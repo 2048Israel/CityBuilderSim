@@ -3849,3 +3849,118 @@ must report actual-flow/statement timing and paying versus sponsored
 households. BLS statistical material is public domain with attribution
 ([policy](https://www.bls.gov/bls/linksite.htm)); Statistics Canada data is
 under its commercially reusable [Open Licence](https://www.statcan.gc.ca/en/terms-conditions/open-licence).
+
+The remote native default capture completes through month 600 on pushed
+fb2f3a74d/CY1, world RANDOM 48213 and default ensemble variation 0, Temurin
+21.0.13+9. It holds box.lock shared after PW3e's ensemble releases it.
+Compile and diagnostic run return 0; native audits execute before the
+observer, but its deliberate month-600 stop is not a LongPlaytest pass.
+Only two passive scratch calls are added, after household settlement and
+after native audit; no mathematical statement, RNG, policy or month order
+changes. Actual settlement is paired with the preceding cleared leases,
+not the next clearing. Reports 95a3/6c03 and the source/flow manifest are
+retained in the helper's target/rent-weight/box.
+
+Months 240-600 inclusive give 361 observations. Rent is 40.7061 percent of
+the measured consumption bills; actual-funding bounds are 40.7058-40.7231
+percent. Ambiguous rent funding is small; most unfunded bills are in
+zero-rent cells. Aggregate rent/primary gross income is 32.481 percent,
+or 24.233 percent after observed property receipts are included. These
+are aggregate ratios, not Census's cash-paying renter median. Paying
+full/half cohorts have 37.815 percent against primary income, but property
+income is not yet matched safely to those cohorts, so no full-income
+renter distribution is claimed. This evidence does not support a blanket
+30-percent income cap.
+
+Rent/consumption at 240/360/480/600 is
+43.028/28.978/41.687/37.721 percent; the native CPI rent weights are
+42.968/41.713/37.535/44.781 percent, averaging 41.187 percent over the
+window. It is not the early prewarmed fixture's 71 percent. The four native
+relinks expose raw-to-applied rent shares 41.633 to 42.968, 39.258 to
+41.713, 29.881 to 37.535 and 42.096 to 44.781 percent: the fifteen-percent
+luxury cap raises rent's share by 1.335/2.455/7.654/2.685 points. Observed
+vehicle purchases, 4.43 percent of measured consumption, are absent from
+CPI; fuel, .67 percent, is grouped with groceries but priced with grocery
+shelf prices. Meals and luxury purchases also need separate treatment
+when reading the household spending headline. The early fixture's full
+coverage/cap decomposition remains under analysis; no model target or
+cap change is selected merely from these figures.
+
+The subsequent clean, uninstrumented remote MonetaryCheck at the same
+pushed head reproduces exactly two hard failures: original total effect
+-3.891767 points against the kept +1 floor, and pooled delay .806726
+against .750. All annual timing, non-shelter transmission, curve,
+currency, saving-plan, physical-basket, calendar and supply guards pass.
+The head is now validated as still defective after CY1, rather than using
+an obsolete pre-merge result. Report 64c2 retains the clean manifest/log;
+the measurement and baseline jobs have both ended. The helper continues
+only analysis of existing captures for a sourced model proposal.
+
+The focused passive original 3/40 pair reproduces both current full-double
+Monetary component lines exactly, including the -3.891766822369-point
+effect, with all native pair guards passing. It confirms that the luxury
+cap is inactive at the original base: meals, luxury, vehicles and fuel
+have zero base spending. Actual later Boutique/Diner completion and first
+purchases explain that difference from the native default city. Removing
+the luxury cap or adding its absent base vehicles is not a demonstrated
+remedy for the original failure. Income receipt credits reconcile to the
+native audit within 4.45e-15; settlement census counts match exactly and
+prior lease bills within 2.23e-16.
+
+The original base's paying renter cohort has gross-income burdens
+43.274/41.557 percent at 3/40, with representative-cell weighted medians
+54.877/48.864 percent at month 37. Aggregate income across all households
+masks that burden because much property income reaches other cohorts.
+By month 84 those medians are 30.303/39.818 percent. These measured model
+cohorts are not Census microdata; the before-tax money-income comparison
+excludes principal, capital sale proceeds and gains. Report e2b7 and the
+helper's pair-box analyses retain the exact definitions and limits.
+
+★ First correct actual positive fractional-household settlement. The
+existing empty-cell branch skips cells below .5 despite allocating real
+lease services and income to them. Original base settled rent is
+34.187918/32.228720k versus booked 38.262372/36.028504k; the difference
+4.074454/3.799784k is recorded as unsettled rent. Do not merely delete a
+legitimate consumed service from CPI. Cause a fractional-recipient money
+regression, reconcile allocation and settlement, retain true zero-cell
+and genuinely unfunded bookkeeping, and preserve cash/card/debt/claim
+conservation. Do not globally change unrelated EMPTY_CELL eligibility.
+
+★ Separately correct the zero-standing-stock quote's gross/net semantics.
+The source audit confirms .058 is a gross advertised-rent/list-value yield,
+not a net equity return. Spec section 4.4 expressly preserves the gross
+comparator rather than adding all operations as though it were net. Live
+standing pricing already compares its gross scarcity target with a
+conditional actual-cost floor and waives that floor in a glut; leave that
+unchanged. Unbuilt opening/reprice instead adds actual carry to the gross
+anchor. Use the larger of gross comparator and actual cost-recovery need,
+retaining cost coverage, actual expense booking and underwriting. Keep
+the .058 value, scarcity elasticity and lease update unchanged. This is
+not a claim that interest was booked twice or that the two corrections
+will by themselves pass MonetaryCheck.
+
+The completed yield/carry source audit is retained as the prior helper's
+yield-carry-audit.txt, report 490a. All its jobs ended and that session is
+stopped. A fresh RES3-fraction-pay builder prepares only these two paths
+and caused regressions in its own worktree. Parent reviews before adoption
+and pushes the candidate before remote native checks. No numerical
+retuning, rent/income cap, CPI window change or Monetary-law change is
+authorized by this implementation scope.
+
+The source review accepts the two narrow corrections and their caused
+regressions. Positive counts now settle, retain their own stocks through
+census/load replanning and receive the corresponding grocery quantities;
+optional credit, investment and estate eligibility keeps its .5 guard.
+No new saved field or public API is added. The already-owed format 66
+covers the unshipped RES3 model; the genuine format-65 refusal pair stays.
+The old aggregate stock and shrinking-census checks remain, with positive
+ownership made explicit and a separate exact-zero clearing case.
+
+Review changed the quote finding to assert each comparable class before
+reconciling a recipe: sum(max(anchor,cost)) is not generally the maximum
+of the two recipe sums. It also removed a proposed early-return test
+selector. Both cost sides are caused by actual property-tax inputs;
+standing-stock, glut, funding and actual expense rules are unchanged.
+Test-only commit d379c33e1 precedes the production correction so the new
+findings can be demonstrated against the old pushed model. No compile or
+JVM has run on this candidate yet; remote validation remains required.

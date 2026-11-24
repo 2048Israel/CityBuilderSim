@@ -176,7 +176,7 @@ public final class HousingMarket {
             onSite.put(s.key(),s.pipeline());
             totalBasis+=(c.homes+s.pipeline())*c.capital;}
         // An unbuilt form is absent from physical stock, but still has a real
-        // operating quote. Its capital-return anchor alone cannot pay those bills.
+        // operating quote. Compare the gross market anchor with actual cost recovery.
         for(BuildingsTemplate t:bm.getTemplates()){
             HousingRecipe recipe=t.getHousingRecipe();if(!re.key().equals(t.getSector())||recipe==null)continue;
             for(var d:recipe.mix()){
@@ -188,8 +188,10 @@ public final class HousingMarket {
                 c.carry=carry.getOrDefault(t.getId(),0.0)*share+debt;
             }
         }
-        for(ClassState c:classes.values())if(opening.contains(c.key()))
-            c.ask=c.capital*RealEstate.LANDLORD_YIELD/12+(c.homes==0?c.carry:0);
+        for(ClassState c:classes.values())if(opening.contains(c.key())){
+            double anchor=c.capital*RealEstate.LANDLORD_YIELD/12;
+            c.ask=c.homes==0?Math.max(anchor,c.carry):anchor;
+        }
     }
     public HousingChoice.Result clear(Game game,List<HousingChoice.Demand> cells){
         if(month==game.getMonth())return result;
@@ -601,7 +603,7 @@ public final class HousingMarket {
             // An unbuilt class keeps its opening supply quote until it has a market.
             double pressure=c.homes>0?c.demand/c.homes:1;
             double anchor=c.capital*RealEstate.LANDLORD_YIELD/12;
-            c.target=c.homes>0?anchor*Math.pow(pressure,RealEstate.SCARCITY_ELASTICITY):anchor+c.carry;
+            c.target=c.homes>0?anchor*Math.pow(pressure,RealEstate.SCARCITY_ELASTICITY):Math.max(anchor,c.carry);
             double balanced=c.homes*RealEstate.GLUT_PRESSURE;
             // Allocation can round down by an ULP at a full door. Classify
             // economic vacancy with the same quantity bound as the match.
