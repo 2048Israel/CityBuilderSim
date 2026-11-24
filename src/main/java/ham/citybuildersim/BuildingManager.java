@@ -6775,7 +6775,8 @@ public class BuildingManager {
         double points = share * homeOwed;
         if (!(points > 0) || !Double.isFinite(points) || !(owedAll > 0)) return null;
         double materials = stack.getMaterialsOwed() * points / owedAll;
-        double buildings = share * stack.getUnderConstruction();
+        // ...the buildings its points finish sooner: the site's by the points owed, so FC2's pooled claim, which stays on his book, is not counted.
+        double buildings = stack.getUnderConstruction() * points / owedAll;
         double pace = BuildersShort.sitePace(points, thresholdMonths(), largestDepotPoints(), monthCap(t, stack.pointsOnSite()));
         double monthsAbroad = BuildersShort.monthsAbroad(points, pace);
         double home = siteMonths(key, waitOutput);
