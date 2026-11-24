@@ -332,52 +332,60 @@ Run here, one at a time (`./batch-check.sh <name>`), the earth and world data se
 - After REV-PW3d's mend (the share waived only in a month that lacks), one at a time: **PowerPlanCheck** green, 94
   lines, 8a's last two fixtures shown red first (§2, ★R); **BuildAdviceCheck, EssentialWorksCheck,
   WorksFinanceCheck, BuildCardCheck, NewUnitCheck, HydroCheck, WaterPowerCheck, MaterialsCheck** green;
-  **AutoBuildCheck** with only its known FS12 red; **LongPlaytest** (the default run, 2,400 months): green, every
-  month audited and every reload matched (§5).
+  **AutoBuildCheck** with only its known FS12 red; **LongPlaytest** green.
+- After REV-PW3e's mend (the share waived when the seasonal peak is short at the plant's completion), one at a time:
+  **PowerPlanCheck** green, 99 lines, 8a's last four fixtures each shown red under the form it guards against (§2,
+  ★R); **BuildAdviceCheck, EssentialWorksCheck, WorksFinanceCheck, BuildCardCheck, NewUnitCheck, HydroCheck,
+  WaterPowerCheck, MaterialsCheck** green; **AutoBuildCheck** with only its known FS12 red; **LongPlaytest** (the
+  default run, 2,400 months): green, every month audited and every reload matched (§5).
 
 ## 5. What the default run builds, decade by decade (spec §6, "Measure first" 3)
 
 LongPlaytest's default city (founded 1900, today's buildings but every power plant from its year, PW2), the
 automatic path's power orders by the decade they were placed in:
 
-| decade | after REV-PW3d's mend | the seasonal line (REV-PW3c) |
-|---|---|---|
-| 1900s | nothing (the founding grid carries the town) | 1 Oil-Fired Plant |
-| 1910s | 2 diesel | nothing |
-| 1920s | nothing | nothing |
-| 1930s | 1 diesel | nothing |
-| 1940s | 4 diesel | 9 diesel, 1 Oil-Fired Plant |
-| 1950s | 2 diesel, 1 Oil-Fired Plant | 1 coal |
-| 1960s | 2 diesel, 1 turbine, 1 coal | 23 diesel, 6 turbines, 2 Oil-Fired Plants, 1 coal |
-| 1970s | 6 diesel, 3 turbines, 1 Oil-Fired Plant | nothing |
-| 1980s | 17 diesel, 6 turbines, 2 Oil-Fired Plants, 1 coal, **13 Wind Farms** | 7 turbines, 1 Oil-Fired Plant, **2 Wind Farms** |
-| 1990s | 10 diesel, 12 turbines, 1 Oil-Fired Plant, 1 coal, **3 Wind Farms, 1 Solar Farm, 1 Biomass** | nothing |
-| 2000s | nothing | 15 diesel, 7 turbines |
-| 2010s | 8 diesel, 5 turbines, 1 Oil-Fired Plant, 1 coal, **2 Wind Farms** | 3 diesel, 2 turbines, 3 Oil-Fired Plants, **1 Solar Farm** |
-| 2020s | 3 diesel, 1 turbine, **1 Wind Farm** | 4 diesel, 3 turbines, 4 Oil-Fired Plants, **11 Wind Farms, 1 Biomass** |
-| 2030s | 11 diesel, 3 turbines, 2 coal | 5 diesel, 11 turbines, 2 coal |
-| 2040s | 6 diesel, 10 turbines, 2 coal, **9 Solar Farms** | 1 diesel, 4 turbines, 5 coal |
-| 2050s | 6 diesel, 2 turbines, 2 coal, **1 Solar Farm** | nothing |
-| 2060s | 11 diesel, 5 turbines | nothing |
-| 2070s | nothing | 2 diesel, 2 coal |
-| 2080s | 1 coal | nothing |
-| 2090s-2100 | nothing | 2100 (m2400) 5 turbines |
+| decade | after REV-PW3e's mend | after REV-PW3d's mend | the seasonal line (REV-PW3c) |
+|---|---|---|---|
+| 1900s | 1 Oil-Fired Plant | nothing (the founding grid carries the town) | 1 Oil-Fired Plant |
+| 1910s | nothing | 2 diesel | nothing |
+| 1920s | nothing | nothing | nothing |
+| 1930s | nothing | 1 diesel | nothing |
+| 1940s | 9 diesel, 1 Oil-Fired Plant | 4 diesel | 9 diesel, 1 Oil-Fired Plant |
+| 1950s | 1 coal | 2 diesel, 1 Oil-Fired Plant | 1 coal |
+| 1960s | 1 turbine | 2 diesel, 1 turbine, 1 coal | 23 diesel, 6 turbines, 2 Oil-Fired Plants, 1 coal |
+| 1970s | 16 diesel, 4 turbines, 1 coal, **1 Biomass** | 6 diesel, 3 turbines, 1 Oil-Fired Plant | nothing |
+| 1980s | 8 diesel, 7 turbines, 1 Oil-Fired Plant, 1 coal, **3 Wind Farms, 1 Biomass** | 17 diesel, 6 turbines, 2 Oil-Fired Plants, 1 coal, **13 Wind Farms** | 7 turbines, 1 Oil-Fired Plant, **2 Wind Farms** |
+| 1990s | nothing | 10 diesel, 12 turbines, 1 Oil-Fired Plant, 1 coal, **3 Wind Farms, 1 Solar Farm, 1 Biomass** | nothing |
+| 2000s | **1 Wind Farm** | nothing | 15 diesel, 7 turbines |
+| 2010s | nothing | 8 diesel, 5 turbines, 1 Oil-Fired Plant, 1 coal, **2 Wind Farms** | 3 diesel, 2 turbines, 3 Oil-Fired Plants, **1 Solar Farm** |
+| 2020s | 2 diesel, 3 turbines, 1 Oil-Fired Plant, **6 Wind Farms, 4 Biomass** | 3 diesel, 1 turbine, **1 Wind Farm** | 4 diesel, 3 turbines, 4 Oil-Fired Plants, **11 Wind Farms, 1 Biomass** |
+| 2030s | 15 diesel, 7 turbines, 4 Oil-Fired Plants, 1 coal | 11 diesel, 3 turbines, 2 coal | 5 diesel, 11 turbines, 2 coal |
+| 2040s | 5 diesel, 4 turbines | 6 diesel, 10 turbines, 2 coal, **9 Solar Farms** | 1 diesel, 4 turbines, 5 coal |
+| 2050s | 8 diesel, 2 turbines, 1 coal, **1 Wind Farm** | 6 diesel, 2 turbines, 2 coal, **1 Solar Farm** | nothing |
+| 2060s | 7 diesel, 7 turbines | 11 diesel, 5 turbines | nothing |
+| 2070s | nothing | nothing | 2 diesel, 2 coal |
+| 2080s | nothing | 1 coal | nothing |
+| 2090s-2100 | nothing | nothing | 2100 (m2400) 5 turbines |
 
-**The totals**, after REV-PW3d's mend, the seasonal line, ★R's first form and REV-PW3's mends:
+**The totals**, after REV-PW3e's mend, REV-PW3d's, the seasonal line, ★R's first form and REV-PW3's mends:
 
-| | REV-PW3d's mend | seasonal line | ★R's first form | REV-PW3's mends |
-|---|---|---|---|---|
-| Diesel Stations | 89 | 62 | 66 | 86 |
-| Oil-Fired Turbines | 48 | 45 | 38 | 57 |
-| coal plants | 11 | 11 | 7 | 9 |
-| Oil-Fired Plants | 6 | 12 | 10 | 7 |
-| Wind Farms | 19 | 13 | 15 | 5 |
-| Solar Farms | 11 | 1 | 19 | 2 |
-| Biomass Plants | 1 | 1 | 2 | 2 |
-| reserve suggestions | 139 | 119 | 390 | 447 |
-| spread suggestions | 12 | 13 | 9 | 8 |
-| offers assembled past the listing | 0 | 0 | 0 | 1 |
-| Wire & Cable Works (no other copper works) | 2 | 4 | 5 | 3 |
+| | REV-PW3e's mend | REV-PW3d's mend | seasonal line | ★R's first form | REV-PW3's mends |
+|---|---|---|---|---|---|
+| Diesel Stations | 70 | 89 | 62 | 66 | 86 |
+| Oil-Fired Turbines | 35 | 48 | 45 | 38 | 57 |
+| coal plants | 5 | 11 | 11 | 7 | 9 |
+| Oil-Fired Plants | 8 | 6 | 12 | 10 | 7 |
+| Wind Farms | 11 | 19 | 13 | 15 | 5 |
+| Solar Farms | 0 | 11 | 1 | 19 | 2 |
+| Biomass Plants | 6 | 1 | 1 | 2 | 2 |
+| reserve suggestions | 112 | 139 | 119 | 390 | 447 |
+| spread suggestions | 6 | 12 | 13 | 9 | 8 |
+| offers assembled past the listing | 0 | 0 | 0 | 0 | 1 |
+| Wire & Cable Works (no other copper works) | 2 | 2 | 4 | 5 | 3 |
+
+LongPlaytest samples the share of power served every 120 months (its works line). After REV-PW3e's mend none of
+the 20 samples is under `lacksNow()`'s line (0.924); after REV-PW3d's, m120 was at 0.569; on the seasonal line,
+m600 was at 0.907. The month-by-month count is the ensemble's (§6).
 
 Before REV-PW3's mends the run built 73 diesels, 51 turbines, 9 coal plants, 7 Oil-Fired Plants and no farms, with
 292 reserve and 11 spread suggestions.
@@ -388,11 +396,14 @@ block is 1.507 times the draw, the year's 1.263), so the rule passes over a firm
 Solar Farms fall from 34 to 14 (a reading of the rule; the run's farms and its 119 reserve suggestions against 390
 were not traced one by one). With REV-PW3d's mend a gap the month does not lack waits for a row it fills three tenths
 of, a small one or a farm, and the farms are 30 again (19 wind, 11 solar), the Oil-Fired Plants 6 against 12 (not
-traced one by one).
+traced one by one). With REV-PW3e's mend, 11 Wind Farms, no Solar Farm and 6 Biomass Plants (not traced one by
+one).
 
-The 1900s Oil-Fired Plant is gone with REV-PW3d's mend: the first order is 2 Diesel Stations at m122 (1910, the
-diesel's first year), $4.4M, physical relief 20,444 a month, open 63.1 months on. The seasonal line had ordered the
-Oil-Fired Plant at m102 ($13.7M, opening 102.8 months out, relief 11,850 a month) and the first form at m107. **Against main:** FC2's gate run on 0.9.195 (2026-11-23, the same default run) ordered 170 Oil-Fired
+With REV-PW3e's mend the 1900s Oil-Fired Plant is back, the seasonal line's order to the month: m102, $13.7M, a
+lead of 102.8 months, physical relief 11,850 a month. It opens at m205, and the rule orders it because the seasonal
+peak is short at that completion (a reading of the rule, not traced); the diesel stands only from 1910. REV-PW3d's
+mend had ordered 2 Diesel Stations at m122 ($4.4M, open 63.1 months on), with m120's power served at 0.569, and
+★R's first form the Oil-Fired Plant at m107. **Against main:** FC2's gate run on 0.9.195 (2026-11-23, the same default run) ordered 170 Oil-Fired
 Turbines, 8 Diesel Stations and 1 Oil-Fired Plant, no coal and no farms.
 
 **Why so few farms** (the orchestrator asked: did research find them, and what did the planner price them at;
@@ -415,8 +426,8 @@ prices rural ground apart from the city's (a helper's reading of the tree: the c
 `LandFactors` is a nation's multiplier; agriculture buys at the city's price, with a property-tax relief at use
 value; no building rents its ground; a farm's ground use is a coal plant's). Rural ground for the power farms is
 RG1's (Queued on main after FS6, 77c77ab8c: a policy, Jerus 2026-11-24, "that also lets farms crops as well be cheaper"), not PW3's, so PW3 ships with the city's price and the mix follows
-it. The planner chooses a farm where its numbers say so (PowerPlanCheck 6 and 6a; this run's 1980s, 1990s, 2010s,
-2020s, 2040s and 2050s).
+it. The planner chooses a farm where its numbers say so (PowerPlanCheck 6 and 6a; this run's 1980s, 2000s, 2020s
+and 2050s).
 
 **Against §2.9's table:** 1900's city burned coal in plants of half a megawatt and took a third of its power from
 rivers; this one has no hydro site ordered, and today's sizes (a 280 MW coal unit, an 86 MW Oil-Fired Plant, a 19
