@@ -168,6 +168,86 @@ public final class HousingMarketCheck {
         plans.setLandAvailable(1_000_000_000,0);
         check("an unfunded backlog does not promise a profitable project",re.plan(plans,g).template==null);
     }
+    static void netOperatingChoice()throws Exception{
+        out.println("--- actual project choice ranks net operating income before financing ---");
+        Game g=new Game(GameFiles.scratch("res3-net-operating-choice"));g.run();
+        var bm=g.getBuildingManager();var em=g.getEconomyManager();var re=g.getSectors().realEstate();var market=re.housingMarket();
+        var compact=bm.getTemplate(HousingForms.ALL.stream().filter(f->f.code().equals("C01")).findFirst().orElseThrow().id());
+        var house=bm.getTemplateByName("House");
+        // The available area admits these two physical forms without a knowledge hook.
+        // Free ground keeps the actual invoice and planner quote identical.
+        g.getLandManager().setPricePerSqFt(0);em.setLandPricePerSqFt(0);
+        em.getTaxPolicy().setPropertyTaxRate(0);em.setPricePerWaterUnit(0);em.setPricePerWatt(0);
+        var plans=new BusinessInvestment(bm,em);plans.setLandAvailable(house.getLandSqFt(),0);
+        double compactCost=plans.getCostOf(compact,1),houseCost=plans.getCostOf(house,1);
+        double compactBase=em.housingCarry(compact),houseBase=em.housingCarry(house);
+        check("both physical alternatives are actually known",bm.isTemplateKnown(compact)&&bm.isTemplateKnown(house));
+        check("only the two house forms fit the available land",bm.getTemplatesBySector(re.key()).stream()
+                .filter(t->t.getCapacity()>0&&plans.plotsAvailableFor(t)>0).count()==2);
+        check("both alternatives have a real positive invoice",compactCost>0&&houseCost>0);
+        near("compact planner cost is the actual door invoice",compactCost,g.doorPriceOf(compact,1));
+        near("House planner cost is the actual door invoice",houseCost,g.doorPriceOf(house,1));
+        // Open at an electricity bill equal to the compact form's gross capital
+        // return, then halve that tariff. Existing asks retain their opening quote;
+        // no rent, yield, template cost or preference is fitted to the ranking.
+        double openingPower=compactCost*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12/compact.getElectricityConsumption();
+        double households=compact.getDwellings()+house.getDwellings();
+        em.setPricePerWatt(openingPower);market.reset();
+        var demand=List.of(new HousingChoice.Demand("choice-retired-couples",households,2,0,true,0,false,houseCost));
+        market.clear(g,demand);
+        var compactKey=new HousingInventory.Key(compact.getId(),compact.getHousingRecipe().mix().getFirst().id());
+        var houseKey=new HousingInventory.Key(house.getId(),house.getHousingRecipe().mix().getFirst().id());
+        near("compact opening quote is its actual operating floor",market.price(compactKey),em.housingCarry(compact));
+        near("House opening quote keeps the unchanged gross reference",market.price(houseKey),houseCost*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12);
+        em.setPricePerWatt(openingPower/2);
+        var forecast=market.forecast(g);
+        double compactIncome=forecast.income(compact,1),houseIncome=forecast.income(house,1);
+        double compactCarry=em.housingCarry(compact),houseCarry=em.housingCarry(house);
+        near("the actual match fills the compact alternative",compactIncome,market.price(compactKey)*compact.getDwellings());
+        near("the actual match fills the House alternative",houseIncome,market.price(houseKey)*house.getDwellings());
+        check("both alternatives clear the unchanged operating hurdle",compactIncome>em.housingBuildHurdle(compact)&&houseIncome>em.housingBuildHurdle(house));
+        check("the compact form wins on gross receipts per actual project dollar",compactIncome/compactCost>houseIncome/houseCost);
+        check("the gross winner has higher operating carry per project dollar",compactCarry/compactCost>houseCarry/houseCost);
+        check("House dominates on actual net operating income per project dollar",(houseIncome-houseCarry)/houseCost>(compactIncome-compactCarry)/compactCost);
+        var choice=re.plan(plans,g);
+        check("the actual planner chooses the net operating winner",choice.build&&choice.template==house);
+
+        // A planner quote is an observation, including its full native saved state.
+        check("choice fixture saves only in scratch slot10",g.saveGame(10,"RES3 net operating choice").ok);
+        byte[] saved=Files.readAllBytes(g.getGameFiles().saveFile(10));
+        double[] pools=MoneyAudit.pools(g);String leases=JSON.toJson(market.forSave());
+        String stock=JSON.toJson(bm.getHousingInventory().forSave());
+        for(int i=0;i<3;i++){
+            near("repeat compact quote keeps the actual invoice",plans.getCostOf(compact,1),g.doorPriceOf(compact,1));
+            near("repeat forecast keeps actual expected rent",market.candidateIncome(g,house,1),houseIncome);
+            var repeated=re.plan(plans,g);
+            check("repeat plan preserves the chosen project and quantity",repeated.template==choice.template&&repeated.quantity==choice.quantity);
+        }
+        check("quotes and plans spend no cash or raise capital in any pool",Arrays.equals(pools,MoneyAudit.pools(g)));
+        check("quotes and plans change no lease or saved market field",leases.equals(JSON.toJson(market.forSave())));
+        check("quotes and plans change no owned or funded physical stock",stock.equals(JSON.toJson(bm.getHousingInventory().forSave())));
+        check("repeated quote fixture saves only in scratch slot10",g.saveGame(10,"RES3 net operating choice").ok);
+        check("quotes and plans preserve the complete native saved state",Arrays.equals(saved,Files.readAllBytes(g.getGameFiles().saveFile(10))));
+
+        em.setPricePerWatt(0);
+        check("with no power bill the gross winner is also the net winner",(compactIncome-em.housingCarry(compact))/compactCost>(houseIncome-em.housingCarry(house))/houseCost);
+        var same=re.plan(plans,g);
+        check("the actual planner retains a gross winner that also wins on net",same.build&&same.template==compact);
+        double breakEvenPower=Math.max((compactIncome-compactBase)/compact.getElectricityConsumption(),(houseIncome-houseBase)/house.getElectricityConsumption());
+        em.setPricePerWatt(breakEvenPower);
+        near("one actual alternative earns exactly zero net operating income",Math.max(compactIncome-em.housingCarry(compact),houseIncome-em.housingCarry(house)),0);
+        check("the unchanged hurdle rejects zero net operating income",!re.plan(plans,g).build);
+        em.setPricePerWatt(breakEvenPower+openingPower);
+        check("actual utility bills cause negative net income for both",compactIncome<em.housingCarry(compact)&&houseIncome<em.housingCarry(house));
+        check("the unchanged hurdle rejects negative net operating income",!re.plan(plans,g).build);
+        em.setPricePerWatt(0);plans.setLandAvailable(compact.getLandSqFt()/2,0);
+        check("the unchanged land gate rejects every otherwise profitable project",!re.plan(plans,g).build);
+        plans.setLandAvailable(house.getLandSqFt(),0);market.reset();
+        market.clear(g,List.of(new HousingChoice.Demand("choice-unfunded",households,2,0,true,0,false,0)));
+        near("an unfunded actual match promises no compact rent",market.candidateIncome(g,compact,1),0);
+        near("an unfunded actual match promises no House rent",market.candidateIncome(g,house,1),0);
+        check("the unchanged funded-demand gate rejects zero receipts",!re.plan(plans,g).build);
+    }
     static void classPrices(){
         out.println("--- class-local debt carry, actual trades and zero-demand glut ---");
         HousingMarket normal=new HousingMarket(),debt=new HousingMarket();
@@ -1407,8 +1487,8 @@ public final class HousingMarketCheck {
         out=System.out;unbuiltGrossQuotes();
         out=System.out;coalescedSponsored();sharingForecastSources();crossClassPaidExcess();savedContractModes();
         out=System.out;fundedPressureAndForecast();rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
-        StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on this laptop, including all other city systems, not isolated solver timings.\n");
-        try{System.setOut(silent);classPrices();rentPriceIndex();mergedBudgetPressure();plannerInputs();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();doubledDemand();studentFacility();fundedHost();scarceFreeHost();retiredRoom();loadedDoorCensus();familyHostReservation();aggregatePackingRemainder();savingHousingBudget();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
+        StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on the executing host, including all other city systems, not isolated solver timings.\n");
+        try{System.setOut(silent);classPrices();rentPriceIndex();mergedBudgetPressure();plannerInputs();netOperatingChoice();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();doubledDemand();studentFacility();fundedHost();scarceFreeHost();retiredRoom();loadedDoorCensus();familyHostReservation();aggregatePackingRemainder();savingHousingBudget();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
         Path target=Path.of("target/RES3-catalogue-report.md");Files.writeString(target,report);
         out.println("Report: "+target);out.println(fails==0?"HousingMarketCheck: ALL PASSED":fails+" FAILED");if(fails>0)System.exit(1);
     }

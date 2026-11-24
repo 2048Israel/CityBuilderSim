@@ -4127,3 +4127,16 @@ helper's target/policy-trace and
 reconciliation is within 6.22e-15 in the original and 7.28e-12 in default;
 recipient counts match exactly and prior default lease bills within
 2.28e-13. No production or law changed during diagnosis.
+
+The source review accepts the one-score net operating ranking correction.
+The added scratch regression uses actual tariffs and plots to cause a
+gross/net choice reversal, retains a gross-and-net winner countercase,
+and keeps zero/negative NOI, land and funded-demand rejection cases. It
+also checks repeated plans against cash pools, leases, inventory and
+complete native save bytes. No new API, field, dial or saved state is
+introduced. The legacy untyped branch likewise ranks its existing
+fillable rent after actual operating costs; financing remains separate.
+All fixture prerequisites are explicit and still require native proof.
+The parent also corrects the catalogue generator's machine wording to
+"executing host", since these heavy runs now use the gate box. No native
+result is claimed for this candidate before the pushed-source replay.

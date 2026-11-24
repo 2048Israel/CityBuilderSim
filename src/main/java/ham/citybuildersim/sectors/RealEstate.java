@@ -738,7 +738,9 @@ public final class RealEstate extends Sector {
             double income = housingMarket.active()?typedIncome:doors * FamilyModel.rentWeightOf(t.homeSize()) * price;
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
-            double score = income / cost;
+            // Rank the rent these doors would earn after their own operating
+            // costs, before interest; the lender still judges the financing.
+            double score = (income - game.getEconomyManager().housingCarry(t)) / cost;
             if (score > bestScore) {
                 bestScore = score;
                 best = t;
