@@ -62,6 +62,7 @@ adds its line here, not in `CLAUDE.md`.
         HousingChoiceCheck.java, HousingMarketCheck.java
                                    caused choice, rent, budget, construction and native continuation proofs;
                                    actual historical/present-day catalogue report and integrated profiles
+        ForeignChoiceCheck.java    FC2b: a payer hands a site's remaining work to the foreign crews - a business when its extra is under its saving, the city from its card; a half-built site, a shared stack, the money booked once, saved and loaded
         sectors/                   twenty-four sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the

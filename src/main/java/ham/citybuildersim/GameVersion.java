@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.9.197";
+    public static final String VERSION = "0.9.198";
 
     /**
      * The save shape.
@@ -8371,9 +8371,18 @@ public final class GameVersion {
      * today's 255 agents a building, not 290.7, until the next month's
      * choice. The floor rises with the format; no conversion.
      */
-    // RES3 follows R6f's shipped format 64. Typed class quotes, leases and
-    // rental flows cannot be recovered from the pooled layout: format/floor 65.
-    public static final int SAVE_FORMAT = 65;
+    /* FC2b: A CONTRACT'S POINTS (format 65).
+     * A site shared by payers is now divided by the points each payer's
+     * orders put on it (BuildingsStacks.Contract.points, saved in the
+     * contract records), which a payer's share of the site handed to the
+     * foreign crews is struck on. A format-64 save holds no points: once
+     * an order adds points to one payer's contract on a shared site, the
+     * share by points reads the older payers' work there as none. The
+     * floor rises with the format; no conversion.
+     */
+    // RES3 follows FC2b's shipped format 65. Typed class quotes, leases and
+    // rental flows cannot be recovered from the pooled layout: format/floor 66.
+    public static final int SAVE_FORMAT = 66;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8383,7 +8392,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 64 since batch R6f (THE CONTACT CENTRE BEFORE THE AI ASSISTANT above:
+     * 65 since batch FC2b (A CONTRACT'S POINTS above: an older save's
+     * contracts hold no points and a shared site's shares read wrongly).
+     * 64 from batch R6f (THE CONTACT CENTRE BEFORE THE AI ASSISTANT above:
      * an older 1900 city's Contact Centre holds no missing-B10 flag and loads
      * its agents at today's count).
      * 60 from batch R6e (PRE-GM CROP RECIPES above: an older native choice
@@ -8436,7 +8447,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 65;
+    public static final int OLDEST_LOADABLE_FORMAT = 66;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose
