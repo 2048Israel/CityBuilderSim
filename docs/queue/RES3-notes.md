@@ -3289,3 +3289,94 @@ launch reads 76.7 percent committed (41.88/54.63 GiB), and the native memory
 probe reads 5,671 MiB available RAM and over 12 GiB free commitment: both
 MG1 reserves pass. Native Earth/world paths and parallel=1 are explicit.
 The helper is instructed to launch no JVM until the parent hands back.
+
+Root SaveFileCheck finishes batch 0, exactly one selected harness, harness
+0 in 123.6 seconds. The immutable archive confirms the genuine 62/63/64/65
+refusal conjunction fired, reaching the real 65 hashes/schema/nonzero points;
+the one-below-floor case is exactly 65 below current 66. Fresh/running loads,
+both files, full saved city, manager/history identities and money stay intact.
+Current-format save/history and the seventy-five fixed-bill cells pass; the
+next-month loaded twin matches the live city, every money pool and people
+to the bit. No FAIL or OBSERVED case is present.
+
+Root ReadPathCheck finishes batch 0, one selected harness, harness 0 in
+136.5 seconds. Native 62/63/64/65 refusal and repeated reads fire; all
+prior native/HC1/PW5 cases, dated Money and licence readers pass too.
+The helper reviews only each immutable run archive, not a live overwritten
+log. Both root process trees have finished before the JVM is handed back.
+Generated maps retain structural changes and LF; final root fast/maps still
+wait for the final model. No money-policy pass is claimed.
+
+Source-only diagnosis of the completed G observations finds mean paid-partial
+households 155.7800/151.7065 at 3/40 percent over months 49–84; almost all
+can afford a normal full current door. They have no eligible same-class
+free completion gap, while 16.5112/8.5653 households have some other free,
+normal-affordable class. A 3 percent month-50 COUPLE:COLLEGE H120 example
+has .7138344 households, .7067754 funded/physical doors, bill .0336951,
+ask .0476744 and budget .3223685, with other recipe-160 classes spare.
+These final states do not establish retained or late-expansion flows.
+No cash/bill funding violation is established. Approve only passive capture
+of actual pre-primary, retained and post-phase quantities, followed by a
+separate frozen-argument choice counterfactual. The logger must not solve,
+price, forecast or mutate the model; the completed original arrays must
+match the archived G run before interpretation. This distinguishes a real
+allocation defect from a tenure/normal-upgrade priority tradeoff, with no
+new model algorithm or policy-law change authorized.
+
+The passive actual-phase capture completes with the same single original
+hard failure (batch 4, one harness, 52.6 seconds). Every CPI/non-shelter,
+start, rent and late array equals archived G exactly. The 664-row monthly
+trace SHA-256 is also identical:
+a59008d705282b8f75c93e203352b97f3c994e5edbf86e620978baadb2713165.
+Only after this equality gate are the 72 actual 3/40-percent frames over
+months 49–84 interpreted. They contain 1,440 phase records, including the
+actual retained list before fresh assignments are appended. Existing normal
+completion expands positively in all seventy-two frames; that is now a
+captured local flow, not an inference from the final stock. The separate
+frozen-argument choice comparison remains diagnostic. Its filter must
+identify paid partials from the built primary's reconstructed prior funded
+doors, preserving full-funded hosts even when the current ask changed.
+Raw hosted physical shares and old bills divided by a new ask are not
+valid incumbent-funding classifiers.
+
+The frozen choice diagnostic passes (batch 0, one harness, 1.7 seconds).
+All seventy-two baseline Results exactly match the captured actual primitive;
+171,941 source, stock, invoice, budget, closure, immutability and reconstruction
+guards pass. Only genuine built-primary paid partials are excluded in the
+counterfactual: mean 139.9681/139.3762 households at 3/40 percent, with full
+primary hosts protected. Actual retained paid partials are
+139.7683/139.2199 households; almost all are normal/whole affordable.
+Removing them increases fresh normal placements 88.4708/87.6403 but loses
+51.2419/51.5484 housed households at this pure primitive stage. These are
+not final-city evictions and cannot be assumed recoverable by later hosting.
+No cash-funding violation is established. Blanket nonretention is not a fix.
+
+★ Keep every existing funded footprint and bill, and investigate only the
+excess household fraction over funded doors as a normal-upgrade request
+after all movers. Merging this operation into the same class reproduces
+the adopted completion; other unused normal classes can be considered
+without surrendering the funded incumbent claim. Authorize a frozen proof,
+not a production change: old eligible lease counts/bills stay fixed,
+households reduce only pro rata to a placed funded gap, and new normal
+leases receive those same households. Each remaining old tenant and each
+new tenant must afford the bill; total new cost is capped by actual quoted
+cell resources less existing bills. Hosts/zero-bill guests remain intact.
+Cause the two-old-halves/other-vacant-class case, the budget-12 refusal,
+hosted/mixed-host and equivalent reversal boundaries before any live
+integration proposal. Every monetary law and window stays unchanged.
+
+The new frozen excess-household proof stops with batch 4 and one
+HousingChoiceCheck failure: strict current stock cap. Its nine minimal
+boundaries returned before failure in an actual frame. No assertion,
+fixture or threshold is weakened and no production algorithm is changed.
+Request exact class/stock/old-use/new-allocation quantities and bit patterns
+before any repair; one context-only rerun is permitted only if the existing
+artifacts cannot supply them. It must still fail at the original guard.
+Do not label the excess a rounding exception without the witness.
+
+A separate source-only hypothesis is queued behind that proof: current
+price demand may count a fully funded host's donated physical share as
+additional demand despite no funded new-door forecast. The minimal proposed
+case is one door at ask 20, a host with budget/bill 20 and a zero-budget
+free guest. This is not yet a finding or a pricing-change authorization;
+source reasoning and a caused countercase are required first.
