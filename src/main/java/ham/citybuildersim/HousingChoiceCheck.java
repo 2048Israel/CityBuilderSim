@@ -19,7 +19,7 @@ public final class HousingChoiceCheck {
         System.out.println("--- funded half-paying incumbents precede a rich new mover ---");
         var home=o("paired",1,2,40,1,0,false,20);
         var a=d("old-a",1,1,0,0,12);var b=d("old-b",1,1,0,0,12);var rich=d("new-rich",1,1,0,5,100);
-        var old=List.of(new HousingChoice.Lease(a.key(),home.key(),.5,5,1),new HousingChoice.Lease(b.key(),home.key(),.5,5,1));
+        var old=List.of(new HousingChoice.Lease(a.key(),home.key(),.5,5,1,new HousingChoice.Funding(0,1,0)),new HousingChoice.Lease(b.key(),home.key(),.5,5,1,new HousingChoice.Funding(0,1,0)));
         var r=HousingChoice.clear(List.of(rich,b,a),List.of(home),old,8);
         near("both old households keep their actual half shares",r.leases().stream().filter(l->!l.cell().equals(rich.key())).mapToDouble(HousingChoice.Lease::households).sum(),2);
         near("a rich new mover cannot displace those funded incumbents",count(r,rich.key(),null),0);
@@ -32,7 +32,93 @@ public final class HousingChoiceCheck {
         check("incumbent order confers no priority",r.leases().equals(reversed.leases()));
     }
 
+    static void mixedContracts(){
+        System.out.println("--- coalescing cannot subsidize an unaffordable full-price incumbent ---");
+        var home=o("mixed",2,6,120,1,0,false,20);
+        var d=d("mixed",2,1,0,0,16);
+        var merged=HousingChoice.clear(List.of(d),List.of(home),List.of(new HousingChoice.Lease(d.key(),home.key(),1.5,30,2,new HousingChoice.Funding(1,1,0))),8,false);
+        var split=HousingChoice.clear(List.of(d),List.of(home),List.of(new HousingChoice.Lease(d.key(),home.key(),1,20,1,new HousingChoice.Funding(1,0,0)),new HousingChoice.Lease(d.key(),home.key(),.5,10,1,new HousingChoice.Funding(0,1,0))),8,false);
+        near("merged B16 retains only the individually affordable half household",merged.leases().stream().mapToDouble(HousingChoice.Lease::households).sum(),1);
+        near("split B16 retains only the individually affordable half household",split.leases().stream().mapToDouble(HousingChoice.Lease::households).sum(),1);
+        near("merged and split contracts retain equivalent physical space",count(merged,null,null),count(split,null,null));
+        var full=HousingChoice.clear(List.of(d("full",1,1,0,0,20)),List.of(home),List.of(new HousingChoice.Lease("full",home.key(),1,20,1,new HousingChoice.Funding(1,0,0))),8,false);
+        near("pure full B20 remains stable",full.kept(),1);
+        var half=HousingChoice.clear(List.of(d("half",1,1,0,0,16)),List.of(home),List.of(new HousingChoice.Lease("half",home.key(),.5,10,1,new HousingChoice.Funding(0,1,0))),8,false);
+        near("pure half B16 remains stable",half.kept(),.5);
+    }
+    static List<HousingChoice.Lease> canonical(List<HousingChoice.Lease> leases){return leases.stream().sorted(Comparator.comparing(HousingChoice.Lease::cell).thenComparing(l->l.home().toString())).toList();}
+    static void paidExcessContracts(){
+        System.out.println("--- paid excess proof boundaries preserve held claims, modes and actual stock ---");
+        var a=o("A",1,6,120,1,0,false,20);var b=o("B",1,6,120,1,0,false,20);
+        var pair=new HousingChoice.Lease("old",a.key(),1,20,2,new HousingChoice.Funding(0,2,0));
+        var old=List.of(pair);var ds=List.of(d("old",2,2,0,0,20));
+        var p=HousingChoice.completePaidExcess(ds,List.of(a,b),old,7);
+        near("whole affordable paid excess moves to vacant B",p.moved(),1);
+        check("old A footprint and bill remain exact",p.leases().getFirst().count()==1&&p.leases().getFirst().bill()==20);
+        check("old remaining payer becomes full truthfully",p.leases().getFirst().funding().equals(new HousingChoice.Funding(1,0,0)));
+        check("new B takes exactly one normal full payer",p.leases().getLast().funding().equals(new HousingChoice.Funding(1,0,0))&&p.leases().getLast().households()==1);
+        p=HousingChoice.completePaidExcess(List.of(d("old",2,2,0,0,12)),List.of(a,b),old,7);
+        check("B12 cannot leave an unaffordable remaining full payer",p.moved()==0&&p.leases().equals(old));
+        var hosted=List.of(new HousingChoice.Lease("host",a.key(),.5,20,1,new HousingChoice.Funding(1,0,0)),new HousingChoice.Lease("guest",a.key(),.5,0,1,new HousingChoice.Funding(0,0,1)));
+        p=HousingChoice.completePaidExcess(List.of(d("host",1,2,0,0,20),d("guest",1,2,0,0,0)),List.of(a,b),hosted,7);
+        check("full funded donor and sponsored guest remain exact",p.moved()==0&&p.leases().equals(hosted));
+        var a2=o("A",2,6,120,1,0,false,20);
+        var fullMixed=List.of(new HousingChoice.Lease("host",a2.key(),1.5,40,2,new HousingChoice.Funding(2,0,0)),hosted.getLast());
+        p=HousingChoice.completePaidExcess(List.of(d("host",2,2,0,0,20),d("guest",1,2,0,0,0)),List.of(a2,b),fullMixed,7);
+        check("mixed physical full donors contain no paid excess",p.moved()==0&&p.leases().equals(fullMixed));
+        var a15=o("A",1.5,6,120,1,0,false,20);
+        var halfMixed=List.of(new HousingChoice.Lease("host",a15.key(),1,30,2,new HousingChoice.Funding(1,1,0)),hosted.getLast());
+        p=HousingChoice.completePaidExcess(List.of(d("host",2,2,0,0,20),d("guest",1,2,0,0,0)),List.of(a15,b),halfMixed,7);
+        near("mixed contract moves only its half-price deficit",p.moved(),.5);
+        check("mixed contract keeps sponsored claim exact",p.leases().get(1).equals(halfMixed.get(1)));
+        var richOld=List.of(pair,new HousingChoice.Lease("rich",b.key(),1,20));
+        p=HousingChoice.completePaidExcess(List.of(ds.getFirst(),d("rich",1,2,0,5,100)),List.of(a,b),richOld,7);
+        check("all normal movers reserve B before paid upgrades",p.moved()==0&&p.leases().equals(richOld));
+        var equivalent=List.of(new HousingChoice.Lease("left",a2.key(),1,20,2,new HousingChoice.Funding(0,2,0)),new HousingChoice.Lease("right",a2.key(),1,20,2,new HousingChoice.Funding(0,2,0)));
+        var sources=List.of(d("left",2,2,0,0,20),d("right",2,2,0,0,20));
+        p=HousingChoice.completePaidExcess(sources,List.of(a2,b),equivalent,7);
+        near("equivalent deficit receives half the one normal vacancy",p.leases().getFirst().households(),1.5);
+        var reverse=HousingChoice.completePaidExcess(List.of(sources.getLast(),sources.getFirst()),List.of(b,a2),List.of(equivalent.getLast(),equivalent.getFirst()),7);
+        check("paid excess ties are independent of input order",canonical(p.leases()).equals(canonical(reverse.leases())));
+        p=HousingChoice.completePaidExcess(List.of(d("old",2,4,2,0,20)),List.of(a,o("studio",1,2,40,1,0,false,20)),old,7);
+        check("children cannot upgrade into a compact vacancy",p.moved()==0&&p.leases().equals(old));
+        p=HousingChoice.completePaidExcess(ds,List.of(a,o("premium",1,6,120,1,0,false,100)),old,7);
+        check("unaffordable premium spare creates no placement",p.moved()==0&&p.leases().equals(old));
+        var recurring=new HousingChoice.Offer(b.key(),1,6,3,120,1,0,false,20,1);
+        p=HousingChoice.completePaidExcess(ds,List.of(a,recurring),old,7);
+        check("new recurring costs count against the original source",p.moved()==0&&p.leases().equals(old));
+    }
+    static void fractionalExcessBook(){
+        System.out.println("--- fractional new books keep old claims exact under running and coalesced stock caps ---");
+        boolean stock=true,sources=true,claims=true,resources=true;int frames=0;
+        for(double scale:new double[]{1e-6,1,1e6})for(int frame=0;frame<12;frame++){
+            List<HousingChoice.Demand> ds=new ArrayList<>();List<HousingChoice.Lease> old=new ArrayList<>();
+            double aStock=0,bStock=0;double[] a=new double[32],b=new double[32];
+            for(int i=0;i<a.length;i++){a[i]=.1*(i+1)*scale;b[i]=.03*(i+2)*scale;aStock+=a[i];bStock+=b[i];}
+            var home=o("fraction-A",aStock,6,120,1,0,false,20);var spare=o("fraction-B",bStock+.07*(frame+1)*scale,6,120,1,0,false,20);
+            for(int i=0;i<a.length;i++){String key=String.format(Locale.ROOT,"fraction-%02d",i);
+                ds.add(d(key,2*a[i]+b[i],2,0,0,30));
+                old.add(new HousingChoice.Lease(key,home.key(),a[i],20*a[i],2*a[i],new HousingChoice.Funding(0,2*a[i],0)));
+                old.add(new HousingChoice.Lease(key,spare.key(),b[i],20*b[i]));
+            }
+            var p=HousingChoice.completePaidExcess(ds,List.of(home,spare),old,7);frames++;
+            for(var o:List.of(home,spare))stock&=p.leases().stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::count).reduce(0,(x,y)->x+y)<=o.count();
+            for(int i=0;i<ds.size();i++){var d=ds.get(i);double hh=0,cost=0;
+                for(var l:p.leases())if(l.cell().equals(d.key())){hh+=l.households();cost+=l.bill();
+                    if(l.home().equals(home.key()))claims&=l.count()==a[i]&&l.bill()==20*a[i];}
+                sources&=Math.abs(hh-d.count())<=FamilyModel.packingRounding(d.count());
+                resources&=cost<=d.count()*d.budget()+FamilyModel.packingRounding(cost);
+            }
+        }
+        check(frames+" fractional books respect strict final stock including equal-key coalescence",stock);
+        check("fractional completion preserves every old A footprint and bill bit for bit",claims);
+        check("fractional completion conserves each actual household source",sources);
+        check("fractional completion reserves each source's old recurring resources",resources);
+    }
     public static void main(String[] args){
+        mixedContracts();
+        paidExcessContracts();
+        fractionalExcessBook();
         retainedHalfLeases();
         System.out.println("--- suitable placements before preferences; studios cannot take children ---");
         var family=d("family",1,4,2,0,100);var single=d("single",1,1,0,0,100);

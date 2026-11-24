@@ -67,7 +67,7 @@ public final class HousingMarketCheck {
         var state=priceInputs(0);var home=state.classes.get(1);
         home.capacity=6;home.ask=15;home.homes=10;home.occupied=5;home.demand=10;
         state.classes=List.of(home);state.suitable=0;state.crowded=10;state.pipeline=List.of();
-        state.leases=List.of(new HousingChoice.Lease("family",new HousingInventory.Key(901,"family"),5,75,10));
+        state.leases=List.of(new HousingChoice.Lease("family",new HousingInventory.Key(901,"family"),5,75,10,new HousingChoice.Funding(0,10,0)));
         double pooled=(5*20+25*singleBudget)/10;
         state.demand=List.of(new HousingChoice.Demand("source",0,1,0,false,0,true,singleBudget),
                 new HousingChoice.Demand("family",10,5,0,false,0,true,pooled));
@@ -460,6 +460,8 @@ public final class HousingMarketCheck {
         check("door-census fixture funds actual replacement homes before the next press",
                 g.buildStack(bm.getTemplateByName("House"),100,false)==Game.BuildResult.SUCCESS);
         check("scarce-door fixture saves natively",g.saveGame(10,"RES3 family-door census").ok);
+        var modes=g.getSectors().realEstate().housingMarket().leases();
+        out.println("   native scarce-door saved contracts full="+modes.stream().mapToDouble(l->l.funding().full()).sum()+" half="+modes.stream().mapToDouble(l->l.funding().half()).sum()+" sponsored="+modes.stream().mapToDouble(l->l.funding().sponsored()).sum());
         Game back=new Game(g.getGameFiles());back.loadGameSave(10);holdHousingFixture(back);
         Game running=new Game(GameFiles.scratch("res3-old-door-census"));running.run();
         running.getBuildingManager().addStack(running.getBuildingManager().getTemplateByName("House"),1000,true);
@@ -867,7 +869,7 @@ public final class HousingMarketCheck {
         double[] before=balances.toCellSaveArray(),flows=balances.flowsToSave();
         near("the unchanged live non-rent fixed floor leaves seven resources",balances.strikeHousingBudgets(families,accounts,0,charged,c->10,.03,1).get(cell.key()).budget(),7);
         var home=new HousingChoice.Offer(new HousingInventory.Key(900,"rent-source"),10,2,0,40,1,0,false,2,0);
-        var actual=HousingChoice.clear(List.of(new HousingChoice.Demand(cell.key(),2,1,0,false,0,false,7)),List.of(home),List.of(new HousingChoice.Lease(cell.key(),home.key(),10,20,10)),8,true);
+        var actual=HousingChoice.clear(List.of(new HousingChoice.Demand(cell.key(),2,1,0,false,0,false,7)),List.of(home),List.of(new HousingChoice.Lease(cell.key(),home.key(),10,20,10,new HousingChoice.Funding(10,0,0))),8,true);
         double actualHH=actual.leases().stream().mapToDouble(HousingChoice.Lease::households).sum();
         double actualBill=actual.leases().stream().mapToDouble(HousingChoice.Lease::bill).sum();
         near("actual retention scales ten old households to the two current recipients",actualHH,2);
@@ -905,7 +907,7 @@ public final class HousingMarketCheck {
             near("fixture has no endogenous source households at budget "+budget,g.getCohorts().total(),0);
             home.ask=home.lastTrade=20;home.tradeQuantity=1;home.tradeValue=20;home.occupied=1;home.demand=2;
             state.month=g.getMonth()-1;state.demand=List.of(a,b);
-            state.leases=List.of(new HousingChoice.Lease(a.key(),key,.5,10,1),new HousingChoice.Lease(b.key(),key,.5,10,1));
+            state.leases=List.of(new HousingChoice.Lease(a.key(),key,.5,10,1,new HousingChoice.Funding(0,1,0)),new HousingChoice.Lease(b.key(),key,.5,10,1,new HousingChoice.Funding(0,1,0)));
             state.kept=1;state.crowded=1;state.suitable=state.unaffordable=state.noSuitable=state.unplaced=0;
             market.restore(state);
             var actual=market.clear(g,hasRich?List.of(a,b,rich):List.of(a,b));
@@ -954,7 +956,7 @@ public final class HousingMarketCheck {
             var b=new HousingChoice.Demand("old-family-b",1,4,2,false,0,false,20);
             var state=market.forSave();var home=state.classes.stream().filter(c->c.key().equals(key)).findFirst().orElseThrow();
             home.ask=home.lastTrade=20;home.tradeQuantity=1;home.tradeValue=20;home.occupied=1;home.demand=2;
-            state.month=g.getMonth()-1;state.demand=List.of(a,b);state.leases=List.of(new HousingChoice.Lease(a.key(),key,.5,10,1),new HousingChoice.Lease(b.key(),key,.5,10,1));
+            state.month=g.getMonth()-1;state.demand=List.of(a,b);state.leases=List.of(new HousingChoice.Lease(a.key(),key,.5,10,1,new HousingChoice.Funding(0,1,0)),new HousingChoice.Lease(b.key(),key,.5,10,1,new HousingChoice.Funding(0,1,0)));
             state.kept=1;state.crowded=1;state.suitable=state.unaffordable=state.noSuitable=state.unplaced=0;market.restore(state);
             var actual=market.clear(g,List.of(a,b));
             near("committed forecast keeps both paid actual families",actual.leases().stream().mapToDouble(HousingChoice.Lease::households).sum(),2);
@@ -997,26 +999,26 @@ public final class HousingMarketCheck {
         out.println("--- late paid footprint completion preserves movers, host funding and equivalent shares ---");
         var key=lateHome();var a=lateDemand("old-a",1,20);var b=lateDemand("old-b",1,20);
         List<HousingChoice.Demand> current=new ArrayList<>();List<HousingChoice.Lease> prior=new ArrayList<>();
-        for(int i=0;i<4;i++){var d=lateDemand("equivalent-"+i,1,20);current.add(d);prior.add(new HousingChoice.Lease(d.key(),key,.5,10,1));}
+        for(int i=0;i<4;i++){var d=lateDemand("equivalent-"+i,1,20);current.add(d);prior.add(new HousingChoice.Lease(d.key(),key,.5,10,1,new HousingChoice.Funding(0,1,0)));}
         var rationed=lateFixture("rationed",3,current,current,prior);
         for(var l:rationed.leases()){near("equivalent incumbent receives pro-rata physical completion",l.count(),.75);near("equivalent incumbent pays the identical physical delta",l.bill(),15);near("equivalent household source unchanged",l.households(),1);}
         near("rationed completion occupies all three current doors",rationed.occupied(),3);near("rationed completion leaves one crowded equivalent",rationed.forSave().crowded,1);
         Collections.reverse(current);Collections.reverse(prior);var reverse=lateFixture("rationed-reverse",3,current,current,prior);
         check("equivalent completion does not confer input-order priority",JSON.toJson(rationed.leases()).equals(JSON.toJson(reverse.leases())));
         var host=lateDemand("full-host",1,100);var guest=lateDemand("zero-guest",1,0);
-        var hosted=lateFixture("fully-funded-host",2,List.of(host,guest),List.of(host,guest),List.of(new HousingChoice.Lease(host.key(),key,.5,20,1),new HousingChoice.Lease(guest.key(),key,.5,0,1)));
+        var hosted=lateFixture("fully-funded-host",2,List.of(host,guest),List.of(host,guest),List.of(new HousingChoice.Lease(host.key(),key,.5,20,1,new HousingChoice.Funding(1,0,0)),new HousingChoice.Lease(guest.key(),key,.5,0,1,new HousingChoice.Funding(0,0,1))));
         near("full-funded host keeps its one bill rather than paying twice",hosted.rentFor(host.key(),1),20);near("hosted zero-bill guest stays free",hosted.rentFor(guest.key(),1),0);
         near("full-funded host and guest retain one actual door",hosted.occupied(),1);near("full-funded hosted provenance unchanged",hosted.forSave().hosted,1);near("full-funded guest is not evicted",hosted.forSave().unplaced,0);
         var mixed=lateDemand("mixed-paid",2,20);
         for(int stock:new int[]{2,3}){
-            var m=lateFixture("mixed-host-"+stock,stock,List.of(mixed,guest),List.of(mixed),List.of(new HousingChoice.Lease(mixed.key(),key,1.5,30,2)));
+            var m=lateFixture("mixed-host-"+stock,stock,List.of(mixed,guest),List.of(mixed),List.of(new HousingChoice.Lease(mixed.key(),key,1.5,30,2,new HousingChoice.Funding(1,1,0))));
             near("mixed host completes only its funded deficit",m.leases().stream().filter(l->l.cell().equals(mixed.key())).mapToDouble(HousingChoice.Lease::count).sum(),1.5);
             near("mixed host bill funds exactly two households",m.rentFor(mixed.key(),1),40);near("mixed paid household count unchanged",m.leases().stream().filter(l->l.cell().equals(mixed.key())).mapToDouble(HousingChoice.Lease::households).sum(),2);
             near("mixed hosted guest physical share unchanged",m.leases().stream().filter(l->l.cell().equals(guest.key())).mapToDouble(HousingChoice.Lease::count).sum(),.5);near("mixed guest bill stays zero",m.rentFor(guest.key(),1),0);
             near("mixed hosted counter unchanged",m.forSave().hosted,1);near("mixed paid crowding becomes only the hosted guest",m.forSave().crowded,1);near("mixed footprint never expands past funding",m.occupied(),2);
         }
         var zeros=lateDemand("late-zero-guests",2,0);var demand=List.of(a,b,zeros);
-        var retained=lateFixture("new-host-room-retained",2,demand,List.of(a,b),List.of(new HousingChoice.Lease(a.key(),key,.5,10,1),new HousingChoice.Lease(b.key(),key,.5,10,1)));
+        var retained=lateFixture("new-host-room-retained",2,demand,List.of(a,b),List.of(new HousingChoice.Lease(a.key(),key,.5,10,1,new HousingChoice.Funding(0,1,0)),new HousingChoice.Lease(b.key(),key,.5,10,1,new HousingChoice.Funding(0,1,0))));
         var normal=lateFixture("new-host-room-normal-control",2,demand,List.of(),List.of());
         double retainedHH=retained.leases().stream().mapToDouble(HousingChoice.Lease::households).sum(),normalHH=normal.leases().stream().mapToDouble(HousingChoice.Lease::households).sum();
         near("native normal control proves four households can be housed",normalHH,4);near("native normal control has no unplaced free guests",normal.forSave().unplaced,0);
@@ -1027,7 +1029,7 @@ public final class HousingMarketCheck {
         near("newly funded host provenance counts the two new guests",retained.forSave().hosted,2);near("newly funded host crowding counts only the two guests",retained.forSave().crowded,2);
         var oldHost=lateDemand("old-full-host",1,100);var oldZero=lateDemand("old-zero-guest",1,0);var newZero=lateDemand("new-zero-guests",2,0);
         var previous=List.of(oldHost,oldZero,a,b);var all=List.of(oldHost,oldZero,a,b,newZero);
-        var oldAndNew=lateFixture("old-and-new-zero-guests",3,all,previous,List.of(new HousingChoice.Lease(oldHost.key(),key,.5,20,1),new HousingChoice.Lease(oldZero.key(),key,.5,0,1),new HousingChoice.Lease(a.key(),key,.5,10,1),new HousingChoice.Lease(b.key(),key,.5,10,1)));
+        var oldAndNew=lateFixture("old-and-new-zero-guests",3,all,previous,List.of(new HousingChoice.Lease(oldHost.key(),key,.5,20,1,new HousingChoice.Funding(1,0,0)),new HousingChoice.Lease(oldZero.key(),key,.5,0,1,new HousingChoice.Funding(0,0,1)),new HousingChoice.Lease(a.key(),key,.5,10,1,new HousingChoice.Funding(0,1,0)),new HousingChoice.Lease(b.key(),key,.5,10,1,new HousingChoice.Funding(0,1,0))));
         for(var payer:List.of(oldHost,a,b))check("old/new guest follow-up preserves exact payer households and bill "+payer.key(),oldAndNew.leases().stream().filter(l->l.cell().equals(payer.key())).mapToDouble(HousingChoice.Lease::households).sum()==1&&oldAndNew.rentFor(payer.key(),1)==20);
         check("already hosted zero guest is not assigned a second time",oldAndNew.leases().stream().filter(l->l.cell().equals(oldZero.key())).mapToDouble(HousingChoice.Lease::households).sum()==1&&oldAndNew.rentFor(oldZero.key(),1)==0);
         check("new zero guests receive exactly the remaining source quantity",oldAndNew.leases().stream().filter(l->l.cell().equals(newZero.key())).mapToDouble(HousingChoice.Lease::households).sum()==2&&oldAndNew.rentFor(newZero.key(),1)==0);
@@ -1054,9 +1056,9 @@ public final class HousingMarketCheck {
         a.ask=a.lastTrade=20;a.occupied=a.tradeQuantity=1;a.tradeValue=20;a.demand=2;
         if(cheap)for(var c:state.classes)if(c.recipe==studio.getId())c.ask=c.lastTrade=10;
         state.month=g.getMonth()-1;state.demand=List.copyOf(demand);state.sharing=List.of();
-        if(pair&&demand.size()==1)state.leases=List.of(new HousingChoice.Lease(demand.getFirst().key(),home,1,20,2));
-        else if(pair)state.leases=List.of(new HousingChoice.Lease(demand.get(0).key(),home,.5,10,1),new HousingChoice.Lease(demand.get(1).key(),home,.5,10,1));
-        else state.leases=List.of(new HousingChoice.Lease(demand.get(0).key(),home,.5,20,1),new HousingChoice.Lease(demand.get(1).key(),home,.5,0,1));
+        if(pair&&demand.size()==1)state.leases=List.of(new HousingChoice.Lease(demand.getFirst().key(),home,1,20,2,new HousingChoice.Funding(0,2,0)));
+        else if(pair)state.leases=List.of(new HousingChoice.Lease(demand.get(0).key(),home,.5,10,1,new HousingChoice.Funding(0,1,0)),new HousingChoice.Lease(demand.get(1).key(),home,.5,10,1,new HousingChoice.Funding(0,1,0)));
+        else state.leases=List.of(new HousingChoice.Lease(demand.get(0).key(),home,.5,20,1,new HousingChoice.Funding(1,0,0)),new HousingChoice.Lease(demand.get(1).key(),home,.5,0,1,new HousingChoice.Funding(0,0,1)));
         state.kept=1;state.crowded=1;state.hosted=pair?0:1;state.suitable=state.unaffordable=state.noSuitable=state.unplaced=0;
         m.restore(state);var result=m.clear(g,demand);
         near(label+" fixture keeps ask twenty",m.price(home),20);
@@ -1091,7 +1093,137 @@ public final class HousingMarketCheck {
         check("alternative quote preserves actual leases and stock",before.equals(JSON.toJson(m.forSave()))&&inventory.equals(JSON.toJson(bm.getHousingInventory().forSave())));
     }
 
+    static void coalescedSponsored(){
+        out.println("--- actual sponsored groups survive coalescence with newly funded sharing groups ---");
+        for(int stock:new int[]{2,3}){
+            Game g=new Game(GameFiles.scratch("res3-coalesced-sponsored-"+stock),Founding.defaults().withUnfitted(false));g.run();
+            double[] people=new double[AgeBand.values().length+3];people[AgeBand.ADULT.ordinal()]=100;
+            g.getCohorts().restore(PopulationCohorts.saveBands(),people);g.getFamilies().rememberHouseholds(false);
+            double[] jobs=new double[PayTier.values().length];jobs[PayTier.UNSKILLED.ordinal()]=100;g.getFamilies().rebuild(g.getCohorts(),jobs);
+            var single=g.getHouseholdBalance().cells().stream().filter(c->c instanceof WorkingHousehold w&&w.shape()==FamilyStructure.SINGLE_ADULT&&g.getFamilies().get(w.shape(),w.tier(),w.stage())>=6).map(c->(WorkingHousehold)c).findFirst().orElseThrow();
+            String shared=g.getHouseholdBalance().cell(FamilyStructure.SHARED_ADULTS,single.tier(),single.stage()).key();
+            var bm=g.getBuildingManager();bm.addStack(bm.getTemplate(0),stock,true);bm.addStack(bm.getTemplate(156),1,true);
+            if(stock==2)bm.addStack(bm.getTemplate(157),1,true);
+            var market=g.getSectors().realEstate().housingMarket();market.clear(g,List.of());var state=market.forSave();var key=lateHome();
+            for(var c:state.classes){c.ask=c.lastTrade=c.recipe==156?8:20;if(c.recipe==0){c.occupied=1;c.demand=2;c.tradeQuantity=1;c.tradeValue=20;}}
+            var host=lateDemand("funded-donor",1,20);var old=new HousingChoice.Demand(shared,1,5,0,false,single.tier().ordinal(),single.stage()==AdultStage.YOUNG,0);
+            var singles=new HousingChoice.Demand(single.key(),6,1,0,false,single.tier().ordinal(),single.stage()==AdultStage.YOUNG,8);
+            state.month=g.getMonth()-1;state.demand=List.of(host,old);state.leases=List.of(new HousingChoice.Lease(host.key(),key,.5,20,1,new HousingChoice.Funding(1,0,0)),new HousingChoice.Lease(shared,key,.5,0,1,new HousingChoice.Funding(0,0,1)));
+            state.kept=1;state.crowded=state.hosted=1;state.suitable=state.unaffordable=state.noSuitable=state.unplaced=0;market.restore(state);
+            double[] families=g.getFamilies().toSaveArray();
+            try{
+                var r=market.clear(g,List.of(host,old,singles));
+                near("coalesced "+stock+" native formation causes exactly one paid group",market.sharingGroups(),1);
+                near("coalesced "+stock+" sponsored household remains hosted",market.hosted(),1);
+                near("coalesced "+stock+" sponsored crowding is preserved",r.crowded(),1);
+                near("coalesced "+stock+" original free guest has no new charge",market.rentFor(shared,1),20);
+                near("coalesced "+stock+" formed and original groups both remain",r.leases().stream().filter(l->l.cell().equals(shared)).mapToDouble(HousingChoice.Lease::households).sum(),2);
+                check("coalesced "+stock+" fixture really transfers family census",!Arrays.equals(families,g.getFamilies().toSaveArray()));
+            }catch(IllegalStateException e){check("coalesced "+stock+" preserves sponsored provenance without throwing: "+e.getMessage(),false);}
+        }
+    }
+    static void sharingForecastSources(){
+        out.println("--- forecast current contracts and prospective worker cohorts close separate sources ---");
+        Game g=new Game(GameFiles.scratch("res3-sharing-forecast-sources"),Founding.defaults().withUnfitted(false));g.run();
+        double[] people=new double[AgeBand.values().length+3];people[AgeBand.ADULT.ordinal()]=100;
+        g.getCohorts().restore(PopulationCohorts.saveBands(),people);g.getFamilies().rememberHouseholds(false);
+        double[] jobs=new double[PayTier.values().length];jobs[PayTier.UNSKILLED.ordinal()]=100;g.getFamilies().rebuild(g.getCohorts(),jobs);
+        var single=g.getHouseholdBalance().cells().stream().filter(c->c instanceof WorkingHousehold w&&w.shape()==FamilyStructure.SINGLE_ADULT&&g.getFamilies().get(w.shape(),w.tier(),w.stage())>=6).map(c->(WorkingHousehold)c).findFirst().orElseThrow();
+        String shared=g.getHouseholdBalance().cell(FamilyStructure.SHARED_ADULTS,single.tier(),single.stage()).key();
+        var bm=g.getBuildingManager();bm.addStack(bm.getTemplate(0),1,true);bm.addStack(bm.getTemplate(156),1,true);
+        var m=g.getSectors().realEstate().housingMarket();m.clear(g,List.of());var opening=m.forSave();
+        for(var c:opening.classes)c.ask=c.lastTrade=c.recipe==0?20:8;
+        opening.month=g.getMonth()-1;m.restore(opening);
+        for(int press=0;press<2;press++){
+            if(press>0)g.getFamilies().rebuild(g.getCohorts(),jobs);
+            double oldSingles=g.getFamilies().get(single.shape(),single.tier(),single.stage()),formed=g.getFamilies().getFormed(single.shape(),single.tier(),single.stage());
+            var prior=m.forSave();prior.month=g.getMonth()-1;m.restore(prior);
+            var r=m.clear(g,List.of(new HousingChoice.Demand(single.key(),6,1,0,false,single.tier().ordinal(),single.stage()==AdultStage.YOUNG,8)));
+            near("press "+press+" actual five-to-one transfer occurs",m.sharingGroups(),1);
+            near("press "+press+" family census loses only the five actual source singles",g.getFamilies().get(single.shape(),single.tier(),single.stage()),oldSingles-5);
+            near("press "+press+" prospective mix remains the pre-valve formation record",g.getFamilies().getFormed(single.shape(),single.tier(),single.stage()),formed);
+            near("press "+press+" current source singleton count",m.demands().stream().filter(d->d.key().equals(single.key())).mapToDouble(HousingChoice.Demand::count).sum(),1);
+            near("press "+press+" current target group count",m.demands().stream().filter(d->d.key().equals(shared)).mapToDouble(HousingChoice.Demand::count).sum(),1);
+            near("press "+press+" current demand conserves original six heads",m.demands().stream().mapToDouble(d->d.count()*d.size()).sum(),6);
+            near("press "+press+" current budgets conserve original resources",m.demands().stream().mapToDouble(d->d.count()*d.budget()).sum(),48);
+            near("press "+press+" actual contracts fund both current households",r.leases().stream().mapToDouble(HousingChoice.Lease::households).sum(),2);
+            near("press "+press+" old committed contracts keep both bills",m.receipts(),28);
+            String before=JSON.toJson(m.forSave());double[] familyBefore=g.getFamilies().toSaveArray();
+            var forecast=m.forecast(g);var candidate=bm.getTemplate(157);
+            near("press "+press+" restoring five old singles cannot spend the retained group bill again",forecast.income(candidate,100),0);
+            near("press "+press+" current full-price contracts create no duplicate project request",forecast.quantityNeeded(candidate),0);
+            check("press "+press+" forecast changes neither actual census nor contracts",Arrays.equals(familyBefore,g.getFamilies().toSaveArray())&&before.equals(JSON.toJson(m.forSave())));
+        }
+        double currentHeads=m.demands().stream().mapToDouble(d->d.count()*d.size()).sum();String before=JSON.toJson(m.forSave());
+        var candidate=bm.getTemplate(157);for(var d:candidate.getHousingRecipe().mix())m.setAsk(new HousingInventory.Key(candidate.getId(),d.id()),0);
+        near("no funded future job cohort requests another free candidate",m.forecast(g).quantityNeeded(candidate),0);
+        bm.addStack(bm.getTemplateByName("Construction Depot"),100,false);
+        check("prospective worker cause is actual jobs under construction",bm.getJobsUnderConstruction()>100);
+        var projected=m.forecast(g);check("actual future jobs create a positive separately projected worker cohort",projected.quantityNeeded(candidate)>0);
+        near("projected arriving workers do not inflate the current household source",m.demands().stream().mapToDouble(d->d.count()*d.size()).sum(),currentHeads);
+        // Quote changes are intentional fixture inputs; forecasting itself remains read-only.
+        before=JSON.toJson(m.forSave());var repeated=m.forecast(g);
+        check("incoming projection is repeatable without consuming current contracts",projected.quantityNeeded(candidate)==repeated.quantityNeeded(candidate)&&before.equals(JSON.toJson(m.forSave())));
+    }
+    static void crossClassPaidExcess(){
+        out.println("--- late normal vacancies receive only privately funded paid-half excess ---");
+        for(double budget:new double[]{12,20})for(boolean rich:new boolean[]{false,true}){
+            Game g=new Game(GameFiles.scratch("res3-cross-excess-"+(int)budget+rich),Founding.defaults().withUnfitted(false));g.run();
+            var bm=g.getBuildingManager();bm.addStack(bm.getTemplate(0),1,true);bm.addStack(bm.getTemplate(157),1,true);
+            var m=g.getSectors().realEstate().housingMarket();m.clear(g,List.of());var state=m.forSave();var a=lateHome();
+            var b=new HousingInventory.Key(157,HousingForms.of(157).recipe().mix().getFirst().id());
+            for(var c:state.classes){c.ask=c.lastTrade=20;if(c.recipe==0){c.occupied=1;c.demand=2;c.tradeQuantity=1;c.tradeValue=20;}}
+            var pair=lateDemand("paid-pair",2,budget);var mover=lateDemand("rich-mover",1,100);
+            state.month=g.getMonth()-1;state.demand=List.of(pair);state.leases=List.of(new HousingChoice.Lease(pair.key(),a,1,20,2,new HousingChoice.Funding(0,2,0)));
+            state.kept=state.crowded=1;state.hosted=state.suitable=state.unaffordable=state.noSuitable=state.unplaced=0;m.restore(state);
+            var r=m.clear(g,rich?List.of(pair,mover):List.of(pair));boolean moves=budget>=20&&!rich;
+            var old=r.leases().stream().filter(l->l.cell().equals(pair.key())&&l.home().equals(a)).findFirst().orElseThrow();
+            near("cross excess keeps the old funded footprint exact",old.count(),1);near("cross excess keeps the old bill exact",old.bill(),20);
+            near("cross excess moves exactly the eligible source household",old.households(),moves?1:2);
+            check("cross excess updates the remaining full/half modes",old.funding().equals(moves?new HousingChoice.Funding(1,0,0):new HousingChoice.Funding(0,2,0)));
+            near("normal newcomer has priority over excess upgrades",r.leases().stream().filter(l->l.cell().equals(mover.key())&&l.home().equals(b)).mapToDouble(HousingChoice.Lease::households).sum(),rich?1:0);
+            near("cross excess uses the actual alternative only when funded",r.leases().stream().filter(l->l.cell().equals(pair.key())&&l.home().equals(b)).mapToDouble(HousingChoice.Lease::households).sum(),moves?1:0);
+            near("cross excess preserves source households",r.leases().stream().mapToDouble(HousingChoice.Lease::households).sum()+r.unplaced(),rich?3:2);
+            check("cross excess cannot consume unavailable native stock",m.classes().stream().allMatch(c->c.occupied<=c.homes));
+        }
+    }
+    static void savedContractModes()throws Exception{
+        out.println("--- all three coalesced contract modes survive native fresh and running loads ---");
+        Game g=new Game(GameFiles.scratch("res3-contract-modes-save"),Founding.defaults().withUnfitted(false));g.run();
+        var bm=g.getBuildingManager();bm.addStack(bm.getTemplate(0),3,true);var m=g.getSectors().realEstate().housingMarket();m.clear(g,List.of());
+        var state=m.forSave();var key=lateHome();var modes=new HousingChoice.Funding(1,1,1);
+        for(var c:state.classes)if(c.key().equals(key)){c.ask=c.lastTrade=20;c.occupied=c.tradeQuantity=1.5;c.tradeValue=30;c.demand=3;}
+        state.demand=List.of(lateDemand("all-modes",3,20));state.leases=List.of(new HousingChoice.Lease("all-modes",key,1.5,30,3,modes));
+        state.month=g.getMonth();state.kept=1.5;state.crowded=1.5;state.hosted=1;state.suitable=state.unaffordable=state.noSuitable=state.unplaced=0;m.restore(state);
+        Map<HousingInventory.Key,Double> occupied=new LinkedHashMap<>();for(var s:bm.getHousingInventory().stock())occupied.put(s.key(),s.key().equals(key)?1.5:0);bm.getHousingInventory().matchClasses(occupied);
+        String before=JSON.toJson(m.forSave());var copy=new HousingMarket();copy.restore(JSON.fromJson(before,HousingMarket.State.class));
+        check("nonzero full/half/sponsored contract round-trips exactly",before.equals(JSON.toJson(copy.forSave()))&&copy.leases().getFirst().funding().equals(modes));
+        copy.redenominate(.001);check("denomination preserves every contract quantity",copy.leases().getFirst().funding().equals(modes));near("denomination scales only the actual bill",copy.receipts(),.03);
+        var corrupt=JSON.fromJson(before,HousingMarket.State.class);corrupt.leases=List.of(new HousingChoice.Lease("all-modes",key,1.5,30,3,new HousingChoice.Funding(2,0,1)));
+        boolean refused=false;try{new HousingMarket().restore(corrupt);}catch(IllegalArgumentException expected){refused=true;}
+        check("load rejects funded components inconsistent with actual occupied stock",refused);
+        corrupt=JSON.fromJson(before,HousingMarket.State.class);corrupt.hosted=0;refused=false;
+        try{new HousingMarket().restore(corrupt);}catch(IllegalArgumentException expected){refused=true;}
+        check("load rejects lost sponsored provenance",refused);
+        check("all-mode fixture saves natively in scratch slot10",g.saveGame(10,"RES3 contract modes").ok);
+        Game fresh=new Game(g.getGameFiles());fresh.loadGameSave(10);
+        Game running=new Game(GameFiles.scratch("res3-contract-modes-running"));running.run();
+        running.getBuildingManager().addStack(running.getBuildingManager().getTemplate(0),7,true);
+        Files.createDirectories(running.getGameFiles().saveFile(10).getParent());
+        Files.copy(g.getGameFiles().saveFile(10),running.getGameFiles().saveFile(10),StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(g.getGameFiles().historyFile(10),running.getGameFiles().historyFile(10),StandardCopyOption.REPLACE_EXISTING);running.loadGameSave(10);
+        for(Game loaded:List.of(g,fresh,running)){
+            var market=loaded.getSectors().realEstate().housingMarket();check("native load preserves coalesced contract bytes",before.equals(JSON.toJson(market.forSave())));
+            var previous=market.forSave();previous.month=loaded.getMonth()-1;market.restore(previous);
+            var result=market.clear(loaded,List.of(lateDemand("all-modes",3,16)));
+            near("next clearing cannot retain an unaffordable full-price component",result.leases().stream().mapToDouble(l->l.funding().full()).sum(),0);
+            near("without a funded host every actual assignment is now a paid half",result.leases().stream().mapToDouble(l->l.funding().half()).sum(),3);
+            near("previous sponsorship has priority only in actually funded host room",market.hosted(),0);
+            near("next clearing keeps the three actual households",result.leases().stream().mapToDouble(HousingChoice.Lease::households).sum(),3);
+        }
+    }
     public static void main(String[] args)throws Exception{
+        out=System.out;coalescedSponsored();sharingForecastSources();crossClassPaidExcess();savedContractModes();
         out=System.out;fundedPressureAndForecast();rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
         StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on this laptop, including all other city systems, not isolated solver timings.\n");
         try{System.setOut(silent);classPrices();rentPriceIndex();mergedBudgetPressure();plannerInputs();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();doubledDemand();studentFacility();fundedHost();scarceFreeHost();retiredRoom();loadedDoorCensus();familyHostReservation();aggregatePackingRemainder();savingHousingBudget();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}

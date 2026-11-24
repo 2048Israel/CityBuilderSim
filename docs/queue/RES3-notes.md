@@ -3475,3 +3475,96 @@ metadata must pass DataSave/load and the real format-65 refusal boundary,
 under RES3's owed format/floor 66. No old-save conversion or policy-test
 weakening is authorized. Existing guests and truthful reason counters,
 new-only strict stock bounds and valid incumbent claims remain mandatory.
+
+The fresh helper verifies the root pricing-only run: exactly HousingMarketCheck
+was selected; compilation passed and only the two cheap-alternative funding
+assertions failed. All other normal housing cases, including host/pair/guest
+price controls, pass on fcc04554a. This is still a red normal harness.
+
+★ Persist actual full-price, paid-half and sponsored quantities on the
+existing lease contract. Aggregate HH/count/bill cannot distinguish a full
+payer plus sponsored guest from two half payers, so temporary provenance
+alone cannot restore valid next-month eligibility. An immutable Funding
+quantity tuple adds no preference profile, household cell or identity.
+Actual allocation events, scaling, renames and merges must preserve it.
+The existing State/DataSave path and load validation/rebuild must carry it,
+with meaningful nonzero save/reload coverage. Format/floor 66 remains the
+owed bump above shipped 65; write no conversion. Full and half components
+must pass their own recurring-price eligibility before aggregation.
+
+A fresh detached helper, RES3-funding-core, starts at fcc04554a with a narrow
+brief. It first causes the split/merged B16 and native coalesced-guest
+controls, then prepares a peer-only component-aware prototype and focused
+checks for review. Parent owns adoption, records and commits. The prior
+helper is finished; there is one helper and one JVM lane. MemWatch reads
+79.1 percent before this launch. No MonetaryCheck law, rate, window,
+coefficient or fixture change is authorized.
+
+The funding-core prototype causes both missing conditions before mending
+them. Merged B16 full/half contracts wrongly retain two households where
+split contracts retain only the affordable half; native formation also
+coalesces an old sponsored group with a new paying group and loses guest
+provenance. The component-aware peer now passes normal HousingChoiceCheck
+and HousingMarketCheck, including the prior cheap-alternative finding.
+These are peer results, pending adoption and integrated policy validation.
+
+Parent source review accepts the accounting shape: actual assignment events
+create full, half and sponsored components; census/stock scaling, renames,
+denomination and coalescence preserve them. Each retained full or half must
+afford its own current recurring bill. Same-class completion expands only
+paid halves; later cross-class completion leaves old footprint and bill
+exact, updates the remaining payer mode and books only funded new normal
+contracts after every ordinary mover. Strict stock checks remain, with
+rounding directed down on new additions alone. Sponsored households never
+become paid-half deficits merely because their merged cell has a bill.
+
+Load validation reconciles physical occupancy and funded doors by class,
+class bills against those funded components, and sponsored quantities
+against hosted reasons. A native scratch-slot-10 test carries all three
+nonzero quantities through State JSON, denomination, fresh and running
+loads, then clears B16: the full-price claim cannot remain by averaging,
+and a sponsored claim needs an actually funded host. The format remains
+66 above the genuine shipped-65 pair; conversion remains prohibited.
+
+Forecast review additionally requires caused current/next-month census
+closure before accepting removal of the old sharing-count undo. The
+market holds actual post-sharing contracts; mixing them with pre-sharing
+counts spends a source in different coordinates. Incoming-worker
+formation memory must still contribute its separate projected cohort.
+The helper will prove that basis, finish save/read checks and run the full
+unchanged MonetaryCheck on its final source. No policy pass is claimed yet.
+
+The forecast-basis finding is now caused separately. Restoring only the old
+pre-sharing count undo on top of the component model fails five assertions:
+six B8 singles form one funded five-adult group plus one single, conserving
+six heads and 48 resources with held bills 28. The undo discards the held
+group's bill 20 and promises five extra doors/new income 40. It does this
+both at the first clearing and after FamilyModel rebuild; a free-candidate
+control with no future jobs also invents five requests. Actual census,
+formed-memory and positive pending-job controls pass. Keep closing demand
+with its contracts, and use pre-valve formed memory solely for the separate
+incoming cohort. ReadPathCheck also passes on the peer component model.
+
+Adopt the reviewed four-file patch, SHA256
+2c44aed7e61ef1693e4d02380e67de7abc50f38f02df4f3f0a913a814ce8a648,
+on fcc04554a. Parent independently verifies root/peer SHA256 equality for
+all four Java files and a clean diff/patch check. Final normal peer runs
+HousingChoiceCheck, HousingMarketCheck, SaveFileCheck and ReadPathCheck
+each return 0, archived under the helper's target/funding-choice-final,
+funding-market-final, funding-savefile and funding-readpath. The thirty-six
+fractional books preserve old A counts/bills bit for bit and strict final
+stock after equal-key coalescence. Every earlier boundary remains enabled.
+Immutable report: cbs-bus 20261124-124815-141-RES3-funding-core-6907.
+
+Real-city scarce-door save and actual native following-month twins also
+pass, with saved full 195.4013914211201 and sponsored 113.16688659135609
+households (half zero in that city). The separate all-three-mode native
+fixture makes the saved half quantity nonzero; neither substitutes for
+the other. Genuine old-format refusal pairs and intact files remain.
+
+Regenerate the fourteen-form/thirty-two-class catalogue from the final
+normal market run, retaining historical and modern paid builds. Its small
+city has 332 residents and a 29.055 ms integrated month; modern and 1900
+observations are 23.884 and 18.271 ms. These are individual laptop timings,
+not a performance guarantee. The full unchanged monetary check is running
+on precisely the adopted source; no result is claimed in this checkpoint.

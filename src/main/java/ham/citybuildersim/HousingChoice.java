@@ -45,11 +45,24 @@ public final class HousingChoice {
                 throw new IllegalArgumentException("Invalid housing offer");
         }
     }
-    /** count is occupied door-equivalents; households also counts the second household in a doubled home. */
-    public record Lease(String cell, HousingInventory.Key home, double count, double bill, double households) {
-        public Lease(String cell,HousingInventory.Key home,double count,double bill){this(cell,home,count,bill,count);}
+    /** Contract quantities, independent of donated physical room and the cell's preference vector. */
+    public record Funding(double full, double half, double sponsored) {
+        public Funding { quantity(full);quantity(half);quantity(sponsored); }
+        public double households(){return full+half+sponsored;}
+        public double doors(){return full+half/2;}
+        public Funding scale(double factor){return new Funding(full*factor,half*factor,sponsored*factor);}
+        public Funding plus(Funding other){return new Funding(full+other.full,half+other.half,sponsored+other.sponsored);}
+    }
+    /** count is occupied door-equivalents; funding preserves the actual contracts through coalescence and saves. */
+    public record Lease(String cell, HousingInventory.Key home, double count, double bill, double households, Funding funding) {
+        public Lease(String cell,HousingInventory.Key home,double count,double bill){this(cell,home,count,bill,count,new Funding(count,0,0));}
         public Lease { quantity(count);quantity(bill);quantity(households);
-            if(cell==null||cell.isBlank()||home==null||households<count||households>2*count+FamilyModel.packingRounding(households))throw new IllegalArgumentException("Invalid lease"); }
+            double rounding=FamilyModel.packingRounding(households);
+            if(cell==null||cell.isBlank()||home==null||funding==null||households<count||households>2*count+rounding
+                    ||Math.abs(funding.households()-households)>rounding
+                    ||count>funding.doors()+funding.sponsored()/2+rounding)throw new IllegalArgumentException("Invalid lease"); }
+        public Lease scale(double factor){return new Lease(cell,home,count*factor,bill*factor,households*factor,funding.scale(factor));}
+        public Lease plus(Lease other){return new Lease(cell,home,count+other.count,bill+other.bill,households+other.households,funding.plus(other.funding));}
     }
     public record Result(List<Lease> leases, double kept, double suitable, double crowded,
                          double unaffordable, double noSuitable, double unplaced) { }
@@ -128,29 +141,27 @@ public final class HousingChoice {
         Map<String,Demand> cells=new HashMap<>();for(var d:demands)cells.put(d.key(),d);
         Map<HousingInventory.Key,Offer> homes=new HashMap<>();for(var o:offers)homes.put(o.key(),o);
         List<Lease> ordered=incumbents.stream().sorted(Comparator.comparing(Lease::cell).thenComparing(l->l.home().toString())).toList();
-        Map<HousingInventory.Key,Double> oldBills=new HashMap<>(),oldDoors=new HashMap<>();
-        for(var l:ordered){oldBills.merge(l.home(),l.bill(),Double::sum);oldDoors.merge(l.home(),l.count(),Double::sum);}
         List<Lease> valid=new ArrayList<>();Map<String,Double> wanted=new HashMap<>();
         for(var l:ordered){var d=cells.get(l.cell());var o=homes.get(l.home());if(d==null||o==null)continue;
-            double oldPrice=oldBills.get(l.home())/oldDoors.get(l.home());
-            double n=oldPrice>0?Math.min(l.households(),l.bill()/oldPrice):l.count();
-            double people=Math.min(l.households(),2*n);
-            if(!(n>0)||!suitable(d,o,people>n)||(o.rent()+o.recurring())*n>d.budget()*people)continue;
-            var paid=new Lease(l.cell(),l.home(),n,l.bill(),people);
+            double full=suitable(d,o,false)&&affordable(d,o)?l.funding().full():0;
+            double half=suitable(d,o,true)&&(o.rent()+o.recurring())/2<=d.budget()?l.funding().half():0;
+            Funding funding=new Funding(full,half,0);double n=funding.doors(),people=funding.households();
+            if(!(n>0))continue;
+            var paid=new Lease(l.cell(),l.home(),n,n*o.rent(),people,funding);
             valid.add(paid);wanted.merge(paid.cell(),paid.households(),Double::sum);
         }
         valid.sort(Comparator.comparing(Lease::cell).thenComparing(l->l.home().toString()));
         List<Lease> scaled=new ArrayList<>();Map<HousingInventory.Key,Double> occupied=new HashMap<>();
         for(var l:valid){double factor=Math.min(1,cells.get(l.cell()).count()/wanted.get(l.cell()));
             double n=l.count()*factor;if(!(n>0))continue;
-            var q=new Lease(l.cell(),l.home(),n,n*homes.get(l.home()).rent(),l.households()*factor);
+            var q=l.scale(factor);
             scaled.add(q);occupied.merge(q.home(),q.count(),Double::sum);
         }
         List<Lease> kept=new ArrayList<>();Map<String,Double> placed=new HashMap<>();Map<HousingInventory.Key,Double> used=new HashMap<>();
         double doors=0,crowded=0;
         for(var l:scaled){double factor=Math.min(1,homes.get(l.home()).count()/occupied.get(l.home()));
             double n=l.count()*factor;if(!(n>0))continue;
-            var q=new Lease(l.cell(),l.home(),n,n*homes.get(l.home()).rent(),l.households()*factor);
+            var q=l.scale(factor);
             kept.add(q);placed.merge(q.cell(),q.households(),Double::sum);used.merge(q.home(),q.count(),Double::sum);
             doors+=q.count();crowded+=q.households()-q.count();
         }
@@ -162,6 +173,69 @@ public final class HousingChoice {
     }
 
     private record DemandSignature(int size,int children,boolean retired,int tier,boolean young,double budget) { }
+    record Completion(List<Lease> leases,double moved) { }
+    private record ContractKey(String cell,HousingInventory.Key home) { }
+    static List<Lease> coalesce(List<Lease> leases){
+        Map<ContractKey,Lease> merged=new LinkedHashMap<>();
+        for(var l:leases)merged.merge(new ContractKey(l.cell(),l.home()),l,Lease::plus);
+        return List.copyOf(merged.values());
+    }
+    /** After all movers, keep old claims exact and move only paid-half excess to unused normal doors. */
+    static Completion completePaidExcess(List<Demand> demand,List<Offer> offers,List<Lease> old,int month){
+        Map<String,Demand> cells=new TreeMap<>();for(var d:demand)cells.put(d.key(),d);
+        Map<HousingInventory.Key,Offer> homes=new HashMap<>();for(var o:offers)homes.put(o.key(),o);
+        Map<HousingInventory.Key,Double> used=new HashMap<>();Map<String,Double> costs=new HashMap<>(),gaps=new TreeMap<>();
+        for(var l:old){used.merge(l.home(),l.count(),Double::sum);costs.merge(l.cell(),l.bill()+l.count()*homes.get(l.home()).recurring(),Double::sum);}
+        double[] eligible=new double[old.size()];
+        for(int i=0;i<old.size();i++){
+            var l=old.get(i);var d=cells.get(l.cell());var o=homes.get(l.home());
+            if(!(l.bill()>0)||!suitable(d,o,false)||!affordable(d,o))continue;
+            double n=l.funding().half()/2;if(n<=FamilyModel.packingRounding(l.households()))continue;
+            eligible[i]=n;gaps.merge(l.cell(),n,Double::sum);
+        }
+        List<Demand> extra=new ArrayList<>();
+        for(var e:gaps.entrySet()){var d=cells.get(e.getKey());
+            double resources=Math.max(0,d.budget()*d.count()-costs.getOrDefault(d.key(),0.0));
+            extra.add(new Demand(d.key(),e.getValue(),d.size(),d.children(),d.retired(),d.tier(),d.young(),Math.min(d.budget(),resources/e.getValue())));
+        }
+        List<Offer> free=new ArrayList<>();for(var o:offers)free.add(new Offer(o.key(),Math.max(0,o.count()-used.getOrDefault(o.key(),0.0)),o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring()));
+        var placed=clear(extra,free,List.of(),month,false);
+        // Only NEW additions round down against the running old+new book. Old claims
+        // are never scaled to make an allocation fit; larger excess remains an error.
+        List<Lease> added=new ArrayList<>();Map<HousingInventory.Key,Double> running=new HashMap<>(used);
+        for(var l:placed.leases()){
+            var o=homes.get(l.home());double before=running.getOrDefault(l.home(),0.0),n=l.count();
+            if(before+n>o.count()){
+                if(before+n-o.count()>FamilyModel.packingRounding(before+n))throw new IllegalStateException("New normal addition exceeds current stock");
+                n=Math.min(n,Math.max(0,Math.nextDown(o.count()-before)));
+                while(n>0&&before+n>o.count())n=Math.nextDown(n);
+            }
+            if(n>0){
+                // Saving coalesces equal cell/class rows. Check that summation order too,
+                // reducing this new row alone if its merge would cross the strict cap.
+                for(;;){
+                    List<Lease> book=new ArrayList<>(old);book.addAll(added);book.add(new Lease(l.cell(),l.home(),n,n*o.rent()));
+                    double total=0;for(var q:coalesce(book))if(q.home().equals(l.home()))total+=q.count();
+                    if(total<=o.count())break;
+                    double excess=total-o.count();
+                    if(excess>FamilyModel.packingRounding(total))throw new IllegalStateException("Coalesced normal addition exceeds current stock");
+                    n=Math.max(0,Math.nextDown(n-excess));if(!(n>0))break;
+                }
+                if(n>0){added.add(new Lease(l.cell(),l.home(),n,n*o.rent()));running.put(l.home(),before+n);}
+            }
+        }
+        Map<String,Double> moved=new HashMap<>();for(var l:added)moved.merge(l.cell(),l.households(),Double::sum);
+        List<Lease> all=new ArrayList<>();
+        for(int i=0;i<old.size();i++){
+            var l=old.get(i);if(!(eligible[i]>0)){all.add(l);continue;}
+            double n=Math.min(eligible[i],eligible[i]*Math.min(1,moved.getOrDefault(l.cell(),0.0)/gaps.get(l.cell())));
+            if(!(n>0)){all.add(l);continue;}
+            var f=l.funding();
+            // Two paid halves become one remaining full payer and one normal mover.
+            all.add(new Lease(l.cell(),l.home(),l.count(),l.bill(),l.households()-n,new Funding(f.full()+n,Math.max(0,f.half()-2*n),f.sponsored())));
+        }
+        all.addAll(added);return new Completion(coalesce(all),moved.values().stream().mapToDouble(Double::doubleValue).sum());
+    }
     /** Books the outcome of internal emergency phases without clearing or pricing again. */
     public static Result summarize(List<Demand> demand,List<Offer> offers,List<Lease> leases,double kept,double normal,double crowded,
                                    Map<String,Double> remainingBudgets){
