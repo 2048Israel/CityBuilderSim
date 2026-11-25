@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 28,989 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 29,001 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -14012,7 +14012,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1492 every month after the load is compared:
   - L1493 ...and in none the map read back, or the sidecar it writes, differs from the live map's
 
-## GdpCheck.java - 151 labelled assertions
+## GdpCheck.java - 163 labelled assertions
 
 > Verifies the national accounts: the identity, growth rates, and the government's books - and, since 0.7.58, that every good a sector holds is stock in them (a fleet bought abroad among them).
 > 
@@ -14143,61 +14143,74 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L578 fixture: saved
   - L579 and a reloaded city reports the same interest
   - L615 fixture: the town's school and its buses both cost something
-  - L618 G counts the schools' and transit's cost
-- **L630 every good a sector holds is in the accounts**
-  - L646 every good a sector holds is in an inventory term, or named as left out
-  - L653 HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), cement after them (0.7.131),
-  - L667 ...and Iron & Steel, which keeps a yard of coke, is counted by it
-  - L669 ...and Cement & Concrete, which keeps a silo of cement, is counted by it (0.7.131)
-  - L672 ...and Copper Mining and Copper Refining, which keep yards of cathode, are counted by it (0.7.133)
-  - L677 ...and Wood Products, which keeps yards of lumber, panels, pulp, paper and pellets, is counted by it (0.7.140)
-- **L699 a city whose railway buys its fleet abroad**
-  - L751 fixture: the spurs laid buy more sets than the town's last month made
-  - L753 fixture: the railway bought its fleet abroad
-  - L756 fixture: more than the town makes in a month, so with nothing against it the month reads negative
-  - L757 the fleet's import is matched by the stock it went into, to within its wear and the price's move
-  - L759 ...so the month it lands is not negative output
-  - L760 ...and the identity holds in it
-- **L782 a city whose copper refinery goes with its yard full**
-  - L836 fixture: the refineries' yards hold more cathode than the town's last month made
-  - L838 fixture: the refinery went with cathode in its yard, and the yard was written off
-  - L840 the strike kept the units its rows wrote off
-  - L841 the accounts were handed the units written off
-  - L842 fixture: the yard is worth more than the town makes in a month, so booked as a fall in stock the month reads negative
-  - L844 ...so the month the works goes is not negative output
-  - L845 ...and the identity holds in it
-  - L849 fixture: saved in the month the yard was written off
-  - L850 a city loaded from that save hands its accounts the same units
-  - L851 ...and strikes the same GDP
-- **L885 a works forecasts its inputs on the current band (GDP1)**
-- **L946 imported feed held as output before a later export (GDP1)**
-- **L1031 a city whose bakeries and materials plants go with their sheds full (0.7.136)**
-  - L1121 fixture: the bakeries went with food in their warehouses, and it was written off
-  - L1123 fixture: ...and the plants with materials in their sheds, written off alike
-  - L1127 the strike kept the food its rows wrote off, good by good
-  - L1128 ...and the materials
-  - L1129 ...and the pieces written off by hand
-  - L1130 the accounts were handed the food written off, at its fixed weights
-  - L1131 ...and the materials, in units
-  - L1132 ...and the luxuries, in pieces
-  - L1133 fixture: the sheds are worth more than the town makes in a month, so booked as a fall in stock the month reads negative
-  - L1135 ...so the month the works go is not negative output
-  - L1136 ...and the identity holds in it
-  - L1140 fixture: saved in the month the sheds were written off
-  - L1141 a city loaded from that save hands its accounts the same food
-  - L1142 ...the same materials
-  - L1143 ...the same luxuries
-  - L1144 ...and strikes the same GDP
-- **L1163 a bank's upkeep bought abroad is not an import of the accounts (HL1)**
-  - L1169 no seats
-  - L1176 an office
-  - L1202 fixture: Business Services has no seats, two or more banks stand and the bank paid an operating cost
-  - L1204 ...Business Services' statement holds the whole of it on BANK_UPKEEP_SUPPLIES, to the cent, and the five services' upkeep on UPKEEP_SUPPLIES
-  - L1207 fixture: with an office (seats), two or more banks stand and the bank paid an operating cost
-  - L1209 ...the bank's line is the operating cost times UPKEEP_IMPORTED, to the cent, and the five services' upkeep is on UPKEEP_SUPPLIES
-  - L1212 the accounts' imports are every sector's imports summed, less the bank's line (the bank's upkeep is in the sectors' imports and not
-  - L1215 ...so GDP is higher by exactly the bank's line (the whole operating cost with no seats) than C + I + G + exports less the sectors' whole imports
-  - L1217 ...and the identity holds in it
+  - L621 fixture: the month's repairs to the city's own buildings cost something
+  - L622 G counts the schools' and transit's cost, and the city's repairs (R1g)
+- **L634 every good a sector holds is in the accounts**
+  - L650 every good a sector holds is in an inventory term, or named as left out
+  - L657 HELD ends with the steelworks' coke and the two coals, appended after crude (0.7.123), cement after them (0.7.131),
+  - L671 ...and Iron & Steel, which keeps a yard of coke, is counted by it
+  - L673 ...and Cement & Concrete, which keeps a silo of cement, is counted by it (0.7.131)
+  - L676 ...and Copper Mining and Copper Refining, which keep yards of cathode, are counted by it (0.7.133)
+  - L681 ...and Wood Products, which keeps yards of lumber, panels, pulp, paper and pellets, is counted by it (0.7.140)
+- **L703 a city whose railway buys its fleet abroad**
+  - L755 fixture: the spurs laid buy more sets than the town's last month made
+  - L757 fixture: the railway bought its fleet abroad
+  - L760 fixture: more than the town makes in a month, so with nothing against it the month reads negative
+  - L761 the fleet's import is matched by the stock it went into, to within its wear and the price's move
+  - L763 ...so the month it lands is not negative output
+  - L764 ...and the identity holds in it
+- **L786 a city whose copper refinery goes with its yard full**
+  - L840 fixture: the refineries' yards hold more cathode than the town's last month made
+  - L842 fixture: the refinery went with cathode in its yard, and the yard was written off
+  - L844 the strike kept the units its rows wrote off
+  - L845 the accounts were handed the units written off
+  - L846 fixture: the yard is worth more than the town makes in a month, so booked as a fall in stock the month reads negative
+  - L848 ...so the month the works goes is not negative output
+  - L849 ...and the identity holds in it
+  - L853 fixture: saved in the month the yard was written off
+  - L854 a city loaded from that save hands its accounts the same units
+  - L855 ...and strikes the same GDP
+- **L890 a works forecasts its inputs on the current band (GDP1)**
+- **L951 imported feed held as output before a later export (GDP1)**
+- **L1036 a city whose bakeries and materials plants go with their sheds full (0.7.136)**
+  - L1126 fixture: the bakeries went with food in their warehouses, and it was written off
+  - L1128 fixture: ...and the plants with materials in their sheds, written off alike
+  - L1132 the strike kept the food its rows wrote off, good by good
+  - L1133 ...and the materials
+  - L1134 ...and the pieces written off by hand
+  - L1135 the accounts were handed the food written off, at its fixed weights
+  - L1136 ...and the materials, in units
+  - L1137 ...and the luxuries, in pieces
+  - L1138 fixture: the sheds are worth more than the town makes in a month, so booked as a fall in stock the month reads negative
+  - L1140 ...so the month the works go is not negative output
+  - L1141 ...and the identity holds in it
+  - L1145 fixture: saved in the month the sheds were written off
+  - L1146 a city loaded from that save hands its accounts the same food
+  - L1147 ...the same materials
+  - L1148 ...the same luxuries
+  - L1149 ...and strikes the same GDP
+- **L1168 a bank's upkeep bought abroad is not an import of the accounts (HL1)**
+  - L1174 no seats
+  - L1181 an office
+  - L1207 fixture: Business Services has no seats, two or more banks stand and the bank paid an operating cost
+  - L1209 ...Business Services' statement holds the whole of it on BANK_UPKEEP_SUPPLIES, to the cent, and the five services' upkeep on UPKEEP_SUPPLIES
+  - L1212 fixture: with an office (seats), two or more banks stand and the bank paid an operating cost
+  - L1214 ...the bank's line is the operating cost times UPKEEP_IMPORTED, to the cent, and the five services' upkeep is on UPKEEP_SUPPLIES
+  - L1217 the accounts' imports are every sector's imports summed, less the bank's line (the bank's upkeep is in the sectors' imports and not
+  - L1220 ...so GDP is higher by exactly the bank's line (the whole operating cost with no seats) than C + I + G + exports less the sectors' whole imports
+  - L1222 ...and the identity holds in it
+- **L1238 the city's repairs to its own roads are government consumption, not negative output (R1g)**
+  - L1239 paid
+  - L1240 owed
+  - L1277 fixture (
+  - L1279 fixture (
+  - L1281 fixture (paid): the treasury paid the whole bill
+  - L1282 fixture (owed): the treasury paid none of it, and the city owes it
+  - L1283 (
+  - L1284 (
+  - L1286 (
+  - L1288 (
+  - L1289 (
 
 ## GlobeCheck.java - 138 labelled assertions
 

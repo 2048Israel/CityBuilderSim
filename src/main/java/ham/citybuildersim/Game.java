@@ -15290,7 +15290,13 @@ public class Game {
                         + economyManager.getResearchBill()
                         + economyManager.getTransitBill()
                         // ...and the licence the utilities bought abroad (R2c-P), valued at cost like the services it bought into; it is in the imports too, so GDP is unchanged.
-                        + publicIpPaid,
+                        + publicIpPaid
+                        // ...and the repairs to the city's own buildings, the roads, plants, schools, clinics, stations and terminals
+                        // (EconomyManager.CITY_MAINTAINED), at the bill chargeBuildingMaintenance() struck above, paid or owed: the city buys
+                        // the service, so it is government consumption, as a real government's road repairs are. WHY (R1g, 2026-11-24): the
+                        // builders' material imports for these repairs were in the imports while the repairs were in no final term, so a
+                        // grown city with its building stopped read GDP below zero (the 1900 city, seed 1, -360.89 at month 1135).
+                        + economyManager.getCityMaintenanceBill(),
                 // The full interest bill, foreign coupons included - the
                 // government's books should show what it paid, not only the
                 // part its own bank collected. See payForeignInterest().
