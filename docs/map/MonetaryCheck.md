@@ -1,4 +1,4 @@
-# MonetaryCheck.java - 1,324 lines · 26 methods · 13 constants · harnesses
+# MonetaryCheck.java - 1,360 lines · 27 methods · 13 constants · harnesses
 
 `ham/citybuildersim/MonetaryCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -8,8 +8,8 @@
 > 
 >   1. Does the price index measure what households BUY, on a basket fixed at a
 >      base period? A CPI that re-weights as spending shifts shows no inflation
->      for a family that switched to cheaper food while eating worse. Since
->      0.7.43: five components on the trailing year's spending, luxury capped,
+>      for a family that switched to cheaper food while eating worse.
+>      Nine components use actual trailing reference spending,
 >      struck again every REBASE_MONTHS and chained, so neither the level nor
 >      the year's rate jumps at a link - and since 0.7.45 each component's own
 >      level runs through it too.
@@ -50,7 +50,7 @@
 >      builders' crews and the month's delay, in each year and over the
 >      three, asserted hard, not waited for.)
 
-**Uses:** [PriceIndex](PriceIndex.md) (84), [Game](Game.md) (24), [DebtManager](DebtManager.md) (24), [ForeignAccounts](ForeignAccounts.md) (18), [Retail](Retail.md) (13), [LongPlaytest](LongPlaytest.md) (12), [CityCalendar](CityCalendar.md) (9), [Founding](Founding.md) (8), [GameFiles](GameFiles.md) (7), [WorldEconomy](WorldEconomy.md) (6), [PriceLevel](PriceLevel.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (3), [Investor](Investor.md) (1), [HousingForms](HousingForms.md) (1), [HousingInventory](HousingInventory.md) (1), [BuildingManager](BuildingManager.md) (1), [TempDirs](TempDirs.md) (1), [HousingMarket](HousingMarket.md) (1), [HousingChoice](HousingChoice.md) (1), [Sectors](Sectors.md) (1), [WorldMarket](WorldMarket.md) (1), [Bank](Bank.md) (1)
+**Uses:** [PriceIndex](PriceIndex.md) (87), [Game](Game.md) (24), [DebtManager](DebtManager.md) (24), [ForeignAccounts](ForeignAccounts.md) (18), [Retail](Retail.md) (13), [LongPlaytest](LongPlaytest.md) (12), [CityCalendar](CityCalendar.md) (9), [Founding](Founding.md) (8), [GameFiles](GameFiles.md) (7), [WorldEconomy](WorldEconomy.md) (6), [PriceLevel](PriceLevel.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (3), [HousingInventory](HousingInventory.md) (2), [Investor](Investor.md) (1), [HousingForms](HousingForms.md) (1), [BuildingManager](BuildingManager.md) (1), [TempDirs](TempDirs.md) (1), [CpiCoverageFinding](CpiCoverageFinding.md) (1), [HousingMarket](HousingMarket.md) (1), [HousingChoice](HousingChoice.md) (1), [Sectors](Sectors.md) (1), [WorldMarket](WorldMarket.md) (1), [Bank](Bank.md) (1)
 
 **Used by (3):** [CurveCheck](CurveCheck.md), [ExpectationsCheck](ExpectationsCheck.md), [HouseholdCheck](HouseholdCheck.md)
 
@@ -58,89 +58,93 @@
 
 | line | section |
 |---:|---|
-| 153 | · 1. the basket |
-| 177 | · · the high and low water marks |
-| 229 | · · five components, the year's weights, chained (0.7.43) |
-| 382 | · 2. prices ration |
-| 423 | · 3. the world is a real place |
-| 456 | · 4. and the rate does something |
-| 584 | · 5. in a city, and across a reload |
-| 709 | 6. INFLATION FALLS WITH THE RATE (asserted since 0.7.3; measured |
+| 171 | · 1. the basket |
+| 195 | · · the high and low water marks |
+| 247 | · · nine components, the year's weights, chained (0.7.43) |
+| 403 | · 2. prices ration |
+| 444 | · 3. the world is a real place |
+| 477 | · 4. and the rate does something |
+| 605 | · 5. in a city, and across a reload |
+| 732 | 6. INFLATION FALLS WITH THE RATE (asserted since 0.7.3; measured |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 60 | `MonetaryCheck.POLICY_SEEDS` | `java.util.stream.LongStream.range(16, 32).toArray()` | Independent validation paths; timing limits were calibrated on the default town and paths 0-15. |
-| 832 | `MonetaryCheck.HELD_RATES` | `{.03,.10,.20,.40 }` | The policy rates the one founding is held at, from month 25: the three of the baseline, and since 0.7.2 a fourth at 40% - past the old stop of the dial (25% until 0.7.2), the uncapped case. |
-| 835 | `MonetaryCheck.MEASURED_MONTHS` | `84` | The month each run ends at, and its window with it: the December of the seventh year, the month before the next January's solve of the world's prices (asserted against the calendar). |
-| 838 | `MonetaryCheck.WINDOW_YEARS` | `3` | The whole calendar years the rows are read over: three, the 36 months the section read before FS10, each from its January's solve to its December. |
-| 846 | `MonetaryCheck.HELD_FROM` | `LongPlaytest.HELD_AFTER + 1` | The month the dial is held from: the one after LongPlaytest.HELD_AFTER, the months the held runs start after. |
-| 861 | `MonetaryCheck.ORDERING_RESOLUTION` | `.0065` | The original 0.65-point ordering resolution. |
-| 864 | `MonetaryCheck.TIMING_LIMIT` | `.0075` | Frozen before validation: twice 0.356534 points on default/path 0-15, rounded up to a quarter point. |
-| 866 | `MonetaryCheck.ANNUAL_TIMING_LIMIT` | `.02` | Frozen before validation: twice the 0.961207-point pooled annual response, rounded up to a quarter point. |
-| 869 | `MonetaryCheck.TRANSMISSION_FLOOR` | `.01` | Minimum annual effect: a point on the original CPI and on pooled common-basket non-shelter prices; a flat demand channel fails. |
-| 1290 | `MonetaryCheck.WORLD_LEVEL_SET` | `1.5` | The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. |
-| 1293 | `MonetaryCheck.PINNED_RATE` | `1.0` | The rate section 5's fixture pins the currency at (ForeignAccounts.pinRate()): one D$ to the US$, a long way from either bound. |
-| 1296 | `MonetaryCheck.FIXTURE_SHELF_RISE` | `.01` | What the fixture's shelf rises a month, a fraction: a point, so the index it strikes is not 1.000 and its year of readings reads a rate. |
-| 1299 | `MonetaryCheck.FIXTURE_RENT_RISE` | `.005` | ...and what its rent rises a month: half of that, so the two components part. |
+| 855 | `MonetaryCheck.HELD_RATES` | `{.03,.10,.20,.40 }` | The policy rates the one founding is held at, from month 25: the three of the baseline, and since 0.7.2 a fourth at 40% - past the old stop of the dial (25% until 0.7.2), the uncapped case. |
+| 858 | `MonetaryCheck.MEASURED_MONTHS` | `84` | The month each run ends at, and its window with it: the December of the seventh year, the month before the next January's solve of the world's prices (asserted against the calendar). |
+| 861 | `MonetaryCheck.WINDOW_YEARS` | `3` | The whole calendar years the rows are read over: three, the 36 months the section read before FS10, each from its January's solve to its December. |
+| 869 | `MonetaryCheck.HELD_FROM` | `LongPlaytest.HELD_AFTER + 1` | The month the dial is held from: the one after LongPlaytest.HELD_AFTER, the months the held runs start after. |
+| 884 | `MonetaryCheck.ORDERING_RESOLUTION` | `.0065` | The original 0.65-point ordering resolution. |
+| 887 | `MonetaryCheck.TIMING_LIMIT` | `.0075` | Frozen before validation: twice 0.356534 points on default/path 0-15, rounded up to a quarter point. |
+| 889 | `MonetaryCheck.ANNUAL_TIMING_LIMIT` | `.02` | Frozen before validation: twice the 0.961207-point pooled annual response, rounded up to a quarter point. |
+| 892 | `MonetaryCheck.TRANSMISSION_FLOOR` | `.01` | Minimum annual effect: a point on the original CPI and on pooled common-basket non-shelter prices; a flat demand channel fails. |
+| 1326 | `MonetaryCheck.WORLD_LEVEL_SET` | `1.5` | The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. |
+| 1329 | `MonetaryCheck.PINNED_RATE` | `1.0` | The rate section 5's fixture pins the currency at (ForeignAccounts.pinRate()): one D$ to the US$, a long way from either bound. |
+| 1332 | `MonetaryCheck.FIXTURE_SHELF_RISE` | `.01` | What the fixture's shelf rises a month, a fraction: a point, so the index it strikes is not 1.000 and its year of readings reads a rate. |
+| 1335 | `MonetaryCheck.FIXTURE_RENT_RISE` | `.005` | ...and what its rent rises a month: half of that, so the two components part. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 61 | `private static long policySeed` |  |
-| 65 | `private final java.util.List<HousingStart> starts` |  |
-| 66 | `private double laterRent` |  |
-| 67 | `private int laterSamples` |  |
-| 124 | `static int fails` |  |
-| 125 | `static PrintStream out` |  |
-| 126 | `static PrintStream quiet` |  |
-| 993 | `static double fewestCrews` | The fewest of its posts the builders offered in any held month of the runs since the last reset (0.7.17). |
-| 1006 | `static boolean solvesOnTheCalendar` | Whether, in every month of every run's window so far (heldRun()), the world market had solved in that month's own calendar year: its yearly repricings fall on each January of the window, the same months in every run, ... |
-| 1009 | `static boolean basedBeforeWindow` | Whether the basket was based before the window opened in every run so far (heldRun()): an index not yet based reads 0% over it. |
-| 1012 | `static double heldAt` | The rate every run's D$ is pinned at (heldRun()): the founding's in the month the dial is first held, NaN until the first run sets it. |
-| 1015 | `static boolean currencyHeld` | Whether every run's D$ stood at heldAt, pinned, in every month from the hold to the window's close (heldRun()). |
+| 66 | `private final java.util.List<HousingStart> starts` |  |
+| 67 | `private double laterRent` |  |
+| 68 | `private int laterSamples` |  |
+| 69 | `private double laterPaidRent` |  |
+| 70 | `private int laterStockMonths, laterTradeMonths` |  |
+| 142 | `static int fails` |  |
+| 143 | `static PrintStream out` |  |
+| 144 | `static PrintStream quiet` |  |
+| 1016 | `static double fewestCrews` | The fewest of its posts the builders offered in any held month of the runs since the last reset (0.7.17). |
+| 1029 | `static boolean solvesOnTheCalendar` | Whether, in every month of every run's window so far (heldRun()), the world market had solved in that month's own calendar year: its yearly repricings fall on each January of the window, the same months in every run, ... |
+| 1032 | `static boolean basedBeforeWindow` | Whether the basket was based before the window opened in every run so far (heldRun()): an index not yet based reads 0% over it. |
+| 1035 | `static double heldAt` | The rate every run's D$ is pinned at (heldRun()): the founding's in the month the dial is first held, NaN until the first run sets it. |
+| 1038 | `static boolean currencyHeld` | Whether every run's D$ stood at heldAt, pinned, in every month from the hold to the window's close (heldRun()). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 1268 | **type** `public class MonetaryCheck` | Money: what a basket costs, what the world charges, and what the rate does. |
+| 57 | 1304 | **type** `public class MonetaryCheck` | Money: what a basket costs, what the world charges, and what the rate does. |
 | 62 | 1 | **type** `private record HousingStart(int month, long doors)` |  |
-| 64 | 25 | **type** `private static final class HousingTown extends Game` | Harness-only observation at acceptance; no model flow or saved order state is reconstructed. |
-| 68 | 1 | `HousingTown(GameFiles files, Founding founding)` _(in MonetaryCheck.HousingTown)_ |  |
-| 69 | 6 | `public boolean buildFor(Investor payer, BuildingsTemplate template, long quantity)` _(in MonetaryCheck.HousingTown)_ |  |
-| 75 | 4 | `long earlyStarts()` _(in MonetaryCheck.HousingTown)_ |  |
-| 79 | 8 | `void observeSupply()` _(in MonetaryCheck.HousingTown)_ |  |
-| 87 | 1 | `double laterRent()` _(in MonetaryCheck.HousingTown)_ |  |
-| 90 | 25 | **type** `private record BasketPrices(double[] quantities, double[] prices, int linked, double index)` | Flatten the services sub-basket too: changing fee shares must not masquerade as a price response. |
-| 91 | 17 | `static BasketPrices read(PriceIndex p)` _(in MonetaryCheck.BasketPrices)_ |  |
-| 108 | 6 | `double cost(double[] q, boolean withoutRent)` _(in MonetaryCheck.BasketPrices)_ |  |
-| 115 | 5 | **type** `private record PriceWindow(BasketPrices from, BasketPrices to, double spendFactor)` |  |
-| 116 | 3 | `double nonShelterInflation(double[] quantities)` _(in MonetaryCheck.PriceWindow)_ |  |
-| 120 | 3 | **type** `private record PolicyComparison(double[] inflation, double[][] years, double[] late, double[][] lateYears, ...` |  |
-| 128 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 133 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
-| 143 | 565 | `public static void main(String[] args) throws Exception` |  |
+| 63 | 1 | **type** `private record PaidSupply(double rentPerDoor, int stockMonths, int tradeMonths)` |  |
+| 65 | 42 | **type** `private static final class HousingTown extends Game` | Harness-only observation at acceptance; no model flow or saved order state is reconstructed. |
+| 71 | 1 | `HousingTown(GameFiles files, Founding founding)` _(in MonetaryCheck.HousingTown)_ |  |
+| 72 | 6 | `public boolean buildFor(Investor payer, BuildingsTemplate template, long quantity)` _(in MonetaryCheck.HousingTown)_ |  |
+| 78 | 4 | `long earlyStarts()` _(in MonetaryCheck.HousingTown)_ |  |
+| 82 | 19 | `void observeSupply()` _(in MonetaryCheck.HousingTown)_ |  |
+| 101 | 1 | `double laterRent()` _(in MonetaryCheck.HousingTown)_ |  |
+| 102 | 4 | `PaidSupply paidSupply()` _(in MonetaryCheck.HousingTown)_ |  |
+| 108 | 25 | **type** `private record BasketPrices(double[] quantities, double[] prices, int linked, double index)` | Flatten the services sub-basket too: changing fee shares must not masquerade as a price response. |
+| 109 | 17 | `static BasketPrices read(PriceIndex p)` _(in MonetaryCheck.BasketPrices)_ |  |
+| 126 | 6 | `double cost(double[] q, boolean withoutRent)` _(in MonetaryCheck.BasketPrices)_ |  |
+| 133 | 5 | **type** `private record PriceWindow(BasketPrices from, BasketPrices to, double spendFactor)` |  |
+| 134 | 3 | `double nonShelterInflation(double[] quantities)` _(in MonetaryCheck.PriceWindow)_ |  |
+| 138 | 3 | **type** `private record PolicyComparison(double[] inflation, double[][] years, double[] late, double[][] lateYears, ...` |  |
+| 146 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 151 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
+| 161 | 570 | `public static void main(String[] args) throws Exception` |  |
 
-### 6. INFLATION FALLS WITH THE RATE (asserted since 0.7.3; measured (lines 709-1324)
+### 6. INFLATION FALLS WITH THE RATE (asserted since 0.7.3; measured (lines 732-1360)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 841 | 3 | `static int windowMonths()` | The months a window is, from its first January to its last December: the years before the last whole, and the eleven of the last after its January's own solve, from the model's calendar (CityCalendar.monthOfYear(MEASU... |
-| 872 | 3 | `static void step(Game g, double heldRate)` | One month, as the playtest steps it: a broke city steps rather than skips. |
-| 877 | 7 | `static void step(Game g, double heldRate, int heldFrom)` | ...holding the dial from a month of the caller's: the paired timing run holds it a month late. |
-| 886 | 3 | `static Game founding(Path root, String label)` | The playtest's default founding, to the month before the dial is held. |
-| 897 | 3 | `static Game founding(Path root, String label, boolean onLiterals)` | ...on the goods' literals where asked (Game.playOnLiterals()); no section here asks since WN3-R. |
-| 905 | 3 | `static Game founding(Path root, String label, boolean onLiterals, String...held)` | ...with the sectors named held out of the investor's building (BusinessInvestment.holdSector()), as the harnesses that read a steady bank hold the one whose plant on a bank loan the bank cannot carry (WN3 held Cement ... |
-| 913 | 78 | `static Game founding(Path root, String label, boolean onLiterals, boolean causesHeldOff, String...held)` | ...with the causes of 1900 held off from the first month where asked (R0b call 7): only heldRun() asks, the three harnesses that borrow this founding (CurveCheck, ExpectationsCheck, HouseholdCheck) keep the deaths of ... |
-| 996 | 8 | `static double[] fingerprint(Game g)` | What the founding looks like the month before the dial moves - equal across the runs, or they are not one founding. |
-| 1018 | 10 | `static void reportHeldRent(Game g, String label)` | Read the rent counter-channel without changing any paid lease, quote, policy input or assertion. |
-| 1037 | 3 | `static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city, double[] years)` | One run of the founding at a held rate: the dial held from heldFrom, the D$ pinned (ForeignAccounts.pinRate()) at the founding's rate in its own last month, HELD_FROM, on time and late alike, and inflation over the wi... |
-| 1041 | 71 | `private static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city, double[] years, ...` |  |
-| 1113 | 63 | `static void inflationFallsWithTheRate(Path root)` |  |
-| 1177 | 111 | `private static PolicyComparison policyComparison(Path root, long seed)` |  |
-| 1307 | 10 | `static PriceIndex basedBasket(int shoppingMonths)` | FS10: a price index put through the model's own door, PriceIndex.takeMonth(): a shelf and a rent, each month with spending on both in it (the households' 40 on food and 60 on rent, the weights the basket is struck on)... |
-| 1318 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
+| 864 | 3 | `static int windowMonths()` | The months a window is, from its first January to its last December: the years before the last whole, and the eleven of the last after its January's own solve, from the model's calendar (CityCalendar.monthOfYear(MEASU... |
+| 895 | 3 | `static void step(Game g, double heldRate)` | One month, as the playtest steps it: a broke city steps rather than skips. |
+| 900 | 7 | `static void step(Game g, double heldRate, int heldFrom)` | ...holding the dial from a month of the caller's: the paired timing run holds it a month late. |
+| 909 | 3 | `static Game founding(Path root, String label)` | The playtest's default founding, to the month before the dial is held. |
+| 920 | 3 | `static Game founding(Path root, String label, boolean onLiterals)` | ...on the goods' literals where asked (Game.playOnLiterals()); no section here asks since WN3-R. |
+| 928 | 3 | `static Game founding(Path root, String label, boolean onLiterals, String...held)` | ...with the sectors named held out of the investor's building (BusinessInvestment.holdSector()), as the harnesses that read a steady bank hold the one whose plant on a bank loan the bank cannot carry (WN3 held Cement ... |
+| 936 | 78 | `static Game founding(Path root, String label, boolean onLiterals, boolean causesHeldOff, String...held)` | ...with the causes of 1900 held off from the first month where asked (R0b call 7): only heldRun() asks, the three harnesses that borrow this founding (CurveCheck, ExpectationsCheck, HouseholdCheck) keep the deaths of ... |
+| 1019 | 8 | `static double[] fingerprint(Game g)` | What the founding looks like the month before the dial moves - equal across the runs, or they are not one founding. |
+| 1041 | 10 | `static void reportHeldRent(Game g, String label)` | Read the rent counter-channel without changing any paid lease, quote, policy input or assertion. |
+| 1060 | 3 | `static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city, double[] years)` | One run of the founding at a held rate: the dial held from heldFrom, the D$ pinned (ForeignAccounts.pinRate()) at the founding's rate in its own last month, HELD_FROM, on time and late alike, and inflation over the wi... |
+| 1064 | 71 | `private static double heldRun(Path root, String label, double rate, int heldFrom, double[] print, Game[] city, double[] years, ...` |  |
+| 1136 | 74 | `static void inflationFallsWithTheRate(Path root)` |  |
+| 1211 | 113 | `private static PolicyComparison policyComparison(Path root, long seed)` |  |
+| 1343 | 10 | `static PriceIndex basedBasket(int shoppingMonths)` | FS10: a price index put through the model's own door, PriceIndex.takeMonth(): a shelf and a rent, each month with spending on both in it (the households' 40 on food and 60 on rent, the weights the basket is struck on)... |
+| 1354 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 

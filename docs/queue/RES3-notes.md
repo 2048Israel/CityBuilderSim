@@ -5,17 +5,19 @@ retain the successive HC1, AP2, PW5, FC2 and later integration evidence.
 
 ## Current integration and validation, 2026-11-25
 
-Main de51851044d is records-only over shipped R6e-rest0.9.201 at78ed67315,
-format/floor66; RES3 takes67. The records merge is a03579d4b.
+The latest integration is6db8db4a9, merging main d657b3a83 and shipped
+PW3 0.9.202. PW3 retains format/floor66; RES3 stays67. The genuine66 pair
+below is from unedited shipped R6e-rest0.9.201 at78ed67315.
 Substation155, RES3 homes156-166 and existing power167-171 retain their IDs;
 nextId is172. The genuine unedited shipped66 save/history pair is committed,
 and current SaveFileCheck refuses it with both files and the running city intact.
 No conversion or current-schema restamping is used. The newest ensemble
-baseline is docs/ensemble/0.9.201.md.
+baseline is now docs/ensemble/0.9.202.md. The checks below precede the PW3
+merge; its affected verification and the default measurement are still pending.
 
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
-byte-identical through the later passive-observer/diagnostic-only commits;
+byte-identical through dce's later observer and harness-only commits;
 their added hooks default to null in ordinary checks.
 
 | Check | Native/batch | Labelled checks | Seconds |
@@ -5691,3 +5693,36 @@ fresh HMC gate RAM5.771/commit12.399/CPU24.195 percent passes. The remaining
 seven unique checks resume one per call. After all are green and stale Kept
 owners are resolved, the committed audited600-month default observer has a
 conditional exact-dce GO; no policy/baseline sweep or full-playtest claim.
+
+The remaining dce checks completed before PW3: Substation0/native0 in30s;
+DebtStatistics0/native0 under1s; Research0/native0,247 checks in2s;
+ModernRows0/native0,240 checks in13s; PostwarRecipe0/native0,233 in18s.
+Their supported combined-record hash is
+cfed388049545c5b3f4f918c0f6fb024d5c5165d7a67e720d915b833ffb013d1.
+LicenceFees and Kept had not started. All owned processes ended at the
+boundary; the default600 observer had not compiled or started.
+
+PW3 shipped while those checks finished. Merge6db8db4a9 brings main
+d657b3a83/0.9.202 into RES3. Only four generated maps conflict; take main's
+copies and regenerate from integrated source. Actual source merges cleanly:
+RES3's housing, held-save tariff and null-default observation hooks remain;
+PW3's place/season power, future-known menu and pre-land/money blocker land.
+PW3 makes no save-format change. RES3 remains67 over genuinely shipped66,
+so the unedited0.9.201 boundary pair still proves the native previous-format
+refusal. No retag, conversion or new format is needed for the merge.
+
+The prior native evidence remains labelled, not promoted to a merged-model
+pass. Hold the default observer and remaining old-source starts; the helper
+reports source coupling and the necessary affected replay set. Newest ensemble
+baseline is docs/ensemble/0.9.202.md. Static pick now says ALL254; money review
+names Bank and DebtStatistics, saves review DataSave, HistorySave and both
+format/floor declarations. The provisional marker remains until review,
+ensemble, the authorized dry run and its final marker commit.
+
+Root's actual merged6db8 --fast exits0, including compile/maps/Stale, retained
+at target/RES3-root-fast-6db8db4a9-20261125-035313. Pinned Oracle21.0.4 and
+the absolute C:/ assets are used. Its fresh gate has76-percent committed,
+5.925 GiB RAM available,13.025 GiB free commit and mean10.109-percent CPU
+from three two-second samples. No other owned JVM was active; controller45127
+ends0 before the helper's next source GO. Commit the regenerated integrated
+maps rather than restoring either parent's earlier generated copies.

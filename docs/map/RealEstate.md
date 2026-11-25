@@ -1,4 +1,4 @@
-# RealEstate.java - 1,122 lines · 100 methods · 10 constants · sectors
+# RealEstate.java - 1,141 lines · 100 methods · 10 constants · sectors
 
 `ham/citybuildersim/sectors/RealEstate.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -79,8 +79,8 @@
 | 404 | THE PRICE |
 | 589 | THE SALE, at the bottom of the month |
 | 631 | PLANNING - off jobs, and off the segment that is short |
-| 972 | THE SCREEN |
-| 1047 | SAVE, RESET, THE REFORM |
+| 991 | THE SCREEN |
+| 1066 | SAVE, RESET, THE REFORM |
 
 ## Constants
 
@@ -132,7 +132,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 121 | 1002 | **type** `public final class RealEstate extends Sector` | The landlords. |
+| 121 | 1021 | **type** `public final class RealEstate extends Sector` | The landlords. |
 | 123 | 1 | `public ham.citybuildersim.HousingMarket housingMarket()` |  |
 
 ### the prices (lines 180-208)
@@ -238,44 +238,44 @@
 | 623 | 3 | `public void endOfMonth(Game game)` | Rent walks here, and only here: moving a lagged price one step toward its target IS a month passing, and the load path must not do it. |
 | 629 | 1 | `public double getInventoryValue()` | The landlords hold no stock: a home is not a unit in a warehouse. |
 
-### PLANNING - off jobs, and off the segment that is short (lines 631-971)
+### PLANNING - off jobs, and off the segment that is short (lines 631-990)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 641 | 1 | `public boolean ordersOnlyWhatItCanStaff()` | False (HD1): the landlords build homes before anyone can staff them. |
-| 644 | 133 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` |  |
-| 779 | 3 | `public double doorShortfall(boolean family)` | Households in one segment with no door of their own, or fewer than none. |
-| 789 | 3 | `private double doorsWanted(boolean family)` | The same shortfall as a planner reads it: less the doors of that segment already on the landlords' sites (0.7.17) - see plan(), "AND SO DO THE HOMES ON SITE". |
-| 794 | 12 | `private double doorsOnSite(boolean family)` | Doors of one segment on the landlords' sites. |
-| 808 | 3 | `private double capacityOnSite()` | People of capacity on the landlords' sites. |
-| 816 | 4 | `public double monthsOfWorkOnSite()` | Months of the builders' site output the landlords' sites owe (0.7.17), for the investor page. |
-| 822 | 4 | `private boolean hasDoorsToSpare(BuildingsTemplate t)` | Whether the segment this template belongs to has spare doors. |
-| 833 | 7 | `public double latentHeadShortfall()` | The head shortage plan() would see if it were asked right now - for the credit check, and the harnesses. |
-| 848 | 7 | `private double fillableDoors(BuildingsTemplate t, double headShortfall)` | How many of this template's doors the city would actually put somebody in: a studio only a studio-seeker; a family unit a family first and then a studio-seeker the studios have no room for. |
-| 862 | 8 | `private double doorsNeeded(boolean family, double headShortfall)` | Doors one segment is short: households here with nowhere, plus the ones the job market is about to bring, at the segment's own household size. |
-| 872 | 4 | `public double priceForSegment(BuildingsTemplate t)` | The price the segment this template belongs to is charging. |
-| 885 | 10 | `public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans)` | What the city's households would pay for it, not what it would collect if it were full. |
-| 898 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Housing: demand is people actually living in it. |
-| 933 | 17 | `public boolean mayRetire(BuildingsTemplate t)` | A residential holding is only sheddable if ITS OWN segment has doors to spare - AND NOBODY IN THE CITY IS SHARING A DOOR THEY DID NOT CHOOSE. |
-| 952 | 9 | `public long limitSpareRetirement(BuildingsTemplate t, long quantity, double keepAtLeast)` | Every class of a retired structure must come from actual vacant RE titles. |
-| 963 | 4 | `public String noRetirementReason(boolean distress)` |  |
-| 970 | 1 | `public double unitsOf(BuildingsTemplate t)` | People, not doors: the measure the spare-capacity rule counts in. |
+| 644 | 152 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` |  |
+| 798 | 3 | `public double doorShortfall(boolean family)` | Households in one segment with no door of their own, or fewer than none. |
+| 808 | 3 | `private double doorsWanted(boolean family)` | The same shortfall as a planner reads it: less the doors of that segment already on the landlords' sites (0.7.17) - see plan(), "AND SO DO THE HOMES ON SITE". |
+| 813 | 12 | `private double doorsOnSite(boolean family)` | Doors of one segment on the landlords' sites. |
+| 827 | 3 | `private double capacityOnSite()` | People of capacity on the landlords' sites. |
+| 835 | 4 | `public double monthsOfWorkOnSite()` | Months of the builders' site output the landlords' sites owe (0.7.17), for the investor page. |
+| 841 | 4 | `private boolean hasDoorsToSpare(BuildingsTemplate t)` | Whether the segment this template belongs to has spare doors. |
+| 852 | 7 | `public double latentHeadShortfall()` | The head shortage plan() would see if it were asked right now - for the credit check, and the harnesses. |
+| 867 | 7 | `private double fillableDoors(BuildingsTemplate t, double headShortfall)` | How many of this template's doors the city would actually put somebody in: a studio only a studio-seeker; a family unit a family first and then a studio-seeker the studios have no room for. |
+| 881 | 8 | `private double doorsNeeded(boolean family, double headShortfall)` | Doors one segment is short: households here with nowhere, plus the ones the job market is about to bring, at the segment's own household size. |
+| 891 | 4 | `public double priceForSegment(BuildingsTemplate t)` | The price the segment this template belongs to is charging. |
+| 904 | 10 | `public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans)` | What the city's households would pay for it, not what it would collect if it were full. |
+| 917 | 3 | `public double[] retirementDemandAndCapacity(Game game)` | Housing: demand is people actually living in it. |
+| 952 | 17 | `public boolean mayRetire(BuildingsTemplate t)` | A residential holding is only sheddable if ITS OWN segment has doors to spare - AND NOBODY IN THE CITY IS SHARING A DOOR THEY DID NOT CHOOSE. |
+| 971 | 9 | `public long limitSpareRetirement(BuildingsTemplate t, long quantity, double keepAtLeast)` | Every class of a retired structure must come from actual vacant RE titles. |
+| 982 | 4 | `public String noRetirementReason(boolean distress)` |  |
+| 989 | 1 | `public double unitsOf(BuildingsTemplate t)` | People, not doors: the measure the spare-capacity rule counts in. |
 
-### THE SCREEN (lines 972-1046)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 978 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a landlord, whose middle line is its net operating income, before its mortgages. |
-| 981 | 1 | `public String inputLabel()` |  |
-| 984 | 1 | `public boolean hasPlantBlock()` |  |
-| 987 | 59 | `public List<Line> ownLines(Game game)` |  |
-
-### SAVE, RESET, THE REFORM (lines 1047-1122)
+### THE SCREEN (lines 991-1065)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1052 | 16 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 1070 | 18 | `protected void restoreExtras(Map<String, Double> extras)` |  |
-| 1090 | 16 | `protected void resetExtras()` |  |
-| 1109 | 13 | `protected void redenominateExtras(double scale)` | The prices and the per-capacity costs are money; the doors, the weights and the rates are not. |
+| 997 | 1 | `public ham.citybuildersim.SectorStatements.Format statementFormat()` | Its formal statements' format (0.7.74, spec-sector-statements 4.6): a landlord, whose middle line is its net operating income, before its mortgages. |
+| 1000 | 1 | `public String inputLabel()` |  |
+| 1003 | 1 | `public boolean hasPlantBlock()` |  |
+| 1006 | 59 | `public List<Line> ownLines(Game game)` |  |
+
+### SAVE, RESET, THE REFORM (lines 1066-1141)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1071 | 16 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 1089 | 18 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 1109 | 16 | `protected void resetExtras()` |  |
+| 1128 | 13 | `protected void redenominateExtras(double scale)` | The prices and the per-capacity costs are money; the doors, the weights and the rates are not. |
 

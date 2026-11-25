@@ -1,12 +1,12 @@
-# HousingMarketCheck.java - 701 lines · 30 methods · 2 constants · harnesses
+# HousingMarketCheck.java - 1,691 lines · 54 methods · 2 constants · harnesses
 
-`ham/citybuildersim/HousingMarketCheck.java` - generated 2026-11-23 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingMarketCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Integrated quotes, funded sites, rental receipts, budgets and reload evidence.
 > WHY (RES3): a synthetic catalogue quote does not prove an actual funded project
 > or a month whose occupied rents and household cash reconcile.
 
-**Uses:** [HousingChoice](HousingChoice.md) (62), [Game](Game.md) (46), [HousingMarket](HousingMarket.md) (29), [PayTier](PayTier.md) (25), [FamilyStructure](FamilyStructure.md) (24), [HousingForms](HousingForms.md) (19), [GameFiles](GameFiles.md) (19), [AgeBand](AgeBand.md) (17), [FamilyModel](FamilyModel.md) (16), [HousingInventory](HousingInventory.md) (15), [LongPlaytest](LongPlaytest.md) (13), [WorkingHousehold](WorkingHousehold.md) (12), [RealEstate](RealEstate.md) (11), [PopulationCohorts](PopulationCohorts.md) (8), [HouseholdBalance](HouseholdBalance.md) (6), [AdultStage](AdultStage.md) (5), [JobType](JobType.md) (4), [MoneyAudit](MoneyAudit.md) (3), [HousingRecipe](HousingRecipe.md) (3), [PriceLevel](PriceLevel.md) (2), [Household](Household.md) (2), [HouseholdAccounts](HouseholdAccounts.md) (2), [StudentHousehold](StudentHousehold.md) (2), [Sectors](Sectors.md) (2), [BusinessInvestment](BusinessInvestment.md) (1), [Bank](Bank.md) (1), [CardCheck](CardCheck.md) (1), [WageBand](WageBand.md) (1), [Founding](Founding.md) (1), [ConstructionControl](ConstructionControl.md) (1)
+**Uses:** [HousingChoice](HousingChoice.md) (189), [Game](Game.md) (92), [PayTier](PayTier.md) (41), [FamilyStructure](FamilyStructure.md) (41), [HousingMarket](HousingMarket.md) (38), [HousingInventory](HousingInventory.md) (36), [GameFiles](GameFiles.md) (34), [FamilyModel](FamilyModel.md) (30), [Household](Household.md) (30), [AgeBand](AgeBand.md) (24), [HouseholdBalance](HouseholdBalance.md) (23), [HousingForms](HousingForms.md) (22), [Sectors](Sectors.md) (20), [WorkingHousehold](WorkingHousehold.md) (17), [RealEstate](RealEstate.md) (14), [LongPlaytest](LongPlaytest.md) (13), [PopulationCohorts](PopulationCohorts.md) (11), [MoneyAudit](MoneyAudit.md) (10), [HouseholdAccounts](HouseholdAccounts.md) (10), [Founding](Founding.md) (9), [AdultStage](AdultStage.md) (8), [Mortgage](Mortgage.md) (7), [UnemployedHousehold](UnemployedHousehold.md) (7), [JobType](JobType.md) (6), [TaxPolicy](TaxPolicy.md) (5), [Equity](Equity.md) (4), [HousingRecipe](HousingRecipe.md) (3), [StudentHousehold](StudentHousehold.md) (3), [PriceLevel](PriceLevel.md) (2), [BusinessInvestment](BusinessInvestment.md) (2)... and 8 more
 
 ## Constants
 
@@ -26,7 +26,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 13 | 689 | **type** `public final class HousingMarketCheck` | Integrated quotes, funded sites, rental receipts, budgets and reload evidence. |
+| 13 | 1679 | **type** `public final class HousingMarketCheck` | Integrated quotes, funded sites, rental receipts, budgets and reload evidence. |
 | 19 | 1 | `static void check(String label, boolean ok)` |  |
 | 20 | 1 | `static void near(String label, double a, double b)` |  |
 | 21 | 5 | `static void audits(Game g)` |  |
@@ -35,26 +35,51 @@
 | 66 | 11 | `static HousingMarket.State mixedSharingPrices(double singleBudget)` | Five old shared households at twenty, joined by five groups of five singles, preserve their actual resources. |
 | 77 | 13 | `static void mergedBudgetPressure()` |  |
 | 90 | 44 | `static void rentPriceIndex()` |  |
-| 134 | 30 | `static void plannerInputs()` |  |
-| 164 | 48 | `static void classPrices()` |  |
-| 212 | 11 | `static void foundingBudgets()` |  |
-| 223 | 13 | `static void fractionalPressure()` |  |
-| 236 | 44 | `static void sharingOrder()` |  |
-| 280 | 28 | `static void doubledDoors()` |  |
-| 308 | 23 | `static void doubledDemand()` |  |
-| 331 | 13 | `static void studentFacility()` |  |
-| 344 | 25 | `static void scarceFreeHost()` |  |
-| 369 | 43 | `static void fundedHost()` |  |
-| 412 | 5 | `static double[] cardPositions(HouseholdBalance balances)` |  |
-| 417 | 15 | `static void retiredRoom()` |  |
-| 432 | 4 | `static void holdHousingFixture(Game g)` |  |
-| 436 | 59 | `static void loadedDoorCensus() throws Exception` |  |
-| 495 | 30 | `static void savingHousingBudget()` |  |
-| 525 | 19 | `static void cardHousingBudget()` |  |
-| 544 | 22 | `static void aggregatePackingRemainder()` |  |
-| 566 | 27 | `static void familyHostReservation()` |  |
-| 593 | 32 | `static void writeReport(StringBuilder report, Game g, String label, Map<Integer, Long> starts, Map<Integer, Long> completions, ...` |  |
-| 625 | 60 | `static void city(StringBuilder report, boolean historical) throws Exception` |  |
-| 685 | 7 | `public static void main(String[] args) throws Exception` |  |
-| 692 | 9 | `static void smallProfile(StringBuilder report)` |  |
+| 134 | 37 | `static void plannerInputs()` |  |
+| 171 | 90 | `static void netOperatingChoice() throws Exception` |  |
+| 261 | 48 | `static void classPrices()` |  |
+| 309 | 34 | `static void unbuiltGrossQuotes()` |  |
+| 343 | 81 | `static void fractionalSettlement()` |  |
+| 424 | 57 | `static void fractionalClaims()` |  |
+| 481 | 11 | `static void foundingBudgets()` |  |
+| 492 | 14 | `static void fractionalPressure()` |  |
+| 506 | 44 | `static void sharingOrder()` |  |
+| 550 | 28 | `static void doubledDoors()` |  |
+| 578 | 23 | `static void doubledDemand()` |  |
+| 601 | 13 | `static void studentFacility()` |  |
+| 614 | 25 | `static void scarceFreeHost()` |  |
+| 639 | 43 | `static void fundedHost()` |  |
+| 682 | 5 | `static double[] cardPositions(HouseholdBalance balances)` |  |
+| 687 | 15 | `static void retiredRoom()` |  |
+| 702 | 4 | `static void holdHousingFixture(Game g)` |  |
+| 706 | 61 | `static void loadedDoorCensus() throws Exception` |  |
+| 768 | 175 | `static void causedStrandedDebtContinuation() throws Exception` | A paid Bank mortgage, vacant-title closure, then the real capacity/share writer and native twins. |
+| 944 | 30 | `static void savingHousingBudget()` |  |
+| 974 | 19 | `static void cardHousingBudget()` |  |
+| 993 | 22 | `static void aggregatePackingRemainder()` |  |
+| 1015 | 27 | `static void familyHostReservation()` |  |
+| 1042 | 32 | `static void writeReport(StringBuilder report, Game g, String label, Map<Integer, Long> starts, Map<Integer, Long> completions, ...` |  |
+| 1074 | 74 | `static void city(StringBuilder report, boolean historical) throws Exception` |  |
+| 1148 | 26 | `static void retainedFundedGuest()` |  |
+| 1174 | 54 | `static void stagedHousingStocks()` |  |
+| 1230 | 8 | `static HouseholdAccounts paidHousingRow(int row, double people, double income, double fees)` | An actually paid non-wage row and its billed source population, before the next census. |
+| 1238 | 35 | `static void stagedHousingFlows()` |  |
+| 1273 | 34 | `static void carriedStudentService()` |  |
+| 1308 | 30 | `static void rentCommitmentBudgets()` |  |
+| 1340 | 42 | `static void independentDoorPressure()` |  |
+| 1383 | 39 | `static void committedDoorBoundaries()` |  |
+| 1423 | 1 | `static HousingInventory.Key lateHome()` |  |
+| 1424 | 1 | `static HousingChoice.Demand lateDemand(String key, double count, double budget)` |  |
+| 1425 | 20 | `static HousingMarket lateFixture(String label, int stock, List<HousingChoice.Demand> current, List<HousingChoice.Demand> previo...` |  |
+| 1445 | 43 | `static void latePaidFootprints()` |  |
+| 1490 | 1 | **type** `private record FundingFixture(Game game, HousingMarket market, BuildingsTemplate house, BuildingsTemplate s...` |  |
+| 1491 | 3 | `static HousingChoice.Demand fundingDemand(String key, double count, boolean retired, double budget)` |  |
+| 1494 | 24 | `static FundingFixture fundingFixture(String label, List<HousingChoice.Demand> demand, boolean pair, boolean cheap)` |  |
+| 1518 | 24 | `static void fundedPressureAndForecast()` |  |
+| 1543 | 29 | `static void coalescedSponsored()` |  |
+| 1572 | 43 | `static void sharingForecastSources()` |  |
+| 1615 | 22 | `static void crossClassPaidExcess()` |  |
+| 1637 | 35 | `static void savedContractModes() throws Exception` |  |
+| 1672 | 10 | `public static void main(String[] args) throws Exception` |  |
+| 1682 | 9 | `static void smallProfile(StringBuilder report)` |  |
 

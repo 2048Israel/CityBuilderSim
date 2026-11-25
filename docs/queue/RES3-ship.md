@@ -1,6 +1,6 @@
 <!-- readiness: provisional -->
 ## changelog
-### {next} — RES3, home choice, typed rents and the 14-form catalogue — 2026-11-24, ready, see docs/queue/RES3-notes.md
+### {next} — RES3, home choice, typed rents and the 14-form catalogue — 2026-11-25, ready, see docs/queue/RES3-notes.md
 Activates fourteen residential recipes and thirty-two comparable dwelling classes,
 with funded census budgets, retained paid and hosted incumbents, explicit sharing
 and crowding, class rents and actual occupied receipts. The existing builder and
