@@ -15,6 +15,22 @@ No conversion or current-schema restamping is used. The newest ensemble
 baseline is now docs/ensemble/0.9.202.md. The checks below precede the PW3
 merge; its affected verification and the default measurement are still pending.
 
+Fresh merged8bb03c69f results: SaveFileCheck native/canonical0 in123 seconds,
+ReadPathCheck native/canonical0 in105 seconds, and MonetaryCheck
+native/canonical0. Its pooled16-31 TOTAL reduction is3.635685 percentage
+points and non-shelter3.102148; both original-town and pooled TOTAL floors
+remain at least1 point. Original, supply, nested, save/reform and purity
+assertions all pass. The remaining affected checks and default observation
+are still pending; these three results are current-source evidence.
+
+The first merged group completes with HousingMarketCheck0 in18.8 seconds
+and ReloadCheck0 in199.2 seconds, including all1229 reload comparisons.
+Current8bb native14/32 output replaces docs/queue/RES3-catalogue.md. Integrated
+month profiles on Oracle21.0.4: small282 people56.726ms; present59.866ms and
+larger147739 people63.842ms; historical42.515ms and larger147508 people44.926ms.
+The larger city retains141 permanent cells. These are individual ordinary
+integrated months, not isolated solver times or a hard timing benchmark.
+
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
 byte-identical through dce's later observer and harness-only commits;
@@ -5732,3 +5748,31 @@ no approval for a future run. The integrated Kept native is still owed; any
 remaining premise must be traced and assigned to a current queued owner.
 PW3's main record independently names three fund-fixture premises under
 queued HT1-H; do not assume those are the same as RES3's old three claims.
+
+Fresh merged8bb SaveFileCheck exits native/canonical0 in123 seconds and
+ReadPathCheck0 in105 seconds. MonetaryCheck also exits native/canonical0:
+pooled16-31 TOTAL3.635685 points and non-shelter3.102148, every original,
+pooled, nested, supply, saved/reform and purity law intact. HousingMarketCheck
+then passes0 with the actual current14/32 report and positive held-debt
+native save case; normal m3 unplaced/doubled/crowded are0, retirement25 is
+allowed25 and physical owned capacity9200->9194. Reload is next.
+
+★ Complete the Bank exit evidence as part of the required fresh box policy
+replay. A bounded source read shows the named BankCheck query matches THREE
+registered classes: BankCheck, CentralBankCheck and YoungBankCheck. The old
+cancelled query never reached the third; its missing numeric exit stays
+missing. The planned current-source box query now deliberately runs all
+three sequentially (parallel1), rather than a separate Central-only replay.
+All native results and the canonical query must complete; no mid-query
+cancellation or retroactive pass. This additionally verifies the current
+TAB_LOSS/equity pair and young-town funding with the merged power inputs.
+
+The parent-reviewed box script is target/RES3-central-merged-approved.sh,
+SHA256264dca26e945f3ec3c97dd4e140ab53236b9bde5663c2932c234519de9f3999e.
+It retains the shared lock, native per-class timeouts, fresh MG1, exact assets,
+source/approval manifests, owned process-group trap and archive/copy evidence.
+The query is on pushed8bb, fork d657 and combined record
+65641960704080c3915aca49a05d6e4619cd6f3fe1d33decfae134d8e7cedd9a.
+Only after all local names pass and owned jobs end may it start. The default
+observer is conditional on the complete box query passing, with no unresolved
+new red, then fresh local gates for its external compile and native run.
