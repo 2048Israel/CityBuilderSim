@@ -11,6 +11,13 @@ import java.util.List;
  * with HS2's remaining adult stages in place of its single adult lifetime.
  * WageLadder remains the historical founding wage table, with its APIs intact.
  * Prices and wages are held at today's level: this is a comparison, not a forecast.
+ *
+ * A row is its whole path's value: every fee along it (a degree's high-school bill, a
+ * licence's university bill) and its earnings once its courses end. The wages a student
+ * gives up are what the step below earns meanwhile, so they are in the gap between two
+ * rows already; WG3's first cut also took them off the row, as ladder.py did, which
+ * counted them twice (Becker 1964: the cost of schooling is its fees and the earnings
+ * forgone, once) and left a degree paying 1.2 diplomas worth less than the diploma.
  */
 public final class SchoolingLadder {
     private SchoolingLadder() { }
@@ -33,7 +40,7 @@ public final class SchoolingLadder {
         public String words() { return words; }
     }
 
-    /** One qualification; NONE is no diploma, HIGH is a diploma. Costs are this course's, as in the prototype. */
+    /** One qualification; NONE is no diploma, HIGH is a diploma. fees and forgone are this course's own bill; afterCost is the path's. */
     public record Row(EducationType qualification, String label, JobType job,
                       double paid, double target, double afterCost, int months,
                       double fees, double forgone, int workingMonths, boolean eligible) { }
@@ -47,8 +54,7 @@ public final class SchoolingLadder {
         }
 
         public Row before(EducationType type) {
-            return row(type.isProfessional() ? EducationType.UNIVERSITY
-                    : type == EducationType.HIGH ? EducationType.NONE : EducationType.HIGH);
+            return row(prior(type));
         }
 
         /** The enrollment curve's input, before its exponent and cap. */
@@ -64,6 +70,12 @@ public final class SchoolingLadder {
             double gain = gain(type);
             return gain <= 0 ? Verdict.UNDER : gain >= FAR_RETURN ? Verdict.FAR : Verdict.ABOVE;
         }
+    }
+
+    /** The step a course is taken from: a licence from a degree, a degree or college from a diploma. */
+    static EducationType prior(EducationType type) {
+        return type.isProfessional() ? EducationType.UNIVERSITY
+                : type == EducationType.HIGH ? EducationType.NONE : EducationType.HIGH;
     }
 
     /** Expected work left in HS2's compartments: a young stage still has the established stage ahead. */
@@ -95,6 +107,8 @@ public final class SchoolingLadder {
         int life = workingMonths(stage);
         double divisor = annuity(life, rate);
         List<Row> rows = new ArrayList<>();
+        // Every fee along the path to each qualification, valued at 18: its prerequisites come first in the list.
+        double[] pathFees = new double[EducationType.values().length];
         for (EducationType type : List.of(EducationType.NONE, EducationType.HIGH,
                 EducationType.COLLEGE, EducationType.UNIVERSITY, EducationType.MEDICAL,
                 EducationType.LAW, EducationType.BUSINESS, EducationType.ENGINEERING)) {
@@ -111,10 +125,12 @@ public final class SchoolingLadder {
             JobType from = type.isAdult() ? bestJob(market, type.requires()) : null;
             double before = from == null ? 0 : market.getWage(from);
             double feesPV = fee * annuity(months, rate) * Math.pow(1 + rate,
-                    type == EducationType.HIGH ? months : -start);
-            double forgonePV = before * annuity(months, rate) * Math.pow(1 + rate, -start);
+                    type == EducationType.HIGH ? months : -start)
+                    + (type == EducationType.NONE ? 0 : pathFees[prior(type).ordinal()]);
+            pathFees[type.ordinal()] = feesPV;
+            // No wages forgone here: the months out of work earn nothing below, and the step below earns them.
             double earningsPV = wage * annuity(working, rate) * Math.pow(1 + rate, -delay);
-            double after = type == EducationType.NONE ? wage : (earningsPV - feesPV - forgonePV) / divisor;
+            double after = type == EducationType.NONE ? wage : (earningsPV - feesPV) / divisor;
             String label = type == EducationType.NONE ? "No diploma"
                     : type == EducationType.HIGH ? "Diploma" : type.getLabel();
             rows.add(new Row(type, label, job, wage, job == null ? 0

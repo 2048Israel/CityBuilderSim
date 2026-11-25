@@ -1152,7 +1152,25 @@ public class BuildAdviceCheck {
 
     /* ============================ 9. NO HIGHER EDUCATION WITHOUT ITS PIPELINE ============================ */
 
-    /** Pipeline caps: the short city adds graduate posts; the controlled-return founding still has too few. */
+    /**
+     * NO HIGHER EDUCATION WITHOUT ITS PIPELINE (0.7.51). Every college or
+     * university row wants no more than would come and no more than would
+     * be hired, to the bit, and with no seats of its kind at least half the
+     * smallest school. The short city without its university has students
+     * for one and too few posts for its graduates: no row and no card; the
+     * posts brought in - Engineering Services Offices, standing - and the
+     * row is there. And the playtest's founding at month 9, which the old
+     * rule told to build a university, gets none.
+     *
+     * WG3 (2026-11-25): the founding's students answer to the degree's pay
+     * after its cost. Its best ungated degree job pays about 1.2 diplomas,
+     * near the break-even of four years out of work, so the founding itself
+     * draws no class (Becker 1964; Freeman 1976: enrolment fell when the
+     * college premium did): no row, and none of its students without a gain.
+     * The hiring guard is still tested on the founding: one degree job is
+     * offered at three diplomas, a class would come, its posts would not
+     * hire one, and there is still no row.
+     */
     static void thePipeline(Path root, Game g, List<CityNeeds.Need> all) {
         out.println("\n--- 9. no higher education without its pipeline: no more wanted than would come or be hired;"
                 + " a first school half full ---");
@@ -1188,6 +1206,26 @@ public class BuildAdviceCheck {
         assertTrue("...and the UNIVERSITY row is there", schoolRow(after, uni) != null);
         higherRows(u, after, "...with the offices", rows);
         assertTrue("fixture: the rows above held a school with seats and one with none", rows[0] > 0 && rows[1] > 0);
+
+        // ...THE FOUNDING ITSELF, FROM THE NINTH TO MONTH 36 (LD1, 2026-10-31): its students follow the degree's pay after cost.
+        Game n = founded(root, "founded-native", 9);
+        double comeN = CityNeeds.wouldCome(n, uni);
+        while (comeN < CityNeeds.SEATS_FLOOR && n.getMonth() < 36) {
+            quietly(() -> n.simulateMonths(1));
+            comeN = CityNeeds.wouldCome(n, uni);
+        }
+        LabourMarket nm = n.getLabourMarket();
+        SchoolingLadder.View nv = n.getEducation().schoolingLadder(nm, AdultStage.YOUNG);
+        double nativeReturn = 0;
+        for (AdultStage stage : AdultStage.values()) nativeReturn += n.getEducation().studyReturn(uni, nm, stage);
+        out.printf("      the founding at month %d: %,d people, %,.0f would come to a university; its degree pays %.2f diplomas,"
+                        + " %+.3f after cost (young)%n", n.getMonth(), n.getPopulationManager().getPopulation(), comeN,
+                nv.row(uni).paid() / nv.row(EducationType.HIGH).paid(), nv.gain(uni));
+        assertTrue("the founding's would-be students follow the degree's pay after cost: none without a gain",
+                nativeReturn > 0 || comeN == 0);
+        List<CityNeeds.Need> n9 = CityNeeds.measure(n, CityNeeds.PLAIN);
+        assertTrue("the founding gets no university row", schoolRow(n9, uni) == null);
+        assertTrue("...and no university card", !suggests(n, n9, uni));
 
         Game f = founded(root, "founded", 9);
         Education school = f.getEducation();

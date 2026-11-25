@@ -1812,9 +1812,9 @@ public class EducationCheck {
         double young = ed.studyReturn(EducationType.COLLEGE, market, AdultStage.YOUNG);
         double older = ed.studyReturn(EducationType.COLLEGE, market, AdultStage.ESTABLISHED);
         double youngPay = SchoolingLadderCheck.handSum(AdultStage.YOUNG.spanMonths() + AdultStage.ESTABLISHED.spanMonths(),
-                0, EducationType.COLLEGE.months(), false, 3, 2, 0, SchoolingLadder.FLOOR_RATE);
+                EducationType.COLLEGE.months(), 3, 0, SchoolingLadder.FLOOR_RATE);
         double olderPay = SchoolingLadderCheck.handSum(AdultStage.ESTABLISHED.spanMonths(),
-                0, EducationType.COLLEGE.months(), false, 3, 2, 0, SchoolingLadder.FLOOR_RATE);
+                EducationType.COLLEGE.months(), 3, 0, SchoolingLadder.FLOOR_RATE);
         assertTrue("each stage uses after-cost(next)/after-cost(current)-1 through the original curve",
                 Math.abs(young - Math.pow(youngPay / 2 - 1, Education.RETURN_ELASTICITY)) < 1e-12
                 && Math.abs(older - Math.pow(olderPay / 2 - 1, Education.RETURN_ELASTICITY)) < 1e-12);
@@ -1838,9 +1838,9 @@ public class EducationCheck {
         double fee = ed.feeFor(EducationType.COLLEGE);
         for (int i = 0; i < 70; i++) {
             double trial = (low + high) / 2;
-            double free = SchoolingLadderCheck.handSum(life, 0, EducationType.COLLEGE.months(), false, trial, 2, 0,
+            double free = SchoolingLadderCheck.handSum(life, EducationType.COLLEGE.months(), trial, 0,
                     SchoolingLadder.FLOOR_RATE);
-            double paid = SchoolingLadderCheck.handSum(life, 0, EducationType.COLLEGE.months(), false, trial, 2, fee,
+            double paid = SchoolingLadderCheck.handSum(life, EducationType.COLLEGE.months(), trial, fee,
                     SchoolingLadder.FLOOR_RATE);
             if ((free + paid) / 2 < 2) low = trial; else high = trial;
         }

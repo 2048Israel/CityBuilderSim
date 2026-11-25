@@ -3076,8 +3076,9 @@ final class PolicyScreen {
             showPolicyMenu();
         }));
         page.getChildren().add(sectionHead("THE QUALIFICATION LADDER",
-                "Each course's fees after subsidy and wages forgone are valued at the dearer of the loan rate, the policy rate and a three percent annual floor "
-                        + "(an estimate of a family's price of waiting). A licence follows the university years; each row shows its own course's bill, as in the wages study. "
+                "Pay after cost is a whole path: every fee along it after subsidy, and nothing earned while it studies, valued at the dearer of the loan rate, "
+                        + "the policy rate and a three percent annual floor (an estimate of a family's price of waiting). The wages forgone are what the step below earns meanwhile, "
+                        + "so they are already in the gap between two bars, not taken off again. A licence follows the university years; each row's details show its own course's bill. "
                         + "A diploma's fees precede adult work; high-school enrollment keeps its coverage and affordability rule. Wages and fees stay at today's level, not a forecast.",
                 quiet(view.workingMonths() + " expected working months left · money at " + FORMAT.pct(view.annualRate()) + " a year")));
         page.getChildren().add(muted("Solid: paid now. Outline: pay after cost. Faint tick: the wage's own walk. Figures: paid / after cost, a month."));
