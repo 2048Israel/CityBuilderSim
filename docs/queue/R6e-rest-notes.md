@@ -259,6 +259,17 @@ population 9,223,026 in both), as it should, since the ensemble's cities are
 founded today's way and E22, its piece and its licence act only in a city
 founded the 1900 way.
 
+## The dry run
+
+`sh tools/gate.sh R6e-rest --dry-run` on the gate box at c5f72fe9a (the
+orchestrator's go with the review's SHIP, once the ensemble passed): gate
+exit 0, run `/home/jerus/cbs/runs/cbs-gate-R6e-rest-HOMKXWfI` (the ship
+file's first line). The suite took 1,279 s and exited 3, known reds only,
+every one main's (AutoBuildCheck, CarCheck, CopperRefiningCheck,
+CurrencyCheck, DeathRecordCheck, DenominationCheck, ForeignDebtCheck,
+GroundSkipCheck, HoldersCheck, InvestCheck, OrderDoorCheck, PlanCheck,
+PopulationCheck, RailDrawCheck, RoadCheck), with no unnamed line.
+
 ## Seen in passing, not this batch's
 
 - A city work's piece is fitted only by the player (`EquipmentFit` ranks

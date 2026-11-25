@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-R6e-rest-HOMKXWfI -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — R6e-rest, the engineering rows R6e held — 2026-11-24, ready, see docs/queue/R6e-rest-notes.md
