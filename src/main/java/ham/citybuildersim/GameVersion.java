@@ -8381,12 +8381,13 @@ public final class GameVersion {
      * floor rises with the format; no conversion.
      */
     /* R6e-rest: THE DESALINATION PLANT BEFORE THE PRESSURE EXCHANGER (format 66).
-     * E22 gives the Desalination Plant a missing-change flag, as B10 gave
-     * the Contact Centre: in a city before 1997 its choice is now
-     * "default~E22", which is saved, where format 65 held nothing for a
-     * template with no choice. A format-65 save of such a city would load
-     * its sea works at today's 10,880 kW a plant, not 13,454, until the
-     * next month's choice. The floor rises with the format; no conversion.
+     * E22 gives the Desalination Plant a piece, the pressure exchanger, as
+     * every patentable change on a city work is one: a plant that finishes
+     * before June 1997 is saved as lacking it (the stack's unfitted count)
+     * and runs 13,454 kW until the player's Fit. A format-65 save holds no
+     * count for a piece that did not exist, so its plants would load as
+     * fitted and draw today's 10,880 kW from June 1997 with no fitting
+     * built. The floor rises with the format; no conversion.
      */
     public static final int SAVE_FORMAT = 66;
 
@@ -8400,7 +8401,7 @@ public final class GameVersion {
      *
      * 66 since batch R6e-rest (THE DESALINATION PLANT BEFORE THE PRESSURE
      * EXCHANGER above: an older city's Desalination Plant holds no
-     * missing-E22 flag and loads its power at today's draw).
+     * unfitted exchanger and loads as fitted, at today's draw).
      * 65 from batch FC2b (A CONTRACT'S POINTS above: an older save's
      * contracts hold no points and a shared site's shares read wrongly).
      * 64 from batch R6f (THE CONTACT CENTRE BEFORE THE AI ASSISTANT above:
