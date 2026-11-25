@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-PW3-3faCRab3 -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — PW3, wind and solar by place and season, and the power planner — 2026-11-24, ready, see docs/queue/PW3-notes.md
