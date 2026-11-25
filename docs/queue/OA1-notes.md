@@ -183,3 +183,12 @@ NOT SHIP, one P1, mended here:
   - So no seed holds water for years before or after on 0.9.206. The growth-phase spells of one to two years are the
     baseline's pattern, on other seeds as the paths part. The longest is 26 months against 29, and 12 runs are over
     24 months against 8.
+
+## 7. The dry run
+
+`sh tools/gate.sh OA1 --dry-run` on the gate box: 3a8377368 on main ca030ab08, run `cbs-gate-OA1-PUfYNDpO`, **exit 0**.
+The suite took 1,262 s and exited 3: the 18 reds are all known by `known-reds.txt`, no `[NEW]` line, and
+`unnamed.txt` is empty. AskProceedsCheck, AuctionCheck, WorksFinanceCheck and EssentialWorksCheck are green. The gate
+would have committed the merge as 0.9.207 with OA1's block on top and its one Queued row (SW1). After it, FB11 shipped
+(main bb155e205, 0.9.207). OA1 merged it and re-ran `--fast` and AskProceedsCheck (below), and the gate runs the suite
+on the merge itself.
