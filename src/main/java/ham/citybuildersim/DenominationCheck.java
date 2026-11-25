@@ -64,6 +64,9 @@ public class DenominationCheck {
     static int fails = 0;
     static PrintStream out;
     static PrintStream quiet;
+    /** Optional readers used only by the bounded held-stock finding. */
+    static java.util.function.Consumer<Game> emptyScanObserver;
+    static java.util.function.BiConsumer<Game,Game> tp1WaitObserver;
 
     /** A closed trade caused by an insolvent seller and a liquid buyer, as in CarCheck. */
     static Motoring.UsedTrade usedTradeFixture() {
@@ -1143,7 +1146,11 @@ public class DenominationCheck {
         sameCity(plain, lopped, factor, 1e-9);
 
         // 6. On until prices have moved: the floor is the index's, in both money, and the reformed city still draws what the plain one does.
-        for (int m = 0; m < 12 && tradeOf(plain).snapshot().minLane() <= TradeLanes.minLane(1, 1) * (1 + 1e-9); m++) monthOn(plain, lopped);
+        for (int m = 0; m < 12 && tradeOf(plain).snapshot().minLane() <= TradeLanes.minLane(1, 1) * (1 + 1e-9); m++) {
+            if (tp1WaitObserver != null) tp1WaitObserver.accept(plain, lopped);
+            monthOn(plain, lopped);
+        }
+        if (tp1WaitObserver != null) tp1WaitObserver.accept(plain, lopped);
         cardAndLanes("with prices moved", plain, lopped, 1 / factor, true);
     }
 
@@ -1387,6 +1394,7 @@ public class DenominationCheck {
         }
         looks++;
         if (any) looksWithEmpty++;
+        if (emptyScanObserver != null) emptyScanObserver.accept(g);
     }
 
     /** Reforms regardless of the price-level gate, which is tested separately. */

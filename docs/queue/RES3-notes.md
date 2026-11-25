@@ -5069,3 +5069,54 @@ remain visible, with no epsilon denominator, national fitted cap or .5-count
 filter. Detailed income and burden claims await the approved native run.
 The helper holds after its active stage until the observer is pushed and
 receives a new exact-commit GO; no unpublished probe JVM is run.
+
+ExchangeRateCheck's complete canonical result is green on f0b960367:
+native/batch0, 236 labelled checks, 28.4 seconds (c08d). DenominationCheck,
+already active when the observer HOLD arrives, then reports a NEW red on
+the same integrated model (e69b): the two scales' output, annual output,
+rent and price level differ slightly. These are not passed by name or
+assigned to a fixture owner from their size. Finish that one active native,
+then HOLD every further check/probe; source and retained evidence go to the
+helper for the exact failed law, first divergence and causal diagnosis.
+The 572dfc717 observer GO is superseded by that red HOLD (5ac2). No model,
+assertion, tolerance, seed or fixture is changed to escape the difference.
+
+The final Denomination verdict corrects the initial classification (9ece):
+canonical4 in 86.1 seconds, ten failed assertions. Seven decade-twin drift
+lines are already [known] under the canonical judge. The three NEW assertion
+lines concern under-half household-cell holdings immediately after reform
+and over the following months, and the TP1 upward-price fixture at index
+0.8195. They remain held for source diagnosis. Exit and total-FAILED lines
+explain the five report rows; they are not five independent model failures.
+All helper-owned JVMs/controllers have ended; no next native or probe starts.
+
+The source diagnosis (bdb5) identifies the two ownership predicates:
+DenominationCheck.scanEmpty uses Household.isEmpty, whose optional-action
+threshold is count below0.5. The positive-count financial settlement mend
+instead preserves lawful fractional owners. The native log does not identify
+the offending cells or distinguish them from exact-zero households, so do
+not declare that diagnosis proven or assign the lines to a fixture sweep.
+The TP1 source likewise waits at most twelve ordinary months for a floor
+above founding without causing inflation; its actual index is0.8195. Its
+existing same-floor, card and lane comparisons pass.
+
+★ Approve a bounded committed DenominationHeldFinding for exact evidence,
+using the original two city builders, closed-used-car prelude, reform100,
+and existing1/11/88 follow-month sequence with all202 native scans. Keep
+the original empty-owner and sameCity predicates and their1e-9 guards;
+the diagnostic is expected to retain their failures rather than manufacture
+a green result. Two null-default harness readers expose the original scan
+and TP1 wait; no model, fixture, window or assertion is changed. A separate
+TP1 mode runs only the original section and its unchanged twelve-month wait.
+
+Parent reviews source-prep f6da1f19 and adds a stronger explicit raw-position
+guard for every exact-zero household count. Snapshots inventory all native
+stocks, including dynamic bonds, security basis and tax claims, before and
+after reform and at every original look. Raw per-household values remain
+visible even when their household-weighted total is zero. The added per-stock
+reform comparisons retain the native1e-9 relative guard and distinguish local
+money, USD, physical claims and status shares. Read direct fields rather than
+HouseholdBalance.stocks, which writes its bond-id cache; bracket reads with
+exact saved household/CPI array comparisons. Pushed-source compile and the
+cells diagnostic need fresh MG1 and an exact GO; TP1 gets a separate GO after
+the first result. Neither probe mode has run at this record point.
