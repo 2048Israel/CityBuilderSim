@@ -9,7 +9,7 @@ With no school, the young learn the year's trade at work as apprentices. On 0.9.
 2,400, its rent .307 of take-home on average. The walk's months are saved, with no format bump. Village1900Check proves the stall, each fix
 and the walk. The city's repairs to its own buildings are government consumption now, paid or owed: their imported material came off GDP
 with nothing against it, so a 1900 city whose building stopped read GDP below zero (GdpCheck). The foreign contractor's points are earned at
-his price the month he builds them, out of the contracts whose payers paid it, never more: the 1900 village, whose own crews are a handful,
+his price the month he builds them, their material on top, out of the contracts whose payers paid it, never more: the 1900 village, whose own crews are a handful,
 earned them at its sites' rate and imported them at his, and read GDP below zero at month 15 (ForeignCrewsCheck). The 1900 playtest is the
 slower (38 minutes for 2,400 months on the PC against 18). A farm fitting its last tractor now clears its old captive feed, so its crop
 agrees after a reload.

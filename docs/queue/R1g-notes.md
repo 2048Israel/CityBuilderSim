@@ -2575,4 +2575,74 @@ bill with their material inside it, and the builders' value added on
 them reads minus their material, not zero. The fix is to set the premium
 at his bill less what his share earned net of its allowance. It would
 bind in most months he builds, since his price is above the sites' own
-price net of material.
+price net of material. Mended below, as the orchestrator ordered.
+
+### His points' material apart (the orchestrator, 2026-11-25; cc4c5b9d1)
+
+**The order.** "Mend now; stop this ensemble." A point the contractor
+builds alone should read value added near nothing: its output is his
+bill plus its material, the material is intermediate, and his bill is
+the import. So the premium is his bill less what his share of the month
+earned net of its material allowance. The ensemble begun on 067b3f5c6
+was stopped.
+
+**The mend.** `BuildingsStacks.getLastHomeAllowance()`: the material
+allowance in the month's home dues, never more than the home part
+earned. `BuildingManager` sums it over the stacks as `homeAllowance`; a
+demolition draws none. In `earnAtHisPrice()` his share's earnings at
+the sites' rates are now `max(0, homeEarned - homeAllowance) x share`,
+and the premium is his bill less that. His share's allowance,
+`homeAllowance x share`, stays on top as `getForeignMaterial()`. So the
+sites earn his points at his bill plus their material allowance. The
+builders' value added on them is his margin, which is nil, because the
+city passes his price through. It no longer reads minus their material.
+The escalation in `Game.settleSiteContracts()` still settles what the
+material cost past the allowance.
+
+**Reality.** Under the input method (IFRS 15 B18-B19), a builder that
+passes a subcontract through recognises the subcontract's cost and the
+materials put in place as they go in. The month's output on that work is
+the subcontract plus the material. The material is intermediate
+consumption and the subcontract is the import, so the work adds nothing
+but the builder's margin.
+
+**The fixture.** ForeignCrewsCheck section 9 adds two checks. "His
+points drew material" is the premise. "Value added is his margin, nil,
+not minus their material" asserts that the month's recognised work is at
+least his bill plus that material. On cc4c5b9d1: billed 1,650.17; the
+sites earned 1,650.17 for his points, plus 189.94 of material; the
+month's work was 1,845.34 (955.94 with the switch off); premium 889.40.
+Under the old form (`onSites = homeEarned x share`) the work was
+1,655.4, under the 1,840.1 bound, so the check went red (FAIL), as the
+order asked. The rest of section 9 holds unchanged.
+
+**CreditCrunchCheck, moved with the played city (seed 13, 270 months).**
+- *The cut fixture.* Retiring homes by their dwellings left the placement
+  room at 6.4, under `MARGIN` 12: on the moved city one retire freed more
+  room than a home's dwellings. The cut now steps by the room the last
+  retire freed, and the bound "less than one home's room more" is that
+  room (`lastHomeRoom`). On this run: 240.9 to 12.6, the last home's
+  room 1.24.
+- *Section 4's order.* At `TO` the played city's policy rate is 0.2631
+  (the currency regime's rate, `Game`'s policy-rate block), its insured
+  rate 0.2707, and the lender tests at 0.2381. It passed 1 of the 6,
+  which the till buys outright, so the door never asked the bank and the
+  capital trim the section proves never happened. On the reviewed form
+  it tested at 0.1102 and passed 2. The section is about the capital
+  trim, so the lender's side is now caused: the insured rate is held at
+  `ORDER_RATE` .08 for the order (tested .0474). The lender passes 3,
+  and the door says "Built 1 Low-Rise Apartments (trimmed from 6 - the
+  bank is short of capital for a mortgage, so what its own funds buy
+  outright)". The premise is now asserted as "the lender's test passes
+  more than the till buys outright" (passed > 1). A 26% policy rate at
+  month 270 of one played city is a move of the city, not of the door;
+  the ensemble judges the rates.
+- *Section 3's banner* now quotes the new run: 15.1 households with no
+  home at m151 (178 of 355 doubled up), the first block mortgaged at
+  m189 and standing at m190. Its law holds.
+
+**The harnesses, one at a time on the laptop, on cc4c5b9d1:**
+ForeignCrewsCheck, CreditCrunchCheck, ForeignChoiceCheck,
+ConstructionTrapCheck, ConstructionControlCheck, ForeignCheck,
+PegAnchorCheck, GdpCheck and Village1900Check are green. ForeignDebtCheck
+is red only on main's known serial-schedule line. `--fast` is green.
