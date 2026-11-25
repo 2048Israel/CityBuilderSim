@@ -5606,3 +5606,55 @@ and abort before invalid closure. The exact held-save/next-twin/money guards
 are unchanged; retain the real slot10 pair for evidence before TempDirs exits.
 No production, rate, seed, tolerance, retirement or underwriting rule changes.
 This revised fixture has not run until the next pushed-source native GO.
+
+The redundant selection is stopped only after ownership verification (643d):
+child3292 creation02:37:09.534362/parent42264, coordinator's exact BankCheck
+command and top34776 runner match the recorded run. taskkill by owned34776
+PID/tree ends exactly six owned processes; all are confirmed gone and no new
+JVM starts from that call. Preserve Bank's complete "All checks passed" output,
+TAB_LOSS/equity pair and native-log SHA256
+d590d08e779cba0afe6c02c5c1ce9a23cf88ab4a0b1c227e2b1d7f53a9dc82d6.
+IMPORTANT: numeric Bank native exit was not persisted before cancellation;
+BankCheck-cancel-status.json records CanonicalVerdict=null. A raw shell wrapper
+returning0 after the forced tree end is NOT a completed canonical verdict.
+Do not manufacture an exit, retag/rejudge incomplete output or claim a cancelled
+Central pass. The separately completed box Central remains the complete evidence.
+
+The approved CardCheck/BuildCardCheck subset completes canonical0, both native
+classes0 and two harnesses passed (0bd6). HC1 card/debt/service/loan-book/capital
+continuation and format60/61 byte/running-city refusal guards pass. Actual
+closing holders8.394 percent, late households0.780 percent, late balances10.024
+percent and annual charge-off0.854 percent are retained, not fitted targets.
+BuildCard's actual quotes, funding and insured-mortgage guards all pass with
+no FS12 waiver. Remove the five obsolete own BuildCardCheck known-red rows;
+the original assertions are unchanged. WaterCheck then passes0 in4 seconds,
+including its format30 refusal/file-untouched law (9037); fresh RAM6.300/
+commit12.328/CPU14.412 percent and all pinned identities pass. WaterPowerCheck
+starts next alone before the new-source switch request reaches its boundary.
+
+WaterPowerCheck passes0, all41 checks, on c7e (81ff). Before source adoption,
+all68 changed generated docs are archived as generated-before-a09.tgz,
+SHA2568893b1f60cd4ccdce3a9fd50acad911f442c23d2378e1be892bcb5eda62ca5ad.
+The helper cleanly adopts a09c6d00b, tree2eae5e8ef6ffcafe58b3c0f0037919e92558c541,
+and pinned Maven compiles0 with fresh RAM6.061/commit12.251/CPU26.807 percent.
+Only the expected three HMC classes differ from c7e; every other model/harness
+class is byte-identical. No earlier native is replayed. The first HMC preflight
+Get-Counter call throws800007d6 before a valid numeric CPU gate; no native
+starts and no test failure is claimed. Retry the complete fresh gate with
+unchanged thresholds/samples; an API failure is not permission to substitute0.
+
+The actual a09 run (5f62/fe00) then proves the opening census, all23 positive
+endowments, Bank backing/book, genuine mortgage0->1, principal increase and
+all lending/fee/premium flows with ordinary money/household audits. The case
+still fails normal retirement and its vacant-title limit, aborting BEFORE
+physical closure. Actual unplaced0, doubled106.35/crowded42.86, and House
+vacant limit0 against14 show the declared offer stock has not caused a fully
+normally housed town with spare House titles. No new save or later report is
+produced; prior c7e reports stay source-labelled.
+
+★ Increase only the declared opening House stock from200 to1000, retaining
+the same500-person native census input,20 Studio structures, actual lending,
+all retirement gates and every audit/save guard. The offer cushion must cause
+the required normal placement and spare family titles in the native run;
+it is not asserted green from a static calculation. No post-audit balance,
+quote, household assignment or eligibility result is rewritten.

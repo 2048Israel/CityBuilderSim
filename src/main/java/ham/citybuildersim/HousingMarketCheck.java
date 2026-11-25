@@ -777,7 +777,7 @@ public final class HousingMarketCheck {
         // Excess real doors CAUSE vacancy instead of finding it in a played town.
         g.setCashForTest(Founding.WEALTHY_CASH);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt()+20_000_000);
-        check("closed-debt fixture builds its known standing family stock",g.buildStack(house,200,true)==Game.BuildResult.SUCCESS);
+        check("closed-debt fixture builds its known standing family stock",g.buildStack(house,1000,true)==Game.BuildResult.SUCCESS);
         check("closed-debt fixture builds its known standing compact stock",g.buildStack(compact,20,true)==Game.BuildResult.SUCCESS);
         check("closed-debt fixture funds an actual Bank branch",g.buildStack(bm.getTemplateByName("Commercial Bank"),1,true)==Game.BuildResult.SUCCESS);
         check("closed-debt fixture funds actual crews",g.buildStack(bm.getTemplateByName("Construction Depot"),2,true)==Game.BuildResult.SUCCESS);
