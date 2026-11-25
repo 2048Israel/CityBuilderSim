@@ -28,10 +28,12 @@ final class AdviceValueOracle {
         double nominal = (1 + monthly)
                 * (1 + Math.max(-.99, g.getBusinessInvestment().getExpectedInflation()) / 12) - 1;
         double footprint = s.landSqFt();
+        // ...and a Wind or Solar Farm's farmland reserve while one stands (RG1).
+        String reserve = s.paving() ? null : g.getLandManager().reserveKeyOf(t);
         double usableLand = Math.max(0, land + (g.getLandManager().freeForAnyone(Game.groundUse(t))
-                - g.getLandManager().getAvailableSqFt()));
+                - g.getLandManager().getAvailableSqFt()) + (reserve == null ? 0 : g.getLandManager().heldBy(reserve)));
         double initialLand = s.paving() ? -BuildAdvice.landValue(g, -footprint, usableLand)
-                : BuildAdvice.landValue(g, footprint, usableLand);
+                : BuildAdvice.landValue(g, t, footprint, usableLand);
         Ground ground = new Ground(g, t, land);
         double invoice = quote.total + ground.use(s.paving() ? footprint : g.landNeededFor(t, s.count()));
         double available = g.getAutoBuilder().spendableForMeasure(g, measure) - (g.getCash() - treasury);
@@ -79,7 +81,7 @@ final class AdviceValueOracle {
                     double free = Math.max(0, usableLand - footprint - additions * (double) t.getLandSqFt());
                     double paidDate = Math.max(0, date - nextLead);
                     double discount = Math.pow(1 + monthly, -paidDate);
-                    capitalLater += (build + BuildAdvice.landValue(g, t.getLandSqFt() * (double) extra, free)) * discount;
+                    capitalLater += (build + BuildAdvice.landValue(g, t, t.getLandSqFt() * (double) extra, free)) * discount;
                     double needed = build + ground.use(g.landNeededFor(t, extra));
                     double[] loan = credit(g, Math.max(0, needed - available), nominal,
                             Math.min(BuildAdvice.LIFE_MONTHS - paidDate, Game.BUILD_BOND_YEARS * 12));
@@ -221,7 +223,7 @@ final class AdviceValueOracle {
             double wanted = 0;
             Zoning zones = game.getLandManager().getZoning();
             for (Zoning.Zone zone : zones.zones())
-                wanted += Math.max(0, zone.targetSqFt(dry) - zone.usedSqFt());
+                wanted += Math.max(0, zone.targetSqFt(dry) - zone.builtSqFt());
             double open = Math.max(0, dry - taken - zones.keptShare() * forest - wanted);
             if (use == LandManager.Use.WORKS) return open;
             if (use == LandManager.Use.BUILDING) {
