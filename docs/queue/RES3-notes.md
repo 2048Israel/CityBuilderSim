@@ -40,6 +40,8 @@ correction passes its normal native run; separately captured TP1
 deflation preserves every floor comparison. Combined review remains owed.
 HousingMarketCheck also passes0 with the current14/32 report and profiles;
 InvestCheck passes3 for only its recorded builder-wage premise. Stage1 is green.
+CentralBankCheck's laptop run reaches its unchanged1740-second timeout;
+no law fails before it, and a named gate-box verdict is still pending.
 
 Remaining named checks, transfer of the current catalogue/profiles, default600-month spending
 observations, final fast/maps, combined money/saves review, final ensemble and
@@ -5441,3 +5443,46 @@ silent I/O failure cannot yield a complete measurement claim. No production
 seam, policy, rate, fixture, native audit, threshold or model changes. This
 external diagnostic still is not a full LongPlaytest/ensemble verdict. Its
 native run remains held until the final reviewed/pushed source GO.
+
+CentralBankCheck on903 reaches the unchanged1740-second bound and returns
+canonical4/native1 for the timeout only (bd4d); no law failure is logged
+before it. The last completed42-house/3-month/21-added comparison at month600
+is strict4.314 versus Standard4.551 percent, but this partial output is NOT
+a completed harness pass. Preserve full native/log/summary at helper
+target/integrated67/validation-903/CentralBankCheck and run-CentralBankCheck.txt.
+Controller96120 ends normally, native9668 is gone, and no owned JVM/controller
+remains. Other sessions are untouched.
+
+The retained progress sample at1505.7 seconds shows1660.7 CPU seconds,
+1.548 GiB resident,3.87 GiB then-available RAM and9.991 GiB free commit,
+after a legal fresh start with over6 GiB available. Do not infer a model
+verdict or invent a timeout waiver from it. Under the orchestrator's existing
+named-heavy gate-box authority, prepare a CentralBankCheck-ONLY command on
+pushed d936 (model/harness903/759 unchanged), holding box.lock shared with
+the same1740-second bound and exact committed approvals/assets/runtime proof.
+No suite, gate, dry run or ensemble is authorized here. Parent reviews the
+explicit one-name command before launch; no further native starts meanwhile.
+The concrete closure/save source patch is prepared separately for review.
+
+★ Accept the narrow held-state case proposed in76fa, SHA256
+1bb5b4509c8bd130ea6b892ca028ef23fc759cb16758c04277d7915f46bd15e9.
+It uses the native private mortgage payer with public paid buildFor, actual
+Bank claims and construction queue, with declared vacant stock/equity/ground
+before the first audit. Every funding, vacancy and whole-form retirement
+precondition is asserted. The actual BuildingManager physical retirement and
+land-release primitives match the existing loaded-door case; the next ordinary
+month invokes the native capacity writer and must CAUSE positive stranded share.
+No share setter, fabricated debt or save restamping is used.
+
+Scope is explicit: this physically closes eligible vacant titles while retaining
+actual loan principal/claims and cash, then tests the held positive share,
+capacity base, Bank claim, every borrower claim and physical owner inventory
+through native scratch slot10 reload and the next ordinary audited twins.
+It does not invoke private Game.retire's salvage, land-sale and BF1 loan-
+repayment settlement. Do not claim that planned-settlement path or the old
+HousingCheck OBSERVED branch is now counted. This narrow case supplies positive
+held-state/save coverage, while the existing debt-locality and ordinary
+retirement/audit cases retain their distinct scope. No production eligibility,
+funding, repayment, research, model, tolerance or existing test changes.
+The new case is registered in HousingMarketCheck and remains unexecuted until
+the reviewed source is pushed and receives a separate native GO.

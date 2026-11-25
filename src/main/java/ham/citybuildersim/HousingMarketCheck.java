@@ -764,6 +764,80 @@ public final class HousingMarketCheck {
                 &&JSON.toJson(g.getSectors().realEstate().housingMarket().forSave()).equals(JSON.toJson(running.getSectors().realEstate().housingMarket().forSave())));
         audits(g);audits(back);audits(running);
     }
+    /** A paid Bank mortgage, vacant-title closure, then the real capacity/share writer and native twins. */
+    static void causedStrandedDebtContinuation() throws Exception {
+        out.println("--- caused positive closed-home debt, native save and continuation ---");
+        Game g=new Game(GameFiles.scratch("res3-caused-closed-debt"),Founding.defaults());g.run();
+        holdHousingFixture(g);
+        var bm=g.getBuildingManager();var re=g.getSectors().realEstate();
+        var credit=g.getEconomyManager().getBusinessDebtManager();
+        var house=bm.getTemplateByName("House");var compact=bm.getTemplateByName("Studio Apartments");
+        final long ordered=4,closed=ordered+1;
+        // Declared initial stock/equity/ground, before this fixture's audit opens.
+        // Excess real doors CAUSE vacancy instead of finding it in a played town.
+        g.setCashForTest(Founding.WEALTHY_CASH);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt()+20_000_000);
+        check("closed-debt fixture builds its known standing family stock",g.buildStack(house,200,true)==Game.BuildResult.SUCCESS);
+        check("closed-debt fixture builds its known standing compact stock",g.buildStack(compact,20,true)==Game.BuildResult.SUCCESS);
+        check("closed-debt fixture funds an actual Bank branch",g.buildStack(bm.getTemplateByName("Commercial Bank"),1,true)==Game.BuildResult.SUCCESS);
+        check("closed-debt fixture funds actual crews",g.buildStack(bm.getTemplateByName("Construction Depot"),2,true)==Game.BuildResult.SUCCESS);
+        double cost=g.quoteBuild(house,ordered).total+g.getLandManager().priceFor(house.getLandSqFt()*ordered,house.getSector(),Game.groundUse(house));
+        double minimum=Mortgage.ownFundsFor(cost);
+        re.setCash(minimum+(cost-minimum)/3);
+        g.toggleNextMonth();audits(g);
+        check("closed-debt fixture starts without stranded debt",re.strandedDebtShare()==0);
+        long sitesBefore=bm.getStack(house).getUnderConstruction();
+        check("closed-debt fixture has no earlier family sites",sitesBefore==0);
+        double principalBeforeFunding=credit.getPrincipal(Sectors.REAL_ESTATE);
+        var payerMethod=Game.class.getDeclaredMethod("mortgageInvestor",String.class,String[].class);
+        payerMethod.setAccessible(true);
+        String[] refusal={null};Investor payer=(Investor)payerMethod.invoke(g,Sectors.REAL_ESTATE,(Object)refusal);
+        // Existing public paid order and its OWN native mortgage payer: no copied lending formula or fake loan.
+        boolean funded=g.buildFor(payer,house,ordered);
+        check("closed-debt fixture funds the actual residential order",funded);
+        if(!funded)throw new IllegalStateException("native mortgage/build refusal: "+refusal[0]);
+        check("closed-debt fixture created actual Bank mortgage principal",credit.getPrincipal(Sectors.REAL_ESTATE)>principalBeforeFunding);
+        check("closed-debt order is on the actual paid work queue",bm.getStack(house).getUnderConstruction()-sitesBefore==ordered);
+        g.toggleNextMonth();audits(g);
+        int reIndex=Arrays.asList(Sectors.KEYS).indexOf(Sectors.REAL_ESTATE);
+        check("the real Bank holds the borrower's funded claim",g.getBank().getLoansToSector(reIndex)>0&&credit.getPrincipal(Sectors.REAL_ESTATE)>0);
+        check("normal retirement eligibility permits this vacant form",re.mayRetire(house));
+        check("every class's actual vacant RE titles permit the whole closure",re.limitSpareRetirement(house,closed,0)>=closed);
+        double capacityBefore=re.getOwnedHousingCapacity(),debtBefore=credit.getPrincipal(Sectors.REAL_ESTATE);
+        String claimsBefore=JSON.toJson(credit.getLoans());double[] poolsBefore=MoneyAudit.pools(g);
+        // Same physical vacant-retirement/land-release path as the existing loaded-door case.
+        // It books no invented sale, salvage receipt, or repayment.
+        long removed=bm.retire(house,closed);
+        check("the caused vacancy really closes all requested structures",removed==closed);
+        g.getLandManager().release(removed*house.getLandSqFt(),house.getSector(),Game.groundUse(house));
+        check("physical closure preserves every actual loan claim",claimsBefore.equals(JSON.toJson(credit.getLoans()))&&debtBefore==credit.getPrincipal(Sectors.REAL_ESTATE));
+        check("physical closure creates or loses no money",Arrays.equals(poolsBefore,MoneyAudit.pools(g)));
+        g.toggleNextMonth();audits(g);
+        // At most ordered homes can complete; closing ordered+1 guarantees a real net capacity fall.
+        check("the normal capacity writer observes a real owned-capacity reduction",re.getOwnedHousingCapacity()<capacityBefore);
+        check("the actual capacity writer CAUSED a positive stranded share",re.strandedDebtShare()>0&&re.strandedDebtShare()<=1);
+        check("positive closed-home share still carries actual Bank debt",credit.getPrincipal(Sectors.REAL_ESTATE)>0&&g.getBank().getLoansToSector(reIndex)>0);
+        double share=re.strandedDebtShare(),capacity=re.getOwnedHousingCapacity(),debt=credit.getPrincipal(Sectors.REAL_ESTATE);
+        double bankClaim=g.getBank().getLoansToSector(reIndex);
+        String claims=JSON.toJson(credit.getLoans()),inventory=JSON.toJson(bm.getHousingInventory().forSave());
+        out.printf(Locale.ROOT,"   caused closure m%d: %d structures; share %a; owned capacity %a -> %a; debt %a; Bank claim %a%n",g.getMonth(),removed,share,capacityBefore,capacity,debt,bankClaim);
+        check("positive closed-home debt saves through the actual native writer",g.saveGame(10,"RES3 caused closed-home debt").ok);
+        Game back=new Game(g.getGameFiles());back.loadGameSave(10);holdHousingFixture(back);
+        var loaded=back.getSectors().realEstate();var backCredit=back.getEconomyManager().getBusinessDebtManager();
+        check("native reload preserves the exact held positive stranded share",Double.doubleToLongBits(share)==Double.doubleToLongBits(loaded.strandedDebtShare()));
+        check("native reload preserves the exact capacity writer's base",Double.doubleToLongBits(capacity)==Double.doubleToLongBits(loaded.getOwnedHousingCapacity()));
+        check("native reload preserves the exact live borrower principal",Double.doubleToLongBits(debt)==Double.doubleToLongBits(backCredit.getPrincipal(Sectors.REAL_ESTATE)));
+        check("native reload preserves every actual loan claim",claims.equals(JSON.toJson(backCredit.getLoans())));
+        check("native reload preserves the actual Bank's held claim",Double.doubleToLongBits(bankClaim)==Double.doubleToLongBits(back.getBank().getLoansToSector(reIndex)));
+        check("native reload preserves all physical owner/title cohorts",inventory.equals(JSON.toJson(back.getBuildingManager().getHousingInventory().forSave())));
+        g.toggleNextMonth();back.toggleNextMonth();audits(g);audits(back);
+        check("next native twins keep the exact positive debt share",Double.doubleToLongBits(re.strandedDebtShare())==Double.doubleToLongBits(loaded.strandedDebtShare()));
+        check("next native twins keep the exact capacity base",Double.doubleToLongBits(re.getOwnedHousingCapacity())==Double.doubleToLongBits(loaded.getOwnedHousingCapacity()));
+        check("next native twins keep all actual borrower claims",JSON.toJson(credit.getLoans()).equals(JSON.toJson(backCredit.getLoans())));
+        check("next native twins keep the actual Bank claim",Double.doubleToLongBits(g.getBank().getLoansToSector(reIndex))==Double.doubleToLongBits(back.getBank().getLoansToSector(reIndex)));
+        check("next native twins keep every physical owner/title cohort",JSON.toJson(bm.getHousingInventory().forSave()).equals(JSON.toJson(back.getBuildingManager().getHousingInventory().forSave())));
+    }
+
     static void savingHousingBudget(){
         out.println("--- the real saving return reaches funded demand at the ask ---");
         Game g=new Game(GameFiles.scratch("res3-saving-budget"));g.run();
@@ -1498,7 +1572,7 @@ public final class HousingMarketCheck {
         out=System.out;coalescedSponsored();sharingForecastSources();crossClassPaidExcess();savedContractModes();
         out=System.out;fundedPressureAndForecast();rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
         StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on the executing host, including all other city systems, not isolated solver timings.\n");
-        try{System.setOut(silent);classPrices();rentPriceIndex();mergedBudgetPressure();plannerInputs();netOperatingChoice();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();doubledDemand();studentFacility();fundedHost();scarceFreeHost();retiredRoom();loadedDoorCensus();familyHostReservation();aggregatePackingRemainder();savingHousingBudget();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
+        try{System.setOut(silent);classPrices();rentPriceIndex();mergedBudgetPressure();plannerInputs();netOperatingChoice();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();doubledDemand();studentFacility();fundedHost();scarceFreeHost();retiredRoom();loadedDoorCensus();causedStrandedDebtContinuation();familyHostReservation();aggregatePackingRemainder();savingHousingBudget();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
         Path target=Path.of("target/RES3-catalogue-report.md");Files.writeString(target,report);
         out.println("Report: "+target);out.println(fails==0?"HousingMarketCheck: ALL PASSED":fails+" FAILED");if(fails>0)System.exit(1);
     }
