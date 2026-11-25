@@ -1,4 +1,4 @@
-# FarmlandReserveCheck.java - 366 lines · 15 methods · 6 constants · harnesses
+# FarmlandReserveCheck.java - 419 lines · 17 methods · 6 constants · harnesses
 
 `ham/citybuildersim/FarmlandReserveCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -29,7 +29,7 @@
 >   7. THE SAVE: a city with the reserve saved and loaded is the same city, a month on too; an older save's zone, which has no
 >      reserve key, reads as a zone at its share.
 
-**Uses:** [LandManager](LandManager.md) (20), [Zoning](Zoning.md) (19), [Game](Game.md) (16), [BuildAdvice](BuildAdvice.md) (11), [PowerPlanCheck](PowerPlanCheck.md) (10), [LandMarket](LandMarket.md) (9), [Sectors](Sectors.md) (6), [PriceLevel](PriceLevel.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (5), [GameFiles](GameFiles.md) (4), [Formats](Formats.md) (4), [LandFactors](LandFactors.md) (3), [MoneyAudit](MoneyAudit.md) (3), [LongPlaytest](LongPlaytest.md) (2), [Founding](Founding.md) (1), [EssentialWorksCheck](EssentialWorksCheck.md) (1), [TempDirs](TempDirs.md) (1), [AutoBuilder](AutoBuilder.md) (1)
+**Uses:** [LandManager](LandManager.md) (28), [Zoning](Zoning.md) (21), [Game](Game.md) (18), [BuildAdvice](BuildAdvice.md) (11), [PowerPlanCheck](PowerPlanCheck.md) (10), [LandMarket](LandMarket.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [Formats](Formats.md) (8), [Sectors](Sectors.md) (6), [PriceLevel](PriceLevel.md) (5), [GameFiles](GameFiles.md) (4), [LandFactors](LandFactors.md) (3), [LongPlaytest](LongPlaytest.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Founding](Founding.md) (1), [EssentialWorksCheck](EssentialWorksCheck.md) (1), [TempDirs](TempDirs.md) (1), [EconomyManager](EconomyManager.md) (1), [Sector](Sector.md) (1), [ConstructionControl](ConstructionControl.md) (1), [AutoBuilder](AutoBuilder.md) (1)
 
 ## Sections
 
@@ -40,8 +40,8 @@
 | 167 | 3. WITH IT |
 | 197 | 4. THE MONEY |
 | 233 | 5. THE CITY'S OWN FARMS |
-| 267 | 6. THE PLANNER |
-| 322 | 7. THE SAVE |
+| 317 | 6. THE PLANNER |
+| 372 | 7. THE SAVE |
 
 ## Constants
 
@@ -52,7 +52,7 @@
 | 62 | `FarmlandReserveCheck.PASTURE_USD` | `0.044, CROPLAND_USD = 0.134` | Real ground a square foot, US$ (LandMarket's THE CROWDING PREMIUM): US pasture, and cropland - what a farm's ground costs. |
 | 68 | `FarmlandReserveCheck.RESERVE_KM2` | `2` | The reserve the fixtures zone: square kilometres of the fields' zone, enough for a Solar Farm's ground and more. |
 | 71 | `FarmlandReserveCheck.DIAL` | `0.5` | The dial the fields' zone is set at before it is the reserve: a share, to tell the two prices apart. |
-| 270 | `FarmlandReserveCheck.CROWDED_FREE_KM2` | `RESERVE_KM2 + 1` | The free ground the crowded town keeps past what it has built, square kilometres: room for the reserve and a little for anyone. |
+| 320 | `FarmlandReserveCheck.CROWDED_FREE_KM2` | `RESERVE_KM2 + 1` | The free ground the crowded town keeps past what it has built, square kilometres: room for the reserve and a little for anyone. |
 
 ## Fields (state)
 
@@ -65,7 +65,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 328 | **type** `public final class FarmlandReserveCheck` | The farmland reserve, the model (RG1, 2026-11-25; Jerus, 2026-11-24: "Policy, that also lets farms crops as well be cheaper"): the fields' zone at the sellers' farmland price, outside the crowding premium, holding gro... |
+| 39 | 381 | **type** `public final class FarmlandReserveCheck` | The farmland reserve, the model (RG1, 2026-11-25; Jerus, 2026-11-24: "Policy, that also lets farms crops as well be cheaper"): the fields' zone at the sellers' farmland price, outside the crowding premium, holding gro... |
 | 44 | 4 | `static void check(String label, boolean ok)` |  |
 | 49 | 3 | `static boolean close(double a, double b, double tol)` |  |
 | 53 | 5 | `static void quietly(Runnable r)` |  |
@@ -97,23 +97,25 @@
 |---:|---:|---|---|
 | 199 | 33 | `static void theMoney(Game g)` |  |
 
-### 5. THE CITY'S OWN FARMS (lines 233-266)
+### 5. THE CITY'S OWN FARMS (lines 233-316)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 235 | 31 | `static void theCitysFarms(Game g)` |  |
+| 235 | 64 | `static void theCitysFarms(Game g)` |  |
+| 301 | 9 | `static int demolishOne(Game g, BuildingsTemplate wind)` | Orders one of the city's Wind Farms demolished and presses months until its site is done and its ground given back (Game.settleConstructionControl()): the months, or -1 when refused or never done. |
+| 312 | 4 | `static boolean onSite(Game g, BuildingsTemplate t)` | Whether a demolition of this kind is on site. |
 
-### 6. THE PLANNER (lines 267-321)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 272 | 41 | `static void thePlanner(Path root)` |  |
-| 315 | 4 | `static double share(Game g, BuildingsTemplate t)` | One `t`'s ground as a share of its capital at the planner's (BuildAdvice.capitalOf() on the ground free for anyone). |
-| 320 | 1 | `static String named(BuildAdvice.Suggestion s)` |  |
-
-### 7. THE SAVE (lines 322-366)
+### 6. THE PLANNER (lines 317-371)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 324 | 42 | `static void theSave(Path root, Game g)` |  |
+| 322 | 41 | `static void thePlanner(Path root)` |  |
+| 365 | 4 | `static double share(Game g, BuildingsTemplate t)` | One `t`'s ground as a share of its capital at the planner's (BuildAdvice.capitalOf() on the ground free for anyone). |
+| 370 | 1 | `static String named(BuildAdvice.Suggestion s)` |  |
+
+### 7. THE SAVE (lines 372-419)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 374 | 45 | `static void theSave(Path root, Game g)` |  |
 

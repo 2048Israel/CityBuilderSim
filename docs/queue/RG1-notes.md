@@ -25,9 +25,17 @@ Jerus, 2026-11-24 09:12: "Policy, that also lets farms crops as well be cheaper"
   - The crowding premium and the city's scarcity are outside it.
 - **LandManager:** `strikeFarmland()` at every `updateMarket()`. `reserveKeyOf()` and
   `groundKeyOf()` route the city's Wind and Solar Farms to the reserve's ground while one stands.
+- **The city's farms' ground, apart** (the review's P1, REV-RG1). A city Wind or Solar Farm in the
+  reserve is counted on the zone as `cityFarmSqFt`, saved, and never as the fields' `usedSqFt`.
+  `LandManager.allocateCityFarm()` takes the reserve's held ground into it, and
+  `releaseCityFarm()` gives it back from it whatever the reserve is by then. The zone's held
+  ground is its target less both (`Zone.builtSqFt()`, in heldByZone, WorksValue and
+  AdviceValueOracle). The roll (`EconomyManager.assessedLandValueOf`) and the fields' buyback
+  read `usedSqFt` alone, as before. A missing key reads 0, so there is no format bump.
 - **Game:** `setFarmlandReserve(boolean)` is logged as a ZONING decision. The city's build
-  (processBuildOrder, buildStack, runAhead, freeGroundFor) and its demolition read `groundKeyOf`
-  and `reserveKeyOf`.
+  (processBuildOrder, buildStack, runAhead, freeGroundFor) reads `groundKeyOf`, and while a
+  reserve stands it allocates a farm by `allocateCityFarm`. A demolished city Wind or Solar Farm
+  is released by `releaseCityFarm`, whatever the reserve is at the time.
 - **The planner:** `BuildAdvice.landValue(game, t, sqFt, landLeft)` prices a farm's ground in
   the reserve at the reserve's price first. capitalOf, orderLife, availableGround, WorksValue,
   AutoBuilder (lacks, groundWords) and AdviceValueOracle follow it.
@@ -43,13 +51,20 @@ Jerus, 2026-11-24 09:12: "Policy, that also lets farms crops as well be cheaper"
   3. With it: the struck share, the dial kept, re-sized, never dearer, a copy detached.
   4. The money: a Mixed Farm's ground is quoted at $1,416.17 against $7,066.19. Cash and land
      sales move by exactly it, and the month's MoneyAudit closes.
-  5. The city's Wind Farm takes 0.162 km² of the reserve. It pays its cash cost alone, and its
-     ground comes back on demolition. Lifted, wind leaves the zone alone.
+  5. The city's Wind Farm takes 0.162 km² of the reserve, counted as the city's farms' and not
+     the fields'. With a field outside the zone (the fields' ground 0.111 km², 0.0557 km² in the
+     zone), the fields' land on the roll and their whole buyback stay at $8,493.58 before and
+     after. It pays its cash cost alone, and its ground comes back on demolition. In both orders
+     the fields' used ground is exact: built lifted and demolished under the reserve, or built in
+     the reserve and demolished lifted.
+     (The review's two fixtures. On the first build the old code fails both: `usedBy` grows by
+     the farm, and the roll's `min(all, used)` grows with it.)
   6. The planner: PowerPlanCheck 6's dear town crowded orders no wind (its ground 74% of
      capital, a Solar Farm's 92%), nor with a zone at the going price. With the reserve, the
      ground is 0.3% and 1.2%, and the spread orders a Wind Farm.
-  7. Saved and loaded, the same reserve, and the same month a month on. An older save's zoning
-     with no reserve key reads as no reserve.
+  7. Saved and loaded, the same reserve with a city Wind Farm in it (its ground counted apart),
+     and the same month a month on. An older save's zoning with no reserve key reads as no
+     reserve and no city farm ground.
 
 ## Calls
 
@@ -58,6 +73,10 @@ Jerus, 2026-11-24 09:12: "Policy, that also lets farms crops as well be cheaper"
 - ★ The price is min(farmland, going): the reserve is never dearer than the going price.
 - ★ It leaves out both the crowding premium and the scarcity multiplier. Farmland's own price
   moves with the nation's land factor, not with the city's density.
+- ★ The city's farms' ground is its own counter on the zone, not a second zone and not the fields'
+  used ground (the review's form). Released counter-first, as the zone's own ground is. A city farm
+  built outside the reserve and demolished while others stand in it takes its release from the
+  counter: the ground is the city's either way, and the counter cannot outlast the farms on it.
 - ★ The struck share is saved (`Zoning.State.farmlandShare`), so a load prices the zone exactly
   as before it, with no wait for the next month's strike.
 - ★ No format bump. Gson leaves the two new keys at false and 0 in an older save, which reads
@@ -71,18 +90,21 @@ Jerus, 2026-11-24 09:12: "Policy, that also lets farms crops as well be cheaper"
   were left alone: no farm template passes through them.
 - BuildAdvice does not take the reserve's held ground off between cards in one advice pass.
   It is minor, since a pass seldom orders two farms.
-- The save twin, found while building section 7: a city saved by hand right after a station
-  is built by hand, before the month is pressed, loads with its cash a few cents off a month
-  on. This holds with no reserve too: 0.99 at month 0, 1.33 after a hand-built Wind Farm, 0
-  once a month is pressed after it. The fixture presses a month before it saves. A fixture's
-  artifact, not a player's path, so nothing is queued.
+- The save twin, found while building section 7, is a player's path, not a fixture's artifact
+  (the review, item 3, restated). A player builds by hand, saves before pressing the month, and
+  quits; the save does not reload to the same city. Its cash a month on is a few cents off:
+  0.99 for a fresh city saved at month 0, 1.33 after a hand-built Wind Farm, and 0 once a month
+  is pressed after the build. Main does the same, with no reserve. A save must reload exactly,
+  so it is queued as **HBS1** in the ship file: find the state a hand build leaves unsaved, with
+  a SaveFileCheck fixture of build, save, load, press. Section 7 presses a month before it
+  saves, so it tests the reserve and not HBS1's bug.
 - The twin loads from a copy of the slot in a folder of its own. Two cities pressed a month on
   in one folder autosave into one history file, and the rename collides on Windows.
 
 ## The checks
 
 - `./batch-check.sh --fast`: compile OK, maps regenerated, stale 0 firm.
-- Named, one at a time: FarmlandReserveCheck (41 OK), ZoningCheck, ZoningViewCheck,
+- Named, one at a time: FarmlandReserveCheck (44 OK after the review's mend), ZoningCheck, ZoningViewCheck,
   PowerPlanCheck, BuildAdviceCheck and EssentialWorksCheck green. SaveFileCheck's only red
   is main's known "REV-HC1 P5: the populated format-62 city continues ..." (FRW1, known-reds.txt).
 - `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed), so a dry run follows. Its

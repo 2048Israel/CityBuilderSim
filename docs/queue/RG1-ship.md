@@ -10,3 +10,5 @@ capital, has it at under 1%, so the planner builds farms where it built none. Th
 sale and on the roll. It is off by default: no zone, or a zone at a share, prices the ground as before, and an older save
 reads as no reserve. FarmlandReserveCheck causes both paths. To look at on the PC: the fields' zone page, the reserve's
 card under ITS PRICE, and the dial kept while the reserve stands.
+## queued
+| HBS1 | A save made right after a hand build, before the month is pressed, must reload exactly (REV-RG1 item 3): main's city saved at month 0 is 0.99 off in cash a month on, 1.33 after a hand-built Wind Farm, 0 once a month is pressed; find the state a hand build leaves unsaved, with a SaveFileCheck fixture of build, save, load, press | docs/queue/RG1-notes.md |

@@ -1691,24 +1691,24 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 8651 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0, 0)` | No trade at all: every figure nothing. |
 | 9648 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
 | 9907 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 11137 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 11716 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
-| 12537 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
-| 13180 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 13350 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 13394 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 13554 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15484 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 15496 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 15499 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15527 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 15538 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 15578 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 17388 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 17798 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 18454 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 18457 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
-| 18460 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 11138 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 11717 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
+| 12538 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
+| 13181 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 13351 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 13395 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 13555 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15485 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 15497 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 15500 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15528 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
+| 15539 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 15579 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
+| 17389 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 17799 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 18455 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 18458 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
+| 18461 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -2354,8 +2354,8 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 246 | `LandManager.DEFAULT_PRICE_PER_SQ_FT` | `.001 * PriceLevel.FACTOR` | Opening sale price, $1/sq ft - a 43% margin on what the city pays. |
 | 333 | `LandManager.FOREST_REGROWTH` | `1.0 / 240` | Forest's stored depletion falls by this share a month: 1/240, a twenty-year time constant, so 95% of what is cut grows back within a sixty-year rotation ((1 - 1/240)^720 = 0.05; spec-land 2.1). |
 | 1093 | `LandManager.TWO_POOLS_FORMAT` | `35` | The first save format that carries the two pools: its depletion's oil the ground pool's, and the offshore pool's E beside it. |
-| 2668 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
-| 3208 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 2697 | `LandManager.CLEARING_ROUNDING` | `1e-9` | A share of the city's dry ground that is a rounding and not ground: what the month's clearing ignores past the built ground's own (settleClearing()). |
+| 3248 | `LandManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### LandMap.java ([map](map/LandMap.md))
 
@@ -6901,7 +6901,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 62 | `FarmlandReserveCheck.PASTURE_USD` | `0.044, CROPLAND_USD = 0.134` | Real ground a square foot, US$ (LandMarket's THE CROWDING PREMIUM): US pasture, and cropland - what a farm's ground costs. |
 | 68 | `FarmlandReserveCheck.RESERVE_KM2` | `2` | The reserve the fixtures zone: square kilometres of the fields' zone, enough for a Solar Farm's ground and more. |
 | 71 | `FarmlandReserveCheck.DIAL` | `0.5` | The dial the fields' zone is set at before it is the reserve: a share, to tell the two prices apart. |
-| 270 | `FarmlandReserveCheck.CROWDED_FREE_KM2` | `RESERVE_KM2 + 1` | The free ground the crowded town keeps past what it has built, square kilometres: room for the reserve and a little for anyone. |
+| 320 | `FarmlandReserveCheck.CROWDED_FREE_KM2` | `RESERVE_KM2 + 1` | The free ground the crowded town keeps past what it has built, square kilometres: room for the reserve and a little for anyone. |
 
 ### FieldOperatorsCheck.java ([map](map/FieldOperatorsCheck.md))
 
