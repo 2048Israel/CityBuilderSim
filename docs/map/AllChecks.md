@@ -1,4 +1,4 @@
-# AllChecks.java - 597 lines · 29 methods · 25 constants · harnesses
+# AllChecks.java - 599 lines · 29 methods · 25 constants · harnesses
 
 `ham/citybuildersim/AllChecks.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -54,7 +54,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 561 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
+| 37 | 563 | **type** `public class AllChecks` | Runs every harness, one JVM each, and says which failed. |
 | 134 | 140 | `public static void main(String[] args) throws Exception` |  |
 | 276 | 6 | `static boolean selected(String name, boolean timing, boolean gate, boolean nightly, List<String> only)` | Gate defaults exclude the nightly tier; only exact direct picks add its members. |
 | 284 | 18 | `static Comparator<String> longestFirst(Path local, Path gate)` | Previous local seconds, else the last gate's; malformed rows cannot stop a suite. |
@@ -82,8 +82,8 @@
 | 508 | 3 | `static int newCount(List<String> red, Set<String> known)` | How many of the red lines are not in the record. |
 | 513 | 19 | `static List<String> report(String name, int code, double seconds, List<String> printed, boolean lines, Set<String> known)` | The quiet verdict and optional tagged lines, judged by KnownReds. |
 | 534 | 9 | `static String againstLine(Path record, Set<String> known, List<String> knownOnly, List<String> newRed)` | Lists known and new reds without resembling the suite summary used by shell callers. |
-| 545 | 10 | `static List<String> command(String java, String classpath, String name, boolean logged)` | Starts a heap-bounded harness with forwarded properties and UTF-8 logged output (SP1, TM3). |
-| 557 | 8 | `static List<String> observationLines(Path log)` | PO1: legacy console bytes are replaced, as in softLines and failingLines. |
-| 567 | 10 | `static int softLines(Path log)` | How many of a log's assertion lines went SOFT (Timing.SOFT_LINE); a log that cannot be read has none. |
-| 579 | 18 | `static List<String> failingLines(Path log) throws IOException` | Keeps each failing section and assertion, or the last ten lines after an unlabelled death, replacing invalid UTF-8. |
+| 545 | 12 | `static List<String> command(String java, String classpath, String name, boolean logged)` | Starts a heap-bounded harness with forwarded properties and UTF-8 logged output (SP1, TM3). |
+| 559 | 8 | `static List<String> observationLines(Path log)` | PO1: legacy console bytes are replaced, as in softLines and failingLines. |
+| 569 | 10 | `static int softLines(Path log)` | How many of a log's assertion lines went SOFT (Timing.SOFT_LINE); a log that cannot be read has none. |
+| 581 | 18 | `static List<String> failingLines(Path log) throws IOException` | Keeps each failing section and assertion, or the last ten lines after an unlabelled death, replacing invalid UTF-8. |
 

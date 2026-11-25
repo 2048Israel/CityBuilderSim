@@ -1,8 +1,8 @@
-# gate of Merge batch/CY1: the planner appraises a processing works over its cycle: SpreadPlanner reads one month's margin as lasting, so a sector builds at the copper charge's peak and is left at the trough owing more than it holds, its own borrowing lifting the hurdle past every later build (DS1's answer, CU2: seed 2's five smelters from m1598, 30.44% and an 82-month loss streak at m2400; seed 1's Scrap Copper Refinery on a one-month spike). Read the margin over the charge's swing or a trailing year, and look at a sector whose rate has outrun its works' earnings; any processing sector can be left this way. The swing is in quantities too (FC2's box path, 11-24: seed 1's cathode and rod tallies cycle every three months from m1200, a Rod Mill earns +54k, -83k, -33k, mean -20k against a 45k hurdle, and still passes; one works a month from m858 to 181 Rod Mills, 40 smelters, 46 refineries, 60 scrap refineries). Beside the trailing margin: CopperRefining gets the feed gate HeavyIndustry has (feedRefusal; 180 mills stood for 1.44 Mt against 0.69 Mt of cathode, at 25% of nameplate), and the idle shed must fire (noteMonth resets it). Owns CopperRefiningCheck's seed-1 Rod Mills known red, 0.9.199
+# gate of Merge batch/FS5: sweep: KeptCheck from section 55; takes KFP1, KBP1, KRW1, CD9-K, KP5-N to KP7-N, KRT1's 77 and 78 (after FS4; not beside BI1); takes FS5H, the five KeptCheck lines HT1's gate found red on main's own pages (Lending's opened tables, Construction's cash and debt statement, the Rankings drawer, the Government Overview's new nodes a month), and FC2's KeptCheck section 49 (Freight's statement: the same SectorScreen/StatementView route as Construction's, known-reds' class), which pass by name to FS5 ([FS5H](docs/queue/FS5H.md)). Back from Pending 2026-11-24 (contract section 6, the orchestrator's): its final untagged gate on 0.9.180 found KeptCheck's retained objects at 1711.9 MiB against the hard 1536 MiB bound under the gate box's Monocle/SW, where native Windows SW passed at 1502.8 MiB (kept run pcPZSnVc). The batch merges main, has a helper trace the box-against-Windows difference on today's main, then mends; no heap waiver, 0.9.200
 # date: 2026-11-24
 # earth-2.bin: named
 # nightly: 2026-11-24 03:09 0.9.196 94ba28823 4,000 months: RED, exit 1 in 712 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-24-94ba28823-AVsIJOCL
-# suite: 242 harnesses run in 1285s: 226 passed, 16 failed
+# suite: 240 harnesses run in 1032s: 226 passed, 14 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -47,14 +47,6 @@ RailDrawCheck | 1 FAILED
 PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
 PlanCheck | 1 FAILED
-KeptCheck | exit 6
-KeptCheck | the Bank Overview: a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
-KeptCheck | fixture: the fund's rule held still through 63's choices, no lot it did not hold before (187 lots, then 88; new [B:2695, B:2696, B:2697]) FAIL
-KeptCheck | the city's fund: a month's redraw after each choice hands back nine in ten of the page's nodes, or more FAIL
-KeptCheck | fixture: the rule held again after its month, no lot but the ones it settled (88 lots, then 178; new [B:2698, B:2699, B:2700, B:2701, B:2702, B:2703, B:2704, B:2705, B:2706, B:2707, B:2708, B:2709, B:2710, B:2711, B:2712, B:2713, B:2714, B:2715, B:2716, B:2717, B:2718, B:2719, B:2720, B:2721, B:2722, B:2723, B:2724, B:2725, B:2726, B:2727, B:2728, B:2729, B:2730, B:2731, B:2732, B:2733, B:2734, B:2735, B:2736, B:2737, B:2738, B:2739, B:2740, B:2741, B:2742, B:2743, B:2744, B:2745, B:2746, B:2747, B:2748, B:2749, B:2750, B:2752, B:2753, B:2754, B:2755, B:2756, B:2757, B:2758, B:2759, B:2760, B:2761, B:2762, B:2763, B:2764, B:2765, B:2766, B:2767, B:2768, B:2769, B:2770, B:2771, B:2772, B:2773, B:2774, B:2775, B:2776, B:2777, B:2778, B:2779, B:2780, B:2781, B:2782, B:2783, B:2785, B:2786, B:2787, B:2788, B:2789, B:2790, B:2791, B:2792]) FAIL
-KeptCheck | no month makes more than a tenth of the nodes the first draw made (the most made in one: 39 of 376; 10 of 25 months made none) FAIL
-KeptCheck | the full kept check leaves a quarter of AllChecks.HEAP_MB free           FAIL
-KeptCheck | 6 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
@@ -64,9 +56,9 @@ CarCheck | the fixture: one household's money buys a car at the price the draw i
 CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  62 cars, 1 step(s) of the import price; paid 56.232508772885560, the ship's product 55.440508772885560; 6.0 cars on the makers' shelves
 CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 55.440508772885560, paid 56.232508772885560
 CarCheck | 3 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
 GroundSkipCheck | exit 1
 GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 30 month(s) FAIL
 GroundSkipCheck | 1 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
