@@ -161,6 +161,14 @@ All48 temporary diagnostic lines are removed; KeptBench returns exactly to
 its8bb source. The final run cannot stop after section45. The numeric model,
 saved fields and format remain unchanged. Full Kept/reader proof is still owed.
 
+Current combined75fb --fast exits0 (compile/maps/Stale), retained at
+target/RES3-root-fast-75fb04d80-20261125-060856. Fresh MG1:83-percent committed,
+4.248 GiB available RAM,9.242 GiB free commit and mean29.845-percent CPU from
+three two-second samples; pinned Oracle21.0.4/absolute C:/ assets/parallel1.
+Controller88265 ends0, no owned jobs remain. Regenerate the maps for the
+actual reset fixture and both CPI readers. Full Kept/Chart and subsequent
+bank/default evidence remain pending; no economic-model source changed.
+
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
 byte-identical through dce's later observer and harness-only commits;

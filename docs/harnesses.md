@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**254 harness files, 29,737 labelled assertions.** AllChecks runs 254 of them.
+**254 harness files, 29,738 labelled assertions.** AllChecks runs 254 of them.
 
 ## Which harnesses read which class
 
@@ -55,7 +55,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CapChips](map/CapChips.md) | **none** |
 | [CapSetting](map/CapSetting.md) | AuctionCheck |
 | [CapitalFlows](map/CapitalFlows.md) | AuctionCheck, BondCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, FloatLinkCheck, HoldersCheck, InterestAbroadCheck, LongPlaytest, ReadPathCheck, ReloadCheck, SaveFileCheck |
-| [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CausesOfDeathCheck, ChildcareCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, LongPlaytest, MedicineCheck, ModernRowsCheck, OwnerCheck, PowerPlanCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, WorksFinanceCheck |
+| [CareType](map/CareType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CausesOfDeathCheck, ChildcareCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, KeptCheck, LongPlaytest, MedicineCheck, ModernRowsCheck, OwnerCheck, PowerPlanCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, WorksFinanceCheck |
 | [CausesOfDeath](map/CausesOfDeath.md) | CausesOfDeathCheck, LongPlaytest, MedicineCheck, ReadPathCheck, SaveFileCheck, SicknessCheck |
 | [CellSpread](map/CellSpread.md) | CardCheck, DebtStatisticsCheck, HealthCheck, OutsideCheck |
 | [CementConcrete](map/CementConcrete.md) | BuildingDataCheck, CementConcreteCheck, Forms1900Check, IndustryViewCheck, QuarryingCheck |
@@ -19836,7 +19836,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2543 26e. ...joined to the plan's streets: one join listed, no longer than RAMP_JOIN_REACH, and from the ramp the streets run on past it to the grid
   - L2546 26f. ...where the same plan not given it, as before RR1, leaves the ramp with no street beneath and lists no join
 
-## KeptCheck.java - 561 labelled assertions
+## KeptCheck.java - 562 labelled assertions
 
 > The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each
 > month's redraw run over last month's nodes ends exactly where a page built new would, and costs
@@ -20010,482 +20010,483 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2706 ...and sets one that has none (\"
   - L2708 the screen's own filter changed under the hand leaves the focused find box as typed (\"
   - L2710 ...and the next draw, once the focus is gone, sets the box to it (\"
-  - L2751 a card's + pressed between draws is a press on the card (the count reads \"
-  - L2752 ...the order bar is refilled in place at once, outside any draw, once (
-  - L2753 ...and the next kept draw keeps the bar and equals a page built new
-  - L2755 the current large step, a month and a kept draw equal a page built new
-  - L2757 the card's own ↺ clears the order, the bar goes, and the next kept draw equals a page built new
-- **L2763 46: the hover is kept (Build)**
-  - L2792 a
-  - L2844 fixture: the supplied sawmill has a counted month and works to draw
-- **L2895 The research screens on Sectors and Build (R5, slice B2): a city founded the 1900 way**
-- **L2907 96: a sector's Investors page with its equipment, kept**
-  - L2914 the town has a stack that lacks a piece the city knows (the page's premise)
-  - L2921 ITS EQUIPMENT is on
-  - L2922 ...with the piece's card (
-  - L2924 ...saying how many carry it, as the model counts them (
-  - L2932 ...and the model's verdict on the next one (
-  - L2933 ...and where it came from (known since the founding, or from abroad)
-  - L2956 the kept page's signature equals the new page's for
-  - L2960 the page still has equipment rows to draw (the next check's premise)
-  - L2968 fixture: the farm catalogues supply the tractor and the independent 1900 binder
-  - L2986 before the tractor is found no tractor row is shown, while the catalogue's known binder stays
-  - L2992 ...ITS EQUIPMENT shows the catalogue's binder and hides the unknown tractor
-  - L3000 the tractor found here gives the farms a row in the model
-  - L3002 finding the tractor retains the catalogue's binder beside it
-  - L3007 ...ITS EQUIPMENT is on their page with the piece (
-  - L3009 ...where it came from, the month and the years ahead as the discovery says them
-  - L3011 ...what it does, in the entry's words
-  - L3013 ...and, as the model prices it (
-  - L3024 a city founded the default way has no equipment rows in the model
-  - L3028 ...and no ITS EQUIPMENT on an Investors page (
-- **L3033 97: a NEW build card, kept**
-  - L3042 the town's furnace is NEW, found here in month 9, five months old (the page's premise)
-  - L3053 the town has a market category with nothing new on it (
-  - L3059 no card has been drawn: the furnace shows NEW and was seen in no month
-  - L3061 on
-  - L3063 ...and the furnace is still unseen (its card has not been drawn)
-  - L3072 the card is drawn in month
-  - L3073 ...it shows NEW: the chip in its head and the violet edge
-  - L3078 ...the strip under the head says what is new (
-  - L3079 ...the chip of
-  - L3083 ...and the card says where it came from (
-  - L3086 the kept page of
-  - L3097 drawn again in the same month the card still shows NEW (a month's own redraws are the same month)
-  - L3107 the month after, the model alone still says NEW (the premise of the seen rule)
-  - L3108 ...and the screen does not: the card was first drawn in month
-  - L3109 ...no NEW chip, no violet edge and no strip on
-  - L3111 ...and no dot on its chip, which follows the same rule
-  - L3113 the kept page the month after equals a page built new
-  - L3114 ...the same on the page of
-  - L3122 a reload (the screen forgotten) shows NEW again on what became known within the year
-  - L3128 the rule alone: NEW for a card never drawn, and for one drawn this month
-  - L3130 ...and not for one drawn in an earlier month, nor for what the model says is not new
-  - L3144 a lab's card (
-  - L3146 ...and in a city founded the 1900 way says no more than that
-  - L3149 the lab's page kept equals a page built new
-  - L3152 a city founded the default way has no NEW in the model
-  - L3156 ...no NEW chip, edge, strip or dot on
-  - L3158 ...and a lab's card there says that nothing is ever on the chase in such a city
-- **L3164 Sectors (KP4)**
-  - L3169 the city has a plain business with a plant standing (
-  - L3170 ...and a materials industry with works standing (
-- **L3270 50: the pictures on a business's page are kept**
-  - L3290 the refinery's town has a refinery that runs, so that its picture is drawn (
-- **L3556 51: the count-up only at 1x-10x (Sectors)**
-  - L3617 a count running when a month lands past COUNT_UP_TOP is stopped on
-- **L3648 53: a control keeps the player's hand (the oil reserve's dials)**
-  - L3650 the sea town has a Strategic Reserve with oil in it, to draw its two dials (
-  - L3666 the oil industry's page has the reserve's two dials to hold (
-- **L3744 54: the hover is kept (Sectors)**
-  - L3755 a
-- **L3788 The Bank tab (KP5)**
-- **L3905 57: a chip picked lands at the top of its page**
-  - L3938 the Bank's
-  - L3945 ...a month landing leaves the kept scroller where the player left it
-  - L3946 ...its own chip picked leaves the same scroller (the page is kept) at the top (
-  - L3947 ...and the page is equal to a page built new
-  - L3973 the Overview's chip picked from a scrolled Profit page lands at its top (
-  - L3974 the Statement view picked from a scrolled page lands at its top (
-  - L3975 ...and the Summary view picked again, scrolled, at its top (
-  - L4005 fixture: the books hold one piece of every kind of paper PAPER names, sold through the model (
-  - L4055 fixture:
-  - L4069 fixture:
-- **L4100 The Finances tab (KP5)**
-- **L4156 60: the book, a line's page and Close it now**
-  - L4199 fixture: Borrow's normal ask clears and its fortyfold ask is a real short sale
-- **L4269 60: the foreign default menu and the debt result menu**
-- **L4428 The city's fund (KP5)**
-  - L4458 the fund holds something to draw (
-  - L4474 holding the fund's rule preserves already-committed automatic bids
-  - L4479 fixture: the held month drains outstanding automatic fund buys before 63's watch (
-  - L4507 fixture: the fund holds a bond,
-  - L4605 fixture:
-  - L4611 fixture: the fund's rule held still through 63's choices, no lot it did not hold before (
-  - L4664 fixture: the held-again watch explicitly cancels automatic commitments (
-  - L4706 fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it (
-  - L4709 fixture: the settled lot watched,
-  - L4711 fixture: the rule held again after its month, no lot but the ones it settled (
-  - L4713 fixture: the fund's cash stood over
-  - L4768 Search shows the first
-  - L4770 Search says exactly how many results are left, and its last page has no Show more
-  - L4801 the older year's fixture has profitable and loss-making sales, income and a contribution
-  - L4803 the year's net is its ledger's realized gains plus income, with contributions and principal excluded
-  - L4805 the year's count is its distinct recorded months
-  - L4806 Activity's latest twelve months include the boundary month and keep the preceding one behind a year fold
-  - L4811 every Activity line occurs in exactly one period, in its original order
-  - L4813 the Money chip's older years have zero realized-plus-income net
-- **L4870 63: the fund's Search pages and Activity years (FP1)**
-  - L4874 fixture: the market lists more than two Search pages (
-  - L4881 the market still lists more than two Search pages
-  - L4912 a chip starts Search again from its first rows
-  - L4927 all of the issuer's matches can be reached and Show more goes away
-  - L4939 the replacement fixture has listed shares on show
-  - L4940 the replacement fixture presses the Bonds chip
-  - L4943 the same row positions now show different securities
-  - L4951 replacing shares with bonds keeps every common row node
-  - L4952 the replaced rows' fields equal a page built new
-  - L4957 a reused row opens its current bond
-  - L4961 the replacement fixture leaves the model in the same month
-  - L4971 fixture: the record folds lines older than ACTIVITY_MONTHS into more than one year (
-  - L4975 year
-  - L4976 year
-  - L4978 year
-  - L4981 year
-  - L4982 year
+  - L2748 fixture: reset retains the same first building with positive held order (
+  - L2759 a card's + pressed between draws is a press on the card (the count reads \"
+  - L2760 ...the order bar is refilled in place at once, outside any draw, once (
+  - L2761 ...and the next kept draw keeps the bar and equals a page built new
+  - L2763 the current large step, a month and a kept draw equal a page built new
+  - L2765 the card's own ↺ clears the order, the bar goes, and the next kept draw equals a page built new
+- **L2771 46: the hover is kept (Build)**
+  - L2800 a
+  - L2852 fixture: the supplied sawmill has a counted month and works to draw
+- **L2903 The research screens on Sectors and Build (R5, slice B2): a city founded the 1900 way**
+- **L2915 96: a sector's Investors page with its equipment, kept**
+  - L2922 the town has a stack that lacks a piece the city knows (the page's premise)
+  - L2929 ITS EQUIPMENT is on
+  - L2930 ...with the piece's card (
+  - L2932 ...saying how many carry it, as the model counts them (
+  - L2940 ...and the model's verdict on the next one (
+  - L2941 ...and where it came from (known since the founding, or from abroad)
+  - L2964 the kept page's signature equals the new page's for
+  - L2968 the page still has equipment rows to draw (the next check's premise)
+  - L2976 fixture: the farm catalogues supply the tractor and the independent 1900 binder
+  - L2994 before the tractor is found no tractor row is shown, while the catalogue's known binder stays
+  - L3000 ...ITS EQUIPMENT shows the catalogue's binder and hides the unknown tractor
+  - L3008 the tractor found here gives the farms a row in the model
+  - L3010 finding the tractor retains the catalogue's binder beside it
+  - L3015 ...ITS EQUIPMENT is on their page with the piece (
+  - L3017 ...where it came from, the month and the years ahead as the discovery says them
+  - L3019 ...what it does, in the entry's words
+  - L3021 ...and, as the model prices it (
+  - L3032 a city founded the default way has no equipment rows in the model
+  - L3036 ...and no ITS EQUIPMENT on an Investors page (
+- **L3041 97: a NEW build card, kept**
+  - L3050 the town's furnace is NEW, found here in month 9, five months old (the page's premise)
+  - L3061 the town has a market category with nothing new on it (
+  - L3067 no card has been drawn: the furnace shows NEW and was seen in no month
+  - L3069 on
+  - L3071 ...and the furnace is still unseen (its card has not been drawn)
+  - L3080 the card is drawn in month
+  - L3081 ...it shows NEW: the chip in its head and the violet edge
+  - L3086 ...the strip under the head says what is new (
+  - L3087 ...the chip of
+  - L3091 ...and the card says where it came from (
+  - L3094 the kept page of
+  - L3105 drawn again in the same month the card still shows NEW (a month's own redraws are the same month)
+  - L3115 the month after, the model alone still says NEW (the premise of the seen rule)
+  - L3116 ...and the screen does not: the card was first drawn in month
+  - L3117 ...no NEW chip, no violet edge and no strip on
+  - L3119 ...and no dot on its chip, which follows the same rule
+  - L3121 the kept page the month after equals a page built new
+  - L3122 ...the same on the page of
+  - L3130 a reload (the screen forgotten) shows NEW again on what became known within the year
+  - L3136 the rule alone: NEW for a card never drawn, and for one drawn this month
+  - L3138 ...and not for one drawn in an earlier month, nor for what the model says is not new
+  - L3152 a lab's card (
+  - L3154 ...and in a city founded the 1900 way says no more than that
+  - L3157 the lab's page kept equals a page built new
+  - L3160 a city founded the default way has no NEW in the model
+  - L3164 ...no NEW chip, edge, strip or dot on
+  - L3166 ...and a lab's card there says that nothing is ever on the chase in such a city
+- **L3172 Sectors (KP4)**
+  - L3177 the city has a plain business with a plant standing (
+  - L3178 ...and a materials industry with works standing (
+- **L3278 50: the pictures on a business's page are kept**
+  - L3298 the refinery's town has a refinery that runs, so that its picture is drawn (
+- **L3564 51: the count-up only at 1x-10x (Sectors)**
+  - L3625 a count running when a month lands past COUNT_UP_TOP is stopped on
+- **L3656 53: a control keeps the player's hand (the oil reserve's dials)**
+  - L3658 the sea town has a Strategic Reserve with oil in it, to draw its two dials (
+  - L3674 the oil industry's page has the reserve's two dials to hold (
+- **L3752 54: the hover is kept (Sectors)**
+  - L3763 a
+- **L3796 The Bank tab (KP5)**
+- **L3913 57: a chip picked lands at the top of its page**
+  - L3946 the Bank's
+  - L3953 ...a month landing leaves the kept scroller where the player left it
+  - L3954 ...its own chip picked leaves the same scroller (the page is kept) at the top (
+  - L3955 ...and the page is equal to a page built new
+  - L3981 the Overview's chip picked from a scrolled Profit page lands at its top (
+  - L3982 the Statement view picked from a scrolled page lands at its top (
+  - L3983 ...and the Summary view picked again, scrolled, at its top (
+  - L4013 fixture: the books hold one piece of every kind of paper PAPER names, sold through the model (
+  - L4063 fixture:
+  - L4077 fixture:
+- **L4108 The Finances tab (KP5)**
+- **L4164 60: the book, a line's page and Close it now**
+  - L4207 fixture: Borrow's normal ask clears and its fortyfold ask is a real short sale
+- **L4277 60: the foreign default menu and the debt result menu**
+- **L4436 The city's fund (KP5)**
+  - L4466 the fund holds something to draw (
+  - L4482 holding the fund's rule preserves already-committed automatic bids
+  - L4487 fixture: the held month drains outstanding automatic fund buys before 63's watch (
+  - L4515 fixture: the fund holds a bond,
+  - L4613 fixture:
+  - L4619 fixture: the fund's rule held still through 63's choices, no lot it did not hold before (
+  - L4672 fixture: the held-again watch explicitly cancels automatic commitments (
+  - L4714 fixture: the month the rule was let go settled holdings the fund did not hold, a settled lot's page and review watched after it (
+  - L4717 fixture: the settled lot watched,
+  - L4719 fixture: the rule held again after its month, no lot but the ones it settled (
+  - L4721 fixture: the fund's cash stood over
+  - L4776 Search shows the first
+  - L4778 Search says exactly how many results are left, and its last page has no Show more
+  - L4809 the older year's fixture has profitable and loss-making sales, income and a contribution
+  - L4811 the year's net is its ledger's realized gains plus income, with contributions and principal excluded
+  - L4813 the year's count is its distinct recorded months
+  - L4814 Activity's latest twelve months include the boundary month and keep the preceding one behind a year fold
+  - L4819 every Activity line occurs in exactly one period, in its original order
+  - L4821 the Money chip's older years have zero realized-plus-income net
+- **L4878 63: the fund's Search pages and Activity years (FP1)**
+  - L4882 fixture: the market lists more than two Search pages (
+  - L4889 the market still lists more than two Search pages
+  - L4920 a chip starts Search again from its first rows
+  - L4935 all of the issuer's matches can be reached and Show more goes away
+  - L4947 the replacement fixture has listed shares on show
+  - L4948 the replacement fixture presses the Bonds chip
+  - L4951 the same row positions now show different securities
+  - L4959 replacing shares with bonds keeps every common row node
+  - L4960 the replaced rows' fields equal a page built new
+  - L4965 a reused row opens its current bond
+  - L4969 the replacement fixture leaves the model in the same month
+  - L4979 fixture: the record folds lines older than ACTIVITY_MONTHS into more than one year (
   - L4983 year
-  - L4985 year
-  - L4987 year
-  - L4988 year
-  - L5029 the warrant fixture gives the previous move multiple wrapped lines
-  - L5033 the warrants replace the preferred in the same row node
-  - L5034 the warrant's current move is empty
-  - L5035 a recycled warrant row clears its wrapped move and equals a page built new
-  - L5088 fixture:
-- **L5142 64: the pictures on the money screens are kept**
-  - L5165 a
-  - L5172 fixture: the paper for the
-  - L5287 fixture: the figures
-  - L5289 fixture: ...and the same month read twice moves none, so a move is a month's
-- **L5441 65: the count-up only at 1x-10x (Bank and the fund)**
-  - L5465 a month landing starts
-  - L5515 an animation running when a month lands past COUNT_UP_TOP is stopped on
-- **L5651 66: the boxes keep the player's hand**
-  - L5661 the city has a piece of paper to close
-- **L5689 67: the hover is kept (Bank, Finances, the fund)**
-  - L5715 a
-  - L5884 fixture:
-  - L5887 restored
-  - L5893 the same release predicate rejects an actual fresh
-  - L5900 the same retired page releases when the deliberate strong root is dropped
-- **L5910 The Government tab (KP6)**
-  - L5963 fixture: Spending's debt fold has a long-dated line to open
-  - L5997 the central bank's printing and the arrears owed cause the cards they are meant to (CENTRAL BANK lines
-- **L6085 74b: Trade's warning past the bound reads the month's dealing and the regime (XI2)**
-  - L6088 fixture (74b): the city has a GDP to measure the bound against
-  - L6091 fixture (74b): each of two pieces (
-  - L6106 ...two pieces under the bound cross it together: the warning shows though the ask alone is under it
-  - L6108 ...its title is the month's dealing, 18% of a year
-  - L6109 ...and it says what is dealt already
-  - L6111 fixture: the piece on top of what is dealt and the piece alone read differently (
-  - L6112 ...the warning's figure is the piece on top (
-  - L6115 ...an ask past the bound alone warns
-  - L6117 ...its title is the ask, 11% of a year
-  - L6118 ...and nothing is said of what is dealt already
-  - L6119 ...its figure is the piece alone
-  - L6122 ...a sale that leaves the month's dealing past the bound warns, the sale alone being far under it
-  - L6124 ...its title is the month's dealing, 15% of a year
-  - L6125 ...and the sale's move is a dearer D$ (÷)
-  - L6128 fixture: the regime is the peg
-  - L6129 ...the warning shows
-  - L6131 ...it says the rate stays at the peg and does not say the deal moves nothing
-  - L6132 ...it says the float's own rate behind the peg moves by the piece on top (
-  - L6134 ...and the model holds the deal at the peg
-  - L6137 fixture: the regime is the band
-  - L6138 ...the warning shows
-  - L6140 ...the model carries the move past the weak edge, so the band holds it there
-  - L6141 ...the warning says the rate stops at its edge and that the float's own rate would move by the piece on top
-  - L6147 ...the warning shows
-  - L6149 ...the model keeps the move inside the edges, so the band holds nothing of it
-  - L6151 ...the warning says the rate stays inside the band and moves by the piece on top
-  - L6154 the city is as it was: the regime (
-- **L6160 The Trade tab (KP6)**
-  - L6169 the tab has its six pages (
-  - L6176 the city trades with three nations, whose pages can be opened (
-  - L6301 the fold of the eight over the years holds its charts (
-  - L6309 ...each chart as wide as the card it sits in, on the kept draw and the month after
-  - L6310 ...and the card is not as wide as a chart made before it has a card (794 px and its padding): the width is the card's
-  - L6311 ...the page equal to a page built new
-- **L6373 The Policy tab (KP6)**
-  - L6581 People's page, with people short of food (
-  - L6752 a draw with nothing changed sets the reading's text and style no more (
-  - L6755 ...and the counter hears a text set by hand (
-  - L6756 a slider pressed is held
-  - L6757 a month landing on a held slider leaves the same slider node, still held
-  - L6758 ...its value still the thumb's (
-  - L6759 ...the reading the thumb's words (\"
-  - L6760 ...Ladder.shown() the thumb's value
-  - L6761 ...the card's effects drawn at the thumb (
-  - L6763 ...the line under the dial followed the thumb while it was dragged (it says the held step's words)
-  - L6764 ...and a month landing under the hand leaves the held step's words under the thumb, not the city's step's
-  - L6767 ...and nothing staged before the release
-  - L6769 ...and nothing applied before the release (the model at
-  - L6771 a slider released is not held
-  - L6773 ...the change is staged at the thumb (
-  - L6775 ...the change is applied at once, the model at the thumb (
-  - L6778 ...and the page is the same slider, kept, equal to a page built new
-  - L6849 ...the held slider is the same node, still held, at the thumb (
-  - L6850 ...its reading the thumb's (\"
-  - L6851 ...and no dial in front of it carries its thumb
-  - L6852 ...released, the page is equal to a page built new
-  - L6854 ...the card taken away and the change dropped: the page is equal to a page built new
-- **L6860 78: a card comes in front of a held dial**
-  - L6875 a tax has two payers with a row and a dial of their own to open (
-  - L6906 a sector's ITS TAXES card has a
-  - L6960 fixture: both SOLD and BOUGHT prior saved-month words
-  - L7013 the no-count predicate rejects both actual counts started from changed saved-month words
-- **L7071 79: the count-up only at 1x-10x (Trade; Government and Policy have none)**
-  - L7095 a month landing starts
-  - L7144 a count running when a month lands past COUNT_UP_TOP is stopped on
-  - L7153 equal SOLD and BOUGHT saved-month words start no count at a slow clock
-  - L7156 equal SOLD and BOUGHT saved-month words start no count at a paused clock
-- **L7214 80: the hover is kept (Government, Trade, Policy)**
-  - L7238 fixture: a zone stands, for the ground's rows (
-- **L7250 80: the tooltips are kept (Government, Trade, Policy)**
-  - L7301 the
-  - L7398 the sentence for
-- **L7481 99: in a city founded the default way the Overview is one quiet card, Funding says there is nothing to find, and the hub has a Research card**
-  - L7487 the Research area's first page is the Overview, where a door to the area lands (
-  - L7492 ...and a door to the area (Policy's open(area, null)) lands on it:
-  - L7496 the Overview is the one card that says there is nothing to research (
-  - L7504 Funding has a card for each of the four fields
-  - L7505 ...each ending in the sentence that every discovery is known from the start, so a grant buys posts whose researchers have nothing to work on
-  - L7508 ...a grant and a prize dial on each (
-  - L7509 ...and no lab could come: each prize says nothing is to be found
-  - L7522 fixture: founded the default way, with a University, a grant that bought posts, researchers holding them and every one of them idle (
-  - L7526 fixture: ...and the posts the grant bought (
-  - L7527 the Overview, with a grant set, says what its posts are doing:
-  - L7530 ...and with no researcher (the played city) there is no such line
-  - L7550 a grant staged on Engineering in a default city shows the tray with its chip (
-  - L7552 ...the posts it buys, as the model counts them (
-  - L7555 ...and its sentence is still that there is nothing to find
-  - L7565 fixture: the grant taken away, a month on: no post is held, and the faculty are still at research (
-  - L7569 the Overview then says the researchers are the schools' own staff, and claims no post a grant bought and no cost
-  - L7575 the hub has a Research card: its title, the researchers at work (
-- **L7582 99: the Overview in a city founded the 1900 way, kept: four figures, a row a field, a row a kind of school**
-  - L7592 fixture: the town has researchers at work, a bill, problems in reach in some field and none in others, and three kinds of school
-  - L7599 RESEARCHERS AT WORK is the people at work on a problem (
-  - L7601 A MONTH is the research bill (
-  - L7603 FOUND HERE is the finds (
-  - L7605 IN REACH is the problems open (
-  - L7622 a row for each field: its name, its schools, its researchers with the labs' and the idle among them, what is in reach, what it found here and had from abroad...
-  - L7631 a row for each kind of school that stands: its name and count, and the posts it carries of each field it hosts (
-  - L7638 ...the posts there filled and the room there, as the model's shares of each field
-  - L7653 the hub's Research card: its title,
-  - L7658 ...a door: a press on the card opens the Research area on its Overview (
-- **L7665 100: the Funding page, kept: a card a field, a grant and a prize staged through Policy's set and tray, their rows before and after**
-  - L7677 a grant and a prize dial on each of the four cards (
-  - L7695 each card shows its field and schools, the room and what a post costs, where labs come, and the rows at the dials in force: the researchers, the posts of the...
-  - L7697 ...and the sentence the model's reads choose: nothing in reach for medicine, business and law (their problems wait on ideas nobody has), the problems in reac...
-  - L7701 medicine's prize in force is in its \"A find pays out\" row (
-  - L7709 fixture: engineering has a threshold for a lab (
-  - L7733 a grant staged three posts up on engineering: the tray with its chip (\"
-  - L7736 ...THE BUDGET is the balance with the posts' bill (
-  - L7738 ...the rows move (
-  - L7741 ...and the sentence the reads choose for the case:
-  - L7742 ...the page equal to a page built new
-  - L7748 a grant past the room buys the room and no more (
-  - L7753 a prize under what a lab needs: its sentence says so, and the row \"A find pays out\" shows the prize (
-  - L7781 Apply all through the tray's own path sets the engineering grant (
-  - L7785 ...each change logged as the promises are (
-  - L7815 an Engineering Research Lab standing (
-  - L7817 ...and the card's researchers are the field's and the lab's (
-- **L7823 101: Services > Education's research posts, Government's Research line and payroll, and the wage floor: the research staff counted**
-  - L7832 each kind of school that hosts research and stands has its research posts line - the University, the Institute of technology and the Medical school - saying ...
-  - L7834 ...and no other card has one (the Business and Law schools, not built; the ladder's stages and the college host none)
-  - L7846 fixture: the research bill is above nothing and is in the accounts' total expenses (
-  - L7848 the Spending list has a Research line (the last of
-  - L7852 ...the page names it with the accounts' figure (
-  - L7856 ...a page that Policy has
-  - L7858 the prizes paid to the labs are in the Subsidies line, as the books strike them (
-  - L7864 the Research line opened shows who is paid: the posts' pay (
-  - L7872 the city's own payroll is the care, the schools and the research posts (
-  - L7876 Government's AGAINST THE ECONOMY names the research staff with the payroll (
-  - L7883 the floor in force shows no change of the city's own payroll: the payroll at the floor in force is the payroll (
-  - L7885 ...the card of what the city itself pays lists the research posts (
-  - L7889 the hub's Wages card names the research staff with the payroll
-- **L7918 95: in a city founded the default way the page is one quiet card**
-  - L7921 the Research area's Found page is one of the fixed pages section 77's default bench walks (KeptBench.policyPages())
-  - L7930 the default city's page is the one card that says nothing is found (
-  - L7933 ...and City History draws no discovery flag there
-- **L7950 95: what the page shows, from the model's own reads**
-  - L7965 fixture: the town has a find here, discoveries from abroad, a recipe in use and a piece of equipment (
-  - L7967 the lead counts them: \"
-  - L7979 every discovery is a dot whose tooltip names it and says how the city came to know it, in the model's own month and years ahead
-  - L7980 a FOUND HERE row for each find: its name and how many years before the world
-  - L7991 a RECIPES IN USE row for each way: its name, how many of the building's stack run it, and where it came from
-  - L8004 an EQUIPMENT FITTED row for each piece: its name, how many of its buildings carry it
-  - L8005 ...with the sector's own verdict in words (
-  - L8006 ...each row a door to its sector's Investors page (a click, and the tooltip that says so)
-  - L8011 the timeline is one pane with four charts under it (a researchers, a money, a found-against-abroad and a spread chart):
-  - L8023 laid out, there is a dot for each of the
-  - L8024 ...and no two dots stand on each other
-- **L8034 95: the timeline's stacking, its year ticks and City History's flags, as pure helpers**
-  - L8037 the slot is the dot's width and its gap (
-  - L8040 two dots a pixel apart stack: the second stands one above the first
-  - L8042 two dots far apart share the floor
-  - L8045 exactly the slot apart they do not stack, one pixel less they do
-  - L8048 a bunch of three climbs, and a dot with room again goes back to the floor
-  - L8051 dots of one month stack one on another, no level past the count
-  - L8053 a wider plot parts dots that a narrow one stacked, and a narrower one stacks dots that were apart
-  - L8056 and the same row at the same width stacks the same way twice
-  - L8068 the year ticks are Januaries inside the axis, at least
-  - L8070 a narrower plot has fewer ticks, a wider one more
-  - L8073 a flag's head counts its decisions and its discoveries apart, singular and plural right
-  - L8084 a discovery's flag has the research violet (
-  - L8092 YOUR DECISIONS lists the decisions, newest first, and leaves the discoveries out
-  - L8094 ...and only those in the window: 6 to 7 holds a discovery and no decision
-  - L8096 a flag counts its decisions alone (a month of one decision and a find counts one; a find alone, none)
-  - L8103 the flags City History is handed carry each of the town's
-- **L8116 88: the clock never rebuilds a rail screen**
-  - L8123 a page drawn the old way twice under one name moves the in-place count by one (it moved
-  - L8124 ...and the next real screen shown, an arrival, does not move it (it moved
-  - L8185 the clock's redraw of
-  - L8186 ...and left its page's top nodes the same nodes (
-  - L8187 ...and the screen on show is still
-  - L8188 ...and the redraw ran over the screen's own nodes (
-- **L8207 Household money (KP7)**
-  - L8224 the grid has cells to open, family cells and rows below the rule (
-  - L8256 the open cell's books sit beside the grid at the full width and under it at 1000 wide (beside:
-- **L8266 The Rankings tab (KP7)**
-  - L8317 the city is saved into slot 10 of the harness's scratch folder (the player's own folder is refused)
-  - L8339 the read of the saved cities landed, its worker's own answer waited on, with the saved city on the board (
-- **L8428 89: the hover is kept (Household money, the Rankings tab)**
-  - L8448 Household money: a limitCell was found on the page of this city, to put the pointer on
-  - L8449 the Rankings tab: a measure line was found on the page of this city, to put the pointer on
-  - L8450 the Rankings tab: a table row was found on the page of this city, to put the pointer on
-- **L8455 89: the tooltips are kept (Household money, the Rankings tab)**
-  - L8481 fixture:
-  - L8491 the pages of
-- **L8525 91: a slider greyed while held lets go**
-  - L8572 a slider
-  - L8575 a slider
-  - L8576 ...released elsewhere while greyed it lets go (held
-  - L8577 ...ungreyed, a draw with another value staged puts the thumb on it (
-  - L8579 ...and the page is equal to a page built new
-  - L8581 ...the staged value dropped, the thumb is back at the city's (
-  - L8615 ...a draw with nothing changed sets no door card's style (
-  - L8617 ...and the counter hears a style set by hand (
-  - L8655 a second kept draw of
-- **L8695 92: a redraw with nothing new sets nothing**
-  - L8719 a style set to what it is moves no listener, and set to another and back moves it twice (
-  - L8727 a berth kind that goes to none is drawn as a row built new with none, bounds and all
-  - L8732 the city has a plain business and a materials industry with works to draw (
-  - L8746 the first note on
-  - L8792 the city's books hold a piece of paper (the fixture's premise for a line's page and Close it now:
-  - L8799 the fund lists a security (the fixture's premise for a security's page:
-  - L8805 the city trades with a nation (the fixture's premise for a nation's page:
-  - L8813 the window abroad is shut (the fixture's premise):
-  - L8829 the grid has a cell to open (the fixture's premise for Household money's open cells:
-- **L8902 93: the Rankings table keeps its hand, and its band follows a pointer a wheel leaves still**
-  - L8911 the Rankings table's picture has the hand, and a kept draw of the page writes its cursor none
-  - L8919 the Rankings table: after a wheel scrolls the page under a still pointer, and after a month lands, the band is on the row the pointer is over now
-  - L8933 the Rankings tab has a saved city on its board (the fixture's premise for Your cities:
-- **L9010 The drawer's bar, the construction tab and the speed's reading (UP7)**
-  - L9016 the city has stacks enough to put three on site (
-  - L9027 the first draw made the bar's nodes and the tab's (
-  - L9078 after the first, each of
-  - L9080 ...and the nodes are the same objects in the same boxes (
-  - L9081 the tab's count is the number of sites the city has, in every state (
-  - L9082 the kept bar and tab's signature equals the new ones' in every state (
-  - L9084 the kept bar and tab are the same pictures as the new ones at three states, to SHADE_LEVELS (
-  - L9104 the tab's count made wrong by hand (\"
-  - L9105 ...and its picture
-  - L9106 ...and the next kept draw sets it right again
-  - L9132 a second kept draw of the bar and of the tab in the same state sets no style, text, graphic, padding or width (
-  - L9133 ...and a draw after the pin is flipped does set the bar's words and look (
-  - L9157 the tab drawn again under a still pointer keeps its hover look, and loses it when the pointer goes
-  - L9159 ...and drawn with the panel open it has that look with the pointer away
-  - L9180 the tab's tooltip, the pin's and the close's are the same objects across draws
-  - L9181 ...the tab's words follow the count (nothing on site, 1 site, 3 sites) and the panel (open, then fold)
-  - L9184 ...the pin's follow the pin (\"
-  - L9186 ...and the delays are the tab's own 300 ms and the pin's 1,000 (
-  - L9217 the bar's pin and close and the tab have their click handlers after a kept draw, after one built new and after the kept draw again
-  - L9220 ...fired, the pin pins and unpins the drawer and draws the bar, and the tab opens and folds the panel (prefs saved in the scratch city)
-- **L9257 98: the speed's reading is the speed reached, alone and in amber, in one width**
-  - L9289 the reading's one width is the widest text it can show, and never under 34 (
-  - L9325 at pace, at every rung, the reading is the rung's words in the header's colour (
-  - L9327 ...laid out at the one width (
-  - L9328 ...and exactly as a label made the old way is (min width 34, the old style, the same words): the same width and height (
-  - L9330 ...and no reading's words are clipped (
-  - L9361 short of the rung, at every rung, the reading is pace.reached() alone, with no rung beside it (
-  - L9363 ...in amber (WARN) and nothing else changed in its style (
-  - L9364 ...at the one width (
-  - L9365 ...and the clock block's width and the money block's, the tiles' and the rating's x are the same as at pace (
-  - L9375 with the clock stopped the reading is the rung in the header's colour, though the pace was short
-  - L9402 the kept header's signature equals a header built new, at pace and short, at every rung (
-  - L9424 a second header draw at pace writes nothing on the reading (
-  - L9425 paintSpeed() with the reading unchanged writes nothing, at pace and short (
-  - L9427 a flip from pace to short sets the words once and the style once (
-  - L9428 ...and back sets them once each (
-  - L9429 ...and a header draw that finds the pace short sets them once each, the next draw nothing (
-- **L9453 103: the geometry and retention repairs of FB2, each caused on its own**
-  - L9457 fixture:
-  - L9482 fixture: one holder's face moves its bar by
-  - L9484 the buyback ladder whose one bar moved by a hundredth of a pixel stays the nodes it was, and shows what a ladder built new and told it shows
-  - L9486 ...and when that bar moved by half a pixel it is drawn again, and shows what a ladder built new and told it shows
-  - L9496 fixture: the header tile shows its longest wording at some widths and hides it at others (
-  - L9507 the header tile told the same words at each width equals a tile built new at that width (
-  - L9517 fixture: the bar's dial tick is named in some states and not in others (
-  - L9528 the bar whose dial tick comes and goes equals a bar built new in each state (
-  - L9540 fixture: Partners' chart is drawn at the one size in every telling (
-  - L9541 Partners' chart told other places for the buyers to join is the same picture as one built new, to the pixel (pixels that differ:
-  - L9546 fixture: Search's rows are told words that come and go (the kept page reads differently in the second state than the first)
-  - L9557 Search's rows whose price, move and held words come and go equal rows built new in each state (
-  - L9563 fixture: the lines made their nodes when they first came, and the lines never seen before made theirs (made, a state each:
-  - L9565 the lines that came back made no node, the ring's slices, the key's rows, the bridge's steps and the statement's rows among them (
-  - L9567 ...and the lines away made none either (
-  - L9572 fixture: more one-off lines are parked than a scope can hold (
-  - L9573 the recurring lines asked again after the one-offs filled the scope were kept, not let go with them (
-  - L9583 the page of lines that come and go equals a page built new in each state (
-  - L9597 fixture: attaching the actual rail starts its minimap pump, and no-window layout stops it
-  - L9602 a held fixture UI releases its completed bench
-  - L9607 the no-window minimap pump does not retain a dropped fixture UI
-  - L9612 the cache release refuses the FX thread
-  - L9616 fixture: the real ScrollPane skin caches its viewport
-  - L9626 the real viewport owns a bitmap, and invalidate releases that bitmap
-  - L9630 fixture: invalidating the real viewport returned an image to the idle pool
-  - L9631 idle effect images release without changing the locked-image count
-  - L9636 the retained node graph has reconstructible bitmaps, and invalidation clears them
-  - L9637 a renderer-cache purge preserves the kept page's signature and every node identity
-  - L9639 bitmap invalidation changes no retained node's cached flag or hint
-  - L9641 a renderer-cache purge preserves the exact Canvas render targets
-  - L9642 a renderer-cache purge changes no Policy draw counter
-  - L9643 the kept page's exact picture survives bitmap invalidation
-  - L9644 the real viewport and its Canvas picture survive invalidation
-  - L9647 the viewport fixture really changes its picture
-  - L9649 the viewport's original state redraws the exact original pixels
-  - L9651 normal rendering recreates the viewport bitmap, which releases again
-  - L9653 the final heap sample starts with reconstructible bitmap and idle caches empty
-- **L9658 102: unchanged state stays put, a press survives greying, retired pages are released**
-  - L9669 restored comparisons keep no saved page, boxes or pools (
-  - L9671 an unchanged greyed button and grid change no property or constraint identity
-  - L9672 the draw that omits optional state and constraints resets all of them
-  - L9673 the following draw resets nothing again
-  - L9674 a kept vitals cell from another maker receives the last cell's look on every draw
-  - L9676 the Rankings page starts with its four row handlers and hand cursor
-  - L9677 ...two kept redraws preserve all four handlers and the same row picture's hand
-  - L9678 History starts with its action button's hand cursor
-  - L9679 ...two kept redraws preserve that same action button's hand
-  - L9680 the header starts with mouse-transparent sparklines
-  - L9681 ...two kept redraws preserve those same sparklines' transparency
-  - L9682 Pieces.sparkline starts mouse-transparent when pooled directly
-  - L9683 ...two kept redraws preserve that same directly pooled sparkline's transparency
-  - L9685 an unchanged icon and HBox margin request no layout (
-  - L9686 the sweep counts an equal raw Region.setPrefSize (
-  - L9687 the sweep counts an equal raw HBox.setMargin (
-  - L9716 a real policy thumb holds through a greyed draw during its drag
-  - L9717 ...and through un-greying and a further draw in the same drag
-  - L9718 ...release commits the held value and ends the hold
-  - L9719 ...dropping the staged choice follows the city again
-  - L9725 fixture: soft-only renderer images have zero GC retention age
-  - L9734 the repaint counter does not keep a retired picture alive
-  - L9735 a no-stage chrome scene releases the fresh header after restore
-  - L9745 fixture: the canvases the kept screens hold are found and their render targets read (
-  - L9747 the full kept check's objects leave a quarter of AllChecks.HEAP_MB free (the live heap, less the render targets a software renderer keeps on it)
-- **L9752 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
-- **L9786 1 and 2: the kept page, month after month, against a page built new**
-  - L9811 an unchanged People draw creates no node
-  - L9846 each month's redraw keeps the page it drew (the same top node,
-  - L9848 each month hands back nine in ten of the nodes it draws again, or more (
-  - L9859 the rule fails on People drawn from a pool let go (forgetPeople), a page thrown away (
-  - L9862 the kept page's signature equals the new page's at every month (
-- **L9864 3: and its pixels**
-  - L9866 the kept page and the new page are the same picture at
-  - L9886 one figure made wrong on the kept page (\"
-  - L9888 ...and its picture
-  - L9889 ...and the next kept draw sets it right again
-- **L9891 4: what reshapes the page**
+  - L4984 year
+  - L4986 year
+  - L4989 year
+  - L4990 year
+  - L4991 year
+  - L4993 year
+  - L4995 year
+  - L4996 year
+  - L5037 the warrant fixture gives the previous move multiple wrapped lines
+  - L5041 the warrants replace the preferred in the same row node
+  - L5042 the warrant's current move is empty
+  - L5043 a recycled warrant row clears its wrapped move and equals a page built new
+  - L5096 fixture:
+- **L5150 64: the pictures on the money screens are kept**
+  - L5173 a
+  - L5180 fixture: the paper for the
+  - L5295 fixture: the figures
+  - L5297 fixture: ...and the same month read twice moves none, so a move is a month's
+- **L5449 65: the count-up only at 1x-10x (Bank and the fund)**
+  - L5473 a month landing starts
+  - L5523 an animation running when a month lands past COUNT_UP_TOP is stopped on
+- **L5659 66: the boxes keep the player's hand**
+  - L5669 the city has a piece of paper to close
+- **L5697 67: the hover is kept (Bank, Finances, the fund)**
+  - L5723 a
+  - L5892 fixture:
+  - L5895 restored
+  - L5901 the same release predicate rejects an actual fresh
+  - L5908 the same retired page releases when the deliberate strong root is dropped
+- **L5918 The Government tab (KP6)**
+  - L5971 fixture: Spending's debt fold has a long-dated line to open
+  - L6005 the central bank's printing and the arrears owed cause the cards they are meant to (CENTRAL BANK lines
+- **L6093 74b: Trade's warning past the bound reads the month's dealing and the regime (XI2)**
+  - L6096 fixture (74b): the city has a GDP to measure the bound against
+  - L6099 fixture (74b): each of two pieces (
+  - L6114 ...two pieces under the bound cross it together: the warning shows though the ask alone is under it
+  - L6116 ...its title is the month's dealing, 18% of a year
+  - L6117 ...and it says what is dealt already
+  - L6119 fixture: the piece on top of what is dealt and the piece alone read differently (
+  - L6120 ...the warning's figure is the piece on top (
+  - L6123 ...an ask past the bound alone warns
+  - L6125 ...its title is the ask, 11% of a year
+  - L6126 ...and nothing is said of what is dealt already
+  - L6127 ...its figure is the piece alone
+  - L6130 ...a sale that leaves the month's dealing past the bound warns, the sale alone being far under it
+  - L6132 ...its title is the month's dealing, 15% of a year
+  - L6133 ...and the sale's move is a dearer D$ (÷)
+  - L6136 fixture: the regime is the peg
+  - L6137 ...the warning shows
+  - L6139 ...it says the rate stays at the peg and does not say the deal moves nothing
+  - L6140 ...it says the float's own rate behind the peg moves by the piece on top (
+  - L6142 ...and the model holds the deal at the peg
+  - L6145 fixture: the regime is the band
+  - L6146 ...the warning shows
+  - L6148 ...the model carries the move past the weak edge, so the band holds it there
+  - L6149 ...the warning says the rate stops at its edge and that the float's own rate would move by the piece on top
+  - L6155 ...the warning shows
+  - L6157 ...the model keeps the move inside the edges, so the band holds nothing of it
+  - L6159 ...the warning says the rate stays inside the band and moves by the piece on top
+  - L6162 the city is as it was: the regime (
+- **L6168 The Trade tab (KP6)**
+  - L6177 the tab has its six pages (
+  - L6184 the city trades with three nations, whose pages can be opened (
+  - L6309 the fold of the eight over the years holds its charts (
+  - L6317 ...each chart as wide as the card it sits in, on the kept draw and the month after
+  - L6318 ...and the card is not as wide as a chart made before it has a card (794 px and its padding): the width is the card's
+  - L6319 ...the page equal to a page built new
+- **L6381 The Policy tab (KP6)**
+  - L6589 People's page, with people short of food (
+  - L6760 a draw with nothing changed sets the reading's text and style no more (
+  - L6763 ...and the counter hears a text set by hand (
+  - L6764 a slider pressed is held
+  - L6765 a month landing on a held slider leaves the same slider node, still held
+  - L6766 ...its value still the thumb's (
+  - L6767 ...the reading the thumb's words (\"
+  - L6768 ...Ladder.shown() the thumb's value
+  - L6769 ...the card's effects drawn at the thumb (
+  - L6771 ...the line under the dial followed the thumb while it was dragged (it says the held step's words)
+  - L6772 ...and a month landing under the hand leaves the held step's words under the thumb, not the city's step's
+  - L6775 ...and nothing staged before the release
+  - L6777 ...and nothing applied before the release (the model at
+  - L6779 a slider released is not held
+  - L6781 ...the change is staged at the thumb (
+  - L6783 ...the change is applied at once, the model at the thumb (
+  - L6786 ...and the page is the same slider, kept, equal to a page built new
+  - L6857 ...the held slider is the same node, still held, at the thumb (
+  - L6858 ...its reading the thumb's (\"
+  - L6859 ...and no dial in front of it carries its thumb
+  - L6860 ...released, the page is equal to a page built new
+  - L6862 ...the card taken away and the change dropped: the page is equal to a page built new
+- **L6868 78: a card comes in front of a held dial**
+  - L6883 a tax has two payers with a row and a dial of their own to open (
+  - L6914 a sector's ITS TAXES card has a
+  - L6968 fixture: both SOLD and BOUGHT prior saved-month words
+  - L7021 the no-count predicate rejects both actual counts started from changed saved-month words
+- **L7079 79: the count-up only at 1x-10x (Trade; Government and Policy have none)**
+  - L7103 a month landing starts
+  - L7152 a count running when a month lands past COUNT_UP_TOP is stopped on
+  - L7161 equal SOLD and BOUGHT saved-month words start no count at a slow clock
+  - L7164 equal SOLD and BOUGHT saved-month words start no count at a paused clock
+- **L7222 80: the hover is kept (Government, Trade, Policy)**
+  - L7246 fixture: a zone stands, for the ground's rows (
+- **L7258 80: the tooltips are kept (Government, Trade, Policy)**
+  - L7309 the
+  - L7406 the sentence for
+- **L7489 99: in a city founded the default way the Overview is one quiet card, Funding says there is nothing to find, and the hub has a Research card**
+  - L7495 the Research area's first page is the Overview, where a door to the area lands (
+  - L7500 ...and a door to the area (Policy's open(area, null)) lands on it:
+  - L7504 the Overview is the one card that says there is nothing to research (
+  - L7512 Funding has a card for each of the four fields
+  - L7513 ...each ending in the sentence that every discovery is known from the start, so a grant buys posts whose researchers have nothing to work on
+  - L7516 ...a grant and a prize dial on each (
+  - L7517 ...and no lab could come: each prize says nothing is to be found
+  - L7530 fixture: founded the default way, with a University, a grant that bought posts, researchers holding them and every one of them idle (
+  - L7534 fixture: ...and the posts the grant bought (
+  - L7535 the Overview, with a grant set, says what its posts are doing:
+  - L7538 ...and with no researcher (the played city) there is no such line
+  - L7558 a grant staged on Engineering in a default city shows the tray with its chip (
+  - L7560 ...the posts it buys, as the model counts them (
+  - L7563 ...and its sentence is still that there is nothing to find
+  - L7573 fixture: the grant taken away, a month on: no post is held, and the faculty are still at research (
+  - L7577 the Overview then says the researchers are the schools' own staff, and claims no post a grant bought and no cost
+  - L7583 the hub has a Research card: its title, the researchers at work (
+- **L7590 99: the Overview in a city founded the 1900 way, kept: four figures, a row a field, a row a kind of school**
+  - L7600 fixture: the town has researchers at work, a bill, problems in reach in some field and none in others, and three kinds of school
+  - L7607 RESEARCHERS AT WORK is the people at work on a problem (
+  - L7609 A MONTH is the research bill (
+  - L7611 FOUND HERE is the finds (
+  - L7613 IN REACH is the problems open (
+  - L7630 a row for each field: its name, its schools, its researchers with the labs' and the idle among them, what is in reach, what it found here and had from abroad...
+  - L7639 a row for each kind of school that stands: its name and count, and the posts it carries of each field it hosts (
+  - L7646 ...the posts there filled and the room there, as the model's shares of each field
+  - L7661 the hub's Research card: its title,
+  - L7666 ...a door: a press on the card opens the Research area on its Overview (
+- **L7673 100: the Funding page, kept: a card a field, a grant and a prize staged through Policy's set and tray, their rows before and after**
+  - L7685 a grant and a prize dial on each of the four cards (
+  - L7703 each card shows its field and schools, the room and what a post costs, where labs come, and the rows at the dials in force: the researchers, the posts of the...
+  - L7705 ...and the sentence the model's reads choose: nothing in reach for medicine, business and law (their problems wait on ideas nobody has), the problems in reac...
+  - L7709 medicine's prize in force is in its \"A find pays out\" row (
+  - L7717 fixture: engineering has a threshold for a lab (
+  - L7741 a grant staged three posts up on engineering: the tray with its chip (\"
+  - L7744 ...THE BUDGET is the balance with the posts' bill (
+  - L7746 ...the rows move (
+  - L7749 ...and the sentence the reads choose for the case:
+  - L7750 ...the page equal to a page built new
+  - L7756 a grant past the room buys the room and no more (
+  - L7761 a prize under what a lab needs: its sentence says so, and the row \"A find pays out\" shows the prize (
+  - L7789 Apply all through the tray's own path sets the engineering grant (
+  - L7793 ...each change logged as the promises are (
+  - L7823 an Engineering Research Lab standing (
+  - L7825 ...and the card's researchers are the field's and the lab's (
+- **L7831 101: Services > Education's research posts, Government's Research line and payroll, and the wage floor: the research staff counted**
+  - L7840 each kind of school that hosts research and stands has its research posts line - the University, the Institute of technology and the Medical school - saying ...
+  - L7842 ...and no other card has one (the Business and Law schools, not built; the ladder's stages and the college host none)
+  - L7854 fixture: the research bill is above nothing and is in the accounts' total expenses (
+  - L7856 the Spending list has a Research line (the last of
+  - L7860 ...the page names it with the accounts' figure (
+  - L7864 ...a page that Policy has
+  - L7866 the prizes paid to the labs are in the Subsidies line, as the books strike them (
+  - L7872 the Research line opened shows who is paid: the posts' pay (
+  - L7880 the city's own payroll is the care, the schools and the research posts (
+  - L7884 Government's AGAINST THE ECONOMY names the research staff with the payroll (
+  - L7891 the floor in force shows no change of the city's own payroll: the payroll at the floor in force is the payroll (
+  - L7893 ...the card of what the city itself pays lists the research posts (
+  - L7897 the hub's Wages card names the research staff with the payroll
+- **L7926 95: in a city founded the default way the page is one quiet card**
+  - L7929 the Research area's Found page is one of the fixed pages section 77's default bench walks (KeptBench.policyPages())
+  - L7938 the default city's page is the one card that says nothing is found (
+  - L7941 ...and City History draws no discovery flag there
+- **L7958 95: what the page shows, from the model's own reads**
+  - L7973 fixture: the town has a find here, discoveries from abroad, a recipe in use and a piece of equipment (
+  - L7975 the lead counts them: \"
+  - L7987 every discovery is a dot whose tooltip names it and says how the city came to know it, in the model's own month and years ahead
+  - L7988 a FOUND HERE row for each find: its name and how many years before the world
+  - L7999 a RECIPES IN USE row for each way: its name, how many of the building's stack run it, and where it came from
+  - L8012 an EQUIPMENT FITTED row for each piece: its name, how many of its buildings carry it
+  - L8013 ...with the sector's own verdict in words (
+  - L8014 ...each row a door to its sector's Investors page (a click, and the tooltip that says so)
+  - L8019 the timeline is one pane with four charts under it (a researchers, a money, a found-against-abroad and a spread chart):
+  - L8031 laid out, there is a dot for each of the
+  - L8032 ...and no two dots stand on each other
+- **L8042 95: the timeline's stacking, its year ticks and City History's flags, as pure helpers**
+  - L8045 the slot is the dot's width and its gap (
+  - L8048 two dots a pixel apart stack: the second stands one above the first
+  - L8050 two dots far apart share the floor
+  - L8053 exactly the slot apart they do not stack, one pixel less they do
+  - L8056 a bunch of three climbs, and a dot with room again goes back to the floor
+  - L8059 dots of one month stack one on another, no level past the count
+  - L8061 a wider plot parts dots that a narrow one stacked, and a narrower one stacks dots that were apart
+  - L8064 and the same row at the same width stacks the same way twice
+  - L8076 the year ticks are Januaries inside the axis, at least
+  - L8078 a narrower plot has fewer ticks, a wider one more
+  - L8081 a flag's head counts its decisions and its discoveries apart, singular and plural right
+  - L8092 a discovery's flag has the research violet (
+  - L8100 YOUR DECISIONS lists the decisions, newest first, and leaves the discoveries out
+  - L8102 ...and only those in the window: 6 to 7 holds a discovery and no decision
+  - L8104 a flag counts its decisions alone (a month of one decision and a find counts one; a find alone, none)
+  - L8111 the flags City History is handed carry each of the town's
+- **L8124 88: the clock never rebuilds a rail screen**
+  - L8131 a page drawn the old way twice under one name moves the in-place count by one (it moved
+  - L8132 ...and the next real screen shown, an arrival, does not move it (it moved
+  - L8193 the clock's redraw of
+  - L8194 ...and left its page's top nodes the same nodes (
+  - L8195 ...and the screen on show is still
+  - L8196 ...and the redraw ran over the screen's own nodes (
+- **L8215 Household money (KP7)**
+  - L8232 the grid has cells to open, family cells and rows below the rule (
+  - L8264 the open cell's books sit beside the grid at the full width and under it at 1000 wide (beside:
+- **L8274 The Rankings tab (KP7)**
+  - L8325 the city is saved into slot 10 of the harness's scratch folder (the player's own folder is refused)
+  - L8347 the read of the saved cities landed, its worker's own answer waited on, with the saved city on the board (
+- **L8436 89: the hover is kept (Household money, the Rankings tab)**
+  - L8456 Household money: a limitCell was found on the page of this city, to put the pointer on
+  - L8457 the Rankings tab: a measure line was found on the page of this city, to put the pointer on
+  - L8458 the Rankings tab: a table row was found on the page of this city, to put the pointer on
+- **L8463 89: the tooltips are kept (Household money, the Rankings tab)**
+  - L8489 fixture:
+  - L8499 the pages of
+- **L8533 91: a slider greyed while held lets go**
+  - L8580 a slider
+  - L8583 a slider
+  - L8584 ...released elsewhere while greyed it lets go (held
+  - L8585 ...ungreyed, a draw with another value staged puts the thumb on it (
+  - L8587 ...and the page is equal to a page built new
+  - L8589 ...the staged value dropped, the thumb is back at the city's (
+  - L8623 ...a draw with nothing changed sets no door card's style (
+  - L8625 ...and the counter hears a style set by hand (
+  - L8663 a second kept draw of
+- **L8703 92: a redraw with nothing new sets nothing**
+  - L8727 a style set to what it is moves no listener, and set to another and back moves it twice (
+  - L8735 a berth kind that goes to none is drawn as a row built new with none, bounds and all
+  - L8740 the city has a plain business and a materials industry with works to draw (
+  - L8754 the first note on
+  - L8800 the city's books hold a piece of paper (the fixture's premise for a line's page and Close it now:
+  - L8807 the fund lists a security (the fixture's premise for a security's page:
+  - L8813 the city trades with a nation (the fixture's premise for a nation's page:
+  - L8821 the window abroad is shut (the fixture's premise):
+  - L8837 the grid has a cell to open (the fixture's premise for Household money's open cells:
+- **L8910 93: the Rankings table keeps its hand, and its band follows a pointer a wheel leaves still**
+  - L8919 the Rankings table's picture has the hand, and a kept draw of the page writes its cursor none
+  - L8927 the Rankings table: after a wheel scrolls the page under a still pointer, and after a month lands, the band is on the row the pointer is over now
+  - L8941 the Rankings tab has a saved city on its board (the fixture's premise for Your cities:
+- **L9018 The drawer's bar, the construction tab and the speed's reading (UP7)**
+  - L9024 the city has stacks enough to put three on site (
+  - L9035 the first draw made the bar's nodes and the tab's (
+  - L9086 after the first, each of
+  - L9088 ...and the nodes are the same objects in the same boxes (
+  - L9089 the tab's count is the number of sites the city has, in every state (
+  - L9090 the kept bar and tab's signature equals the new ones' in every state (
+  - L9092 the kept bar and tab are the same pictures as the new ones at three states, to SHADE_LEVELS (
+  - L9112 the tab's count made wrong by hand (\"
+  - L9113 ...and its picture
+  - L9114 ...and the next kept draw sets it right again
+  - L9140 a second kept draw of the bar and of the tab in the same state sets no style, text, graphic, padding or width (
+  - L9141 ...and a draw after the pin is flipped does set the bar's words and look (
+  - L9165 the tab drawn again under a still pointer keeps its hover look, and loses it when the pointer goes
+  - L9167 ...and drawn with the panel open it has that look with the pointer away
+  - L9188 the tab's tooltip, the pin's and the close's are the same objects across draws
+  - L9189 ...the tab's words follow the count (nothing on site, 1 site, 3 sites) and the panel (open, then fold)
+  - L9192 ...the pin's follow the pin (\"
+  - L9194 ...and the delays are the tab's own 300 ms and the pin's 1,000 (
+  - L9225 the bar's pin and close and the tab have their click handlers after a kept draw, after one built new and after the kept draw again
+  - L9228 ...fired, the pin pins and unpins the drawer and draws the bar, and the tab opens and folds the panel (prefs saved in the scratch city)
+- **L9265 98: the speed's reading is the speed reached, alone and in amber, in one width**
+  - L9297 the reading's one width is the widest text it can show, and never under 34 (
+  - L9333 at pace, at every rung, the reading is the rung's words in the header's colour (
+  - L9335 ...laid out at the one width (
+  - L9336 ...and exactly as a label made the old way is (min width 34, the old style, the same words): the same width and height (
+  - L9338 ...and no reading's words are clipped (
+  - L9369 short of the rung, at every rung, the reading is pace.reached() alone, with no rung beside it (
+  - L9371 ...in amber (WARN) and nothing else changed in its style (
+  - L9372 ...at the one width (
+  - L9373 ...and the clock block's width and the money block's, the tiles' and the rating's x are the same as at pace (
+  - L9383 with the clock stopped the reading is the rung in the header's colour, though the pace was short
+  - L9410 the kept header's signature equals a header built new, at pace and short, at every rung (
+  - L9432 a second header draw at pace writes nothing on the reading (
+  - L9433 paintSpeed() with the reading unchanged writes nothing, at pace and short (
+  - L9435 a flip from pace to short sets the words once and the style once (
+  - L9436 ...and back sets them once each (
+  - L9437 ...and a header draw that finds the pace short sets them once each, the next draw nothing (
+- **L9461 103: the geometry and retention repairs of FB2, each caused on its own**
+  - L9465 fixture:
+  - L9490 fixture: one holder's face moves its bar by
+  - L9492 the buyback ladder whose one bar moved by a hundredth of a pixel stays the nodes it was, and shows what a ladder built new and told it shows
+  - L9494 ...and when that bar moved by half a pixel it is drawn again, and shows what a ladder built new and told it shows
+  - L9504 fixture: the header tile shows its longest wording at some widths and hides it at others (
+  - L9515 the header tile told the same words at each width equals a tile built new at that width (
+  - L9525 fixture: the bar's dial tick is named in some states and not in others (
+  - L9536 the bar whose dial tick comes and goes equals a bar built new in each state (
+  - L9548 fixture: Partners' chart is drawn at the one size in every telling (
+  - L9549 Partners' chart told other places for the buyers to join is the same picture as one built new, to the pixel (pixels that differ:
+  - L9554 fixture: Search's rows are told words that come and go (the kept page reads differently in the second state than the first)
+  - L9565 Search's rows whose price, move and held words come and go equal rows built new in each state (
+  - L9571 fixture: the lines made their nodes when they first came, and the lines never seen before made theirs (made, a state each:
+  - L9573 the lines that came back made no node, the ring's slices, the key's rows, the bridge's steps and the statement's rows among them (
+  - L9575 ...and the lines away made none either (
+  - L9580 fixture: more one-off lines are parked than a scope can hold (
+  - L9581 the recurring lines asked again after the one-offs filled the scope were kept, not let go with them (
+  - L9591 the page of lines that come and go equals a page built new in each state (
+  - L9605 fixture: attaching the actual rail starts its minimap pump, and no-window layout stops it
+  - L9610 a held fixture UI releases its completed bench
+  - L9615 the no-window minimap pump does not retain a dropped fixture UI
+  - L9620 the cache release refuses the FX thread
+  - L9624 fixture: the real ScrollPane skin caches its viewport
+  - L9634 the real viewport owns a bitmap, and invalidate releases that bitmap
+  - L9638 fixture: invalidating the real viewport returned an image to the idle pool
+  - L9639 idle effect images release without changing the locked-image count
+  - L9644 the retained node graph has reconstructible bitmaps, and invalidation clears them
+  - L9645 a renderer-cache purge preserves the kept page's signature and every node identity
+  - L9647 bitmap invalidation changes no retained node's cached flag or hint
+  - L9649 a renderer-cache purge preserves the exact Canvas render targets
+  - L9650 a renderer-cache purge changes no Policy draw counter
+  - L9651 the kept page's exact picture survives bitmap invalidation
+  - L9652 the real viewport and its Canvas picture survive invalidation
+  - L9655 the viewport fixture really changes its picture
+  - L9657 the viewport's original state redraws the exact original pixels
+  - L9659 normal rendering recreates the viewport bitmap, which releases again
+  - L9661 the final heap sample starts with reconstructible bitmap and idle caches empty
+- **L9666 102: unchanged state stays put, a press survives greying, retired pages are released**
+  - L9677 restored comparisons keep no saved page, boxes or pools (
+  - L9679 an unchanged greyed button and grid change no property or constraint identity
+  - L9680 the draw that omits optional state and constraints resets all of them
+  - L9681 the following draw resets nothing again
+  - L9682 a kept vitals cell from another maker receives the last cell's look on every draw
+  - L9684 the Rankings page starts with its four row handlers and hand cursor
+  - L9685 ...two kept redraws preserve all four handlers and the same row picture's hand
+  - L9686 History starts with its action button's hand cursor
+  - L9687 ...two kept redraws preserve that same action button's hand
+  - L9688 the header starts with mouse-transparent sparklines
+  - L9689 ...two kept redraws preserve those same sparklines' transparency
+  - L9690 Pieces.sparkline starts mouse-transparent when pooled directly
+  - L9691 ...two kept redraws preserve that same directly pooled sparkline's transparency
+  - L9693 an unchanged icon and HBox margin request no layout (
+  - L9694 the sweep counts an equal raw Region.setPrefSize (
+  - L9695 the sweep counts an equal raw HBox.setMargin (
+  - L9724 a real policy thumb holds through a greyed draw during its drag
+  - L9725 ...and through un-greying and a further draw in the same drag
+  - L9726 ...release commits the held value and ends the hold
+  - L9727 ...dropping the staged choice follows the city again
+  - L9733 fixture: soft-only renderer images have zero GC retention age
+  - L9742 the repaint counter does not keep a retired picture alive
+  - L9743 a no-stage chrome scene releases the fresh header after restore
+  - L9753 fixture: the canvases the kept screens hold are found and their render targets read (
+  - L9755 the full kept check's objects leave a quarter of AllChecks.HEAP_MB free (the live heap, less the render targets a software renderer keeps on it)
+- **L9760 KeptCheck: the People page, the chrome, City History, Infrastructure, Services, the land office, Build, the construction page, the Sector...**
+- **L9794 1 and 2: the kept page, month after month, against a page built new**
+  - L9819 an unchanged People draw creates no node
+  - L9854 each month's redraw keeps the page it drew (the same top node,
+  - L9856 each month hands back nine in ten of the nodes it draws again, or more (
+  - L9867 the rule fails on People drawn from a pool let go (forgetPeople), a page thrown away (
+  - L9870 the kept page's signature equals the new page's at every month (
+- **L9872 3: and its pixels**
+  - L9874 the kept page and the new page are the same picture at
+  - L9894 one figure made wrong on the kept page (\"
+  - L9896 ...and its picture
+  - L9897 ...and the next kept draw sets it right again
+- **L9899 4: what reshapes the page**
 
 ## KeptTimingCheck.java - 5 labelled assertions
 
