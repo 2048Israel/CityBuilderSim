@@ -2745,3 +2745,81 @@ city traced (CreditCrunchCheck's seed 13, REV-R1g3 above), the warm
 months were supply-side: the grocery shelf sat at its cap, and main's
 held luxury index caught up in one step. A2 stays FAIL as on main (13
 months, the same median as main).
+
+### The first dry run's reds (2026-11-25; cbs-gate-R1g-EyG2IaHs)
+
+The dry run on 09f7dd4db exited 1 with six reds not named in the ship file.
+Each one, and what was done about it:
+
+- **KeptCheck and GroundSkipCheck.** Since R1g, `probeCity()` founds the
+  1900 city through `played()`. The subject of these two checks is the city
+  a player founds the default way today, so they now play
+  `LongPlaytest.probeTodayCity()` (agreed with the orchestrator).
+  GroundSkipCheck now reads only LP-G2's known line.
+- **KeptCheck on today's city** still read two reds, both caused by R1g.
+  - The cause: under his price, today's city's Industry is assessed at
+    about a seventieth of main's. Its property-tax bill is $45k a month
+    against $3.3M at month 1,444, while the city is larger (10,811 people
+    against 9,919 at month 605).
+  - `-Dr1g.hisprice=off` clears both reds, and main is clean.
+  - Section 51, rungs 0 and 5, "no month in twelve moved the figures".
+    The swing was three of Industry's $1,000 steps, and that cannot move
+    the list's KEPT, which is printed in $100k steps.
+    Mend ★: the list's view now swings `listMover()`, the business largest
+    by assessed value (Real Estate here), and `businessMoving(..., list)`
+    sizes its swing on the larger of the list's KEPT step and the
+    business's own. The two business views still swing the plain business
+    (`sectorKinds`, unchanged). Each view puts its swing back before the
+    next. On the PC (run 7, `target/r1g-kept-run7.txt`): Real Estate swung
+    between 1.5% and 10% a year, and all of section 51 passed.
+    When it stands still, the line now says why (`stood()`): the KEPT
+    watched, last month's and this, and how many cards moved.
+  - Section 63 ran out of memory after "all of the issuer's matches can be
+    reached". The live set at that point was 2.14 GB of JavaFX nodes:
+    175,513 Labels, 70,631 `Kept$Row` and 21,076 `FundScreen$Found`
+    (main had 1,326 MiB live).
+    Mend: the issuer pressed through is now the one with the fewest matches
+    that still fill one page and leave a partial one. Run 7 searched
+    Restaurants, 170 matches (5 pages of 40), and all of section 63 ran.
+    The full check's live heap was 1,407 MiB of 2,048 (the bound is 1,536).
+- **KeptCheck's reds left on today's city** (run 7, on the PC, 4 FAILED).
+  The fourth is main's known HT1-H row, "fixture: the fund holds a bond".
+  The other three are of the same class, and the ship file names them
+  under HT1-H, the queued row for fixtures that find their condition in
+  the played city instead of causing it. PW3's moved city is named there
+  on main the same way. R1g touches no fund or Kept screen code; its only
+  interface change is FoundingScreen's three lines.
+  - "every row that folds opened on Portfolio", two lines. The Portfolio
+    had no row that folds, because the fund held no bond that lasts
+    (B:2858 bought through the model, and none held). That is the fixture
+    main's row already names.
+  - "nonrepeating content blocks still hand back at least three in four
+    of the nodes drawn again". One reading, bond 2713's book: the month
+    after handed back 74.8% of the nodes it drew again. The condition, a
+    block of the month's content, is a reading the played city happened
+    to give. On main's city the gate's box passes it.
+- **WorldMoneysCheck.** Caused by R1g. A loaded city shared out the premium
+  by the claims rescaled from the saved points, and two months on it parted
+  from its twin by an ulp.
+  - Mend: `DataSave.abroadClaimById` now saves the claims as they are.
+    There is no format bump: an old save lacks the field and reads the
+    rescaled claims as before.
+  - The premium now weighs only the sites with points owed, as
+    `liveClaims()` does.
+- **ShortSellingCheck section 9.** His price moved the 48-month town, and
+  the month before the purchase paid out $9.43 (main: $0.87) against the
+  purchase's $59.33. The premise is restated at
+  `OVER_THE_MONTH` (5) times the month before's flows. The sale's money is
+  now read net of its capital-gains tax ($1.01), as a real sale's gain is
+  taxed.
+- **SaveFileCheck.** The 1-ulp `familyRentWeight` is main's latent rebuild,
+  and main's known-reds row owns it under FRW1. Main is now 0.9.203, and on
+  the merge this check is green.
+- **MapCheck.** The repairs booked as G move section 1's 120-month city,
+  which draws one + junction pair nearer than JUNCTION_APART. This is named
+  in the ship file's known-reds under FS6, MapCheck's queued sweep row.
+- **This session's checks (R1gd, on c21cc77e4's merge plus b8e9fe4bf).**
+  `./batch-check.sh --fast` green; WorldMoneysCheck, ShortSellingCheck and
+  SaveFileCheck green on the PC; GroundSkipCheck exit 3 (LP-G2's known
+  line alone). KeptCheck was not run again here: the PC's KeptCheck slot
+  was RES3's, and run 7 above was of this code. It runs in the dry run.

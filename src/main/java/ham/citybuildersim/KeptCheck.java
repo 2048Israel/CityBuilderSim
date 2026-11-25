@@ -3399,6 +3399,15 @@ public class KeptCheck {
         return !words[0][0].equals(words[0][1]) && cards && (!business || !words[1][0].equals(words[1][1]));
     }
 
+    /** Why no month in twelve moved the figures, by the twelfth month's words: the KEPT watched, last month's and this, and the cards that moved (R1g). */
+    private static String stood(String[][] words, boolean business) {
+        int moved = 0;
+        for (int i = 2; i < words.length; i++) if (!words[i][0].equals(words[i][1])) moved++;
+        String[] kept = words[business ? 1 : 0];
+        return "no month in twelve moved the figures (the twelfth: " + (business ? "the business's" : "the list's") + " KEPT " + kept[0] + " then "
+                + kept[1] + ", " + moved + " of " + (words.length - 2) + " cards moved)";
+    }
+
     /**
      * KS2: the plain business's month made to move while 51 is watched, and what puts it back. Section 51 reads a count-up on a business's
      * figures in a month that moved them, and a business can stand still at the page's tenth of a unit for a year (RB1's path: "no month in
@@ -3408,6 +3417,15 @@ public class KeptCheck {
      * Construction); the offset it had is put back after.
      */
     static Runnable businessMoving(Game g, KeptBench bench, String key) throws Exception {
+        return businessMoving(g, bench, key, false);
+    }
+
+    /**
+     * The swing on `key`, sized on the list's KEPT when `list` (R1g): the list's view waits on the city's total, printed a unit above any
+     * one business's when the city is large, and a swing sized on the business's own steps moved it by a thousandth of its step. Sized on
+     * the larger of the two steps, so the business's card moves too.
+     */
+    static Runnable businessMoving(Game g, KeptBench bench, String key, boolean list) throws Exception {
         Runnable before = afterMonth;
         TaxPolicy p = fx(() -> g.getEconomyManager().getTaxPolicy());
         double offset = fx(() -> p.getPropertyOffset(key)), rate = fx(() -> p.effectivePropertyRate(key));
@@ -3416,7 +3434,7 @@ public class KeptCheck {
         // past a unit ("$950.0M" to "$1.0B") was swung by a thousandth of its new step, and no month in twelve moved it (BO1-S).
         Runnable swing = () -> {
             high[0] = !high[0];
-            g.setZoneTax(key, Zoning.Tax.PROPERTY, high[0] ? swungOffset(g, bench, key, offset) : offset);
+            g.setZoneTax(key, Zoning.Tax.PROPERTY, high[0] ? swungOffset(g, bench, key, offset, list) : offset);
         };
         String bills = fx(() -> {
             Sector s = g.getSectors().byKey(key);
@@ -3424,8 +3442,9 @@ public class KeptCheck {
             swing.run();
             return Money.money(was) + " and " + Money.money(g.getEconomyManager().getPropertyTaxFor(s));
         });
-        System.out.printf("  %s's property tax swung every month between %.3f%% and %.3f%% a year (%d of its net income's printed steps, %s at the start, sized again each month): a bill of %s a month%n",
-                key, rate * 100, fx(() -> p.effectivePropertyRate(key)) * 100, SWING_STEPS, Money.money(fx(() -> printedStep(bench.sectorsWords(key)[1][1]))), bills);
+        System.out.printf("  %s's property tax swung every month between %.3f%% and %.3f%% a year (%d of %s printed steps, %s at the start, sized again each month): a bill of %s a month%n",
+                key, rate * 100, fx(() -> p.effectivePropertyRate(key)) * 100, SWING_STEPS, list ? "the list's KEPT's or its net income's, the larger" : "its net income's",
+                Money.money(fx(() -> swingStep(bench, key, list))), bills);
         afterMonth = () -> {
             if (before != null) before.run();
             swing.run();
@@ -3441,15 +3460,36 @@ public class KeptCheck {
      * has (KS2): up where the tax allows it and down otherwise. The bill is the assessed value at the annual rate over the year's months
      * (TaxPolicy.effectiveMonthlyPropertyRate). Read with the business at `offset`, the swing's low month.
      */
-    static double swungOffset(Game g, KeptBench bench, String key, double offset) {
+    static double swungOffset(Game g, KeptBench bench, String key, double offset, boolean list) {
         TaxPolicy p = g.getEconomyManager().getTaxPolicy();
         double rate = p.effectivePropertyRate(key);
-        double step = printedStep(bench.sectorsWords(key)[1][1]);
+        double step = swingStep(bench, key, list);
         double assessed = g.getEconomyManager().getAssessedValue(g.getSectors().byKey(key));
         double points = assessed > 0 ? SWING_STEPS * step * TreasuryFund.YEAR_MONTHS / assessed : TaxPolicy.MAX_PROPERTY_TAX;
         double to = rate + points <= TaxPolicy.MAX_PROPERTY_TAX ? rate + points
                 : rate - points >= 0 ? rate - points : rate < TaxPolicy.MAX_PROPERTY_TAX / 2 ? TaxPolicy.MAX_PROPERTY_TAX : 0;
         return offset + to - rate;
+    }
+
+    /** The step the swing is sized on: the business's net income's printed step, or the list's KEPT's when that is the larger and `list` (R1g). */
+    static double swingStep(KeptBench bench, String key, boolean list) {
+        String[][] words = bench.sectorsWords(key);
+        double own = printedStep(words[1][1]);
+        return list ? Math.max(own, printedStep(words[0][1])) : own;
+    }
+
+    /** The business the list's view swings (R1g): the largest by assessed value, any business, so a swing of the list's steps is the fewest points of its tax. */
+    static String listMover(Game g) {
+        String mover = null;
+        double largest = -1;
+        for (Sector s : g.getSectors().all()) {
+            double assessed = g.getEconomyManager().getAssessedValue(s);
+            if (assessed > largest) {
+                mover = s.key();
+                largest = assessed;
+            }
+        }
+        return mover;
     }
 
     /** How many of its printed steps the swing moves the business's net income by each month (KS2): past a rounding with room to spare. */
@@ -3495,7 +3535,7 @@ public class KeptCheck {
         List<Animation> before = new ArrayList<>();
         for (javafx.scene.control.Label l : countingFigures(bench, key)) before.add(KeptBench.countOf(l));
         Animation fallBefore = bench.fallGrowth(), sweepBefore = bench.ringSweep();
-        if (!landUntil(g, () -> figuresMoved(bench.sectorsWords(key), key != null))) return "no month in twelve moved the figures";
+        if (!landUntil(g, () -> figuresMoved(bench.sectorsWords(key), key != null))) return stood(bench.sectorsWords(key), key != null);
         bench.showSectors();
         bench.passes();
         String[][] words = bench.sectorsWords(key);
@@ -3561,8 +3601,9 @@ public class KeptCheck {
         System.out.printf("  the ladder has %d rungs, %d of them at or under COUNT_UP_TOP (%.0fx)%n", ladder.length, countingRungs, top);
         String[][] views = {{null, "Operations", "the list's KEPT and its cards'"}, {plain, "Income", "a business's KEPT and the Income page's waterfall"},
                 {plain, "Operations", "a business's KEPT and the Operations page's ring"}};
-        Runnable back = businessMoving(g, bench, plain);
+        String mover = fx(() -> listMover(g));
         for (String[] view : views) {
+            Runnable back = businessMoving(g, bench, view[0] == null ? mover : plain, view[0] == null);
             StringBuilder wrong = new StringBuilder();
             fx(() -> {
                 bench.forgetSectors();
@@ -3589,7 +3630,7 @@ public class KeptCheck {
                 bench.showSectors();
                 bench.finishPageAnimations();
                 bench.passes();
-                if (!landUntil(g, () -> figuresMoved(bench.sectorsWords(view[0]), view[0] != null))) return "no month in twelve moved the figures";
+                if (!landUntil(g, () -> figuresMoved(bench.sectorsWords(view[0]), view[0] != null))) return stood(bench.sectorsWords(view[0]), view[0] != null);
                 bench.showSectors();
                 bench.passes();
                 List<javafx.scene.control.Label> figures = countingFigures(bench, view[0]);
@@ -3598,7 +3639,7 @@ public class KeptCheck {
                 for (javafx.scene.control.Label l : figures) running.add(KeptBench.countOf(l));
                 Animation fall = bench.fallGrowth(), sweep = bench.ringSweep();
                 bench.speed(ladder.length - 1);
-                if (!landUntil(g, () -> figuresMoved(bench.sectorsWords(view[0]), view[0] != null))) return "no month in twelve moved the figures";
+                if (!landUntil(g, () -> figuresMoved(bench.sectorsWords(view[0]), view[0] != null))) return stood(bench.sectorsWords(view[0]), view[0] != null);
                 bench.showSectors();
                 bench.passes();
                 String[][] words = bench.sectorsWords(view[0]);
@@ -3615,11 +3656,11 @@ public class KeptCheck {
             });
             if (stopped != null) System.out.println("  " + view[2] + ": " + stopped);
             check("a count running when a month lands past COUNT_UP_TOP is stopped on " + view[2] + ", and each figure is the month's", stopped == null);
+            fx(() -> {
+                back.run();
+                return null;
+            });
         }
-        fx(() -> {
-            back.run();
-            return null;
-        });
     }
 
     /** The oil reserve's city: OilViewCheck's sea town (a platform with its wells, two land wells, a Strategic Reserve with FILL ordered), its fixture's report lines kept off this output. */
@@ -4914,12 +4955,16 @@ public class KeptCheck {
         }));
         choices.add(choice("Search's final partial page", b -> {
             b.drawKept(tab);
-            // A query naming one issuer causes several pages without drawing the entire old city's market.
-            String issuer = FundView.search(g, "", "Bonds").stream().map(FundView.Hit::issuer).distinct().filter(name -> {
-                int count = FundView.search(g, name, "Bonds").size();
-                return count > rows && count % rows != 0;
-            }).findFirst().orElse(null);
+            // A query naming one issuer causes several pages without drawing the entire old city's market: the issuer with the fewest
+            // matches that still fill a page and leave a partial one (R1g: the first such was taken until R1g, whose today's city put an
+            // issuer first with pages enough that pressing through them, a page built new beside each, took the heap past HEAP_MB).
+            String issuer = FundView.search(g, "", "Bonds").stream().map(FundView.Hit::issuer).distinct()
+                    .map(name -> java.util.Map.entry(name, FundView.search(g, name, "Bonds").size()))
+                    .filter(e -> e.getValue() > rows && e.getValue() % rows != 0)
+                    .min(java.util.Map.Entry.comparingByValue()).map(java.util.Map.Entry::getKey).orElse(null);
             if (issuer == null) return "no issuer causes both a full page and a final partial page";
+            int matches = FundView.search(g, issuer, "Bonds").size();
+            System.out.printf("  the issuer searched: %s, %d matches (%d pages of %d)%n", issuer, matches, (matches + rows - 1) / rows, rows);
             b.fundSearchBox().setText(issuer);
             String more;
             int presses = 0;
