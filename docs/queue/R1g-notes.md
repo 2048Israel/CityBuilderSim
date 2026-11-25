@@ -2907,3 +2907,11 @@ it.
   re-order after a bleed sale; the orchestrator, 2026-11-25). The kept run
   could not be reused (BX2 moved PackagingCheck.java and pick.sh), so the
   gate-run line is dropped and a fresh dry run follows.
+
+### The third dry run, green (2026-11-25; cbs-gate-R1g-kCRUMDgo)
+
+The fresh dry run on the box, of R1g 18483ec2a with main d169af247 (RG1,
+0.9.205), exited 0. The suite ran in 1,325 s, with known reds only, in 18
+harnesses. The run is kept on the box at
+`/home/jerus/cbs/runs/cbs-gate-R1g-kCRUMDgo`, and a copy is at
+`%TEMP%\cbs-gate-R1g-kCRUMDgo`.
