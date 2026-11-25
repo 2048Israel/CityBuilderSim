@@ -2514,15 +2514,21 @@ still went to -0.4 and -4.8 at months 15 and 16
 (`target/ensemble/R1g-gdp15d`). It also turned two of ForeignDebtCheck's
 fixture lines red. The premium form replaced it.
 
-**The fixture.** ForeignCrewsCheck section 9 (header item 9): a city
-played to a backlog, his book priced at `DEARER` (2) times the sites'
-rate a point, his points most of the month, and a twin with
-`-Dr1g.hisprice=off` (`BuildingManager.HIS_PRICE`). Off, the builders
-recognise less work than they pay him for (7,485.0 against 14,868.1: the
-fault). On, the sites earn 14,868.1 for his points, his bill; the
-month's work is at least it; his bill is the twin's; and what the sites
-earned past the twin's, 7,434.06, is what their contracts hold less than
-the twin's, to 1e-9: no money made or lost between payer and site.
+**The fixture.** ForeignCrewsCheck section 9 (header item 9), restated
+for REV-R1g2's P2 below: a calm city whose landlords' Houses have
+finished, the city's cheap work (`CHEAP`, 15 Home Care Service) ordered
+at home under the threshold, then section 7's Coal Power Plant, its
+86,923 points past the threshold handed him at its quote's 0.3987 a
+point. He offers 4,139 points and the plant takes 1,450 a month at most
+(its 60-month build, PW2), so his crews go to the cheap sites too. A
+twin runs with `-Dr1g.hisprice=off` (`BuildingManager.HIS_PRICE`). Off,
+the builders recognise less work than they pay him for (955.9 against
+1,650.2: the fault). On, the sites earn 1,650.2 for his points, his
+bill; the month's work is at least it; his bill and the points owed are
+the twin's; what the sites earned past the twin's, 699.46, is what their
+contracts hold less than the twin's, to 1e-9; and the cheap sites'
+contracts fell alike in both: the premium came out of the plant's
+contract, whose payer paid his price.
 
 **The probe on the box** (`target/ensemble/R1g-gdp15e`, classes of
 3b74e6cf8, AUTO2 seeds 4-7, 60 months): no negative month on any seed;
@@ -2539,3 +2545,34 @@ serial-schedule line (`docs/notes/gate.txt`).
 
 `BuildingManager.HIS_PRICE` is a mutable static, as P3's are: set only
 inside ForeignCrewsCheck section 9, put back in a `finally`.
+
+### REV-R1g2's mends (2026-11-25)
+
+The money review of the mend (REV-R1g2): SHIP, no P1. Output is what was
+paid over the contract's life (SNA 2008 6.112), no money is made or lost,
+and the order and the saves are right. Two small ones:
+
+- **P2, ForeignCrewsCheck section 9**: its `dearer()` raised his price
+  with one point no quote paid, so the 7,434 it earned ahead was the
+  landlords' money for their own work, not a premium anyone paid. It now
+  causes the fault with an order quoted dear: the plant (the fixture
+  above). `DEARER` and `dearer()` are gone. It adds "the twins owe the
+  same points" and "the cheap sites' contracts fell alike".
+- **P3, `BuildingsStacks.earnAhead()`**: what it may take is capped by
+  `getHomeContractValue()`, which is the lesser of the home contracts'
+  sum and the site's value, while it shared the take by that capped
+  figure. Were the site's value below its contracts' sum, the dues would
+  have summed past what the site earned. It now shares the take by what
+  the contracts hold (39bcef763), so the dues sum to the take exactly. In
+  every city played the two agree, so the model is the one reviewed.
+
+**A bound found writing P2, put to the orchestrator.** The floor compares
+his bill with what his share of the month earned, and that includes the
+material allowance priced into the contracts (`bookContract`; the
+escalation in `Game.settleSiteContracts()` adds only the material less
+the allowance). So in a month the premium binds, his points earn his
+bill with their material inside it, and the builders' value added on
+them reads minus their material, not zero. The fix is to set the premium
+at his bill less what his share earned net of its allowance. It would
+bind in most months he builds, since his price is above the sites' own
+price net of material.
