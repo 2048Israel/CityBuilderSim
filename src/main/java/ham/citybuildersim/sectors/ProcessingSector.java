@@ -183,11 +183,6 @@ public abstract class ProcessingSector extends Sector {
         return pricePerWattIndustry;
     }
 
-    /** What its works' surplus is paid: the struck book's price of a kW the works sold the grid (Sector.getPowerSoldValue()). */
-    public double worksTariff() {
-        return pricePerWattWorks;
-    }
-
     /** What one of `t` would make less what it would use a month at `rate`, each valued as one more of it would change the city's trade (pure): made at Values.out(), used at Values.in(). */
     public static double gross(BuildingsTemplate t, SpreadPlanner.Values v, double rate) {
         return gross(NewUnit.standing(t), v, rate);
@@ -213,19 +208,27 @@ public abstract class ProcessingSector extends Sector {
      * One building weighed (pure in its arguments): what one more would earn
      * a month at the city's values and the frame's rate - gross() less its
      * running and standing costs and SpreadPlanner.ownCosts() - asked every
-     * gate, its feed's refusal `feed` (null for none).
+     * gate, its feed's refusal `feed` (null for none). At the one flat
+     * `tariff` for its draw and its surplus both: a check's frame; the
+     * sector weighs with the two prices below (PW1-R).
      */
     public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
                                                    double factor, double tariff, String feed) {
-        return estimate(city.unit(t), v, city, factor, tariff, feed);
+        return estimate(city.unit(t), v, city, factor, tariff, tariff, feed);
+    }
+
+    /** ...with its own draw's power at `tariff` and its surplus at `worksTariff`, as the bill pays it (PW1-R). */
+    public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
+                                                   double factor, double tariff, double worksTariff, String feed) {
+        return estimate(city.unit(t), v, city, factor, tariff, worksTariff, feed);
     }
 
     /** ...for one new building already resolved (QN1): its own makes, uses, posts, draw, consumables and power. */
     public static SpreadPlanner.Candidate estimate(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city,
-                                                   double factor, double tariff, String feed) {
+                                                   double factor, double tariff, double worksTariff, String feed) {
         BuildingsTemplate t = u.template();
         double rate = city.rate(u);
-        double earns = gross(u, v, rate) - city.running(u) - city.standing(t) - SpreadPlanner.ownCosts(u, rate, factor, tariff);
+        double earns = gross(u, v, rate) - city.running(u) - city.standing(t) - SpreadPlanner.ownCosts(u, rate, factor, tariff, worksTariff);
         return SpreadPlanner.judge(t, earns, city.cost(t), feed, city, null);
     }
 
@@ -241,35 +244,42 @@ public abstract class ProcessingSector extends Sector {
     public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
                                                    double factor, double tariff, String feed, double share, double other,
                                                    double extraCost) {
-        return estimate(city.unit(t), v, city, factor, tariff, feed, share, other, extraCost);
+        return estimate(city.unit(t), v, city, factor, tariff, tariff, feed, share, other, extraCost);
     }
 
-    /** ...for one new building already resolved (QN1). */
+    /** ...for one new building already resolved (QN1), its surplus at `worksTariff` (PW1-R). */
     public static SpreadPlanner.Candidate estimate(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city,
-                                                   double factor, double tariff, String feed, double share, double other,
-                                                   double extraCost) {
-        if (share == 1 && other == 0 && extraCost == 0) return estimate(u, v, city, factor, tariff, feed);
+                                                   double factor, double tariff, double worksTariff, String feed, double share,
+                                                   double other, double extraCost) {
+        if (share == 1 && other == 0 && extraCost == 0) return estimate(u, v, city, factor, tariff, worksTariff, feed);
         BuildingsTemplate t = u.template();
         double rate = city.rate(u) * share;
-        double earns = gross(u, v, rate) - city.running(u) - city.standing(t) - SpreadPlanner.ownCosts(u, rate, factor, tariff)
+        double earns = gross(u, v, rate) - city.running(u) - city.standing(t) - SpreadPlanner.ownCosts(u, rate, factor, tariff, worksTariff)
                 - other;
         return SpreadPlanner.judge(t, earns, city.cost(t) + extraCost, feed, city, null);
     }
 
-    /** What the last one of `t` standing earns a month (pure): grossStanding() less the same costs a candidate's earnings lose. */
+    /** What the last one of `t` standing earns a month (pure): grossStanding() less the same costs a candidate's earnings lose; its power at the one flat `tariff`, a check's frame. */
     public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
                                    double factor, double tariff) {
+        return lastEarns(t, v, city, factor, tariff, tariff);
+    }
+
+    /** ...with its own draw's power at `tariff` and its surplus at `worksTariff`, as the bill pays it (PW1-R). */
+    public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
+                                   double factor, double tariff, double worksTariff) {
         double rate = city.rate();
-        return grossStanding(t, v, rate) - city.running(NewUnit.standing(t)) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff);
+        return grossStanding(t, v, rate) - city.running(NewUnit.standing(t)) - city.standing(t)
+                - SpreadPlanner.ownCosts(t, rate, factor, tariff, worksTariff);
     }
 
     /** ...run at `share` of the sector's rate and paying `other` a month past its running, standing and own costs (0.7.123): lastEarns() above at a share of 1 and none. */
     public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city,
-                                   double factor, double tariff, double share, double other) {
-        if (share == 1 && other == 0) return lastEarns(t, v, city, factor, tariff);
+                                   double factor, double tariff, double worksTariff, double share, double other) {
+        if (share == 1 && other == 0) return lastEarns(t, v, city, factor, tariff, worksTariff);
         double rate = city.rate() * share;
-        return grossStanding(t, v, rate) - city.running(NewUnit.standing(t)) - city.standing(t) - SpreadPlanner.ownCosts(t, rate, factor, tariff)
-                - other;
+        return grossStanding(t, v, rate) - city.running(NewUnit.standing(t)) - city.standing(t)
+                - SpreadPlanner.ownCosts(t, rate, factor, tariff, worksTariff) - other;
     }
 
     /*
@@ -400,7 +410,7 @@ public abstract class ProcessingSector extends Sector {
         BuildingsTemplate t = u.template();
         double share = feedShare(t);
         double rate = share == 1 ? city.rate(u) : city.rate(u) * share;
-        return estimate(u, v, city, exchangeFactor(), tariff(), feedRefusal(t), share,
+        return estimate(u, v, city, exchangeFactor(), tariff(), worksTariff(), feedRefusal(t), share,
                 offMarketFeed(t, rate) + freightRunning(u, v, rate, legPrice()), fleetCapital(u, v));
     }
 
@@ -741,7 +751,7 @@ public abstract class ProcessingSector extends Sector {
             public String staff(BuildingsTemplate b) { return city.staff(b); }
             public String money(double earns, double cost) { return city.money(earns, cost); }
         };
-        return lastEarns(t, v, standing, exchangeFactor(), tariff(), share, offMarketFeed(t, rate) + freightRunning(t, v, rate, legPrice()));
+        return lastEarns(t, v, standing, exchangeFactor(), tariff(), worksTariff(), share, offMarketFeed(t, rate) + freightRunning(t, v, rate, legPrice()));
     }
 
     /** Whether the plan weighs a building of its, and the idle book counts its kind (weighs()): one that makes something. */
@@ -761,7 +771,7 @@ public abstract class ProcessingSector extends Sector {
         BusinessInvestment plans = game.getBusinessInvestment();
         SpreadPlanner.Values v = values();
         return grossStanding(t, v, rate) - plans.standingRunningCostOf(t) - plans.standingCostOf(this, t)
-                - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), tariff())
+                - SpreadPlanner.ownCosts(t, rate, exchangeFactor(), tariff(), worksTariff())
                 - offMarketFeed(t, rate) - freightRunning(t, v, rate, legPrice());
     }
 }

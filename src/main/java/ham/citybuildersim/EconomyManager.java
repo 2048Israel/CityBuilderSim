@@ -160,6 +160,7 @@ public class EconomyManager {
     public double getPricePerWatt()      { return pricePerWatt; }
     public double getIndustryPricePerWatt() { return pricePerWattIndustry; }
     public double getWorksPricePerWatt() { return pricePerWattWorks; }
+    /** The water's price a unit as the planners read it (and Recipes.pricesOf() with them): the year's mean, the season out (PW1-R); the sectors are billed at their own, the season in. */
     public double getPricePerWaterUnit() { return pricePerWaterUnit; }
 
     /** What a planner values a building's power draw at: the industry price for Heavy Industry and Mining, the commerce price for the rest. */
@@ -180,9 +181,20 @@ public class EconomyManager {
         for (Sector s : sectors.all()) s.setPowerPrices(commerce, industry, works);
     }
 
+    /** The struck book's season (PW1-R), the month's load over the year's mean: each sector's bill is its draw x ratio x season x its price. Set beside setPowerPrices() wherever the book's prices are handed down, the month's strike and the load path. */
+    public void setPowerSeason(double season) {
+        for (Sector s : sectors.all()) s.setPowerSeason(season);
+    }
+
+    /** One water price for the bills and the planners (a fixture's, or a city with no season to tell them apart). */
     public void setPricePerWaterUnit(double price) {
-        pricePerWaterUnit = price;
-        for (Sector s : sectors.all()) s.setPricePerWaterUnit(price);
+        setPricePerWaterUnit(price, price);
+    }
+
+    /** The water's two prices (PW1-R, REV-PW1-R): each sector billed at the month's, the works' power served at the book's season; the planners at the year's mean, so a works' choice does not swing with the month. */
+    public void setPricePerWaterUnit(double billed, double planned) {
+        pricePerWaterUnit = planned;
+        for (Sector s : sectors.all()) s.setPricePerWaterUnit(billed);
     }
 
     public void setEnergyRatio(double ratio) { for (Sector s : sectors.all()) s.setEnergyRatio(ratio); }

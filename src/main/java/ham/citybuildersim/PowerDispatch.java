@@ -337,7 +337,7 @@ public final class PowerDispatch {
             System.arraycopy(price, 0, m.price, 0, HALVES);
             m.meritOrder = List.copyOf(meritOrder);
             m.askedKwh = askedKwh; m.servedKwh = servedKwh; m.curtailedKwh = curtailedKwh;
-            m.ratio = ratio; m.energyPrice = energyPrice;
+            m.ratio = ratio; m.energyPrice = energyPrice; m.season = season;
             return m;
         }
         /** Per half-block: the load asked (kW, losses in), what was left unserved (kW), and the price it cleared at (city money a kWh). */
@@ -347,6 +347,8 @@ public final class PowerDispatch {
         public double ratio = 1;
         /** City money a kWh DELIVERED: the sum over half-blocks of served kWh x price, over servedKwh, over (1 - GRID_LOSSES); 0 when nothing is served. */
         public double energyPrice;
+        /** The season the month was dispatched at, its load over the year's mean (SEASON at the city's calendar): a kW drawn is served season x MONTH_HOURS kWh, which the bills charge (PW1-R); 1 in a save from before it, which billed the mean. */
+        public double season = 1;
     }
 
     /* ===== THE CALENDAR AND THE WEATHER ===== */
@@ -397,6 +399,7 @@ public final class PowerDispatch {
     public static Month dispatch(List<Row> rows, double drawKw, double season, double voll, double carryKw) {
         Month m = new Month();
         List<Integer> observedOrder = new ArrayList<>();
+        m.season = nonNegative(season);
         double draw = nonNegative(drawKw) * nonNegative(season) / (1 - GRID_LOSSES), cap = nonNegative(voll);
         double[] residual = new double[HALVES];
         for (int s = 0; s < HALVES; s++) {

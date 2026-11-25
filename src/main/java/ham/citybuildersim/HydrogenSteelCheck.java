@@ -401,9 +401,9 @@ public class HydrogenSteelCheck {
                 drawn == PLANTS * gp.powerBought() + gw.powerBought()
                         && Math.abs(gw.powerBought() * HydroSites.KWH_PER_UNIT / 1000 / gw.makes(Good.STEEL) - HeavyIndustry.HYDROGEN_MWH_A_TONNE) < 1e-3,
                 String.format("%,.0f units for the works, %,.0f for the plants", gw.powerBought(), PLANTS * gp.powerBought()));
-        report("...billed at the ratio the grid delivered and the tariff: the sector's electricity is its draw times both",
-                MaterialsCheck.near(bill, drawn * heavy.getEnergyRatio() * tariff) && bill > 0,
-                String.format("bill %,.4fk, draw x ratio x tariff %,.4fk", bill, drawn * heavy.getEnergyRatio() * tariff));
+        report("...billed at the ratio the grid delivered, the season its book was dispatched at and the tariff: the sector's electricity is the kWh served (PW1-R), its draw times all three",
+                MaterialsCheck.near(bill, drawn * heavy.getEnergyRatio() * heavy.getPowerSeason() * tariff) && heavy.getPowerSeason() == u.getPowerSeason() && bill > 0,
+                String.format("bill %,.4fk, draw x ratio x season %.4f x tariff %,.4fk", bill, heavy.getPowerSeason(), drawn * heavy.getEnergyRatio() * heavy.getPowerSeason() * tariff));
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         report("the month's money audit closes", audit != null && audit.relative() < 1e-4, audit == null ? "no audit" : String.format("residual %.3g of what moved", audit.relative()));
     }

@@ -6473,15 +6473,19 @@ public class Game {
         UtilitiesHandler.Book book = utility.getStruckBook();
         double local = 0, imported = 0;
         java.util.Map<String, Double> byGood = new java.util.LinkedHashMap<>();
+        // A city with no markets (a bare fixture) draws no fuel and pays the upkeep at par, the exchange rate the utility reads then (REV-PW1's lows, PW1-R).
+        Markets markets = getMarkets();
         for (java.util.Map.Entry<String, Double> e : book.fuel.entrySet()) {
-            double units = e.getValue();
-            if (!(units > 0)) continue;
-            Markets.Draw d = getMarkets().draw(Good.valueOf(e.getKey()), null, Trade.CITY, units, getSectors());
+            double units = e.getValue() == null ? 0 : e.getValue();
+            // ...and a fuel a save names that this build has no good for is dropped, not the load (Good.byName(), as every saved good name is read).
+            Good fuel = Good.byName(e.getKey());
+            if (!(units > 0) || fuel == null || markets == null) continue;
+            Markets.Draw d = markets.draw(fuel, null, Trade.CITY, units, getSectors());
             local += d.localCost();
             imported += d.importCost();
             byGood.merge(e.getKey(), d.importCost(), Double::sum);
         }
-        utility.setFuelPaid(local, imported, book.upkeepWorld * getMarkets().getExchangeRate(), byGood);
+        utility.setFuelPaid(local, imported, book.upkeepWorld * (markets == null ? 1 : markets.getExchangeRate()), byGood);
         // ...and the water works' power of the month just ended, at the same book's commerce price, which the water's books pay the power's
         // in this month's services net (PW1-W, UtilitiesHandler's THE WATER'S POWER).
         utility.setWaterPowerPaid(utility.getWaterPowerBill());
@@ -15773,7 +15777,8 @@ public class Game {
         servicesManager.updateServices();
         economyManager.setPowerPrices(servicesManager.getUtilitiesHandler().getPricePerWatt(),
                 servicesManager.getUtilitiesHandler().getIndustryPricePerWatt(), servicesManager.getUtilitiesHandler().getWorksPricePerWatt());
-        economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
+        economyManager.setPowerSeason(servicesManager.getUtilitiesHandler().getPowerSeason());
+        economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit(), servicesManager.getMeanPricePerWaterUnit());
         // The month's bill on the city's own patented works (R2c-P), struck once the utilities hold the month's output and prices; paid at the next strike.
         publicIpPending = LicenceFees.capturePublic(this);
 
@@ -17403,7 +17408,10 @@ public class Game {
         // ...and the strategic reserve's crude, bought from the world and shipped to it (0.7.85).
         UtilitiesHandler utility = servicesManager.getUtilitiesHandler();
         java.util.Map<Good, Double> powerFuel = new java.util.EnumMap<>(Good.class);
-        for (java.util.Map.Entry<String, Double> e : utility.getFuelImportedByGood().entrySet()) powerFuel.merge(Good.valueOf(e.getKey()), e.getValue(), Double::sum);
+        for (java.util.Map.Entry<String, Double> e : utility.getFuelImportedByGood().entrySet()) {
+            Good fuel = Good.byName(e.getKey());   // a name this build has no good for is dropped (PW1-R)
+            if (fuel != null) powerFuel.merge(fuel, e.getValue(), Double::sum);
+        }
         return economyManager.getSectors().tradeByGood(getHouseholdCarImports(), getHouseholdFuelImports(), reserve.getSettledImports(), reserve.getSettledExports(),
                 powerFuel, utility.getUpkeepPaid());
     }
@@ -21434,7 +21442,9 @@ public class Game {
     servicesManager.getUtilitiesHandler().restorePendingPower();
     economyManager.setPowerPrices(servicesManager.getUtilitiesHandler().getPricePerWatt(),
             servicesManager.getUtilitiesHandler().getIndustryPricePerWatt(), servicesManager.getUtilitiesHandler().getWorksPricePerWatt());
-    economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
+    // ...and its season, the kWh the month's bills are struck on (PW1-R).
+    economyManager.setPowerSeason(servicesManager.getUtilitiesHandler().getPowerSeason());
+    economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit(), servicesManager.getMeanPricePerWaterUnit());
 
     // refreshEconPrices(), NOT finalEconUpdate() - the latter clears every
     // market and has every maker produce. Calling it here ran a month of

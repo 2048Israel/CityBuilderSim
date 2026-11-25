@@ -116,6 +116,8 @@ public class ElectrolyserCheck {
         HeavyIndustry heavy = g.getSectors().heavyIndustry();
         heavy.setPricePerWatt(1);
         heavy.setEnergyRatio(1);
+        // ...and the year's mean season: a bill is the kWh served (PW1-R), so a kW at one unit is one unit only at the mean.
+        heavy.setPowerSeason(1);
     }
 
     /** What the buildings' templates sum to for Heavy Industry, in units: every works it has standing at the draw its template bills (EconomyManager's own sum), whatever the played months have added. */
@@ -123,7 +125,7 @@ public class ElectrolyserCheck {
         return g.getBuildingManager().totalBySector(g.getSectors().heavyIndustry().key(), t -> BuildingsTemplate.isBilledForUtilities(t) ? t.powerBought() : 0);
     }
 
-    /** Heavy Industry's draw at nameplate in units: its bill at one unit of power a unit and the grid's whole ratio. */
+    /** Heavy Industry's draw at nameplate in units: its bill at one unit of power a unit and the grid's whole ratio and the mean season. */
     static double draw(Game g) {
         billAtOne(g);
         return g.getSectors().heavyIndustry().getElectricityCost();
