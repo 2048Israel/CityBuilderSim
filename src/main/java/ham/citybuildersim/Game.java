@@ -15778,7 +15778,7 @@ public class Game {
         economyManager.setPowerPrices(servicesManager.getUtilitiesHandler().getPricePerWatt(),
                 servicesManager.getUtilitiesHandler().getIndustryPricePerWatt(), servicesManager.getUtilitiesHandler().getWorksPricePerWatt());
         economyManager.setPowerSeason(servicesManager.getUtilitiesHandler().getPowerSeason());
-        economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
+        economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit(), servicesManager.getMeanPricePerWaterUnit());
         // The month's bill on the city's own patented works (R2c-P), struck once the utilities hold the month's output and prices; paid at the next strike.
         publicIpPending = LicenceFees.capturePublic(this);
 
@@ -21444,7 +21444,7 @@ public class Game {
             servicesManager.getUtilitiesHandler().getIndustryPricePerWatt(), servicesManager.getUtilitiesHandler().getWorksPricePerWatt());
     // ...and its season, the kWh the month's bills are struck on (PW1-R).
     economyManager.setPowerSeason(servicesManager.getUtilitiesHandler().getPowerSeason());
-    economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
+    economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit(), servicesManager.getMeanPricePerWaterUnit());
 
     // refreshEconPrices(), NOT finalEconUpdate() - the latter clears every
     // market and has every maker produce. Calling it here ran a month of

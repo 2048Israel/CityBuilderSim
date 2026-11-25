@@ -25,7 +25,9 @@ import java.util.Locale;
  *      income gains it and the water's loses it, the services' net and the treasury's line are unmoved by it, the audit's utility
  *      revenue is the sectors' bills, and the money audit closes.
  *   4. THE SAVE: a city saved and loaded prices its water, holds its works' record and its payment as it did; a save without them
- *      (the build before) loads with the record its load rebuilds from the same stock and nothing paid, and prices by the same rule.
+ *      (the build before) loads with the record its load rebuilds from the same stock and nothing paid, and prices by the same rule. The same save
+ *      with its book struck at July's season and at April's (PW1-R, REV-PW1-R): the price a planner reads is the same to the bit,
+ *      the bills' price and every sector's water bill move by the seasons' ratio.
  *   5. A LICENCE'S POWER IS THE DISPATCH'S ENERGY SERVED (PW1-L): the dispatch run again on the month's rows serves the month's
  *      demand; in the copy in surplus in every half-block a plant moved adds nothing; in the copy short in every half-block by more
  *      than the move it adds the move's kWh over the kWh asked of the demand, which is not the flat rule's move.
@@ -178,7 +180,7 @@ public class WaterPowerCheck {
                 && u.getLatestWaterDraw().seaDelivered() == 0 && u.getLatestWaterDraw().landDelivered() == w.served(), String.valueOf(u.getLatestWaterDraw()));
         check("the water's price, what the statements strike at and what the recipes weigh, is the tariff exactly: the land's water pays its"
                         + " works' power from it, and the plant's power is in no price",
-                price == tariff && Recipes.pricesOf(d).pricePerWaterUnit() == tariff && tariff == .05 * PriceLevel.FACTOR,
+                price == tariff && u.getPricePerWaterUnit() == tariff && Recipes.pricesOf(d).pricePerWaterUnit() == tariff && tariff == .05 * PriceLevel.FACTOR,
                 f(price) + " against " + f(tariff));
         double gain = PublicLicenceCheck.desalReading(d, desal, sea)[3];
         check("the plant serves no demand: its gain over its running cost is negative", gain < 0, f(gain));
@@ -197,15 +199,20 @@ public class WaterPowerCheck {
         System.out.println("--- 2. a town short of water prices it at its sea works' power ---");
         UtilitiesHandler u = d.getServicesManager().getUtilitiesHandler();
         Works w = works(d);
-        double c = u.getStruckBook().commercePrice * u.getStruckBook().season, tariff = u.getWaterTariff(), price = d.getEconomyManager().getPricePerWaterUnit();
+        // The bills' price (the utility's, every sector's) serves the works' power at the book's season; the planners' (the economy's, the
+        // recipes') at the year's mean, the season out (PW1-R, REV-PW1-R).
+        double c = u.getStruckBook().commercePrice * u.getStruckBook().season, tariff = u.getWaterTariff(), price = u.getPricePerWaterUnit();
+        double mean = u.getStruckBook().commercePrice, plan = d.getEconomyManager().getPricePerWaterUnit();
         check("fixture: " + n + " Pulp Mills take the demand past every works at full staffing: the city is short of water",
                 u.getWaterRatio() < 1 && w.served() < u.getWaterConsumption() && c > 0, "ratio " + f(u.getWaterRatio()) + " commerce " + f(c));
         check("the sea works deliver their whole output, the desalination nameplate at the fill: past SEA_MARGIN_SHARE of it, the margin alone",
                 w.seaDelivered() > 0 && w.seaDelivered() >= UtilitiesHandler.SEA_MARGIN_SHARE * w.seaOutput() && near(w.seaDelivered(), u.getDesalNameplate() * u.getAverageUtilityFill(), 1e-9) && near(u.getLatestWaterDraw().seaDelivered(), w.seaDelivered(), 1e-12),
                 f(w.seaDelivered()) + " against " + f(u.getLatestWaterDraw().seaDelivered()));
-        double want = tariff + w.seaKw() * c / w.seaDelivered();
-        check("the water's price is the tariff and the sea works' draw at the struck commerce price over the water they deliver",
-                near(price, want, 1e-12) && near(Recipes.pricesOf(d).pricePerWaterUnit(), want, 1e-12) && price > tariff, f(price) + " against " + f(want));
+        double want = tariff + w.seaKw() * c / w.seaDelivered(), wantPlan = tariff + w.seaKw() * mean / w.seaDelivered();
+        check("the water's price is the tariff and the sea works' draw at the struck commerce price over the water they deliver: the bills' at the"
+                        + " book's season, the planners' (the economy's and the recipes') at the year's mean",
+                near(price, want, 1e-12) && near(plan, wantPlan, 1e-12) && near(Recipes.pricesOf(d).pricePerWaterUnit(), wantPlan, 1e-12) && price > tariff,
+                f(price) + ", " + f(plan) + " against " + f(want) + ", " + f(wantPlan));
         check("the sea's water at that price pays the sea works' power: their water's power part is their draw at the commerce price",
                 near((price - tariff) * w.seaDelivered(), w.seaKw() * c, 1e-12), f((price - tariff) * w.seaDelivered()) + " against " + f(w.seaKw() * c));
     }
@@ -217,7 +224,7 @@ public class WaterPowerCheck {
         UtilitiesHandler a = lo.getServicesManager().getUtilitiesHandler(), b = hi.getServicesManager().getUtilitiesHandler();
         Works wa = works(lo), wb = works(hi);
         double ca = a.getStruckBook().commercePrice * a.getStruckBook().season, cb = b.getStruckBook().commercePrice * b.getStruckBook().season, share = UtilitiesHandler.SEA_MARGIN_SHARE;
-        double pa = lo.getEconomyManager().getPricePerWaterUnit(), pb = hi.getEconomyManager().getPricePerWaterUnit();
+        double pa = a.getPricePerWaterUnit(), pb = b.getPricePerWaterUnit();   // the bills' price, the season in (PW1-R)
         check("fixture: each copy's fresh works are retired for a desalination plant, and its Pulp Mills (" + nlo + ", " + nhi + ") take its demand"
                         + " a little past the wells: the sea delivers a sliver, under SEA_MARGIN_SHARE of its output at the fill, and the water served is within that share",
                 wa.freshKw() == 0 && wb.freshKw() == 0 && wa.seaKw() > 0 && wb.seaKw() > 0 && wa.seaDelivered() > 0 && wb.seaDelivered() > 0
@@ -235,7 +242,7 @@ public class WaterPowerCheck {
         for (Game g : new Game[] { lo, hi }) {
             UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
             Works w = g == lo ? wa : wb;
-            double adder = g.getEconomyManager().getPricePerWaterUnit() - u.getWaterTariff(), power = w.seaKw() * u.getStruckBook().commercePrice * u.getStruckBook().season;
+            double adder = u.getPricePerWaterUnit() - u.getWaterTariff(), power = w.seaKw() * u.getStruckBook().commercePrice * u.getStruckBook().season;
             once &= near(w.served() * adder, power, 1e-12);
             billedNoMore &= u.getBilledWaterDraw() * u.getWaterRatio() * adder <= power * (1 + 1e-12);
         }
@@ -251,14 +258,15 @@ public class WaterPowerCheck {
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         Works w = works(g);
         double c = u.getStruckBook().commercePrice * u.getStruckBook().season, share = UtilitiesHandler.SEA_MARGIN_SHARE, tariff = u.getWaterTariff();
-        double price = g.getEconomyManager().getPricePerWaterUnit(), power = w.seaKw() * c;
+        double price = u.getPricePerWaterUnit(), power = w.seaKw() * c, powerPlan = w.seaKw() * u.getStruckBook().commercePrice;
         check("fixture: the cheap copy's fresh works stood again beside its plant, and " + n + " Pulp Mills more take its demand a little past the land's"
                         + " water: the sea delivers a sliver, under SEA_MARGIN_SHARE of its output at the fill, and the water served passes that share",
                 w.freshKw() > 0 && w.seaDelivered() > 0 && w.seaDelivered() < share * w.seaOutput() && w.served() > share * w.seaOutput() && c > 0,
                 "sea " + f(w.seaDelivered()) + " served " + f(w.served()) + " output " + f(w.seaOutput()));
-        double want = tariff + power / (share * w.seaOutput());
+        double want = tariff + power / (share * w.seaOutput()), wantPlan = tariff + powerPlan / (share * w.seaOutput());
         check("the water's price is the tariff and the sea works' draw at the struck commerce price over that share of their output, what a plant"
-                        + " delivering just the share would price its water at", near(price, want, 1e-12) && near(Recipes.pricesOf(g).pricePerWaterUnit(), want, 1e-12),
+                        + " delivering just the share would price its water at (the planners' at the year's mean)", near(price, want, 1e-12)
+                        && near(g.getEconomyManager().getPricePerWaterUnit(), wantPlan, 1e-12) && near(Recipes.pricesOf(g).pricePerWaterUnit(), wantPlan, 1e-12),
                 f(price) + " against " + f(want));
         check("...bounded below the sea works' draw over the sliver, and the water served pays their power more than once, as the margin's does",
                 price < tariff + power / w.seaDelivered() && w.served() * (price - tariff) > power, f(w.served() * (price - tariff)) + " against " + f(power));
@@ -363,8 +371,48 @@ public class WaterPowerCheck {
         UtilitiesHandler b = back.getServicesManager().getUtilitiesHandler();
         check("fixture: the city saved in its scratch folder's slot " + SLOT + ", with a works' record and a payment to keep", written && record != null && record.seaDelivered() > 0 && paid > 0, null);
         check("loaded, it prices its water as it did, holds the same works' record and the same payment",
-                back.getEconomyManager().getPricePerWaterUnit() == price && record.equals(b.getLatestWaterDraw()) && b.getWaterPowerPaid() == paid,
+                back.getEconomyManager().getPricePerWaterUnit() == price && b.getPricePerWaterUnit() == u.getPricePerWaterUnit() && record.equals(b.getLatestWaterDraw()) && b.getWaterPowerPaid() == paid,
                 f(back.getEconomyManager().getPricePerWaterUnit()) + " against " + f(price) + "; " + b.getLatestWaterDraw());
+
+        // REV-PW1-R: the planners' water price carries no season. The same save loaded twice, its struck book's season July's and then
+        // April's (the dispatch's SEASON at the city's latitude), everything else in the file the same: the bills' price moves with the
+        // season, every sector's bill with it, and the price the planners read (the economy's, the recipes') does not move at all.
+        java.nio.file.Path saved = files.saveFile(SLOT);
+        String text = java.nio.file.Files.readString(saved);
+        double july = PowerDispatch.season(7, u.latitude()), april = PowerDispatch.season(4, u.latitude());
+        double[] seasons = { july, april };
+        Game[] at = new Game[2];
+        for (int i = 0; i < 2; i++) {
+            com.google.gson.JsonObject j = com.google.gson.JsonParser.parseString(text).getAsJsonObject();
+            j.getAsJsonObject("powerBooks").getAsJsonObject("struck").addProperty("season", seasons[i]);
+            java.nio.file.Files.writeString(saved, new com.google.gson.Gson().toJson(j));
+            Game g = new Game(files);
+            HistoricalRecipeCheck.silent(() -> g.loadGameSave(SLOT));
+            at[i] = g;
+        }
+        java.nio.file.Files.writeString(saved, text);
+        UtilitiesHandler uj = at[0].getServicesManager().getUtilitiesHandler(), ua = at[1].getServicesManager().getUtilitiesHandler();
+        double tariff = u.getWaterTariff();
+        check("fixture: the same save loaded with its book struck at July's season and at April's (" + f(july) + ", " + f(april) + "), the sea delivering",
+                uj.getPowerSeason() == july && ua.getPowerSeason() == april && july > april && record.equals(uj.getLatestWaterDraw())
+                        && record.equals(ua.getLatestWaterDraw()), uj.getPowerSeason() + ", " + ua.getPowerSeason());
+        double planJ = at[0].getEconomyManager().getPricePerWaterUnit(), planA = at[1].getEconomyManager().getPricePerWaterUnit();
+        check("a planner's water price is the same in July as in April, to the bit, the economy's and the recipes': the year's mean, so a works'"
+                        + " choice does not swing with the month",
+                planJ == planA && Recipes.pricesOf(at[0]).pricePerWaterUnit() == planJ && Recipes.pricesOf(at[1]).pricePerWaterUnit() == planA && planJ > tariff,
+                f(planJ) + " against " + f(planA));
+        double billJ = uj.getPricePerWaterUnit(), billA = ua.getPricePerWaterUnit();
+        boolean sectors = false, billed = true;
+        for (Sector s : at[0].getSectors().all()) {
+            Sector t = at[1].getSectors().byKey(s.key());
+            if (t == null || !(s.getWaterCost() > 0)) continue;
+            sectors = true;
+            billed &= near(s.getWaterCost() / t.getWaterCost(), billJ / billA, 1e-12);
+        }
+        check("...while the bills' price carries it: the water's power part in July over April's is the seasons' ratio, at the mean it is the"
+                        + " planners', and every sector's water bill moves with the bills' price",
+                near((billJ - tariff) / (billA - tariff), july / april, 1e-12) && near((billJ - tariff) / july, planJ - tariff, 1e-12) && sectors && billed,
+                f(billJ) + ", " + f(billA) + " against " + f(planJ));
 
         java.nio.file.Path file = files.saveFile(SLOT);
         com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(file)).getAsJsonObject();
@@ -381,7 +429,7 @@ public class WaterPowerCheck {
                 + kwPerUnit(rebuilt.seaKw(), rebuilt.landDelivered(), rebuilt.seaDelivered(), rebuilt.seaOutput()) * c;
         check("fixture: the save carried the record and the payment, struck out of the file to make the save of the build before", had, null);
         check("a save without them loads with nothing paid and the record its load rebuilt from the same stock, which prices the water by the same rule",
-                o.getWaterPowerPaid() == 0 && rebuilt != null && near(old.getEconomyManager().getPricePerWaterUnit(), want, 1e-12),
-                rebuilt + " priced " + f(old.getEconomyManager().getPricePerWaterUnit()) + " against " + f(want));
+                o.getWaterPowerPaid() == 0 && rebuilt != null && near(o.getPricePerWaterUnit(), want, 1e-12),
+                rebuilt + " priced " + f(o.getPricePerWaterUnit()) + " against " + f(want));
     }
 }

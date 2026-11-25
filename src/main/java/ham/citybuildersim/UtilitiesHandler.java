@@ -263,6 +263,8 @@ public class UtilitiesHandler {
     }
     /** What a unit of water is billed at: the tariff and the struck book's water power a unit delivered (PW1-W); the tariff alone until a month strikes one. */
     public double getPricePerWaterUnit()   { return pricePerWaterUnit + getWaterPowerPerUnit(); }
+    /** What a planner prices a unit of water at (PW1-R, REV-PW1-R): the tariff and the works' power a unit at the struck commerce price, the year's mean, the season left out, so a works' choice does not swing with the month; the bills charge getPricePerWaterUnit(), the season in. */
+    public double getMeanPricePerWaterUnit() { return pricePerWaterUnit + (latestWater == null ? 0 : latestWater.marginalKwPerUnit() * struck.commercePrice); }
     /** The water's tariff before its works' power: main's constant, $50 a unit at the founding's level. */
     public double getWaterTariff()         { return pricePerWaterUnit; }
 

@@ -1,4 +1,4 @@
-# ServicesManager.java - 448 lines · 34 methods · 0 constants · model
+# ServicesManager.java - 453 lines · 35 methods · 0 constants · model
 
 `ham/citybuildersim/ServicesManager.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -27,7 +27,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 438 | **type** `public class ServicesManager` |  |
+| 11 | 443 | **type** `public class ServicesManager` |  |
 | 27 | 5 | `public ServicesManager(BuildingManager buildingManager)` |  |
 | 43 | 3 | `public void setFreshCapSource(DoubleSupplier source)` |  |
 | 54 | 3 | `public void setSteamShareSource(java.util.function.ToDoubleFunction<String> source)` |  |
@@ -54,12 +54,13 @@
 | 374 | 3 | `public void setExchangeRate(DoubleSupplier rate)` | City money per world thousand, for the plants' upkeep (PW1); null: 1, at par. |
 | 379 | 3 | `public void setCalendarMonth(IntSupplier month)` | The calendar month, 1 to 12, for the season of the month's load (PW1); null: none. |
 | 383 | 3 | `public double getPricePerWaterUnit()` |  |
-| 388 | 3 | `public void setPopulation(long population)` | The people's water draw. |
-| 397 | 3 | `public void printUtilityInfo()` | =============================== PRINTERS =============================== |
-| 405 | 9 | `public void updateByCategoryHandlerDouble(BuildingType category, DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> get...` | =============================== GENERIC BUILDING AGGREGATION =============================== |
-| 415 | 8 | `public void updateHandlerDouble(DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> getter)` |  |
-| 428 | 3 | `public void updateFromGame(DoubleConsumer setter, double value)` | =============================== GAME → HANDLER HELPERS =============================== |
-| 432 | 3 | `public void updateFromGameInt(IntConsumer setter, int value)` |  |
-| 440 | 3 | `private void copyArray(double[] source, double[] target)` | =============================== ARRAY HELPERS =============================== |
-| 444 | 3 | `private void copyArray(long[] source, long[] target)` |  |
+| 388 | 3 | `public double getMeanPricePerWaterUnit()` | The water's price a planner reads, the year's mean (UtilitiesHandler.getMeanPricePerWaterUnit(), PW1-R). |
+| 393 | 3 | `public void setPopulation(long population)` | The people's water draw. |
+| 402 | 3 | `public void printUtilityInfo()` | =============================== PRINTERS =============================== |
+| 410 | 9 | `public void updateByCategoryHandlerDouble(BuildingType category, DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> get...` | =============================== GENERIC BUILDING AGGREGATION =============================== |
+| 420 | 8 | `public void updateHandlerDouble(DoubleConsumer setter, ToDoubleFunction<BuildingsTemplate> getter)` |  |
+| 433 | 3 | `public void updateFromGame(DoubleConsumer setter, double value)` | =============================== GAME → HANDLER HELPERS =============================== |
+| 437 | 3 | `public void updateFromGameInt(IntConsumer setter, int value)` |  |
+| 445 | 3 | `private void copyArray(double[] source, double[] target)` | =============================== ARRAY HELPERS =============================== |
+| 449 | 3 | `private void copyArray(long[] source, long[] target)` |  |
 

@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 29,077 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 29,080 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -35265,7 +35265,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L494 a city with no fresh plants is given no rights
   - L527 A FORMAT-30 SAVE IS REFUSED (0.7.120): below the floor, in P7's words, nothing of it applied, its file as it was
 
-## WaterPowerCheck.java - 39 labelled assertions
+## WaterPowerCheck.java - 42 labelled assertions
 
 > The water priced from its cost, as PW1 prices power (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price"), with the licence's
 > power read from the dispatch (PW1-L) and a recipe's own power weighed at the prices the strike pays it (PW1-G), through the game's
@@ -35281,54 +35281,57 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      the sea delivers nothing and the price is the tariff exactly, which pays the land's works' power; the plant's gain over its
 > ...
 
-- **L117 WaterPowerCheck: the water priced from its cost, the licence's power and a recipe's own (PW1-W)**
-- **L170 1. a town in surplus prices its water at its tariff**
-  - L174 fixture: a desalination plant stands beside the fresh works, and the founding wells alone serve the city's demand
-  - L177 the sea works deliver nothing and the land's water all of it, and the handler's record says so
-  - L179 the water's price, what the statements strike at and what the recipes weigh, is the tariff exactly: the land's water pays its
-  - L184 the plant serves no demand: its gain over its running cost is negative
-  - L187 the water's books still pay the power's for all the works' draw at the struck commerce price, the plant's included
-  - L190 ...and a month on the wells still serve the demand and the price is still the tariff
-- **L197 2. a town short of water prices it at its sea works' power**
-  - L201 fixture:
-  - L203 the sea works deliver their whole output, the desalination nameplate at the fill: past SEA_MARGIN_SHARE of it, the margin alone
-  - L207 the water's price is the tariff and the sea works' draw at the struck commerce price over the water they deliver
-  - L209 the sea's water at that price pays the sea works' power: their water's power part is their draw at the commerce price
-- **L216 7. the sea on a sliver: the price bounded, the sea works' power recovered once, and moved by the price of power**
-  - L221 fixture: each copy's fresh works are retired for a desalination plant, and its Pulp Mills (
-  - L227 fixture: the copy whose homes ask past its plant is short of power and its struck commerce price is the higher
-  - L230 each copy's water is the tariff and its sea works' draw at its own commerce price spread over the water served, not over the sliver
-  - L232 the price stays bounded: below the sea works' draw over the sliver, the rule before the bound
-  - L242 the water served at that price recovers the sea works' power once, and the bills, the billed part of it, no more
-  - L244 the dearer power prices the dearer water
-- **L250 8. the sea on a sliver of a city that serves past that share: the price is the plant's power over the share**
-  - L255 fixture: the cheap copy's fresh works stood again beside its plant, and
-  - L260 the water's price is the tariff and the sea works' draw at the struck commerce price over that share of their output, what a plant
-  - L263 ...bounded below the sea works' draw over the sliver, and the water served pays their power more than once, as the margin's does
-- **L270 5. a licence's power is the dispatch's energy served (PW1-L)**
-  - L286 fixture: the cheap copy is in surplus in every half-block
-  - L287 ...so a coal plant moved by
-  - L290 fixture: the dear copy is short in every half-block by more than the move
-  - L291 ...so the move serves its every kWh: the demand delivered rises by the move's kWh over the kWh asked
-  - L293 ...which is not the flat rule's whole move: the dispatch carries the grid's losses and the season
-- **L302 6. a recipe's own power is weighed at what the strike pays it (PW1-G)**
-  - L308 fixture: the Pulp Mill's recipe makes power past its draw, and Wood Products' surplus is its
-  - L311 fixture: the works price the strike pays a surplus is not the industry price a Heavy Industry draw pays
-  - L317 the mills' recipe weighs their surplus at what Wood Products' statement was then paid for it, at the works price
-  - L319 ...and not at the industry price, which the whole difference at the class's price would have weighed it at
-  - L323 an Oxygen Steel Shop's own power is netted at its class's price: its draw past what it makes at the industry price
-- **L331 3. every bill once**
-  - L337 the water's books paid the power's the month's works' draw at the struck commerce price
-  - L342 the electricity's income gains it and the water's loses it
-  - L343 ...and the services' net, which the treasury takes, is the same with it or without
-  - L344 the treasury's utility line is the services' net
-  - L348 the audit's utility revenue is the sectors' bills: the works' power is no customer's
-  - L349 the money audit closes
-- **L355 4. the save**
-  - L364 fixture: the city saved in its scratch folder's slot
-  - L365 loaded, it prices its water as it did, holds the same works' record and the same payment
-  - L382 fixture: the save carried the record and the payment, struck out of the file to make the save of the build before
-  - L383 a save without them loads with nothing paid and the record its load rebuilt from the same stock, which prices the water by the same rule
+- **L119 WaterPowerCheck: the water priced from its cost, the licence's power and a recipe's own (PW1-W)**
+- **L172 1. a town in surplus prices its water at its tariff**
+  - L176 fixture: a desalination plant stands beside the fresh works, and the founding wells alone serve the city's demand
+  - L179 the sea works deliver nothing and the land's water all of it, and the handler's record says so
+  - L181 the water's price, what the statements strike at and what the recipes weigh, is the tariff exactly: the land's water pays its
+  - L186 the plant serves no demand: its gain over its running cost is negative
+  - L189 the water's books still pay the power's for all the works' draw at the struck commerce price, the plant's included
+  - L192 ...and a month on the wells still serve the demand and the price is still the tariff
+- **L199 2. a town short of water prices it at its sea works' power**
+  - L206 fixture:
+  - L208 the sea works deliver their whole output, the desalination nameplate at the fill: past SEA_MARGIN_SHARE of it, the margin alone
+  - L212 the water's price is the tariff and the sea works' draw at the struck commerce price over the water they deliver: the bills' at the
+  - L216 the sea's water at that price pays the sea works' power: their water's power part is their draw at the commerce price
+- **L223 7. the sea on a sliver: the price bounded, the sea works' power recovered once, and moved by the price of power**
+  - L228 fixture: each copy's fresh works are retired for a desalination plant, and its Pulp Mills (
+  - L234 fixture: the copy whose homes ask past its plant is short of power and its struck commerce price is the higher
+  - L237 each copy's water is the tariff and its sea works' draw at its own commerce price spread over the water served, not over the sliver
+  - L239 the price stays bounded: below the sea works' draw over the sliver, the rule before the bound
+  - L249 the water served at that price recovers the sea works' power once, and the bills, the billed part of it, no more
+  - L251 the dearer power prices the dearer water
+- **L257 8. the sea on a sliver of a city that serves past that share: the price is the plant's power over the share**
+  - L262 fixture: the cheap copy's fresh works stood again beside its plant, and
+  - L267 the water's price is the tariff and the sea works' draw at the struck commerce price over that share of their output, what a plant
+  - L271 ...bounded below the sea works' draw over the sliver, and the water served pays their power more than once, as the margin's does
+- **L278 5. a licence's power is the dispatch's energy served (PW1-L)**
+  - L294 fixture: the cheap copy is in surplus in every half-block
+  - L295 ...so a coal plant moved by
+  - L298 fixture: the dear copy is short in every half-block by more than the move
+  - L299 ...so the move serves its every kWh: the demand delivered rises by the move's kWh over the kWh asked
+  - L301 ...which is not the flat rule's whole move: the dispatch carries the grid's losses and the season
+- **L310 6. a recipe's own power is weighed at what the strike pays it (PW1-G)**
+  - L316 fixture: the Pulp Mill's recipe makes power past its draw, and Wood Products' surplus is its
+  - L319 fixture: the works price the strike pays a surplus is not the industry price a Heavy Industry draw pays
+  - L325 the mills' recipe weighs their surplus at what Wood Products' statement was then paid for it, at the works price
+  - L327 ...and not at the industry price, which the whole difference at the class's price would have weighed it at
+  - L331 an Oxygen Steel Shop's own power is netted at its class's price: its draw past what it makes at the industry price
+- **L339 3. every bill once**
+  - L345 the water's books paid the power's the month's works' draw at the struck commerce price
+  - L350 the electricity's income gains it and the water's loses it
+  - L351 ...and the services' net, which the treasury takes, is the same with it or without
+  - L352 the treasury's utility line is the services' net
+  - L356 the audit's utility revenue is the sectors' bills: the works' power is no customer's
+  - L357 the money audit closes
+- **L363 4. the save**
+  - L372 fixture: the city saved in its scratch folder's slot
+  - L373 loaded, it prices its water as it did, holds the same works' record and the same payment
+  - L396 fixture: the same save loaded with its book struck at July's season and at April's (
+  - L400 a planner's water price is the same in July as in April, to the bit, the economy's and the recipes': the year's mean, so a works'
+  - L412 ...while the bills' price carries it: the water's power part in July over April's is the seasons' ratio, at the mean it is the
+  - L430 fixture: the save carried the record and the payment, struck out of the file to make the save of the build before
+  - L431 a save without them loads with nothing paid and the record its load rebuilt from the same stock, which prices the water by the same rule
 
 ## WellCheck.java - 157 labelled assertions
 

@@ -34,6 +34,13 @@ demand charge, where one exists, is a kW figure, but this model's prices are ene
   (`getWaterPowerPerUnit()`) carry the season too: the dispatch serves the water works' draw at the season like
   every other, the fuel is bought on it, and PW1-W bills them as a class. The fallback `getElectricityRevenue()` (no
   statements handed in) carries it as well.
+- ★ **The water's two prices** (REV-PW1-R's note, mended before the ensemble): as first built, the water's price with
+  the season in reached the planners too (`EconomyManager.getPricePerWaterUnit()`, `Recipes.pricesOf()` at Recipes.java:176,
+  the advice's and the investment's running costs, the licences), against the call above. Now
+  `EconomyManager.setPricePerWaterUnit(billed, planned)`: every sector is billed at `UtilitiesHandler.getPricePerWaterUnit()`,
+  the works' power at the book's season, so the water's books are unchanged; the economy's own price, which the planners
+  read, is `getMeanPricePerWaterUnit()`, the same power part at the year's mean. The one-price setter stays for fixtures.
+  Handed down in the same three places as the power prices.
 - **The lag** (item 4's third low) is unchanged and now said: a statement bills the kWh of the dispatch its book was
   struck from, the end of the month before the one it bills, so July's bill is at June's season (1.088, not 1.193).
   The fuel bought at the same strike is that dispatch's, so bills and fuel agree on the kWh; the margin takes none of
@@ -135,3 +142,9 @@ fuel map, the dispatch record and the grid costs by their JSON. Green.
 - Every other harness reading a bill, a price or the ratio was looked for (`getElectricityCost()`, the book's prices,
   the water's power, `getElectricityRevenue()`): FoodProcessingCheck, HaulageCheck, NewGameCheck, ReadPathCheck and
   VanCheck read the ratios only; LongPlaytest's power gap is the revenue against the statements, both on the one bill.
+- **The water's two prices** (REV-PW1-R): WaterPowerCheck's lines that read the economy's price as the bill (sections 2,
+  7, 8 and the save without the record) read the utility's, the bills' price; sections 2 and 8 hold the economy's and the
+  recipes' to the same rule at the year's mean. New in section 4: the same save loaded with its book struck at July's
+  season (1.193) and at April's (0.880): a planner's water price is the same to the bit (0.00998178220 in both), the
+  economy's and the recipes'; the bills' power part moves by the seasons' ratio and every sector's water bill with it. Red
+  under the reviewed code (the planners' price carried the season). WaterPowerCheck: all ok (44).
