@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**256 harness files, 29,239 labelled assertions.** AllChecks runs 256 of them.
+**256 harness files, 29,259 labelled assertions.** AllChecks runs 256 of them.
 
 ## Which harnesses read which class
 
@@ -87,7 +87,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Currency](map/Currency.md) | DenominationCheck, FittingCheck, HistoryCheck, LandClassCheck, LongPlaytest, MoneySignCheck, MoneyWordsCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, YearBookCheck |
 | [DataSave](map/DataSave.md) | CurrencyRegimeCheck, EarthTerrainCheck, FittingCheck, GoldMiningCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HousingInventoryCheck, LandmassCheck, LicenceFeesCheck, MapCheck, ModernEngineeringCheck, MoneyDatesCheck, MoneySignCheck, PolicyOpenCheck, PopulationCheck, PostwarRecipeCheck, PublicLicenceCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalGainsCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, TreasuryCheck, WorksFinanceCheck |
-| [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BondCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CardCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CreditCrunchCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FB13Check, FloatLinkCheck, ForeignDebtCheck, GoldStandardCheck, GovernmentViewCheck, HoldersCheck, HousingCheck, HousingDoorCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MoneyWordsCheck, MortgageCheck, OrderDoorCheck, OwnerCheck, PartnersCheck, PegAnchorCheck, PolicyOpenCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
+| [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BondCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CardCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CreditCrunchCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ER1Check, EquityCheck, ExchangeCheck, ExpectationsCheck, FB13Check, FloatLinkCheck, ForeignDebtCheck, GoldStandardCheck, GovernmentViewCheck, HoldersCheck, HousingCheck, HousingDoorCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MoneyWordsCheck, MortgageCheck, OrderDoorCheck, OwnerCheck, PartnersCheck, PegAnchorCheck, PolicyOpenCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
 | [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, BuybackCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, PriceLevelCheck, StepsCheck, WorksFinanceCheck |
 | [DebtStatistics](map/DebtStatistics.md) | CardCheck, DebtStatisticsCheck, MoneyWordsCheck, ReadPathCheck |
 | [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, GoldStandardCheck, KeptCheck, LabourCheck, LongPlaytest, OilCheck, PegAnchorCheck, PolicyOpenCheck, ReadPathCheck, ResearchViewCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
@@ -125,7 +125,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FollowRules](map/FollowRules.md) | ReplayCheck |
 | [FoodIndustry](map/FoodIndustry.md) | BooksCheck, CreditCheck, FoodIndustryCheck, WaterCheck |
 | [FoodProcessing](map/FoodProcessing.md) | FoodProcessingCheck, GapOrderCheck |
-| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ExchangeRateCheck, ExpectationsCheck, FB13Check, ForeignCheck, ForeignCrewsCheck, ForeignDebtCheck, GoldMiningCheck, GoldStandardCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PolicyOpenCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, ShortSellingCheck, VaultMoneysCheck, WorldMoneysCheck |
+| [ForeignAccounts](map/ForeignAccounts.md) | CapitalFlowCheck, CarryTradeCheck, CurrencyCheck, CurrencyRegimeCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, ER1Check, ExchangeRateCheck, ExpectationsCheck, FB13Check, ForeignCheck, ForeignCrewsCheck, ForeignDebtCheck, GoldMiningCheck, GoldStandardCheck, HoldersCheck, InterestAbroadCheck, InterventionCheck, KeptCheck, LabourCheck, LandCheck, LandNationsCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, NewGameCheck, OilCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PolicyOpenCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, ShortSellingCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [ForeignCouponView](map/ForeignCouponView.md) | FB13Check |
 | [Forestry](map/Forestry.md) | BuildCardCheck, BuildingDataCheck, ForestryCheck, IndustryViewCheck, WoodProductsCheck, ZoningCheck |
 | [Formats](map/Formats.md) | AgricultureCheck, BuildAdviceCheck, BuildCardCheck, CarCheck, FarmlandReserveCheck, FoodProcessingCheck, FormatsCheck, LandCheck, MoneySignCheck, MortgageCheck, PolicyPreviewCheck, ScaleCheck, SectorFlowCheck, SulphideLeachCheck, TradeCostCheck, WellCheck, ZoningCheck |
@@ -233,7 +233,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
 | [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, GroundInputCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LicenceFeesCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PriceLevelCheck, RailDepotCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
 | [Money](map/Money.md) | KeptCheck, LandClassCheck, MoneySignCheck, MoneyWordsCheck, NewUnitCheck, PriceLevelCheck, RankingsCheck, RunWorksCheck, TradeBandCheck, WorldDataCheck |
-| [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FarmlandReserveCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GroceryCheck, HistoricalLicenceCheck, HistoryCheck, HoldersCheck, HouseholdStageCheck, HousingDoorCheck, HydrogenSteelCheck, InterestAbroadCheck, InvestCheck, LandCheck, LicenceFeesCheck, LongPlaytest, MaterialsCheck, MoneyDatesCheck, MortgageCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, PortCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TreasuryCheck, WaterPowerCheck, WoodProductsCheck |
+| [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, DiscoveryCheck, ER1Check, EducationCheck, ExchangeCheck, ExchangeRateCheck, FarmlandReserveCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GroceryCheck, HistoricalLicenceCheck, HistoryCheck, HoldersCheck, HouseholdStageCheck, HousingDoorCheck, HydrogenSteelCheck, InterestAbroadCheck, InvestCheck, LandCheck, LicenceFeesCheck, LongPlaytest, MaterialsCheck, MoneyDatesCheck, MortgageCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, PortCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TreasuryCheck, WaterPowerCheck, WoodProductsCheck |
 | [MonthOrder](map/MonthOrder.md) | **none** |
 | [Mortgage](map/Mortgage.md) | BankFailureCheck, BooksCheck, BuildCardCheck, CreditCheck, CreditCrunchCheck, HousingDoorCheck, InvestCheck, LongPlaytest, MortgageCheck, OrderDoorCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
@@ -9111,27 +9111,56 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L412 section 3's verdict was PAYS: the city fits the kit, so the driven share was below 1 in
   - L413 ...and the share it fell to is the share of the depots still lacking it (
 
-## ER1Check.java - 9 labelled assertions
+## ER1Check.java - 29 labelled assertions
 
-> The growth hold when a full city's treasury cannot buy a whole land offer.
+> The growth hold when a full city's treasury cannot buy a whole land offer, and its repair: the offer funded on the
+> land office's bond while a sector waits on ground (FB11).
 > 
 > WHY: ER1's Rotterdam replay has willing private investors, no free plots,
-> and a builder with no orders. This fixture consumes the free ground and
-> removes the city's purchasing cash, then tests the actual private build
-> path each month. Funding the land buyer must release the same order.
-> The long replay's measurements belong in docs/queue/ER1-notes.md.
+> and a builder with no orders: the player kept ground ahead out of a tenth of
+> its cash and bought no whole offer for hundreds of months. FB11 (ER1-F)
+> funds that ground on the funding page's bond while a sector waits on it and
+> the player's own test for borrowing carries it (LongPlaytest, GROUND FUNDED
+> WHEN A SECTOR WAITS ON IT). This fixture consumes the free ground and
+> removes the city's purchasing cash, then proves, on the actual private build
+> path each month: with nothing waiting on ground the share alone decides; a
+> city its own test will not lend to still holds its jobs every month; a city
+> ...
 
-- **L54 a full city holds jobs while its land buyer has no cash**
-  - L55 premise: the shop is known and its private buyer can pay its whole quote
-  - L57 premise: used ground exceeds the player's own horizon and slack line
-  - L59 premise: the office has linked ground, and every whole offer exceeds the treasury cash
-  - L65 premise: the city has jobs and no inherited jobs on site
-  - L83 every look is counted cash-short and refuses the funded private order
-  - L85 every simulated month retains the land shortage and adds no physical or queued jobs
-- **L87 restoring the land buyer's cash releases the same held order**
-  - L89 premise: a linked offer remains available for the counterfactual
-  - L110 the same ground rule now buys land and permits a plot for the held shop
-  - L119 the funded private order is accepted and adds the template's own jobs on site
+- **L102 with nothing waiting on ground the cash share alone decides, and nothing is borrowed**
+  - L106 premise: used ground exceeds the player's own horizon and slack line
+  - L108 premise: a linked offer stands, past what the cash share pays
+  - L110 premise: no sector waits on ground, and the player's own test would lend what the share cannot pay
+  - L115 the look is counted short, buys no ground and borrows nothing
+- **L119 a full city past its own test for borrowing holds jobs while its land buyer has no cash**
+  - L131 premise: the shop is known and its private buyer can pay its whole quote
+  - L136 premise: used ground exceeds the line, and the linked offer a look finds is past what the cash share pays
+  - L139 premise: the city borrowed until the player's own test refused even no more
+  - L144 premise: the city has jobs and no inherited jobs on site
+  - L166 premise: a sector waited on ground at a look, so the hold is the lender's
+  - L167 every look is counted cash-short, borrows nothing and refuses the funded private order
+  - L170 every simulated month retains the land shortage and adds no physical or queued jobs
+- **L172 restoring the land buyer's cash releases the same held order**
+  - L174 premise: a linked offer remains available for the counterfactual
+  - L196 the same ground rule now buys land out of the share, borrowing nothing, and permits a plot for the held shop
+  - L203 the funded private order is accepted and adds the template's own jobs on site
+- **L222 land paid from the vault is not the bond's: the look borrows nothing**
+  - L225 premise: used ground exceeds the line, a sector waits on ground, and a linked offer stands past the share
+  - L228 premise: the player's own test would lend what the share cannot pay
+  - L235 paying from the vault, the look borrows nothing and funds no offer
+- **L238 a city its own test will lend to funds the demanded ground on the funding page's bond**
+  - L240 premise: the month before the look closed its money audit, the fixture's hand out of it
+  - L241 premise: a sector still waits on ground and the share cannot pay the offer the look will find
+  - L244 premise: the shop's plot is refused before the look, and its private buyer can pay its whole quote
+  - L259 the look bought the offer it found, whole: it leaves the listing and the city owns at least its ground
+  - L262 ...on the bond: the offers past the share are counted funded, the look short at most at its end
+  - L264 ...the treasury's own cash paid no more than the share
+  - L265 ...the city's debt rose by no less than the bonds raised
+  - L266 ...what the bonds raised and the cash paid together are the offers' price
+  - L268 ...and the sellers are owed the offers' dollars
+  - L269 the held shop's plot is now permitted
+  - L272 the private order is accepted and adds the template's own jobs on site
+  - L277 the month after the funded look closes its money audit
 
 ## EarthCheck.java - 80 labelled assertions
 
@@ -21821,114 +21850,114 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L1662 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
 - **L3622 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
 - **L3677 AND EVERYTHING THAT IS A PURCHASE.**
-- **L4050 AND THE BEST OF THEM WINS.**
-- **L6909 founding: a few months at a time, by hand**
-- **L7006 then the real rhythm**
-- **L7141 the report**
-- **L7164 ==**
-- **L7261 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L8558 what the advisor tried, and what happened**
-- **L8564 findings**
-- **L8584 HA1 money audit fixtures**
-- **L9201 1. a city that prospers**
-  - L9223 a founding city conserves money to within 0.01% of what moved
-- **L9242 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
-  - L9265 an industrial city conserves money to within 0.01% of what moved
-  - L9267 ...and it really did carry passengers, so the fare was really charged
-  - L9284 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
-- **L9293 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
-- **L9303 land bought out of the vault: nothing moves the audit cannot see**
-  - L9313 fixture: the vault paid for a parcel and the treasury's cash did not move
-  - L9317 a city that paid for land out of the vault conserves money
-  - L9319 ...and nothing moved a pool after any month's audit
-- **L9322 2. a city under stress**
-  - L9349 a stressed city conserves money to within 0.01% of what moved
-  - L9380 fixture: retail went under whole, and was restructured
-  - L9382 a restructure moves no cash the audit cannot see
-- **L9385 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
-- **L9403 a city paying over the world: the money that arrives is audited**
-  - L9424 fixture: the rate actually brought money in
-  - L9426 ...and the audit saw it cross the border
-  - L9429 a city conserves money with hot money flowing
-  - L9432 ...and nothing moved after the audit struck
-- **L9434 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
-- **L9448 a works making its own power and buying consumables abroad: still nothing leaks**
-  - L9478 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
-  - L9481 ...and bought consumables abroad, inside their imports
-  - L9483 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
-  - L9485 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
-- **L9489 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
-- **L9501 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
-  - L9539 fixture: the yard bought old steel from the households and from a sector
-  - L9541 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
-  - L9543 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9547 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
-  - L9558 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
-  - L9560 the households' books close in every one of the yard's months (worst residual
-  - L9562 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
-- **L9565 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
-- **L9576 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
-  - L9607 fixture: the refinery bought old copper from the households and from a sector
-  - L9609 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
-  - L9611 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9621 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
-  - L9623 the households' books close in every one of the refinery's months (worst residual
-  - L9625 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
-- **L9628 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
-- **L9657 the city's paper on its books: the amortisation is no money, and the audit closes**
-  - L9683 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
-  - L9729 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
-  - L9730 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
-  - L9732 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
-  - L9734 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
-  - L9736 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
-  - L9738 ...and nothing moved a pool after any month's audit struck
-  - L9739 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
-  - L9741 ...and it is the cash coupons the budget calls its cash interest
-- **L9743 12. the services' upkeep is bought of Business Services**
-  - L9764 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
-  - L9767 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
-  - L9769 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
-  - L9780 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
-  - L9792 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
-  - L9794 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
-  - L9797 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
-  - L9800 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
-  - L9805 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-  - L9808 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
-  - L9813 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
-  - L9826 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
-  - L9830 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
-  - L9835 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-- **L9837 13. the households' books close**
-  - L9846 fixture: the longest city this file plays gave at least 24 months to read
-  - L9848 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
-  - L9857 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
-- **L9861 14. a cent that vanishes from a household is seen**
-  - L9873 fixture: the city holds savings enough that 1% of them is a hundred cents or more
-  - L9878 the theft took what it was meant to: the savings fell by X, to the cent
-  - L9884 the game's own strike, whose opening figure was read after the theft, closes
-  - L9885 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
-- **L9888 15. a bond's face that no cell holds is named**
-  - L9921 fixture: the bond town's households hold a corporate bond whose coupon on half its record clears twice the visible line
-  - L9930 fixture: the bond town has real wires for its billed and closing peaks
-  - L9948 fixture: the bond's record now exceeds the cells' own by D, over a cent
-  - L9949 fixture: ...and the coupon on D is over what the identity can tell from rounding
-  - L9957 the press that paid the coupon on D declares it orphaned:
-  - L9960 ...and the own line fired with that figure
-  - L9961 ...the households' books close
-  - L9964 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
-  - L9992 the bond matured within its term (m
-  - L9994 ...every month on the way closed its households' books
-  - L9995 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
-  - L9998 ...and the households' books close that month, the principal paid on a face no cell held
-- **L10002 16. what comes off the payslips is in transit a press**
-  - L10022 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
-  - L10044 fixture: the treasury banked all three that press
-  - L10047 ...by the lines the pools' identity reads
-  - L10058 fixture: what comes off the payslips moved by over a cent in at least three presses
-  - L10059 the households' books close in every one of the
-  - L10060 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
+- **L4055 AND THE BEST OF THEM WINS.**
+- **L6981 founding: a few months at a time, by hand**
+- **L7078 then the real rhythm**
+- **L7213 the report**
+- **L7236 ==**
+- **L7333 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L8632 what the advisor tried, and what happened**
+- **L8638 findings**
+- **L8658 HA1 money audit fixtures**
+- **L9275 1. a city that prospers**
+  - L9297 a founding city conserves money to within 0.01% of what moved
+- **L9316 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
+  - L9339 an industrial city conserves money to within 0.01% of what moved
+  - L9341 ...and it really did carry passengers, so the fare was really charged
+  - L9358 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
+- **L9367 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
+- **L9377 land bought out of the vault: nothing moves the audit cannot see**
+  - L9387 fixture: the vault paid for a parcel and the treasury's cash did not move
+  - L9391 a city that paid for land out of the vault conserves money
+  - L9393 ...and nothing moved a pool after any month's audit
+- **L9396 2. a city under stress**
+  - L9423 a stressed city conserves money to within 0.01% of what moved
+  - L9454 fixture: retail went under whole, and was restructured
+  - L9456 a restructure moves no cash the audit cannot see
+- **L9459 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
+- **L9477 a city paying over the world: the money that arrives is audited**
+  - L9498 fixture: the rate actually brought money in
+  - L9500 ...and the audit saw it cross the border
+  - L9503 a city conserves money with hot money flowing
+  - L9506 ...and nothing moved after the audit struck
+- **L9508 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
+- **L9522 a works making its own power and buying consumables abroad: still nothing leaks**
+  - L9552 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
+  - L9555 ...and bought consumables abroad, inside their imports
+  - L9557 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
+  - L9559 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
+- **L9563 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
+- **L9575 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
+  - L9613 fixture: the yard bought old steel from the households and from a sector
+  - L9615 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
+  - L9617 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9621 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
+  - L9632 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
+  - L9634 the households' books close in every one of the yard's months (worst residual
+  - L9636 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
+- **L9639 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
+- **L9650 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
+  - L9681 fixture: the refinery bought old copper from the households and from a sector
+  - L9683 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
+  - L9685 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9695 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
+  - L9697 the households' books close in every one of the refinery's months (worst residual
+  - L9699 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
+- **L9702 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
+- **L9731 the city's paper on its books: the amortisation is no money, and the audit closes**
+  - L9757 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
+  - L9803 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
+  - L9804 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
+  - L9806 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
+  - L9808 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
+  - L9810 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
+  - L9812 ...and nothing moved a pool after any month's audit struck
+  - L9813 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
+  - L9815 ...and it is the cash coupons the budget calls its cash interest
+- **L9817 12. the services' upkeep is bought of Business Services**
+  - L9838 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
+  - L9841 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
+  - L9843 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
+  - L9854 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
+  - L9866 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
+  - L9868 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
+  - L9871 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
+  - L9874 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
+  - L9879 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+  - L9882 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
+  - L9887 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
+  - L9900 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
+  - L9904 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
+  - L9909 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+- **L9911 13. the households' books close**
+  - L9920 fixture: the longest city this file plays gave at least 24 months to read
+  - L9922 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
+  - L9931 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
+- **L9935 14. a cent that vanishes from a household is seen**
+  - L9947 fixture: the city holds savings enough that 1% of them is a hundred cents or more
+  - L9952 the theft took what it was meant to: the savings fell by X, to the cent
+  - L9958 the game's own strike, whose opening figure was read after the theft, closes
+  - L9959 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
+- **L9962 15. a bond's face that no cell holds is named**
+  - L9995 fixture: the bond town's households hold a corporate bond whose coupon on half its record clears twice the visible line
+  - L10004 fixture: the bond town has real wires for its billed and closing peaks
+  - L10022 fixture: the bond's record now exceeds the cells' own by D, over a cent
+  - L10023 fixture: ...and the coupon on D is over what the identity can tell from rounding
+  - L10031 the press that paid the coupon on D declares it orphaned:
+  - L10034 ...and the own line fired with that figure
+  - L10035 ...the households' books close
+  - L10038 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
+  - L10066 the bond matured within its term (m
+  - L10068 ...every month on the way closed its households' books
+  - L10069 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
+  - L10072 ...and the households' books close that month, the principal paid on a face no cell held
+- **L10076 16. what comes off the payslips is in transit a press**
+  - L10096 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
+  - L10118 fixture: the treasury banked all three that press
+  - L10121 ...by the lines the pools' identity reads
+  - L10132 fixture: what comes off the payslips moved by over a cent in at least three presses
+  - L10133 the households' books close in every one of the
+  - L10134 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
 
 ## LuxuryRetailCheck.java - 8 labelled assertions
 

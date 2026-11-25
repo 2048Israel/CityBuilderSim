@@ -3728,6 +3728,11 @@ public class LongPlaytest {
             if (room != null && LandMarket.hasLinkedDry(room)) {
                 moves.add(new Move("bought room to grow", roomLost, () -> {
                     boolean bought = g.buyLandParcel(room.getId());
+                    // ...or, the cash short of it while a sector waits on ground, a share of the cash and the funding page's bond (FB11).
+                    if (!bought && fundGround(g, room, Math.max(0, g.getCash()) * GROUND_AHEAD_CASH_SHARE, "room to grow") != null) {
+                        bought = true;
+                        roomMovesFunded++;
+                    }
                     if (bought) roomMovesBought++;
                     return bought;
                 }));
@@ -4497,6 +4502,65 @@ public class LongPlaytest {
     static int groundAheadBought, groundAheadShort;
     static double groundAheadSqFt, groundAheadUsd;
 
+    /** Over the run (FB11): the offers of those bought on the funding page's bond (fundGround()), and the local money the bonds raised. */
+    static int groundAheadFunded, roomMovesFunded;
+    static double groundAheadBorrowed;
+
+    /*
+     * GROUND FUNDED WHEN A SECTOR WAITS ON IT (FB11, ER1-F, 2026-11-25).
+     *
+     * The player keeps ground ahead out of a tenth of the cash
+     * (GROUND_AHEAD_CASH_SHARE), and the room-to-grow move out of the
+     * cash; the land office sells whole offers. When a sector's plan or the
+     * landlords' order was refused for want of ground last month
+     * (Game.getLandBlockedSectors(), the "nowhere to build" notice's), the
+     * offer is bought anyway: the share's part out of the cash, the rest on
+     * the land office's funding page - the BUILD_BOND_YEARS bond buyWhole()
+     * and the funding page borrow on - when the player's own test for
+     * borrowing (canService()) carries it. The price, the whole offer, the
+     * seller's payment and the vault are the land office's, as before.
+     *
+     * WHY: ER1 (docs/queue/ER1-notes.md) found Rotterdam's Earth city held at
+     * about 33,000 people for six hundred months with a works that would pay
+     * waiting on one plot, and HT1 (docs/queue/FB11H.md) the ensemble's seed
+     * 14 with 4.4 households unplaced at month 456: in both the look found the
+     * city past its line and the offer past a tenth of the cash, and bought
+     * nothing while the share stayed below the offer. Measured on 0.9.206
+     * (docs/queue/FB11-notes.md), Rotterdam's 1900 city from month 900 to
+     * 1,300: the ground full and the landlords waiting on it 283 months of
+     * 401, 68 of 76 looks held by the share with up to 394k in the treasury,
+     * 42,503 people at the end; funded, 4 months waiting and 443,756 people,
+     * its debt no more of its output than before.
+     */
+
+    /** Whether a sector waits on ground (FB11): last month's plans or landlords' orders refused for want of it, as Game.getLandBlockedSectors() keeps them. */
+    static boolean groundDemanded(Game g) {
+        return !g.getLandBlockedSectors().isEmpty();
+    }
+
+    /**
+     * Buys a whole offer the cash share cannot pay while ground is demanded (FB11, see the banner): at most {@code share} of
+     * local money out of the cash, the rest borrowed first on the funding page's BUILD_BOND_YEARS bond when canService()
+     * carries it. "bond" when bought; null, and nothing borrowed, when no sector waits on ground, the land is paid from the
+     * vault (buyWhole()'s rule), or the city could not service the debt; null after borrowing only when the bond raised
+     * less than asked or the office then refused the offer - the money raised stays in the treasury, as buyWhole() leaves it.
+     */
+    static String fundGround(Game g, LandParcel p, double share, String purpose) {
+        if (p == null || !groundDemanded(g) || g.isLandPaidFromVault()) return null;
+        double local = p.localPrice(g.getForeignAccounts().getRate());
+        double fromCash = Math.max(0, Math.min(share, g.getCash()));
+        double gap = local - fromCash;
+        if (!(gap > 0) || !canService(g, gap)) return null;
+        double before = g.getCash();
+        g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, g.fundingLot("Term"));
+        notePaper(g, purpose + " (the land office's funding page)");   // the trace; nothing else reads it
+        if (g.getCash() - before < gap - FUNDED_SLACK * local || !g.canAffordParcel(p)) return null;
+        return g.buyLandParcel(p.getId()) ? "bond" : null;
+    }
+
+    /** What a bond may fall short of the gap it was asked for and still fund the offer (FB11): a millionth of the price, the bond auction's rounding, not a part of the cash share. */
+    static final double FUNDED_SLACK = 1e-6;
+
     /**
      * The most of its dry ground a look leaves built on (0.7.58, J1d): the
      * ground in use grown BuildAdvice.HORIZON months by the businesses'
@@ -4582,14 +4646,22 @@ public class LongPlaytest {
             if (traceGround)
                 tr.printf("PW5_GROUND_OFFER month=%d id=%s price=%.9f budget=%.9f sizeSqFt=%.9f%n",
                         g.getMonth(), best.getId(), local, budget, (double) best.getSizeSqFt());
+            double cashBefore = g.getCash();
             if (local > budget || !g.canAffordParcel(best)) {
-                if (traceGround) tr.printf("PW5_GROUND_HELD month=%d reason=%s%n", g.getMonth(), local > budget ? "cash-share" : "cannot-afford");
-                groundAheadShort++;
-                break;
-            }
-            if (!g.buyLandParcel(best.getId())) break;
-            if (traceGround) tr.printf("PW5_GROUND_BOUGHT month=%d id=%s price=%.9f%n", g.getMonth(), best.getId(), local);
-            budget -= local;
+                // ...unless a sector waits on ground: then the land office's funding page lends what the share cannot pay (FB11, ER1-F).
+                String funded = fundGround(g, best, budget, "ground kept ahead");
+                if (funded == null) {
+                    if (traceGround) tr.printf("PW5_GROUND_HELD month=%d reason=%s demanded=%b%n", g.getMonth(),
+                            local > budget ? "cash-share" : "cannot-afford", groundDemanded(g));
+                    groundAheadShort++;
+                    break;
+                }
+                groundAheadFunded++;
+                groundAheadBorrowed += g.getCash() - cashBefore + local;
+            } else if (!g.buyLandParcel(best.getId())) break;
+            if (traceGround) tr.printf("PW5_GROUND_BOUGHT month=%d id=%s price=%.9f fromCash=%.9f%n", g.getMonth(), best.getId(), local,
+                    cashBefore - g.getCash());
+            budget -= cashBefore - g.getCash();
             groundAheadBought++;
             groundAheadSqFt += best.getSizeSqFt();
             groundAheadUsd += best.getPriceUsd();
@@ -8294,6 +8366,8 @@ public class LongPlaytest {
         out.printf("  ...ground kept ahead (0.7.58): %,d offer(s) bought over the run, %.2f km2 dry, US$%,.0fk; the"
                 + " cash share stopped a look short %,d time(s)%n", groundAheadBought,
                 LandManager.km2(groundAheadSqFt), groundAheadUsd, groundAheadShort);
+        out.printf("  ...and funded while a sector waited on ground (FB11): %,d of them and %,d room move(s) on the funding"
+                + " page's bond, %,.0f raised for the ground kept ahead%n", groundAheadFunded, roomMovesFunded, groundAheadBorrowed);
         out.printf("  ...and across the skips (LP-G1): %,d ground look(s) inside a skip; the most months a skip let the"
                 + " ground go unlooked at, %d (the horizon %.0f)%n", groundLooksInSkips, longestGroundGap, BuildAdvice.HORIZON);
         out.printf("  ...the build's bonds (CC1-S): %,d at home, %,d abroad, the dearest abroad %.2f%%%n",
