@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-R6e-rest-HOMKXWfI -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — R6e-rest, the engineering rows R6e held — 2026-11-24, ready, see docs/queue/R6e-rest-notes.md
 A city founded the 1900 way now finds the pressure exchanger (E22, 1997). A Desalination Plant built before it draws 13,454 kW, not today's 10,880, until the player fits the exchanger, and a plant built after comes fitted. The step is Las Palmas III's measured 3.49 to 2.68 kWh a m3, on the reverse-osmosis step alone.
