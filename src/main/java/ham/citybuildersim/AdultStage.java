@@ -40,6 +40,8 @@ public enum AdultStage {
     public String getLabel() { return label; }
     public int getFromAge()  { return fromAge; }
     public int getToAge()    { return toAge; }
+    /** The inclusive ages the household money page names (HS3). */
+    public String getAges()  { return fromAge + "-" + (toAge - 1); }
 
     /** How many months an adult spends in the stage, on average: 204 young, 420 established. */
     public int spanMonths() {

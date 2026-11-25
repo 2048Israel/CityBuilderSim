@@ -39,11 +39,19 @@ public final class EssentialWorksCheck {
     static Game town(Path root, String name) {
         ChildcareCheck.quiet = quiet;
         Game g = ChildcareCheck.town(root, name);
+        // THE FIXTURE CAUSES IT (PW2): a 1900 city knows the wind farm from E16 (December 1980) since each plant is offered from its year
+        // (Jerus's Q2), and these towns weigh wind against coal; so their research found its code at the founding (Research.knownFrom(), R3's lever).
+        knowWind(g);
         quietly(() -> g.handleLongBondForCash(2 * AutoBuilder.annualGdp(g),
                 Game.BUILD_BOND_YEARS, Game.BUILD_BOND_GRANULE));
         g.getAutoBuilder().setDebtLimit(0, null);
         g.getAutoBuilder().setCashAnyway(true, null);
         return g;
+    }
+
+    /** A city's research finds the Wind Farm's code (its since) at month 1, so a 1900 city knows it: the fixture's lever, since PW2 dates every plant. */
+    static void knowWind(Game g) {
+        g.getResearch().restore(Map.of(), Map.of(), Map.of(), Map.of(g.getBuildingManager().getTemplateByName("Wind Farm").getSinceText(), 1));
     }
 
     static AutoBuilder.Step step(Game g, BuildAdvice.Measure m) {
@@ -91,6 +99,22 @@ public final class EssentialWorksCheck {
         double[] two = BuildAdvice.supplyDemand(g, power, Map.of());
         double perKw = (two[1] - one[1]) / (c2 - c1);
         u.setWattsConsumption(Math.max(0, c1 + (share * one[0] - one[1]) / perKw));
+    }
+
+    /** These cases isolate another essential order; physical wires cover even its longest forecast. */
+    static void serveGrid(Game g) {
+        BuildAdvice.Measure grid = BuildAdvice.Measure.of(BuildAdvice.Kind.GRID);
+        BuildAdvice.Ahead at = BuildAdvice.opening(g, BuildAdvice.LIFE_MONTHS, g.getAutoBuilder().getSlack());
+        double site = Math.max(1, g.getBuildingOutputAtEveryPost());
+        SubstationCheck.wiresFor(g, BuildAdvice.supplyDemand(g, grid, Map.of(), at)[1]);
+        // Wires need repairs as well as posts. Preserve the builders this isolated ordering case already had.
+        BuildingManager b = g.getBuildingManager();
+        for (int n = 0; n < 64 && g.getBuildingOutputAtEveryPost() < site; n++)
+            b.addStack(b.getTemplateByName("Construction Depot"), 1, true);
+        check("fixture: standing substations carry the isolated order's entire forecast",
+                BuildAdvice.maintained(g, grid, Map.of(), at));
+        check("fixture: the wired town retains its construction output after the substations' repairs",
+                g.getBuildingOutputAtEveryPost() >= site);
     }
 
     /** Give unrelated essential services their operating capacity before isolating an ahead-of-need order. */
@@ -289,6 +313,7 @@ public final class EssentialWorksCheck {
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         u.setWattsConsumption(u.getProduction() * 4);
+        serveGrid(g);
         BuildingsTemplate cheapest = null;
         double one = Double.POSITIVE_INFINITY, second = Double.POSITIVE_INFINITY;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (power.serves(t) && BuildAdvice.unit(g, power, t) > 0) {
@@ -373,6 +398,7 @@ public final class EssentialWorksCheck {
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         // ...the draw a fifth inside the supply as the advice reads it (PW1: the calm peak over the firm supply).
         powerDrawAt(g, .8);
+        serveGrid(g);
         double first = bm.siteUnitMonths(mill, 1, g.getBuildingOutputAtEveryPost());
         check("fixture: a paid mill opens within the planning horizon while current power has its reserve",
                 stack.getUnderConstruction() == 1 && first > 0 && first < BuildAdvice.HORIZON
@@ -627,6 +653,7 @@ public final class EssentialWorksCheck {
         }
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         utilities.setWattsConsumption(utilities.getProduction() * .5);
+        serveGrid(g);
         g.getInfrastructureManager().setLoad(0);
         g.getInfrastructureManager().setBreakdown(new double[Traffic.values().length]);
         BuildingsTemplate elementary = bm.getTemplateByName("Elementary School");
@@ -771,6 +798,7 @@ public final class EssentialWorksCheck {
         g.getHistorySave().getMonth().clear();
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         u.setWattsConsumption(u.getProduction() * 2);
+        serveGrid(g);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         check("overview cards require the NEEDS YOU row their screen reads",
                 BuildAdvice.suggest(g, java.util.List.of()).isEmpty());
@@ -810,6 +838,15 @@ public final class EssentialWorksCheck {
         // (coal $193M against wind $285M on this town, the prevented loss $1.5M against $1.8M). The section is the timing, not that price:
         // the fixture's farm is built 1 / WIND_FIRM larger, firm at the nameplate the section was written against.
         wind.setProduction1(wind.getProduction1() / PowerDispatch.WIND_FIRM);
+        // THE FIXTURE CAUSES IT (PW2): the section is the wind's timing against pending coal; the Oil-Fired Plant opens between
+        // them (its 48 months to the wind's 36 and the coal's 60), and the pass ordered it. Dated past this town's year it is no
+        // candidate; the founding's own oil-fired plant stands and runs as before. And PW2's refigure (spec-electricity 2.3) made
+        // the coal plant cheaper a unit of power than the section was written against (776,914 of cash for 280,086, was 1,071,816
+        // for 280,000) and the wind farm dearer (25,023 for 6,854, was 23,240 for 8,100): firm at its nameplate the farm's plan was
+        // still 3% dearer than a second coal plant's here. The section is the timing, not that price, so the fixture's farm is
+        // also priced at half.
+        g.getBuildingManager().getTemplateByName("Oil-Fired Plant").setSince(2100);
+        wind.setCashCost(wind.getCashCost() / 2);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         AutoBuilder ab = g.getAutoBuilder();
         g.setCashForTest(1e14);
@@ -840,6 +877,7 @@ public final class EssentialWorksCheck {
         g.getBusinessInvestment().restorePopulationHistory(people);
         // ...the draw a fifth inside the supply as the advice reads it (PW1: the calm peak over the firm supply).
         powerDrawAt(g, .8);
+        serveGrid(g);
         check("fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner",
                 BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW)
                         && !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.opening(g, windLead, ab.getSlack()))
@@ -1021,7 +1059,7 @@ public final class EssentialWorksCheck {
         AutoBuilder ab = g.getAutoBuilder();
         BuildingManager bm = g.getBuildingManager();
         BuildingsTemplate wind = bm.getTemplateByName("Wind Farm");
-        BuildingsTemplate road = bm.getTemplateByName("Paved Road");
+        BuildingsTemplate later = bm.getTemplateByName("Container Terminal");
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
         quietly(() -> g.buildStack(bm.getTemplateByName("Construction Depot"), 8, true));
@@ -1041,8 +1079,14 @@ public final class EssentialWorksCheck {
         quietly(() -> ab.pass(g));
         check("pending capacity covers the shortage before its quoted deadline",
                 step(g, power) != null && step(g, power).outcome() == AutoBuilder.Outcome.AHEAD);
-        quietly(() -> g.buildStack(road, 10_000, false));
-        bm.getControl().setOrder(java.util.List.of(ConstructionControl.keyOf(road), ConstructionControl.keyOf(wind)));
+        // FC2, 2026-11-23: the work that stands before the wind was ten thousand Paved Roads. On FC2's path the foreign crews took them
+        // (505 roads finished in the first month), and the repairs of the roads that stood outran the builders: 347 points of repairs
+        // at the order, 3,707 a month on, 12,893 at the pass past the deadline, against a site output of 726 a month that was 0 by the
+        // next month, so that pass held the Coal Power Plant "the builders have no site output to build them" and ordered no power. It is one
+        // Container Terminal now, the dearest single building (829,800 points): one unit, which neither the home builders nor the
+        // crews abroad finish in the months compared, so nothing finishes to be repaired and the builders keep their site output.
+        quietly(() -> g.buildStack(later, 1, false));
+        bm.getControl().setOrder(java.util.List.of(ConstructionControl.keyOf(later), ConstructionControl.keyOf(wind)));
         int reloadAt = began + Math.max(1, (int) first / 2);
         quietly(() -> g.simulateMonths(reloadAt - g.getMonth()));
         check("the unbroken city reaches the mid-construction save month", g.getMonth() == reloadAt);
@@ -1093,6 +1137,9 @@ public final class EssentialWorksCheck {
         g.autoBuildProbeForTest = null;
         loaded.autoBuildProbeForTest = null;
         check("fixture: later priority work kept operating power short throughout the original deadline", stayedShort[0]);
+        check("fixture: the later priority work finished nothing, so the repairs left the builders a site output at the last pass",
+                bm.getStack(later).getQuantity() == 0 && bm.getStack(later).getUnderConstruction() == 1
+                        && g.getBuildingOutputAtEveryPost() > 0);
         check("monthly passes respect the original pending deadline before it expires", !early[0]);
         check("past that deadline the automatic path orders more power despite the pending wind", late[0]);
         check("the real loaded city and its unbroken twin place the same later automatic orders, one by one",

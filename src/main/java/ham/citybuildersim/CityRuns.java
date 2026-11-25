@@ -246,6 +246,8 @@ public final class CityRuns {
         long version();
         /** The city's owned box, {x0, y0, x1, y1} in plots, inclusive: how far out a corridor is sought. */
         long[] box();
+        /** (AP2) A link's search (linkWay()) begins (true) or ends (false): a ground that keeps what it reads may keep all of it meanwhile. It changes no answer of at(). */
+        default void searching(boolean on) { }
     }
 
     /** Whether a ground class is the city's dry ground: owned (a class at all, not -1), and dry by World.dry() - not water, and since 0.7.127 not ice. */
@@ -1664,7 +1666,13 @@ public final class CityRuns {
      */
     static LinkWay linkWay(Net n, Net other, Ground g, int p, long[][] from, int goalKind, long goalV, long[] hub, long most) {
         LinkSearch s = new LinkSearch(n, other, g, p, goalKind, goalV, hub, most);
-        return s.run(from[0], from[1]);
+        // (AP2) The ground keeps every tile the search reads: on a large city its ring is wider than the tiles it keeps otherwise.
+        g.searching(true);
+        try {
+            return s.run(from[0], from[1]);
+        } finally {
+            g.searching(false);
+        }
     }
 
     /**
@@ -2423,15 +2431,17 @@ public final class CityRuns {
     /**
      * (TN1) Lays the freight station's yard, the first, again at a longer box where the ground now allows one: of the boxes on the track
      * longer along than its own (the tiers, THE RAILWAY'S YARDS), the nearest a mine that fits (on home's ground with the railway in
-     * pieces), off every other yard; it keeps its ask. A station that holds no train (shorter than every tier's length) may go too, after
-     * every box on the quarter line, where the spine runs straight beside it (spotsOffLine()). Weighed in each month reweighDue() names while
-     * it is short of YARD_LONG.
+     * pieces), off every other yard; it keeps its ask. After every box on the quarter line it may go too where the spine runs straight
+     * beside it (spotsOffLine(); TN1 kept this to a station that holds no train, STY1 to any short of YARD_LONG). Weighed in each month
+     * reweighDue() names while it is short of YARD_LONG.
      * WHY: a yard is laid at the longest tier the ground allows the month it is laid and kept at its box after (keepYards()), so a young
      * city's station, laid where its ground ran short of a train's length, or one read from a sidecar before FORMAT 10, laid at its
      * footprint, stays short for good, and since FX5 a train runs only onto a siding that holds it (TrainSchedule.unfit()): Jerus's city
      * at month 1,204 had its station's Rail Depot laid at its 8-plot footprint, a siding of one plot, and 29 trains a month, every one
      * unfit; the Bergen playtest's, laid a mixed train's 15 plots long at month 840, never held a unit train. Only the station's yard: a
-     * further yard stands beside its works (placeFurther()), which a box nearer a mine would leave.
+     * further yard stands beside its works (placeFurther()), which a box nearer a mine would leave. (STY1) A station laid at a mixed
+     * train's 15 plots, which holds a train, was never weighed beside the quarter line, where a spine's straight stretch off it may run
+     * a unit train's length (MainLineCheck 17 (c)); its unit trains, 41.4 plots, were unfit every month.
      */
     private void lengthenStation(List<int[]> sizes, Ground g, List<long[]> mines, Pieces pieces, boolean inPieces) {
         if (sizes.isEmpty() || !reweighDue()) return;
@@ -2440,10 +2450,9 @@ public final class CityRuns {
         int[] asked = yardAsked(0);
         List<long[]> others = yards.subList(1, yards.size());
         List<List<long[]>> tiers = spotsOnTrack(asked[0], asked[1]);
-        // A station that holds no train (shorter than the shortest train's tier) may go too where the spine runs straight off the quarter line (spotsOffLine()).
-        int shortest = Integer.MAX_VALUE;
-        for (int l : TIER_LENGTHS) shortest = Math.min(shortest, l);
-        if (had < shortest) tiers.addAll(spotsOffLine(asked[0], asked[1]));
+        // A station short of YARD_LONG (reweighDue()) may go too where the spine runs straight off the quarter line (spotsOffLine(); TN1
+        // weighed these only for a station that holds no train, so a mixed train's station beside such a stretch held no unit train, STY1).
+        tiers.addAll(spotsOffLine(asked[0], asked[1]));
         for (List<long[]> tier : tiers) {
             List<long[]> fit = new ArrayList<>();
             for (long[] b : tier) {
@@ -2595,7 +2604,7 @@ public final class CityRuns {
      * (TN1) The boxes a yard of footprint w x h could take on the spine's straight stretches that run off a cell's quarter line, by tier
      * (TIER_LENGTHS, the longest first; not the footprint's own): spotsOnTrack()'s boxes, across the stretch's own line and on either side of it - a spine arm that
      * turned a corner round water or a highway's verge and went on straight a plot or two beside the quarter line - where the track runs
-     * the box's whole length. Only lengthenStation()'s, for a station whose yard holds no train: Jerus's city's main line left the quarter
+     * the box's whole length. Only lengthenStation()'s, for a station short of YARD_LONG (TN1: one whose yard holds no train): Jerus's city's main line left the quarter
      * line two plots west of its hub and ran 219 plots on beside it, and the track on the quarter line had room only for its station's
      * 8-plot footprint.
      */
@@ -2943,6 +2952,8 @@ public final class CityRuns {
             if (!ctx.works.isEmpty()) for (int i = Math.max(1, yardsActive()); i < yards.size(); i++) reachYard(yards.get(i), g, ctx, budget);
             // (HB2) Last, a spur to each of the harbour's quay lines: after all the model's track, none of it the model's.
             layQuaySpurs(ctx, g);
+            // (RR1) ...and where the main line reaches no edge, its arms past the gate arm only as far as a train's way uses them.
+            if (deal == null) cutDeadSpine();
         }
         yardsShort = Math.max(0, sizes.size() - yardsActive());
         railStamp = stamp;
@@ -3170,6 +3181,71 @@ public final class CityRuns {
             }
         }
         return any;
+    }
+
+    /**
+     * (RR1) Takes the main line's arms past its gate arm back to the last plot a train's way uses, where none of them reaches the
+     * city's edge. FX2 grows the next arm of the spine where the gate arm waits at the sea, and the next after that, to the first that
+     * waits anywhere else - for the world line to leave from (Jerus's Halifax). Where each of them waits at the sea or has run into the
+     * net, no world line leaves from any (the trains come in by the portal at the gate arm's end, TN1), and the track they laid past the
+     * yards on them was track no train ran on: Jerus's fjord city, 2026-11-20, "rail still has dead ends" - the north arm past the
+     * station on to the shore, the east arm 14 plots into the homes. FR7's rule (star 3) holds there too: no track on no train's way.
+     * The arms keep their waits, so the line is not grown again until the ground moves; then it is grown and taken back as before.
+     * True when it took any back.
+     */
+    private boolean cutDeadSpine() {
+        int gate = gateArm(rail, gateway);
+        if (gate < 0 || rail.arms.get(gate).stoppedBy != SEA || mainArm() != gate) return false;
+        List<Integer> order = spineOrder(rail, gate), line = new ArrayList<>();
+        for (int k = 1; k < order.size(); k++) {
+            Arm a = rail.arms.get(order.get(k));
+            // An arm at the edge, or one still to wait (growing, or stopped by anything but the sea or the net), may take the world line.
+            if (a.stoppedBy == EDGE || a.stoppedBy != SEA && !a.joined) return false;
+            line.add(order.get(k));
+            if (a.joined) break;
+        }
+        boolean any = false;
+        for (int k = line.size() - 1; k >= 0; k--) {
+            int i = line.get(k);
+            Arm a = rail.arms.get(i);
+            while (a.steps > 0 && !trainsUse(a.x, a.y, i)) {
+                stepBack(rail, i);
+                any = true;
+            }
+        }
+        if (any) recountPieces(rail);
+        return any;
+    }
+
+    /** (RR1) Whether plot (x, y) of spine arm `arm` is one a train's way uses: a yard's, an interchange's, or where an arm of another corridor (a siding, a branch, a quay's spur) leaves it. */
+    private boolean trainsUse(long x, long y, int arm) {
+        for (long[] b : yards) if (x >= b[0] && y >= b[1] && x < b[0] + b[2] && y < b[1] + b[3]) return true;
+        for (Interchange c : rail.interchanges) if (c.x() == x && c.y() == y) return true;
+        for (int j = 0; j < rail.arms.size(); j++) {
+            Arm o = rail.arms.get(j);
+            if (j != arm && o.corridor > 1 && o.steps > 0 && o.sx == x && o.sy == y) return true;
+        }
+        return false;
+    }
+
+    /** (RR1) Takes arm i of net n back one step as trimPiece() does - its plot and a 45-degree step's corner seen going, its stretch shorter - but keeps its wait: what stopped it still does. */
+    private static void stepBack(Net n, int i) {
+        Arm a = n.arms.get(i);
+        int s = a.segs - 1, h = a.segHead[s], dx = DX[h], dy = DY[h], p = pieceOf(n, a);
+        long x = a.x, y = a.y;
+        boolean diag = dx != 0 && dy != 0;
+        saw(n, x, y);
+        if (diag) saw(n, x, y - dy);
+        a.segSteps[s]--;
+        if (a.segSteps[s] == 0) a.segs--;
+        a.steps--;
+        a.x = x - dx;
+        a.y = y - dy;
+        a.head = a.segs > 0 ? a.segHead[a.segs - 1] : a.home;
+        a.known = 0;
+        if (!covered(n, x, y)) { n.plots--; debit(n, p, 1); }
+        if (diag && !covered(n, x, y - dy)) { n.plots--; debit(n, p, 1); }
+        while (!a.crossings.isEmpty() && a.crossings.get(a.crossings.size() - 1)[2] > a.steps) a.crossings.remove(a.crossings.size() - 1);
     }
 
     /** The plots of net n: its hub's, if laid, and the union of its arms' (each 45-degree step's corner too). */
@@ -4284,6 +4360,20 @@ public final class CityRuns {
         return out;
     }
 
+    /**
+     * (RR1) The ramps among highwayRamps() at the ends of arms that wait at
+     * the city's own water (stoppedBy SEA: the sea, or water wider than the
+     * net bridges), {x, y, the arm's index}: such an arm grows on only if the
+     * ground moves, so the plan lays a street beneath its ramp, joined to its
+     * streets (DistrictPlan's rampJoins()), and its end is a junction, not
+     * JunctionCheck 4's open end narrowing for an arm still to grow.
+     */
+    public List<long[]> waitingEnds() {
+        List<long[]> out = new ArrayList<>();
+        for (long[] r : highwayRamps()) if (highways.arms.get((int) r[2]).stoppedBy == SEA) out.add(r);
+        return out;
+    }
+
     /** Adds to out arm a's plots at steps from and to (from <= to) and at every turn between, in the order of its steps. */
     static void armPoints(Arm a, int from, int to, List<long[]> out) {
         out.add(plotAt(a, from));
@@ -4522,7 +4612,8 @@ public final class CityRuns {
         long h = World.mix(0x52554E53L ^ gateway);
         for (Net n : new Net[] { highways, rail }) {
             h = World.mix(h ^ n.plots ^ (n.started ? n.hubX * 31 + n.hubY : 7) ^ (n.hubLaid ? 1L << 62 : 0));
-            for (Arm a : n.arms) h = World.mix(h ^ a.steps ^ ((long) a.head << 40) ^ (a.x << 20) ^ a.y);
+            // (RR1) ...and whether a highway's arm waits at the city's own water, which its frame's plan reads (waitingEnds()).
+            for (Arm a : n.arms) h = World.mix(h ^ a.steps ^ ((long) a.head << 40) ^ (a.x << 20) ^ a.y ^ (n.kind == HIGHWAYS && a.stoppedBy == SEA ? 1L << 61 : 0));
             h = World.mix(h ^ n.corridors.size());
             for (int j = 1; j < n.pieceHubs.size(); j++) h = World.mix(h ^ n.pieceHubs.get(j)[0] * 0x9E3779B97F4A7C15L ^ n.pieceHubs.get(j)[1] ^ ((long) j << 56));
         }
@@ -4873,11 +4964,14 @@ public final class CityRuns {
                     }
                 }
             }
-            if (marks != null && n.kind == HIGHWAYS) {
-                // A ramp at each arm's end.
+            if (n.kind == HIGHWAYS) {
+                // A ramp at each arm's end; (RR1) one where the arm waits at the city's own water (waitingEnds()) is joined to
+                // a street, which the frame's hash carries, marks or none, so its plan is made again when the arm comes to wait.
                 for (Arm a : n.arms) {
                     if (a.steps == 0 || a.x < x0 || a.y < y0 || a.x >= x0 + w || a.y >= y0 + h) continue;
-                    marks[(int) ((a.y - y0) * w + (a.x - x0))] |= M_RAMP;
+                    int i = (int) ((a.y - y0) * w + (a.x - x0));
+                    if (a.stoppedBy == SEA) hash = World.mix(hash ^ i ^ 0x5741495453L << 24);
+                    if (marks != null) marks[i] |= M_RAMP;
                 }
             }
         }

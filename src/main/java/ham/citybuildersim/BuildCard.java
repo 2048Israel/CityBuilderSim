@@ -154,6 +154,7 @@ public final class BuildCard {
     /** The words before the figure and after it, for a city building on a measure. */
     public static String[] doesWords(BuildAdvice.Measure m, BuildingsTemplate t) {
         switch (m.kind()) {
+            case GRID:    return new String[] {"carries ", " kW at the peak"};
             case POWER:   return new String[] {"generates ", KILOWATTS};
             case WATER:   return new String[] {"makes ", " units a month"};
             case ROADS: case HIGHWAYS: return new String[] {"carries ", " trips a month"};
@@ -173,7 +174,7 @@ public final class BuildCard {
     /** ...the one of it a cost is per: "cost per patient", "cheapest per child". */
     public static String perWords(BuildAdvice.Measure m) {
         switch (m.kind()) {
-            case POWER:   return "kW";
+            case POWER: case GRID: return "kW";
             case WATER:   return "unit";
             case ROADS: case HIGHWAYS: return "trip";
             case TRANSIT: return "rider";
@@ -189,7 +190,7 @@ public final class BuildCard {
     /** ...and many of it, for the staff bar's "per 10,000 patients". */
     public static String perPlural(BuildAdvice.Measure m) {
         switch (m.kind()) {
-            case POWER:   return "kW";
+            case POWER: case GRID: return "kW";
             case WATER:   return "units";
             case ROADS: case HIGHWAYS: return "trips";
             case TRANSIT: return "riders";
@@ -1810,7 +1811,7 @@ public final class BuildCard {
 
     /**
      * What a sector's word is about. BUILDING: investors have an order on
-     * site, or the word says it built; SELLING: it sold buildings back;
+     * site, or the word says it built; SELLING: it sold or scrapped buildings;
      * LAND: no ground, or the month's land-blocked list has it; STAFF: the
      * staffing test; LICENCE: licences; ORE: a deposit, the ore or (0.7.138)
      * the forest Forestry may cut; SUPPLY:
@@ -1857,7 +1858,7 @@ public final class BuildCard {
         String w = word == null ? "" : word;
         String lower = w.toLowerCase(java.util.Locale.ROOT);
         if (building || w.startsWith("Built")) return WordKind.BUILDING;
-        if (w.startsWith("Sold")) return WordKind.SELLING;
+        if (w.startsWith("Sold") || w.startsWith("Scrapped")) return WordKind.SELLING;
         if (landBlocked || w.startsWith("Could not build") || says(lower, LAND_WORDS)) return WordKind.LAND;
         if (says(lower, STAFF_WORDS)) return WordKind.STAFF;
         if (says(lower, LICENCE_WORDS)) return WordKind.LICENCE;
@@ -1945,7 +1946,7 @@ public final class BuildCard {
        refusals are warned before the click, not discovered after it.
        ===================================================================== */
 
-    public enum VerdictKind { NO_DEPOSIT, NO_LICENCE, NO_LAND, BILL, MONTHS, NO_COAST, NO_RIVER, NO_BRIDGE }
+    public enum VerdictKind { NO_DEPOSIT, NO_LICENCE, NO_LAND, BILL, MONTHS, NO_COAST, NO_RIVER, NO_BRIDGE, NO_WATER }
 
     /** The verdict, the quote it is on, and how short: sq ft of land, cash, or the months to wait - and, refused for a deposit, whose sites it needs (0.7.62; null otherwise). */
     public record Verdict(VerdictKind kind, Game.BuildQuote quote, double figure, Resource site) {
@@ -1958,6 +1959,7 @@ public final class BuildCard {
         if (!game.hasDepositFor(t, n)) return new Verdict(VerdictKind.NO_DEPOSIT, q, 0, Game.siteOf(t));
         if (!game.hasCoastFor(t, n, Landmasses.CHOSEN)) return new Verdict(VerdictKind.NO_COAST, q, 0);
         if (!game.hasRiverFor(t, n)) return new Verdict(VerdictKind.NO_RIVER, q, 0);
+        if (!game.hasCoolingFor(t)) return new Verdict(VerdictKind.NO_WATER, q, 0);
         if (!game.hasBridgeFor(t, n)) return new Verdict(VerdictKind.NO_BRIDGE, q, 0);
         if (!game.hasLicencesFor(t, n)) return new Verdict(VerdictKind.NO_LICENCE, q, game.licencesNeededFor(nu, n));
         if (q.landNeeded > q.landFree) return new Verdict(VerdictKind.NO_LAND, q, q.landNeeded - q.landFree);

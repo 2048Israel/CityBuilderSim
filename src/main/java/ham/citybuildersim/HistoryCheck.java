@@ -81,6 +81,13 @@ public class HistoryCheck {
 
     public static void main(String[] args) throws Exception {
 
+        System.out.printf("HistoryCheck native PID=%d runtime=%s home=%s earth=%s world=%s%n", ProcessHandle.current().pid(),
+                System.getProperty("java.runtime.version"), System.getProperty("java.home"), System.getProperty("cbs.earth"), System.getProperty("cbs.world"));
+        try (var bytes = HistoryCheck.class.getResourceAsStream("HistoryCheck.class")) {
+            System.out.println("HistoryCheck loaded class SHA256=" + java.util.HexFormat.of().formatHex(
+                    java.security.MessageDigest.getInstance("SHA-256").digest(bytes.readAllBytes())));
+        }
+
         Path root = TempDirs.create("history");
         GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
 
@@ -105,6 +112,8 @@ public class HistoryCheck {
          * means adding a series to the recorder automatically adds it here.
          */
         Map<String, List<? extends Number>> series = h.seriesByName();
+        Map<String, Double> power = PowerView.series(PowerView.of(city));
+        assertTrue("the thirty-month fixture has native power observations", !power.isEmpty());
         System.out.println("  series kept: " + series.size());
         assertTrue("there are more than the original eight", series.size() > 8);
 
@@ -119,6 +128,12 @@ public class HistoryCheck {
                         e.getValue().size() >= 1 && e.getValue().size() <= h.months());
                 continue;
             }
+            // Only exact keys emitted by this native projection qualify; an unknown power name fails.
+            if (power.containsKey(e.getKey())) {
+                powerSuffix(h, e.getKey(), power.get(e.getKey()));
+                continue;
+            }
+            if (e.getKey().startsWith("power")) assertTrue("  " + e.getKey() + " is an emitted native power key", false);
             assertTrue("  " + e.getKey() + " has a value for every month",
                     e.getValue().size() == h.months());
         }
@@ -715,9 +730,119 @@ public class HistoryCheck {
 
         todaysPrices(root, files, city);
 
+        firstPowerObservation();
+
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** Monthly optional observations occupy an actual suffix, with unknown earlier months, never invented zeroes. */
+    static void powerSuffix(HistorySave h, String key, double latest) {
+        List<? extends Number> stored = h.seriesByName().get(key);
+        int axis = h.months(), size = stored == null ? 0 : stored.size(), offset = axis - size;
+        System.out.printf("  POWER %s axis=%d stored=%d offset=%d lastMonth=%s%n", key, axis, size, offset,
+                axis == 0 ? "none" : h.getMonth().get(axis - 1));
+        assertTrue("  " + key + " is a nonempty, non-overlong monthly suffix", h.yearlyPoints() == 0 && size > 0 && size <= axis);
+        if (size == 0 || size > axis) return;
+        double[] raw = h.raw(key), aligned = h.aligned(key), tail = h.alignedTail(key, axis + 1);
+        boolean shape = raw.length == axis && aligned.length == axis && tail.length == axis;
+        boolean prefix = shape, values = shape;
+        for (int i = 0; shape && i < axis; i++) {
+            if (i < offset) prefix &= Double.isNaN(raw[i]) && Double.isNaN(aligned[i]) && Double.isNaN(tail[i]);
+            else {
+                Number n = stored.get(i - offset);
+                values &= n != null && Double.isFinite(n.doubleValue())
+                        && raw[i] == n.doubleValue() && aligned[i] == n.doubleValue() && tail[i] == n.doubleValue();
+            }
+        }
+        assertTrue("  " + key + " unobserved prefix reads NaN in all readers", prefix);
+        assertTrue("  " + key + " every stored suffix entry reaches all readers", values);
+        int last = Math.min(2, axis);
+        assertTrue("  " + key + " short alignedTail is the actual tail", java.util.Arrays.equals(h.alignedTail(key, last),
+                java.util.Arrays.copyOfRange(aligned, axis - last, axis)));
+        assertTrue("  " + key + " ends at the latest native observation", shape && raw[axis - 1] == latest && Double.isFinite(latest));
+    }
+
+    /** Four fixed native months expose the first observation; no synthetic history, aging, or search for a passing month. */
+    static void firstPowerObservation() throws Exception {
+        System.out.println("\n--- power begins when the native observation first exists ---");
+        PowerPriceCheck.City fixture = PowerPriceCheck.town("history-first-observation", false, 0);
+        Game city = fixture.g;
+        HistorySave h = city.getHistorySave();
+        PowerView.View founding = PowerView.of(city);
+        assertTrue("founding has no retained power observation or emitted history values",
+                !founding.recorded() && PowerView.series(founding).isEmpty()
+                        && h.seriesByName().keySet().stream().noneMatch(k -> k.startsWith("power")));
+        Map<Integer, Map<String, Double>> captures = new LinkedHashMap<>();
+        Map<String, Integer> first = new LinkedHashMap<>();
+        int advances = 0, observed = 0, unobserved = 0, firstMonth = -1;
+        Map<String, Double> latest = Map.of();
+        for (int step = 0; step < 4; step++) {
+            int before = h.months();
+            int[] ran = {0};
+            quietly(() -> ran[0] = city.simulateMonths(1));
+            advances += ran[0];
+            assertTrue("native first-observation advance " + step + " completed one axis entry", ran[0] == 1 && h.months() == before + 1);
+            if (ran[0] != 1 || h.months() != before + 1) return;
+            int index = h.months() - 1, month = h.getMonth().get(index);
+            PowerView.View v = PowerView.of(city);
+            latest = Map.copyOf(PowerView.series(v));
+            captures.put(index, latest);
+            System.out.printf("  native step=%d gameMonth=%d axisIndex=%d axisMonth=%d recorded=%s emitted=%d%n",
+                    step, city.getMonth(), index, month, v.recorded(), latest.size());
+            assertTrue("native history axis names the actual current month", month == city.getMonth());
+            if (!v.recorded()) {
+                unobserved++;
+                assertTrue("unobserved native month emits no power values or stored keys", latest.isEmpty()
+                        && h.seriesByName().keySet().stream().noneMatch(k -> k.startsWith("power")));
+                continue;
+            }
+            observed++;
+            if (firstMonth < 0) firstMonth = month;
+            assertTrue("recorded native observation is struck at the true history month", !latest.isEmpty() && v.struckMonth() == month);
+            boolean ends = true;
+            for (var e : latest.entrySet()) {
+                first.putIfAbsent(e.getKey(), index);
+                double[] raw = h.raw(e.getKey());
+                ends &= raw.length == h.months() && raw[index] == e.getValue();
+            }
+            assertTrue("every emitted native value reaches its true axis position", ends);
+        }
+        System.out.printf("  first-observation advances=%d unobserved=%d observed=%d firstRecordedMonth=%d distinctKeys=%d%n",
+                advances, unobserved, observed, firstMonth, first.size());
+        assertTrue("fixed native months cause both an unobserved prefix and a first recorded observation",
+                advances == 4 && unobserved > 0 && observed > 0 && !first.isEmpty());
+        assertTrue("native coal fixture actually emits nonzero generation, fuel and receipts",
+                PowerView.of(city).rows().stream().anyMatch(r -> r.record().fuel() == Good.THERMAL_COAL
+                        && r.record().kwh() > 0 && r.record().fuelUnits() > 0 && r.record().receipts() > 0));
+        for (var e : first.entrySet()) {
+            String key = e.getKey();
+            List<? extends Number> stored = h.seriesByName().get(key);
+            int index = e.getValue(), emitted = 0;
+            boolean positions = true;
+            double[] raw = h.raw(key);
+            for (var capture : captures.entrySet()) {
+                Double value = capture.getValue().get(key);
+                if (value != null) { emitted++; positions &= raw[capture.getKey()] == value; }
+            }
+            System.out.printf("  FIRST %s index=%d month=%d emitted=%d%n", key, index, h.getMonth().get(index), emitted);
+            assertTrue("  " + key + " begins at its first actual emitted month and has no missing tail",
+                    stored != null && h.months() - stored.size() == index && emitted == h.months() - index && positions);
+            powerSuffix(h, key, latest.getOrDefault(key, Double.NaN));
+        }
+        assertTrue("native first-observation fixture saved normally", city.saveGame(10, "first power observation").ok);
+        city.awaitSaves();
+        Game loaded = new Game(city.getGameFiles());
+        quietly(() -> loaded.loadGameSave(10));
+        HistorySave back = loaded.getHistorySave();
+        assertTrue("first-observation native save/load restores the actual axis", loaded.getLoadFailure() == null && back.getMonth().equals(h.getMonth()));
+        assertTrue("native retained power projection survives the ordinary save/load", PowerView.series(PowerView.of(loaded)).equals(latest));
+        for (String key : first.keySet()) {
+            assertTrue("  " + key + " ordinary reload preserves every stored observation", h.seriesByName().get(key).equals(back.seriesByName().get(key)));
+            powerSuffix(back, key, latest.getOrDefault(key, Double.NaN));
+        }
+        loaded.awaitSaves();
     }
 
     /* ============ 6. past five hundred years, a year to a point (0.7.55) ============

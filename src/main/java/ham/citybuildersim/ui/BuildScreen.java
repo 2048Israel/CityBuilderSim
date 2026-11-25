@@ -45,7 +45,7 @@ import static ham.citybuildersim.ui.Levers.*;
  * Since 0.7.5 the shell's key filter also calls buildPending() and
  * clearPending(): Enter, and Backspace or Delete, on the page showing.
  */
-final class BuildScreen {
+public final class BuildScreen {
 
     /** The window this screen draws into: its game, its root, its clearMenu(). */
     private final UserInterface ui;
@@ -907,7 +907,7 @@ final class BuildScreen {
         if (!tags.getChildren().isEmpty()) face.getChildren().add(tags);
         face.getChildren().addAll(Kept.scope("hero", () -> heroRow(f)), Kept.scope("price", () -> priceRow(f, afford)));
         // ...and (FC1), while the builders are short, why the work costs more than it did.
-        Label buildersShort = Kept.scope("builders short", this::shortLine);
+        Label buildersShort = Kept.scope("builders short", () -> shortLine(template));
         if (buildersShort != null) face.getChildren().add(buildersShort);
         face.getChildren().addAll(Kept.scope("bars", () -> cardBars(f, group, m)));
         // ...a sea terminal's payback, which ports never had (FR4; the advice's own read, BuildAdvice.berthPayback()).
@@ -1558,28 +1558,30 @@ final class BuildScreen {
     }
 
     /**
-     * The builders short (FC1), a small line under the price row: what an order's work is multiplied by when the queue
-     * has outgrown the builders' pace (the premium and the months queued, in Palette.WARN) or the city's crews are all on
-     * repairs and a foreign contractor takes the order (Palette.BAD). Every figure is the model's
-     * (BuildingManager.orderPriceMultiplier(), scarcityPremium(), monthsQueued(), foreignCrewsTakeOrders()); null when the
-     * multiplier is 1, the row as it always was - and for a premium that does not round to a whole percent, which would
-     * read "+0%".
+     * The builders' two offers (FC1; FC2), a small line under the price row: the city's builders' premium on the work
+     * and the months queued at home, and the foreign crews' excess and the months past which the queue is theirs - in
+     * Palette.WARN while an order placed now sends work abroad or pays a premium, else in the label's tone. Every figure
+     * is the model's (BuildingManager.foreignTerms(), scarcityPremium()); the foreign crews' share and threshold are the
+     * card's own order's, one of {@code template} (REV-FC2; Game.abroadOfOrder()): what the price row's quote
+     * charges for its work past the threshold. Null with no trade on (the founding's first month, or the switch off),
+     * the row as it always was.
      */
-    Label shortLine() {
+    Label shortLine(BuildingsTemplate template) {
         BuildingManager bm = ui.game.getBuildingManager();
-        if (bm.orderPriceMultiplier() == 1) return null;
-        boolean foreign = bm.foreignCrewsTakeOrders();
-        double premium = bm.scarcityPremium();
-        if (!foreign && Math.round(premium * 100) == 0) return null;
-        Label line = Kept.label(foreign
-                ? String.format("foreign crews: ×%.1f on the work, paid abroad · the city's crews are all on repairs",
-                        BuildersShort.FOREIGN_PRICE)
-                : String.format("builders short: +%d%% on the work · ≈ %.1f months queued",
-                        Math.round(premium * 100), bm.monthsQueued()));
-        line.setStyle(wordsAt(9.5, foreign ? Palette.BAD : Palette.WARN));
+        BuildingManager.ForeignTerms now = bm.foreignTerms();
+        BuildingManager.OrderAbroad t = ui.game.abroadOfOrder(template, 1);
+        if (now == null || t == null) return null;
+        boolean abroad = t.buildings() > 0;
+        long premiumPct = Math.round(bm.scarcityPremium() * 100);
+        Label line = Kept.label(String.format("builders %s · ≈ %.1f months queued · foreign crews +%d%% a point%s",
+                premiumPct > 0 ? String.format("+%d%% on the work", premiumPct) : "at their price",
+                now.monthsQueued(), Math.round(t.share() * 100),
+                abroad ? String.format(" for the work past %.1f months, paid abroad", t.thresholdMonths())
+                        : String.format(", past %.1f months", t.thresholdMonths())));
+        line.setStyle(wordsAt(9.5, abroad || premiumPct > 0 ? Palette.WARN : Palette.TEXT_LABEL));
         line.setWrapText(true);
         line.setMinWidth(0);
-        Tooltip tip = Kept.tip(line, buildersShortInfo(), 1000);
+        Tooltip tip = Kept.tip(line, buildersShortInfo(ui.game.getCurrency()), 1000);
         tip.setWrapText(true);
         tip.setMaxWidth(320);
         return line;
@@ -1587,15 +1589,21 @@ final class BuildScreen {
 
     /**
      * What the builders' premium and the foreign contractor are, in two sentences, from the model's own constants
-     * (BuildersShort): the build card's line says it in its tooltip, the Construction page's gauge in its (i).
+     * (BuildersShort): the build card's line says it in its tooltip, the Construction page's gauge in its (i). The city's
+     * money by its name, never a typed sign (FM1; MoneyWordsCheck), and as an argument of the format, never inside its
+     * template (REV-FC2b: a typed "100% Crown" threw; MoneyWordsCheck 4).
      */
-    static String buildersShortInfo() {
+    public static String buildersShortInfo(Currency money) {
         return String.format("The builders charge more for a point of work as their queue grows past %.0f months at the pace "
-                + "the repairs leave the sites, up to +%.0f%% with none left. Once the sites get under %.0f%% of the "
-                + "builders' month, a foreign contractor takes every new order at %.1f times the price, paid abroad, "
-                + "and builds the builders' own depots first.",
-                BuildersShort.KNEE_MONTHS, BuildersShort.CEILING * 100, BuildersShort.FOREIGN_FLOOR * 100,
-                BuildersShort.FOREIGN_PRICE);
+                + "the repairs leave the sites, up to +%.0f%% with none left. Foreign crews are always on offer at the "
+                + "city's own price for the work and an excess in the world's money, %.0f%% of the world's price at par: "
+                + "a strong %s makes them cheaper, a weak one dearer, but never more than +%.0f%% to begin with, so the "
+                + "work queued past %.0f months at the latest is theirs, paid abroad. They bring their own crews, as "
+                + "many as the work wants, and ask more a point the more they take, never more than +%.0f%%. While the "
+                + "queue is under %.0f months the builders sell the points no site took abroad.",
+                BuildersShort.KNEE_MONTHS, BuildersShort.CEILING * 100, BuildersShort.FOREIGN_EXCESS * 100, money.name(),
+                BuildersShort.capShare() * 100, BuildersShort.KNEE_MONTHS + BuildersShort.SURE_MONTHS,
+                BuildersShort.CEILING * 100, BuildersShort.KNEE_MONTHS);
     }
 
     /**
@@ -2447,6 +2455,9 @@ final class BuildScreen {
             // ...a hydro station's (HY1): no river with a drop owned, or none of its slots left.
             case NO_RIVER:   return new Pieces.Press(Pieces.Look.HELD, "No river with a drop",
                     "a river comes with land: the Land office ›");
+            // ...a steam plant's (PW2): no sea, lake or river owned to cool it.
+            case NO_WATER:   return new Pieces.Press(Pieces.Look.HELD, "No water to cool it",
+                    "sea, a lake or a river comes with land: the Land office ›");
             // ...a long bridge's (ET6): no way across the water to the landmass chosen, in the words of the survey.
             case NO_BRIDGE:  return new Pieces.Press(Pieces.Look.HELD, "No way across the water",
                     "the reason is under the count: the Land office ›");
@@ -2477,6 +2488,7 @@ final class BuildScreen {
             case NO_DEPOSIT: return new String[] {"no " + BuildCard.depositWord(v.site()) + " deposit", Palette.BAD};
             case NO_COAST:   return new String[] {noCoastWhy(t, "no sea owned"), Palette.BAD};
             case NO_RIVER:   return new String[] {"no river with a drop owned", Palette.BAD};
+            case NO_WATER:   return new String[] {"no water owned to cool it", Palette.BAD};
             case NO_BRIDGE:  return new String[] {noBridgeWhy(t, "no way across the water"), Palette.BAD};
             case NO_LICENCE: return new String[] {"nobody licensed", Palette.BAD};
             case NO_LAND:    return new String[] {"short " + LandManager.areaWords(v.figure()) + " of land", Palette.BAD};
@@ -3154,6 +3166,7 @@ final class BuildScreen {
                         : "no " + ham.citybuildersim.sectors.ExtractionSector.oreWords(Game.siteOf(stopAt), null) + " left to dig";
                 case NO_COAST   -> noCoastWhy(stopAt, "no sea owned for it");
                 case NO_RIVER   -> "no river with a drop owned for it";
+                case NO_WATER   -> "no water owned to cool it";
                 case NO_BRIDGE  -> noBridgeWhy(stopAt, "no way across the water for it");
                 case NO_LICENCE -> "nobody licensed to practise";
                 default         -> "short of land - buy it at the land office first";
@@ -4076,6 +4089,7 @@ final class BuildScreen {
     String measureSubtitle(BuildAdvice.Measure m) {
         switch (m.kind()) {
             case POWER:   return "generation for every building and home";
+            case GRID:    return "wires and transformers to carry the peak";
             case WATER:   return "treatment for every tap";
             case ROADS:   return "the trips to every building, on the streets";
             case HIGHWAYS: return "the long trips across the city and the freight to its gates";
@@ -4136,7 +4150,7 @@ final class BuildScreen {
     /** What a measure is counted in, for a ring's "short by N ..." - only care reaches it since 0.7.25, when the cards' "serves N ..." moved to BuildCard.doesWords(). */
     static String unitWords(BuildAdvice.Measure m) {
         switch (m.kind()) {
-            case POWER:   return "kW";
+            case POWER: case GRID: return "kW";
             case WATER:   return "units a month";
             case ROADS: case HIGHWAYS: return "trips a month";
             case TRANSIT: return "riders";
@@ -4178,10 +4192,10 @@ final class BuildScreen {
         CityNeeds.Served served = BuildAdvice.verdict(game, m, java.util.Map.of());
         String says = served == null ? null : servedWords(served) + " · ";
         switch (m.kind()) {
-            case POWER: case WATER: {
+            case POWER: case WATER: case GRID: {
                 figure = CityNeeds.servedPct(served.share());
                 arc = arc(served);
-                shortLine = says + (m.kind() == BuildAdvice.Kind.POWER
+                shortLine = says + (m.kind() == BuildAdvice.Kind.POWER || m.kind() == BuildAdvice.Kind.GRID
                         ? (gap > 0 ? power(gap) + " short" : power(-gap) + " spare")
                         : gap > 0 ? shortNumber(gap) + " units short" : shortNumber(-gap) + " units spare");
                 break;
@@ -5855,6 +5869,42 @@ final class BuildScreen {
     }
 
     /**
+     * The city has the money and the land, and no water to cool a steam plant (PW2).
+     *
+     * Its own refusal for the reason the river has one: a coal, oil or biomass plant condenses its steam with water drawn
+     * from the sea, a lake or a river (BuildingsTemplate.cooling()), and the only thing that fixes a city with none is
+     * ground with some on it, so no loan would help, and the page says so.
+     */
+    void showNoWaterMenu(BuildingsTemplate selected, long quantity,
+                         String menuTitle, EnumSet<BuildingType> categories) {
+        ui.keepMenu("showNoWaterMenu", () -> showNoWaterMenu(selected, quantity, menuTitle, categories), pool,
+                () -> drawNoWater(selected, quantity, menuTitle, categories));
+    }
+
+    /** The no-water page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs. */
+    void drawNoWater(BuildingsTemplate selected, long quantity, String menuTitle, EnumSet<BuildingType> categories) {
+        Kept.scope("showNoWaterMenu", () -> {
+            Label title = refusalTitle("NO WATER TO COOL IT");
+
+            VBox explanation = Kept.scope("why", () -> reportSection("WHY",
+                    quantity + " x " + selected.getName() + " needs water to cool its steam on the ground the city owns.",
+                    "The city owns no sea, lake or river.",
+                    "",
+                    "A steam plant condenses its steam with water drawn from the sea, a",
+                    "lake or a river, so it stands only where the city owns some. A diesel",
+                    "station, an oil-fired turbine, a wind or a solar farm needs none.",
+                    "",
+                    "This is not a funding problem. A bond would not fix it."));
+
+            HBox toLand = doorPill("Go to the Land Office", Icons.LAND, Palette.BUILDING, () -> ui.landScreen.showLandMenu());
+
+            Button back = pageButton("Back", () -> handleAllBuildingMenus(menuTitle, categories));
+
+            ui.setPage(title, explanation, toLand, back);
+        });
+    }
+
+    /**
      * The city has the money and the land, and the model finds no way across the water (ET6).
      *
      * Its own refusal for the reason the river has one: a long bridge is not short of cash or ground, it is short of a
@@ -6205,6 +6255,7 @@ final class BuildScreen {
             case NO_DEPOSIT -> showNoDepositMenu(t, n, from.title(), from.categories());
             case NO_COAST   -> showNoCoastMenu(t, n, from.title(), from.categories());
             case NO_RIVER   -> showNoRiverMenu(t, n, from.title(), from.categories());
+            case NO_WATER   -> showNoWaterMenu(t, n, from.title(), from.categories());
             case NO_BRIDGE  -> showNoBridgeMenu(t, n, from.title(), from.categories());
             case NO_LICENCE -> showNoLicenceMenu(t, n, from.title(), from.categories());
             default -> {
@@ -6269,6 +6320,7 @@ final class BuildScreen {
                 case NO_DEPOSIT -> "no " + BuildCard.depositWord(Game.siteOf(at.getKey())) + " deposit is free for it";
                 case NO_COAST   -> noCoastWhy(at.getKey(), "the city owns no sea for it");
                 case NO_RIVER   -> "the city owns no river with a drop for it";
+                case NO_WATER   -> "the city owns no water to cool it";
                 case NO_BRIDGE  -> noBridgeWhy(at.getKey(), "the city has no way across the water for it");
                 case NO_LICENCE -> "nobody is licensed to work in it";
                 default         -> "not enough ground is free for it";

@@ -639,7 +639,7 @@ public class EconomyManager {
         }
         re.setHousingCosts(bestStructure, bestLand);
         re.setSegmentHousingCosts(bestStudio, bestFamily);
-        re.setOwnedHousingCapacity(buildingManager.getCapacityInPortfolioBySector(re.key()));
+        re.setOwnedHousingCapacity(buildingManager.getHousingInventory().ownedCapacity(HousingInventory.Owner.REAL_ESTATE, true));
     }
 
     /* ===================================================================
@@ -2225,6 +2225,7 @@ public class EconomyManager {
          * counter belongs here the day it is written.
          */
         double retailSales = retail.statement().salesToHouseholds
+                + sectors.businessServices().statement().salesToHouseholds
                 + sectors.luxuryRetail().statement().salesToHouseholds
                 // ...and a dinner, which is consumption bought over a counter
                 // like the other two. See the note above.

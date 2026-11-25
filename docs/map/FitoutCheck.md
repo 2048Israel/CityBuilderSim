@@ -1,6 +1,6 @@
-# FitoutCheck.java - 754 lines · 32 methods · 3 constants · harnesses
+# FitoutCheck.java - 757 lines · 32 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FitoutCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FitoutCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > A new building's equipment is chosen and priced at its order, kept on its site, saved, and delivered at its finish (R1e):
 > Fitout, BuildingsStacks' lots, Game.fitWhatFinished().
@@ -51,13 +51,13 @@
 | 185 | · the 1900 farm town |
 | 270 | · 1 |
 | 359 | · 2 |
-| 393 | · 3 |
-| 466 | · 4 |
-| 527 | · 5 |
-| 585 | · 6 |
-| 627 | · 7 |
-| 669 | · 8 |
-| 697 | · 9 |
+| 396 | · 3 |
+| 469 | · 4 |
+| 530 | · 5 |
+| 588 | · 6 |
+| 630 | · 7 |
+| 672 | · 8 |
+| 700 | · 9 |
 
 ## Constants
 
@@ -85,7 +85,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 64 | 691 | **type** `public final class FitoutCheck` | A new building's equipment is chosen and priced at its order, kept on its site, saved, and delivered at its finish (R1e): Fitout, BuildingsStacks' lots, Game.fitWhatFinished(). |
+| 64 | 694 | **type** `public final class FitoutCheck` | A new building's equipment is chosen and priced at its order, kept on its site, saved, and delivered at its finish (R1e): Fitout, BuildingsStacks' lots, Game.fitWhatFinished(). |
 | 73 | 6 | `static void check(String label, boolean ok, String detail)` |  |
 | 80 | 1 | `static void section(String title)` |  |
 | 82 | 1 | `static boolean near(double a, double b)` |  |
@@ -127,52 +127,52 @@
 | 272 | 84 | `static void splitSourced() throws Exception` |  |
 | 357 | 1 | `static boolean apart(double a, double b)` |  |
 
-### 2 (lines 359-392)
+### 2 (lines 359-395)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 361 | 31 | `static void defaultCity() throws Exception` |  |
+| 361 | 34 | `static void defaultCity() throws Exception` |  |
 
-### 3 (lines 393-465)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 395 | 70 | `static void twoOrders() throws Exception` |  |
-
-### 4 (lines 466-526)
+### 3 (lines 396-468)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 468 | 58 | `static void discoveryOnSite() throws Exception` |  |
+| 398 | 70 | `static void twoOrders() throws Exception` |  |
 
-### 5 (lines 527-584)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 529 | 55 | `static void saveMidBuild() throws Exception` |  |
-
-### 6 (lines 585-626)
+### 4 (lines 469-529)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 587 | 39 | `static void receipts() throws Exception` |  |
+| 471 | 58 | `static void discoveryOnSite() throws Exception` |  |
 
-### 7 (lines 627-668)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 629 | 39 | `static void shell() throws Exception` |  |
-
-### 8 (lines 669-696)
+### 5 (lines 530-587)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 671 | 25 | `static void r1dKept() throws Exception` |  |
+| 532 | 55 | `static void saveMidBuild() throws Exception` |  |
 
-### 9 (lines 697-754)
+### 6 (lines 588-629)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 699 | 30 | `static void runInvoice() throws Exception` |  |
-| 730 | 24 | `public static void main(String[] args) throws Exception` |  |
+| 590 | 39 | `static void receipts() throws Exception` |  |
+
+### 7 (lines 630-671)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 632 | 39 | `static void shell() throws Exception` |  |
+
+### 8 (lines 672-699)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 674 | 25 | `static void r1dKept() throws Exception` |  |
+
+### 9 (lines 700-757)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 702 | 30 | `static void runInvoice() throws Exception` |  |
+| 733 | 24 | `public static void main(String[] args) throws Exception` |  |
 

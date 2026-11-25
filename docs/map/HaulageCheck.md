@@ -1,6 +1,6 @@
-# HaulageCheck.java - 1,671 lines · 44 methods · 4 constants · harnesses
+# HaulageCheck.java - 1,673 lines · 44 methods · 4 constants · harnesses
 
-`ham/citybuildersim/HaulageCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HaulageCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is
 > billed once, by Haulage, at a quote the trucks' own books set, and the vans
@@ -64,7 +64,7 @@
 >      left; a sector that asked nothing at the haul is dealt a whole 1, and
 > ... (11 more lines in the source)
 
-**Uses:** [Good](Good.md) (148), [Sector](Sector.md) (77), [Game](Game.md) (51), [Haulage](Haulage.md) (42), [Freight](Freight.md) (32), [ProcessingSector](ProcessingSector.md) (24), [JobType](JobType.md) (22), [GameFiles](GameFiles.md) (20), [Sectors](Sectors.md) (19), [Traffic](Traffic.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (8), [BuildingManager](BuildingManager.md) (5), [Mining](Mining.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [SpreadPlanner](SpreadPlanner.md) (4), [Founding](Founding.md) (3), [HeavyIndustry](HeavyIndustry.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [Resource](Resource.md) (1), [Ports](Ports.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1)
+**Uses:** [Good](Good.md) (148), [Sector](Sector.md) (77), [Game](Game.md) (51), [Haulage](Haulage.md) (42), [Freight](Freight.md) (32), [ProcessingSector](ProcessingSector.md) (24), [JobType](JobType.md) (22), [GameFiles](GameFiles.md) (20), [Sectors](Sectors.md) (19), [Traffic](Traffic.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (8), [BuildingManager](BuildingManager.md) (5), [Mining](Mining.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [SpreadPlanner](SpreadPlanner.md) (4), [Founding](Founding.md) (3), [HeavyIndustry](HeavyIndustry.md) (2), [InfrastructureManager](InfrastructureManager.md) (1), [Resource](Resource.md) (1), [SubstationCheck](SubstationCheck.md) (1), [Ports](Ports.md) (1), [BuildingType](BuildingType.md) (1), [Markets](Markets.md) (1)
 
 **Used by (9):** [EquipmentCheck](EquipmentCheck.md), [Forms1900Check](Forms1900Check.md), [FreightViewCheck](FreightViewCheck.md), [HomeRailCheck](HomeRailCheck.md), [IslandRailCheck](IslandRailCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [RailDepotCheck](RailDepotCheck.md), [TradeBandCheck](TradeBandCheck.md), [TruckRouteCheck](TruckRouteCheck.md)
 
@@ -73,18 +73,18 @@
 | line | section |
 |---:|---|
 | 132 | THE FIXTURES |
-| 442 | · 3. EACH LEG ONCE - and A RELOAD, on the same city |
-| 548 | · · the reload |
-| 639 | 1. THE SLOT |
-| 672 | 2. TRUCKS |
-| 719 | 5. VANS FOR GOODS |
-| 747 | 6. THE FREIGHT FACTOR |
-| 849 | 7. THE FLEET and 8. THE PRICE |
-| 961 | · 8. THE PRICE |
-| 1044 | 4. THE SIDING |
-| 1125 | 9. THE DEPOT |
-| 1242 | 10. THE WEIGHING |
-| 1357 | 11. THE DEAL (FR8) |
+| 444 | · 3. EACH LEG ONCE - and A RELOAD, on the same city |
+| 550 | · · the reload |
+| 641 | 1. THE SLOT |
+| 674 | 2. TRUCKS |
+| 721 | 5. VANS FOR GOODS |
+| 749 | 6. THE FREIGHT FACTOR |
+| 851 | 7. THE FLEET and 8. THE PRICE |
+| 963 | · 8. THE PRICE |
+| 1046 | 4. THE SIDING |
+| 1127 | 9. THE DEPOT |
+| 1244 | 10. THE WEIGHING |
+| 1359 | 11. THE DEAL (FR8) |
 
 ## Constants
 
@@ -100,116 +100,116 @@
 | line | field | says |
 |---:|---|---|
 | 91 | `static int fails` |  |
-| 219 | `final Map<Sector, Double> legs` |  |
-| 220 | `double tonnes, capacity, quote, share, fit` |  |
-| 266 | `static String worstWhere` | Where the last compare() found its worst miss: the sector, what it was billed, what the brief says. |
-| 269 | `static double topOfMonth` | What the builders' repair imports added to their line over the rows the prediction saw (positive), over every compare() so far. |
-| 1367 | `final GameFiles files` |  |
-| 1368 | `final Game game` |  |
-| 1369 | `final Freight fr` |  |
-| 1370 | `final Haulage h` |  |
-| 1371 | `final Map<String, Double> standing` |  |
-| 1372 | `double standingTotal` |  |
+| 221 | `final Map<Sector, Double> legs` |  |
+| 222 | `double tonnes, capacity, quote, share, fit` |  |
+| 268 | `static String worstWhere` | Where the last compare() found its worst miss: the sector, what it was billed, what the brief says. |
+| 271 | `static double topOfMonth` | What the builders' repair imports added to their line over the rows the prediction saw (positive), over every compare() so far. |
+| 1369 | `final GameFiles files` |  |
+| 1370 | `final Game game` |  |
+| 1371 | `final Freight fr` |  |
+| 1372 | `final Haulage h` |  |
+| 1373 | `final Map<String, Double> standing` |  |
+| 1374 | `double standingTotal` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 89 | 1583 | **type** `public class HaulageCheck` | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the vans carry goods and nothing else. |
+| 89 | 1585 | **type** `public class HaulageCheck` | Freight's trucks, held to FR2's brief: the city leg of every bulk tonne is billed once, by Haulage, at a quote the trucks' own books set, and the vans carry goods and nothing else. |
 | 93 | 5 | `static void quietly(Runnable r)` |  |
 | 99 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 104 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 110 | 3 | `static boolean same(double a, double b)` | Bitwise, not near. |
 | 114 | 3 | `static boolean near(double a, double b, double tol)` |  |
 
-### THE FIXTURES (lines 132-638)
+### THE FIXTURES (lines 132-640)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 150 | 1 | `static Game base(GameFiles files)` | A city with a bulk chain at home and trade both ways: three iron mines, and a pelletising plant that buys their ore (and lands the rest, which the mines cannot make), lands its coal and ships its pellets. |
 | 153 | 1 | `static Game base(GameFiles files, boolean plant)` | ...with or without the plant: mines and no works are a city whose ore all goes abroad. |
-| 162 | 30 | `static Game base(GameFiles files, boolean plant, boolean literals)` | ...and, with `literals`, playing on the goods' literals (Game.playOnLiterals(): the flag is the harness's and not the save's, so a city so made is not one to reload). |
-| 194 | 1 | `static Game played(GameFiles files, int months)` | ...played for `months`, which is long enough for the trucks to be seeded (at the first haul, at the plant's nameplate need) and the books settled. |
-| 196 | 1 | `static Game played(GameFiles files, int months, boolean plant)` |  |
-| 198 | 5 | `static Game played(GameFiles files, int months, boolean plant, boolean literals)` |  |
-| 204 | 1 | `static Game played(String label, int months)` |  |
-| 207 | 5 | `static void lay(Game game, String name, int count)` | Track or depots, handed to the city rather than waited for, on their ground (RailCheck.lay()). |
-| 218 | 9 | **type** `static final class Pred` | The month about to be billed, worked out from the model's own getters before the haul runs. |
-| 223 | 1 | `double f(Sector s)` _(in HaulageCheck.Pred)_ | The share of its legs the sector is billed at: its own share in force, scaled to the trucks' capacity. |
-| 225 | 1 | `double bill(Sector s)` _(in HaulageCheck.Pred)_ |  |
-| 235 | 27 | `static Pred predict(Game game)` | What the next haul bills, from the rows the month just run left: each sector's legs (Haulage.legTonnes at the railway's share of each good in force), at the share its own industry was dealt (FR8) and, the sectors' car... |
-| 263 | 1 | `static double line(Sector s)` |  |
-| 280 | 38 | `static double[] compare(Game game, Pred p)` | Every sector's "Haulage" line against the prediction. |
-| 323 | 13 | `static String dealtUnlike(Game live, Game back)` | What differs between two cities' deals (FR8), to the bit: each sector's share and standing demand, the newest share, the standing share. |
-| 337 | 5 | `static double sum(Game game)` |  |
-| 344 | 9 | `static double goodsTonnes(Sector s)` | The GOODS tonnes a sector's standing plant moves, in and out, worked out from its capacities (no captive good in these cities). |
-| 355 | 9 | `static double bulkTonnes(Sector s)` | The BULK tonnes a sector's plant moves at nameplate. |
-| 366 | 1 | `static void haul(Game game)` | One haul, run by hand: the month's rows billed at the state in force, as Game.chargeFreight() runs it. |
-| 373 | 9 | `static void setState(Haulage h, double need, double share)` | Haulage's need and share put where a fixture wants them, through its own save and restore (the share is struck at a haul, so a fixture cannot reach it by moving the pantry). |
-| 384 | 6 | `static void offTheBooks(Haulage h)` | Trucks a fixture hands over (setPantry) were bought by nobody: Haulage's fleet account (★10) kept at nought for them, or their wear comes back to the shippers as a refund. |
-| 397 | 11 | `static double[] tradeShares(Game game, Good g)` | A good's shares of the city's trade, from the sectors' own month: the units shipped abroad over those and the units bought at home, and the units landed over those and the units bought at home - or, with nothing trade... |
-| 414 | 16 | `static double nameplate(Game game, boolean railed)` | The city-leg tonnes the plant standing asks for at nameplate, from the brief's weights (the FR2 review): every sector's but Freight's BULK inputs at capacity x tpu x (1 - RELIEF x rail x import share), plus its BULK o... |
-| 432 | 4 | `static void strike(Game game, double fleet)` | The trucks set to `fleet` and a haul run by hand: the share is struck then, over the fleet held at its start (Haulage.getShare()). |
-| 437 | 201 | `public static void main(String[] args)` |  |
+| 162 | 32 | `static Game base(GameFiles files, boolean plant, boolean literals)` | ...and, with `literals`, playing on the goods' literals (Game.playOnLiterals(): the flag is the harness's and not the save's, so a city so made is not one to reload). |
+| 196 | 1 | `static Game played(GameFiles files, int months)` | ...played for `months`, which is long enough for the trucks to be seeded (at the first haul, at the plant's nameplate need) and the books settled. |
+| 198 | 1 | `static Game played(GameFiles files, int months, boolean plant)` |  |
+| 200 | 5 | `static Game played(GameFiles files, int months, boolean plant, boolean literals)` |  |
+| 206 | 1 | `static Game played(String label, int months)` |  |
+| 209 | 5 | `static void lay(Game game, String name, int count)` | Track or depots, handed to the city rather than waited for, on their ground (RailCheck.lay()). |
+| 220 | 9 | **type** `static final class Pred` | The month about to be billed, worked out from the model's own getters before the haul runs. |
+| 225 | 1 | `double f(Sector s)` _(in HaulageCheck.Pred)_ | The share of its legs the sector is billed at: its own share in force, scaled to the trucks' capacity. |
+| 227 | 1 | `double bill(Sector s)` _(in HaulageCheck.Pred)_ |  |
+| 237 | 27 | `static Pred predict(Game game)` | What the next haul bills, from the rows the month just run left: each sector's legs (Haulage.legTonnes at the railway's share of each good in force), at the share its own industry was dealt (FR8) and, the sectors' car... |
+| 265 | 1 | `static double line(Sector s)` |  |
+| 282 | 38 | `static double[] compare(Game game, Pred p)` | Every sector's "Haulage" line against the prediction. |
+| 325 | 13 | `static String dealtUnlike(Game live, Game back)` | What differs between two cities' deals (FR8), to the bit: each sector's share and standing demand, the newest share, the standing share. |
+| 339 | 5 | `static double sum(Game game)` |  |
+| 346 | 9 | `static double goodsTonnes(Sector s)` | The GOODS tonnes a sector's standing plant moves, in and out, worked out from its capacities (no captive good in these cities). |
+| 357 | 9 | `static double bulkTonnes(Sector s)` | The BULK tonnes a sector's plant moves at nameplate. |
+| 368 | 1 | `static void haul(Game game)` | One haul, run by hand: the month's rows billed at the state in force, as Game.chargeFreight() runs it. |
+| 375 | 9 | `static void setState(Haulage h, double need, double share)` | Haulage's need and share put where a fixture wants them, through its own save and restore (the share is struck at a haul, so a fixture cannot reach it by moving the pantry). |
+| 386 | 6 | `static void offTheBooks(Haulage h)` | Trucks a fixture hands over (setPantry) were bought by nobody: Haulage's fleet account (★10) kept at nought for them, or their wear comes back to the shippers as a refund. |
+| 399 | 11 | `static double[] tradeShares(Game game, Good g)` | A good's shares of the city's trade, from the sectors' own month: the units shipped abroad over those and the units bought at home, and the units landed over those and the units bought at home - or, with nothing trade... |
+| 416 | 16 | `static double nameplate(Game game, boolean railed)` | The city-leg tonnes the plant standing asks for at nameplate, from the brief's weights (the FR2 review): every sector's but Freight's BULK inputs at capacity x tpu x (1 - RELIEF x rail x import share), plus its BULK o... |
+| 434 | 4 | `static void strike(Game game, double fleet)` | The trucks set to `fleet` and a haul run by hand: the share is struck then, over the fleet held at its start (Haulage.getShare()). |
+| 439 | 201 | `public static void main(String[] args)` |  |
 
-### 1. THE SLOT (lines 639-671)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 643 | 28 | `static void slot()` |  |
-
-### 2. TRUCKS (lines 672-718)
+### 1. THE SLOT (lines 641-673)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 676 | 42 | `static void trucks()` |  |
+| 645 | 28 | `static void slot()` |  |
 
-### 5. VANS FOR GOODS (lines 719-746)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 723 | 23 | `static void vans(Game a)` |  |
-
-### 6. THE FREIGHT FACTOR (lines 747-848)
+### 2. TRUCKS (lines 674-720)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 751 | 97 | `static void factor(Game a)` |  |
+| 678 | 42 | `static void trucks()` |  |
 
-### 7. THE FLEET and 8. THE PRICE (lines 849-1043)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 853 | 161 | `static void fleetAndPrice()` |  |
-| 1016 | 27 | `static void seeding()` | The first fleet is given once, at the nameplate need, free; a city that is known to have run out is not given another. |
-
-### 4. THE SIDING (lines 1044-1124)
+### 5. VANS FOR GOODS (lines 721-748)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1048 | 76 | `static void siding()` |  |
+| 725 | 23 | `static void vans(Game a)` |  |
 
-### 9. THE DEPOT (lines 1125-1241)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1129 | 112 | `static void depot()` |  |
-
-### 10. THE WEIGHING (lines 1242-1356)
+### 6. THE FREIGHT FACTOR (lines 749-850)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1246 | 110 | `static void weighing()` |  |
+| 753 | 97 | `static void factor(Game a)` |  |
 
-### 11. THE DEAL (FR8) (lines 1357-1671)
+### 7. THE FLEET and 8. THE PRICE (lines 851-1045)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1366 | 43 | **type** `static final class Town` | A played city whose trucks suffice, every sector with legs dealt a literal 1 and its standing demand noted: the town whose fleet is full, before anything lands. |
-| 1374 | 1 | `Town(String label)` _(in HaulageCheck.Town)_ |  |
-| 1382 | 1 | `Town(String label, boolean bakery)` _(in HaulageCheck.Town)_ | ...with `bakery` an Industrial Bakery handed to the city before its first month (WN3, the world market): the sector with legs the deal's save section counts a fourth of. |
-| 1389 | 19 | `Town(String label, boolean bakery, String held)` _(in HaulageCheck.Town)_ | ...with `held` a sector held out of the planner's hands through the sixteen months (CU2), so it stands no works at the haul. |
-| 1411 | 8 | `static boolean land(Game g, String building, int count)` | `count` more of a building, handed to the city finished and paid for from a fixture's cash (as base() builds its plant); whether it stood. |
-| 1421 | 5 | `static double trucksFor(double tonnes)` | The trucks that carry `tonnes` a month, and not an ulp short of it. |
-| 1427 | 244 | `static void deal()` |  |
+| 855 | 161 | `static void fleetAndPrice()` |  |
+| 1018 | 27 | `static void seeding()` | The first fleet is given once, at the nameplate need, free; a city that is known to have run out is not given another. |
+
+### 4. THE SIDING (lines 1046-1126)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1050 | 76 | `static void siding()` |  |
+
+### 9. THE DEPOT (lines 1127-1243)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1131 | 112 | `static void depot()` |  |
+
+### 10. THE WEIGHING (lines 1244-1358)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1248 | 110 | `static void weighing()` |  |
+
+### 11. THE DEAL (FR8) (lines 1359-1673)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1368 | 43 | **type** `static final class Town` | A played city whose trucks suffice, every sector with legs dealt a literal 1 and its standing demand noted: the town whose fleet is full, before anything lands. |
+| 1376 | 1 | `Town(String label)` _(in HaulageCheck.Town)_ |  |
+| 1384 | 1 | `Town(String label, boolean bakery)` _(in HaulageCheck.Town)_ | ...with `bakery` an Industrial Bakery handed to the city before its first month (WN3, the world market): the sector with legs the deal's save section counts a fourth of. |
+| 1391 | 19 | `Town(String label, boolean bakery, String held)` _(in HaulageCheck.Town)_ | ...with `held` a sector held out of the planner's hands through the sixteen months (CU2), so it stands no works at the haul. |
+| 1413 | 8 | `static boolean land(Game g, String building, int count)` | `count` more of a building, handed to the city finished and paid for from a fixture's cash (as base() builds its plant); whether it stood. |
+| 1423 | 5 | `static double trucksFor(double tonnes)` | The trucks that carry `tonnes` a month, and not an ulp short of it. |
+| 1429 | 244 | `static void deal()` |  |
 

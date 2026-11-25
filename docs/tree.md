@@ -9,6 +9,10 @@ adds its line here, not in `CLAUDE.md`.
 
 
     src/main/java/ham/citybuildersim/
+        Substations.java           the city's 100 MW district grids and their capital, repair and filled-post costs in the wires' tariff (PW5)
+        SubstationCheck.java       both carry edges, grid shortages, peak-growth orders, cost-based bills and the saved closing costs (PW5)
+        WaterPowerCheck.java       the water priced at its margin works' power, its bills once and its save, PW1-L's licence power and PW1-G's recipe surplus (PW1-W)
+        PowerPlantsCheck.java      the oil, diesel, turbine, biomass and solar rows and the refigured coal and wind: the study's figures, the sun's hours, each fuel bought once, the cooling gate, the build-time floor and each row from its year (PW2)
         CityBuilderSim.java        launcher (deliberately not an Application subclass; stays here for the jar's main class)
         Game.java                  the month, the seam every system meets at; over 17,000 lines, 45 banner sections
         Motoring.java, LuxuryCounter.java, Offending.java, CityBasket.java
@@ -46,6 +50,10 @@ adds its line here, not in `CLAUDE.md`.
         OrderDoorCheck.java        HN1-A and HN1-B at the door (FB15): a landlord's order and its
                                    down payment at the door's own price, one block and two, and a
                                    shop's order the bank said no to built at half (seed 12, m200-420)
+        GapOrderCheck.java         OG1: a planner orders to the gap, not one a month - the builders' target
+                                   the work a typical month sends them (a median, their own depots left out,
+                                   saved), bounded by CEILING; several depots and six Bottling Plants ordered
+        ForeignChoiceCheck.java    FC2b: a payer hands a site's remaining work to the foreign crews - a business when its extra is under its saving, the city from its card; a half-built site, a shared stack, the money booked once, saved and loaded
         sectors/                   twenty-four sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector
                                    orders - the best earnings on cost at the city's own prices, past the
@@ -362,6 +370,8 @@ adds its line here, not in `CLAUDE.md`.
                                    its template, which every order, stack and key keeps; what future readers read
         HistoricalRecipeCheck.java R2d's per-row date/fitting fixtures, both fitting orders, default and real-clock checks.
         PostwarRecipeCheck.java    R2e's postwar row transitions, independent and catalyst-stage composition, wood dates and default control.
+        ModernRowsCheck.java       R6f's M12, B10 and L8 on both sides of their months: the stays factor, the Contact Centre's agents,
+                                   the bank's conservation buffer; a default city unchanged; a held city across a save
         NewUnitCheck.java          QN1's new-building readers: the rejected robot's 300 posts, staffing, the order bar, the bank's
                                    clerks and fee boundary, identities, what is on site and the power ahead
         HistoricalLicenceCheck.java Independent recipe/piece and rail patent invoices, closed audits, saved bills and exemptions.
@@ -1021,6 +1031,10 @@ adds its line here, not in `CLAUDE.md`.
         FB13Check.java             FB13's three texts asked of the model that says them: the island's words (table, chip, notice,
                                    door, the Build tab's card) naming a bridge where the survey allows one, the coupons' note, and
                                    the build card's licence line; a screen's read moves nothing of the rule's
+        GroundSkipCheck.java       the test player keeps its ground across its long skips (batch LP-G1): a growing village at its
+                                   line skipped sixty months the old way runs its reserve out and holds the landlords for land;
+                                   the watched skip (LongPlaytest.skipWatchingGround()) looks each BuildAdvice.HORIZON months,
+                                   buys within the cash share and pays, and an offer the share cannot pay still waits
         InterventionCheck.java     a purchase or sale of dollars moves the D$ a bounded amount (batch XI1): ForeignAccounts'
                                    interventionMove() and its inverse equal the old linear expressions to the bit up to
                                    INTERVENTION_LINEAR of a year's GDP and are logarithmic past it, continuous in value and slope;

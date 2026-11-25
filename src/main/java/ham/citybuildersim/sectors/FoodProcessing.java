@@ -202,6 +202,11 @@ public final class FoodProcessing extends Sector {
 
     /** ...for one new plant already resolved (QN1): what its own recipe makes. */
     public double fillFor(NewUnit t) {
+        return fillFor(t, 0);
+    }
+
+    /** ...for the plant after {@code before} more of these, counted as made beside what stands and is on site (OG1): the n-th plant of an order, before = n - 1. */
+    public double fillFor(NewUnit t, long before) {
         double onePlant = 0, uncovered = 0;
         for (Good g : t.goodsMade().keySet()) {
             double made = t.makes(g);
@@ -209,7 +214,7 @@ public final class FoodProcessing extends Sector {
             double floor = Math.max(0, markets.get(g).netExportPrice());
             onePlant += made * floor;
             uncovered += Math.max(0, markets.get(g).getDemand()
-                    - getCapacity(g) - getPipeline(g)) * floor;
+                    - getCapacity(g) - getPipeline(g) - before * made) * floor;
         }
         return onePlant > 0 ? uncovered / onePlant : 0;
     }
@@ -219,6 +224,9 @@ public final class FoodProcessing extends Sector {
      * No order in flight is waited for (BA1, 2026-11-02; it was one): fillFor()
      * takes what the plants on site will make off the demand (getPipeline()), so
      * the plant after one on site is ordered only for the demand the first leaves.
+     * Since OG1 (BusinessInvestment, THE ORDER IS THE GAP) the order is as many
+     * of the best as are each FILLED with the ones before them counted
+     * (fillFor(unit, n - 1)), where it was one a month.
      */
     @Override
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
@@ -292,8 +300,13 @@ public final class FoodProcessing extends Sector {
         if (plans.plotsAvailableFor(best) < 1) {
             return BusinessInvestment.Decision.noLand(sector, plans.landReason(best));
         }
-        return new BusinessInvestment.Decision(sector, best, 1,
-                "the city already eats what one would make", true);
+        // ...as many as the city eats, each FILLED with the ones before it counted (OG1), and no more than the plots or the staff.
+        NewUnit unit = plans.newUnit(best);
+        long eaten = BusinessInvestment.largestThatPasses(plans.plotsAvailableFor(best), n -> fillFor(unit, n - 1) >= FILLED);
+        long quantity = plans.gapOrder(this, best, eaten);
+        return new BusinessInvestment.Decision(sector, best, quantity,
+                quantity > 1 ? String.format("the city already eats what %,d would make", quantity)
+                        : "the city already eats what one would make", true);
     }
 
     /* =====================================================================

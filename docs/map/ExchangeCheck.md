@@ -1,6 +1,6 @@
-# ExchangeCheck.java - 1,464 lines · 39 methods · 6 constants · harnesses
+# ExchangeCheck.java - 1,609 lines · 40 methods · 6 constants · harnesses
 
-`ham/citybuildersim/ExchangeCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ExchangeCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Verifies the exchange on the order book (0.7.12 round 2): what the desk
 > posts and what it is not obliged to take, who trades with whom and at what
@@ -64,29 +64,29 @@
 >      exchange's mark, every price read is the quote (EM2) the book as it
 > ... (9 more lines in the source)
 
-**Uses:** [Exchange](Exchange.md) (145), [Equity](Equity.md) (70), [HouseholdBalance](HouseholdBalance.md) (56), [OrderBook](OrderBook.md) (48), [PayTier](PayTier.md) (26), [Bank](Bank.md) (21), [TreasuryFund](TreasuryFund.md) (21), [FamilyStructure](FamilyStructure.md) (17), [Household](Household.md) (8), [Sectors](Sectors.md) (6), [Game](Game.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [GameFiles](GameFiles.md) (2), [MoneyAudit](MoneyAudit.md) (2), [DebtManager](DebtManager.md) (1), [PriceLevel](PriceLevel.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [Exchange](Exchange.md) (162), [Equity](Equity.md) (114), [OrderBook](OrderBook.md) (60), [HouseholdBalance](HouseholdBalance.md) (54), [TreasuryFund](TreasuryFund.md) (30), [PayTier](PayTier.md) (26), [Bank](Bank.md) (23), [FamilyStructure](FamilyStructure.md) (17), [Household](Household.md) (11), [Sectors](Sectors.md) (9), [MoneyAudit](MoneyAudit.md) (6), [Game](Game.md) (4), [OutwardInvestment](OutwardInvestment.md) (3), [GameFiles](GameFiles.md) (2), [DebtManager](DebtManager.md) (1), [PriceLevel](PriceLevel.md) (1), [TaxPolicy](TaxPolicy.md) (1), [TempDirs](TempDirs.md) (1)
 
-**Used by (5):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [MarketCheck](MarketCheck.md), [OwnerCheck](OwnerCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
+**Used by (7):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [CapitalGainsCheck](CapitalGainsCheck.md), [MarketCheck](MarketCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [OwnerCheck](OwnerCheck.md), [ShortSellingCheck](ShortSellingCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
 | 345 | 7c. the last trade under fair value (RB3) |
-| 507 | · 1. the price is the quote |
-| 549 | · 2. nobody is obliged |
-| 600 | · 2b. the desk's caps (round 3) |
-| 647 | · 2c. what is over the caps, offered at fair value |
-| 741 | · 3. the leavers |
-| 783 | · 4. the world |
-| 840 | · 5. the household cells |
-| 935 | · 6. cell to cell |
-| 982 | · 6b. the cells rebalance by the bond rule (round 3) |
-| 1013 | · 7. the buyback, and the money that stays |
-| 1147 | · 7b. the fund past its cap (RB1) |
-| 1239 | · 8. the split |
-| 1284 | · 9. the save |
-| 1321 | · 10. a live city |
+| 630 | · 1. the price is the quote |
+| 672 | · 2. nobody is obliged |
+| 723 | · 2b. the desk's caps (round 3) |
+| 770 | · 2c. what is over the caps, offered at fair value |
+| 864 | · 3. the leavers |
+| 906 | · 4. the world |
+| 963 | · 5. the household cells |
+| 1058 | · 6. cell to cell |
+| 1111 | · 6b. the cells rebalance by the bond rule (round 3) |
+| 1143 | · 7. the buyback, and the money that stays |
+| 1291 | · 7b. the fund past its cap (RB1) |
+| 1383 | · 8. the split |
+| 1428 | · 9. the save |
+| 1465 | · 10. a live city |
 
 ## Constants
 
@@ -127,7 +127,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 1387 | **type** `public class ExchangeCheck` | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what price, what a company does with its surplus, a split, and that a city ... |
+| 78 | 1532 | **type** `public class ExchangeCheck` | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what price, what a company does with its surplus, a split, and that a city ... |
 | 84 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 89 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 113 | 1 | `static Equity equity()` | A register in the fixtures' dollar. |
@@ -138,7 +138,7 @@
 | 144 | 11 | `static Equity withPaid(int a, double incomeA, double paidA, int b, double incomeB, double paidB)` | ...for two companies over the same twelve months: the register closes every company's month together, so each is noted in it. |
 | 156 | 1 | `static double[] months(double v)` |  |
 | 159 | 5 | `static double[] fading(double yearly)` | A year of profit that is fading - the older six months twice the newer six, so a NORMAL regime - adding up to this much (EM1: a company's value is its earnings capitalised, so a fixture says what it earns a year). |
-| 166 | 13 | `static HouseholdBalance savers(double savedEach, double takeHome)` | Households: a hundred unskilled couples with this much saved each, struck once so they have a take-home. |
+| 166 | 13 | `static HouseholdBalance savers(double savedEach, double takeHome)` | A hundred debt-free savers at the exchange boundary, with the stated take-home and cash. |
 | 180 | 1 | `static Household couple(HouseholdBalance hb)` |  |
 | 183 | 8 | `static Bank bankWith(double capital)` | A bank with one branch and this much capital, its month open: a desk posts only for a bank that stands (0.7.12 round 2). |
 | 193 | 33 | **type** `static class Firms implements Exchange.Companies` | The companies, as the exchange sees them: a till, a balance sheet, a payroll. |
@@ -163,7 +163,7 @@
 | 269 | 27 | `static void splitOccurrenceControls(Exchange realSplit)` | A perfectly closed audit without any split must fail the same law the played city uses. |
 | 298 | 46 | `static void wageBand()` | A century of rising and falling founding-share prices, with an independently growing wage. |
 
-### 7c. the last trade under fair value (RB3) (lines 345-1464)
+### 7c. the last trade under fair value (RB3) (lines 345-1609)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -174,5 +174,6 @@
 | 415 | 1 | `double sold()` _(in ExchangeCheck.LeaversTown)_ | The shares the fund sold in the month, out of its market book. |
 | 418 | 1 | `double asked()` _(in ExchangeCheck.LeaversTown)_ | The tenth of the excess the rule asks (TreasuryFund.limitSale()), on the holding and the issue the month began with. |
 | 430 | 66 | `static void theLastTradeUnderFair()` | THE BOOK LAST TRADED UNDER FAIR VALUE, AND THE LEAVERS ASK UNDER THE FUND'S FAIR VALUE (RB3; FS13's ★g, FundCheck 9e's town on 60 and 84 months of founding). |
-| 497 | 967 | `public static void main(String[] args) throws Exception` |  |
+| 498 | 120 | `static void rescueSaleChecks()` | RS1: cause the rescued bank's sale, its unavailable self-bid and both price faults through settlement. |
+| 619 | 990 | `public static void main(String[] args) throws Exception` |  |
 

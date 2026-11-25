@@ -346,14 +346,25 @@ public class ConstructionControlCheck {
             for (ConstructionControl.Overtime x : g.getControlThisMonth().overtime) if (x.key().equals(key)) o = x;
             assertTrue("month " + m + ": the site was worked on overtime, its month " + m, o != null && o.month() == m);
             if (o == null) continue;
-            close("  its work is its share x 50/40 x the month's factor", o.work(),
-                    Math.min(bm.getLastPlan().owedOf(key), o.share() * ConstructionControl.overtimeOutput(m)), 1e-12);
+            // FC2, moved from "its work is its share x 50/40 x the month's factor": since FC2 the foreign crews are always on
+            // offer, and this city's queue is past their threshold, so their points join the month the plan shares out and part
+            // of the site's share is theirs. Overtime is the city's own crews' hours (FC1's rule, ConstructionTrapCheck 10):
+            // their part of the share - the share over the whole month, less his points, of it - on overtime, and his as it is.
+            // With nothing of his in the month the own part is the whole share, and this is the line it was.
+            BuildingManager.Plan plan = bm.getLastPlan();
+            double his = g.getSectors().construction().getForeignPointsThisMonth();
+            out.printf("  month %d: the sites' month %,.0f, of it %,.0f the foreign crews'%n", m, plan.output, his);
+            close("  the city's own crews' part of the share is the share over the month, less the foreign crews' points of it", o.own(),
+                    o.share() * (plan.output - his) / plan.output, 1e-12);
+            close("  its work is the city's own part x 50/40 x the month's factor and the foreign crews' part as it is", o.work(),
+                    Math.min(plan.owedOf(key), (o.share() - o.own()) + o.own() * ConstructionControl.overtimeOutput(m)), 1e-12);
             close("  ...and is what the site was built by", uni.getLastApplied(), o.work(), 1e-12);
             close("  ...its progress moved by it", uni.getConstructionProgress() - progressBefore, o.work(), 1e-9);
             close("  the wage bill a point is a depot's posts at today's wages over its points", o.perPoint(),
                     perPoint, 1e-12);
-            close("  the premium is 0.375 of its crews' bill", o.premium(),
-                    ConstructionControl.premiumShare() * o.share() * perPoint, 1e-12);
+            // ...and moved from "of its crews' bill" on the share: the premium is on the city's own crews' part alone (FC2).
+            close("  the premium is 0.375 of its own crews' bill", o.premium(),
+                    ConstructionControl.premiumShare() * o.own() * perPoint, 1e-12);
             close("  the treasury paid it with the builders' tax in it", g.getOvertimePaidThisMonth(),
                     o.premium() / (1 - rB), 1e-9);
             close("  ...which the builders earned", g.getSectors().construction().getOvertimeThisMonth(),
@@ -482,8 +493,11 @@ public class ConstructionControlCheck {
         Game.DemolitionQuote q = g.quoteDemolition(t, 2);
         close("its work is 5% of the template's points", q.points(),
                 ConstructionControl.DEMOLITION_SHARE * t.getConstructionPoints() * 2, 0);
-        close("its price is that share of the building's work at the builders' rate today, at their multiple (FC1)",
-                q.price().sticker, ConstructionControl.DEMOLITION_SHARE * bm.nonMaterialCost(t) * 2 * bm.orderPriceMultiplier(), 1e-12);
+        // REV-FC2, the second review, moved from "at their multiple (FC1)": a demolition is the city's crews' work, never
+        // handed abroad, so it is priced at the premium at home (BuildingManager.homePriceMultiplier()), not at the order's
+        // multiple, which past the threshold is the foreign crews' share - and this city's queue is past it.
+        close("its price is that share of the building's work at the builders' rate today, at the premium at home",
+                q.price().sticker, ConstructionControl.DEMOLITION_SHARE * bm.nonMaterialCost(t) * 2 * bm.homePriceMultiplier(), 1e-12);
         double rB = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX,
                 g.getEconomyManager().getTaxPolicy().effectiveSalesRate(g.getSectors().construction())));
         close("...no material, and the tax in it", q.price().total, q.price().sticker / (1 - rB), 1e-12);
@@ -604,6 +618,12 @@ public class ConstructionControlCheck {
                 households0 > homes0,
                 "next-month household retention");
         double[] moved = handMoves(g, () -> g.buyOutAndDemolish(t, k));
+        String word = g.getLastInvestment(RE);
+        out.println("      compulsory-purchase word: " + word);
+        assertTrue("the actual compulsory purchase still says Sold with its quantity and compensation",
+                word.startsWith("Sold " + k + " " + t.getName() + " to the city by compulsory purchase, for "));
+        assertTrue("...and still reads as SELLING ahead of land",
+                BuildCard.wordKind(word, false, true) == BuildCard.WordKind.SELLING);
         close("the buy-out moves money between the pools only", moved[1], moved[0], 1e-9);
         close("the owner's cash rose by exactly the compensation", owner.getCash() - till0, q.compensation(), 1e-9);
         close("the treasury paid it and the demolition", cash0 - g.getCash(), q.total(), 1e-9);

@@ -1,6 +1,6 @@
 # FamilyStructure.java - 119 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/FamilyStructure.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FamilyStructure.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The shapes a household comes in.
 > 
@@ -22,7 +22,7 @@
 
 **Uses:** [AgeBand](AgeBand.md) (9)
 
-**Used by (37):** [AdultStage](AdultStage.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [CarCheck](CarCheck.md), [Consumption](Consumption.md), [ConsumptionCheck](ConsumptionCheck.md), [CrimeCheck](CrimeCheck.md), [EducationCheck](EducationCheck.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [FamilyModel](FamilyModel.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [HoldersCheck](HoldersCheck.md), [Household](Household.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [KeptBench](KeptBench.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [RetiredHousehold](RetiredHousehold.md), [ShortSellingCheck](ShortSellingCheck.md), [WorkingHousehold](WorkingHousehold.md)
+**Used by (42):** [AdultStage](AdultStage.md), [BankCheck](BankCheck.md), [BondCheck](BondCheck.md), [CapitalGainsCheck](CapitalGainsCheck.md), [CarCheck](CarCheck.md), [CardCheck](CardCheck.md), [Consumption](Consumption.md), [ConsumptionCheck](ConsumptionCheck.md), [CrimeCheck](CrimeCheck.md), [DebtStatistics](DebtStatistics.md), [DebtStatisticsCheck](DebtStatisticsCheck.md), [EducationCheck](EducationCheck.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [FamilyModel](FamilyModel.md), [GroceryCheck](GroceryCheck.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [HoldersCheck](HoldersCheck.md), [Household](Household.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [HousingCheck](HousingCheck.md), [InvestCheck](InvestCheck.md), [KeptBench](KeptBench.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [RestaurantsCheck](RestaurantsCheck.md), [RetiredHousehold](RetiredHousehold.md), [ShortSellingCheck](ShortSellingCheck.md), [WorkingHousehold](WorkingHousehold.md)
 
 ## Sections
 

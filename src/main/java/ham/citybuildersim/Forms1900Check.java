@@ -468,6 +468,9 @@ public class Forms1900Check {
     /** The months the cart cities are played: the fleet and the money audit are held over them. */
     static final int CART_MONTHS = 12;
 
+    /** Half a cent, in the model's thousands: the allowance is the haul's own sums, so it covers them to the cent (Forms1900Check 11). */
+    static final double ALLOWANCE_CENT = .000005;
+
     /** One month of a city's Haulage, as the sections read it, taken the moment the month was played. */
     static final class Month {
         double need, carried, truckTonnes, teamTonnes, litres, diesel, teams, feedTonnes, feedTonnesImported, feed, feedImported;
@@ -735,10 +738,16 @@ public class Forms1900Check {
         Month m = f[6];
         check("the city leg's price after 6 months at a share of 1 is a quote struck from the month's carriage (not the estimate), finite and positive",
                 m.quoteKnown && Double.isFinite(m.quote) && m.quote > 0, String.format("D$%.6f a tonne, known %b", m.quote, m.quoteKnown));
-        // The pay is read after the month, when the labour market has moved the fill since the haul priced it (a few percent in a growing city): hence the 0.9.
-        check("...and the rule's allowance covers the month's feed and (to within the fill moved since the haul) the carters' pay",
-                m.feed > 0 && m.haulagePay > 0 && m.allowed >= m.feed + 0.9 * m.haulagePay,
-                String.format("allowed D$%.4f, feed D$%.4f, carters D$%.4f", m.allowed, m.feed, m.haulagePay));
+        // FC2, 2026-11-23: on FC2's path the carters' tier filled from 0.19 to 0.25 in month 6 (a third more in a month, the labour market not yet having filled the 30,456 carters),
+        // so the pay read after the month was D$1,372.10 against the D$1,019.24 the haul priced it at, and the allowance,
+        // D$1,156.95, was the haul's own pay plus the feed D$71.59 and the teams' hire D$66.12 to the cent. The rule prices the payroll as the month before
+        // closed it (Haulage.closeMonth() reads Freight.haulagePayroll() at the haul), so the pay it must cover is that month's, and that is the figure read: with it
+        // the allowance covers the three to the cent (REV-FC2b), and the 0.9 the read after the month needed is gone.
+        Month before = f[5];
+        check("...and the rule's allowance covers the month's feed, the teams' hire and the carters' pay the haul priced (the month before), to the cent",
+                m.feed > 0 && m.hire > 0 && before.haulagePay > 0 && m.allowed >= m.feed + m.hire + before.haulagePay - ALLOWANCE_CENT,
+                String.format("allowed D$%.4f, feed D$%.4f, hire D$%.4f, carters D$%.4f as the month before closed them (D$%.4f after this month)",
+                        m.allowed, m.feed, m.hire, before.haulagePay, m.haulagePay));
         check("...and the quote is finite and positive in every one of the " + CART_MONTHS + " months", allMonths(f, x -> x.quoteKnown && Double.isFinite(x.quote) && x.quote > 0));
     }
 
@@ -818,6 +827,14 @@ public class Forms1900Check {
         check("fixture: a town with a grocery and homes, the fuel duty on, and no share set: nothing struck",
                 retail.buildingsStanding() > 0 && tax.chargedFuelDuty() > 0 && !hf.isOn() && !hf.hasSale() && hf.getLampShare() == 0 && hf.getCoalShare() == 0);
 
+        // FC2, 2026-11-23: on FC2's path no household in the town owned a car in months 7 to 14 (0 cars among 342 to 465 households, the captive share 1, the drivers 0,
+        // the cells wanting 0 cars at the showroom's D$1.27 with 0.48 to 0.90 saved a household against 0.13 to 0.17 a month disposable and 87 to 146 households going short), so the pump
+        // sold no petrol and the duty, on for it, struck nothing (petrol duty 0.000000): the line below that the bill is not the duty's had nothing to be tested on. The
+        // households are handed the cars whole, as CarCheck hands its buyers their money, half a car a grown-up (one at most) in each working cell: the drivers are then
+        // the town's commuters with a car (339 of them in the month, a duty of D$0.21), whatever the savings and the cell sizes the path brought.
+        for (Household c : g.getHouseholdBalance().cells()) {
+            if (!c.isEmpty() && c.row() < Household.RETIRED_ROW) c.cars = 0.5 * Math.min(1, c.grownUps());
+        }
         hf.setLampShare(1);
         play(g, 1);
         final double perHome = HomeFuel.LAMP_OIL_LITRES_A_HOME_MONTH;
@@ -929,6 +946,10 @@ public class Forms1900Check {
         play(twin, 1);
         // The first month's sale, taken the moment it was struck; the households pay it the month after, and Retail's statement shows it then.
         final double bill = hf.getBill();
+        // FC2, 2026-11-23: the homes this month's sale was struck for, taken now with the bill. The books split the bill a month later by the doors they held then, which
+        // are this strike's count to the bit (380.415135 both), so the count to read is this one; read after the second month it was the second strike's (403.05, 6% on
+        // as the town grew into its houses), a month further on than the bill the doors split.
+        final double homesStruck = hf.getHomes();
         check("fixture: the first month sold both goods and struck a bill", bill > 0 && hf.getLitres() > 0 && hf.getTonnes() > 0,
                 String.format("bill %.6f, %.1f L, %.3f t", bill, hf.getLitres(), hf.getTonnes()));
         check("the households are told it next month, as the drivers' fuel is: their books show none yet, and spend what the twin does",
@@ -963,7 +984,7 @@ public class Forms1900Check {
         check("each row pays its share of the doors, the doors the rent is split by", byDoors);
         check("...the orphans and the prisoners, who have no door, pay none", hb.getRowDoors(HouseholdAccounts.ORPHANS) == 0 && hb.getRowDoors(HouseholdAccounts.PRISONERS) == 0
                 && hb.getRowHomeFuel(HouseholdAccounts.ORPHANS) == 0 && hb.getRowHomeFuel(HouseholdAccounts.PRISONERS) == 0);
-        near("...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on)", hf.getHomes(), doors, 0.05);
+        near("...and the homes the month was struck for are about the doors the books split it by (the same count, a few weeks on)", homesStruck, doors, 0.05);
 
         boolean waterfall = true;
         for (int r = 0; r < hb.getRowCount(); r++) {

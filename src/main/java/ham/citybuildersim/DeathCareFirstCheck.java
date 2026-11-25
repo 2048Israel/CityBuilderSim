@@ -111,6 +111,9 @@ public class DeathCareFirstCheck {
      */
     static final int TRAP_MONTHS = 12;
 
+    /** The share of the builders' sick month the trap's repairs take, at the least (section 2's fixture): most of it, as in the trace's city. */
+    static final double TRAP_REPAIRS = .8;
+
     /** The most months the trap's city plays past its three years for the backlog to reach its cap (R0b). */
     static final int CAP_MONTHS_MORE = 36;
 
@@ -219,6 +222,8 @@ public class DeathCareFirstCheck {
             g.setCashForTest(Founding.WEALTHY_CASH);
             g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 120_000_000L);
             for (Sector s : g.getSectors().all()) g.getBusinessInvestment().holdSector(s.key());
+            // PW2: its works stand Wind Farms, which a 1900 city knows only from their year; its research found them first.
+            EssentialWorksCheck.knowWind(g);
             for (String[] w : new String[][] {
                     { "Industrial Bakery", "3" }, { "Wind Farm", "4" }, { "Water Treatment Plant", "1" },
                     { "Commercial Bank", "1" }, { "Convenience Store", "6" }, { "House", "400" },
@@ -257,11 +262,22 @@ public class DeathCareFirstCheck {
     }
 
     /** ...and the roads and the sites: the half of the fixture that follows the trap. */
-    static void sites(Game g) {
+    static void sites(Game g) { sites(g, 0); }
+
+    /**
+     * ...with the repairs over `repairsAtLeast` of the builders' sick month (0: none asked), the roads leaving it no more than the
+     * rest less a road's repairs, so the roads' whole number cannot bring them under it. FC2, 2026-11-23: on the merged model's
+     * path (0.9.194 with FC2) the trap's town was sicker than main's, 29.0% against 20.9% (the baseline 7.5%, 3.7% more for the
+     * unhoused, the capped dead's 15%), its sick month 398 points against 443 of the nameplate's 560, so a year of the cemetery's
+     * points left 80 of it and the repairs took 80.0%, at the bar and not over it; main's town left 78 of 443 (82.4%).
+     */
+    static void sites(Game g, double repairsAtLeast) {
         BuildingsTemplate cemetery = template(g, CEMETERY);
         BuildingsTemplate road = template(g, ROAD);
         double perRoad = road.getConstructionPoints() * road.repairsPerYear() / 12;
-        double leave = cemetery.getConstructionPoints() / (double) TRAP_MONTHS;
+        double year = cemetery.getConstructionPoints() / (double) TRAP_MONTHS;
+        double leave = repairsAtLeast > 0
+                ? Math.min(year, (1 - repairsAtLeast) * g.getConstructionOutputAtEveryPost() - perRoad) : year;
         int roads = (int) Math.floor((g.getConstructionOutputAtEveryPost() - g.getMaintenancePoints() - leave) / perRoad);
         quietly(() -> {
             if (roads > 0) g.buildStack(road, roads, true);
@@ -280,8 +296,8 @@ public class DeathCareFirstCheck {
         toTheCap(without, with);
         // The twin without the rule: the hook Game sets, told nobody lies unburied.
         without.getBuildingManager().setUnburied(() -> 0);
-        sites(without);
-        sites(with);
+        sites(without, TRAP_REPAIRS);
+        sites(with, TRAP_REPAIRS);
         Game g = with;
         Healthcare hc = g.getHealthcare();
         Health health = g.getHealth();
@@ -302,13 +318,19 @@ public class DeathCareFirstCheck {
         double repairsShare = g.getMaintenancePoints() / g.getConstructionOutputAtEveryPost();
         out.printf("  repairs take %.1f%% of the sick builders' month (%.1f%% of their nameplate)%n", repairsShare * 100,
                 g.getMaintenancePoints() / g.getBuildingManager().getTotalConstructionCapacity() * 100);
-        assertTrue("fixture: the repairs take most of the builders' sick month", repairsShare > 0.8);
+        assertTrue("fixture: the repairs take most of the builders' sick month, over TRAP_REPAIRS of it", repairsShare > TRAP_REPAIRS);
         BuildingManager bm = g.getBuildingManager();
         String cem = ConstructionControl.keyOf(template(g, CEMETERY));
         assertTrue("fixture: the cemetery is the city's own site", bm.isCitySite(cem));
-        assertTrue("fixture: among other city sites, the Penitentiary still owing most of its points",
-                bm.citySiteKeys().size() >= 4 && bm.stackOfKey(ConstructionControl.keyOf(template(g, "Penitentiary")))
-                        .getConstructionProgress() < template(g, "Penitentiary").getConstructionPoints() / 2.0);
+        // REV-FC2, the second review, moved from "still owing most of its points" (FC2 first made this move, and REV-FC2 put
+        // main's back when whole buildings kept the Penitentiary at home): the threshold splits the building it falls in,
+        // so the founding's Penitentiary hands the foreign crews its work past it and they build it beside the city's crews.
+        // It owes less, but it is on site still, which keeps every post offered (the assertion after this), what it is for.
+        BuildingsStacks pen = bm.stackOfKey(ConstructionControl.keyOf(template(g, "Penitentiary")));
+        out.printf("  the Penitentiary: %,.0f of its %,d points built%n", pen.getConstructionProgress(),
+                template(g, "Penitentiary").getConstructionPoints());
+        assertTrue("fixture: among other city sites, the Penitentiary still owing points",
+                bm.citySiteKeys().size() >= 4 && pen.getConstructionProgress() < template(g, "Penitentiary").getConstructionPoints());
         assertTrue("fixture: the builders offer every post", g.getBuildingOutput() == g.getBuildingOutputAtEveryPost());
         String houses = ConstructionControl.keyOf(template(g, "House"));
         assertTrue("fixture: and the landlords' Houses on site, not the city's", bm.siteKeysOnSite().contains(houses)

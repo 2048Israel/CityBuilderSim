@@ -96,6 +96,11 @@ public class DataSave implements Cloneable {
     //save variables
     private double cash;
     private long[] buildings;
+
+    /** RES2 bounded title/occupancy/listing cohorts; physical stock stays in buildings[]. */
+    private java.util.List<HousingInventory.Holding> housingInventory;
+    public void setHousingInventory(java.util.List<HousingInventory.Holding> holdings) { housingInventory = holdings; }
+    public java.util.List<HousingInventory.Holding> getHousingInventory() { return housingInventory; }
     private int month = 1;
     private JsonArray debts;
 
@@ -176,7 +181,8 @@ public class DataSave implements Cloneable {
 
     /**
      * The utility's struck book (PW1; UtilitiesHandler, THE MERIT ORDER): the prices this month's power is billed at, the ratio it served
-     * and the fuel bought at the next strike, and the month's fuel paid. Absent on an older save, which loads the founding book. No format bump.
+     * and the fuel bought at the next strike, and the month's fuel paid. PW5 also keeps the closing dispatch's grid costs here;
+     * the load rebuild restores them with that dispatch, never from the ending stock (format 62 after RES2).
      */
     private UtilitiesHandler.PowerState powerBooks;
 
@@ -1183,6 +1189,21 @@ public class DataSave implements Cloneable {
         this.materialsOwedById = materialsOwed;
         this.contractValueById = contractValue;
     }
+
+    /**
+     * Each site's work on the foreign crews' book in points, by template id (REV-FC2, the second review;
+     * BuildingsStacks.abroadClaim, BuildingManager.abroadOwedOf()), only the sites with some, and written always, an
+     * empty map when none: so a save without the key is a save from before it, whose sites with points owed claim his
+     * book in proportion to them - a cancel takes its share of his book, as FC1b took its points left. No format bump.
+     */
+    private java.util.Map<Integer, Double> abroadOwedById;
+
+    public void setAbroadOwedById(java.util.Map<Integer, Double> byId) {
+        this.abroadOwedById = byId == null ? new java.util.TreeMap<>() : byId;
+    }
+
+    /** The points by template id, empty for a save with none abroad, null for a save from before the key. */
+    public java.util.Map<Integer, Double> getAbroadOwedById() { return abroadOwedById; }
 
     /**
      * The buildings still WITHOUT a piece of equipment, by template id and then by the piece's id (R1; BuildingsStacks' unfitted counts), written
@@ -2489,6 +2510,22 @@ public class DataSave implements Cloneable {
      * scales none of it.
      */
     private double[] householdFlows;
+    /** HT1's struck investment-tax transfers and actual assessment counts. */
+    private double[] householdInvestmentTaxes;
+    private double[] securedHouseholdTaxes, securedForeignTaxes;
+    private EstateCustody.State estateCustody;
+    private double unbackedCustodyPaper;
+    public void setEstateCustody(EstateCustody.State state) { estateCustody = state == null ? null : state.copy(); }
+    public EstateCustody.State getEstateCustody() { return estateCustody == null ? null : estateCustody.copy(); }
+    public void setUnbackedCustodyPaper(double face) { unbackedCustodyPaper = face; }
+    public double getUnbackedCustodyPaper() { return unbackedCustodyPaper; }
+    public void setSecuredHouseholdTaxes(double[] state) { securedHouseholdTaxes = state == null ? null : state.clone(); }
+    public double[] getSecuredHouseholdTaxes() { return securedHouseholdTaxes == null ? null : securedHouseholdTaxes.clone(); }
+    public void setSecuredForeignTaxes(double[] state) { securedForeignTaxes = state == null ? null : state.clone(); }
+    public double[] getSecuredForeignTaxes() { return securedForeignTaxes == null ? null : securedForeignTaxes.clone(); }
+    public void setHouseholdInvestmentTaxes(double[] state) { householdInvestmentTaxes = state == null ? null : state.clone(); }
+    public double[] getHouseholdInvestmentTaxes() { return householdInvestmentTaxes == null ? null : householdInvestmentTaxes.clone(); }
+
 
     public void setHouseholdFlows(double[] v) { this.householdFlows = v == null ? null : v.clone(); }
     public double[] getHouseholdFlows()       { return householdFlows == null ? null : householdFlows.clone(); }
@@ -2830,6 +2867,32 @@ public class DataSave implements Cloneable {
     public java.util.Map<String, Integer> getSectorOperatingLossMonths(){ return sectorOperatingLossMonths; }
     public void setPopulationTrend(java.util.List<Long> l){ this.populationTrend = l; }
     public java.util.List<Long> getPopulationTrend(){ return populationTrend; }
+
+    /*
+     * The work each recent month ordered of the builders, their own depots left out, and what everyone else's sites
+     * owed when the last advance ended (OG1; BusinessInvestment, THE WORK THE CITY SENDS THE BUILDERS): what the
+     * builders' next depot order is sized to. A save from before OG1 has neither, and the record starts again: one
+     * depot an order until it has MIN_MONTHS_OF_SITE_WORK.
+     */
+    private java.util.List<Double> buildersWork;
+    private Double buildersOwedAfterAdvance;
+
+    public void setBuildersWork(java.util.List<Double> l){ this.buildersWork = l; }
+    public java.util.List<Double> getBuildersWork(){ return buildersWork; }
+    public void setBuildersOwedAfterAdvance(Double v){ this.buildersOwedAfterAdvance = v; }
+    public Double getBuildersOwedAfterAdvance(){ return buildersOwedAfterAdvance; }
+
+    /*
+     * What a used car went for in the month (PW2; Motoring.getUsedCarPrice()): the households' cars are marked at it
+     * in their assets (HouseholdBalance.assets(), Game's car mark), and a loaded city read none until its next month,
+     * so it marked them at the showroom's floor and its debt statistics parted from the live city's (SaveFileCheck's
+     * HC2 line, found when PW2's city sold used cars in the month it was saved). A save from before PW2 has none and
+     * reads as a month with no used car sold: the floor, as before.
+     */
+    private Double usedCarPrice;
+
+    public void setUsedCarPrice(Double v){ this.usedCarPrice = v; }
+    public Double getUsedCarPrice(){ return usedCarPrice; }
     public void setCityCapitalSpending(double v){ this.cityCapitalSpending = v; }
     public double getCityCapitalSpending(){ return cityCapitalSpending; }
 

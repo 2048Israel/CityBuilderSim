@@ -459,6 +459,16 @@ public class PopulationCohorts {
         band[AgeBand.BABY.ordinal()] += lastBirths;
     }
 
+    /** Discharged source families leave first; only the other net movers use population shares. */
+    public void migrate(double netArrivals, HouseholdBalance.BankruptcyDepartures discharged) {
+        double gone = discharged.people();
+        for (AgeBand a : AgeBand.values()) band[a.ordinal()] = Math.max(0, band[a.ordinal()] - discharged.ages()[a.ordinal()]);
+        for (AdultStage s : AdultStage.values()) stage[s.ordinal()] = Math.max(0, stage[s.ordinal()] - discharged.stages()[s.ordinal()]);
+        syncAdults();
+        migrate(netArrivals + gone);
+        lastMigration -= gone;
+    }
+
     /**
      * People moving in, or out. This is now the city's main source of residents.
      *

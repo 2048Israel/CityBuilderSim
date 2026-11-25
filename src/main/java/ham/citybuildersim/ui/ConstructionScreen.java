@@ -9,6 +9,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
@@ -198,15 +199,20 @@ final class ConstructionScreen {
         VBox material = Kept.scope("material", () -> limitCell("MATERIAL", String.format("%,d in the yard", bm.getConstructionMaterials()),
                 "the rest bought as they build; the world's at " + money(bm.getConstructionMaterialPrice())
                         + " a unit", Palette.TEXT_HEAD));
-        // The price of a point (FC1): the premium the queue's months set, or the contractor's price while the city's crews are all on repairs.
-        boolean foreign = bm.foreignCrewsTakeOrders();
+        // The price of a point (FC1): the premium the queue at home's months set (FC2: the foreign crews' book is not in it).
         long premiumPct = Math.round(bm.scarcityPremium() * 100);
         VBox price = Kept.scope("price", () -> limitCell("PRICE OF A POINT",
-                foreign ? String.format("×%.1f foreign", BuildersShort.FOREIGN_PRICE)
-                        : premiumPct > 0 ? String.format("+%d%%", premiumPct) : "no premium",
-                foreign ? "the city's crews are all on repairs" : "the queue's months set it",
-                foreign ? Palette.BAD : premiumPct > 0 ? Palette.WARN : Palette.TEXT_HEAD));
-        HBox cells = vitalsBar(builders, onSite, months, material, price);
+                premiumPct > 0 ? String.format("+%d%%", premiumPct) : "no premium",
+                "the queue at home's months set it", premiumPct > 0 ? Palette.WARN : Palette.TEXT_HEAD));
+        // ...and the foreign crews' offer beside it (FC2): their excess now and the months past which the queue is theirs,
+        // in Palette.WARN while an order placed now sends work abroad; "not on offer" with no trade on (the founding's first month).
+        BuildingManager.ForeignTerms terms = bm.foreignTerms();
+        boolean abroadNow = terms != null && terms.monthsQueued() > terms.thresholdMonths();
+        VBox foreignCell = Kept.scope("foreign", () -> limitCell("FOREIGN CREWS",
+                terms == null ? "not on offer" : String.format("+%d%%", Math.round(terms.share() * 100)),
+                terms == null ? "no builders' month yet" : String.format("a point, for the queue past %.1f months", terms.thresholdMonths()),
+                abroadNow ? Palette.WARN : Palette.TEXT_HEAD));
+        HBox cells = vitalsBar(builders, onSite, months, material, price, foreignCell);
 
         // The bar: the queue up to where the premium is half its ceiling, a mark at the knee.
         double span = limit + BuildersShort.HALF_MONTHS;
@@ -229,19 +235,36 @@ final class ConstructionScreen {
                 + "price and the interest on its wait, and stops ordering when they do not pay. "
                 + "The yard's material is free to the city's orders; the crews buy the rest as they build, from "
                 + "what they salvaged, then the plant, then the world - so no site in this model is ever short "
-                + "of it.\n\n" + BuildScreen.buildersShortInfo(), false));
+                + "of it.\n\n" + BuildScreen.buildersShortInfo(g.getCurrency()), false));
         VBox box = Kept.column(6, cells, bar, scale);
         // ...and, once a foreign contractor has built anything for the city, what it built, what it was paid and what is still its own (FC1).
         var contractor = g.getSectors().construction();
         double builtAbroad = contractor.getForeignPointsThisMonth(), book = contractor.getForeignBook();
+        boolean foreign = abroadNow;
         if (foreign || builtAbroad > 0 || book > 0) {
             box.getChildren().add(Kept.scope("abroad", () -> {
-                Label abroad = Kept.label(String.format("FOREIGN CREWS: %,.0f pts built last month, %s paid abroad; %,.0f pts still theirs%s",
-                        builtAbroad, money(contractor.getForeignBillThisMonth()), book,
-                        foreign ? " - taking every new order" : book > 0 ? " - finishing what it took" : ""));
+                // ...and (REV-FC2) the share the points still theirs were handed at, which each is billed at: its payer's quote.
+                Label abroad = Kept.label(String.format("FOREIGN CREWS: %,.0f pts built last month, %s paid abroad; %,.0f pts handed them this month, %,.0f pts still theirs%s%s",
+                        builtAbroad, money(contractor.getForeignBillThisMonth()), contractor.getHandedAbroadThisMonth(), book,
+                        book > 0 ? String.format(" at +%d%% a point", Math.round(contractor.getForeignBookShare() * 100)) : "",
+                        foreign ? " - taking the queue past the threshold" : book > 0 ? " - finishing what it took" : ""));
                 abroad.setWrapText(true);
-                abroad.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.BAD));
+                abroad.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.WARN));
                 return abroad;
+            }));
+        }
+        // ...and the other way (FC2): what a spare point of the builders' fetches abroad while the queue at home is under
+        // the knee, and what they sold last month; nothing past the knee, when their own queue wants every point.
+        double exportPrice = terms == null ? 0 : BuildingManager.exportPriceOf(terms);
+        double soldAbroad = contractor.getExportPointsThisMonth();
+        if (exportPrice > 0 || soldAbroad > 0) {
+            box.getChildren().add(Kept.scope("export", () -> {
+                Label sold = Kept.label(String.format("SOLD ABROAD: %,.0f spare pts last month for %s; a spare point fetches %s abroad%s",
+                        soldAbroad, money(contractor.getExportReceiptsThisMonth()), money(exportPrice),
+                        exportPrice > 0 ? "" : " - none now, the queue at home is past the knee"));
+                sold.setWrapText(true);
+                sold.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
+                return sold;
             }));
         }
         box.setStyle("-fx-padding: 10 12 10 12;" + Palette.block(Palette.PANEL, Palette.EDGE));
@@ -526,8 +549,13 @@ final class ConstructionScreen {
         String status;
         String tone;
         boolean rushed = control.isRushed(key);
+        // FC2b: a site with a record of work handed to the foreign crews (a business's or the city's own), and the city's card for one it may hand.
+        ConstructionControl.Abroad abroad = control.abroadOf(key);
+        Game.AbroadCard abroadCard = mine && demolition == null && !control.isCancelling(key) ? g.abroadPreview(key) : null;
+        boolean handable = abroadCard != null && abroadCard.open();
         if (control.isCancelling(key)) { status = "stops at month's end"; tone = Palette.WARN; }
         else if (demolition != null && demolition.closing) { status = "closes as the month starts"; tone = Palette.WARN; }
+        else if (abroad != null) { status = "with the foreign crews"; tone = Palette.BUILDING; }
         else if (rushed) { status = String.format("rushed (month %d)", control.monthsOnOvertime(key) + 1); tone = Palette.BUILDING; }
         else if (share <= 0 && plan.owedOf(key) > 0) { status = "waiting for crews"; tone = Palette.WARN; }
         else if (demolition != null) { status = "demolishing"; tone = Palette.GOOD; }
@@ -535,7 +563,8 @@ final class ConstructionScreen {
         VBox statusBox = Kept.scope("status", () -> {
             VBox box = Kept.column(4);
             box.getChildren().add(chip(status, tone));
-            HBox hand = Kept.row(4);
+            // A flow, not a row (FC2b): Rush, Foreign crews and Cancel are wider together than the column, and the last wraps under the others.
+            FlowPane hand = Kept.flow(4, 4);
             if (mine) {
                 if (rushed) {
                     double[] next = g.rushPreview(key);
@@ -555,6 +584,13 @@ final class ConstructionScreen {
                         return rush;
                     }));
                 }
+                if (handable) {
+                    hand.getChildren().add(Kept.scope("abroad", () -> {
+                        Button foreign = action("Foreign crews", Palette.TEXT_BODY, () -> confirmAbroad(key));
+                        tip(foreign, abroadTip(abroadCard));
+                        return foreign;
+                    }));
+                }
                 if (demolition == null) {
                     if (control.isCancelling(key)) {
                         hand.getChildren().add(Kept.scope("keep", () -> action("Keep", Palette.TEXT_BODY, () -> { g.cancelSite(key, false); draw(); })));
@@ -569,10 +605,20 @@ final class ConstructionScreen {
                         hand.getChildren().add(Kept.scope("cancel", () -> action("Cancel", Palette.BAD, () -> confirmCancel(key))));
                     }
                 }
-            } else if (demolition == null) {
+            } else if (demolition == null && (abroad == null || !"City".equals(abroad.payer))) {
+                // The city's own site handed abroad is no one's order to speak of: the crews' line below says whose it is now.
                 hand.getChildren().add(Kept.scope("theirs", () -> caption("their order")));
             }
             box.getChildren().add(hand);
+            if (handable) {
+                box.getChildren().add(Kept.scope("abroad numbers", () -> caption(String.format("abroad: %s, %s, %s interest saved",
+                        plusMoney(abroadCard.extra()), soonerWords(abroadCard.monthsSaved()), money(abroadCard.interestSaved())))));
+            }
+            if (abroad != null) {
+                // Under the hand rather than in it: the hand is a column's width, and a line this long beside "their order" would squeeze both.
+                box.getChildren().add(Kept.scope("crews", () -> caption(String.format("foreign crews: %,.0f of %,.0f points left at %,.0f a month, %s; paid %s",
+                        abroad.owed, abroad.points, abroad.pace, wholeMonths(abroad.monthsLeft()), money(abroad.paid)))));
+            }
             return box;
         });
 
@@ -1149,6 +1195,63 @@ final class ConstructionScreen {
                 "This month's work is done and billed; the rest of the prepayment comes back. The half-built shell "
                 + "keeps its work and its ground.",
                 lines, "Stop it", () -> { g.cancelSite(key, true); draw(); });
+    }
+
+    /**
+     * The city hands one of its sites to the foreign crews (FC2b): the card as the model strikes it now, said before it is paid. A site the
+     * month has since closed the card on is refused with the card's own reason, as a hand the model refuses is.
+     */
+    private void confirmAbroad(String key) {
+        Game g = ui.game;
+        Game.AbroadCard card = g.abroadPreview(key);
+        if (!card.open()) { refused(card.why()); return; }
+        List<String[]> lines = new ArrayList<>();
+        lines.add(new String[] { "Their price a point", money(card.pricePerPoint()) });
+        lines.add(new String[] { "The extra, paid now", plusMoney(card.extra()) });
+        lines.add(new String[] { "Finished in", wholeMonths(card.monthsAbroad()) });
+        lines.add(new String[] { "At home", wholeMonths(card.monthsHome()) });
+        lines.add(new String[] { "Months saved", Double.isFinite(card.monthsSaved()) ? wholeMonths(card.monthsSaved()) : "it never finishes at home" });
+        lines.add(new String[] { "Interest saved", money(card.interestSaved()) });
+        ui.confirm(String.format("Hand %s to the foreign crews?", card.building()),
+                String.format("The foreign crews build the rest of this site at their own pace, %,.0f points a month. "
+                        + "The site's other work stays with the city's crews. %sIt cannot be taken back.",
+                        card.pace(), g.getBuildingManager().getControl().isRushed(key) ? "Its overtime stops. " : ""),
+                lines, "Hand it over", () -> {
+                    String why = g.handSiteAbroad(key);
+                    if (why != null) refused(why);
+                    draw();
+                });
+    }
+
+    /** What the Foreign crews button says it does (FC2b), from the card's own getters. */
+    private static String abroadTip(Game.AbroadCard card) {
+        return String.format("The foreign crews build the rest of this site at their own pace, %,.0f points a month, and price, %s a point. "
+                + "The city pays %s over the home price, the builders' tax in it. %s. That saves %s of interest on its cost, at the city's long rate.",
+                card.pace(), money(card.pricePerPoint()), plusMoney(card.extra()), againstHome(card), money(card.interestSaved()));
+    }
+
+    /** The months abroad against the months at home, and the months saved (FC2b): "3 months against 10 months at home, 7 months sooner", or where home never finishes, that. */
+    private static String againstHome(Game.AbroadCard card) {
+        return Double.isFinite(card.monthsHome())
+                ? String.format("Finished in %s against %s at home, %s", wholeMonths(card.monthsAbroad()), wholeMonths(card.monthsHome()), soonerWords(card.monthsSaved()))
+                : String.format("Finished in %s, where at home it never finishes", wholeMonths(card.monthsAbroad()));
+    }
+
+    /** The months the foreign crews' figures are worded in (FC2b): "1 month", "3 months", "never" for endless. */
+    private static String wholeMonths(double months) {
+        if (!Double.isFinite(months)) return "never";
+        long n = Math.round(months);
+        return n == 1 ? "1 month" : String.format("%,d months", n);
+    }
+
+    /** The months a handover saves, as the card's caption says them: "3 months sooner", or "never done at home" where the wait at home is endless. */
+    private static String soonerWords(double monthsSaved) {
+        return Double.isFinite(monthsSaved) ? wholeMonths(monthsSaved) + " sooner" : "never done at home";
+    }
+
+    /** A sum the city pays over, with its plus (thousands, as money() takes them): "+$1.2M", and "-$40K" when it is a saving. */
+    private static String plusMoney(double thousands) {
+        return (thousands > 0 ? "+" : "") + money(thousands);
     }
 
     private void confirmDemolition(BuildingsTemplate t, long n, Game.DemolitionQuote q) {

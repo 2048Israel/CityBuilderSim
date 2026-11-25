@@ -1,6 +1,6 @@
-# SaveSlotCheck.java - 1,996 lines · 53 methods · 4 constants · harnesses
+# SaveSlotCheck.java - 2,001 lines · 53 methods · 4 constants · harnesses
 
-`ham/citybuildersim/SaveSlotCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SaveSlotCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Verifies the slot system: ten saves plus an autosave, the version stamp, and
 > the labels the menu is drawn from.
@@ -94,16 +94,16 @@
 | 1135 | `final List<String> unfilled` |  |
 | 1136 | `private int next` |  |
 | 1137 | `private int depth` |  |
-| 1792 | `final IdentityHashMap<Object, String> mutable` | Every mutable object reached, by identity, with the path it was first reached by. |
-| 1795 | `final List<String> opaque` | Each object of a class the walk cannot see into: its path and its class. |
-| 1798 | `private final IdentityHashMap<Object, Boolean> walked` | The containers already walked (mutable or not): a cycle, or a shared one, is walked once. |
-| 1801 | `private final IdentityHashMap<Object, Boolean> settled` | What isImmutable() has settled for a model object: true while it is being settled, which is how a cycle ends. |
+| 1797 | `final IdentityHashMap<Object, String> mutable` | Every mutable object reached, by identity, with the path it was first reached by. |
+| 1800 | `final List<String> opaque` | Each object of a class the walk cannot see into: its path and its class. |
+| 1803 | `private final IdentityHashMap<Object, Boolean> walked` | The containers already walked (mutable or not): a cycle, or a shared one, is walked once. |
+| 1806 | `private final IdentityHashMap<Object, Boolean> settled` | What isImmutable() has settled for a model object: true while it is being settled, which is how a cycle ends. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 79 | 1918 | **type** `public class SaveSlotCheck` | Verifies the slot system: ten saves plus an autosave, the version stamp, and the labels the menu is drawn from. |
+| 79 | 1923 | **type** `public class SaveSlotCheck` | Verifies the slot system: ten saves plus an autosave, the version stamp, and the labels the menu is drawn from. |
 | 83 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 88 | 10 | `static void assertEquals(String label, Object actual, Object expected)` |  |
 | 99 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
@@ -138,7 +138,7 @@
 | 1200 | 6 | `static void assertNoneShared(String label, Walk first, Walk second)` |  |
 | 1207 | 10 | `static void assertNoneUnseen(String label, Walk first, Walk second)` |  |
 
-### 7c.2 to 7c.7: the writer, on a city whose history is as long as a kept one (lines 1218-1996)
+### 7c.2 to 7c.7: the writer, on a city whose history is as long as a kept one (lines 1218-2001)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -149,29 +149,29 @@
 | 1251 | 9 | `static void quietly(Runnable work)` | Runs {@code work} with System.out swallowed, and restores it. |
 | 1262 | 3 | `static void step(Game city)` | One month on the clock, as the window's clock steps it (toggleNextMonth(), no wait), the model's printing swallowed. |
 | 1267 | 5 | `static double median(double[] figures)` | The median of a set of figures. |
-| 1282 | 13 | `static void padHistory(HistorySave history)` | Grows a history to MONTHLY_KEPT months through its own recording path (HistorySave.appendMonth(), which ends in the fold recordMonth() ends in), each series given its own last recorded value, or 0 for an empty one. |
-| 1301 | 10 | `static void wholeOnDisk(String which, Game city, GameFiles files)` | The autosave on disk, read back: its save and its history both whole JSON, the save at the city's month, the history as long as the city's (no month has run since it was asked for). |
-| 1313 | 14 | `static Thread releaseLater(long ms, AtomicLong releasedAt)` | Lets the held writer go after {@code ms}, on a thread of its own; {@code releasedAt} reads 0 until it has (nanoTime, set just before the release). |
-| 1338 | 60 | `static void clockCost(Game city, GameFiles files, long[] now) throws Exception` | 7c.2: the clock. |
-| 1409 | 64 | `static void writtenBehind(Game city, GameFiles files) throws Exception` | 7c.3: what the writer writes is what the old way writes. |
-| 1481 | 26 | `static void oneAtATimeAlwaysWhole(Game city, GameFiles files)` | 7c.4: two autosaves asked for back to back. |
-| 1517 | 72 | `static void theWaits(Game city, GameFiles files) throws Exception` | 7c.5: a load, a numbered save, a skip and Quit each wait for an autosave still in the writer. |
-| 1597 | 42 | `static void aWriteThatFails(Game city, GameFiles files) throws Exception` | 7c.6: a write that fails. |
-| 1649 | 65 | `static void theFloor(Game city, GameFiles files, long[] now) throws Exception` | 7c.7: the floor of real time. |
-| 1722 | 45 | `static Game grownCity(GameFiles files, int months)` | The playtest's city, founded and played to `months`, on `files` (a scratch folder): the founding, the first builds, the schools and the advice, as LongPlaytest plays them, with its map made so the save carries one. |
-| 1789 | 170 | **type** `static final class Walk` | What Gson would write of an object, as sets of identities: every object in it that someone could still change (a list, a map, an array that is not empty, a model object with a non-final field), each with the path it w... |
-| 1803 | 5 | `static Walk of(Object root, String name)` _(in SaveSlotCheck.Walk)_ |  |
-| 1810 | 12 | `static List<String> shared(Walk first, Walk second)` _(in SaveSlotCheck.Walk)_ | The paths, in the first walk, of every mutable object in both: "path (and where the second reached it): class". |
-| 1823 | 7 | `private static boolean isLeaf(Object o)` _(in SaveSlotCheck.Walk)_ |  |
-| 1831 | 3 | `private static boolean isModel(Class<?> c)` _(in SaveSlotCheck.Walk)_ |  |
-| 1836 | 7 | `private static boolean isMutableJdk(Class<?> c)` _(in SaveSlotCheck.Walk)_ | The JDK's collections that Gson writes and anyone can still change. |
-| 1845 | 7 | `private static boolean isImmutableJdk(Class<?> c)` _(in SaveSlotCheck.Walk)_ | List.of and its kin, and Collections' empty and singleton collections: nobody can change them. |
-| 1854 | 12 | `private static List<Field> fieldsOf(Class<?> c)` _(in SaveSlotCheck.Walk)_ | Gson's fields of a model object: declared, up the chain, not static, transient or synthetic. |
-| 1867 | 7 | `private static Object get(Field f, Object o)` _(in SaveSlotCheck.Walk)_ |  |
-| 1876 | 23 | `private boolean isImmutable(Object o)` _(in SaveSlotCheck.Walk)_ | True when nobody can change this value: the same test as the walk's, without recording anything. |
-| 1901 | 5 | `private boolean record(Object o, String path)` _(in SaveSlotCheck.Walk)_ | Records `o` under `path`; false when it was reached before (its first path stands, and it is not walked again). |
-| 1907 | 51 | `private void visit(Object o, String path)` _(in SaveSlotCheck.Walk)_ |  |
-| 1961 | 3 | `static void wholeMonth(String which, Game city, GameFiles files)` | The autosave as `city` stands now: wholeMonth(which, city, files, city.getMonth()). |
-| 1970 | 18 | `static void wholeMonth(String which, Game city, GameFiles files, int month)` | Loads the autosave and plays two single months on (single, so neither writes it again): it carries `month`, its history ends at that month, and after the two its history runs one month at a time to the city's. |
-| 1989 | 7 | `static void cleanUp(Path root)` |  |
+| 1282 | 18 | `static void padHistory(HistorySave history)` | Grows a history to MONTHLY_KEPT months through its own recording path (HistorySave.appendMonth(), which ends in the fold recordMonth() ends in), each series given its own last recorded value, or 0 for an empty one. |
+| 1306 | 10 | `static void wholeOnDisk(String which, Game city, GameFiles files)` | The autosave on disk, read back: its save and its history both whole JSON, the save at the city's month, the history as long as the city's (no month has run since it was asked for). |
+| 1318 | 14 | `static Thread releaseLater(long ms, AtomicLong releasedAt)` | Lets the held writer go after {@code ms}, on a thread of its own; {@code releasedAt} reads 0 until it has (nanoTime, set just before the release). |
+| 1343 | 60 | `static void clockCost(Game city, GameFiles files, long[] now) throws Exception` | 7c.2: the clock. |
+| 1414 | 64 | `static void writtenBehind(Game city, GameFiles files) throws Exception` | 7c.3: what the writer writes is what the old way writes. |
+| 1486 | 26 | `static void oneAtATimeAlwaysWhole(Game city, GameFiles files)` | 7c.4: two autosaves asked for back to back. |
+| 1522 | 72 | `static void theWaits(Game city, GameFiles files) throws Exception` | 7c.5: a load, a numbered save, a skip and Quit each wait for an autosave still in the writer. |
+| 1602 | 42 | `static void aWriteThatFails(Game city, GameFiles files) throws Exception` | 7c.6: a write that fails. |
+| 1654 | 65 | `static void theFloor(Game city, GameFiles files, long[] now) throws Exception` | 7c.7: the floor of real time. |
+| 1727 | 45 | `static Game grownCity(GameFiles files, int months)` | The playtest's city, founded and played to `months`, on `files` (a scratch folder): the founding, the first builds, the schools and the advice, as LongPlaytest plays them, with its map made so the save carries one. |
+| 1794 | 170 | **type** `static final class Walk` | What Gson would write of an object, as sets of identities: every object in it that someone could still change (a list, a map, an array that is not empty, a model object with a non-final field), each with the path it w... |
+| 1808 | 5 | `static Walk of(Object root, String name)` _(in SaveSlotCheck.Walk)_ |  |
+| 1815 | 12 | `static List<String> shared(Walk first, Walk second)` _(in SaveSlotCheck.Walk)_ | The paths, in the first walk, of every mutable object in both: "path (and where the second reached it): class". |
+| 1828 | 7 | `private static boolean isLeaf(Object o)` _(in SaveSlotCheck.Walk)_ |  |
+| 1836 | 3 | `private static boolean isModel(Class<?> c)` _(in SaveSlotCheck.Walk)_ |  |
+| 1841 | 7 | `private static boolean isMutableJdk(Class<?> c)` _(in SaveSlotCheck.Walk)_ | The JDK's collections that Gson writes and anyone can still change. |
+| 1850 | 7 | `private static boolean isImmutableJdk(Class<?> c)` _(in SaveSlotCheck.Walk)_ | List.of and its kin, and Collections' empty and singleton collections: nobody can change them. |
+| 1859 | 12 | `private static List<Field> fieldsOf(Class<?> c)` _(in SaveSlotCheck.Walk)_ | Gson's fields of a model object: declared, up the chain, not static, transient or synthetic. |
+| 1872 | 7 | `private static Object get(Field f, Object o)` _(in SaveSlotCheck.Walk)_ |  |
+| 1881 | 23 | `private boolean isImmutable(Object o)` _(in SaveSlotCheck.Walk)_ | True when nobody can change this value: the same test as the walk's, without recording anything. |
+| 1906 | 5 | `private boolean record(Object o, String path)` _(in SaveSlotCheck.Walk)_ | Records `o` under `path`; false when it was reached before (its first path stands, and it is not walked again). |
+| 1912 | 51 | `private void visit(Object o, String path)` _(in SaveSlotCheck.Walk)_ |  |
+| 1966 | 3 | `static void wholeMonth(String which, Game city, GameFiles files)` | The autosave as `city` stands now: wholeMonth(which, city, files, city.getMonth()). |
+| 1975 | 18 | `static void wholeMonth(String which, Game city, GameFiles files, int month)` | Loads the autosave and plays two single months on (single, so neither writes it again): it carries `month`, its history ends at that month, and after the two its history runs one month at a time to the city's. |
+| 1994 | 7 | `static void cleanUp(Path root)` |  |
 

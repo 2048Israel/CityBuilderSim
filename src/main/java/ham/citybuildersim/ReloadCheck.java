@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import ham.citybuildersim.sectors.Construction;
+import ham.citybuildersim.sectors.RealEstate;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -58,7 +59,9 @@ import java.util.function.Function;
  *      (g) the sudden stop's words and the hot money's peaks; (h) Quarrying's
  *      carry; (i) each market's draws since the month closed, and the seller
  *      rows they put back a month on; (j) a seller-priced market's trades of a
- *      month are off its list the month after.
+ *      month are off its list the month after; (k) Real Estate's count of the
+ *      places it owns and its closed homes' share, right after the load and a
+ *      month on, after a month whose count moved the share (RN2).
  *   4. THE REAL EARTH: sections 1 and 2 at one checkpoint (about month 120)
  *      on LongPlaytest.probeCity(files, "rotterdam"), where earth-2.bin is
  *      named; a line saying it did not run, never a FAIL, where it is not.
@@ -98,6 +101,15 @@ import java.util.function.Function;
  * PriceIndex.SETTLING_MONTHS and its index based. What stays played, and is found in the checkpoints (the hot money's peaks, the
  * seller-priced markets' sales that the played months made): no model setter puts the peaks there between the presses.
  *
+ * RN2 (2026-11-22): the caused point has too, by hand, Real Estate's count of the places it owns lowered by CAUSED_CLOSED
+ * (RealEstate.setOwnedHousingCapacity, the call the month makes), so a share of its debt is a closed home's and the month on's own
+ * count, the portfolio's, moves the count back up and dilutes the share (3k). Before RN2 the count was not saved, so the reload's
+ * first count was one from nothing and kept the share as saved, while the live city's diluted it: on OE1's path, Danzik's
+ * strandedDebtShare read 0.12079056423500815 live and 0.12091110568025631 reloaded, a month whose capacity the path happened to move.
+ * REV-FB16: and a last point, CLOSED_CITY, reloaded after the autosave with Real Estate's count set to none by hand while it owns its
+ * places (every home closed, the share whole): a count of none is a count, and comes back as one, so the reload's first month counts
+ * from nothing as the live city's does, not from the portfolio its rebuild counted.
+ *
  * @author Jerus
  */
 public class ReloadCheck {
@@ -134,8 +146,14 @@ public class ReloadCheck {
     /** The Houses worked before the caused point (FS17, R1g): their materials are reported at the next month's strike. */
     static final int CAUSED_ORDER = 5;
 
+    /** The share of Real Estate's count of the places it owns that the harness takes off by hand on the caused point (RN2): a share of its debt then a closed home's, and the month on's count, the portfolio's, moves the count back up by it. */
+    static final double CAUSED_CLOSED = .05;
+
     /** The name of the caused point's city, which the by-hand fixtures look it up by (FS17). */
     static final String CAUSED_CITY = "Danzik, caused";
+
+    /** The name of the last point, reloaded after the autosave with Real Estate counting no place while it owns some (REV-FB16). */
+    static final String CLOSED_CITY = "Danzik, every home closed";
 
     /** The seller-priced goods no sector sells through its market (FB3, FW6-C): building work is the crews' own points, so its list is empty at every checkpoint and no fixture can ask that it sold. */
     static final Set<Good> NEVER_FILLED = Set.of(Good.BUILDING_WORK);
@@ -237,8 +255,10 @@ public class ReloadCheck {
         Compared history1, history2, save1, save2;
         final Cause revalued = new Cause(), drawn = new Cause(), tally = new Cause(), notes = new Cause(),
                 shares = new Cause(), weights = new Cause(), skipped = new Cause(),
-                stop = new Cause(), carry = new Cause(), draws = new Cause(), sellerPriced = new Cause();
+                stop = new Cause(), carry = new Cause(), draws = new Cause(), sellerPriced = new Cause(), landlord = new Cause();
         int skips, skipsWithOutbreak, skipsSick;
+        /** Real Estate's count of the places it owns in the live city right after the load (RN2), which a month on is read against. */
+        double countAtLoad = Double.NaN;
         /** The hand order the harness made on the live city before this point (FB3, FW6-C), or null: a point with one is the caused point. */
         HandOrder order;
 
@@ -324,8 +344,8 @@ public class ReloadCheck {
      * presses, a month just closed): a sudden stop begun (the words are a String no array carries); a hand order, half of what the
      * makers of the good they hold the most of have in stock, drawn as the player's orders draw (Game.drawMaterials(), drawBitumen(),
      * fit(): the builders the buyer, their purchase booked), the seller rows of which only the draws list can put back; and,
-     * when no checkpoint's city carried any, a carry of limestone placed. Returns the hand order (null if no maker holds any
-     * stock of a traded good the builders do not make).
+     * when no checkpoint's city carried any, a carry of limestone placed. Since RN2 too, Real Estate's count of the places it owns
+     * lowered by CAUSED_CLOSED. Returns the hand order (null if no maker holds any stock of a traded good the builders do not make).
      */
     static HandOrder causeTheConditions(Game g, boolean placeACarry) {
         causeBuildingDraw(g);
@@ -375,6 +395,10 @@ public class ReloadCheck {
         sharesNow.put(sharer.key(), CAUSED_SHARES.clone());
         sharesBefore.put(sharer.key(), CAUSED_SHARES_BEFORE.clone());
         g.getSectorBooks().restoreShares(sharesNow, sharesBefore);
+        // RN2: ...and Real Estate's count of the places it owns lowered by hand, by the call the month makes: a share of its debt is then a closed
+        // home's, and the month on's own count (the portfolio's, the Houses just ordered among them) moves the count back up and dilutes the share.
+        RealEstate landlord = g.getSectors().realEstate();
+        landlord.setOwnedHousingCapacity(landlord.getOwnedHousingCapacity() * (1 - CAUSED_CLOSED));
         if (most == null) return null;
         GoodsMarket market = g.getMarkets().get(most);
         int before = market.monthsDraws().size();
@@ -506,6 +530,17 @@ public class ReloadCheck {
         p.weights.saw("indexes based", g.getPriceIndex().isBased() ? 1 : 0);
         p.weights.compare("the price index: rent weight", g.getPriceIndex().getRentWeight(), back.getPriceIndex().getRentWeight());
         p.weights.compare("the price index: food weight", g.getPriceIndex().getFoodWeight(), back.getPriceIndex().getFoodWeight());
+        // (k) RN2: Real Estate's count of the places it owns, and the share of its debt whose homes are closed.
+        RealEstate landlord = g.getSectors().realEstate(), landlordBack = back.getSectors().realEstate();
+        p.countAtLoad = landlord.getOwnedHousingCapacity();
+        p.landlord.saw("landlords with a closed homes' share", landlord.strandedDebtShare() > 0 ? 1 : 0);
+        long owned = g.getBuildingManager().getCapacityInPortfolioBySector(landlord.key());
+        p.landlord.saw("...with a count under the places they own", p.countAtLoad > 0 && p.countAtLoad < owned ? 1 : 0);
+        // REV-FB16: ...and one counting none, every home closed, while it owns places: the count a save of none must bring back as none.
+        p.landlord.saw("landlords counting no place while they own some, their share whole",
+                p.countAtLoad == 0 && owned > 0 && landlord.strandedDebtShare() == 1 ? 1 : 0);
+        p.landlord.compare("Real Estate: the places it owns", p.countAtLoad, landlordBack.getOwnedHousingCapacity());
+        p.landlord.compare("Real Estate: the closed homes' share", landlord.strandedDebtShare(), landlordBack.strandedDebtShare());
     }
 
     /** (i) One market's draws since the month closed, the live city's against the reloaded city's: how many, and each one's seller, buyer, units and price. */
@@ -544,7 +579,8 @@ public class ReloadCheck {
 
     /**
      * A month on: (a) each sector book's stock revaluation and whether it was counted, (b) Construction's materials
-     * drawn at home and imported in the month last struck, and (c) the investment notes the investors left.
+     * drawn at home and imported in the month last struck, (k) Real Estate's count and share (RN2), and (c) the investment
+     * notes the investors left.
      */
     private static void observeAMonthOn(Point p, Game g, Game back) {
         for (Sector s : g.getSectors().all()) {
@@ -575,6 +611,13 @@ public class ReloadCheck {
                 p.draws.compare(t.seller() + " " + t.good() + ": units sold at home a month on", liveSold, reSold);
             }
         }
+
+        // (k) RN2: the month's own count, and the share it moved; a count that moved is the condition the reload's first count must follow.
+        RealEstate landlord = g.getSectors().realEstate(), landlordBack = back.getSectors().realEstate();
+        p.landlord.saw("landlords whose count moved in the month on, their share with it",
+                landlord.getOwnedHousingCapacity() != p.countAtLoad && landlord.strandedDebtShare() > 0 ? 1 : 0);
+        p.landlord.compare("Real Estate: the places it owns, a month on", landlord.getOwnedHousingCapacity(), landlordBack.getOwnedHousingCapacity());
+        p.landlord.compare("Real Estate: the closed homes' share, a month on", landlord.strandedDebtShare(), landlordBack.strandedDebtShare());
 
         Map<String, String> liveNotes = g.getLastInvestments(), reNotes = back.getLastInvestments();
         p.notes.saw("investment notes the live city left", liveNotes.size());
@@ -813,11 +856,22 @@ public class ReloadCheck {
         List<String> handTrades = new ArrayList<>();
         for (Good good : Good.values()) if (!good.traded()) handTrades.add(handTradeSaw(good));
         onCausedPoint(caused, "3j", p -> p.sellerPriced, handTrades.toArray(new String[0]));
+        cause(points, p -> p.landlord, "3k", "right after the load and a month on",
+                "Real Estate's count of the places it owns and its closed homes' share are the live city's, and the month on's count moves the share as the live city's does");
+        // RN2: the caused point's Real Estate had its count lowered by hand (CAUSED_CLOSED), so its share is above zero and the month on's count moved it.
+        onCausedPoint(caused, "3k", p -> p.landlord, "landlords with a closed homes' share", "...with a count under the places they own",
+                "landlords whose count moved in the month on, their share with it");
+        // REV-FB16: the last point's Real Estate had its count set to none by hand while it owned places, and the month on counted them.
+        onCausedPoint(pointOf(points, CLOSED_CITY), "3k, every home closed", p -> p.landlord,
+                "landlords counting no place while they own some, their share whole", "landlords whose count moved in the month on, their share with it");
     }
 
     /** The caused point (FS17): the city after its last checkpoint, with the causes set by hand, or null. */
-    static Point causedPoint(List<Point> points) {
-        for (Point p : points) if (p.problem == null && CAUSED_CITY.equals(p.city)) return p;
+    static Point causedPoint(List<Point> points) { return pointOf(points, CAUSED_CITY); }
+
+    /** The point of the city named, compared without a problem, or null (REV-FB16: the caused point's and the last one's). */
+    static Point pointOf(List<Point> points, String city) {
+        for (Point p : points) if (p.problem == null && city.equals(p.city)) return p;
         return null;
     }
 
@@ -839,7 +893,7 @@ public class ReloadCheck {
     /** A cause whose fixture the caused point supplies (FB3, FW6-C): the line says what the checkpoints alone showed. */
     static void causedCause(List<Point> points, Function<Point, Cause> which, String id, String when, String label) {
         Map<String, Integer> saw = sawTogether(points, which), natural = new LinkedHashMap<>();
-        for (Point p : points) if (p.problem == null && p.order == null) which.apply(p).saw.forEach((k, v) -> natural.merge(k, v, Integer::sum));
+        for (Point p : points) if (p.problem == null && p.order == null && !CLOSED_CITY.equals(p.city)) which.apply(p).saw.forEach((k, v) -> natural.merge(k, v, Integer::sum));
         check("fixture " + id + ": the live city exercised it", allAbove0(saw),
                 seen(saw) + "; the checkpoints alone showed " + seen(natural) + ", the rest is the caused point's (a stop started, a hand order made between the presses"
                         + ", and a carry placed if no checkpoint had one)");
@@ -987,6 +1041,11 @@ public class ReloadCheck {
         long a0 = System.nanoTime();
         Autosaved autosaved = autosaveAndReload(files, g);
         System.out.printf("  autosaved at month %d, loaded from the autosave and compared (%.0f s)%n", autosaved.month, (System.nanoTime() - a0) / 1e9);
+        // REV-FB16: ...and last, Real Estate counting no place (every home closed, the share whole) while it owns the portfolio's places, reloaded.
+        long z0 = System.nanoTime();
+        g.getSectors().realEstate().setOwnedHousingCapacity(0);
+        points.add(reload(files, g, CLOSED_CITY));
+        System.out.printf("  Real Estate's count set to none, saved, reloaded and compared at month %d (%.0f s)%n", points.get(points.size() - 1).month, (System.nanoTime() - z0) / 1e9);
         Point earth = null;
         if (earthHere()) {
             GameFiles earthFiles = GameFiles.scratch("reloadcheck-earth");

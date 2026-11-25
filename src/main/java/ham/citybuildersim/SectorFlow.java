@@ -65,7 +65,7 @@ public final class SectorFlow {
     /**
      * One good that came out, or a part of its revenue that is not a good.
      *
-     * @param good        the good, or null for work billed (Sector.otherRevenueParts())
+     * @param good        the good, or null for work billed (Sector.otherRevenueParts()) or sold abroad (servicesSoldParts(), FC2)
      * @param name        what it is called
      * @param capacity    nameplate a month (getCapacity()); for a good the seller prices, what the Build group's
      *                    note says it can serve (capacityNote()); NaN where neither says
@@ -211,6 +211,12 @@ public final class SectorFlow {
             if (e.getValue() == null || e.getValue() == 0) continue;
             outs.add(new Out(null, e.getKey(), Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
                     Double.NaN, Double.NaN, Double.NaN, e.getValue(), 0, Double.NaN, Double.NaN));
+        }
+        // ...and the work sold abroad (FC2; Sector.servicesSoldParts()): no good behind it, all of its money abroad.
+        for (Map.Entry<String, Double> e : sector.servicesSoldParts().entrySet()) {
+            if (e.getValue() == null || e.getValue() == 0) continue;
+            outs.add(new Out(null, e.getKey(), Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN,
+                    Double.NaN, Double.NaN, Double.NaN, 0, e.getValue(), Double.NaN, Double.NaN));
         }
 
         double points = Double.NaN, busy = Double.NaN;

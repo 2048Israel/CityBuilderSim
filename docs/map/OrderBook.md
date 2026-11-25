@@ -1,6 +1,6 @@
 # OrderBook.java - 470 lines · 54 methods · 1 constants · model
 
-`ham/citybuildersim/OrderBook.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OrderBook.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > A limit-order book for one instrument: buy and sell orders from named
 > participants, each a price and a quantity, matched by price-time priority.
@@ -53,7 +53,7 @@
 
 **Uses:** [SaveCopy](SaveCopy.md) (2), [MoneyAudit](MoneyAudit.md) (1)
 
-**Used by (22):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [HistoryCheck](HistoryCheck.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [OrderBookCheck](OrderBookCheck.md), [OwnerCheck](OwnerCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [ShortSellingCheck](ShortSellingCheck.md)
+**Used by (25):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [CapitalGainsCheck](CapitalGainsCheck.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [FinancesScreen](FinancesScreen.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [HistoryCheck](HistoryCheck.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [OrderBookCheck](OrderBookCheck.md), [OwnerCheck](OwnerCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [ShortSellingCheck](ShortSellingCheck.md)
 
 ## Sections
 

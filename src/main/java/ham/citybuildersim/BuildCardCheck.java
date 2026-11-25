@@ -238,6 +238,7 @@ public class BuildCardCheck {
         theGates(g);
         theVerdict(g);
         theKinds(g);
+        shortWords();
         theRun(g);
         theServed(g);
         theInterest(g);
@@ -301,18 +302,20 @@ public class BuildCardCheck {
                 }
             }
         }
-        // ...every building the city knows: in a city founded today's way the catalogue less the near future's (R6b's call 1), which it never knows and no card shows.
-        int catalogue = 0, nearFuture = 0;
+        // ...every building the city knows: in a city founded today's way the catalogue less the near future's (R6b's call 1), which it never knows and no card shows,
+        // and since PW2 less the power plants whose year has not come (Jerus's Q2: each from its since), shown on none either.
+        int catalogue = 0, nearFuture = 0, notYet = 0;
         boolean nearOnNone = true;
         Set<String> every = new HashSet<>(market);
         every.addAll(city);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (g.getBuildingManager().isTemplateKnown(t)) catalogue++;
             else if (ResearchCatalog.nearFuture(t.getSinceText())) { nearFuture++; nearOnNone &= !every.contains(t.getName()); }
+            else if (t.getCategory() == BuildingType.ELECTRICITY && !t.knownAt(g.getMonth())) { notYet++; nearOnNone &= !every.contains(t.getName()); }
         }
         assertTrue("every building in the catalogue the city knows (" + catalogue + ") is on a card", every.size() == catalogue);
-        assertTrue("...and the near future's (" + nearFuture + "), which a city founded today's way never knows, on none",
-                nearFuture > 0 && nearFuture == g.getBuildingManager().getTemplates().size() - catalogue && nearOnNone);
+        assertTrue("...and the near future's (" + nearFuture + ") and the power plants not yet built anywhere (" + notYet + "), which the city does not know, on none",
+                nearFuture > 0 && nearFuture + notYet == g.getBuildingManager().getTemplates().size() - catalogue && nearOnNone);
         assertTrue("...a market building on exactly one, in one group (" + market.size() + " market buildings)",
                 marketTwice == 0 && market.size() + city.size() == catalogue);
         assertTrue("...and every card and group has a name", named);
@@ -989,7 +992,7 @@ public class BuildCardCheck {
     static final Object[][] KIND_EXAMPLES = {
             { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind.BUILDING },
             { "Built 1 House on an insured mortgage - 73 households need a door a child is allowed in", BuildCard.WordKind.BUILDING },
-            { "Sold 3 Fabrication Shop - six months of losses (plot back to the city for $1,200)", BuildCard.WordKind.SELLING },
+            { "Scrapped 3 Fabrication Shop - six months of losses (plot back to the city for $1,200)", BuildCard.WordKind.SELLING },
             { "Sold 1 Diner to the city by compulsory purchase, for $40,000", BuildCard.WordKind.SELLING },
             { "Holding: no land - needs 0.0446 km², 0.0301 km² free", BuildCard.WordKind.LAND },
             { "Holding: the city is short of homes - ground is worth more to live on", BuildCard.WordKind.LAND },
@@ -1094,7 +1097,9 @@ public class BuildCardCheck {
         assertTrue("an order on site is BUILDING whatever the word, and the land-blocked list is LAND",
                 BuildCard.wordKind("Holding: no margin in it", true, false) == BuildCard.WordKind.BUILDING
                 && BuildCard.wordKind("Holding: no margin in it", false, true) == BuildCard.WordKind.LAND
-                && BuildCard.wordKind("Sold 1 Diner - losses", false, true) == BuildCard.WordKind.SELLING);
+                && BuildCard.wordKind("Scrapped 1 Diner - losses", false, true) == BuildCard.WordKind.SELLING
+                && BuildCard.wordKind("Sold 1 Diner to the city by compulsory purchase", false, true) == BuildCard.WordKind.SELLING
+                && BuildCard.wordKind("Scrapped 1 Diner - losses", true, true) == BuildCard.WordKind.BUILDING);
 
         // One sector's investors: its own buildings, its word, and building while investors are.
         boolean own = true;
@@ -1134,6 +1139,19 @@ public class BuildCardCheck {
         assertTrue("...and a sector with nothing on site does not: " + mines.kind() + ", " + mines.word(),
                 !mines.theirs() && mines.kind() == BuildCard.wordKind(mines.word(), false, mines.landBlocked()));
     }
+    /** The compact card's text-only reader, without constructing a screen or starting the toolkit. */
+    static void shortWords() throws ReflectiveOperationException {
+        var shortWord = Class.forName("ham.citybuildersim.ui.SectorScreen").getDeclaredMethod("shortWord", String.class);
+        shortWord.setAccessible(true);
+        assertTrue("the compact card shortens Scrapped at the existing dash, keeping quantity and building",
+                "Scrapped 3 Fabrication Shop".equals(shortWord.invoke(null, (String) KIND_EXAMPLES[2][0])));
+        String sale = (String) KIND_EXAMPLES[3][0];
+        assertTrue("the compact card keeps the full compulsory-purchase Sold line without a dash",
+                sale.equals(shortWord.invoke(null, sale)));
+        assertTrue("the compact card still shortens Built at the existing dash",
+                "Built 2 Industrial Bakery".equals(shortWord.invoke(null, (String) KIND_EXAMPLES[0][0])));
+    }
+
     /* ============================ 9. A RUN OF ORDERS ============================ */
 
     static Map<BuildingsTemplate, Long> run(Object... pairs) {

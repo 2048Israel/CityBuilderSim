@@ -1,6 +1,6 @@
-# MoneyWordsCheck.java - 328 lines · 16 methods · 5 constants · harnesses
+# MoneyWordsCheck.java - 544 lines · 20 methods · 5 constants · harnesses
 
-`ham/citybuildersim/MoneyWordsCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MoneyWordsCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The words of every page, read off the nodes, in a city whose money is written after the figure (FM1). Not part of the game.
 > 
@@ -17,61 +17,67 @@
 >      section 2 without having been looked at.
 >   2. On the Krona's city no string holds a "$" except inside a foreign mark (US$, C$, A$: ForeignAccounts.MONEY_MARK, and
 >      Currency.FOREIGN_SYMBOL). Each string is printed once, with the page it was first read on, as one FAIL line.
+>   3. HS3's household page names both adult stages and their own ledgers, two former tiers and an owner family; caused estates,
+>      actual profitable fills and dividends show the public model's figures, kept equal to built new and through a real redraw.
 > 
 > The city is the playtest's village founded by hand with the money (LongPlaytest.founding() and its first builds) and played
 > MONTHS months, no more: the pages need figures, not a history.
 
-**Uses:** [KeptBench](KeptBench.md) (15), [LongPlaytest](LongPlaytest.md) (13), [Currency](Currency.md) (9), [Game](Game.md) (7), [Founding](Founding.md) (1), [GameFiles](GameFiles.md) (1), [Sectors](Sectors.md) (1), [Sector](Sector.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [KeptCheck](KeptCheck.md) (1)
+**Uses:** [KeptBench](KeptBench.md) (20), [PayTier](PayTier.md) (17), [LongPlaytest](LongPlaytest.md) (14), [Currency](Currency.md) (12), [FamilyStructure](FamilyStructure.md) (11), [Game](Game.md) (9), [DebtStatistics](DebtStatistics.md) (9), [Household](Household.md) (7), [AdultStage](AdultStage.md) (6), [ExchangeCheck](ExchangeCheck.md) (5), [Money](Money.md) (5), [Exchange](Exchange.md) (4), [OrderBook](OrderBook.md) (4), [GameFiles](GameFiles.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [FamilyModel](FamilyModel.md) (2), [Equity](Equity.md) (2), [FundLedgerCheck](FundLedgerCheck.md) (2), [Founding](Founding.md) (1), [Sectors](Sectors.md) (1), [Sector](Sector.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [KeptCheck](KeptCheck.md) (1), [BuildScreen](BuildScreen.md) (1), [HouseholdMemoryCheck](HouseholdMemoryCheck.md) (1), [WorkingHousehold](WorkingHousehold.md) (1), [PopulationCohorts](PopulationCohorts.md) (1), [Bank](Bank.md) (1), [DebtManager](DebtManager.md) (1), [TaxPolicy](TaxPolicy.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 114 | · reading the words |
-| 295 | · · 1 |
-| 308 | · · 2 |
+| 116 | · reading the words |
+| 297 | · · 1 |
+| 310 | · · 2 |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 66 | `MoneyWordsCheck.MONTHS` | `24` | The months the two cities are played to before their pages are drawn: enough for a bank, a ledger and a trade, and for the pages to hold figures. |
-| 69 | `MoneyWordsCheck.AT_LEAST` | `500` | The fewest distinct strings holding a city's own sign that its pages must show for the fixture to count as drawn: a page that drew nothing would pass section 2 unread. |
-| 72 | `MoneyWordsCheck.PRINTED` | `60` | The most offending strings section 2 prints, each as a FAIL line; the rest are only counted. |
-| 75 | `MoneyWordsCheck.AROUND` | `70` | How much of an offending string is printed round the "$": a window, so a long paragraph still says where. |
-| 77 | `MoneyWordsCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 68 | `MoneyWordsCheck.MONTHS` | `24` | The months the two cities are played to before their pages are drawn: enough for a bank, a ledger and a trade, and for the pages to hold figures. |
+| 71 | `MoneyWordsCheck.AT_LEAST` | `500` | The fewest distinct strings holding a city's own sign that its pages must show for the fixture to count as drawn: a page that drew nothing would pass section 2 unread. |
+| 74 | `MoneyWordsCheck.PRINTED` | `60` | The most offending strings section 2 prints, each as a FAIL line; the rest are only counted. |
+| 77 | `MoneyWordsCheck.AROUND` | `70` | How much of an offending string is printed round the "$": a window, so a long paragraph still says where. |
+| 79 | `MoneyWordsCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 55 | `private static int fails, checks` |  |
+| 57 | `private static int fails, checks` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 276 | **type** `public class MoneyWordsCheck` | The words of every page, read off the nodes, in a city whose money is written after the figure (FM1). |
-| 57 | 1 | `static void check(String label, boolean ok)` |  |
-| 59 | 5 | `static void check(String label, boolean ok, String detail)` |  |
-| 79 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
-| 86 | 1 | `static Currency krona()` | The Krona: the money of section 2's city, written "2.6M kr". |
-| 89 | 24 | `static Game city(String label, Currency money)` | The playtest's village founded with `money` (the founding's own when null), its first builds and months played, the game's narration off. |
+| 55 | 490 | **type** `public class MoneyWordsCheck` | The words of every page, read off the nodes, in a city whose money is written after the figure (FM1). |
+| 59 | 1 | `static void check(String label, boolean ok)` |  |
+| 61 | 5 | `static void check(String label, boolean ok, String detail)` |  |
+| 81 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
+| 88 | 1 | `static Currency krona()` | The Krona: the money of section 2's city, written "2.6M kr". |
+| 91 | 24 | `static Game city(String label, Currency money)` | The playtest's village founded with `money` (the founding's own when null), its first builds and months played, the game's narration off. |
 
-### reading the words (lines 114-328)
+### reading the words (lines 116-544)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 117 | 29 | `static void words(Node n, Set<String> out, Map<Node, Boolean> seen)` | Every word on a node and under it: a label's text and graphic, a text, a field's text and prompt, a tooltip, a tab, a choice. |
-| 147 | 3 | `private static void add(Set<String> out, String s)` |  |
-| 152 | 1 | **type** `record Named(String name, Callable<List<Node>> draw)` | A page: the name the lines call it, and how it is drawn - the nodes it left on the bench. |
-| 155 | 8 | `static Named page(KeptBench bench, String name, KeptBench.Page p, Runnable after)` | One of KeptBench's pages, on the page it opens on and drawn from nothing kept: what `after` sets, then the nodes. |
-| 165 | 45 | `static List<Named> pages(Game g, KeptBench bench)` | Every page KeptBench can draw, for the city it is built on. |
-| 212 | 21 | `static Map<String, Set<String>> read(Game g, String label) throws Exception` | What a city's pages say, page by page: each page once, the strings in the order they were read; a page that cannot be drawn is told on its own line. |
-| 235 | 5 | `static Set<String> distinct(Map<String, Set<String>> said)` | The distinct strings of every page. |
-| 242 | 6 | `static List<String> foreignMarks()` | The foreign moneys' marks that hold a "$": the one a vault's figures are written with, and ForeignAccounts' others. |
-| 250 | 11 | `static int stray(String s, List<String> marks)` | Where in the string a "$" is that is not inside a foreign mark, or -1. |
-| 263 | 4 | `static String showing(String s, int at)` | A string for a line: where the stray sign is, a window of it, its newlines shown. |
-| 268 | 16 | `public static void main(String[] args) throws Exception` |  |
-| 285 | 43 | `static void run() throws Exception` |  |
+| 119 | 29 | `static void words(Node n, Set<String> out, Map<Node, Boolean> seen)` | Every word on a node and under it: a label's text and graphic, a text, a field's text and prompt, a tooltip, a tab, a choice. |
+| 149 | 3 | `private static void add(Set<String> out, String s)` |  |
+| 154 | 1 | **type** `record Named(String name, Callable<List<Node>> draw)` | A page: the name the lines call it, and how it is drawn - the nodes it left on the bench. |
+| 157 | 8 | `static Named page(KeptBench bench, String name, KeptBench.Page p, Runnable after)` | One of KeptBench's pages, on the page it opens on and drawn from nothing kept: what `after` sets, then the nodes. |
+| 167 | 45 | `static List<Named> pages(Game g, KeptBench bench)` | Every page KeptBench can draw, for the city it is built on. |
+| 214 | 21 | `static Map<String, Set<String>> read(Game g, String label) throws Exception` | What a city's pages say, page by page: each page once, the strings in the order they were read; a page that cannot be drawn is told on its own line. |
+| 237 | 5 | `static Set<String> distinct(Map<String, Set<String>> said)` | The distinct strings of every page. |
+| 244 | 6 | `static List<String> foreignMarks()` | The foreign moneys' marks that hold a "$": the one a vault's figures are written with, and ForeignAccounts' others. |
+| 252 | 11 | `static int stray(String s, List<String> marks)` | Where in the string a "$" is that is not inside a foreign mark, or -1. |
+| 265 | 4 | `static String showing(String s, int at)` | A string for a line: where the stray sign is, a window of it, its newlines shown. |
+| 270 | 16 | `public static void main(String[] args) throws Exception` |  |
+| 287 | 45 | `static void run() throws Exception` |  |
+| 338 | 15 | `static void buildersShortTyped() throws Exception` | REV-FC2b: the builders' tooltip (BuildScreen.buildersShortInfo(), the build card's line and the Construction page's gauge) names the city's money as an argument of its format. |
+| 355 | 174 | `static void householdMoney() throws Exception` | HS3: initial census/stocks, then native estates, fills and dividends; no displayed result is assigned. |
+| 530 | 5 | `static Set<String> pageWords(KeptBench bench)` |  |
+| 536 | 8 | `static boolean lineShows(KeptBench bench, String label, String amount)` |  |
 

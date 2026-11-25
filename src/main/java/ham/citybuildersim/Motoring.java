@@ -238,6 +238,9 @@ public final class Motoring {
     /** What one went for. Zero in a month when nobody offered one. */
     public double getUsedCarPrice()        { return usedCarPrice; }
 
+    /** ...restored from a save (PW2; DataSave.usedCarPrice): the month's figure the households' cars are marked at until the next month clears its own. */
+    void restoreUsedCarPrice(double price)  { usedCarPrice = Math.max(0, price); }
+
     /** What the buyers paid for them, all in. */
     public double getUsedCarSpend()        { return usedCarSpend; }
 
@@ -293,7 +296,7 @@ public final class Motoring {
          * and a month of fuel - against a month's pass. See THE FUEL, AND THE
          * BUYER WEIGHS THE FARE.
          */
-        double fullCost = carPayment(asking, bank.householdRate(game.getDebtManager().getPolicyRate()))
+        double fullCost = carPayment(asking, bank.cardRate(game.getDebtManager().getPolicyRate()))
                 + TaxPolicy.JOURNEYS_A_MONTH * roads.getFuelPerJourney();
         double pass = game.getEconomyManager().getTaxPolicy().monthlyFare();
         prefersTransit = InfrastructureManager.transitChosen(fullCost, pass);
@@ -354,7 +357,19 @@ public final class Motoring {
                     // ...each household's want read at the price the draw was sized at, so the cars
                     // placed are the cars drawn, every one paid for (OE1: AUTO2 seed 6 m655 drew 26, placed 25).
                     householdCarSpend = householdBalance.takeCars(took.units(), paid, perCar, ceiling);
-                    householdCarImports = took.importCost();
+                    /*
+                     * ...AND THE IMPORT HALF IS STRUCK FROM WHAT THEY PAID (CI1, 2026-11-22). The spend is
+                     * takeCars()' sum of the cells' cars at cost / units, and the draw's importCost() is
+                     * the ship's one product: two roundings of one sum, so a month of cars all off a ship
+                     * read 13.07876547080566 paid against 13.078765470805662 imported (OE1's notes,
+                     * section 10), and CarCheck's "a month of car sales is a month of real money" took
+                     * imported over paid. The import half is the spend times the draw's import share,
+                     * which is exactly one when the shelf sold none (cost() is localCost + importCost,
+                     * and 0 + x is x) and never over one, so imported is paid when every car came off a
+                     * ship and never more than paid by construction.
+                     */
+                    double importShare = took.cost() > 0 ? took.importCost() / took.cost() : 0;
+                    householdCarImports = householdCarSpend * importShare;
                     /*
                      * AND THE BANK FINDS THE REST OF IT (2026-09-17).
                      *

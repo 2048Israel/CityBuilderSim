@@ -1,6 +1,6 @@
-# EarthTerrain.java - 3,287 lines · 171 methods · 63 constants · model
+# EarthTerrain.java - 3,311 lines · 172 methods · 64 constants · model
 
-`ham/citybuildersim/EarthTerrain.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EarthTerrain.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The real Earth's ground on the world's plots: a tile, a plot, a line or a region at a time, each world cell's land and forest (the cells pass), the founding site snapped to dry ground, and a point's sea - spec-earth 3's detail below the data, drawn from earth-1 through EarthData and EarthProj.
 > 
@@ -64,7 +64,7 @@
 > centre from the shares there and the octaves wider than a pixel, the
 > ... (61 more lines in the source)
 
-**Uses:** [World](World.md) (190), [EarthData](EarthData.md) (95), [EarthProj](EarthProj.md) (37), [Resource](Resource.md) (13), [Geology](Geology.md) (7), [MapFrame](MapFrame.md) (4)
+**Uses:** [World](World.md) (191), [EarthData](EarthData.md) (95), [EarthProj](EarthProj.md) (37), [Resource](Resource.md) (13), [Geology](Geology.md) (7), [MapFrame](MapFrame.md) (4)
 
 **Used by (28):** [BridgeCheck](BridgeCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthFoundingCheck](EarthFoundingCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [FB13Check](FB13Check.md), [GatewayCheck](GatewayCheck.md), [Gateways](Gateways.md), [GlobeCheck](GlobeCheck.md), [GlobeFrame](GlobeFrame.md), [GlobePicture](GlobePicture.md), [HydroSites](HydroSites.md), [IslandLinkCheck](IslandLinkCheck.md), [IslandRailCheck](IslandRailCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandSellers](LandSellers.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [MapCheck](MapCheck.md), [MapTiles](MapTiles.md), [NewGameCheck](NewGameCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReliefRenders](ReliefRenders.md), [SaveFileCheck](SaveFileCheck.md), [SlopeCheck](SlopeCheck.md), [World](World.md)
 
@@ -82,12 +82,12 @@
 | 959 | A PLOT, A LINE, A REGION AND A POINT'S SEA |
 | 1136 | THE RELIEF: a second plane beside the cover (ET1, spec-earth2-terrain 3.1) |
 | 1280 | THE LANDMASS OF A PLOT (ET5, 2026-10-25; the ET5 design, D2 to D4) |
-| 1698 | RIVERS AND SMALL LAKES, PROJECTED: a 1-degree tile's, and a district's |
-| 1843 | THE FAR VIEW'S NODES (0.7.119, batch E5; spec-earth 3, "Far views") |
-| 2218 | · the camera: where the far rule's pixels lie on the planet (0.7.132, batch E8; spec-globe 3.5) |
-| 2801 | THE CELLS PASS AND THE SNAP (the world's build) |
-| 2816 | THE SEA'S DEPTH (0.7.121, batch E4; ET1, 2026-10-24: spec-earth2-terrain 7) |
-| 2975 | FIELD LAND AT A POINT (0.8.12, batch EG1; spec-earth2-terrain 8.5) |
+| 1722 | RIVERS AND SMALL LAKES, PROJECTED: a 1-degree tile's, and a district's |
+| 1867 | THE FAR VIEW'S NODES (0.7.119, batch E5; spec-earth 3, "Far views") |
+| 2242 | · the camera: where the far rule's pixels lie on the planet (0.7.132, batch E8; spec-globe 3.5) |
+| 2825 | THE CELLS PASS AND THE SNAP (the world's build) |
+| 2840 | THE SEA'S DEPTH (0.7.121, batch E4; ET1, 2026-10-24: spec-earth2-terrain 7) |
+| 2999 | FIELD LAND AT A POINT (0.8.12, batch EG1; spec-earth2-terrain 8.5) |
 
 ## Constants
 
@@ -134,28 +134,29 @@
 | 713 | `EarthTerrain.SCRATCH` | `ThreadLocal.withInitial(Scratch : : new)` | Each thread's own working arrays and readers, so tiles drawn on several threads at once share none. |
 | 1305 | `EarthTerrain.LANDMASS_REACH` | `8` | How many 15" cells either way (east-west and north-south, about 3.7 km north-south) a dry plot on a cell the layer calls no land looks for the nearest land cell: 8. |
 | 1308 | `EarthTerrain.RESOLVED_KEPT` | `65_536` | Cells whose nearest land cell is kept (resolvedCell()) before the memory is cleared: 65,536. |
-| 1639 | `EarthTerrain.FarShares.OF` | `new WeakHashMap<>()` |  |
-| 1641 | `EarthTerrain.FarShares.NONE` | `new byte [ 0 ]` | A tile built and found flat or without land, kept in place of an array. |
-| 1734 | `EarthTerrain.NO_WATER` | `new Water()` | A district's water where it lies off the world or off the planet: no river and no small lake. |
-| 1848 | `EarthTerrain.DITHER_STRIDE` | `1<<NOISE_HI` | A far node's forest is dithered by a hash from this stride, in plots: 2^NOISE_HI, 16 (480 m) - where no octave of the forest's noise is wider than a pixel, so the ranked noise stands at its mean and would draw forest ... |
-| 1851 | `EarthTerrain.FAR_RIVER_HALF_PX` | `RIVER_MIN_HALF` | A river's least half-width on a far node, in pixels: RIVER_MIN_HALF, 0.75 - a far pixel is to the node what a plot is to a tile, so a river is stroked at least 1.5 px wide, past the 0.71 px (half a pixel's diagonal) u... |
-| 1866 | `EarthTerrain.FAR_RIVER_SHARE` | `30.0 / 2500` | The least width, as a share of a far pixel, at which a river is stroked: 30 / 2,500, 0.012 (★E5) - the narrowest river in the data, GRWL's 30 m (spec-earth 1), at the study's far render of 2.5 km a pixel (spec-earth 3... |
-| 1869 | `EarthTerrain.FAR_BLEND_PX` | `8` | From WATER_STRIDE a far node's pixels take their latitude and longitude from blocks of this many a side, each blended from its four corners (EarthProj.blend(), the tile's way): 8 - measured, at worst 0.15 of a pixel o... |
-| 1881 | `EarthTerrain.FAR_TILE_BLEND_STRIDE` | `64` | From this stride, in plots, a far node places a 1-degree tile's river vertices and small lakes bilinear between the tile's four corners, projected exactly, rather than projecting each: 64 (★E5) - measured at worst 0.0... |
-| 1884 | `EarthTerrain.NODE_EDGE_POINTS` | `32` | Points along each edge of a far node its box of 1-degree tiles is found from: 32 - at the widest node (1,024 plots a pixel, 3,932 km a side) one every 123 km, where a straight edge strays from its chord by a fraction ... |
-| 1887 | `EarthTerrain.LONGEST_SEGMENT_M` | `17_915` | The longest river segment in earth-1, in metres on the sphere: 17,915, measured over all its tiles (MapCheck 10 holds it when the file is named). |
-| 1899 | `EarthTerrain.RIM_M` | `(double) LONGEST_SEGMENT_M * LONGEST_SEGMENT_M /(4 * EarthProj.RADIUS_M)` | A river segment with an end this close to the planet's rim is not stroked, in metres: LONGEST_SEGMENT_M^2 / 4R, 12.6 (★E5). |
-| 1902 | `EarthTerrain.F_DITHER` | `0xD17E4L` | The far view's dither's stream. |
-| 2037 | `EarthTerrain.FAR_COUNTS` | `ThreadLocal.withInitial(() -> new long [ 3 ])` | How many river segments and small lakes the last far node on this thread drew from, and how many 1-degree tiles it read: what a harness prints. |
-| 2296 | `EarthTerrain.Camera.NO_SHIFT` | `{ 0 }` | The one shift a camera whose x does not wrap draws a shape at: none, the shape where it is. |
-| 2376 | `EarthTerrain.GLOBE_DITHER_DEG` | `4.0 / 60` | The globe's dither cell (spec-globe 3.5: "the dither's hash comes from a fixed latitude-longitude grid at the pixel's scale, so the forest does not shimmer as the globe turns"): rows of GLOBE_DITHER_DEG x 2^level degr... |
-| 2379 | `EarthTerrain.DITHER_WIDENS` | `new double [ 30 ]` | The latitudes past which a dither cell is 2^m times as wide in longitude as tall, m = 1, 2, ...: where cos lat falls to 2^-m. |
-| 2386 | `EarthTerrain.F_GLOBE_DITHER` | `0x610BED17L` | The globe's dither's stream (the far node's F_DITHER is the plane's, by plot and the world's seed). |
-| 2409 | `EarthTerrain.M_A_DEGREE` | `Math.PI * EarthProj.RADIUS_M / 180` | How many metres of ground a degree of latitude is on the sphere: pi R / 180. |
-| 2773 | `EarthTerrain.FOOTPRINT_POINTS` | `3` | Points a side of a 1-degree tile its footprint is read at: 3, its corners, the middles of its edges and its centre. |
-| 2849 | `EarthTerrain.COAST_BELOW` | `(int) Math.ceil(SEA_LEVEL * EarthData.SHARE_LEVELS)` | The sea layer's levels under which a 15" cell is the coast's land side: the share under SEA_LEVEL, 0 to 7 of 15 - the land of the landmass layer (tools/earth/FORMAT-2.txt). |
-| 2852 | `EarthTerrain.SEA_LEAST_DEPTH_M` | `1` | The shallowest a sea plot is, metres: 1 (FORMAT-2: "a sea plot is never shallower than 1 m in the game"), so World.depthAt() over 0 is still how a sea plot is told from land. |
-| 2855 | `EarthTerrain.DEPTHS_KEPT` | `4096` | Depths kept, by plot: 4,096 (a field's depth is asked again every time the city's ground changes). |
+| 1474 | `EarthTerrain.IDS_KEPT` | `100_000` | Tiles whose landmass ids (idsNear()) are kept before the memory is cleared: 100,000 (about 8 MB), Landmasses.NEAR_KEPT's size. |
+| 1663 | `EarthTerrain.FarShares.OF` | `new WeakHashMap<>()` |  |
+| 1665 | `EarthTerrain.FarShares.NONE` | `new byte [ 0 ]` | A tile built and found flat or without land, kept in place of an array. |
+| 1758 | `EarthTerrain.NO_WATER` | `new Water()` | A district's water where it lies off the world or off the planet: no river and no small lake. |
+| 1872 | `EarthTerrain.DITHER_STRIDE` | `1<<NOISE_HI` | A far node's forest is dithered by a hash from this stride, in plots: 2^NOISE_HI, 16 (480 m) - where no octave of the forest's noise is wider than a pixel, so the ranked noise stands at its mean and would draw forest ... |
+| 1875 | `EarthTerrain.FAR_RIVER_HALF_PX` | `RIVER_MIN_HALF` | A river's least half-width on a far node, in pixels: RIVER_MIN_HALF, 0.75 - a far pixel is to the node what a plot is to a tile, so a river is stroked at least 1.5 px wide, past the 0.71 px (half a pixel's diagonal) u... |
+| 1890 | `EarthTerrain.FAR_RIVER_SHARE` | `30.0 / 2500` | The least width, as a share of a far pixel, at which a river is stroked: 30 / 2,500, 0.012 (★E5) - the narrowest river in the data, GRWL's 30 m (spec-earth 1), at the study's far render of 2.5 km a pixel (spec-earth 3... |
+| 1893 | `EarthTerrain.FAR_BLEND_PX` | `8` | From WATER_STRIDE a far node's pixels take their latitude and longitude from blocks of this many a side, each blended from its four corners (EarthProj.blend(), the tile's way): 8 - measured, at worst 0.15 of a pixel o... |
+| 1905 | `EarthTerrain.FAR_TILE_BLEND_STRIDE` | `64` | From this stride, in plots, a far node places a 1-degree tile's river vertices and small lakes bilinear between the tile's four corners, projected exactly, rather than projecting each: 64 (★E5) - measured at worst 0.0... |
+| 1908 | `EarthTerrain.NODE_EDGE_POINTS` | `32` | Points along each edge of a far node its box of 1-degree tiles is found from: 32 - at the widest node (1,024 plots a pixel, 3,932 km a side) one every 123 km, where a straight edge strays from its chord by a fraction ... |
+| 1911 | `EarthTerrain.LONGEST_SEGMENT_M` | `17_915` | The longest river segment in earth-1, in metres on the sphere: 17,915, measured over all its tiles (MapCheck 10 holds it when the file is named). |
+| 1923 | `EarthTerrain.RIM_M` | `(double) LONGEST_SEGMENT_M * LONGEST_SEGMENT_M /(4 * EarthProj.RADIUS_M)` | A river segment with an end this close to the planet's rim is not stroked, in metres: LONGEST_SEGMENT_M^2 / 4R, 12.6 (★E5). |
+| 1926 | `EarthTerrain.F_DITHER` | `0xD17E4L` | The far view's dither's stream. |
+| 2061 | `EarthTerrain.FAR_COUNTS` | `ThreadLocal.withInitial(() -> new long [ 3 ])` | How many river segments and small lakes the last far node on this thread drew from, and how many 1-degree tiles it read: what a harness prints. |
+| 2320 | `EarthTerrain.Camera.NO_SHIFT` | `{ 0 }` | The one shift a camera whose x does not wrap draws a shape at: none, the shape where it is. |
+| 2400 | `EarthTerrain.GLOBE_DITHER_DEG` | `4.0 / 60` | The globe's dither cell (spec-globe 3.5: "the dither's hash comes from a fixed latitude-longitude grid at the pixel's scale, so the forest does not shimmer as the globe turns"): rows of GLOBE_DITHER_DEG x 2^level degr... |
+| 2403 | `EarthTerrain.DITHER_WIDENS` | `new double [ 30 ]` | The latitudes past which a dither cell is 2^m times as wide in longitude as tall, m = 1, 2, ...: where cos lat falls to 2^-m. |
+| 2410 | `EarthTerrain.F_GLOBE_DITHER` | `0x610BED17L` | The globe's dither's stream (the far node's F_DITHER is the plane's, by plot and the world's seed). |
+| 2433 | `EarthTerrain.M_A_DEGREE` | `Math.PI * EarthProj.RADIUS_M / 180` | How many metres of ground a degree of latitude is on the sphere: pi R / 180. |
+| 2797 | `EarthTerrain.FOOTPRINT_POINTS` | `3` | Points a side of a 1-degree tile its footprint is read at: 3, its corners, the middles of its edges and its centre. |
+| 2873 | `EarthTerrain.COAST_BELOW` | `(int) Math.ceil(SEA_LEVEL * EarthData.SHARE_LEVELS)` | The sea layer's levels under which a 15" cell is the coast's land side: the share under SEA_LEVEL, 0 to 7 of 15 - the land of the landmass layer (tools/earth/FORMAT-2.txt). |
+| 2876 | `EarthTerrain.SEA_LEAST_DEPTH_M` | `1` | The shallowest a sea plot is, metres: 1 (FORMAT-2: "a sea plot is never shallower than 1 m in the game"), so World.depthAt() over 0 is still how a sea plot is told from land. |
+| 2879 | `EarthTerrain.DEPTHS_KEPT` | `4096` | Depths kept, by plot: 4,096 (a field's depth is asked again every time the city's ground changes). |
 
 ## Fields (state)
 
@@ -205,59 +206,60 @@
 | 1186 | `private final Map<Long, byte[]> reliefTiles` |  |
 | 1310 | `private final Map<Long, Integer> resolved` |  |
 | 1312 | `private final Map<Long, int[]> landmassTiles` |  |
-| 1642 | `private final byte[][] tiles` |  |
-| 1704 | `double[] ax` |  |
-| 1705 | `double[] minX` |  |
-| 1706 | `double[] lx` |  |
-| 1707 | `int segs, lakes` |  |
-| 1736 | `private final Map<Integer, Water> dataTiles` |  |
-| 1742 | `private final Map<Long, Water> districts` |  |
-| 1905 | `private volatile int[] widestRun` | Each 1-degree tile's widest river run, by its median width in metres, once a far node has read it: -1 until then. |
-| 1918 | `final double least` |  |
-| 1919 | `final List<EarthData.Run> runs` |  |
-| 1920 | `final int[] medians` |  |
-| 1921 | `final int most` |  |
-| 1934 | `private final FarRivers[] farRivers` | Each 1-degree tile's FarRivers, once a far node has read it: null until then, and made again (not kept) for a node whose narrowest is under the kept one's `least`. |
-| 2244 | `final int w, h, stride` |  |
-| 2245 | `final double ox, oy, step, unitM` |  |
-| 2247 | `final double wrap` | Units round the planet across, where the camera's x wraps (the grid's columns at the date line); 0 where it does not. |
-| 2317 | `private final long x0, y0` |  |
-| 2318 | `private final long ds` |  |
-| 2319 | `private final double rim` |  |
-| 2320 | `private final double[] corners` |  |
-| 2321 | `private boolean blended` |  |
-| 2322 | `private int tile` |  |
-| 2323 | `private EarthProj.Blend blend` |  |
-| 2324 | `private int blendX` |  |
-| 2424 | `private final double perDeg` |  |
-| 2425 | `private final int level` |  |
-| 2482 | `final EarthProj.Ortho view` |  |
-| 2483 | `final double viewW, viewH, m` |  |
-| 2484 | `private final int level` |  |
-| 2544 | `private final double cosLat0, sinLat0, cosLon0, sinLon0` |  |
-| 2545 | `private final double cityX, cityY, cityZ, eastX, eastY, northX, northY, northZ` |  |
-| 2546 | `private final double fromUp, c0, bandRad, cosEnd` |  |
-| 2547 | `private double t, sx, sy, sz, planeX, planeY` |  |
-| 2857 | `private final Map<Long, Double> depths` |  |
-| 2990 | `final EarthData.Layer farLand` |  |
-| 2991 | `final int fcpd` |  |
-| 2992 | `final byte[][] landBands` |  |
-| 2993 | `final int[] landUniform` |  |
-| 2994 | `final boolean[] bandRead` |  |
-| 2995 | `int dry, wet` |  |
-| 3017 | `private final Geology geo` |  |
-| 3018 | `private final double[][] mult` |  |
-| 3019 | `private final boolean[] seaOil` |  |
-| 3020 | `private final int oil` |  |
-| 3042 | `private volatile PointWeights pointWeights` |  |
-| 3155 | `private volatile long[] site` |  |
-| 3208 | `private volatile long[] snapGround, beyond` |  |
+| 1477 | `private final Map<Long, int[]> idsKept` | idsNear() by tile, (tx << 32 \| ty): the data is frozen, so a tile's window of cells never changes; shared, do not write into one. |
+| 1666 | `private final byte[][] tiles` |  |
+| 1728 | `double[] ax` |  |
+| 1729 | `double[] minX` |  |
+| 1730 | `double[] lx` |  |
+| 1731 | `int segs, lakes` |  |
+| 1760 | `private final Map<Integer, Water> dataTiles` |  |
+| 1766 | `private final Map<Long, Water> districts` |  |
+| 1929 | `private volatile int[] widestRun` | Each 1-degree tile's widest river run, by its median width in metres, once a far node has read it: -1 until then. |
+| 1942 | `final double least` |  |
+| 1943 | `final List<EarthData.Run> runs` |  |
+| 1944 | `final int[] medians` |  |
+| 1945 | `final int most` |  |
+| 1958 | `private final FarRivers[] farRivers` | Each 1-degree tile's FarRivers, once a far node has read it: null until then, and made again (not kept) for a node whose narrowest is under the kept one's `least`. |
+| 2268 | `final int w, h, stride` |  |
+| 2269 | `final double ox, oy, step, unitM` |  |
+| 2271 | `final double wrap` | Units round the planet across, where the camera's x wraps (the grid's columns at the date line); 0 where it does not. |
+| 2341 | `private final long x0, y0` |  |
+| 2342 | `private final long ds` |  |
+| 2343 | `private final double rim` |  |
+| 2344 | `private final double[] corners` |  |
+| 2345 | `private boolean blended` |  |
+| 2346 | `private int tile` |  |
+| 2347 | `private EarthProj.Blend blend` |  |
+| 2348 | `private int blendX` |  |
+| 2448 | `private final double perDeg` |  |
+| 2449 | `private final int level` |  |
+| 2506 | `final EarthProj.Ortho view` |  |
+| 2507 | `final double viewW, viewH, m` |  |
+| 2508 | `private final int level` |  |
+| 2568 | `private final double cosLat0, sinLat0, cosLon0, sinLon0` |  |
+| 2569 | `private final double cityX, cityY, cityZ, eastX, eastY, northX, northY, northZ` |  |
+| 2570 | `private final double fromUp, c0, bandRad, cosEnd` |  |
+| 2571 | `private double t, sx, sy, sz, planeX, planeY` |  |
+| 2881 | `private final Map<Long, Double> depths` |  |
+| 3014 | `final EarthData.Layer farLand` |  |
+| 3015 | `final int fcpd` |  |
+| 3016 | `final byte[][] landBands` |  |
+| 3017 | `final int[] landUniform` |  |
+| 3018 | `final boolean[] bandRead` |  |
+| 3019 | `int dry, wet` |  |
+| 3041 | `private final Geology geo` |  |
+| 3042 | `private final double[][] mult` |  |
+| 3043 | `private final boolean[] seaOil` |  |
+| 3044 | `private final int oil` |  |
+| 3066 | `private volatile PointWeights pointWeights` |  |
+| 3179 | `private volatile long[] site` |  |
+| 3232 | `private volatile long[] snapGround, beyond` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 138 | 3150 | **type** `public final class EarthTerrain` | The real Earth's ground on the world's plots: a tile, a plot, a line or a region at a time, each world cell's land and forest (the cells pass), the founding site snapped to dry ground, and a point's sea - spec-earth 3... |
+| 138 | 3174 | **type** `public final class EarthTerrain` | The real Earth's ground on the world's plots: a tile, a plot, a line or a region at a time, each world cell's land and forest (the cells pass), the founding site snapped to dry ground, and a point's sea - spec-earth 3... |
 
 ### THE DIALS (lines 140-296)
 
@@ -358,7 +360,7 @@
 | 1218 | 8 | `public void tileRelief(long tx, long ty, byte[] out)` | One tile's relief, a byte a plot in rows (out[py x 32 + px], as tileTerrain()'s cover): the rule above, on the plots whose cover tileTerrain() draws dry. |
 | 1232 | 47 | `private void drawRelief(long tx, long ty, byte[] cover, byte[] out)` | A tile's relief given its cover (the rule's tile copy): FLAT but on dry plots, and on those the nested classes over the relief noise. |
 
-### THE LANDMASS OF A PLOT (ET5, 2026-10-25; the ET5 design, D2 to D4) (lines 1280-1697)
+### THE LANDMASS OF A PLOT (ET5, 2026-10-25; the ET5 design, D2 to D4) (lines 1280-1721)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -370,157 +372,158 @@
 | 1417 | 8 | `public void tileLandmass(long tx, long ty, int[] out)` | One tile's landmass, an id a plot in rows (out[py x 32 + px], as tileTerrain()'s cover): 0 on water, off the world's square and for data with no landmass layer. |
 | 1427 | 5 | `public int landmassAt(long x, long y)` | One plot's landmass: its tile's (tileLandmass()), from a kept tile; 0 off the world and for data with no landmass layer. |
 | 1439 | 9 | `public int landmassOfPlot(long x, long y)` | A plot's landmass by its 15" cell alone, whether the plot is dry or water: the cell's own id, or the nearest land cell's within LANDMASS_REACH (resolvedCell(), the rule landmassAt() gives a dry plot), read at the plot... |
-| 1455 | 55 | `int[] idsNear(long tx, long ty)` | The landmass ids a tile's plots can take, the non-zero ones ascending: those of the land cells under the tile's blend box widened by LANDMASS_REACH cells every way. |
-| 1520 | 20 | `private byte reliefOf(Scratch s, double[] q, double x, double y, double lat, double lon, int stride, double dither)` | A point's relief at a stride, the rule's point copy (the regions' and the far views'): the shares at the point (Reader.shares(), a 15" cell's own land-weighted blend; from FAR_STRIDE the 4' block's - FarShares) agains... |
-| 1546 | 7 | `byte pointRelief(long x, long y, byte cover)` | A plot's relief by the point rule at its centre, at a stride of one, given its cover: the rule's other copy (drawRelief() is the tile's) for a plot of dry cover, FLAT for any other. |
-| 1560 | 8 | `double[] reliefShares(double lat, double lon, boolean far)` | The shares the tile and point rules draw against at a point (ET1): of the land there, at or above foothill, at or above steep and very steep (Reader.shares(): the four 15" cells' about it, weighted by each cell's land... |
-| 1577 | 27 | `public void regionRelief(long x0, long y0, int stride, int n, byte[] out)` | A region's relief at a stride (World.regionRelief()'s contract), as regionTerrain() lays its cover: n x n pixels from plot (x0, y0), each `stride` plots wide, FLAT where the pixel's cover is not dry ground. |
-| 1606 | 21 | `private void farShares(Scratch s, double lat, double lon, double[] out)` | The far shares of the slope at a point into out[0..2] (the 4' block it lies in, FarShares), the last tile read kept in hand. |
-| 1638 | 59 | **type** `private static final class FarShares` | The slope's shares summarised for the far views (ET1): per 1-degree tile, built the first time a far pixel lies in it and kept, the land-weighted shares at or above foothill, steep and very steep of each FAR_BLOCK x F... |
-| 1644 | 3 | `static FarShares of(EarthData d)` _(in EarthTerrain.FarShares)_ |  |
-| 1649 | 11 | `byte[] blocks(EarthData d, int t)` _(in EarthTerrain.FarShares)_ | Tile t's blocks, three planes of (cpd / FAR_BLOCK)^2; null where the tile has no slope to speak of. |
-| 1661 | 35 | `private static byte[] build(EarthData d, int t)` _(in EarthTerrain.FarShares)_ |  |
+| 1456 | 16 | `int[] idsNear(long tx, long ty)` | The landmass ids a tile's plots can take, the non-zero ones ascending: those of the land cells under the tile's blend box widened by LANDMASS_REACH cells every way. |
+| 1480 | 54 | `int[] idsNearDrawn(long tx, long ty)` | idsNear() read from the cells, never kept: a harness's (LandmassCheck, AP2) beside idsNear(). |
+| 1544 | 20 | `private byte reliefOf(Scratch s, double[] q, double x, double y, double lat, double lon, int stride, double dither)` | A point's relief at a stride, the rule's point copy (the regions' and the far views'): the shares at the point (Reader.shares(), a 15" cell's own land-weighted blend; from FAR_STRIDE the 4' block's - FarShares) agains... |
+| 1570 | 7 | `byte pointRelief(long x, long y, byte cover)` | A plot's relief by the point rule at its centre, at a stride of one, given its cover: the rule's other copy (drawRelief() is the tile's) for a plot of dry cover, FLAT for any other. |
+| 1584 | 8 | `double[] reliefShares(double lat, double lon, boolean far)` | The shares the tile and point rules draw against at a point (ET1): of the land there, at or above foothill, at or above steep and very steep (Reader.shares(): the four 15" cells' about it, weighted by each cell's land... |
+| 1601 | 27 | `public void regionRelief(long x0, long y0, int stride, int n, byte[] out)` | A region's relief at a stride (World.regionRelief()'s contract), as regionTerrain() lays its cover: n x n pixels from plot (x0, y0), each `stride` plots wide, FLAT where the pixel's cover is not dry ground. |
+| 1630 | 21 | `private void farShares(Scratch s, double lat, double lon, double[] out)` | The far shares of the slope at a point into out[0..2] (the 4' block it lies in, FarShares), the last tile read kept in hand. |
+| 1662 | 59 | **type** `private static final class FarShares` | The slope's shares summarised for the far views (ET1): per 1-degree tile, built the first time a far pixel lies in it and kept, the land-weighted shares at or above foothill, steep and very steep of each FAR_BLOCK x F... |
+| 1668 | 3 | `static FarShares of(EarthData d)` _(in EarthTerrain.FarShares)_ |  |
+| 1673 | 11 | `byte[] blocks(EarthData d, int t)` _(in EarthTerrain.FarShares)_ | Tile t's blocks, three planes of (cpd / FAR_BLOCK)^2; null where the tile has no slope to speak of. |
+| 1685 | 35 | `private static byte[] build(EarthData d, int t)` _(in EarthTerrain.FarShares)_ |  |
 
-### RIVERS AND SMALL LAKES, PROJECTED: a 1-degree tile's, and a district's (lines 1698-1842)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1703 | 29 | **type** `private static final class Water` | Rivers' segments and small lakes in plots: each segment's ends, half-widths and box widened by them, each lake's centre and radius. |
-| 1709 | 13 | `void addSeg(double ax0, double ay0, double bx0, double by0, double h0, double h1)` _(in EarthTerrain.Water)_ |  |
-| 1723 | 8 | `void addLake(double x, double y, double r)` _(in EarthTerrain.Water)_ |  |
-| 1749 | 27 | `private Water dataTile(int tile)` | A 1-degree tile's rivers and small lakes through the projection, kept: every run's segments as stored (one crossing the tile's edge is in each tile it touches), each half-width at least RIVER_MIN_HALF. |
-| 1778 | 1 | `private static double halfWidth(int widthM)` | A river's half-width in plots from its width in metres: at least RIVER_MIN_HALF. |
-| 1781 | 10 | `private Water water(long dx, long dy)` | A district's rivers and small lakes, kept: those of the 1-degree tiles within WATER_PAD_DEG of it whose reach touches it. |
-| 1792 | 50 | `private Water districtWater(long dx, long dy)` |  |
-
-### THE FAR VIEW'S NODES (0.7.119, batch E5; spec-earth 3, "Far views") (lines 1843-2217)
+### RIVERS AND SMALL LAKES, PROJECTED: a 1-degree tile's, and a district's (lines 1722-1866)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1917 | 10 | **type** `private static final class FarRivers` | A tile's rivers as a far node draws them: the runs of two vertices or more whose median width is `least` or more, in the order EarthData.rivers() gives them, each with its median, and `most`, the largest median over a... |
-| 1923 | 3 | `FarRivers(double least, List<EarthData.Run> runs, int[] medians, int most)` _(in EarthTerrain.FarRivers)_ |  |
-| 1955 | 3 | `public void farTerrain(long x0, long y0, int stride, int n, byte[] out)` | A far node's ground (spec-earth 3, "Far views"; MapTiles.nodeTerrain()): n x n pixels from plot (x0, y0), `stride` plots each. |
-| 1965 | 8 | `public void farTerrain(long x0, long y0, int stride, int n, byte[] out, byte[] relief)` | ...and, where `relief` is not null, its relief beside it (ET1, spec-earth2-terrain 3.1): n x n bytes laid as `out` is, FLAT where the pixel's cover is not dry ground - the cover is the same byte for byte as without it. |
-| 1984 | 3 | `public void farTerrain(Camera c, byte[] out)` | The far rule through a camera (0.7.132, batch E8; spec-globe 3.5): the camera's w x h pixels, each classed at its centre on the planet as a far node's are (classAt(), the camera's stride picking the layers and the oct... |
-| 1996 | 9 | `public void farTerrain(Camera c, byte[] out, byte[] relief)` | ...and, where `relief` is not null, the relief of its pixels beside the cover (ET1, spec-earth2-terrain 3.1; w x h bytes laid as `out` is): on each pixel whose cover is dry ground, once the rivers and small lakes are ... |
-| 2007 | 28 | `private void farTerrain(Camera c, byte[] out, byte[] relief, Scratch s)` | ...on this thread's scratch, whose chart (if the camera is one) is set. |
-| 2040 | 83 | `private void strokeWater(Camera c, byte[] out, double[] q)` | The rivers and small lakes over a camera's pixels (farTerrain()): fresh water on every pixel that is not sea whose centre a river's stroke or a small lake's blob covers. |
-| 2125 | 5 | `private static double unwrapped(double v, double ref, double wrap)` | A wrapped coordinate moved by whole turns to within half a turn of a reference: a river's next vertex across the grid's date line. |
-| 2132 | 11 | `private boolean tileCorners(int t, double[] c, double rim)` | Tile t's four corners in plots into c (south-west, south-east, north-west, north-east, x then y), projected exactly: false - the tile's points then each projected - where the tile reaches past EarthProj.BLEND_MAX_LAT ... |
-| 2145 | 8 | `private boolean place(double lat, double lon, boolean blended, double[] c, int t, double[] out)` | A point's plot in tile t: bilinear between the tile's corners where `blended` (tileCorners()), else projected; false off the planet. |
-| 2155 | 4 | `private static boolean nearRim(double[] p, double rim)` | Whether a point in plots lies within RIM_M of the rim: `rim` metres or more from the spot. |
-| 2167 | 19 | `private static void stroke(double ax, double ay, double bx, double by, double ha, double hb, Camera c, double xs, byte[] out)` | One river segment stroked onto a camera's pixels: every pixel not sea whose centre lies within the segment's half-width there, interpolated along it (onRiver()'s rule) - the camera's x units xs of its y units on the g... |
-| 2188 | 17 | `private void blob(double lx, double ly, double r, Camera c, double xs, byte[] out, double[] q)` | One small lake drawn onto a camera's pixels: every pixel not sea whose centre its blob holds - inLake()'s rule, its noise at the camera's stride (at DITHER_STRIDE and up, at its mean: the lake's disc) - x scaled as st... |
-| 2207 | 4 | `private static int first(double v, double o, double step, int n)` | The first pixel of a run (from `o`, `step` units each, n of them) whose centre is at `v` or past it, clamped to the run: n when none is. |
-| 2213 | 4 | `private static int last(double v, double o, double step, int n)` | ...and the last whose centre is at `v` or before it: -1 when none is. |
+| 1727 | 29 | **type** `private static final class Water` | Rivers' segments and small lakes in plots: each segment's ends, half-widths and box widened by them, each lake's centre and radius. |
+| 1733 | 13 | `void addSeg(double ax0, double ay0, double bx0, double by0, double h0, double h1)` _(in EarthTerrain.Water)_ |  |
+| 1747 | 8 | `void addLake(double x, double y, double r)` _(in EarthTerrain.Water)_ |  |
+| 1773 | 27 | `private Water dataTile(int tile)` | A 1-degree tile's rivers and small lakes through the projection, kept: every run's segments as stored (one crossing the tile's edge is in each tile it touches), each half-width at least RIVER_MIN_HALF. |
+| 1802 | 1 | `private static double halfWidth(int widthM)` | A river's half-width in plots from its width in metres: at least RIVER_MIN_HALF. |
+| 1805 | 10 | `private Water water(long dx, long dy)` | A district's rivers and small lakes, kept: those of the 1-degree tiles within WATER_PAD_DEG of it whose reach touches it. |
+| 1816 | 50 | `private Water districtWater(long dx, long dy)` |  |
 
-### the camera: where the far rule's pixels lie on the planet (0.7.132, batch E8; spec-globe 3.5) (lines 2218-2800)
+### THE FAR VIEW'S NODES (0.7.119, batch E5; spec-earth 3, "Far views") (lines 1867-2241)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2243 | 66 | **type** `public abstract static class Camera` | Where the far rule's pixels lie on the planet, and where a river's vertex lands among them (0.7.132, batch E8; docs/studies/spec-globe.md 3.5). |
-| 2249 | 10 | `Camera(int w, int h, int stride, double ox, double oy, double step, double unitM, double wrap)` _(in EarthTerrain.Camera)_ |  |
-| 2261 | 1 | `public int width()` _(in EarthTerrain.Camera)_ | Its pixels across and down. |
-| 2262 | 1 | `public int height()` _(in EarthTerrain.Camera)_ |  |
-| 2265 | 1 | `public int stride()` _(in EarthTerrain.Camera)_ | The rule's stride: a pixel's ground, in plots. |
-| 2268 | 1 | `public double pixelM()` _(in EarthTerrain.Camera)_ | Metres of ground a pixel stands for, down. |
-| 2271 | 1 | `abstract boolean latLon(int px, int py, double[] ll)` _(in EarthTerrain.Camera)_ | Pixel (px, py)'s centre on the planet into ll; false off the planet (or off the plane's square), where it is drawn as sea. |
-| 2274 | 1 | `abstract double x(int px)` _(in EarthTerrain.Camera)_ | Where pixel column px and row py stand for the rule's noise, in plots. |
-| 2275 | 1 | `abstract double y(int py)` _(in EarthTerrain.Camera)_ |  |
-| 2278 | 1 | `abstract double dither(int px, int py, double lat, double lon)` _(in EarthTerrain.Camera)_ | The dither at pixel (px, py), whose centre is (lat, lon): a number in [0, 1), or NaN where the forest is ranked through its noise. |
-| 2281 | 1 | `abstract int[] tiles()` _(in EarthTerrain.Camera)_ | The 1-degree tiles whose rivers and small lakes may reach its pixels. |
-| 2284 | 1 | `void tile(int t)` _(in EarthTerrain.Camera)_ | Ready to place tile t's vertices and small lakes. |
-| 2287 | 1 | `boolean aim(int px, int py)` _(in EarthTerrain.Camera)_ | Ready for the noise at pixel (px, py) when a rule reads it away from latLon() (a small lake's fray); false where the pixel is not on the planet. |
-| 2290 | 1 | `abstract boolean place(double lat, double lon, double[] xy, boolean river)` _(in EarthTerrain.Camera)_ | A point of tile t's - a river's vertex (`river`) or a small lake's - in the camera's units into xy; false where it is not drawn. |
-| 2293 | 1 | `double xScale(double lat)` _(in EarthTerrain.Camera)_ | A unit's ground across over a unit's ground down, at a latitude: 1 but on the grid. |
-| 2299 | 9 | `double[] shifts(double x0, double x1)` _(in EarthTerrain.Camera)_ | The whole turns a shape spanning x0 to x1 is drawn at: none but where x wraps (the grid's). |
-| 2311 | 3 | `public Camera plane(long x0, long y0, int stride, int n)` | The city's plane's camera: a far node of n x n pixels from plot (x0, y0), stride plots each (MapTiles.nodeTerrain()). |
-| 2316 | 50 | **type** `private final class Plane extends Camera` | The city's plane: the far node as it was drawn before the camera, the same arithmetic in the same order. |
-| 2326 | 6 | `Plane(long x0, long y0, int stride, int n)` _(in EarthTerrain.Plane)_ |  |
-| 2333 | 1 | `double x(int px)` _(in EarthTerrain.Plane)_ |  |
-| 2334 | 1 | `double y(int py)` _(in EarthTerrain.Plane)_ |  |
-| 2336 | 12 | `boolean latLon(int px, int py, double[] ll)` _(in EarthTerrain.Plane)_ |  |
-| 2349 | 5 | `double dither(int px, int py, double lat, double lon)` _(in EarthTerrain.Plane)_ |  |
-| 2355 | 1 | `int[] tiles()` _(in EarthTerrain.Plane)_ |  |
-| 2357 | 4 | `void tile(int t)` _(in EarthTerrain.Plane)_ |  |
-| 2362 | 3 | `boolean place(double lat, double lon, double[] xy, boolean river)` _(in EarthTerrain.Plane)_ |  |
-| 2381 | 3 | `static { ... }` |  |
-| 2389 | 3 | `public static int ditherLevel(double degrees)` | The dither level of a pixel `degrees` of latitude tall: the least whose cell, GLOBE_DITHER_DEG x 2^level, is no shorter than the pixel. |
-| 2394 | 13 | `public static double globeDither(int level, double lat, double lon)` | The globe's dither at (lat, lon) at a level: its cell's hash, a number in [0, 1) - a function of the point and the level alone, not of the view, the city or its seed. |
-| 2412 | 3 | `public Camera grid(int arcmin, int row0, int rows)` | A latitude-longitude grid's camera: rows row0 to row0 + rows - 1 of the planet at `arcmin` minutes a texel, every column (360 x 60 / arcmin), row 0 at the north pole - the planet's picture (GlobePicture). |
-| 2423 | 45 | **type** `private final class Grid extends Camera` | The planet on a latitude-longitude grid: a pixel a texel, its centre the texel's; the rule's stride at least FAR_STRIDE, so each pixel reads the 4' far layers at its centre - at 4' its own cell of them (★E8); a vertex... |
-| 2427 | 7 | `Grid(int arcmin, int row0, int rows)` _(in EarthTerrain.Grid)_ |  |
-| 2435 | 1 | `double x(int px)` _(in EarthTerrain.Grid)_ |  |
-| 2436 | 1 | `double y(int py)` _(in EarthTerrain.Grid)_ |  |
-| 2438 | 5 | `boolean latLon(int px, int py, double[] ll)` _(in EarthTerrain.Grid)_ |  |
-| 2444 | 1 | `double dither(int px, int py, double lat, double lon)` _(in EarthTerrain.Grid)_ |  |
-| 2446 | 13 | `int[] tiles()` _(in EarthTerrain.Grid)_ |  |
-| 2460 | 5 | `boolean place(double lat, double lon, double[] xy, boolean river)` _(in EarthTerrain.Grid)_ |  |
-| 2466 | 1 | `double xScale(double lat)` _(in EarthTerrain.Grid)_ |  |
-| 2476 | 3 | `public Camera globe(EarthProj.Ortho view, double kmPx, double viewW, double viewH, int sx0, int sy0, int w, int h)` | The globe's camera: pixels sx0 to sx0 + w - 1 across and sy0 to sy0 + h - 1 down of a view viewW x viewH pixels at kmPx km a pixel, orthographic round its centre with its roll (EarthProj.Ortho) - GlobeFrame's GROUND t... |
-| 2481 | 38 | **type** `private class Globe extends Camera` | The globe round a view centre with a roll: a pixel's centre through the orthographic inverse, a vertex through the forward (hidden on the far side), the forest dithered by globeDither() at the pixel's scale. |
-| 2486 | 3 | `Globe(EarthProj.Ortho view, double kmPx, double viewW, double viewH, int sx0, int sy0, int w, int h)` _(in EarthTerrain.Globe)_ |  |
-| 2491 | 8 | `Globe(EarthProj.Ortho view, double m, int stride, double viewW, double viewH, double ox, double oy, int w, int h)` _(in EarthTerrain.Globe)_ | ...a pixel `m` metres, its rule's stride given (a chart's is not raised to DITHER_STRIDE), the first pixel at (ox, oy). |
-| 2500 | 1 | `double x(int px)` _(in EarthTerrain.Globe)_ |  |
-| 2501 | 1 | `double y(int py)` _(in EarthTerrain.Globe)_ |  |
-| 2503 | 4 | `boolean latLon(int px, int py, double[] ll)` _(in EarthTerrain.Globe)_ |  |
-| 2508 | 1 | `double dither(int px, int py, double lat, double lon)` _(in EarthTerrain.Globe)_ |  |
-| 2510 | 1 | `int[] tiles()` _(in EarthTerrain.Globe)_ |  |
-| 2512 | 6 | `boolean place(double lat, double lon, double[] xy, boolean river)` _(in EarthTerrain.Globe)_ |  |
-| 2543 | 71 | **type** `private final class Chart extends Globe` | A chart's camera (MS3; GlobeFrame.chart()): node (nx, ny) of an anchor's chart - MapFrame.NODE_PX square pixels of `plots` x World.PLOT_M metres each, pixel (i, j)'s centre at (nx NODE_PX + i + 0.5) such pixels east a... |
-| 2549 | 23 | `Chart(EarthProj.Ortho anchor, int plots, long nx, long ny, double fromUp, double bandRad)` _(in EarthTerrain.Chart)_ |  |
-| 2574 | 21 | `boolean aim(int px, int py)` _(in EarthTerrain.Chart)_ | Aims the noise at the pixel: its point on the planet, planet-fixed, in plots; t, the share of the sphere's noise it reads (0 to 1, by its angle from the city); and, where t is under 1, its plot on the city's plane. |
-| 2597 | 6 | `double noise(long[] os, double scale, double stride)` _(in EarthTerrain.Chart)_ | The aimed pixel's noise in the field `os` at `scale` (1, or the relief's RELIEF_SCALE) and a stride: the sphere's, blended in from the plane's at its plot within the band. |
-| 2604 | 4 | `boolean latLon(int px, int py, double[] ll)` _(in EarthTerrain.Chart)_ |  |
-| 2609 | 1 | `double x(int px)` _(in EarthTerrain.Chart)_ |  |
-| 2610 | 1 | `double y(int py)` _(in EarthTerrain.Chart)_ |  |
-| 2612 | 1 | `double dither(int px, int py, double lat, double lon)` _(in EarthTerrain.Chart)_ |  |
-| 2625 | 3 | `public Camera chart(EarthProj.Ortho anchor, int plots, long nx, long ny, double fromUp, double bandRad)` | The camera of node (nx, ny) of the chart about an anchor (MS3): the far rule through the planet's own orthographic camera, true in shape, `plots` plots a pixel, MapFrame.NODE_PX pixels a side. |
-| 2637 | 60 | `private int[] globeTiles(EarthProj.Ortho view, double m, double viewW, double viewH, double sx0, double sy0, int w, int h)` | The 1-degree tiles whose rivers and small lakes may reach a piece of the globe's screen: (NODE_EDGE_POINTS + 1)^2 points over the piece - those past the disc taken at its limb - give a box of latitude and its arc of l... |
-| 2699 | 4 | `private static boolean inPiece(double[] xy, double m, double viewW, double viewH, double sx0, double sy0, int w, int h)` | Whether a point of the view's plane (metres) lies on the piece's pixels. |
-| 2715 | 56 | `int[] nodeTiles(double x0, double y0, double side)` | The 1-degree tiles whose rivers and small lakes may reach a box of plots [x0, x0 + side)^2. |
-| 2782 | 18 | `private boolean footprint(int t, double x0, double y0, double side)` | Whether 1-degree tile t, widened by WATER_PAD_DEG (the reach of its widest river past its edge), may reach a box of plots: its FOOTPRINT_POINTS x FOOTPRINT_POINTS points projected, their box widened by an eighth of it... |
+| 1941 | 10 | **type** `private static final class FarRivers` | A tile's rivers as a far node draws them: the runs of two vertices or more whose median width is `least` or more, in the order EarthData.rivers() gives them, each with its median, and `most`, the largest median over a... |
+| 1947 | 3 | `FarRivers(double least, List<EarthData.Run> runs, int[] medians, int most)` _(in EarthTerrain.FarRivers)_ |  |
+| 1979 | 3 | `public void farTerrain(long x0, long y0, int stride, int n, byte[] out)` | A far node's ground (spec-earth 3, "Far views"; MapTiles.nodeTerrain()): n x n pixels from plot (x0, y0), `stride` plots each. |
+| 1989 | 8 | `public void farTerrain(long x0, long y0, int stride, int n, byte[] out, byte[] relief)` | ...and, where `relief` is not null, its relief beside it (ET1, spec-earth2-terrain 3.1): n x n bytes laid as `out` is, FLAT where the pixel's cover is not dry ground - the cover is the same byte for byte as without it. |
+| 2008 | 3 | `public void farTerrain(Camera c, byte[] out)` | The far rule through a camera (0.7.132, batch E8; spec-globe 3.5): the camera's w x h pixels, each classed at its centre on the planet as a far node's are (classAt(), the camera's stride picking the layers and the oct... |
+| 2020 | 9 | `public void farTerrain(Camera c, byte[] out, byte[] relief)` | ...and, where `relief` is not null, the relief of its pixels beside the cover (ET1, spec-earth2-terrain 3.1; w x h bytes laid as `out` is): on each pixel whose cover is dry ground, once the rivers and small lakes are ... |
+| 2031 | 28 | `private void farTerrain(Camera c, byte[] out, byte[] relief, Scratch s)` | ...on this thread's scratch, whose chart (if the camera is one) is set. |
+| 2064 | 83 | `private void strokeWater(Camera c, byte[] out, double[] q)` | The rivers and small lakes over a camera's pixels (farTerrain()): fresh water on every pixel that is not sea whose centre a river's stroke or a small lake's blob covers. |
+| 2149 | 5 | `private static double unwrapped(double v, double ref, double wrap)` | A wrapped coordinate moved by whole turns to within half a turn of a reference: a river's next vertex across the grid's date line. |
+| 2156 | 11 | `private boolean tileCorners(int t, double[] c, double rim)` | Tile t's four corners in plots into c (south-west, south-east, north-west, north-east, x then y), projected exactly: false - the tile's points then each projected - where the tile reaches past EarthProj.BLEND_MAX_LAT ... |
+| 2169 | 8 | `private boolean place(double lat, double lon, boolean blended, double[] c, int t, double[] out)` | A point's plot in tile t: bilinear between the tile's corners where `blended` (tileCorners()), else projected; false off the planet. |
+| 2179 | 4 | `private static boolean nearRim(double[] p, double rim)` | Whether a point in plots lies within RIM_M of the rim: `rim` metres or more from the spot. |
+| 2191 | 19 | `private static void stroke(double ax, double ay, double bx, double by, double ha, double hb, Camera c, double xs, byte[] out)` | One river segment stroked onto a camera's pixels: every pixel not sea whose centre lies within the segment's half-width there, interpolated along it (onRiver()'s rule) - the camera's x units xs of its y units on the g... |
+| 2212 | 17 | `private void blob(double lx, double ly, double r, Camera c, double xs, byte[] out, double[] q)` | One small lake drawn onto a camera's pixels: every pixel not sea whose centre its blob holds - inLake()'s rule, its noise at the camera's stride (at DITHER_STRIDE and up, at its mean: the lake's disc) - x scaled as st... |
+| 2231 | 4 | `private static int first(double v, double o, double step, int n)` | The first pixel of a run (from `o`, `step` units each, n of them) whose centre is at `v` or past it, clamped to the run: n when none is. |
+| 2237 | 4 | `private static int last(double v, double o, double step, int n)` | ...and the last whose centre is at `v` or before it: -1 when none is. |
 
-### THE CELLS PASS AND THE SNAP (the world's build) (lines 2801-2815)
+### the camera: where the far rule's pixels lie on the planet (0.7.132, batch E8; spec-globe 3.5) (lines 2242-2824)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2806 | 9 | `void build()` | The cells pass and the snap, once (World.build() asks). |
+| 2267 | 66 | **type** `public abstract static class Camera` | Where the far rule's pixels lie on the planet, and where a river's vertex lands among them (0.7.132, batch E8; docs/studies/spec-globe.md 3.5). |
+| 2273 | 10 | `Camera(int w, int h, int stride, double ox, double oy, double step, double unitM, double wrap)` _(in EarthTerrain.Camera)_ |  |
+| 2285 | 1 | `public int width()` _(in EarthTerrain.Camera)_ | Its pixels across and down. |
+| 2286 | 1 | `public int height()` _(in EarthTerrain.Camera)_ |  |
+| 2289 | 1 | `public int stride()` _(in EarthTerrain.Camera)_ | The rule's stride: a pixel's ground, in plots. |
+| 2292 | 1 | `public double pixelM()` _(in EarthTerrain.Camera)_ | Metres of ground a pixel stands for, down. |
+| 2295 | 1 | `abstract boolean latLon(int px, int py, double[] ll)` _(in EarthTerrain.Camera)_ | Pixel (px, py)'s centre on the planet into ll; false off the planet (or off the plane's square), where it is drawn as sea. |
+| 2298 | 1 | `abstract double x(int px)` _(in EarthTerrain.Camera)_ | Where pixel column px and row py stand for the rule's noise, in plots. |
+| 2299 | 1 | `abstract double y(int py)` _(in EarthTerrain.Camera)_ |  |
+| 2302 | 1 | `abstract double dither(int px, int py, double lat, double lon)` _(in EarthTerrain.Camera)_ | The dither at pixel (px, py), whose centre is (lat, lon): a number in [0, 1), or NaN where the forest is ranked through its noise. |
+| 2305 | 1 | `abstract int[] tiles()` _(in EarthTerrain.Camera)_ | The 1-degree tiles whose rivers and small lakes may reach its pixels. |
+| 2308 | 1 | `void tile(int t)` _(in EarthTerrain.Camera)_ | Ready to place tile t's vertices and small lakes. |
+| 2311 | 1 | `boolean aim(int px, int py)` _(in EarthTerrain.Camera)_ | Ready for the noise at pixel (px, py) when a rule reads it away from latLon() (a small lake's fray); false where the pixel is not on the planet. |
+| 2314 | 1 | `abstract boolean place(double lat, double lon, double[] xy, boolean river)` _(in EarthTerrain.Camera)_ | A point of tile t's - a river's vertex (`river`) or a small lake's - in the camera's units into xy; false where it is not drawn. |
+| 2317 | 1 | `double xScale(double lat)` _(in EarthTerrain.Camera)_ | A unit's ground across over a unit's ground down, at a latitude: 1 but on the grid. |
+| 2323 | 9 | `double[] shifts(double x0, double x1)` _(in EarthTerrain.Camera)_ | The whole turns a shape spanning x0 to x1 is drawn at: none but where x wraps (the grid's). |
+| 2335 | 3 | `public Camera plane(long x0, long y0, int stride, int n)` | The city's plane's camera: a far node of n x n pixels from plot (x0, y0), stride plots each (MapTiles.nodeTerrain()). |
+| 2340 | 50 | **type** `private final class Plane extends Camera` | The city's plane: the far node as it was drawn before the camera, the same arithmetic in the same order. |
+| 2350 | 6 | `Plane(long x0, long y0, int stride, int n)` _(in EarthTerrain.Plane)_ |  |
+| 2357 | 1 | `double x(int px)` _(in EarthTerrain.Plane)_ |  |
+| 2358 | 1 | `double y(int py)` _(in EarthTerrain.Plane)_ |  |
+| 2360 | 12 | `boolean latLon(int px, int py, double[] ll)` _(in EarthTerrain.Plane)_ |  |
+| 2373 | 5 | `double dither(int px, int py, double lat, double lon)` _(in EarthTerrain.Plane)_ |  |
+| 2379 | 1 | `int[] tiles()` _(in EarthTerrain.Plane)_ |  |
+| 2381 | 4 | `void tile(int t)` _(in EarthTerrain.Plane)_ |  |
+| 2386 | 3 | `boolean place(double lat, double lon, double[] xy, boolean river)` _(in EarthTerrain.Plane)_ |  |
+| 2405 | 3 | `static { ... }` |  |
+| 2413 | 3 | `public static int ditherLevel(double degrees)` | The dither level of a pixel `degrees` of latitude tall: the least whose cell, GLOBE_DITHER_DEG x 2^level, is no shorter than the pixel. |
+| 2418 | 13 | `public static double globeDither(int level, double lat, double lon)` | The globe's dither at (lat, lon) at a level: its cell's hash, a number in [0, 1) - a function of the point and the level alone, not of the view, the city or its seed. |
+| 2436 | 3 | `public Camera grid(int arcmin, int row0, int rows)` | A latitude-longitude grid's camera: rows row0 to row0 + rows - 1 of the planet at `arcmin` minutes a texel, every column (360 x 60 / arcmin), row 0 at the north pole - the planet's picture (GlobePicture). |
+| 2447 | 45 | **type** `private final class Grid extends Camera` | The planet on a latitude-longitude grid: a pixel a texel, its centre the texel's; the rule's stride at least FAR_STRIDE, so each pixel reads the 4' far layers at its centre - at 4' its own cell of them (★E8); a vertex... |
+| 2451 | 7 | `Grid(int arcmin, int row0, int rows)` _(in EarthTerrain.Grid)_ |  |
+| 2459 | 1 | `double x(int px)` _(in EarthTerrain.Grid)_ |  |
+| 2460 | 1 | `double y(int py)` _(in EarthTerrain.Grid)_ |  |
+| 2462 | 5 | `boolean latLon(int px, int py, double[] ll)` _(in EarthTerrain.Grid)_ |  |
+| 2468 | 1 | `double dither(int px, int py, double lat, double lon)` _(in EarthTerrain.Grid)_ |  |
+| 2470 | 13 | `int[] tiles()` _(in EarthTerrain.Grid)_ |  |
+| 2484 | 5 | `boolean place(double lat, double lon, double[] xy, boolean river)` _(in EarthTerrain.Grid)_ |  |
+| 2490 | 1 | `double xScale(double lat)` _(in EarthTerrain.Grid)_ |  |
+| 2500 | 3 | `public Camera globe(EarthProj.Ortho view, double kmPx, double viewW, double viewH, int sx0, int sy0, int w, int h)` | The globe's camera: pixels sx0 to sx0 + w - 1 across and sy0 to sy0 + h - 1 down of a view viewW x viewH pixels at kmPx km a pixel, orthographic round its centre with its roll (EarthProj.Ortho) - GlobeFrame's GROUND t... |
+| 2505 | 38 | **type** `private class Globe extends Camera` | The globe round a view centre with a roll: a pixel's centre through the orthographic inverse, a vertex through the forward (hidden on the far side), the forest dithered by globeDither() at the pixel's scale. |
+| 2510 | 3 | `Globe(EarthProj.Ortho view, double kmPx, double viewW, double viewH, int sx0, int sy0, int w, int h)` _(in EarthTerrain.Globe)_ |  |
+| 2515 | 8 | `Globe(EarthProj.Ortho view, double m, int stride, double viewW, double viewH, double ox, double oy, int w, int h)` _(in EarthTerrain.Globe)_ | ...a pixel `m` metres, its rule's stride given (a chart's is not raised to DITHER_STRIDE), the first pixel at (ox, oy). |
+| 2524 | 1 | `double x(int px)` _(in EarthTerrain.Globe)_ |  |
+| 2525 | 1 | `double y(int py)` _(in EarthTerrain.Globe)_ |  |
+| 2527 | 4 | `boolean latLon(int px, int py, double[] ll)` _(in EarthTerrain.Globe)_ |  |
+| 2532 | 1 | `double dither(int px, int py, double lat, double lon)` _(in EarthTerrain.Globe)_ |  |
+| 2534 | 1 | `int[] tiles()` _(in EarthTerrain.Globe)_ |  |
+| 2536 | 6 | `boolean place(double lat, double lon, double[] xy, boolean river)` _(in EarthTerrain.Globe)_ |  |
+| 2567 | 71 | **type** `private final class Chart extends Globe` | A chart's camera (MS3; GlobeFrame.chart()): node (nx, ny) of an anchor's chart - MapFrame.NODE_PX square pixels of `plots` x World.PLOT_M metres each, pixel (i, j)'s centre at (nx NODE_PX + i + 0.5) such pixels east a... |
+| 2573 | 23 | `Chart(EarthProj.Ortho anchor, int plots, long nx, long ny, double fromUp, double bandRad)` _(in EarthTerrain.Chart)_ |  |
+| 2598 | 21 | `boolean aim(int px, int py)` _(in EarthTerrain.Chart)_ | Aims the noise at the pixel: its point on the planet, planet-fixed, in plots; t, the share of the sphere's noise it reads (0 to 1, by its angle from the city); and, where t is under 1, its plot on the city's plane. |
+| 2621 | 6 | `double noise(long[] os, double scale, double stride)` _(in EarthTerrain.Chart)_ | The aimed pixel's noise in the field `os` at `scale` (1, or the relief's RELIEF_SCALE) and a stride: the sphere's, blended in from the plane's at its plot within the band. |
+| 2628 | 4 | `boolean latLon(int px, int py, double[] ll)` _(in EarthTerrain.Chart)_ |  |
+| 2633 | 1 | `double x(int px)` _(in EarthTerrain.Chart)_ |  |
+| 2634 | 1 | `double y(int py)` _(in EarthTerrain.Chart)_ |  |
+| 2636 | 1 | `double dither(int px, int py, double lat, double lon)` _(in EarthTerrain.Chart)_ |  |
+| 2649 | 3 | `public Camera chart(EarthProj.Ortho anchor, int plots, long nx, long ny, double fromUp, double bandRad)` | The camera of node (nx, ny) of the chart about an anchor (MS3): the far rule through the planet's own orthographic camera, true in shape, `plots` plots a pixel, MapFrame.NODE_PX pixels a side. |
+| 2661 | 60 | `private int[] globeTiles(EarthProj.Ortho view, double m, double viewW, double viewH, double sx0, double sy0, int w, int h)` | The 1-degree tiles whose rivers and small lakes may reach a piece of the globe's screen: (NODE_EDGE_POINTS + 1)^2 points over the piece - those past the disc taken at its limb - give a box of latitude and its arc of l... |
+| 2723 | 4 | `private static boolean inPiece(double[] xy, double m, double viewW, double viewH, double sx0, double sy0, int w, int h)` | Whether a point of the view's plane (metres) lies on the piece's pixels. |
+| 2739 | 56 | `int[] nodeTiles(double x0, double y0, double side)` | The 1-degree tiles whose rivers and small lakes may reach a box of plots [x0, x0 + side)^2. |
+| 2806 | 18 | `private boolean footprint(int t, double x0, double y0, double side)` | Whether 1-degree tile t, widened by WATER_PAD_DEG (the reach of its widest river past its edge), may reach a box of plots: its FOOTPRINT_POINTS x FOOTPRINT_POINTS points projected, their box widened by an eighth of it... |
 
-### THE SEA'S DEPTH (0.7.121, batch E4; ET1, 2026-10-24: spec-earth2-terrain 7) (lines 2816-2974)
+### THE CELLS PASS AND THE SNAP (the world's build) (lines 2825-2839)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2872 | 13 | `public double depthAt(long x, long y)` | The sea's depth at a plot's centre, metres below its level (ET1, the study's 7): 0 where the plot is not the sea's (World.salt()), else the depth layer's metres there (EarthData.depthM()), at least SEA_LEAST_DEPTH_M, ... |
-| 2891 | 4 | `public double depthOf(double lat, double lon)` | The depth layer's metres at a point of the planet (ET1 slice D; the globe's hover, which has a point and no plot): what depthAt() gives the plot there if it is sea - at least SEA_LEAST_DEPTH_M - whether or not the poi... |
-| 2920 | 54 | `public void cellsPass()` | Each world cell's land and forest, as shares of its area (spec-earth 4): CELL_SAMPLES x CELL_SAMPLES points a cell, each read from the 4' far layers - its land the ground that is not sea, dry and lake (the generated w... |
+| 2830 | 9 | `void build()` | The cells pass and the snap, once (World.build() asks). |
 
-### FIELD LAND AT A POINT (0.8.12, batch EG1; spec-earth2-terrain 8.5) (lines 2975-3287)
+### THE SEA'S DEPTH (0.7.121, batch E4; ET1, 2026-10-24: spec-earth2-terrain 7) (lines 2840-2998)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2989 | 25 | **type** `private final class FarReader` | Reads the 4' far layers at a point, keeping the bands it has inflated (a band of a layer is a row of degrees all round the planet): the cells pass's reader, and pointFieldWeights()'s - dry and wet, 0 to FAR_LEVELS each. |
-| 2998 | 15 | `void read(double lat, double lon)` _(in EarthTerrain.FarReader)_ | The point's dry land and its lakes, in the layers' levels, left in dry and wet. |
-| 3016 | 25 | **type** `private static final class PointWeights` | What a point contributes to each resource's field land: its land share (and oil's sea share on a province whose sea holds oil) times the multiplier there. |
-| 3022 | 12 | `PointWeights(Geology geo)` _(in EarthTerrain.PointWeights)_ |  |
-| 3036 | 4 | `double of(int k, int row, double lat, double lon, double pl, int levels)` _(in EarthTerrain.PointWeights)_ | Resource k's weight at a point in province `row`: `pl` the point's land share, `levels` its dry and lake levels added (FAR_LEVELS less them is the sea). |
-| 3044 | 10 | `private PointWeights pointWeights()` |  |
-| 3064 | 19 | `double[] pointFieldWeights(int cell, Resource r)` | The weights a cell's CELL_SAMPLES x CELL_SAMPLES points carry for a resource (EG1), in the cells pass's order - rows from the north, each from the west, j x CELL_SAMPLES + i - each the point's land (oil's with a sea t... |
-| 3092 | 9 | `boolean fieldGround(Resource r, double x, double y)` | Whether a point (plot coordinates) is ground a resource's fields lie on (EG1): the province under it (Geology.provinceAt(), the patches in) gives the resource a multiplier above nought there (Geology.multiplierAt(), a... |
-| 3103 | 1 | `public Geology geology()` | The geology of its data (Geology.of()): the provinces, their classes and multipliers. |
-| 3112 | 5 | `double cellFieldLand(int cell, Resource r)` | A cell's FIELD LAND for a resource, as a share of its area (0.7.117): its 16 points' land each times the multiplier there (Geology.multiplier(), and since EG1 iron's at the point, Geology.multiplierAt()), oil's with a... |
-| 3119 | 5 | `public int provinceAt(double x, double y)` | The province under a point in plot coordinates, its row in the data; 0 off the planet or in none. |
-| 3126 | 1 | `public double cellsPassMs()` | How long the cells pass took, in ms (the last time it ran). |
-| 3129 | 1 | `double cellLand(int cell)` | A cell's land, as a share of its area: the ground that is not sea (World.cellLandShare()). |
-| 3132 | 1 | `double cellForest(int cell)` | A cell's forest, as a share of its area. |
-| 3147 | 7 | `private void snap()` | THE SNAP (spec-earth 2): from the spot's plot - the projection's centre is the corner of four, and this is the one south-east of it, (SIDE/2, SIDE/2) - the nearest plot that passes the founding's test 1, buildable gro... |
-| 3163 | 27 | `public long[] siteNear()` | The snap's answer without the cells pass (0.7.121, batch E4: the founding card's first question, and Random spot's test): {x, y, plots tested}, x and y -1 when no plot within SNAP_PLOTS passes - a spot in the sea, or ... |
-| 3192 | 9 | `boolean siteBuildable(long px, long py)` | The founding's test 1 at plot (px, py) (ET2: buildable ground, spec-earth2-terrain 3.4): it and eight points World.SITE_DRY_PLOTS round its centre are ground a building may stand on - dry, and flat or foothill (World.... |
-| 3203 | 4 | `private boolean buildable(long x, long y)` | Whether plot (x, y) is ground a building may stand on: its cover is dry, and its relief - read only where it is - flat or foothill. |
-| 3215 | 24 | `long[] snapGround()` | What the snap's disc holds when it found no site (ET2): {dry plots, and of them the steep and very steep} within SNAP_PLOTS of the spot, counted plot by plot from the tiles drawn for them - what tells a spot among ste... |
-| 3247 | 28 | `long[] siteBeyond()` | The nearest buildable ground past a snap that found none (ET2, spec-earth2-terrain 3.4): {x, y} of the nearest spot that passes the founding's test 1 (siteBuildable()) on a lattice of BEYOND_STEP plots from the spot, ... |
-| 3277 | 1 | `long siteX()` | The founding site, as a plot: the snap's. |
-| 3280 | 1 | `long siteY()` | ...and its row. |
-| 3283 | 1 | `int siteTests()` | How many plots the snap tested. |
-| 3286 | 1 | `public static long spotPlot()` | The plot the snap starts from: the spot's, (SIDE/2, SIDE/2). |
+| 2896 | 13 | `public double depthAt(long x, long y)` | The sea's depth at a plot's centre, metres below its level (ET1, the study's 7): 0 where the plot is not the sea's (World.salt()), else the depth layer's metres there (EarthData.depthM()), at least SEA_LEAST_DEPTH_M, ... |
+| 2915 | 4 | `public double depthOf(double lat, double lon)` | The depth layer's metres at a point of the planet (ET1 slice D; the globe's hover, which has a point and no plot): what depthAt() gives the plot there if it is sea - at least SEA_LEAST_DEPTH_M - whether or not the poi... |
+| 2944 | 54 | `public void cellsPass()` | Each world cell's land and forest, as shares of its area (spec-earth 4): CELL_SAMPLES x CELL_SAMPLES points a cell, each read from the 4' far layers - its land the ground that is not sea, dry and lake (the generated w... |
+
+### FIELD LAND AT A POINT (0.8.12, batch EG1; spec-earth2-terrain 8.5) (lines 2999-3311)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3013 | 25 | **type** `private final class FarReader` | Reads the 4' far layers at a point, keeping the bands it has inflated (a band of a layer is a row of degrees all round the planet): the cells pass's reader, and pointFieldWeights()'s - dry and wet, 0 to FAR_LEVELS each. |
+| 3022 | 15 | `void read(double lat, double lon)` _(in EarthTerrain.FarReader)_ | The point's dry land and its lakes, in the layers' levels, left in dry and wet. |
+| 3040 | 25 | **type** `private static final class PointWeights` | What a point contributes to each resource's field land: its land share (and oil's sea share on a province whose sea holds oil) times the multiplier there. |
+| 3046 | 12 | `PointWeights(Geology geo)` _(in EarthTerrain.PointWeights)_ |  |
+| 3060 | 4 | `double of(int k, int row, double lat, double lon, double pl, int levels)` _(in EarthTerrain.PointWeights)_ | Resource k's weight at a point in province `row`: `pl` the point's land share, `levels` its dry and lake levels added (FAR_LEVELS less them is the sea). |
+| 3068 | 10 | `private PointWeights pointWeights()` |  |
+| 3088 | 19 | `double[] pointFieldWeights(int cell, Resource r)` | The weights a cell's CELL_SAMPLES x CELL_SAMPLES points carry for a resource (EG1), in the cells pass's order - rows from the north, each from the west, j x CELL_SAMPLES + i - each the point's land (oil's with a sea t... |
+| 3116 | 9 | `boolean fieldGround(Resource r, double x, double y)` | Whether a point (plot coordinates) is ground a resource's fields lie on (EG1): the province under it (Geology.provinceAt(), the patches in) gives the resource a multiplier above nought there (Geology.multiplierAt(), a... |
+| 3127 | 1 | `public Geology geology()` | The geology of its data (Geology.of()): the provinces, their classes and multipliers. |
+| 3136 | 5 | `double cellFieldLand(int cell, Resource r)` | A cell's FIELD LAND for a resource, as a share of its area (0.7.117): its 16 points' land each times the multiplier there (Geology.multiplier(), and since EG1 iron's at the point, Geology.multiplierAt()), oil's with a... |
+| 3143 | 5 | `public int provinceAt(double x, double y)` | The province under a point in plot coordinates, its row in the data; 0 off the planet or in none. |
+| 3150 | 1 | `public double cellsPassMs()` | How long the cells pass took, in ms (the last time it ran). |
+| 3153 | 1 | `double cellLand(int cell)` | A cell's land, as a share of its area: the ground that is not sea (World.cellLandShare()). |
+| 3156 | 1 | `double cellForest(int cell)` | A cell's forest, as a share of its area. |
+| 3171 | 7 | `private void snap()` | THE SNAP (spec-earth 2): from the spot's plot - the projection's centre is the corner of four, and this is the one south-east of it, (SIDE/2, SIDE/2) - the nearest plot that passes the founding's test 1, buildable gro... |
+| 3187 | 27 | `public long[] siteNear()` | The snap's answer without the cells pass (0.7.121, batch E4: the founding card's first question, and Random spot's test): {x, y, plots tested}, x and y -1 when no plot within SNAP_PLOTS passes - a spot in the sea, or ... |
+| 3216 | 9 | `boolean siteBuildable(long px, long py)` | The founding's test 1 at plot (px, py) (ET2: buildable ground, spec-earth2-terrain 3.4): it and eight points World.SITE_DRY_PLOTS round its centre are ground a building may stand on - dry, and flat or foothill (World.... |
+| 3227 | 4 | `private boolean buildable(long x, long y)` | Whether plot (x, y) is ground a building may stand on: its cover is dry, and its relief - read only where it is - flat or foothill. |
+| 3239 | 24 | `long[] snapGround()` | What the snap's disc holds when it found no site (ET2): {dry plots, and of them the steep and very steep} within SNAP_PLOTS of the spot, counted plot by plot from the tiles drawn for them - what tells a spot among ste... |
+| 3271 | 28 | `long[] siteBeyond()` | The nearest buildable ground past a snap that found none (ET2, spec-earth2-terrain 3.4): {x, y} of the nearest spot that passes the founding's test 1 (siteBuildable()) on a lattice of BEYOND_STEP plots from the spot, ... |
+| 3301 | 1 | `long siteX()` | The founding site, as a plot: the snap's. |
+| 3304 | 1 | `long siteY()` | ...and its row. |
+| 3307 | 1 | `int siteTests()` | How many plots the snap tested. |
+| 3310 | 1 | `public static long spotPlot()` | The plot the snap starts from: the spot's, (SIDE/2, SIDE/2). |
 

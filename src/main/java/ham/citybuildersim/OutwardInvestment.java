@@ -501,8 +501,19 @@ public class OutwardInvestment {
     /** True when a sector may hold more of it: the rule that sends dollars abroad - money in the till and nothing owed (WHO GOES). */
     private boolean mayHold(String sector, double cash, EconomyManager economy) {
         BusinessDebtManager credit = economy.getBusinessDebtManager();
-        boolean borrower = credit != null && credit.getPrincipal(sector) > 0;
+        return mayHold(cash, credit != null ? credit.getPrincipal(sector) : 0);
+    }
+
+    /** ...given what it owes (getPrincipal()). */
+    private boolean mayHold(double cash, double owed) {
+        boolean borrower = owed > 0;
         return cash > minMove && !borrower;
+    }
+
+    /** (AP2) What each sector of Sectors.KEYS owes, in that order, from one pass over the bank's book (BusinessDebtManager.getPrincipalsByKey()); nothing without a bank. */
+    private static double[] owedByKey(EconomyManager economy) {
+        BusinessDebtManager credit = economy.getBusinessDebtManager();
+        return credit != null ? credit.getPrincipalsByKey() : new double[Sectors.KEYS.length];
     }
 
     /**
@@ -513,9 +524,11 @@ public class OutwardInvestment {
     public double idleWealth(EconomyManager economy) {
         if (economy == null) return 0;
         double total = 0;
-        for (String sector : Sectors.KEYS) {
+        double[] owed = owedByKey(economy);
+        for (int i = 0; i < Sectors.KEYS.length; i++) {
+            String sector = Sectors.KEYS[i];
             double cash = economy.getSectorCash(sector);
-            if (!mayHold(sector, cash, economy)) continue;
+            if (!mayHold(cash, owed[i])) continue;
             total += Math.max(0, cash + usd.getOrDefault(sector, 0.0) * lastRate);
         }
         return total;
@@ -532,6 +545,11 @@ public class OutwardInvestment {
         if (economy == null) return 0;
         double cash = economy.getSectorCash(sector);
         if (!mayHold(sector, cash, economy)) return 0;
+        return bid(sector, cash, yield, depositRate, worldRate);
+    }
+
+    /** bidOf() for a sector that may hold the paper. */
+    private double bid(String sector, double cash, double yield, double depositRate, double worldRate) {
         double wealth = cash + usd.getOrDefault(sector, 0.0) * lastRate;
         double over = Math.max(0, yield - Math.max(depositRate, worldRate));
         double target = Math.max(0, wealth) * Math.min(MAX_SHARE, APPETITE * over);
@@ -550,14 +568,16 @@ public class OutwardInvestment {
         double[] w = new double[keys.length];
         if (economy == null) return w;
         double total = 0;
+        double[] owed = owedByKey(economy);
         for (int i = 0; i < keys.length; i++) {
-            w[i] = bidOf(keys[i], yield, depositRate, worldRate, economy);
+            double cash = economy.getSectorCash(keys[i]);
+            w[i] = mayHold(cash, owed[i]) ? bid(keys[i], cash, yield, depositRate, worldRate) : 0;
             total += w[i];
         }
         if (!(total > 0)) {
             for (int i = 0; i < keys.length; i++) {
                 double cash = economy.getSectorCash(keys[i]);
-                w[i] = mayHold(keys[i], cash, economy) ? cash : 0;
+                w[i] = mayHold(cash, owed[i]) ? cash : 0;
                 total += w[i];
             }
         }

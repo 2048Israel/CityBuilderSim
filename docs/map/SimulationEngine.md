@@ -1,6 +1,6 @@
-# SimulationEngine.java - 251 lines · 5 methods · 0 constants · model
+# SimulationEngine.java - 262 lines · 5 methods · 0 constants · model
 
-`ham/citybuildersim/SimulationEngine.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SimulationEngine.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The order the month runs in: the sites advance, the roads, the posts and
 > the wages, the people, then the economy and the services.
@@ -23,10 +23,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 10 | 242 | **type** `public class SimulationEngine` | The order the month runs in: the sites advance, the roads, the posts and the wages, the people, then the economy and the services. |
+| 10 | 253 | **type** `public class SimulationEngine` | The order the month runs in: the sites advance, the roads, the posts and the wages, the people, then the economy and the services. |
 | 18 | 13 | `public SimulationEngine(EconomyManager economyManager, PopulationManager populationManager, ServicesManager servicesManager, Bu...` |  |
-| 32 | 126 | `public void simulateMonth(Game game)` |  |
-| 159 | 13 | `public void updatePopulation(Game game)` |  |
-| 173 | 68 | `public void updateEconomy(Game game)` |  |
-| 242 | 8 | `public void updateServices(Game game)` |  |
+| 32 | 135 | `public void simulateMonth(Game game)` |  |
+| 168 | 13 | `public void updatePopulation(Game game)` |  |
+| 182 | 70 | `public void updateEconomy(Game game)` |  |
+| 253 | 8 | `public void updateServices(Game game)` |  |
 

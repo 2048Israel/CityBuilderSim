@@ -186,3 +186,11 @@ EP1 will bake history from 1900 (`docs/studies/spec-1900-start.md`). The verdict
 
 - `tools/earth/ATTRIBUTION-2.txt` goes beside the exe as `data/earth-2-ATTRIBUTION.txt` (ET1), and since LC1 `tools/world/ATTRIBUTION.txt` as `data/world-ATTRIBUTION.txt`: the Rankings' file and the two fixtures are in the jar, so their credits travel with it.
 - In the game, the Rankings' (i) names each source with its licence. No screen shows the full credits: both attribution files said "the Credits page", which does not exist. A Credits page, from the title screen, showing both files and the fonts' notice, is CR1; until then the files beside the exe are the credits, which CC BY allows ("any reasonable manner").
+
+
+## 5. R6e's GM crop proxy (read 2026-11-21)
+
+| source | licence | read at | commercial | attribution / changed mapping |
+|---|---|---|---|---|
+| Klümper, W. and Qaim, M. (2014), A Meta-Analysis of the Impacts of Genetically Modified Crops, PLOS ONE 9(11): e111629 | CC BY 4.0; the article's copyright notice links this deed | https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0111629 ; https://creativecommons.org/licenses/by/4.0/ | yes, with attribution | Credit and DOI in tools/world/ATTRIBUTION.txt, shipped beside the exe. The game uses the abstract's rounded 22% as an approximate all-CROPS mapping on Grain/Mixed Farm; body21% and the heterogeneous crops, traits and countries remain disclosed. Modern anchors stay500/69; pre-GM output is anchor/1.22, independently additive beside PE20/E10. No paper, table or image is copied. |
+| USDA ERS, Recent Trends in GE Adoption (updated 2025-12-12) | factual commercial-introduction date, no dataset or image copied | https://www.ers.usda.gov/data-products/adoption-of-genetically-engineered-crops-in-the-united-states/recent-trends-in-ge-adoption | date fact | 1996; June is the game's placeholder, monthKnown=false. |

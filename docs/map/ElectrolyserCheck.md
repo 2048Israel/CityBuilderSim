@@ -1,6 +1,6 @@
-# ElectrolyserCheck.java - 472 lines · 24 methods · 4 constants · harnesses
+# ElectrolyserCheck.java - 475 lines · 24 methods · 4 constants · harnesses
 
-`ham/citybuildersim/ElectrolyserCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ElectrolyserCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Electrolysis at 46 kWh a kilogram (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037): the Hydrogen
 > Steel Works' piece of equipment, the 46 kWh electrolyser, and what a works that has it draws from the grid.
@@ -40,7 +40,7 @@
 > Every fixture is HydrogenSteelCheck.town1900(), a city founded the 1900 way with its clock at FE4's month, its works placed by hand and said over by
 > unfitTheFounding(), in a GameFiles.scratch() directory (no save slot is written); its clock is moved by ResearchCheck.atMonth() where a date is the premise.
 
-**Uses:** [HeavyIndustry](HeavyIndustry.md) (38), [EquipmentFit](EquipmentFit.md) (28), [Game](Game.md) (20), [ResearchCatalog](ResearchCatalog.md) (12), [BuildingsStacks](BuildingsStacks.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (8), [Equipment](Equipment.md) (7), [BuildingManager](BuildingManager.md) (5), [PowerDispatch](PowerDispatch.md) (5), [Good](Good.md) (4), [PolicyDates](PolicyDates.md) (4), [LicenceFees](LicenceFees.md) (4), [HydrogenSteelCheck](HydrogenSteelCheck.md) (3), [HydroSites](HydroSites.md) (3), [ResearchCheck](ResearchCheck.md) (2), [CityCalendar](CityCalendar.md) (1), [ResearchViewCheck](ResearchViewCheck.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1)
+**Uses:** [HeavyIndustry](HeavyIndustry.md) (38), [EquipmentFit](EquipmentFit.md) (28), [Game](Game.md) (20), [ResearchCatalog](ResearchCatalog.md) (12), [BuildingsStacks](BuildingsStacks.md) (8), [BuildingsTemplate](BuildingsTemplate.md) (8), [Equipment](Equipment.md) (7), [BuildingManager](BuildingManager.md) (5), [PowerDispatch](PowerDispatch.md) (5), [Good](Good.md) (4), [PolicyDates](PolicyDates.md) (4), [LicenceFees](LicenceFees.md) (4), [HydrogenSteelCheck](HydrogenSteelCheck.md) (3), [HydroSites](HydroSites.md) (3), [ResearchCheck](ResearchCheck.md) (2), [CityCalendar](CityCalendar.md) (1), [ResearchViewCheck](ResearchViewCheck.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [SubstationCheck](SubstationCheck.md) (1), [Substations](Substations.md) (1)
 
 ## Sections
 
@@ -52,7 +52,7 @@
 | 240 | 4. its kWh read by FE4's works |
 | 283 | 5. the saving against the model's own constants |
 | 340 | 7. the grid is sized on what is drawn |
-| 415 | 6. before the window, and today's way |
+| 418 | 6. before the window, and today's way |
 
 ## Constants
 
@@ -74,7 +74,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 50 | 423 | **type** `public class ElectrolyserCheck` | Electrolysis at 46 kWh a kilogram (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037): the Hydrogen Steel Works' piece of equipment, the 46 kWh electrolyser, and... |
+| 50 | 426 | **type** `public class ElectrolyserCheck` | Electrolysis at 46 kWh a kilogram (R6d, FE10: the US energy department's target for a PEM system, 55 today; projected 2034, window 2031-2037): the Hydrogen Steel Works' piece of equipment, the 46 kWh electrolyser, and... |
 | 60 | 4 | `static void check(String label, boolean ok)` |  |
 | 65 | 4 | `static void check(String label, boolean ok, String found)` |  |
 | 70 | 3 | `static void near(String label, double actual, double expected, double tolerance)` |  |
@@ -121,18 +121,18 @@
 | 285 | 47 | `static void five()` |  |
 | 333 | 6 | `static double twice(Game g, BuildingsTemplate t, Equipment e, double price)` |  |
 
-### 7. the grid is sized on what is drawn (lines 340-414)
+### 7. the grid is sized on what is drawn (lines 340-417)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 346 | 4 | **type** `record Grid(double demand, double billed, double ratio, double drawn, PowerDispatch.Month month)` | The city's demand, the draw invoiced, the grid's ratio and the sector's own draw, as a counted state leaves them; and the merit order's month (PW1), its half-blocks' loads. |
 | 348 | 1 | `double peak()` _(in ElectrolyserCheck.Grid)_ | The peak block's load, the losses in: what a grid must carry to serve the month whole (PW1, PowerDispatch). |
 | 357 | 19 | `static Grid grid(Game g, long fitted, double supply)` | The city with `fitted` of the works carrying the piece: the counts set, the forms said, the services updated and, where `supply` is a number, the grid's production written over the buildings' so that it is exactly tha... |
-| 377 | 37 | `static void seven()` |  |
+| 377 | 40 | `static void seven()` |  |
 
-### 6. before the window, and today's way (lines 415-472)
+### 6. before the window, and today's way (lines 418-475)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 417 | 55 | `static void six()` |  |
+| 420 | 55 | `static void six()` |  |
 

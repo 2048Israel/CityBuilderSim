@@ -1,6 +1,6 @@
-# OutwardInvestment.java - 753 lines · 47 methods · 5 constants · model
+# OutwardInvestment.java - 773 lines · 50 methods · 5 constants · model
 
-`ham/citybuildersim/OutwardInvestment.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OutwardInvestment.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Outward investment: what the city's businesses do with money the bank will
 > not pay for.
@@ -56,7 +56,7 @@
 > when the spread has gone, when it borrows, or when it needs the money - by
 > the rule that sends the dollars home. See THE CITY'S PAPER.
 
-**Uses:** [EconomyManager](EconomyManager.md) (13), [Sectors](Sectors.md) (11), [ForeignAccounts](ForeignAccounts.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (2), [PriceLevel](PriceLevel.md) (1), [Sector](Sector.md) (1), [Debt](Debt.md) (1)
+**Uses:** [EconomyManager](EconomyManager.md) (14), [Sectors](Sectors.md) (13), [ForeignAccounts](ForeignAccounts.md) (3), [BusinessDebtManager](BusinessDebtManager.md) (3), [PriceLevel](PriceLevel.md) (1), [Sector](Sector.md) (1), [Debt](Debt.md) (1)
 
 **Used by (16):** [Auction](Auction.md), [AuctionCheck](AuctionCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [Buyback](Buyback.md), [BuybackCheck](BuybackCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [EconomyManager](EconomyManager.md), [Exchange](Exchange.md), [ExchangeCheck](ExchangeCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [HouseholdBalance](HouseholdBalance.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [TradeScreen](TradeScreen.md)
 
@@ -73,7 +73,7 @@
 | 273 | · · the move |
 | 342 | · reading |
 | 393 | THE CITY'S PAPER (CD2, slice 4, D33) |
-| 655 | · save and restore |
+| 675 | · save and restore |
 
 ## Constants
 
@@ -111,7 +111,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 63 | 691 | **type** `public class OutwardInvestment` | Outward investment: what the city's businesses do with money the bank will not pay for. |
+| 63 | 711 | **type** `public class OutwardInvestment` | Outward investment: what the city's businesses do with money the bank will not pay for. |
 
 ### HOW MUCH WANTS TO GO (lines 65-96)
 
@@ -158,7 +158,7 @@
 | 390 | 1 | `public double getLifetimeInterest()` |  |
 | 391 | 1 | `public double getPeakUsd()` |  |
 
-### THE CITY'S PAPER (CD2, slice 4, D33) (lines 393-654)
+### THE CITY'S PAPER (CD2, slice 4, D33) (lines 393-674)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -175,23 +175,26 @@
 | 489 | 1 | `public double getLifetimePaperSold()` |  |
 | 492 | 1 | `public double paperOf(String sector)` | The city's paper one sector holds, at face. |
 | 495 | 5 | `public double totalPaper()` | ...and every sector's, at face: DebtManager.firmPrincipal() from the other side. |
-| 502 | 5 | `private boolean mayHold(String sector, double cash, EconomyManager economy)` | True when a sector may hold more of it: the rule that sends dollars abroad - money in the till and nothing owed (WHO GOES). |
-| 513 | 10 | `public double idleWealth(EconomyManager economy)` | The businesses' idle money, for the auction (Auction.Bidders.firmsIdle): the tills and the dollars abroad, at the rate they were last valued at, of every sector that may hold the city's paper. |
-| 531 | 9 | `public double bidOf(String sector, double yield, double depositRate, double worldRate, EconomyManager economy)` | What one sector would bid for the city's paper at this yield: Auction.firmsAt() for the one sector - a share of its idle money, APPETITE per unit of what the paper pays over the better of the deposit rate and the worl... |
-| 548 | 20 | `public double[] allotmentWeights(double yield, double depositRate, double worldRate, EconomyManager economy)` | How a sale at this yield is shared among the sectors, in Sectors.KEYS order, summing to one: each sector's bid over all of them. |
-| 570 | 7 | `public void takeAllotment(String sector, double cash, double face, EconomyManager economy)` | A sector pays this cash out of its till at the settle for this face of the city's paper (Game.firmsTakeTheirShare(), which has capped it at the till). |
-| 579 | 11 | `public void creditPaperCoupon(double total, EconomyManager economy)` | A coupon on the businesses' share, into the tills pro rata to the paper each sector holds. |
-| 592 | 3 | `public void creditPaperPrincipal(double face, EconomyManager economy)` | Principal on their share, into the tills with the paper down by the same, pro rata. |
-| 601 | 12 | `public void creditPaperBuyback(double face, double price, EconomyManager economy)` | A bond bought back: this much of the businesses' face off the paper, this much of the price into the tills, each sector's in proportion to the paper it holds. |
-| 620 | 13 | `private double sellPaper(String sector, double face, EconomyManager economy)` | A sector sells up to this much face of the city's paper to the desk, at the month's market value, into its till. |
-| 643 | 11 | `private void sellExcessPaper(String sector, double depositRate, double worldRate, double rate, boolean borrower, EconomyManager...` | THE SPREAD GONE, and the borrower: a sector's target for the city's paper is its rule at the paper's book yield - a share of its idle money for each unit the paper pays over the better of the deposit rate and the worl... |
+| 502 | 4 | `private boolean mayHold(String sector, double cash, EconomyManager economy)` | True when a sector may hold more of it: the rule that sends dollars abroad - money in the till and nothing owed (WHO GOES). |
+| 508 | 4 | `private boolean mayHold(double cash, double owed)` | ...given what it owes (getPrincipal()). |
+| 514 | 4 | `private static double[] owedByKey(EconomyManager economy)` | (AP2) What each sector of Sectors.KEYS owes, in that order, from one pass over the bank's book (BusinessDebtManager.getPrincipalsByKey()); nothing without a bank. |
+| 524 | 12 | `public double idleWealth(EconomyManager economy)` | The businesses' idle money, for the auction (Auction.Bidders.firmsIdle): the tills and the dollars abroad, at the rate they were last valued at, of every sector that may hold the city's paper. |
+| 544 | 6 | `public double bidOf(String sector, double yield, double depositRate, double worldRate, EconomyManager economy)` | What one sector would bid for the city's paper at this yield: Auction.firmsAt() for the one sector - a share of its idle money, APPETITE per unit of what the paper pays over the better of the deposit rate and the worl... |
+| 552 | 6 | `private double bid(String sector, double cash, double yield, double depositRate, double worldRate)` | bidOf() for a sector that may hold the paper. |
+| 566 | 22 | `public double[] allotmentWeights(double yield, double depositRate, double worldRate, EconomyManager economy)` | How a sale at this yield is shared among the sectors, in Sectors.KEYS order, summing to one: each sector's bid over all of them. |
+| 590 | 7 | `public void takeAllotment(String sector, double cash, double face, EconomyManager economy)` | A sector pays this cash out of its till at the settle for this face of the city's paper (Game.firmsTakeTheirShare(), which has capped it at the till). |
+| 599 | 11 | `public void creditPaperCoupon(double total, EconomyManager economy)` | A coupon on the businesses' share, into the tills pro rata to the paper each sector holds. |
+| 612 | 3 | `public void creditPaperPrincipal(double face, EconomyManager economy)` | Principal on their share, into the tills with the paper down by the same, pro rata. |
+| 621 | 12 | `public void creditPaperBuyback(double face, double price, EconomyManager economy)` | A bond bought back: this much of the businesses' face off the paper, this much of the price into the tills, each sector's in proportion to the paper it holds. |
+| 640 | 13 | `private double sellPaper(String sector, double face, EconomyManager economy)` | A sector sells up to this much face of the city's paper to the desk, at the month's market value, into its till. |
+| 663 | 11 | `private void sellExcessPaper(String sector, double depositRate, double worldRate, double rate, boolean borrower, EconomyManager...` | THE SPREAD GONE, and the borrower: a sector's target for the city's paper is its rule at the paper's book yield - a share of its idle money for each unit the paper pays over the better of the deposit rate and the worl... |
 
-### save and restore (lines 655-753)
+### save and restore (lines 675-773)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 666 | 23 | `public double[] toSaveArray()` | Seven headline figures, then three per sector in SECTORS order - and since CD2 (slice 4) the city's paper: one per sector, then the ratio and the yield it was struck at and what the businesses have bought and sold ove... |
-| 690 | 24 | `public void restore(double[] saved)` |  |
-| 715 | 15 | `public void reset()` |  |
-| 736 | 17 | `public void redenominate(double scale)` | A reform divides the local money and leaves the dollars alone. |
+| 686 | 23 | `public double[] toSaveArray()` | Seven headline figures, then three per sector in SECTORS order - and since CD2 (slice 4) the city's paper: one per sector, then the ratio and the yield it was struck at and what the businesses have bought and sold ove... |
+| 710 | 24 | `public void restore(double[] saved)` |  |
+| 735 | 15 | `public void reset()` |  |
+| 756 | 17 | `public void redenominate(double scale)` | A reform divides the local money and leaves the dollars alone. |
 

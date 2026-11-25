@@ -1,6 +1,6 @@
-# SpreadPlanner.java - 656 lines · 57 methods · 6 constants · sectors
+# SpreadPlanner.java - 843 lines · 70 methods · 10 constants · sectors
 
-`ham/citybuildersim/sectors/SpreadPlanner.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/SpreadPlanner.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and
 > docs/studies/spec-materials.md 2.6): what a processing sector orders - of the
@@ -57,156 +57,185 @@
 >      each kind has stood with nothing to do, by name, saved in the
 >      client's extras ("idleMonths.<KIND>"); a kind idle IDLE_MONTHS
 >      running is the one its sector may sell back.
-> 
-> One planner a client sector, held by it (Refining.planner(), and since
-> 0.7.112 every ProcessingSector's): its money gate and its idle months are
-> that sector's.
-> 
-> ... (4 more lines in the source)
+>   7. OVER ITS YEAR (CY1, 2026-11-24; noteMargin(), marginOverYear(),
+>      lesser()): each kind's appraisals of the last TRAILING_MONTHS, saved
+>      in the client's extras. A client tests an order on the lesser of the
+>      month's earnings and the year's mean, and counts a kind idle while
+>      the last one standing earned below nothing in the month or over its
+> ... (10 more lines in the source)
 
 **Uses:** [BuildingsTemplate](BuildingsTemplate.md) (24), [Good](Good.md) (14), [NewUnit](NewUnit.md) (10), [BusinessInvestment](BusinessInvestment.md) (9), [Sector](Sector.md) (7), [GoodsMarket](GoodsMarket.md) (6), [Game](Game.md) (6), [Currency](Currency.md) (4), [Refining](Refining.md) (2), [Freight](Freight.md) (1), [Markets](Markets.md) (1), [OldMetal](OldMetal.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1)
 
-**Used by (43):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [ExtractionSector](ExtractionSector.md), [FittingCheck](FittingCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [HaulageCheck](HaulageCheck.md), [HeavyIndustry](HeavyIndustry.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [LongPlaytest](LongPlaytest.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [PortCheck](PortCheck.md), [ProcessingSector](ProcessingSector.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [ResearchCheck](ResearchCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (45):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMining](CoalMining.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [ExtractionSector](ExtractionSector.md), [FittingCheck](FittingCheck.md), [ForestryCheck](ForestryCheck.md), [Game](Game.md), [HaulageCheck](HaulageCheck.md), [HeavyIndustry](HeavyIndustry.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [IndustryPicture](IndustryPicture.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [LongPlaytest](LongPlaytest.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [OilCheck](OilCheck.md), [OilView](OilView.md), [OilViewCheck](OilViewCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [PortCheck](PortCheck.md), [ProcessingSector](ProcessingSector.md), [Quarrying](Quarrying.md), [QuarryingCheck](QuarryingCheck.md), [RecipeChanges](RecipeChanges.md), [Recipes](Recipes.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [ResearchCheck](ResearchCheck.md), [SaveFileCheck](SaveFileCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 98 | · 1. the city's own price (spec-oil 2.4, cityValue) |
-| 274 | · the study's four cases (materials-chains-research.md 2.5) |
-| 328 | · 2. and 3. a candidate, and the gates |
-| 430 | · 5. the order |
-| 462 | · 4. the money gate, one replaceable piece |
-| 606 | · 6. idle, then shed |
+| 104 | · 1. the city's own price (spec-oil 2.4, cityValue) |
+| 280 | · the study's four cases (materials-chains-research.md 2.5) |
+| 334 | · 2. and 3. a candidate, and the gates |
+| 436 | · 5. the order |
+| 468 | · 4. the money gate, one replaceable piece |
+| 612 | · 6. idle, then shed |
+| 708 | · 7. over its year (CY1) |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 279 | `SpreadPlanner.Case.A` | Feed imported, output exported: what freight has to hold under the hurdle (the study's 1.2). |
-| 281 | `SpreadPlanner.Case.B` | Feed local, valued at its export price; output exported. |
-| 283 | `SpreadPlanner.Case.C` | Feed local; output replacing imports. |
-| 285 | `SpreadPlanner.Case.D` | Both at import prices. |
-| 333 | `SpreadPlanner.Gate.FEED` | Spare stream for FEED_GATE of one: a unit's feed, or for a crude unit the city's imports or the wells' spare. |
-| 335 | `SpreadPlanner.Gate.LAND` | Ground for one (BusinessInvestment.plotsAvailableFor()). |
-| 337 | `SpreadPlanner.Gate.STAFF` | Staff for one (Sector.staffing()). |
-| 339 | `SpreadPlanner.Gate.MONEY` | It earns something, and enough for the money gate (MoneyGate). |
+| 285 | `SpreadPlanner.Case.A` | Feed imported, output exported: what freight has to hold under the hurdle (the study's 1.2). |
+| 287 | `SpreadPlanner.Case.B` | Feed local, valued at its export price; output exported. |
+| 289 | `SpreadPlanner.Case.C` | Feed local; output replacing imports. |
+| 291 | `SpreadPlanner.Case.D` | Both at import prices. |
+| 339 | `SpreadPlanner.Gate.FEED` | Spare stream for FEED_GATE of one: a unit's feed, or for a crude unit the city's imports or the wells' spare. |
+| 341 | `SpreadPlanner.Gate.LAND` | Ground for one (BusinessInvestment.plotsAvailableFor()). |
+| 343 | `SpreadPlanner.Gate.STAFF` | Staff for one (Sector.staffing()). |
+| 345 | `SpreadPlanner.Gate.MONEY` | It earns something, and enough for the money gate (MoneyGate). |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 90 | `SpreadPlanner.FEED_GATE` | `Freight.MIN_LINE_UTILISATION` | The least share of one building's feed the spare stream must cover for it to be weighed at all: the railway's MIN_LINE_UTILISATION, nothing built to stand idle (spec-oil 2.4). |
-| 93 | `SpreadPlanner.IDLE_MONTHS` | `BusinessInvestment.RETIREMENT_LOSS_MONTHS` | Months a kind must stand idle running before its sector may sell it back (spec-oil 2.4): six, RETIREMENT_LOSS_MONTHS - as long as the spare-capacity rule waits on losses. |
-| 96 | `SpreadPlanner.IDLE_KEY` | `"idleMonths."` | The prefix of each kind's idle months in a client's saved extras. |
-| 481 | `SpreadPlanner.ON_ITS_BORROWING` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash)...` | THE RULE TO 0.7.111, KEPT AS A NAMED HISTORY: on what the order would borrow, its cost less the sector's cash - Game.consider()'s own test until 0.7.113, which asked nothing of an order the till paid; for the counterf... |
-| 496 | `SpreadPlanner.ON_ITS_WHOLE_COST` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash)...` | THE RULE IN FORCE SINCE 0.7.112 (batch I2; Jerus's decision A, 2026-10-08: "test every order on its whole cost, whoever pays"): on the whole cost - its ground at its zone's price with it (BusinessInvestment.getCostOf(... |
-| 503 | `SpreadPlanner.DEFAULT_MONEY_GATE` | `ON_ITS_WHOLE_COST` | The money gate every SpreadPlanner tests its sector's orders by unless a check or a probe sets another: ON_ITS_WHOLE_COST since 0.7.112 (decision A). |
+| 96 | `SpreadPlanner.FEED_GATE` | `Freight.MIN_LINE_UTILISATION` | The least share of one building's feed the spare stream must cover for it to be weighed at all: the railway's MIN_LINE_UTILISATION, nothing built to stand idle (spec-oil 2.4). |
+| 99 | `SpreadPlanner.IDLE_MONTHS` | `BusinessInvestment.RETIREMENT_LOSS_MONTHS` | Months a kind must stand idle running before its sector may sell it back (spec-oil 2.4): six, RETIREMENT_LOSS_MONTHS - as long as the spare-capacity rule waits on losses. |
+| 102 | `SpreadPlanner.IDLE_KEY` | `"idleMonths."` | The prefix of each kind's idle months in a client's saved extras. |
+| 487 | `SpreadPlanner.ON_ITS_BORROWING` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash)...` | THE RULE TO 0.7.111, KEPT AS A NAMED HISTORY: on what the order would borrow, its cost less the sector's cash - Game.consider()'s own test until 0.7.113, which asked nothing of an order the till paid; for the counterf... |
+| 502 | `SpreadPlanner.ON_ITS_WHOLE_COST` | `new MoneyGate() { @ Override public double testedOn(double cost, double cash)...` | THE RULE IN FORCE SINCE 0.7.112 (batch I2; Jerus's decision A, 2026-10-08: "test every order on its whole cost, whoever pays"): on the whole cost - its ground at its zone's price with it (BusinessInvestment.getCostOf(... |
+| 509 | `SpreadPlanner.DEFAULT_MONEY_GATE` | `ON_ITS_WHOLE_COST` | The money gate every SpreadPlanner tests its sector's orders by unless a check or a probe sets another: ON_ITS_WHOLE_COST since 0.7.112 (decision A). |
+| 726 | `SpreadPlanner.TRAILING_MONTHS` | `12` | Months of a kind's appraisals the planner reads its margin over (CY1): a year, which counts a one-month spike a twelfth and a three-month cycle of the tallies at its mean, and lags a city that grows into a works by ha... |
+| 729 | `SpreadPlanner.MARGIN_KEY` | `"margin."` | The prefix of each kind's appraisals of one more, newest first, in a client's saved extras ("margin.<KIND>.<age in months>"). |
+| 732 | `SpreadPlanner.LAST_KEY` | `"lastMargin."` | ...and of what its last one standing earned ("lastMargin.<KIND>.<age in months>"). |
+| 735 | `SpreadPlanner.HOLDING_KEY` | `"lastHolding."` | ...and the holding its last one's figures were noted at ("lastHolding.<KIND>"): a smaller one starts the year again. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 287 | `private final boolean feedAtImport, outputAtImport` |  |
-| 505 | `private MoneyGate moneyGate` |  |
-| 609 | `private final Map<String, Integer> idle` | Months each kind has stood idle running, by its name. |
+| 293 | `private final boolean feedAtImport, outputAtImport` |  |
+| 511 | `private MoneyGate moneyGate` |  |
+| 615 | `private final Map<String, Integer> idle` | Months each kind has stood idle running, by its name. |
+| 739 | `private final java.util.ArrayDeque<Double> figures` |  |
+| 740 | `private int month` |  |
+| 741 | `private double holding` |  |
+| 761 | `private final Map<String, Trail> margins` | What one more of each kind was appraised to earn, its last TRAILING_MONTHS. |
+| 764 | `private final Map<String, Trail> lasts` | What the last one of each kind standing earned, its last TRAILING_MONTHS. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 87 | 570 | **type** `public final class SpreadPlanner` | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of the buildings that pass its gates, the one that earns most on its cost ... |
+| 93 | 751 | **type** `public final class SpreadPlanner` | The spread planner (0.7.82, batch O5; docs/studies/spec-oil.md 2.4, and docs/studies/spec-materials.md 2.6): what a processing sector orders - of the buildings that pass its gates, the one that earns most on its cost ... |
 
-### 1. the city's own price (spec-oil 2.4, cityValue) (lines 98-273)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 118 | 6 | `public static double cityValue(GoodsMarket m)` | What one more unit of a good is worth to the city (pure): the net import price (landed and hauled) if its market imported any this month - what the city would pay for the unit made here instead - else the net export p... |
-| 154 | 5 | `private static double priceOr(GoodsMarket m, double price)` | A price for one part of a split: itself, or the local price where it is not a number, or nothing where neither is (cityValue()'s fallback). |
-| 166 | 8 | `public static double outValue(GoodsMarket m, double imported, double u)` | What `u` units of a good made here are worth to the city (pure; spec-materials 2.6, outValue): the net import price for as many as the city imported this month (`imported`, units), the net export price for the rest. |
-| 181 | 8 | `public static double inValue(GoodsMarket m, double exported, double u)` | ...and what `u` units of a good used here cost the city (pure; inValue, the mirror): the net export price for as many as the city exported this month (`exported`, units) - what it would no longer ship - and the net im... |
-| 191 | 3 | `public static double outValue(GoodsMarket m, double u)` | ...at the market's own tally of the month: what it imported. |
-| 196 | 3 | `public static double inValue(GoodsMarket m, double u)` | ...at the market's own tally of the month: what it exported. |
-| 201 | 6 | **type** `public interface Values` | What units of each good are worth to the city at the margin, made here (out) and used here (in): the city's this month (values()) or a check's own frame. |
-| 203 | 1 | `double out(Good g, double u)` _(in SpreadPlanner.Values)_ | What `u` units of `g` made here are worth. |
-| 205 | 1 | `double in(Good g, double u)` _(in SpreadPlanner.Values)_ | What `u` units of `g` used here cost. |
-| 209 | 6 | `public static Values values(Markets markets)` | The city's values this month: outValue() and inValue() at each good's market and its month's tally; nothing for a good with no market. |
-| 235 | 12 | `public static Values after(Values v, ToDoubleFunction<Good> comingOut, ToDoubleFunction<Good> comingIn)` | The city's values for one more works after those a sector already has on site (BA1, 2026-11-02; pure in `v`): what `u` units are worth past the `comingOut` units of that good the works on site will make, and the `comi... |
-| 262 | 3 | `public static double ownCosts(BuildingsTemplate t, double rate, double factor, double tariff)` | A works' consumables at `factor` and `rate`, less its power at `tariff` (pure; above): what its earnings lose past running and standing. |
-| 267 | 6 | `public static double ownCosts(NewUnit t, double rate, double factor, double tariff)` | ...for one new building already resolved (QN1): its own consumables and power. |
-
-### the study's four cases (materials-chains-research.md 2.5) (lines 274-327)
+### 1. the city's own price (spec-oil 2.4, cityValue) (lines 104-279)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 277 | 22 | **type** `public enum Case` | The study's four cases: a works' feed and its output each at the import or the export price. |
-| 289 | 4 | `Case(boolean feedAtImport, boolean outputAtImport)` _(in SpreadPlanner.Case)_ |  |
-| 295 | 1 | `public boolean feedAtImport()` _(in SpreadPlanner.Case)_ | Whether its feed is priced at the import price (else the export price). |
-| 297 | 1 | `public boolean outputAtImport()` _(in SpreadPlanner.Case)_ | Whether its output is priced at the import price (else the export price). |
-| 309 | 18 | `public static double caseEarns(BuildingsTemplate t, Case c, ToDoubleFunction<Good> importPrice, ToDoubleFunction<Good> exportPr...` | What a works earns a month at nameplate in one of the study's cases (pure; the study's 2.5, at parity with `factor` 1): each good it makes at the case's price for its output, less each it uses at the case's price for ... |
+| 124 | 6 | `public static double cityValue(GoodsMarket m)` | What one more unit of a good is worth to the city (pure): the net import price (landed and hauled) if its market imported any this month - what the city would pay for the unit made here instead - else the net export p... |
+| 160 | 5 | `private static double priceOr(GoodsMarket m, double price)` | A price for one part of a split: itself, or the local price where it is not a number, or nothing where neither is (cityValue()'s fallback). |
+| 172 | 8 | `public static double outValue(GoodsMarket m, double imported, double u)` | What `u` units of a good made here are worth to the city (pure; spec-materials 2.6, outValue): the net import price for as many as the city imported this month (`imported`, units), the net export price for the rest. |
+| 187 | 8 | `public static double inValue(GoodsMarket m, double exported, double u)` | ...and what `u` units of a good used here cost the city (pure; inValue, the mirror): the net export price for as many as the city exported this month (`exported`, units) - what it would no longer ship - and the net im... |
+| 197 | 3 | `public static double outValue(GoodsMarket m, double u)` | ...at the market's own tally of the month: what it imported. |
+| 202 | 3 | `public static double inValue(GoodsMarket m, double u)` | ...at the market's own tally of the month: what it exported. |
+| 207 | 6 | **type** `public interface Values` | What units of each good are worth to the city at the margin, made here (out) and used here (in): the city's this month (values()) or a check's own frame. |
+| 209 | 1 | `double out(Good g, double u)` _(in SpreadPlanner.Values)_ | What `u` units of `g` made here are worth. |
+| 211 | 1 | `double in(Good g, double u)` _(in SpreadPlanner.Values)_ | What `u` units of `g` used here cost. |
+| 215 | 6 | `public static Values values(Markets markets)` | The city's values this month: outValue() and inValue() at each good's market and its month's tally; nothing for a good with no market. |
+| 241 | 12 | `public static Values after(Values v, ToDoubleFunction<Good> comingOut, ToDoubleFunction<Good> comingIn)` | The city's values for one more works after those a sector already has on site (BA1, 2026-11-02; pure in `v`): what `u` units are worth past the `comingOut` units of that good the works on site will make, and the `comi... |
+| 268 | 3 | `public static double ownCosts(BuildingsTemplate t, double rate, double factor, double tariff)` | A works' consumables at `factor` and `rate`, less its power at `tariff` (pure; above): what its earnings lose past running and standing. |
+| 273 | 6 | `public static double ownCosts(NewUnit t, double rate, double factor, double tariff)` | ...for one new building already resolved (QN1): its own consumables and power. |
 
-### 2. and 3. a candidate, and the gates (lines 328-429)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 331 | 10 | **type** `public enum Gate` | The gates a candidate is asked, in order (spec-oil 2.4). |
-| 353 | 15 | **type** `public record Candidate(BuildingsTemplate template, double earns, double cost, Gate failed, String why, Map...` | One building weighed. |
-| 357 | 1 | `public double score()` _(in SpreadPlanner.Candidate)_ | What it earns a month on its cost; 0 with no cost. |
-| 360 | 1 | `public boolean passes()` _(in SpreadPlanner.Candidate)_ | Whether it passes every gate. |
-| 363 | 1 | `public boolean onlyLand()` _(in SpreadPlanner.Candidate)_ | Whether ground is the one gate it fails - the refusal the player can clear, by buying ground. |
-| 366 | 1 | `public String refusal(Gate g)` _(in SpreadPlanner.Candidate)_ | A gate's refusal in words; null when it passes that gate. |
-| 370 | 29 | **type** `public interface City` | What the planner asks of the city about one building: its costs and its gates - the game's (city()) or a check's own frame. |
-| 372 | 1 | `double cost(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | What one costs to order, its ground with it. |
-| 374 | 1 | `double running(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | A month's wages, power and water for one, at today's prices. |
-| 376 | 1 | `default double running(NewUnit u)` _(in SpreadPlanner.City)_ | ...for one new building already resolved (QN1): a frame that knows no unit answers running() of its template. |
-| 378 | 1 | `default NewUnit unit(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | One new building of `t` as this frame values it (QN1): the game's resolves the new unit (BusinessInvestment.newUnit()); a frame that knows none, the template as it stands. |
-| 380 | 1 | `double standing(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | A month's repairs and property tax on one. |
-| 382 | 1 | `double rate()` _(in SpreadPlanner.City)_ | The share of nameplate the sector's buildings run at. |
-| 384 | 1 | `default double rate(NewUnit u)` _(in SpreadPlanner.City)_ | ...as an order weighs one new building at it (OE1; Sector.plannedRate()): the game's reads a first plant's own rate in a sector with nothing running; a frame that knows none, rate(). |
-| 386 | 1 | `String land(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | Null when there is ground for one, else why not. |
-| 388 | 1 | `String staff(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | Null when the city could staff one, else why not. |
-| 390 | 1 | `String money(double earns, double cost)` _(in SpreadPlanner.City)_ | Null when an order earning `earns` a month and costing `cost` passes the money gate, else why not. |
-| 397 | 1 | `default String money(BuildingsTemplate t, double earns, double cost)` _(in SpreadPlanner.City)_ | ...for an order of one `t` (BA1, 2026-11-02): the gate also strikes the interest on the wait for it, which depends on the building ordered (the points it owes the builders). |
-| 401 | 3 | `public static double earns(BuildingsTemplate t, double gross, City city)` | What one building's spread on its feed earns a month once running: `gross` (at nameplate) at the rate, less its running and standing costs. |
-| 406 | 3 | `public static double earns(NewUnit t, double gross, City city)` | ...for one new building already resolved (QN1): its own posts, draw and water in its running costs. |
-| 417 | 12 | `public static Candidate judge(BuildingsTemplate t, double earns, double cost, String feed, City city, List<BuildingsTemplate> w...` | Asks a building every gate (pure in `city`): its feed (`feed`, the client's refusal, or null when it has the feed), the ground and the staff for `t`, and the money for `earns` on `cost`. |
-
-### 5. the order (lines 430-461)
+### the study's four cases (materials-chains-research.md 2.5) (lines 280-333)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 433 | 8 | `public static Candidate best(List<Candidate> all)` | The candidate that passes every gate and earns most on its cost (the first on a tie, in the order weighed); null for none. |
-| 443 | 8 | `public static Candidate bestBlockedByLand(List<Candidate> all)` | Of the candidates whose only refusal is the ground, the one that earns most on its cost; null for none - the land office's case. |
-| 453 | 8 | `public static Candidate bestFed(List<Candidate> all)` | Of the candidates that had their feed, the one that earns most on its cost, gates or not; null when none had - what a refusal is worded by. |
+| 283 | 22 | **type** `public enum Case` | The study's four cases: a works' feed and its output each at the import or the export price. |
+| 295 | 4 | `Case(boolean feedAtImport, boolean outputAtImport)` _(in SpreadPlanner.Case)_ |  |
+| 301 | 1 | `public boolean feedAtImport()` _(in SpreadPlanner.Case)_ | Whether its feed is priced at the import price (else the export price). |
+| 303 | 1 | `public boolean outputAtImport()` _(in SpreadPlanner.Case)_ | Whether its output is priced at the import price (else the export price). |
+| 315 | 18 | `public static double caseEarns(BuildingsTemplate t, Case c, ToDoubleFunction<Good> importPrice, ToDoubleFunction<Good> exportPr...` | What a works earns a month at nameplate in one of the study's cases (pure; the study's 2.5, at parity with `factor` 1): each good it makes at the case's price for its output, less each it uses at the case's price for ... |
 
-### 4. the money gate, one replaceable piece (lines 462-605)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 473 | 6 | **type** `public interface MoneyGate` | What the money gate tests an order on (spec-materials A): the amount the interest is struck on. |
-| 475 | 1 | `double testedOn(double cost, double cash)` _(in SpreadPlanner.MoneyGate)_ | The amount the interest is struck on, for an order costing `cost` by a sector holding `cash`. |
-| 477 | 1 | `String words()` _(in SpreadPlanner.MoneyGate)_ | The rule in a phrase, for the words. |
-| 508 | 1 | `public MoneyGate moneyGate()` | The money gate this sector's orders are tested by: DEFAULT_MONEY_GATE unless a check or a probe set another. |
-| 511 | 1 | `public void setMoneyGate(MoneyGate gate)` | A check's or a probe's: tests this sector's orders by another rule (the counterfactual); null puts the default back. |
-| 519 | 3 | `public double hurdle(Sector sector, BusinessInvestment plans, Game game, double cost)` | What a month's earnings must reach for an order of `cost` by `sector` to pass the money gate: PROFIT_OVER_INTEREST times a month's interest at the real rate on what the gate tests, as servicesItsOwnDebt() strikes it; ... |
-| 529 | 6 | `public double hurdle(Sector sector, BusinessInvestment plans, Game game, BuildingsTemplate t, int n, double cost)` | ...for an order of `n` of `t` (BA1, 2026-11-02): what the gate tests carries the interest on the order's wait (BusinessInvestment.carryOf()), so an order years out must earn it. |
-| 537 | 3 | `public boolean passesMoney(Sector sector, BusinessInvestment plans, Game game, double earns, double cost)` | Whether an order earning `earns` a month and costing `cost` passes the money gate: it earns something, and servicesItsOwnDebt() on what the gate tests. |
-| 549 | 7 | `public boolean passesMoney(Sector sector, BusinessInvestment plans, Game game, BuildingsTemplate t, int n, double earns, double...` | ...for an order of `n` of `t` (BA1, 2026-11-02): servicesItsOwnDebt() on what the gate tests grown by the wait for the building (BusinessInvestment.carryOf(), >= 1) at the rate a loan of it would be written at - an or... |
-| 558 | 3 | `private static double carryOf(BusinessInvestment plans, BuildingsTemplate t, int n, double rate)` | The factor an order's cost grows by over its wait (BusinessInvestment.carryOf()); 1 for no building. |
-| 563 | 5 | `private static double rateFor(Sector sector, Game game, double amount)` | The rate a loan of `amount` would be written at for the sector (BusinessDebtManager.projectRate()); prime's placeholder 0 with no game. |
-| 570 | 35 | `public City city(Sector sector, BusinessInvestment plans, Game game)` | The game's answers for `sector`'s orders this month: BusinessInvestment's costs, ground and staffing, and this planner's money gate. |
-
-### 6. idle, then shed (lines 606-656)
+### 2. and 3. a candidate, and the gates (lines 334-435)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 612 | 4 | `public void noteMonth(String kind, boolean standing, boolean idleThisMonth)` | The month's end for one kind: none standing clears its count; standing and idle adds a month; standing and working starts it again. |
-| 618 | 1 | `public int idleMonths(String kind)` | Months a kind has stood idle running; 0 for one working or with none standing. |
-| 621 | 1 | `public boolean mayShed(String kind)` | Whether a kind has stood idle IDLE_MONTHS running: the one its sector may sell back. |
-| 624 | 3 | `public void setIdleMonthsForTest(String kind, int months)` | A fixture's: a kind's idle months as a save would give them. |
-| 629 | 3 | `public void saveIdle(Map<String, Double> extras, Iterable<String> kinds)` | Into a client's extras: each kind's idle months, every kind named (IDLE_KEY + its name). |
-| 634 | 7 | `public void restoreIdle(Map<String, Double> extras, Iterable<String> kinds)` | ...and back: a kind missing, or not a whole number of months, reads none (a save from before 0.7.82). |
-| 643 | 1 | `public java.util.Set<String> idleKinds()` | The kinds counting idle months now (0.7.112): what a client whose kinds are its templates' ids saves (ProcessingSector). |
-| 646 | 5 | `public void restoreIdle(Map<String, Double> extras)` | ...and back, every kind the extras name (0.7.112): for a client whose kinds are not known until its buildings are (ProcessingSector). |
-| 653 | 3 | `public void reset()` | A founding sector: no kind idle. |
+| 337 | 10 | **type** `public enum Gate` | The gates a candidate is asked, in order (spec-oil 2.4). |
+| 359 | 15 | **type** `public record Candidate(BuildingsTemplate template, double earns, double cost, Gate failed, String why, Map...` | One building weighed. |
+| 363 | 1 | `public double score()` _(in SpreadPlanner.Candidate)_ | What it earns a month on its cost; 0 with no cost. |
+| 366 | 1 | `public boolean passes()` _(in SpreadPlanner.Candidate)_ | Whether it passes every gate. |
+| 369 | 1 | `public boolean onlyLand()` _(in SpreadPlanner.Candidate)_ | Whether ground is the one gate it fails - the refusal the player can clear, by buying ground. |
+| 372 | 1 | `public String refusal(Gate g)` _(in SpreadPlanner.Candidate)_ | A gate's refusal in words; null when it passes that gate. |
+| 376 | 29 | **type** `public interface City` | What the planner asks of the city about one building: its costs and its gates - the game's (city()) or a check's own frame. |
+| 378 | 1 | `double cost(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | What one costs to order, its ground with it. |
+| 380 | 1 | `double running(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | A month's wages, power and water for one, at today's prices. |
+| 382 | 1 | `default double running(NewUnit u)` _(in SpreadPlanner.City)_ | ...for one new building already resolved (QN1): a frame that knows no unit answers running() of its template. |
+| 384 | 1 | `default NewUnit unit(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | One new building of `t` as this frame values it (QN1): the game's resolves the new unit (BusinessInvestment.newUnit()); a frame that knows none, the template as it stands. |
+| 386 | 1 | `double standing(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | A month's repairs and property tax on one. |
+| 388 | 1 | `double rate()` _(in SpreadPlanner.City)_ | The share of nameplate the sector's buildings run at. |
+| 390 | 1 | `default double rate(NewUnit u)` _(in SpreadPlanner.City)_ | ...as an order weighs one new building at it (OE1; Sector.plannedRate()): the game's reads a first plant's own rate in a sector with nothing running; a frame that knows none, rate(). |
+| 392 | 1 | `String land(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | Null when there is ground for one, else why not. |
+| 394 | 1 | `String staff(BuildingsTemplate t)` _(in SpreadPlanner.City)_ | Null when the city could staff one, else why not. |
+| 396 | 1 | `String money(double earns, double cost)` _(in SpreadPlanner.City)_ | Null when an order earning `earns` a month and costing `cost` passes the money gate, else why not. |
+| 403 | 1 | `default String money(BuildingsTemplate t, double earns, double cost)` _(in SpreadPlanner.City)_ | ...for an order of one `t` (BA1, 2026-11-02): the gate also strikes the interest on the wait for it, which depends on the building ordered (the points it owes the builders). |
+| 407 | 3 | `public static double earns(BuildingsTemplate t, double gross, City city)` | What one building's spread on its feed earns a month once running: `gross` (at nameplate) at the rate, less its running and standing costs. |
+| 412 | 3 | `public static double earns(NewUnit t, double gross, City city)` | ...for one new building already resolved (QN1): its own posts, draw and water in its running costs. |
+| 423 | 12 | `public static Candidate judge(BuildingsTemplate t, double earns, double cost, String feed, City city, List<BuildingsTemplate> w...` | Asks a building every gate (pure in `city`): its feed (`feed`, the client's refusal, or null when it has the feed), the ground and the staff for `t`, and the money for `earns` on `cost`. |
+
+### 5. the order (lines 436-467)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 439 | 8 | `public static Candidate best(List<Candidate> all)` | The candidate that passes every gate and earns most on its cost (the first on a tie, in the order weighed); null for none. |
+| 449 | 8 | `public static Candidate bestBlockedByLand(List<Candidate> all)` | Of the candidates whose only refusal is the ground, the one that earns most on its cost; null for none - the land office's case. |
+| 459 | 8 | `public static Candidate bestFed(List<Candidate> all)` | Of the candidates that had their feed, the one that earns most on its cost, gates or not; null when none had - what a refusal is worded by. |
+
+### 4. the money gate, one replaceable piece (lines 468-611)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 479 | 6 | **type** `public interface MoneyGate` | What the money gate tests an order on (spec-materials A): the amount the interest is struck on. |
+| 481 | 1 | `double testedOn(double cost, double cash)` _(in SpreadPlanner.MoneyGate)_ | The amount the interest is struck on, for an order costing `cost` by a sector holding `cash`. |
+| 483 | 1 | `String words()` _(in SpreadPlanner.MoneyGate)_ | The rule in a phrase, for the words. |
+| 514 | 1 | `public MoneyGate moneyGate()` | The money gate this sector's orders are tested by: DEFAULT_MONEY_GATE unless a check or a probe set another. |
+| 517 | 1 | `public void setMoneyGate(MoneyGate gate)` | A check's or a probe's: tests this sector's orders by another rule (the counterfactual); null puts the default back. |
+| 525 | 3 | `public double hurdle(Sector sector, BusinessInvestment plans, Game game, double cost)` | What a month's earnings must reach for an order of `cost` by `sector` to pass the money gate: PROFIT_OVER_INTEREST times a month's interest at the real rate on what the gate tests, as servicesItsOwnDebt() strikes it; ... |
+| 535 | 6 | `public double hurdle(Sector sector, BusinessInvestment plans, Game game, BuildingsTemplate t, int n, double cost)` | ...for an order of `n` of `t` (BA1, 2026-11-02): what the gate tests carries the interest on the order's wait (BusinessInvestment.carryOf()), so an order years out must earn it. |
+| 543 | 3 | `public boolean passesMoney(Sector sector, BusinessInvestment plans, Game game, double earns, double cost)` | Whether an order earning `earns` a month and costing `cost` passes the money gate: it earns something, and servicesItsOwnDebt() on what the gate tests. |
+| 555 | 7 | `public boolean passesMoney(Sector sector, BusinessInvestment plans, Game game, BuildingsTemplate t, int n, double earns, double...` | ...for an order of `n` of `t` (BA1, 2026-11-02): servicesItsOwnDebt() on what the gate tests grown by the wait for the building (BusinessInvestment.carryOf(), >= 1) at the rate a loan of it would be written at - an or... |
+| 564 | 3 | `private static double carryOf(BusinessInvestment plans, BuildingsTemplate t, int n, double rate)` | The factor an order's cost grows by over its wait (BusinessInvestment.carryOf()); 1 for no building. |
+| 569 | 5 | `private static double rateFor(Sector sector, Game game, double amount)` | The rate a loan of `amount` would be written at for the sector (BusinessDebtManager.projectRate()); prime's placeholder 0 with no game. |
+| 576 | 35 | `public City city(Sector sector, BusinessInvestment plans, Game game)` | The game's answers for `sector`'s orders this month: BusinessInvestment's costs, ground and staffing, and this planner's money gate. |
+
+### 6. idle, then shed (lines 612-707)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 618 | 4 | `public void noteMonth(String kind, boolean standing, boolean idleThisMonth)` | The month's end for one kind: none standing clears its count; standing and idle adds a month; standing and working starts it again. |
+| 634 | 16 | `public void noteMonth(String kind, double holding, int month, double lastEarns)` | ...with what the last one of `holding` standing earned in `month` (CY1): a kind counts a month idle when its last one earned below nothing in the month or over its year (OVER ITS YEAR), and starts again only when it e... |
+| 652 | 3 | `public void noteMonth(String kind, boolean standing, int month, double lastEarns)` | ...for a kind standing or not, its holding not compared. |
+| 657 | 1 | `public int idleMonths(String kind)` | Months a kind has stood idle running; 0 for one working or with none standing. |
+| 666 | 5 | `public boolean mayShed(String kind)` | Whether a kind has stood idle IDLE_MONTHS running and, where its last one's earnings are noted (CY1), lost in the last month noted and over its year: the one its sector may sell back. |
+| 673 | 3 | `public void setIdleMonthsForTest(String kind, int months)` | A fixture's: a kind's idle months as a save would give them. |
+| 678 | 3 | `public void saveIdle(Map<String, Double> extras, Iterable<String> kinds)` | Into a client's extras: each kind's idle months, every kind named (IDLE_KEY + its name). |
+| 683 | 7 | `public void restoreIdle(Map<String, Double> extras, Iterable<String> kinds)` | ...and back: a kind missing, or not a whole number of months, reads none (a save from before 0.7.82). |
+| 692 | 1 | `public java.util.Set<String> idleKinds()` | The kinds counting idle months now (0.7.112): what a client whose kinds are its templates' ids saves (ProcessingSector). |
+| 695 | 5 | `public void restoreIdle(Map<String, Double> extras)` | ...and back, every kind the extras name (0.7.112): for a client whose kinds are not known until its buildings are (ProcessingSector). |
+| 702 | 5 | `public void reset()` | A founding sector: no kind idle. |
+
+### 7. over its year (CY1) (lines 708-843)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 738 | 21 | **type** `private static final class Trail` | One kind's figures over its year: the last TRAILING_MONTHS, newest first, the month the newest was noted, and the holding they were noted at (the last one's; NaN where none is known). |
+| 744 | 6 | `void note(int m, double x)` _(in SpreadPlanner.Trail)_ | The month's figure: a second in the same month replaces the first (a check that weighs twice, the planner asked again). |
+| 752 | 6 | `double mean()` _(in SpreadPlanner.Trail)_ | Their mean; NaN with none. |
+| 767 | 3 | `public static double lesser(double month, double year)` | The lesser of a month's figure and its year's mean (pure): the month's where the year is not a number. |
+| 772 | 3 | `public void noteMargin(String kind, int month, double earns)` | Notes what one more of `kind` was appraised to earn in `month`; a second note in the same month replaces the first, and a figure that is not finite is not noted. |
+| 777 | 4 | `public double marginOverYear(String kind)` | The mean of what one more of `kind` was appraised to earn over its year, this month's with it; NaN with none noted. |
+| 783 | 4 | `public int marginMonths(String kind)` | The months of `kind`'s appraisals noted, at most TRAILING_MONTHS. |
+| 789 | 4 | `public double lastOverYear(String kind)` | The mean of what the last one of `kind` standing earned over its year; NaN with none standing or none noted. |
+| 795 | 7 | `public void saveMargins(Map<String, Double> extras)` | Into a client's extras: each kind's year, newest first (MARGIN_KEY and LAST_KEY + its name + "." + the figure's age). |
+| 804 | 11 | `public void restoreMargins(Map<String, Double> extras)` | ...and back, every kind the extras name; a save from before CY1 reads none, and its planner reads the month alone until its year fills. |
+| 816 | 6 | `private static void save(Map<String, Double> extras, String prefix, Map<String, Trail> trails)` |  |
+| 823 | 20 | `private static void restore(Map<String, Double> extras, String prefix, Map<String, Trail> trails)` |  |
 

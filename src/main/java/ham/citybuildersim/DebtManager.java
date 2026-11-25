@@ -1545,6 +1545,40 @@ public class DebtManager {
         if (saved.length >= 7) strikeExpectations(saved[5], saved[6]);
     }
 
+    // HT1: a genuine unmatched entitlement is retained explicitly, never borrowed from another holder.
+    private double unbackedCustodyPaper;
+    public double unbackedCustodyPaper() { return unbackedCustodyPaper; }
+    public void restoreUnbackedCustodyPaper(double face) { unbackedCustodyPaper = face; }
+    public double reserveCustodyPaper(double face) {
+        if (!(face >= 0)) throw new IllegalArgumentException("Negative estate paper");
+        double available = householdPrincipal(), backed = face, book = 0;
+        if (backed > available) backed = available;
+        double left = backed;
+        Debt last = null;
+        for (Debt d : debts) if (d.householdPrincipal() > 0) last = d;
+        for (Debt d : debts) if (d.householdPrincipal() > 0) {
+            double part = d == last ? left : backed * d.householdPrincipal() / available;
+            book += d.reserveCustody(part); left -= part;
+        }
+        double missing = face - backed;
+        if (missing > 0) {
+            unbackedCustodyPaper += missing;
+            GameLog.note("FINDING HT1 estate paper has no settled household counterpart: " + missing);
+        }
+        return book;
+    }
+    public record CustodyRetirement(double face, double gain) {}
+    public CustodyRetirement consolidateCustodyPaper() {
+        double face = 0, gain = 0;
+        for (Iterator<Debt> it = debts.iterator(); it.hasNext();) {
+            Debt d = it.next(); double reserved = d.custodyReservedFace();
+            if (!(reserved > 0) || d.getSettleDue() > 0 || d.unsettledFace > 0) continue;
+            gain += d.consolidateCustody(); face += reserved;
+            if (!(d.getOustandingPrincipal() > 0)) it.remove();
+        }
+        return new CustodyRetirement(face, gain);
+    }
+
     public List<Debt> getDebt() {
         return debts;
     }
@@ -3475,6 +3509,7 @@ public class DebtManager {
     }
 
     public void clearDebts() {
+        unbackedCustodyPaper = 0;
         debts.clear();
     }
 
@@ -3493,6 +3528,7 @@ public class DebtManager {
     /** The city's debt book, in the new unit. Rates and premiums do not move. */
     public void redenominate(double scale) {
         overdraft *= scale;
+        unbackedCustodyPaper *= scale;
         GDP *= scale;
         monthlyTaxRevenue *= scale;
         monthlyExports *= scale;

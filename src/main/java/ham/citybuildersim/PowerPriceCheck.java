@@ -29,8 +29,8 @@ import java.util.Map;
  *      the month's ratio is the energy served over the energy asked.
  *   4. A FUEL SHOCK MOVES THE NEXT MONTH'S BILLS: two copies of one city, one with the coal's price tripled in the dispatch: its
  *      coal row's marginal, its energy price, its struck prices and then its commerce bills are higher.
- *   5. THE UTILITY'S MARGIN IS THE TREASURY'S LINE: income = revenue - payroll - power bought - fuel bill, and the services' net
- *      the treasury takes carries it.
+ *   5. THE UTILITY'S MARGIN IS THE TREASURY'S LINE: income = revenue - payroll - power bought - fuel bill + the water works' power the water's
+ *      books buy (PW1-W), and the services' net the treasury takes carries it.
  *   6. THE FUEL'S MONEY REACHES ITS SELLERS: the coal the book burned is what the market drew for the city, what Coal Mining
  *      was paid is fuelLocal, what the world was paid fuelImported, and the upkeep is the book's at the exchange rate.
  *   7. THE MONEY AUDIT CLOSES over every month of every fixture, with the coal bought at home and abroad, and the two TRADE
@@ -110,7 +110,7 @@ public class PowerPriceCheck {
         /** The coal Coal Mining held before the month. */
         double coalHeld;
         /** After: the fuel paid, the margin's terms, the treasury's line. */
-        double fuelLocal, fuelImported, upkeep, revenue, payroll, bought, income, waterIncome, net, treasury, charges;
+        double fuelLocal, fuelImported, upkeep, revenue, payroll, bought, income, waterIncome, net, treasury, charges, waterPower;
         /** After: the coal drawn for the city this month: units from Coal Mining, units from the world, what each cost. */
         double localUnits, importedUnits, localCost, importedCost;
         /** After: the exchange rate, Coal Mining's statement's coal sold at home, the coal row of the dispatch the month ended on. */
@@ -167,6 +167,12 @@ public class PowerPriceCheck {
                 Game.BuildResult r = g.buildStack(b.getTemplateByName(o[0]), Integer.parseInt(o[1]), true);
                 if (r != Game.BuildResult.SUCCESS) failed.append(o[0]).append(' ').append(r).append("; ");
             }
+            // PW5: this harness isolates generation and fuel prices, so its wires must carry even its short town's peak.
+            int wires = (int) Math.ceil(Substations.peak(HOMES * kw, java.util.Arrays.stream(PowerDispatch.SEASON).max().orElseThrow())
+                    / (Substations.SUBSTATION_MW * 1000));
+            g.setCashForTest(g.getCash() + g.quoteBuild(b.getTemplateByName("Substation"), Math.max(1, wires)).total);
+            Game.BuildResult grid = g.buildStack(b.getTemplateByName("Substation"), Math.max(1, wires), true);
+            if (grid != Game.BuildResult.SUCCESS) failed.append("Substation ").append(grid);
         });
         check("fixture: the " + label + " town's orders all stand", failed.length() == 0, "refused: " + failed);
         return new City(label, g, mine);
@@ -212,6 +218,7 @@ public class PowerPriceCheck {
         st.bought = u.getPowerBought();
         st.income = u.getElectricityIncome();
         st.waterIncome = u.getWaterIncome();
+        st.waterPower = u.getWaterPowerPaid();
         st.net = g.getServicesManager().getServiceNetIncome();
         st.treasury = g.getEconomyManager().getUtilityIncome();
         st.charges = g.getEconomyManager().getSectorElectricityCharges();
@@ -350,7 +357,10 @@ public class PowerPriceCheck {
 
     static void pricesOfBook(String who, Game g, UtilitiesHandler.Book b) {
         double unit = unitOf(g), hours = PowerDispatch.MONTH_HOURS;
-        double transmission = PowerDispatch.TRANSMISSION_A_KWH / unit, distribution = PowerDispatch.DISTRIBUTION_A_KWH / unit;
+        double wires = b.gridCosts == null || b.servedKwh <= 0 ? 0 : b.gridCosts.total() / (b.servedKwh * (1 - PowerDispatch.GRID_LOSSES));
+        double transmission = wires * Substations.TRANSMISSION_SHARE, distribution = wires * (1 - Substations.TRANSMISSION_SHARE);
+        check(who + ": the bill carries the substations' captured costs", b.gridCosts != null && b.gridCosts.count() > 0);
+        check(who + ": the grid's costs include posts actually filled and paid", b.gridCosts != null && b.gridCosts.payroll() > 0);
         check(who + ": commerce pays the energy and all the wires: (energy + TRANSMISSION + DISTRIBUTION) x the month's hours, at the city's unit",
                 near(b.commercePrice, (b.energyPrice + transmission + distribution) * hours, 1e-12), f(b.commercePrice) + " against " + f((b.energyPrice + transmission + distribution) * hours));
         check(who + ": industry pays the energy and the transmission alone: (energy + TRANSMISSION) x the month's hours",
@@ -391,7 +401,7 @@ public class PowerPriceCheck {
         section("2. each class's bill is its price on what was delivered, exactly");
         Step st = c.last();
         UtilitiesHandler.Book book = st.book;
-        double unit = unitOf(c.g), hours = PowerDispatch.MONTH_HOURS, distribution = PowerDispatch.DISTRIBUTION_A_KWH / unit;
+        double unit = unitOf(c.g), hours = PowerDispatch.MONTH_HOURS, distribution = book.distributionPrice;
 
         double[] retail = st.held.get(Sectors.RETAIL);
         check("fixture: Retail draws power, is a commerce class (no high-voltage share) and holds the book's commerce price it is struck at",
@@ -530,8 +540,10 @@ public class PowerPriceCheck {
         Step st = c.last();
         double fuelBill = st.fuelLocal + st.fuelImported + st.upkeep;
         check("fixture: a month with coal bought: the fuel bill is positive", fuelBill > 0 && c.u.getFuelBill() == fuelBill, f(fuelBill));
-        double want = st.revenue - st.payroll - st.bought - fuelBill;
-        check("the electricity income is revenue less payroll less the power bought less the fuel bill, to 1e-9",
+        // ...and since PW1-W plus the water works' power, which the water's books buy of the power's (WaterPowerCheck 3 holds the transfer).
+        double want = st.revenue - st.payroll - st.bought - fuelBill + st.waterPower;
+        check("fixture: the town's water works drew power the water's books paid for", st.waterPower > 0, f(st.waterPower));
+        check("the electricity income is revenue less payroll less the power bought less the fuel bill, and the water works' power sold to the water's books, to 1e-9",
                 near(st.income, want, 1e-9) || Math.abs(st.income - want) <= 1e-9 * st.revenue, f(st.income) + " against " + f(want));
         check("the revenue is what the sectors' statements charged for electricity", near(st.revenue, st.charges, 1e-12), f(st.revenue) + " against " + f(st.charges));
         check("the services' net the treasury takes is the electricity income and the water income, to 1e-9",

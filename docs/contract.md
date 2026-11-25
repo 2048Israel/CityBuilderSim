@@ -169,6 +169,21 @@ own words, and it is the requirement.
   loop order; a file the brief did not name. If a slice's Edit refuses the
   worktree, brief it to `EnterWorktree` that path (KP7). DeepSeek, when he has
   the budget, takes the same brief through `docs/deepseek.md`.
+- **Delegate to keep the context clean, not only when it would not fit**
+  (Jerus, 2026-11-23: "sometimes its not about if it fits in the context, its
+  if it pollutes the context"). WHY: FC2 traced every red itself, about 3,400
+  calls in one context over 27 hours, near 266k tokens in 8 of its 11 turns and
+  compacted 14 times, every later call re-sending the traces. Tracing a red
+  check, reading a log or a dry run's output, comparing with main and
+  diagnosing a mechanism each go to a helper that reports in 15 lines: a
+  foreground subagent (`slice` or `Explore`, one at a time, below), or a
+  sub-session through MemWatch, `cbs-bus start <ID>-<what> --as <ID> --cwd
+  <its own worktree> --file <brief>`, started by the batch and reporting to it
+  by bus (DX-RES3 for RES3, 2026-11-23); a Codex builder uses the sub-session.
+  Before starting one, read MemWatch's committed % (under
+  `AllChecks.COMMIT_PCT`); nesting stops three levels below a session. The
+  builder keeps the decisions, the diff review, the records and the commit,
+  and reads the helper's report, not what the helper read.
 - **Headless, a builder runs its subagents in the foreground** (`Agent
   run_in_background: false`) and never ends its turn while a subagent or a job
   it started runs: the process exits at the turn's end and kills them (SQ1,
@@ -322,7 +337,9 @@ own words, and it is the requirement.
   question alone (2026-10-20: "if you dont post the stuff in the chat i wont
   have a clue").
 - **A blocked batch goes under Pending at once**, in a queue commit pushed the
-  same turn (2026-10-24: PT1-M4's reds held a lane six hours). Who returns
-  such a row to Queued when its block clears by itself is still Jerus's call
-  (BP1, call 2; recommended: the orchestrator; unanswered, so until then his
-  review moves it).
+  same turn (2026-10-24: PT1-M4's reds held a lane six hours). The
+  orchestrator returns such a row to Queued itself, once its block clears or
+  once the work that clears it (a trace, a mend) is a batch's, and says so at
+  ship (BP1, call 2; Jerus, 2026-11-24, desk chat: "Yes, its call"). WHY:
+  R1g, WG3, FS5 and FS6 sat in Pending from 11-21 with their causes untraced,
+  each waiting on a review nobody had asked him for.

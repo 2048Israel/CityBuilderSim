@@ -260,9 +260,57 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     private TreasuryFund fund;
     /** What the fund's market book's shares are worth at this step, for its 70/30 (Exchange.cityMarketValue()). */
     private double fundSharesValue;
-    /** The fund's coupons struck at the top of the month, paid at the step (not saved, like the others'). */
-    private double dueCity;
-    /** ...bond by bond, by its id, for the fund's ledger (0.7.39): the same working, not saved. */
+    /** The fund's and passive custody's record-date coupons, saved until actually paid. */
+    private double dueCity, dueCustody;
+    private EstateCustody custody;
+    private boolean couponRecordOpen, couponsCharged, bankCouponsBooked;
+    private double couponCash, couponIssuerDebit, couponBankPaid;
+    private final Map<String, Double> recordDueCells = new LinkedHashMap<>();
+    private final Map<Integer, Double> dueCustodyById = new LinkedHashMap<>();
+    public void attachCustody(EstateCustody owner) { custody = owner; }
+    public void checkCustodyTransfer(int id, double face) {
+        CorporateBond b = bonds.stream().filter(x -> x.id == id).findFirst().orElseThrow();
+        if (!(face >= 0) || face > b.households + Math.ulp(b.households) * 8)
+            throw new IllegalStateException("Estate bond exceeds actual household holder: " + id);
+    }
+    public void transferToCustody(int id, double face) {
+        checkCustodyTransfer(id, face);
+        CorporateBond b = bonds.stream().filter(x -> x.id == id).findFirst().orElseThrow();
+        b.households -= face; b.custody += face;
+        custody.receiveBond(b, face, face * modelPrice(b, ledgerMonth()));
+    }
+    public void transferRecordedCouponToCustody(String cell, double fraction) {
+        double amount = recordDueCells.getOrDefault(cell, 0.0) * fraction;
+        if (amount == 0) return;
+        double available = dueCells.getOrDefault(cell, 0.0);
+        if (amount > available + Math.ulp(available) * 8) throw new IllegalStateException("Estate coupon exceeds record-date entitlement");
+        dueCells.put(cell, available - amount); dueHouseholds -= amount; dueCustody += amount;
+        custody.recordCoupon(amount);
+    }
+    /** Books the actual issuer charge after finance has paid it. A record-date promise alone is not cash. */
+    public void recordCouponIssuerCharge(double paid) {
+        if (!couponRecordOpen) { if (paid != 0) throw new IllegalStateException("Coupon charge has no record date"); return; }
+        if (couponsCharged) { if (paid != 0) throw new IllegalStateException("Coupon issuer charged twice"); return; }
+        double due = dueByIssuer.values().stream().mapToDouble(Double::doubleValue).sum();
+        if (Math.abs(paid - due) > Math.ulp(due) * 8) throw new IllegalStateException("Coupon issuer charge differs from its recorded bill");
+        couponIssuerDebit = paid; couponCash += paid; couponsCharged = true;
+    }
+    /** The native bank credit leaves the same clearing cash before the other holders are paid. */
+    public void recordCouponBankPayment(double paid) {
+        if (!couponRecordOpen) { if (paid != 0) throw new IllegalStateException("Bank coupon has no record date"); return; }
+        if (bankCouponsBooked) { if (paid != 0) throw new IllegalStateException("Bank coupon credited twice"); return; }
+        if (!couponsCharged || paid != dueBank) throw new IllegalStateException("Bank coupon differs from its unpaid record");
+        couponBankPaid = paid; couponCash -= paid; bankCouponsBooked = true;
+    }
+    public double couponClearingCash() { return couponCash; }
+    public double recordedIssuerCouponDebit() { return couponIssuerDebit; }
+    public double recordedBankCouponPaid() { return couponBankPaid; }
+    public double couponUnpaidEntitlement() {
+        if (!couponRecordOpen) return 0;
+        return dueHouseholds + dueWorld + dueCity + dueCustody + (bankCouponsBooked ? 0 : dueBank)
+                + dueCompanies.values().stream().mapToDouble(Double::doubleValue).sum();
+    }
+    /** ...bond by bond, by its id, for the fund's ledger (0.7.39): the same saved record-date working. */
     private final Map<Integer, Double> dueCityById = new LinkedHashMap<>();
 
     /** The month the fund's ledger dates what it writes by: the city's, read live. */
@@ -289,6 +337,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
      * the two drift. HL1 names it (MoneyAudit's "- households BondFaceOrphaned"), HL2 mends it; not saved, struck and read inside one press.
      */
     private double orphanedToHouseholds;
+    private double couponsToCustody, principalToCustody, lossCustody;
     private double lossHouseholds, lossBank, lossCompanies, lossWorld;  // face written off, by holder
     private double bankLossCost;                              // what the bank's holdings cost it, written off
     private double issuedFace, issuedCosts;
@@ -313,7 +362,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     private double betweenHouseholds, lifeBetweenHouseholds;
     private int betweenHouseholdsTrades, lifeBetweenHouseholdsTrades;
 
-    /* ---- the coupons struck at the top of the month, paid at the market's step (not saved: a month's working, settled before any save) ---- */
+    /* ---- saved record-date entitlements and actual charged/unpaid cash, paid at the market's step ---- */
     private double dueHouseholds, dueBank, dueWorld;
     /** ...the households' part, cell by cell, by the cell's key: what each held at the record date (round 2). */
     private final Map<String, Double> dueCells = new LinkedHashMap<>();
@@ -425,6 +474,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     }
 
     @Override public double monthlyCoupon(String sector) {
+        if (couponRecordOpen) return couponsCharged ? 0 : dueByIssuer.getOrDefault(sector, 0.0);
         double t = 0;
         for (CorporateBond b : bonds) if (b.issuer.equals(sector)) t += b.monthlyCoupon();
         return t;
@@ -477,7 +527,10 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         for (CorporateBond b : bonds) {
             if (!b.issuer.equals(sector)) continue;
             double hh = b.households, bk = b.bank, cost = b.bankCost, w = b.world, co = b.companiesTotal(), ci = b.city;
+            double custodyBefore = b.custody;
             gone += b.writeDown(keep);
+            if (custody != null && custodyBefore > 0) custody.writeDownBond(b, custodyBefore, b.custody);
+            lossCustody += custodyBefore - b.custody;
             if (fund != null) fund.noteBondLoss(ci - b.city);
             // ...and the ledger takes that share of the bond's cost out, a realized loss (0.7.39).
             if (fund != null && ci > 0) fund.getLedger().writtenDown(b, ci, b.city, ledgerMonth());
@@ -1038,6 +1091,10 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
 
     /** Strikes this month's coupons by who holds each bond now: the record date. */
     public void strikeCoupons() {
+        if (couponRecordOpen) return; // saved unpaid record dates never strike twice
+        couponRecordOpen = true; couponsCharged = bankCouponsBooked = false;
+        couponIssuerDebit = couponBankPaid = 0;
+        dueCustody = 0; recordDueCells.clear(); dueCustodyById.clear();
         dueHouseholds = dueBank = dueWorld = dueCity = 0;
         dueCityById.clear();
         dueCompanies.clear();
@@ -1066,23 +1123,29 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             dueBank += b.bank * c;
             dueWorld += b.world * c;
             dueCity += b.city * c;
+            dueCustody += b.custody * c;
+            if (custody != null && b.custody > 0) {
+                custody.recordCoupon(b.custody * c); dueCustodyById.merge(b.id, b.custody * c, Double::sum);
+            }
             if (b.city > 0) dueCityById.merge(b.id, b.city * c, Double::sum);
             for (Map.Entry<String, Double> e : b.companies.entrySet()) {
                 if (e.getValue() > 0) dueCompanies.merge(e.getKey(), e.getValue() * c, Double::sum);
             }
             dueByIssuer.merge(b.issuer, b.face * c, Double::sum);
         }
+        recordDueCells.putAll(dueCells);
     }
 
-    /** Every coupon struck this month, all holders: what the issuers' statements paid. */
+    /** Coupon bill not yet charged to issuers. The separate saved debit records what finance actually paid. */
     public double getCouponsStruck() {
+        if (couponsCharged) return 0;
         double t = 0;
         for (double v : dueByIssuer.values()) t += v;
         return t;
     }
 
     /** The bank's part of this month's coupons, paid it at the settle with its loans' interest. */
-    public double getCouponsDueToBank() { return dueBank; }
+    public double getCouponsDueToBank() { return bankCouponsBooked ? 0 : dueBank; }
 
     /**
      * PAYS EVERY BOND THAT FALLS DUE THIS MONTH: its face out of the issuer's
@@ -1120,6 +1183,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 principalToCompanies += v;
             }
             if (b.world > 0) principalAbroad += b.world;
+            if (b.custody > 0 && custody != null) { custody.redeemBond(b, b.custody); principalToCustody += b.custody; }
             // ...and the city's fund (0.7.14): issuer's till to the fund, a pool to a pool.
             if (b.city > 0 && fund != null) fund.receivePrincipal(b.city);
             // ...its face against what it cost the fund (0.7.39, FundLedger).
@@ -1130,8 +1194,10 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         }
     }
 
-    /** Pays the month's coupons struck at the top to everybody but the bank. */
+    /** Pays the saved record-date holders after the actual issuer charge and bank booking. */
     private void payCoupons() {
+        if (couponRecordOpen && (!couponsCharged || !bankCouponsBooked)) return;
+        double paidFromClearing = couponUnpaidEntitlement();
         if (dueHouseholds > 0) {
             // To the cells that held them at the record date (round 2).
             if (households != null) {
@@ -1162,6 +1228,13 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         if (fund != null) for (Map.Entry<Integer, Double> e : dueCityById.entrySet()) {
             fund.getLedger().coupon(e.getKey(), e.getValue(), ledgerMonth());
         }
+        if (dueCustody > 0 && custody != null) {
+            for (Map.Entry<Integer, Double> e : dueCustodyById.entrySet()) custody.getLedger().coupon(e.getKey(), e.getValue(), ledgerMonth());
+            custody.payRecordedCoupon(dueCustody); couponsToCustody += dueCustody;
+        }
+        couponCash -= paidFromClearing;
+        dueCustodyById.clear();
+        dueCustody = 0; couponRecordOpen = couponsCharged = false; recordDueCells.clear(); dueCustodyById.clear();
         dueHouseholds = dueBank = dueWorld = dueCity = 0;
         dueCityById.clear();
         dueCompanies.clear();
@@ -1193,6 +1266,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         couponsToHouseholds = couponsToBank = couponsToCompanies = couponsAbroad = 0;
         principalToHouseholds = principalToBank = principalToCompanies = principalAbroad = 0;
         orphanedToHouseholds = 0;
+        couponsToCustody = principalToCustody = lossCustody = 0;
         lifeLossHouseholds += lossHouseholds;
         lifeLossBank += lossBank;
         lifeLossCompanies += lossCompanies;
@@ -1239,8 +1313,13 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         // Gone whole: a bond a backstop wrote to nothing.
         bonds.removeIf(b -> {
             if (b.face > dust) return false;
+            // Native extinction closes the cells too: their own per-cell positions otherwise
+            // outlive the deleted issuer and cannot pass to an estate (HT1/FundCheck).
+            if (households != null) lossHouseholds += households.writeDownBonds(b.id, 0);
+            b.households = 0;
             // ...what is left of its cost in the fund, a loss (0.7.39).
             if (fund != null) fund.getLedger().gone(b, month);
+            if (custody != null && b.custody > 0) { custody.writeDownBond(b, b.custody, 0); b.custody = 0; }
             OrderBook book = books.remove(b.instrument());
             if (book != null) book.clear();
             return true;
@@ -1828,7 +1907,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             double held = households.bondFaceHeld(b.id);
             if (Math.abs(held - b.households) <= 1e-9 * Math.max(1, Math.abs(b.households))) continue;
             b.households = held;
-            b.face = b.households + b.bank + b.world + b.city + b.companiesTotal();
+            b.face = b.households + b.bank + b.world + b.city + b.custody + b.companiesTotal();
         }
     }
 
@@ -1936,17 +2015,17 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
 
     /** The month's coupons, every holder's: the households', the bank's, the companies' and the world's. */
     public double getCouponsPaid() {
-        return couponsToHouseholds + couponsToBank + couponsToCompanies + couponsAbroad;
+        return couponsToHouseholds + couponsToBank + couponsToCompanies + couponsAbroad + couponsToCustody;
     }
 
     /** ...the principal repaid at maturity, to every holder. */
     public double getPrincipalRepaid() {
-        return principalToHouseholds + principalToBank + principalToCompanies + principalAbroad;
+        return principalToHouseholds + principalToBank + principalToCompanies + principalAbroad + principalToCustody;
     }
 
     /** ...and the face written off in defaults, every holder's. */
     public double getWrittenOffThisMonth() {
-        return lossHouseholds + lossBank + lossCompanies + lossWorld;
+        return lossHouseholds + lossBank + lossCompanies + lossWorld + lossCustody;
     }
 
     /**
@@ -1957,7 +2036,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
      */
     public record Issuer(String issuer, int bonds, double face, double lowCoupon, double highCoupon,
                          int nearestMaturity, int largestId, double households, double bank,
-                         double companies, double world, double city) { }
+                         double companies, double world, double city, double custody) { }
 
     /** Every issuer with a bond outstanding, biggest face first. */
     public List<Issuer> byIssuer() {
@@ -1967,7 +2046,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         for (Map.Entry<String, List<CorporateBond>> e : of.entrySet()) {
             int n = 0, nearest = Integer.MAX_VALUE, largest = -1;
             double face = 0, low = Double.POSITIVE_INFINITY, high = 0, most = -1;
-            double hh = 0, bk = 0, co = 0, wo = 0, ci = 0;
+            double hh = 0, bk = 0, co = 0, wo = 0, ci = 0, cu = 0;
             for (CorporateBond b : e.getValue()) {
                 n++;
                 face += b.face;
@@ -1979,9 +2058,9 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 bk += b.bank;
                 co += b.companiesTotal();
                 wo += b.world;
-                ci += b.city;
+                ci += b.city; cu += b.custody;
             }
-            out.add(new Issuer(e.getKey(), n, face, low, high, nearest, largest, hh, bk, co, wo, ci));
+            out.add(new Issuer(e.getKey(), n, face, low, high, nearest, largest, hh, bk, co, wo, ci, cu));
         }
         out.sort((a, b) -> Double.compare(b.face(), a.face()));
         return out;
@@ -2009,6 +2088,11 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         String lastIssue;
         double[] lastIssueFigures;
         Map<String, Double> issuedBySector, proceedsBySector, repaidBySector, boughtBySector, couponsBySector;
+        double[] couponDues;
+        boolean couponRecordOpen, couponsCharged, bankCouponsBooked;
+        double couponCash, couponIssuerDebit, couponBankPaid;
+        Map<String, Double> dueCells, recordDueCells, dueCompanies, dueByIssuer;
+        Map<Integer, Double> dueCityById, dueCustodyById;
 
         /**
          * A copy that shares nothing with this state (UP1, 2026-10-22):
@@ -2030,6 +2114,10 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 c.repaidBySector = SaveCopy.map(repaidBySector);
                 c.boughtBySector = SaveCopy.map(boughtBySector);
                 c.couponsBySector = SaveCopy.map(couponsBySector);
+                c.couponDues = couponDues == null ? null : couponDues.clone();
+                c.dueCells = SaveCopy.map(dueCells); c.recordDueCells = SaveCopy.map(recordDueCells);
+                c.dueCompanies = SaveCopy.map(dueCompanies); c.dueByIssuer = SaveCopy.map(dueByIssuer);
+                c.dueCityById = SaveCopy.map(dueCityById); c.dueCustodyById = SaveCopy.map(dueCustodyById);
                 return c;
             } catch (CloneNotSupportedException e) {
                 throw new AssertionError(e);
@@ -2051,7 +2139,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
                 issuedFace, issuedCosts, issues, emigrantsFace,
                 lastPostedBuy, lastPostedSell, lastFilled, lastSellQuantityWaited,
                 lastSellsPosted, lastSellsWaited, lastTrades, bankLossCost,
-                betweenHouseholds, betweenHouseholdsTrades };
+                betweenHouseholds, betweenHouseholdsTrades, couponsToCustody, principalToCustody, lossCustody };
         s.life = new double[] {
                 lifeIssued, lifeCosts, lifeCouponsHouseholds, lifeCouponsBank, lifeCouponsCompanies, lifeCouponsAbroad,
                 lifeLossHouseholds, lifeLossBank, lifeLossCompanies, lifeLossWorld,
@@ -2065,6 +2153,12 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         s.repaidBySector = new LinkedHashMap<>(repaidBySector);
         s.boughtBySector = new LinkedHashMap<>(boughtBySector);
         s.couponsBySector = new LinkedHashMap<>(couponsBySector);
+        s.couponDues = new double[] {dueHouseholds, dueBank, dueWorld, dueCity, dueCustody};
+        s.couponRecordOpen = couponRecordOpen; s.couponsCharged = couponsCharged; s.bankCouponsBooked = bankCouponsBooked;
+        s.couponCash = couponCash; s.couponIssuerDebit = couponIssuerDebit; s.couponBankPaid = couponBankPaid;
+        s.dueCells = new LinkedHashMap<>(dueCells); s.recordDueCells = new LinkedHashMap<>(recordDueCells);
+        s.dueCompanies = new LinkedHashMap<>(dueCompanies); s.dueByIssuer = new LinkedHashMap<>(dueByIssuer);
+        s.dueCityById = new LinkedHashMap<>(dueCityById); s.dueCustodyById = new LinkedHashMap<>(dueCustodyById);
         return s;
     }
 
@@ -2084,7 +2178,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         nextId = Math.max(1, s.nextId);
         double[] m = s.month;
         // 30 from round 1, 32 since round 2 (the cells' trades with each other).
-        if (m != null && (m.length == 30 || m.length == 32)) {
+        if (m != null && (m.length == 30 || m.length == 32 || m.length == 35)) {
             int i = 0;
             householdsBought = m[i++]; householdsSold = m[i++]; householdsBoughtAbroad = m[i++]; householdsSoldAbroad = m[i++];
             worldBought = m[i++]; worldSold = m[i++];
@@ -2095,7 +2189,8 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             lastPostedBuy = m[i++]; lastPostedSell = m[i++]; lastFilled = m[i++]; lastSellQuantityWaited = m[i++];
             lastSellsPosted = (int) Math.round(m[i++]); lastSellsWaited = (int) Math.round(m[i++]);
             lastTrades = (int) Math.round(m[i++]); bankLossCost = m[i++];
-            if (m.length == 32) { betweenHouseholds = m[i++]; betweenHouseholdsTrades = (int) Math.round(m[i]); }
+            if (m.length >= 32) { betweenHouseholds = m[i++]; betweenHouseholdsTrades = (int) Math.round(m[i++]); }
+            if (m.length >= 35) { couponsToCustody = m[i++]; principalToCustody = m[i++]; lossCustody = m[i]; }
         }
         double[] l = s.life;
         if (l != null && (l.length == 18 || l.length == 20)) {
@@ -2119,6 +2214,16 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         putAll(repaidBySector, s.repaidBySector);
         putAll(boughtBySector, s.boughtBySector);
         putAll(couponsBySector, s.couponsBySector);
+        if (s.couponDues != null && s.couponDues.length == 5) {
+            dueHouseholds = s.couponDues[0]; dueBank = s.couponDues[1]; dueWorld = s.couponDues[2];
+            dueCity = s.couponDues[3]; dueCustody = s.couponDues[4];
+        }
+        couponRecordOpen = s.couponRecordOpen; couponsCharged = s.couponsCharged; bankCouponsBooked = s.bankCouponsBooked;
+        couponCash = s.couponCash; couponIssuerDebit = s.couponIssuerDebit; couponBankPaid = s.couponBankPaid;
+        putAll(dueCells, s.dueCells); putAll(recordDueCells, s.recordDueCells);
+        putAll(dueCompanies, s.dueCompanies); putAll(dueByIssuer, s.dueByIssuer);
+        if (s.dueCityById != null) dueCityById.putAll(s.dueCityById);
+        if (s.dueCustodyById != null) dueCustodyById.putAll(s.dueCustodyById);
     }
 
     /** A save carries no NaN: nothing where there was none. */
@@ -2133,6 +2238,8 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     /** No bonds, no books, nothing over the city's life: a new city. */
     public void reset() {
         bonds.clear();
+        couponCash = couponIssuerDebit = couponBankPaid = 0; bankCouponsBooked = false;
+        dueCustody = 0; couponRecordOpen = couponsCharged = false; recordDueCells.clear(); dueCustodyById.clear();
         books.clear();
         issuedSoFar.clear();
         repaidSoFar.clear();
@@ -2178,7 +2285,11 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
         companiesSoldShort *= scale;
         bankLossTaken.replaceAll((k, v) -> v * scale);
         lastIssueFace *= scale;
-        dueHouseholds *= scale; dueBank *= scale; dueWorld *= scale; dueCity *= scale;
+        couponCash *= scale; couponIssuerDebit *= scale; couponBankPaid *= scale;
+        couponsToCustody *= scale; principalToCustody *= scale; lossCustody *= scale;
+        dueHouseholds *= scale; dueBank *= scale; dueWorld *= scale; dueCity *= scale; dueCustody *= scale;
+        recordDueCells.replaceAll((k, v) -> v * scale);
+        dueCustodyById.replaceAll((k, v) -> v * scale);
         dueCityById.replaceAll((k, v) -> v * scale);
         fundSharesValue *= scale;
         dueCompanies.replaceAll((k, v) -> v * scale);

@@ -38,20 +38,22 @@ public class AllChecks {
 
     /** Every harness: the gate and nightly selections together cover this registry. */
     static final String[] HARNESSES = {
-        "CopperBufferCheck", "UndemandedFeedCheck", "GroundInputCheck", "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "PackagingCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck", "PowerDispatchCheck", "PowerPriceCheck",
+        "CopperBufferCheck", "UndemandedFeedCheck", "GroundInputCheck", "BuildingDataCheck", "BrandingCheck", "CreditsCheck", "PackagingCheck", "MoneySignCheck", "NewGameCheck", "WorldCheck", "GridCheck", "CalendarCheck", "BooksCheck", "WaterCheck", "HydroCheck", "PowerDispatchCheck", "SubstationCheck", "PowerPriceCheck", "PowerPlantsCheck", "WaterPowerCheck", "PowerViewCheck",
         "EarthCheck", "WorldDataCheck", "NationsCheck", "WorldMeasuresCheck", "RankingsCheck", "WorldMarketCheck", "WorldMoneysCheck", "RealDollarCheck", "PartnersCheck", "VaultMoneysCheck", "PegAnchorCheck", "InterestAbroadCheck", "GoldPriceCheck", "GoldStandardCheck", "EarthTerrainCheck", "EarthFoundingCheck", "EarthDepositsCheck", "GlobeCheck",
         "PolicyCheck", "PolicyOpenCheck", "MoneyDatesCheck", "LandCheck", "SlopeCheck", "LandClassCheck", "LandmassCheck", "LandNationsCheck", "BridgeCheck", "RunWorksCheck", "ZoningCheck", "ZoningViewCheck", "MiningCheck", "InvestCheck", "CreditCheck", "MortgageCheck", "HousingDoorCheck", "CreditCrunchCheck", "OrderDoorCheck",
-        "ConstructionControlCheck", "DeathCareFirstCheck", "BuildersFirstCheck", "ConstructionTrapCheck", "FoundingYardCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "EssentialWorksCheck", "WorksFinanceCheck", "IslandLinkCheck", "SectorFlowCheck", "PolicyPreviewCheck",
+        "ConstructionControlCheck", "DeathCareFirstCheck", "BuildersFirstCheck", "GapOrderCheck", "ConstructionTrapCheck", "ForeignCrewsCheck", "FoundingYardCheck", "BuildAdviceCheck", "BuildCardCheck", "RoadCheck", "ChildcareCheck", "AutoBuildCheck", "EssentialWorksCheck", "WorksFinanceCheck", "IslandLinkCheck", "SectorFlowCheck", "PolicyPreviewCheck",
         "RestructureCheck", "BuybackCheck", "CallCheck", "FloatLinkCheck", "DeskCheck", "GdpCheck", "HistoryCheck",
         "BankCheck", "ForeignCheck", "CurrencyCheck", "ExchangeRateCheck", "InterventionCheck", "CurrencyRegimeCheck", "PassThroughCheck", "ForeignDebtCheck", "DebtExchangeCheck", "DebtMoneysCheck", "CapitalFlowCheck", "CarryTradeCheck", "EquityCheck", "ExchangeCheck", "ShortSellingCheck", "MarketCheck", "MonetaryCheck", "ExpectationsCheck", "CurveCheck", "GroceryCheck", "SupplierCreditCheck", "CentralBankCheck", "FundCheck", "FundLedgerCheck", "FormatsCheck", "HoldersCheck", "BondCheck", "OrderBookCheck",
         "DenominationCheck", "PriceLevelCheck", "DeterminismCheck", "StepsCheck",
-        "HouseholdCheck", "HouseholdFlowCheck", "HouseholdStageCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
+            "HouseholdCheck", "CardCheck", "DebtStatisticsCheck", "HouseholdFlowCheck", "CapitalGainsCheck", "HouseholdStageCheck", "PopulationCheck", "LabourCheck", "EducationCheck", "HealthCheck",
         "InfrastructureCheck", "ReadPathCheck", "RobustnessCheck", "SaveFileCheck", "ReloadCheck",
         "SaveSlotCheck", "ScaleCheck", "BuildingStackCheck", "MapCheck", "GatewayCheck", "MainLineCheck", "RailDrawCheck", "JunctionCheck", "PlanCheck", "OrderSearchCheck", "SkipReportCheck", "InboxCheck", "PlaytestFixCheck", "BuildMenuCheck", "KeptCheck", "KeptTimingCheck", "ChartFitCheck", "ToastCheck", "MoneyWordsCheck", "ClockCheck",
         "ConsumptionCheck", "SectorStatementCheck", "TreasuryCheck", "HousingCheck", "OutsideCheck", "SicknessCheck", "CausesOfDeathCheck", "MedicineCheck", "HouseholdMemoryCheck", "DeathRecordCheck", "CrimeCheck", "BusinessServicesCheck", "DistressBleedCheck", "ManufacturingCheck", "AgricultureCheck", "FoodIndustryCheck", "FoodProcessingCheck", "TradeCostCheck", "RailCheck", "RailDepotCheck", "HaulageCheck", "CarCheck", "VanCheck", "RestaurantsCheck", "LuxuryRetailCheck", "OilCheck", "RefineryCheck", "RefineryViewCheck", "OilViewCheck", "WellCheck", "PortCheck", "QuayRailCheck", "QuayCraneCheck", "LandlordPortCheck", "HomeRailCheck", "FreightViewCheck", "TradeBandCheck", "MaterialsCheck", "HydrogenSteelCheck", "CoalMiningCheck", "QuarryingCheck", "CementConcreteCheck", "CopperMiningCheck", "SulphideLeachCheck", "GoldMiningCheck", "CopperRefiningCheck", "ForestryCheck", "WoodProductsCheck", "IndustryViewCheck", "YearBookCheck", "ChartCheck", "TimingCheck", "ObservationCheck", "StaleCheck", "KnownRedsCheck", "EnsembleCheck", "TruckRouteCheck", "AuctionCheck", "LongPlaytest",
         "IslandNetCheck", "IslandRailCheck", "CrossingCheck", "BridgeMapCheck", "WantedPostsCheck", "PartnerCallsCheck", "Forms1900Check", "EquipmentCheck", "FittingCheck", "DriverlessTruckCheck", "FieldOperatorsCheck", "ElectrolyserCheck", "RecipeCheck", "HistoricalRecipeCheck", "HistoricalLicenceCheck", "LicenceFeesCheck", "PublicLicenceCheck", "ResearchCheck", "DiscoveryCheck", "PrizeCheck", "ResearchPreviewCheck", "ResearchViewCheck", "WageLadderCheck", "ArrivalMixCheck", "BasketYearCheck", "Village1900Check",
         "ReplayCheck", "StaffingDrawCheck", "StaffingTieCheck", "OwnerCheck",
-        "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck", "ER1Check", "PostwarRecipeCheck", "YoungBankCheck", "NewUnitCheck", "FitoutCheck", "FB13Check"
+        "HousingInventoryCheck",
+        "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck", "ER1Check", "PostwarRecipeCheck", "ModernEngineeringCheck", "ModernRowsCheck", "YoungBankCheck", "NewUnitCheck", "FitoutCheck", "FB13Check", "GroundSkipCheck",
+        "ForeignChoiceCheck"
     };
 
     /** How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. */
@@ -75,7 +77,7 @@ public class AllChecks {
     /** Keep 4 GB of RAM available, above the 2.9 GB left when two KeptChecks drove this 32 GB PC to 91% RAM (MG1). */
     static final double AVAILABLE_RAM_GB = 4;
 
-    /** Start beside another harness below 80% CPU, leaving room before MG1's measured 85â€“94% contention. */
+    /** Start beside another harness below 80% CPU, leaving room before MG1's measured 85Ã¢â‚¬â€œ94% contention. */
     static final double CPU_PCT = 80;
 
     /** Sample every two seconds so held starts can resume without busy waiting (MG1). */
@@ -190,7 +192,7 @@ public class AllChecks {
                         if (seen == 0) held.incrementAndGet();
                         if ((seen & (1 << block)) == 0) {
                             heldBy[block]++;
-                            System.out.println("memory: " + name + " start held â€” " + holdLine(reading, block));
+                            System.out.println("memory: " + name + " start held Ã¢â‚¬â€ " + holdLine(reading, block));
                             seen |= 1 << block;
                         }
                         live.wait(RESOURCE_SECONDS * 1000L);
@@ -258,7 +260,7 @@ public class AllChecks {
         System.out.println(summaryLine(ran, failed, (System.currentTimeMillis() - started) / 1000.0));
         String display = System.getProperty(ham.citybuildersim.ui.FollowBench.DISPLAY_PROPERTY, "");   // GB5: the gate box's runs
         if (!display.isEmpty()) System.out.println(displayLine(display, order));
-        if (held.get() > 0) System.out.printf("memory: %d start(s) held until resources allowed â€” free commit %d, available RAM %d, CPU %d%n", held.get(), heldBy[1], heldBy[2], heldBy[3]);
+        if (held.get() > 0) System.out.printf("memory: %d start(s) held until resources allowed Ã¢â‚¬â€ free commit %d, available RAM %d, CPU %d%n", held.get(), heldBy[1], heldBy[2], heldBy[3]);
         if (soft > 0) System.out.printf("%d timing assertion%s SOFT, not counted (%s): %s%n",
                 soft, soft == 1 ? "" : "s", Timing.forwarded(), String.join(", ", softIn));
         if (observed > 0) System.out.printf("%d path assertion%s OBSERVED, not counted: %s%n",
@@ -542,6 +544,8 @@ public class AllChecks {
     /** Starts a heap-bounded harness with forwarded properties and UTF-8 logged output (SP1, TM3). */
     static List<String> command(String java, String classpath, String name, boolean logged) {
         List<String> c = new ArrayList<>(List.of(java, "-Xmx" + HEAP_MB + "m", "-Xms" + HEAP_START_MB + "m"));
+        // WHY (FS5): soft-only renderer images otherwise survive by heap headroom and wall time, including orphan locked pool entries.
+        if (name.equals("KeptCheck")) c.add("-XX:SoftRefLRUPolicyMSPerMB=0");
         Observation.forwardTo(c);
         c.add("-D" + Observation.HARNESS_PROPERTY + "=" + name);
         if (Timing.forwarded() != null) c.add(Timing.forwarded());

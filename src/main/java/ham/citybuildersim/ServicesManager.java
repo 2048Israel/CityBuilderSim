@@ -112,7 +112,7 @@ public class ServicesManager {
         // ...and the plants themselves, each with its count, for the month's merit order (PW1; UtilitiesHandler, THE MERIT ORDER).
         Map<BuildingsTemplate, Long> plants = new LinkedHashMap<>();
         for (BuildingsTemplate t : buildingManager.getTemplates()) {
-            if (t.getCategory() != BuildingType.ELECTRICITY) continue;
+            if (t.getCategory() != BuildingType.ELECTRICITY || Substations.isSubstation(t)) continue;
             long n = buildingManager.getQuantity(t.getId());
             if (n > 0) plants.put(t, n);
         }
@@ -145,6 +145,9 @@ public class ServicesManager {
                         t -> t.isSeaWater() ? t.getProduction1() : 0));
         utilitiesHandler.setFreshCap(freshCapSource == null
                 ? Double.POSITIVE_INFINITY : freshCapSource.getAsDouble());
+        // ...and the power the works draw, which the water's books buy of the power's since PW1-W (UtilitiesHandler, THE WATER'S POWER).
+        utilitiesHandler.setWaterWorksDraw(buildingManager.getTotalByCategoryDouble(BuildingType.WATER, t -> t.isSeaWater() ? 0 : gridDraw(t)),
+                buildingManager.getTotalByCategoryDouble(BuildingType.WATER, t -> t.isSeaWater() ? gridDraw(t) : 0));
 
         // every building standing draws water, whatever its category - the
         // mirror of the electricity draw above

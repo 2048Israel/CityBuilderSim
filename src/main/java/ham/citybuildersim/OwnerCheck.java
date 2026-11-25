@@ -472,7 +472,10 @@ public class OwnerCheck {
         couple.savings = 1_000;
         couple.shares[IND] = 10;
         owners[0] = ownersNext;
-        month(hb, couplesNext);
+        // Observe the reclassification itself, before the two different
+        // households settle another month's minima and emergency bills.
+        hb.censusOnly((shape, tier) -> shape == FamilyStructure.COUPLE && tier == PayTier.UNSKILLED ? couplesNext
+                : shape == FamilyStructure.SINGLE_ADULT && tier == PayTier.SKILLED ? 40 : 0);
         return hb;
     }
 

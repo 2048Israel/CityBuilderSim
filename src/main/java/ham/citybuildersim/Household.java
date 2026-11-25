@@ -155,6 +155,69 @@ public abstract class Household {
     /** ...and what it owes the bank on its revolving credit. */
     double debt;
 
+    /** Shares of households carrying cards, late, and excluded; lateDebt is part of debt (HC1). */
+    double revolving, lateDebt, lateShare, shutOut;
+    /** The settled month's minimum principal, emergency bill, and net write-off, per household. */
+    double minimumPaid, emergencyBill, cardWrittenOff, minimumDue, depositIncome;
+    /** Next census's debt-free departing share, and its remaining cash per original household. */
+    double bankruptcyLeaving, bankruptcyCash;
+
+    public double revolving() { return revolving; }
+    public double lateDebt() { return lateDebt; }
+    public double lateShare() { return lateShare; }
+    public double shutOut() { return shutOut; }
+    public double minimumPaid() { return minimumPaid; }
+    public double minimumDue() { return minimumDue; }
+    public double emergencyBill() { return emergencyBill; }
+    public double cardWrittenOff() { return cardWrittenOff; }
+
+    /**
+     * Harness-only lender input, not a borrower stock: a closed lender offers
+     * no card room, even as an exclusion ages. The game leaves this true.
+     * Like a fixture census/market, it is not part of a city's saved position.
+     */
+    transient boolean cardLenderOpenForHarness = true;
+
+    /** Available customers after the bank's income/access test, excluding children and prisoners. */
+    double cardAccess(double income) {
+        return cardLenderOpenForHarness && grownUps() > 0 && !debtFrozen()
+                ? Bank.cardAccess(income, tier(), shutOut) : 0;
+    }
+
+    /** The rate is on holders' own balances, capped at the criminal-rate default. */
+    private double cardRate(double base, double income) {
+        double months = income > 0 && revolving > 0 ? debt / revolving / income : 0;
+        return debtFrozen() ? 0 : Math.min(Bank.CARD_RATE_CAP,
+                Math.max(0, base) + Bank.CARD_SPREAD + HouseholdBalance.RISK_SLOPE * months);
+    }
+
+    /** Principal part of the fixed minimum, after its interest. */
+    double minimumPrincipal() {
+        return debtFrozen() ? 0 : Math.min(debt, Math.max(Bank.CARD_MINIMUM * debt,
+                interest + Bank.CARD_MIN_PRINCIPAL * debt) - interest);
+    }
+
+    /** Probability and balance tails move into arrears at an annual hazard. */
+    private void cardArrears(double spare) {
+        double currentShare = Math.max(0, revolving - lateShare);
+        double currentDebt = Math.max(0, debt - lateDebt);
+        if (!(currentShare > 0 && currentDebt > 0) || debtFrozen()) return;
+        double line = Math.max(0, spare) / Math.max(Bank.CARD_MINIMUM, rate / 12 + Bank.CARD_MIN_PRINCIPAL);
+        double mean = currentDebt / currentShare;
+        lateDebt += currentShare * CellSpread.aboveMean(line, mean, CellSpread.CARD_SIGMA) / 12;
+        lateShare += currentShare * CellSpread.above(line, mean, CellSpread.CARD_SIGMA) / 12;
+    }
+
+    /** Reassert subset bounds after a census pools wallets from different shapes. */
+    void boundCards() {
+        revolving = Math.min(1, Math.max(0, revolving));
+        shutOut = Math.min(1 - revolving, Math.max(0, shutOut));
+        lateDebt = Math.min(debt, Math.max(0, lateDebt));
+        lateShare = Math.min(revolving, Math.max(0, lateShare));
+        if (!(debt > 0)) revolving = lateDebt = lateShare = 0;
+    }
+
+
     /**
      * Dividends and foreign coupons received since this cell last planned a
      * month. A STOCK between strikes, and saved, which is why it is here and
@@ -182,8 +245,6 @@ public abstract class Household {
      */
     double meansIncome;
 
-    /** Months this cell cannot borrow, after a discharge. A countdown, so a stock. */
-    int lockout;
 
     /**
      * THE MOST THIS CELL MAY OWE THIS MONTH ON THE BANK'S CAPITAL (0.7.8),
@@ -218,6 +279,16 @@ public abstract class Household {
 
     /** What the shares paid this month, per household. Credited to savings. */
     double dividends;
+
+    /** Average acquisition cost in each company, per household (HT1); a split leaves it standing. */
+    final double[] basis = new double[Equity.COMPANIES.length];
+    /** Net capital losses available against later gains, per household. */
+    double lossCarried;
+    /** Encumbered subset of shares, and its limited, interest-free unpaid gains tax (HT1). */
+    final double[] taxShares = new double[Equity.COMPANIES.length];
+    final double[] taxClaim = new double[Equity.COMPANIES.length];
+    /** Gains taxed in the current month, eligible for a same-month loss refund. Saved, not a stock. */
+    double taxedGains;
 
     /**
      * DOLLARS held abroad by one of these households: the world's paper,
@@ -735,7 +806,7 @@ public abstract class Household {
     /** Per household. */
     public double savings()     { return savings; }
     public double debt()        { return debt; }
-    public int    lockout()     { return lockout; }
+    public int    lockout()     { return shutOut > 0 ? HouseholdBalance.LOCKOUT_MONTHS : 0; }
 
     /** Shares held in this company, per household. */
     public double shares(int company) { return shares[company]; }
@@ -766,7 +837,7 @@ public abstract class Household {
 
     /** Shares sold this month to cover the shop, per household, in cash. */
     public double sold()        { return sold; }
-    public boolean isLockedOut(){ return lockout > 0; }
+    public boolean isLockedOut(){ return shutOut > 0; }
     public double disposable()  { return disposable; }
     public double afterFixed()  { return afterFixed; }
     public double interest()    { return interest; }
@@ -876,6 +947,7 @@ public abstract class Household {
                 Liquidity market, double localPerUsd) {
 
         disposable = disposablePer;
+        boundCards();
 
         /* ---------------- what the lender charges this one ----------------
          * The bank's household rate - its four costs at RISK_HOUSEHOLD (Bank,
@@ -883,10 +955,10 @@ public abstract class Household {
          * owed, capped. Until 0.7.7 it was the city's own rate plus
          * BASE_SPREAD, three points.
          */
-        double owedMonths = disposablePer > 0 ? debt / disposablePer : 0;
-        rate = debtFrozen() ? 0 : Math.min(HouseholdBalance.MAX_RATE,
-                Math.max(0, riskFreeAnnual) + HouseholdBalance.RISK_SLOPE * owedMonths);
+        rate = cardRate(riskFreeAnnual, disposablePer);
         interest = debt * rate / 12;
+        minimumDue = debtFrozen() ? 0 : Math.min(debt + interest,
+                Math.max(Bank.CARD_MINIMUM * debt, interest + Bank.CARD_MIN_PRINCIPAL * debt));
 
         /* ---------------- the bills, in order ---------------- */
         // The student loan: the month's interest on the balance, then the
@@ -895,12 +967,23 @@ public abstract class Household {
         studentInterest = studentInterestDue();
         studentRepaid = Math.min(studentDebt, studentRepayment());
         afterFixed = disposablePer - rentPerHome - feesPer - interest - studentRepaid - studentInterest;
+        afterFixed -= minimumPrincipal();
         subsistence = baskets() * foodPricePerHead;
 
         /* ---------------- settle what they actually spent ---------------- */
+        emergencyBill = minimumPaid = cardWrittenOff = 0;
+        double duePrincipal = minimumPrincipal();
+        double beforeMinimum = afterFixed + duePrincipal;
+        // The risk line is income after non-card fixed bills and a full food basket.
+        cardArrears(afterFixed + duePrincipal + interest - subsistence);
+        minimumPaid = Math.min(duePrincipal, Math.max(0, beforeMinimum + Math.max(0, savings)));
+        afterFixed += duePrincipal - minimumPaid;
         double gap = spentPer - afterFixed;
 
-        drawn = 0; borrowed = 0; repaid = 0; banked = 0; unfunded = 0; sold = 0;
+        drawn = 0; borrowed = 0; repaid = minimumPaid; banked = 0; unfunded = 0; sold = 0;
+        double beforePayment = debt;
+        debt = Math.max(0, debt - minimumPaid);
+        if (beforePayment > 0) lateDebt *= debt / beforePayment;
         loanFee = 0;
         paperSold = 0; paperIncome = 0;
         bondsSold = 0; bondIncome = 0;
@@ -910,7 +993,15 @@ public abstract class Household {
         // it and paid above, so what is owed never carries it.
         studentDebt -= studentRepaid;
         if (gap > 0) {
-            drawn = Math.min(gap, Math.max(0, savings));
+            // Minimum principal is reserved from the cell's cash; the remaining
+            // shopping gap uses the buffer spread, so some borrow while others save.
+            double fixedDraw = Math.min(gap, Math.max(0, minimumPaid - Math.max(0, beforeMinimum)));
+            fixedDraw = Math.min(fixedDraw, Math.max(0, savings));
+            double otherGap = Math.max(0, gap - fixedDraw);
+            double buffer = Math.max(0, savings - fixedDraw);
+            double borrowerShare = CellSpread.below(otherGap, buffer, CellSpread.SAVINGS_SIGMA);
+            drawn = fixedDraw + otherGap - CellSpread.shortfall(otherGap, buffer, CellSpread.SAVINGS_SIGMA);
+            drawn = Math.min(Math.max(0, savings), Math.max(0, drawn));
             savings -= drawn;
             double still = gap - drawn;
 
@@ -985,10 +1076,23 @@ public abstract class Household {
              * SHORT_ROUNDING of the month's gap is covered.
              */
             if (still <= SHORT_ROUNDING * gap) still = 0;
-            unfunded = still - fundShortfall(still, disposablePer);
+            double holdersBefore = revolving;
+            double acceptedNeed = still * Math.max(holdersBefore, cardAccess(disposablePer));
+            double raised = fundShortfall(still, disposablePer);
+            if (borrowed > 0) revolving = holdersBefore + Math.max(0, cardAccess(disposablePer) - holdersBefore)
+                    * borrowerShare * Math.min(1, raised / Math.max(acceptedNeed, Double.MIN_NORMAL));
+            unfunded = still - raised;
         } else {
             double surplus = -gap;
-            repaid = Math.min(surplus, debt);
+            double currentShare = Math.max(0, revolving - lateShare);
+            double currentDebt = Math.max(0, debt - lateDebt);
+            double payment = currentShare > 0 ? Bank.CARD_PAYDOWN * surplus : 0;
+            double extra = currentShare > 0 ? currentShare * CellSpread.cappedMean(payment,
+                    currentDebt / currentShare, CellSpread.CARD_SIGMA) : 0;
+            extra = Math.min(surplus, Math.min(currentDebt, extra));
+            if (currentShare > 0 && currentDebt > 0) revolving = lateShare + currentShare
+                    * CellSpread.above(payment, currentDebt / currentShare, CellSpread.CARD_SIGMA);
+            repaid += extra;
             /*
              * CLAMPED, LIKE EVERY OTHER WRITE TO A POSITION (2026-09-16).
              *
@@ -1000,10 +1104,29 @@ public abstract class Household {
              * currently suspected. See HouseholdBalance.moveStock() for the
              * 158-month divergence the SIGN of one of these cost.
              */
-            debt = Math.max(0, debt - repaid);
-            banked = surplus - repaid;
+            debt = Math.max(0, debt - extra);
+            banked = surplus - extra;
             savings += banked;
         }
+        // A new bill is paid from buffers first and then the same card line.
+        // Its paid amount is sold once by Business Services in the game's sync.
+        double free = Math.max(0, cardAccess(disposablePer) - revolving);
+        double hits = Bank.CARD_SHOCK_CHANCE * Math.max(0, 1 - revolving);
+        double bill = Bank.CARD_SHOCK_MONTHS * Math.max(0, disposablePer);
+        double hitShare = Bank.CARD_SHOCK_CHANCE * free * CellSpread.below(bill, savings, CellSpread.SAVINGS_SIGMA);
+        double borrowNeed = hits * CellSpread.shortfall(bill, savings, CellSpread.SAVINGS_SIGMA);
+        double allowedCredit = Bank.CARD_SHOCK_CHANCE * free * CellSpread.shortfall(bill, savings, CellSpread.SAVINGS_SIGMA);
+        double fromSavings = Math.min(savings, Math.max(0, hits * bill - borrowNeed));
+        savings -= fromSavings;
+        drawn += fromSavings;
+        double borrowedBefore = borrowed, feesBefore = loanFee;
+        double holdersBefore = revolving;
+        double financed = allowedCredit > 0 ? fundCardShortfall(allowedCredit, disposablePer) : 0;
+        // fundShortfall is also used by cars and the main waterfall: keep all draws.
+        if (allowedCredit > 0) { borrowed += borrowedBefore; loanFee += feesBefore; }
+        if (allowedCredit > 0) revolving = holdersBefore + hitShare * financed / allowedCredit;
+        emergencyBill = fromSavings + financed;
+        boundCards();
     }
 
     /**
@@ -1203,13 +1326,12 @@ public abstract class Household {
     void restrike(double disposablePer, double rentPerHome, double feesPer,
                   double foodPricePerHead, double riskFreeAnnual) {
         disposable = disposablePer;
-        double owedMonths = disposablePer > 0 ? debt / disposablePer : 0;
-        rate = debtFrozen() ? 0 : Math.min(HouseholdBalance.MAX_RATE,
-                Math.max(0, riskFreeAnnual) + HouseholdBalance.RISK_SLOPE * owedMonths);
+        rate = cardRate(riskFreeAnnual, disposablePer);
         interest = debt * rate / 12;
         studentInterest = studentInterestDue();
         studentRepaid = Math.min(studentDebt, studentRepayment());
         afterFixed = disposablePer - rentPerHome - feesPer - interest - studentRepaid - studentInterest;
+        afterFixed -= minimumPrincipal();
         subsistence = baskets() * foodPricePerHead;
     }
 
@@ -1225,6 +1347,14 @@ public abstract class Household {
      * @return what was funded
      */
     protected double fundShortfall(double still, double disposablePer) {
+        // The residual bill belongs to all households. Only the accepted share
+        // can draw it; rejected neighbours go unfunded even when the total
+        // balance would fit the cell's aggregate credit ceiling.
+        return fundCardShortfall(still * Math.max(revolving, cardAccess(disposablePer)), disposablePer);
+    }
+
+    /** The bank's card draw, distinct from the student's tuition/living loan. */
+    private double fundCardShortfall(double still, double disposablePer) {
         double room = creditRoom(disposablePer);
         /*
          * AND NOBODY BORROWS A NEGATIVE AMOUNT (2026-09-16).
@@ -1261,10 +1391,13 @@ public abstract class Household {
          * and nothing else; the ceiling above still binds either way.
          */
         if (!Double.isInfinite(capitalCeiling)) {
-            room = Math.min(room, capitalRoom() + Math.max(0, interest));
+            room = Math.min(room, Math.max(0, capitalCeiling + Math.max(0, interest) - debt));
         }
         borrowed = Math.max(0, Math.min(still, room / (1 + Bank.LOAN_FEE)));
         loanFee = borrowed * Bank.LOAN_FEE;
+        double free = Math.max(0, cardAccess(disposablePer) - revolving);
+        if (borrowed > 0) revolving += free * CellSpread.below(still,
+                Math.max(0, savings), CellSpread.SAVINGS_SIGMA);
         debt += borrowed + loanFee;
         return borrowed;
     }
@@ -1289,21 +1422,19 @@ public abstract class Household {
         return Math.min(creditRoom(disposablePer), capitalRoom());
     }
 
-    /** Months of income this household owes - and with a debt and no income at all, past any ceiling, as discharge() reads it. */
+    /** Months of income this household owes - and with a debt and no income at all, past any credit ceiling. */
     public double monthsOwed() {
         return disposable > 0 ? debt / disposable : debt > 0 ? Double.POSITIVE_INFINITY : 0;
     }
 
-    /** What the bank sets aside against this cell's debt, in total (0.7.8): Bank.householdAllowance() on its months owed - a year's loss on a frozen debt, which nothing discharges while it is frozen. */
+    /** What the bank sets aside against this cell's debt, in total (0.7.8): Bank.cardAllowance() on its late balances - a year's loss on a frozen debt, which nothing discharges while it is frozen. */
     public double lossAllowance() {
         return debtFrozen() ? totalDebt() * Bank.BASE_LOSS_RATE
-                : Bank.householdAllowance(totalDebt(), monthsOwed());
+                : Bank.cardAllowance(totalDebt(), lateDebt * households);
     }
 
-    /** This cell's debt, in total, when it is in trouble (Bank.householdWatched()); nothing when it is not. */
-    public double debtInTrouble() {
-        return !debtFrozen() && debt > 0 && Bank.householdWatched(monthsOwed()) ? totalDebt() : 0;
-    }
+    /** This cell's debt, in total, behind on its card minimums; nothing when it is not. */
+    public double debtInTrouble() { return debtFrozen() ? 0 : lateDebt * households; }
 
     /** The month's student-loan instalment (principal), per household. Nothing, except in a working family. */
     protected double studentRepayment() { return 0; }
@@ -1320,71 +1451,46 @@ public abstract class Household {
 
     /** What the bank will still lend one of these: the ceiling less what is owed, or nothing. */
     public double creditRoom(double disposablePer) {
-        return lockout > 0 ? 0
-                : Math.max(0, HouseholdBalance.CREDIT_LIMIT_MONTHS
-                        * Math.max(0, disposablePer) - debt);
+        if (!cardLenderOpenForHarness) return 0;
+        double access = cardAccess(disposablePer);
+        return Math.max(0, HouseholdBalance.CREDIT_LIMIT_MONTHS * Math.max(0, disposablePer)
+                * Math.max(access, revolving) - debt);
     }
 
     /**
-     * Whoever cannot carry it any more: a share of the cell discharges.
-     *
-     * At the ceiling AND short of the shop - reaching the ceiling is not the
-     * same as failing; a household at the ceiling that can still service the
-     * interest is merely poor.
+     * A share of late balances charges off after allowing for monthly cures.
+     * Its savings repay the creditor first and the remaining loan-book loss
+     * belongs to the bank. No performing neighbour is shut out.
      *
      * @return debt written off, in total money
      */
-    double discharge() {
-        bankrupt = 0;
-        seizedSavings = 0;
-        if (lockout > 0) lockout--;
+    double chargeOff() {
+        bankrupt = seizedSavings = cardWrittenOff = 0;
+        shutOut -= shutOut / HouseholdBalance.LOCKOUT_MONTHS;
         if (debtFrozen()) return 0;
-
-        /*
-         * A HOUSEHOLD WITH NO INCOME AND A DEBT IS AT ITS CEILING (2026-09-11).
-         * Until the out of work had books of their own nobody had no income,
-         * so the guard was disposable > 0; somebody whose EI has run out and
-         * who still owes the bank from the job they had can never borrow again
-         * and never repay, and without this they would owe it for ever.
-         */
-        boolean atTheCeiling = disposable > 0
-                ? debt >= HouseholdBalance.BANKRUPT_AT_MONTHS * disposable
-                : debt > 0;
-        boolean cannotEat = afterFixed < subsistence;
-        if (!(atTheCeiling && cannotEat)) return 0;
-
-        double going = households * HouseholdBalance.BANKRUPT_RATE;
-        bankrupt = going;
-
-        /*
-         * THE BANKRUPT'S SAVINGS REPAY THE BANK FIRST (HL1, 2026-11-11).
-         *
-         * This ended `debt *= (1 - RATE); savings *= (1 - RATE)`: the share's
-         * whole debt was written off, the bank's loss, and its savings simply
-         * went with it, to nobody - money destroyed in the households' books
-         * that no pool and no line knew of (30,218 over 900 months in one
-         * city, 117,105 in another, up to 3.5% of the period's GDP, the largest
-         * leak the households' identity found). A bankrupt's assets go to its
-         * creditor: per bankrupt household, its savings repay its debt as far as
-         * they reach, as one more repayment of the month (`repaid`, so the
-         * money reaches the bank by the channel there already is, Game.
-         * syncHouseholdAccounts()), and only what they did not cover is written
-         * off. What is left of the savings is still the household's. The
-         * per-household figures are averages, so a share discharging is that
-         * share off the average, and the debt dies with the share's position.
-         */
-        double seized = Math.min(Math.max(0, savings), debt);
-        double writtenOff = (debt - seized) * going;
-        debt    *= (1 - HouseholdBalance.BANKRUPT_RATE);
-        seizedSavings = seized * HouseholdBalance.BANKRUPT_RATE;
-        savings -= seizedSavings;
-        repaid  += seizedSavings;
-        lockout = HouseholdBalance.LOCKOUT_MONTHS;
-        return writtenOff;
+        double offShare = lateShare / Bank.CARD_CHARGE_OFF_MONTHS;
+        double ended = lateDebt / Bank.CARD_CHARGE_OFF_MONTHS;
+        double cured = lateDebt * Bank.CARD_CURE;
+        double curedShare = lateShare * Bank.CARD_CURE;
+        lateDebt = Math.max(0, lateDebt - ended - cured);
+        lateShare = Math.max(0, lateShare - offShare - curedShare);
+        revolving = Math.max(0, revolving - offShare);
+        double cashBefore = Math.max(0, savings);
+        double seized = Math.min(ended, cashBefore * offShare);
+        seizedSavings = seized; savings -= seized; repaid += seized;
+        debt = Math.max(0, debt - ended);
+        bankrupt = offShare * households;
+        shutOut += offShare;
+        bankruptcyLeaving += offShare * HouseholdBalance.LEAVE_ON_BANKRUPTCY;
+        bankruptcyCash += Math.max(0, cashBefore * offShare - seized) * HouseholdBalance.LEAVE_ON_BANKRUPTCY;
+        cardWrittenOff = Math.max(0, ended - seized);
+        boundCards();
+        return cardWrittenOff * households;
     }
 
     /** Nothing to strike: the working is blank, the position stands. */
     void clearWorking() {
+        minimumPaid = emergencyBill = cardWrittenOff = minimumDue = depositIncome = 0;
         disposable = 0; afterFixed = 0; interest = 0; drawn = 0; unfunded = 0;
         borrowed = 0; repaid = 0; banked = 0; want = 0; planned = 0; rate = 0;
         subsistence = 0; bankrupt = 0; seizedSavings = 0; dividends = 0; sold = 0; carsSold = 0;
@@ -1399,18 +1505,28 @@ public abstract class Household {
 
     /** The cell is empty: no position either. */
     void clearAll() {
-        savings = 0; debt = 0; lockout = 0; households = 0; abroad = 0; studentDebt = 0;
+        savings = 0; debt = 0; households = 0; abroad = 0; studentDebt = 0;
+        revolving = lateDebt = lateShare = shutOut = 0;
+        bankruptcyLeaving = bankruptcyCash = 0;
         paper = 0; bonds = 0; bondFace.clear();
         cars = 0; mealsEaten = 0; carePaid = 1;
         groceriesGot = 0; groceriesAsked = 0; groceriesNeed = 0; assistance = 0;
         meansIncome = 0;
         java.util.Arrays.fill(shares, 0);
+        java.util.Arrays.fill(basis, 0);
+        lossCarried = 0; taxedGains = 0;
+        java.util.Arrays.fill(taxShares, 0); java.util.Arrays.fill(taxClaim, 0);
         clearWorking();
     }
 
     /** Everything in money, in the new unit. Rates, counts, months, SHARES and DOLLARS do not move. */
     void redenominate(double scale) {
         savings *= scale;  debt *= scale;  dividends *= scale;  sold *= scale;
+        lateDebt *= scale; minimumPaid *= scale; emergencyBill *= scale; cardWrittenOff *= scale; minimumDue *= scale; depositIncome *= scale;
+        bankruptcyCash *= scale;
+        for (int k = 0; k < basis.length; k++) basis[k] *= scale;
+        lossCarried *= scale; taxedGains *= scale;
+        for (int k = 0; k < taxClaim.length; k++) taxClaim[k] *= scale;
         // The bank's ceiling on it this month is money too (0.7.8); an
         // infinite one - lending freely - stays infinite.
         capitalCeiling *= scale;
