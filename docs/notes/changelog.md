@@ -18,6 +18,14 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### BX2 — PackagingCheck reads BX1's zip line — 2026-11-25, ready, see docs/queue/BX2-notes.md
+BX1 named Windows' own `tar.exe` by its full path in `Build EXE.bat`, and PackagingCheck still found the zip
+by `tar -a -c`, so main was red on "the image is staged and checked after jpackage and before the zip" from
+4183928ca on. BX1's gate never ran PackagingCheck: `tools/pick.sh` tied no harness to the bat, and R1g's dry
+run found the red. The check now finds the zip by its full line and asserts that the zip is made by Windows'
+own tar, never a bare `tar` from PATH. The pick runs PackagingCheck when the bat changes. Untagged: the game
+is unchanged.
+
 ### BX1 — Build EXE.bat's zip is a zip from any shell — 2026-11-25, ready, see docs/queue/BX1-notes.md
 `Build EXE.bat` zips the game with Windows' own `tar.exe`, named by its full path. Called from Git Bash, a bare
 `tar` was Git's GNU tar, which ignores `-a`: 0.9.204's `CityBuilderSim-0.9.204.zip` came out a plain tar
