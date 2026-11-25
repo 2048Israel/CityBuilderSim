@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-RG1-GmcAQnsy -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — RG1, farm ground at a farm price, by policy — 2026-11-25, ready, see docs/queue/RG1-notes.md
 A new policy on Policy › Zoning: the fields' zone may be made a farmland reserve, as BC's Agricultural Land Reserve,
