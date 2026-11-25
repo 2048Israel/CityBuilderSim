@@ -1,6 +1,6 @@
 # Substations.java - 51 lines · 6 methods · 5 constants · model
 
-`ham/citybuildersim/Substations.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Substations.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The city's wires: one substation for each 100 MW of peak, and their own costs in the power bill.
 > WHY. PW1 charged a flat 5.94 cents a kWh for wires that nothing built or maintained.

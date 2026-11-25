@@ -1,6 +1,6 @@
 # CarryTradeCheck.java - 430 lines · 5 methods · 1 constants · harnesses
 
-`ham/citybuildersim/CarryTradeCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CarryTradeCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The carry trade: the other side of hot money, and the bank's first borrower.
 > 

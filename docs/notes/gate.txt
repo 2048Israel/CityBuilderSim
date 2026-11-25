@@ -1,8 +1,8 @@
-# gate of Merge batch/FS5: sweep: KeptCheck from section 55; takes KFP1, KBP1, KRW1, CD9-K, KP5-N to KP7-N, KRT1's 77 and 78 (after FS4; not beside BI1); takes FS5H, the five KeptCheck lines HT1's gate found red on main's own pages (Lending's opened tables, Construction's cash and debt statement, the Rankings drawer, the Government Overview's new nodes a month), and FC2's KeptCheck section 49 (Freight's statement: the same SectorScreen/StatementView route as Construction's, known-reds' class), which pass by name to FS5 ([FS5H](docs/queue/FS5H.md)). Back from Pending 2026-11-24 (contract section 6, the orchestrator's): its final untagged gate on 0.9.180 found KeptCheck's retained objects at 1711.9 MiB against the hard 1536 MiB bound under the gate box's Monocle/SW, where native Windows SW passed at 1502.8 MiB (kept run pcPZSnVc). The batch merges main, has a helper trace the box-against-Windows difference on today's main, then mends; no heap waiver, 0.9.200
-# date: 2026-11-24
+# gate of Merge batch/R6e-rest: research: the seven 1996-2024 engineering rows R6e held at their old figures for want of a source: E22 with E33 (seawater reverse osmosis and its pressure exchanger), E23 GPS autosteer, E24 the large-rotor wind farm (after PW3), E26 driverless haul trucks, E27 endless strip, E30 calcined-clay cement and E32 the electric long-haul truck. Find for each the evidence R6e's notes say is missing and adopt a row only when it is found, the rest held at the old figure as R6e did, 0.9.201
+# date: 2026-11-25
 # earth-2.bin: named
 # nightly: 2026-11-24 03:09 0.9.196 94ba28823 4,000 months: RED, exit 1 in 712 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-24-94ba28823-AVsIJOCL
-# suite: 240 harnesses run in 1032s: 226 passed, 14 failed
+# suite: 246 harnesses run in 1261s: 231 passed, 15 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -56,9 +56,9 @@ CarCheck | the fixture: one household's money buys a car at the price the draw i
 CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  62 cars, 1 step(s) of the import price; paid 56.232508772885560, the ship's product 55.440508772885560; 6.0 cars on the makers' shelves
 CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 55.440508772885560, paid 56.232508772885560
 CarCheck | 3 FAILED
-GroundSkipCheck | exit 1
-GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 30 month(s) FAIL
-GroundSkipCheck | 1 FAILED
 CopperRefiningCheck | exit 1
 CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
 CopperRefiningCheck | 1 FAILED
+GroundSkipCheck | exit 1
+GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 30 month(s) FAIL
+GroundSkipCheck | 1 FAILED

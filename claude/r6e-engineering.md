@@ -50,3 +50,22 @@ electric trucks need the dynamic charged-fleet model. Their measured
 component effects cannot be silently applied to whole buildings. The
 numerical evidence, licensing limits and exact prospective methods are
 preserved in [the batch notes](../docs/queue/R6e-notes.md).
+
+## R6e-rest, 2026-11-24: the pressure exchanger, and why the rest still wait
+
+A second search, one row at a time, found one step consistent enough to
+build. The pressure exchanger (E22, 1997) cut Las Palmas III's reverse
+osmosis train from 3.49 to 2.68 kWh a cubic metre when it replaced the
+Pelton turbines. The US DOE puts a modern plant's RO step at 2.70 of the
+game's 3.449. So a Desalination Plant before 1997 draws 13,454 kW, not
+10,880, until it is fitted with the exchanger. The exchanger is a piece, as
+the Water Treatment Plant's rapid sand is, so a city that imports it pays
+its licence while the patent runs. Reverse osmosis itself (E33, Jeddah,
+1979) is still reserved. The flash plant it replaced ran on heat, and the
+plant buys only electricity: the sources' heat, put in electricity, differs
+by more than two to one. Autosteer and driverless haul trucks have no
+measured whole-farm or whole-mine effect. Endless strip, calcined-clay
+cement and the electric long-haul truck are under 2% of today's practice
+(about 1.5% of world steel, under 1% of cement, 0.3% of EU trucks).
+Today's figures do not contain them, so there is nothing to undo before
+their dates. [The notes](../docs/queue/R6e-rest-notes.md) give each search.

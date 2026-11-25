@@ -1,6 +1,6 @@
 # AdultStage.java - 88 lines · 10 methods · 0 constants · model
 
-`ham/citybuildersim/AdultStage.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AdultStage.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The two stages of an adult life inside AgeBand.ADULT: the young, 18-34, and
 > the established, 35-69.
