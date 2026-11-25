@@ -4759,3 +4759,50 @@ finite copy-back, defensive records, Sectors.KEYS vector order and late
 restore placement. No finding or monetary law changes in this model
 patch; the already pushed unconditional history capture is retained.
 Native verification remains to run on the next pushed candidate.
+
+Exact 9d2d98699 CPI coverage is green (27dc): verified source, pinned
+assets and Temurin21.0.13+9; compile/classpath/finding exit 0, 227 passes
+and zero failures. All 48 observation-purity checks and every original
+nominal/historical/reformed fresh/running/next-month data and HISTORY
+comparison pass, including exact money/claims/stocks and acquisition
+inputs. This verifies the held bank books and raw physical claim scale
+with the same caused fixtures and predicates. No assertion was relaxed.
+The coverage JVM ended and raw snapshots are retained; the authorized
+normal named checks now proceed sequentially on that exact source.
+Their results are still pending and are not inferred from this finding.
+
+On exact 9d2d98699 the separate normal DebtStatisticsCheck, WaterCheck,
+WaterPowerCheck and SubstationCheck each return batch exit 0 (one selected
+harness passed), with zero firm Stale findings and unchanged source
+guards (940d/1c2f). DebtStatisticsCheck's administrative wrapper initially
+returns 1 only because Maps creates the two new untracked CPI map pages;
+they are archived and explicitly cleaned from the owned clone. Actual
+batch exit is 0; no test or source is rerun/changed to repair that wrapper.
+The full normal MonetaryCheck, retaining all prior laws plus the nested
+coverage finding, is next. Its policy result remains pending.
+
+The full normal 9d2d98699 MonetaryCheck executes every policy case and
+the nested 227/0 coverage, then returns Java 1/batch 4 for one failed
+legacy-array assertion (22a9/d284). All policy laws pass; no rate effect,
+ordering, supply, timing, window or bound is changed. The fixture's
+whole.length-1 used to construct the layout before parity, but now
+removes one of the nine newly appended relatives, yielding an invalid
+partial current array. A second fixture's whole.length-COMPONENTS-1
+now produces a with-levels layout instead of its claimed before-levels
+layout; that assertion happens to pass and is false historical coverage.
+This batch caused both fixture construction errors and must repair them.
+
+Keep the production saved state/parser and every old predicate/tolerance.
+Construct the actual layouts from the existing format span:
+B=SLOTS_BEFORE_CHAIN+CHAIN_TAIL_0743 (before component levels), L=B+
+COMPONENTS (before parity), P=L+1, current=P+COMPONENTS. Make the existing
+format-span constant package-visible so the fixtures use the model's
+own layout; no value or dial changes. from744 now uses B and from745 L.
+Add a negative guard that the one-slot-truncated current array is not
+accepted as a historical chain. This causes each claimed format and
+protects rejection of the invalid current truncation, with no new save
+conversion or classifier relaxation. Run the full normal MonetaryCheck
+again on the pushed correction, then continue the named sequence.
+Its runner/JVM ended and the exact previous source/results are retained;
+ExchangeRate and later names have not run. Prior four normal passes and
+the native coverage remain recorded, not replaced by this fixture fix.

@@ -356,12 +356,16 @@ public class MonetaryCheck {
         // the capped level runs on from the level of the link.
         PriceIndex from745 = new PriceIndex();
         double[] whole = chain.toSaveArray();
-        from745.restore(java.util.Arrays.copyOf(whole, whole.length - 1));
+        int beforeLevels = PriceIndex.SLOTS_BEFORE_CHAIN + PriceIndex.CHAIN_TAIL_0743;
+        PriceIndex truncatedCurrent = new PriceIndex();
+        truncatedCurrent.restore(java.util.Arrays.copyOf(whole, whole.length - 1));
+        assertTrue("a truncated current array is not read as a historical chain", truncatedCurrent.isLinkPending());
+        from745.restore(java.util.Arrays.copyOf(whole, beforeLevels + PriceIndex.COMPONENTS));
         assertTrue("a save from before the capped basket's link still reads as a chain, and its capped level runs on from the link",
                 !from745.isLinkPending() && from745.getLink() == chain.getLink() && from745.getIndex() == chain.getIndex()
                         && from745.getComponentLevel(PriceIndex.MEALS) == chain.getComponentLevel(PriceIndex.MEALS));
         PriceIndex from744 = new PriceIndex();
-        from744.restore(java.util.Arrays.copyOf(whole, whole.length - PriceIndex.COMPONENTS - 1));
+        from744.restore(java.util.Arrays.copyOf(whole, beforeLevels));
         double worstSeeded = 0;
         for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
             worstSeeded = Math.max(worstSeeded,

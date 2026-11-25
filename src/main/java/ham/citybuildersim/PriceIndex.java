@@ -590,7 +590,7 @@ public class PriceIndex {
     public static final double CHAIN_MARKER = 743;
 
     /** The chained basket's slots behind the marker as 0.7.43 wrote them: the link, its month, the pending flag, the bases, weights and last prices, the fee lines', and the trailing year. */
-    private static final int CHAIN_TAIL_0743 = 4 + COMPONENTS * 3 + FEE_LINES * 3 + 1 + WEIGHT_MONTHS * (COMPONENTS + FEE_LINES);
+    static final int CHAIN_TAIL_0743 = 4 + COMPONENTS * 3 + FEE_LINES * 3 + 1 + WEIGHT_MONTHS * (COMPONENTS + FEE_LINES);
 
     public double[] toSaveArray() {
         int tail = CHAIN_TAIL_0743 + COMPONENTS + 1 + COMPONENTS;
