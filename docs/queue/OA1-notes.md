@@ -158,3 +158,28 @@ NOT SHIP, one P1, mended here:
 - 3, holds: the re-sale booked like the first sale (now gone); the money closes; proceeds outside the reserve; with no
   ask open, spending is main's.
 - 4: the 26 CFR wording (section 2, the harness header, the banner): the expectation test, not a duty to spend.
+
+## 6. The ensemble
+
+80 of 80 on the gate box (29.3 min), the classes of dc7f9cc7d (the fenced mend on 0.9.206), scored against
+`docs/ensemble/0.9.206.md` (R1g), JAVA_OPTS empty (the baseline's data paths alone). Committed as
+`docs/ensemble/OA1.md`.
+- **M1 and F1 pass in all five policies**: no month's money audit failed, and no run has a LongPlaytest finding. The
+  batch verdict is PASS, hard criteria 10 of 10, 23 of 26 criteria. A1 and A2 (AUTO2, info) fail as the baseline's do.
+- Changed verdicts: T2 (info) FAIL to PASS in all five. The baseline was scored against 0.9.202, this run against
+  0.9.206 itself. ZERO_HOT's final population is 15,883 [7,343 to 22,744] against 13,344 [6,266 to 26,551].
+  ZERO_HOT's H2 (info) goes PASS to FAIL: 11 of 16 seeds below against the 12 asked, median +0.67% against -0.45%.
+- **The water-held seeds, before and after** (the runs' `served_water`: the longest spell under 0.5 from m200, read by
+  `target/oa1-water.py`; the baseline's CSVs copied from the box's R1g run):
+  - On PW3's fourth run (4043d6f3c), ZERO_HOT seeds 6, 9 and 15 were held under half for 136, 114 and 111 months to the
+    run's end, a Water Treatment Plant's ask open all through (section 1).
+  - On 0.9.206 (R1g), ZERO_HOT seeds 6, 9 and 15 are never under half from m200. ZERO_HOT's one spell is seed 5's, 13
+    months (m362-m374). In all, 37 runs hold water under half for 12 months or more, 12 to 29 months: seeds 0, 4, 9,
+    10, 11, 12, 13, 14 and 15 of AUTO2, ZERO_SLACK, SHOCK and HIGH, which share their early years, and ZERO_HOT 5.
+    Every one is served in full by the end except HIGH 13 (0.952).
+  - With OA1, ZERO_HOT seeds 6, 9 and 15 are never under half from m200; seed 5's spell is 16 months (m358-m373). In
+    all, 28 runs, 12 to 26 months: seeds 0, 1, 8, 10, 11, 12 and 14 of the same four policies, and ZERO_HOT 5. Every
+    one is served in full by the end except SHOCK 0 (0.956).
+  - So no seed holds water for years before or after on 0.9.206. The growth-phase spells of one to two years are the
+    baseline's pattern, on other seeds as the paths part. The longest is 26 months against 29, and 12 runs are over
+    24 months against 8.

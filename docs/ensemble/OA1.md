@@ -1,0 +1,247 @@
+# Ensemble baseline: {next}
+
+The ensemble on the model of **{next}**: classes snapshot of commit dc7f9cc7d (2026-11-25T21:55Z), label OA1, 80 of 80 runs.
+Data files named for this snapshot — `-Dcbs.earth=/home/jerus/cbs/main/data/earth-2.bin -Dcbs.world=/home/jerus/cbs/main/data/world-1.bin`.
+Run on gatebox, openjdk version "21.0.13" 2026-10-20 LTS.
+Scored against `docs/ensemble/0.9.206.md` for T1, T2 and F1. 
+| policy | id | class | measure | median [min to max] | threshold | verdict | baseline value | baseline verdict |
+|---|---|---|---|---|---|---|---|---|
+| AUTO2 | A1 | info | inflation m240-end, a year | 2.96% [2.25% to 3.32%] | median 2.00%±1.00%, ≥12/16 in band* | FAIL (8/16 in band) | 2.96% [2.45% to 3.56%] | FAIL |
+| AUTO2 | info | info | inflation m240-600 (the young city), a year | 3.38% [1.67% to 4.25%] | - | info | - | - |
+| AUTO2 | info | info | the founding, m120-240: longest spell of yoy > 10.00%; of yoy < -10.00%, months | 11 [0 to 18]; 0 [0 to 8] | - | info | - | - |
+| AUTO2 | A2 | info | longest spell of yoy > 10.00% from m240, months | 14 [10 to 28] | < 12 in every seed* | FAIL | 13 [8 to 38] | FAIL |
+| AUTO2 | A3 | info | deflation spell from m240 (months); final/peak population | 0 [0 to 6]; 99.69% [94.91% to 100.00%] | < 12; all finish; ≥ 50.00%* | PASS | 0 [0 to 6]; 99.50% [95.68% to 100.00%] | PASS |
+| AUTO2 | info | info | policy rate, mean from m240; share of months at 0% | 5.08% [4.50% to 5.80%]; 19.93% [17.18% to 28.24%] | - | info | - | - |
+| AUTO2 | info | info | mean yoy reading from m240 | 3.02% [2.35% to 3.42%] | - | info | - | - |
+| ZERO_SLACK | S1 | info | inflation m1800-2040 at 0% minus the AUTO2 twin's, a year | 2.69% [1.20% to 5.25%] | every seed ≤ the currency's extra fall + 1.00%* | PASS (16/16 seeds within) | 2.74% [1.08% to 5.12%] | PASS |
+| ZERO_SLACK | info | info | the currency's extra fall, a year (fx's growth over the twin's); each seed's margin (that fall + the tolerance - the excess) | 3.56% [1.71% to 7.00%]; 1.93% [1.25% to 2.81%] | - | info | - | - |
+| ZERO_SLACK | info | info | S1 as it was until RN1: median ≤ +1.00%, all ≤ +3.00%, no spell of yoy > 10.00% of 12 | 2.69% [1.20% to 5.25%]; longest spell 94 months | - | would fail | - | - |
+| ZERO_SLACK | info | info | the window's own inflation, a year; peak yoy; the twin's peak yoy; yoy over the twin's same month, at most | 4.73% [2.19% to 9.54%]; 16.67% [7.92% to 24.41%]; 8.85% [5.82% to 11.51%]; 10.00% [5.63% to 16.26%] | - | info | - | - |
+| ZERO_SLACK | info | info | unemployment in the window: the run's; the twin's (the spec's section 8: read S1 beside it) | 9.62% [4.96% to 11.02%]; 10.28% [6.61% to 12.20%] | - | info | - | - |
+| ZERO_SLACK | info | info | at m2040 against twin: fx; rent | 98.49% [40.58% to 269.05%]; 47.78% [22.24% to 152.67%] | - | info | - | - |
+| ZERO_HOT | info | info | inflation m42-162 (1st half); m162-282 (2nd half); index over twin at m162, m282, m402 | 7.01% [1.88% to 14.91%]; 4.49% [0.69% to 14.01%]; 17.43% [-20.06% to 132.66%]; 44.45% [11.72% to 188.28%]; 52.11% [-10.21% to 349.60%] | - | info | - | - |
+| ZERO_HOT | H1 | info | at 0%, minus the AUTO2 twin: m42-162 (1st half); m162-282 (2nd half); 2nd minus 1st | 1.71% [-2.31% to 9.30%]; 1.72% [-0.49% to 7.10%]; -2.79% [-10.34% to 8.49%] | ≥ +1.00%; ≥ +1.00%; < +1.00%* | RETIRED (Jerus, 2026-10-21, on CD1: "Keep D9 as decided: H1's premise is retired"; the numbers alone would pass) | 1.71% [-2.31% to 9.30%]; 1.73% [-0.51% to 7.10%]; -2.80% [-10.30% to 8.49%] | RETIRED |
+| ZERO_HOT | H2 | info | inflation m342-402 (autopilot back) minus the AUTO2 twin's | 0.67% [-5.09% to 4.25%] | median ≤ +1.00%, below the 2nd half's excess in ≥ 12* | FAIL (11/16 below) | -0.45% [-2.94% to 5.04%] | PASS |
+| ZERO_HOT | info | info | inflation m342-402: the run's; the twin's (H2 until EN1: the run's at most 4.00%) | 4.17% [0.79% to 8.29%]; 3.69% [1.58% to 6.82%] | - | info | - | - |
+| ZERO_HOT | info | info | unemployment at 0% minus twin (points) | -0.29% [-3.28% to 2.96%] | - | info | - | - |
+| ZERO_HOT | info | info | fx at m282 against twin (+ = weaker) | 88.40% [0.39% to 435.05%] | - | info | - | - |
+| SHOCK | K1 | info | index over its twin, highest within 36 months | 19.05% [15.82% to 24.64%] | median ≥ 2.00%* | PASS | 18.82% [16.84% to 21.92%] | PASS |
+| SHOCK | K2 | info | inflation m720-840; minus the twin's, a year | 2.58% [0.65% to 4.42%]; -0.37% [-1.63% to 1.86%] | ≤ 3.00%; ≤ 1.00%* | PASS | 2.58% [-0.20% to 4.18%]; -0.02% [-1.52% to 0.88%] | PASS |
+| SHOCK | info | info | at the step's peak against twin: shelf; rent; fx | 26.11% [17.19% to 29.54%]; 4.43% [2.63% to 52.21%]; -29.07% [-38.26% to 2.98%] | - | info | - | - |
+| SHOCK | info | info | world level at the shock against twin | 30.00% [30.00% to 30.00%] | - | info | - | - |
+| HIGH | R1 | info | inflation m600-720 at 15% minus twin | -4.43% [-7.79% to -0.65%] | median ≤ -0.50%* | PASS | -3.48% [-7.73% to -1.32%] | PASS |
+| HIGH | R2 | info | unemployment minus twin (points) | 2.75% [-1.43% to 8.21%] | median ≥ +0.50%* | PASS | 1.92% [-3.75% to 10.61%] | PASS |
+| HIGH | R3 | info | inflation m660-720 minus twin | -4.18% [-7.42% to -0.39%] | median ≤ 0, ≤ 2 seeds > +1 pt* | PASS (0 above +1 pt) | -3.68% [-8.38% to 0.01%] | PASS |
+| HIGH | info | info | deposit rate in the window | 1.44% [0.42% to 3.56%] | - | info | - | - |
+| HIGH | info | info | at m720 against twin: shelf; rent; fx | -32.57% [-54.76% to -2.87%]; -24.34% [-63.24% to 13.60%]; -52.41% [-73.13% to -21.87%] | - | info | - | - |
+| ALL | T1 | info | AUTO2 seeds reaching 40,000 people (month reached) | 16/16 (m524 [447 to 687]) | ≥ baseline 16 - 2* | PASS | 16/16 (m576 [465 to 731]) | PASS |
+| AUTO2 | T2 | info | final population | 6,240,014 [495,858 to 7,935,948] | ≥ 75.00% of baseline 6,262,849* | PASS | 6,262,849 [2,823,013 to 8,220,222] | FAIL |
+| AUTO2 | M1 | hard | months the money audit failed (unread) | 0 (0) | 0 | PASS | 0 (0) | PASS |
+| AUTO2 | F1 | hard | runs with a LongPlaytest finding | 0/16 [] | ≤ baseline 0 | PASS | 0/16 [] | PASS |
+| ZERO_SLACK | T2 | info | final population | 4,187,796 [305,589 to 6,043,572] | ≥ 75.00% of baseline 4,317,140* | PASS | 4,317,140 [1,701,339 to 6,054,416] | FAIL |
+| ZERO_SLACK | info | info | final population over the AUTO2 twin's, same month | 106.42% [94.34% to 125.52%] | - | info | - | - |
+| ZERO_SLACK | M1 | hard | months the money audit failed (unread) | 0 (0) | 0 | PASS | 0 (0) | PASS |
+| ZERO_SLACK | F1 | hard | runs with a LongPlaytest finding | 0/16 [] | ≤ baseline 0 | PASS | 0/16 [] | PASS |
+| ZERO_HOT | T2 | info | final population | 15,883 [7,343 to 22,744] | ≥ 75.00% of baseline 13,344* | PASS | 13,344 [6,266 to 26,551] | FAIL |
+| ZERO_HOT | info | info | final population over the AUTO2 twin's, same month | 97.56% [46.28% to 303.88%] | - | info | - | - |
+| ZERO_HOT | M1 | hard | months the money audit failed (unread) | 0 (0) | 0 | PASS | 0 (0) | PASS |
+| ZERO_HOT | F1 | hard | runs with a LongPlaytest finding | 0/16 [] | ≤ baseline 0 | PASS | 0/16 [] | PASS |
+| SHOCK | T2 | info | final population | 533,324 [83,981 to 1,207,281] | ≥ 75.00% of baseline 367,962* | PASS | 367,962 [89,875 to 1,056,499] | FAIL |
+| SHOCK | info | info | final population over the AUTO2 twin's, same month | 102.96% [62.90% to 159.30%] | - | info | - | - |
+| SHOCK | M1 | hard | months the money audit failed (unread) | 0 (0) | 0 | PASS | 0 (0) | PASS |
+| SHOCK | F1 | hard | runs with a LongPlaytest finding | 0/16 [] | ≤ baseline 0 | PASS | 0/16 [] | PASS |
+| HIGH | T2 | info | final population | 182,116 [19,430 to 429,886] | ≥ 75.00% of baseline 104,940* | PASS | 104,940 [14,828 to 452,470] | FAIL |
+| HIGH | info | info | final population over the AUTO2 twin's, same month | 62.49% [25.58% to 109.29%] | - | info | - | - |
+| HIGH | M1 | hard | months the money audit failed (unread) | 0 (0) | 0 | PASS | 0 (0) | PASS |
+| HIGH | F1 | hard | runs with a LongPlaytest finding | 0/16 [] | ≤ baseline 0 | PASS | 0/16 [] | PASS |
+| ALL | pairing | info | runs identical to their AUTO2 twin before the switch | 64/64 | all | PASS | 64/64 | PASS |
+
+criteria passed: 23/26 (vacuous, not counted: 0; retired, not counted: 1); missing runs: none; short runs: none
+batch verdict PASS (hard criteria passed 10/10)
+changed verdict ZERO_HOT H2 (info) PASS -> FAIL
+changed verdict AUTO2 T2 (info) FAIL -> PASS
+changed verdict ZERO_SLACK T2 (info) FAIL -> PASS
+changed verdict ZERO_HOT T2 (info) FAIL -> PASS
+changed verdict SHOCK T2 (info) FAIL -> PASS
+changed verdict HIGH T2 (info) FAIL -> PASS
+time per run (median s): AUTO2 374.4, ZERO_SLACK 347.6, ZERO_HOT 17.9, SHOCK 80.5, HIGH 49.1; total 232.5 min
+
+## summary.json
+
+What `--baseline` reads: T1, T2 and F1 compare with it.
+
+```json
+{
+ "seeds": 16,
+ "policies": {
+  "AUTO2": {
+   "final_pop_median": 6240014.0,
+   "runs_with_findings": 0,
+   "audit_months_failed": 0
+  },
+  "ZERO_SLACK": {
+   "final_pop_median": 4187795.5,
+   "runs_with_findings": 0,
+   "audit_months_failed": 0
+  },
+  "ZERO_HOT": {
+   "final_pop_median": 15883.0,
+   "runs_with_findings": 0,
+   "audit_months_failed": 0
+  },
+  "SHOCK": {
+   "final_pop_median": 533324.0,
+   "runs_with_findings": 0,
+   "audit_months_failed": 0
+  },
+  "HIGH": {
+   "final_pop_median": 182116.5,
+   "runs_with_findings": 0,
+   "audit_months_failed": 0
+  }
+ },
+ "takeoffs": 16,
+ "criteria": {
+  "AUTO2/A1": {
+   "class": "info",
+   "value": "2.96% [2.25% to 3.32%]",
+   "verdict": "FAIL"
+  },
+  "AUTO2/A2": {
+   "class": "info",
+   "value": "14 [10 to 28]",
+   "verdict": "FAIL"
+  },
+  "AUTO2/A3": {
+   "class": "info",
+   "value": "0 [0 to 6]; 99.69% [94.91% to 100.00%]",
+   "verdict": "PASS"
+  },
+  "ZERO_SLACK/S1": {
+   "class": "info",
+   "value": "2.69% [1.20% to 5.25%]",
+   "verdict": "PASS"
+  },
+  "ZERO_HOT/H1": {
+   "class": "info",
+   "value": "1.71% [-2.31% to 9.30%]; 1.72% [-0.49% to 7.10%]; -2.79% [-10.34% to 8.49%]",
+   "verdict": "RETIRED"
+  },
+  "ZERO_HOT/H2": {
+   "class": "info",
+   "value": "0.67% [-5.09% to 4.25%]",
+   "verdict": "FAIL"
+  },
+  "SHOCK/K1": {
+   "class": "info",
+   "value": "19.05% [15.82% to 24.64%]",
+   "verdict": "PASS"
+  },
+  "SHOCK/K2": {
+   "class": "info",
+   "value": "2.58% [0.65% to 4.42%]; -0.37% [-1.63% to 1.86%]",
+   "verdict": "PASS"
+  },
+  "HIGH/R1": {
+   "class": "info",
+   "value": "-4.43% [-7.79% to -0.65%]",
+   "verdict": "PASS"
+  },
+  "HIGH/R2": {
+   "class": "info",
+   "value": "2.75% [-1.43% to 8.21%]",
+   "verdict": "PASS"
+  },
+  "HIGH/R3": {
+   "class": "info",
+   "value": "-4.18% [-7.42% to -0.39%]",
+   "verdict": "PASS"
+  },
+  "ALL/T1": {
+   "class": "info",
+   "value": "16/16 (m524 [447 to 687])",
+   "verdict": "PASS"
+  },
+  "AUTO2/T2": {
+   "class": "info",
+   "value": "6,240,014 [495,858 to 7,935,948]",
+   "verdict": "PASS"
+  },
+  "AUTO2/M1": {
+   "class": "hard",
+   "value": "0 (0)",
+   "verdict": "PASS"
+  },
+  "AUTO2/F1": {
+   "class": "hard",
+   "value": "0/16 []",
+   "verdict": "PASS"
+  },
+  "ZERO_SLACK/T2": {
+   "class": "info",
+   "value": "4,187,796 [305,589 to 6,043,572]",
+   "verdict": "PASS"
+  },
+  "ZERO_SLACK/M1": {
+   "class": "hard",
+   "value": "0 (0)",
+   "verdict": "PASS"
+  },
+  "ZERO_SLACK/F1": {
+   "class": "hard",
+   "value": "0/16 []",
+   "verdict": "PASS"
+  },
+  "ZERO_HOT/T2": {
+   "class": "info",
+   "value": "15,883 [7,343 to 22,744]",
+   "verdict": "PASS"
+  },
+  "ZERO_HOT/M1": {
+   "class": "hard",
+   "value": "0 (0)",
+   "verdict": "PASS"
+  },
+  "ZERO_HOT/F1": {
+   "class": "hard",
+   "value": "0/16 []",
+   "verdict": "PASS"
+  },
+  "SHOCK/T2": {
+   "class": "info",
+   "value": "533,324 [83,981 to 1,207,281]",
+   "verdict": "PASS"
+  },
+  "SHOCK/M1": {
+   "class": "hard",
+   "value": "0 (0)",
+   "verdict": "PASS"
+  },
+  "SHOCK/F1": {
+   "class": "hard",
+   "value": "0/16 []",
+   "verdict": "PASS"
+  },
+  "HIGH/T2": {
+   "class": "info",
+   "value": "182,116 [19,430 to 429,886]",
+   "verdict": "PASS"
+  },
+  "HIGH/M1": {
+   "class": "hard",
+   "value": "0 (0)",
+   "verdict": "PASS"
+  },
+  "HIGH/F1": {
+   "class": "hard",
+   "value": "0/16 []",
+   "verdict": "PASS"
+  },
+  "ALL/pairing": {
+   "class": "info",
+   "value": "64/64",
+   "verdict": "PASS"
+  }
+ }
+}
+```
