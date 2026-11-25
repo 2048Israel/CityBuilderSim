@@ -1,4 +1,4 @@
-# WaterPowerCheck.java - 386 lines · 18 methods · 2 constants · harnesses
+# WaterPowerCheck.java - 387 lines · 18 methods · 2 constants · harnesses
 
 `ham/citybuildersim/WaterPowerCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -18,7 +18,8 @@
 >   2. A TOWN SHORT OF WATER PRICES IT AT ITS SEA WORKS' POWER: its demand past what every works makes at full staffing, the sea
 >      works deliver their whole output, past SEA_MARGIN_SHARE of it, and the water's price is the tariff and their draw at the struck
 >      commerce price over that output, recomputed from the stacks, the book and UtilitiesHandler.waterOutput(); the sea's water pays
->      the sea works' power.
+>      the sea works' power. "At the struck commerce price" is on the kWh served throughout (PW1-R): the price a kW of the year's
+>      mean draw times the season the book's month was dispatched at (UtilitiesHandler.Book.season), as every class is billed.
 >   3. EVERY BILL ONCE: the water's books pay the power's the month's works' draw at the struck commerce price; the electricity's
 >      income gains it and the water's loses it, the services' net and the treasury's line are unmoved by it, the audit's utility
 >      revenue is the sectors' bills, and the money audit closes.
@@ -49,90 +50,90 @@
 
 | line | section |
 |---:|---|
-| 166 | · 1 |
-| 193 | · 2 |
-| 212 | · 7 |
-| 246 | · 8 |
-| 266 | · 5 |
-| 298 | · 6 |
-| 327 | · 3 |
-| 351 | · 4 |
+| 167 | · 1 |
+| 194 | · 2 |
+| 213 | · 7 |
+| 247 | · 8 |
+| 267 | · 5 |
+| 299 | · 6 |
+| 328 | · 3 |
+| 352 | · 4 |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 52 | `WaterPowerCheck.MOVE_KW` | `1000` | kW a plant is moved by in section 5: well inside every short half-block's shortfall in the dear copy. |
-| 55 | `WaterPowerCheck.SLOT` | `10` | The save slot the scratch cities are saved in: past the player's nine. |
+| 53 | `WaterPowerCheck.MOVE_KW` | `1000` | kW a plant is moved by in section 5: well inside every short half-block's shortfall in the dear copy. |
+| 56 | `WaterPowerCheck.SLOT` | `10` | The save slot the scratch cities are saved in: past the player's nine. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 49 | `static int fails` |  |
+| 50 | `static int fails` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 340 | **type** `public class WaterPowerCheck` | The water priced from its cost, as PW1 prices power (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price"), with the licence's power read from the dispatch (PW1-L) and a recipe's own power weighed at the prices the... |
-| 57 | 5 | `static void check(String label, boolean ok, String detail)` |  |
-| 63 | 3 | `static boolean near(double a, double b, double rel)` |  |
-| 67 | 1 | `static String f(double v)` |  |
-| 70 | 4 | **type** `record Works(double freshKw, double seaKw, double served, double withoutSea, double wellsAlone, double seaO...` | What the water works stand and deliver, worked from the stacks, the templates and waterOutput(): independent of the handler's record. |
-| 71 | 1 | `double landDelivered()` _(in WaterPowerCheck.Works)_ |  |
-| 72 | 1 | `double seaDelivered()` _(in WaterPowerCheck.Works)_ |  |
-| 76 | 3 | `static double kwPerUnit(double seaKw, double land, double sea, double seaOutput)` | The sea works' draw a unit, the rule stated from a record's fields: over the sea's water, or the water served under SEA_MARGIN_SHARE of their output. |
-| 80 | 16 | `static Works works(Game g)` |  |
-| 98 | 4 | `static int mills(Game g, boolean pastEveryWorks)` | Pulp Mills past what the city's water works make at full staffing, or past the founding wells alone: how many stood. |
-| 104 | 9 | `static int millsPast(Game g, double desal, double fresh)` | Pulp Mills past what the given sea and fresh nameplates make with the wells at full staffing: how many more stood. |
-| 114 | 51 | `public static void main(String[] args) throws Exception` |  |
+| 48 | 340 | **type** `public class WaterPowerCheck` | The water priced from its cost, as PW1 prices power (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price"), with the licence's power read from the dispatch (PW1-L) and a recipe's own power weighed at the prices the... |
+| 58 | 5 | `static void check(String label, boolean ok, String detail)` |  |
+| 64 | 3 | `static boolean near(double a, double b, double rel)` |  |
+| 68 | 1 | `static String f(double v)` |  |
+| 71 | 4 | **type** `record Works(double freshKw, double seaKw, double served, double withoutSea, double wellsAlone, double seaO...` | What the water works stand and deliver, worked from the stacks, the templates and waterOutput(): independent of the handler's record. |
+| 72 | 1 | `double landDelivered()` _(in WaterPowerCheck.Works)_ |  |
+| 73 | 1 | `double seaDelivered()` _(in WaterPowerCheck.Works)_ |  |
+| 77 | 3 | `static double kwPerUnit(double seaKw, double land, double sea, double seaOutput)` | The sea works' draw a unit, the rule stated from a record's fields: over the sea's water, or the water served under SEA_MARGIN_SHARE of their output. |
+| 81 | 16 | `static Works works(Game g)` |  |
+| 99 | 4 | `static int mills(Game g, boolean pastEveryWorks)` | Pulp Mills past what the city's water works make at full staffing, or past the founding wells alone: how many stood. |
+| 105 | 9 | `static int millsPast(Game g, double desal, double fresh)` | Pulp Mills past what the given sea and fresh nameplates make with the wells at full staffing: how many more stood. |
+| 115 | 51 | `public static void main(String[] args) throws Exception` |  |
 
-### 1 (lines 166-192)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 168 | 24 | `static void surplus(Game d, BuildingsTemplate desal, BuildingsStacks sea)` |  |
-
-### 2 (lines 193-211)
+### 1 (lines 167-193)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 195 | 16 | `static void short_(Game d, int n)` |  |
+| 169 | 24 | `static void surplus(Game d, BuildingsTemplate desal, BuildingsStacks sea)` |  |
 
-### 7 (lines 212-245)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 214 | 31 | `static void dearPower(Game lo, Game hi, int nlo, int nhi)` |  |
-
-### 8 (lines 246-265)
+### 2 (lines 194-212)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 248 | 17 | `static void wideSliver(Game g, int n)` |  |
+| 196 | 16 | `static void short_(Game d, int n)` |  |
 
-### 5 (lines 266-297)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 268 | 29 | `static void licence(Game lo, Game hi)` |  |
-
-### 6 (lines 298-326)
+### 7 (lines 213-246)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 300 | 26 | `static void recipes(Game d, int n)` |  |
+| 215 | 31 | `static void dearPower(Game lo, Game hi, int nlo, int nhi)` |  |
 
-### 3 (lines 327-350)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 329 | 21 | `static void money(Game d)` |  |
-
-### 4 (lines 351-386)
+### 8 (lines 247-266)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 353 | 33 | `static void save(Game d) throws Exception` |  |
+| 249 | 17 | `static void wideSliver(Game g, int n)` |  |
+
+### 5 (lines 267-298)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 269 | 29 | `static void licence(Game lo, Game hi)` |  |
+
+### 6 (lines 299-327)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 301 | 26 | `static void recipes(Game d, int n)` |  |
+
+### 3 (lines 328-351)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 330 | 21 | `static void money(Game d)` |  |
+
+### 4 (lines 352-387)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 354 | 33 | `static void save(Game d) throws Exception` |  |
 

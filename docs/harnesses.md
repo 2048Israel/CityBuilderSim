@@ -9759,85 +9759,85 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L149 1. the row and its dials: the piece, the chemistry's saving, what a works saves in the game's units**
-  - L154 fixture: the Hydrogen Steel Works carries the piece, since FE10, ending ELECTROLYSERS, buying machinery and lasting
-  - L158 fixture: the target is under today's figure and over nothing (46 < 55)
-  - L160 the hydrogen a tonne of iron takes at today's figure is HYDROGEN_KG_A_TONNE kilograms at ELECTROLYSIS_KWH_A_KG: 2.97 MWh (the study's)
-  - L162 ...and at the target 2.484 MWh (the study's 2.48)
-  - L163 the saving a tonne is the difference of the two, 0.486 MWh
-  - L165 ...0.486 MWh
-  - L166 ...less than the works' whole draw a tonne, and the hydrogen at today's figure is part of that whole (the rest is the shaft furnace and the arc furnace)
-  - L171 a works saves its steel a month at that saving, in the game's units (HydroSites.KWH_PER_UNIT kWh a unit)
-  - L174 ...which is the saving's share of the works' whole draw (HYDROGEN_MWH_SAVED_A_TONNE over HYDROGEN_MWH_A_TONNE), to a unit's rounding
-  - L176 the template's own draw is HYDROGEN_MWH_A_TONNE a tonne, untouched by the piece (the piece is a fitting, not a figure of the row)
-- **L184 2. the entry: FE10, projected, its date inside its window, after FE4**
-  - L186 fixture: FE10 and FE4 are in the catalogue
-  - L188 FE10 is an ENGINEERING row that opens equipment, of the equipment's size, patented, its source the department's page (X8)
-  - L191 it is a projection (dated after history's end,
-  - L195 its window
-  - L197 it needs FE4, the works the piece is fitted to, and FE4 is dated before it
-  - L198 the piece is known from FE10's month and not before: knownFrom() is the entry's, a year inside the window
-- **L205 3. known in its window and not before: NOT_KNOWN a month before FE10, priced at it, earlier in a city that found it**
-  - L208 fixture: a 1900 city,
-  - L213 the month before its window opens the piece is NOT_KNOWN on the works, and none carries it
-  - L217 ...and the month before FE10's own
-  - L221 at FE10's month it is known, priced and judged: PAYS or NOT_YET, its gain, cost, rate and hurdle numbers
-  - L231 a city that finds FE10 in month
-  - L234 ...and has it in the month it found it, twelve months before history's (
-  - L236 ...owing no patent rent on what it found itself
-- **L243 4. its kWh read by FE4's works: each works with the piece draws HYDROGEN_MWH_SAVED_A_TONNE less a tonne of its steel**
-  - L250 none fitted, Heavy Industry draws the buildings' own figure, to the bit: every works at its template's draw
-  - L251 ...and no works is counted with the piece
-  - L255 two of the
-  - L257 Heavy Industry draws the works' draws less the saving of each fitted works
-  - L258 ...a fitted works drawing the whole 3.48 MWh a tonne less the 0.486, in units: draw - saved is HYDROGEN_MWH_A_TONNE - HYDROGEN_MWH_SAVED_A_TONNE a tonne of i...
-  - L261 EconomyManager setting the draw again from the templates keeps the saving off it
-  - L263 ...and the forms said again move nothing (the saving is taken off the buildings' figure once, not each time)
-  - L267 every works fitted, the saving is of every one
-  - L268 ...and the sector still draws power: the saving is part of the draw and never all of it
-  - L272 the count that comes back takes the saving off again: the buildings' figure, to the bit
-  - L277 fixture: two months played, the works stand and carry the count they were given
-  - L280 two months played, the draw is still the buildings' sum less the fitted works' saving (the month's own setting of the draw kept it)
-- **L286 5. the saving against the model's own constants: it pays where power is dear, and the break-even is the model's own arithmetic**
-  - L296 fixture: the works saves units, and the grid has a price
-  - L297 the piece's gross gain is the units it saves at the unit's price (EquipmentFit.electrolyserGain())
-  - L299 ...which is a function of the price alone: twice the price, twice the gain
-  - L304 the piece costs about the stacks' share of the works' whole cost, 8% (an estimate: the electrolysers a fifth of such a works, the stacks two fifths of them, ...
-  - L307 FE10 is payable at its own month, so the verdict's gain is the gross less the patent's share of it
-  - L309 the verdict's gain is the gross less that rent (1 - LicenceFees.SHARE of it)
-  - L314 fixture: the break-even is a price above nothing
-  - L315 the verdict at the model's own tariff is the one that tariff's side of the break-even gives: PAYS exactly when the tariff is at least it
-  - L322 a quarter above the break-even tariff the piece PAYS: its gain earns the cost back over its life and clears the hurdle
-  - L324 a fifth short of it the piece does NOT: NOT_YET, the same works, the same cost, the same life
-  - L326 the gain between the two tariffs differs by the units saved at the difference of the prices, net of the rent
-  - L329 at no price for power the piece saves nothing and is not fitted: NOT_YET
-- **L378 7. the grid is sized on what is drawn: the utility's demand and invoiced draw fall with the works' bill, and the ratio follows**
-  - L386 fixture: substations carry the unfitted peak, so only generation can ration this comparison
-  - L388 every works fitted, the city's demand falls by the saving of every one (ServicesManager reads what the sector is billed)
-  - L389 ...and so does the draw the utility invoices
-  - L390 ...the same units the sector's own bill falls by
-  - L391 ...which the services manager holds as the saving it was handed
-  - L393 half of them fitted, half the saving comes off the demand
-  - L395 fixture: the utility has staff, so its supply scales with its fill and can be written to a number
-  - L401 a grid sized between the two demands' peak blocks serves the city whose works have the piece in full: the energy ratio is 1
-  - L402 ...and rations the same city with the piece off its works: the ratio is under 1, the supply under the peak block it has
-  - L410 ...at exactly what the supply serves of the half-blocks' loads (the merit order's served over asked)
-  - L412 the count that comes back takes the saving off the demand again
-  - L414 ...and the count taken off hands the grid none: the demand is the buildings' own, to the bit, and the saving 0
-- **L421 6. a city founded before the window, and one founded today's way, are untouched**
-  - L428 a 1900 city a month before the window opens draws the buildings' figure, to the bit
-  - L429 ...with no works carrying the piece, and the grid handed no saving
-  - L431 ...three months played, the buildings' sum to the bit
-  - L432 ...and none carries the piece
-  - L441 fixture: a 1900 city with
-  - L442 the month before FE10 no count-less works is counted with a piece nobody knows, and the draw is the buildings' own, to the bit
-  - L446 ...and at FE10's month the same stack, lacking nothing by its counts, is counted with it, all of them
-  - L460 fixture: founded today's way, a year past FE10's month,
-  - L463 the works draw the buildings' figure, to the bit: no saving in a city that never knows FE10
-  - L464 ...and none is counted with the piece, every count there reading fitted, and the grid is handed no saving
-  - L470 a count of the piece put on the stack by hand, and taken off, moves nothing: the buildings' figure still
-  - L471 ...no works carries the piece
-  - L473 two months played, the buildings' sum to the bit
+- **L151 1. the row and its dials: the piece, the chemistry's saving, what a works saves in the game's units**
+  - L156 fixture: the Hydrogen Steel Works carries the piece, since FE10, ending ELECTROLYSERS, buying machinery and lasting
+  - L160 fixture: the target is under today's figure and over nothing (46 < 55)
+  - L162 the hydrogen a tonne of iron takes at today's figure is HYDROGEN_KG_A_TONNE kilograms at ELECTROLYSIS_KWH_A_KG: 2.97 MWh (the study's)
+  - L164 ...and at the target 2.484 MWh (the study's 2.48)
+  - L165 the saving a tonne is the difference of the two, 0.486 MWh
+  - L167 ...0.486 MWh
+  - L168 ...less than the works' whole draw a tonne, and the hydrogen at today's figure is part of that whole (the rest is the shaft furnace and the arc furnace)
+  - L173 a works saves its steel a month at that saving, in the game's units (HydroSites.KWH_PER_UNIT kWh a unit)
+  - L176 ...which is the saving's share of the works' whole draw (HYDROGEN_MWH_SAVED_A_TONNE over HYDROGEN_MWH_A_TONNE), to a unit's rounding
+  - L178 the template's own draw is HYDROGEN_MWH_A_TONNE a tonne, untouched by the piece (the piece is a fitting, not a figure of the row)
+- **L186 2. the entry: FE10, projected, its date inside its window, after FE4**
+  - L188 fixture: FE10 and FE4 are in the catalogue
+  - L190 FE10 is an ENGINEERING row that opens equipment, of the equipment's size, patented, its source the department's page (X8)
+  - L193 it is a projection (dated after history's end,
+  - L197 its window
+  - L199 it needs FE4, the works the piece is fitted to, and FE4 is dated before it
+  - L200 the piece is known from FE10's month and not before: knownFrom() is the entry's, a year inside the window
+- **L207 3. known in its window and not before: NOT_KNOWN a month before FE10, priced at it, earlier in a city that found it**
+  - L210 fixture: a 1900 city,
+  - L215 the month before its window opens the piece is NOT_KNOWN on the works, and none carries it
+  - L219 ...and the month before FE10's own
+  - L223 at FE10's month it is known, priced and judged: PAYS or NOT_YET, its gain, cost, rate and hurdle numbers
+  - L233 a city that finds FE10 in month
+  - L236 ...and has it in the month it found it, twelve months before history's (
+  - L238 ...owing no patent rent on what it found itself
+- **L245 4. its kWh read by FE4's works: each works with the piece draws HYDROGEN_MWH_SAVED_A_TONNE less a tonne of its steel**
+  - L252 none fitted, Heavy Industry draws the buildings' own figure, to the bit: every works at its template's draw
+  - L253 ...and no works is counted with the piece
+  - L257 two of the
+  - L259 Heavy Industry draws the works' draws less the saving of each fitted works
+  - L260 ...a fitted works drawing the whole 3.48 MWh a tonne less the 0.486, in units: draw - saved is HYDROGEN_MWH_A_TONNE - HYDROGEN_MWH_SAVED_A_TONNE a tonne of i...
+  - L263 EconomyManager setting the draw again from the templates keeps the saving off it
+  - L265 ...and the forms said again move nothing (the saving is taken off the buildings' figure once, not each time)
+  - L269 every works fitted, the saving is of every one
+  - L270 ...and the sector still draws power: the saving is part of the draw and never all of it
+  - L274 the count that comes back takes the saving off again: the buildings' figure, to the bit
+  - L279 fixture: two months played, the works stand and carry the count they were given
+  - L282 two months played, the draw is still the buildings' sum less the fitted works' saving (the month's own setting of the draw kept it)
+- **L288 5. the saving against the model's own constants: it pays where power is dear, and the break-even is the model's own arithmetic**
+  - L298 fixture: the works saves units, and the grid has a price
+  - L299 the piece's gross gain is the units it saves at the unit's price (EquipmentFit.electrolyserGain())
+  - L301 ...which is a function of the price alone: twice the price, twice the gain
+  - L306 the piece costs about the stacks' share of the works' whole cost, 8% (an estimate: the electrolysers a fifth of such a works, the stacks two fifths of them, ...
+  - L309 FE10 is payable at its own month, so the verdict's gain is the gross less the patent's share of it
+  - L311 the verdict's gain is the gross less that rent (1 - LicenceFees.SHARE of it)
+  - L316 fixture: the break-even is a price above nothing
+  - L317 the verdict at the model's own tariff is the one that tariff's side of the break-even gives: PAYS exactly when the tariff is at least it
+  - L324 a quarter above the break-even tariff the piece PAYS: its gain earns the cost back over its life and clears the hurdle
+  - L326 a fifth short of it the piece does NOT: NOT_YET, the same works, the same cost, the same life
+  - L328 the gain between the two tariffs differs by the units saved at the difference of the prices, net of the rent
+  - L331 at no price for power the piece saves nothing and is not fitted: NOT_YET
+- **L380 7. the grid is sized on what is drawn: the utility's demand and invoiced draw fall with the works' bill, and the ratio follows**
+  - L388 fixture: substations carry the unfitted peak, so only generation can ration this comparison
+  - L390 every works fitted, the city's demand falls by the saving of every one (ServicesManager reads what the sector is billed)
+  - L391 ...and so does the draw the utility invoices
+  - L392 ...the same units the sector's own bill falls by
+  - L393 ...which the services manager holds as the saving it was handed
+  - L395 half of them fitted, half the saving comes off the demand
+  - L397 fixture: the utility has staff, so its supply scales with its fill and can be written to a number
+  - L403 a grid sized between the two demands' peak blocks serves the city whose works have the piece in full: the energy ratio is 1
+  - L404 ...and rations the same city with the piece off its works: the ratio is under 1, the supply under the peak block it has
+  - L412 ...at exactly what the supply serves of the half-blocks' loads (the merit order's served over asked)
+  - L414 the count that comes back takes the saving off the demand again
+  - L416 ...and the count taken off hands the grid none: the demand is the buildings' own, to the bit, and the saving 0
+- **L423 6. a city founded before the window, and one founded today's way, are untouched**
+  - L430 a 1900 city a month before the window opens draws the buildings' figure, to the bit
+  - L431 ...with no works carrying the piece, and the grid handed no saving
+  - L433 ...three months played, the buildings' sum to the bit
+  - L434 ...and none carries the piece
+  - L443 fixture: a 1900 city with
+  - L444 the month before FE10 no count-less works is counted with a piece nobody knows, and the draw is the buildings' own, to the bit
+  - L448 ...and at FE10's month the same stack, lacking nothing by its counts, is counted with it, all of them
+  - L462 fixture: founded today's way, a year past FE10's month,
+  - L465 the works draw the buildings' figure, to the bit: no saving in a city that never knows FE10
+  - L466 ...and none is counted with the piece, every count there reading fitted, and the grid is handed no saving
+  - L472 a count of the piece put on the stack by hand, and taken off, moves nothing: the buildings' figure still
+  - L473 ...no works carries the piece
+  - L475 two months played, the buildings' sum to the bit
 
 ## EnsembleCheck.java - 41 labelled assertions
 
@@ -17576,7 +17576,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L386 the works' pellets are the plants' first: the captive figure covers what the works need so far as the plants make it, and the sector bids only for the
   - L391 ...and the pellets the works took cost it nothing at the market: what it bought is the rest,
   - L399 the works' power is drawn at the template's figure: Iron & Steel's draw is its buildings' net draw, the plants' and the works' own, and the works'
-  - L404 ...billed at the ratio the grid delivered and the tariff: the sector's electricity is its draw times both
+  - L404 ...billed at the ratio the grid delivered, the season its book was dispatched at and the tariff: the sector's electricity is the kWh served (PW1-R), its draw...
   - L408 the month's money audit closes
 - **L414 5. nothing moves without the works: no 154, so no pellets are captive and the plants' pellets all go to the market as before**
   - L425 fixture: two Pelletising Plants and no Hydrogen Steel Works; Heavy Industry's pellets are captive in law and need none
@@ -35281,54 +35281,54 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      the sea delivers nothing and the price is the tariff exactly, which pays the land's works' power; the plant's gain over its
 > ...
 
-- **L116 WaterPowerCheck: the water priced from its cost, the licence's power and a recipe's own (PW1-W)**
-- **L169 1. a town in surplus prices its water at its tariff**
-  - L173 fixture: a desalination plant stands beside the fresh works, and the founding wells alone serve the city's demand
-  - L176 the sea works deliver nothing and the land's water all of it, and the handler's record says so
-  - L178 the water's price, what the statements strike at and what the recipes weigh, is the tariff exactly: the land's water pays its
-  - L183 the plant serves no demand: its gain over its running cost is negative
-  - L186 the water's books still pay the power's for all the works' draw at the struck commerce price, the plant's included
-  - L189 ...and a month on the wells still serve the demand and the price is still the tariff
-- **L196 2. a town short of water prices it at its sea works' power**
-  - L200 fixture:
-  - L202 the sea works deliver their whole output, the desalination nameplate at the fill: past SEA_MARGIN_SHARE of it, the margin alone
-  - L206 the water's price is the tariff and the sea works' draw at the struck commerce price over the water they deliver
-  - L208 the sea's water at that price pays the sea works' power: their water's power part is their draw at the commerce price
-- **L215 7. the sea on a sliver: the price bounded, the sea works' power recovered once, and moved by the price of power**
-  - L220 fixture: each copy's fresh works are retired for a desalination plant, and its Pulp Mills (
-  - L226 fixture: the copy whose homes ask past its plant is short of power and its struck commerce price is the higher
-  - L229 each copy's water is the tariff and its sea works' draw at its own commerce price spread over the water served, not over the sliver
-  - L231 the price stays bounded: below the sea works' draw over the sliver, the rule before the bound
-  - L241 the water served at that price recovers the sea works' power once, and the bills, the billed part of it, no more
-  - L243 the dearer power prices the dearer water
-- **L249 8. the sea on a sliver of a city that serves past that share: the price is the plant's power over the share**
-  - L254 fixture: the cheap copy's fresh works stood again beside its plant, and
-  - L259 the water's price is the tariff and the sea works' draw at the struck commerce price over that share of their output, what a plant
-  - L262 ...bounded below the sea works' draw over the sliver, and the water served pays their power more than once, as the margin's does
-- **L269 5. a licence's power is the dispatch's energy served (PW1-L)**
-  - L285 fixture: the cheap copy is in surplus in every half-block
-  - L286 ...so a coal plant moved by
-  - L289 fixture: the dear copy is short in every half-block by more than the move
-  - L290 ...so the move serves its every kWh: the demand delivered rises by the move's kWh over the kWh asked
-  - L292 ...which is not the flat rule's whole move: the dispatch carries the grid's losses and the season
-- **L301 6. a recipe's own power is weighed at what the strike pays it (PW1-G)**
-  - L307 fixture: the Pulp Mill's recipe makes power past its draw, and Wood Products' surplus is its
-  - L310 fixture: the works price the strike pays a surplus is not the industry price a Heavy Industry draw pays
-  - L316 the mills' recipe weighs their surplus at what Wood Products' statement was then paid for it, at the works price
-  - L318 ...and not at the industry price, which the whole difference at the class's price would have weighed it at
-  - L322 an Oxygen Steel Shop's own power is netted at its class's price: its draw past what it makes at the industry price
-- **L330 3. every bill once**
-  - L336 the water's books paid the power's the month's works' draw at the struck commerce price
-  - L341 the electricity's income gains it and the water's loses it
-  - L342 ...and the services' net, which the treasury takes, is the same with it or without
-  - L343 the treasury's utility line is the services' net
-  - L347 the audit's utility revenue is the sectors' bills: the works' power is no customer's
-  - L348 the money audit closes
-- **L354 4. the save**
-  - L363 fixture: the city saved in its scratch folder's slot
-  - L364 loaded, it prices its water as it did, holds the same works' record and the same payment
-  - L381 fixture: the save carried the record and the payment, struck out of the file to make the save of the build before
-  - L382 a save without them loads with nothing paid and the record its load rebuilt from the same stock, which prices the water by the same rule
+- **L117 WaterPowerCheck: the water priced from its cost, the licence's power and a recipe's own (PW1-W)**
+- **L170 1. a town in surplus prices its water at its tariff**
+  - L174 fixture: a desalination plant stands beside the fresh works, and the founding wells alone serve the city's demand
+  - L177 the sea works deliver nothing and the land's water all of it, and the handler's record says so
+  - L179 the water's price, what the statements strike at and what the recipes weigh, is the tariff exactly: the land's water pays its
+  - L184 the plant serves no demand: its gain over its running cost is negative
+  - L187 the water's books still pay the power's for all the works' draw at the struck commerce price, the plant's included
+  - L190 ...and a month on the wells still serve the demand and the price is still the tariff
+- **L197 2. a town short of water prices it at its sea works' power**
+  - L201 fixture:
+  - L203 the sea works deliver their whole output, the desalination nameplate at the fill: past SEA_MARGIN_SHARE of it, the margin alone
+  - L207 the water's price is the tariff and the sea works' draw at the struck commerce price over the water they deliver
+  - L209 the sea's water at that price pays the sea works' power: their water's power part is their draw at the commerce price
+- **L216 7. the sea on a sliver: the price bounded, the sea works' power recovered once, and moved by the price of power**
+  - L221 fixture: each copy's fresh works are retired for a desalination plant, and its Pulp Mills (
+  - L227 fixture: the copy whose homes ask past its plant is short of power and its struck commerce price is the higher
+  - L230 each copy's water is the tariff and its sea works' draw at its own commerce price spread over the water served, not over the sliver
+  - L232 the price stays bounded: below the sea works' draw over the sliver, the rule before the bound
+  - L242 the water served at that price recovers the sea works' power once, and the bills, the billed part of it, no more
+  - L244 the dearer power prices the dearer water
+- **L250 8. the sea on a sliver of a city that serves past that share: the price is the plant's power over the share**
+  - L255 fixture: the cheap copy's fresh works stood again beside its plant, and
+  - L260 the water's price is the tariff and the sea works' draw at the struck commerce price over that share of their output, what a plant
+  - L263 ...bounded below the sea works' draw over the sliver, and the water served pays their power more than once, as the margin's does
+- **L270 5. a licence's power is the dispatch's energy served (PW1-L)**
+  - L286 fixture: the cheap copy is in surplus in every half-block
+  - L287 ...so a coal plant moved by
+  - L290 fixture: the dear copy is short in every half-block by more than the move
+  - L291 ...so the move serves its every kWh: the demand delivered rises by the move's kWh over the kWh asked
+  - L293 ...which is not the flat rule's whole move: the dispatch carries the grid's losses and the season
+- **L302 6. a recipe's own power is weighed at what the strike pays it (PW1-G)**
+  - L308 fixture: the Pulp Mill's recipe makes power past its draw, and Wood Products' surplus is its
+  - L311 fixture: the works price the strike pays a surplus is not the industry price a Heavy Industry draw pays
+  - L317 the mills' recipe weighs their surplus at what Wood Products' statement was then paid for it, at the works price
+  - L319 ...and not at the industry price, which the whole difference at the class's price would have weighed it at
+  - L323 an Oxygen Steel Shop's own power is netted at its class's price: its draw past what it makes at the industry price
+- **L331 3. every bill once**
+  - L337 the water's books paid the power's the month's works' draw at the struck commerce price
+  - L342 the electricity's income gains it and the water's loses it
+  - L343 ...and the services' net, which the treasury takes, is the same with it or without
+  - L344 the treasury's utility line is the services' net
+  - L348 the audit's utility revenue is the sectors' bills: the works' power is no customer's
+  - L349 the money audit closes
+- **L355 4. the save**
+  - L364 fixture: the city saved in its scratch folder's slot
+  - L365 loaded, it prices its water as it did, holds the same works' record and the same payment
+  - L382 fixture: the save carried the record and the payment, struck out of the file to make the save of the build before
+  - L383 a save without them loads with nothing paid and the record its load rebuilt from the same stock, which prices the water by the same rule
 
 ## WellCheck.java - 157 labelled assertions
 
