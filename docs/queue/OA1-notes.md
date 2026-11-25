@@ -34,7 +34,11 @@ A helper traced PW3's water-held seeds with a copy of `tools/ensemble/Ensemble.j
 - Seeds 9 and 15, the same: raised at least the cost in 110 of 113 and 108 of 110 months, held() never; shortfall at
   least 5.3M and 5.6M against reserves of the same size.
 - In passing, not this batch's and not traced: on 0.9.205 seed 6 has water at 0.39 to 0.44 for 24 months (m379-402) with
-  no ask, its hold line "no building the city could staff would move it now" (crews, `Outcome.NOTHING`).
+  no ask, its hold line "no building the city could staff would move it now" (crews, `Outcome.NOTHING`); seeds 9
+  (m305-314) and 15 (m302-314) the same line, and on 0.9.199 seeds 6, 9 and 15 for 6, 42 and 52 months. Queued as
+  **SW1** in the ship file (the orchestrator, 2026-11-25: "not yours to mend, but it must not be lost"): no real city
+  leaves its water at 40% for two years because it cannot staff the works, so the row asks why the staffing test
+  refuses every water card.
 
 ## 2. Reality first
 
