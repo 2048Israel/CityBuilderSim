@@ -302,6 +302,13 @@ public class EducationCheck {
 
     public static void main(String[] args) throws Exception {
 
+        afterCostReturns();
+        afterCostBinding();
+        if (java.util.Arrays.asList(args).contains("--wg3")) {
+            System.out.println(fails == 0 ? "All WG3 checks passed." : fails + " FAILED");
+            System.exit(fails == 0 ? 0 : 1);
+        }
+
         /* ============ 1. THE PROFESSION IS GATED ============
 
            The headline. A city can IMPORT some doctors - a share of the
@@ -1790,6 +1797,160 @@ public class EducationCheck {
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** WG3: fee and stage changes must reach actual intake through the original curve. */
+    static void afterCostReturns() {
+        System.out.println("--- after-cost returns cause adult intake, high school unchanged ---");
+        LabourMarket market = SchoolingLadderCheck.wages();
+        Education ed = new Education();
+        TaxPolicy tax = new TaxPolicy();
+        double[] policyRate = {0};
+        PopulationCohorts pyramid = SchoolingLadderCheck.stages(300, 100);
+        ed.setStudyFinance(tax, () -> policyRate[0], pyramid);
+        ed.setTuitionSubsidy(1);
+        double young = ed.studyReturn(EducationType.COLLEGE, market, AdultStage.YOUNG);
+        double older = ed.studyReturn(EducationType.COLLEGE, market, AdultStage.ESTABLISHED);
+        double youngPay = SchoolingLadderCheck.handSum(AdultStage.YOUNG.spanMonths() + AdultStage.ESTABLISHED.spanMonths(),
+                EducationType.COLLEGE.months(), 3, 0, SchoolingLadder.FLOOR_RATE);
+        double olderPay = SchoolingLadderCheck.handSum(AdultStage.ESTABLISHED.spanMonths(),
+                EducationType.COLLEGE.months(), 3, 0, SchoolingLadder.FLOOR_RATE);
+        assertTrue("each stage uses after-cost(next)/after-cost(current)-1 through the original curve",
+                Math.abs(young - Math.pow(youngPay / 2 - 1, Education.RETURN_ELASTICITY)) < 1e-12
+                && Math.abs(older - Math.pow(olderPay / 2 - 1, Education.RETURN_ELASTICITY)) < 1e-12);
+        assertTrue("fixture: both adult stages want this course, with less return when established",
+                young > older && older > 0 && young < 1);
+        assertTrue("the mixed pool averages stage decisions through the same curve",
+                Math.abs(ed.studyReturn(EducationType.COLLEGE, market) - (.75 * young + .25 * older)) < 1e-12);
+        PopulationCohorts allOlder = SchoolingLadderCheck.stages(0, 400);
+        ed.setStudyStages(allOlder);
+        assertTrue("no young adults means the established decision alone",
+                Math.abs(ed.studyReturn(EducationType.COLLEGE, market) - older) < 1e-12);
+        ed.setStudyStages(SchoolingLadderCheck.stages(0, 0));
+        assertTrue("no eligible adult stage means no willingness", ed.studyReturn(EducationType.COLLEGE, market) == 0);
+        ed.setStudyStages(pyramid);
+
+        // Find a narrow positive return by summing the free and fee-paying ledgers independently.
+        // This causes fees alone to move the SAME gross wage across parity.
+        ed.setTuitionScaleOf(EducationType.HIGH, 0); // Hold the prerequisite's after-cost wage fixed at 2.
+        double low = market.getWage(JobType.DIPLOMA), high = low * 2;
+        int life = AdultStage.YOUNG.spanMonths() + AdultStage.ESTABLISHED.spanMonths();
+        double fee = ed.feeFor(EducationType.COLLEGE);
+        for (int i = 0; i < 70; i++) {
+            double trial = (low + high) / 2;
+            double free = SchoolingLadderCheck.handSum(life, EducationType.COLLEGE.months(), trial, 0,
+                    SchoolingLadder.FLOOR_RATE);
+            double paid = SchoolingLadderCheck.handSum(life, EducationType.COLLEGE.months(), trial, fee,
+                    SchoolingLadder.FLOOR_RATE);
+            if ((free + paid) / 2 < 2) low = trial; else high = trial;
+        }
+        for (JobType job : JobType.values()) if (WageBand.of(job) == WageBand.COLLEGE)
+            market.getWages()[job.ordinal()] = (low + high) / 2;
+        ed.setStudyStages(SchoolingLadderCheck.stages(400, 0));
+        double freeReturn = ed.studyReturn(EducationType.COLLEGE, market);
+        ed.setTuitionSubsidy(0);
+        assertTrue("fixture: fees alone cross after-cost parity at this gross wage",
+                freeReturn > 0 && ed.studyReturn(EducationType.COLLEGE, market) == 0);
+        double[] heads = new double[WageBand.values().length];
+        heads[WageBand.DIPLOMA.ordinal()] = 200;
+        PopulationManager people = LabourCheck.handFed(400, heads, new long[JobType.values().length], new double[JobType.values().length]);
+        double[] seats = new double[EducationType.values().length];
+        seats[EducationType.COLLEGE.ordinal()] = 100;
+        PopulationCohorts onlyYoung = SchoolingLadderCheck.stages(400, 0);
+        ed.advanceMonth(seats, onlyYoung, people, market, 0, 0);
+        assertTrue("the costly course actually admits nobody", ed.studentBody(EducationType.COLLEGE) == 0);
+        ed.setTuitionSubsidy(1);
+        double expected = 200 * Education.MAX_PARTICIPATION * freeReturn * Education.ENROLMENT_RATE;
+        ed.advanceMonth(seats, onlyYoung, people, market, 0, 0);
+        assertTrue("the subsidized course actually admits the curve's flow",
+                ed.studentBody(EducationType.COLLEGE) > 0 && Math.abs(ed.studentBody(EducationType.COLLEGE) - expected) < 1e-12);
+        market = SchoolingLadderCheck.wages();
+        double floor = ed.studyReturn(EducationType.UNIVERSITY, market);
+        policyRate[0] = .09;
+        double dearPolicy = ed.studyReturn(EducationType.UNIVERSITY, market);
+        tax.setStudentLoanRate(.12);
+        assertTrue("live policy and loan changes each lower the return", floor > dearPolicy
+                && dearPolicy > ed.studyReturn(EducationType.UNIVERSITY, market));
+        java.util.Arrays.fill(market.getWages(), 2);
+        assertTrue("gross parity is now a loss after time out of work", ed.studyReturn(EducationType.COLLEGE, market) == 0);
+        market.getWages()[JobType.COLLEGE_BUSINESS.ordinal()] = 200;
+        assertTrue("the original curve still caps at one", ed.studyReturn(EducationType.COLLEGE, market) == 1);
+
+        double[] state = onlyYoung.toSaveArray();
+        state[AgeBand.TEEN.ordinal()] = 100;
+        onlyYoung.restore(PopulationCohorts.saveBands(), state);
+        for (EducationType type : EducationType.values()) if (type.isBasic()) seats[type.ordinal()] = 1_000;
+        policyRate[0] = 0;
+        ed.advanceMonth(seats, onlyYoung, people, market, 0, 0);
+        double diplomas = ed.getNewDiplomas();
+        policyRate[0] = .2;
+        ed.advanceMonth(seats, onlyYoung, people, market, 0, 0);
+        assertTrue("high school still graduates from coverage and affordability, at either rate",
+                diplomas > 0 && ed.getNewDiplomas() == diplomas);
+    }
+
+    /** WG3's actual Game binding, through construction, a month and a load, using scratch saves only. */
+    static void afterCostBinding() throws Exception {
+        System.out.println("--- live school finance and stages survive the Game paths ---");
+        Path root = TempDirs.create("wg3-binding");
+        try {
+            GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
+            Game game = new Game(files);
+            assertStudyBinding(game, "bare construction");
+            quietly(game::newGame);
+            assertStudyBinding(game, "construction");
+            game.getEconomyManager().getTaxPolicy().setStudentLoanRate(.12);
+            assertStudyBinding(game, "live loan change");
+            game.getEconomyManager().getTaxPolicy().setStudentLoanRate(0);
+            game.getDebtManager().setPolicyRate(.09);
+            assertStudyBinding(game, "live policy change");
+            quietly(() -> game.simulateMonths(1));
+            assertStudyBinding(game, "month");
+            assertTrue("the binding fixture saves only to its scratch folder", game.saveGame(1, "wg3-binding").ok);
+            Game loaded = new Game(files);
+            quietly(() -> loaded.loadGameSave(1));
+            assertTrue("the binding fixture loads", loaded.getLoadFailure() == null);
+            assertStudyBinding(loaded, "load before first month");
+            PopulationCohorts old = SchoolingLadderCheck.stages(0, 400);
+            loaded.getCohorts().restore(PopulationCohorts.saveBands(), old.toSaveArray());
+            assertStudyBinding(loaded, "live pyramid change after load");
+            loaded.getEconomyManager().getTaxPolicy().setStudentLoanRate(.12);
+            assertStudyBinding(loaded, "live loan change after load");
+            loaded.getEconomyManager().getTaxPolicy().setStudentLoanRate(0);
+            loaded.getDebtManager().setPolicyRate(.09);
+            assertStudyBinding(loaded, "live policy change after load");
+            quietly(loaded::newGame);
+            assertStudyBinding(loaded, "newGame reset after load");
+            loaded.getCohorts().restore(PopulationCohorts.saveBands(), old.toSaveArray());
+            assertStudyBinding(loaded, "live cohort reference after reset");
+            loaded.getEconomyManager().getTaxPolicy().setStudentLoanRate(.12);
+            assertStudyBinding(loaded, "live loan change after reset");
+            loaded.getEconomyManager().getTaxPolicy().setStudentLoanRate(0);
+            loaded.getDebtManager().setPolicyRate(.09);
+            assertStudyBinding(loaded, "live policy change after reset");
+        } finally { cleanUp(root); }
+    }
+
+    static void assertStudyBinding(Game game, String path) {
+        TaxPolicy tax = game.getEconomyManager().getTaxPolicy();
+        double rate = game.getDebtManager().getPolicyRate();
+        Education ed = game.getEducation();
+        LabourMarket market = game.getLabourMarket();
+        // A partial return at every tested rate makes a stale stage binding observable.
+        System.arraycopy(SchoolingLadderCheck.wages().getWages(), 0, market.getWages(), 0, JobType.values().length);
+        market.getWages()[JobType.COLLEGE_BUSINESS.ordinal()] = 4;
+        double young = ed.studyReturn(EducationType.COLLEGE, market, AdultStage.YOUNG);
+        double older = ed.studyReturn(EducationType.COLLEGE, market, AdultStage.ESTABLISHED);
+        assertTrue(path + " fixture: stage decisions differ and neither is zero or capped", young > older && older > 0 && young < 1);
+        double expectedRate = Math.max(SchoolingLadder.FLOOR_RATE, Math.max(tax.getStudentLoanRate(), rate));
+        assertTrue(path + " reads the live borrowing/waiting rate", ed.schoolingLadder(market, AdultStage.YOUNG).annualRate() == expectedRate);
+        double adults = game.getCohorts().get(AgeBand.ADULT), expected = 0;
+        for (AdultStage stage : AdultStage.values()) {
+            double gain = SchoolingLadder.of(market, ed, tax, rate, stage).gain(EducationType.COLLEGE);
+            double curve = gain <= 0 ? 0 : Math.min(1, Math.pow(gain, Education.RETURN_ELASTICITY));
+            if (adults > 0) expected += game.getCohorts().get(stage) / adults * curve;
+        }
+        assertTrue(path + " reads the current adult-stage decisions", Math.abs(ed.studyReturn(EducationType.COLLEGE, market) - expected) < 1e-12);
     }
 
     /** Last month's journal line by its label, or NaN for none. See section 14. */

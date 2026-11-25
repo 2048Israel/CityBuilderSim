@@ -25,7 +25,7 @@
 
 **Uses:** [FamilyStructure](FamilyStructure.md) (1)
 
-**Used by (15):** [CapitalGainsCheck](CapitalGainsCheck.md), [CardCheck](CardCheck.md), [DebtStatistics](DebtStatistics.md), [DebtStatisticsCheck](DebtStatisticsCheck.md), [FamilyModel](FamilyModel.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [KeptBench](KeptBench.md), [MoneyWordsCheck](MoneyWordsCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCohorts](PopulationCohorts.md), [WorkingHousehold](WorkingHousehold.md)
+**Used by (22):** [BuildAdviceCheck](BuildAdviceCheck.md), [CapitalGainsCheck](CapitalGainsCheck.md), [CardCheck](CardCheck.md), [DebtStatistics](DebtStatistics.md), [DebtStatisticsCheck](DebtStatisticsCheck.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [FamilyModel](FamilyModel.md), [HouseholdAccounts](HouseholdAccounts.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdFlowCheck](HouseholdFlowCheck.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [KeptBench](KeptBench.md), [MoneyWordsCheck](MoneyWordsCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [PopulationCohorts](PopulationCohorts.md), [SchoolingLadder](SchoolingLadder.md), [SchoolingLadderCheck](SchoolingLadderCheck.md), [SchoolingPageCheck](SchoolingPageCheck.md), [WorkingHousehold](WorkingHousehold.md)
 
 ## Enum constants
 

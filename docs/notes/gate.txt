@@ -1,8 +1,8 @@
-# gate of Merge batch/PW1-R: pW1's review follow-ups (after PW1): the bills struck on the year's mean kWh while the dispatch serves the season's; the planner pricing Heavy Industry's power at the commerce price and own generation at the industry price; powerBooks with no SaveFileCheck line; lows, 0.9.203
+# gate of Merge batch/WG3: schooling on pay after cost (Jerus, 2026-11-02: "After cost, not high school (Recommended)"): `WageLadder` (pure, from `ladder.py`) and `Education.returnOn()` on it for college, university and the professional schools, a degree valued off its best ungated job, high school unchanged; after WG1, and after the households study's age stages if those are queued; ensemble. Folded in at the queue's triage (Jerus, 2026-11-09: "we really need to empty the queue"): **WS2**: The ladder page (after WG3): one bar per qualification, paid and after cost, may invert, with posts, holders, the course's cost and a verdict each. Back from Pending 2026-11-24 (contract section 6, the orchestrator's): its dry run against 0.9.180 found two new reds, BuildAdviceCheck's university-demand fixture (wouldCome 0 against 25 by month 36) and LongPlaytest's households with no home 15 times at months 380-394 (kept run cM0qFfei). The batch merges main, has a helper trace each against main before any mend or restatement (check reality first), then dry runs; no waiver, 0.9.204
 # date: 2026-11-25
 # earth-2.bin: named
 # nightly: 2026-11-25 03:03 0.9.202 d657b3a83 4,000 months: RED, exit 1 in 971 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-25-d657b3a83-xbsFLHkH
-# suite: 242 harnesses run in 1023s: 222 passed, 20 failed
+# suite: 240 harnesses run in 806s: 224 passed, 16 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -13,9 +13,6 @@ RoadCheck | exit 1
 RoadCheck | the move follows the card's paving or new-build action and records the actual count              FAIL
 RoadCheck | the test player orders exactly the count on its whole-plan card                                  FAIL
 RoadCheck | 2 FAILED
-AutoBuildCheck | exit 1
-AutoBuildCheck | fixture: the saved city turned people away from general care for its fee                                       FAIL
-AutoBuildCheck | 1 FAILED
 CurrencyCheck | exit 1
 CurrencyCheck | fixture: the city reads a year of 45% inflation                    FAIL  0.000000000 != 0.450000000
 CurrencyCheck | the autopilot sets the rule's rate                                 FAIL  0.030000000 != 0.000000000
@@ -54,9 +51,6 @@ RailDrawCheck | 1 FAILED
 PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
 PlanCheck | 1 FAILED
-KeptCheck | exit 1
-KeptCheck | a note with lines this month opened on it adds to the page (396 lines, then 393) FAIL
-KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
@@ -66,11 +60,12 @@ CarCheck | the fixture: one household's money buys a car at the price the draw i
 CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  62 cars, 1 step(s) of the import price; paid 56.232508772885570, the ship's product 55.440508772885565; 6.0 cars on the makers' shelves
 CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 55.440508772885570, paid 56.232508772885570
 CarCheck | 3 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
-LongPlaytest | exit 1
-LongPlaytest | FAIL a building on the map moved                        3 time(s), months 603-1807
 GroundSkipCheck | exit 1
 GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 30 month(s) FAIL
 GroundSkipCheck | 1 FAILED
+KeptCheck | exit 1
+KeptCheck | a note with lines this month opened on it adds to the page (396 lines, then 393) FAIL
+KeptCheck | 1 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
