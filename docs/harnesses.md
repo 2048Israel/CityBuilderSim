@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 29,063 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 29,064 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -6308,7 +6308,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L520 ...the leach plant bought its acid - from the world, no smelter standing
   - L523 the month's money audit closes
 
-## CopperRefiningCheck.java - 84 labelled assertions
+## CopperRefiningCheck.java - 85 labelled assertions
 
 > Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md
 > 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's -
@@ -6324,101 +6324,102 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L176 1. the sector on the registry: a works on concentrate, anode, cathode and scrap; the wire works in Manufacturing**
-  - L179 Sectors.KEYS has Copper Refining after Copper Mining, the twenty-second - wood's Forestry after it since 0.7.138
-  - L183 ...a processing sector found by its saved name, Iron & Steel's group, making cathode, anode, acid and rod of
-  - L190 ...anode and cathode captive - made and used inside it - and nothing else
-  - L194 Manufacturing makes wire and cable of rod, appended after its own two goods and two inputs; its planning good still
-  - L210 the buyers (spec 2.12): concentrate the smelters', cathode the mines' leach plants' and the refineries', the rod mills'
-- **L265 2. the five rows at parity: the study's 4.3, and its 4.4 table's four cases to its rounding**
-  - L284 the
-  - L296 ...its ground
-  - L304 its consumables are its running cost less its wages, power and water
-  - L314 ...its four cases are the study's 4.4 to its rounding:
-  - L318 the study's 4.4: the smelter loses on imported concentrate (case A), so the rule never builds one without a mine - on the
-  - L321 ...imported scrap just breaks even: the scrap refinery's case A the study's -0.02%
-  - L323 ...the rod mill's 11% in case C, a thin premium on a big tonnage; the wire works built to replace imports (C) far past
-  - L330 the scrap refinery takes the city's old copper, its whole feed - oldMetal COPPER 4,400 t a month, its scrap's tonnes; it and
-  - L336 the heavy plants' posts 54/35/9/2 by largest remainder: the smelter's 700 are 378/245/63/14
-- **L347 3. the chain by its ratios: concentrate to anode to cathode to rod to wire, anode and cathode captive**
-  - L352 the rows' ratios: 33,000 t of concentrate into 9,750 t of anode and 0.9 t of acid a tonne; the anode into 9,700 t of
-  - L376 fixture: a smelter, a refinery and a rod mill standing beside a wire works, two months on: the smelter's anode all to the
-  - L383 ...the refinery's cathode to the rod mill first, captive: min of its 9,700 t and the mill's 8,016 at the rate; the rest to
-  - L389 ...the rod mill's 8,000 t of rod at the rate to the market: what the wire works bid sold at home, the rest shipped
-  - L394 ...and the wire works' wire and cable, a tonne a tonne of rod, nobody here buying it, all shipped
-  - L398 the month's money audit closes
-- **L405 4. the smelter's acid sold, the leach plant's bought at home, the rest shipped**
-  - L429 fixture: a smelter beside a leach plant, two months on: the smelter made 29,700 t of acid to its 9,750 of anode, the
-  - L438 ...on the books (struck at the next month's top): Copper Mining bought acid at home, Copper Refining sold it at home and
-- **L448 5. the city's old copper: from cars and demolitions, bought by a scrap refinery at 70% of scrap's export, the rest landfill**
-  - L457 a thousand cars scrapped leave 23 kg of copper each at 85%, and two Houses pulled down 0.1 t a unit of their material at
-  - L464 ...beside the steel's pool, which is as it was: 0.9 t a car and 0.3 t a unit, at 85%
-  - L473 its state carries the copper beside the steel, and reads back the same; a state with none (a save from before 0.7.133)
-  - L492 fixture: a Scrap Copper Refinery standing, 6,000 t of old copper handed it - half the households' cars', half a sector's:
-  - L498 ...at PAY_SHARE of COPPER_SCRAP's export price, from each seller pro rata
-  - L502 ...and its bid for scrap its need at the clearing past the old copper it took - next to none, the old copper covering
-  - L510 ...on the books at the next strike: its input line \"Old metal\" what it paid, the households' part billed by them, the
-  - L523 with less old copper than its intake it buys and makes all of it, nothing to landfill or loss-making imported scrap
-  - L531 the month's money audit closes (MoneyCheck holds its old-metal lines over two years)
-  - L545 the same town on profitable cathode has a positive scrap remainder after 500 t of recovered copper
-  - L550 ...it bids and buys its full positive market remainder, not just the recovered copper
-  - L557 ...the actual cathode uses the recovered copper and the market remainder at the same recipe ratio
-  - L566 ...and with no scrap refinery standing the month's old copper all goes to landfill, nobody paid
-- **L573 6. the planner weighs one more scrap refinery on the old copper past what those standing take**
-  - L583 fixture: a town, its own few cars' old copper: one more refinery weighed on it and the market's scrap
-  - L593 3,000 t of old copper arisen, no refinery standing: one more weighs it at PAY_SHARE of scrap's export price and the rest
-  - L598 ...with one standing it takes its 4,400 t first: one more is weighed on what is left past them, the last on what
-- **L626 7. the Wire & Cable Works weighed with its insulation and its freight; Manufacturing's older rows with their legs, as every maker**
-  - L639 the wire works' estimate: the maker's, less its insulation (its consumables) at the exchange factor and its freight, to the
-  - L645 ...and a Fabrication Shop's, which buys no consumables, the maker's estimate less its city legs, to the bit
-- **L684 8. a works buys inputs only for what it makes: the idle refinery orders no anode, and does not swallow its smelter's**
-  - L700 fixture (a): an Electrolytic Refinery on imported anode, the shed held at the dump line: the whole shed withheld, none offered,
-  - L710 (a) every unit of anode it bought this month was made into cathode (which the yard then holds or writes off) or went to a pantry,
-  - L714 ...and in this case it orders no anode and makes no cathode
-  - L727 (d) the books lose nothing: what the works' input imports came to in the accounts is matched by the cathode it made, at no more
-  - L731 ...so the month's GDP (C + Iconstr + Istock + G + NX) is not below what C + G alone would make it, less the rest of the imports line
-  - L744 fixture (b): a smelter and two refineries, the shed held at the dump line, the cathode's price and net export price under
-  - L753 (b) the smelter's anode is not swallowed as captive by refineries that make nothing: what it smelted was used by the cathode
-  - L761 ...and the anode it bought from the world is likewise used, none of it lost
-  - L774 (c) the original empty-yard refinery has no cathode demand and a negative feed spread: no speculative production or anode
-  - L794 ...and so does a chain whose month makes its whole rate (a smelter, a refinery and a rod mill): every order is the need at the
-- **L840 9. a works making a flow good orders no input for exports that sell under it: the rod mill, the slope, the count**
-  - L855 fixture (a): two Rod Mills on imported cathode, no refinery and no wire works, rod's export price half the literal: its net
-  - L861 (a) the mills order no cathode past the home market's demand (none here: the bid is nothing, nothing is imported), make no rod,
-  - L867 ...and the books lose nothing: the month's GDP plus the rest of the imports is not below C + G
-  - L885 fixture (b): (a) with a Wire & Cable Works beside the mills: rod is still under its cathode's cost, and the home market asked for
-  - L890 (b) the rod made is that demand, whatever it fetches, and the cathode bid is that times the Rod Mill's cathode for a tonne of rod
-  - L894 ...and none of it is exported: it all sold at home, and what the mills could not sell at home they did not make
-  - L907 fixture (c): the same mills, rod's export price twice the literal: its net export price is over the cost and its headroom
-  - L910 (c) a rod that pays orders exactly the need at the rate - getInputAtCapacity() times the operating rate, less what is captive - and
-  - L932 fixture (d): the same mills (no wire works), rod's band a straight line in the city's exports: this month's net export price is over
-  - L943 (d) the rod exported is some, and less than the spare, and it is the most the slope allows: at it next month's net export price still
-  - L952 ...and with no curve (prices set by hand again) the net export price at any exports is this month's, to the bit; no curve reads
-  - L965 fixture (e): a smelter, a refinery and a rod mill, rod's export price half the literal, cathode's twice it: rod is under its
-  - L971 (e) the smelter still makes the refinery's anode need: it is kept for the refinery, none of it lost to the market, and the refinery
-  - L983 ...and a tonne of anode costs the smelter's inputs at what they cost here less its acid at what that nets abroad, over its anode, from
-  - L1006 fixture (g): a smelter beside a leach plant, anode's export price half the literal: its net export price is under what a tonne of
-  - L1016 (g) the smelter still runs for its acid, and every tonne of concentrate it bought was made into anode and acid in the template's
-  - L1041 fixture (h): a smelter, a refinery and a rod mill, the refinery's cathode covering the mill's, rod's net export price over what a
-  - L1053 (h) in the chain's
-  - L1058 ...and a tonne of rod costs the mill's cathode at what the chain saves by not using it: the cathode market's landed price, or
-  - L1171 (f) the run played its months with no month's GDP negative
-  - L1176 ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under
-  - L1193 ...and every curve the world gave a market reproduces the band it was set at: the net export price at the exports it was struck at is
-- **L1245 10. a mine and a smelter on the world market: the chain the literals mean to pay pays, and the copper charge's cycle is seen**
-  - L1277 fixture: a town not on the literals with a Large Copper Mine, a smelter and a refinery standing, and sulphide ground for the mine's whole run
-  - L1328 the city has a world market in every month played
-  - L1332 the world market solved the founding year and every January after it, WORLD_YEARS (
-  - L1338 ...and in every year played the mine dug concentrate, the smelter made anode and the refinery cathode
-  - L1350 ...the years played hold at least PEAKS_HELD (
-  - L1367 (a) Copper Refining's own result, its revenue less its inputs, is above 0 in every year played after the founding year's ramp
-  - L1369 (a) ...and the smelter's margin a tonne of anode, at the export side, is above 0 every January
-  - L1374 (b) the smelter's margin over cathode follows the year's treatment part over cathode: the correlation is at least CYCLE_SEEN (
-  - L1376 (b) ...and the margin's range is at least RANGE_KEPT (
-- **L1400 11. seed 1's Rod Mills, played: the playtest's seed 1 for 2,400 months stands no Rod Mill that lives**
-  - L1427 the playtest's seed 1 finishes in
-  - L1448 the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line
-  - L1454 seed 1's 2,400 months stand at most ROD_MILLS_STANDING (
+- **L178 1. the sector on the registry: a works on concentrate, anode, cathode and scrap; the wire works in Manufacturing**
+  - L181 Sectors.KEYS has Copper Refining after Copper Mining, the twenty-second - wood's Forestry after it since 0.7.138
+  - L185 ...a processing sector found by its saved name, Iron & Steel's group, making cathode, anode, acid and rod of
+  - L192 ...anode and cathode captive - made and used inside it - and nothing else
+  - L196 Manufacturing makes wire and cable of rod, appended after its own two goods and two inputs; its planning good still
+  - L212 the buyers (spec 2.12): concentrate the smelters', cathode the mines' leach plants' and the refineries', the rod mills'
+- **L267 2. the five rows at parity: the study's 4.3, and its 4.4 table's four cases to its rounding**
+  - L286 the
+  - L298 ...its ground
+  - L306 its consumables are its running cost less its wages, power and water
+  - L316 ...its four cases are the study's 4.4 to its rounding:
+  - L320 the study's 4.4: the smelter loses on imported concentrate (case A), so the rule never builds one without a mine - on the
+  - L323 ...imported scrap just breaks even: the scrap refinery's case A the study's -0.02%
+  - L325 ...the rod mill's 11% in case C, a thin premium on a big tonnage; the wire works built to replace imports (C) far past
+  - L332 the scrap refinery takes the city's old copper, its whole feed - oldMetal COPPER 4,400 t a month, its scrap's tonnes; it and
+  - L338 the heavy plants' posts 54/35/9/2 by largest remainder: the smelter's 700 are 378/245/63/14
+- **L349 3. the chain by its ratios: concentrate to anode to cathode to rod to wire, anode and cathode captive**
+  - L354 the rows' ratios: 33,000 t of concentrate into 9,750 t of anode and 0.9 t of acid a tonne; the anode into 9,700 t of
+  - L378 fixture: a smelter, a refinery and a rod mill standing beside a wire works, two months on: the smelter's anode all to the
+  - L385 ...the refinery's cathode to the rod mill first, captive: min of its 9,700 t and the mill's 8,016 at the rate; the rest to
+  - L391 ...the rod mill's 8,000 t of rod at the rate to the market: what the wire works bid sold at home, the rest shipped
+  - L396 ...and the wire works' wire and cable, a tonne a tonne of rod, nobody here buying it, all shipped
+  - L400 the month's money audit closes
+- **L407 4. the smelter's acid sold, the leach plant's bought at home, the rest shipped**
+  - L431 fixture: a smelter beside a leach plant, two months on: the smelter made 29,700 t of acid to its 9,750 of anode, the
+  - L440 ...on the books (struck at the next month's top): Copper Mining bought acid at home, Copper Refining sold it at home and
+- **L450 5. the city's old copper: from cars and demolitions, bought by a scrap refinery at 70% of scrap's export, the rest landfill**
+  - L459 a thousand cars scrapped leave 23 kg of copper each at 85%, and two Houses pulled down 0.1 t a unit of their material at
+  - L466 ...beside the steel's pool, which is as it was: 0.9 t a car and 0.3 t a unit, at 85%
+  - L475 its state carries the copper beside the steel, and reads back the same; a state with none (a save from before 0.7.133)
+  - L494 fixture: a Scrap Copper Refinery standing, 6,000 t of old copper handed it - half the households' cars', half a sector's:
+  - L500 ...at PAY_SHARE of COPPER_SCRAP's export price, from each seller pro rata
+  - L504 ...and its bid for scrap its need at the clearing past the old copper it took - next to none, the old copper covering
+  - L512 ...on the books at the next strike: its input line \"Old metal\" what it paid, the households' part billed by them, the
+  - L525 with less old copper than its intake it buys and makes all of it, nothing to landfill or loss-making imported scrap
+  - L533 the month's money audit closes (MoneyCheck holds its old-metal lines over two years)
+  - L547 the same town on profitable cathode has a positive scrap remainder after 500 t of recovered copper
+  - L552 ...it bids and buys its full positive market remainder, not just the recovered copper
+  - L559 ...the actual cathode uses the recovered copper and the market remainder at the same recipe ratio
+  - L568 ...and with no scrap refinery standing the month's old copper all goes to landfill, nobody paid
+- **L575 6. the planner weighs one more scrap refinery on the old copper past what those standing take**
+  - L585 fixture: a town, its own few cars' old copper: one more refinery weighed on it and the market's scrap
+  - L595 3,000 t of old copper arisen, no refinery standing: one more weighs it at PAY_SHARE of scrap's export price and the rest
+  - L600 ...with one standing it takes its 4,400 t first: one more is weighed on what is left past them, the last on what
+- **L628 7. the Wire & Cable Works weighed with its insulation and its freight; Manufacturing's older rows with their legs, as every maker**
+  - L641 the wire works' estimate: the maker's, less its insulation (its consumables) at the exchange factor and its freight, to the
+  - L647 ...and a Fabrication Shop's, which buys no consumables, the maker's estimate less its city legs, to the bit
+- **L686 8. a works buys inputs only for what it makes: the idle refinery orders no anode, and does not swallow its smelter's**
+  - L702 fixture (a): an Electrolytic Refinery on imported anode, the shed held at the dump line: the whole shed withheld, none offered,
+  - L712 (a) every unit of anode it bought this month was made into cathode (which the yard then holds or writes off) or went to a pantry,
+  - L716 ...and in this case it orders no anode and makes no cathode
+  - L729 (d) the books lose nothing: what the works' input imports came to in the accounts is matched by the cathode it made, at no more
+  - L733 ...so the month's GDP (C + Iconstr + Istock + G + NX) is not below what C + G alone would make it, less the rest of the imports line
+  - L746 fixture (b): a smelter and two refineries, the shed held at the dump line, the cathode's price and net export price under
+  - L755 (b) the smelter's anode is not swallowed as captive by refineries that make nothing: what it smelted was used by the cathode
+  - L763 ...and the anode it bought from the world is likewise used, none of it lost
+  - L776 (c) the original empty-yard refinery has no cathode demand and a negative feed spread: no speculative production or anode
+  - L796 ...and so does a chain whose month makes its whole rate (a smelter, a refinery and a rod mill): every order is the need at the
+- **L842 9. a works making a flow good orders no input for exports that sell under it: the rod mill, the slope, the count**
+  - L857 fixture (a): two Rod Mills on imported cathode, no refinery and no wire works, rod's export price half the literal: its net
+  - L863 (a) the mills order no cathode past the home market's demand (none here: the bid is nothing, nothing is imported), make no rod,
+  - L869 ...and the books lose nothing: the month's GDP plus the rest of the imports is not below C + G
+  - L887 fixture (b): (a) with a Wire & Cable Works beside the mills: rod is still under its cathode's cost, and the home market asked for
+  - L892 (b) the rod made is that demand, whatever it fetches, and the cathode bid is that times the Rod Mill's cathode for a tonne of rod
+  - L896 ...and none of it is exported: it all sold at home, and what the mills could not sell at home they did not make
+  - L909 fixture (c): the same mills, rod's export price twice the literal: its net export price is over the cost and its headroom
+  - L912 (c) a rod that pays orders exactly the need at the rate - getInputAtCapacity() times the operating rate, less what is captive - and
+  - L934 fixture (d): the same mills (no wire works), rod's band a straight line in the city's exports: this month's net export price is over
+  - L945 (d) the rod exported is some, and less than the spare, and it is the most the slope allows: at it next month's net export price still
+  - L954 ...and with no curve (prices set by hand again) the net export price at any exports is this month's, to the bit; no curve reads
+  - L967 fixture (e): a smelter, a refinery and a rod mill, rod's export price half the literal, cathode's twice it: rod is under its
+  - L973 (e) the smelter still makes the refinery's anode need: it is kept for the refinery, none of it lost to the market, and the refinery
+  - L985 ...and a tonne of anode costs the smelter's inputs at what they cost here less its acid at what that nets abroad, over its anode, from
+  - L1008 fixture (g): a smelter beside a leach plant, anode's export price half the literal: its net export price is under what a tonne of
+  - L1018 (g) the smelter still runs for its acid, and every tonne of concentrate it bought was made into anode and acid in the template's
+  - L1043 fixture (h): a smelter, a refinery and a rod mill, the refinery's cathode covering the mill's, rod's net export price over what a
+  - L1055 (h) in the chain's
+  - L1060 ...and a tonne of rod costs the mill's cathode at what the chain saves by not using it: the cathode market's landed price, or
+  - L1173 (f) the run played its months with no month's GDP negative
+  - L1178 ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under
+  - L1195 ...and every curve the world gave a market reproduces the band it was set at: the net export price at the exports it was struck at is
+- **L1250 10. a mine and a smelter on the world market: the chain the literals mean to pay pays, and the copper charge's cycle is seen**
+  - L1282 fixture: a town not on the literals with a Large Copper Mine, a smelter and a refinery standing, and sulphide ground for the mine's whole run
+  - L1346 the city has a world market in every month played
+  - L1350 the world market solved the founding year and every January after it, WORLD_YEARS (
+  - L1356 ...and in every year played the mine dug concentrate, the smelter made anode and the refinery cathode
+  - L1368 ...the years played hold at least PEAKS_HELD (
+  - L1379 (a) a month's cathode sells at the next month's strike: from the first full year, in every month after one that made it, what is sold is the month before's m...
+  - L1394 (a) Copper Refining's own result on what it sold, its revenue less the inputs of the months that made it, is above 0 in every year played
+  - L1397 (a) ...and the smelter's margin a tonne of anode, at the export side, is above 0 every January
+  - L1402 (b) the smelter's margin over cathode follows the year's treatment part over cathode: the correlation is at least CYCLE_SEEN (
+  - L1404 (b) ...and the margin's range is at least RANGE_KEPT (
+- **L1428 11. seed 1's Rod Mills, played: the playtest's seed 1 for 2,400 months stands no Rod Mill that lives**
+  - L1455 the playtest's seed 1 finishes in
+  - L1476 the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line
+  - L1482 seed 1's 2,400 months stand at most ROD_MILLS_STANDING (
 
 ## CreditCheck.java - 272 labelled assertions
 
