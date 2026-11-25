@@ -8389,7 +8389,12 @@ public final class GameVersion {
      * fitted and draw today's 10,880 kW from June 1997 with no fitting
      * built. The floor rises with the format; no conversion.
      */
-    public static final int SAVE_FORMAT = 66;
+    /* RES3: typed leases, comparable rent/CPI observations and held monetary
+     * inputs cannot be reconstructed from a format-66 city. Missing tariff,
+     * payroll, labour anchors, bank books and raw claim scale would change
+     * the next month after load or reform. Refuse the old pair; no conversion.
+     */
+    public static final int SAVE_FORMAT = 67;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8457,7 +8462,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 66;
+    public static final int OLDEST_LOADABLE_FORMAT = 67;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

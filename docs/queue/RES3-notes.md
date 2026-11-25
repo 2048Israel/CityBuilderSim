@@ -4925,3 +4925,30 @@ new tolerance or pass-by-name row is used. Do not infer all 31 data
 predicates passed until the corrected full normal native rerun.
 No ReadPath/Denomination/HousingMarket/Invest stage has begun; the
 SaveFile runner ends before preparing the pushed correction.
+
+R6e-rest ships 0.9.201/format66 at 78ed67315 (orchestrator7e20), so merge
+that main before continuing. The conflicts are GameVersion's boundary
+comment and generated ResearchCheck map. Keep main's version/floor66
+in the merge, take its generated map for final regeneration, and retain
+both ResearchCheck additions and all engineering/recipe/licence changes.
+Merge commit73e631cef ends with the required author line; no publisher
+version or record is edited by hand. The next owned change takes
+SAVE_FORMAT and OLDEST_LOADABLE_FORMAT from shipped66 to67: missing
+typed/consumer/held monetary state would load wrongly, so no conversion.
+
+ID audit confirms the catalogue remains contiguous: RES3's reserved
+156-166 and main's power167-171, nextId172; PW5 Substation155 remains.
+The prior b17 main already has nextId172 and the power rows, so this
+merge introduces no ID move and HousingForms' hard-coded IDs stay valid.
+The final report/maps must be regenerated on the integrated model.
+Newest ensemble baseline is now docs/ensemble/0.9.201.md.
+
+Add an external HousingFormat66Fixture producer which reflects the
+runtime build/version/floor and refuses anything except the unedited
+shipped 0.9.201/66 classes. It uses LongPlaytest.probeCity with scratch
+files, twelve real months and slot10, then copies both native files.
+The helper must compile/run it against clean shipped78ed classes, with
+fresh MG1 and no other owned JVM, and deliver raw hashes/schema/history
+evidence plus deterministic gzip resources. Current67 native checks
+remain held until the real66 pair and refusal assertions are installed.
+No current-schema re-stamp or fabricated digest is used.
