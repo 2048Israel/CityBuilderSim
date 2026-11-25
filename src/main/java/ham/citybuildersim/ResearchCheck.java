@@ -34,12 +34,12 @@ import java.util.regex.Pattern;
  *
  * What it has to prove:
  *
- *   1. THE FILE READS. The packaged file gives 100 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
+ *   1. THE FILE READS. The packaged file gives 101 entries and a fresh reading of its text reports nothing (no entry skipped); the codes are
  *      unique and in the studies' order, the near future's FE1, FE2 and FE4 and the speculative tier's FE8 and FE10 after them; the counts by prefix and by field are the studies'; the
  *      field follows the code (the second letter of an F code); every entry has a name, a world, a touches and an effect; the kinds, the kind
  *      notes and the names of a few are the tables'.
- *   2. NEEDS. Every need is a code in the catalogue, no entry needs itself, history dates each need no later than its entry; the tables' 29
- *      needs of 25 entries and the near future's 3 of 2 are there; M1 needs PM6 (research-1900 8.6), E18 needs E13 and E9, PE17 needs PE14, M12 needs M9, B10 needs B1 and B2.
+ *   2. NEEDS. Every need is a code in the catalogue, no entry needs itself, history dates each need no later than its entry; the tables' 30
+ *      needs of 26 entries and the near future's 3 of 2 are there; M1 needs PM6 (research-1900 8.6), E18 needs E13 and E9, PE17 needs PE14, E22 needs E6, M12 needs M9, B10 needs B1 and B2.
  *   3. HISTORY'S DATES. Every entry's world month is PolicyDates.monthOf() of its year and month; every original non-F row is 1900 to 1995 but E21, M12, L8 and B10, which are 1996 to 2024, every F row
  *      NEAR_FUTURE's year to 2060, and every row from NEAR_FUTURE on is coded F; values typed from the tables (a dated month, and
  *      the study's model's month where the table names none); every PolicyDates lever with an entry key is a LAW entry on the lever's own year,
@@ -130,6 +130,7 @@ public class ResearchCheck {
             new Spot("E9", 1962, 6, false),   // early 1960s
             new Spot("E17", 1984, 4, false),  // 1984, APL/UP
             new Spot("E21", 1996, 6, false),  // USDA gives 1996; June is the study placeholder
+            new Spot("E22", 1997, 6, false),  // 1997 (Energy Recovery: its first PX pressure exchanger at sea, the Canary Islands); June is the study placeholder
             new Spot("M1", 1952, 6, false),   // 1952
             new Spot("M4", 1960, 3, false),   // 1960, Seattle
             new Spot("M9", 1987, 3, false),   // 1987, Lyon
@@ -146,16 +147,16 @@ public class ResearchCheck {
     /** The entries whose World column names a month: the tables' 33 and the near future's FE1 and FE2 (FE4 is a projection, a year's window). */
     static final int MONTH_KNOWN = 35;
 
-    /** The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 95 rows (HISTORY_ROWS). */
+    /** The prefixes in the studies' order, and how many entries each has; the counts add to the studies' 96 rows (HISTORY_ROWS). */
     static final String[] PREFIXES = {"E", "M", "B", "L", "PE", "PM", "PB", "PL"};
-    static final int[] PREFIX_COUNTS = {21, 11, 9, 6, 27, 6, 3, 12};
-    static final int HISTORY_ROWS = 95;
+    static final int[] PREFIX_COUNTS = {22, 11, 9, 6, 27, 6, 3, 12};
+    static final int HISTORY_ROWS = 96;
 
-    /** The studies' rows that come after the PL rows, in the file's order: L5, E19-E21, then M12, B10 and L8 (R6f). */
-    static final List<String> STUDY_TAIL = List.of("L5", "E19", "E20", "E21", "M12", "B10", "L8");
+    /** The studies' rows that come after the PL rows, in the file's order: L5, E19-E22, then M12, B10 and L8 (R6f). */
+    static final List<String> STUDY_TAIL = List.of("L5", "E19", "E20", "E21", "E22", "M12", "B10", "L8");
 
-    /** The studies' rows dated after 1995, and the years they may be dated in: E21 (1996), M12 (2000), L8 (2013) and B10 (2020); every other non-F row is 1900 to 1995. */
-    static final Set<String> LATE_HISTORY = Set.of("E21", "M12", "L8", "B10");
+    /** The studies' rows dated after 1995, and the years they may be dated in: E21 (1996), E22 (1997), M12 (2000), L8 (2013) and B10 (2020); every other non-F row is 1900 to 1995. */
+    static final Set<String> LATE_HISTORY = Set.of("E21", "E22", "M12", "L8", "B10");
     static final int LATE_FROM = 1996;
     static final int LATE_TO = 2024;
 
@@ -240,18 +241,18 @@ public class ResearchCheck {
         String real = text("/" + ResearchCatalog.FILE_NAME);
 
         /* ==================== 1. the file reads ==================== */
-        System.out.println("--- the packaged file gives 100 entries and reports nothing ---");
+        System.out.println("--- the packaged file gives 101 entries and reports nothing ---");
         Read fresh = read(real);
         int inFile = JsonParser.parseString(real).getAsJsonObject().getAsJsonArray("entries").size();
         int rows = HISTORY_ROWS + NEAR_CODES.size();
         check("the file has " + rows + " entries (the studies' " + HISTORY_ROWS + " and the near future's and the speculative tier's " + NEAR_CODES.size() + ") and the catalogue read " + cat.entries().size() + " of them",
-                inFile == 100 && rows == 100 && cat.entries().size() == 100);
-        check("a fresh reading of the file's text reads all 100 and writes nothing to the log", fresh.catalogue().entries().size() == 100 && fresh.log().isEmpty());
+                inFile == 101 && rows == 101 && cat.entries().size() == 101);
+        check("a fresh reading of the file's text reads all 101 and writes nothing to the log", fresh.catalogue().entries().size() == 101 && fresh.log().isEmpty());
         check("nothing was skipped: the fresh reading has the same codes, in the same order, as the file",
                 codes(fresh.catalogue()).equals(codes(cat)));
         Set<String> unique = new HashSet<>(codes(cat));
-        check("the 100 codes are unique", unique.size() == 100);
-        check("the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5, E19-E21, M12, B10, L8, then the near future's FE1, FE2, FE4 and the speculative tier's FE8, FE10",
+        check("the 101 codes are unique", unique.size() == 101);
+        check("the order is the studies': E1-E18, M1-M10, B1-B8, L1-L4, PE1-PE27, PM1-PM6, PB1-PB3, PL1-PL12, then L5, E19-E22, M12, B10, L8, then the near future's FE1, FE2, FE4 and the speculative tier's FE8, FE10",
                 codes(cat).equals(orderOf()));
         Map<String, Integer> byPrefix = new HashMap<>();
         for (Entry e : cat.entries()) byPrefix.merge(prefixOf(e.code()), 1, Integer::sum);
@@ -264,7 +265,7 @@ public class ResearchCheck {
         }
         Map<Field, Integer> byField = new HashMap<>();
         for (Entry e : cat.entries()) byField.merge(e.field(), 1, Integer::sum);
-        check("ENGINEERING has 53 (the studies' 48 and FE1, FE2, FE4, FE8, FE10), MEDICINE 17, BUSINESS 12 and LAW 18 (" + byField + ")", byField.get(Field.ENGINEERING) == 53
+        check("ENGINEERING has 54 (the studies' 49 and FE1, FE2, FE4, FE8, FE10), MEDICINE 17, BUSINESS 12 and LAW 18 (" + byField + ")", byField.get(Field.ENGINEERING) == 54
                 && byField.get(Field.MEDICINE) == 17 && byField.get(Field.BUSINESS) == 12 && byField.get(Field.LAW) == 18);
         boolean fieldOfPrefix = true;
         for (Entry e : cat.entries()) {
@@ -322,8 +323,8 @@ public class ResearchCheck {
         check("every need is a code in the catalogue", allCodes);
         check("no entry needs itself", noSelf);
         check("history dates every need no later than the entry that needs it", notLater);
-        check("the tables give 29 needs to 25 entries (M12 needs M9, B10 needs B1 and B2), the near future's 3 to 2 more (FE2 needs E12, FE4 needs PE1 and E4) and the speculative tier's 3 to 2 more (FE8 needs PE14 and PE17, FE10 needs FE4): 35 and 29 (" + links + " and " + withNeeds + ")",
-                links == 35 && withNeeds == 29 && of("M12").needs().equals(List.of("M9")) && new HashSet<>(of("B10").needs()).equals(Set.of("B1", "B2")) && of("B10").needs().size() == 2
+        check("the tables give 30 needs to 26 entries (E22 needs E6, M12 needs M9, B10 needs B1 and B2), the near future's 3 to 2 more (FE2 needs E12, FE4 needs PE1 and E4) and the speculative tier's 3 to 2 more (FE8 needs PE14 and PE17, FE10 needs FE4): 36 and 30 (" + links + " and " + withNeeds + ")",
+                links == 36 && withNeeds == 30 && of("E22").needs().equals(List.of("E6")) && of("M12").needs().equals(List.of("M9")) && new HashSet<>(of("B10").needs()).equals(Set.of("B1", "B2")) && of("B10").needs().size() == 2
                         && of("FE1").needs().isEmpty() && of("FE2").needs().equals(List.of("E12"))
                         && new HashSet<>(of("FE4").needs()).equals(Set.of("PE1", "E4")) && of("FE4").needs().size() == 2
                         && new HashSet<>(of("FE8").needs()).equals(Set.of("PE14", "PE17")) && of("FE8").needs().size() == 2 && of("FE10").needs().equals(List.of("FE4")));
@@ -1057,7 +1058,7 @@ public class ResearchCheck {
         return out;
     }
 
-    /** The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E21, M12, B10, L8 (STUDY_TAIL), then the near future's rows. */
+    /** The studies' order: E, M, B, L1-L4, PE, PM, PB, PL, then L5, E19-E22, M12, B10, L8 (STUDY_TAIL), then the near future's rows. */
     static List<String> orderOf() {
         List<String> out = new ArrayList<>();
         for (int p = 0; p < PREFIXES.length; p++) {

@@ -1,6 +1,6 @@
 # PrizeCheck.java - 2,024 lines · 76 methods · 10 constants · harnesses
 
-`ham/citybuildersim/PrizeCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PrizeCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > A prize pays only for a result, a Research Lab goes for the cheapest problem the purse pays for, and the schools' share of a purse buys posts
 > (R4, slice A: Research; docs/studies/research-design.md 5.3, 1.5, 5.4).

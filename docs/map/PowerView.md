@@ -1,6 +1,6 @@
 # PowerView.java - 95 lines · 4 methods · 0 constants · model
 
-`ham/citybuildersim/PowerView.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PowerView.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The power screen's pure projection of a retained dispatch and its struck tariff.
 > WHY. Ending fleet, fuel prices and the next dispatch cannot explain an earlier month's clearing receipts.
