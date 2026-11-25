@@ -118,6 +118,14 @@ HistoryScreen's index/weight trace catalogue and component preset also omit
 the four new parts; prepare the same narrow reader compatibility repair,
 preserving old trace keys. These are required reader mends, not a new UI flow.
 
+The reviewed HistoryScreen patch4b8b6dbd968b79c8f2a5127ea96ba4f6b3c1b89dcc46b82e524fe4dbbe9c0aa3
+wraps the existing completed trace catalogue, preserving every old object,
+key and order. It appends missing index/weight entries from authoritative
+HistorySave keys and PriceIndex names, and extends the existing basket preset
+after its unchanged price-index/old-five prefix. The units match the old
+entries (index and percent). No duplicate keys, new preset, saved field or
+numeric model change is introduced. Render/acceptance proof remains pending.
+
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
 byte-identical through dce's later observer and harness-only commits;
