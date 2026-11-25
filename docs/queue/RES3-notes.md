@@ -5409,3 +5409,35 @@ all later gates passing nor a new generic exemption. Record-only update and
 supported rejudging of the retained native log can establish canonical3;
 do not repeat Oil's native merely to rediscover this result. Remaining named
 checks may resume only after the new committed record is selected exactly.
+
+Supported saved-log rejudge on records-only9030fd45d returns3 (b312), ONLY
+the exact FS8 Oil row and recorded lines. CBS_REJUDGE=1/--judge uses the
+committed fork/RES3 record; the original759 native suite/log/record is kept
+and a903 copy judged separately. No native/Maven repeats or handwritten
+approvals. New combined-record SHA2568d4047539f8268c5138072be591959c64422d9b4529188d0c5512d5f20059c6c;
+the fork gate blob c02d8ef0 is unchanged between78ed/de5185, with all source
+IDs retained. Fresh judge MG1 passes at6.613 GiB RAM,12.808 GiB free commit
+and24.003 percent CPU. CentralBankCheck starts alone under its own fresh MG1,
+with unchanged laws/bounds and no retiming. Closure/save source-prep continues
+without an extra JVM or tracked source edit.
+
+★ Review the external observer's early month600 exit before its first run.
+It originally skipped the native final summary and could hide accumulated
+ordinary findings. The source proof (e796) shows flag increments the actual
+LongPlaytest.findings map rather than throwing; the native terminal condition
+is findings.isEmpty() && LongPlaytest.MoneyFixtures.fails==0. The counter at
+line9002 belongs to that nested helper, not outer LongPlaytest. Parent checks
+both classes/fields are package-visible and the raw household-audit getter
+exists. Existing attached-observer Throwable rethrow remains intact.
+
+Adopt source-prep SHA256450fda40a3f02764eb63067c8708b8e8f5756c0309e55be6cace7318def411ea.
+It records ordinary-audits.jsonl for ALL months1-600 with native findings,
+counts, first/last/worst and actual money/household audits; the240-600 metrics
+remain361 rows. These new reads stay inside the existing exact saved-array
+purity guard. Flush all outputs and use the native failure predicate for the
+diagnostic exit, explicitly marking unrelated final probes unexecuted. Parent
+adds PrintWriter error checks and a nonzero exit if any output failed, so
+silent I/O failure cannot yield a complete measurement claim. No production
+seam, policy, rate, fixture, native audit, threshold or model changes. This
+external diagnostic still is not a full LongPlaytest/ensemble verdict. Its
+native run remains held until the final reviewed/pushed source GO.

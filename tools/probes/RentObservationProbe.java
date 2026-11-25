@@ -10,7 +10,7 @@ import java.util.*;
 /** Observes the default player's billed household flows and linked CPI without changing the city. */
 public final class RentObservationProbe {
     private static final Gson JSON = new GsonBuilder().serializeSpecialFloatingPointValues().create();
-    private static PrintWriter months, cells;
+    private static PrintWriter months, cells, ordinary;
     private static List<HousingChoice.Lease> billedLeases = List.of();
     private static List<Map<String,Object>> openingCells = List.of(), openingRows = List.of();
     private static int openingMonth, openingClear, captured;
@@ -33,6 +33,7 @@ public final class RentObservationProbe {
         Files.createDirectories(output);
         months = new PrintWriter(Files.newBufferedWriter(output.resolve("monthly.jsonl")));
         cells = new PrintWriter(Files.newBufferedWriter(output.resolve("cells.jsonl")));
+        ordinary = new PrintWriter(Files.newBufferedWriter(output.resolve("ordinary-audits.jsonl")));
         LongPlaytest.passiveObserver = RentObservationProbe::observe;
         // Reuse the ENTIRE committed DEFAULT script, including its exact founding,
         // ordinary audited months, annual player and normal checkpoint/reload work.
@@ -60,19 +61,31 @@ public final class RentObservationProbe {
         paired = false;
         double[] indexBefore = game.getPriceIndex().toSaveArray();
         double[] cellBefore = game.getHouseholdBalance().toSaveArray();
+        Map<String,Object> audit = new LinkedHashMap<>();
+        audit.put("month",month); audit.put("phase","after unchanged LongPlaytest.audit/countWorks, before traceMonth");
+        audit.put("ordinaryFindingKinds",LongPlaytest.findings.size());
+        audit.put("ordinaryFindingCount",LongPlaytest.findings.values().stream().mapToInt(f->f.count).sum());
+        audit.put("findings",JSON.toJsonTree(LongPlaytest.findings));
+        audit.put("moneyAudit",JSON.toJsonTree(game.getLastMoneyAudit()));
+        audit.put("householdsAudit",JSON.toJsonTree(game.getLastHouseholdsAudit()));
+        audit.put("moneyFixtureFails",LongPlaytest.MoneyFixtures.fails);
+        audit.put("finalProbesExecuted",false); ordinary.println(JSON.toJson(audit));
         if (month >= 240 && month <= 600) capture(game);
         if (!Arrays.equals(indexBefore, game.getPriceIndex().toSaveArray())
                 || !Arrays.equals(cellBefore, game.getHouseholdBalance().toSaveArray()))
             throw new IllegalStateException("observer changed saved index/household values");
-        months.flush(); cells.flush();
+        months.flush(); cells.flush(); ordinary.flush();
         if (month == 600) {
             if (captured != 361) throw new IllegalStateException("window has " + captured + " observations");
-            months.close(); cells.close();
-            LongPlaytest.out.println("RENT_OBSERVATION_COMPLETE month=600 rows=361 diagnostic_only=true");
+            boolean ordinaryClear=LongPlaytest.findings.isEmpty()&&LongPlaytest.MoneyFixtures.fails==0;
+            boolean outputClear=!months.checkError()&&!cells.checkError()&&!ordinary.checkError();
+            months.close(); cells.close(); ordinary.close();
+            LongPlaytest.out.println("RENT_OBSERVATION_COMPLETE month=600 rows=361 diagnostic_only=true ordinary_clear="+ordinaryClear
+                    +" output_clear="+outputClear+" finding_kinds="+LongPlaytest.findings.size()+" money_fixture_fails="+LongPlaytest.MoneyFixtures.fails);
             // LongPlaytest.main catches Throwable and then starts unrelated final
             // harness probes. Stop this sole diagnostic JVM after its last ordinary
             // month; the JVM's existing TempDirs shutdown cleanup remains active.
-            System.exit(0);
+            System.exit(ordinaryClear&&outputClear?0:1);
         }
     }
 
