@@ -152,7 +152,7 @@ public final class WorksValue {
             double unbuilt = Math.max(0, owned - allocated - zoning.keptShare() * forest);
             double held = 0;
             for (Zoning.Zone zone : zoning.zones())
-                held += Math.max(0, zone.targetSqFt(owned) - zone.usedSqFt());
+                held += Math.max(0, zone.targetSqFt(owned) - zone.builtSqFt());
             double anyone = Math.max(0, unbuilt - held);
             if (use == LandManager.Use.WORKS) return anyone;
             double runSlope = owned > 0 ? Math.min(runs * slope / owned, slope) : 0;

@@ -111,12 +111,19 @@ public final class Zoning {
         private final boolean farmland;
         /** The farmland price over the going business price as last struck (Zoning.strikeFarmland()); NaN before any. */
         private double farmShare;
+        /**
+         * The city's own Wind and Solar Farms' ground in the zone (RG1,
+         * REV-RG1): built on, so the zone no longer holds it, but not its
+         * sector's - the roll and the buyback read usedSqFt alone, the fields'
+         * own ground. Given back whatever the reserve is by then.
+         */
+        private double cityFarmSqFt;
 
         Zone(String sector, Size kind, double size, double priceShare, double usedSqFt) {
-            this(sector, kind, size, priceShare, usedSqFt, false, Double.NaN);
+            this(sector, kind, size, priceShare, usedSqFt, false, Double.NaN, 0);
         }
 
-        Zone(String sector, Size kind, double size, double priceShare, double usedSqFt, boolean farmland, double farmShare) {
+        Zone(String sector, Size kind, double size, double priceShare, double usedSqFt, boolean farmland, double farmShare, double cityFarmSqFt) {
             this.sector = sector;
             this.kind = kind == null ? Size.SHARE : kind;
             this.size = clampSize(this.kind, size);
@@ -124,6 +131,7 @@ public final class Zoning {
             this.usedSqFt = Math.max(0, usedSqFt);
             this.farmland = farmland && RESERVE_SECTOR.equals(sector);
             this.farmShare = farmShare;
+            this.cityFarmSqFt = Double.isFinite(cityFarmSqFt) ? Math.max(0, cityFarmSqFt) : 0;
         }
 
         public String sector()     { return sector; }
@@ -143,14 +151,19 @@ public final class Zoning {
         public double dialShare()  { return priceShare; }
         /** Whether this zone is the farmland reserve (RG1): sold at the sellers' farmland price, holding ground for every farm. */
         public boolean farmland()  { return farmland; }
+        /** The ground its sector has built on in it: what the roll assesses and the buyback pays at the zone's price. */
         public double usedSqFt()   { return usedSqFt; }
+        /** The city's own Wind and Solar Farms' ground in it (RG1): neither the sector's nor held. */
+        public double cityFarmSqFt() { return cityFarmSqFt; }
+        /** Every square foot built on in it, its sector's and the city's farms': what it no longer holds (LandManager.heldBy()). */
+        public double builtSqFt()  { return usedSqFt + cityFarmSqFt; }
 
         /** What the zone is to be, in square feet, on this much dry ground: its share of it, or its square kilometres. */
         public double targetSqFt(double drySqFt) {
             return kind == Size.SHARE ? size * Math.max(0, drySqFt) : LandManager.sqFt(size);
         }
 
-        Zone copy() { return new Zone(sector, kind, size, priceShare, usedSqFt, farmland, farmShare); }
+        Zone copy() { return new Zone(sector, kind, size, priceShare, usedSqFt, farmland, farmShare, cityFarmSqFt); }
     }
 
     /** The zones, at most one a sector, by sector key. */
@@ -232,7 +245,8 @@ public final class Zoning {
     public Zone set(String sector, Size kind, double size, double priceShare) {
         if (sector == null || sector.isEmpty()) return null;
         Zone was = zones.get(sector);
-        Zone z = new Zone(sector, kind, size, priceShare, was == null ? 0 : was.usedSqFt, was != null && was.farmland, farmlandShare);
+        Zone z = new Zone(sector, kind, size, priceShare, was == null ? 0 : was.usedSqFt, was != null && was.farmland, farmlandShare,
+                was == null ? 0 : was.cityFarmSqFt);
         zones.put(sector, z);
         return z;
     }
@@ -247,7 +261,7 @@ public final class Zoning {
     public Zone setFarmland(String sector, boolean on) {
         Zone was = zone(sector);
         if (was == null || !RESERVE_SECTOR.equals(sector)) return null;
-        Zone z = new Zone(sector, was.kind, was.size, was.priceShare, was.usedSqFt, on, farmlandShare);
+        Zone z = new Zone(sector, was.kind, was.size, was.priceShare, was.usedSqFt, on, farmlandShare, was.cityFarmSqFt);
         zones.put(sector, z);
         return z;
     }
@@ -289,6 +303,21 @@ public final class Zoning {
         return out;
     }
 
+    /** The city's own Wind or Solar Farm took this much of the reserve's held ground (RG1, LandManager.allocateCityFarm()): counted apart from the fields' used ground. */
+    void addCityFarm(double sqFt) {
+        Zone z = zone(RESERVE_SECTOR);
+        if (z != null && sqFt > 0) z.cityFarmSqFt += sqFt;
+    }
+
+    /** ...and a city farm gave this much back (LandManager.releaseCityFarm()), whatever the reserve is by then: the city's farms' ground in the zone first, the zone holding it again; what came out of it. */
+    double releaseCityFarm(double sqFt) {
+        Zone z = zone(RESERVE_SECTOR);
+        if (z == null || !(sqFt > 0)) return 0;
+        double out = Math.min(z.cityFarmSqFt, sqFt);
+        z.cityFarmSqFt -= out;
+        return out;
+    }
+
     /** Every zone gone and the law at 0 and 0: a new city's. */
     public void clear() {
         zones.clear();
@@ -317,6 +346,8 @@ public final class Zoning {
         public double priceShare;
         public double usedSqFt;
         public boolean farmland;
+        /** The city's own farms' ground in it (RG1, Zone.cityFarmSqFt()); absent on an older save, which has none: 0. */
+        public double cityFarmSqFt;
         public ZoneState() { }
     }
 
@@ -353,6 +384,7 @@ public final class Zoning {
             zs.priceShare = z.priceShare;
             zs.usedSqFt = z.usedSqFt;
             zs.farmland = z.farmland;
+            zs.cityFarmSqFt = z.cityFarmSqFt;
             s.zones.add(zs);
         }
         s.protectedShare = protectedShare;
@@ -371,7 +403,7 @@ public final class Zoning {
                 if (zs == null || zs.sector == null || zs.sector.isEmpty()) continue;
                 Size kind = Size.SHARE;
                 for (Size k : Size.values()) if (k.name().equals(zs.kind)) kind = k;
-                zones.put(zs.sector, new Zone(zs.sector, kind, zs.size, zs.priceShare, zs.usedSqFt, zs.farmland, farmlandShare));
+                zones.put(zs.sector, new Zone(zs.sector, kind, zs.size, zs.priceShare, zs.usedSqFt, zs.farmland, farmlandShare, zs.cityFarmSqFt));
             }
         }
         setForestLaw(s.protectedShare, s.keptShare);

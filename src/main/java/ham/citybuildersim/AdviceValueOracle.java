@@ -223,7 +223,7 @@ final class AdviceValueOracle {
             double wanted = 0;
             Zoning zones = game.getLandManager().getZoning();
             for (Zoning.Zone zone : zones.zones())
-                wanted += Math.max(0, zone.targetSqFt(dry) - zone.usedSqFt());
+                wanted += Math.max(0, zone.targetSqFt(dry) - zone.builtSqFt());
             double open = Math.max(0, dry - taken - zones.keptShare() * forest - wanted);
             if (use == LandManager.Use.WORKS) return open;
             if (use == LandManager.Use.BUILDING) {

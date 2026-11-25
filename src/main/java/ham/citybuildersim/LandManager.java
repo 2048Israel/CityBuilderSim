@@ -2035,6 +2035,21 @@ public class LandManager {
      * (foothillDisplacedByRunSqFt()), so the next building is not charged for pads the run displaced.
      */
     public boolean allocate(double sqFt, String sector, Use use) {
+        return allocate(sqFt, sector, use, false);
+    }
+
+    /**
+     * ...the city's own Wind or Solar Farm in the farmland reserve (RG1,
+     * REV-RG1): the reserve's held ground first, as a field takes it, but
+     * counted as the city's farms' (Zoning.Zone.cityFarmSqFt()) and not as
+     * the fields' used ground, which the roll assesses and the buyback pays
+     * at the zone's price. Asked while a reserve stands (reserveKeyOf()).
+     */
+    public boolean allocateCityFarm(double sqFt, Use use) {
+        return allocate(sqFt, Zoning.RESERVE_SECTOR, use, true);
+    }
+
+    private boolean allocate(double sqFt, String sector, Use use, boolean cityFarm) {
         if (!canAllocate(sqFt, sector, use)) {
             return false;
         }
@@ -2046,7 +2061,10 @@ public class LandManager {
         if (use == Use.WORKS) worksSqFt += sqFt;
         if (use == Use.RUN) runsSqFt += sqFt;
         if (prepare > 0) preparedSqFt += prepare;
-        if (fromZone > 0) zoning.addUsed(sector, fromZone);
+        if (fromZone > 0) {
+            if (cityFarm) zoning.addCityFarm(fromZone);
+            else zoning.addUsed(sector, fromZone);
+        }
         return true;
     }
 
@@ -2080,6 +2098,17 @@ public class LandManager {
         if (worksSqFt > allocatedSqFt) worksSqFt = allocatedSqFt;
         if (runsSqFt > allocatedSqFt - worksSqFt) runsSqFt = Math.max(allocatedSqFt - worksSqFt, 0);
         zoning.releaseUsed(sector, sqFt);
+    }
+
+    /**
+     * ...the city's own Wind or Solar Farm's ground (RG1, REV-RG1): out of
+     * the city's farms' ground in the fields' zone as far as it goes, whether
+     * a reserve stands now or not - the zone holding it again - and the rest
+     * the city's ground; never the fields' used ground.
+     */
+    public void releaseCityFarm(double sqFt, Use use) {
+        release(sqFt, null, use);
+        zoning.releaseCityFarm(sqFt);
     }
 
     /** What a business pays the city for a plot this size. */
@@ -2729,7 +2758,7 @@ public class LandManager {
         double wanted = 0;
         for (int i = 0; i < held.length; i++) {
             Zoning.Zone zone = list.get(i);
-            held[i] = Math.max(0, zone.targetSqFt(linkedOwned()) - zone.usedSqFt());
+            held[i] = Math.max(0, zone.targetSqFt(linkedOwned()) - zone.builtSqFt());
             wanted += held[i];
         }
         double free = freeSqFt(z);
@@ -2806,6 +2835,12 @@ public class LandManager {
     /** ...and what its sector has built in it (used). */
     public double usedBy(String sector)   { return zoning.used(sector); }
 
+    /** The city's own Wind and Solar Farms' ground in the fields' zone (RG1, Zoning.Zone.cityFarmSqFt()): built on there, not the fields'; 0 with no zone. */
+    public double cityFarmsInReserve() {
+        Zoning.Zone z = zoning.zone(Zoning.RESERVE_SECTOR);
+        return z == null ? 0 : z.cityFarmSqFt();
+    }
+
     /** What a sector's zone is to be, square feet: its share of the dry ground or its square kilometres; 0 with no zone. */
     public double zoneSizeOf(String sector) {
         Zoning.Zone z = zoning.zone(sector);
@@ -2852,7 +2887,12 @@ public class LandManager {
 
     /** The zone a building's ground is taken from that is not its sector's (RG1): the farmland reserve's for a Wind or Solar Farm while one stands; null otherwise. */
     public String reserveKeyOf(BuildingsTemplate t) {
-        return t != null && (t.isWind() || t.isSolar()) && zoning.reserve() != null ? Zoning.RESERVE_SECTOR : null;
+        return isCityFarm(t) && zoning.reserve() != null ? Zoning.RESERVE_SECTOR : null;
+    }
+
+    /** Whether a building is one of the city's farms the reserve may hold ground for (RG1): a Wind or Solar Farm. */
+    public static boolean isCityFarm(BuildingsTemplate t) {
+        return t != null && (t.isWind() || t.isSolar());
     }
 
     /** ...and the key its ground is taken, priced and given back under: the reserve's for a farm while one stands, else its own sector's (t.getSector(), "" for the city's own). */

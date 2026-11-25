@@ -233,35 +233,85 @@ public final class FarmlandReserveCheck {
     /* ============================ 5. THE CITY'S OWN FARMS ============================ */
 
     static void theCitysFarms(Game g) {
-        out.println("--- 5. the city's own Wind Farm builds in the reserve, and gives its ground back ---");
+        out.println("--- 5. the city's own Wind Farm builds in the reserve apart from the fields' ground, and gives it back whatever the reserve is by then ---");
         LandManager land = g.getLandManager();
+        EconomyManager em = g.getEconomyManager();
+        Sector fields = g.getSectors().byKey(FIELDS);
         BuildingsTemplate wind = g.getBuildingManager().getTemplateByName("Wind Farm");
+        BuildingsTemplate field = LongPlaytest.template(g, "Mixed Farm");
+        double sq = wind.getLandSqFt();
         quietly(() -> land.updateMarket(g.getPopulationManager().getPopulation()));
-        double used = land.usedBy(FIELDS), held = land.heldBy(FIELDS), cash = g.getCash(), sales = land.getLandSalesThisMonth();
+
+        // ...a field outside the zone first (REV-RG1): the zone shrunk under what the fields built in it, so it holds nothing, a field bought, the zone grown back.
+        double usedIn = land.usedBy(FIELDS);
+        quietly(() -> g.setZone(FIELDS, Zoning.Size.KM2, LandManager.km2(usedIn) * 0.9, DIAL));
+        double heldNone = land.heldBy(FIELDS);
+        boolean outside = g.buildFor(g.getSectorInvestor(FIELDS), field, 1);
+        quietly(() -> g.setZone(FIELDS, Zoning.Size.KM2, RESERVE_KM2, DIAL));
+        double all = g.getBuildingManager().getLandSqFtBySector(FIELDS);
+        check(String.format("fixture: a field bought outside the zone (it held %s): the fields' ground %s, %s of it in the zone, the reserve standing",
+                        LandManager.areaWords(heldNone), LandManager.areaWords(all), LandManager.areaWords(land.usedBy(FIELDS))),
+                outside && heldNone == 0 && usedIn > 0 && land.usedBy(FIELDS) == usedIn && all > usedIn && g.getZoning().reserve() != null);
+
+        double used = land.usedBy(FIELDS), held = land.heldBy(FIELDS), farms = land.cityFarmsInReserve();
+        double cash = g.getCash(), sales = land.getLandSalesThisMonth();
+        double assessed = em.assessedLandValueOf(fields), buyback = land.buybackPriceFor(all, FIELDS, LandManager.Use.BUILDING);
         check("a Wind Farm's ground is the reserve's: its key is the fields' while the reserve stands",
-                FIELDS.equals(land.reserveKeyOf(wind)) && FIELDS.equals(land.groundKeyOf(wind)) && held >= wind.getLandSqFt());
+                FIELDS.equals(land.reserveKeyOf(wind)) && FIELDS.equals(land.groundKeyOf(wind)) && held >= sq);
         Game.BuildResult[] r = new Game.BuildResult[1];
         quietly(() -> r[0] = g.buildStack(wind, 1, true));
-        check(String.format("the city builds one (%s): it takes %s of the reserve's ground, used as a field's",
-                        r[0], LandManager.areaWords(wind.getLandSqFt())),
-                r[0] == Game.BuildResult.SUCCESS && land.usedBy(FIELDS) - used == wind.getLandSqFt()
-                        && close(held - land.heldBy(FIELDS), wind.getLandSqFt(), 1e-9));
+        check(String.format("the city builds one (%s): it takes %s of the reserve's held ground, counted as the city's farms' and not as the fields'",
+                        r[0], LandManager.areaWords(sq)),
+                r[0] == Game.BuildResult.SUCCESS && land.usedBy(FIELDS) == used && land.cityFarmsInReserve() - farms == sq
+                        && close(held - land.heldBy(FIELDS), sq, 1e-9));
+        out.printf("      the fields' land on the roll %s and %s; bought back whole %s and %s%n", Formats.INSTANCE.cash(assessed),
+                Formats.INSTANCE.cash(em.assessedLandValueOf(fields)), Formats.INSTANCE.cash(buyback),
+                Formats.INSTANCE.cash(land.buybackPriceFor(all, FIELDS, LandManager.Use.BUILDING)));
+        check("...so the fields' land on the roll, and what the city would buy all of it back at, are as before: their ground outside the zone at the going price still",
+                close(em.assessedLandValueOf(fields), assessed, 1e-12) && close(land.buybackPriceFor(all, FIELDS, LandManager.Use.BUILDING), buyback, 1e-12));
         check(String.format("...and pays for the building alone (%s, an instant build's cash), nothing for the ground, its own",
                         Formats.INSTANCE.cash(cash - g.getCash())),
                 close(cash - g.getCash(), wind.getCashCost(), 1e-9) && land.getLandSalesThisMonth() == sales);
-        double usedWith = land.usedBy(FIELDS);
-        boolean ordered = g.demolish(wind, 1);
-        int months = 0;
-        while (land.usedBy(FIELDS) > usedWith - wind.getLandSqFt() && months++ < 60) quietly(g::toggleNextMonth);
-        check(String.format("demolished (%d months), its ground goes back to the reserve", months),
-                ordered && land.usedBy(FIELDS) == usedWith - wind.getLandSqFt());
+        int months = demolishOne(g, wind);
+        check(String.format("demolished (%d months), its ground goes back to the reserve out of the city's farms', the fields' used ground untouched", months),
+                months >= 0 && land.cityFarmsInReserve() == farms && land.usedBy(FIELDS) == used);
 
+        // ...both orders of building and lifting (REV-RG1): the ground goes back by where it came from, not by whether a reserve stands at the end.
         quietly(() -> g.setFarmlandReserve(false));
-        double before = land.usedBy(FIELDS);
+        double before = land.usedBy(FIELDS), farmsBefore = land.cityFarmsInReserve();
         quietly(() -> g.buildStack(wind, 1, true));
-        check("with the reserve lifted, a Wind Farm the city builds leaves the fields' zone alone",
-                g.getZoning().reserve() == null && land.reserveKeyOf(wind) == null && land.usedBy(FIELDS) == before);
+        boolean apart = g.getZoning().reserve() == null && land.reserveKeyOf(wind) == null && land.usedBy(FIELDS) == before
+                && land.cityFarmsInReserve() == farmsBefore;
         quietly(() -> g.setFarmlandReserve(true));
+        int first = demolishOne(g, wind);
+        check(String.format("built with the reserve lifted, a Wind Farm leaves the zone alone; demolished under the reserve (%d months), "
+                        + "the fields' used ground is exact (%s)", first, LandManager.areaWords(land.usedBy(FIELDS))),
+                apart && first >= 0 && land.usedBy(FIELDS) == before && land.cityFarmsInReserve() == farmsBefore);
+        quietly(() -> g.buildStack(wind, 1, true));
+        boolean in = land.cityFarmsInReserve() - farmsBefore == sq && land.usedBy(FIELDS) == before;
+        quietly(() -> g.setFarmlandReserve(false));
+        int second = demolishOne(g, wind);
+        check(String.format("built in the reserve and demolished with it lifted (%d months): the city's farms' ground goes back, the fields' used ground exact",
+                        second),
+                in && second >= 0 && land.cityFarmsInReserve() == farmsBefore && land.usedBy(FIELDS) == before);
+        quietly(() -> g.setFarmlandReserve(true));
+    }
+
+    /** Orders one of the city's Wind Farms demolished and presses months until its site is done and its ground given back (Game.settleConstructionControl()): the months, or -1 when refused or never done. */
+    static int demolishOne(Game g, BuildingsTemplate wind) {
+        if (!g.demolish(wind, 1)) return -1;
+        int months = 0;
+        while (onSite(g, wind)) {
+            if (months++ >= 60) return -1;
+            quietly(g::toggleNextMonth);
+        }
+        return months;
+    }
+
+    /** Whether a demolition of this kind is on site. */
+    static boolean onSite(Game g, BuildingsTemplate t) {
+        for (ConstructionControl.Demolition d : g.getBuildingManager().getControl().demolitions()) if (d.templateId == t.getId()) return true;
+        return false;
     }
 
     /* ============================ 6. THE PLANNER ============================ */
@@ -326,10 +376,12 @@ public final class FarmlandReserveCheck {
         LandManager land = g.getLandManager();
         // ...saved between two presses, nothing set by hand since the last (ZoningCheck plays 24 months): a station the city built by
         // hand between presses is a month the save does not carry, and its twin's cash differs a month on with no reserve at all (RG1's notes).
+        // ...with a Wind Farm of the city's in the reserve, its ground counted apart (REV-RG1), built before the press.
+        quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName("Wind Farm"), 1, true));
         quietly(g::toggleNextMonth);
         Zoning.Zone was = g.getZoning().reserve();
-        check("fixture: the city has its reserve, a field and the farmland share struck",
-                was != null && land.usedBy(FIELDS) > 0 && Double.isFinite(g.getZoning().farmlandShare()));
+        check("fixture: the city has its reserve, a field, a Wind Farm of its own in it and the farmland share struck",
+                was != null && land.usedBy(FIELDS) > 0 && land.cityFarmsInReserve() > 0 && Double.isFinite(g.getZoning().farmlandShare()));
         quietly(() -> g.saveGame(10, "farmlandcheck"));
         // ...the twin in a folder of its own, the slot copied to it: two cities pressed a month on in one folder autosave into one history file.
         GameFiles mine = new GameFiles(root.resolve("city"), root.resolve("city-no-legacy")), its = new GameFiles(root.resolve("twin"), root.resolve("twin-no-legacy"));
@@ -344,9 +396,9 @@ public final class FarmlandReserveCheck {
         quietly(() -> twin.loadGameSave(10));
         twin.getBusinessInvestment().holdSector(Sectors.AGRICULTURE);   // the harness's hold, not the save's
         Zoning.Zone back = twin.getZoning().reserve();
-        check("loaded, the fields' zone is the reserve again: its size, dial, used ground and the share it sells at",
+        check("loaded, the fields' zone is the reserve again: its size, dial, used ground, the city's farms' ground and the share it sells at",
                 back != null && back.size() == was.size() && back.kind() == was.kind() && back.dialShare() == was.dialShare()
-                        && back.usedSqFt() == was.usedSqFt() && back.priceShare() == was.priceShare()
+                        && back.usedSqFt() == was.usedSqFt() && back.cityFarmSqFt() == was.cityFarmSqFt() && back.priceShare() == was.priceShare()
                         && twin.getZoning().farmlandShare() == g.getZoning().farmlandShare());
         check("...and its ground as the live city prices it", twin.getLandManager().groundPriceFor(FIELDS) == land.groundPriceFor(FIELDS)
                 && twin.getLandManager().heldBy(FIELDS) == land.heldBy(FIELDS));
@@ -360,7 +412,8 @@ public final class FarmlandReserveCheck {
         Zoning.State s = new com.google.gson.Gson().fromJson(older, Zoning.State.class);
         Zoning z = new Zoning();
         z.restore(s);
-        check("an older save's zoning, with no reserve key, reads the fields' zone at its share and no reserve",
-                z.reserve() == null && z.zone(FIELDS) != null && z.priceShare(FIELDS) == 0.5 && Double.isNaN(z.farmlandShare()));
+        check("an older save's zoning, with no reserve key, reads the fields' zone at its share, no reserve and none of the city's farms in it",
+                z.reserve() == null && z.zone(FIELDS) != null && z.priceShare(FIELDS) == 0.5 && Double.isNaN(z.farmlandShare())
+                        && z.zone(FIELDS).cityFarmSqFt() == 0);
     }
 }

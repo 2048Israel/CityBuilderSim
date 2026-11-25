@@ -10896,10 +10896,10 @@ public class Game {
             c.sold(bought, paid);
             // ...a bought building's ground back to its zone, if its sector has one (0.7.107).
             // ...a works's ground leaves the works' part of the pool (standsAnywhere(), ET2), a run's the runs' (isRun(), ET4).
-            // ...the city's own Wind or Solar Farm back to the farmland reserve while one stands (RG1).
             BuildingsTemplate gone = buildingManager.getTemplate(d.templateId);
-            String reserve = "City".equals(d.from) ? landManager.reserveKeyOf(gone) : null;
-            landManager.release(d.landSqFt, reserve != null ? reserve : d.from, groundUse(gone));
+            // ...a city's Wind or Solar Farm out of the city's farms' ground in the fields' zone, whatever the reserve is now (RG1, REV-RG1).
+            if ("City".equals(d.from) && LandManager.isCityFarm(gone)) landManager.releaseCityFarm(d.landSqFt, groundUse(gone));
+            else landManager.release(d.landSqFt, d.from, groundUse(gone));
             // ...a sea terminal's units no longer hold their island's ground (ET5).
             if (Ports.isPort(buildingManager.getTemplate(d.templateId))) landManager.getLandmasses().demolished(d.id);
             GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for %s, %s freed.",
@@ -11013,6 +11013,7 @@ public class Game {
         if (totalCost <= cash) {
             totalCost = treasuryPays(TreasuryLine.BUILDINGS, totalCost);
             if (island) landManager.allocateOn(landmass, landNeeded);
+            else if (landManager.reserveKeyOf(selected) != null) landManager.allocateCityFarm(landNeeded, works);
             else landManager.allocate(landNeeded, groundKey, works);
             this.hasNewReceipt = true;
             this.receiptSerial++;
