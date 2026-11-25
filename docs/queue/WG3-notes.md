@@ -1193,3 +1193,19 @@ labour-market row is owed. The degree's gain after cost runs 0.6 to 1.3,
 near or past full willingness, while university students sit at its seats
 (2,000, then 4,000-6,000). That is the page's "too few seats" verdict, and
 the auto-builder's to answer, not WG3's.
+
+### The dry run (the orchestrator's go): green
+
+Builder WG3d (Claude Opus 5.5) took over at 8ae00cf15 after WG3c's session
+died at 10:02 (MemWatch's runner out of memory). The dry run it had started
+survived it and was waited on, not restarted.
+- `sh tools/gate-box.sh WG3 --dry-run`, run
+  `/home/jerus/cbs/runs/cbs-gate-WG3-7lRwO2gt` on the gate box, tools and
+  branch at 8ae00cf15, main 304506de2 (0.9.203), which has not moved since.
+- The pick is ALL, 254 harnesses. The suite finished in 823 s, exit 3, known
+  red only (16 harnesses, every one main's). Three timing assertions were
+  SOFT (SaveSlotCheck 1, MapCheck 2). `unnamed.txt` is empty.
+- The gate's exit is 0. The run is copied home to
+  `C:\Users\Jerus\AppData\Local\Temp\cbs-gate-WG3-7lRwO2gt`, and its name is
+  on the ship file's first line, so the gate reuses the suite.
+- After it, only the notes and the ship file changed.

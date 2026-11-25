@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-WG3-7lRwO2gt -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — WG3, schooling on pay after cost — 2026-11-25, ready, see docs/queue/WG3-notes.md
