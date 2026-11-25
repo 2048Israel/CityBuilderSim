@@ -227,7 +227,10 @@ December 2024 removes nothing, and an electric fleet is a new energy path
 ## Checks run
 
 On the final code (after the mend; ResearchCheck and PostwarRecipeCheck
-again after the merge of main at 0.9.200):
+again after the merge of main at 0.9.200). The review (REV-R6e-rest, SHIP)
+had two wording nits, folded: the saving is priced at the commerce price
+(`getPowerPriceFor()`, not the works' surplus price), and E22's date is
+Energy Recovery's release, not Stover's 2008 retrofit:
 
 - ResearchCheck: 101 entries, E prefix 22, ENGINEERING 54, the needs pin
   (36 links over 30 entries), E22's date spot and study tail.
@@ -243,6 +246,18 @@ again after the merge of main at 0.9.200):
 - PostwarRecipeCheck (233 ok; template changes 31), PublicLicenceCheck (68),
   HistoricalLicenceCheck (80), SaveFileCheck, ReadPathCheck,
   BuildingDataCheck: green.
+
+## The ensemble
+
+80 of 80 runs on the gate box (aef18c2e3, 35 minutes), scored against
+`docs/ensemble/0.9.199.md`, committed as `docs/ensemble/R6e-rest.md`:
+batch verdict PASS, the hard criteria 10/10, M1 0 and F1 0/16 in every
+policy, criteria 25/26, no verdict changed. A2 (a spell of inflation over
+10% from m240, 13 months against under 12) fails as the baseline's does.
+The trace is unchanged: every median equals the baseline's (AUTO2's final
+population 9,223,026 in both), as it should, since the ensemble's cities are
+founded today's way and E22, its piece and its licence act only in a city
+founded the 1900 way.
 
 ## Seen in passing, not this batch's
 
