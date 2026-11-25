@@ -89,6 +89,25 @@ draw and predicate. This is instrumentation, not a mend or acceptance pass.
 Current native still finishes on its original8bb classes; no overlapping JVM
 or source edit in that running worktree is authorized.
 
+The next native reaches section75 and throws: basketParts reads colour5
+from the five-entry BASKET_RAMP while the real PriceIndex has nine components.
+The component names already have nine entries; the missing colours cause the
+crash even for a zero-weight new component. This is an owned reader regression,
+not a missing premise. Adapt the existing basket reader to all nine components
+and inventory its other readers; keep every weight and history comparison.
+The fatal main leaves only JavaFX threads alive. Parent authorizes stopping
+only that verified owned tree if no meaningful test continuation remains,
+recorded as cancelled-after-fatal with unknown numeric exit, never a pass.
+
+The bounded reset replay preserves the entire original played-city setup and
+sections1-45, including the failed reset assertion. A temporary explicit
+diagnostic flag stops ONLY after that assertion, prints a nonacceptance marker
+and exits77. Normal full Kept remains unchanged. This saves replaying later
+sections before the actual reset flags are known; it cannot supply acceptance
+evidence. Remove the stop branch before the final full run. Source-only patch
+96c750ce53d7c74733e55ae85d27bade6684da2f7b1b6298e94bd8865c32f41c is reviewed
+and applied; no native starts until the earlier owned jobs end and fresh gates pass.
+
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
 byte-identical through dce's later observer and harness-only commits;

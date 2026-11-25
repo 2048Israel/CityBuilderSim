@@ -9941,6 +9941,15 @@ public class KeptCheck {
         construction(g, bench);
         stopped(g, bench);
         buildControls(g, bench);
+        // WHY: a reset finding preserves the ENTIRE original prefix and reset checks.
+        // Exit 77 marks a diagnostic stop; it is never a full Kept/acceptance verdict.
+        if (Boolean.getBoolean("keptcheck.stopAfterResetFinding")) {
+            System.out.println("DIAGNOSTIC STOP after original section45 reset checks; not full Kept/acceptance");
+            System.out.flush();
+            System.err.flush();
+            javafx.application.Platform.exit();
+            System.exit(77);
+        }
         buildHover(g, bench);
         sectors(g, bench);
         researchScreens(g, bench);
