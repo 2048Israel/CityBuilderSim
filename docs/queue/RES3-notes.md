@@ -28,16 +28,20 @@ their added hooks default to null in ordinary checks.
 The unchanged pooled16-31 TOTAL policy-effect floor of at least one point
 passes at3.635685 percentage points; non-shelter reduction is3.102148 points.
 Original-town, supply, saved-observation and purity guards also pass.
-DenominationCheck is held: seven failed decade comparisons are canonical-known;
-three NEW assertions concern under-half-cell ownership and an uncaused upward-
-price premise. The bounded diagnostic retains every original predicate and
+DenominationCheck on75937af98 passes canonical3 with only the seven recorded
+decade comparisons and TP1's recorded upward-price premise. All new caused
+financial-owner, paid-credit, per-position and weighted-conservation/reform
+guards pass; no absent real-city owner holds a raw position. The preceding
+bounded diagnostic retains every original predicate and
 all202 looks: exact-zero owners are0 in all206 snapshots;35109 individual
 reform stock comparisons and all purity/inventory guards pass. Lawful positive
 fractional owners cause the two legacy under-half claims. The registered scan
-correction is prepared for its normal native run; separately captured TP1
+correction passes its normal native run; separately captured TP1
 deflation preserves every floor comparison. Combined review remains owed.
+HousingMarketCheck also passes0 with the current14/32 report and profiles;
+InvestCheck passes3 for only its recorded builder-wage premise. Stage1 is green.
 
-Remaining named checks, current catalogue/profiles, default600-month spending
+Remaining named checks, transfer of the current catalogue/profiles, default600-month spending
 observations, final fast/maps, combined money/saves review, final ensemble and
 dry run remain pending. The ship marker stays provisional. Earlier final,
 green, format and baseline statements below belong to their named commits.
@@ -5250,3 +5254,158 @@ adds a separate raw-per-position reform comparison for the above-half owner,
 the class's WHY and the diagnostic's updated count comment. None of this
 changes production settlement or silences an original conservation/save guard.
 The corrected registered finding and Denomination native run are still pending.
+
+Parent also finds a validation-record issue from the actual script: detached
+worktrees have no branch name, so record_reds cannot select RES3-ship.md.
+For the next canonical calls use the existing supported CBS_KNOWN_REDS input,
+generated from exactly the same fork-main gate record and committed RES3 ship
+rows that the normal batch/RES3 branch selects. Retain that file, its hash and
+both source identities; add no handwritten approval or extra waiver. This
+replicates the ordinary branch judge, preserving all native assertions and
+NEW-red stops. Stale Kept/FS5 rows are explicitly excluded as valid acceptance
+even if their text matches: they still need current native evidence and an
+honest queued owner if any red remains. No process/script code is changed.
+
+Origin/main advances only to de5185104, adding QUEUE entries and PF1/PW9
+briefs. Parent confirms those are the only three changed files; publisher
+version stays0.9.201 and shipped format/floor66. Merge a03579d4b imports those
+records without editing them by hand. Its model/harness/resource bytes remain
+identical to the approved75937af98 native source, so the ongoing exact759
+validation continues; no duplicate native or new format boundary is needed.
+
+Canonical75937af98 DenominationCheck completes at exit3 (cd00) using the
+supported combined record SHA256c84e95e9ed945d26549e6762db408910e8b5d8bd7d4bca137052bfb0d8d0a755.
+Only eight recorded assertions remain: seven known decade comparisons and
+the full-run TP1 index0.8195 upward-premise line. ALL new caused absent/
+fractional/above-threshold raw-position, paid cash-credit, weighted-conservation
+and reform guards pass, as do real-city absence scans. Maps regenerate and
+Stale has zero firm findings. Compiled class manifests show only the expected
+Denomination change and two new FinancialOwnerFinding classes; every other
+model/harness class matches1ce. No first-five native rerun is needed for this
+harness-only correction. HousingMarketCheck starts next after fresh MG1.
+
+HousingMarketCheck on exact759 passes canonical0 (92af). Its actual full
+catalogue report includes all14 forms/32 classes, present and1900 quotes,
+budgets, availability, paid starts and completions, retained as helper
+target/integrated67/validation-759/RES3-catalogue-report.md. Small scratch city
+is282 residents at53.035 ms, H/T/A/M/L65/32/139/0/0; present integrated month
+62.022 ms and larger147739-resident month61.781 ms. Historical month42.686 ms
+and larger147508-resident month46.025 ms. There are141 permanent household
+cells. These are actual integrated-month measurements under the recorded local
+host/JDK, with no retiming or isolated-solver claim. Final transfer and commit
+of the generated report/maps remain. Invest starts alone after fresh MG1.
+The same report also confirms all819 named new Denomination position,
+conservation and scaling checks pass on the corrected registered guard.
+
+Stage1 completes green0/3 (cfcf): current759 InvestCheck returns3 for ONLY
+the exact builder-wage HT1-H fixture line, already in the fork's combined
+record; no broad waiver or other failed funding law. HousingMarket's full
+harness takes17.6 seconds and retains its actual14/32 report. The first-five
+f0 source-labelled passes remain valid unchanged-model evidence; Denomination,
+HousingMarket and Invest now have current759 verdicts. The combined approval
+file, commands, per-stage MG1 and source/class/asset/JDK identities are archived.
+HousingCheck starts stage2 alone; all remaining names run one per call.
+
+Current759 HousingCheck passes canonical0 (b8ab), with zero firm Stale.
+Its native report also marks one existing path OBSERVED/not counted; do not
+represent that observation as an asserted pass. Retain the full native output
+and obtain the exact label/source context at the helper's next boundary,
+without a redundant rerun. HousingDoorCheck starts next under fresh MG1.
+
+The observed label is explicit (8b8b): "fixture: the city closed homes and
+left their debt on the landlords". strandedDebtShare's0..1 range is counted,
+but Observation.reached(share>0, closed-home share save round trip) does not
+reach its save/load branch. That block/predicate is identical to main; the
+whole HousingCheck file differs, so make no whole-file identity claim. Existing
+Choice allocation and HMC class-local debt/glut checks do not prove this
+positive-stranded-share path. Its missing coverage is recorded without a
+rerun, changed premise or substituted counted pass. Ask the helper to identify
+actual impact and any already-caused Door evidence before the final coverage claim.
+
+Current759 HousingDoorCheck passes canonical0 in165.1 seconds, including
+the exact no-month-unplaced>1 law, actual played closure/refusal checks and
+all monthly household cash audits (5b0c/69cf). HousingInventoryCheck also
+passes0, all native checks, with zero firm Stale. HousingChoiceCheck starts
+next after its own fresh MG1; source/assets/JDK/combined approvals unchanged.
+
+HousingChoiceCheck on759 also passes0 (9422), including retained incumbents,
+source-count conservation, rounding remainders and paid-half ownership. The
+preceding HousingInventory native takes2.4 seconds. HouseholdCheck starts
+alone under fresh MG1. The retained controller additionally hashes pinned
+java/javac/earth/world and the exact combined-approval file before each call;
+these are read-only identity guards, with no model/harness/process-source edit.
+
+HouseholdCheck passes0 in5.6 seconds and BuildingDataCheck passes0 on759
+(97ba), all native counted laws green. ReloadCheck starts next alone under
+fresh MG1. No extra closure fixture/probe/replay is added during the source-
+only investigation of HousingCheck's separately reported observation.
+
+The narrow impact report (cfd6) confirms no Door/HMC case directly causes
+positive strandedDebtShare and reloads it. Door's "stranded" variable counts
+orders missed by a lender. HMC separately counts class-local carry/no subsidy,
+whole vacant-title retirement, occupied-form retirement/displacement and family-
+door load census; these do not substitute for the missing positive-share save
+path. The RealEstate capacity/share writer, getter, carriedInterest and legacy
+extras save/reset/load code match main; EconomyManager's inventory-capacity
+caller is also unchanged. RES3 does change mayRetire and mixed-class spare-
+retirement limits, so its closure trajectory can affect the branch. Do not
+make a blanket unchanged-path claim.
+
+★ Add one minimal caused positive closed-home debt/save/continuation case
+through the existing actual funded inventory and permitted retirement path,
+preferably extending HMC's real retirement/load fixtures. Source-prep first:
+actual Bank debt, capacity loss, positive held stranded share, exact reload and
+next-month money/debt/capacity twins; no direct share setter, new production
+seam, fabricated flow or relaxed gate/tolerance. The native HousingCheck
+observation remains honestly uncounted; the new registered case must supply
+the coverage. Other already-approved one-name checks continue on759 while
+the helper prepares source only. No new-case JVM or model change is authorized.
+
+ReloadCheck on759 passes0 in199.7 seconds, all checkpoints and caused states
+(d1a4). CarCheck returns3 in8.0 seconds for ONLY three exact combined-record
+premise lines: the4800-trial price-edge search does not cause its edge; the
+all-off-ship premise has domestic maker stock (66 cars/10 maker stock on this
+path); its exact declared-import-versus-total-paid comparison consequently
+includes domestic purchases. These are existing recorded rows, not a new
+classification or waiver. OilCheck starts alone. The closure fixture source-
+prep must account for BF1's native retirement loan repayment rather than
+incorrectly asserting unchanged principal; conservation includes that real flow.
+
+OilCheck on759 stops at canonical4/native1 for one NEW assertion (7a65):
+"a town with no station, its drivers petrol all past the stations at the queue
+price, is given one". The native unmet demand is9317 litres, but the reported
+staffing is33 percent now and75 percent with a year of arrivals, below the
+unchanged80-percent gate. All own processes end, and CentralBank/other native
+stages remain unstarted. Diagnose exact fixture inputs, gate eligibility,
+source impact and the actual queued sweep owner from retained evidence;
+no baseline/full rerun, relaxed staffing gate or invented waiver. The closed-
+debt source-prep continues independently without a JVM.
+
+Oil's bounded diagnosis (6459/6d31) identifies the actual condition: unchanged
+town(oilcheck-nopump,600 Houses,8000000 spare ft2), RETAIL investment held,
+300 extra Houses and24 ordinary months. The assertion requires a Filling
+Station candidate but never causes staffing. Sector.staffing correctly rejects
+its formatted33-percent current/75-percent forecast share below the native
+80-percent MIN_STAFFABLE_TO_ORDER; no independent raw workforce draw was
+logged, so do not invent one. Later gross-margin, project-cost, order-size,
+land and staffable-count gates are not reached. A neighboring margin-minus-
+wages1e-12 law passes at-0.260606; that is not this candidate's gross-margin
+test or proof of what staffing alone would make it choose.
+
+The whole OilCheck and AutoBuilder blobs match main, as do Sector's staffing
+functions and Retail.planStations/litresForecast. Sector differs only in the
+held-payroll save lines, Retail only in pure current grocery/fuel readers,
+and BusinessInvestment in typed spare-retirement limits. RES3 changes the
+played housing/migration trajectory; no fresh-main failure is claimed and no
+baseline replay is run. All other oil/material/price/duty/save laws pass;
+there is one failed assertion in29.2 seconds.
+
+★ Pass only that exact missing-eligibility fixture line by name to EXISTING
+queued FS8, the industry/research/views20-harness sweep. Parent verifies
+OilCheck's FS8 ownership in by-harness row162 and the live QUEUE row; FS12 is
+a different sweep. The ship row names its precise assertion and cause, keeps
+24 months/80 percent and every financial/physical law, and claims neither
+all later gates passing nor a new generic exemption. Record-only update and
+supported rejudging of the retained native log can establish canonical3;
+do not repeat Oil's native merely to rediscover this result. Remaining named
+checks may resume only after the new committed record is selected exactly.
