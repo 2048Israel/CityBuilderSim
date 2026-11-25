@@ -18043,6 +18043,7 @@ public class Game {
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
         // ...and each site's work on the foreign crews' book (REV-FC2, the second review), what a cancel takes off it.
         dataSave.setAbroadOwedById(buildingManager.getAbroadOwedById());
+        dataSave.setAbroadClaimsById(buildingManager.getAbroadClaimsById());
         // ...and the equipment each site's orders froze, only where a site has a lot (R1e; none in a city founded the default way).
         dataSave.setLotsById(buildingManager.getLotsById());
         dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
@@ -18161,6 +18162,7 @@ public class Game {
         dataSave.setBankAllowance(bank.allowanceToSave());
         dataSave.setBankCapitalRecord(bank.capitalRecordToSave());
         dataSave.setBankMonthLines(bank.monthLinesToSave());
+        dataSave.setBankHeldBooks(bank.heldBooksForSave());
         // ...and its year of statements (0.7.9), which last month's column
         // and the last twelve months are read from.
         dataSave.setBankStatementYear(bank.statementYearToSave());
@@ -23200,6 +23202,12 @@ public class Game {
         if (restoredFlows != null && restoredFlows.getBankHouseholdDeposits() != null
                 && restoredFlows.getBankSectorDeposits() != null) {
             bank.restoreDeposits(restoredFlows.getBankHouseholdDeposits(), restoredFlows.getBankSectorDeposits());
+        }
+        // The held book amounts and raw site claims, over the final rebuild. No new lending,
+        // funding or work is settled here: these are the exact inputs the next month reads.
+        if (restoredFlows != null) {
+            bank.restoreHeldBooks(restoredFlows.getBankHeldBooks());
+            buildingManager.restoreAbroadClaims(restoredFlows.getAbroadClaimsById());
         }
         // ...and what had moved each sector's debt so far (FW2, R7), over whatever the rebuild counted.
         if (restoredFlows != null) economyManager.getBusinessDebtManager().restoreMoved(restoredFlows.getCreditMoved());

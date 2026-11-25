@@ -4721,3 +4721,41 @@ full evidence SHA256
 5e7c954e489dc8da450a3e993638fb8e48fd0b05981e4d7cba9e77cac574cafd,
 at helper target/cpi-native-18c8. All owned jobs ended; normal checks
 remain unrun, and the source-only bank/claim proposal remains open.
+
+The source/unit plan (7554) corrects the raw claim classification: these
+are physical CLAIM-POINT counts at a carried common scale, not
+dimensionless or currency amounts. noteAbroad initializes with physical
+work points and adds existingClaims times abroadWorkPoints over prior
+foreignBookWorkPoints. Both caller paths and handAbroad pass physical
+points, while nominal prices/bills remain separate. Currency reform
+scales neither the raw claims nor the physical foreign book.
+
+Review and adopt model-only patch SHA256
+d80ad5bb930eec4424570cb6cb2cacacc051fd68635166a32a282a0c3c2e51f9,
+five files +77/-1, unchanged from delivery. Bank.HeldBooks snapshots
+seven held local-money amounts (deposits, sector/city/household/mortgage/
+interim/bond books) and the two 25-sector loan vectors. Its constructor
+and accessors clone the vectors, and restore copies them into bank-owned
+arrays. These values already scale once in live redenomination; no
+independent snapshot scaling, deposit component duplication, new cash,
+claims, equity adjustment, risk/rate or transaction is introduced.
+Restore follows the last refreshBank and restoreDeposits, before the
+cost-of-funds reader and next startMonth sheet. It restores recorded
+held amounts directly rather than re-summing scaled components.
+
+BuildingManager returns a fresh raw-claim map only for live owed sites,
+matching the existing liveClaims denominator. DataSave copies the map
+in both directions; late load restores through the existing finite
+setter after site rebuild. Existing effective-point field/getter,
+projection, book, additions, cancellation and funding formulas remain
+unchanged. Physical claim points never scale in a currency reform.
+The four exact native comparisons determine the actual result; the
+unretained earlier raw values do not support a retrospective numerical
+reproduction claim. The already owed unshipped66/floor66 covers these
+held fields over shipped65, with no further bump or new conversion.
+
+Actual-diff review checks the existing live-site filter, raw additions,
+finite copy-back, defensive records, Sectors.KEYS vector order and late
+restore placement. No finding or monetary law changes in this model
+patch; the already pushed unconditional history capture is retained.
+Native verification remains to run on the next pushed candidate.

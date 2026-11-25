@@ -474,6 +474,41 @@ public class Bank {
         }
     }
 
+    /** The held local-money book amounts read by the next startMonth's sheet and opening equity.
+     * The deposit components already have their own save; their held sum also needs carrying. */
+    public record HeldBooks(double deposits, double sectorBook, double cityBook, double householdBook,
+                            double mortgageBook, double interimBook, double bondBook,
+                            double[] loansBySector, double[] interimBySector) {
+        public HeldBooks {
+            loansBySector = loansBySector == null ? null : loansBySector.clone();
+            interimBySector = interimBySector == null ? null : interimBySector.clone();
+        }
+        @Override public double[] loansBySector() { return loansBySector == null ? null : loansBySector.clone(); }
+        @Override public double[] interimBySector() { return interimBySector == null ? null : interimBySector.clone(); }
+    }
+
+    public HeldBooks heldBooksForSave() {
+        return new HeldBooks(deposits, sectorBook, cityBook, householdBook, mortgageBook,
+                interimBook, bondBook, loansBySector, interimBySector);
+    }
+
+    /** Put the held books over the load's final refresh and deposit reconstruction, without settling anything. */
+    public void restoreHeldBooks(HeldBooks saved) {
+        if (saved == null) return;
+        double[] loans = saved.loansBySector(), interim = saved.interimBySector();
+        if (loans == null || loans.length != loansBySector.length
+                || interim == null || interim.length != interimBySector.length) return;
+        deposits = saved.deposits();
+        sectorBook = saved.sectorBook();
+        cityBook = saved.cityBook();
+        householdBook = saved.householdBook();
+        mortgageBook = saved.mortgageBook();
+        interimBook = saved.interimBook();
+        bondBook = saved.bondBook();
+        System.arraycopy(loans, 0, loansBySector, 0, loansBySector.length);
+        System.arraycopy(interim, 0, interimBySector, 0, interimBySector.length);
+    }
+
     /** What the sector at this index of Sectors.KEYS owes it outside its insured mortgages and its interim financing. */
     public double getLoansToSector(int sector)   { return loansBySector[sector]; }
     /** ...and its interim financing. */

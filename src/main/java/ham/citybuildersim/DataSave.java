@@ -1216,6 +1216,8 @@ public class DataSave implements Cloneable {
      * book in proportion to them - a cancel takes its share of his book, as FC1b took its points left. No format bump.
      */
     private java.util.Map<Integer, Double> abroadOwedById;
+    /** Raw physical claim-points at their carried common scale, by building id; distinct from effective work points. */
+    private java.util.Map<Integer, Double> abroadClaimsById;
 
     public void setAbroadOwedById(java.util.Map<Integer, Double> byId) {
         this.abroadOwedById = byId == null ? new java.util.TreeMap<>() : byId;
@@ -1223,6 +1225,12 @@ public class DataSave implements Cloneable {
 
     /** The points by template id, empty for a save with none abroad, null for a save from before the key. */
     public java.util.Map<Integer, Double> getAbroadOwedById() { return abroadOwedById; }
+    public void setAbroadClaimsById(java.util.Map<Integer, Double> byId) {
+        abroadClaimsById = byId == null ? null : new java.util.TreeMap<>(byId);
+    }
+    public java.util.Map<Integer, Double> getAbroadClaimsById() {
+        return abroadClaimsById == null ? null : new java.util.TreeMap<>(abroadClaimsById);
+    }
 
     /**
      * The buildings still WITHOUT a piece of equipment, by template id and then by the piece's id (R1; BuildingsStacks' unfitted counts), written
@@ -2033,9 +2041,13 @@ public class DataSave implements Cloneable {
      * a month was played. Null on an older save, which still does, once.
      */
     private double[] bankMonthLines;
+    /** Immutable held book snapshot; its sector arrays are defensively copied by the record. */
+    private Bank.HeldBooks bankHeldBooks;
 
     public void setBankMonthLines(double[] state) { this.bankMonthLines = state; }
     public double[] getBankMonthLines()           { return bankMonthLines; }
+    public void setBankHeldBooks(Bank.HeldBooks state) { bankHeldBooks = state; }
+    public Bank.HeldBooks getBankHeldBooks() { return bankHeldBooks; }
 
     /**
      * The bank's year of statements (0.7.9): the months before the one saved,

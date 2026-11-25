@@ -6596,6 +6596,26 @@ public class BuildingManager {
         return out;
     }
 
+    /** The raw claim-points, at their carried common scale, before projecting them onto the physical book.
+     * noteAbroad starts that scale in physical work points and adds claims at the book's current points-to-claims ratio. */
+    public java.util.Map<Integer, Double> getAbroadClaimsById() {
+        java.util.Map<Integer, Double> out = new java.util.TreeMap<>();
+        for (BuildingsStacks s : stacks) {
+            double claim = s.getAbroadClaim();
+            if (s.owedPoints() > 0 && claim > 0) out.put(s.getBuilding().getId(), claim);
+        }
+        return out;
+    }
+
+    /** Exact raw weights after the load has rebuilt the sites; the existing physical-point fallback stays in force when absent. */
+    public void restoreAbroadClaims(java.util.Map<Integer, Double> byId) {
+        if (byId == null) return;
+        for (BuildingsStacks s : stacks) {
+            Double claim = byId.get(s.getBuilding().getId());
+            s.setAbroadClaim(claim == null ? 0 : claim);
+        }
+    }
+
     /**
      * ...and restored from it, the points the claims. A save written before REV-FC2's second review has no key (null):
      * every site with points owed claims his book in proportion to them, as FC1b's cancel cut a site's points left.
