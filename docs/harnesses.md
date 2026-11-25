@@ -11079,38 +11079,38 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      host's land factor; and it stands outside the crowding premium - a crowded city's going price rises, the farmland price does not.
 > ...
 
-- **L109 1. the farmland price is the sellers' own figure, outside the crowding premium**
-  - L133 ...and the farmland share struck with it is the farmland price over the new going price
-- **L140 2. without the policy, today's prices**
-  - L149 ...and a Wind Farm's ground is taken under its own key, the city's, no reserve's
-  - L152 ...the planner's capital for it is the quote and the ground at landValue(), as before
-- **L169 3. with the policy, a farm's ground costs the farmland price**
-  - L173 the fields' zone at its dial is no reserve and sells at its dial
-  - L175 at the farmland price it is the reserve, and sells at the farmland share struck (0.2), its dial kept
-  - L178 ...struck again with the going price, it sells at the new share
-  - L180 ...re-sized and re-dialled it stays the reserve, at the farmland share
-  - L183 never dearer: where the farmland price passes the going price, the reserve sells at the going price
-  - L186 only the fields' zone may be the reserve: a mine's zone may not
-  - L189 lifted, the fields' zone is at its dial again
-  - L192 a copy (a preview's) is detached, and carries the farmland share struck
-- **L199 4. the money: a field in the reserve pays the farmland price, to the city, and the audit closes**
-  - L209 its flat ground sells at the farmland price, its share the farmland price over the going price
-  - L221 bought through the businesses' door, the city has exactly that price, on its land sales
-  - L223 ...which the fields paid with their building, and the reserve's ground is used by it
-- **L235 5. the city's own Wind Farm builds in the reserve, and gives its ground back**
-  - L240 a Wind Farm's ground is the reserve's: its key is the fields' while the reserve stands
-  - L261 with the reserve lifted, a Wind Farm the city builds leaves the fields' zone alone
-- **L272 6. the planner builds farms where the default built none**
-  - L277 fixture: PowerPlanCheck 6's dear town (diesels standing) orders wind on its own ground (
-  - L289 ...so the town orders no wind (
-  - L308 ...and the town orders wind again (
-  - L310 ...its ground needing none bought: the reserve holds it
-- **L324 7. saved and reloaded, the same reserve; an older save's zone at its share**
-  - L330 fixture: the city has its reserve, a field and the farmland share struck
-  - L337 loaded, the fields' zone is the reserve again: its size, dial, used ground and the share it sells at
-  - L341 ...and its ground as the live city prices it
-  - L344 a month on, the two are the same month: cash, the reserve's price and ground
-  - L353 an older save's zoning, with no reserve key, reads the fields' zone at its share and no reserve
+- **L110 1. the farmland price is the sellers' own figure, outside the crowding premium**
+  - L134 ...and the farmland share struck with it is the farmland price over the new going price
+- **L141 2. without the policy, today's prices**
+  - L150 ...and a Wind Farm's ground is taken under its own key, the city's, no reserve's
+  - L153 ...the planner's capital for it is the quote and the ground at landValue(), as before
+- **L170 3. with the policy, a farm's ground costs the farmland price**
+  - L174 the fields' zone at its dial is no reserve and sells at its dial
+  - L176 at the farmland price it is the reserve, and sells at the farmland share struck (0.2), its dial kept
+  - L179 ...struck again with the going price, it sells at the new share
+  - L181 ...re-sized and re-dialled it stays the reserve, at the farmland share
+  - L184 never dearer: where the farmland price passes the going price, the reserve sells at the going price
+  - L187 only the fields' zone may be the reserve: a mine's zone may not
+  - L190 lifted, the fields' zone is at its dial again
+  - L193 a copy (a preview's) is detached, and carries the farmland share struck
+- **L200 4. the money: a field in the reserve pays the farmland price, to the city, and the audit closes**
+  - L210 its flat ground sells at the farmland price, its share the farmland price over the going price
+  - L222 bought through the businesses' door, the city has exactly that price, on its land sales
+  - L224 ...which the fields paid with their building, and the reserve's ground is used by it
+- **L236 5. the city's own Wind Farm builds in the reserve, and gives its ground back**
+  - L241 a Wind Farm's ground is the reserve's: its key is the fields' while the reserve stands
+  - L262 with the reserve lifted, a Wind Farm the city builds leaves the fields' zone alone
+- **L273 6. the planner builds farms where the default built none**
+  - L278 fixture: PowerPlanCheck 6's dear town (diesels standing) orders wind on its own ground (
+  - L290 ...so the town orders no wind (
+  - L309 ...and the town orders wind again (
+  - L311 ...its ground needing none bought: the reserve holds it
+- **L325 7. saved and reloaded, the same reserve; an older save's zone at its share**
+  - L331 fixture: the city has its reserve, a field and the farmland share struck
+  - L347 loaded, the fields' zone is the reserve again: its size, dial, used ground and the share it sells at
+  - L351 ...and its ground as the live city prices it
+  - L354 a month on, the two are the same month: cash, the reserve's price and ground
+  - L363 an older save's zoning, with no reserve key, reads the fields' zone at its share and no reserve
 
 ## FieldOperatorsCheck.java - 70 labelled assertions
 

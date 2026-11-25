@@ -79,6 +79,15 @@ Jerus, 2026-11-24 09:12: "Policy, that also lets farms crops as well be cheaper"
 - The twin loads from a copy of the slot in a folder of its own. Two cities pressed a month on
   in one folder autosave into one history file, and the rename collides on Windows.
 
+## The checks
+
+- `./batch-check.sh --fast`: compile OK, maps regenerated, stale 0 firm.
+- Named, one at a time: FarmlandReserveCheck (41 OK), ZoningCheck, ZoningViewCheck,
+  PowerPlanCheck, BuildAdviceCheck and EssentialWorksCheck green. SaveFileCheck's only red
+  is main's known "REV-HC1 P5: the populated format-62 city continues ..." (FRW1, known-reds.txt).
+- `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed), so a dry run follows. Its
+  review line reads "not needed - no money, saves or threading in the diff".
+
 ## The default run
 
 No code path takes the reserve unless `setFarmlandReserve(true)` is called. The policy

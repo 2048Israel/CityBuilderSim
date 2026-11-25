@@ -2,6 +2,7 @@ package ham.citybuildersim;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
@@ -330,7 +331,16 @@ public final class FarmlandReserveCheck {
         check("fixture: the city has its reserve, a field and the farmland share struck",
                 was != null && land.usedBy(FIELDS) > 0 && Double.isFinite(g.getZoning().farmlandShare()));
         quietly(() -> g.saveGame(10, "farmlandcheck"));
-        Game twin = new Game(new GameFiles(root.resolve("city"), root.resolve("city-no-legacy")));
+        // ...the twin in a folder of its own, the slot copied to it: two cities pressed a month on in one folder autosave into one history file.
+        GameFiles mine = new GameFiles(root.resolve("city"), root.resolve("city-no-legacy")), its = new GameFiles(root.resolve("twin"), root.resolve("twin-no-legacy"));
+        try {
+            Files.createDirectories(its.savesDirectory());
+            Files.copy(mine.saveFile(10), its.saveFile(10));
+            Files.copy(mine.historyFile(10), its.historyFile(10));
+        } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException(e);
+        }
+        Game twin = new Game(its);
         quietly(() -> twin.loadGameSave(10));
         twin.getBusinessInvestment().holdSector(Sectors.AGRICULTURE);   // the harness's hold, not the save's
         Zoning.Zone back = twin.getZoning().reserve();

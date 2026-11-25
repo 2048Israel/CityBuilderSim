@@ -6896,12 +6896,12 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 40 | `FarmlandReserveCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 58 | `FarmlandReserveCheck.FIELDS` | `Zoning.RESERVE_SECTOR` |  |
-| 61 | `FarmlandReserveCheck.PASTURE_USD` | `0.044, CROPLAND_USD = 0.134` | Real ground a square foot, US$ (LandMarket's THE CROWDING PREMIUM): US pasture, and cropland - what a farm's ground costs. |
-| 67 | `FarmlandReserveCheck.RESERVE_KM2` | `2` | The reserve the fixtures zone: square kilometres of the fields' zone, enough for a Solar Farm's ground and more. |
-| 70 | `FarmlandReserveCheck.DIAL` | `0.5` | The dial the fields' zone is set at before it is the reserve: a share, to tell the two prices apart. |
-| 269 | `FarmlandReserveCheck.CROWDED_FREE_KM2` | `RESERVE_KM2 + 1` | The free ground the crowded town keeps past what it has built, square kilometres: room for the reserve and a little for anyone. |
+| 41 | `FarmlandReserveCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 59 | `FarmlandReserveCheck.FIELDS` | `Zoning.RESERVE_SECTOR` |  |
+| 62 | `FarmlandReserveCheck.PASTURE_USD` | `0.044, CROPLAND_USD = 0.134` | Real ground a square foot, US$ (LandMarket's THE CROWDING PREMIUM): US pasture, and cropland - what a farm's ground costs. |
+| 68 | `FarmlandReserveCheck.RESERVE_KM2` | `2` | The reserve the fixtures zone: square kilometres of the fields' zone, enough for a Solar Farm's ground and more. |
+| 71 | `FarmlandReserveCheck.DIAL` | `0.5` | The dial the fields' zone is set at before it is the reserve: a share, to tell the two prices apart. |
+| 270 | `FarmlandReserveCheck.CROWDED_FREE_KM2` | `RESERVE_KM2 + 1` | The free ground the crowded town keeps past what it has built, square kilometres: room for the reserve and a little for anyone. |
 
 ### FieldOperatorsCheck.java ([map](map/FieldOperatorsCheck.md))
 
