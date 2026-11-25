@@ -664,6 +664,7 @@ supply reads lower on main; the count says nothing about how soon either orders.
 
 | run | under `lacksNow()`'s line: ZERO_HOT; HIGH; AUTO2 | under the mean peak block: ZERO_HOT; HIGH; AUTO2 |
 |---|---|---|
+| the seventh (REV-PW3f's mend) | 155 (7 seeds); 194; 194 | 29 (2 seeds); 50; 50 |
 | the sixth (REV-PW3e's mend) | 155 (7 seeds); 183; 183 | 29 (2 seeds); 37; 37 |
 | the fifth (REV-PW3d's) | 529 (16 seeds); 409; 409 | 134 (10 seeds); 156; 156 |
 | the fourth (the seasonal line) | 120 (7 seeds); 145; 145 | 19 (2 seeds); 31; 31 |
@@ -678,4 +679,63 @@ towns (seeds 2, 3, 8, 11, 12, 13 and 15) match the fourth run's CSV row for row 
 to 317 (HIGH). REV-PW3e's mend had put the seasonal line's orders back where they were (§2, the need date), and
 HIGH's median, 623,344, is the fourth run's 622,866 again.
 
-`docs/ensemble/PW3.md` is this run's snapshot.
+**The seventh run**, after REV-PW3f's mend (the need date, its late rows and the calendar, §2), on e51464909 (PW3
+on main's 0.9.200), was scored against `docs/ensemble/0.9.199.md` (main keeps no 0.9.200 baseline).
+- M1 and F1 pass in all five policies; the batch verdict is PASS, the hard criteria 10 of 10, and 25 of 26 criteria
+  (A2 fails as the baseline's does, 13 [4 to 29] against 13 [10 to 26]).
+- No verdict changed.
+
+| policy | measure | the seventh run | the sixth | 0.9.199 |
+|---|---|---|---|---|
+| ZERO_HOT | T2, final population | 54,272 [16,026 to 155,817] | 54,272 | 51,906 [15,266 to 79,127] |
+| ZERO_HOT | H2 | 0.60% [-5.83% to 6.81%], 15 of 16 below | -0.26% | 0.81% |
+| HIGH | T2 | 694,440 [99,878 to 1,232,347] | 623,344 | 734,788 |
+| HIGH | R2 | 3.09% | 3.04% | 2.94% |
+| AUTO2 | T1 | m325 [283 to 508] | m323 | m331 |
+| AUTO2 | T2 | 9,174,482 | 9,223,768 | 9,223,026 |
+| AUTO2 | A1 | 2.65% | 2.61% | 2.63% |
+| ZERO_SLACK | T2 | 7,298,229 | 7,700,074 | 7,646,013 |
+| SHOCK | T2 | 1,519,712 | 1,530,066 | 1,516,325 |
+
+**What the mend moved** (traces on this run's classes, run here on the box's data, each matching the box's CSV;
+`target/pw3-trace/scripts/seedshort.py`).
+- ZERO_HOT is the sixth run's in 15 of its 16 towns, row for row over all 402 months (seed 1 parts at m219). The
+  seven that are still the fourth run's whole (seeds 2, 3, 8, 11, 12, 13 and 15) are the towns whose need falls
+  before the diesel can stand. Held to the month already short, the fifth run's towns fell short at m91 to m95
+  (seeds 11, 8, 12, 13 and 2), m110 (15) and m116 (3); the 1910 Diesel Station is on the menu from m120. So no
+  faster firm row can be on line by the date, and the Oil-Fired Plant ordered at m72 to m81 (48 build months) is
+  the rule's answer, and late (seed 13 stands at 0.81 to 0.91 from m92 for 36 months while it is built). The other
+  nine, whose need fell at m119 to m136, no longer buy it: the plant 29 times the town's draw is no longer sold where
+  a diesel can meet the date. No smaller firm row stands before 1910 (§5, against §2.9's table).
+- ZERO_HOT seeds 7 and 1, which do not buy the early plant, fall short at m126 and m136, as in the sixth run. Seed 7
+  slides from 1.000 at m124 to 0.954 and then 0.91 to 0.92 (above the mean block) while the diesel it orders at m126,
+  the month it falls short, is built. Seed 1 steps from 1.000 to 0.756 in one month at m136, a load the trend does not carry, as LongPlaytest's
+  mill (§5).
+- In AUTO2, HIGH and ZERO_SLACK (the same towns to the switch), 194 seed-months fall under `lacksNow()`'s line
+  against the sixth run's 183, and 50 under the mean block against 37. Four towns part from the sixth run, at m108
+  to m118: seeds 0, 3, 5 and 15, with 20, 39, 19 and 25 months against 25, 29, 16 and 21. The mean block's 13 are
+  seed 3's alone. Without the calendar it orders the 1900 Oil-Fired Plant at m108 ($9.2M, $6.6M of it new
+  financing) and a diesel at m127, and stands at 0.81 to 0.86 to m160. With it, the plant waits for the 1910 diesel.
+  The diesel, ordered at m127, restores the supply at m156, four months sooner. Meanwhile the town, without the
+  plant's debt, draws more on the same founding grid and stands at 0.75 to 0.80 (its final population 9,619,244
+  against 9,489,211). Neither plant could be on line by the need date. The diesel orders only in the month already
+  short because the trend's forecast at m120 to m126 did not see the draw rise 9% in four months, the projection
+  REV-PW3f keeps.
+
+**HIGH's median** (REV-PW3f's P2): 694,440 against 0.9.199's 734,788, 5.5% under; the sixth run's 623,344 was 15%
+under.
+- Seed 2, the lowest (99,878), is the sixth run's town row for row over all 720 months, and the power planner is not
+  its cause. Its power is served at 1.0 at every sample, and its orders to m260 are two Diesel Stations (m154,
+  $1.9M; m251, $2.5M). It forks from the fifth run's town between m150 and m200 (7,814 people at m200 against
+  8,149), and only the fifth run's took off (23,842 at m300, 608,703 at m720). The fourth, sixth and seventh grow
+  at half that pace (15,052 at m300) and stall at about 43,000 from m540 to m600. Through that stall water is
+  served at 0.44 for 25 months (m541 to m565) and the city's debt rises from 167M at m500 to 809M at m600: the
+  water hold of ZERO_HOT's seeds 6, 9 and 15 above (main's, OA1 on the queue) is the likely class, not traced
+  further.
+- HIGH's median rose 11% from the sixth run with seed 2 unchanged: seeds 0, 7 and 13 rose 15% to 24%, and seeds 10
+  and 14 fell 13% to 14%. Resampled from this run's own 16 towns, as h2d.py did ZERO_HOT's, two medians of 16 part
+  by 5.5% or more 67% of the time and by 15% or more 28% of the time. So the gap to main is inside the median's own
+  spread. Main's own HIGH median moved from 711,698 to 734,788 between 0.9.198 and 0.9.199, and its lowest town from
+  332,328 to 177,889.
+
+`docs/ensemble/PW3.md` is the seventh run's snapshot.
