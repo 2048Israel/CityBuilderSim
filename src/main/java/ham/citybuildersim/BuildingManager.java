@@ -5837,6 +5837,8 @@ public class BuildingManager {
         abroadBill = 0;
         foreignEarned = 0;
         homeEarned = 0;
+        homeAllowance = 0;
+        foreignMaterial = 0;
         contractsDue.clear();
         controlEvents = new ConstructionControl.Events();
 
@@ -5889,6 +5891,7 @@ public class BuildingManager {
                 materialsDue += stack.getMaterialsDue();
                 revenueDue += stack.getRevenueDue();
                 homeEarned += stack.getLastHomeEarned();
+                homeAllowance += stack.getLastHomeAllowance();
                 contractsDue.addAll(stack.getDues());
                 if (stack.getLastFinished() > 0) {
                     // ...with what each order's buildings come without, as their lots froze it (R1e), and those no order fitted out.
@@ -5977,7 +5980,10 @@ public class BuildingManager {
      *
      * So, after the sites and the demolitions have earned their own: his points built (Game.settleForeignCrews()'s, the
      * points past the city's own month and its overtime, never more than he offered), billed at his price; less what his
-     * share of the month's points earned at the sites' rates (his crews on every site alike); the rest - the premium his
+     * share of the month's points earned at the sites' rates (his crews on every site alike), their material apart - the
+     * allowance for it priced into the contracts, which pays for the material as Game.settleSiteContracts()'s escalation
+     * settles the rest, and not for his work (the orchestrator, 2026-11-25: a point of his reads value added near nothing,
+     * its output his bill and its material, the material intermediate and his bill the import); the rest - the premium his
      * payers paid - is earned now out of the home contracts of the sites that claimed his book, by claim, and those
      * contracts owe it less after (BuildingsStacks.earnAhead()): earned sooner, never more. No claim on any site, and it
      * is earned by the points the month built on each. A site's contracts are the ceiling: what none has left is not
@@ -5990,18 +5996,27 @@ public class BuildingManager {
     /** What the month's points earned of the sites' contracts at their own rates, the parts handed abroad (FC2b) apart: the stacks' home parts and the demolitions. */
     private double homeEarned;
 
-    /** ...and what the sites earned for the contractor's points this month (R1g): his bill, but where the claiming sites' contracts ran out first. */
+    /** ...and of it the material allowance the home contracts priced in (BuildingsStacks.getLastHomeAllowance(); a demolition draws none). */
+    private double homeAllowance;
+
+    /** ...and what the sites earned for the contractor's points this month, their material apart (R1g): his bill, but where the claiming sites' contracts ran out first. */
     private double foreignEarned;
+
+    /** ...and the material allowance his share of the month's points earned with it, on top. */
+    private double foreignMaterial;
 
     public double getForeignEarned() { return foreignEarned; }
 
-    /** The premium, his bill less what his share of the month earned at the sites' rates, earned ahead from the claiming sites. See the banner above. */
+    public double getForeignMaterial() { return foreignMaterial; }
+
+    /** The premium, his bill less what his share of the month earned at the sites' rates, its material apart, earned ahead from the claiming sites. See the banner above. */
     private void earnAtHisPrice(int siteOutput, int foreignPoints, double foreignPrice) {
         double ownMonth = siteOutput + controlEvents.overtimePoints;
         double built = Math.max(0, Math.min(pointsBuilt - Math.max(0, ownMonth), foreignPoints));
         if (!(built > 0) || !(pointsBuilt > 0)) return;
-        double bill = built * foreignPrice;
-        double onSites = homeEarned * built / pointsBuilt;
+        double bill = built * foreignPrice, share = built / pointsBuilt;
+        foreignMaterial = Math.max(0, homeAllowance * share);
+        double onSites = Math.max(0, homeEarned - homeAllowance) * share;
         foreignEarned = Math.min(onSites, bill);
         double premium = bill - onSites;
         if (!(premium > 0)) return;

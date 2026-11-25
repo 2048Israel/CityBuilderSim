@@ -1,4 +1,4 @@
-# ForeignCrewsCheck.java - 1,031 lines · 31 methods · 18 constants · harnesses
+# ForeignCrewsCheck.java - 1,034 lines · 31 methods · 18 constants · harnesses
 
 `ham/citybuildersim/ForeignCrewsCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -54,8 +54,8 @@
 >      city's cheap work at home under it), more of his points than the plant can take in a month, so his crews go to
 >      the cheaper sites too, as R1g's 1900 village met it (0.42 against 0.29, GDP -51 at month 15): with
 >      -Dr1g.hisprice=off the builders recognise less work than they pay him for; on, the sites earn his points at his
->      price, what they earn for them is his bill, the month's work is at least it, his bill and the points owed are the
->      twin's, and what the sites earned past the twin's their contracts hold less, the plant's alone: earned sooner out
+>      price, what they earn for them, their material apart, is his bill, the month's work is at least it and their
+>      material (his points' value added nil, not minus their material), his bill and the points owed are the twin's, and what the sites earned past the twin's their contracts hold less, the plant's alone: earned sooner out
 >      of what its payer paid, never more.
 >  10. THE AUDIT: every month played here balanced to the cent and left nothing moving after it.
 > 
@@ -78,7 +78,7 @@
 | 430 | 6. A 240-MONTH BACKLOG |
 | 577 | 7. THE BUILDING THE THRESHOLD FALLS IN |
 | 872 | 9. HIS WORK EARNED AT HIS PRICE (R1g) |
-| 974 | 8. A CURRENCY REFORM |
+| 977 | 8. A CURRENCY REFORM |
 
 ## Constants
 
@@ -113,7 +113,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 86 | 946 | **type** `public class ForeignCrewsCheck` | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at and the city's own inflation; the handover of the queue past it; the ... |
+| 86 | 949 | **type** `public class ForeignCrewsCheck` | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at and the city's own inflation; the handover of the queue past it; the ... |
 | 146 | 1 | `static void ok(String label, boolean cond)` |  |
 | 148 | 1 | `static void near(String label, double actual, double expected, double tol)` |  |
 | 150 | 1 | `static void exact(String label, double actual, double expected)` |  |
@@ -180,7 +180,7 @@
 | 840 | 25 | `static void partsAbroadOwedOnSite(Game g)` | REV-FC2, the third review (P2-2): a works on foothill ground, split at the threshold, hands him its pad's preparation in the share its building's points are (Game.abroadWork()); the preparation is owed on its site wit... |
 | 866 | 5 | `static double sum(java.util.Map<Integer, Double> m)` |  |
 
-### 9. HIS WORK EARNED AT HIS PRICE (R1g) (lines 872-973)
+### 9. HIS WORK EARNED AT HIS PRICE (R1g) (lines 872-976)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -188,12 +188,12 @@
 | 898 | 16 | `static Game dearOrder(Path root, String name)` | A calm city played on until its landlords' Houses have finished, with the city's CHEAP ordered at home, as many as go under the threshold, then one PLANT, its points past the threshold handed him as it is billed at wh... |
 | 916 | 5 | `static double held(BuildingManager bm)` | What the sites' contracts still hold, over every site on the city: what their payers paid for work not yet earned. |
 | 923 | 4 | `static double heldOn(Game g, String name)` | What one template's site's contracts still hold; 0 with none on site. |
-| 928 | 45 | `static void hisPrice(Path root)` |  |
+| 928 | 48 | `static void hisPrice(Path root)` |  |
 
-### 8. A CURRENCY REFORM (lines 974-1031)
+### 8. A CURRENCY REFORM (lines 977-1034)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 976 | 20 | `static void theReform(Game a)` |  |
-| 998 | 33 | `static void afterTheFirstMonth(Game a, Game off)` | The city's workers after a's first month and the twin's, which had no foreign crews. |
+| 979 | 20 | `static void theReform(Game a)` |  |
+| 1001 | 33 | `static void afterTheFirstMonth(Game a, Game off)` | The city's workers after a's first month and the twin's, which had no foreign crews. |
 

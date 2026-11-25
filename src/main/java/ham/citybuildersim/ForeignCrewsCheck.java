@@ -76,8 +76,8 @@ import static ham.citybuildersim.ConstructionTrapCheck.template;
  *      city's cheap work at home under it), more of his points than the plant can take in a month, so his crews go to
  *      the cheaper sites too, as R1g's 1900 village met it (0.42 against 0.29, GDP -51 at month 15): with
  *      -Dr1g.hisprice=off the builders recognise less work than they pay him for; on, the sites earn his points at his
- *      price, what they earn for them is his bill, the month's work is at least it, his bill and the points owed are the
- *      twin's, and what the sites earned past the twin's their contracts hold less, the plant's alone: earned sooner out
+ *      price, what they earn for them, their material apart, is his bill, the month's work is at least it and their
+ *      material (his points' value added nil, not minus their material), his bill and the points owed are the twin's, and what the sites earned past the twin's their contracts hold less, the plant's alone: earned sooner out
  *      of what its payer paid, never more.
  *  10. THE AUDIT: every month played here balanced to the cent and left nothing moving after it.
  *
@@ -951,19 +951,22 @@ public class ForeignCrewsCheck {
             BuildingManager.HIS_PRICE = true;
         }
         double built = cOn.getForeignPointsThisMonth(), bill = cOn.getForeignBillThisMonth(), work = cOn.getRecognisedThisMonth();
-        double earned = bmOn.getForeignEarned(), workOff = cOff.getRecognisedThisMonth(), billOff = cOff.getForeignBillThisMonth();
+        double earned = bmOn.getForeignEarned(), material = bmOn.getForeignMaterial();
+        double workOff = cOff.getRecognisedThisMonth(), billOff = cOff.getForeignBillThisMonth();
         double own = on.getBuildingOutputAtEveryPost();
         double fellOn = heldOn - held(bmOn), fellOff = heldOff - held(bmOff);
         double cheapFellOn = cheapOn - heldOn(on, CHEAP), cheapFellOff = cheapOff - heldOn(off, CHEAP);
-        out.printf(Locale.ROOT, "  he built %,.0f points beside the sites' own month of %,.0f; billed %,.4f; the sites earned %,.4f for his points and %,.4f in all"
-                + " (off: %,.4f in all, billed %,.4f)%n", built, own, bill, earned, work, workOff, billOff);
+        out.printf(Locale.ROOT, "  he built %,.0f points beside the sites' own month of %,.0f; billed %,.4f; the sites earned %,.4f for his points, their material apart,"
+                + " and %,.4f for the material they drew; %,.4f in all (off: %,.4f in all, billed %,.4f)%n", built, own, bill, earned, material, work, workOff, billOff);
         out.printf(Locale.ROOT, "  the sites' contracts fell %,.4f over the month, the twin's %,.4f; the %s's %,.4f, the twin's %,.4f; points still owed %,.4f, the twin's %,.4f%n",
                 fellOn, fellOff, CHEAP, cheapFellOn, cheapFellOff, bmOn.getRemainingConstructionPoints(), bmOff.getRemainingConstructionPoints());
         ok("fixture: his points are most of the month, in the city and its twin", built > own && cOff.getForeignPointsThisMonth() == built);
         ok("with -Dr1g.hisprice=off the sites earn his points at their own rates: the builders recognise less work than they pay him for"
                 + " (GDP's investment under the import, R1g's month 15)", workOff < billOff);
-        near("on, the sites earn his points at his price: what they earned for them is his bill", earned, bill, 1e-9 * bill);
-        ok("...so the month's work the builders recognise is at least his bill", work >= bill);
+        ok("fixture: his points drew material, priced into the contracts", material > 0);
+        near("on, the sites earn his points at his price: what they earned for them, their material apart, is his bill", earned, bill, 1e-9 * bill);
+        ok("...so the month's work the builders recognise is at least his bill and his points' material: their value added is his margin, nil,"
+                + " not minus their material", work >= bill + material);
         exact("...his bill is the twin's: the switch moves what the sites earn, not what he is paid", bill, billOff);
         exact("...and the twins owe the same points: nor what is built", bmOn.getRemainingConstructionPoints(), bmOff.getRemainingConstructionPoints());
         near("what the sites earned past the twin's, their contracts hold less: earned sooner out of what the payers paid, never more",

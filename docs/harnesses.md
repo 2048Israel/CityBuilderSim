@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**253 harness files, 29,144 labelled assertions.** AllChecks runs 253 of them.
+**253 harness files, 29,146 labelled assertions.** AllChecks runs 253 of them.
 
 ## Which harnesses read which class
 
@@ -6743,7 +6743,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2145 the issue and the fair buyback value read the same curve
   - L2149 ...and the buyback takes it off the books at that price
 
-## CreditCrunchCheck.java - 37 labelled assertions
+## CreditCrunchCheck.java - 38 labelled assertions
 
 > A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose
 > leverage ratio binds, standing in its band between its leverage minimum and
@@ -6779,28 +6779,29 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L223 fixture: the bank's room lies between the door's loan and the loan on the cost less the till
   - L226 ...so the owners are asked for the down payment only
   - L228 ...and the door writes the mortgage on the rest
-- **L394 2. the fixture: leverage binding, the bank in its band, the landlords asking, households waiting**
-  - L407 fixture: the city played every month of the crunch
-  - L408 fixture: every month the bank's leverage ratio bound, so the rule rationed the insured mortgages
-  - L410 fixture: every month the bank stood in its band, the rule neither free nor keeping borrowers going
-  - L412 fixture: the landlords asked for homes the bank had no capital to lend on
-  - L416 fixture: every month of the crunch began with ground for GROUND_BLOCKS blocks of Low-Rise Apartments
-  - L418 fixture: the homes cut left the placement room for MARGIN households and less than one house more
-- **L433 3. the owners put in what the till lacked, homes are built, and the households left with no home clear**
-  - L452 the landlords' owners were asked, and put money in, while the bank was short
-  - L453 ...and homes were built in the crunch
-  - L454 no month of the crunch leaves more households with no home than its first month, before any home could be built (R1g)
-  - L456 ...every month leaving more than WATCH with no home is one the landlords asked for homes the bank was short of capital for
-  - L458 ...and they clear: once the owners' first homes stand, no month leaves more than WATCH with no home (LongPlaytest's watch)
-  - L470 ...and no played month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)
-- **L502 4. an order the owners' issue falls short of, the bank short: the door trims it for the capital**
-  - L547 fixture: the bank held in its band and the rule struck on it: leverage binding, the insured mortgages rationed,
-  - L549 fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage
-  - L552 fixture: the door's price of the order is not the planner's (the yard emptied: its materials at the market's quote)
-  - L555 the lender read the order at the door's own price, and the owners were offered what the till lacked at it (HN1-A)
-  - L557 fixture: ...and their issue fell short of it
-  - L558 the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys
-  - L560 ...and is not left marked as held for the bank's capital (REV-HN1-1)
+- **L410 2. the fixture: leverage binding, the bank in its band, the landlords asking, households waiting**
+  - L423 fixture: the city played every month of the crunch
+  - L424 fixture: every month the bank's leverage ratio bound, so the rule rationed the insured mortgages
+  - L426 fixture: every month the bank stood in its band, the rule neither free nor keeping borrowers going
+  - L428 fixture: the landlords asked for homes the bank had no capital to lend on
+  - L432 fixture: every month of the crunch began with ground for GROUND_BLOCKS blocks of Low-Rise Apartments
+  - L434 fixture: the homes cut left the placement room for MARGIN households and less than one home's room more
+- **L449 3. the owners put in what the till lacked, homes are built, and the households left with no home clear**
+  - L468 the landlords' owners were asked, and put money in, while the bank was short
+  - L469 ...and homes were built in the crunch
+  - L470 no month of the crunch leaves more households with no home than its first month, before any home could be built (R1g)
+  - L472 ...every month leaving more than WATCH with no home is one the landlords asked for homes the bank was short of capital for
+  - L474 ...and they clear: once the owners' first homes stand, no month leaves more than WATCH with no home (LongPlaytest's watch)
+  - L486 ...and no played month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)
+- **L525 4. an order the owners' issue falls short of, the bank short: the door trims it for the capital**
+  - L575 fixture: the bank held in its band and the rule struck on it: leverage binding, the insured mortgages rationed,
+  - L577 fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage
+  - L583 fixture: the lender's test passes more than the till buys outright, so the door asks the bank for a mortgage
+  - L585 fixture: the door's price of the order is not the planner's (the yard emptied: its materials at the market's quote)
+  - L588 the lender read the order at the door's own price, and the owners were offered what the till lacked at it (HN1-A)
+  - L590 fixture: ...and their issue fell short of it
+  - L591 the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys
+  - L593 ...and is not left marked as held for the bank's capital (REV-HN1-1)
 
 ## CreditsCheck.java - 71 labelled assertions
 
@@ -12352,7 +12353,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1177 ...the stack's contract value unchanged
   - L1178 ...and the card is open still, at the same extra
 
-## ForeignCrewsCheck.java - 171 labelled assertions
+## ForeignCrewsCheck.java - 172 labelled assertions
 
 > The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange
 > rate the city's money stands at and the city's own inflation; the handover of the queue past it; the supply curve
@@ -12528,27 +12529,28 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L941 fixture: ...at the price a point its quote charged for them, paid by its payer
   - L942 fixture: ...more than the plant can take in a month (its build time, PW2): his crews go to the cheaper sites too
   - L943 fixture: the twins are the same city
-  - L962 fixture: his points are most of the month, in the city and its twin
-  - L963 with -Dr1g.hisprice=off the sites earn his points at their own rates: the builders recognise less work than they pay him for
-  - L965 on, the sites earn his points at his price: what they earned for them is his bill
-  - L966 ...so the month's work the builders recognise is at least his bill
-  - L967 ...his bill is the twin's: the switch moves what the sites earn, not what he is paid
-  - L968 ...and the twins owe the same points: nor what is built
-  - L969 what the sites earned past the twin's, their contracts hold less: earned sooner out of what the payers paid, never more
-  - L971 ...and out of the plant's, the contract that paid his price: the cheap sites' contracts fell alike in the twins
-- **L977 8. a currency reform: his book's price a point is the city's money, divided with it**
-  - L980 fixture: his book holds points at a price
-  - L983 fixture: the reform is made
-  - L987 the book's price a point is divided by the reform
-  - L988 ...and the offer bills his month at it
-  - L993 fixture: he built in the month after
-  - L994 ...and billed them at the book's price in the new unit, not a thousandfold
-  - L1020 the builders' workers are the same with and without the foreign crews: no city worker is taken
-  - L1021 ...in every sector, not the builders' alone
-  - L1025 ...and the city offers the same posts in every tier: his crews are his own, and open none
-  - L1027 the foreign crews built in a and not in the twin
-  - L1028 a's sites took more points than the twin's
-  - L1029 ...by his month
+  - L963 fixture: his points are most of the month, in the city and its twin
+  - L964 with -Dr1g.hisprice=off the sites earn his points at their own rates: the builders recognise less work than they pay him for
+  - L966 fixture: his points drew material, priced into the contracts
+  - L967 on, the sites earn his points at his price: what they earned for them, their material apart, is his bill
+  - L968 ...so the month's work the builders recognise is at least his bill and his points' material: their value added is his margin, nil,
+  - L970 ...his bill is the twin's: the switch moves what the sites earn, not what he is paid
+  - L971 ...and the twins owe the same points: nor what is built
+  - L972 what the sites earned past the twin's, their contracts hold less: earned sooner out of what the payers paid, never more
+  - L974 ...and out of the plant's, the contract that paid his price: the cheap sites' contracts fell alike in the twins
+- **L980 8. a currency reform: his book's price a point is the city's money, divided with it**
+  - L983 fixture: his book holds points at a price
+  - L986 fixture: the reform is made
+  - L990 the book's price a point is divided by the reform
+  - L991 ...and the offer bills his month at it
+  - L996 fixture: he built in the month after
+  - L997 ...and billed them at the book's price in the new unit, not a thousandfold
+  - L1023 the builders' workers are the same with and without the foreign crews: no city worker is taken
+  - L1024 ...in every sector, not the builders' alone
+  - L1028 ...and the city offers the same posts in every tier: his crews are his own, and open none
+  - L1030 the foreign crews built in a and not in the twin
+  - L1031 a's sites took more points than the twin's
+  - L1032 ...by his month
 
 ## ForeignDebtCheck.java - 111 labelled assertions
 

@@ -254,8 +254,12 @@ public final class CreditCrunchCheck {
     static boolean shortThisMonth;
     /** What the lender's watch read the last order at, its whole cost (Game.lenderReads()' costOf). */
     static double lenderCost = Double.NaN;
+    /** ...and the lender's own reading of it (R1g): how many its test passed, the rent a unit it read, at the rate it tested. */
+    static long lenderPassed;
+    static double lenderNoi = Double.NaN, lenderRate = Double.NaN;
     static double roomAtStart = Double.NaN, roomAfterCut = Double.NaN;
     static long cutHomes;
+    static double lastHomeRoom = Double.NaN;
 
     /** ★ How far over the risk-based requirement the hold puts the leverage requirement: the book may weigh a quarter more by the strike. */
     static final double BINDS_BY = 1.25;
@@ -315,16 +319,25 @@ public final class CreditCrunchCheck {
         return r == null ? 0 : r.households();
     }
 
-    /** The landlords' homes retired, blocks then houses, while what is left still leaves MARGIN households of room. */
+    /**
+     * The landlords' homes retired, blocks then houses, while what is left still leaves MARGIN households of room. Each
+     * home's room is read off the one retired before it (R1g): Room.households() counts the arrivals' mix, so a home can
+     * take more households' room than its dwellings, and the cut that took its dwellings for its room left 6.4 of the 12
+     * once R1g's builders were paid the contractor's price. lastHomeRoom keeps the last home's room, for the fixture.
+     */
     static void cutToTheValve(Game g) {
         roomAtStart = room(g);
         BuildingManager bm = g.getBuildingManager();
         for (String name : new String[] { "Low-Rise Apartments", "House" }) {
             BuildingsTemplate t = LongPlaytest.template(g, name);
             if (t == null) continue;
-            while (bm.getQuantity(t.getId()) > 0 && room(g) - t.getDwellings() >= MARGIN) {
+            double each = t.getDwellings();
+            while (bm.getQuantity(t.getId()) > 0 && room(g) - each >= MARGIN) {
+                double before = room(g);
                 if (bm.retire(t, 1) < 1) break;
                 cutHomes += t.getDwellings();
+                each = Math.max(each, before - room(g));
+                lastHomeRoom = each;
             }
         }
         roomAfterCut = room(g);
@@ -348,6 +361,9 @@ public final class CreditCrunchCheck {
                     BusinessDebtManager desk = g.getEconomyManager().getBusinessDebtManager();
                     double cost = costOf.applyAsDouble(Math.max(1, asked));
                     lenderCost = cost;
+                    lenderPassed = found == null ? 0 : found.quantity();
+                    lenderNoi = noiPerUnit;
+                    lenderRate = annualRate;
                     if (desk.mortgageShortOfCapital(RE, cost - Math.max(cash, Mortgage.ownFundsFor(cost)))) shortThisMonth = true;
                 }
             });
@@ -381,8 +397,8 @@ public final class CreditCrunchCheck {
 
         out.printf("%nthe ensemble's seed %d, its bank held %.0f%% of the way up its leverage band, months %d-%d%n",
                 SEED, HOLD * 100, FROM + 1, TO);
-        out.printf(Locale.ROOT, "   at m%d the placement had room for %.1f households; %,d homes retired left %.1f%n",
-                FROM, roomAtStart, cutHomes, roomAfterCut);
+        out.printf(Locale.ROOT, "   at m%d the placement had room for %.1f households; %,d homes retired left %.1f, the last one's room %.2f%n",
+                FROM, roomAtStart, cutHomes, roomAfterCut, lastHomeRoom);
         for (Month r : months) {
             if (r.month % 6 == 0 || r.unplaced > 1 || r.written > 0 || r.raised > 0)
                 out.printf(Locale.ROOT, "   m%d: %,.0f households, %,d homes, %,.0f doubled up, %.1f with no home;"
@@ -415,16 +431,16 @@ public final class CreditCrunchCheck {
                 groundMonths, TO - FROM, GROUND_BLOCKS, groundPlots);
         check("fixture: every month of the crunch began with ground for GROUND_BLOCKS blocks of Low-Rise Apartments",
                 groundMonths == TO - FROM);
-        check("fixture: the homes cut left the placement room for MARGIN households and less than one house more",
-                cutHomes > 0 && roomAfterCut >= MARGIN && roomAfterCut < MARGIN + 1 && roomAfterCut < roomAtStart);
+        check("fixture: the homes cut left the placement room for MARGIN households and less than one home's room more",
+                cutHomes > 0 && roomAfterCut >= MARGIN && roomAfterCut < MARGIN + lastHomeRoom && roomAfterCut < roomAtStart);
 
         /*
          * ----- the households with no home: bounded by the crunch's first month, and cleared by the owners' homes (R1g, 2026-11-25) -----
          * Restated from "no month leaves more than one" (LongPlaytest's watch, unmoved since HT1). On the 1900 city R1g plays, the cut
-         * leaves MARGIN households of room as Room.households() counts the arrivals' mix, but the month after it 9.1 households have no
-         * door, the doubling valve at its ceiling (186 of 371 doubled up, FamilyModel's half the households plus one, no seeker among them);
-         * the bank, short of capital, writes no mortgage for twenty months, and they stay until the owners' first block, mortgaged at
-         * m171, stands (m172), then none again to TO. That is the real law: a credit crunch that stops
+         * leaves MARGIN households of room as Room.households() counts the arrivals' mix, but the month after it 15.1 households have no
+         * door, the doubling valve at its ceiling (178 of 355 doubled up, FamilyModel's half the households plus one, no seeker among them);
+         * the bank, short of capital, writes no mortgage for thirty-eight months, and they stay until the owners' first block, mortgaged at
+         * m189, stands (m190), then none again to TO (the material form's run, R1g's last). That is the real law: a credit crunch that stops
          * the building leaves newcomers without a home until building resumes, and adds none past what it began with. Calgary, 1905-1913
          * (The City of Calgary's First Boom and Bust, Alberta's Real Estate Heritage, Heritage Community Foundation, after J. Peach 1993): the
          * 1905-1909 housing shortage left some newcomers living in tents, and in the 1913 bust the collapse "caused building permits to
@@ -482,6 +498,12 @@ public final class CreditCrunchCheck {
     static final double TILL = 1.5;
     /** The plots the fixture may buy for the order's ground. */
     static final int MAX_PLOTS = 60;
+    /**
+     * ★ The insured mortgage rate the order is read at (R1g): a calm market's, so the lender's test passes more of the
+     * order than the till buys outright and what trims it is the bank's capital. The played crunch's own rate at TO moves
+     * with the city: R1g's seed 13 ran its policy rate to 0.26 on its currency, and the lender passed one block, the till's.
+     */
+    static final double ORDER_RATE = .08;
 
     /**
      * Since FB15 the played crunch asks for one block at a time while the bank
@@ -494,7 +516,8 @@ public final class CreditCrunchCheck {
      * held in its band again just before, and the desks' capital rule
      * struck on it by the calls Game.startOfMonthUpdate() strikes it with,
      * since the month's end has left the bank where its hot money's reset
-     * puts it, not where the rule was struck (FS9). The yard is emptied, so
+     * puts it, not where the rule was struck (FS9), and the insured rate held
+     * at ORDER_RATE, so the lender passes more than the till buys (R1g). The yard is emptied, so
      * the builders buy the order's materials at the market's quote and the
      * door's price is not the planner's.
      */
@@ -514,6 +537,8 @@ public final class CreditCrunchCheck {
         Bank bank = g.getBank();
         holdInBand(bank);
         strikeTheRule(g);
+        double playedRate = desk.getInsuredMortgageRate(), playedPolicy = g.getDebtManager().getPolicyRate();
+        desk.setInsuredMortgageRate(ORDER_RATE);
         double growth = desk.getCapitalGrowth();
         boolean bandsRule = bank.leverageBinds() && bank.leverageRatio() > Bank.LEVERAGE_RATIO_MIN
                 && bank.leverageRatio() < bank.leverageTarget() && desk.isInsuredRationed()
@@ -531,6 +556,9 @@ public final class CreditCrunchCheck {
         askedThisMonth = 0;
         shortThisMonth = false;
         lenderCost = Double.NaN;
+        lenderPassed = 0;
+        lenderNoi = Double.NaN;
+        lenderRate = Double.NaN;
         java.lang.reflect.Method investor = Game.class.getDeclaredMethod("sectorInvestor", String.class);
         investor.setAccessible(true);
         java.lang.reflect.Method consider = Game.class.getDeclaredMethod("consider", BusinessInvestment.Decision.class, Investor.class);
@@ -548,6 +576,11 @@ public final class CreditCrunchCheck {
                 + " growth finite and above nothing, not keeping borrowers going", bandsRule);
         check("fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage",
                 groundForAll && quote && askedThisMonth == ORDER && shortThisMonth);
+        out.printf(Locale.ROOT, "   the lender's test passed %d of the %d, a block's rent read %.3f a month at %.4f a year tested (insured held at %.4f,"
+                        + " the played city's %.4f on a policy rate of %.4f; inflation expected %.4f)%n",
+                lenderPassed, ORDER, lenderNoi, lenderRate, desk.getInsuredMortgageRate(), playedRate, playedPolicy,
+                g.getBusinessInvestment().getExpectedInflation());
+        check("fixture: the lender's test passes more than the till buys outright, so the door asks the bank for a mortgage", lenderPassed > 1);
         out.printf(Locale.ROOT, "   the door %s the planner by %.1f%%%n", whole > plan ? "over" : "under", 100 * Math.abs(whole - plan) / plan);
         check("fixture: the door's price of the order is not the planner's (the yard emptied: its materials at the market's quote)",
                 Math.abs(whole - plan) > 1e-6 * plan);

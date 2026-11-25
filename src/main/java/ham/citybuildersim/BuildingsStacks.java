@@ -372,6 +372,11 @@ public class BuildingsStacks {
 
     public double getLastHomeEarned() { return lastHomeEarned; }
 
+    /** ...and of it the material allowance the home contracts priced in, for the material the month's work drew (R1g). */
+    private double lastHomeAllowance;
+
+    public double getLastHomeAllowance() { return lastHomeAllowance; }
+
     /** What the home contracts still hold: what their payers have paid for work not yet earned, the ones handed abroad (FC2b) apart. */
     public double getHomeContractValue() {
         double v = 0;
@@ -675,6 +680,7 @@ public class BuildingsStacks {
         materialsDue = 0;
         revenueDue = 0;
         lastHomeEarned = 0;
+        lastHomeAllowance = 0;
         lastFinished = 0;
         lastApplied = 0;
         lastAbroadApplied = 0;
@@ -780,10 +786,14 @@ public class BuildingsStacks {
         }
         materialsOwed = Math.max(0, materialsOwed - materialsDue);
         contractValue = Math.max(0, contractValue - revenueDue);
-        // ...and of it the home part's (R1g): all but what the contracts handed abroad earned.
-        double abroadEarned = 0;
-        for (Due d : dues) if (d.abroad) abroadEarned += d.revenue;
+        // ...and of it the home part's (R1g): all but what the contracts handed abroad earned, and the material allowance in it.
+        double abroadEarned = 0, homeAllowance = 0;
+        for (Due d : dues) {
+            if (d.abroad) abroadEarned += d.revenue;
+            else homeAllowance += d.allowance;
+        }
         lastHomeEarned = Math.max(0, revenueDue - abroadEarned);
+        lastHomeAllowance = Math.min(lastHomeEarned, homeAllowance);
 
         // Print how many finished
         System.out.print(finished + "/" + startedConstruction + " " + template.name + "(s) finished construction.");
