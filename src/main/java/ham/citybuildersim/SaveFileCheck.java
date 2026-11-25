@@ -3077,7 +3077,7 @@ public class SaveFileCheck {
                 worthIs.length == worthWas.length && java.util.Arrays.equals(worthIs, worthWas)
                         && worthWas.length > 0 && !Double.isNaN(worthWas[worthWas.length - 1]));
         /*
-         * THE NEW PRICE MODEL, READ (0.7.45): the twenty-three series City
+         * THE NEW PRICE MODEL, READ (0.7.45): every price-model series City
          * History draws of it, the month's move in credibility (the anchor's
          * eighth slot) and each price component's chained level (the index's
          * tail, after its ring) - each through a save, or a reloaded city's
@@ -3089,13 +3089,13 @@ public class SaveFileCheck {
         priceSeries.addAll(java.util.List.of("basketLinkedAt", "shelfPrice", "shelfFloor", "basketsAsked", "basketsHanded",
                 "hunger", "hungerPricedOut", "householdsAssisted",
                 "mealMargin", "mealTargetMargin", "luxuryMargin", "luxuryTargetMargin"));
-        boolean priceSeriesBack = priceSeries.size() == 23;
+        boolean priceSeriesBack = priceSeries.size() == 13 + 2 * PriceIndex.COMPONENTS;
         for (String name : priceSeries) {
             double[] seriesWas = fundCity.getHistorySave().aligned(name), seriesIs = bought.getHistorySave().aligned(name);
             priceSeriesBack &= seriesWas.length > 0 && java.util.Arrays.equals(seriesWas, seriesIs)
                     && !Double.isNaN(seriesWas[seriesWas.length - 1]);
         }
-        assertTrue("the new price model's twenty-three series come back on the history, month by month", priceSeriesBack);
+        assertTrue("all price-model series come back on the history, month by month", priceSeriesBack);
         same("...the month's move in credibility, the anchor's eighth slot",
                 bought.getExpectations().getCredibilityStep(), fundCity.getExpectations().getCredibilityStep());
         double worstComponent = 0;

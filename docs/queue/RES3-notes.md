@@ -4840,3 +4840,88 @@ expected fallback. No Labour native pass is claimed from this static
 correction. Run normal LabourCheck on the pushed fix, and retain the
 other exact-source validation labels; the pure added accessors change
 no existing simulation behavior.
+
+The box lock is held exclusively by another ensemble (metadata only,
+PID1884071 also holding ensemble.lock); no other logs are read and its
+job is untouched. Our 63001d9a4 controller had only a waiting flock and
+no clone/compile/Java stage. Terminate only that owned waiting child;
+its controller/SSH ends 143, with no harness executed. Exact7ba16cbf0
+is then queued under the mandatory shared lock (controller1944040),
+compile first followed by full MonetaryCheck, LabourCheck and remaining
+names. Static audit confirms the four labour tail consumers are confined
+to LabourCheck, with no other end-index or external lastAverageOf user
+(9bb1/2504). Waiting for the shared lock is not a laptop-memory timeout,
+a harness red or permission to interfere with the ensemble.
+
+At 21:39 the helper confirms a sustained lock impediment: our shared
+waiter has waited 12m08s, the exclusive ensemble holder has run 26m39s,
+and another ensemble writer is queued. No owned JVM has started. Send
+orchestrator a scheduling-only block report (29e2), keeping the existing
+authorized waiter queued and all other jobs untouched. This does not
+change model state, permission, timing laws or native pass labels.
+
+Orchestrator 1528 at 21:43 authorizes remaining native checks on this
+laptop now that eleven GB are available, one harness at a time with
+MG1 re-read before each, and orders our box waiter dropped. R6e-rest's
+ensemble/dry keep the box; no lock is bypassed. Our waiting flock and
+controller end 143 before any Java/compile; both PIDs are confirmed
+absent, with zero owned remote jobs (f8a1).
+
+Read MG1 and its actual AllChecks dials: 2 GiB heap plus .5 GiB non-heap,
+at least 4 GiB available RAM and CPU below 80 percent over three two-second
+samples. The non-JVM preflight has 10.970 GiB RAM, 13.917 GiB free commit,
+18.423 percent CPU and zero Java processes. Fresh readings and the MG1
+read are required before each local named launch. Prepare a clean
+detached 7ba16cbf0 source, verify all source/asset hashes, and pin the
+existing Oracle21.0.4+8-LTS-274 at C:/Program Files/Java/jdk-21 without
+changing the machine. This differs from box Temurin21.0.13+9 and the
+validation records must say which host/JDK ran each result. Assets use
+the required absolute C:/ main-data paths and parallel=1. Compile first,
+then canonical one-name batch-check calls with one heavy harness at a
+time and no other compile/check overlap. No local native verdict is
+claimed from preflight alone; full Monetary and Labour remain pending.
+
+The orchestrator also advises R6e-rest will likely ship format66 first:
+keep our current66 until merging its published main, then take67 and
+make a genuine previous-format66 save/history pair from that shipped
+source. Never pre-stamp a current pair or bump from an unshipped value.
+
+Full canonical local MonetaryCheck is green on exact7ba16cbf0 (4fce):
+batch/native exit 0, 722 passes/zero failures. All 494 prior guards,
+the new invalid-current-truncation guard, corrected historical layout
+fixtures and nested 227/0 CPI coverage pass; all 48 purity checks remain
+green. The original +1 total-effect floor passes with pooled paths16-31
+effect 3.635685 points and non-shelter effect 3.102148 points, matching
+the earlier box figures. This result runs under pinned Oracle21.0.4 on
+the laptop, with pinned source/assets and fresh MG1 before launch;
+zero firm Stale findings and clean post-source guard/tree. Its runner
+ends before LabourCheck starts. Logs and Monetary-verdict.json remain
+at helper target/cpi-local-7ba1. Later named verdicts are still pending.
+
+Local canonical LabourCheck also passes on exact7ba16cbf0 (3232),
+batch/native 0, zero firm Stale and clean source guard. This verifies
+the true pre-tie, invalid tie, pre-average and held-average helper
+corrections under unchanged assertions. Its runner ends before fresh
+MG1 passes for ExchangeRateCheck (10.587 GiB RAM, 13.985 GiB free
+commit, 11.661 percent sampled CPU, zero Java before start).
+
+Local canonical ExchangeRateCheck passes exact7ba16cbf0 (c29b), native/
+batch 0, zero firm Stale, clean source guard and ended runner. Fresh
+MG1 before SaveFile has 8.697 GiB RAM, 11.734 GiB free commit and
+13.760 percent sampled CPU. Two external GUI/launcher Java processes
+are identified by sanitized metadata and left untouched; only our one
+selected heavy harness runs.
+
+SaveFileCheck then returns native1/batch4 for one assertion (b1da/7606).
+Its list already includes all nine component indices and nine weights,
+expectedLevel and twelve fixed series: 31 entries. Its initialization
+still requires size23, the old five-component dimension, so the aggregate
+must fail regardless of the data. Correct only that dimension to
+13+2*PriceIndex.COMPONENTS and the obsolete descriptive label/comment.
+Every per-series nonempty, exact-array-equality and non-NaN predicate
+stays byte-identical, as do all other save/refusal/running-city guards.
+This batch caused the stale coverage count; no production restore fix,
+new tolerance or pass-by-name row is used. Do not infer all 31 data
+predicates passed until the corrected full normal native rerun.
+No ReadPath/Denomination/HousingMarket/Invest stage has begun; the
+SaveFile runner ends before preparing the pushed correction.
