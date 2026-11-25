@@ -148,7 +148,10 @@ with "industry stands farther out than the homes" at m1400. These are the short 
 - **LandCheck, LandmassCheck**: green.
 - **The pick** (`sh tools/pick.sh origin/main HEAD`): 90 of 256 harnesses, not ALL; review line
   "not needed - no money, saves or threading". The brief asks for a money review all the same: the
-  player now borrows and buys land with it. `./batch-check.sh --pick`: see section 7.
+  player now borrows and buys land with it. `./batch-check.sh --pick` (7560256a3): exit 4, 13 harnesses red,
+  12 of them main's known reds (InvestCheck, HousingDoorCheck, OrderDoorCheck, RoadCheck, AutoBuildCheck,
+  ForeignDebtCheck, DenominationCheck, MapCheck, PlanCheck, KeptCheck, CarCheck, GroundSkipCheck), and one
+  line NEW: CopperRefiningCheck 11, traced in section 7 and passed by name (main's latent cycle, FS8's).
 
 ## 5. Calls taken
 
@@ -172,6 +175,40 @@ with "industry stands farther out than the homes" at m1400. These are the short 
 - The ensemble: the player's land buying moves the default run; it runs on the final model
   against docs/ensemble/0.9.206.md after the review.
 
-## 7. The pick and the ensemble
+## 7. CopperRefiningCheck 11, the pick's one new red
 
-(Filled in as they run.)
+"seed 1's 2,400 months stand at most ROD_MILLS_STANDING (1) Rod Mill: FAIL 23 Rod Mills". The harness plays
+LongPlaytest's seed 1 for 2,400 months in a child and reads the copper works at the end: on FB11 "Copper Smelter 24,
+Electrolytic Refinery 24, Scrap Copper Refinery 25, Rod Mill 23, Wire & Cable Works 0". Traced by a helper (two
+2,400-month runs of seed 1 one at a time, with a temporary print, since removed; `target/fb11/cu-off.log` and
+`cu-on.log`, not committed):
+
+- Main's player (`-Dplaytest.groundFunding=off`) ends "Copper Smelter 15, Electrolytic Refinery 15, Scrap Copper
+  Refinery 16, Rod Mill 0". But it builds and sheds Rod Mills in waves: 17 standing at m1353, 16 at m1693 and 9 at
+  m2028 (the first at m889; 0, 5, 0 and 0 at m600/1200/1800/2400). FB11's city builds its first at m1385 and stands
+  8 at m1800 and 23 at m2400, ten of them ordered in m2324-2357. The bound reads one month of a cycle main's own run
+  has (checked in the log: `CU m1353 rod 17`).
+- Ground held neither. Copper Refining was never in `getLandBlockedSectors()` in either run (every 60th month and
+  every month the count moved). Main's holds were staff, the interest test and, at the end, a broke sector. Nothing
+  in `fundGround()` orders a works: the mills are `ProcessingSector.plan()`'s (SpreadPlanner `best()`), through
+  `CopperRefining.feedRefusal()`'s feed gate (the mills run at 95% of nameplate).
+- They pay, thinly. No rod is sold locally: no wire works, rod demand 0, all of it exported (174,902 t at m2400).
+  The mills take the city's own cathode, which the planner values at its net export price, the city exporting
+  141,545 t. Rod over cathode at the export side was 1.109 at main's m897, 1.023 at m1351, 1.0175 at FB11's m2324,
+  1.0136 at FB11's m2400 and 1.0117 at main's m2400. The study's 1.03 (spec-world-prices.md 5) prices the feed at
+  import, which a city exporting its cathode does not pay. Losing mills are shed: main went from 17 to 0 in
+  m1353-1435 under `SpreadPlanner.mayShed()`, and from 9 to 0 in m2050-2113 in a sector-wide distress
+  (`ProcessingSector.mayRetire()`).
+- Reality: an integrated refiner rolls part of its cathode into rod on a premium of about 1-3%, which roughly covers
+  the conversion, so this is real in kind. 23 mills exporting all their rod with no wire works is large in scale; that
+  is FS8's question, not this batch's.
+
+★ Passed by name, not mended here: a `## known-reds` row naming FS8 (docs/studies/flaky-suite.md 6.7: "CopperRefining
+11's premise is caused the same way... its 28-minute child of LongPlaytest's seed 1 stays nightly as the playtest's
+audit"). The red is not FB11's code. It is main's own Rod Mill cycle, which FB11's moved city reaches at m2400. The
+law to restate (no mill on rod priced apart from its cathode, losing mills shed, not a count at one month) is the
+sweep's that owns the harness.
+
+## 8. The ensemble
+
+(Filled in when it runs, after the review.)
