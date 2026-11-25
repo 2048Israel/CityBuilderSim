@@ -2848,3 +2848,58 @@ Each one, and what was done about it:
   heap after release was 1,406.8 MiB of 2,048 (the bound 1,536). The box's
   software renderer keeps more on the heap (FS5: 175-340 MiB), so the dry
   run's heap line is the one to watch.
+
+### The second dry run (2026-11-25; cbs-gate-R1g-PcIeOrFf)
+
+The dry run on the box ran R1g at 46b24b126 with main 4183928ca (0.9.204
+with BX1). It exited 1 with three harnesses red and not named. The run is
+kept on the box at `/home/jerus/cbs/runs/cbs-gate-R1g-PcIeOrFf` and copied
+home to `%TEMP%\cbs-gate-R1g-PcIeOrFf`. The ship file's first line names
+it.
+
+- **PackagingCheck** is main's. BX1's zip line calls Windows' own
+  `tar.exe`, and the check looked for a bare `tar -a -c`. BX2 (main
+  dc573ee27) mends the check, and R1g merged it as 6fe14c0ba. Nothing of
+  R1g's is involved.
+- **RefineryCheck**, the fixture "an Oil Refinery standing on its wells'
+  crude in a town of 600 houses". It is red on the PC too. A helper traced
+  it with instrumented runs.
+  - The order is placed at m18 on every commit.
+  - What fails is the premise `imported == 0`: 9.09e-13 barrels (2^-40)
+    of crude were bought from the world. The cause is `Markets.java:401`,
+    where `got = bids[j] * fill / bid` with `fill == bid` rounds one step
+    low, and the step is booked as an import.
+  - It is green on main ee0384007 and on R1g 09f7dd4db. It is red on
+    R1g c21cc77e4 (main 0.9.203 merged), dd000d256 and 46b24b126.
+  - WG3 is not involved. R1g's path parts from main's in the last digits
+    from m5, and the merged path lands the m18 bid on such a value.
+  - Taking the whole bid when `fill >= bid` turns it green, but it moves
+    every clearing's last digits.
+  - ★ This is a real defect, main's, found in passing. R1g touches no
+    `Markets.java`. It is queued as MR1 in the ship file, and the
+    fixture's line is named under MR1. It is not mended here: a mend
+    would be model code beyond the plan, and would need a new review, the
+    suite and the ensemble.
+- **KeptCheck**, "the full kept check's objects leave a quarter of
+  AllChecks.HEAP_MB free". On the box's software renderer the objects
+  read 1,562.3 MiB against 1,536. Main's gates read 1,464.8 (PW1-R) and
+  1,492.8 (PW3); R1g's 1900 city read 1,553.1 at the first dry run. The
+  PC's Direct3D reads 1,406.8 on the same code.
+  - A helper played the same 600 months with no screen on R1g 6fe14c0ba
+    (`probeTodayCity()`) and on main dc573ee27 (`probeCity()`). The
+    model held 85.5 MiB against 82.1 after GC; the class histograms
+    differ by 3.4 MiB in all, the largest `OrderBook$Order` at 0.9 MiB.
+    R1g's model keeps nothing growing.
+  - The difference is the pages KeptCheck builds for R1g's today's city:
+    10,811 people at m605 against main's 9,919, and its own businesses
+    and fund.
+  - ★ Named under HT1-H, the queued row for harness premises that the
+    played city sets. Its other KeptCheck lines are named there the same
+    way.
+- KeptCheck's other reds (the four of run 7) are named as before; no
+  other KeptCheck line was red on the box.
+- **The playtest** on the box reads "All checks passed": UnsettledFees'
+  mean month is 23.2 ppm against 30, as on the PC. The LongPlaytest row
+  under PB1 is dropped from the ship file (the orchestrator's go: "only
+  if the box's playtest agrees"). PB1 stays queued, with that figure
+  added.
