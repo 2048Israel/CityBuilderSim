@@ -1680,60 +1680,63 @@ public class AuctionCheck {
         assertTrue("...the streets' log entry shows the bond money its ask had raised, borrowed on an earlier month, and no more",
                 placedB != null && Math.abs(placedB.borrowed() - raisedB) < 1e-6 && placedB.borrowed() < placedB.cost());
 
-        /* THE MONTH'S BILLS DRAW THE MONEY (OA1, 2026-11-25): what they drew is offered again, every sale under the debt
-           limit's test, and the proceeds pay the works the month they cover them. Until OA1 this part asserted the old
-           law - the paper never sold twice, the orders waiting for the cash to come back - and that wait was the
-           finding: in PW3's ensemble a city whose deficit kept its cash down held a Water Treatment Plant on its raised
-           bond for 135 months (docs/queue/OA1-notes.md). A real city's bond proceeds are restricted to the works they
-           were raised for and spent on it within months (GASB 54; 26 CFR 1.148-2(e)(2)); AskProceedsCheck proves the
-           rest, the limit's release among it. */
+        /* THE MONTH'S BILLS DRAW THE MONEY: the paper is not sold twice, and the order waits for the cash. */
         Game p = load(saved);
         AutoBuilder pb = p.getAutoBuilder();
         long openP = pb.asks().size(), sitesP = siteCount(p);
-        int ordersP = pb.getOrders();
-        double raisedP = 0;
-        java.util.Set<String> askedFor = new java.util.HashSet<>();
-        for (AutoBuilder.OpenAsk k : pb.asks()) {
-            raisedP += k.raised();
-            askedFor.add(k.measure());
-        }
-        double principalP = p.getDebtManager().getAllPrincipal(), landP = pb.getLandSpent();
         p.getBank().setDepositRate(deposit);
         roomTo(p, 1e9);
         p.setCashForTest(AutoBuilder.reserve(p));
-        double cashP = p.getCash(), askLot = p.fundingLot("Term");
+        // What the treasury could pay at the end of the month's pass, its sales in: its cash and the central bank's advance (OA1).
+        double[] roomP = { Double.NaN };
+        p.autoBuildProbeForTest = after -> { if (after && Double.isNaN(roomP[0])) roomP[0] = p.discretionaryRoom(); };
         printed(() -> p.simulateMonths(1));
-        MoneyAudit.Result auditP = p.getLastMoneyAudit();
-        // Each ask's order as the log has it: its cost, and what its paper raised in all (Entry.borrowed(): the ask's sales, this month's with them).
-        double placedCost = 0, reraised = 0, askedAgain = 0;
-        int placedP = 0;
-        for (AutoBuilder.Entry e : pb.log()) {
-            if (!askedFor.contains(e.measure()) || !e.why().contains("waited")) continue;
-            placedP++;
-            placedCost += e.cost();
-            reraised += e.borrowed();
+        p.autoBuildProbeForTest = null;
+        double costsP = 0;
+        boolean raisedAllP = !pb.asks().isEmpty();
+        for (AutoBuilder.OpenAsk k : pb.asks()) {
+            costsP += k.cost();
+            raisedAllP &= k.raised() >= k.cost() - 1e-6 * k.cost();
         }
-        reraised -= raisedP;
-        for (TimeSkipReport.AutoSale s : p.getAutoSalesThisMonth()) if (s.by().equals("Automatic building")) askedAgain += s.asked();
-        out.printf("      drawn: %d ask(s), %.0f raised before, the cash at the pass %.0f; placed %d for %.0f, its paper raising %.0f more;"
-                + " the builder's other orders free again: %d orders, %d sales this month%n", openP, raisedP, cashP, placedP, placedCost,
-                reraised, pb.getOrders() - ordersP, salesBy(p, "Automatic building"));
-        assertTrue("treasury at the reserve, the money the asks raised before drawn by the month's bills, the room back: each ask is"
-                        + " offered again for its order's gap - what the bills drew with what it never raised - and its order is"
-                        + " placed that month: the proceeds pay the works, and every ask is closed",
-                openP >= 1 && pb.asks().isEmpty() && placedP == openP && reraised > 0
-                        && pb.getOrders() >= ordersP + openP && siteCount(p) >= sitesP + openP);
-        assertTrue("...and the new paper is that gap and no more: what the asks' sales raised this month is at most their orders' cost"
-                        + " and ground less what the treasury still held of their proceeds (its cash, up to what they had raised), a"
-                        + " granule an ask; the principal rose by the face the builder's sales asked alone",
-                reraised <= placedCost + (pb.getLandSpent() - landP) - Math.min(raisedP, cashP) + openP * askLot + 1e-6
+        assertTrue("treasury at the reserve, the room back: each ask is offered what it still has to raise and sells it in full (the"
+                        + " cost less what it had raised), not short",
+                pb.asks().size() == openP && salesBy(p, "Automatic building") == openP
+                        && p.getAutoSalesThisMonth().stream().noneMatch(TimeSkipReport.AutoSale::shortSale) && raisedAllP);
+        // OA1, 2026-11-25: an ask raised in full is paid from its proceeds where the bills drew the cash under them, the treasury
+        // overdrawn by what they drew as far as the central bank advances (AskProceedsCheck 2). Here the drawn money is past that
+        // advance, so the order waits: the claim is restated to that reason (it was "no order is placed on money that is not there").
+        double leastCostP = Double.POSITIVE_INFINITY;
+        for (AutoBuilder.OpenAsk k : pb.asks()) leastCostP = Math.min(leastCostP, k.cost());
+        out.printf("      drawn: %d ask(s), costs %.0f, the treasury's cash and advance at the pass %.0f%n", openP, costsP, roomP[0]);
+        assertTrue("...but the money it raised before was drawn by the month's bills past what the central bank advances: the treasury"
+                        + " cannot pay any of the orders (its cash and the advance short of each), so none is placed",
+                pb.getOrders() == 0 && pb.log().isEmpty() && pb.asks().size() == openP && leastCostP > roomP[0]);
+        double principalP = p.getDebtManager().getAllPrincipal();
+        java.util.Map<AutoBuilder.OpenAsk, Double> raisedBefore = new java.util.IdentityHashMap<>();
+        for (AutoBuilder.OpenAsk k : pb.asks()) raisedBefore.put(k, k.raised());
+        p.setCashForTest(AutoBuilder.reserve(p));
+        double askLot = p.fundingLot("Term");
+        printed(() -> p.simulateMonths(1));
+        Notice waits = p.getInbox().live("autobuild");
+        double repricedGap = 0;
+        for (AutoBuilder.OpenAsk k : pb.asks()) repricedGap += Math.max(0, k.cost() - raisedBefore.getOrDefault(k, 0.0));
+        double askedAgain = p.getAutoSalesThisMonth().stream().mapToDouble(TimeSkipReport.AutoSale::asked).sum();
+        assertTrue("next month, drawn again, the paper already raised is not sold twice: new sales cover only the repriced cost"
+                        + " less the money already raised, rounded by at most a granule per ask; the orders still wait",
+                pb.asks().size() == openP && pb.getOrders() == 0
+                        && p.getAutoSalesThisMonth().stream().noneMatch(TimeSkipReport.AutoSale::shortSale)
+                        && askedAgain <= repricedGap + openP * askLot + 1e-6
                         && p.getDebtManager().getAllPrincipal() <= principalP + askedAgain + 1e-6);
-        assertTrue("...the inbox says each order was placed on what its ask raised and the cash beside it",
-                p.getInbox().live("autobuild-ask") != null
-                        && String.join(" ", p.getInbox().live("autobuild-ask").getBody()).contains("placed its order")
-                        && String.join(" ", p.getInbox().live("autobuild-ask").getBody()).contains("its ask raised"));
-        assertTrue("...and no dollar was made or lost: the month's money audit closed",
-                Math.abs(auditP.residual) <= MoneyAudit.tolerance(auditP.moved()));
+        assertTrue("...and the inbox says the month's bills drew the money and that nothing more is borrowed for it",
+                waits != null && String.join(" ", waits.getBody()).contains("have drawn the rest")
+                        && String.join(" ", waits.getBody()).contains("nothing more is borrowed for it"));
+        int bondsP = pb.getBonds();
+        double principalP2 = p.getDebtManager().getAllPrincipal();
+        p.setCashForTest(AutoBuilder.reserve(p) + costsP + Founding.WEALTHY_CASH);
+        printed(() -> p.simulateMonths(1));
+        assertTrue("the cash back in the treasury, the orders are placed, and nothing more is borrowed: no sale, no new bond, no new debt",
+                pb.asks().isEmpty() && pb.getOrders() >= openP && siteCount(p) >= sitesP + openP && pb.getBonds() == bondsP
+                        && salesBy(p, "Automatic building") == 0 && Math.abs(p.getDebtManager().getAllPrincipal() - principalP2) < 1e-6);
 
         /* WITHDRAWN: the advice no longer ranks the order. */
         Game c = load(saved);

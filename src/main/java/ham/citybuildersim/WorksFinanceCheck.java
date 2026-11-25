@@ -479,7 +479,16 @@ public final class WorksFinanceCheck {
         check(fullyRaised ? "the higher-loss service is actually ordered, from its own proceeds"
                         : "the higher-loss service is actually ordered using the released cash",
                 order != null && order.ordered() > 0);
-        check("the lower funded reservation is released",
+        if (fullyRaised) {
+            // REV-OA1 #2: streets are paid from their own proceeds, so streets leave nothing unfunded and do not release the lower
+            // ask; what releases it is the next essential the cash cannot pay, which the withdrawal names. The check says so.
+            String release = auto.asked().stream().filter(l -> l.contains("withdrew its ask") && l.contains("(" + power.label() + ")"))
+                    .findFirst().orElse("");
+            out.println("      " + release);
+            check("the lower funded reservation is released - for an essential the cash cannot pay, not for streets, which their own"
+                            + " proceeds pay", auto.askFor(power) == null && release.contains("Cash is needed for ")
+                            && !release.contains("Cash is needed for " + streets.label() + ","));
+        } else check("the lower funded reservation is released",
                 auto.asks().stream().noneMatch(a -> a.measure().equals(power.label()) && a.raised() > 0));
         if (fullyRaised) check("the already funded higher-loss order sells no additional paper",
                 order != null && order.ordered() > 0 && originalAsk.raised() == originalRaised);

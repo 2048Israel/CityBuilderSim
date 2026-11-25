@@ -6,24 +6,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The bond proceeds an open ask has raised pay its works: the treasury holds them outside the operating reserve, the order is
- * placed on them, and what the month's bills drew is offered again under the debt limit (AutoBuilder.spendableFor(), held(),
- * stillToRaise()).
+ * The bond proceeds an open ask has raised pay its works, as a fenced fund pays them: the treasury holds them outside the operating
+ * reserve, the order is placed on them, and where the month's bills drew the cash under them the order is paid from them all the
+ * same, the treasury overdrawn by what the bills drew as far as the central bank advances (AutoBuilder.spendableFor(), funded(),
+ * covered(), stillToRaise(); Game.allowProceeds()).
  * WHY (OA1, 2026-11-25). An open ask held an essential works for years: PW3's ensemble had a Water Treatment Plant's ask raise its
  * whole cost, the cash 53.4M against the order's 49.8M and the reserve 6.9M, and the old rule took the reserve out of the proceeds
  * first, so the order waited 133 months with water served at 26% - and, its sales past its cost, nothing was offered again, so
- * neither the order, a sale nor the debt limit's test ever ran. The real law: bond proceeds are restricted to the works they were
- * raised for, outside the operating reserve (GASB Statement 54; GFOA's fund-balance practice), and spent on it within months
- * (26 CFR 1.148-2(e)(2): 5% bound within six months, 85% spent within three years).
+ * neither the order, a sale nor the debt limit's test ever ran. OA1's first mend sold again what the bills drew, bounded only by
+ * the debt limit (REV-OA1: a deficit wider than the market sold paper every month for an order never covered); 2b and 2c play
+ * that case for months. The real law: bond proceeds are restricted to the works they were raised for, outside the operating
+ * reserve (GASB Statement 54; GFOA's fund-balance practice); and a tax-exempt issue keeps its temporary period only if its issuer
+ * expects to bind 5% of the proceeds within six months and spend 85% within three years (26 CFR 1.148-2(e)(2)) - the six months
+ * this harness and AutoBuilder.PROCEEDS_WAIT_MONTHS read.
  * What this has to prove:
  * 1. The finding, caused: a town short of water, an ask whose sales raised the order's whole cost, the cash its proceeds and half
  *    the reserve; one pass orders the works from them, closes the ask, sells no bond.
- * 2. The bills drew the proceeds: cash half the cost, room to sell: the ask is offered again for the gap, sold in full, and the
- *    order placed that pass, the new paper the gap and no more.
- * 2b. Drawn, and the market short: the bond is offered again and sells short, the order is not placed, the ask stays open with what is
- *    still to raise, and the builder says why.
- * 3. The debt limit releases it: the limit just under what a sale of the gap would take the debt to; the ask is withdrawn, nothing
- *    sold, what it raised stays in the treasury.
+ * 2. The bills drew the proceeds within what the central bank advances, a sale able to sell: one pass orders the works from them,
+ *    sells no paper for it, and the treasury goes under by what the bills drew; the money conserved.
+ * 2b. Drawn, and the market short, played for months: the ask closes within six months (in the first), raising nothing past its
+ *    cost, every month's money audit closed.
+ * 2c. Drawn past what the central bank advances, played for months with the bills drawing the cash back each month: the order is
+ *    not placed, nothing is sold twice (a repricing at most), the builder says why, and the ask is withdrawn at the first pass it has been open
+ *    PROCEEDS_WAIT_MONTHS.
+ * 3. The debt limit closes an ask with money still to raise: the limit just under what a sale of the rest would take the debt to;
+ *    the ask is withdrawn, nothing sold, what it raised stays in the treasury.
  * 4. Within months, in the played month: case 1's city played with the month, the works on order in the first month and audited.
  * 5. Without the lack nothing changes: no ask, spendable() is the cash over the reserve (an overdraft in full); with proceeds and
  *    reserve both whole, held() is the cash over the reserve beside the other asks' money; water served in full opens no ask.
@@ -45,7 +52,7 @@ public final class AskProceedsCheck {
     static final BuildAdvice.Measure POWER = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
     static final BuildAdvice.Measure ROADS = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
 
-    /** The months the works may take to be ordered at the latest: the six-month binding-commitment test for bond proceeds (26 CFR 1.148-2(e)(2)). */
+    /** The months the works may take to be ordered at the latest: the six months in which a tax-exempt issuer must expect to bind 5% of the proceeds (26 CFR 1.148-2(e)(2)). */
     static final int BINDING_COMMITMENT_MONTHS = 6;
 
     /** How many times what the plants supply the buildings are made to draw, so the town is short of water. */
@@ -229,85 +236,174 @@ public final class AskProceedsCheck {
                         && near(g.getDebtManager().getAllPrincipal() - principal, soldFace(g)));
     }
 
-    /** Case 1's city with the bills drawn: the treasury at half the cost. */
-    static Finding drawn(Path root, String name, Auction.Cap cap, double room) {
+    /** What the central bank advances the treasury past its cash today: Game.discretionaryRoom() over the cash in hand. */
+    static double advance(Game g) {
+        return g.discretionaryRoom() - Math.max(0, g.getCash());
+    }
+
+    /**
+     * Case 1's city with the bills drawn: the ask's whole cost raised, and the treasury holding less. `pastAdvance` false, the
+     * bills drew PROCEEDS_LEFT of what the central bank advances (the treasury can pay the order, overdrawn); true, they drew past
+     * it (the cash PROCEEDS_LEFT of the cost less the advance: the treasury cannot).
+     */
+    static Finding drawn(Path root, String name, Auction.Cap cap, double room, boolean pastAdvance) {
         Finding f = finding(root, name);
         f.auto().setCap(cap, null);
         AuctionCheck.roomTo(f.g(), room);
-        open(f, f.cost(), f.cost() * PROCEEDS_LEFT);
+        open(f, f.cost(), f.cost());
+        double advance = advance(f.g());
+        f.g().setCashForTest(pastAdvance ? (f.cost() - advance) * PROCEEDS_LEFT : f.cost() - advance * PROCEEDS_LEFT);
         return f;
     }
 
+    /** The money over one pass from its start: the orders it placed (ground with them), the paper it sold, what the ask's own order took. */
+    record Pass(AutoBuilder.Entry e, double paidAll, double newPaper, double otherPaper) { }
+
+    static Pass pass(Game g, AutoBuilder auto, int logged, double borrowed) {
+        AutoBuilder.Entry e = order(auto, logged);
+        double paidAll = 0, otherPaper = 0;
+        for (int i = logged; i < auto.log().size(); i++) {
+            AutoBuilder.Entry x = auto.log().get(i);
+            paidAll += paid(x);
+            if (x != e) otherPaper += x.borrowed();
+        }
+        return new Pass(e, paidAll, auto.getBorrowed() - borrowed, otherPaper);
+    }
+
     static void billsDrew(Path root) {
-        out.println("--- 2. the bills drew the proceeds: the ask is offered again for what they drew, and the order is placed ---");
-        Finding f = drawn(root, "ask-drawn", Auction.Cap.FILL, AMPLE_ROOM);
+        out.println("--- 2. the bills drew the proceeds: the works is paid from them, the treasury overdrawn by what the bills drew, no paper sold for it ---");
+        Finding f = drawn(root, "ask-drawn", Auction.Cap.FILL, AMPLE_ROOM, false);
         Game g = f.g();
         AutoBuilder auto = f.auto();
         AutoBuilder.OpenAsk ask = auto.askFor(WATER);
         stands(f, ask);
         limitOpen(f);
         figures(g, ask, auto);
-        double gap = ask.cost() - g.getCash();
-        DebtQuote quote = AutoBuilder.bondQuote(g, gap, auto.getCap());
-        check("fixture: the ask raised the whole cost but the bills left half of it (cash under the cost), the cap is Fill with room,"
-                        + " and a bond for the gap sells in full and stays within the limit",
-                ask.raised() >= ask.cost() && g.getCash() < ask.cost() && near(gap, ask.cost() * (1 - PROCEEDS_LEFT)) && auto.getCap().fill()
-                        && quote != null && !quote.isShort()
-                        && quote.cashReceived() >= gap && AutoBuilder.ratioAfter(g, quote) <= auto.getDebtLimit()
-                        && auto.held(g, ask) < ask.cost() && near(auto.held(g, ask), g.getCash()));
-        int bonds = auto.getBonds(), logged = auto.log().size();
+        double drew = ask.cost() - g.getCash();
+        DebtQuote quote = AutoBuilder.bondQuote(g, drew, auto.getCap());
+        out.printf("      the bills drew %.3f; the central bank advances %.3f past the cash%n", drew, advance(g));
+        check("fixture: the ask raised the whole cost, the bills drew part of it (the cash under the cost) within what the central bank"
+                        + " advances, and the cap is Fill with room - a bond for what they drew would sell in full, within the limit",
+                ask.raised() >= ask.cost() && g.getCash() < ask.cost() && g.getCash() > 0 && ask.cost() <= g.discretionaryRoom()
+                        && auto.getCap().fill() && quote != null && !quote.isShort() && quote.cashReceived() >= drew
+                        && AutoBuilder.ratioAfter(g, quote) <= auto.getDebtLimit());
+        int logged = auto.log().size();
         double principal = g.getDebtManager().getAllPrincipal(), borrowed = auto.getBorrowed(), cash = g.getCash();
         EssentialWorksCheck.quietly(() -> auto.pass(g));
         steps(auto);
-        AutoBuilder.Entry e = order(auto, logged);
-        double raised = auto.getBorrowed() - borrowed;
-        out.printf("      gap %.3f, raised by the new sale %.3f, face %.3f, the order cost %.3f, cash %.3f -> %.3f%n", gap, raised,
-                soldFace(g), paid(e), cash, g.getCash());
-        check("the ask was offered again: a sale by automatic building, one more bond", AuctionCheck.salesBy(g, BY) == 1 && auto.getBonds() == bonds + 1);
-        check("...for the order's gap, sold in full and no more: it raised the gap, and at most one funding lot beyond",
-                raised >= gap - 1e-6 * gap && raised <= gap + g.fundingLot("Term"));
-        check("...the principal rose only by the new sale's face", near(g.getDebtManager().getAllPrincipal() - principal, soldFace(g)) && soldFace(g) > 0);
-        check("the order was placed that pass, and the ask is closed", e != null && EssentialWorksCheck.step(g, WATER).ordered() > 0
-                && auto.askFor(WATER) == null);
-        check("conservation: the cash after is the cash before, what the sale raised, less what the order cost",
-                e != null && near(g.getCash(), cash + raised - paid(e)));
+        Pass p = pass(g, auto, logged, borrowed);
+        AutoBuilder.Entry e = p.e();
+        out.printf("      the ask's order cost %.3f; the pass's orders %.3f, its new paper %.3f (its other orders' %.3f); cash %.3f -> %.3f%n",
+                paid(e), p.paidAll(), p.newPaper(), p.otherPaper(), cash, g.getCash());
+        check("the water works is ordered that pass, and its ask is closed", e != null && EssentialWorksCheck.step(g, WATER).ordered() > 0
+                && auto.askFor(WATER) == null && auto.asks().isEmpty());
+        check("...from its proceeds, no paper sold for it: its entry's borrowing is what the ask had raised, and every dollar of the"
+                        + " pass's new paper is its other orders'",
+                e != null && near(e.borrowed(), ask.raised()) && near(p.newPaper(), p.otherPaper()));
+        check("...paid past the cash: the order cost more than the treasury held, and the log says the treasury is overdrawn for the"
+                        + " deficit a fenced fund would have left",
+                e != null && paid(e) > cash && e.why().contains("the deficit a fenced fund would have left"));
+        check("conservation: the cash fell by what the pass's orders cost less its new paper, the principal rose by that paper's face",
+                e != null && near(cash - g.getCash(), p.paidAll() - p.newPaper())
+                        && near(g.getDebtManager().getAllPrincipal() - principal, soldFace(g)));
     }
 
     static void marketShort(Path root) {
-        out.println("--- 2b. drawn, and the market short: the bond is offered again, sells short, and the order waits for the money ---");
-        Finding f = drawn(root, "ask-short", Auction.Cap.tail(0), SHORT_ROOM);
+        out.println("--- 2b. drawn, and the market short, played for months: the order is placed from the proceeds, and the ask raises nothing past its cost ---");
+        Finding f = drawn(root, "ask-short", Auction.Cap.tail(0), SHORT_ROOM, false);
         Game g = f.g();
         AutoBuilder auto = f.auto();
         AutoBuilder.OpenAsk ask = auto.askFor(WATER);
         stands(f, ask);
         limitOpen(f);
-        double gap = ask.cost() - g.getCash();
         AuctionCheck.useUpTheRoom(g);
-        DebtQuote quote = AutoBuilder.bondQuote(g, gap, auto.getCap());
+        double drew = ask.cost() - g.getCash();
+        DebtQuote quote = AutoBuilder.bondQuote(g, drew, auto.getCap());
         figures(g, ask, auto);
-        out.printf("      the bond for the gap %.3f sells %.3f of %.3f face at the cap%n", gap, quote == null ? 0 : quote.cashReceived(),
-                quote == null || quote.auction() == null ? 0 : quote.auction().ask().face());
-        check("fixture: the bills drew half the proceeds, the bank's room is used up (deposit rate " + String.format("%.2f%%", AuctionCheck.deposit * 100)
-                        + ") and the cap is fair, so a bond for the gap sells short but not nothing",
-                g.getCash() < ask.cost() && quote != null && quote.isShort() && !quote.isEmpty() && quote.cashReceived() < gap
-                        && AutoBuilder.ratioAfter(g, quote) <= auto.getDebtLimit());
-        int bonds = auto.getBonds(), logged = auto.log().size();
-        double cash = g.getCash(), borrowed = auto.getBorrowed();
-        EssentialWorksCheck.quietly(() -> auto.pass(g));
-        steps(auto);
-        AutoBuilder.OpenAsk after = auto.askFor(WATER);
-        double raised = auto.getBorrowed() - borrowed;
-        out.printf("      offered again: raised %.3f of the gap %.3f; cash %.3f -> %.3f, held %.3f, to raise %.3f%n", raised, gap, cash,
-                g.getCash(), after == null ? 0 : auto.held(g, after), after == null ? 0 : after.toRaise());
-        check("the bond was offered again, by automatic building, and came up short",
-                AuctionCheck.salesBy(g, BY) == 1 && auto.getBonds() == bonds + 1 && g.getAutoSalesThisMonth().stream().anyMatch(s -> s.by().equals(BY) && s.shortSale())
-                        && raised > 0 && raised < gap);
-        check("the order is not placed - no money that is not there: no order in the log, the cash only rose by what sold",
-                order(auto, logged) == null && auto.log().size() == logged && near(g.getCash(), cash + raised));
-        check("the ask stays open, its to-raise the cost less what the treasury holds for it, and over nothing",
-                after != null && after.toRaise() > 0 && near(after.toRaise(), after.cost() - auto.held(g, after)));
-        check("the builder says the month's bills have drawn the rest and that it is offered again",
-                auto.held().stream().anyMatch(l -> l.contains("the month's bills have drawn the rest") && l.contains("is offered again")));
+        out.printf("      a bond for what the bills drew, %.3f, sells %.3f at the cap%n", drew, quote == null ? 0 : quote.cashReceived());
+        check("fixture: the bills drew part of the proceeds within what the central bank advances, the bank's room is used up and the"
+                        + " cap is fair, so a bond for what they drew sells short (the review's case: the draw past what sells)",
+                g.getCash() < ask.cost() && ask.cost() <= g.discretionaryRoom() && quote != null && quote.isShort() && quote.cashReceived() < drew);
+        double[] atPass = { Double.NaN, Double.NaN };
+        g.autoBuildProbeForTest = after -> {
+            if (after || !Double.isNaN(atPass[0])) return;
+            atPass[0] = g.getCash();
+            atPass[1] = g.discretionaryRoom();
+        };
+        int start = g.getMonth(), logged = auto.log().size(), ordered = -1;
+        double cost = ask.cost(), raised = ask.raised();
+        boolean audits = true;
+        for (int played = 1; played <= BINDING_COMMITMENT_MONTHS && ordered < 0; played++) {
+            MoneyAudit.Result audit = play(g);
+            audits &= Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved());
+            if (order(auto, logged) != null) ordered = played;
+        }
+        g.autoBuildProbeForTest = null;
+        AutoBuilder.Entry e = order(auto, logged);
+        out.printf("      at the first pass: cash %.3f, the treasury's cash and advance %.3f, cost %.3f; ordered in played month %d, its entry's"
+                + " borrowing %.3f%n", atPass[0], atPass[1], cost, ordered, e == null ? Double.NaN : e.borrowed());
+        check("fixture: the first pass found the treasury drawn under the cost and able to pay it with the central bank's advance",
+                atPass[0] < cost && cost <= atPass[1]);
+        AutoBuilder.OpenAsk next = auto.askFor(WATER);
+        if (next != null) out.printf("      the pass went on to open an ask for the next plant, raised %.3f of %.3f%n", next.raised(), next.cost());
+        check("the ask closes within " + BINDING_COMMITMENT_MONTHS + " months - in the first: its works on order, the ask no longer open",
+                ordered == 1 && auto.asks().stream().noneMatch(x -> x == ask) && g.getMonth() - start <= BINDING_COMMITMENT_MONTHS);
+        check("...and it raised nothing past its cost: its entry's borrowing is what it had raised when the months began",
+                e != null && near(e.borrowed(), raised) && raised <= cost + 1e-6 * cost);
+        check("...and every played month's money audit closed within its tolerance", audits);
+    }
+
+    static void pastAdvance(Path root) {
+        out.println("--- 2c. drawn past what the central bank advances: the ask waits, selling nothing twice, and is withdrawn once open "
+                + AutoBuilder.PROCEEDS_WAIT_MONTHS + " months ---");
+        Finding f = drawn(root, "ask-past", Auction.Cap.FILL, AMPLE_ROOM, true);
+        Game g = f.g();
+        AutoBuilder auto = f.auto();
+        AutoBuilder.OpenAsk ask = auto.askFor(WATER);
+        stands(f, ask);
+        limitOpen(f);
+        figures(g, ask, auto);
+        double cash = g.getCash(), draw = g.getServicesManager().getUtilitiesHandler().getBuildingWaterDraw();
+        out.printf("      the treasury's cash and advance %.3f against the cost %.3f%n", g.discretionaryRoom(), ask.cost());
+        check("fixture: the ask raised the whole cost, the bills drew past what the central bank advances (the cash and the advance"
+                        + " short of the cost), and the cap is Fill with room - a sale would sell, so not selling is the rule's",
+                ask.raised() >= ask.cost() && g.getCash() >= 0 && g.discretionaryRoom() < ask.cost() && auto.getCap().fill());
+        // Each month the bills draw the cash back down and the town stays short of water: both set again before the month, its pass the first thing in it.
+        int opened = ask.monthOpened(), logged = auto.log().size(), withdrawnAt = -1;
+        int[] passMonth = { -1 };
+        g.autoBuildProbeForTest = after -> { if (!after) passMonth[0] = g.getMonth(); };
+        boolean audits = true, bounded = true, waits = true;
+        double sold = 0;
+        for (int played = 1; played <= AutoBuilder.PROCEEDS_WAIT_MONTHS + 2 && withdrawnAt < 0; played++) {
+            AutoBuilder.OpenAsk before = auto.askFor(WATER);
+            double raisedBefore = before == null ? 0 : before.raised();
+            g.setCashForTest(cash);
+            g.getServicesManager().getUtilitiesHandler().setBuildingWaterDraw(draw);
+            g.getServicesManager().getUtilitiesHandler().updateWaterRatio();
+            MoneyAudit.Result audit = play(g);
+            audits &= Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved());
+            sold += soldFace(g);
+            AutoBuilder.OpenAsk open = auto.askFor(WATER);
+            if (open == null) withdrawnAt = passMonth[0];
+            else {
+                out.printf("      the pass of month %d: raised %.3f of the cost as repriced %.3f, held %.3f%n", passMonth[0], open.raised(), open.cost(), auto.held(g, open));
+                bounded &= open.raised() - raisedBefore <= Math.max(0, open.cost() - raisedBefore) + g.fundingLot("Term") + 1e-9;
+                waits &= auto.held().stream().anyMatch(l -> l.contains("have drawn the rest") && l.contains("nothing more is borrowed for it"));
+            }
+        }
+        g.autoBuildProbeForTest = null;
+        for (int i = logged; i < auto.log().size(); i++) { AutoBuilder.Entry x = auto.log().get(i); out.printf("      logged: month %d %s %d %s, cost %.3f, borrowed %.3f%n", x.month(), x.measure(), x.count(), x.building(), x.cost(), x.borrowed()); }
+        out.printf("      opened in month %d, withdrawn at the pass of month %d; the builder sold %.3f of face in the months, a funding lot %.3f%n", opened,
+                withdrawnAt, sold, g.fundingLot("Term"));
+        check("while it waits its order is not placed - the treasury cannot pay it - and nothing is sold twice: each month's sale for"
+                        + " it is at most what its cost, as repriced, asked past what it had raised, and a funding lot",
+                order(auto, logged) == null && bounded);
+        check("...and the builder says the bills drew the rest, and that nothing more is borrowed for it", waits);
+        check("it is withdrawn at the first pass at which it has been open " + AutoBuilder.PROCEEDS_WAIT_MONTHS + " months, and the"
+                        + " inbox's line says the treasury cannot pay the order and that what it raised stays",
+                withdrawnAt - opened == AutoBuilder.PROCEEDS_WAIT_MONTHS
+                        && auto.asked().stream().anyMatch(l -> l.contains("cannot pay the order") && l.contains("stays in the treasury")));
+        check("...and every played month's money audit closed within its tolerance", audits);
     }
 
     /** The highest debt limit, on its slider's steps, that a sale of `quote` takes the debt past: it is at or over the ratio now, or the fixture says no step lies between. */
@@ -317,23 +413,28 @@ public final class AskProceedsCheck {
     }
 
     static void limitReleases(Path root) {
-        out.println("--- 3. the debt limit releases it: the sale of the gap would cross the limit, so the ask is withdrawn, not held ---");
-        Finding f = drawn(root, "ask-limit", Auction.Cap.FILL, AMPLE_ROOM);
+        out.println("--- 3. the debt limit closes an ask with money still to raise: the sale would cross it, so the ask is withdrawn, not held ---");
+        Finding f = finding(root, "ask-limit");
         Game g = f.g();
         AutoBuilder auto = f.auto();
+        auto.setCap(Auction.Cap.FILL, null);
+        AuctionCheck.roomTo(g, AMPLE_ROOM);
+        open(f, f.cost() * PROCEEDS_LEFT, f.cost() * PROCEEDS_LEFT);
         AutoBuilder.OpenAsk ask = auto.askFor(WATER);
-        double gap = ask.cost() - g.getCash();
+        double gap = ask.cost() - ask.raised();
         DebtQuote quote = AutoBuilder.bondQuote(g, gap, auto.getCap());
         auto.setDebtLimit(limitUnder(g, quote), null);
         quote = AutoBuilder.bondQuote(g, gap, auto.getCap());
         double after = AutoBuilder.ratioAfter(g, quote);
-        out.printf("      ratio %.4f, a sale of the gap %.3f takes it to %.4f; limit %.2f%n", AutoBuilder.ratio(g), gap, after, auto.getDebtLimit());
+        out.printf("      ratio %.4f, a sale of what is still to raise %.3f takes it to %.4f; limit %.2f%n", AutoBuilder.ratio(g), gap, after,
+                auto.getDebtLimit());
         stands(f, ask);
         figures(g, ask, auto);
-        check("fixture: the town is within its limit, and a sale of the gap would take the debt past it (ratio "
-                        + String.format("%.4f", AutoBuilder.ratio(g)) + " <= limit " + auto.getDebtLimit() + " < " + String.format("%.4f", after) + ")",
-                quote != null && auto.within(g) && AutoBuilder.ratio(g) <= auto.getDebtLimit() && after > auto.getDebtLimit()
-                        && auto.getDebtLimit() > 0 && g.getCash() < ask.cost());
+        check("fixture: the ask has raised part of its cost and the treasury holds it, and a sale of the rest would take the debt past"
+                        + " the limit (ratio " + String.format("%.4f", AutoBuilder.ratio(g)) + " <= limit " + auto.getDebtLimit() + " < "
+                        + String.format("%.4f", after) + ")",
+                quote != null && ask.raised() < ask.cost() && near(auto.held(g, ask), ask.raised()) && auto.within(g)
+                        && AutoBuilder.ratio(g) <= auto.getDebtLimit() && after > auto.getDebtLimit() && auto.getDebtLimit() > 0);
         int bonds = auto.getBonds(), logged = auto.log().size();
         double principal = g.getDebtManager().getAllPrincipal(), cash = g.getCash(), raised = ask.raised();
         EssentialWorksCheck.quietly(() -> auto.pass(g));
@@ -451,6 +552,7 @@ public final class AskProceedsCheck {
         theFinding(root);
         billsDrew(root);
         marketShort(root);
+        pastAdvance(root);
         limitReleases(root);
         withinMonths(root);
         withoutTheLack(root);

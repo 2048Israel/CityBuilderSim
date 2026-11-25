@@ -1,4 +1,4 @@
-# WorksFinanceCheck.java - 1,095 lines · 28 methods · 6 constants · harnesses
+# WorksFinanceCheck.java - 1,104 lines · 28 methods · 6 constants · harnesses
 
 `ham/citybuildersim/WorksFinanceCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -37,7 +37,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 1074 | **type** `public final class WorksFinanceCheck` | Essential funding reservations, actual parcel cash and quoted bond terms (HW1). |
+| 22 | 1083 | **type** `public final class WorksFinanceCheck` | Essential funding reservations, actual parcel cash and quoted bond terms (HW1). |
 | 26 | 4 | `static void check(String words, boolean condition)` |  |
 | 31 | 3 | `static boolean close(double a, double b)` |  |
 | 72 | 31 | `static Game founded(Path root, String name, String[][] works)` | FS15: the city a section's premise is set on, caused. |
@@ -53,17 +53,17 @@
 | 320 | 75 | `static void roundedCash(Path root, boolean borrowFirst)` | The physical calendar supplies counts; this ledger independently carries each quote's cash. |
 | 396 | 13 | `static AutoBuilder.OpenAsk ask(BuildAdvice.Suggestion plan, int month, double raised)` |  |
 | 410 | 3 | `static void reservationRelease(Path root)` |  |
-| 414 | 74 | `static void reservationRelease(Path root, boolean fullyRaised)` |  |
-| 489 | 33 | `static void groundUse(String name)` |  |
-| 523 | 31 | `static void independentPending(Path root)` |  |
-| 555 | 4 | `static double addedPoints(Game.BuildQuote quote, BuildingsTemplate t, long count)` |  |
-| 560 | 32 | `static void prospectiveQueue(Path root)` |  |
-| 593 | 97 | `static void crewPromise(Path root, boolean partial) throws Exception` |  |
-| 691 | 14 | `static Game reserveTown(Path root, String name)` |  |
-| 706 | 64 | `static void pavingHold(Path root)` |  |
-| 771 | 74 | `static void highwayPromise(Path root)` |  |
-| 846 | 94 | `static void promotedDepot(Path root)` |  |
-| 941 | 31 | `static void commonCalendar(Path root)` |  |
-| 973 | 80 | `static void growingCalendarChoice(Path root)` |  |
-| 1054 | 41 | `public static void main(String[] args) throws Exception` |  |
+| 414 | 83 | `static void reservationRelease(Path root, boolean fullyRaised)` |  |
+| 498 | 33 | `static void groundUse(String name)` |  |
+| 532 | 31 | `static void independentPending(Path root)` |  |
+| 564 | 4 | `static double addedPoints(Game.BuildQuote quote, BuildingsTemplate t, long count)` |  |
+| 569 | 32 | `static void prospectiveQueue(Path root)` |  |
+| 602 | 97 | `static void crewPromise(Path root, boolean partial) throws Exception` |  |
+| 700 | 14 | `static Game reserveTown(Path root, String name)` |  |
+| 715 | 64 | `static void pavingHold(Path root)` |  |
+| 780 | 74 | `static void highwayPromise(Path root)` |  |
+| 855 | 94 | `static void promotedDepot(Path root)` |  |
+| 950 | 31 | `static void commonCalendar(Path root)` |  |
+| 982 | 80 | `static void growingCalendarChoice(Path root)` |  |
+| 1063 | 41 | `public static void main(String[] args) throws Exception` |  |
 

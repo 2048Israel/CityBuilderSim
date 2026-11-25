@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**257 harness files, 29,272 labelled assertions.** AllChecks runs 257 of them.
+**257 harness files, 29,278 labelled assertions.** AllChecks runs 257 of them.
 
 ## Which harnesses read which class
 
@@ -538,65 +538,69 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L393 a city founded the default way holds no mix in any of its 24 months
   - L394 ...and the same village founded the default way draws a smaller share of its arrivals without a diploma
 
-## AskProceedsCheck.java - 35 labelled assertions
+## AskProceedsCheck.java - 39 labelled assertions
 
-> The bond proceeds an open ask has raised pay its works: the treasury holds them outside the operating reserve, the order is
-> placed on them, and what the month's bills drew is offered again under the debt limit (AutoBuilder.spendableFor(), held(),
-> stillToRaise()).
+> The bond proceeds an open ask has raised pay its works, as a fenced fund pays them: the treasury holds them outside the operating
+> reserve, the order is placed on them, and where the month's bills drew the cash under them the order is paid from them all the
+> same, the treasury overdrawn by what the bills drew as far as the central bank advances (AutoBuilder.spendableFor(), funded(),
+> covered(), stillToRaise(); Game.allowProceeds()).
 > WHY (OA1, 2026-11-25). An open ask held an essential works for years: PW3's ensemble had a Water Treatment Plant's ask raise its
 > whole cost, the cash 53.4M against the order's 49.8M and the reserve 6.9M, and the old rule took the reserve out of the proceeds
 > first, so the order waited 133 months with water served at 26% - and, its sales past its cost, nothing was offered again, so
-> neither the order, a sale nor the debt limit's test ever ran. The real law: bond proceeds are restricted to the works they were
-> raised for, outside the operating reserve (GASB Statement 54; GFOA's fund-balance practice), and spent on it within months
-> (26 CFR 1.148-2(e)(2): 5% bound within six months, 85% spent within three years).
-> What this has to prove:
-> 1. The finding, caused: a town short of water, an ask whose sales raised the order's whole cost, the cash its proceeds and half
->    the reserve; one pass orders the works from them, closes the ask, sells no bond.
+> neither the order, a sale nor the debt limit's test ever ran. OA1's first mend sold again what the bills drew, bounded only by
+> the debt limit (REV-OA1: a deficit wider than the market sold paper every month for an order never covered); 2b and 2c play
+> that case for months. The real law: bond proceeds are restricted to the works they were raised for, outside the operating
+> reserve (GASB Statement 54; GFOA's fund-balance practice); and a tax-exempt issue keeps its temporary period only if its issuer
+> expects to bind 5% of the proceeds within six months and spend 85% within three years (26 CFR 1.148-2(e)(2)) - the six months
 > ...
 
-  - L177 fixture: the town is short of water (supply
-  - L181 fixture: the streets are ahead of their load, so the builder has no street order to place before the water works
-  - L187 fixture: the debt limit is open - the town's debt is within it, with room (limit
-- **L193 1. the finding, caused: the proceeds the treasury holds pay the works, the reserve beside them short**
-  - L203 fixture: the ask has raised the order's whole cost, the treasury holds it - and the reserve is not beside it: the cash
-  - L207 fixture: the card the advice gives now is still the ask's building, and the treasury holds what covers it (held at least the cost)
-  - L215 the water works is ordered on the proceeds
-  - L216 ...and its ask is closed
-  - L222 ...and its order sold no paper of its own: its entry's borrowing is what the ask had raised, and no more
-  - L226 ...and no dollar was made or lost: the cash fell by exactly what the pass's orders cost, ground with them, less what
-- **L242 2. the bills drew the proceeds: the ask is offered again for what they drew, and the order is placed**
-  - L252 fixture: the ask raised the whole cost but the bills left half of it (cash under the cost), the cap is Fill with room,
-  - L266 the ask was offered again: a sale by automatic building, one more bond
-  - L267 ...for the order's gap, sold in full and no more: it raised the gap, and at most one funding lot beyond
-  - L269 ...the principal rose only by the new sale's face
-  - L270 the order was placed that pass, and the ask is closed
-  - L272 conservation: the cash after is the cash before, what the sale raised, less what the order cost
-- **L277 2b. drawn, and the market short: the bond is offered again, sells short, and the order waits for the money**
-  - L290 fixture: the bills drew half the proceeds, the bank's room is used up (deposit rate
-  - L302 the bond was offered again, by automatic building, and came up short
-  - L305 the order is not placed - no money that is not there: no order in the log, the cash only rose by what sold
-  - L307 the ask stays open, its to-raise the cost less what the treasury holds for it, and over nothing
-  - L309 the builder says the month's bills have drawn the rest and that it is offered again
-- **L320 3. the debt limit releases it: the sale of the gap would cross the limit, so the ask is withdrawn, not held**
-  - L333 fixture: the town is within its limit, and a sale of the gap would take the debt past it (ratio
-  - L341 the ask is withdrawn, and the inbox's line says the debt limit closed on it
-  - L343 ...nothing was sold: the builder's bonds and the city's principal stand, and no sale is in the month's report
-  - L345 ...no order was placed, the cash is as it was, and what the ask raised (
-- **L352 4. within months, in the played month: case 1's city, played, has the works on order and every month's money audit closes**
-  - L377 fixture: the treasury as the first pass found it is case 1's - the cash set before the month, the proceeds whole and the
-  - L380 the water works is on order by the end of the first month
-  - L381 ...and at the latest within
-  - L383 ...and every played month's money audit closed within its tolerance
-- **L387 5. without the lack, nothing changes**
-  - L396 (a) with no ask open, spendable() is the cash over the reserve, nothing under it, and an overdraft in full
-  - L405 fixture: the advice gives a water card and a power card for two asks
-  - L418 fixture: two asks open, each short of its cost, the cash whole over both and the reserve
-  - L420 (b) each ask holds the cash over the reserve less the other's raised money, as before
-  - L422 ...and the builder's own orders have the cash over the reserve less both asks' raised money
-  - L437 (c) water served in full (supply
-  - L442 ...and no ask is open or raised anything: the paper sold (
+  - L184 fixture: the town is short of water (supply
+  - L188 fixture: the streets are ahead of their load, so the builder has no street order to place before the water works
+  - L194 fixture: the debt limit is open - the town's debt is within it, with room (limit
+- **L200 1. the finding, caused: the proceeds the treasury holds pay the works, the reserve beside them short**
+  - L210 fixture: the ask has raised the order's whole cost, the treasury holds it - and the reserve is not beside it: the cash
+  - L214 fixture: the card the advice gives now is still the ask's building, and the treasury holds what covers it (held at least the cost)
+  - L222 the water works is ordered on the proceeds
+  - L223 ...and its ask is closed
+  - L229 ...and its order sold no paper of its own: its entry's borrowing is what the ask had raised, and no more
+  - L233 ...and no dollar was made or lost: the cash fell by exactly what the pass's orders cost, ground with them, less what
+- **L274 2. the bills drew the proceeds: the works is paid from them, the treasury overdrawn by what the bills drew, no paper sold for it**
+  - L285 fixture: the ask raised the whole cost, the bills drew part of it (the cash under the cost) within what the central bank
+  - L298 the water works is ordered that pass, and its ask is closed
+  - L300 ...from its proceeds, no paper sold for it: its entry's borrowing is what the ask had raised, and every dollar of the
+  - L303 ...paid past the cash: the order cost more than the treasury held, and the log says the treasury is overdrawn for the
+  - L306 conservation: the cash fell by what the pass's orders cost less its new paper, the principal rose by that paper's face
+- **L312 2b. drawn, and the market short, played for months: the order is placed from the proceeds, and the ask raises nothing past its cost**
+  - L324 fixture: the bills drew part of the proceeds within what the central bank advances, the bank's room is used up and the
+  - L345 fixture: the first pass found the treasury drawn under the cost and able to pay it with the central bank's advance
+  - L349 the ask closes within
+  - L351 ...and it raised nothing past its cost: its entry's borrowing is what it had raised when the months began
+  - L353 ...and every played month's money audit closed within its tolerance
+  - L368 fixture: the ask raised the whole cost, the bills drew past what the central bank advances (the cash and the advance
+  - L398 while it waits its order is not placed - the treasury cannot pay it - and nothing is sold twice: each month's sale for
+  - L401 ...and the builder says the bills drew the rest, and that nothing more is borrowed for it
+  - L402 it is withdrawn at the first pass at which it has been open
+  - L406 ...and every played month's money audit closed within its tolerance
+- **L416 3. the debt limit closes an ask with money still to raise: the sale would cross it, so the ask is withdrawn, not held**
+  - L433 fixture: the ask has raised part of its cost and the treasury holds it, and a sale of the rest would take the debt past
+  - L442 the ask is withdrawn, and the inbox's line says the debt limit closed on it
+  - L444 ...nothing was sold: the builder's bonds and the city's principal stand, and no sale is in the month's report
+  - L446 ...no order was placed, the cash is as it was, and what the ask raised (
+- **L453 4. within months, in the played month: case 1's city, played, has the works on order and every month's money audit closes**
+  - L478 fixture: the treasury as the first pass found it is case 1's - the cash set before the month, the proceeds whole and the
+  - L481 the water works is on order by the end of the first month
+  - L482 ...and at the latest within
+  - L484 ...and every played month's money audit closed within its tolerance
+- **L488 5. without the lack, nothing changes**
+  - L497 (a) with no ask open, spendable() is the cash over the reserve, nothing under it, and an overdraft in full
+  - L506 fixture: the advice gives a water card and a power card for two asks
+  - L519 fixture: two asks open, each short of its cost, the cash whole over both and the reserve
+  - L521 (b) each ask holds the cash over the reserve less the other's raised money, as before
+  - L523 ...and the builder's own orders have the cash over the reserve less both asks' raised money
+  - L538 (c) water served in full (supply
+  - L543 ...and no ask is open or raised anything: the paper sold (
 
-## AuctionCheck.java - 308 labelled assertions
+## AuctionCheck.java - 309 labelled assertions
 
 > The city's paper sold at auction: one clearing yield, and what it costs.
 > 
@@ -917,21 +921,22 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1656 ...and says it waited, and the inbox says the order was placed
   - L1676 the treasury can pay for what is left of the orders: they are placed with no sale at all - no bond, no new paper,
   - L1680 ...the streets' log entry shows the bond money its ask had raised, borrowed on an earlier month, and no more
-  - L1721 treasury at the reserve, the money the asks raised before drawn by the month's bills, the room back: each ask is
-  - L1726 ...and the new paper is that gap and no more: what the asks' sales raised this month is at most their orders' cost
-  - L1731 ...the inbox says each order was placed on what its ask raised and the cash beside it
-  - L1735 ...and no dollar was made or lost: the month's money audit closed
-  - L1770 fixture: the saved street and care reservations share actual sold proceeds without changing cash or debt
-  - L1786 fixture: the town had a funded ask open for its general care, and then twenty Health Centres stand:
-  - L1793 an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the
-  - L1801 ...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed
-  - L1809 funded withdrawal retains every dollar: cash changes only by new sales less placed orders
-  - L1811 funded withdrawal retains every bond: principal changes only by newly sold face
-  - L1823 fixture: the debt limit is under what the city owes
-  - L1824 an ask whose next sale would cross the debt limit is withdrawn, and the log says the limit closed on it: none is left
-  - L1837 the panel's withdraw(index) takes one ask off, leaves the others, leaves the cash alone, and is a decision
-  - L1848 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
-  - L1853 ...and its headlines say automatic building came up short at its cap, and how many times it sold
+  - L1701 treasury at the reserve, the room back: each ask is offered what it still has to raise and sells it in full (the
+  - L1711 ...but the money it raised before was drawn by the month's bills past what the central bank advances: the treasury
+  - L1724 next month, drawn again, the paper already raised is not sold twice: new sales cover only the repriced cost
+  - L1730 ...and the inbox says the month's bills drew the money and that nothing more is borrowed for it
+  - L1737 the cash back in the treasury, the orders are placed, and nothing more is borrowed: no sale, no new bond, no new debt
+  - L1773 fixture: the saved street and care reservations share actual sold proceeds without changing cash or debt
+  - L1789 fixture: the town had a funded ask open for its general care, and then twenty Health Centres stand:
+  - L1796 an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the
+  - L1804 ...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed
+  - L1812 funded withdrawal retains every dollar: cash changes only by new sales less placed orders
+  - L1814 funded withdrawal retains every bond: principal changes only by newly sold face
+  - L1826 fixture: the debt limit is under what the city owes
+  - L1827 an ask whose next sale would cross the debt limit is withdrawn, and the log says the limit closed on it: none is left
+  - L1840 the panel's withdraw(index) takes one ask off, leaves the others, leaves the cash alone, and is a decision
+  - L1851 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
+  - L1856 ...and its headlines say automatic building came up short at its cap, and how many times it sold
 
 ## AutoBuildCheck.java - 71 labelled assertions
 
@@ -35879,7 +35884,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L626 saved and reloaded: the sector's cash and its five yards the same, and the accounts' held units
   - L634 ...a month on, the two the same month to the reload's known residual: Wood Products' cash and yards, the city's cash
 
-## WorksFinanceCheck.java - 61 labelled assertions
+## WorksFinanceCheck.java - 62 labelled assertions
 
 > Essential funding reservations, actual parcel cash and quoted bond terms (HW1).
 > WHY. A plan could count available cash twice, finance fractional parcels,
@@ -35916,51 +35921,52 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L430 fixture: streets have the higher current monetary loss and both works are proposed
   - L465 fixture: the higher ask has raised its full cost and the treasury holds it, though the cash over the reserve
   - L471 fixture: 100 above reserve, 40 lower-reserved, 90 higher-cost, and the gap's capped auction sells nothing
-  - L482 the lower funded reservation is released
-  - L484 the already funded higher-loss order sells no additional paper
-  - L486 releasing the reservation leaves outstanding debt intact
-  - L504 fixture: building-only room is short, while the order's actual use has enough owned ground
-  - L517 fixture: the flat-demand comparison borrows its build price and needs no later unit
-  - L519 owned run or works ground adds no parcel borrowing
-- **L524 the independent oracle sizes its own pending electrical load**
-  - L543 fixture: an operating power shortage has a wind proposal and a paid industrial load opens shortly (
-  - L551 the independent pending-load schedule and sizing reproduce the complete power plan
-- **L561 prospective unit completion matches the actually changed queue**
-  - L583 prospective quote places no order or cash flow, mode
-  - L588 the quoted first unit matches the actual queue after placement, mode
-  - L639 fixture: one fully covered pending care plan, unserved now, and a multiple-road reserve proposal
-  - L662 fixture: the full reserve plan would miss the saved completion, with the intended one-unit headroom
-  - L669 the reserve order respects the saved essential completion
-  - L674 the actual card explains the construction-capacity limit
-  - L679 a real reload keeps the construction-capacity reason
-  - L683 switching off clears both construction-capacity reasons
-- **L707 the hard construction-hold reader resolves the actual paving template**
-  - L717 fixture: unrelated essential services already have their operating capacity
-  - L738 fixture: physically served streets have a real paving reserve proposal with positive site output
-  - L750 fixture: even one paving would move unserved care past its one-month saved promise
-  - L764 the real automatic ask path records a paving construction hold
-  - L767 the hard hold-reason reader accepts the actual paving construction hold
-- **L772 an early street cannot cover a later highway's saved promise**
-  - L780 fixture: unrelated essential services already have their operating capacity
-  - L806 fixture: power is physically served with a wind reserve proposal, and the pending highway covers its unserved traffic (served now
-  - L829 fixture: the shared road-site map includes an early street, but even one reserve wind would postpone the highway beyond its own due
-  - L836 the actual reserve order preserves the highway-only completion promise (
-- **L847 a reserve order can promote a previously unstarved depot**
-  - L861 fixture: the town keeps one standing depot
-  - L884 fixture: physically served streets have a multi-road reserve plan while pending care covers its operating shortage
-  - L919 fixture: the reserve promotes a staffable depot past the model's builders-first threshold even though ordinary crew sharing would keep care inside its due
-  - L924 the actual reserve pass trims the promoted-depot delay and preserves care's completion
-  - L933 the full reserve actually promotes the depot and its prospective quote matches the changed queue
-- **L942 a work opening after the common comparison end earns no operating credit**
-  - L960 fixture: funded priority work delays a staffable plant beyond twenty years while operating power is physically short
-  - L967 a post-horizon opening keeps its capital and posts but claims no operating loss relief, running, tax return or later works
-- **L974 growing works share a calendar end before their actual funded choice**
-  - L977 fixture: unrelated essential services already have their operating capacity
-  - L1024 fixture: currently served streets have two growing plans, with slower dearer rail, both needing credit inside the player's limit
-  - L1038 the independent common-calendar values favour the timely road and match both complete plan sums
-  - L1045 the real automatic order takes the timely road with less new borrowing than rail requires
-  - L1074 Elevated Highway
-  - L1075 Hydro Station
+  - L488 the lower funded reservation is released - for an essential the cash cannot pay, not for streets, which their own
+  - L491 the lower funded reservation is released
+  - L493 the already funded higher-loss order sells no additional paper
+  - L495 releasing the reservation leaves outstanding debt intact
+  - L513 fixture: building-only room is short, while the order's actual use has enough owned ground
+  - L526 fixture: the flat-demand comparison borrows its build price and needs no later unit
+  - L528 owned run or works ground adds no parcel borrowing
+- **L533 the independent oracle sizes its own pending electrical load**
+  - L552 fixture: an operating power shortage has a wind proposal and a paid industrial load opens shortly (
+  - L560 the independent pending-load schedule and sizing reproduce the complete power plan
+- **L570 prospective unit completion matches the actually changed queue**
+  - L592 prospective quote places no order or cash flow, mode
+  - L597 the quoted first unit matches the actual queue after placement, mode
+  - L648 fixture: one fully covered pending care plan, unserved now, and a multiple-road reserve proposal
+  - L671 fixture: the full reserve plan would miss the saved completion, with the intended one-unit headroom
+  - L678 the reserve order respects the saved essential completion
+  - L683 the actual card explains the construction-capacity limit
+  - L688 a real reload keeps the construction-capacity reason
+  - L692 switching off clears both construction-capacity reasons
+- **L716 the hard construction-hold reader resolves the actual paving template**
+  - L726 fixture: unrelated essential services already have their operating capacity
+  - L747 fixture: physically served streets have a real paving reserve proposal with positive site output
+  - L759 fixture: even one paving would move unserved care past its one-month saved promise
+  - L773 the real automatic ask path records a paving construction hold
+  - L776 the hard hold-reason reader accepts the actual paving construction hold
+- **L781 an early street cannot cover a later highway's saved promise**
+  - L789 fixture: unrelated essential services already have their operating capacity
+  - L815 fixture: power is physically served with a wind reserve proposal, and the pending highway covers its unserved traffic (served now
+  - L838 fixture: the shared road-site map includes an early street, but even one reserve wind would postpone the highway beyond its own due
+  - L845 the actual reserve order preserves the highway-only completion promise (
+- **L856 a reserve order can promote a previously unstarved depot**
+  - L870 fixture: the town keeps one standing depot
+  - L893 fixture: physically served streets have a multi-road reserve plan while pending care covers its operating shortage
+  - L928 fixture: the reserve promotes a staffable depot past the model's builders-first threshold even though ordinary crew sharing would keep care inside its due
+  - L933 the actual reserve pass trims the promoted-depot delay and preserves care's completion
+  - L942 the full reserve actually promotes the depot and its prospective quote matches the changed queue
+- **L951 a work opening after the common comparison end earns no operating credit**
+  - L969 fixture: funded priority work delays a staffable plant beyond twenty years while operating power is physically short
+  - L976 a post-horizon opening keeps its capital and posts but claims no operating loss relief, running, tax return or later works
+- **L983 growing works share a calendar end before their actual funded choice**
+  - L986 fixture: unrelated essential services already have their operating capacity
+  - L1033 fixture: currently served streets have two growing plans, with slower dearer rail, both needing credit inside the player's limit
+  - L1047 the independent common-calendar values favour the timely road and match both complete plan sums
+  - L1054 the real automatic order takes the timely road with less new borrowing than rail requires
+  - L1083 Elevated Highway
+  - L1084 Hydro Station
 
 ## WorldCheck.java - 61 labelled assertions
 
