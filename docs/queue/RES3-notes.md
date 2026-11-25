@@ -5120,3 +5120,13 @@ HouseholdBalance.stocks, which writes its bond-id cache; bracket reads with
 exact saved household/CPI array comparisons. Pushed-source compile and the
 cells diagnostic need fresh MG1 and an exact GO; TP1 gets a separate GO after
 the first result. Neither probe mode has run at this record point.
+
+The6dc model compile passes with fresh MG1 and unchanged model/resource
+bytes (d85c/64d2). An external-javac shell quoting failure occurs before a JVM;
+the helper corrects only the retained command wrapper and gates again.
+Actual external javac then finds a checked IOException from TempDirs.create
+which the new tp1 helper failed to declare (5a01). Parent corrects that single
+declaration; main already propagates Exception. No model or native probe has
+run or changed. Reuse the already compiled, byte-identical6dc model classes,
+verify source/class identities and compile only the corrected pushed external
+driver under fresh MG1 before the previously approved cells-only run.

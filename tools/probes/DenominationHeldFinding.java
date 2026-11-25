@@ -173,7 +173,7 @@ public final class DenominationHeldFinding {
         return legacyHolders;
     }
 
-    private static void tp1() {
+    private static void tp1() throws java.io.IOException {
         Path root=TempDirs.create("denom-held-tp1");
         DenominationCheck.tp1WaitObserver=(a,b)->{
             phase="original-tp1-price-wait";captureWait(a,"plain");captureWait(b,"reformed");waitSnapshots++;
