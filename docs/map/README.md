@@ -4,7 +4,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 639 files, 694,712 lines, 30,353 methods, 6,786 constants. `GameVersion.VERSION` is "0.9.202", `SAVE_FORMAT` 66.
+**The tree:** 639 files, 694,715 lines, 30,353 methods, 6,786 constants. `GameVersion.VERSION` is "0.9.202", `SAVE_FORMAT` 66.
 
 ## model (280 files)
 
@@ -36,7 +36,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BuildingManager.java](BuildingManager.md) | 9,609 | 313 | The city's buildings: the catalogue of templates, the stacks standing and on site with the contracts the builders are working to and who placed the... | 163 |
 | [BuildingType.java](BuildingType.md) | 255 | 0 |  | 109 |
 | [BuildingVisual.java](BuildingVisual.md) | 553 | 24 | How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which ... | 33 |
-| [BuildingsStacks.java](BuildingsStacks.md) | 955 | 87 | One building type in the city: how many stand, how many are on site, and the progress, material and contract its sites carry. | 74 |
+| [BuildingsStacks.java](BuildingsStacks.md) | 958 | 87 | One building type in the city: how many stand, how many are on site, and the progress, material and contract its sites carry. | 74 |
 | [BuildingsTemplate.java](BuildingsTemplate.md) | 1,712 | 188 | One kind of building, and what it costs to put up. | 246 |
 | [BusinessDebt.java](BusinessDebt.md) | 100 | 14 | Base class for private-sector borrowing. | 11 |
 | [BusinessDebtManager.java](BusinessDebtManager.md) | 3,847 | 253 | Private-sector credit. | 44 |

@@ -384,14 +384,17 @@ public class BuildingsStacks {
      * by its share of what they hold (R1g; BuildingManager, THE CONTRACTOR'S POINTS EARNED AT HIS PRICE): the premium
      * the payers paid for the pooled contractor's points, earned the month his points go in. The value comes off the
      * contracts and the site's value alike, so what is earned ahead is not earned again; the units, the allowance and the
-     * points stay, drawn and done by the work as ever. Never more than the contracts hold. Adds to the month's dues and
-     * revenue; returns what it earned. Call after advanceConstruction().
+     * points stay, drawn and done by the work as ever. Never more than the contracts hold, nor than the site's value.
+     * Adds to the month's dues and revenue; returns what it earned. Call after advanceConstruction().
      */
     public double earnAhead(double amount) {
-        double home = getHomeContractValue();
-        double take = Math.min(Math.max(0, amount), home);
+        double held = 0;
+        for (Contract c : contracts.values()) held += c.value;
+        double take = Math.min(Math.max(0, amount), getHomeContractValue());
         if (!(take > 0)) return 0;
-        double f = Math.min(1, take / home);
+        // ...each contract by its share of what the contracts hold, not of the site's value (REV-R1g2, P3): were the site's
+        // value ever below its contracts' sum, a fraction of the lesser would hand the payers' dues more than the site earns.
+        double f = Math.min(1, take / held);
         for (Contract c : contracts.values()) {
             double v = f >= 1 ? c.value : c.value * f;
             c.value -= v;
