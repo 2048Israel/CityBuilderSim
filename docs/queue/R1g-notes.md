@@ -2456,3 +2456,86 @@ items, mended on the laptop one harness at a time:
 
 These are harness mends: the model is 0103d9c4b's, so the ensemble
 started on it stands.
+
+That ensemble (0103d9c4b against 0.9.201) failed F1, below: the model
+moved again after it, and the ensemble runs again on the final model.
+
+### The second negative GDP: the contractor's points at his price (2026-11-25)
+
+**The ensemble's red.** On 0103d9c4b F1 was hard red in all five
+policies, seeds 4-7 alone: one month, month 15, GDP -51.0 (a probe of 20
+months, `target/ensemble/R1g-gdp15c`, classes of b2af94e0a, AUTO2 seed 4).
+
+**The component.** The foreign contractor's bill. In the probe's month 14
+the pooled contractor (FC1, FC2) built 400 points for the builders at his
+book's price, 0.42 a point, and billed 168.0; it is struck into month 15's
+accounts as an imported service (`bookImportedService(FOREIGN_CREWS, ...)`),
+taken off GDP with the materials. Against it, I construction rose only to
+133.0: every site earns its points at its own rate, the value of its
+contracts by the points it owes, about 0.29 a point on the village's
+sites (its roads earn under 0.1). His crews spread over the sites as the
+month is (`BuildingManager.plan()`), so his points were earned at the
+sites' blended rate and billed at his. The 1900 village reaches it
+because its own crews are a handful: he built most of the month. A city
+with crews of its own never let his share be most of a month, and FC2's
+own harnesses priced his book near the sites' rate.
+
+**Reality.** Which price does his work cost the city? His: the builders
+import it at the price his book holds (Game.settleForeignCrews()). Which
+does the site earn? Before the mend, the site's blended rate. The payers
+whose orders claimed his book paid his price in their quotes (REV-FC2:
+the quote is the base times one plus his share), so the premium is
+theirs, paid up front and held in their contracts. A general contractor
+passing a subcontract through recognises revenue by the input method
+(IFRS 15 B18-B19, ASC 606-10-55-20: progress measured by the costs put in
+place against the costs expected): the month the dear subcontract work
+goes in is the month its price is recognised. So the month he builds,
+the sites earn his points at his price, out of the contracts that paid
+for it, and no more over the site's life.
+
+**The mend** (3b74e6cf8; `BuildingManager`, THE CONTRACTOR'S POINTS
+EARNED AT HIS PRICE). After the sites and the demolitions have earned
+their own: his points built, as Game.settleForeignCrews() strikes them
+(past the city's own month and its overtime, never more than he
+offered), billed at his price; less what his share of the month's points
+earned at the sites' rates; the rest, the premium, is earned now out of
+the home contracts of the sites that claim his book, by claim
+(`BuildingsStacks.earnAhead()`). Those contracts hold it less after, so
+it is earned sooner, never more: the value, not the units, the allowance
+or the points, comes off. No claim on any site and it goes by the points
+the month built on each. The contracts' value is the ceiling, and a
+month that earned more than his bill gives nothing back. The dues carry
+it to the payers (no units, no allowance: no escalation on it).
+
+A first form (8dc2b8dc1) earned his share of each site's points at his
+price site by site: the cheap sites' values ran out at his price, so the
+sites earned 156.6 of 168.0, 78.8 of 88.1 and 62.4 of 88.1, and seeds 4-7
+still went to -0.4 and -4.8 at months 15 and 16
+(`target/ensemble/R1g-gdp15d`). It also turned two of ForeignDebtCheck's
+fixture lines red. The premium form replaced it.
+
+**The fixture.** ForeignCrewsCheck section 9 (header item 9): a city
+played to a backlog, his book priced at `DEARER` (2) times the sites'
+rate a point, his points most of the month, and a twin with
+`-Dr1g.hisprice=off` (`BuildingManager.HIS_PRICE`). Off, the builders
+recognise less work than they pay him for (7,485.0 against 14,868.1: the
+fault). On, the sites earn 14,868.1 for his points, his bill; the
+month's work is at least it; his bill is the twin's; and what the sites
+earned past the twin's, 7,434.06, is what their contracts hold less than
+the twin's, to 1e-9: no money made or lost between payer and site.
+
+**The probe on the box** (`target/ensemble/R1g-gdp15e`, classes of
+3b74e6cf8, AUTO2 seeds 4-7, 60 months): no negative month on any seed;
+months 15 and 16 at +15.3 and +18.3 (seed 4; seeds 5-7 within 1.0), the
+sites earn exactly his bill (168.0, 88.1, 88.1), I construction 199.3 at
+month 15. M1 and F1 pass on the four runs.
+
+**The harnesses, one at a time on the laptop, on 3b74e6cf8:**
+ForeignCrewsCheck, ForeignChoiceCheck (each stack's dues sum to its
+revenue), ConstructionTrapCheck, ConstructionControlCheck (the FC2b
+handovers), ForeignCheck, PegAnchorCheck, GdpCheck, Village1900Check and
+CreditCrunchCheck green; ForeignDebtCheck red only on main's known
+serial-schedule line (`docs/notes/gate.txt`).
+
+`BuildingManager.HIS_PRICE` is a mutable static, as P3's are: set only
+inside ForeignCrewsCheck section 9, put back in a `finally`.

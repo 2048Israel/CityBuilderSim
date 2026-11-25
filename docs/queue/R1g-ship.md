@@ -8,8 +8,11 @@ on its last twelve months' mean, capped at today's home (Jerus: "its cost moves 
 With no school, the young learn the year's trade at work as apprentices. On 0.9.174 the playtest's 1900 city held 1,852,269 people at month
 2,400, its rent .307 of take-home on average. The walk's months are saved, with no format bump. Village1900Check proves the stall, each fix
 and the walk. The city's repairs to its own buildings are government consumption now, paid or owed: their imported material came off GDP
-with nothing against it, so a 1900 city whose building stopped read GDP below zero (GdpCheck). The 1900 playtest is the slower (38 minutes
-for 2,400 months on the PC against 18). A farm fitting its last tractor now clears its old captive feed, so its crop agrees after a reload.
+with nothing against it, so a 1900 city whose building stopped read GDP below zero (GdpCheck). The foreign contractor's points are earned at
+his price the month he builds them, out of the contracts whose payers paid it, never more: the 1900 village, whose own crews are a handful,
+earned them at its sites' rate and imported them at his, and read GDP below zero at month 15 (ForeignCrewsCheck). The 1900 playtest is the
+slower (38 minutes for 2,400 months on the PC against 18). A farm fitting its last tractor now clears its old captive feed, so its crop
+agrees after a reload.
 ## pending
 | R1g-H | revisit the 1900 home once HO1 (owning a home) ships ({next}) | Jerus, 2026-11-20: "perhaps try once people mortgages exist? idk" | [R1g notes §6](docs/queue/R1g-notes.md#6-jeruss-pick-the-homes-cost-moves-with-wages-09174) |
 ## queued
