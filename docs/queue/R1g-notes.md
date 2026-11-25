@@ -2392,13 +2392,9 @@ set) and is not committed.
     since R1g. On the same tree with `-Dplaytest.founded=today` it is
     green: the owners put in 3,089 against 1,162, the bank is short in 51
     crunch months against 116, and nobody goes without a home.
-  - ★ Named, not mended here: a known-reds row under HT1-H, the queued
-    row for fixtures that find their condition in the played city with
-    their sweep shipped (FS9, 11-22). Recommended, because a poorer city's
-    owners not covering a capital-short bank is a real effect. The mend
-    is HT1-H's: cause the crunch rather than find it. The 11-21 attempt
-    named the same class under FS9 before it shipped. Pinning the harness
-    to today's city instead would hide the 1900 effect.
+  - ★ Named at first under HT1-H; REV-R1g (P1) moved it here, and it is
+    restated in R1g: see "The review's mends" below. The known-reds row
+    is dropped.
 - **HousingDoorCheck**: exit 3, its one red the FS11 row as on 11-21. FS11
   is still queued.
 - **ReloadCheck**: green (exit 0). The two RN2 rows are dropped: RN2 has
@@ -2407,3 +2403,56 @@ set) and is not committed.
   they pass on the merged code.
 - **LongPlaytest** (the PB1 row, households' UnsettledFees) is not run
   here (38 minutes on the 1900 path); the dry run judges it.
+
+### The review's mends (REV-R1g, 2026-11-25)
+
+REV-R1g: money, saves and threading sound; SHIP after one P1. The three
+items, mended on the laptop one harness at a time:
+
+- **P1, CreditCrunchCheck section 3** (restated in R1g, the HT1-H row
+  dropped). m151 first, as the review asked. It is the crunch's first
+  month, right after the cut at m150. The cut left room for 12.2
+  households as `Room.households()` counts the arrivals' mix (175 homes
+  retired from 226.3). But in m151, with nothing built and no household
+  arriving (371, falling to 358 by m171), 9.10 had no door. The doubling
+  valve was at its ceiling (186 of 371 doubled up, half the households
+  plus one), and no seeker was among them. So the 9.10 is the cut's. The
+  bank, short of capital, wrote nothing for twenty months; the households
+  fell only as people left (4.1 at m170). The owners' first block was
+  mortgaged at m171 (trimmed from 4) and stood at m172, and from then 0.00
+  to m270.
+  - ★ The law restated, the premise unmoved: no month leaves more with no
+    home than the crunch's first; every month over `WATCH` (one,
+    LongPlaytest's watch) is one where the landlords asked and the bank
+    was short; and once the owners' first homes stand none is over
+    `WATCH`. Kept: the owners put money in (1,162), homes were built (306
+    to 507). Today's city (-Dplaytest.founded=today, 11-24) held 0.00, so
+    all three hold there.
+  - Reality, from the source the review gave (The City of Calgary's First
+    Boom and Bust, Alberta's Real Estate Heritage, archived 2010-12-08).
+    In the 1905-1909 shortage some newcomers lived in tents; in the 1913
+    bust building permits fell from over $20M (1912) to $8.5M, then
+    "This in turn created high unemployment." The page does not say, as
+    the review put it, that 1913's arrivals were homeless; the banner
+    cites what it does say.
+  - The 1900 run's log is kept at `target/r1g-cc-1900.log`, green.
+    `Month` records the seekers with no door, so the log shows the 9.10's
+    kind.
+- **P2, Village1900Check**: section 5's draw is now "more arrivals at the
+  end of the five years than the stalled village" (51.6 against 13.1;
+  today's twin 47.4). The `STALLED` floor and its dial are gone: the
+  unfixed village drew 0.276 of the twin's, over it. With
+  `-Dr1g.home=off` the check fails, 13.1 against 13.1
+  (`target/r1g-v-homeoff.log`). Section 4 and header item 4 are retitled
+  "the draw": they prove `drawShare < pullShare`, not a stall.
+- **P3, a note**: `Recipes.HOMES_1900`, `Recipes.HOME_WALK` and
+  `PopulationManager.APPRENTICES_1900` are mutable statics, the R1g
+  switches. They become per-Game before any in-JVM parallel run. Today
+  the suite runs each harness in its own process (`AllChecks`'
+  ProcessBuilder), so two Games with different switches share a JVM only
+  inside Village1900Check. It plays one at a time, setting `HOMES_1900` and
+  `APPRENTICES_1900` per play and putting them back; `HOME_WALK` is read
+  from `-Dr1g.walk` alone.
+
+These are harness mends: the model is 0103d9c4b's, so the ensemble
+started on it stands.
