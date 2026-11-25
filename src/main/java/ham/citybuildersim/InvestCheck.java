@@ -809,6 +809,25 @@ public class InvestCheck {
         assertTrue("land no longer binding -> the order is back", d.build && d.quantity > 5);
         var quantityMarket = housed.getSectors().realEstate().housingMarket();
         assertTrue("fixture: the land-order quantity uses actual funded housing demand", quantityMarket.active());
+        /*
+         * RES3c, 2026-11-25. Since the ask is struck on the home's market value (RES3's mend 1) the landlords' best home
+         * here is a Duplex, two doors of one kind, and a form of one kind has its need at its income's knee: every door of
+         * the need lets at its class's ask and none past it, so the order is the need and the hurdle never cuts inside it
+         * (641 Duplexes, each 0.0776 a month against a hurdle of 0.0486). The hurdle cuts inside the need of a form of
+         * several kinds, whose need is the most-wanted kind's and leaves the other kinds' doors empty. So each best home
+         * the need cuts is priced out of first place, as section 2 prices out the House (its materials a millionfold),
+         * until the best is one the hurdle cuts, and all are put back after.
+         */
+        java.util.Map<BuildingsTemplate, Integer> pricedOut = new java.util.LinkedHashMap<>();
+        while (d.build && d.template != null && pricedOut.size() < 20
+                && d.quantity >= quantityMarket.forecast(housed).quantityNeeded(d.template)) {
+            pricedOut.put(d.template, d.template.getConstructionMaterials());
+            d.template.setConstructionMaterials(d.template.getConstructionMaterials() * 1_000_000 + 1_000_000);
+            d = landlords.plan(tight, housed);
+        }
+        System.out.printf("   priced out of first place: %s; the best is then %s%n",
+                pricedOut.keySet().stream().map(BuildingsTemplate::getName).collect(java.util.stream.Collectors.joining(", ")),
+                d.template == null ? "none" : d.template.getName());
         if (d.build && d.template != null) {
             var quantityForecast = quantityMarket.forecast(housed);
             double hurdle = housed.getEconomyManager().housingBuildHurdle(d.template);
@@ -823,6 +842,7 @@ public class InvestCheck {
                         quantityForecast.income(d.template, next) < hurdle * next);
             }
         }
+        pricedOut.forEach(BuildingsTemplate::setConstructionMaterials);
 
         /*
          * THE LANDLORDS ORDER THE GAP, NOT MONTHS OF WORK (BA1). REWRITTEN: this asserted that sites owing more than
@@ -889,6 +909,16 @@ public class InvestCheck {
         housedBuilders.updateJobFillRate(thinned);
         housedBuilders.updateWages(housed.getEconomyManager().getWageRates(), housedBuilders.postsPerTier());
         double roomLeft = AutoBuilder.ORDER_MONTHS * housed.getBuildingOutputAtEveryPost() - owedRe;
+        // RES3c, 2026-11-25: a month's output is whole points (Game.getBuildingOutputAtEveryPost()), so a year's room moves
+        // in steps of ORDER_MONTHS; with a Duplex of 86 points the best home, 95% of it came out a step high, at 86. The
+        // crews are thinned on until the room is under it.
+        for (int i = 0; i < 60 && roomLeft >= bestHome.getConstructionPoints(); i++) {
+            thin *= 0.98;
+            java.util.Arrays.fill(thinned, thin);
+            housedBuilders.updateJobFillRate(thinned);
+            housedBuilders.updateWages(housed.getEconomyManager().getWageRates(), housedBuilders.postsPerTier());
+            roomLeft = AutoBuilder.ORDER_MONTHS * housed.getBuildingOutputAtEveryPost() - owedRe;
+        }
         System.out.printf("   crews at %.3f of their posts: %,.0f points of a year's room, a %s is %,d and a %s %,d%n", thin, roomLeft,
                 bestHome.getName(), bestHome.getConstructionPoints(), smallest.getName(), smallest.getConstructionPoints());
         assertTrue("fixture: a year's room is less than one of the best home, and more than the smallest",
