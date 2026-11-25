@@ -18,8 +18,11 @@ import java.io.PrintStream;
  * city its own test will not lend to still holds its jobs every month; a city
  * it will lend to buys the whole offer on the bond, its cash paying no more
  * than the share, the sellers paid, the month's money audit closed, and the
- * held order released; land paid from the vault is not the bond's; and
- * restoring the cash still buys through the share. The long replays'
+ * held order released; land paid from the vault is not the bond's; an
+ * overdrawn treasury's bond covers the overdraft with the offer and buys it
+ * (REV-FB11: a bond the size of the offer alone went to the overdraft and
+ * bought nothing, look after look); and restoring the cash still buys
+ * through the share. The long replays'
  * measurements belong in docs/queue/ER1-notes.md and docs/queue/FB11-notes.md.
  */
 public class ER1Check {
@@ -62,6 +65,12 @@ public class ER1Check {
                 + g.getLandManager().priceFor(shop.getLandSqFt(), shop.getSector(), LandManager.Use.BUILDING)));
     }
 
+    /** Whether the shop's private buyer holds its whole quote, ground included: what fundShop() gives it twice. */
+    static boolean canPayWhole(Game g, Investor buyer, BuildingsTemplate shop) {
+        return buyer.getCash() >= g.quoteBuild(shop, 1).total
+                + g.getLandManager().priceFor(shop.getLandSqFt(), shop.getSector(), LandManager.Use.BUILDING);
+    }
+
     /** The part of the best offer for room a look's cash share cannot pay: its local price less a tenth of the cash. */
     static double gap(Game g, LandParcel offer) {
         return offer.localPrice(g.getForeignAccounts().getRate()) - Math.max(0, g.getCash()) * LongPlaytest.GROUND_AHEAD_CASH_SHARE;
@@ -78,6 +87,7 @@ public class ER1Check {
         long started = System.nanoTime();
         held();
         funded();
+        overdrawn();
         out.printf("   fixture %.3f seconds%n", (System.nanoTime() - started) / 1e9);
         out.println(fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -129,7 +139,7 @@ public class ER1Check {
         fundShop(g, shop);
         quietly(() -> g.simulateMonths(1));
         check("premise: the shop is known and its private buyer can pay its whole quote",
-                buildings.isTemplateKnown(shop) && buyer.getCash() > 0);
+                buildings.isTemplateKnown(shop) && canPayWhole(g, buyer, shop));
         // ...past the share, not past the whole cash as until FB11: the city has six months' revenue in hand, and the share is
         // what a look pays out of it (the old premise read a city with no revenue, whose every offer was past the cash).
         LandParcel found = g.bestOffer(Game.LandNeed.room());
@@ -243,8 +253,7 @@ public class ER1Check {
         long coming = buildings.getJobsUnderConstruction();
         check("premise: the shop's plot is refused before the look, and its private buyer can pay its whole quote",
                 !land.canAllocate(shop.getLandSqFt(), shop.getSector())
-                && buyer.getCash() >= g.quoteBuild(shop, 1).total
-                        + land.priceFor(shop.getLandSqFt(), shop.getSector(), LandManager.Use.BUILDING));
+                && canPayWhole(g, buyer, shop));
         double cash = g.getCash(), share = Math.max(0, cash) * LongPlaytest.GROUND_AHEAD_CASH_SHARE;
         principal = debt.getAllPrincipal();
         double owned = land.getOwnedSqFt();
@@ -275,5 +284,49 @@ public class ER1Check {
         // ...and nothing of the fixture's between the look and the month: the bond, the purchase and the order are the model's.
         quietly(() -> g.simulateMonths(1));
         check("the month after the funded look closes its money audit", auditClosed(g));
+    }
+
+    /** An overdrawn treasury (REV-FB11): the funded look's bond covers the overdraft with the offer, as buyWhole()'s Game.landCashGap() counts it, and buys the offer. */
+    static void overdrawn() {
+        Game g = fullCity("ER1-land-overdrawn");
+        LandManager land = g.getLandManager();
+        DebtManager debt = g.getDebtManager();
+        ForeignAccounts fx = g.getForeignAccounts();
+        fundShop(g, g.getBuildingManager().getTemplateByName("Convenience Store"));
+        quietly(() -> g.simulateMonths(2));
+
+        out.println("--- an overdrawn treasury: the bond covers the overdraft with the offer, and buys it ---");
+        // ...overdrawn by the fixture by as much as it held: Game.landPayable() reads such a treasury as no cash, and buyWhole()'s gap counts the overdraft.
+        g.setCashForTest(-Math.max(1, g.getCash()));
+        double cash = g.getCash(), rate = fx.getRate();
+        LandParcel offer = g.bestOffer(Game.LandNeed.room());
+        double local = offer == null ? Double.NaN : offer.localPrice(rate);
+        double officeGap = offer == null ? Double.NaN : g.landCashGap(java.util.List.of(offer.getId()));
+        out.printf("   cash %.6f; offer %.6f; the office's gap %.6f; waiting on ground: %s%n", cash, local, officeGap, g.getLandBlockedSectors());
+        check("premise: the treasury is overdrawn, a sector waits on ground, and a linked offer stands past the line",
+                cash < 0 && LongPlaytest.groundDemanded(g) && land.getUsedShare() > LongPlaytest.groundAheadUtilisation(g)
+                && offer != null && LandMarket.hasLinkedDry(offer));
+        check("premise: the office's gap is the price and the overdraft, and the player's own test would lend it",
+                Math.abs(officeGap - (local - cash)) <= 1e-9 * officeGap && LongPlaytest.canService(g, officeGap));
+        double principal = debt.getAllPrincipal(), owned = land.getOwnedSqFt();
+        double pending = fx.getLandUsdPending(), usd = LongPlaytest.groundAheadUsd, raised = LongPlaytest.groundAheadBorrowed;
+        int boughtBefore = LongPlaytest.groundAheadBought, fundedBefore = LongPlaytest.groundAheadFunded, unspent = LongPlaytest.groundBondsUnspent;
+        quietly(() -> LongPlaytest.keepGroundAhead(g));
+        int bought = LongPlaytest.groundAheadBought - boughtBefore, funded = LongPlaytest.groundAheadFunded - fundedBefore;
+        double borrowed = LongPlaytest.groundAheadBorrowed - raised, paidUsd = LongPlaytest.groundAheadUsd - usd;
+        out.printf("   bought %d offer(s), %d funded; cash %.6f -> %.6f; raised %.6f; debt %.6f -> %.6f; bonds that bought nothing %d%n",
+                bought, funded, cash, g.getCash(), borrowed, principal, debt.getAllPrincipal(), LongPlaytest.groundBondsUnspent - unspent);
+        check("the look bought the offer it found, whole: it leaves the listing and the city owns at least its ground",
+                offer != null && land.getMarket().find(offer.getId()) == null && land.getOwnedSqFt() - owned >= offer.getSizeSqFt());
+        check("...on the bond, and sold no bond that bought no ground",
+                funded > 0 && funded <= bought && LongPlaytest.groundBondsUnspent == unspent);
+        check("...the bond cleared the overdraft: the treasury ends the look not overdrawn", g.getCash() >= -1e-6 * Math.max(1, paidUsd * rate));
+        check("...the city's debt rose by no less than the bonds raised", borrowed > 0 && debt.getAllPrincipal() - principal >= borrowed * (1 - 1e-9));
+        check("...what the bonds raised, less the overdraft they cleared, is the offers' price",
+                Math.abs(borrowed + (cash - g.getCash()) - paidUsd * rate) <= 1e-6 * Math.max(1, paidUsd * rate));
+        check("...and the sellers are owed the offers' dollars", Math.abs(fx.getLandUsdPending() - pending - paidUsd) <= 1e-6 * Math.max(1, paidUsd));
+        // ...the fixture's overdraft is a hand in the first month's books; the second has none of it.
+        quietly(() -> g.simulateMonths(2));
+        check("the second month after the look closes its money audit", auditClosed(g));
     }
 }

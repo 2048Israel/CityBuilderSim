@@ -4506,6 +4506,10 @@ public class LongPlaytest {
     static int groundAheadFunded, roomMovesFunded;
     static double groundAheadBorrowed;
 
+    /** ...and the bonds fundGround() sold that bought no ground (an auction short of the gap, or the office refusing the offer), with what they raised: the money stays in the treasury, as buyWhole() leaves it (REV-FB11). */
+    static int groundBondsUnspent;
+    static double groundBondsUnspentRaised;
+
     /*
      * GROUND FUNDED WHEN A SECTOR WAITS ON IT (FB11, ER1-F, 2026-11-25).
      *
@@ -4544,21 +4548,27 @@ public class LongPlaytest {
     /**
      * Buys a whole offer the cash share cannot pay while ground is demanded (FB11, see the banner): at most {@code share} of
      * local money out of the cash, the rest borrowed first on the funding page's BUILD_BOND_YEARS bond when canService()
-     * carries it. "bond" when bought; null, and nothing borrowed, when no sector waits on ground, the land is paid from the
-     * vault (buyWhole()'s rule), or the city could not service the debt; null after borrowing only when the bond raised
-     * less than asked or the office then refused the offer - the money raised stays in the treasury, as buyWhole() leaves it.
+     * carries it. An overdrawn treasury's overdraft is in the gap, as buyWhole()'s Game.landCashGap() counts it: the bond's
+     * proceeds would otherwise clear the overdraft and leave the offer unpaid (REV-FB11). "bond" when bought; null, and nothing
+     * borrowed, when no sector waits on ground, the land is paid from the vault (buyWhole()'s rule), or the city could not
+     * service the debt; null after borrowing only when the bond raised less than asked or the office then refused the offer -
+     * the money raised stays in the treasury, as buyWhole() leaves it, counted in groundBondsUnspent.
      */
     static String fundGround(Game g, LandParcel p, double share, String purpose) {
         if (!GROUND_FUNDING || p == null || !groundDemanded(g) || g.isLandPaidFromVault()) return null;
         double local = p.localPrice(g.getForeignAccounts().getRate());
         double fromCash = Math.max(0, Math.min(share, g.getCash()));
-        double gap = local - fromCash;
+        double gap = Math.max(local - fromCash, g.landCashGap(java.util.List.of(p.getId())));
         if (!(gap > 0) || !canService(g, gap)) return null;
         double before = g.getCash();
         g.handleLongBondForCash(gap, Game.BUILD_BOND_YEARS, g.fundingLot("Term"));
         notePaper(g, purpose + " (the land office's funding page)");   // the trace; nothing else reads it
-        if (g.getCash() - before < gap - FUNDED_SLACK * local || !g.canAffordParcel(p)) return null;
-        return g.buyLandParcel(p.getId()) ? "bond" : null;
+        if (g.getCash() - before >= gap - FUNDED_SLACK * local && g.canAffordParcel(p) && g.buyLandParcel(p.getId())) return "bond";
+        if (g.getCash() != before) {
+            groundBondsUnspent++;
+            groundBondsUnspentRaised += g.getCash() - before;
+        }
+        return null;
     }
 
     /** What a bond may fall short of the gap it was asked for and still fund the offer (FB11): a millionth of the price, the bond auction's rounding, not a part of the cash share. */
@@ -4666,8 +4676,9 @@ public class LongPlaytest {
             } else if (!g.buyLandParcel(best.getId())) break;
             if (traceGround) tr.printf("PW5_GROUND_BOUGHT month=%d id=%s price=%.9f fromCash=%.9f%n", g.getMonth(), best.getId(), local,
                     cashBefore - g.getCash());
-            // ...the share spent by the offer's price as before, or, funded, by the part the cash paid.
-            budget -= onBond ? cashBefore - g.getCash() : local;
+            // ...the share spent by the offer's price as before, or, funded, by the fall in the cash the look began with: a bond's surplus comes back to
+            // the share before the next offer borrows again, an overdraft it cleared does not (REV-FB11).
+            budget -= onBond ? Math.max(0, cashBefore) - g.getCash() : local;
             groundAheadBought++;
             groundAheadSqFt += best.getSizeSqFt();
             groundAheadUsd += best.getPriceUsd();
@@ -8373,7 +8384,8 @@ public class LongPlaytest {
                 + " cash share stopped a look short %,d time(s)%n", groundAheadBought,
                 LandManager.km2(groundAheadSqFt), groundAheadUsd, groundAheadShort);
         out.printf("  ...and funded while a sector waited on ground (FB11): %,d of them and %,d room move(s) on the funding"
-                + " page's bond, %,.0f raised for the ground kept ahead%n", groundAheadFunded, roomMovesFunded, groundAheadBorrowed);
+                + " page's bond, %,.0f raised for the ground kept ahead; %,d bond(s) that bought no ground, %,.0f raised by them%n",
+                groundAheadFunded, roomMovesFunded, groundAheadBorrowed, groundBondsUnspent, groundBondsUnspentRaised);
         out.printf("  ...and across the skips (LP-G1): %,d ground look(s) inside a skip; the most months a skip let the"
                 + " ground go unlooked at, %d (the horizon %.0f)%n", groundLooksInSkips, longestGroundGap, BuildAdvice.HORIZON);
         out.printf("  ...the build's bonds (CC1-S): %,d at home, %,d abroad, the dearest abroad %.2f%%%n",

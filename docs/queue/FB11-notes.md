@@ -69,11 +69,14 @@ the eight trace files under `target/fb11/`, not committed):
   buys the whole offer anyway: at most the share out of the cash, the rest raised first on the
   funding page's `Game.BUILD_BOND_YEARS` bond (`handleLongBondForCash(gap, BUILD_BOND_YEARS,
   fundingLot("Term"))`, the bond `buyWhole()` and the land office's funding page use), when the
-  player's own test for borrowing, `canService()` (`DEBT_SERVICE_LIMIT`), carries the gap. Not
+  player's own test for borrowing, `canService()` (`DEBT_SERVICE_LIMIT`), carries the gap. An
+  overdrawn treasury's overdraft is in the gap, as `buyWhole()`'s `Game.landCashGap()` counts it
+  (REV-FB11's P1, section 8). Not
   when the land is paid from the vault (`buyWhole()`'s rule), and nothing when no sector waits on
   ground. If the bond raised less than the gap (by more than `FUNDED_SLACK` of the price), or the
   office then refuses the offer, the money raised stays in the treasury, as `buyWhole()` leaves
-  it. Recommended way, ER1's: the alternative, cash-only buying with the funding left to the
+  it, counted in `groundBondsUnspent` and `groundBondsUnspentRaised` (the run's summary prints
+  them). Recommended way, ER1's: the alternative, cash-only buying with the funding left to the
   player's page, keeps the hold this batch is for.
 - ★ **"Demanded" is the model's own record**: `Game.getLandBlockedSectors()`, the sectors whose
   plan or the landlords' order the month refused for want of ground, which the inbox's "nowhere
@@ -121,7 +124,7 @@ with "industry stands farther out than the homes" at m1400. These are the short 
 ## 4. The checks
 
 - `./batch-check.sh --fast`: compile OK, maps regenerated, stale 0 firm.
-- **ER1Check** (restated, 29 assertions, 3.7 s), green. Its old first section, "a full city holds
+- **ER1Check** (restated, 34 assertions, 4.3 s, with REV-FB11's section 6 below), green. Its old first section, "a full city holds
   jobs while its land buyer has no cash", was the defect this batch repairs; it is now a control
   and a repair: (1) with nothing waiting on ground, the share alone decides, though the player's
   own test would lend: counted short, nothing bought or borrowed; (2) a full city that borrowed on
@@ -132,7 +135,9 @@ with "industry stands farther out than the homes" at m1400. These are the short 
   whole offer on the bond: 6 offers, all funded, its cash paying at most the share, the debt up by
   no less than the bonds raised, raised plus cash equal to the offers' price, the sellers owed the
   offers' dollars, the shop's plot permitted and its order placed, and the next month's money audit
-  closed (residual and drift, the ensemble's rule), as the month before it did.
+  closed (residual and drift, the ensemble's rule), as the month before it did; (6) an overdrawn
+  treasury (REV-FB11, section 8) buys the offer on a bond that covers the overdraft with it, and
+  sells no bond that bought nothing.
   ★ The control city plays its first `PLANNING_HORIZON` months with its ground free before the
   ground is consumed: at month 2 its revenue was 0.095 a month, and the player's test refused for
   want of revenue, not of the demand gate (diagnosed). Its premise "every whole offer exceeds the
@@ -209,6 +214,47 @@ audit"). The red is not FB11's code. It is main's own Rod Mill cycle, which FB11
 law to restate (no mill on rod priced apart from its cathode, losing mills shed, not a count at one month) is the
 sweep's that owns the harness.
 
-## 8. The ensemble
+## 8. The review (REV-FB11) and its mends
 
-(Filled in when it runs, after the review.)
+The orchestrator's stranger's money review on "mends at" 3685baf8e: MEND, one P1 and two P2s. The
+rest stands: the bond route is the land screen's and `buyWhole()`'s, the audit closes, the game
+never calls `fundGround()`, GroundSkipCheck 3 is fair, the 443k Rotterdam is real (Amsterdam's
+erfpacht, Stockholm's land bank of 1904), and CopperRefiningCheck 11 is main's class under FS8.
+
+- **P1, a bond that buys no land, look after look.** `fundGround()`'s gap was the price less
+  `max(0, min(share, cash))`, so it ignored an overdraft, which `buyWhole()`'s `landCashGap()`
+  counts. On an overdrawn treasury the bond raised the price, the overdraft took the proceeds,
+  `canAffordParcel()` failed, and the debt rose with nothing bought, at every later look while the
+  overdraft lasted. Mended: the gap is `max(local - fromCash, g.landCashGap(List.of(p.getId())))`.
+  A bond that buys nothing (a short auction, or the office refusing) is now counted
+  (`groundBondsUnspent`, `groundBondsUnspentRaised`, in the summary). ★ A funded offer spends
+  the share by the fall in the cash the look began with, `max(0, cashBefore) - cash`. A bond's
+  surplus over its gap comes back to the share before the next offer borrows again, as before,
+  but an overdraft it cleared does not. A first try, `max(0, cashBefore - cash)`, kept the surplus
+  out: section 5 then bought 7 offers and left 4.48 in the treasury, borrowed. The final form
+  gives section 5 the reviewed figures to the digit (6 offers, cash 2.18 to 2.70, 31.26 raised).
+  ER1Check's new section 6 is the evidence:
+  - The treasury is overdrawn by as much as it held (-2.18), with the office's gap 7.30 (an offer
+    of 5.12 plus the overdraft). The look bought 6 offers, all funded, and no bond bought nothing.
+    It ended at +0.62. The bonds raised 33.55 against a debt up 37.53, raised less the overdraft
+    cleared equal to the offers' price. The sellers are owed the offers' dollars, and the second
+    month's audit closed.
+  - Run against the old gap (a temporary revert, restored): 4 FAILs, 0 bought, 1 bond that bought
+    nothing, the debt 0 to 6.47 and the cash -2.18 to 3.92 with no ground.
+- **Real, not only a fixture's.** The treasury is overdrawn at some looks in the traced Rotterdam
+  runs: main's 1900 at 7 of 76, main's today at 5 of 156. FB11's funded runs had one between them
+  (today's, m880: cash -209,715, offer 640,835, held). Its bond book shows no issue at m880-881:
+  the test refused and no bond was sold, so section 3's paired figures stand.
+- **P2, the ship file's words.** "debt service at most a quarter of the tax" was not
+  `canService()`. Main's rule (`LongPlaytest.java:6030`) is the interest alone on the whole debt,
+  the new bond in it, at the marginal quote, with no principal; today's funded city pays 32-37% of
+  its tax in interest at m800-1200 (section 3). The words now say so. Queued in the ship file,
+  ARL1: a servicing test with principal and the book's own coupons, as Ontario's Annual Repayment
+  Limit (principal and interest at most 25% of own-source revenue).
+- **P2, ER1Check's premise.** "its private buyer can pay its whole quote" asserted only
+  `buyer.getCash() > 0`. It now asserts the whole quote, ground included (`canPayWhole()`), as the
+  funded section's premise does.
+
+## 9. The ensemble
+
+(Filled in when it runs.)
