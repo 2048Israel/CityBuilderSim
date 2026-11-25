@@ -27,6 +27,14 @@ public final class HousingChoice {
     public static final double AREA_PER_TIER = .15;
     /** Young adults' desired area relative to established households. */
     public static final double YOUNG_AREA = .9;
+    /**
+     * The census line: the census of England and Wales called a home overcrowded past two persons a room (1891, and so
+     * to 1931), its rooms its bedrooms and a kitchen. No occupied door passes it: a household alone, two to a share, a
+     * guest beside its host and a lodger (RES3, the orchestrator's call of 2026-11-25).
+     */
+    public static final double PERSONS_PER_ROOM = 2;
+    /** The most people a door of so many bedrooms holds at the census line (H55 4, D90 6, H120 8). */
+    public static int line(int bedrooms){return (int)Math.floor(PERSONS_PER_ROOM*(bedrooms+1));}
     /** Each tier's extra preference for finish quality. */
     public static final double QUALITY_PER_TIER = .20;
     /** Outdoor square metres at which the family garden term saturates. */
@@ -36,13 +44,19 @@ public final class HousingChoice {
         public Demand { quantity(count); quantity(budget); if (size<1 || children<0 || tier<0 || key==null || key.isBlank()) throw new IllegalArgumentException(); }
         double targetArea() { return (BASE_AREA+AREA_PER_PERSON*size)*(1+AREA_PER_TIER*tier)*(young?YOUNG_AREA:1); }
     }
+    /** people is the most one household placed here may bring: a whole door's census line, or the line less who shares it. */
     public record Offer(HousingInventory.Key key, double count, int capacity, int bedrooms,
                         double area, double quality, double garden, boolean stepFree,
-                        double rent, double recurring) {
+                        double rent, double recurring, int people) {
         public Offer {
             quantity(count);quantity(rent);quantity(recurring);quantity(garden);
-            if(key==null||capacity<1||bedrooms<0||!(area>0)||!Double.isFinite(area)||!(quality>0)||!Double.isFinite(quality))
+            if(key==null||capacity<1||bedrooms<0||people<1||!(area>0)||!Double.isFinite(area)||!(quality>0)||!Double.isFinite(quality))
                 throw new IllegalArgumentException("Invalid housing offer");
+        }
+        /** A whole door, open to a household up to its census line. */
+        public Offer(HousingInventory.Key key, double count, int capacity, int bedrooms, double area, double quality,
+                     double garden, boolean stepFree, double rent, double recurring) {
+            this(key,count,capacity,bedrooms,area,quality,garden,stepFree,rent,recurring,line(bedrooms));
         }
     }
     /** Contract quantities, independent of donated physical room and the cell's preference vector. */
@@ -69,10 +83,13 @@ public final class HousingChoice {
     public record Result(List<Lease> leases, double kept, double suitable, double crowded,
                          double unaffordable, double noSuitable, double unplaced) { }
     private static void quantity(double v) { if (!Double.isFinite(v)||v<0) throw new IllegalArgumentException("Invalid housing quantity"); }
+    /** Crowding may pass the door's built capacity, never the census line its people bound carries. */
     public static boolean suitable(Demand d, Offer o, boolean emergency) {
-        return !(d.children()>0 && o.capacity()<=FamilyModel.STUDIO_MAX_SIZE)
+        return !(d.children()>0 && o.capacity()<=FamilyModel.STUDIO_MAX_SIZE) && d.size()<=o.people()
                 && (emergency || d.size()<=o.capacity());
     }
+    /** Two of this household to a share stay within the door's census line. */
+    public static boolean halves(Demand d, Offer o) { return suitable(d,o,true) && 2*d.size()<=o.people(); }
     public static boolean affordable(Demand d, Offer o) { return o.rent()+o.recurring()<=d.budget(); }
     public static double score(Demand d, Offer o) {
         return -Math.abs(Math.log(o.area()/d.targetArea()))
@@ -88,7 +105,11 @@ public final class HousingChoice {
     }
     /** Planning can reserve suitable homes without assuming emergency crowding in a new project. */
     public static Result clear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month,boolean emergency) {
-        if(!incumbents.isEmpty())return retainAndClear(demands,offers,incumbents,month,emergency);
+        return clear(demands,offers,incumbents,month,emergency,Set.of());
+    }
+    /** sitting: the cells whose incumbents keep their doors whatever their budget, until they can be evicted (tenure). */
+    public static Result clear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month,boolean emergency,Set<String> sitting) {
+        if(!incumbents.isEmpty())return retainAndClear(demands,offers,incumbents,month,emergency,sitting);
         List<Demand> ds=demands.stream().sorted(Comparator.comparing(Demand::key)).toList();
         List<Offer> os=offers.stream().sorted(Comparator.comparing(o->o.key().toString())).toList();
         int h=ds.size(),t=os.size(); double[][] x=new double[h][t];
@@ -138,15 +159,21 @@ public final class HousingChoice {
         if(left<=FamilyModel.packingRounding(source))left=poor=noSuitable=0;
         return new Result(List.copyOf(leases),kept,suitable,crowded,poor,noSuitable,left);
     }
-    /** Existing funded door shares precede new movers; their household quantity is not a whole-door quantity. */
-    private static Result retainAndClear(List<Demand> demands,List<Offer> offers,List<Lease> incumbents,int month,boolean emergency){
+    /**
+     * Existing funded door shares precede new movers; their household quantity is not a whole-door quantity. A sitting
+     * cell keeps its door and its bill on the budget it has (tenure: the landlord carries the arrears); only a cell
+     * that can be evicted keeps no more than its budget funds.
+     */
+    private static Result retainAndClear(List<Demand> demands,List<Offer> offers,List<Lease> incumbents,int month,boolean emergency,Set<String> sitting){
         Map<String,Demand> cells=new HashMap<>();for(var d:demands)cells.put(d.key(),d);
         Map<HousingInventory.Key,Offer> homes=new HashMap<>();for(var o:offers)homes.put(o.key(),o);
         List<Lease> ordered=incumbents.stream().sorted(Comparator.comparing(Lease::cell).thenComparing(l->l.home().toString())).toList();
         List<Lease> valid=new ArrayList<>();Map<String,Double> wanted=new HashMap<>();
         for(var l:ordered){var d=cells.get(l.cell());var o=homes.get(l.home());if(d==null||o==null)continue;
-            double full=suitable(d,o,false)&&affordable(d,o)?l.funding().full():0;
-            double half=suitable(d,o,true)&&(o.rent()+o.recurring())/2<=d.budget()?l.funding().half():0;
+            boolean sits=sitting.contains(l.cell());
+            // A sitter keeps its door within the census line, as a family that grows in it stays (RES3c).
+            double full=suitable(d,o,sits)&&(sits||affordable(d,o))?l.funding().full():0;
+            double half=halves(d,o)&&(sits||(o.rent()+o.recurring())/2<=d.budget())?l.funding().half():0;
             Funding funding=new Funding(full,half,0);double n=funding.doors(),people=funding.households();
             if(!(n>0))continue;
             var paid=new Lease(l.cell(),l.home(),n,n*o.rent(),people,funding);
@@ -254,14 +281,14 @@ public final class HousingChoice {
         if(left<=FamilyModel.packingRounding(source))left=poor=shortage=0;
         return new Result(List.copyOf(leases),kept,normal,crowded,poor,shortage,left);
     }
-    private record OfferSignature(int capacity,int bedrooms,double area,double quality,double garden,boolean stepFree,double rent,double recurring) { }
+    private record OfferSignature(int capacity,int bedrooms,double area,double quality,double garden,boolean stepFree,double rent,double recurring,int people) { }
     /** A subtraction residue is measured against its original source, before it can create a graph node. */
     private static double residual(double left,double source){return left<=FamilyModel.packingRounding(source)?0:Math.max(0,left);}
     private static double allocate(List<Demand> ds,List<Offer> os,double[] need,double[] free,double[][] x,int month,boolean emergency){
         Map<DemandSignature,List<Integer>> dg=new LinkedHashMap<>(); Map<OfferSignature,List<Integer>> og=new LinkedHashMap<>();
         boolean freeOffers=true;for(int j=0;j<os.size();j++)if(free[j]>0&&os.get(j).rent()+os.get(j).recurring()>0)freeOffers=false;
         for(int i=0;i<ds.size();i++)if(need[i]>0){Demand d=ds.get(i);dg.computeIfAbsent(new DemandSignature(d.size(),d.children(),d.retired(),d.tier(),d.young(),freeOffers?0:d.budget()),k->new ArrayList<>()).add(i);}
-        for(int j=0;j<os.size();j++)if(free[j]>0){Offer o=os.get(j);og.computeIfAbsent(new OfferSignature(o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring()),k->new ArrayList<>()).add(j);}
+        for(int j=0;j<os.size();j++)if(free[j]>0){Offer o=os.get(j);og.computeIfAbsent(new OfferSignature(o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring(),o.people()),k->new ArrayList<>()).add(j);}
         List<List<Integer>> hs=new ArrayList<>(dg.values()),ts=new ArrayList<>(og.values());
         // Stable keys, rotated monthly, decide only incomparable residual ties.
         hs.sort(Comparator.comparingLong(g->rotatedKey(ds.get(g.getFirst()).key(),month)));
@@ -309,7 +336,7 @@ public final class HousingChoice {
         }
         Map<DemandSignature,List<Integer>> dg=new LinkedHashMap<>();Map<OfferSignature,List<Integer>> og=new LinkedHashMap<>();
         for(int i=0;i<ds.size();i++)if(originalH[i]>0){Demand d=ds.get(i);dg.computeIfAbsent(new DemandSignature(d.size(),d.children(),d.retired(),d.tier(),d.young(),freeOffers?0:d.budget()),k->new ArrayList<>()).add(i);}
-        for(int j=0;j<os.size();j++)if(originalT[j]>0){Offer o=os.get(j);og.computeIfAbsent(new OfferSignature(o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring()),k->new ArrayList<>()).add(j);}
+        for(int j=0;j<os.size();j++)if(originalT[j]>0){Offer o=os.get(j);og.computeIfAbsent(new OfferSignature(o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring(),o.people()),k->new ArrayList<>()).add(j);}
         List<List<Integer>> hs=new ArrayList<>(dg.values()),ts=new ArrayList<>(og.values());
         hs.sort(Comparator.comparingLong(g->rotatedKey(ds.get(g.getFirst()).key(),month)));
         int hn=hs.size(),tn=ts.size(),sink=hn+tn+1;List<List<Edge>> graph=new ArrayList<>();for(int n=0;n<=sink;n++)graph.add(new ArrayList<>());

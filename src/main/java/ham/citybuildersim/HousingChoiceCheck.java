@@ -115,7 +115,31 @@ public final class HousingChoiceCheck {
         check("fractional completion conserves each actual household source",sources);
         check("fractional completion reserves each source's old recurring resources",resources);
     }
+    /** Tenure (RES3c, 2026-11-25): the doors follow the people across cells, and a sitter keeps its door within the census line. */
+    static void tenureFollowsThePeople(){
+        System.out.println("--- tenure follows the people: a household that changes cell takes its door, a sitter keeps it within the census line ---");
+        var home=o("four",10,4,90,1,0,false,10);
+        check("fixture: a door built for four, two bedrooms, holds six on the census line",home.capacity()==4&&home.people()==HousingChoice.line(2)&&home.people()==6);
+        String small="COUPLE_CHILD:UNSKILLED",grown="LARGE_FAMILY:UNSKILLED";
+        var lease=new HousingChoice.Lease(small,home.key(),8,80);
+        var route=new HouseholdBalance.HousingRoute(Map.of(small,10.0),Map.of(small,Map.of(grown,2.5)));
+        var carried=HousingMarket.carry(List.of(lease),route);
+        near("a quarter of the cell's households changed cell and take a quarter of its doors",carried.stream().filter(l->l.cell().equals(grown)).mapToDouble(HousingChoice.Lease::count).sum(),2);
+        near("...the households that stayed keep the rest",carried.stream().filter(l->l.cell().equals(small)).mapToDouble(HousingChoice.Lease::count).sum(),6);
+        near("...and the bills go with the doors, none made or lost",carried.stream().mapToDouble(HousingChoice.Lease::bill).sum(),80);
+        check("a route with no one changing cell carries nothing",HousingMarket.carry(List.of(lease),HouseholdBalance.HousingRoute.NONE).equals(List.of(lease)));
+        var family=new HousingChoice.Demand(grown,2,6,4,false,0,false,0);
+        var held=carried.stream().filter(l->l.cell().equals(grown)).toList();
+        var sat=HousingChoice.clear(List.of(family),List.of(home),held,8,true,Set.of(grown));
+        near("a sitting family of six keeps its door past the four it was built for, within the census line, on no budget",sat.kept(),2);
+        near("...its bill still due at the class's quote: the landlord carries the arrears",sat.leases().stream().filter(l->l.cell().equals(grown)).mapToDouble(HousingChoice.Lease::bill).sum(),20);
+        near("a household that can be evicted and cannot pay keeps no door",HousingChoice.clear(List.of(family),List.of(home),held,8,true,Set.of()).kept(),0);
+        var seven=new HousingChoice.Demand(grown,2,7,5,false,0,false,0);
+        near("...nor does a sitter past the census line",HousingChoice.clear(List.of(seven),List.of(home),held,8,true,Set.of(grown)).kept(),0);
+    }
+
     public static void main(String[] args){
+        tenureFollowsThePeople();
         mixedContracts();
         paidExcessContracts();
         fractionalExcessBook();

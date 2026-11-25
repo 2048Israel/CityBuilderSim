@@ -323,6 +323,8 @@ public class Migration {
     private double rentBurden;
 
     public void setRentBurden(double burden) { this.rentBurden = Math.max(0, burden); }
+    /** The rent burden the pull last weighed: the asking rent's on the typed market (HousingMarket.askedBurden()), else the paid. */
+    public double getRentBurden() { return rentBurden; }
 
     public double getLastAffordabilityPull() { return lastAffordabilityPull; }
 

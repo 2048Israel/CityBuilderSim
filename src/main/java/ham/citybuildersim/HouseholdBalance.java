@@ -764,8 +764,51 @@ public class HouseholdBalance {
         for(int i=0;i<cells.length;i++)projected.cells[i].dependants=cells[i].dependants;
         // Counterparties and receipts deliberately stay detached: this is a quote,
         // not a tax payment, security trade, inheritance booking or a cash settlement.
-        projected.followThePeople(fresh,new double[cells.length],projected.planFlows(families,false),true);
+        Plan plan=projected.planFlows(families,false);
+        housingRoute=projected.route(fresh,plan);
+        projected.followThePeople(fresh,new double[cells.length],plan,true);
         return projected.cells;
+    }
+
+    /* ----- the doors follow the people (RES3c, 2026-11-25) ----- */
+    /**
+     * Who changes cell this month, for the typed market's leases (HousingMarket.carry()): each cell's households
+     * coming into the month (before), and the households it sends to each other cell (moved).
+     */
+    public record HousingRoute(java.util.Map<String,Double> before,java.util.Map<String,java.util.Map<String,Double>> moved) {
+        public static final HousingRoute NONE=new HousingRoute(java.util.Map.of(),java.util.Map.of());
+    }
+    /** The route the last housing quote struck (strikeHousingBudgets()): a quote's, not saved, struck again each month. */
+    private HousingRoute housingRoute=HousingRoute.NONE;
+    public HousingRoute housingRoute(){return housingRoute;}
+    /**
+     * The month's moves between cells as the money takes them: the flows' own (ageing on, retiring, a partner's
+     * death), then the census's net change routed as SecurityRoute routes a stock with every household weighing one,
+     * within the stock group first and then across the city. Leavers, estates and a loss no cell gains go nowhere.
+     */
+    private HousingRoute route(double[] fresh,Plan plan){
+        int n=cells.length;double[] after=new double[n],arriving=new double[n],delta=new double[n];
+        java.util.Map<String,Double> before=new java.util.TreeMap<>();
+        java.util.Map<String,java.util.Map<String,Double>> moved=new java.util.TreeMap<>();
+        for(int i=0;i<n;i++){after[i]=cells[i].households;before.put(cells[i].key(),cells[i].households);}
+        for(Move m:plan.moves){after[m.from]-=m.out;if(m.to<0)continue;arriving[m.to]+=m.in;
+            double h=Math.min(m.out,m.in);
+            if(m.to!=m.from&&h>0)moved.computeIfAbsent(cells[m.from].key(),k->new java.util.TreeMap<>()).merge(cells[m.to].key(),h,Double::sum);}
+        double[] loss=new double[Household.STOCK_GROUPS],gain=new double[Household.STOCK_GROUPS];
+        for(int i=0;i<n;i++){after[i]=Math.max(0,after[i])+arriving[i];delta[i]=fresh[i]-after[i];
+            if(delta[i]<0)loss[cells[i].stockGroup()]-=delta[i];else if(delta[i]>0)gain[cells[i].stockGroup()]+=delta[i];}
+        double[] lossLeft=new double[n],gainLeft=new double[n];
+        for(int i=0;i<n;i++){int r=cells[i].stockGroup();double row=Math.min(loss[r],gain[r]);
+            if(delta[i]<0){double sent=row>0?-delta[i]*row/loss[r]:0;lossLeft[i]=-delta[i]-sent;
+                if(sent>0)for(int j=0;j<n;j++)if(delta[j]>0&&cells[j].stockGroup()==r)
+                    moved.computeIfAbsent(cells[i].key(),k->new java.util.TreeMap<>()).merge(cells[j].key(),sent*delta[j]/gain[r],Double::sum);}
+            else if(delta[i]>0)gainLeft[i]=delta[i]*(row>0?1-row/gain[r]:1);}
+        double cityLoss=0,cityGain=0;for(int i=0;i<n;i++){cityLoss+=lossLeft[i];cityGain+=gainLeft[i];}
+        double city=Math.min(cityLoss,cityGain);
+        if(city>0)for(int i=0;i<n;i++)if(lossLeft[i]>0){double sent=lossLeft[i]*city/cityLoss;
+            for(int j=0;j<n;j++)if(gainLeft[j]>0)
+                moved.computeIfAbsent(cells[i].key(),k->new java.util.TreeMap<>()).merge(cells[j].key(),sent*gainLeft[j]/cityGain,Double::sum);}
+        return new HousingRoute(before,moved);
     }
 
     public void setRentShares(ToDoubleFunction<Household> shares) {

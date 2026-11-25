@@ -16305,9 +16305,12 @@ public class Game {
          * ...and what a flat costs here, which is a PULL rather than a push and
          * so is set in the same place for a different reason. See
          * Migration.affordabilityPull(): the discharged leave, and the people
-         * who would have arrived simply do not.
+         * who would have arrived simply do not. On the typed market a mover
+         * weighs the asking rent, not what doubled-up households pay (RES3,
+         * HousingMarket.askedBurden()).
          */
-        migration.setRentBurden(households.getRentBurden());
+        double askedBurden = getSectors().realEstate().housingMarket().askedBurden(this, households.getDisposableIncome());
+        migration.setRentBurden(Double.isFinite(askedBurden) ? askedBurden : households.getRentBurden());
 
         // ...and what last month's crime says about living here. See
         // Migration.crimePull(): "like dear rent", Jerus.
@@ -16992,7 +16995,7 @@ public class Game {
             if(count>sharing)demand.add(new HousingChoice.Demand(c.key(),count-sharing,size,children,c.isRetired(),
                     c.tier()==null?0:c.tier().ordinal(),c instanceof WorkingHousehold w&&w.stage()==AdultStage.YOUNG,budget));
         }
-        var result=market.clear(this,demand);
+        var result=market.clear(this,demand,householdBalance.housingRoute());
         families.acceptTypedHousing(market.demands(),result,householdBalance.cells(),buildingManager.getHousingInventory());
         getSectors().realEstate().setRentWeight(families.studioRentWeight(),families.familyRentWeight());
         getSectors().realEstate().setOccupiedHomes(market.occupied());

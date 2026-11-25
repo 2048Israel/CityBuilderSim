@@ -667,9 +667,14 @@ public final class HousingMarketCheck {
         double structure=g.getEconomyManager().housingStructureValue(t),full=structure+g.getEconomyManager().housingLandValue(t);
         double ask=HousingForms.of(0).homeCapital(t.getHousingRecipe().mix().getFirst().id(),structure,full-structure)*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
         var market=g.getSectors().realEstate().housingMarket();
-        var result=market.clear(g,List.of(new HousingChoice.Demand("host",1,2,0,false,0,false,2*ask),
-                new HousingChoice.Demand("fundable",1,2,0,true,0,false,.75*ask),
-                new HousingChoice.Demand("poor",1,2,0,true,0,false,0)));
+        // Four to a household: a host and one guest fill the door to its census line (HousingChoice.line), so the
+        // host place is scarce and no lodging room is left beside them (RES3c, 2026-11-25).
+        int size=HousingChoice.line(t.getHousingRecipe().mix().getFirst().bedrooms())/2;
+        check("fixture: a host and one guest fill the door to its census line",2*size==HousingChoice.line(t.getHousingRecipe().mix().getFirst().bedrooms())
+                &&size<=t.getHousingRecipe().mix().getFirst().capacity());
+        var result=market.clear(g,List.of(new HousingChoice.Demand("host",1,size,0,false,0,false,2*ask),
+                new HousingChoice.Demand("fundable",1,size,0,true,0,false,.75*ask),
+                new HousingChoice.Demand("poor",1,size,0,true,0,false,0)));
         near("all three households have feasible emergency shelter",result.unplaced(),0);
         near("the poor household uses the already funded host",market.rentFor("poor",1),0);
         near("the other guest funds its actual vacant half door",market.rentFor("fundable",1),ask/2);
@@ -678,9 +683,9 @@ public final class HousingMarketCheck {
         near("occupied shares earn only their actual rent",market.receipts(),1.5*ask);
         near("actual occupied door equivalents are bounded",market.occupied(),1.5);
         check("no temporary matching node reaches a saved lease",market.leases().stream().allMatch(l->l.home().recipe()>=0));
-        market.reset();result=market.clear(g,List.of(new HousingChoice.Demand("host",1,2,0,false,0,false,2*ask),
-                new HousingChoice.Demand("fundable",1,2,0,true,0,false,.25*ask),
-                new HousingChoice.Demand("poor",1,2,0,true,0,false,0)));
+        market.reset();result=market.clear(g,List.of(new HousingChoice.Demand("host",1,size,0,false,0,false,2*ask),
+                new HousingChoice.Demand("fundable",1,size,0,true,0,false,.25*ask),
+                new HousingChoice.Demand("poor",1,size,0,true,0,false,0)));
         near("without a funded vacant share one household remains explicitly unplaced",result.unplaced(),1);
         near("unfunded vacancy creates no extra receipts",market.receipts(),ask);
         near("unfunded vacancy creates no extra occupied home",market.occupied(),1);
@@ -711,8 +716,10 @@ public final class HousingMarketCheck {
                 new HousingChoice.Demand(single.key(),5,1,0,false,0,single.stage()==AdultStage.YOUNG,0)));
         check("an emergency sharing group can join a funded host without a vacant door",market.sharingGroups()>0);
         near("hosting a sharing group still earns just the one funded rent",market.receipts(),ask);
-        check("a sharing group consumes the host slot before further guests",result.leases().stream().mapToDouble(HousingChoice.Lease::households).sum()
+        // Lodgers (HousingMarket.lodging()) hold no share: the shares stay two to a door, the people within the census line.
+        check("a sharing group consumes the host slot before further guests",result.leases().stream().mapToDouble(HousingMarket::shares).sum()
                 <=2*market.occupied()+FamilyModel.packingRounding(2*market.occupied()));
+        check("...and whoever boards beyond it keeps the door within its census line (HousingChoice.line)",withinLine(market,result));
         beforeRoom=JSON.toJson(market.forSave());bm.addStack(t,1,true);
         near("migration room sees a real completion and first reserves current unplaced demand",
                 market.roomLeft(g,new FamilyModel.Room(0,0,0,2,1,0,2)).households(),2-result.unplaced());
@@ -1042,14 +1049,17 @@ public final class HousingMarketCheck {
     }
     static void aggregatePackingRemainder(){
         out.println("--- the final shortage uses the existing whole-match packing resolution ---");
-        Game g=new Game(GameFiles.scratch("res3-aggregate-packing"));g.run();var bm=g.getBuildingManager();bm.addStack(bm.getTemplate(0),100,true);
+        // A hundred one-bedroom doors, each a couple and its guest couple: four, the door's census line, so the
+        // residue has no room in the doubling or in lodging (RES3c, 2026-11-25).
+        Game g=new Game(GameFiles.scratch("res3-aggregate-packing"));g.run();var bm=g.getBuildingManager();var h55=bm.getTemplate(HousingForms.ALL.getFirst().id());bm.addStack(h55,100,true);
+        check("fixture: a couple and its guest couple fill the door to its census line",HousingChoice.line(h55.getHousingRecipe().mix().getFirst().bedrooms())==4);
         String host=g.getHouseholdBalance().cell(FamilyStructure.COUPLE,PayTier.UNSKILLED).key();
-        String guest=g.getHouseholdBalance().cell(FamilyStructure.SENIOR_ALONE,PayTier.UNSKILLED).key();
-        String residue=g.getHouseholdBalance().cell(FamilyStructure.SENIOR_COUPLE,PayTier.UNSKILLED).key();
+        String guest=g.getHouseholdBalance().cell(FamilyStructure.SENIOR_COUPLE,PayTier.UNSKILLED).key();
+        String residue=g.getHouseholdBalance().cell(FamilyStructure.SENIOR_ALONE,PayTier.UNSKILLED).key();
         var market=g.getSectors().realEstate().housingMarket();
         for(double missing:new double[]{Math.ulp(100.0),1e-4}){
             market.reset();List<HousingChoice.Demand> cells=List.of(new HousingChoice.Demand(host,100,2,0,false,0,false,1000),
-                    new HousingChoice.Demand(guest,100,1,0,true,0,false,0),new HousingChoice.Demand(residue,missing,2,0,true,0,false,0));
+                    new HousingChoice.Demand(guest,100,2,0,true,0,false,0),new HousingChoice.Demand(residue,missing,1,0,true,0,false,0));
             var result=market.clear(g,cells);g.getFamilies().acceptTypedHousing(market.demands(),result,g.getHouseholdBalance().cells(),bm.getHousingInventory());
             if(missing<FamilyModel.packingRounding(200)){
                 check("an ULP of the whole source is exactly zero final shortage",result.unplaced()==0);
@@ -1070,11 +1080,19 @@ public final class HousingMarketCheck {
         double[] jobs=new double[PayTier.values().length];jobs[PayTier.UNSKILLED.ordinal()]=1000;g.getFamilies().rebuild(g.getCohorts(),jobs);
         var single=g.getHouseholdBalance().cells().stream().filter(c->c instanceof WorkingHousehold w&&w.shape()==FamilyStructure.SINGLE_ADULT
                 &&g.getFamilies().get(w.shape(),w.tier(),w.stage())>=5).map(c->(WorkingHousehold)c).findFirst().orElseThrow();
-        var bm=g.getBuildingManager();bm.addStack(bm.getTemplate(0),1,true);bm.addStack(bm.getTemplate(1),1,true);
-        String host=g.getHouseholdBalance().cell(FamilyStructure.LARGE_FAMILY,PayTier.UNSKILLED).key();
+        // Two three-bedroom doors (census line 8): beside a couple a place for six, beside a couple and child one
+        // for five. Both fit the five adults' group; only the first fits the child family of six. Two one-bedroom
+        // doors (line 4) beside couples take the single adults left over from the group (MAX_SHARING), and no child.
+        var bm=g.getBuildingManager();var h120=bm.getTemplate(0);var h55=bm.getTemplate(HousingForms.ALL.getFirst().id());
+        bm.addStack(h120,2,true);bm.addStack(h55,2,true);
+        check("fixture: the three-bedroom door's line is eight, the one-bedroom's four",HousingChoice.line(h120.getHousingRecipe().mix().getFirst().bedrooms())==8
+                &&HousingChoice.line(h55.getHousingRecipe().mix().getFirst().bedrooms())==4);
+        String host=g.getHouseholdBalance().cell(FamilyStructure.COUPLE_CHILD,PayTier.UNSKILLED).key();
+        String couple=g.getHouseholdBalance().cell(FamilyStructure.COUPLE,PayTier.UNSKILLED).key();
         String guest=g.getHouseholdBalance().cell(FamilyStructure.LARGE_FAMILY,PayTier.SKILLED).key();
         String compact=g.getHouseholdBalance().cell(FamilyStructure.COUPLE,PayTier.SKILLED).key();
-        List<HousingChoice.Demand> demands=List.of(new HousingChoice.Demand(host,1,6,4,false,0,false,1000),
+        List<HousingChoice.Demand> demands=List.of(new HousingChoice.Demand(host,1,3,1,false,0,false,1000),
+                new HousingChoice.Demand(couple,1,2,0,false,0,false,1000),
                 new HousingChoice.Demand(compact,2,2,0,false,2,false,1000),
                 new HousingChoice.Demand(single.key(),5,1,0,false,single.tier().ordinal(),single.stage()==AdultStage.YOUNG,0),
                 new HousingChoice.Demand(guest,1,6,4,false,2,false,0));
@@ -1082,12 +1100,23 @@ public final class HousingMarketCheck {
         var market=g.getSectors().realEstate().housingMarket();var result=market.clear(g,demands);
         double after=0;for(FamilyStructure shape:FamilyStructure.values())after+=g.getFamilies().totalOf(shape)*shape.size();
         near("host allocation preserves all actual family members",after,before);
-        near("three funded hosts occupy exactly three real doors",market.occupied(),3);
+        near("four funded hosts occupy exactly four real doors",market.occupied(),4);
         check("actual single adults really form emergency sharing groups",market.sharingGroups()>0);
         near("compatible family host space is not consumed by adult soft preferences",result.unplaced(),0);
         near("the child guest obtains its whole compatible host slot",result.leases().stream().filter(l->l.cell().equals(guest)).mapToDouble(HousingChoice.Lease::households).sum(),1);
-        check("all emergency guests fit the actual two-household door limit",result.leases().stream().mapToDouble(HousingChoice.Lease::households).sum()<=6+FamilyModel.packingRounding(6));
-        near("emergency hosts collect only the three funded lease bills",market.receipts(),result.leases().stream().filter(l->l.cell().equals(host)||l.cell().equals(compact)).mapToDouble(HousingChoice.Lease::bill).sum());
+        check("all emergency guests fit the actual two-household door limit",result.leases().stream().mapToDouble(HousingChoice.Lease::households).sum()<=8+FamilyModel.packingRounding(8));
+        check("and every door within its census line",withinLine(market,result));
+        near("emergency hosts collect only the four funded lease bills",market.receipts(),result.leases().stream().filter(l->l.cell().equals(host)||l.cell().equals(couple)||l.cell().equals(compact)).mapToDouble(HousingChoice.Lease::bill).sum());
+    }
+    /** Every class's occupied doors hold at most their census line of people (HousingChoice.line, RES3c). */
+    static boolean withinLine(HousingMarket market,HousingChoice.Result result){
+        Map<String,Integer> sizes=new HashMap<>();for(var d:market.demands())sizes.put(d.key(),d.size());
+        Map<HousingInventory.Key,Double> people=new HashMap<>(),doors=new HashMap<>();
+        for(var l:result.leases()){people.merge(l.home(),l.households()*sizes.getOrDefault(l.cell(),Integer.MAX_VALUE/4),Double::sum);doors.merge(l.home(),l.count(),Double::sum);}
+        for(var c:market.classes()){var k=c.key();if(!people.containsKey(k))continue;
+            var o=market.offers().stream().filter(x->x.key().equals(k)).findFirst().orElse(null);if(o==null)return false;
+            if(people.get(k)>o.people()*doors.get(k)+FamilyModel.packingRounding(people.get(k)))return false;}
+        return true;
     }
     static void writeReport(StringBuilder report,Game g,String label,Map<Integer,Long> starts,Map<Integer,Long> completions,int months,double ms){
         var re=g.getSectors().realEstate();var market=re.housingMarket();var bm=g.getBuildingManager();var em=g.getEconomyManager();

@@ -57,6 +57,8 @@ public final class HousingMarket {
     public double hosted(){return hosted;}
     public double sharingGroups(){return sharing.stream().mapToDouble(Sharing::groups).sum();}
     public List<HousingChoice.Demand> demands(){return demand;}
+    /** The last clearing's doors as offered (not saved: a load has none until its next clearing). */
+    public List<HousingChoice.Offer> offers(){return offers;}
     public boolean active() { return month!=Integer.MIN_VALUE; }
     public int clearedMonth() { return month; }
     public List<HousingChoice.Lease> leases() { return leases; }
@@ -64,6 +66,23 @@ public final class HousingMarket {
     public HousingChoice.Result result() { return result; }
     public double rentFor(String cell,double count) { return count>0?leases.stream().filter(l->l.cell().equals(cell)||l.cell().startsWith(cell+"#")).mapToDouble(HousingChoice.Lease::bill).sum()/count:0; }
     public double receipts() { return leases.stream().mapToDouble(HousingChoice.Lease::bill).sum(); }
+    /**
+     * THE ASKED BURDEN (RES3c, 2026-11-25): what a mover weighs, every household's cheapest suitable class's ask, the
+     * rent its next vacant door asks, over the city's take-home pay; NaN off the typed market. A class asks one rent,
+     * let or vacant, so a class whose doors are all let still names the price of the next one built.
+     * WHY: the paid burden, receipts over take-home, counts what doubled-up households pay. On the 1900 city 41% of
+     * households paid nothing as guests and lodgers, the paid burden fell to 0.296 (main 0.717), and Migration read
+     * a cheap city where the House asked its anchor. A mover weighs the asking rent (the orchestrator's call). The
+     * doors are read from the saved classes, not the clearing's offers, which a load does not keep.
+     */
+    public double askedBurden(Game game,double disposable){
+        if(!active()||!(disposable>0))return Double.NaN;
+        double asked=0;var doors=supply(game);
+        for(var d:demand){double best=Double.POSITIVE_INFINITY;
+            for(var o:doors)if(o.count()>0&&HousingChoice.suitable(d,o,false))best=Math.min(best,o.rent());
+            if(Double.isFinite(best))asked+=d.count()*best;}
+        return asked/disposable;
+    }
     public double rentPriceIndex() { return rentPriceIndex; }
     public double occupied() { return leases.stream().mapToDouble(HousingChoice.Lease::count).sum(); }
     /** Reserve this press's domestic formation before admitting people who start work next press. */
@@ -98,12 +117,13 @@ public final class HousingMarket {
         for(var stock:inventory.stock()){
             var c=classes.get(stock.key());if(c==null||!c.available)continue;
             double owned=inventory.owned(c.key(),HousingInventory.Owner.REAL_ESTATE);homes+=owned;
-            double assigned=leases.stream().filter(l->l.home().equals(c.key())).mapToDouble(HousingChoice.Lease::households).sum();
+            // Who holds a share, two to a door: a lodger holds none (lodging()), so it is neither a slot taken nor displaced.
+            double assigned=leases.stream().filter(l->l.home().equals(c.key())).mapToDouble(HousingMarket::shares).sum();
             // A demolition/title transfer can precede the next monthly clearing.
             // Reserve other rooms for its displaced tenants before admitting arrivals.
             double lost=Math.max(0,assigned-2*owned);
             double parents=leases.stream().filter(l->l.home().equals(c.key())&&familyCells.getOrDefault(l.cell(),false))
-                    .mapToDouble(HousingChoice.Lease::households).sum();
+                    .mapToDouble(HousingMarket::shares).sum();
             double lostFamilies=Math.min(lost,Math.max(0,parents-2*owned));
             children+=lostFamilies;adults+=lost-lostFamilies;
             double slots=Math.max(0,2*owned-assigned);
@@ -197,26 +217,22 @@ public final class HousingMarket {
         }
     }
     public HousingChoice.Result clear(Game game,List<HousingChoice.Demand> cells){
+        return clear(game,cells,HouseholdBalance.HousingRoute.NONE);
+    }
+    /** The month's clearing, the households that changed cell taking their doors along the route (carry()). */
+    public HousingChoice.Result clear(Game game,List<HousingChoice.Demand> cells,HouseholdBalance.HousingRoute route){
         if(month==game.getMonth())return result;
+        leases=carry(leases,route);
         quote(game);
-        var inventory=game.getBuildingManager().getHousingInventory();List<HousingChoice.Offer> supply=new ArrayList<>();
-        for(var t:game.getBuildingManager().getTemplatesBySector(Sectors.REAL_ESTATE)){
-            if(game.foundedUnfitted()&&!t.knownAt(game.getMonth(),game.getResearch()))continue;
-            var recipe=t.getHousingRecipe();if(recipe==null)continue;
-            for(var d:recipe.mix()){
-            var key=new HousingInventory.Key(t.getId(),d.id());ClassState c=classes.get(key);if(c==null)continue;var f=HousingForms.of(t.getId());
-            supply.add(new HousingChoice.Offer(key,c.homes,d.capacity(),d.bedrooms(),d.area(),d.quality(),
-                    f==null?0:f.garden(),f!=null&&f.stepFree(),c.ask,0));
-            }
-        }
-        demand=List.copyOf(cells);offers=List.copyOf(supply);
+        var inventory=game.getBuildingManager().getHousingInventory();
+        demand=List.copyOf(cells);offers=supply(game);
         hosted=0;arrivalProjection=false;formingFamilies=formingAdults=0;
         List<HousingChoice.Offer> pending=new ArrayList<>();
         for(var s:inventory.stock())if(s.pipeline()>0){var d=s.dwelling();var f=HousingForms.of(s.key().recipe());
             pending.add(new HousingChoice.Offer(s.key(),s.pipeline(),d.capacity(),d.bedrooms(),d.area(),d.quality(),
                     f==null?0:f.garden(),f!=null&&f.stepFree(),price(s.key()),0));}
         pipeline=List.copyOf(pending);
-        result=HousingChoice.clear(demand,offers,leases,game.getMonth());
+        result=HousingChoice.clear(demand,offers,leases,game.getMonth(),true,sitting(game));
         retainHosted();
         emergencySharing(game);
         emergencyDoubling(game);
@@ -266,10 +282,88 @@ public final class HousingMarket {
         }
     }
     private record LeaseKey(String cell,HousingInventory.Key home) { }
-    /** Prior guests keep priority only in the real room funded by this clearing's paying hosts. */
+    /**
+     * TENURE FOLLOWS THE PEOPLE (RES3c, 2026-11-25). A lease is a cell's, and a household that changes cell (a child
+     * born, a job lost, a pension drawn) would leave its door behind for a stranger and seek a new one with what it
+     * has now: a working family of six at a zero budget had no door although it never moved out. So each household
+     * that changes cell takes its share of its old cell's leases, as it takes its share of the cell's savings
+     * (HouseholdBalance.housingRoute(), the money's own route). Whether it keeps the door is the clearing's: a sitter
+     * keeps it within the census line on its arrears, an evictable cell within its budget (HousingChoice).
+     */
+    static List<HousingChoice.Lease> carry(List<HousingChoice.Lease> leases,HouseholdBalance.HousingRoute route){
+        if(route.moved().isEmpty())return leases;
+        List<HousingChoice.Lease> out=new ArrayList<>();
+        for(var l:leases){var to=route.moved().get(l.cell());double b=route.before().getOrDefault(l.cell(),0.0);
+            if(to==null||!(b>0)){out.add(l);continue;}
+            double sent=0;
+            for(var e:to.entrySet()){double f=Math.min(1-sent,e.getValue()/b);if(!(f>0))continue;sent+=f;
+                var q=l.scale(f);out.add(new HousingChoice.Lease(e.getKey(),q.home(),q.count(),q.bill(),q.households(),q.funding()));}
+            if(sent<1)out.add(l.scale(1-sent));
+        }
+        return HousingChoice.coalesce(out);
+    }
+    /** A lease's households that hold a share of its doors, two to a door; the rest are its lodgers. */
+    public static double shares(HousingChoice.Lease l){return Math.min(l.households(),2*l.count());}
+    /** Every known class's standing doors at its ask, as the clearing offers them. */
+    private List<HousingChoice.Offer> supply(Game game){
+        List<HousingChoice.Offer> supply=new ArrayList<>();
+        for(var t:game.getBuildingManager().getTemplatesBySector(Sectors.REAL_ESTATE)){
+            if(game.foundedUnfitted()&&!t.knownAt(game.getMonth(),game.getResearch()))continue;
+            var recipe=t.getHousingRecipe();if(recipe==null)continue;
+            for(var d:recipe.mix()){
+            var key=new HousingInventory.Key(t.getId(),d.id());ClassState c=classes.get(key);if(c==null)continue;var f=HousingForms.of(t.getId());
+            supply.add(new HousingChoice.Offer(key,c.homes,d.capacity(),d.bedrooms(),d.area(),d.quality(),
+                    f==null?0:f.garden(),f!=null&&f.stepFree(),c.ask,0));
+            }
+        }
+        return List.copyOf(supply);
+    }
+    /**
+     * TENURE (RES3c, 2026-11-25). Main's rule is Jerus's (2026-09-11): an incumbent keeps its door until it is past
+     * EI with its savings gone. A cell that cannot yet be evicted sits on, and its unpaid rent is booked as main books
+     * it, the landlord's arrears (the bill stays due; HouseholdBalance counts what it could not fund); only a cell that
+     * can be evicted keeps no more than its budget funds, its savings in the budget.
+     * WHY: kept on the budget alone, a family on EI lost its door the month its budget fell, and the 1900 city's first
+     * crunch month put 13 households with no home where main had none (CreditCrunchCheck 3). An eviction takes months
+     * of arrears, and the landlord carries them.
+     */
+    static Set<String> sitting(Game game){
+        Set<String> sitting=new HashSet<>();if(game==null||game.getHouseholdBalance()==null)return sitting;
+        for(Household c:game.getHouseholdBalance().cells())if(!c.canBeEvicted()){sitting.add(c.key());sitting.add(c.key()+"#sharing");}
+        return sitting;
+    }
+
+    /* ----- host places within the census line (RES3c, 2026-11-25) ----- */
+    /** The places beside lone host households of one size on one class of home. */
+    private record HostKey(HousingInventory.Key home,int size) { }
+    /**
+     * A lone household on its door leaves the one place beside it, two to a door; a guest takes it only if the pair
+     * stays within the door's census line (HousingChoice.PERSONS_PER_ROOM), so the places are kept by the host's size.
+     * WHY: kept by class alone, a family of six doubled into a two-bedroom door beside another four, ten in three rooms.
+     */
+    private static Map<HostKey,Double> hostPlaces(List<HousingChoice.Lease> all,Map<String,Integer> sizes){
+        Map<HostKey,Double> places=new TreeMap<>(Comparator.comparing((HostKey k)->k.home().toString()).thenComparingInt(HostKey::size));
+        for(var l:all){Integer size=sizes.get(l.cell());double n=Math.max(0,2*l.count()-l.households());
+            if(size!=null&&n>0)places.merge(new HostKey(l.home(),size),n,Double::sum);}
+        return places;
+    }
+    /** Hosts give up the places their guests took: half a door a place, from the leases that gave it pro rata. */
+    private static void giveUp(List<HousingChoice.Lease> all,Map<String,Integer> sizes,Map<HostKey,Double> places,Map<HostKey,Double> taken){
+        for(int i=0;i<all.size();i++){var l=all.get(i);Integer size=sizes.get(l.cell());if(size==null)continue;
+            var key=new HostKey(l.home(),size);double n=taken.getOrDefault(key,0.0);if(!(n>0))continue;
+            all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()-n*Math.max(0,2*l.count()-l.households())/(2*places.get(key)),l.bill(),l.households(),l.funding()));}
+    }
+    /** A host place as an offer: the home as built, free, open to one the census line still fits beside its host. */
+    private static HousingChoice.Offer hostRoom(HousingInventory.Key key,HousingChoice.Offer o,int host,double n){
+        return new HousingChoice.Offer(key,n,o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),0,0,o.people()-host);
+    }
+    private Map<String,Integer> sizes(){Map<String,Integer> sizes=new HashMap<>();for(var d:demand)sizes.put(d.key(),d.size());return sizes;}
+    private Map<HousingInventory.Key,HousingChoice.Offer> homes(){Map<HousingInventory.Key,HousingChoice.Offer> homes=new HashMap<>();for(var o:offers)homes.put(o.key(),o);return homes;}
+
+    /** Prior guests keep priority only in the real room funded by this clearing's paying hosts, beside a host the line fits. */
     private void retainHosted(){
         Map<String,HousingChoice.Demand> cells=new HashMap<>();for(var d:demand)cells.put(d.key(),d);
-        Map<HousingInventory.Key,HousingChoice.Offer> homes=new HashMap<>();for(var o:offers)homes.put(o.key(),o);
+        var homes=homes();var sizes=sizes();
         List<HousingChoice.Lease> all=new ArrayList<>(result.leases());
         Map<String,Double> prior=new HashMap<>(),left=new HashMap<>();
         for(var d:demand){double placed=all.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();left.put(d.key(),Math.max(0,d.count()-placed));}
@@ -281,22 +375,34 @@ public final class HousingMarket {
             double guests=Math.min(l.funding().sponsored(),2*Math.max(0,l.count()-l.funding().doors()));
             if(!(guests>0))continue;claims.merge(new LeaseKey(l.cell(),l.home()),guests,Double::sum);prior.merge(l.cell(),guests,Double::sum);
         }
-        Map<HousingInventory.Key,Double> room=new HashMap<>(),asked=new HashMap<>(),taken=new HashMap<>();
-        for(var o:offers)room.put(o.key(),all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum());
-        for(var e:claims.entrySet()){double n=e.getValue()*Math.min(1,left.getOrDefault(e.getKey().cell(),0.0)/prior.get(e.getKey().cell()));e.setValue(n);asked.merge(e.getKey().home(),n,Double::sum);}
+        var places=hostPlaces(all,sizes);
+        // A claim asks of the host sizes it fits beside, pro rata to their places; each host size rations its own places.
+        Map<LeaseKey,Map<HostKey,Double>> asks=new LinkedHashMap<>();Map<HostKey,Double> asked=new HashMap<>(),taken=new HashMap<>();
+        for(var e:claims.entrySet()){var k=e.getKey();double n=e.getValue()*Math.min(1,left.getOrDefault(k.cell(),0.0)/prior.get(k.cell()));
+            int guest=cells.get(k.cell()).size(),line=homes.get(k.home()).people();
+            Map<HostKey,Double> fits=new LinkedHashMap<>();double room=0;
+            for(var p:places.entrySet())if(p.getKey().home().equals(k.home())&&guest+p.getKey().size()<=line){fits.put(p.getKey(),p.getValue());room+=p.getValue();}
+            if(!(n>0)||!(room>0))continue;
+            Map<HostKey,Double> ask=new LinkedHashMap<>();
+            for(var f:fits.entrySet()){double a=n*f.getValue()/room;ask.put(f.getKey(),a);asked.merge(f.getKey(),a,Double::sum);}
+            asks.put(k,ask);
+        }
         List<HousingChoice.Lease> guests=new ArrayList<>();double extra=0;
-        for(var e:claims.entrySet()){double n=e.getValue()*Math.min(1,room.getOrDefault(e.getKey().home(),0.0)/asked.get(e.getKey().home()));if(!(n>0))continue;
-            guests.add(new HousingChoice.Lease(e.getKey().cell(),e.getKey().home(),n/2,0,n,new HousingChoice.Funding(0,0,n)));taken.merge(e.getKey().home(),n,Double::sum);extra+=n;}
-        for(int i=0;i<all.size();i++){var l=all.get(i);double n=taken.getOrDefault(l.home(),0.0);if(!(n>0))continue;
-            all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()-n*Math.max(0,2*l.count()-l.households())/(2*room.get(l.home())),l.bill(),l.households(),l.funding()));}
+        for(var e:asks.entrySet()){double n=0;
+            for(var a:e.getValue().entrySet()){double got=a.getValue()*Math.min(1,places.get(a.getKey())/asked.get(a.getKey()));n+=got;taken.merge(a.getKey(),got,Double::sum);}
+            if(!(n>0))continue;
+            guests.add(new HousingChoice.Lease(e.getKey().cell(),e.getKey().home(),n/2,0,n,new HousingChoice.Funding(0,0,n)));extra+=n;}
+        giveUp(all,sizes,places,taken);
         all.addAll(guests);hosted+=extra;
         result=HousingChoice.summarize(demand,offers,bounded(all),result.kept(),result.suitable(),result.crowded()+extra,Map.of());
     }
 
     /**
      * LODGING (RES3c, 2026-11-25). Who funds no share of any standing home boards with the housed, beyond two to a
-     * share and up to the door's people as built (its capacity), the hosts carrying its share: no bill, no new money,
-     * no payer added, and the doors occupied stay the doors occupied.
+     * share and up to the census line (HousingChoice.PERSONS_PER_ROOM), the hosts carrying its share: no bill, no new
+     * money, no payer added, and the doors occupied stay the doors occupied. The market keeps no single door's count,
+     * so a class's people are taken as spread evenly over its occupied doors: a lodger boards only where they keep room
+     * for it, and the class's people never pass the line.
      *
      * WHY: the doubling places a guest two to a share and no further, so a household past its EI with its savings
      * gone was left with no home at all: on the 1900 city one EI cohort's expiry left 252 households with no door in
@@ -307,21 +413,23 @@ public final class HousingMarket {
      */
     private void lodging(){
         Map<String,HousingChoice.Demand> cells=new HashMap<>();for(var d:demand)cells.put(d.key(),d);
+        var homes=homes();
         Map<LeaseKey,HousingChoice.Lease> all=new LinkedHashMap<>();
-        Map<String,Double> placed=new HashMap<>();Map<HousingInventory.Key,Double> room=new HashMap<>();
+        Map<String,Double> placed=new HashMap<>();Map<HousingInventory.Key,Double> room=new HashMap<>(),doors=new HashMap<>();
         for(var l:result.leases()){
             all.merge(new LeaseKey(l.cell(),l.home()),l,HousingChoice.Lease::plus);placed.merge(l.cell(),l.households(),Double::sum);
-            var d=cells.get(l.cell());var o=offers.stream().filter(x->x.key().equals(l.home())).findFirst().orElse(null);
-            if(d!=null&&o!=null)room.merge(l.home(),o.capacity()*l.count()-d.size()*l.households(),Double::sum);
+            var d=cells.get(l.cell());var o=homes.get(l.home());
+            if(d!=null&&o!=null){room.merge(l.home(),o.people()*l.count()-d.size()*l.households(),Double::sum);doors.merge(l.home(),l.count(),Double::sum);}
         }
         double extra=0;
         for(var d:demand){
             double need=d.count()-placed.getOrDefault(d.key(),0.0);
             if(need<=FamilyModel.packingRounding(d.count())||paysAShare(d))continue;
-            var homes=offers.stream().filter(o->HousingChoice.suitable(d,o,true)&&room.getOrDefault(o.key(),0.0)>0)
+            var boards=offers.stream().filter(o->HousingChoice.suitable(d,o,true)&&room.getOrDefault(o.key(),0.0)>0)
                     .sorted(Comparator.comparingDouble(o->-HousingChoice.score(d,o))).toList();
-            for(var o:homes){
-                double n=Math.min(need,room.get(o.key())/d.size());if(!(n>0))continue;
+            for(var o:boards){
+                double r=room.get(o.key());if(d.size()>r/doors.get(o.key()))continue;
+                double n=Math.min(need,r/d.size());if(!(n>0))continue;
                 all.merge(new LeaseKey(d.key(),o.key()),new HousingChoice.Lease(d.key(),o.key(),0,0,n,new HousingChoice.Funding(0,0,n)),HousingChoice.Lease::plus);
                 room.merge(o.key(),-n*d.size(),Double::sum);need-=n;extra+=n;
                 if(need<=FamilyModel.packingRounding(d.count()))break;
@@ -332,13 +440,14 @@ public final class HousingMarket {
         Map<String,Double> oldBudgets=new HashMap<>();for(var shift:sharing)oldBudgets.put(shift.target(),shift.targetBudget());
         result=HousingChoice.summarize(demand,offers,new ArrayList<>(all.values()),result.kept(),result.suitable(),result.crowded()+extra,oldBudgets);
     }
-    /** Whether a cell's budget funds half a share of a home that stands: who does is not a lodger. */
+    /** Whether a cell's budget funds half a share it fits of a home that stands: who does is not a lodger. */
     private boolean paysAShare(HousingChoice.Demand d){
-        for(var o:offers)if(o.count()>0&&HousingChoice.suitable(d,o,true)&&(o.rent()+o.recurring())/2<=d.budget())return true;
+        for(var o:offers)if(o.count()>0&&HousingChoice.halves(d,o)&&(o.rent()+o.recurring())/2<=d.budget())return true;
         return false;
     }
 
-    private record EmergencyRoom(HousingChoice.Offer home,boolean hosted) { }
+    /** A doubling node: a home's places beside one host size, or (host null) its vacant doors' paid halves. */
+    private record EmergencyRoom(HousingChoice.Offer home,HostKey host) { }
     /** Guests and hosts retain separate household counts while sharing one actual door and rent bill. */
     private void emergencyDoubling(Game game){
         List<HousingChoice.Lease> all=new ArrayList<>(result.leases());double extra=0;
@@ -352,28 +461,25 @@ public final class HousingMarket {
         // translated back to their actual comparable classes before any lease is kept.
         List<HousingChoice.Offer> rooms=new ArrayList<>();
         Map<HousingInventory.Key,EmergencyRoom> nodes=new HashMap<>();
-        Map<HousingInventory.Key,Double> hostSlots=new HashMap<>();
+        // Host places are kept by the host's size and a vacant door's halves at half its line, so no pair passes it.
+        var sizes=sizes();var homes=homes();var places=hostPlaces(all,sizes);
+        for(var p:places.entrySet()){var o=homes.get(p.getKey().home());if(o==null||o.people()-p.getKey().size()<1)continue;
+            var key=new HousingInventory.Key(-1-rooms.size(),o.key().dwelling());
+            rooms.add(hostRoom(key,o,p.getKey().size(),p.getValue()));nodes.put(key,new EmergencyRoom(o,p.getKey()));}
         for(var o:offers){
-            double hosts=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum();
             double occupied=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::count).sum();
-            hostSlots.put(o.key(),hosts);
-            for(boolean host:new boolean[]{true,false}){
-                double n=host?hosts:2*Math.max(0,o.count()-occupied);if(!(n>0))continue;
-                var key=new HousingInventory.Key(-1-rooms.size(),o.key().dwelling());
-                rooms.add(new HousingChoice.Offer(key,n,o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),host?0:o.rent()/2,host?0:o.recurring()/2));
-                nodes.put(key,new EmergencyRoom(o,host));
-            }
+            double n=2*Math.max(0,o.count()-occupied);if(!(n>0))continue;
+            var key=new HousingInventory.Key(-1-rooms.size(),o.key().dwelling());
+            rooms.add(new HousingChoice.Offer(key,n,o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent()/2,o.recurring()/2,o.people()/2));
+            nodes.put(key,new EmergencyRoom(o,null));
         }
         var guests=HousingChoice.clear(without,rooms,List.of(),game.getMonth());
-        Map<HousingInventory.Key,Double> takenHosts=new HashMap<>();
-        for(var l:guests.leases()){var node=nodes.get(l.home());if(node.hosted())takenHosts.merge(node.home().key(),l.count(),Double::sum);}
-        for(int i=0;i<all.size();i++){
-            var l=all.get(i);double n=takenHosts.getOrDefault(l.home(),0.0);if(!(n>0))continue;
-            all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()-n*Math.max(0,2*l.count()-l.households())/(2*hostSlots.get(l.home())),l.bill(),l.households(),l.funding()));
-        }
+        Map<HostKey,Double> takenHosts=new HashMap<>();
+        for(var l:guests.leases()){var node=nodes.get(l.home());if(node.host()!=null)takenHosts.merge(node.host(),l.count(),Double::sum);}
+        giveUp(all,sizes,places,takenHosts);
         for(var l:guests.leases()){
-            var node=nodes.get(l.home());double n=l.count();
-            all.add(new HousingChoice.Lease(l.cell(),node.home().key(),n/2,l.bill(),n,new HousingChoice.Funding(0,node.hosted()?0:n,node.hosted()?n:0)));extra+=n;
+            var node=nodes.get(l.home());double n=l.count();boolean host=node.host()!=null;
+            all.add(new HousingChoice.Lease(l.cell(),node.home().key(),n/2,l.bill(),n,new HousingChoice.Funding(0,host?0:n,host?n:0)));extra+=n;
         }
         hosted+=takenHosts.values().stream().mapToDouble(Double::doubleValue).sum();
         Map<LeaseKey,HousingChoice.Lease> merged=new LinkedHashMap<>();
@@ -466,29 +572,31 @@ public final class HousingMarket {
         List<HousingChoice.Demand> missing=new ArrayList<>();
         for(var d:proposed){double n=d.count()-placed.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
             if(n>FamilyModel.packingRounding(d.count()))missing.add(with(d,n,d.budget()));}
-        List<HousingChoice.Offer> hosts=new ArrayList<>();
-        for(var o:offers){double n=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum();
-            hosts.add(new HousingChoice.Offer(o.key(),n,o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),0,0));}
+        // Host places by the host's size: a group shelters only beside a host the census line still fits.
+        var sizes=sizes();for(var d:proposed)sizes.put(d.key(),d.size());var homes=homes();var places=hostPlaces(all,sizes);
+        List<HousingChoice.Offer> hosts=new ArrayList<>();Map<HousingInventory.Key,HostKey> nodes=new HashMap<>();
+        for(var p:places.entrySet()){var o=homes.get(p.getKey().home());if(o==null||o.people()-p.getKey().size()<1)continue;
+            var key=new HousingInventory.Key(-1-hosts.size(),o.key().dwelling());hosts.add(hostRoom(key,o,p.getKey().size(),p.getValue()));nodes.put(key,p.getKey());}
         // Child families cannot use compact host rooms. Keep their actual remaining
         // compatible slots before adult groups' softer preference for family space.
         Set<String> pooled=new HashSet<>();for(var p:pools.values())pooled.add(p.original().key());
-        double waitingChildren=0;
+        double waitingChildren=0;int smallest=Integer.MAX_VALUE;
         for(var d:demand)if(d.children()>0&&!pooled.contains(d.key())){
             double taken=all.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
-            waitingChildren+=Math.max(0,d.count()-taken);
+            double n=Math.max(0,d.count()-taken);waitingChildren+=n;if(n>0)smallest=Math.min(smallest,d.size());
         }
-        double familyHosts=hosts.stream().filter(o->o.capacity()>FamilyModel.STUDIO_MAX_SIZE).mapToDouble(HousingChoice.Offer::count).sum();
+        // Only a family place a waiting child family fits within the census line is kept for it.
+        final int fits=smallest;
+        java.util.function.Predicate<HousingChoice.Offer> forFamilies=o->o.capacity()>FamilyModel.STUDIO_MAX_SIZE&&o.people()>=fits;
+        double familyHosts=hosts.stream().filter(forFamilies).mapToDouble(HousingChoice.Offer::count).sum();
         double reserved=Math.min(familyHosts,waitingChildren);
-        if(reserved>0)for(int i=0;i<hosts.size();i++){var o=hosts.get(i);if(o.capacity()>FamilyModel.STUDIO_MAX_SIZE)
-            hosts.set(i,new HousingChoice.Offer(o.key(),o.count()*(1-reserved/familyHosts),o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),0,0));}
+        if(reserved>0)for(int i=0;i<hosts.size();i++){var o=hosts.get(i);if(forFamilies.test(o))
+            hosts.set(i,new HousingChoice.Offer(o.key(),o.count()*(1-reserved/familyHosts),o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),0,0,o.people()));}
         var sheltered=HousingChoice.clear(missing,hosts,List.of(),game.getMonth());
-        for(var o:hosts){double n=sheltered.leases().stream().filter(l->l.home().equals(o.key())).mapToDouble(HousingChoice.Lease::households).sum();if(!(n>0))continue;
-            double actualHosts=all.stream().filter(l->l.home().equals(o.key())).mapToDouble(l->Math.max(0,2*l.count()-l.households())).sum();
-            for(int i=0;i<all.size();i++){var l=all.get(i);if(l.home().equals(o.key()))
-                all.set(i,new HousingChoice.Lease(l.cell(),l.home(),l.count()-n*Math.max(0,2*l.count()-l.households())/(2*actualHosts),l.bill(),l.households(),l.funding()));}
-            for(var l:sheltered.leases())if(l.home().equals(o.key()))all.add(new HousingChoice.Lease(l.cell(),l.home(),l.count()/2,0,l.count(),new HousingChoice.Funding(0,0,l.count())));
-            hosted+=n;
-        }
+        Map<HostKey,Double> taken=new HashMap<>();
+        for(var l:sheltered.leases())taken.merge(nodes.get(l.home()),l.households(),Double::sum);
+        giveUp(all,sizes,places,taken);
+        for(var l:sheltered.leases()){all.add(new HousingChoice.Lease(l.cell(),nodes.get(l.home()).home(),l.count()/2,0,l.count(),new HousingChoice.Funding(0,0,l.count())));hosted+=l.households();}
         all=bounded(all);
         List<Sharing> transfers=new ArrayList<>();Map<String,Double> oldBudgets=new HashMap<>();
         double normal=result.suitable(),crowded=result.crowded();
@@ -571,7 +679,7 @@ public final class HousingMarket {
             var d=r.dwelling();var f=HousingForms.of(r.key().recipe());
             committed.add(new HousingChoice.Offer(r.key(),inventory.owned(r.key(),HousingInventory.Owner.REAL_ESTATE)+r.pipeline(),d.capacity(),d.bedrooms(),d.area(),d.quality(),f==null?0:f.garden(),f!=null&&f.stepFree(),price(r.key()),0));
         }
-        var reserved=HousingChoice.clear(planning,committed,leases,month,false);
+        var reserved=HousingChoice.clear(planning,committed,leases,month,false,sitting(game));
         List<HousingChoice.Demand> remaining=new ArrayList<>();
         Map<HousingInventory.Key,HousingChoice.Offer> homes=new HashMap<>();for(var o:committed)homes.put(o.key(),o);
         // Actual normal movers and privately funded paid-half deficits are disjoint.
