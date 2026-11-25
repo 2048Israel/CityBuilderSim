@@ -2876,8 +2876,8 @@ it.
   - Taking the whole bid when `fill >= bid` turns it green, but it moves
     every clearing's last digits.
   - ★ This is a real defect, main's, found in passing. R1g touches no
-    `Markets.java`. It is queued as MR1 in the ship file, and the
-    fixture's line is named under MR1. It is not mended here: a mend
+    `Markets.java`. It is queued as MKR1 in the ship file, and the
+    fixture's line is named under MKR1. It is not mended here: a mend
     would be model code beyond the plan, and would need a new review, the
     suite and the ensemble.
 - **KeptCheck**, "the full kept check's objects leave a quarter of
@@ -2903,3 +2903,7 @@ it.
   under PB1 is dropped from the ship file (the orchestrator's go: "only
   if the box's playtest agrees"). PB1 stays queued, with that figure
   added.
+- The queued row is MKR1, not MR1: MR1 is taken (QUEUE.md, Manufacturing's
+  re-order after a bleed sale; the orchestrator, 2026-11-25). The kept run
+  could not be reused (BX2 moved PackagingCheck.java and pick.sh), so the
+  gate-run line is dropped and a fresh dry run follows.
