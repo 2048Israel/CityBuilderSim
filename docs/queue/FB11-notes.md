@@ -257,4 +257,24 @@ erfpacht, Stockholm's land bank of 1904), and CopperRefiningCheck 11 is main's c
 
 ## 9. The ensemble
 
-(Filled in when it runs.)
+Label FB11, on the gate box, classes of ee746bd77 (the REV-FB11 mends with main ca030ab08 merged),
+80 of 80 runs in 28.7 minutes, scored against `docs/ensemble/0.9.206.md` (R1g's a3fc9ab0c); its
+baseline is `docs/ensemble/FB11.md`. **Verdict PASS**: hard criteria 10 of 10, M1 (the money
+audit) and F1 (findings) passed under all five policies; 24 of 26 criteria (1 retired). The two not
+passed are AUTO2's A1 and A2 (info), which failed on 0.9.206 too: inflation from m240 2.88%
+[2.45% to 3.48%], 9 of 16 seeds in band (0.9.206: 2.96%); the longest spell of yoy above 10%,
+14 months [9 to 32] (0.9.206: 13).
+
+Final population, median [range], FB11 against 0.9.206. T2 (info) went from FAIL to PASS under
+all five policies:
+
+| policy | FB11 | 0.9.206 |
+|---|---:|---:|
+| AUTO2 | 5,815,558 [2,367,023 to 9,020,635] | 6,262,849 |
+| ZERO_SLACK | 4,326,150 [1,267,092 to 7,059,834] | 4,317,140 |
+| ZERO_HOT | 19,202 [8,770 to 33,893] | 13,344 |
+| SHOCK | 606,768 [29,537 to 1,070,531] | 367,962 |
+| HIGH | 184,152 [13,254 to 349,428] | 104,940 |
+
+The held cities grow most where they were held: ZERO_HOT, SHOCK and HIGH by 44-75% in their
+medians. AUTO2's median is 7% lower, its seeds' range wider at the top (9.02 million against 8.22).
