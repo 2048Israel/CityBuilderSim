@@ -31,7 +31,8 @@ import java.util.List;
  *      and received by the treasury; a played month that writes one closes.
  *   3. THE DOWN PAYMENT: a landlord short of it on one holds, in words.
  *   4. THE LENDER'S TEST AT ITS LINE: MORTGAGE_DEBT_COVERAGE is financed, a
- *      hair under is declined, in words.
+ *      hair under is declined, in words; each size the halving tries is read
+ *      at its own rent roll (RES3c).
  *   5. FIXED FOR THE TERM: the dial moving does not move the payment; at
  *      MORTGAGE_TERM_MONTHS it renews at the day's rate over what is left.
  *      And the rent floor reads its interest and not its principal.
@@ -443,6 +444,21 @@ public class MortgageCheck {
         Mortgage.Decision five = Mortgage.decide(5, costOf, 5 * till, line * (1 - 1e-6), rate);
         assertTrue("the test is on the order: five that fail it are trimmed until they pass, or dropped",
                 five.quantity() < 5);
+
+        // RES3c: a lender reads the rent roll of the size it is shown. Demand for three: past it the order's rent is
+        // three units' spread over more (the typed market's HousingMarket.candidateIncome()); the till is the down
+        // payment on three.
+        java.util.function.LongToDoubleFunction roll = n -> 1.5 * line * Math.min(n, 3) / n;
+        assertTrue("fixture: six read at their average fail the line, three at their own pass it",
+                roll.applyAsDouble(6) < line && roll.applyAsDouble(3) >= line);
+        Mortgage.Decision averaged = Mortgage.decide(6, costOf, Mortgage.ownFundsFor(3 * one), roll.applyAsDouble(6), rate);
+        Mortgage.Decision ownRoll = Mortgage.decide(6, costOf, Mortgage.ownFundsFor(3 * one), roll, rate, n -> 1);
+        assertTrue("each size the halving tries is read at its own rent: six trimmed to the three the till puts down on",
+                ownRoll.quantity() == 3 && Mortgage.Decision.DOWN_PAYMENT.equals(ownRoll.trimmedBy()));
+        assertTrue("...where the six-order's average rent read for every size passed fewer", averaged.quantity() < 3);
+        Mortgage.Decision flat = Mortgage.decide(5, costOf, 5 * till, n -> line * (1 - 1e-6), rate, n -> 1);
+        assertTrue("...and a flat rent read either way decides the same", flat.quantity() == five.quantity()
+                && java.util.Objects.equals(flat.trimmedBy(), five.trimmedBy()));
     }
 
     /* ========================= 5. FIXED FOR THE TERM ========================= */

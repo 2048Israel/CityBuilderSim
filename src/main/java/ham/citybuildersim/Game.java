@@ -7932,16 +7932,18 @@ public class Game {
     /** The lender's reading of an order of `quantity` with `cash` in hand - the one call the landlords' order (considerOnMortgage()) and the build card (lenderTest()) both make, so they cannot disagree. */
     private LenderReading lenderReads(BuildingsTemplate t, long quantity, double cash, double perUnitRent) {
         var residential=getSectors().realEstate();
-        if(residential.housingMarket().active() && quantity>0)
-            perUnitRent=residential.housingMarket().candidateIncome(this,t,quantity)/quantity;
+        // On the typed market each size the lender is shown is read at its own rent roll (Mortgage.decide(), RES3c).
+        HousingMarket.Forecast forecast=residential.housingMarket().active() && quantity>0?residential.housingMarket().forecast(this):null;
+        if(forecast!=null)perUnitRent=forecast.income(t,quantity)/quantity;
         double insured = economyManager.getBusinessDebtManager().getInsuredMortgageRate();
         double tested = businessInvestment.realTestRate(insured);
         // ...at the door's own price (FB15, HN1-A; A LANDLORD'S ORDER AT THE DOOR'S OWN PRICE): the planner's was 2-5% under it.
         java.util.function.LongToDoubleFunction costOf = n -> doorPriceOf(t, n);
         // ...the shortfall grown over the order's wait (BA1; carryOf() applies the real rate itself, so it is handed the insured one).
         java.util.function.LongToDoubleFunction carryOf = n -> businessInvestment.carryOf(t, n, insured);
-        double noi = perUnitRent - economyManager.housingCarry(t);
-        return new LenderReading(costOf, insured, tested, noi, Mortgage.decide(quantity, costOf, cash, noi, tested, carryOf));
+        double carry = economyManager.housingCarry(t), noi = perUnitRent - carry, flat = perUnitRent;
+        java.util.function.LongToDoubleFunction noiOf = forecast == null ? n -> flat - carry : n -> forecast.income(t, n) / n - carry;
+        return new LenderReading(costOf, insured, tested, noi, Mortgage.decide(quantity, costOf, cash, noiOf, tested, carryOf));
     }
 
     /**

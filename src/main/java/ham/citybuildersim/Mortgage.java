@@ -289,9 +289,21 @@ public class Mortgage extends BusinessDebt {
     public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf,
                                   double cash, double noiPerUnit, double annualRate,
                                   java.util.function.LongToDoubleFunction carryOf) {
+        return decide(asked, costOf, cash, n -> noiPerUnit, annualRate, carryOf);
+    }
+
+    /**
+     * ...with each size the halving tries read at its own rent: {@code noiOf(n)} is one unit's net operating income in
+     * an order of n, as a lender reads the rent roll of the project it is shown. The typed market lets an order past its
+     * demand at less a unit (HousingMarket.candidateIncome()), so a slice read at the whole order's average was read short
+     * (RES3c, 2026-11-25). Non-increasing in n, a run from one stays a run from one.
+     */
+    public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf,
+                                  double cash, java.util.function.LongToDoubleFunction noiOf, double annualRate,
+                                  java.util.function.LongToDoubleFunction carryOf) {
         if (asked < 1) return new Decision(0, null, false, Double.NaN, Double.NaN);
         // What trimmed it is what failed first on the way down: the whole order.
-        Slice top = Slice.of(asked, costOf, cash, noiPerUnit, annualRate, carryOf);
+        Slice top = Slice.of(asked, costOf, cash, noiOf.applyAsDouble(asked), annualRate, carryOf);
         String trimmedBy = top.failedOn();
         // The largest that passes, by halving: passing is a run from one up
         // (THE LANDLORD'S ORDER IS A RUN FROM ONE, below).
@@ -299,11 +311,11 @@ public class Mortgage extends BusinessDebt {
         if (top.passes()) pass = asked;
         else while (fail - pass > 1) {
             long mid = ((long) pass + fail) >>> 1;
-            if (Slice.of(mid, costOf, cash, noiPerUnit, annualRate, carryOf).passes()) pass = mid; else fail = mid;
+            if (Slice.of(mid, costOf, cash, noiOf.applyAsDouble(mid), annualRate, carryOf).passes()) pass = mid; else fail = mid;
         }
         if (pass >= 2) return new Decision(pass, trimmedBy, false, Double.NaN, Double.NaN);
         // ...and the facts for one, which the count read when it got down to one.
-        Slice one = asked == 1 ? top : Slice.of(1, costOf, cash, noiPerUnit, annualRate, carryOf);
+        Slice one = asked == 1 ? top : Slice.of(1, costOf, cash, noiOf.applyAsDouble(1), annualRate, carryOf);
         if (pass == 1 && one.outright()) return new Decision(1, trimmedBy, false, Double.NaN, Double.NaN);
         if (pass == 1) return new Decision(1, trimmedBy, false, one.own(), one.coverage());
         return new Decision(0, trimmedBy, one.shortOfDown(), one.own(), one.coverage());
