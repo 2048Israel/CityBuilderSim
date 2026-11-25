@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-PW1-R-lDOWlbCK -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — PW1-R, PW1's review follow-ups: power billed on the kWh served — 2026-11-25, ready, see docs/queue/PW1-R-notes.md
