@@ -81,6 +81,63 @@ purity and output-error guards remain. This is a diagnostic counting repair,
 not a model change or a claim that the observer has run. Earlier unexecuted
 default payloads are superseded and remain unauthorized.
 
+Authorize one diagnostic Kept run on pushed4a5f516cb with no Java source
+instrumentation. Reviewed remote payload SHA256 is
+8af48e3a6ca25b2703365cdb083ce9fc1d4c16fc043df8ceba6397d314d53121;
+the parent verifies all four script hashes. It keeps the2GiB heap, original
+full fixture and bounds, adding one fixed HotSpot heap-dump path on the box.
+Disk preflight requires8GiB free, each file is capped at3GiB, and capture stops
+the registered owned group if run size exceeds4GiB or free disk falls below
+4GiB. A fatal result remains failed or unknown; capture cannot turn it green.
+Raw heap stays on the box with its checksum. Analysis starts only after all
+owned JVMs end, using a bounded non-JVM reader. No later run resumes on this
+permission, and no retained-heap cause or fix is claimed before evidence.
+
+The first capture wrapper itself is defective: its bare OutOfMemoryError
+substring also matches the JVM option HeapDumpOnOutOfMemoryError in the log
+header. The helper reports the false match and the parent acknowledges missing
+it in review. Its120-second cleanup cancels the run before any actual heap
+failure, with no dump, full footer or verdict. This supplies no second OOM
+claim and no acceptance. Exact owned cleanup and all three copy hashes pass;
+checks archive is
+ee64cf5e599d3f4679887ba7c46a538ea438d1d42ebc4b80aaf6f266be360762.
+Keep that run intact. Correct both wrapper checks to the actual exception
+signature and verify option-header/exception examples before a separately
+reviewed capture attempt. The original721 heap failure remains unresolved.
+
+The second payload matches java.lang.OutOfMemoryError followed by a colon in
+both its monitor and final guard. Actual option-header bytes are negative and
+actual721 exception bytes positive; the dump-only and120-second cleanup cases
+also pass without a JVM. Parent reviews the three-line remote delta, the
+launch/copy changes and all four actual hashes, then authorizes one new run.
+Remote SHA256 is
+c3e3dbee8f4819e2c64fc0663b464326aa4edbdf884fb59d168108f5e2976986.
+Source remains4a5f516cb; all heap, fixture, disk, ownership and acceptance
+limits stay unchanged. This authorization supplies no result yet.
+
+The second capture reproduces the genuine section63 Java heap-space error.
+Its single dump hits the reviewed3GiB file cap: HotSpot explicitly reports
+the file incomplete. It is retained on the box at exactly3221225472 bytes,
+SHA256 dfa4fa64105e0ac3609340d9673a977c6b2740577a7a0ad3b66c5dac1b196a0f.
+The reader does not run because its complete-file precondition is absent.
+No class ownership or retained-size conclusion follows from this partial file.
+The controller's bounded fatal cleanup ends143 with all groups empty; native
+and canonical verdicts remain unknown, and medicine is not reached. All three
+copy hashes verify, source guard is empty and compiled classes are unchanged;
+checks archive is
+5c44a73686ef69c19c9001cf03c96205885b1b579f8dd9a126af5873cce87570.
+A larger forensic file allowance is proposed separately; the Java heap,
+fixture, window, runtime bound and every law remain unchanged.
+
+Review the third capture's complete delta and all four actual script hashes.
+Authorize one new directory with a6GiB forensic file cap,8GiB run cap and
+12GiB free-disk preflight; the4GiB free-space cutoff remains. This increases
+only storage for the dump, not the2GiB JVM heap or any test allowance.
+Remote SHA256 is
+ff4fa713e231e44c6554d536a09c1abdb3d69a3511db04512cb0a6c7d4be7964.
+The partial second dump stays immutable. Full dump completion, end marker,
+owner/hash provenance and process cleanup are prerequisites to analysis.
+
 Fresh merged8bb03c69f results: SaveFileCheck native/canonical0 in123 seconds,
 ReadPathCheck native/canonical0 in105 seconds, and MonetaryCheck
 native/canonical0. Its pooled16-31 TOTAL reduction is3.635685 percentage
@@ -98,7 +155,7 @@ The larger city retains141 permanent cells. These are individual ordinary
 integrated months, not isolated solver times or a hard timing benchmark.
 
 The final ensemble remains after the combined review, against the newest
-baseline (currently0.9.202). Use a fresh output directory for this final model:
+baseline (currently0.9.203). Use a fresh output directory for this final model:
 earlier RES3 attempts retain their first class snapshot and cannot be resumed
 as proof of the changed model. The label and committed baseline remain RES3.
 
