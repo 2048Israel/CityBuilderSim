@@ -8391,8 +8391,9 @@ public final class GameVersion {
      */
     /* RES3: typed leases, comparable rent/CPI observations and held monetary
      * inputs cannot be reconstructed from a format-66 city. Missing tariff,
-     * payroll, labour anchors, bank books and raw claim scale would change
-     * the next month after load or reform. Refuse the old pair; no conversion.
+     * payroll, labour anchors and bank books would change the next month
+     * after load or reform (the sites' raw claims are R1g's abroadClaimById,
+     * at 66). Refuse the old pair; no conversion.
      */
     public static final int SAVE_FORMAT = 67;
 
@@ -8404,7 +8405,10 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 66 since batch R6e-rest (THE DESALINATION PLANT BEFORE THE PRESSURE
+     * 67 since batch RES3 (RES3 above SAVE_FORMAT: an older city holds no
+     * typed leases, class rents or CPI observations, nor its held tariff,
+     * payroll, labour anchors and bank books, and its next month reads them).
+     * 66 from batch R6e-rest (THE DESALINATION PLANT BEFORE THE PRESSURE
      * EXCHANGER above: an older city's Desalination Plant holds no
      * unfitted exchanger and loads as fitted, at today's draw).
      * 65 from batch FC2b (A CONTRACT'S POINTS above: an older save's

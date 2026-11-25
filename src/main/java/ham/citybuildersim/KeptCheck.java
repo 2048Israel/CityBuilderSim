@@ -4965,15 +4965,19 @@ public class KeptCheck {
             List<javafx.scene.layout.HBox> expanded = fundResultRows(bench);
             boolean kept = true, bounded = true;
             StringBuilder months = new StringBuilder();
+            int start = FundView.search(g, named, "Bonds").size(), grown = start;
             for (int m = 0; m < SHOW_MORE_MONTHS; m++) {
                 month(g);
                 bench.drawKept(tab);
                 List<javafx.scene.layout.HBox> now = fundResultRows(bench);
                 int all = FundView.search(g, named, "Bonds").size();
+                grown = all;
                 bounded &= now.size() == Math.min(shown, all);
                 for (int i = 0; i < expanded.size(); i++) kept &= i < now.size() && expanded.get(i) == now.get(i);
                 months.append("m").append(g.getMonth()).append(" ").append(now.size()).append(" of ").append(all).append("; ");
             }
+            // REV-RES3z: the bound below is only a bound if the list it holds back grew while it held.
+            check("fixture: the issuer's search grew over the SHOW_MORE_MONTHS months (" + start + " to " + grown + ")", grown > start);
             check("a month's redraw shows the rows the presses showed, however long the issuer's search grows (" + months + ")", bounded);
             check("...the same row nodes month after month", kept);
             check("...and the expanded search equals a page built new", againstNew(bench, tab, true) == null);

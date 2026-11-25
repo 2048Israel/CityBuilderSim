@@ -478,6 +478,36 @@ public final class HousingMarketCheck {
         near("no eligible recipient creates no orphan-coupon cash",nobody.creditBondCoupons(Map.of("no-owner",1.0)),0);
         near("no eligible recipient leaves aggregate cash unchanged",nobody.totalSavings(),0);
     }
+    /** REV-RES3z: a cell under EMPTY_CELL keeps its shares, so its dividend and lending fee are paid to it at home, where
+     *  Equity books as abroad what creditDividend() does not pay and Exchange pays the cells only what creditLendingFee() does. */
+    static void fractionalDividends(){
+        out.println("--- positive fractional owners receive their dividend and lending fee at home ---");
+        for(double count:new double[]{.25,HouseholdBalance.EMPTY_CELL,Math.nextDown(HouseholdBalance.EMPTY_CELL),0}){
+            var b=new HouseholdBalance();var tier=PayTier.UNSKILLED;double[] taxed={0};
+            b.setInvestmentTaxes(new TaxPolicy(),c->10,(line,amount)->taxed[0]+=amount);
+            java.util.function.ToDoubleBiFunction<FamilyStructure,PayTier> census=(s,p)->p!=tier?0:
+                    s==FamilyStructure.SINGLE_ADULT?count:s==FamilyStructure.COUPLE?1:0;
+            b.censusOnly(census);var fraction=b.cell(FamilyStructure.SINGLE_ADULT,tier);var couple=b.cell(FamilyStructure.COUPLE,tier);
+            for(var c:List.of(fraction,couple))if(c.households()>0){c.savings=10;c.shares[0]=2;c.basis[0]=3;}
+            double held=b.sharesHeld(0),perShare=.5;
+            double cash=b.totalSavings(),fractionCash=fraction.savings();
+            double home=b.creditDividend(0,perShare);
+            near("the dividend paid at home is every actual owner's, none left for Equity to book abroad: "+count,home,held*perShare);
+            near("the dividend conserves: the owners' cash and the tax on it are what was paid: "+count,b.totalSavings()-cash+taxed[0],home);
+            if(count>0){
+                check("the fractional owner receives its own dividend: "+count,fraction.savings()>fractionCash);
+                near("fractional and whole owners receive the same dividend per share: "+count,
+                        fraction.dividends()/fraction.shares[0],couple.dividends()/couple.shares[0]);
+            }
+            cash=b.totalSavings();fractionCash=fraction.savings();double taxBefore=taxed[0],fee=.25;
+            double paid=b.creditLendingFee(0,fee);
+            near("the lending fee reaches every actual lender at home, all of the cells' share: "+count,paid,held*fee);
+            near("the lending fee conserves: the lenders' cash and any claim it settles are what was paid: "+count,
+                    b.totalSavings()-cash+taxed[0]-taxBefore,paid);
+            if(count>0)near("the fractional lender receives its own fee: "+count,fraction.savings()-fractionCash,fraction.shares[0]*fee);
+            if(count==0)near("exact zero holds nothing and is paid nothing",fraction.shares[0]+fraction.savings(),0);
+        }
+    }
     static void foundingBudgets(){
         out.println("--- a founding worker's current wage funds the first actual home ---");
         Game g=new Game(GameFiles.scratch("res3-founding-budgets"),LongPlaytest.played(null));g.run();
@@ -704,7 +734,8 @@ public final class HousingMarketCheck {
         g.getBusinessInvestment().holdBranches();g.getAutoBuilder().setOn(false,null);
     }
     static void loadedDoorCensus()throws Exception{
-        Game g=LongPlaytest.probeCity(GameFiles.scratch("res3-family-door-census"),null);
+        // Today's city, its compact forms and depot (R1g: probeCity() founds the 1900 city since 0.9.206; this fixture's subject is today's door census).
+        Game g=LongPlaytest.probeTodayCity(GameFiles.scratch("res3-family-door-census"),null);
         var bm=g.getBuildingManager();holdHousingFixture(g);
         for(var t:bm.getTemplatesBySector(Sectors.REAL_ESTATE))if(t.getHousingRecipe()!=null
                 &&t.getHousingRecipe().mix().stream().anyMatch(d->d.capacity()>FamilyModel.STUDIO_MAX_SIZE)){
@@ -1670,7 +1701,7 @@ public final class HousingMarketCheck {
         }
     }
     public static void main(String[] args)throws Exception{
-        out=System.out;fractionalSettlement();fractionalClaims();
+        out=System.out;fractionalSettlement();fractionalClaims();fractionalDividends();
         out=System.out;unbuiltGrossQuotes();
         out=System.out;coalescedSponsored();sharingForecastSources();crossClassPaidExcess();savedContractModes();
         out=System.out;fundedPressureAndForecast();rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());

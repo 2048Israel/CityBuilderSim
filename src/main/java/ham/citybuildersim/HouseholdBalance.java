@@ -5758,7 +5758,7 @@ public class HouseholdBalance {
         if (!(perShare > 0)) return 0;
         double paid = 0;
         for (Household c : cells) {
-            if (c.isEmpty() || c.shares[company] <= 0) continue;
+            if (!(c.households > 0) || c.shares[company] <= 0) continue; // a fractional cell keeps its shares, so it is paid at home (REV-RES3z)
             double each = c.shares[company] * perShare;
             double tax = each * investmentPolicy.dividendTaxRate(investmentWageRate(c), Equity.COMPANIES[company]);
             receiveInvestmentTax(false, tax * c.households);
@@ -5789,7 +5789,7 @@ public class HouseholdBalance {
         if (!(perShare > 0)) return 0;
         double paid = 0;
         for (Household c : cells) {
-            if (c.isEmpty() || c.shares[company] <= 0) continue;
+            if (!(c.households > 0) || c.shares[company] <= 0) continue; // ...and so is its lending fee (REV-RES3z)
             double each = c.shares[company] * perShare;
             double retained = collectClaim(c, company, each * c.taxShares[company] / c.shares[company]);
             c.savings += each - retained;
