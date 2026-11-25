@@ -1001,3 +1001,103 @@ adult stages and inspect the common zero, negative outlines, muted no-post
 rows, costs and faint wage-walk ticks at a narrow window width. High school
 still runs on coverage and affordability. This is an inspection note, not a
 Pending row.
+
+## 2026-11-25: the restart
+
+Builder WG3c (Claude Opus 5.5, xhigh), started by the orchestrator once WG3
+was back in Queued (2026-11-24). It took the branch over at 98989a29c. The
+sections above are the earlier Codex session's record, and this one is the
+record from here on.
+
+**The merge.** origin/main 304506de2 (0.9.203, format 66) went in at
+cdafdc612:
+- AllChecks' registry was joined by hand: main's lines, then WG3's two
+  harnesses.
+- The generated docs were taken from main and regenerated.
+- CLAUDE.md's interface count went to fifty-three (`ui/SchoolingProbe`). That
+  was Stale's one firm finding.
+- No format bump. WG3 saves nothing: Education's three new fields are
+  transient, and Game binds them at construction.
+
+**The trace.** A slice helper ran it on cdafdc612, before any mend.
+- BuildAdviceCheck: main's section 9 on the merged code is red. The founding
+  reaches month 36 with 329 people and 0 who would come, against 25. It has 5
+  university posts, a studyReturn of 0 for both adult stages, eligible 155.5
+  and affordability .84. The diploma pays 0.13 and the best ungated degree job
+  (UNIV_SCIENCE) 0.15. Main's kept runs (R1g-EyG2IaHs, FC2-zHb6IoDf) show month
+  11, 116 people and 27 who would come, because on main a degree's "after" is
+  the doctor's wage. The red is the merged code's alone.
+- LongPlaytest: green on the merged code, exit 0, "findings: Nothing". It was
+  run directly, because batch-check's 1,740 s cap stopped it at m2280 on the
+  loaded laptop. 0.9.180's households-with-no-home red does not reproduce on
+  0.9.203's city. The 103,224 evictions over the run are at main's scale
+  (FC2's gate 180,928, R1g's 132,533).
+
+**The double count: a defect, mended.** The capture above shows a degree
+paying 1.21 diplomas coming out at 0.118 a level month, against the diploma's
+0.134.
+- The cause: the row put a degree's earnings off until after its course AND
+  took the wages given up off it. That is ladder.py's
+  `v = earn - fees_at_18 - given_up_pv`, copied line for line.
+- Why that is twice: the path that studies earns nothing in those months, and
+  the diploma's row earns them. So the gap between the two rows already holds
+  the wages given up, and taking them off again counts them twice. Becker
+  (1964, *Human Capital*): the cost of schooling is its fees plus the earnings
+  forgone, counted once. The world does not do this, so it is mended.
+- A row is now its whole path: every fee along it and its earnings once its
+  courses end. A degree's path includes the high-school bill, and a licence's
+  includes the university bill. The first cut left those off the higher rows,
+  while the diploma's row paid its own.
+- `forgone` stays the page's figure for the course's bill. ladder.py is
+  mended the same way, and spec-wages 3.5 says so.
+- SchoolingLadderCheck books a path's cash and no wages forgone. Its new
+  section, "The wages given up are counted once":
+  - a free degree that pays the diploma's wage costs four years of that wage,
+    counted once;
+  - at the break-even wage the gain is 0, to 1e-9;
+  - 1% above it is a gain.
+
+  With the double count put back, the section fails (0.572 against 0.286) and
+  17 assertions fail in all. With the mend it passes.
+- "A higher studied-from wage..." now reads: it raises the wages forgone and
+  lowers the step's gain, and leaves the college path's own value unchanged.
+
+**The university red, restated to the real law.** With the mend, the
+founding's degree at month 36 pays 1.15 diplomas and comes out −3.2% after
+cost (young). Four years out of work at 3% need about 1.17 diplomas just to
+break even (624 working months against 576).
+- Does a real university draw students when its degree barely covers its
+  cost? No. Enrolment follows the return: Becker 1964; Freeman 1976, *The
+  Overeducated American* (young men's college enrolment fell when the college
+  premium fell in the early 1970s); Card and Lemieux 2001, QJE 116(2).
+- So the model is right. The premise that a class would come to the
+  founding's university came from the doctor's wage.
+- Section 9 is restated. Its javadoc keeps 0.7.51's text and adds WG3's.
+  - The native founding, months 9 to 36, gets no row and no card, which still
+    holds.
+  - New assertion: its would-be students follow the degree's pay after cost,
+    and none come without a gain.
+  - The hiring guard is still caused, on a second founding with the earlier
+    session's controlled offer: one existing ungated degree job at three
+    diplomas. At month 9, 26 would come against 5 posts and 4.9 hires, and
+    there is still no row.
+
+**Calls taken:**
+- ★ The mend departs from the spec's "ladder.py is its prototype, line for
+  line". The prototype's arithmetic was wrong, and a defect is mended.
+  Spec-wages 2.2's ladder.py figures (1.57×, 1.92× over no diploma) are a
+  study's table, not a check. The spec now says they predate the mend and
+  understate the steps, and they were not remeasured.
+- A row counts every fee along its path, so the ratio compares like with like.
+  The fee shown stays the course's own.
+
+**Checks on cfd768a0d (merged and mended):**
+- `--fast`: exit 0, 0 firm.
+- SchoolingLadderCheck, SchoolingPageCheck, EducationCheck and
+  BuildAdviceCheck: exit 0.
+- KeptCheck's section 77 walks every fixed Policy page, The ladder among them
+  (`KeptBench.policyPages()`). That is the page's Kept proof, and it runs in
+  the pick.
+- The pick is ALL (AllChecks, Game). The review line says "not needed".
+  Schooling moves money flows, so the orchestrator orders the brief's money
+  and saves review.
