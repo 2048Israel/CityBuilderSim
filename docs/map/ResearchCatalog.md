@@ -1,6 +1,6 @@
 # ResearchCatalog.java - 408 lines · 27 methods · 13 constants · model
 
-`ham/citybuildersim/ResearchCatalog.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ResearchCatalog.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The research catalogue (R2): every discovery the city's schools can make, read out of research.json: its code, the field that researches it,
 > what it unlocks (a building, a piece of equipment, a recipe, a drug), history's date, the discoveries it needs first and the work it takes.

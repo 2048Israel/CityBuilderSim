@@ -1,6 +1,6 @@
-# Village1900Check.java - 587 lines · 19 methods · 13 constants · harnesses
+# Village1900Check.java - 584 lines · 19 methods · 12 constants · harnesses
 
-`ham/citybuildersim/Village1900Check.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Village1900Check.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Why the 1900 city stalls (R1g's finding), and what R1g's two switches change: the playtest's village founded the 1900 way, played the
 > playtest's way for five years beside its twin founded today's way. Not part of the game.
@@ -21,7 +21,7 @@
 >      Fabrication Shop, whose 1900 recipe asks several times today's diploma crew) meets it at the gate month in the diploma band:
 >      today's twin's diploma workers cover the plant's diploma posts and the 1900 village's do not, and the village cannot pass the
 >      staffing gate, Sector.MIN_STAFFABLE_TO_ORDER
->   4. THE STALL: the 1900 village draws a smaller share of today's twin's arrivals at the end of the five years than its
+>   4. THE DRAW: the 1900 village draws a smaller share of today's twin's arrivals at the end of the five years than its
 >      affordability pull is of the twin's, so the rent holds it (section 2), and no exporter stands there, its manufacturing held
 >      at the staffing gate; and the 1900 village's
 >      treasury holds its cash and owes nothing, more cash a head than today's growing twin holds, so the dated money (no central
@@ -31,8 +31,8 @@
 > 
 >   5. THE 1900 HOME (Recipes.HOMES_1900): each of the 1900 village's homes is built at the scale it stands at (Recipes.datedScale();
 >      homeScale() with the walk off) of today's twin's (the cash cost as the catalogue states it, the materials and the points; the land not
->      moved), its households pay under the stalled village's rent, at most DEAR_RENT times the target, and it draws at least STALLED of
->      today's twin's arrivals at the end of the five years
+>      moved), its households pay under the stalled village's rent, at most DEAR_RENT times the target, and it draws more of
+>      the arrivals at the end of the five years than the stalled village does (with the home off the two are one village)
 >   6. THE APPRENTICES (PopulationManager.APPRENTICES_1900): the five years' apprentices are the teens who came of age times the year's
 >      trade share (ArrivalMix.tradeShareAt()), there being no school, and the village holds more diploma workers than the stalled one
 >   7. TODAY'S CITY DOES NOT MOVE: today's twin played with both switches on is today's twin played with both off, to the bit
@@ -58,14 +58,14 @@
 
 | line | section |
 |---:|---|
-| 154 | · 2 |
-| 186 | · 3 |
-| 215 | · 4 |
-| 245 | · 5 |
-| 277 | · 6 |
-| 294 | · 7 |
-| 313 | · 8 |
-| 371 | · the fixture |
+| 151 | · 2 |
+| 183 | · 3 |
+| 212 | · 4 |
+| 242 | · 5 |
+| 274 | · 6 |
+| 291 | · 7 |
+| 310 | · 8 |
+| 368 | · the fixture |
 
 ## Constants
 
@@ -75,15 +75,14 @@
 | 71 | `Village1900Check.MONTHS` | `60` | The months the two cities are played: five years, the stall's start (R1d: 472 people at month 60, nobody arriving from month 55). |
 | 74 | `Village1900Check.GATE_MONTH` | `30` | The month the exporters' first plant is weighed: the end of the playtest's first skip, its first look after the founding's months by hand. |
 | 77 | `Village1900Check.QUIET_MONTHS` | `5` | The last months the arrivals are summed over: the sixth year's first months, when the 1900 village has all but stopped drawing anybody. |
-| 80 | `Village1900Check.STALLED` | `0.1` | The share of today's twin's arrivals in the quiet months a village draws at least once its homes are dated, section 5's floor: a tenth (R1g measured 0 arrivals on 0.9.157 with the switches off, 2.6 of 35.5 on 0.9.159;... |
-| 83 | `Village1900Check.UNPULLED` | `2` | The least multiple of its people the 1900 village's jobs and homes would support before any pull is struck (Migration.getLastDrawBeforePulls()): two, so its room is not what holds it. |
-| 86 | `Village1900Check.DEAR_RENT` | `1.5` | How many times TARGET_RENT_BURDEN the 1900 village's households pay at the least: one and a half (R1g measured 2.0 at month 60). |
-| 89 | `Village1900Check.SHORT_OF_DIPLOMAS` | `2` | How many times its diploma workers the 1900 village's diploma posts number at the least: two (R1g measured 2.4 at month 60). |
-| 92 | `Village1900Check.CUTTING_CREWS` | `3` | How many times today's twin's diploma crew the 1900 Fabrication Shop wants at the least: three (R2d's cutting crews, 248 for 62). |
-| 95 | `Village1900Check.EXPORTER` | `"Manufacturing"` | The exporters' sector, the advisor's first word on the 1900 village's stall (R1g's probe: "could staff 0% of a Wire & Cable Works now"). |
-| 98 | `Village1900Check.FIRST_PLANT` | `"Fabrication Shop"` | The exporters' first plant. |
-| 101 | `Village1900Check.HOUSE` | `"House"` | The house the homes are weighed by: the village's own, 60 of them laid by hand at the founding. |
-| 104 | `Village1900Check.HOME` | `Recipes.HOMES_1900, APPRENTICES = PopulationManager.APPRENTICES_1900` | The switches as this run was started: each fix section's city plays at its own, so -Dr1g.home=off or -Dr1g.apprentices=off takes it out. |
+| 80 | `Village1900Check.UNPULLED` | `2` | The least multiple of its people the 1900 village's jobs and homes would support before any pull is struck (Migration.getLastDrawBeforePulls()): two, so its room is not what holds it. |
+| 83 | `Village1900Check.DEAR_RENT` | `1.5` | How many times TARGET_RENT_BURDEN the 1900 village's households pay at the least: one and a half (R1g measured 2.0 at month 60). |
+| 86 | `Village1900Check.SHORT_OF_DIPLOMAS` | `2` | How many times its diploma workers the 1900 village's diploma posts number at the least: two (R1g measured 2.4 at month 60). |
+| 89 | `Village1900Check.CUTTING_CREWS` | `3` | How many times today's twin's diploma crew the 1900 Fabrication Shop wants at the least: three (R2d's cutting crews, 248 for 62). |
+| 92 | `Village1900Check.EXPORTER` | `"Manufacturing"` | The exporters' sector, the advisor's first word on the 1900 village's stall (R1g's probe: "could staff 0% of a Wire & Cable Works now"). |
+| 95 | `Village1900Check.FIRST_PLANT` | `"Fabrication Shop"` | The exporters' first plant. |
+| 98 | `Village1900Check.HOUSE` | `"House"` | The house the homes are weighed by: the village's own, 60 of them laid by hand at the founding. |
+| 101 | `Village1900Check.HOME` | `Recipes.HOMES_1900, APPRENTICES = PopulationManager.APPRENTICES_1900` | The switches as this run was started: each fix section's city plays at its own, so -Dr1g.home=off or -Dr1g.apprentices=off takes it out. |
 
 ## Fields (state)
 
@@ -91,77 +90,77 @@
 |---:|---|---|
 | 59 | `static int fails` |  |
 | 60 | `static PrintStream out` |  |
-| 108 | `final boolean the1900Way` |  |
-| 109 | `double gateShare` |  |
-| 110 | `double arrivalsLate` |  |
-| 112 | `double apprentices, apprenticesExpected` | The apprentices of every month, and the coming-of-age teens times the year's trade share less the schools' diploma-holders. |
-| 114 | `final java.util.List<Double> took` | Each month played, the pay the walk took at its top (NaN with none), its window's length, and homeScaleOfPay() as the month ended. |
-| 115 | `final java.util.List<Integer> windowed` |  |
-| 116 | `Game g` |  |
+| 105 | `final boolean the1900Way` |  |
+| 106 | `double gateShare` |  |
+| 107 | `double arrivalsLate` |  |
+| 109 | `double apprentices, apprenticesExpected` | The apprentices of every month, and the coming-of-age teens times the year's trade share less the schools' diploma-holders. |
+| 111 | `final java.util.List<Double> took` | Each month played, the pay the walk took at its top (NaN with none), its window's length, and homeScaleOfPay() as the month ended. |
+| 112 | `final java.util.List<Integer> windowed` |  |
+| 113 | `Game g` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 531 | **type** `public class Village1900Check` | Why the 1900 city stalls (R1g's finding), and what R1g's two switches change: the playtest's village founded the 1900 way, played the playtest's way for five years beside its twin founded today's way. |
+| 57 | 528 | **type** `public class Village1900Check` | Why the 1900 city stalls (R1g's finding), and what R1g's two switches change: the playtest's village founded the 1900 way, played the playtest's way for five years beside its twin founded today's way. |
 | 63 | 1 | `static void check(String label, boolean ok)` |  |
 | 65 | 4 | `static void check(String label, boolean ok, String detail)` |  |
-| 107 | 12 | **type** `static final class Seen` | What one city shows at the gate month and at the end. |
-| 117 | 1 | `Seen(boolean the1900Way)` _(in Village1900Check.Seen)_ |  |
-| 120 | 33 | `public static void main(String[] args)` |  |
+| 104 | 12 | **type** `static final class Seen` | What one city shows at the gate month and at the end. |
+| 114 | 1 | `Seen(boolean the1900Way)` _(in Village1900Check.Seen)_ |  |
+| 117 | 33 | `public static void main(String[] args)` |  |
 
-### 2 (lines 154-185)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 156 | 29 | `static void rent(Seen y1900, Seen today)` |  |
-
-### 3 (lines 186-214)
+### 2 (lines 151-182)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 188 | 26 | `static void skills(Seen y1900, Seen today)` |  |
+| 153 | 29 | `static void rent(Seen y1900, Seen today)` |  |
 
-### 4 (lines 215-244)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 217 | 27 | `static void stall(Seen y1900, Seen today)` |  |
-
-### 5 (lines 245-276)
+### 3 (lines 183-211)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 247 | 29 | `static void home(Seen home, Seen stalled, Seen today)` |  |
+| 185 | 26 | `static void skills(Seen y1900, Seen today)` |  |
 
-### 6 (lines 277-293)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 279 | 14 | `static void apprentices(Seen taught, Seen stalled)` |  |
-
-### 7 (lines 294-312)
+### 4 (lines 212-241)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 296 | 15 | `static void todayUnmoved(Seen on, Seen off)` |  |
+| 214 | 27 | `static void stall(Seen y1900, Seen today)` |  |
 
-### 8 (lines 313-370)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 315 | 43 | `static void walk(Seen home)` |  |
-| 360 | 11 | `static void quietly(Runnable step)` | Runs a step with the console quiet, the model's chatter left out of the report. |
-
-### the fixture (lines 371-587)
+### 5 (lines 242-273)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 381 | 65 | `static Seen play(String label, boolean the1900Way, boolean home, boolean apprentices)` | A city founded on the playtest's founding, the 1900 way or today's, founded and played as LongPlaytest.main() founds and plays it: the same switches, the automatic works on before the village is laid, the founding's m... |
-| 448 | 16 | `static void months(Seen seen, int n)` | Up to n of the player's months (LongPlaytest.runPlayer()), never past MONTHS: the gate weighed at the end of GATE_MONTH, the last arrivals summed. |
-| 466 | 11 | `static void weigh(Seen seen)` | The staffing gate on the exporters' first plant, and the diploma posts it wants. |
-| 479 | 6 | `static double[] postsByBand(Game g)` | The city's posts by wage band, as the playtest's labour trace adds them. |
-| 487 | 25 | `static void lastHorse(Game g)` | R1g: the last horse leaves no feed behind on a reused output row (the played city's reload fault). |
-| 514 | 63 | `static void schoolPlusDegrees()` | REV-R1gc2-1: gross school leavers cover the quota even when degrees make the diploma band's net flow smaller. |
-| 579 | 8 | `static long standing(Game g, String sector)` | How many buildings of a sector stand. |
+| 244 | 29 | `static void home(Seen home, Seen stalled, Seen today)` |  |
+
+### 6 (lines 274-290)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 276 | 14 | `static void apprentices(Seen taught, Seen stalled)` |  |
+
+### 7 (lines 291-309)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 293 | 15 | `static void todayUnmoved(Seen on, Seen off)` |  |
+
+### 8 (lines 310-367)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 312 | 43 | `static void walk(Seen home)` |  |
+| 357 | 11 | `static void quietly(Runnable step)` | Runs a step with the console quiet, the model's chatter left out of the report. |
+
+### the fixture (lines 368-584)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 378 | 65 | `static Seen play(String label, boolean the1900Way, boolean home, boolean apprentices)` | A city founded on the playtest's founding, the 1900 way or today's, founded and played as LongPlaytest.main() founds and plays it: the same switches, the automatic works on before the village is laid, the founding's m... |
+| 445 | 16 | `static void months(Seen seen, int n)` | Up to n of the player's months (LongPlaytest.runPlayer()), never past MONTHS: the gate weighed at the end of GATE_MONTH, the last arrivals summed. |
+| 463 | 11 | `static void weigh(Seen seen)` | The staffing gate on the exporters' first plant, and the diploma posts it wants. |
+| 476 | 6 | `static double[] postsByBand(Game g)` | The city's posts by wage band, as the playtest's labour trace adds them. |
+| 484 | 25 | `static void lastHorse(Game g)` | R1g: the last horse leaves no feed behind on a reused output row (the played city's reload fault). |
+| 511 | 63 | `static void schoolPlusDegrees()` | REV-R1gc2-1: gross school leavers cover the quota even when degrees make the diploma band's net flow smaller. |
+| 576 | 8 | `static long standing(Game g, String sector)` | How many buildings of a sector stand. |
 

@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 29,060 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 29,062 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -6741,7 +6741,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2145 the issue and the fair buyback value read the same curve
   - L2149 ...and the buyback takes it off the books at that price
 
-## CreditCrunchCheck.java - 35 labelled assertions
+## CreditCrunchCheck.java - 37 labelled assertions
 
 > A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose
 > leverage ratio binds, standing in its band between its leverage minimum and
@@ -6757,46 +6757,48 @@ _(this harness does not label its checks through a helper - it prints its findin
 > for the down payment, which buys nothing when the bank lends nothing; HN1's
 > ...
 
-- **L151 1. the door's capital test asked first says what the door says, and records nothing**
-  - L157 fixture: the bank's leverage requirement is the larger and it stands in its band
-  - L161 in the band the test asked first says the bank has no capital for the mortgage
-  - L162 ...and records no refusal
-  - L163 ...where the door refuses the same mortgage for the bank's capital
-  - L169 fixture: over its target the bank has finite room for insured growth (BF1)
-  - L171 over the target a mortgage within the room: the test says no shortage, and the door writes it
-  - L173 ...one past the room: the test says short, and the door refuses it for the bank's capital
-  - L179 while the risk weights bind, the insured mortgage is not rationed: no shortage
-  - L183 ...and with the lender shut the door's no is not the capital's: no shortage
-  - L186 ...and nothing to borrow is no shortage
-  - L190 a landlord banned from borrowing is refused for the ban, not the capital: no shortage
-  - L196 ...nor one past its default point: no shortage
-- **L200 1b. the owners are asked for the whole order only while the door would refuse its mortgage for the bank's capital**
-  - L202 in the band the owners are asked for what the till lacks on the whole order
-  - L204 ...and a banned landlord's owners for what it lacks on the down payment, as before
-  - L206 ...as are the owners of a landlord the risk weights leave unrationed
-  - L219 fixture: the bank's room lies between the door's loan and the loan on the cost less the till
-  - L222 ...so the owners are asked for the down payment only
-  - L224 ...and the door writes the mortgage on the rest
-- **L380 2. the fixture: leverage binding, the bank in its band, the landlords asking, households waiting**
-  - L393 fixture: the city played every month of the crunch
-  - L394 fixture: every month the bank's leverage ratio bound, so the rule rationed the insured mortgages
-  - L396 fixture: every month the bank stood in its band, the rule neither free nor keeping borrowers going
-  - L398 fixture: the landlords asked for homes the bank had no capital to lend on
-  - L402 fixture: every month of the crunch began with ground for GROUND_BLOCKS blocks of Low-Rise Apartments
-  - L404 fixture: the homes cut left the placement room for MARGIN households and less than one house more
-- **L407 3. the owners put in what the till lacked, homes are built, nobody is left with no home**
-  - L418 the landlords' owners were asked, and put money in, while the bank was short
-  - L419 ...and homes were built in the crunch
-  - L420 no month of the crunch leaves more than one household with no home (LongPlaytest's watch)
-  - L431 ...and no played month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)
-- **L463 4. an order the owners' issue falls short of, the bank short: the door trims it for the capital**
-  - L508 fixture: the bank held in its band and the rule struck on it: leverage binding, the insured mortgages rationed,
-  - L510 fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage
-  - L513 fixture: the door's price of the order is not the planner's (the yard emptied: its materials at the market's quote)
-  - L516 the lender read the order at the door's own price, and the owners were offered what the till lacked at it (HN1-A)
-  - L518 fixture: ...and their issue fell short of it
-  - L519 the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys
-  - L521 ...and is not left marked as held for the bank's capital (REV-HN1-1)
+- **L155 1. the door's capital test asked first says what the door says, and records nothing**
+  - L161 fixture: the bank's leverage requirement is the larger and it stands in its band
+  - L165 in the band the test asked first says the bank has no capital for the mortgage
+  - L166 ...and records no refusal
+  - L167 ...where the door refuses the same mortgage for the bank's capital
+  - L173 fixture: over its target the bank has finite room for insured growth (BF1)
+  - L175 over the target a mortgage within the room: the test says no shortage, and the door writes it
+  - L177 ...one past the room: the test says short, and the door refuses it for the bank's capital
+  - L183 while the risk weights bind, the insured mortgage is not rationed: no shortage
+  - L187 ...and with the lender shut the door's no is not the capital's: no shortage
+  - L190 ...and nothing to borrow is no shortage
+  - L194 a landlord banned from borrowing is refused for the ban, not the capital: no shortage
+  - L200 ...nor one past its default point: no shortage
+- **L204 1b. the owners are asked for the whole order only while the door would refuse its mortgage for the bank's capital**
+  - L206 in the band the owners are asked for what the till lacks on the whole order
+  - L208 ...and a banned landlord's owners for what it lacks on the down payment, as before
+  - L210 ...as are the owners of a landlord the risk weights leave unrationed
+  - L223 fixture: the bank's room lies between the door's loan and the loan on the cost less the till
+  - L226 ...so the owners are asked for the down payment only
+  - L228 ...and the door writes the mortgage on the rest
+- **L394 2. the fixture: leverage binding, the bank in its band, the landlords asking, households waiting**
+  - L407 fixture: the city played every month of the crunch
+  - L408 fixture: every month the bank's leverage ratio bound, so the rule rationed the insured mortgages
+  - L410 fixture: every month the bank stood in its band, the rule neither free nor keeping borrowers going
+  - L412 fixture: the landlords asked for homes the bank had no capital to lend on
+  - L416 fixture: every month of the crunch began with ground for GROUND_BLOCKS blocks of Low-Rise Apartments
+  - L418 fixture: the homes cut left the placement room for MARGIN households and less than one house more
+- **L433 3. the owners put in what the till lacked, homes are built, and the households left with no home clear**
+  - L452 the landlords' owners were asked, and put money in, while the bank was short
+  - L453 ...and homes were built in the crunch
+  - L454 no month of the crunch leaves more households with no home than its first month, before any home could be built (R1g)
+  - L456 ...every month leaving more than WATCH with no home is one the landlords asked for homes the bank was short of capital for
+  - L458 ...and they clear: once the owners' first homes stand, no month leaves more than WATCH with no home (LongPlaytest's watch)
+  - L470 ...and no played month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)
+- **L502 4. an order the owners' issue falls short of, the bank short: the door trims it for the capital**
+  - L547 fixture: the bank held in its band and the rule struck on it: leverage binding, the insured mortgages rationed,
+  - L549 fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage
+  - L552 fixture: the door's price of the order is not the planner's (the yard emptied: its materials at the market's quote)
+  - L555 the lender read the order at the door's own price, and the owners were offered what the till lacked at it (HN1-A)
+  - L557 fixture: ...and their issue fell short of it
+  - L558 the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys
+  - L560 ...and is not left marked as held for the bank's capital (REV-HN1-1)
 
 ## CreditsCheck.java - 71 labelled assertions
 
@@ -34774,69 +34776,69 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      city the village's jobs and homes would support is over UNPULLED times its people, and with it the room the village has to grow
 > ...
 
-- **L128 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way**
-  - L129 the 1900 village is founded the 1900 way
-  - L130 today's twin is founded today's way
-  - L131 both are played to month
-- **L157 2. the rent: 1901's wages pay for today's homes**
-  - L166 the 1900 village's households pay over
-  - L168 today's twin's households pay under
-  - L170 so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it
-  - L178 the rent is what binds: before the pulls, the city the 1900 village's jobs and homes would support is over
-  - L180 ...so the room it leaves the village to grow (the target over its people, less one) is under today's twin's
-  - L182 while today's twin's supports more than its people
-- **L189 3. the skills: posts drawn for today's diploma-holders, and 1901's workers**
-  - L195 the 1900 village's diploma posts outnumber its diploma workers over
-  - L197 today's twin's diploma workers cover its diploma posts
-  - L202 the 1900
-  - L205 the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a
-  - L209 today's twin's diploma workers at month
-  - L211 while the 1900 village's do not cover its own
-- **L218 4. the stall: the rent holds the draw, no exporter is built, and the money is not what holds it**
-  - L228 the 1900 village draws a smaller share of today's twin's arrivals in the last
-  - L230 while people still arrive in today's twin
-  - L231 no
-  - L232 and its
-  - L237 the 1900 village's treasury holds cash and owes nothing, so the dated money is not what holds it
-  - L241 and it holds more cash a head than today's twin, which grows on less
-- **L248 5. the 1900 home (Recipes.HOMES_1900): built to 1900's standard, and the rent a 1901 household pays**
-  - L254 the 1900 home is built at about three tenths of today's: Recipes.homeScale() between a fifth and two fifths
-  - L256 the village's
-  - L259 its materials and its points are today's times the scale, rounded
-  - L263 and its plot is today's
-  - L264 the city knows the home is dated
-  - L271 the 1900 home's households pay at most
-  - L273 and it draws at least
-- **L280 6. the apprentices (PopulationManager.APPRENTICES_1900): the young learn the year's trade at work**
-  - L285 the young learn trades in the 1900 village
-  - L286 as many as came of age times the year's trade share, there being no school
-  - L289 so the village holds more diploma workers than the stalled one
-  - L291 and the stalled village, the switch off, made none
-- **L297 7. today's city does not move: both switches on and both off, the same city to the bit**
-  - L299 the same people
-  - L301 the same cash and the same month's GDP
-  - L304 the same rent burden and the same workers by band
-  - L306 the same
-  - L309 and no apprentice
-- **L316 8. the walk (Recipes.HOME_WALK): the home's cost moves with the households' pay, on its last twelve months' mean**
-  - L327 each month takes the households' pay once: the window grows by a month a month to PAY_MONTHS and holds there
-  - L331 the pay each month takes is Recipes.homeScaleOfPay() as the month before ended (the households' pay, founding money, over today's)
-  - L336 the
-  - L338 ...which the village's pay has moved off homeScale(), 1901's household, by more than a hundredth
-  - L347 the village saved and loaded into a fresh Game holds the same months, to the bit, and its
-  - L353 ...and a month on, both have taken the same month's pay and stand at the same scale, to the bit
-- **L488 9. the last horse: fitting every farm clears the captive crop**
-  - L498 fixture: unfitted farms feed their horses from the crop
-  - L506 fixture: every farm now has its tractor, so no crop is captive
-  - L509 the next crop keeps none of the last horse's feed
-- **L515 10. school diplomas cover the apprentice quota before degree outflow**
-  - L546 fixture: both school towns are founded the 1900 way with the same skilled heads
-  - L548 fixture: college and university students are due to finish next month
-  - L561 fixture: gross school diplomas already cover a positive apprentice quota
-  - L562 fixture: college and university completions leave the diploma band and put net movement below the quota
-  - L565 fixture: both controls have the same gross diplomas and net school/degree flows
-  - L567 Game adds no extra trade qualification after the schools cover the quota
-  - L569 the actual Game month keeps the school-only control's skilled heads, including degree outflow
+- **L125 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way**
+  - L126 the 1900 village is founded the 1900 way
+  - L127 today's twin is founded today's way
+  - L128 both are played to month
+- **L154 2. the rent: 1901's wages pay for today's homes**
+  - L163 the 1900 village's households pay over
+  - L165 today's twin's households pay under
+  - L167 so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it
+  - L175 the rent is what binds: before the pulls, the city the 1900 village's jobs and homes would support is over
+  - L177 ...so the room it leaves the village to grow (the target over its people, less one) is under today's twin's
+  - L179 while today's twin's supports more than its people
+- **L186 3. the skills: posts drawn for today's diploma-holders, and 1901's workers**
+  - L192 the 1900 village's diploma posts outnumber its diploma workers over
+  - L194 today's twin's diploma workers cover its diploma posts
+  - L199 the 1900
+  - L202 the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a
+  - L206 today's twin's diploma workers at month
+  - L208 while the 1900 village's do not cover its own
+- **L215 4. the draw: smaller than the rent pull, no exporter built, and the money not what holds it**
+  - L225 the 1900 village draws a smaller share of today's twin's arrivals in the last
+  - L227 while people still arrive in today's twin
+  - L228 no
+  - L229 and its
+  - L234 the 1900 village's treasury holds cash and owes nothing, so the dated money is not what holds it
+  - L238 and it holds more cash a head than today's twin, which grows on less
+- **L245 5. the 1900 home (Recipes.HOMES_1900): built to 1900's standard, and the rent a 1901 household pays**
+  - L251 the 1900 home is built at about three tenths of today's: Recipes.homeScale() between a fifth and two fifths
+  - L253 the village's
+  - L256 its materials and its points are today's times the scale, rounded
+  - L260 and its plot is today's
+  - L261 the city knows the home is dated
+  - L268 the 1900 home's households pay at most
+  - L270 and it draws more arrivals at the end of the five years than the stalled village
+- **L277 6. the apprentices (PopulationManager.APPRENTICES_1900): the young learn the year's trade at work**
+  - L282 the young learn trades in the 1900 village
+  - L283 as many as came of age times the year's trade share, there being no school
+  - L286 so the village holds more diploma workers than the stalled one
+  - L288 and the stalled village, the switch off, made none
+- **L294 7. today's city does not move: both switches on and both off, the same city to the bit**
+  - L296 the same people
+  - L298 the same cash and the same month's GDP
+  - L301 the same rent burden and the same workers by band
+  - L303 the same
+  - L306 and no apprentice
+- **L313 8. the walk (Recipes.HOME_WALK): the home's cost moves with the households' pay, on its last twelve months' mean**
+  - L324 each month takes the households' pay once: the window grows by a month a month to PAY_MONTHS and holds there
+  - L328 the pay each month takes is Recipes.homeScaleOfPay() as the month before ended (the households' pay, founding money, over today's)
+  - L333 the
+  - L335 ...which the village's pay has moved off homeScale(), 1901's household, by more than a hundredth
+  - L344 the village saved and loaded into a fresh Game holds the same months, to the bit, and its
+  - L350 ...and a month on, both have taken the same month's pay and stand at the same scale, to the bit
+- **L485 9. the last horse: fitting every farm clears the captive crop**
+  - L495 fixture: unfitted farms feed their horses from the crop
+  - L503 fixture: every farm now has its tractor, so no crop is captive
+  - L506 the next crop keeps none of the last horse's feed
+- **L512 10. school diplomas cover the apprentice quota before degree outflow**
+  - L543 fixture: both school towns are founded the 1900 way with the same skilled heads
+  - L545 fixture: college and university students are due to finish next month
+  - L558 fixture: gross school diplomas already cover a positive apprentice quota
+  - L559 fixture: college and university completions leave the diploma band and put net movement below the quota
+  - L562 fixture: both controls have the same gross diplomas and net school/degree flows
+  - L564 Game adds no extra trade qualification after the schools cover the quota
+  - L566 the actual Game month keeps the school-only control's skilled heads, including degree outflow
 
 ## WageLadderCheck.java - 63 labelled assertions
 
