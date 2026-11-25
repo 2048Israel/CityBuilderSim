@@ -1709,7 +1709,10 @@ public class ScaleCheck {
             // share; the copy loaded it K times over, so its first month's crews worked K times the posts they had - the K = 10 copy
             // 191,249 points where its month is 18,983 - and since FC2 the points no site took are sold abroad, so its GDP read the
             // phantom crews' month (worst 8.10e-01 of 0.140 in section 9). Main's copies left those points idle, unsold.
-            + "(^|\\.)workFill$)");
+            + "(^|\\.)workFill$|"
+            // PW1-R, 2026-11-25: the struck book's season, the month's load over the year's mean, which its bills carry; the copy loaded
+            // it K times over and billed every class K times its kWh (the K = 617,055 copy's treasury 1.6e10 to 3.1e13 in a month).
+            + "(^|\\.)season$)");
 
     /*
      * THE NAMES THE PATTERN READ WRONG (0.7.54). The scaled copy's first month

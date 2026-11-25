@@ -260,21 +260,36 @@ public final class SpreadPlanner {
      * longer buys, which running charged in full (BusinessInvestment
      * .runningCostOf()), and its surplus sold to the grid (the study's 1.2
      * rule 2: "+ any power it makes beyond its own draw, sold to the grid at
-     * the tariff"). Nothing for a building with neither, as every building
-     * has today.
+     * the tariff"). The draw is credited at its class's tariff, the surplus
+     * at what the grid pays it, the struck book's works price (PW1-R, as the
+     * bill pays it and Recipes.powerCost() reads it). Nothing for a building
+     * with neither, as every building has today.
      */
 
-    /** A works' consumables at `factor` and `rate`, less its power at `tariff` (pure; above): what its earnings lose past running and standing. */
+    /** A works' consumables at `factor` and `rate`, less its power at the one flat `tariff` (pure; above): what its earnings lose past running and standing. A check's or the study's one flat price (caseEarns()); the model weighs a works at its two prices. */
     public static double ownCosts(BuildingsTemplate t, double rate, double factor, double tariff) {
-        return ownCosts(NewUnit.standing(t), rate, factor, tariff);
+        return ownCosts(NewUnit.standing(t), rate, factor, tariff, tariff);
     }
 
-    /** ...for one new building already resolved (QN1): its own consumables and power. */
+    /** ...for one new building already resolved (QN1): its own consumables and power, at the one flat `tariff`. */
     public static double ownCosts(NewUnit t, double rate, double factor, double tariff) {
+        return ownCosts(t, rate, factor, tariff, tariff);
+    }
+
+    /** A works' consumables at `factor` and `rate`, less its power as the bill pays it (PW1-R): what replaces its draw at its class's `tariff`, its surplus past the draw at `worksTariff`. */
+    public static double ownCosts(BuildingsTemplate t, double rate, double factor, double tariff, double worksTariff) {
+        return ownCosts(NewUnit.standing(t), rate, factor, tariff, worksTariff);
+    }
+
+    /** ...for one new building already resolved (QN1): its own consumables and power, its draw at `tariff` and its surplus at `worksTariff`. */
+    public static double ownCosts(NewUnit t, double rate, double factor, double tariff, double worksTariff) {
         if (t == null) return 0;
         double c = t.getConsumables() > 0 ? t.getConsumables() * rate * factor : 0;
-        double p = t.getGen() > 0 ? t.getGen() * tariff : 0;
-        return c - p;
+        double gen = t.getGen();
+        if (gen <= 0) return c;
+        if (worksTariff == tariff) return c - gen * tariff; // one price: the flat frame, to the bit
+        double draw = t.getElectricityConsumption();
+        return c - (Math.min(gen, draw) * tariff + Math.max(0, gen - draw) * worksTariff);
     }
 
     /* ----- the study's four cases (materials-chains-research.md 2.5) ----- */

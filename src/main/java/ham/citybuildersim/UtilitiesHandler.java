@@ -263,6 +263,8 @@ public class UtilitiesHandler {
     }
     /** What a unit of water is billed at: the tariff and the struck book's water power a unit delivered (PW1-W); the tariff alone until a month strikes one. */
     public double getPricePerWaterUnit()   { return pricePerWaterUnit + getWaterPowerPerUnit(); }
+    /** What a planner prices a unit of water at (PW1-R, REV-PW1-R): the tariff and the works' power a unit at the struck commerce price, the year's mean, the season left out, so a works' choice does not swing with the month; the bills charge getPricePerWaterUnit(), the season in. */
+    public double getMeanPricePerWaterUnit() { return pricePerWaterUnit + (latestWater == null ? 0 : latestWater.marginalKwPerUnit() * struck.commercePrice); }
     /** The water's tariff before its works' power: main's constant, $50 a unit at the founding's level. */
     public double getWaterTariff()         { return pricePerWaterUnit; }
 
@@ -305,7 +307,8 @@ public class UtilitiesHandler {
      */
     public double getElectricityRevenue() {
         if (billedByStatement) return billedElectricityRevenue;
-        return Math.min(billedElectricityDraw * energyRatio, production) * getPricePerWatt();
+        // ...and on the kWh served, the season's draw (PW1-R).
+        return Math.min(billedElectricityDraw * energyRatio, production) * struck.season * getPricePerWatt();
     }
 
     /*
@@ -493,8 +496,15 @@ public class UtilitiesHandler {
        Until a month is struck the book holds the founding tariff, "still at founding: no month
        has cleared".
 
-       Nothing calls strikePower(), seedConstants() or setFuelPaid() yet; the money constants
-       are re-struck by Game.restrikeMoneyConstants() in the slice that wires them.
+       THE LAG (REV-PW1's lows, PW1-R). The book a statement is struck at was dispatched at the end
+       of the month before the one it bills, at that month's calendar: July's statement (struck at
+       the top of August) is billed at June's dispatch, its ratio, its price and its season, 1.088
+       and not July's 1.193 on the north's calendar. The fuel bought at the same strike
+       (Game.buyPowerFuel()) is that dispatch's, so the bills and the fuel agree on its kWh, a
+       bill being the kWh served, draw x ratio x season x the price a kW of the mean (Book.season):
+       the month's power lags the calendar by a month, and the utility's margin takes none of it.
+       SimulationEngine.updateEconomy() calls strikePower(), Game.buyPowerFuel() setFuelPaid(); the
+       money constants are re-struck by Game.restrikeMoneyConstants().
        ===================================================================== */
 
     /** The founding tariff a kW a month, D$10 at the founding's level, held by the struck book until a month has cleared (the tariff the game had before PW1). */
@@ -591,11 +601,11 @@ public class UtilitiesHandler {
     /** The last update's water works; null before the first update. */
     public WaterDraw getLatestWaterDraw() { return latestWater; }
 
-    /** The water's power a unit: the sea works' draw a unit while the sea delivers, at the struck commerce price; 0 while the land's water serves and before any update. */
-    public double getWaterPowerPerUnit() { return latestWater == null ? 0 : latestWater.marginalKwPerUnit() * struck.commercePrice; }
+    /** The water's power a unit: the sea works' draw a unit while the sea delivers, served at the book's season (PW1-R) and the struck commerce price; 0 while the land's water serves and before any update. */
+    public double getWaterPowerPerUnit() { return latestWater == null ? 0 : latestWater.marginalKwPerUnit() * struck.season * struck.commercePrice; }
 
-    /** All the water works' power at the struck commerce price, what the water's books owe the power's for the month of the last update. */
-    public double getWaterPowerBill() { return latestWater == null ? 0 : (latestWater.freshKw() + latestWater.seaKw()) * struck.commercePrice; }
+    /** All the water works' power, the kWh served them at the book's season (PW1-R) and the struck commerce price, what the water's books owe the power's for the month of the last update. */
+    public double getWaterPowerBill() { return latestWater == null ? 0 : (latestWater.freshKw() + latestWater.seaKw()) * struck.season * struck.commercePrice; }
 
     /** What the water's books pay the power's this month for the works' power (Game.buyPowerFuel(), the month just ended's bill, before the next strike). */
     public void setWaterPowerPaid(double paid) { waterPowerPaid = Double.isFinite(paid) ? Math.max(0, paid) : 0; }
@@ -709,6 +719,11 @@ public class UtilitiesHandler {
         public double ratio, energyPrice;
         /** City money a kW a month: commerce and light industry (the energy and all the wires), Heavy Industry and Mining (the energy and transmission), and the works' surplus. */
         public double commercePrice, industryPrice, worksPrice;
+        /**
+         * The dispatch's season, its load over the year's mean (PowerDispatch.Month.season): the prices are a kW of the year's mean draw,
+         * and a bill is the kWh served, draw x ratio x season x price (PW1-R); 1 in the founding book and in a save from before it.
+         */
+        public double season = 1;
         /** Per half-block: the price a kWh, the load, and what was left unserved, kW. */
         public double[] price = new double[PowerDispatch.HALVES], load = new double[PowerDispatch.HALVES], unserved = new double[PowerDispatch.HALVES];
         /** The month's kWh asked, served and curtailed, and made by the fuelled plants, the wind, the hydro, the works and the founding grid. */
@@ -738,7 +753,7 @@ public class UtilitiesHandler {
 
         Book copy() {
             Book b = new Book();
-            b.ratio = ratio; b.energyPrice = energyPrice;
+            b.ratio = ratio; b.energyPrice = energyPrice; b.season = season;
             b.commercePrice = commercePrice; b.industryPrice = industryPrice; b.worksPrice = worksPrice;
             b.price = price.clone(); b.load = load.clone(); b.unserved = unserved.clone();
             b.askedKwh = askedKwh; b.servedKwh = servedKwh; b.curtailedKwh = curtailedKwh;
@@ -767,6 +782,7 @@ public class UtilitiesHandler {
         PowerDispatch.Month m = latest;
         Book b = new Book();
         b.ratio = m.ratio;
+        b.season = m.season;
         b.dispatch = latestRecord;
         b.struckMonth = observationMonth == null ? -1 : observationMonth.getAsInt();
         b.gridCosts = latestGridCosts;
@@ -828,6 +844,9 @@ public class UtilitiesHandler {
         for (double u : struck.unserved) if (u > 0) n++;
         return n;
     }
+
+    /** The struck book's season, the month's load over the year's mean: a kW drawn is billed season x the price a kW a month (PW1-R). */
+    public double getPowerSeason() { return struck.season; }
 
     /** What commerce and light industry pay a kW a month (the struck commerce price). */
     public double getPricePerWatt() { return struck.commercePrice; }

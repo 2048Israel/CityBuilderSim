@@ -1,8 +1,8 @@
-# gate of Merge batch/PW3: wind and solar by place and season, and the power planner (after PW2): capacity factors by month, block and latitude, credits falling with their share; the reserve test and the re-dispatched spread in the advice and the auto-builder; its speculative rows are in research-speculative §7 (R6-T-P, 2026-11-16); for R6-G-P and R6b-P (2026-11-20): E25 and E31 if PW2 shipped without them; the storage batch it queues (R6-G ★4) takes E29 the four-hour battery, and FE5 follows that batch; takes PW1-P, the planner's gaps PW1 measured: the works' own power is not counted as supply, a plant still being built counts as on site, the advice ranks plants by their price a firm kW and not their fuel, the cities south of the equator read the northern season, and a wind farm's posts lower the pooled firm supply by more than its firm third adds (PW1's notes §0, §2, §6) Takes PW2's ground finding: AutoBuilder.groundFor() plans from the standing listing alone, so in a young city it never assembles a 200-acre coal plant's ground over several offers, and the planner must choose its plant knowing what ground it can buy (REV-PW2, 2026-11-23), 0.9.202
+# gate of Merge batch/PW1-R: pW1's review follow-ups (after PW1): the bills struck on the year's mean kWh while the dispatch serves the season's; the planner pricing Heavy Industry's power at the commerce price and own generation at the industry price; powerBooks with no SaveFileCheck line; lows, 0.9.203
 # date: 2026-11-25
 # earth-2.bin: named
-# nightly: 2026-11-24 03:09 0.9.196 94ba28823 4,000 months: RED, exit 1 in 712 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-24-94ba28823-AVsIJOCL
-# suite: 249 harnesses run in 1177s: 231 passed, 18 failed
+# nightly: 2026-11-25 03:03 0.9.202 d657b3a83 4,000 months: RED, exit 1 in 971 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-25-d657b3a83-xbsFLHkH
+# suite: 242 harnesses run in 1023s: 222 passed, 20 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -21,6 +21,11 @@ CurrencyCheck | fixture: the city reads a year of 45% inflation                 
 CurrencyCheck | the autopilot sets the rule's rate                                 FAIL  0.030000000 != 0.000000000
 CurrencyCheck | ...past the old stop of the dial                                   FAIL
 CurrencyCheck | 3 FAILED
+PassThroughCheck | exit 1
+PassThroughCheck | fixture: before the step, the shelf holds what the places hand over in both twins, within STOCKING_MONTHS (12) FAIL
+PassThroughCheck | fixture: the shops hand over at least the households' need in both twins in each of the 12 months, the shelf too (0 of 12) FAIL
+PassThroughCheck | the groceries component's pass-through is positive at 12 months: a weaker D$ raised the shelf's price (-3.1% of the step) FAIL
+PassThroughCheck | 3 FAILED
 ForeignDebtCheck | exit 1
 ForeignDebtCheck | fixture: a three-year serial's schedule, a payment a month FAIL
 ForeignDebtCheck | 1 FAILED
@@ -30,47 +35,42 @@ HoldersCheck | fixture: ...and the step came from the households                
 HoldersCheck | fixture: in the middle - the households still hold some                  FAIL
 HoldersCheck | 3 FAILED
 DenominationCheck | exit 1
-DenominationCheck | the same output                                                FAIL  5.7809393183 != 5.7809399727  (1.13e-07 apart)
-DenominationCheck | ...and the same year of it                                     FAIL  77.8713223620 != 77.8713277272  (6.89e-08 apart)
-DenominationCheck | the same rent                                                  FAIL  0.0001354427 != 0.0001354428  (4.65e-08 apart)
-DenominationCheck | the same price level                                           FAIL  1.5619412248 != 1.5619413852  (1.03e-07 apart)
-DenominationCheck | the same currency                                              FAIL  0.0088302998 != 0.0088303014  (1.90e-07 apart)
-DenominationCheck | the same shops' till                                           FAIL  0.4257051150 != 0.4258477382  (0.000335 apart)
-DenominationCheck | the same bank                                                  FAIL  308.7121732599 != 308.7120705809  (3.33e-07 apart)
-DenominationCheck | 7 FAILED
+DenominationCheck | the same currency                                              FAIL  0.0082783905 != 0.0082783905  (3.23e-09 apart)
+DenominationCheck | the same shops' till                                           FAIL  5.4177337215 != 5.4177317499  (3.64e-07 apart)
+DenominationCheck | the same bank                                                  FAIL  314.4818520835 != 314.4818501195  (6.25e-09 apart)
+DenominationCheck | 3 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
 PopulationCheck | 1 FAILED
+SaveFileCheck | exit 1
+SaveFileCheck | REV-HC1 P5: the populated format-62 city continues its card stocks, services, loan book and capital FAIL
+SaveFileCheck | 1 FAILED
 ReloadCheck | exit 1
-ReloadCheck | fixture 3k: the live city exercised it                                                                           FAIL  3 landlords with a closed homes' share, 1 ...with a count under the places they own, 0 landlords counting no place while they own some, their share whole, 2 landlords whose count moved in the month on, their share with it
-ReloadCheck | fixture 3k, every home closed, by hand: the caused point's own city exercised it                                 FAIL  0 landlords counting no place while they own some, their share whole, 0 landlords whose count moved in the month on, their share with it
-ReloadCheck | 2 FAILED
+ReloadCheck | fixture 3b, by hand: the caused point's own city exercised it                                                    FAIL  0 crews that drew materials
+ReloadCheck | 1 FAILED
 RailDrawCheck | exit 1
 RailDrawCheck | ...and where the line runs on through that plot (a T) its plots and the two beside are not replaced and are track in the picture: 3 of 4 FAIL
 RailDrawCheck | 1 FAILED
 PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
 PlanCheck | 1 FAILED
-KeptCheck | exit 3
-KeptCheck | fixture: the fund holds a bond, B:2418, that runs 1 months, past the 2 months its pages are watched FAIL
-KeptCheck | fixture: the fund's rule held still through 63's choices, no lot it did not hold before (17 lots, then 15; new [S:Bank:rescue]) FAIL
-KeptCheck | fixture: the books hold one piece of every kind of paper PAPER names, sold through the model (1 of 6) FAIL
-KeptCheck | 3 FAILED
+KeptCheck | exit 1
+KeptCheck | a note with lines this month opened on it adds to the page (396 lines, then 393) FAIL
+KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
 DeathRecordCheck | 2 FAILED
 CarCheck | exit 3
 CarCheck | the fixture: one household's money buys a car at the price the draw is sized at and none at the price it is struck at FAIL  4800 trials, no edge found
-CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  62 cars, 1 step(s) of the import price; paid 56.232508772885560, the ship's product 55.440508772885560; 6.0 cars on the makers' shelves
-CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 55.440508772885560, paid 56.232508772885560
+CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  62 cars, 1 step(s) of the import price; paid 56.232508772885570, the ship's product 55.440508772885565; 6.0 cars on the makers' shelves
+CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 55.440508772885570, paid 56.232508772885570
 CarCheck | 3 FAILED
 CopperRefiningCheck | exit 1
 CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line            FAIL  exit 1, 5.0 minutes; its output: /tmp/citybuildersim-tmp/2742377/copperrefiningcheck-rodmills10864177280645619554/seed1.log
-CopperRefiningCheck | 2 FAILED
+CopperRefiningCheck | 1 FAILED
 LongPlaytest | exit 1
-LongPlaytest | FAIL a building on the map moved                        2 time(s), months 1808-1809
+LongPlaytest | FAIL a building on the map moved                        3 time(s), months 603-1807
 GroundSkipCheck | exit 1
 GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 30 month(s) FAIL
 GroundSkipCheck | 1 FAILED

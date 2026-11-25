@@ -383,6 +383,11 @@ public class ServicesManager {
         return utilitiesHandler.getPricePerWaterUnit();
     }
 
+    /** The water's price a planner reads, the year's mean (UtilitiesHandler.getMeanPricePerWaterUnit(), PW1-R). */
+    public double getMeanPricePerWaterUnit() {
+        return utilitiesHandler.getMeanPricePerWaterUnit();
+    }
+
     /** The people's water draw. Buildings are picked up from the templates. */
     public void setPopulation(long population) {
         utilitiesHandler.setPopulation(population);
