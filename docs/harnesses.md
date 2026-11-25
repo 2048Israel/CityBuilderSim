@@ -23770,7 +23770,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L787 ...which is the count times buildings.json's own electricity, today's draw
   - L792 fixture: E22 is abroad inside its term (June 1997 to June 2017) and the plant is fitted with it
   - L797 fixture: the plant's own row, E6, is no longer abroad under patent, so the stack's bill is E22's alone; and the works' power has a price
-  - L799 the imported exchanger's public gain is the power it saves, the plants' undone draw at the works' price
+  - L799 the imported exchanger's public gain is the power it saves, the plants' undone draw at the commerce price
   - L802 ...and the plant's licence bill is SHARE of that gain while the patent runs
   - L808 a default city's plant keeps the anchor and lacks no exchanger through E22's month
   - L811 ...and its sea works' draw is the count times the anchor, before and after

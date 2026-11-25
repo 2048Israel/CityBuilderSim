@@ -43,7 +43,7 @@
 >    comes fitted at 10,880; the sea works' draw the water's books pay is the plants' count times the template's
 >    powerBought() after a real month, more than today's while a plant lacks the exchanger; no sector fits a city
 >    work's piece, and the player's Fit (Game.fitForCity()) does, after which the plant and the draw are today's; the
->    imported exchanger's public gain inside its term is the power it saves at the works' price, and the plant's licence
+>    imported exchanger's public gain inside its term is the power it saves at the commerce price, and the plant's licence
 >    bill SHARE of it (it serves no more water; LicenceFees.entryGain() adds the saving); a
 >    default city runs 10,880 across the month; a held city's save loads the unfitted count and the draw at once and
 >    the next month keeps them; a plant with no record of the count (a format-65 save's) is read as fitted from June 1997.
