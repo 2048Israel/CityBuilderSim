@@ -760,8 +760,9 @@ public final class AutoBuilder {
     /**
      * What an order may take of the cash: what is over the reserve; an
      * overdraft counted in full, as Build's funding page counts it
-     * (Game.buildFundingGap()); and since D30 less what open asks have raised
-     * (spendableFor()) - that money is each ask's order's and nothing else's.
+     * (Game.buildFundingGap()); and since D30 beside what open asks have
+     * raised, as far as the cash still holds it (spendableFor()) - that money
+     * is each ask's order's and nothing else's.
      */
     public static double spendable(Game game) {
         return game.getAutoBuilder().spendableFor(game, null);
@@ -774,23 +775,44 @@ public final class AutoBuilder {
     }
 
     /**
-     * What the cash over the reserve leaves for ONE ask's order (D30): the
-     * spendable cash less what every OTHER open ask has raised, as far as the
-     * cash goes - the treasury's other bills may still draw on it, and when
-     * they have the earmark is only what is left. `own` is the ask whose
-     * order it is, whose own raised money is in the cash and counts; null is
-     * an order of the builder's own, which leaves every ask's money alone.
+     * What the treasury holds for ONE ask's order (D30, OA1): its own bond
+     * proceeds, as far as the cash still holds them, and beside them the cash
+     * over the reserve that no ask's proceeds take. `own` is the ask whose
+     * order it is; null is an order of the builder's own, which leaves every
+     * ask's proceeds alone and spends only what is over the reserve beside
+     * them. An overdraft counts in full, as before.
+     *
+     * THE PROCEEDS COME FIRST, OUTSIDE THE RESERVE (OA1, 2026-11-25). Bond
+     * proceeds raised for a works are the works's, restricted to it, and a
+     * city's operating reserve is reckoned on its unrestricted money beside
+     * them (GASB Statement 54: proceeds restricted by the bond's terms are
+     * restricted fund balance; GFOA's fund-balance practice puts the reserve,
+     * two months of operating revenue, in the unrestricted balance). WHY: the
+     * reserve was taken out of the cash first and the proceeds counted only
+     * over it, so a city whose cash had dipped under its reserve before the
+     * sale held its proceeds for nothing: in PW3's ensemble (ZERO_HOT seeds 6,
+     * 9 and 15) a Water Treatment Plant's ask had raised its whole cost by its
+     * fifth month, the cash 53.4M against the order's 49.8M, and it waited on
+     * a reserve of 6.9M for 133 months, water served at 26%.
+     *
+     * Each ask's proceeds are its raised money at most its order's cost (what
+     * a repricing left over is the city's), and the cash holds them oldest ask
+     * first: where the month's bills have drawn the cash under them, the
+     * latest asks' are the ones gone.
      */
     double spendableForMeasure(Game game, BuildAdvice.Measure m) {
         return spendableFor(game, askFor(m));
     }
 
     double spendableFor(Game game, OpenAsk own) {
-        double free = overReserve(game);
-        if (!(free > 0) || asks.isEmpty()) return free;
-        double others = 0;
-        for (OpenAsk a : asks) if (a != own && a.raised > 0) others += a.raised;
-        return free - Math.min(others, free);
+        if (asks.isEmpty() || game.getCash() < 0) return overReserve(game);
+        double left = game.getCash(), mine = 0;
+        for (OpenAsk a : asks) {
+            double proceeds = Math.min(Math.max(0, Math.min(a.raised, a.cost)), left);
+            left -= proceeds;
+            if (a == own) mine = proceeds;
+        }
+        return mine + Math.max(0, left - reserve(game));
     }
 
     /** What a bond must bring for an order of `total`: the part the spendable cash does not cover. */
@@ -2328,14 +2350,20 @@ public final class AutoBuilder {
        ask a measure, and its order waits for its money rather than ordering
        again.
 
-       THE ORDER IS PLACED ON MONEY THAT IS THERE, AND THE PAPER IS NOT SOLD
-       TWICE: covered() is the treasury holding the order's cost for it - the
-       raised money still in the cash, plus any cash over the reserve beside
-       it. What is still to raise (stillToRaise()) is the cost less the
-       greater of that and everything the ask has raised in all, so once its
-       sales have raised the whole cost a month's bills that drew the money
-       leave the order waiting for the cash to be there, not borrowing it
-       again: a city in a deficit does not pile up bonds for one order.
+       THE ORDER IS PLACED ON MONEY THAT IS THERE, AND THE PROCEEDS PAY THE
+       WORKS (OA1, 2026-11-25): covered() is the treasury holding the order's
+       cost for it - its raised money still in the cash, which the reserve is
+       not taken out of, plus any cash over the reserve beside it
+       (spendableFor()). What is still to raise (stillToRaise()) is the cost
+       less that, the order's gap as place() reckons it: where the month's
+       bills have drawn the proceeds, what they drew is offered again, every
+       sale under the debt limit's test. Until OA1 the reserve came out of the
+       proceeds and the paper was never sold twice, and an ask whose sales had
+       passed its cost could neither place, sell nor be withdrawn: PW3's
+       ensemble held a Water Treatment Plant on its raised bond for 135
+       months (docs/queue/OA1-notes.md). A real city's bond proceeds are
+       restricted to the works they were raised for and are spent on it
+       within months (GASB 54; 26 CFR 1.148-2(e)(2)).
 
        WITHDRAWN when the advice no longer ranks the order (the measure is
        ahead without it, or its building has dropped out of the ranking, or it
@@ -2423,11 +2451,12 @@ public final class AutoBuilder {
     }
 
     /**
-     * What the treasury holds for one ask's order right now: the cash over the
-     * reserve, less what every other ask has raised, and never under nothing
-     * (an overdraft is the treasury's, not a debt of the order's). Its own
-     * raised money is in it - unless the month's bills have drawn it, which
-     * they may, and then this is only what is left. The order is placed when
+     * What the treasury holds for one ask's order right now: its own proceeds
+     * as far as the cash still holds them, the reserve not taken out of them,
+     * and the cash over the reserve beside every ask's proceeds
+     * (spendableFor(), OA1); never under nothing (an overdraft is the
+     * treasury's, not a debt of the order's). The month's bills may draw the
+     * proceeds, and then this is only what is left. The order is placed when
      * this covers its cost.
      */
     double held(Game game, OpenAsk own) {
@@ -2517,11 +2546,12 @@ public final class AutoBuilder {
                 ? String.format(" at its cap of %.2f%% (%s)", q.auction().ceiling() * 100, CapSetting.words(cap))
                 : " at its cap (" + CapSetting.words(cap) + ")";
         if (a.raised >= a.cost - 1e-6 * Math.max(1, a.cost)) {
-            // Raised in full, and the month's bills have drawn it: the paper is not sold twice.
+            // Raised in full, and the month's bills have drawn it (OA1): what they drew is offered again, under the debt limit.
             return String.format("%s: the %d-year bond for %d %s raised %s of the %s the order costs, but the treasury holds only"
-                            + " %s for it now - the month's bills have drawn the rest. The order waits for the cash to be there;"
-                            + " nothing more is borrowed for it.", a.measure(), Game.BUILD_BOND_YEARS, a.count, a.building(),
-                    money(a.raised), money(a.cost), money(Math.max(0, held)));
+                            + " %s for it now - the month's bills have drawn the rest. What they drew, %s, is offered again"
+                            + " at its cap%s every month until the order is paid, or the debt limit closes on it.",
+                    a.measure(), Game.BUILD_BOND_YEARS, a.count, a.building(), money(a.raised), money(a.cost),
+                    money(Math.max(0, held)), money(a.toRaise), q != null && q.isShort() ? " (this month's sale came up short)" : "");
         }
         return String.format("%s: the %d-year bond for %d %s sold short%s; %s raised of the %s the order costs, %s still to"
                         + " raise. The order waits for the money and the ask is offered again every month.",
@@ -2653,28 +2683,41 @@ public final class AutoBuilder {
     }
 
     /**
-     * Whether what the treasury holds for an ask's order pays for it: the
-     * cash over the reserve, less every other ask's raised money (held()), at
-     * least the order's cost as priced now. This is the rule that places an
-     * order - never on money that is not there.
+     * Whether what the treasury holds for an ask's order pays for it: its
+     * proceeds and the free cash beside them (held()), at least the order's
+     * cost as priced now. This is the rule that places an order - never on
+     * money that is not there.
      */
     private boolean covered(Game game, OpenAsk a) {
         return held(game, a) >= a.cost - 1e-6 * Math.max(1, a.cost);
     }
 
     /**
-     * What an ask has still to raise: the order's cost less the greater of
-     * what the treasury holds for it and what its sales have raised in all.
-     * The paper already sold is not sold again - when the month's bills have
-     * drawn the money it raised, the order waits for the cash to be there
-     * (covered()), and the city does not borrow the same order twice.
+     * What an ask has still to raise: its order's gap as place() reckons it,
+     * the cost less what the treasury holds for it (spendableFor(): its
+     * proceeds, then the cash over the reserve beside them; an overdraft in
+     * full). Where the month's bills have drawn its proceeds, what they drew
+     * is raised again, each sale under the debt limit's test, which withdraws
+     * the ask when it closes.
+     *
+     * WHY (OA1, 2026-11-25): until OA1 this was the cost less the greater of
+     * that and everything the ask had raised in all, so the paper was never
+     * sold twice. Once the sales passed the cost nothing was offered again, so
+     * the limit's test never ran, the advice still ranked the order, and a
+     * treasury the bills kept under the cost never covered it: the ask could
+     * neither place, sell nor be withdrawn. In PW3's seeds it held a Water
+     * Treatment Plant from m267 to the run's end at m402, its earmark keeping
+     * every other order of the builder's waiting "for Water" (works orders flat
+     * at 70). A real city spends what it borrowed for a works on the works: a
+     * tax-exempt issue must expect a binding commitment for 5% of its proceeds
+     * within six months and 85% spent within three years (26 CFR 1.148-2(e)(2)).
      */
     private double stillToRaise(Game game, OpenAsk a) {
         return stillToRaise(game, a, a.cost);
     }
 
     private double stillToRaise(Game game, OpenAsk a, double cost) {
-        return Math.max(0, cost - Math.max(held(game, a), a.raised));
+        return Math.max(0, cost - spendableFor(game, a));
     }
 
     /* =====================================================================

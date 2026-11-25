@@ -412,7 +412,7 @@ public final class WorksFinanceCheck {
     }
 
     static void reservationRelease(Path root, boolean fullyRaised) {
-        out.println(fullyRaised ? "--- a fully raised cash-short ask cannot borrow its cost again ---"
+        out.println(fullyRaised ? "--- a fully raised ask whose proceeds the treasury holds borrows nothing again ---"
                 : "--- a higher-loss ask releases lower earmarks before an empty capped sale ---");
         Game g = flat(root, fullyRaised ? "finance-raised-reservations" : "finance-reservations");
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt()
@@ -454,12 +454,20 @@ public final class WorksFinanceCheck {
         out.printf("      free %.9f, unreserved %.9f, needed %.9f, raised by quote %.9f%n",
                 free, AutoBuilder.spendable(g), needed, empty == null ? 0 : empty.cashReceived());
         if (fullyRaised) {
-            AutoBuilder.OpenAsk raised = auto.askFor(streets);
-            check("fixture: the higher ask has raised its full cost, cash held is short, and a new gap loan would be available",
+            // OA1, 2026-11-25: the premise was "cash held is short" - the reserve and the lower ask's earmark taken out of
+            // this ask's own proceeds, the old rule's hold. Its proceeds come first now, outside the reserve (GASB 54, GFOA),
+            // so the treasury holds its cost; the cash over the reserve beside the lower earmark is still short of it, and
+            // a loan of that shortfall would sell: the order could borrow again, and the section proves it does not.
+            AutoBuilder.OpenAsk raised = auto.askFor(streets), lower = auto.askFor(power);
+            double shortfall = raised == null || lower == null ? 0
+                    : raised.cost() - (g.getCash() - AutoBuilder.reserve(g) - lower.raised());
+            DebtQuote loan = AutoBuilder.bondQuote(g, shortfall, auto.getCap());
+            check("fixture: the higher ask has raised its full cost and the treasury holds it, though the cash over the reserve"
+                            + " beside the lower ask's earmark is short of it, and a loan of that shortfall would be available",
                     raised != null && raised.raised() >= raised.cost() && raised.toRaise() == 0
-                            && auto.held(g, raised) < raised.cost() && empty != null && empty.cashReceived() >= needed
-                            && AutoBuilder.ratioAfter(g, empty) <= auto.getDebtLimit()
-                            && close(auto.spendableForMeasure(g, streets), .6 * free));
+                            && auto.held(g, raised) >= raised.cost() && shortfall > 0
+                            && loan != null && loan.cashReceived() >= shortfall
+                            && AutoBuilder.ratioAfter(g, loan) <= auto.getDebtLimit());
         } else check("fixture: 100 above reserve, 40 lower-reserved, 90 higher-cost, and the gap's capped auction sells nothing",
                 close(AutoBuilder.spendable(g), .6 * free) && close(high.price(), .9 * free)
                         && needed > 0 && (empty == null || empty.cashReceived() == 0));
@@ -468,7 +476,8 @@ public final class WorksFinanceCheck {
         double originalRaised = originalAsk.raised();
         EssentialWorksCheck.quietly(() -> auto.pass(g));
         AutoBuilder.Step order = EssentialWorksCheck.step(g, streets);
-        check("the higher-loss service is actually ordered using the released cash",
+        check(fullyRaised ? "the higher-loss service is actually ordered, from its own proceeds"
+                        : "the higher-loss service is actually ordered using the released cash",
                 order != null && order.ordered() > 0);
         check("the lower funded reservation is released",
                 auto.asks().stream().noneMatch(a -> a.measure().equals(power.label()) && a.raised() > 0));
