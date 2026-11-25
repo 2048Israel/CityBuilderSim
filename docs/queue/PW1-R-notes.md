@@ -90,7 +90,7 @@ fuel map, the dispatch record and the grid costs by their JSON. Green.
   `buyPowerFuel()` draws no fuel and pays the upkeep at par when the city has no markets (a bare fixture).
 - **The plants' coal moves no freight** (the utility has no buyer's row): not mended. ★ Freight carrying the city's own
   draws is a new money flow (the utility paying a haul, Freight's capacity and fleet for it, the audit's lines, the
-  planner's delivered price of coal), a mechanic and not a low; it is the ship file's Pending row PW1-R-F.
+  planner's delivered price of coal), a mechanic and not a low; it is the ship file's queued row PFR1.
 - **The lag**: said (section 1).
 - **BuildCardCheck's POWER row** was held to `BuildAdvice.served()`, the figure the row reads: itself. It is held to
   the grid's own figure at the peak hour's draw (`getPowerServed() / PLAN_PEAK_HOUR`), to 1e-9. **The ring
