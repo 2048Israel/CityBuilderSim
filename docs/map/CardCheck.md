@@ -1,4 +1,4 @@
-# CardCheck.java - 434 lines · 15 methods · 0 constants · harnesses
+# CardCheck.java - 442 lines · 16 methods · 0 constants · harnesses
 
 `ham/citybuildersim/CardCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -15,12 +15,13 @@
 | line | field | says |
 |---:|---|---|
 | 13 | `static int fails` |  |
+| 402 | `static int tmpN` | Advance both real cities; a matching reload must also make the same next month. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 423 | **type** `public final class CardCheck` | Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1). |
+| 12 | 431 | **type** `public final class CardCheck` | Cards inside a household cell: shapes, shocks, minimums, arrears, and the bank (HC1). |
 | 14 | 3 | `static void check(String label, boolean pass)` |  |
 | 17 | 3 | `static void close(String label, double got, double want, double tolerance)` |  |
 | 20 | 5 | `static WorkingHousehold cell(double income, double savings, double debt, double holders)` |  |
@@ -35,5 +36,6 @@
 | 246 | 84 | `static void city()` |  |
 | 330 | 8 | `public static void main(String[] args)` |  |
 | 339 | 61 | `static void reviewFlows()` |  |
-| 402 | 32 | `static boolean continues(Game live, Game loaded)` | Advance both real cities; a matching reload must also make the same next month. |
+| 403 | 6 | `static void tmpLeaf(String p, com.google.gson.JsonElement a, com.google.gson.JsonElement b)` |  |
+| 409 | 33 | `static boolean continues(Game live, Game loaded)` |  |
 

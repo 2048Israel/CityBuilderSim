@@ -311,6 +311,51 @@ public class PowerPriceCheck {
                 && near(held, savedRatio, 1e-12) && draw > 0 && near(bill, want, 1e-9);
     }
 
+    /* ---------- the struck book through a save, for SaveFileCheck (PW1-R) ---------- */
+
+    /**
+     * A saved city that holds a struck book reads it back field for field (REV-PW1's third follow-up: the only round trip was in memory,
+     * PowerDispatchCheck 10, so the Gson read-back of Book was unchecked), through the save's own file (DataSave.powerBooks) and the load
+     * path (UtilitiesHandler's restore and Book.copy()). THE FIXTURE CAUSES IT: the mine town played WARM months burns coal, and every
+     * number in its book is then given a value of its own, so a field the save drops or copy() forgets reads back as its default, and two
+     * fields swapped read back each other's. Every public field of Book by reflection, so a field added later is held to it too.
+     */
+    static boolean bookChecks() throws Exception {
+        City c = play(town("book-save", true, 0), WARM);
+        UtilitiesHandler.Book b = c.u.getStruckBook();
+        boolean burned = b.cleared && !b.fuel.isEmpty() && b.dispatch != null && b.gridCosts != null;
+        check("fixture: the town's book is struck from a month that burned coal, with its dispatch and its grid costs", burned);
+        double v = 0.375;
+        int numbers = 0;
+        for (java.lang.reflect.Field f : UtilitiesHandler.Book.class.getFields()) {
+            if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+            if (f.getType() == double.class) { f.setDouble(b, v += 1); numbers++; }
+            else if (f.getType() == double[].class) for (int i = 0; i < ((double[]) f.get(b)).length; i++) { ((double[]) f.get(b))[i] = v += 1; numbers++; }
+        }
+        for (Map.Entry<String, Double> e : b.fuel.entrySet()) { e.setValue(v += 1); numbers++; }
+        GameFiles files = c.g.getGameFiles();
+        boolean written = c.g.saveGame(10, "the struck book, every number its own").ok;
+        boolean inFile = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(files.saveFile(10))).getAsJsonObject().has("powerBooks");
+        Game back = new Game(files);
+        quietly(() -> back.loadGameSave(10));
+        UtilitiesHandler.Book r = back.getServicesManager().getUtilitiesHandler().getStruckBook();
+        List<String> differ = new ArrayList<>();
+        int fields = 0;
+        for (java.lang.reflect.Field f : UtilitiesHandler.Book.class.getFields()) {
+            if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+            fields++;
+            Object a = f.get(b), z = f.get(r);
+            boolean same = a instanceof double[] x ? java.util.Arrays.equals(x, (double[]) z)
+                    : a == null || f.getType().isPrimitive() || a instanceof Map ? java.util.Objects.equals(a, z)
+                    : new com.google.gson.Gson().toJson(a).equals(new com.google.gson.Gson().toJson(z));
+            if (!same) differ.add(f.getName());
+        }
+        boolean distinctCopy = r != b && r.price != b.price && r.fuel != b.fuel;
+        System.out.printf("   the book's %d fields, %d numbers each its own, saved and loaded: %s%n", fields, numbers,
+                differ.isEmpty() ? "every one read back" : "differ: " + differ);
+        return burned && written && inFile && distinctCopy && numbers > 20 && differ.isEmpty();
+    }
+
     /* =====================================================================
        MAIN
        ===================================================================== */
