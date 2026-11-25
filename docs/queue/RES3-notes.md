@@ -41,7 +41,8 @@ deflation preserves every floor comparison. Combined review remains owed.
 HousingMarketCheck also passes0 with the current14/32 report and profiles;
 InvestCheck passes3 for only its recorded builder-wage premise. Stage1 is green.
 CentralBankCheck's laptop run reaches its unchanged1740-second timeout;
-no law fails before it, and a named gate-box verdict is still pending.
+the exact c7e named gate-box run then passes0 in533 seconds with all laws
+intact. Native24-shape result is22 below-Standard cases, with18 required.
 
 Remaining named checks, transfer of the current catalogue/profiles, default600-month spending
 observations, final fast/maps, combined money/saves review, final ensemble and
@@ -5486,3 +5487,122 @@ retirement/audit cases retain their distinct scope. No production eligibility,
 funding, repayment, research, model, tolerance or existing test changes.
 The new case is registered in HousingMarketCheck and remains unexecuted until
 the reviewed source is pushed and receives a separate native GO.
+
+The c7e model compiles actual0 after correcting a PowerShell wrapper that
+mistook the routine JDK_JAVA_OPTIONS stderr NOTE for a terminating native error.
+Keep that wrapper failure and its unknown Maven exit separate; the corrected
+run records real shell exit0, fresh MG1 and no compiler diagnostic (0ed3/ed80).
+Canonical HousingMarketCheck then returns4/native1 in18.6 seconds for EXACTLY
+two new fixture preconditions (06e4): the order did not prove creation of new
+Bank mortgage principal, and normal mayRetire is false. Actual paid queue4,
+Bank claim, vacant-title limit>=5, physical closure, positive-share writer,
+native exact reload and following-month debt/capacity/claim/title twins plus
+money/household audits pass, but the whole case is invalid with failed premises.
+Do not count its intended closure coverage as complete or remove those guards.
+Source/retained-data diagnosis must cause the correct mortgage ledger/phase
+and all normal retirement conditions through inputs; no unpublished replay.
+
+★ The unchanged CentralBankCheck/model can be validated independently while
+the helper corrects only the new fixture source. Override the earlier ordering
+condition and authorize the reviewed c7e Central-only box script, SHA256
+2bd3c6695d0935519395675534fedf6c550c5d42741f027191d8b00761cd5c6b,
+after all local jobs have ended. It differs from reviewed76cf script only in
+the pushed commit/run label, uses shared box.lock, fresh MG1, exact approvals,
+asset/runtime/source/class proof, original1740 seconds and one exact name.
+Local Maven, HMC, default observer and other JVMs remain held during the remote
+heavy check. No timeout waiver, full suite, gate, dry run or ensemble. Preserve
+any network/resource/lock impediment; no unapproved fallback or new model fix.
+
+The c7e failure handoff (2614) proves all non-HMC compiled classes match903;
+only the expected three HousingMarketCheck classes differ. Source/assets/JDK
+and8d4 approvals match. Native log SHA2566e8aea58e4808fe6c6343a5858a53a27723df9f770a1e6fdebdac3a756e1df28;
+suite SHA256097e2d55bdb43c2647462e7fc47e8d18e021b5ff4fee235e90e42681e4478195.
+The new case's paid order was cash-funded rather than a demonstrated new
+mortgage: buildFor borrows only a positive cash shortfall, and no subsequent
+repayment in buildFor explains the absent increase. Raw pre-order cash/cost
+was not logged; do not reconstruct it. Per-class vacant closure is allowed,
+but mayRetire's separate unplaced/doubled/segment-shortfall terms were not
+logged individually. Their exact failed term remains for source diagnosis.
+
+The reviewed Central-only box launch starts02:06 local/06:06:03 UTC (ebd9),
+on exact pushed c7e under shared box.lock, no local JVM overlap. Both exact
+Earth/world hashes and supported8d4 record pass. Fresh box MG1 reports
+27.855 GiB available RAM,21.912 GiB free commit and mean0.0 percent CPU
+over three two-second samples. Remote run is
+~/cbs/runs/res3-integrated67-central-c7e; local SSH controller39987 is retained.
+Same1740-second bound, one exact CentralBankCheck and parallel1; no fallback,
+retiming, waiver or new predicate. This is an active run, not a pass claim.
+
+The completed named box verdict (7eba) is canonical/native0 in533 seconds,
+compile0 in9 seconds, under the unchanged1740-second bound. All original
+policy/preview/scale/save laws pass. Native STRICT_SHAPES reports22/24 very-
+strict below-Standard cases against the unchanged18 required, median-0.378
+percentage points/year. Individual reversals were not pre-judged. The suite
+has one passed harness and zero failed; do not confuse that with one assertion.
+
+Exact local c7e versus remote source/resource/pom/batch/probe manifest bytes
+match (zero differences), tree05e67102ea29ba88b1e8afcf2d95f93ac02d3f3b,
+source guard0. Remote runtime is Eclipse Adoptium Temurin21.0.13+9-LTS/Linux,
+explicitly distinct from local Oracle21.0.4; actual release/java/javac hashes
+and Maven path /usr/bin/mvn are retained. Remote class-manifest SHA256
+5856dc90a37c3d5b67a52cc5064dc74aee18c33d1a90f7df238783d358f55b1d.
+All data,8d4 approval, fresh MG1 and shared-lock proofs pass. No timeout waiver
+or new known-red row is used; the local timeout remains separate evidence.
+
+All box files are copied home to helper target/integrated67/central-box-c7e-prep/remote,
+with verified checks.tgz SHA256bcd234b7aefd44f9a54cc9426dc7131c1bf54a8fdb7267d1099aa8abece67b1e
+and generated-docs.tgz SHA25620e55b6ed6fa1bf53884d6962616cc809d761df8b8bed478bda77ce6094294dd.
+Native log SHA2562f01354c9dff9f0906bc8a2085b5b8743dc3c6dbfb0f30c1e0e0c064fba2da16;
+suite SHA2566d78447f35d65d0333bccd29936bad8fb07e44119cc93bdbce2eb2a7950235fc.
+End guard06:16:22 UTC finds no owned process group, controller, model-cwd
+process or local Java/bash job. Remaining named/default/fast stages stay held
+until the next exact source GO; the separate HMC fixture red is not hidden.
+
+Independent c7e CallCheck passes0 in16 seconds, including the required original
+sections2 and6 and actual Bank-standing/room premises (5bb4). DeskCheck passes0,
+291 assertions in27 seconds, with FC2's D$14902 household-spare-for-paper
+premise and all ledger/load/page laws green (30be). FundCheck passes0 in46
+seconds: actual two-company/rescue market books,70-percent bid cap and default
+shortfall pro-rata sale cases all pass (a0e9). Its first prelaunch MG1 refuses
+3.791 GiB RAM; no JVM starts. Resources return naturally and fresh RAM4.801/
+free-commit11.271/CPU13.323 percent passes before the real run; retain the
+refused gate separately without a waiver (c584).
+
+The unchanged selector has substring semantics (1254/9ac0): argument BankCheck
+selects BankCheck AND CentralBankCheck. Bank's native result completes
+"All checks passed" at02:37:09, including TAB_LOSS20 claim558.47k, kept-25.34k,
+writeoff33.78k and both equity identities. Do not claim the incomplete combined
+query canonical0. Its coordinator42264 starts redundant Central child3292;
+the already completed c7e box Central result remains the valid full evidence.
+Parent directs an owned-PID/parent/creation/command check, then stops only
+that redundant owned child/coordinator/runner tree and preserves Bank's actual
+completed native/result metadata. No Bank/Central replay or selector-code fix.
+CardCheck similarly selects BuildCardCheck; explicitly allow that bounded pair
+as affected builder-quote/card validations with parallel1 and separate native
+verdicts. No new whole-suite selection or cancelled-test pass is implied.
+
+The opening-census source revision (e538) confirms Game.run initializes an
+empty demographic/household census, so the earlier wealth loop could be
+vacuous. Parent reviews full patch SHA256
+d82d73005d4a7f620a405dbb892b0a3d3a386d5613a9a119b21e8b4379b36fdf.
+Only an absent population is seeded through native cohorts.migrate(500),
+PopulationManager's actual population/jobs/fill and FamilyModel.rebuild;
+the existing non-accruing account replan makes actual held household counts.
+No household counts or family-shape/tier shares are assigned directly. Assert
+positive census/population, unchanged native cohort/family arrays and every
+existing raw financial position before declaring any wealth.
+
+★ Declare one native House invoice of opening savings per actual positive
+household, with matching weighted Bank cash, BEFORE the first ordinary audit.
+Count and print every positive cell, including below0.5; require the floor,
+exact unchanged count vector and all non-savings positions. Native refreshBank
+must derive the matching deposits without moving cash. Use the existing
+open-audit/pre-bank-settlement callback to place the actual paid order, choosing
+quantity from actual cash/native quote so a genuine admissible shortfall is
+asserted. Keep every mortgage principal/queue/downpayment/one-mortgage/lending/
+fee/premium guard; parent additionally aborts on a wrong mortgage count.
+Normal mayRetire and vacant-title limits remain required, with full diagnostics
+and abort before invalid closure. The exact held-save/next-twin/money guards
+are unchanged; retain the real slot10 pair for evidence before TempDirs exits.
+No production, rate, seed, tolerance, retirement or underwriting rule changes.
+This revised fixture has not run until the next pushed-source native GO.

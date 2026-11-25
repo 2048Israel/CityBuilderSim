@@ -772,7 +772,7 @@ public final class HousingMarketCheck {
         var bm=g.getBuildingManager();var re=g.getSectors().realEstate();
         var credit=g.getEconomyManager().getBusinessDebtManager();
         var house=bm.getTemplateByName("House");var compact=bm.getTemplateByName("Studio Apartments");
-        final long ordered=4,closed=ordered+1;
+        long[] order={4};
         // Declared initial stock/equity/ground, before this fixture's audit opens.
         // Excess real doors CAUSE vacancy instead of finding it in a played town.
         g.setCashForTest(Founding.WEALTHY_CASH);
@@ -781,28 +781,127 @@ public final class HousingMarketCheck {
         check("closed-debt fixture builds its known standing compact stock",g.buildStack(compact,20,true)==Game.BuildResult.SUCCESS);
         check("closed-debt fixture funds an actual Bank branch",g.buildStack(bm.getTemplateByName("Commercial Bank"),1,true)==Game.BuildResult.SUCCESS);
         check("closed-debt fixture funds actual crews",g.buildStack(bm.getTemplateByName("Construction Depot"),2,true)==Game.BuildResult.SUCCESS);
-        double cost=g.quoteBuild(house,ordered).total+g.getLandManager().priceFor(house.getLandSqFt()*ordered,house.getSector(),Game.groundUse(house));
+        double cost=g.quoteBuild(house,order[0]).total+g.getLandManager().priceFor(house.getLandSqFt()*order[0],house.getSector(),Game.groundUse(house));
         double minimum=Mortgage.ownFundsFor(cost);
         re.setCash(minimum+(cost-minimum)/3);
+        // run() initializes templates/bank/yard, not a settled household census.
+        // Seed only an absent opening population through the native migration
+        // input; derive its age/stage/shape/tier census before the first audit.
+        var openingBalance=g.getHouseholdBalance();var openingCells=openingBalance.cells();
+        long startupPositive=openingCells.stream().filter(h->h.households()>0).count();
+        out.printf(Locale.ROOT,"   startup: positive cells %d held HH %a cohorts %a family HH %a%n",startupPositive,openingCells.stream().mapToDouble(Household::households).sum(),g.getCohorts().total(),g.getFamilies().householdsSeekingDoors());
+        // Reuse the pushed complete financial-position reader, without running
+        // its finding: census setup must preserve every existing raw position.
+        var positions=FinancialOwnerFinding.class.getDeclaredMethod("positions",Household.class);positions.setAccessible(true);
+        List<Object> beforeCensus=new ArrayList<>();for(Household h:openingCells)beforeCensus.add(positions.invoke(null,h));
+        if(startupPositive==0){
+            if(!(g.getCohorts().total()>0))g.getCohorts().migrate(500);
+            if(!(g.getFamilies().householdsSeekingDoors()>0)){
+                var population=g.getPopulationManager();
+                population.applyPopulation(Math.round(g.getCohorts().total()),g.getCohorts().get(AgeBand.ADULT));
+                population.updateJobs(g.getJobs());
+                double[] jobsByTier=new double[PayTier.values().length];
+                long[] posts=population.getJobs();double[] fill=population.getJobFillRate();
+                for(JobType type:JobType.values())jobsByTier[PayTier.of(type).ordinal()]+=posts[type.ordinal()]*fill[type.ordinal()];
+                g.getFamilies().rebuild(g.getCohorts(),jobsByTier);
+            }
+            double[] familyCensus=g.getFamilies().toSaveArray(),cohortCensus=g.getCohorts().toSaveArray();
+            // Existing non-accruing native load/replan path -> HB.planOnly();
+            // no second settlement, by-hand HB counts, or chosen family shares.
+            g.refreshHouseholdAccounts();
+            check("opening native census preserves the age/stage pyramid and family shape/tier matrix",Arrays.equals(cohortCensus,g.getCohorts().toSaveArray())&&Arrays.equals(familyCensus,g.getFamilies().toSaveArray()));
+        }
+        List<Object> afterCensus=new ArrayList<>();for(Household h:openingCells)afterCensus.add(positions.invoke(null,h));
+        check("opening native census preserves every existing financial position",beforeCensus.equals(afterCensus));
+        long positiveCells=openingCells.stream().filter(h->h.households()>0).count();
+        double openingHouseholds=openingCells.stream().filter(h->h.households()>0).mapToDouble(Household::households).sum();
+        double[] openingCounts=openingCells.stream().mapToDouble(Household::households).toArray();
+        boolean populated=positiveCells>0&&openingHouseholds>0&&g.getCohorts().total()>0;
+        check("opening wealth has actual positive households and population",populated);
+        if(!populated||!beforeCensus.equals(afterCensus))throw new IllegalStateException("invalid opening census; no wealth or closure attempted");
+        // Opening savings and matching Bank cash are DECLARED fixture stocks,
+        // before the first audit. No after-audit cash or eligibility rewrite.
+        double openingSaving=g.doorPriceOf(house,1),addedDeposits=0;
+        check("opening native House invoice is a positive finite wealth floor",Double.isFinite(openingSaving)&&openingSaving>0);
+        if(!(Double.isFinite(openingSaving)&&openingSaving>0))throw new IllegalStateException("invalid opening wealth floor");
+        double heldBefore=g.getHouseholdDeposits(),bankCashBefore=g.getBank().getCash();
+        List<Object> otherPositions=new ArrayList<>();for(Household h:openingCells){Map<?,?> p=(Map<?,?>)positions.invoke(null,h);p.remove("savings");otherPositions.add(p);}
+        int endowedCells=0;
+        for(Household h:openingCells)if(h.households()>0){
+            double before=h.savings(),add=Math.max(0,openingSaving-before);
+            h.savings+=add;addedDeposits+=h.households()*add;endowedCells++;
+            out.printf(Locale.ROOT,"   opening wealth %s: count %a before %a add %a after %a%n",h.key(),h.households(),before,add,h.savings());
+        }
+        g.getBank().setCash(bankCashBefore+addedDeposits);
+        double endowedHouseholds=openingCells.stream().filter(h->h.households()>0).mapToDouble(Household::households).sum();
+        boolean floorHolds=endowedCells==positiveCells&&Double.doubleToLongBits(endowedHouseholds)==Double.doubleToLongBits(openingHouseholds)
+                &&Arrays.equals(openingCounts,openingCells.stream().mapToDouble(Household::households).toArray())
+                &&openingCells.stream().filter(h->h.households()>0).allMatch(h->h.savings()>=openingSaving);
+        check("every positive opening cell and household receives the declared wealth floor",floorHolds);
+        List<Object> otherAfter=new ArrayList<>();for(Household h:openingCells){Map<?,?> p=(Map<?,?>)positions.invoke(null,h);p.remove("savings");otherAfter.add(p);}
+        check("opening wealth preserves all non-savings financial positions",otherPositions.equals(otherAfter));
+        near("opening weighted savings increase equals declared Bank cash backing",g.getHouseholdDeposits()-heldBefore,addedDeposits);
+        check("opening Bank receives exactly the declared weighted cash backing",Double.doubleToLongBits(g.getBank().getCash())==Double.doubleToLongBits(bankCashBefore+addedDeposits));
+        // Strike the Bank's liabilities/claims from those actual opening stocks;
+        // refreshBank derives books and weights, and transfers no cash.
+        var refresh=Game.class.getDeclaredMethod("refreshBank");refresh.setAccessible(true);refresh.invoke(g);
+        check("opening native Bank deposit book equals actual weighted savings",Double.doubleToLongBits(g.getBank().getHouseholdDeposits())==Double.doubleToLongBits(g.getHouseholdDeposits()));
+        check("opening native Bank book refresh transfers no cash",Double.doubleToLongBits(g.getBank().getCash())==Double.doubleToLongBits(bankCashBefore+addedDeposits));
+        out.printf(Locale.ROOT,"   opening census/wealth: cells %d endowed %d HH %a floor %a weighted add %a held %a->%a Bank cash %a->%a book %a%n",positiveCells,endowedCells,openingHouseholds,openingSaving,addedDeposits,heldBefore,g.getHouseholdDeposits(),bankCashBefore,g.getBank().getCash(),g.getBank().getHouseholdDeposits());
+        if(!floorHolds||!otherPositions.equals(otherAfter))throw new IllegalStateException("invalid opening wealth; no closure attempted");
         g.toggleNextMonth();audits(g);
         check("closed-debt fixture starts without stranded debt",re.strandedDebtShare()==0);
         long sitesBefore=bm.getStack(house).getUnderConstruction();
         check("closed-debt fixture has no earlier family sites",sitesBefore==0);
-        double principalBeforeFunding=credit.getPrincipal(Sectors.REAL_ESTATE);
-        var payerMethod=Game.class.getDeclaredMethod("mortgageInvestor",String.class,String[].class);
-        payerMethod.setAccessible(true);
-        String[] refusal={null};Investor payer=(Investor)payerMethod.invoke(g,Sectors.REAL_ESTATE,(Object)refusal);
-        // Existing public paid order and its OWN native mortgage payer: no copied lending formula or fake loan.
-        boolean funded=g.buildFor(payer,house,ordered);
-        check("closed-debt fixture funds the actual residential order",funded);
-        if(!funded)throw new IllegalStateException("native mortgage/build refusal: "+refusal[0]);
-        check("closed-debt fixture created actual Bank mortgage principal",credit.getPrincipal(Sectors.REAL_ESTATE)>principalBeforeFunding);
-        check("closed-debt order is on the actual paid work queue",bm.getStack(house).getUnderConstruction()-sitesBefore==ordered);
-        g.toggleNextMonth();audits(g);
+        // The existing HoldersCheck callback is inside the open audit, after
+        // startAuditMonth() and before bank.lend/fees. A between-press mortgage
+        // would have its pending lending/fee/premium counters cleared next press.
+        boolean[] orderedInMonth={false};
+        g.settleProbeForTest=after->{
+            if(after||orderedInMonth[0])return;
+            orderedInMonth[0]=true;
+            double available=re.getCash(),one=g.doorPriceOf(house,1);
+            // Size the actual purchase above ACTUAL cash, not yesterday's quote
+            // and endowment. This is an order choice, never a rewritten till.
+            order[0]=Math.max(order[0],(long)Math.ceil(2*Math.max(0,available)/one));
+            double actualCost=g.quoteBuild(house,order[0]).total+g.getLandManager().priceFor(house.getLandSqFt()*order[0],house.getSector(),Game.groundUse(house));
+            double principalBeforeFunding=credit.getPrincipal(Sectors.REAL_ESTATE);
+            double lentBefore=credit.getLentThisMonth(),feesBefore=credit.getFeesThisMonth(),premiumsBefore=credit.getPremiumsThisMonth();
+            int mortgagesBefore=credit.getMortgageCount(Sectors.REAL_ESTATE);
+            out.println("   in-audit pre-order native claims "+JSON.toJson(credit.getLoans()));
+            out.printf(Locale.ROOT,"   in-audit pre-order m%d: cash %a cost %a own-min %a shortfall %a principal %a lent/fee/premium %a/%a/%a qty %d%n",g.getMonth(),available,actualCost,Mortgage.ownFundsFor(actualCost),actualCost-available,principalBeforeFunding,lentBefore,feesBefore,premiumsBefore,order[0]);
+            check("closed-debt actual quote requires a mortgage with sufficient native down payment",actualCost>available&&available>=Mortgage.ownFundsFor(actualCost));
+            if(!(actualCost>available&&available>=Mortgage.ownFundsFor(actualCost)))throw new IllegalStateException("closed-debt fixture has no admissible actual shortfall");
+            Investor payer;
+            String[] refusal={null};
+            try{
+                var factory=Game.class.getDeclaredMethod("mortgageInvestor",String.class,String[].class);factory.setAccessible(true);
+                payer=(Investor)factory.invoke(g,Sectors.REAL_ESTATE,(Object)refusal);
+            }catch(ReflectiveOperationException e){throw new IllegalStateException(e);}
+            boolean funded=g.buildFor(payer,house,order[0]);
+            out.println("   in-audit post-order native claims "+JSON.toJson(credit.getLoans()));
+            out.printf(Locale.ROOT,"   in-audit post-order: funded %s refusal %s cash %a principal %a mortgages %d->%d lent/fee/premium %a/%a/%a%n",funded,refusal[0],re.getCash(),credit.getPrincipal(Sectors.REAL_ESTATE),mortgagesBefore,credit.getMortgageCount(Sectors.REAL_ESTATE),credit.getLentThisMonth(),credit.getFeesThisMonth(),credit.getPremiumsThisMonth());
+            check("closed-debt fixture funds the actual residential order",funded);
+            check("closed-debt fixture created actual Bank mortgage principal",credit.getPrincipal(Sectors.REAL_ESTATE)>principalBeforeFunding);
+            check("closed-debt order is on the actual paid work queue",bm.getStack(house).getUnderConstruction()-sitesBefore==order[0]);
+            check("closed-debt order wrote one actual mortgage",credit.getMortgageCount(Sectors.REAL_ESTATE)==mortgagesBefore+1);
+            if(!funded||!(credit.getPrincipal(Sectors.REAL_ESTATE)>principalBeforeFunding)||credit.getMortgageCount(Sectors.REAL_ESTATE)!=mortgagesBefore+1)throw new IllegalStateException("native mortgage/build refusal: "+refusal[0]);
+            var mortgage=credit.getMortgages(Sectors.REAL_ESTATE).getLast();
+            near("new actual mortgage principal is on the native lending flow",credit.getLentThisMonth()-lentBefore,mortgage.getOutstandingPrincipal());
+            near("new actual mortgage fee is on the native fee flow",credit.getFeesThisMonth()-feesBefore,BusinessDebtManager.feeOn(mortgage.getOutstandingPrincipal()));
+            near("new actual mortgage premium is on the native premium flow",credit.getPremiumsThisMonth()-premiumsBefore,mortgage.getPremium());
+        };
+        try{g.toggleNextMonth();}finally{g.settleProbeForTest=null;}
+        audits(g);check("closed-debt paid order executed in exactly one native settlement window",orderedInMonth[0]);
+        long ordered=order[0],closed=ordered+1;
         int reIndex=Arrays.asList(Sectors.KEYS).indexOf(Sectors.REAL_ESTATE);
         check("the real Bank holds the borrower's funded claim",g.getBank().getLoansToSector(reIndex)>0&&credit.getPrincipal(Sectors.REAL_ESTATE)>0);
-        check("normal retirement eligibility permits this vacant form",re.mayRetire(house));
-        check("every class's actual vacant RE titles permit the whole closure",re.limitSpareRetirement(house,closed,0)>=closed);
+        var family=g.getFamilies();var heldMarket=re.housingMarket().forSave();
+        boolean eligible=re.mayRetire(house);long vacantLimit=re.limitSpareRetirement(house,closed,0);
+        out.printf(Locale.ROOT,"   normal retirement m%d: unplaced %a doubled %a studio/family shortfall %a/%a market unplaced/unaffordable/noSuitable/crowded %a/%a/%a/%a mayRetire %s vacantLimit %d requested %d%n",g.getMonth(),family.getStillUnplaced(),family.getDoubledUpHouseholds(),re.doorShortfall(false),re.doorShortfall(true),heldMarket.unplaced,heldMarket.unaffordable,heldMarket.noSuitable,heldMarket.crowded,eligible,vacantLimit,closed);
+        check("normal retirement eligibility permits this vacant form",eligible);
+        check("every class's actual vacant RE titles permit the whole closure",vacantLimit>=closed);
+        if(!eligible||vacantLimit<closed)throw new IllegalStateException("closed-debt normal retirement precondition failed; physical closure not attempted");
         double capacityBefore=re.getOwnedHousingCapacity(),debtBefore=credit.getPrincipal(Sectors.REAL_ESTATE);
         String claimsBefore=JSON.toJson(credit.getLoans());double[] poolsBefore=MoneyAudit.pools(g);
         // Same physical vacant-retirement/land-release path as the existing loaded-door case.
@@ -822,6 +921,10 @@ public final class HousingMarketCheck {
         String claims=JSON.toJson(credit.getLoans()),inventory=JSON.toJson(bm.getHousingInventory().forSave());
         out.printf(Locale.ROOT,"   caused closure m%d: %d structures; share %a; owned capacity %a -> %a; debt %a; Bank claim %a%n",g.getMonth(),removed,share,capacityBefore,capacity,debt,bankClaim);
         check("positive closed-home debt saves through the actual native writer",g.saveGame(10,"RES3 caused closed-home debt").ok);
+        // Retain the exact native pair outside TempDirs' normal JVM-exit cleanup.
+        Path retained=Path.of("target","checks","closed-debt-native");Files.createDirectories(retained);
+        Files.copy(g.getGameFiles().saveFile(10),retained.resolve("save10.json"),StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(g.getGameFiles().historyFile(10),retained.resolve("history10.json"),StandardCopyOption.REPLACE_EXISTING);
         Game back=new Game(g.getGameFiles());back.loadGameSave(10);holdHousingFixture(back);
         var loaded=back.getSectors().realEstate();var backCredit=back.getEconomyManager().getBusinessDebtManager();
         check("native reload preserves the exact held positive stranded share",Double.doubleToLongBits(share)==Double.doubleToLongBits(loaded.strandedDebtShare()));
