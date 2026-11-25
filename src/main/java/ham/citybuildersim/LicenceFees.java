@@ -111,7 +111,7 @@ public final class LicenceFees {
                 : ProcessingSector.cityLegs(t, rate, owner.legPrice());
         // The works' power at what their class is billed (PW1, REV-PW1c): Heavy Industry and Mining the energy and transmission.
         return gross - plans.standingRunningCostOf(t) - plans.standingCostOf(owner, t)
-                - SpreadPlanner.ownCosts(t, rate, game.getMarkets().getExchangeRate(), owner.powerPriceFor(t)) - freight;
+                - SpreadPlanner.ownCosts(t, rate, game.getMarkets().getExchangeRate(), owner.powerPriceFor(t), owner.worksTariff()) - freight;
     }
 
     /** This template's actual run, not another template's co-produced share of the same sector good. */

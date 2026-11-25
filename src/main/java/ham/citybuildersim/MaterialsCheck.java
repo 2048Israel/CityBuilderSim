@@ -274,6 +274,7 @@ public class MaterialsCheck {
         threeMonthCycle();
         feedShortWorks();
         idleOverYear();
+        ownPowerPlanned();
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -509,9 +510,10 @@ public class MaterialsCheck {
         double gross = b.totalBySector(Sectors.INDUSTRY, x -> BuildingsTemplate.isBilledForUtilities(x) ? x.getElectricityConsumption() : 0);
         report("fixture: three Industrial Bakeries making three times their draw and two Bakeries half theirs, three months on",
                 surplus > 0 && net > 0 && net < gross, String.format("Industry draws %,.0f kW net of %,.0f, sells %,.0f kW", net, gross, surplus));
-        assertTrue("the sector's surplus is its buildings' power past their draws, and its bill its net draw at the ratio and the tariff",
+        assertTrue("the sector's surplus is its buildings' power past their draws, and its bill its net draw at the ratio, the month's season (PW1-R: the kWh served) and the tariff",
                 industry.getPowerSurplus() == surplus
-                        && industry.getElectricityCost() == net * industry.getEnergyRatio() * price);
+                        && industry.getElectricityCost() == net * industry.getEnergyRatio() * industry.getPowerSeason() * price
+                        && industry.getPowerSeason() == u.getPowerSeason());
         Sector.Statement st = industry.statement();
         assertTrue("its statement's powerSold is the surplus at the works' price (the struck book's), undimmed by the grid, and in its revenue past its sales",
                 st.powerSold == surplus * worksPrice && st.powerSold > 0
@@ -1260,9 +1262,10 @@ public class MaterialsCheck {
                 String.format("Iron & Steel sells %,.0f kW, buys %,.0f", heavy.getPowerSurplus(), bought));
         Sector.Statement st = heavy.statement();
         assertTrue("its statement's powerSold is the ovens' 5,800 kW and the furnace's 8,600 at the works' price, in its revenue past its sales;"
-                        + " its bill the shop's 26,600 at the ratio and the industry price (Heavy Industry takes power at high voltage)",
+                        + " its bill the shop's 26,600 at the ratio, the month's season and the industry price (Heavy Industry takes power at high voltage)",
                 st.powerSold == sold * worksPrice && st.powerSold > 0 && st.revenue == st.localSales + st.exports + st.otherRevenue + st.powerSold
-                        && heavy.getElectricityCost() == bought * heavy.getEnergyRatio() * industryPrice);
+                        && heavy.getElectricityCost() == bought * heavy.getEnergyRatio() * heavy.getPowerSeason() * industryPrice
+                        && heavy.getPowerSeason() == u.getPowerSeason());
         assertTrue("the utility pays the works what their statement booked, and the grid counts their surplus as generation",
                 u.getPowerBought() == g.getEconomyManager().getSectorPowerSold() && u.getWorksPower() >= sold);
         MoneyAudit.Result audit = g.getLastMoneyAudit();
@@ -2200,5 +2203,88 @@ public class MaterialsCheck {
         report("...and nothing else was braking it: the month after, the last one losing again in its month and over its year, the rule may shed it and the retirement sells a Rod Mill",
                 mayAgain && losing && idleNow >= idleMonths && yearNow < 0 && later < after,
                 String.format("%d idle months, D$%,.1fk over its year, mayShed %s; %d Rod Mills before the month, %d after", idleNow, yearNow, mayAgain, after, later));
+    }
+
+    /* ============================ 23. the planner weighs a works' own power as it is paid ============================ */
+
+    static void ownPowerPlanned() {
+        out.println("\n--- 23. the planner weighs a works' own power as it is paid (PW1-R): what replaces its draw at its class's price, the surplus at the works' price ---");
+        GameFiles files = GameFiles.scratch("materialscheck-ownpower");
+        Game g = town(files);
+        BuildingManager b = g.getBuildingManager();
+        quietly(() -> {
+            b.addStack(b.getTemplate(HeavyIndustry.COKE_OVENS), 1, true);
+            b.addStack(b.getTemplate(HeavyIndustry.BLAST_FURNACE), 1, true);
+            b.addStack(b.getTemplate(HeavyIndustry.OXYGEN_STEEL_SHOP), 1, true);
+            g.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            // ...four months, as section 14 plays them: the furnace and the shop load the grid past what the ovens make, so a book is struck at a price above nothing.
+            g.simulateMonths(4);
+        });
+        HeavyIndustry heavy = g.getSectors().heavyIndustry();
+        EconomyManager econ = g.getEconomyManager();
+        BuildingsTemplate ovens = b.getTemplate(HeavyIndustry.COKE_OVENS);
+        double gen = ovens.getGen(), draw = ovens.getElectricityConsumption();
+        double commerce = econ.getPricePerWatt(), industry = econ.getIndustryPricePerWatt(), works = econ.getWorksPricePerWatt();
+        double factor = heavy.exchangeFactor(), rate = .8, tariff = heavy.tariff(), worksTariff = heavy.worksTariff();
+        report("fixture: section 14's town, four months on: the Coke Ovens make more power than they draw, and the struck book pays"
+                        + " the works' surplus a price apart from what Heavy Industry is billed",
+                b.getQuantity(HeavyIndustry.COKE_OVENS) == 1 && gen > draw && draw > 0 && ovens.getConsumables() > 0
+                        && industry > 0 && works > 0 && industry != works && tariff == industry && worksTariff == works,
+                String.format("%,.0f kW made past a %,.0f kW draw; commerce %.6g, industry %.6g (sector %.6g), works %.6g (sector %.6g) a kW", gen, draw, commerce, industry, tariff, works, worksTariff));
+
+        double own = SpreadPlanner.ownCosts(ovens, rate, factor, tariff, worksTariff);
+        double byHand = ovens.getConsumables() * rate * factor - Math.min(gen, draw) * tariff - (gen - draw) * worksTariff;
+        report("its own costs are its consumables at the rate and the exchange factor, less its draw replaced at the industry price and its surplus"
+                        + " past the draw at the works' price (to 1e-12)",
+                Math.abs(own - byHand) <= 1e-12 * Math.abs(byHand) && byHand != SpreadPlanner.ownCosts(ovens, rate, factor, tariff),
+                String.format("D$%.6gk a month, not the flat price's D$%.6gk", own, SpreadPlanner.ownCosts(ovens, rate, factor, tariff)));
+
+        // ...the idle book's figure for the works that stand: the works' price moved by a tenth, and the last one earns the surplus times that more.
+        double d = .1 * works;
+        double lastBefore = heavy.lastEarns(ovens), lastAfter, lastBack;
+        try {
+            econ.setPowerPrices(commerce, industry, works + d);
+            lastAfter = heavy.lastEarns(ovens);
+        } finally {
+            econ.setPowerPrices(commerce, industry, works);
+        }
+        lastBack = heavy.lastEarns(ovens);
+        report("the last one standing earns what its surplus gains at a works' price a tenth higher, and no more: lastEarns() rises by the surplus"
+                        + " times the rise (to 1e-9), and falls back with the price",
+                Double.isFinite(lastBefore) && Double.isFinite(lastAfter) && lastBack == lastBefore
+                        && Math.abs((lastAfter - lastBefore) - (gen - draw) * d) <= 1e-9 * Math.abs(lastBefore),
+                String.format("D$%.6gk a month, then D$%.6gk (+%.4gk of the %.4gk surplus x the rise)", lastBefore, lastAfter,
+                        lastAfter - lastBefore, (gen - draw) * d));
+
+        // ...and the industry price moved by the same: it moves what replaces the draw, and not the surplus.
+        double ownMoved;
+        try {
+            econ.setPowerPrices(commerce, industry + d, works);
+            ownMoved = SpreadPlanner.ownCosts(ovens, rate, factor, heavy.tariff(), heavy.worksTariff());
+        } finally {
+            econ.setPowerPrices(commerce, industry, works);
+        }
+        report("the industry price a tenth higher moves its own-power credit by its draw replaced times the rise alone (to 1e-12): the surplus is not paid the industry price",
+                Math.abs((ownMoved - own) - (-Math.min(gen, draw) * d)) <= 1e-12 * Math.max(Math.abs(own), Math.abs(ownMoved)),
+                String.format("%.6g against %.6g", ownMoved - own, -Math.min(gen, draw) * d));
+
+        // ...REV-PW1c: the recipes' prices are the class's, as the planner's are. This town has no street wires, so its commerce and industry prices are one:
+        // the commerce price is moved a tenth of the works' above the industry's while they are read, so a shop's and the ovens' cannot be mistaken for each other.
+        BuildingsTemplate shop = b.getTemplateByName("Small Grocery Store");
+        Recipes.Prices heavyPrices, shopPrices;
+        double commerceNow;
+        try {
+            econ.setPowerPrices(commerce + d, industry, works);
+            commerceNow = econ.getPricePerWatt();
+            heavyPrices = Recipes.pricesOf(g, ovens);
+            shopPrices = Recipes.pricesOf(g, shop);
+        } finally {
+            econ.setPowerPrices(commerce, industry, works);
+        }
+        assertTrue("a recipe of the ovens is weighed at the industry price for its draw and the works' for its surplus, and a shop's at the commerce price",
+                heavyPrices.pricePerWatt() == industry && heavyPrices.worksPricePerWatt() == works
+                        && shopPrices.pricePerWatt() == commerceNow && commerceNow != industry);
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        report("the month's money audit closes", audit.relative() < 1e-4, String.format("residual %.3g of what moved", audit.relative()));
     }
 }

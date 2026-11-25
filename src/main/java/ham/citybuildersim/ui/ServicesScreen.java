@@ -2795,6 +2795,8 @@ final class ServicesScreen {
             return column(statementLine("Price per kW a month, shops, offices and light industry", cash(uh.getPricePerWatt())),
                     statementLine("...Heavy Industry and Mining, at high voltage", cash(uh.getIndustryPricePerWatt())),
                     statementLine("...paid the works for their surplus", cash(uh.getWorksPricePerWatt())),
+                    // PW1-R: a bill is the kWh served, the price a kW of the year's mean draw times the season the book's month was dispatched at.
+                    statementLine("Billed on the kWh served: the month's load, of the year's mean", pct(uh.getPowerSeason())),
                     statementLine("Energy, a MWh, at the month's clearing prices", cash(uh.getEnergyPricePerMwh())),
                     uh.isFoundingBook() ? Kept.scope("founding", () -> statementNote("Still at founding: no month has cleared.")) : null,
                     coalBurned > 0 ? Kept.scope("coal burned", () -> statementLine("Coal burned", String.format("%,.0f t", coalBurned))) : null,
@@ -2807,7 +2809,8 @@ final class ServicesScreen {
                     statementLine("Staff turnout", pct(uh.getAverageUtilityFill())),
                     statementNote("The businesses pay the market's price: the energy at each half-block's clearing "
                             + "price plus the wires — shops and offices both wires, heavy industry and mines the long "
-                            + "ones alone. Households are not billed for power or water, so the homes' draw is real "
+                            + "ones alone, on the kWh the month served them: a month of peak load bills more than its "
+                            + "kW at the prices above, a mild one less. Households are not billed for power or water, so the homes' draw is real "
                             + "load and no revenue. One workforce runs power and water both."));
         }
         // The water's; the road's statement went with its row (0.7.29: Infrastructure › Roads has it).
