@@ -22,4 +22,7 @@ Every ALL dry run on main since 4183928ca carried this red.
 
 ## The checks
 
-See the run below.
+At d326f1d37 on the PC: `./batch-check.sh PackagingCheck` exit 0 (both the order assertion and the
+new BX1 assertion ok; the old line `tar -a -c ...` would fail the new one, a bare `tar` at a line's start),
+`./batch-check.sh TimingCheck` exit 0. `sh tools/pick.sh origin/main HEAD`: PackagingCheck TimingCheck,
+2 of 254, review not needed. Not ALL, so no dry run: the gate runs the pick.
