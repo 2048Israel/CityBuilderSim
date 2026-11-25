@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — R1g, the 1900 city grows — 2026-11-24, ready, see docs/queue/R1g-notes.md
 A city founded the 1900 way grows now, and the founding screen and the playtest (the gate's audit) found it by default: today's city under
