@@ -1536,8 +1536,18 @@ public class HouseholdBalance {
              * the share of the households who could not pay them - a level
              * struck from the month, not a rate typed in. Unemployment moves
              * them next month.
+             *
+             * ...AND ON THE TYPED MARKET, THE DOOR IT COULD NOT FUND (RES3,
+             * 2026-11-25). Main's rentDue > 0 reads "holds a home": every
+             * housed cell pays a pooled share. The typed market bills only a
+             * door a household funds, so a household past EI whose savings
+             * are gone owes none (a guest, or nobody's tenant) and was never
+             * struck: on the 1900 city 250 such households piled up past EI
+             * by m270 (main 8.9) and unemployment stood at 27% (main 12.5%).
+             * The clearing has already refused it the door, so the unfunded
+             * test alone strikes it, and Unemployment moves it as main's.
              */
-            if (c.canBeEvicted() && c.unfunded > 0 && rentDue > 0) {
+            if (c.canBeEvicted() && c.unfunded > 0 && (rentDue > 0 || Double.isFinite(rentBills.applyAsDouble(c)))) {
                 double bills = rentDue + feesDue + c.interest;
                 c.evicted = c.households * Math.min(1, c.unfunded / bills);
                 lastEvicted += c.evicted;
