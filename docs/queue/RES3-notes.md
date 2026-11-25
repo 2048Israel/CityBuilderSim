@@ -4806,3 +4806,37 @@ again on the pushed correction, then continue the named sequence.
 Its runner/JVM ended and the exact previous source/results are retained;
 ExchangeRate and later names have not run. Prior four normal passes and
 the native coverage remain recorded, not replaced by this fixture fix.
+
+The completed 9d2d policy figures (76fe) are pooled total effect
+3.635685 percentage points and non-shelter effect 3.102148 points; the
+unchanged +1 total-effect law and every other policy guard pass. Full
+Monetary output is 720 passes/one legacy-fixture failure, including
+227/0 nested CPI coverage. The corrected full-run verdict remains to
+come. Exact supported array lengths are B223/L232/P233/current242;
+the old fixture erroneously used 241 for pre-parity and 232 for
+before-levels. Evidence at helper target/cpi-native-9d2d has native
+archive SHA256
+837877a1663d5eecc80588d4a63e30cb088eb56516ed88607493d2a0f5bbced8,
+raw snapshots SHA256
+14729d23a72240fe757b86cec1c2a3fd194511b11ec2ba0402ff05096198420f.
+These are internal supported layout-shape fixtures; the genuine shipped
+save-format refusal pairs remain separate and unchanged.
+
+While the controller waits for the required shared box lock (no Java),
+the adjacent static state-layout audit finds the same tail-relative
+fixture error in LabourCheck (dfc7). Its old length-3 now removes the
+three anchors rather than tie/share/average, its invalid tie write now
+changes goingRate, and length-1 removes maxSettable rather than the
+average. lastAverageOf likewise now reads maxSettable. These conflicts
+are caused by this batch's appended state and must be corrected.
+
+Add two pure package-visible format-position accessors, tieStateOffset
+and averageStateOffset, without changing any existing production body,
+state layout, reader, equation or constant. LabourCheck now constructs
+the actual pre-tie/pre-average arrays, corrupts the actual tie ordinal
+and reads the actual saved average through those positions. Every old
+assertion/predicate/tolerance remains, with the same .61/.77 inputs and
+expected fallback. No Labour native pass is claimed from this static
+correction. Run normal LabourCheck on the pushed fix, and retain the
+other exact-source validation labels; the pure added accessors change
+no existing simulation behavior.

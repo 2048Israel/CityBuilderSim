@@ -1037,6 +1037,10 @@ public class LabourMarket {
         return WageBand.values().length * 2 + wage.length + 1;
     }
 
+    /** Stable tail positions for native-format fixtures, independent of later appended state. */
+    int tieStateOffset() { return wage.length + 3 + diagnosticsLength(); }
+    int averageStateOffset() { return tieStateOffset() + 2; }
+
     /**
      * Refused whole on a length mismatch, never padded - the same rule the
      * health and healthcare arrays follow. A wage array from a build with a

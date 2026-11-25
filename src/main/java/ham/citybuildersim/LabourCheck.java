@@ -627,11 +627,11 @@ public class LabourCheck {
         close("...with its share", tiedBack.getTieShare(), .61, 1e-12);
         LabourMarket olderBack = new LabourMarket();
         olderBack.setFloorTie(LabourMarket.FloorTie.NOTHING, .77);
-        olderBack.restore(java.util.Arrays.copyOf(tiedState, tiedState.length - 3));
+        olderBack.restore(java.util.Arrays.copyOf(tiedState, tiedMarket.tieStateOffset()));
         assertTrue("an array cut before the tie restores prices", olderBack.getFloorTie() == LabourMarket.FloorTie.PRICES);
         close("...at the default share", olderBack.getTieShare(), LabourMarket.DEFAULT_TIE_SHARE, 1e-15);
         double[] outOfRange = tiedState.clone();
-        outOfRange[outOfRange.length - 3] = LabourMarket.FloorTie.values().length;   // the tie is the third value from the end (WS1: the last average follows its share)
+        outOfRange[tiedMarket.tieStateOffset()] = LabourMarket.FloorTie.values().length; // corrupt the tie ordinal, before its share and held average
         LabourMarket garbledBack = new LabourMarket();
         garbledBack.setFloorTie(LabourMarket.FloorTie.NOTHING, .77);
         garbledBack.restore(outOfRange);
@@ -1119,7 +1119,7 @@ public class LabourCheck {
             withBack.restore(withState);
             close("the average survives state() and restore()", lastAverageOf(withBack), withAverage.cashGoingRate() * 1.3, 1e-12);
             LabourMarket olderAverage = new LabourMarket();
-            olderAverage.restore(java.util.Arrays.copyOf(withState, withState.length - 1));
+            olderAverage.restore(java.util.Arrays.copyOf(withState, withAverage.averageStateOffset()));
             assertTrue("an array cut before the average keeps the tie it carries",
                     olderAverage.getFloorTie() == LabourMarket.FloorTie.AVERAGE_WAGE && Math.abs(olderAverage.getTieShare() - .61) < 1e-12);
             close("...and reads no average, as before", lastAverageOf(olderAverage), 0, 1e-15);
@@ -1817,10 +1817,10 @@ public class LabourCheck {
     /** The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. */
     static final double TIE_NEXT_AVERAGE_OVER_LAST = 1.1;
 
-    /** The average wage a market's tie last read: the last value of its state array (WS1; there is no getter for it). */
+    /** The average wage a market's tie last read, at its saved field position before later tails. */
     static double lastAverageOf(LabourMarket m) {
         double[] state = m.state();
-        return state[state.length - 1];
+        return state[m.averageStateOffset()];
     }
 
     static void cleanUp(Path root) {
