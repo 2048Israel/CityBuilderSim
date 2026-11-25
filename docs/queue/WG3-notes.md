@@ -1101,3 +1101,16 @@ break even (624 working months against 576).
 - The pick is ALL (AllChecks, Game). The review line says "not needed".
   Schooling moves money flows, so the orchestrator orders the brief's money
   and saves review.
+- LongPlaytest, mended (direct run, `target/checks/LongPlaytest-mend.log`):
+  exit 0, "All checks passed", no households-with-no-home finding.
+  - An observation, not a check: 342,208 evictions over the run and a most of
+    63,153 with no home (m2116). The pre-mend run had 103,224 and 22,179, and
+    main's kept runs 132k-181k. One run of a chaotic city settles nothing; the
+    ensemble's spread is the judge.
+  - Students at m2400: 47,522 here, against 147,851 before the mend.
+- KeptCheck: known red only, main's HT1-H note line in `docs/notes/gate.txt`.
+  "Wages › The ladder: the redraw and the next equal a page built new OK":
+  the ladder page is drawn through Kept.
+- The housing red is not yet called traced. R1g moves LongPlaytest's city,
+  so once R1g ships, main is merged again and LongPlaytest re-run on that
+  city, before the ensemble.
