@@ -1595,9 +1595,13 @@ final class FundScreen {
             results.getChildren().add(Kept.scope("noBond", () -> line("No company has a bond outstanding.")));
         }
         if (shown < all.size()) {
+            // WHY (RES3): Show more is a click, not a key, so it redraws kept: the rows on show are handed back and only the next
+            // SEARCH_ROWS are made. Refilled outside a draw, every press made every row on show new, so reaching a list's last page made
+            // rows in the square of its pages; an issuer's search names the lots the fund closed on its matured bonds, which grow with
+            // the months, and KeptCheck's section 63 ran out of heap pressing through one (RES3-notes.md).
             results.getChildren().add(Kept.scope("more", () -> stepChip("Show more · " + (all.size() - shown) + " left", () -> {
                 searchRows += SEARCH_ROWS;
-                fillResults(g, results);
+                redraw();
             }, false)));
         }
     }

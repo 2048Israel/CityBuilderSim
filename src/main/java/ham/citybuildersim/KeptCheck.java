@@ -4873,6 +4873,73 @@ public class KeptCheck {
             return 2;
         });
     }
+    /** The Show more presses and then the months section 63 watches the longest issuer's expanded search over (RES3). */
+    static final int SHOW_MORE_PRESSES = 2, SHOW_MORE_MONTHS = 3;
+
+    /**
+     * Section 63 (RES3): Show more on the longest issuer's search hands back every row on show and makes only the next SEARCH_ROWS,
+     * and over SHOW_MORE_MONTHS months the expanded rows stay the same nodes, as many as the presses showed, while the lots the fund
+     * closes on the issuer's matured bonds lengthen its search. WHY: refilled outside a draw, every press made every row on show new,
+     * and pressing through RES3's longest issuer ran KeptCheck out of heap (RES3-notes.md).
+     */
+    static void searchShowMoreBounded(Game g, KeptBench bench, KeptBench.Page tab, int rows) throws Exception {
+        System.out.println("\n--- 63: Show more keeps the rows on show and makes only its own, month after month (RES3) ---");
+        fx(() -> {
+            bench.fundPage("Search");
+            bench.fundSearch("", "Bonds");
+            bench.drawKept(tab);
+            String issuer = null;
+            int matches = 0;
+            for (String name : FundView.search(g, "", "Bonds").stream().map(FundView.Hit::issuer).filter(java.util.Objects::nonNull).distinct().toList()) {
+                int count = FundView.search(g, name, "Bonds").size();
+                if (count > matches) {
+                    issuer = name;
+                    matches = count;
+                }
+            }
+            int shown = (SHOW_MORE_PRESSES + 1) * rows;
+            check("fixture: the longest issuer's search runs past " + shown + " rows, SHOW_MORE_PRESSES + 1 Search pages (" + issuer + ", " + matches + " matches)",
+                    matches > shown);
+            if (matches <= shown) return null;
+            final String named = issuer;
+            bench.fundSearch(named, "Bonds");
+            bench.drawKept(tab);
+            boolean same = true, next = true;
+            StringBuilder said = new StringBuilder();
+            for (int press = 1; press <= SHOW_MORE_PRESSES; press++) {
+                List<javafx.scene.layout.HBox> before = fundResultRows(bench);
+                String more = bench.chipWith(s -> s.startsWith("Show more · "));
+                if (more == null || !bench.pressChip(more)) {
+                    same = next = false;
+                    said.append("press ").append(press).append(": Show more is absent");
+                    break;
+                }
+                List<javafx.scene.layout.HBox> after = fundResultRows(bench);
+                for (int i = 0; i < before.size(); i++) same &= i < after.size() && before.get(i) == after.get(i);
+                next &= before.size() == press * rows && after.size() == Math.min((press + 1) * rows, FundView.search(g, named, "Bonds").size());
+                said.append("press ").append(press).append(": ").append(before.size()).append(" rows, then ").append(after.size()).append("; ");
+            }
+            check("each Show more hands back every row on show, the same nodes (" + said + ")", same);
+            check("...and adds only the next SEARCH_ROWS rows", next);
+            List<javafx.scene.layout.HBox> expanded = fundResultRows(bench);
+            boolean kept = true, bounded = true;
+            StringBuilder months = new StringBuilder();
+            for (int m = 0; m < SHOW_MORE_MONTHS; m++) {
+                month(g);
+                bench.drawKept(tab);
+                List<javafx.scene.layout.HBox> now = fundResultRows(bench);
+                int all = FundView.search(g, named, "Bonds").size();
+                bounded &= now.size() == Math.min(shown, all);
+                for (int i = 0; i < expanded.size(); i++) kept &= i < now.size() && expanded.get(i) == now.get(i);
+                months.append("m").append(g.getMonth()).append(" ").append(now.size()).append(" of ").append(all).append("; ");
+            }
+            check("a month's redraw shows the rows the presses showed, however long the issuer's search grows (" + months + ")", bounded);
+            check("...the same row nodes month after month", kept);
+            check("...and the expanded search equals a page built new", againstNew(bench, tab, true) == null);
+            return null;
+        });
+    }
+
     /** Section 63 opens and shuts the paging controls and each older year, kept against a page built new. */
     static void fundLists(Game g, KeptBench bench, KeptBench.Page tab) throws Exception {
         System.out.println("\n--- 63: the fund's Search pages and Activity years (FP1) ---");
@@ -4937,6 +5004,7 @@ public class KeptCheck {
             return null;
         }));
         pageReshapedCaused(g, bench, tab, 63, choices);
+        searchShowMoreBounded(g, bench, tab, rows);
         fx(() -> {
             int month = g.getMonth();
             bench.fundPage("Search");
