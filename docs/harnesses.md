@@ -2793,120 +2793,120 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1310 the road 180% full serves 56%: red, short
   - L1312 nothing asked is all of it met, and nothing supplying an ask is nothing; not a number has no verdict
   - L1316 a share just under 100% never prints as 100% (the word would say short beside it)
-  - L1351 every served NEEDS YOU row (
-  - L1373 every Build ring of power, water, the road, transit, care and the schools (
-  - L1382 ...power's ring is the grid's own figure at the peak hour's draw (to 1e-9) and the road's the road's, to the bit; transit has no verdict
-  - L1388 the curve the Roads page draws against served is the road's flow at what it serves
-  - L1398 fixture: with general care at 90% off the list, NEEDS YOU lists nothing for Healthcare, and the tile shows
-- **L1419 11. the interest on its whole cost: consider()'s brake, the card's last gate**
-  - L1465 ...and consider() would build it
-  - L1478 fixture: it still earns over nothing, the same estimate, and its interest bar is over that
-  - L1481 A BAKERY THAT PAYS BUT NOT ITS INTEREST ON ITS WHOLE COST FAILS THE CARD'S INTEREST GATE, the last
-  - L1483 ...with what one would earn and what it must: PROFIT_OVER_INTEREST times a month's interest
-  - L1489 fixture: the Bakery waits for the builders, so its cost is grown over the wait (carry over 1, and the card's is the model's)
-  - L1492 ...its interest struck on its whole cost grown over the wait though the till pays it all, at the real rate the test reads
-  - L1495 ...the rate it is judged at the bakers' own, the till paying (projectRate() of nothing)
-  - L1498 ...and every gate's report the same: it pays, it fails the interest, and that is its first failure
-  - L1503 THE CARD AGREES WITH consider(): the same order of one is refused
-  - L1507 at today's prime again the card passes it and consider() builds the same order
-  - L1519 fixture: the bakers are under a borrowing ban, and their till holds half a Bakery
-  - L1521 under a ban the gate is the interest's, in consider()'s words: \"
-  - L1526 ...and consider() refuses the same order
-  - L1534 ...and the bakers' till, prime and record put back
-  - L1539 a spur that would lose money fails the interest too, behind the loss, which stays its first
-- **L1567 12. the materials' cards: where it stands, how its sector weighs it, its power, old metal, buyers, E**
-  - L1623 fixture: the catalogue's materials buildings - the nine industries' - and the rest
-  - L1626 only a materials building is one (its owner a ProcessingSector or an ExtractionSector), and only it is weighed
-  - L1628 a works is weighed as its sector's appraisal weighs it: what it earns, its whole cost with its vans, the
-  - L1630 ...a mine, a quarry and the washing plant as their plan weighs one - ExtractionSector's estimate on its cost
-  - L1632 ...a crew under E, and a planted stand not at all (Forestry plants it, nothing orders it)
-  - L1656 fixture: the town holds three iron sites by fiat, all hematite (the first type)
-  - L1660 an Iron Mine's card: one hematite site, the city's three by type, its own and those spoken for, what is left -
-  - L1665 a Large Open-Pit Mine's: twenty sites of one hematite field, which three do not hold - it does not fit
-  - L1670 ...a magnetite works on a city of hematite: none of its type, in its words:
-  - L1674 ...and how its sector weighs it: the field its feed, refused first in the same words
-  - L1682 the words name each resource by its type: hematite ore, coking coal, sulphide copper ore, limestone - and
-  - L1691 an Underground Coal Mine on a town with no coking coal says so in coal's words, read as the ground (ORE):
-  - L1704 fixture: two stone sites by fiat, limestone; a Quarry's row makes aggregate
-  - L1706 a Quarry's card: either type, and one more stands on limestone - it makes the row's tonnes of limestone,
-  - L1712 ...and where it goes is limestone's buyers
-  - L1729 fixture: a Pelletising Plant in a town that digs no ore - its feed imported - fails only the money gate
-  - L1736 its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost - the plant
-  - L1743 the card's \"this one:\" is it - the planner asks before consider() - unless the sector's word already
-  - L1762 ...an Oxygen Steel Shop makes less than it draws, and buys the rest; a Pulp Mill draws none and sells it all;
-  - L1769 fixture: a Scrap Yard standing in the town
-  - L1771 its card buys the city's old steel: its intake (oldMetal()), Iron & Steel's price - PAY_SHARE of scrap's
-  - L1780 ...and with less old steel arising past the yards standing than one more takes, its sector's feed gate
-  - L1786 a Scrap Copper Refinery's buys the city's old copper the same way: Copper Refining's price and spare
-  - L1811 every good's buyers are the sectors whose buildings use it, each taking its standing buildings' need at
-  - L1820 a Copper Smelter's acid goes to copper's leach plants and gold's mill at nameplate; its anode to its
-  - L1827 a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's
-  - L1848 each of the ten industries' pages says who here buys each good it makes, or that it ships
-  - L1861 fixture: a forest town with 10 km2 cuttable - its plan holds in E's words
-  - L1864 a Logging Camp's card: no room under E, none more, and its refusal the plan's own words, to the letter
-  - L1871 the whole forest cuttable: room for N more Logging Camps exactly where E allows N and not N + 1, and it carries
-  - L1898 every offer standing: its fields of each resource by type add up to its sites (CityLand.fieldsOn()), as
-  - L1907 an offer on the
-  - L1922 fixture: offers on the nearest hematite field under twenty sites and the nearest magnetite field
-  - L1928 the magnetite field is filled with magnetite works, never an Iron Mine, no more sites than it holds
-  - L1930 the hematite field under twenty sites takes Iron Mines alone, and its earnings are the old rule's for its
-  - L1935 Build's payback on the magnetite offer is its by-type earnings
-- **L1967 13. a berth's payback, the owner and the depot's line (FR4)**
-  - L2014 A SEA TERMINAL'S CARD HAS A PAYBACK AND NO OTHER BUILDING'S - the Strategic Reserve's, the Tank Farm's and a
-  - L2021 fixture: no cargo of any kind has crossed the boundary (a new city), the dues dial at its default
-  - L2031 A KIND WITH NO CARGO READS NO PAYBACK: NO_CARGO, no years, no tonnes carried and no dues, for every terminal
-  - L2032 ...and not a NaN or an infinity in any other figure the card prints (the years alone are NaN, the sentinel for none)
-  - L2033 ...the price is the one the Build button charges
-  - L2038 fixture: the city buys an offer that runs out to the sea
-  - L2044 AT A BERTH'S WORTH_A_BERTH OF TONNES: the Bulk Berth's card PAYS BACK, and the Bulk Terminal's is SHORT of tonnes
-  - L2046 ...and the card says what the advice does (portTerminal() orders the Bulk Berth, not the Terminal)
-  - L2048 ...it carries the tonnes uncovered, all of them, a month
-  - L2049 ...at the advice's uncovered tonnes
-  - L2050 ...the tonnes the advice waits for are WORTH_A_BERTH over the dial of its month
-  - L2051 ...its dues are the tonnes it carries at the rate struck a tonne
-  - L2052 ...its years are its price over a year's dues less its upkeep
-  - L2053 ...a payback of years above nothing
-  - L2054 ...the shortfall's figures: the Terminal's tonnes needed are the Berth's scaled by their months, its years NaN
-  - L2058 A HAIR UNDER IT: the Bulk Berth is SHORT too, and the card agrees with the advice
-  - L2063 AT THE TERMINAL'S WORTH_A_BERTH: both cards pay back, each judged alone, as portTerminal() asks them with the other
-  - L2065 ...the Bulk Berth carries its whole month (the tonnes uncovered are more)
-  - L2066 ...MORE TONNES CARRIED, FEWER YEARS: the Berth at its full month pays back in fewer years than at 60% of it
-  - L2072 fixture: half the threshold is no berth's worth at the default dial
-  - L2075 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth pays back, and the card agrees with the advice
-  - L2080 THE DIAL AT 0 - NO DUES, NO PAYBACK: NO_DUES for every terminal however many tonnes, no NaN but the years
-  - L2091 A BERTH WHOSE UPKEEP IS MORE THAN ITS DUES is UPKEEP, no years - the break-even does not see its upkeep, the card does
-  - L2101 THE DUES RATE IS THE PORT DUES' OWN: PortDivision.duesRateOf() with the berth standing is the rate the card struck for
-  - L2105 ONE BERTH STANDING FOR TONNES THAT FILL HALF OF IT: COVERED for the Berth and the Terminal - cargo crosses, none is
-  - L2127 THE RAIL AND DEPOT CARDS ARE OWNED BY FREIGHT - the owner the card names, its investors' line's and the slot the
-  - L2135 ...and Build's source no longer says \"Owned by the rail sector\" (the card's owner line reads the owner's key)
-  - L2138 could not read Build's source:
-  - L2146 only the Truck Depot has the line: a Rail Spur, a House and the Strategic Reserve have none
-  - L2150 fixture: no Truck Depot stands or is on site, and the margin is a fraction of a depot's room
-  - L2153 the line's trucks are Haulage's
-  - L2154 ...its depots' room
-  - L2155 ...the trucks past the room, on the street
-  - L2156 ...what it waits for is DEPOT_ORDER_MARGIN of the depot's room
-  - L2157 ...and it would build one exactly when Haulage would order this depot (depotToOrder())
-  - L2162 with the fleet raised past the margin and no depot standing, every truck is on the street
-  - L2163 ...and the line says Freight would build one exactly when the order's own test does, and here that test says yes
-  - L2168 with four trucks and no depot: four over the room, and short of the margin Freight would not build one yet
-- **L2207 14. the landlords' card: the mortgage lender's test, the last gate of a landlord's home (I13-L)**
-  - L2232 ...so a Bakery's door to the lender's test is closed
-  - L2247 fixture: the landlords' owners are not asked for the down payment, and a House costs more than its down payment
-  - L2258 fixture: from a till of twice its down payment a House needs a lender, which reads a rent too small for the payment
-  - L2263 THE LENDER REFUSES IT ON ITS RENT: the card's first gate is the lender's, the last, and the INTEREST gate is none
-  - L2266 ...with the cover the rent gives the payment and the cover the lender asks, the test itself beside them
-  - L2271 ...in the lender's words, with what it lends, the payment and the cover against what it asks
-  - L2278 THE ORDER AGREES: with the card's funds and rent the landlords' order is declined in the same cover, in the lender's line: \"
-  - L2281 ...and no House is ordered
-  - L2287 fixture: a till of half the down payment leaves the landlord short of the down payment, and the lender reads no cover
-  - L2290 SHORT OF THE DOWN PAYMENT IT FAILS THE CARD FOR THAT: the lender's gate with the funds and the down payment
-  - L2295 ...in the lender's words: what it wants of its own and what it would put in
-  - L2300 ...and the order holds for it, in the same line: \"
-  - L2316 A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick
-  - L2329 ...so the card fails it at the lender's gate, the cover now the rate's
-  - L2333 ...and the order is declined in the cover the card read, at the dearer rate: \"
-  - L2344 at today's rate again the card passes it, and the order builds one House on an insured mortgage: \"
+  - L1360 every served NEEDS YOU row (
+  - L1383 every Build ring of power, water, the road, transit, care and the schools (
+  - L1389 ...power's ring is the grid's own figure at the peak hour's draw (to 1e-9; at most it with wind or sun standing:
+  - L1396 the curve the Roads page draws against served is the road's flow at what it serves
+  - L1406 fixture: with general care at 90% off the list, NEEDS YOU lists nothing for Healthcare, and the tile shows
+- **L1427 11. the interest on its whole cost: consider()'s brake, the card's last gate**
+  - L1473 ...and consider() would build it
+  - L1486 fixture: it still earns over nothing, the same estimate, and its interest bar is over that
+  - L1489 A BAKERY THAT PAYS BUT NOT ITS INTEREST ON ITS WHOLE COST FAILS THE CARD'S INTEREST GATE, the last
+  - L1491 ...with what one would earn and what it must: PROFIT_OVER_INTEREST times a month's interest
+  - L1497 fixture: the Bakery waits for the builders, so its cost is grown over the wait (carry over 1, and the card's is the model's)
+  - L1500 ...its interest struck on its whole cost grown over the wait though the till pays it all, at the real rate the test reads
+  - L1503 ...the rate it is judged at the bakers' own, the till paying (projectRate() of nothing)
+  - L1506 ...and every gate's report the same: it pays, it fails the interest, and that is its first failure
+  - L1511 THE CARD AGREES WITH consider(): the same order of one is refused
+  - L1515 at today's prime again the card passes it and consider() builds the same order
+  - L1527 fixture: the bakers are under a borrowing ban, and their till holds half a Bakery
+  - L1529 under a ban the gate is the interest's, in consider()'s words: \"
+  - L1534 ...and consider() refuses the same order
+  - L1542 ...and the bakers' till, prime and record put back
+  - L1547 a spur that would lose money fails the interest too, behind the loss, which stays its first
+- **L1575 12. the materials' cards: where it stands, how its sector weighs it, its power, old metal, buyers, E**
+  - L1631 fixture: the catalogue's materials buildings - the nine industries' - and the rest
+  - L1634 only a materials building is one (its owner a ProcessingSector or an ExtractionSector), and only it is weighed
+  - L1636 a works is weighed as its sector's appraisal weighs it: what it earns, its whole cost with its vans, the
+  - L1638 ...a mine, a quarry and the washing plant as their plan weighs one - ExtractionSector's estimate on its cost
+  - L1640 ...a crew under E, and a planted stand not at all (Forestry plants it, nothing orders it)
+  - L1664 fixture: the town holds three iron sites by fiat, all hematite (the first type)
+  - L1668 an Iron Mine's card: one hematite site, the city's three by type, its own and those spoken for, what is left -
+  - L1673 a Large Open-Pit Mine's: twenty sites of one hematite field, which three do not hold - it does not fit
+  - L1678 ...a magnetite works on a city of hematite: none of its type, in its words:
+  - L1682 ...and how its sector weighs it: the field its feed, refused first in the same words
+  - L1690 the words name each resource by its type: hematite ore, coking coal, sulphide copper ore, limestone - and
+  - L1699 an Underground Coal Mine on a town with no coking coal says so in coal's words, read as the ground (ORE):
+  - L1712 fixture: two stone sites by fiat, limestone; a Quarry's row makes aggregate
+  - L1714 a Quarry's card: either type, and one more stands on limestone - it makes the row's tonnes of limestone,
+  - L1720 ...and where it goes is limestone's buyers
+  - L1737 fixture: a Pelletising Plant in a town that digs no ore - its feed imported - fails only the money gate
+  - L1744 its refusal is the planner's money gate in its own words (SpreadPlanner.City.money()), on its whole cost - the plant
+  - L1751 the card's \"this one:\" is it - the planner asks before consider() - unless the sector's word already
+  - L1770 ...an Oxygen Steel Shop makes less than it draws, and buys the rest; a Pulp Mill draws none and sells it all;
+  - L1777 fixture: a Scrap Yard standing in the town
+  - L1779 its card buys the city's old steel: its intake (oldMetal()), Iron & Steel's price - PAY_SHARE of scrap's
+  - L1788 ...and with less old steel arising past the yards standing than one more takes, its sector's feed gate
+  - L1794 a Scrap Copper Refinery's buys the city's old copper the same way: Copper Refining's price and spare
+  - L1819 every good's buyers are the sectors whose buildings use it, each taking its standing buildings' need at
+  - L1828 a Copper Smelter's acid goes to copper's leach plants and gold's mill at nameplate; its anode to its
+  - L1835 a Panel Mill's panels: nobody here buys them, they ship (until the construction upgrade); a Sawmill's
+  - L1856 each of the ten industries' pages says who here buys each good it makes, or that it ships
+  - L1869 fixture: a forest town with 10 km2 cuttable - its plan holds in E's words
+  - L1872 a Logging Camp's card: no room under E, none more, and its refusal the plan's own words, to the letter
+  - L1879 the whole forest cuttable: room for N more Logging Camps exactly where E allows N and not N + 1, and it carries
+  - L1906 every offer standing: its fields of each resource by type add up to its sites (CityLand.fieldsOn()), as
+  - L1915 an offer on the
+  - L1930 fixture: offers on the nearest hematite field under twenty sites and the nearest magnetite field
+  - L1936 the magnetite field is filled with magnetite works, never an Iron Mine, no more sites than it holds
+  - L1938 the hematite field under twenty sites takes Iron Mines alone, and its earnings are the old rule's for its
+  - L1943 Build's payback on the magnetite offer is its by-type earnings
+- **L1975 13. a berth's payback, the owner and the depot's line (FR4)**
+  - L2022 A SEA TERMINAL'S CARD HAS A PAYBACK AND NO OTHER BUILDING'S - the Strategic Reserve's, the Tank Farm's and a
+  - L2029 fixture: no cargo of any kind has crossed the boundary (a new city), the dues dial at its default
+  - L2039 A KIND WITH NO CARGO READS NO PAYBACK: NO_CARGO, no years, no tonnes carried and no dues, for every terminal
+  - L2040 ...and not a NaN or an infinity in any other figure the card prints (the years alone are NaN, the sentinel for none)
+  - L2041 ...the price is the one the Build button charges
+  - L2046 fixture: the city buys an offer that runs out to the sea
+  - L2052 AT A BERTH'S WORTH_A_BERTH OF TONNES: the Bulk Berth's card PAYS BACK, and the Bulk Terminal's is SHORT of tonnes
+  - L2054 ...and the card says what the advice does (portTerminal() orders the Bulk Berth, not the Terminal)
+  - L2056 ...it carries the tonnes uncovered, all of them, a month
+  - L2057 ...at the advice's uncovered tonnes
+  - L2058 ...the tonnes the advice waits for are WORTH_A_BERTH over the dial of its month
+  - L2059 ...its dues are the tonnes it carries at the rate struck a tonne
+  - L2060 ...its years are its price over a year's dues less its upkeep
+  - L2061 ...a payback of years above nothing
+  - L2062 ...the shortfall's figures: the Terminal's tonnes needed are the Berth's scaled by their months, its years NaN
+  - L2066 A HAIR UNDER IT: the Bulk Berth is SHORT too, and the card agrees with the advice
+  - L2071 AT THE TERMINAL'S WORTH_A_BERTH: both cards pay back, each judged alone, as portTerminal() asks them with the other
+  - L2073 ...the Bulk Berth carries its whole month (the tonnes uncovered are more)
+  - L2074 ...MORE TONNES CARRIED, FEWER YEARS: the Berth at its full month pays back in fewer years than at 60% of it
+  - L2080 fixture: half the threshold is no berth's worth at the default dial
+  - L2083 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth pays back, and the card agrees with the advice
+  - L2088 THE DIAL AT 0 - NO DUES, NO PAYBACK: NO_DUES for every terminal however many tonnes, no NaN but the years
+  - L2099 A BERTH WHOSE UPKEEP IS MORE THAN ITS DUES is UPKEEP, no years - the break-even does not see its upkeep, the card does
+  - L2109 THE DUES RATE IS THE PORT DUES' OWN: PortDivision.duesRateOf() with the berth standing is the rate the card struck for
+  - L2113 ONE BERTH STANDING FOR TONNES THAT FILL HALF OF IT: COVERED for the Berth and the Terminal - cargo crosses, none is
+  - L2135 THE RAIL AND DEPOT CARDS ARE OWNED BY FREIGHT - the owner the card names, its investors' line's and the slot the
+  - L2143 ...and Build's source no longer says \"Owned by the rail sector\" (the card's owner line reads the owner's key)
+  - L2146 could not read Build's source:
+  - L2154 only the Truck Depot has the line: a Rail Spur, a House and the Strategic Reserve have none
+  - L2158 fixture: no Truck Depot stands or is on site, and the margin is a fraction of a depot's room
+  - L2161 the line's trucks are Haulage's
+  - L2162 ...its depots' room
+  - L2163 ...the trucks past the room, on the street
+  - L2164 ...what it waits for is DEPOT_ORDER_MARGIN of the depot's room
+  - L2165 ...and it would build one exactly when Haulage would order this depot (depotToOrder())
+  - L2170 with the fleet raised past the margin and no depot standing, every truck is on the street
+  - L2171 ...and the line says Freight would build one exactly when the order's own test does, and here that test says yes
+  - L2176 with four trucks and no depot: four over the room, and short of the margin Freight would not build one yet
+- **L2215 14. the landlords' card: the mortgage lender's test, the last gate of a landlord's home (I13-L)**
+  - L2240 ...so a Bakery's door to the lender's test is closed
+  - L2255 fixture: the landlords' owners are not asked for the down payment, and a House costs more than its down payment
+  - L2266 fixture: from a till of twice its down payment a House needs a lender, which reads a rent too small for the payment
+  - L2271 THE LENDER REFUSES IT ON ITS RENT: the card's first gate is the lender's, the last, and the INTEREST gate is none
+  - L2274 ...with the cover the rent gives the payment and the cover the lender asks, the test itself beside them
+  - L2279 ...in the lender's words, with what it lends, the payment and the cover against what it asks
+  - L2286 THE ORDER AGREES: with the card's funds and rent the landlords' order is declined in the same cover, in the lender's line: \"
+  - L2289 ...and no House is ordered
+  - L2295 fixture: a till of half the down payment leaves the landlord short of the down payment, and the lender reads no cover
+  - L2298 SHORT OF THE DOWN PAYMENT IT FAILS THE CARD FOR THAT: the lender's gate with the funds and the down payment
+  - L2303 ...in the lender's words: what it wants of its own and what it would put in
+  - L2308 ...and the order holds for it, in the same line: \"
+  - L2324 A HOUSE THE LENDER WOULD WRITE PASSES THE CARD: no first gate, the lender's mark a tick
+  - L2337 ...so the card fails it at the lender's gate, the cover now the rate's
+  - L2341 ...and the order is declined in the cover the card read, at the dearer rate: \"
+  - L2352 at today's rate again the card passes it, and the order builds one House on an insured mortgage: \"
 
 ## BuildMenuCheck.java - 0 labelled assertions
 
@@ -27744,89 +27744,89 @@ _(this harness does not label its checks through a helper - it prints its findin
 > (UtilitiesHandler.strikePower()); its ratio is month t's, its prices are what the statements are struck at at the top of month
 > t+1, and its coal is drawn from the market at that strike and paid in t+1's servicesNet. So a harness reads the book a statement is
 > struck at, and the draw and ratio the sector holds, BEFORE the month that strikes it runs (Step), and the statement after it.
+> Its season is month t-1's too: month t's statement bills the kWh that dispatch served, June's season for July's (UtilitiesHandler's
+> THE LAG, PW1-R), and the coal bought at the same strike is that dispatch's.
 > 
 > What this has to prove:
->   1. THE STRUCK PRICE IS THE DISPATCH'S: commerce pays (energy + transmission + distribution) x month's hours, industry
->      (energy + transmission), and the energy price is the half-blocks' prices weighted by the energy each served, over the
 > ...
 
-  - L182 fixture: the
-  - L288 fixture: the old-save town's orders and its desalination plants all stand
-  - L327 fixture: the town's book is struck from a month that burned coal, with its dispatch and its grid costs
-- **L365 PowerPriceCheck: the bills, the fuel's money and the audit, through the game's own month (PW1)**
-  - L384 0. the fixture: a town that burns coal, a mine that is dug and stocked
-  - L387 the coal row burned: the struck book's THERMAL_COAL is positive (the founding grid does not cover the town)
-  - L389 the plant made fuelled energy and the energy price is positive
-  - L390 the month is served: no half-block short, ratio 1
-  - L391 Coal Mining stands, is staffed and is stocked with coal
-  - L434 1. the struck price is the dispatch's
-  - L443 a half-block clears at the cap only when it is left short: the served ones clear under the VOLL
-  - L444 the merit order prices rise with the load: the peak half-block clears at least as high as the base half-block, and the energy price is above 0
-  - L452 2. each class's bill is its price on what was delivered, exactly
-  - L458 fixture: Retail draws power, is a commerce class (no high-voltage share) and holds the book's commerce price it is struck at
-  - L462 fixture: the book was struck from a dispatch of the game's own calendar and holds that month's season at the city's latitude
-  - L466 a commerce sector's statement electricity is draw x ratio x the season x the commerce price of the book struck the month before, to 1e-9
-  - L471 fixture: Coal Mining draws power, all its buildings are high-voltage (Mining) and its share is 1, at the book's industry price
-  - L475 a Mining sector's statement electricity is draw x ratio x the season x the industry price, to 1e-9
-  - L477 industry pays transmission and not distribution: its price per kW less the commerce price is -distribution x the month's hours
-  - L480 ...and read off the two statements: the Mining bill per kW of the mean delivered less the Retail bill per kW is the same difference, to 1e-9 of the commerce ...
-  - L482 the sectors hold the ratio of the month they were struck in: the book's, which the sectors' energy ratio is
-  - L490 3. a short half-block bills the cap
-  - L499 fixture: the homes ask
-  - L501 fixture: the short month is not served whole: its ratio is under 1
-  - L502 every short half-block carries the struck VOLL (VOLL_A_KWH over the city's unit)
-  - L504 ...and no half-block served whole does
-  - L510 the month's ratio is the energy served over the energy asked
-  - L515 a short half-block's cap is in the bill: what the energy price collects on the energy served is at least the cap on what the short half-blocks served
-  - L520 a commerce sector in the short town is billed draw x ratio x the season x the commerce price on what was delivered, and the ratio is under 1
-  - L528 4. a fuel shock moves the next month's bills
-  - L531 fixture: the two copies are the same city before the shock: the same book, the same cash, the same month
-  - L534 fixture: the coal burned in both
-  - L544 fixture: the coal's price in force is positive, and the two copies' dispatch agree on it
-  - L550 fixture: both cities' dispatch ran the coal row
-  - L551 the shocked city's coal row has the higher marginal
-  - L552 ...the energy it ran is the same: the shock moves the price and not the order
-  - L553 the shocked city's dispatch month has the higher energy price
-  - L556 the month after, the shocked city's struck book has the higher energy price, and it is the dispatch month's
-  - L559 ...and the higher commerce and industry prices
-  - L561 ...while the bills struck that month are still at the book before the shock
-  - L566 fixture: the two cities' Retail draw and ratio are the same when the shocked prices reach the statements
-  - L568 the shocked city's commerce bill is the higher: its next bills carry the fuel
-  - L569 ...in the ratio of the two books' commerce prices, to 1e-9
-  - L578 the coal row's upkeep a kWh is the plant's US$ a MWh at the founding's price level, world money as a good's world price is struck (variableUpkeep / 1e6 x Pri...
-  - L584 dispatched again, the coal row's marginal is the price it was told x the fuel a kWh plus the upkeep at the exchange rate, to 1e-12
-  - L586 ...and the shocked city's is SHOCK times the coal's part of it, to 1e-12: the shock reaches the fuel and not the upkeep
-  - L594 5. the utility's margin is the treasury's line
-  - L597 fixture: a month with coal bought: the fuel bill is positive
-  - L600 fixture: the town's water works drew power the water's books paid for
-  - L601 the electricity income is revenue less payroll less the power bought less the fuel bill, and the water works' power sold to the water's books, to 1e-9
-  - L603 the revenue is what the sectors' statements charged for electricity
-  - L604 the services' net the treasury takes is the electricity income and the water income, to 1e-9
-  - L612 the services' net carries the fuel: with none paid it is the higher by exactly the fuel bill
-  - L614 the line the treasury took is the services' net the month's strike read
-  - L622 6. the fuel's money reaches its sellers
-  - L626 the coal the struck book burned is what the market drew for the city that month, to 1e-9
-  - L627 fixture: Coal Mining was stocked, so the city bought at home
-  - L628 fuelLocal is what Coal Mining was paid for it: the cost of the units drawn from its stock, to 1e-9
-  - L629 ...and Coal Mining's statement booked it among its sales at home
-  - L630 fuelImported is what the world was paid for the rest, to 1e-9
-  - L631 fuelLocal + fuelImported is the draw's cost
-  - L632 the upkeep is the book's variable upkeep (world money) at the exchange rate, to 1e-9
-  - L641 fixture: Coal Mining held half of the month's burn at the strike, and that month's draw is the burn, to 1e-9
-  - L643 the city bought at home what Coal Mining held and the rest abroad: both are positive, and the home part is the stock
-  - L646 ...fuelLocal pays Coal Mining and fuelImported the world, each positive, and together the draw's cost
-  - L649 ...and the upkeep is still the book's at the exchange rate
-  - L679 7. in July and in April each class's bill is the kWh it was served at the price (PW1-R)
-  - L684 fixture: the town's calendar brings a statement struck at a
-  - L689 fixture:
-  - L695 fixture: in
-  - L718 8. the money audit closes
-  - L731 every month of every fixture (
-  - L737 fixture: the last month bought coal at home and abroad, and ran up upkeep
-  - L738 the audit's FuelImports line is the coal bought from the world, to 1e-9
-  - L739 the audit's PlantUpkeep line is the upkeep paid abroad, to 1e-9
-  - L740 both are in TRADE: the month's imports (tradeOut) hold the two lines
-  - L741 the coal bought of the mines is a pool paying a pool: no line of its own, and the audit still closes
+  - L184 fixture: the
+  - L290 fixture: the old-save town's orders and its desalination plants all stand
+  - L329 fixture: the town's book is struck from a month that burned coal, with its dispatch and its grid costs
+- **L367 PowerPriceCheck: the bills, the fuel's money and the audit, through the game's own month (PW1)**
+  - L386 0. the fixture: a town that burns coal, a mine that is dug and stocked
+  - L389 the coal row burned: the struck book's THERMAL_COAL is positive (the founding grid does not cover the town)
+  - L391 the plant made fuelled energy and the energy price is positive
+  - L392 the month is served: no half-block short, ratio 1
+  - L393 Coal Mining stands, is staffed and is stocked with coal
+  - L436 1. the struck price is the dispatch's
+  - L445 a half-block clears at the cap only when it is left short: the served ones clear under the VOLL
+  - L446 the merit order prices rise with the load: the peak half-block clears at least as high as the base half-block, and the energy price is above 0
+  - L454 2. each class's bill is its price on what was delivered, exactly
+  - L460 fixture: Retail draws power, is a commerce class (no high-voltage share) and holds the book's commerce price it is struck at
+  - L464 fixture: the book was struck from a dispatch of the game's own calendar and holds that month's season at the city's latitude
+  - L468 a commerce sector's statement electricity is draw x ratio x the season x the commerce price of the book struck the month before, to 1e-9
+  - L473 fixture: Coal Mining draws power, all its buildings are high-voltage (Mining) and its share is 1, at the book's industry price
+  - L477 a Mining sector's statement electricity is draw x ratio x the season x the industry price, to 1e-9
+  - L479 industry pays transmission and not distribution: its price per kW less the commerce price is -distribution x the month's hours
+  - L482 ...and read off the two statements: the Mining bill per kW of the mean delivered less the Retail bill per kW is the same difference, to 1e-9 of the commerce ...
+  - L484 the sectors hold the ratio of the month they were struck in: the book's, which the sectors' energy ratio is
+  - L492 3. a short half-block bills the cap
+  - L501 fixture: the homes ask
+  - L503 fixture: the short month is not served whole: its ratio is under 1
+  - L504 every short half-block carries the struck VOLL (VOLL_A_KWH over the city's unit)
+  - L506 ...and no half-block served whole does
+  - L512 the month's ratio is the energy served over the energy asked
+  - L517 a short half-block's cap is in the bill: what the energy price collects on the energy served is at least the cap on what the short half-blocks served
+  - L522 a commerce sector in the short town is billed draw x ratio x the season x the commerce price on what was delivered, and the ratio is under 1
+  - L530 4. a fuel shock moves the next month's bills
+  - L533 fixture: the two copies are the same city before the shock: the same book, the same cash, the same month
+  - L536 fixture: the coal burned in both
+  - L546 fixture: the coal's price in force is positive, and the two copies' dispatch agree on it
+  - L552 fixture: both cities' dispatch ran the coal row
+  - L553 the shocked city's coal row has the higher marginal
+  - L554 ...the energy it ran is the same: the shock moves the price and not the order
+  - L555 the shocked city's dispatch month has the higher energy price
+  - L558 the month after, the shocked city's struck book has the higher energy price, and it is the dispatch month's
+  - L561 ...and the higher commerce and industry prices
+  - L563 ...while the bills struck that month are still at the book before the shock
+  - L568 fixture: the two cities' Retail draw and ratio are the same when the shocked prices reach the statements
+  - L570 the shocked city's commerce bill is the higher: its next bills carry the fuel
+  - L571 ...in the ratio of the two books' commerce prices, to 1e-9
+  - L580 the coal row's upkeep a kWh is the plant's US$ a MWh at the founding's price level, world money as a good's world price is struck (variableUpkeep / 1e6 x Pri...
+  - L586 dispatched again, the coal row's marginal is the price it was told x the fuel a kWh plus the upkeep at the exchange rate, to 1e-12
+  - L588 ...and the shocked city's is SHOCK times the coal's part of it, to 1e-12: the shock reaches the fuel and not the upkeep
+  - L596 5. the utility's margin is the treasury's line
+  - L599 fixture: a month with coal bought: the fuel bill is positive
+  - L602 fixture: the town's water works drew power the water's books paid for
+  - L603 the electricity income is revenue less payroll less the power bought less the fuel bill, and the water works' power sold to the water's books, to 1e-9
+  - L605 the revenue is what the sectors' statements charged for electricity
+  - L606 the services' net the treasury takes is the electricity income and the water income, to 1e-9
+  - L614 the services' net carries the fuel: with none paid it is the higher by exactly the fuel bill
+  - L616 the line the treasury took is the services' net the month's strike read
+  - L624 6. the fuel's money reaches its sellers
+  - L628 the coal the struck book burned is what the market drew for the city that month, to 1e-9
+  - L629 fixture: Coal Mining was stocked, so the city bought at home
+  - L630 fuelLocal is what Coal Mining was paid for it: the cost of the units drawn from its stock, to 1e-9
+  - L631 ...and Coal Mining's statement booked it among its sales at home
+  - L632 fuelImported is what the world was paid for the rest, to 1e-9
+  - L633 fuelLocal + fuelImported is the draw's cost
+  - L634 the upkeep is the book's variable upkeep (world money) at the exchange rate, to 1e-9
+  - L643 fixture: Coal Mining held half of the month's burn at the strike, and that month's draw is the burn, to 1e-9
+  - L645 the city bought at home what Coal Mining held and the rest abroad: both are positive, and the home part is the stock
+  - L648 ...fuelLocal pays Coal Mining and fuelImported the world, each positive, and together the draw's cost
+  - L651 ...and the upkeep is still the book's at the exchange rate
+  - L681 7. in July and in April each class's bill is the kWh it was served at the price (PW1-R)
+  - L686 fixture: the town's calendar brings a statement struck at a
+  - L691 fixture:
+  - L697 fixture: in
+  - L720 8. the money audit closes
+  - L733 every month of every fixture (
+  - L739 fixture: the last month bought coal at home and abroad, and ran up upkeep
+  - L740 the audit's FuelImports line is the coal bought from the world, to 1e-9
+  - L741 the audit's PlantUpkeep line is the upkeep paid abroad, to 1e-9
+  - L742 both are in TRADE: the month's imports (tradeOut) hold the two lines
+  - L743 the coal bought of the mines is a pool paying a pool: no line of its own, and the audit still closes
 
 ## PowerViewCheck.java - 38 labelled assertions
 

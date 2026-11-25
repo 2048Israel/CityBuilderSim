@@ -493,8 +493,15 @@ public class UtilitiesHandler {
        Until a month is struck the book holds the founding tariff, "still at founding: no month
        has cleared".
 
-       Nothing calls strikePower(), seedConstants() or setFuelPaid() yet; the money constants
-       are re-struck by Game.restrikeMoneyConstants() in the slice that wires them.
+       THE LAG (REV-PW1's lows, PW1-R). The book a statement is struck at was dispatched at the end
+       of the month before the one it bills, at that month's calendar: July's statement (struck at
+       the top of August) is billed at June's dispatch, its ratio, its price and its season, 1.088
+       and not July's 1.193 on the north's calendar. The fuel bought at the same strike
+       (Game.buyPowerFuel()) is that dispatch's, so the bills and the fuel agree on its kWh, a
+       bill being the kWh served, draw x ratio x season x the price a kW of the mean (Book.season):
+       the month's power lags the calendar by a month, and the utility's margin takes none of it.
+       SimulationEngine.updateEconomy() calls strikePower(), Game.buyPowerFuel() setFuelPaid(); the
+       money constants are re-struck by Game.restrikeMoneyConstants().
        ===================================================================== */
 
     /** The founding tariff a kW a month, D$10 at the founding's level, held by the struck book until a month has cleared (the tariff the game had before PW1). */

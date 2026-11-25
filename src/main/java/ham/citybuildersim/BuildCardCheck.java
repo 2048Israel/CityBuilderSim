@@ -1320,6 +1320,13 @@ public class BuildCardCheck {
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         InfrastructureManager road = g.getInfrastructureManager();
         List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
+        // PW1, PW3: power is planned for the year's peak hour, so its row and its ring are the grid's own figure against the peak hour's draw,
+        // losses in (PowerDispatch.PLAN_PEAK_HOUR), while no wind or sun stands; a wind or solar farm's average past its credit comes off the
+        // firm supply, so with one standing they are at most that figure. PW1-R (REV-PW1's lows): both read what the town holds, not assume it.
+        boolean variable = false;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates())
+            variable |= (t.isWind() || t.isSolar()) && g.getBuildingManager().getQuantity(t.getId()) > 0;
+        double gridAtPeak = u.getPowerServed() / PowerDispatch.PLAN_PEAK_HOUR;
         boolean rows = true;
         int servedRows = 0, listedRows = 0;
         for (CityNeeds.Need n : all) {
@@ -1329,15 +1336,17 @@ public class BuildCardCheck {
             if (n.level() > 0) listedRows++;
             double want = switch (n.kind()) {
                 // PW1: the POWER row read the handler's average (getPowerServed(), production over consumption); it reads the advice's pair, the firm
-                // supply over the calm peak's draw (BuildAdvice.served()), as the cards do.
-                case POWER -> BuildAdvice.served(g, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of());
+                // supply over the calm peak's draw (BuildAdvice.served()), as the cards do. It was held to BuildAdvice.served(), itself (REV-PW1's
+                // lows); it is held to the grid's own figure at the peak hour's draw, below (PW1-R).
+                case POWER -> gridAtPeak;
                 case WATER -> u.getWaterServed();
                 case ROADS -> road.getServed();
                 case CARE -> CityNeeds.careServed(g, n.care(), g.getCohorts(), g.getPopulationManager().getJobFillRate());
                 case BASIC_SCHOOLS -> g.getEducation().basicCoverage();
                 default -> CityNeeds.servedShare(n.a(), n.b());
             };
-            rows &= Double.doubleToLongBits(v.share()) == Double.doubleToLongBits(want);
+            rows &= n.kind() != CityNeeds.Kind.POWER ? Double.doubleToLongBits(v.share()) == Double.doubleToLongBits(want)
+                    : variable ? v.share() > 0 && v.share() <= want * (1 + 1e-9) : Math.abs(v.share() / want - 1) < 1e-9;
             // listed with nothing on the way: the row's colour; never red off the list; on the way only ever lowers the level
             rows &= n.onSite() == 0 && n.level() > 0 ? v.level() == n.level()
                     : n.level() == 0 ? v.level() < 2 : v.level() >= n.level();
@@ -1349,7 +1358,8 @@ public class BuildCardCheck {
                     : CityNeeds.servedPct(v.share()) + " served") || n.reading().startsWith("nothing supplying");
         }
         assertTrue("every served NEEDS YOU row (" + servedRows + " in the town, " + listedRows + " listed) reads its owner's "
-                + "figure, to the bit, as served, in the colour of its level where it is listed", rows && servedRows >= 6);
+                + "figure, to the bit (power's the grid's own at the peak hour's draw, to 1e-9, at most it with wind or sun standing: "
+                + variable + "), as served, in the colour of its level where it is listed", rows && servedRows >= 6);
 
         boolean measures = true;
         int counted = 0;
@@ -1374,13 +1384,11 @@ public class BuildCardCheck {
                 + "supply over its demand, the arc that held to 0-1; the police, the cells and the dead are not served", measures);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         BuildAdvice.Measure roadM = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
-        // PW1, PW3: power is planned for the year's peak hour, so its ring is the grid's own figure against the peak hour's draw, losses
-        // in (PowerDispatch.PLAN_PEAK_HOUR); this city has no wind or sun, whose average past its credit would come off the supply.
-        boolean variable = false;
-        for (BuildingsTemplate t : g.getBuildingManager().getTemplates())
-            variable |= (t.isWind() || t.isSolar()) && g.getBuildingManager().getQuantity(t.getId()) > 0;
-        assertTrue("...power's ring is the grid's own figure at the peak hour's draw (to 1e-9) and the road's the road's, to the bit; transit has no verdict",
-                !variable && Math.abs(BuildAdvice.served(g, power, Map.of()) * PowerDispatch.PLAN_PEAK_HOUR / u.getPowerServed() - 1) < 1e-9
+        // ...the ring as the row (above): the grid's own figure at the peak hour's draw with no wind or sun, at most it with either (PW1-R).
+        double ring = BuildAdvice.served(g, power, Map.of());
+        assertTrue("...power's ring is the grid's own figure at the peak hour's draw (to 1e-9; at most it with wind or sun standing: " + variable
+                        + ") and the road's the road's, to the bit; transit has no verdict",
+                (variable ? ring > 0 && ring <= gridAtPeak * (1 + 1e-9) : Math.abs(ring / gridAtPeak - 1) < 1e-9)
                 && Double.doubleToLongBits(BuildAdvice.served(g, roadM, Map.of())) == Double.doubleToLongBits(road.getServed())
                 && BuildAdvice.verdict(g, BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT), Map.of()).level() == -1
                 && Double.doubleToLongBits(BuildAdvice.served(g, BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT), Map.of()))

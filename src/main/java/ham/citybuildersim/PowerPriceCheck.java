@@ -17,6 +17,8 @@ import java.util.Map;
  * (UtilitiesHandler.strikePower()); its ratio is month t's, its prices are what the statements are struck at at the top of month
  * t+1, and its coal is drawn from the market at that strike and paid in t+1's servicesNet. So a harness reads the book a statement is
  * struck at, and the draw and ratio the sector holds, BEFORE the month that strikes it runs (Step), and the statement after it.
+ * Its season is month t-1's too: month t's statement bills the kWh that dispatch served, June's season for July's (UtilitiesHandler's
+ * THE LAG, PW1-R), and the coal bought at the same strike is that dispatch's.
  *
  * What this has to prove:
  *   1. THE STRUCK PRICE IS THE DISPATCH'S: commerce pays (energy + transmission + distribution) x month's hours, industry

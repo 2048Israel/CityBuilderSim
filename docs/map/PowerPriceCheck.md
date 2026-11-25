@@ -1,4 +1,4 @@
-# PowerPriceCheck.java - 745 lines · 31 methods · 9 constants · harnesses
+# PowerPriceCheck.java - 747 lines · 31 methods · 9 constants · harnesses
 
 `ham/citybuildersim/PowerPriceCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -10,6 +10,8 @@
 > (UtilitiesHandler.strikePower()); its ratio is month t's, its prices are what the statements are struck at at the top of month
 > t+1, and its coal is drawn from the market at that strike and paid in t+1's servicesNet. So a harness reads the book a statement is
 > struck at, and the draw and ratio the sector holds, BEFORE the month that strikes it runs (Step), and the statement after it.
+> Its season is month t-1's too: month t's statement bills the kWh that dispatch served, June's season for July's (UtilitiesHandler's
+> THE LAG, PW1-R), and the coal bought at the same strike is that dispatch's.
 > 
 > What this has to prove:
 >   1. THE STRUCK PRICE IS THE DISPATCH'S: commerce pays (energy + transmission + distribution) x month's hours, industry
@@ -46,155 +48,155 @@
 
 | line | section |
 |---:|---|
-| 101 | THE FIXTURES |
-| 261 | · the old save, for SaveFileCheck (REV-PW1c) |
-| 314 | · the struck book through a save, for SaveFileCheck (PW1-R) |
-| 359 | MAIN |
-| 381 | · the fixture, before any section |
-| 396 | · 1 |
-| 449 | · 2 |
-| 487 | · 3 |
-| 525 | · 4 |
-| 591 | · 5 |
-| 619 | · 6 |
-| 653 | · 7 |
-| 715 | · 8 |
+| 103 | THE FIXTURES |
+| 263 | · the old save, for SaveFileCheck (REV-PW1c) |
+| 316 | · the struck book through a save, for SaveFileCheck (PW1-R) |
+| 361 | MAIN |
+| 383 | · the fixture, before any section |
+| 398 | · 1 |
+| 451 | · 2 |
+| 489 | · 3 |
+| 527 | · 4 |
+| 593 | · 5 |
+| 621 | · 6 |
+| 655 | · 7 |
+| 717 | · 8 |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 51 | `PowerPriceCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 54 | `PowerPriceCheck.HOMES` | `400` | How many homes a town stands on: enough that their draw outruns the founding grid. |
-| 57 | `PowerPriceCheck.HOME_KW` | `50` | Each home's draw in a town, kW: MoneyCheck's and WoodProductsCheck's lever, so 400 homes outrun the founding grid and the coal plant is the margin. |
-| 60 | `PowerPriceCheck.SHORT_ASK` | `2` | How many times the coal plant's production the short town's homes ask of the grid: past the plant and the founding grid in every season. |
-| 63 | `PowerPriceCheck.OLD_SAVE_DESAL` | `2` | How many desalination plants the old save's town stands on the founding grid alone: their draw, 10,880 kW each, is past its 10,000 kW in every month. |
-| 66 | `PowerPriceCheck.SHOCK` | `3` | How many times the coal's price the shocked city's dispatch is told. |
-| 69 | `PowerPriceCheck.WARM` | `8` | The months a town is played before a section reads it: the plants are staffed and the mine is dug and stocked. |
-| 143 | `PowerPriceCheck.audits` | `new ArrayList<>()` |  |
-| 144 | `PowerPriceCheck.auditCities` | `new ArrayList<>()` |  |
+| 53 | `PowerPriceCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 56 | `PowerPriceCheck.HOMES` | `400` | How many homes a town stands on: enough that their draw outruns the founding grid. |
+| 59 | `PowerPriceCheck.HOME_KW` | `50` | Each home's draw in a town, kW: MoneyCheck's and WoodProductsCheck's lever, so 400 homes outrun the founding grid and the coal plant is the margin. |
+| 62 | `PowerPriceCheck.SHORT_ASK` | `2` | How many times the coal plant's production the short town's homes ask of the grid: past the plant and the founding grid in every season. |
+| 65 | `PowerPriceCheck.OLD_SAVE_DESAL` | `2` | How many desalination plants the old save's town stands on the founding grid alone: their draw, 10,880 kW each, is past its 10,000 kW in every month. |
+| 68 | `PowerPriceCheck.SHOCK` | `3` | How many times the coal's price the shocked city's dispatch is told. |
+| 71 | `PowerPriceCheck.WARM` | `8` | The months a town is played before a section reads it: the plants are staffed and the mine is dug and stocked. |
+| 145 | `PowerPriceCheck.audits` | `new ArrayList<>()` |  |
+| 146 | `PowerPriceCheck.auditCities` | `new ArrayList<>()` |  |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 50 | `static int fails` |  |
-| 108 | `int month` | The month before it ran. |
-| 110 | `UtilitiesHandler.Book book, struckAfter` | The book its statements were struck at (struck in the month before), and the book it struck. |
-| 112 | `final Map<String, double[]> held` | Per sector key before the month: draw, ratio, high-voltage share, commerce price, industry price. |
-| 114 | `final Map<String, Double> bills` | Per sector key after the month: the electricity its statement struck. |
-| 116 | `double coalHeld` | The coal Coal Mining held before the month. |
-| 118 | `double fuelLocal, fuelImported, upkeep, revenue, payroll, bought, income, waterIncome, net, treasury, charg...` | After: the fuel paid, the margin's terms, the treasury's line. |
-| 120 | `double localUnits, importedUnits, localCost, importedCost` | After: the coal drawn for the city this month: units from Coal Mining, units from the world, what each cost. |
-| 122 | `double exchange, minePaidAtHome, latestEnergyPrice, latestCoalMarginal, latestCoalKwh` | After: the exchange rate, Coal Mining's statement's coal sold at home, the coal row of the dispatch the month ended on. |
-| 123 | `MoneyAudit.Result audit` |  |
-| 127 | `final String label` |  |
-| 128 | `final Game g` |  |
-| 129 | `final UtilitiesHandler u` |  |
-| 130 | `final boolean mine` |  |
-| 131 | `final List<Step> steps` |  |
+| 52 | `static int fails` |  |
+| 110 | `int month` | The month before it ran. |
+| 112 | `UtilitiesHandler.Book book, struckAfter` | The book its statements were struck at (struck in the month before), and the book it struck. |
+| 114 | `final Map<String, double[]> held` | Per sector key before the month: draw, ratio, high-voltage share, commerce price, industry price. |
+| 116 | `final Map<String, Double> bills` | Per sector key after the month: the electricity its statement struck. |
+| 118 | `double coalHeld` | The coal Coal Mining held before the month. |
+| 120 | `double fuelLocal, fuelImported, upkeep, revenue, payroll, bought, income, waterIncome, net, treasury, charg...` | After: the fuel paid, the margin's terms, the treasury's line. |
+| 122 | `double localUnits, importedUnits, localCost, importedCost` | After: the coal drawn for the city this month: units from Coal Mining, units from the world, what each cost. |
+| 124 | `double exchange, minePaidAtHome, latestEnergyPrice, latestCoalMarginal, latestCoalKwh` | After: the exchange rate, Coal Mining's statement's coal sold at home, the coal row of the dispatch the month ended on. |
+| 125 | `MoneyAudit.Result audit` |  |
+| 129 | `final String label` |  |
+| 130 | `final Game g` |  |
+| 131 | `final UtilitiesHandler u` |  |
+| 132 | `final boolean mine` |  |
+| 133 | `final List<Step> steps` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 48 | 698 | **type** `public class PowerPriceCheck` | The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck book's prices, what each class is billed at them, the coal the plants burn bought from th... |
-| 71 | 5 | `static void check(String label, boolean ok, String detail)` |  |
-| 77 | 1 | `static void check(String label, boolean ok)` |  |
-| 80 | 3 | `static boolean near(double a, double b, double tol)` | Whether two figures agree to tol of the larger. |
-| 84 | 1 | `static String f(double v)` |  |
-| 86 | 4 | `static void section(String title)` |  |
-| 91 | 3 | `static void sectionEnd()` |  |
-| 95 | 5 | `static void quietly(Runnable work)` |  |
+| 50 | 698 | **type** `public class PowerPriceCheck` | The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck book's prices, what each class is billed at them, the coal the plants burn bought from th... |
+| 73 | 5 | `static void check(String label, boolean ok, String detail)` |  |
+| 79 | 1 | `static void check(String label, boolean ok)` |  |
+| 82 | 3 | `static boolean near(double a, double b, double tol)` | Whether two figures agree to tol of the larger. |
+| 86 | 1 | `static String f(double v)` |  |
+| 88 | 4 | `static void section(String title)` |  |
+| 93 | 3 | `static void sectionEnd()` |  |
+| 97 | 5 | `static void quietly(Runnable work)` |  |
 
-### THE FIXTURES (lines 101-260)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 106 | 19 | **type** `static final class Step` | One month run: what the strike at its top read before it ran, and what stood after it. |
-| 126 | 16 | **type** `static final class City` |  |
-| 133 | 6 | `City(String label, Game g, boolean mine)` _(in PowerPriceCheck.City)_ |  |
-| 140 | 1 | `Step last()` _(in PowerPriceCheck.City)_ |  |
-| 152 | 33 | `static City town(String label, boolean mine, double ask)` | A town: founded, the Wealthy preset's cash and ground, homes, shops, a coal plant, water and roads (MaterialsCheck.town()'s list), standing at once (buildStack(..., noConstruction): LongPlaytest.build() orders real co... |
-| 187 | 10 | `static double[] cityDraw(Game g, Good good)` | What the city drew of a good from the market this month, by the draw log the clearing kept with the month's fills: {units local, units imported, cost local, cost imported}. |
-| 198 | 4 | `static PowerDispatch.Row coalRow(UtilitiesHandler u)` |  |
-| 204 | 43 | `static Step run(City c)` | Runs one month of a city and keeps what the harness reads: the strike's book and the sectors' draws before, the statements and the fuel's money after. |
-| 248 | 4 | `static City play(City c, int months)` |  |
-| 254 | 6 | `static double unitOf(Game g)` | The unit the city's money constants are struck at: Game.restrikeMoneyConstants()'s own, the denomination's unit over the struck level. |
-
-### the old save, for SaveFileCheck (REV-PW1c) (lines 261-313)
+### THE FIXTURES (lines 103-262)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 271 | 42 | `static boolean saveChecks() throws Exception` | A save from before PW1 (format 58, no powerBooks) of a city short of power loads with the ratio its load dispatched in its book, as the load handed the sectors before PW1, not the founding book's 1, and its first mont... |
+| 108 | 19 | **type** `static final class Step` | One month run: what the strike at its top read before it ran, and what stood after it. |
+| 128 | 16 | **type** `static final class City` |  |
+| 135 | 6 | `City(String label, Game g, boolean mine)` _(in PowerPriceCheck.City)_ |  |
+| 142 | 1 | `Step last()` _(in PowerPriceCheck.City)_ |  |
+| 154 | 33 | `static City town(String label, boolean mine, double ask)` | A town: founded, the Wealthy preset's cash and ground, homes, shops, a coal plant, water and roads (MaterialsCheck.town()'s list), standing at once (buildStack(..., noConstruction): LongPlaytest.build() orders real co... |
+| 189 | 10 | `static double[] cityDraw(Game g, Good good)` | What the city drew of a good from the market this month, by the draw log the clearing kept with the month's fills: {units local, units imported, cost local, cost imported}. |
+| 200 | 4 | `static PowerDispatch.Row coalRow(UtilitiesHandler u)` |  |
+| 206 | 43 | `static Step run(City c)` | Runs one month of a city and keeps what the harness reads: the strike's book and the sectors' draws before, the statements and the fuel's money after. |
+| 250 | 4 | `static City play(City c, int months)` |  |
+| 256 | 6 | `static double unitOf(Game g)` | The unit the city's money constants are struck at: Game.restrikeMoneyConstants()'s own, the denomination's unit over the struck level. |
 
-### the struck book through a save, for SaveFileCheck (PW1-R) (lines 314-358)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 323 | 35 | `static boolean bookChecks() throws Exception` | A saved city that holds a struck book reads it back field for field (REV-PW1's third follow-up: the only round trip was in memory, PowerDispatchCheck 10, so the Gson read-back of Book was unchecked), through the save'... |
-
-### MAIN (lines 359-380)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 363 | 17 | `public static void main(String[] args) throws Exception` |  |
-
-### the fixture, before any section (lines 381-395)
+### the old save, for SaveFileCheck (REV-PW1c) (lines 263-315)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 383 | 12 | `static void fixture(City c)` |  |
+| 273 | 42 | `static boolean saveChecks() throws Exception` | A save from before PW1 (format 58, no powerBooks) of a city short of power loads with the ratio its load dispatched in its book, as the load handed the sectors before PW1, not the founding book's 1, and its first mont... |
 
-### 1 (lines 396-448)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 399 | 9 | `static double energyPriceOf(UtilitiesHandler.Book b)` | The energy price recomputed from the book's own half-blocks: the prices weighted by the energy each served, over the energy served, over (1 - losses). |
-| 409 | 23 | `static void pricesOfBook(String who, Game g, UtilitiesHandler.Book b)` |  |
-| 433 | 15 | `static void struckPrice(City c)` |  |
-
-### 2 (lines 449-486)
+### the struck book through a save, for SaveFileCheck (PW1-R) (lines 316-360)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 451 | 35 | `static void classBills(City c)` |  |
+| 325 | 35 | `static boolean bookChecks() throws Exception` | A saved city that holds a struck book reads it back field for field (REV-PW1's third follow-up: the only round trip was in memory, PowerDispatchCheck 10, so the Gson read-back of Book was unchecked), through the save'... |
 
-### 3 (lines 487-524)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 489 | 35 | `static void shortCity()` |  |
-
-### 4 (lines 525-590)
+### MAIN (lines 361-382)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 527 | 63 | `static void fuelShock()` |  |
+| 365 | 17 | `public static void main(String[] args) throws Exception` |  |
 
-### 5 (lines 591-618)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 593 | 25 | `static void margin(City c)` |  |
-
-### 6 (lines 619-652)
+### the fixture, before any section (lines 383-397)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 621 | 31 | `static void fuelMoney(City c)` |  |
+| 385 | 12 | `static void fixture(City c)` |  |
 
-### 7 (lines 653-714)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 656 | 3 | `static double dispatchedSeason(City c, UtilitiesHandler.Book b)` | The season the book's dispatch ran at, read off the game's own calendar: SEASON at the dispatch's calendar month and the city's latitude; NaN for a book with no dispatch. |
-| 661 | 9 | `static Step struckIn(City c, int monthOfYear)` | The first statement struck at a book whose dispatch ran in that calendar month and burned coal, played on through the town's own calendar if none has been yet; null if a year brings none. |
-| 678 | 36 | `static void seasonBills(City c)` | PW1-R (REV-PW1's first follow-up): the dispatch serves draw x season x the month's hours, the fuel is bought on those kWh, and the bill was draw x ratio x the price a kW of the year's mean: July billed 16% under, Marc... |
-
-### 8 (lines 715-745)
+### 1 (lines 398-450)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 717 | 28 | `static void auditCloses(City c)` |  |
+| 401 | 9 | `static double energyPriceOf(UtilitiesHandler.Book b)` | The energy price recomputed from the book's own half-blocks: the prices weighted by the energy each served, over the energy served, over (1 - losses). |
+| 411 | 23 | `static void pricesOfBook(String who, Game g, UtilitiesHandler.Book b)` |  |
+| 435 | 15 | `static void struckPrice(City c)` |  |
+
+### 2 (lines 451-488)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 453 | 35 | `static void classBills(City c)` |  |
+
+### 3 (lines 489-526)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 491 | 35 | `static void shortCity()` |  |
+
+### 4 (lines 527-592)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 529 | 63 | `static void fuelShock()` |  |
+
+### 5 (lines 593-620)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 595 | 25 | `static void margin(City c)` |  |
+
+### 6 (lines 621-654)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 623 | 31 | `static void fuelMoney(City c)` |  |
+
+### 7 (lines 655-716)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 658 | 3 | `static double dispatchedSeason(City c, UtilitiesHandler.Book b)` | The season the book's dispatch ran at, read off the game's own calendar: SEASON at the dispatch's calendar month and the city's latitude; NaN for a book with no dispatch. |
+| 663 | 9 | `static Step struckIn(City c, int monthOfYear)` | The first statement struck at a book whose dispatch ran in that calendar month and burned coal, played on through the town's own calendar if none has been yet; null if a year brings none. |
+| 680 | 36 | `static void seasonBills(City c)` | PW1-R (REV-PW1's first follow-up): the dispatch serves draw x season x the month's hours, the fuel is bought on those kWh, and the bill was draw x ratio x the price a kW of the year's mean: July billed 16% under, Marc... |
+
+### 8 (lines 717-747)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 719 | 28 | `static void auditCloses(City c)` |  |
 
