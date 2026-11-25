@@ -278,3 +278,26 @@ all five policies:
 
 The held cities grow most where they were held: ZERO_HOT, SHOCK and HIGH by 44-75% in their
 medians. AUTO2's median is 7% lower, its seeds' range wider at the top (9.02 million against 8.22).
+
+## 10. The pick again, on the final code
+
+`./batch-check.sh --pick` on ee746bd77, run on the laptop while the ensemble ran on the box: exit
+4. Main's 12 known reds as in section 4, and CopperRefiningCheck 11 is now read as known through
+the ship file's row. There is one NEW line: LongPlaytest, "FAIL: timed out after 1740 s"
+(`AllChecks.HARNESS_SECONDS`). Run alone (`./batch-check.sh LongPlaytest`), it timed out the same
+way, at 1,741.5 s.
+
+- The run itself is clean. Both times it reached its final report at m2405: 6,350,489 people,
+  findings "Nothing. Every month passed the audit and every reload matched." Ground kept ahead:
+  264 offers, 34 of them funded on the bond, 118,359,139 raised, 0 bonds that bought no ground.
+  The limit ran out in the HA1 money-audit fixtures printed after the report.
+- ★ It is the PC's class, GB6's (docs/queue/GB6.md, on the queue), not FB11's.
+  - Main's own playtest on the PC ran out of the same 1,740 s at m2220 of 2,400 in R1g's run
+    (R1g-notes, "the PC being slower than the box", the 1900 city's 38 minutes). FB11's reached
+    m2405 and the fixtures inside it.
+  - The box ran main's playtest in 160 s and CopperRefiningCheck in 225 s at PW5's gate (GB6), and
+    the gate runs on the box, which ran this batch's ensemble an hour before.
+  - No `## known-reds` row is written for it: GB6 decides the PC gate's answer for long harnesses,
+    and a row would pass a timeout on the box too.
+- The first pick, on 7560256a3, ran LongPlaytest inside the limit under the same suite, about 27-35
+  minutes by its logs' times, near it then too.
