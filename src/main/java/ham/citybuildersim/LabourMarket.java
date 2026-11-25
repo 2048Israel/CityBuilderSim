@@ -170,7 +170,7 @@ public class LabourMarket {
     /**
      * The going rate in the market's current unit (founding money): the ladder's anchor, what every base is a multiple of. Kept exactly as
      * minSettable is - the ladder's at setLadder(), re-seeded at a unit by seedConstants(), carried across a reform by redenominate() - and
-     * never saved: the city says its ladder, and the unit is the city's.
+     * saved with the wages: scaling the held anchor and dividing its founding value by the new unit may round differently.
      */
     private double goingRate = GOING_RATE;
 
@@ -999,7 +999,7 @@ public class LabourMarket {
 
     public double[] state() {
         int bands = WageBand.values().length;
-        double[] out = new double[wage.length + 3 + diagnosticsLength() + 3];
+        double[] out = new double[wage.length + 3 + diagnosticsLength() + 6];
         out[0] = minimumWage;
         System.arraycopy(wage, 0, out, 1, wage.length);
         // The real floor and the player's nudge, appended so an older save
@@ -1026,6 +1026,10 @@ public class LabourMarket {
         out[i + 2] = tieShare;
         // The average wage the tie last read (WS1), appended after the tie and its share: an older array restores 0, as before. Never NaN in a save.
         out[i + 3] = Double.isFinite(lastAverageWage) ? lastAverageWage : 0;
+        // Held local-money constants after any reforms, before the next wage target.
+        out[i + 4] = goingRate;
+        out[i + 5] = minSettable;
+        out[i + 6] = maxSettable;
         return out;
     }
 
@@ -1052,6 +1056,12 @@ public class LabourMarket {
         if (saved == null || saved.length < wage.length + 1) {
             resetToBase();
             return;
+        }
+        int moneyAt = wage.length + 3 + diagnosticsLength() + 3;
+        if (saved.length >= moneyAt + 3) {
+            goingRate = saved[moneyAt];
+            minSettable = saved[moneyAt + 1];
+            maxSettable = saved[moneyAt + 2];
         }
         minimumWage = clamp(saved[0], minSettable, maxSettable);
         System.arraycopy(saved, 1, wage, 0, wage.length);

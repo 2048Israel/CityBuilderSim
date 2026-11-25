@@ -2731,6 +2731,9 @@ public class DataSave implements Cloneable {
      */
     private double[] labour;
 
+    /** The held full-staffing population wage bill by job type, in local money. */
+    private double[] populationWageTotals;
+
     /**
      * The posts per wage band the staffing gate refused this month that the labour market prices as if they were
      * offered (LD1; WantedPosts).
@@ -2783,6 +2786,8 @@ public class DataSave implements Cloneable {
 
     public void setLabour(double[] a)           { this.labour = a; }
     public double[] getLabour()                 { return labour; }
+    public void setPopulationWageTotals(double[] a) { populationWageTotals = a == null ? null : a.clone(); }
+    public double[] getPopulationWageTotals() { return populationWageTotals == null ? null : populationWageTotals.clone(); }
     public void setWantedPosts(double[] a)      { this.wantedPosts = a; }
     public double[] getWantedPosts()            { return wantedPosts; }
     // UP1: a copy, not the live head counts.

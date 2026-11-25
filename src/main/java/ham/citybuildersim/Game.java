@@ -18309,6 +18309,7 @@ public class Game {
         dataSave.setHealthcare(healthcare.getState());
         dataSave.setHealthcareAccess(healthcare.getAccessState());
         dataSave.setLabour(labourMarket.state());
+        dataSave.setPopulationWageTotals(populationManager.getTotalWagePerType());
         dataSave.setWantedPosts(wantedPosts.state());
         dataSave.setSkilledWorkforce(populationManager.getSkilledHeads());
         dataSave.setLicences(populationManager.getLicensedHeads());
@@ -23021,6 +23022,9 @@ public class Game {
             // Keep the actual saved total after restoring its component bills: summing
             // the individually redenominated bills is a different rounding of that flow.
             economyManager.setTotalPropertyTax(restoredFlows.getPropertyTaxCharged());
+            // The held population wage bill was scaled as a total by a reform; retain that
+            // exact month rather than the rebuild's product of the scaled schedule.
+            populationManager.restoreTotalWagePerType(restoredFlows.getPopulationWageTotals());
             // The rebuild dispatches a notional month. Standing readers need
             // the saved production's royalty, just as the ledgers need its bill.
             restoreLicenceFees(restoredFlows.getLicenceFees());

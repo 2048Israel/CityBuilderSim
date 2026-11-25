@@ -145,6 +145,12 @@ public class PopulationManager {
     public double[] getTotalWagePerType(){
         return totalWagePerType;
     }
+
+    /** The held wage bill, restored after the load has rebuilt posts and wages. */
+    public void restoreTotalWagePerType(double[] saved) {
+        if (saved != null && saved.length == totalWagePerType.length)
+            System.arraycopy(saved, 0, totalWagePerType, 0, totalWagePerType.length);
+    }
     
     /**
      * Positions actually staffed, across every tier.

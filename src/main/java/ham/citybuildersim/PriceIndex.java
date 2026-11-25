@@ -593,7 +593,7 @@ public class PriceIndex {
     private static final int CHAIN_TAIL_0743 = 4 + COMPONENTS * 3 + FEE_LINES * 3 + 1 + WEIGHT_MONTHS * (COMPONENTS + FEE_LINES);
 
     public double[] toSaveArray() {
-        int tail = CHAIN_TAIL_0743 + COMPONENTS + 1;
+        int tail = CHAIN_TAIL_0743 + COMPONENTS + 1 + COMPONENTS;
         double[] out = new double[SLOTS_BEFORE_CHAIN + tail];
         out[0] = based ? 1 : 0;
         out[1] = baseFood;
@@ -637,6 +637,9 @@ public class PriceIndex {
         for (int k = 0; k < COMPONENTS; k++) out[i++] = componentLink[k];
         // ...and the capped level's link (XR1), after those.
         out[i++] = parityLink;
+        // Ratios stay fixed through a reform; redividing the scaled prices can
+        // change their last bit and therefore the parity the next month reads.
+        for (int k = 0; k < COMPONENTS; k++) out[i++] = relative[k];
         return out;
     }
 
@@ -690,7 +693,8 @@ public class PriceIndex {
     /** The chained basket behind the marker, or a link pending on an older save; the array is read whole or not at all. */
     private void restoreChain(double[] saved) {
         clearChain();
-        boolean withParity = saved.length == SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 + COMPONENTS + 1;
+        boolean withRelatives = saved.length == SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 + COMPONENTS + 1 + COMPONENTS;
+        boolean withParity = withRelatives || saved.length == SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 + COMPONENTS + 1;
         boolean withLevels = withParity || saved.length == SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 + COMPONENTS;
         if ((saved.length != SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 && !withLevels)
                 || saved[SLOTS_BEFORE_CHAIN] != CHAIN_MARKER) {
@@ -718,11 +722,11 @@ public class PriceIndex {
         // level runs on from the level of the link (the rent cap binds from then).
         double capped = withParity ? saved[i++] : link;
         parityLink = capped > 0 && Double.isFinite(capped) ? capped : link;
-        // The relatives are this month's and are struck by the next; on the
-        // basket in force they read as last struck.
+        // Carry the held ratios exactly, including through a reform.
+        // Arrays without them retain the existing reconstruction.
         for (int k = 0; k < COMPONENTS; k++) {
             double price = k == SERVICES ? feeLevel() : last[k];
-            relative[k] = base[k] > MIN_BASE ? price / base[k] : 1;
+            relative[k] = withRelatives ? saved[i++] : base[k] > MIN_BASE ? price / base[k] : 1;
         }
     }
 

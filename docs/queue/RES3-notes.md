@@ -4601,3 +4601,77 @@ dfa0558c84857f530fbb3ae92f12824dd1074746aca3d0f2d1b6a9017b1c53c7;
 full box evidence SHA256
 37315e3fa2b0701191585e531399e7cb511d5ed1b3d4db48ecc76aba752482bc.
 All owned jobs ended. Normal monetary and other harnesses remain unrun.
+
+Exact ca9bb9339 compiles and coverage reaches 222 passes/five failures
+(phase report 8869). Both reformed acquisition-input comparisons now
+pass, and the default reformed exact money/transport/stock guard passes.
+The remaining five are default fresh/running next-month native equality
+(two) and historical reformed exact guards plus fresh/running next-month
+native equality (three). This verifies the tariff correction without
+waiving the remaining exact comparisons. Runner/JVM ended, raw snapshots
+are retained and the helper compares the remaining fields; no further
+native or normal check has begun, and no additional cause is claimed.
+
+The bounded ca9bb9339 field comparison (c4dd) narrows the remaining
+post-reform differences to 27 numeric fields in the default city and
+359 in the historical city, with no object-order differences. Source
+mechanisms: Sector.redenominate scales its held wage-times-posts cache,
+but load updateWages recomputes from scaled inputs before the next
+top-of-month statement (Automotive payroll .014621568294559533 versus
+.014621568294559531). Population's held totalWagePerType is likewise
+scaled then recomputed on load (historical .008175987051984966 versus
+.008175987051984964). PriceIndex intentionally preserves relative ratios
+through reform, but restore recomputes scaled last/base (historical
+parity 1.0187766445680204 versus 1.0187766445680202).
+
+Authorize source preparation of the minimal authoritative held-value
+save/load fix, with exact field/phase/unit/consumer evidence first.
+Restore after rebuilds that overwrite the held state; nominal amounts
+scale once, dimensionless CPI relatives never scale. This preserves
+the actual prior flow and the preserved index ratios rather than
+normalizing comparisons or changing prices/payroll/transactions.
+No unrelated derived cache or new conversion path is authorized;
+existing legacy-array guards remain. The already owed unshipped66
+boundary covers any such saved state. The actual diff and native
+proof remain to review before adoption; no further native run is
+authorized until a reviewed patch is pushed with its exact SHA.
+
+The historical labour cause is reproduced by source arithmetic against
+the retained native observations (7868): goingRate .0213575 multiplied
+by .001 yields the live .000021357500000000003, while load's division
+by 1000 yields .0000213575. With unchanged ratio, cost of living,
+combined multiple and ADJUST_RATE=.12, these reproduce the exact next
+UNIV_FINANCE wages .000468626802667078 and .00046862680266707797.
+This establishes an additional held nominal anchor, rather than a
+reason to change the wage equation or a comparison tolerance.
+
+Review and adopt the seven-file +44/-7 held-money restore patch,
+SHA256 d8267db037315576626a10a948f3566dbf0e1b7adc27b8ad9f42a17656021dad.
+SectorState.payrollPerType snapshots eleven full-staffing local-money
+payroll totals with a clone, then copies them back through restoreBills
+after the rebuild. Sector.strike reads them before the next wage refresh.
+DataSave.populationWageTotals snapshots eleven held local-money totals
+with cloned setter/getter arrays; PopulationManager copies them back late
+in load, before followAverageWage can read the rebuilt alternative.
+LabourMarket appends goingRate/minSettable/maxSettable and restores them
+after seeding and before its minimum-wage clamp. Existing redenomination
+already scales these nominal values once. PriceIndex appends its nine
+dimensionless relatives, restored exactly and never scaled; these feed
+parity. Existing earlier array shapes and fallback guards remain.
+
+The actual diff preserves all prior offsets, correctly appends the
+labour tail, copies into private held arrays and restores after the
+overwriting rebuild. No separately derived staffed-wage or template
+cache is saved. No new payroll/settlement/transaction, wage or index
+equation, adjustment rate, bounds constant or comparison changes.
+Every finding/assertion remains byte-identical. Existing unshipped
+format/floor66 covers this held state over shipped65; no extra bump
+or conversion. Native exact guards must establish the result before
+the normal named checks proceed.
+
+Final ca9b source/JDK/assets and artifacts are retained at helper
+target/cpi-native-ca9b. Raw snapshot SHA256
+be4b097b79577e34c3f458c90e2be46254093b39173b32106297c6737142077b;
+full native evidence SHA256
+e5b0221fad63794d8593bf55f47e868ebc10020f59ca99497cb43a56c2841d21.
+All owned jobs ended. No current normal monetary pass is claimed.

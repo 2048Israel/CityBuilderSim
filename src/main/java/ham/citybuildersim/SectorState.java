@@ -27,6 +27,9 @@ public final class SectorState {
     /** The three bills of the month and the rate it was taxed at, as set at the top of it. A flow, carried. */
     public double interest, propertyTax, maintenance, taxRate;
 
+    /** The held full-staffing payroll per job type, in local money, before the next statement is struck. */
+    public double[] payrollPerType;
+
     /**
      * ...and the four ratios its month was run at - power, water, the road
      * and the clinics - as the sector held them when the save was taken
