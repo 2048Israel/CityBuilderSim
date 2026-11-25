@@ -107,7 +107,12 @@ only the generated docs regenerated; the fast check is green on it.
 The named harnesses on 00a5dcc72, laptop, one at a time: SaveFileCheck,
 ReadPathCheck, MonetaryCheck, LabourCheck, ExchangeRateCheck,
 HousingMarketCheck and ReloadCheck green; DenominationCheck and
-InvestCheck known red only (their HT1-H rows, unchanged).
+InvestCheck known red only (their HT1-H rows, unchanged). KeptCheck on
+the merge (WG3 changed ui/PolicyScreen), on the gate box between gates
+with a gate's Monocle options, where it had run out: ALL OK, no FAIL line,
+section 63's new part OK (Real Estate 1,107 matches; 120 of 1,107, 1,108
+and 1,108 over the three months), live heap after release 1,426.3 MiB,
+the objects 1,421.7 MiB under the law's 1,536.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
