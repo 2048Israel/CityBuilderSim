@@ -126,6 +126,41 @@ after its unchanged price-index/old-five prefix. The units match the old
 entries (index and percent). No duplicate keys, new preset, saved field or
 numeric model change is introduced. Render/acceptance proof remains pending.
 
+The GB5 reset diagnostic completes in67.8 seconds with actual native77 and
+canonical4, its explicit nonacceptance marker and all original prefix/reset
+checks. Runtime is Linux Temurin21.0.13+9/Monocle/Pango, distinct from the
+original Oracle Windows run. Exact668 source, both data hashes, fork/record,
+JDK/class manifests, resource gates, complete raw snapshots and all endguards
+are retained; all three copied archives verify. This is not full acceptance.
+
+Actual flags identify the lost condition: before the month, the first card
+is Small Childcare Centre and its held order is2. Afterwards, the live first
+card is Walk-in Clinic with count0, while the childcare order remains2.
+No reset node exists on that current card. The press reports found=false,
+barGone=true and the subsequent fresh signature is null. Thus the failed
+conjunct is reset lookup, not the page equality. The actual owner bar is
+attached before the press; its detached pointer after the later fresh
+comparison does not explain this failure and is not changed speculatively.
+
+★ Cause the intended reset condition through the normal service-ring choice:
+retain the same measure across the month, assert the same first building and
+a strictly positive held order before reset, then keep every original step,
+month, reset, bar and fresh-page assertion. Unpicked Build draws intentionally
+choose the current worst measure, which changes here. No product reset mend
+or known-red waiver is justified by these flags. Original Oracle individual
+flags were not logged, so claim no hidden Oracle value; the final full run
+must prove the properly caused fixture. Remove all48 temporary diagnostic
+lines before that acceptance run. Bank/default starts remain held.
+
+The reviewed f970be9102827b5e79da7c6bbc6a50daf692459be2d4fecfc4af381e43d8ce00
+proposal is now applied: normal buildRing selects Childcare before the first
+draw, and a new strict finding asserts the same first building, positive held
+UI quantity and matching shown quantity immediately before reset. The original
+small/current-large step, ordinary month, reset/bar/fresh comparisons remain.
+All48 temporary diagnostic lines are removed; KeptBench returns exactly to
+its8bb source. The final run cannot stop after section45. The numeric model,
+saved fields and format remain unchanged. Full Kept/reader proof is still owed.
+
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
 byte-identical through dce's later observer and harness-only commits;

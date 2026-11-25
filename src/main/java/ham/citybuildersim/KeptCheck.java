@@ -2719,6 +2719,8 @@ public class KeptCheck {
         KeptBench.Page cards = fx(() -> bench.build("Build, " + cat, cat, java.util.Map.of()));
         Object[] press = fx(() -> {
             bench.home(cards);
+            // WHY: an unpicked ring follows the worst need after a month; keep this reset on its original Childcare card.
+            bench.buildRing(cat, BuildAdvice.measuresOf(cat).indexOf(BuildAdvice.Measure.care(CareType.CHILDCARE)));
             bench.drawKept(cards);
             bench.passes();
             List<String> names = bench.buildCardNames();
@@ -2741,15 +2743,16 @@ public class KeptCheck {
             // ...cleared by the card's own ↺, outside a draw: the bar goes and the next draw is a page built new.
             bench.drawKept(cards);
             String beforeClear = bench.buildCount(0) + " × " + names.get(0);
-            System.out.println("  reset before: " + bench.buildResetReads(0, names.get(0), word, beforeClear));
+            List<String> resetNames = bench.buildCardNames();
+            long held = bench.buildOrdered(names.get(0));
+            check("fixture: reset retains the same first building with positive held order (" + names.get(0)
+                    + ", current " + resetNames + ", held " + held + ", shown " + bench.buildCount(0) + ")",
+                    !resetNames.isEmpty() && names.get(0).equals(resetNames.get(0)) && held > 0
+                            && Long.toString(held).equals(bench.buildCount(0)));
             boolean cleared = bench.buildStep(0, "↺");
             boolean barGone = !bench.buildBarShows(word) && !bench.buildBarShows(beforeClear);
-            System.out.println("  reset after press: found=" + cleared + " barGone=" + barGone
-                    + " " + bench.buildResetReads(0, names.get(0), word, beforeClear));
             bench.drawKept(cards);
             String afterClear = againstNew(bench, cards);
-            System.out.println("  reset after draw: difference=" + afterClear
-                    + " " + bench.buildResetReads(0, names.get(0), word, beforeClear));
             bench.home(cards);
             return new Object[]{pressed, count, barBetween, barAfter, after, pressed100, monthLater, cleared, barGone, afterClear, fillsByPress};
         });
@@ -9941,15 +9944,6 @@ public class KeptCheck {
         construction(g, bench);
         stopped(g, bench);
         buildControls(g, bench);
-        // WHY: a reset finding preserves the ENTIRE original prefix and reset checks.
-        // Exit 77 marks a diagnostic stop; it is never a full Kept/acceptance verdict.
-        if (Boolean.getBoolean("keptcheck.stopAfterResetFinding")) {
-            System.out.println("DIAGNOSTIC STOP after original section45 reset checks; not full Kept/acceptance");
-            System.out.flush();
-            System.err.flush();
-            javafx.application.Platform.exit();
-            System.exit(77);
-        }
         buildHover(g, bench);
         sectors(g, bench);
         researchScreens(g, bench);

@@ -2426,40 +2426,6 @@ public final class KeptBench {
         return find(column, Label.class, x -> words.equals(x.getText())) != null;
     }
 
-    /** Read-only reset finding; no draw, pulse, model call or input change. */
-    public List<String> buildResetReads(int card, String selected, String... words) {
-        List<String> reads = new ArrayList<>();
-        java.util.function.Function<Node, String> trail = n -> {
-            StringBuilder path = new StringBuilder();
-            for (Node p = n; p != null; p = p.getParent()) {
-                if (!path.isEmpty()) path.append(" <- ");
-                path.append(p.getClass().getSimpleName()).append('@').append(System.identityHashCode(p))
-                        .append("[visible=").append(p.isVisible()).append(",managed=").append(p.isManaged()).append(']');
-            }
-            return path.toString();
-        };
-        reads.add("column@" + System.identityHashCode(column) + " selected=" + selected
-                + " current=" + buildCardNames() + " ordered=" + buildOrdered(selected) + " shown=" + buildCount(card));
-        List<javafx.scene.layout.StackPane> cards = cardNodes();
-        if (card < cards.size()) each(cards.get(card), n -> {
-            if (n instanceof javafx.scene.control.Button b && "↺".equals(b.getText()))
-                reads.add("reset disable=" + b.isDisable() + " disabled=" + b.isDisabled()
-                        + " action=" + (b.getOnAction() != null) + " " + trail.apply(b));
-        });
-        each(column, n -> {
-            if (n instanceof Label l && java.util.Arrays.asList(words).contains(l.getText()))
-                reads.add("matching label '" + l.getText() + "' " + trail.apply(l));
-        });
-        try {
-            var field = BuildScreen.class.getDeclaredField("orderBar");
-            field.setAccessible(true);
-            reads.add("screen orderBar=" + trail.apply((Node) field.get(ui.buildScreen)));
-        } catch (ReflectiveOperationException failure) {
-            throw new IllegalStateException("read actual BuildScreen orderBar", failure);
-        }
-        return reads;
-    }
-
     /** A click on a card's (i), as the pointer's: its stat card pinned open, or let go. False when the page has no such card. */
     public boolean buildPin(int card) {
         List<javafx.scene.layout.StackPane> cards = cardNodes();
