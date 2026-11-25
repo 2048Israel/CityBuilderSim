@@ -1,4 +1,4 @@
-# SchoolingLadder.java - 164 lines · 15 methods · 2 constants · model
+# SchoolingLadder.java - 173 lines · 15 methods · 2 constants · model
 
 `ham/citybuildersim/SchoolingLadder.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -48,24 +48,24 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 143 | **type** `public final class SchoolingLadder` | What each qualification pays after its course's cost, as a level monthly wage. |
+| 22 | 152 | **type** `public final class SchoolingLadder` | What each qualification pays after its course's cost, as a level monthly wage. |
 | 23 | 1 | `private SchoolingLadder()` |  |
 | 31 | 11 | **type** `public enum Verdict` |  |
 | 39 | 1 | `Verdict(String words)` _(in SchoolingLadder.Verdict)_ |  |
 | 40 | 1 | `public String words()` _(in SchoolingLadder.Verdict)_ |  |
-| 44 | 3 | **type** `public record Row(EducationType qualification, String label, JobType job, double paid, double target, doubl...` | One qualification; NONE is no diploma, HIGH is a diploma. |
-| 49 | 25 | **type** `public record View(AdultStage stage, double annualRate, int workingMonths, List<Row> rows)` | An immutable snapshot, so every bar and verdict reads the same month's figures. |
-| 50 | 1 | `{ ... }` _(in SchoolingLadder.View)_ |  |
-| 52 | 3 | `public Row row(EducationType type)` _(in SchoolingLadder.View)_ |  |
-| 56 | 3 | `public Row before(EducationType type)` _(in SchoolingLadder.View)_ |  |
-| 61 | 5 | `public double gain(EducationType type)` _(in SchoolingLadder.View)_ | The enrollment curve's input, before its exponent and cap. |
-| 67 | 6 | `public Verdict verdict(EducationType type, long posts)` _(in SchoolingLadder.View)_ |  |
-| 76 | 4 | `static EducationType prior(EducationType type)` | The step a course is taken from: a licence from a degree, a degree or college from a diploma. |
-| 82 | 5 | `public static int workingMonths(AdultStage stage)` | Expected work left in HS2's compartments: a young stage still has the established stage ahead. |
-| 89 | 8 | `public static JobType bestJob(LabourMarket market, WageBand band)` | A degree earns the best ungated wage in its band; a licence earns its own job's wage. |
-| 98 | 4 | `public static View of(LabourMarket market, Education schools, TaxPolicy tax, double policyRate, AdultStage stage)` |  |
-| 103 | 39 | `static View atRates(LabourMarket market, Education schools, double loanRate, double policyRate, AdultStage stage)` |  |
-| 143 | 3 | `private static double annuity(int months, double rate)` |  |
-| 148 | 10 | `public static long posts(Row row, PopulationManager people)` | Posts for this qualification, excluding licensed jobs from a degree's prospects. |
-| 160 | 4 | `public static double holders(Row row, PopulationManager people)` | Band supply or recorded licence holders, matching the population model's existing inventories. |
+| 47 | 4 | **type** `public record Row(EducationType qualification, String label, JobType job, double paid, double target, doubl...` | One qualification; NONE is no diploma, HIGH is a diploma. |
+| 53 | 30 | **type** `public record View(AdultStage stage, double annualRate, int workingMonths, List<Row> rows)` | An immutable snapshot, so every bar and verdict reads the same month's figures. |
+| 54 | 1 | `{ ... }` _(in SchoolingLadder.View)_ |  |
+| 56 | 3 | `public Row row(EducationType type)` _(in SchoolingLadder.View)_ |  |
+| 60 | 3 | `public Row before(EducationType type)` _(in SchoolingLadder.View)_ |  |
+| 70 | 5 | `public double gain(EducationType type)` _(in SchoolingLadder.View)_ | The enrollment curve's input, before its exponent and cap: the step's value over the one it is taken from, both net of the fees already paid on the way to that one. |
+| 76 | 6 | `public Verdict verdict(EducationType type, long posts)` _(in SchoolingLadder.View)_ |  |
+| 85 | 4 | `static EducationType prior(EducationType type)` | The step a course is taken from: a licence from a degree, a degree or college from a diploma. |
+| 91 | 5 | `public static int workingMonths(AdultStage stage)` | Expected work left in HS2's compartments: a young stage still has the established stage ahead. |
+| 98 | 8 | `public static JobType bestJob(LabourMarket market, WageBand band)` | A degree earns the best ungated wage in its band; a licence earns its own job's wage. |
+| 107 | 4 | `public static View of(LabourMarket market, Education schools, TaxPolicy tax, double policyRate, AdultStage stage)` |  |
+| 112 | 39 | `static View atRates(LabourMarket market, Education schools, double loanRate, double policyRate, AdultStage stage)` |  |
+| 152 | 3 | `private static double annuity(int months, double rate)` |  |
+| 157 | 10 | `public static long posts(Row row, PopulationManager people)` | Posts for this qualification, excluding licensed jobs from a degree's prospects. |
+| 169 | 4 | `public static double holders(Row row, PopulationManager people)` | Band supply or recorded licence holders, matching the population model's existing inventories. |
 

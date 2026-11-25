@@ -40,10 +40,14 @@ public final class SchoolingLadder {
         public String words() { return words; }
     }
 
-    /** One qualification; NONE is no diploma, HIGH is a diploma. fees and forgone are this course's own bill; afterCost is the path's. */
+    /**
+     * One qualification; NONE is no diploma, HIGH is a diploma. fees and forgone are this course's
+     * own bill; afterCost is the path's, and pathFees every fee along it, both as level months.
+     */
     public record Row(EducationType qualification, String label, JobType job,
                       double paid, double target, double afterCost, int months,
-                      double fees, double forgone, int workingMonths, boolean eligible) { }
+                      double fees, double forgone, int workingMonths, boolean eligible,
+                      double pathFees) { }
 
     /** An immutable snapshot, so every bar and verdict reads the same month's figures. */
     public record View(AdultStage stage, double annualRate, int workingMonths, List<Row> rows) {
@@ -57,11 +61,16 @@ public final class SchoolingLadder {
             return row(prior(type));
         }
 
-        /** The enrollment curve's input, before its exponent and cap. */
+        /**
+         * The enrollment curve's input, before its exponent and cap: the step's value over the one
+         * it is taken from, both net of the fees already paid on the way to that one. Those are sunk
+         * for whoever is deciding (REV-WG3): a degree that did not pay its own way still leaves its
+         * holder a licence worth taking.
+         */
         public double gain(EducationType type) {
             Row next = row(type), current = before(type);
-            return next.eligible() && current.afterCost() > 0
-                    ? next.afterCost() / current.afterCost() - 1 : 0;
+            double sunk = current.pathFees(), base = current.afterCost() + sunk;
+            return next.eligible() && base > 0 ? (next.afterCost() + sunk) / base - 1 : 0;
         }
 
         public Verdict verdict(EducationType type, long posts) {
@@ -135,7 +144,7 @@ public final class SchoolingLadder {
                     : type == EducationType.HIGH ? "Diploma" : type.getLabel();
             rows.add(new Row(type, label, job, wage, job == null ? 0
                     : market.targetWageAt(job, market.cashMinimumWage()), after, months,
-                    fee * months, before * months, working, eligible));
+                    fee * months, before * months, working, eligible, feesPV / divisor));
         }
         return new View(stage, annual, life, rows);
     }

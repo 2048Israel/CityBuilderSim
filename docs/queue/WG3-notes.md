@@ -1114,3 +1114,29 @@ break even (624 working months against 576).
 - The housing red is not yet called traced. R1g moves LongPlaytest's city,
   so once R1g ships, main is merged again and LongPlaytest re-run on that
   city, before the ensemble.
+
+### The review (REV-WG3: SHIP, no P1) and its two points
+
+The orchestrator's reviewer agreed the double count was real and the mend is
+the standard return. The founding's 1.15 is the live founding market (the
+base ladder is 1.82, inside Goldin and Katz's range), so section 9's
+restatement stands. Both points are done:
+- **P2: fees already paid are sunk for whoever decides.** `View.gain()` used
+  to divide by the prior row's whole-path value, fees included. Now both
+  values are taken net of the fees on the way to the prior step
+  (`Row.pathFees`, a new record component, a level month). A degree under
+  nothing after cost still leaves its holder a licence worth taking.
+  - SchoolingLadderCheck's new section, "The fees already paid are sunk for
+    the next step": a degree earning half its path's fees reads under 0
+    after cost, and the licence's gain equals the ledger's (its own bill
+    against the degree's pay).
+  - With the old base put back, the section fails (gain 0.0 against 1,903.7,
+    2 FAILs). With the new base it passes.
+- **P3: one source for the page and the intake.** The page reads
+  `Education.schoolingLadder(market, stage)`, the same call enrolment reads,
+  in place of building `SchoolingLadder.of()` from the owners itself.
+- Re-run after both: SchoolingLadderCheck, SchoolingPageCheck,
+  EducationCheck and BuildAdviceCheck all exit 0, and `--fast` exits 0. The
+  founding is unchanged at 1.15 diplomas and −3.2% after cost.
+- KeptCheck was not re-run for P3. The view it draws is the same object from
+  the same owners, so the drawing does not change.

@@ -3068,8 +3068,8 @@ final class PolicyScreen {
 
     void schoolingPage(VBox page) {
         Education schools = ui.game.getEducation();
-        SchoolingLadder.View view = SchoolingLadder.of(ui.game.getLabourMarket(), schools,
-                ui.game.getEconomyManager().getTaxPolicy(), ui.game.getDebtManager().getPolicyRate(), schoolingStage);
+        // The same call enrolment reads (REV-WG3), so the page and the intake cannot drift apart.
+        SchoolingLadder.View view = schools.schoolingLadder(ui.game.getLabourMarket(), schoolingStage);
         String[] stages = java.util.Arrays.stream(AdultStage.values()).map(AdultStage::getLabel).toArray(String[]::new);
         page.getChildren().add(chipStrip(stages, schoolingStage.getLabel(), Palette.SIZE_LABEL, picked -> {
             for (AdultStage stage : AdultStage.values()) if (stage.getLabel().equals(picked)) schoolingStage = stage;

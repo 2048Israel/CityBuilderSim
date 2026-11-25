@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**254 harness files, 29,127 labelled assertions.** AllChecks runs 254 of them.
+**254 harness files, 29,130 labelled assertions.** AllChecks runs 254 of them.
 
 ## Which harnesses read which class
 
@@ -32463,7 +32463,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1572 ...and the landlords' studio and family doors to it too
   - L1574 the household places are the city's hundred for each founding endowment and the stacks' places
 
-## SchoolingLadderCheck.java - 27 labelled assertions
+## SchoolingLadderCheck.java - 30 labelled assertions
 
 > Hand-summed monthly cash ledgers for every after-cost qualification (WG3).
 > WHY. A closed-form annuity repeated in a check could agree with the same
@@ -32476,31 +32476,35 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L118 a free degree paying the diploma's wage costs four years of it, once
   - L123 a degree paying the diploma's lifetime in fewer years breaks even (
   - L126 and a degree paying a little more is a gain
-- **L131 Fees, time, wages and all three discount inputs cause a change**
-  - L135 fixture: the three percent floor applies
-  - L136 no diploma has no course to pay for
-  - L137 a modest lead is above, without claiming a far-above shortage
-  - L139 a larger lead crosses the existing curve's full-return threshold
-  - L144 family fees lower the college's value
-  - L147 a higher college fee lowers it again
-  - L154 fixture: university takes longer at the same pay
-  - L156 the longer course is worth less
-  - L162 a higher studied-from wage raises the wages forgone and lowers the step's gain
-  - L164 while the college path's own value, which never earns the diploma's wage, holds
-  - L169 policy above the floor discounts the long course more
-  - L173 loan above policy discounts it further
-  - L177 established adults can study but have less time to earn it back
-  - L182 a dear doctor does not promise a degree a licence
-  - L183 the medical licence earns its own higher pay
-  - L186 an ungated policy job can become the degree's best prospect
-- **L189 Posts, holders and verdicts**
-  - L200 degree posts exclude licensed professions
-  - L201 medical posts are its own job
-  - L202 degree holders read the band's supply
-  - L203 medical holders read the licence
-  - L204 no posts wins over a high return
-  - L205 a very dear doctor is far above
-  - L208 equal gross pay puts adult study below its prerequisite
+- **L129 The fees already paid are sunk for the next step**
+  - L138 fixture: the degree is under nothing after its fees
+  - L142 its holder still weighs the licence on its own bill against the degree's pay
+  - L144 ...and that is a gain
+- **L148 Fees, time, wages and all three discount inputs cause a change**
+  - L152 fixture: the three percent floor applies
+  - L153 no diploma has no course to pay for
+  - L154 a modest lead is above, without claiming a far-above shortage
+  - L156 a larger lead crosses the existing curve's full-return threshold
+  - L161 family fees lower the college's value
+  - L164 a higher college fee lowers it again
+  - L171 fixture: university takes longer at the same pay
+  - L173 the longer course is worth less
+  - L179 a higher studied-from wage raises the wages forgone and lowers the step's gain
+  - L181 while the college path's own value, which never earns the diploma's wage, holds
+  - L186 policy above the floor discounts the long course more
+  - L190 loan above policy discounts it further
+  - L194 established adults can study but have less time to earn it back
+  - L199 a dear doctor does not promise a degree a licence
+  - L200 the medical licence earns its own higher pay
+  - L203 an ungated policy job can become the degree's best prospect
+- **L206 Posts, holders and verdicts**
+  - L217 degree posts exclude licensed professions
+  - L218 medical posts are its own job
+  - L219 degree holders read the band's supply
+  - L220 medical holders read the licence
+  - L221 no posts wins over a high return
+  - L222 a very dear doctor is far above
+  - L225 equal gross pay puts adult study below its prerequisite
 
 ## SchoolingPageCheck.java - 0 labelled assertions
 

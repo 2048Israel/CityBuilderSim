@@ -125,6 +125,23 @@ public class SchoolingLadderCheck {
         market.getWages()[JobType.UNIV_SCIENCE.ordinal()] = breakEven * 1.01;
         check("and a degree paying a little more is a gain", SchoolingLadder.of(market, schools, tax, 0,
                 AdultStage.YOUNG).gain(EducationType.UNIVERSITY) > 0);
+
+        System.out.println("--- The fees already paid are sunk for the next step ---");
+        market = wages();
+        schools.setTuitionSubsidy(0);
+        double degreeFees = SchoolingLadder.of(market, schools, tax, 0, AdultStage.YOUNG).row(EducationType.UNIVERSITY).pathFees();
+        // A degree earning half its own path's fees: under nothing after cost, but its fees are paid.
+        double thin = .5 * degreeFees / ledger(life, r, 1, uni);
+        market.getWages()[JobType.UNIV_SCIENCE.ordinal()] = thin;
+        market.getWages()[JobType.UNIV_POLICY.ordinal()] = thin;
+        SchoolingLadder.View sunk = SchoolingLadder.of(market, schools, tax, 0, AdultStage.YOUNG);
+        check("fixture: the degree is under nothing after its fees", degreeFees > 0 && sunk.row(EducationType.UNIVERSITY).afterCost() < 0);
+        int med = EducationType.MEDICAL.months();
+        double licence = ledger(life, r, market.getWage(JobType.UNIV_DOCTOR), uni + med,
+                new double[]{uni + 1, uni + med, schools.feeFor(EducationType.MEDICAL)});
+        close("its holder still weighs the licence on its own bill against the degree's pay",
+                sunk.gain(EducationType.MEDICAL), licence / ledger(life, r, thin, uni) - 1);
+        check("...and that is a gain", sunk.gain(EducationType.MEDICAL) > 0);
         market = wages();
         schools.setTuitionSubsidy(.25);
 
