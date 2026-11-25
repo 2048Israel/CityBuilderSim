@@ -1360,6 +1360,13 @@ public class ShortSellingCheck {
        ======================================================================= */
 
     /**
+     * ★ How many times the month before's financial inflow and outflow section 9's sale and purchase are, at least: so a line the audit
+     * left out would show past the town's own flows. Ten until R1g, whose 48-month town paid out $9.43 the month before (main's $0.87)
+     * against the purchase's $59.33.
+     */
+    static final int OVER_THE_MONTH = 5;
+
+    /**
      * Section 9 (LF1b): a cell selling a share to the world and a cell buying one from it, made by the fixture inside the real month
      * (Game.settleProbeForTest: after the exchange's month has opened, before its step and the audit) at a price inside the spread, so that
      * no other order on the book fills. The cells and the world are both outside the pools, so neither trade moves a pool and the month
@@ -1367,13 +1374,6 @@ public class ShortSellingCheck {
      * the sale a financial inflow into the cells' savings, the purchase a financial outflow out of them, so the balance of payments'
      * financial account, which the rate reads, holds the cells' shares beside their bonds.
      */
-    /**
-     * ★ How many times the month before's financial inflow and outflow section 9's sale and purchase are, at least: so a line the audit
-     * left out would show past the town's own flows. Ten until R1g, whose 48-month town paid out $9.43 the month before (main's $0.87)
-     * against the purchase's $59.33.
-     */
-    static final int OVER_THE_MONTH = 5;
-
     static void theCellsAbroad() {
         section("9. the cells' share trades with the world: each a pair of lines in the audit, a financial flow and its domestic half (LF1b)");
         Game city = town("shortsellingcheck-abroad", 48);

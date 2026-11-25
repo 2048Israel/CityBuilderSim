@@ -74,7 +74,7 @@
 | 353 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
 | 1085 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
 | 1093 | `ShortSellingCheck.TRADE_ABROAD_MONTH` | `RUN_START + 1` | SX2 (FS14): the month of the run in which the cells' trades with the world are caused, as section 9 causes them, the run's first: the ordinary cell holding the most of the company the cells hold most of by value (the ... |
-| 1375 | `ShortSellingCheck.OVER_THE_MONTH` | `5` | ★ How many times the month before's financial inflow and outflow section 9's sale and purchase are, at least: so a line the audit left out would show past the town's own flows. |
+| 1367 | `ShortSellingCheck.OVER_THE_MONTH` | `5` | ★ How many times the month before's financial inflow and outflow section 9's sale and purchase are, at least: so a line the audit left out would show past the town's own flows. |
 
 ## Fields (state)
 
@@ -185,6 +185,6 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1377 | 90 | `static void theCellsAbroad()` |  |
+| 1377 | 90 | `static void theCellsAbroad()` | Section 9 (LF1b): a cell selling a share to the world and a cell buying one from it, made by the fixture inside the real month (Game.settleProbeForTest: after the exchange's month has opened, before its step and the a... |
 | 1468 | 34 | `static void howOften()` |  |
 

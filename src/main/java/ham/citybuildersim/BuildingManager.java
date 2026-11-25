@@ -6024,7 +6024,8 @@ public class BuildingManager {
         double claims = 0;
         for (int k = 0; k < stacks.size(); k++) {
             BuildingsStacks s = stacks.get(k);
-            weight[k] = s.getHomeContractValue() > 0 ? s.getAbroadClaim() : 0;
+            // ...the sites with points owed, as liveClaims() reads them: a finished site's claim is stale, and a load reads none for it.
+            weight[k] = s.owedPoints() > 0 && s.getHomeContractValue() > 0 ? s.getAbroadClaim() : 0;
             claims += weight[k];
         }
         if (!(claims > 0)) {
@@ -6713,6 +6714,28 @@ public class BuildingManager {
             if (points > 0) out.put(s.getBuilding().getId(), points);
         }
         return out;
+    }
+
+    /**
+     * ...and the claims themselves, in their own unit, for the save (R1g): the sites the points above carry. The points
+     * are the claims rescaled to his book, the same shares but not the same bits, and the premium his payers paid is
+     * shared by the claims (earnAtHisPrice()), so a city loaded from the points alone parted from its twin in the last
+     * bit of the month's work two months on (WorldMoneysCheck). Written always, an empty map when none.
+     */
+    public java.util.Map<Integer, Double> getAbroadClaimById() {
+        java.util.Map<Integer, Double> out = new java.util.TreeMap<>();
+        double claims = liveClaims();
+        for (BuildingsStacks s : stacks) if (claimedPoints(s, claims) > 0) out.put(s.getBuilding().getId(), s.getAbroadClaim());
+        return out;
+    }
+
+    /** ...restored over the points where the save carries them (R1g); a save from before the key (null) keeps the points as the claims. */
+    public void restoreAbroadClaims(java.util.Map<Integer, Double> byId) {
+        if (byId == null) return;
+        for (BuildingsStacks s : stacks) {
+            Double v = byId.get(s.getBuilding().getId());
+            if (v != null) s.setAbroadClaim(v);
+        }
     }
 
     /**

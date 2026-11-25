@@ -18049,6 +18049,8 @@ public class Game {
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
         // ...and each site's work on the foreign crews' book (REV-FC2, the second review), what a cancel takes off it.
         dataSave.setAbroadOwedById(buildingManager.getAbroadOwedById());
+        // ...and the claims themselves (R1g), which the premium his payers paid is shared by: the points rescale them.
+        dataSave.setAbroadClaimById(buildingManager.getAbroadClaimById());
         // ...and the equipment each site's orders froze, only where a site has a lot (R1e; none in a city founded the default way).
         dataSave.setLotsById(buildingManager.getLotsById());
         dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
@@ -22269,6 +22271,7 @@ public class Game {
             // ...and each site's work on the foreign crews' book (REV-FC2, the second review), once the sites owe their points:
             // a save from before the key shares his book among the sites by their points owed, as FC1b's cancel cut them.
             buildingManager.restoreAbroadOwed(loaded.getAbroadOwedById());
+            buildingManager.restoreAbroadClaims(loaded.getAbroadClaimById());
             buildingManager.getHousingInventory().restore(loaded.getHousingInventory());
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());
