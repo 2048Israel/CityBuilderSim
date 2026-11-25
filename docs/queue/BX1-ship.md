@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### BX1 — Build EXE.bat's zip is a zip from any shell — 2026-11-25, ready, see docs/queue/BX1-notes.md
 `Build EXE.bat` zips the game with Windows' own `tar.exe`, named by its full path. Called from Git Bash, a bare
