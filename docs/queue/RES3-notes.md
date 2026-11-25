@@ -5,7 +5,8 @@ retain the successive HC1, AP2, PW5, FC2 and later integration evidence.
 
 ## Current integration and validation, 2026-11-25
 
-Main78ed67315 is shipped R6e-rest0.9.201, format/floor66; RES3 takes67.
+Main de51851044d is records-only over shipped R6e-rest0.9.201 at78ed67315,
+format/floor66; RES3 takes67. The records merge is a03579d4b.
 Substation155, RES3 homes156-166 and existing power167-171 retain their IDs;
 nextId is172. The genuine unedited shipped66 save/history pair is committed,
 and current SaveFileCheck refuses it with both files and the running city intact.
@@ -38,11 +39,24 @@ reform stock comparisons and all purity/inventory guards pass. Lawful positive
 fractional owners cause the two legacy under-half claims. The registered scan
 correction passes its normal native run; separately captured TP1
 deflation preserves every floor comparison. Combined review remains owed.
-HousingMarketCheck also passes0 with the current14/32 report and profiles;
+HousingMarketCheck on dce7b53d5 passes native/canonical0 in19 seconds with
+the current14/32 report and profiles. Its caused positive closed-home debt
+case preserves actual mortgage claims, the held share and the next ordinary
+month through a native save/reload; every retirement and audit guard passes.
+Physical closure is distinct from Game.retire's salvage/repayment path.
 InvestCheck passes3 for only its recorded builder-wage premise. Stage1 is green.
 CentralBankCheck's laptop run reaches its unchanged1740-second timeout;
 the exact c7e named gate-box run then passes0 in533 seconds with all laws
 intact. Native24-shape result is22 below-Standard cases, with18 required.
+
+CallCheck sections2+6, DeskCheck's household spare and FundCheck's market-book
+cases all pass0. The bounded CardCheck/BuildCardCheck query passes canonical0
+with both native classes0; its five obsolete BuildCard waiver rows are removed.
+WaterCheck and WaterPowerCheck pass0. SubstationCheck, DebtStatisticsCheck and
+ResearchCheck on dce also pass native/canonical0. Bank's native output completes
+every assertion, including both TAB_LOSS equity identities, but its numeric
+native exit was not persisted before the accidentally selected duplicate
+Central run was cancelled. Do not label that incomplete query canonical0.
 
 Remaining named checks, transfer of the current catalogue/profiles, default600-month spending
 observations, final fast/maps, combined money/saves review, final ensemble and
@@ -5658,3 +5672,22 @@ all retirement gates and every audit/save guard. The offer cushion must cause
 the required normal placement and spare family titles in the native run;
 it is not asserted green from a static calculation. No post-audit balance,
 quote, household assignment or eligibility result is rewritten.
+
+The dce7b53d5 case is now an ACTUAL canonical/native0 HousingMarketCheck in
+19 seconds (c7fd), every original guard intact. Opening23/23 household wealth,
+positions/counts/native Bank book pass. Actual paid mortgage0->1, quantity24,
+native lending/fee/premium and queue pass. At month3 unplaced/doubled/crowded
+are all0; normal mayRetire is true and allowed25 equals requested25 structures.
+Physical closure25 then causes owned capacity0x1.1f8p13 ->0x1.1f5p13 and held
+positive share0x1.55ed4d05c9afp-11 at month4. Exact native slot10 held state,
+loan/Bank/title claims, next ordinary twins and all money/household audits pass.
+This remains physical closure, not private Game.retire/BF1 settlement or a
+claim that the older conditional HousingCheck observation was counted.
+
+Current14/32 historical/present report and real native pair are retained with
+checksums by the helper. Only HMC.class differs from a09; all other compiled
+classes match. Source/Oracle21.0.4/assets/newcfed approval file are pinned,
+fresh HMC gate RAM5.771/commit12.399/CPU24.195 percent passes. The remaining
+seven unique checks resume one per call. After all are green and stale Kept
+owners are resolved, the committed audited600-month default observer has a
+conditional exact-dce GO; no policy/baseline sweep or full-playtest claim.
