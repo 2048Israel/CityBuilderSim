@@ -276,6 +276,21 @@ The previous130-month case also logs its actual field reads. This is a caused
 fixture proposal now applied, not a predicted native pass. Full Kept must
 prove every precondition and the original laws on the integrated model.
 
+Final721 --fast exits0 on the box, verified and copied by2804: explicit
+compile0, cached batch0, maps regenerated, Stale0 firm/206 soft, source guard
+empty, class manifests equal. Fresh gates are27.788/27.638 GiB available RAM,
+21.912 GiB free commit,0.323/0-percent CPU. Temurin21.0.13+9/Monocle runtime,
+assets/fork/a723 records and all end/copy guards match. Archive
+feb841ec42aaac95d7b746e613f8f5d7627aff11ddd56961e52aebda29afde20
+supplies only the five changed generated documents; notes and records stay.
+
+The first local six-script manifest verification used wrong relative paths
+and the wrong hash-property name, so its printed zero-mismatch count was not
+proof. Immediately recheck all six absolute paths and actual SHA256 fields
+with terminating errors: all six match, including both reviewed remote
+payloads. Native launchers also verify the exact payload themselves. No
+acceptance or native result is inferred from the failed verification command.
+
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
 byte-identical through dce's later observer and harness-only commits;
