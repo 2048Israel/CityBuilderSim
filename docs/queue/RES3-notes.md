@@ -5726,3 +5726,9 @@ the absolute C:/ assets are used. Its fresh gate has76-percent committed,
 from three two-second samples. No other owned JVM was active; controller45127
 ends0 before the helper's next source GO. Commit the regenerated integrated
 maps rather than restoring either parent's earlier generated copies.
+
+Remove the three provisional KeptCheck rows naming shipped FS5. They provide
+no approval for a future run. The integrated Kept native is still owed; any
+remaining premise must be traced and assigned to a current queued owner.
+PW3's main record independently names three fund-fixture premises under
+queued HT1-H; do not assume those are the same as RES3's old three claims.
