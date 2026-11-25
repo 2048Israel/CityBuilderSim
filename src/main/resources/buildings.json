@@ -3082,7 +3082,16 @@
     "UNIV_SCIENCE": 3
    },
    "land": 800000,
-   "roadLoad": 15
+   "roadLoad": 15,
+   "recipeChanges": [
+    {
+     "entry": "E22",
+     "source": "R6e-rest: Stover 2010 (Desalination and Water Treatment 13:33-41, pp38-39), Las Palmas III's Pelton-to-PX retrofit, SWRO process 3.49 to 2.68 kWh/m3; US DOE Seawater Desalination Bandwidth Study 2017 pp16/24, the RO step with energy recovery 2.70 kWh/m3 (Carlsbad). The undo is the RO step alone, 2.70 kWh/m3 of 60,000 units of 10,000 US gal (37.854 m3) at 720 kWh a kW-month, times 3.49/2.68 - 1; intake, pretreatment and post-treatment (the other 0.749 of 3.449 kWh/m3) unchanged. Cross-check: Lemes et al. 2013 whole plant 5.18/4.15 = 1.248 against the game's 1.237. Figures are facts; nothing copied. E33 (reverse osmosis) stays reserved.",
+     "without": {
+      "electricity": 2574.2212598283586
+     }
+    }
+   ]
   },
   {
    "id": 74,

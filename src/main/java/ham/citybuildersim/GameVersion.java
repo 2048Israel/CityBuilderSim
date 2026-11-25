@@ -8380,7 +8380,15 @@ public final class GameVersion {
      * share by points reads the older payers' work there as none. The
      * floor rises with the format; no conversion.
      */
-    public static final int SAVE_FORMAT = 65;
+    /* R6e-rest: THE DESALINATION PLANT BEFORE THE PRESSURE EXCHANGER (format 66).
+     * E22 gives the Desalination Plant a missing-change flag, as B10 gave
+     * the Contact Centre: in a city before 1997 its choice is now
+     * "default~E22", which is saved, where format 65 held nothing for a
+     * template with no choice. A format-65 save of such a city would load
+     * its sea works at today's 10,880 kW a plant, not 13,454, until the
+     * next month's choice. The floor rises with the format; no conversion.
+     */
+    public static final int SAVE_FORMAT = 66;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8390,7 +8398,10 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 65 since batch FC2b (A CONTRACT'S POINTS above: an older save's
+     * 66 since batch R6e-rest (THE DESALINATION PLANT BEFORE THE PRESSURE
+     * EXCHANGER above: an older city's Desalination Plant holds no
+     * missing-E22 flag and loads its power at today's draw).
+     * 65 from batch FC2b (A CONTRACT'S POINTS above: an older save's
      * contracts hold no points and a shared site's shares read wrongly).
      * 64 from batch R6f (THE CONTACT CENTRE BEFORE THE AI ASSISTANT above:
      * an older 1900 city's Contact Centre holds no missing-B10 flag and loads
@@ -8445,7 +8456,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 65;
+    public static final int OLDEST_LOADABLE_FORMAT = 66;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose
