@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.204 — WG3, schooling on pay after cost — 2026-11-25, ready, see docs/queue/WG3-notes.md
+College, university and the four professional schools now enrol on what a qualification pays after its cost: the path's
+earnings once its courses end, less every fee along it, valued at the dearer of the student loan's rate, the policy rate
+and a 3% floor over the adult stage's working years left. The wages a student gives up count once, as the gap to the
+step below (the study's prototype had counted them twice). A degree promises its best job open without a licence, no
+longer the doctor's wage, so a founding whose degree pays 1.15 diplomas draws no university class. High school keeps its
+coverage and affordability rule. Policy → Wages has a second page, The ladder: each qualification's pay and pay after
+cost on one axis, with its posts, holders, course months, fees, wages forgone and a verdict. To look at on the PC: The
+ladder at a narrow window, both adult stages, the shared zero, negative outlines and muted no-post rows.
+
 ### 0.9.203 — PW1-R, PW1's review follow-ups: power billed on the kWh served — 2026-11-25, ready, see docs/queue/PW1-R-notes.md
 Power is billed on the kWh the month served. The grid dispatched each month at its season, July's load about a fifth above the year's mean and April's an eighth below, and bought its fuel on those kWh, but billed every class the year's mean, so the utility's margin took the gap. A bill is now the draw at the ratio delivered, the season its book was dispatched at and the class's price; the prices stay a kW of the year's mean, which the works' choices read. The water's bills carry the season too, its works' power served at it, while the planners read the water's price at the year's mean; the Services screen shows the month's load the bills carry. A works' own generation is worth, in its plans, its draw replaced at its class's price and its surplus at what the grid pays the works for it, no longer all of it at the class price (SpreadPlanner.ownCosts). A saved struck book is held field for field through a save (SaveFileCheck); a save's fuel names are read through Good.byName, and the month between a dispatch and the statements it bills is said where the book is described. BuildCardCheck's POWER row is held to the grid's own figure and reads whether a wind or solar farm stands.
 

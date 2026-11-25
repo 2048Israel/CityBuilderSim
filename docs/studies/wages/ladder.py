@@ -54,11 +54,14 @@ def ladder(row):
     wage = {name: max(float(row[c]) for c in cols) for name, _, _, _, cols in STEPS}
     out = {}
     study_before = {}  # months of adult study before a path's own course
+    path_fees = {}  # every fee along the path, valued at 18 (WG3: a degree pays the diploma's bill too)
+    path_plain = {}  # the same bills, plain sums
     for name, frm, months, feecol, _ in STEPS:
         w = wage[name]
         if frm is None:
             study_before[name] = 0
             v = w * annuity(WORK, r)
+            path_fees[name] = path_plain[name] = 0.0
             out[name] = dict(wage=w, after=w, months=0, fees=0.0, given_up=0.0, interest=0.0)
             continue
         fee = float(row[feecol]) * (1 - s)
@@ -82,9 +85,14 @@ def ladder(row):
         study_before[name] = 0 if name == "Diploma" else start + months
         working = WORK - study_before[name]
         earn = w * annuity(working, r) * (1 + r) ** -study_before[name]
-        v = earn - fees_at_18 - given_up_pv
+        # WG3: the wages given up are not taken off again. The path earns nothing while it
+        # studies, and the step below earns them, so they are in the gap between two rows
+        # already; taking them off here counted them twice. given_up stays for display.
+        path_fees[name] = path_fees[frm] + fees_at_18
+        path_plain[name] = path_plain[frm] + fees_plain
+        v = earn - path_fees[name]
         # What the delay and the borrowing cost, beyond the plain sums: the interest.
-        plain = w * working - fees_plain - given_up
+        plain = w * working - path_plain[name]
         interest = max(0.0, (plain - v / annuity(WORK, r) * WORK) if r > 0 else 0.0)
         out[name] = dict(wage=w, after=v / annuity(WORK, r), months=months,
                          fees=fees_plain, given_up=given_up, interest=interest)

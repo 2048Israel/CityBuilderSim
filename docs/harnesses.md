@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**253 harness files, 29,163 labelled assertions.** AllChecks runs 253 of them.
+**255 harness files, 29,213 labelled assertions.** AllChecks runs 255 of them.
 
 ## Which harnesses read which class
 
@@ -10,7 +10,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 
 | class | harnesses that mention it |
 |---|---|
-| [AdultStage](map/AdultStage.md) | CapitalGainsCheck, CardCheck, DebtStatisticsCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, MoneyWordsCheck |
+| [AdultStage](map/AdultStage.md) | BuildAdviceCheck, CapitalGainsCheck, CardCheck, DebtStatisticsCheck, EducationCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, MoneyWordsCheck, SchoolingLadderCheck, SchoolingPageCheck |
 | [AdviceValueOracle](map/AdviceValueOracle.md) | BuildAdviceCheck, WorksFinanceCheck |
 | [AgeBand](map/AgeBand.md) | ArrivalMixCheck, CardCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, EducationCheck, EssentialWorksCheck, HealthCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, LabourCheck, LongPlaytest, MedicineCheck, OutsideCheck, OwnerCheck, PopulationCheck, RankingsCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck, Village1900Check, WorksFinanceCheck |
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, EquipmentCheck, FieldOperatorsCheck, FittingCheck, FoodIndustryCheck, Forms1900Check, LongPlaytest, ScaleCheck, ZoningCheck |
@@ -103,8 +103,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, PartnersCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FB13Check, GatewayCheck, GlobeCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
 | [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CopperBufferCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, FoodProcessingCheck, ForeignChoiceCheck, FundLedgerCheck, GdpCheck, GovernmentViewCheck, GroundInputCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MaterialsCheck, MortgageCheck, NewGameCheck, OilCheck, OrderDoorCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, UndemandedFeedCheck, WellCheck, ZoningCheck, ZoningViewCheck |
-| [Education](map/Education.md) | EducationCheck, EssentialWorksCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck, Village1900Check |
-| [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, KeptCheck, LongPlaytest, NewUnitCheck, OutsideCheck, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck, Village1900Check |
+| [Education](map/Education.md) | BuildAdviceCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck, SchoolingLadderCheck, SchoolingPageCheck, Village1900Check |
+| [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, KeptCheck, LongPlaytest, NewUnitCheck, OutsideCheck, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, SchoolingLadderCheck, SchoolingPageCheck, StaffingDrawCheck, Village1900Check |
 | [Equipment](map/Equipment.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, ModernEngineeringCheck, ModernRowsCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, ScaleCheck |
 | [EquipmentFit](map/EquipmentFit.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, ModernRowsCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck |
 | [EquipmentForms](map/EquipmentForms.md) | **none** |
@@ -190,11 +190,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [IslandChip](map/IslandChip.md) | **none** |
 | [IslandRailRenders](map/IslandRailRenders.md) | **none** |
 | [JavaScan](map/JavaScan.md) | **none** |
-| [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, DriverlessTruckCheck, ER1Check, EducationCheck, EquipmentCheck, EssentialWorksCheck, FieldOperatorsCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MiningCheck, ModernRowsCheck, NewUnitCheck, OilCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SectorStatementCheck, StaffingDrawCheck, SubstationCheck, Village1900Check, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, YoungBankCheck |
+| [JobType](map/JobType.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, DriverlessTruckCheck, ER1Check, EducationCheck, EquipmentCheck, EssentialWorksCheck, FieldOperatorsCheck, FittingCheck, FoodProcessingCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MiningCheck, ModernRowsCheck, NewUnitCheck, OilCheck, OutsideCheck, OwnerCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, ResearchPreviewCheck, RestaurantsCheck, ScaleCheck, SchoolingLadderCheck, SchoolingPageCheck, SectorStatementCheck, StaffingDrawCheck, SubstationCheck, Village1900Check, WageLadderCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, YoungBankCheck |
 | [Kept](map/Kept.md) | **none** |
 | [KeptBench](map/KeptBench.md) | KeptCheck, KeptTimingCheck, MoneyWordsCheck, NewUnitCheck, ShortSellingCheck, StepsCheck |
 | [KnownReds](map/KnownReds.md) | KnownRedsCheck |
-| [LabourMarket](map/LabourMarket.md) | ArrivalMixCheck, DiscoveryCheck, EducationCheck, ExpectationsCheck, LabourCheck, LongPlaytest, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck |
+| [LabourMarket](map/LabourMarket.md) | ArrivalMixCheck, BuildAdviceCheck, DiscoveryCheck, EducationCheck, ExpectationsCheck, LabourCheck, LongPlaytest, PolicyPreviewCheck, PopulationCheck, PriceLevelCheck, SchoolingLadderCheck, SchoolingPageCheck, StaffingDrawCheck, WageLadderCheck, WantedPostsCheck |
 | [Ladder](map/Ladder.md) | BankCheck, ForeignDebtCheck, MortgageCheck |
 | [LandClassRenders](map/LandClassRenders.md) | **none** |
 | [LandClassView](map/LandClassView.md) | LandClassCheck |
@@ -265,8 +265,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, DiscoveryCheck, FundCheck, GovernmentViewCheck, GroceryCheck, KeptCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
-| [PopulationCohorts](map/PopulationCohorts.md) | ArrivalMixCheck, CardCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, EducationCheck, EssentialWorksCheck, HealthCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, KeptCheck, LabourCheck, LongPlaytest, MoneyWordsCheck, OutsideCheck, OwnerCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SicknessCheck, StaffingDrawCheck, WorksFinanceCheck |
-| [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ChildcareCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, EssentialWorksCheck, ForeignCrewsCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, NewUnitCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, StaffingTieCheck, Village1900Check, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
+| [PopulationCohorts](map/PopulationCohorts.md) | ArrivalMixCheck, CardCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, EducationCheck, EssentialWorksCheck, HealthCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, KeptCheck, LabourCheck, LongPlaytest, MoneyWordsCheck, OutsideCheck, OwnerCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SchoolingLadderCheck, SicknessCheck, StaffingDrawCheck, WorksFinanceCheck |
+| [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ChildcareCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, EssentialWorksCheck, ForeignCrewsCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, NewUnitCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, SchoolingLadderCheck, SchoolingPageCheck, StaffingDrawCheck, StaffingTieCheck, Village1900Check, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, GatewayCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, PublicLicenceCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, ResearchCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
 | [PowerDispatch](map/PowerDispatch.md) | BuildAdviceCheck, BuildCardCheck, ElectrolyserCheck, EssentialWorksCheck, HydroCheck, NewUnitCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PublicLicenceCheck, ScaleCheck, SubstationCheck, WaterPowerCheck, WorksFinanceCheck |
@@ -317,6 +317,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SaveHeader](map/SaveHeader.md) | ModernEngineeringCheck, ReloadCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck |
 | [SaveWriter](map/SaveWriter.md) | LicenceFeesCheck, ModernEngineeringCheck, PublicLicenceCheck, ReloadCheck, ReplayCheck, SaveSlotCheck |
 | [SavedCities](map/SavedCities.md) | HistoryCheck, KeptCheck, RankingsCheck |
+| [SchoolingLadder](map/SchoolingLadder.md) | BuildAdviceCheck, EducationCheck, SchoolingLadderCheck, SchoolingPageCheck |
+| [SchoolingProbe](map/SchoolingProbe.md) | SchoolingPageCheck |
 | [SeaLanes](map/SeaLanes.md) | MapCheck |
 | [SeaRoutes](map/SeaRoutes.md) | GatewayCheck, MapCheck, PartnerCallsCheck |
 | [Sector](map/Sector.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, CallCheck, CapitalFlowCheck, CarCheck, CardCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, DistressBleedCheck, DriverlessTruckCheck, EquipmentCheck, EssentialWorksCheck, FitoutCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForestryCheck, Forms1900Check, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroceryCheck, GroundInputCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HousingCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MoneyWordsCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, PassThroughCheck, PolicyCheck, PolicyPreviewCheck, PortCheck, PostwarRecipeCheck, PowerPlantsCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, RestaurantsCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, Village1900Check, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck |
@@ -348,7 +350,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Substations](map/Substations.md) | BuildAdviceCheck, BuildingDataCheck, ElectrolyserCheck, HistoricalLicenceCheck, LongPlaytest, MaterialsCheck, NewUnitCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PriceLevelCheck, ScaleCheck, SubstationCheck |
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
-| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CapitalGainsCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, EducationCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignChoiceCheck, Forms1900Check, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandlordPortCheck, LongPlaytest, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, TradeCostCheck, TreasuryCheck, WageLadderCheck, ZoningCheck, ZoningViewCheck |
+| [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CapitalGainsCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, EducationCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignChoiceCheck, Forms1900Check, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandlordPortCheck, LongPlaytest, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SchoolingLadderCheck, SchoolingPageCheck, TradeCostCheck, TreasuryCheck, WageLadderCheck, ZoningCheck, ZoningViewCheck |
 | [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CapitalGainsCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperRefiningCheck, CreditCheck, CreditsCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeterminismCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, FoundingYardCheck, GapOrderCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, KnownRedsCheck, LabourCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, ObservationCheck, OrderSearchCheck, OutsideCheck, PackagingCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PowerPlanCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaffingDrawCheck, StaffingTieCheck, StaleCheck, SupplierCreditCheck, TimingCheck, WantedPostsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, QuayRailCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, PortCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
@@ -376,7 +378,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [UtilitiesHandler](map/UtilitiesHandler.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, ElectrolyserCheck, EssentialWorksCheck, ForestryCheck, Forms1900Check, HistoricalLicenceCheck, HydroCheck, HydrogenSteelCheck, LongPlaytest, MaterialsCheck, ModernRowsCheck, NewUnitCheck, OrderDoorCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PublicLicenceCheck, QuarryingCheck, ReadPathCheck, ResearchCheck, SubstationCheck, WaterCheck, WaterPowerCheck, WoodProductsCheck, WorksFinanceCheck |
 | [VaultTable](map/VaultTable.md) | **none** |
 | [VaultView](map/VaultView.md) | PartnersCheck |
-| [WageBand](map/WageBand.md) | ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, CapitalGainsCheck, EducationCheck, EssentialWorksCheck, HouseholdCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, NewUnitCheck, OutsideCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, StaffingDrawCheck, StaffingTieCheck, Village1900Check, WageLadderCheck, WantedPostsCheck, ZoningCheck |
+| [WageBand](map/WageBand.md) | ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, CapitalGainsCheck, EducationCheck, EssentialWorksCheck, HouseholdCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, NewUnitCheck, OutsideCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, SchoolingLadderCheck, SchoolingPageCheck, StaffingDrawCheck, StaffingTieCheck, Village1900Check, WageLadderCheck, WantedPostsCheck, ZoningCheck |
 | [WageLadder](map/WageLadder.md) | LabourCheck, PriceLevelCheck, PrizeCheck, ScaleCheck, WageLadderCheck |
 | [WantedPosts](map/WantedPosts.md) | StaffingTieCheck, WantedPostsCheck |
 | [Where](map/Where.md) | KeptCheck |
@@ -2504,7 +2506,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L951 ...and what is read back is the map it was written from, the bridges laid on its runs: the same map, the same stamp, every plot of every bridge where it was
   - L953 ...with the highways, the railway and the yards what they were: the runs read from the file are laid with the bridges, not from them
 
-## BuildAdviceCheck.java - 130 labelled assertions
+## BuildAdviceCheck.java - 136 labelled assertions
 
 > The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS
 > YOU's list, to the quote, and to the model's own figures, in a played
@@ -2578,90 +2580,96 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1053 fixture: the Elevated Highway is no candidate for the streets, and of those that keep the road ahead the Paved
   - L1057 the streets' card has the least complete maintained-service plan at every price of ground
   - L1149 fixture: the slack and projection add buildings to a listed or fallback card in the same city
-  - L1179 fixture: with no university and its fees paid, more would come than a first one wants
-  - L1180 fixture: ...and its graduates' posts would not fill one
-  - L1182 no UNIVERSITY row
-  - L1183 ...and no university card
-  - L1195 fixture: the offices' posts bring the hires to a first university's
-  - L1197 ...and the UNIVERSITY row is there
-  - L1199 fixture: the rows above held a school with seats and one with none
-  - L1213 fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university
-  - L1216 no university row there
-  - L1217 ...and no university card
-- **L1242 9b. the 1900 city: no university advice ahead of its class**
-  - L1249 fixture: the historical founding has no first university class
-  - L1256 fixture: degree jobs alone would fill a first university, isolating the missing class
-  - L1259 the 1900 pipeline offers no university row before its class
-  - L1260 the 1900 pipeline offers no university card before its class
-- **L1325 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
-  - L1339 fixture: the rising history is a trend the businesses read
-  - L1377 the run is the cards' orders in their order, two of one building added together
-  - L1381 fixture: the short city has the ground for every card
-  - L1382 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
-  - L1395 fixture: the run placed in turn in a twin
-  - L1396 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
-  - L1408 fixture: with the ground for the first card alone, a card after it is short of land
-  - L1409 fixture: ...and no two cards are one building, so the run's orders are the cards
-  - L1410 ...and the run stops at the first short card, for land
-- **L1428 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
-  - L1451 fixture: the fee turned away half of those the beds could take
-  - L1456 fixture: NEEDS YOU has its row
-  - L1458 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
-  - L1459 ...and reads them served over its people
-  - L1461 ...lower than the beds alone read
-  - L1463 ...the share the month itself applies with the beds short: their cover times the share who could pay
-  - L1465 BUILD'S RING READS THE SAME
-  - L1470 AN ORDER'S AFTER: its staffed places added, the month's priced out held
-  - L1476 NOBODY PRICED OUT, THE BEDS, AS BEFORE
-- **L1492 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast**
-  - L1505 fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller
-  - L1508 fixture: no berth stands or is on site, and the dues dial is at its default
-  - L1514 fixture: the city owns no sea
-  - L1515 fixture: the uncovered dry bulk is the tonnes told
-  - L1517 A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes
-  - L1522 fixture: the city buys an offer that runs out to the sea
-  - L1528 A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one
-  - L1530 ...its card reads the uncovered tonnes now
-  - L1531 ...and the tonnes left with the berth standing
-  - L1532 ...at the price the Build button charges
-  - L1535 JUST UNDER IT: no berth is advised
-  - L1538 PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal
-  - L1542 ...a hair under it, the Bulk Berth again
-  - L1544 ...with the Bulk Terminal passed over, the Bulk Berth
-  - L1550 fixture: half the threshold is no berth's worth at the default dial
-  - L1553 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth
-  - L1555 ...a hair under half, none
-  - L1558 THE DIAL AT 0 - no dues, no payback - NONE however many tonnes
-  - L1561 ...and back at the default the same tonnes advise the Bulk Terminal
-  - L1566 fixture: 2.7 Bulk Terminals' months of uncovered dry bulk pay three back at the default dial
-  - L1568 SL1, 2.7 TERMINALS' MONTHS UNCOVERED: the card offers three Bulk Terminals, one order
-  - L1570 ...at the price the Build button charges for the three
-  - L1571 ...the tonnes left with the three standing, none
-  - L1572 ...the order closes the measure and its ground is the three terminals'
-  - L1580 fixture: two Bulk Berths stand, the trade (5.5 Bulk Berths' month) is under the Bulk Terminal's break-even, and 3.5 Bulk Berths' month of it is uncovered
-  - L1584 SL1, THE TRADE UNDER THE BULK TERMINAL'S BREAK-EVEN: the card offers Bulk Berths, three
-  - L1587 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
-  - L1591 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
-- **L1596 14. power is planned for the peak (PW1; PW3 the year's peak hour): a wind farm adds its credit there, the figure is the peak hour's draw ...**
-  - L1606 fixture: the Wind Farm is wind and the Coal Power Plant is not; both can be staffed; six of the one and a plant of the other stand
-  - L1619 (a) a Wind Farm's power unit per kW of its average is its credit at that share (WIND_PEAK_CREDIT x creditFall()) of a Coal Power Plant's, staffing aside
-  - L1621 ...and built() (the card sets it beside unit()) counts the same firm kW, fully staffed
-  - L1623 ...a Coal Power Plant's built() is its whole average
-  - L1633 (b) power's figure is the draw x PLAN_PEAK_HOUR over the firm supply (the model's production less the wind's average beyond its credit, at its own posts' fill)
-  - L1635 ...which is more than the average's draw over its production, the wind standing counted at its average
-  - L1638 ...and supplyDemand() is the firm supply against the peak hour's draw
-  - L1639 ...the draw the peak hour's, losses in
-  - L1650 fixture: the homes added leave power short of at least five Wind Farms' average
-- **L1678 15. the NEEDS YOU power row is read on the calm peak (PW1): wind farms that cover the average and not the peak are listed and advised**
-  - L1710 fixture: wind farms stand (
-  - L1712 fixture: ...and the CALM PEAK does not: the advice's power figure
-  - L1719 (a) NEEDS YOU lists the POWER row, though the average is clear
-  - L1720 ...on the firm supply against the peak's draw (supplyDemand()), not production against consumption
-  - L1722 ...read as served at the calm peak: \"
-  - L1727 (b) the advice offers a power card:
-  - L1738 fixture: the Coal Power Plants (
-  - L1742 (c) with the figure clear the POWER row is not listed
-  - L1744 ...and the advice offers no power card
+  - L1188 fixture: with no university and its fees paid, more would come than a first one wants
+  - L1189 fixture: ...and its graduates' posts would not fill one
+  - L1191 no UNIVERSITY row
+  - L1192 ...and no university card
+  - L1204 fixture: the offices' posts bring the hires to a first university's
+  - L1206 ...and the UNIVERSITY row is there
+  - L1208 fixture: the rows above held a school with seats and one with none
+  - L1224 the founding's would-be students follow the degree's pay after cost: none without a gain
+  - L1227 the founding gets no university row
+  - L1228 ...and no university card
+  - L1244 controlled return: eligible adults and native affordability are positive
+  - L1247 controlled return: positive native after-cost return for
+  - L1249 controlled return: genuine graduate posts and hires both stay below a class
+  - L1256 fixture: controlled return from the ninth month brings at least a university class by month 36
+  - L1259 no university row there
+  - L1260 ...and no university card
+- **L1285 9b. the 1900 city: no university advice ahead of its class**
+  - L1292 fixture: the historical founding has no first university class
+  - L1299 fixture: degree jobs alone would fill a first university, isolating the missing class
+  - L1302 the 1900 pipeline offers no university row before its class
+  - L1303 the 1900 pipeline offers no university card before its class
+- **L1368 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
+  - L1382 fixture: the rising history is a trend the businesses read
+  - L1420 the run is the cards' orders in their order, two of one building added together
+  - L1424 fixture: the short city has the ground for every card
+  - L1425 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
+  - L1438 fixture: the run placed in turn in a twin
+  - L1439 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
+  - L1451 fixture: with the ground for the first card alone, a card after it is short of land
+  - L1452 fixture: ...and no two cards are one building, so the run's orders are the cards
+  - L1453 ...and the run stops at the first short card, for land
+- **L1471 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
+  - L1494 fixture: the fee turned away half of those the beds could take
+  - L1499 fixture: NEEDS YOU has its row
+  - L1501 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
+  - L1502 ...and reads them served over its people
+  - L1504 ...lower than the beds alone read
+  - L1506 ...the share the month itself applies with the beds short: their cover times the share who could pay
+  - L1508 BUILD'S RING READS THE SAME
+  - L1513 AN ORDER'S AFTER: its staffed places added, the month's priced out held
+  - L1519 NOBODY PRICED OUT, THE BEDS, AS BEFORE
+- **L1535 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast**
+  - L1548 fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller
+  - L1551 fixture: no berth stands or is on site, and the dues dial is at its default
+  - L1557 fixture: the city owns no sea
+  - L1558 fixture: the uncovered dry bulk is the tonnes told
+  - L1560 A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes
+  - L1565 fixture: the city buys an offer that runs out to the sea
+  - L1571 A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one
+  - L1573 ...its card reads the uncovered tonnes now
+  - L1574 ...and the tonnes left with the berth standing
+  - L1575 ...at the price the Build button charges
+  - L1578 JUST UNDER IT: no berth is advised
+  - L1581 PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal
+  - L1585 ...a hair under it, the Bulk Berth again
+  - L1587 ...with the Bulk Terminal passed over, the Bulk Berth
+  - L1593 fixture: half the threshold is no berth's worth at the default dial
+  - L1596 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth
+  - L1598 ...a hair under half, none
+  - L1601 THE DIAL AT 0 - no dues, no payback - NONE however many tonnes
+  - L1604 ...and back at the default the same tonnes advise the Bulk Terminal
+  - L1609 fixture: 2.7 Bulk Terminals' months of uncovered dry bulk pay three back at the default dial
+  - L1611 SL1, 2.7 TERMINALS' MONTHS UNCOVERED: the card offers three Bulk Terminals, one order
+  - L1613 ...at the price the Build button charges for the three
+  - L1614 ...the tonnes left with the three standing, none
+  - L1615 ...the order closes the measure and its ground is the three terminals'
+  - L1623 fixture: two Bulk Berths stand, the trade (5.5 Bulk Berths' month) is under the Bulk Terminal's break-even, and 3.5 Bulk Berths' month of it is uncovered
+  - L1627 SL1, THE TRADE UNDER THE BULK TERMINAL'S BREAK-EVEN: the card offers Bulk Berths, three
+  - L1630 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
+  - L1634 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
+- **L1639 14. power is planned for the peak (PW1; PW3 the year's peak hour): a wind farm adds its credit there, the figure is the peak hour's draw ...**
+  - L1649 fixture: the Wind Farm is wind and the Coal Power Plant is not; both can be staffed; six of the one and a plant of the other stand
+  - L1662 (a) a Wind Farm's power unit per kW of its average is its credit at that share (WIND_PEAK_CREDIT x creditFall()) of a Coal Power Plant's, staffing aside
+  - L1664 ...and built() (the card sets it beside unit()) counts the same firm kW, fully staffed
+  - L1666 ...a Coal Power Plant's built() is its whole average
+  - L1676 (b) power's figure is the draw x PLAN_PEAK_HOUR over the firm supply (the model's production less the wind's average beyond its credit, at its own posts' fill)
+  - L1678 ...which is more than the average's draw over its production, the wind standing counted at its average
+  - L1681 ...and supplyDemand() is the firm supply against the peak hour's draw
+  - L1682 ...the draw the peak hour's, losses in
+  - L1693 fixture: the homes added leave power short of at least five Wind Farms' average
+- **L1721 15. the NEEDS YOU power row is read on the calm peak (PW1): wind farms that cover the average and not the peak are listed and advised**
+  - L1753 fixture: wind farms stand (
+  - L1755 fixture: ...and the CALM PEAK does not: the advice's power figure
+  - L1762 (a) NEEDS YOU lists the POWER row, though the average is clear
+  - L1763 ...on the firm supply against the peak's draw (supplyDemand()), not production against consumption
+  - L1765 ...read as served at the calm peak: \"
+  - L1770 (b) the advice offers a power card:
+  - L1781 fixture: the Coal Power Plants (
+  - L1785 (c) with the figure clear the POWER row is not listed
+  - L1787 ...and the advice offers no power card
 
 ## BuildCardCheck.java - 214 labelled assertions
 
@@ -9509,7 +9517,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2492 the picture's camera (a band of 10 degrees at 4'): the cover is the same byte for byte, the relief is none on water, and the band's relief costs a first sigh...
   - L2632 ...its edge frayed both ways about the bit's half-contour, and never past the cells that agree
 
-## EducationCheck.java - 184 labelled assertions
+## EducationCheck.java - 198 labelled assertions
 
 > Verifies the schools: who gets taught, who is allowed to practise, and what
 > it costs. Not part of the game.
@@ -9525,226 +9533,242 @@ _(this harness does not label its checks through a helper - it prints its findin
 >    school that enrolled zero students for three hundred and sixty months
 > ...
 
-- **L305 1. THE PROFESSION IS GATED**
-- **L312 without a medical school, a city cannot make a doctor**
-  - L331 the fixture built hospitals, or this proves nothing
-  - L332 there ARE graduates - they simply cannot practise medicine
-  - L334 so doctor posts stand empty
-  - L341 ...but some doctors moved in anyway
-  - L342 ...and never more than the graduates who contain them
-- **L345 2. AND WITH ONE, IT CAN**
-  - L367 fixture: the students are part way through their courses
-  - L385 fixture: the school's graduates are over the hospitals' doctor posts
-  - L386 fixture: the short town's graduates are under its doctor posts
-  - L387 the school produced doctors
-  - L388 ...enough to staff the hospitals
-  - L389 ...and short of the posts, the shortfall is what stands empty
-- **L392 3. NO SCHOOL TEACHES NOBODY**
-- **L398 every school actually enrols somebody**
-  - L412 fixture: every school has children, teens or adults to draw on
-  - L419 
-  - L424 
-- **L429 4. AND DOES NOT EMPTY THE BAND IT DRAWS FROM**
-- **L436 and does not drain the band beneath it**
-  - L452 the diploma band survives having colleges above it
-  - L454 ...and the city is genuinely better educated than the bare one
-- **L459 5. A DEGREE IS A MOVE, NOT AN APPEARANCE**
-- **L466 a graduate stops being a diploma-holder**
-  - L472 fixture: the month moved people between the bands
-  - L474 the month's schooling moves people rather than making them
-  - L488 the bands plus the students, the prisoners and the owner families still add up to the workforce
-  - L490 fixture: somebody is actually studying
-- **L492 6. LICENCES CANNOT OUTNUMBER GRADUATES**
-- **L499 and a licence belongs to a person**
-  - L521 no more
-- **L525 6b. THE MONTH'S GRADUATES ARE THE GAINS (A6, 0.7.46)**
-- **L534 the month's graduates, gross**
-  - L543 fixture: somebody gained a qualification this month
-  - L544 the month's graduates are what everGraduated gained
-- **L548 7. THE PIPELINE IS ITS NARROWEST STAGE**
-  - L576 plenty of primary places
-  - L577 ...and no high school at all
-  - L578 the pipeline reports the SMALLEST, not the average
-  - L580 ...and names the building to fix
-  - L582 so the city produces no diplomas of its own at all
-  - L599 fixture: the town has children to seat
-  - L600 seats for just over the plenty line of the children are plenty of primary places
-  - L602 ...and seats for just under it are not
-- **L614 the school leavers' diplomas, gross**
-  - L615 no high school: no school leaver takes a diploma
-  - L623 fixture: a high school, and its leavers take diplomas
-  - L624 with no college to leave for, the net movement is the leavers' diplomas
-  - L628 not saved: a city read back from its state has no month's diplomas yet
-  - L638 the leavers off saved state, schoolLeavers(), are the month's diplomas, getNewDiplomas(), to the bit
-- **L641 8. THE SUBSIDY IS A REAL DIAL**
-- **L648 and tuition decides who can actually go**
-  - L685 fixture: seats stand for the whole pool, so they cannot bind the intake, and the pool is there
-  - L687 fixture: the free place is worth going for and is affordable, and the paid one is dearer
-  - L689 paying for it yourself keeps people out
-  - L690 ...and free education costs the city more
-- **L693 9. IT SURVIVES A SAVE**
-- **L698 through a save**
-  - L715 the city saved
-  - L736 the fixture actually licensed somebody
-  - L738 every licence came back
-  - L739 ...and the running totals with them
-  - L740 ...and the tuition policy the player chose
-  - L753 fixture: somebody is part way through a course
-  - L754 ...and every student came back
-  - L755 ...and they are out of the supply on both sides
-- **L760 9b. THE WAIT IS REAL**
-- **L767 the wait is real**
-  - L801 fixture: people enrolled
-  - L802 nobody graduates before the course is over
-  - L804 ...and somebody graduates once it is
-  - L806 ...while the students were out of the supply
-- **L809 10. AND THE TREASURY PAYS FOR IT**
-  - L819 the schools cost something
-  - L820 ...charged to the treasury
-  - L822 ...and on the national accounts' expenditure
-  - L825 it never pays for itself, which is the point
-  - L839 the bill is wages and buildings, and nothing else
-  - L841 ...so net cost is that, less the fees households paid
-  - L857 a generous dial collects less at the door
-  - L859 ...and the subsidy it forgave is the larger one
-- **L862 11. THE UNSKILLED BAND IS A REPORT CARD**
-- **L886 the unskilled band is a report card on the schools**
-  - L918 fixture: the unschooled city really has no basic coverage
-  - L920 fixture: the schooled one really has some
-  - L922 fixture: both towns have school leavers to teach or not
-  - L923 a city with no schools makes its own unskilled adults
-  - L925 ...and against a city with them it is a factor, not a margin
-  - L927 ...and schools are what stop it
-  - L929 nobody arrived unskilled - not one, in either city
-  - L966 fixture: the first town pays its labourers no more than the going rate, and the second over it
-  - L969 fixture: the open pair spent months at the going rate and months over it, with somebody arriving in both
-  - L971 nobody arrives unskilled into a city paying the going rate
-  - L972 ...and a city paying over it for them buys some
-- **L974 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED**
-- **L1004 the queue for a job includes the overqualified**
-  - L1028 fixture: graduates really have come down into college work
-- **L1031 THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own**
-  - L1057 fixture: the two readings of this market really do differ
-  - L1061 ...and it is not: the queue is what counts
-  - L1072 the opportunity read is the queue's, not the band's own
-  - L1074 nobody is ever written off entirely - the floor holds
-- **L1077 13. THE GRANT IS A MENU**
-- **L1101 the grant, on four bases**
-  - L1119 fixture: the students are in the books, the basket is based and the level is the one set
-  - L1131 fixture: somebody is studying, and the wage is a wage
-  - L1137 a new city grants a fixed real amount, the grant that follows prices (0.7.19)
-  - L1141 ...and the bill is the students, the amount and the expected price level, bit for bit
-  - L1143 fixture: prices here are expected off founding, so the level is a factor and not a one
-  - L1154 fixture: a young city with students, its prices still at founding (an index of one)
-  - L1160 ...where the fixed grant's bill is the old wage-share default's at the founding wage, to a part in a billion
-  - L1162 ...which is the bill the month struck and the treasury carries
-  - L1164 ...and what the students' row was handed, the same month (0.7.1: it was the
-  - L1176 a fixed grant pays the amount at the expected price level per student
-  - L1181 ...and it reaches the students as their income
-  - L1190 ...and a currency reform scales it, because it is money
-  - L1192 ...while the loan rate and the tuition scale, being ratios, stay
-  - L1197 ...and a share of tuition does not move either
-  - L1199 the fixed ceiling is an unskilled wage at founding prices
-  - L1223 fixture: last month ran a surplus, on the bridge
-  - L1229 a surplus share pays a tenth of the surplus the bridge showed, as one pool
-  - L1231 ...split evenly over this month's students
-  - L1234 a deficit month pays nothing
-  - L1236 ...and so does a surplus with nobody to split it over
-  - L1244 a tuition share is half of what the student body is charged
-  - L1250 ...each student at their own course's fee
-  - L1257 ...and it follows the tuition scale: at x2 the body's tuition is double
-  - L1270 fixture: the expected level stood a step past the table's, so the press re-struck it
-  - L1273 ...so the bill the month struck was half of the scaled tuition, re-struck at the month's level
-  - L1277 the wage share puts the old founding basis back
-- **L1281 14. THE LOAN'S RATE**
-- **L1291 the loan, at a rate**
-  - L1319 fixture: the students borrowed, and were charged nothing for it while they studied - at any rate
-  - L1321 a balance never told a rate is interest free, as it always was
-  - L1324 at 0% the repayment, the balance and the month are bit for bit what they were
-  - L1330 at 5% a graduate is charged the month's interest on the balance
-  - L1332 ...on top of the same principal as before
-  - L1334 ...so the balance falls exactly as it did
-  - L1336 ...and the month is poorer by exactly the interest
-  - L1338 the city's interest is every graduate's, summed
-  - L1341 ...and the principal repaid is what it was
-  - L1343 a screen asking what 5% would bring in gets the graduates' balances at the rate over twelve
-  - L1360 fixture: five graduates went to prison and their loans went with them
-  - L1362 a prisoner's student loan is frozen: nothing comes off it inside
-  - L1364 ...and nothing is charged on it, whatever the rate
-  - L1368 ...so a month later they owe exactly what they came in with
-  - L1370 ...while the graduates still outside kept paying, interest and all
-  - L1402 fixture: at a $50 grant the students borrowed, and the graduates owe the treasury
-  - L1412 the graduates paid interest this month
-  - L1413 ...which is the treasury's, to the penny
-  - L1415 ...as its own revenue line on the national accounts
-  - L1416 ...counted in the revenue total
-  - L1433 ...while the journal's line is principal, net of what was lent
-  - L1437 ...and the month passed the audit with the interest in it
-  - L1440 ...and the ledger was told the city's rate
-- **L1442 15. THE PRICE OF A PLACE**
-- **L1452 the price of a place**
-  - L1463 at x3 every fee is three times the founding table, and the table itself has not moved
-  - L1464 ...and so is what a household pays out of pocket
-  - L1465 at x1 the fee is the founding fee, bit for bit
-  - L1468 the schools clamp the scale to the policy's ceiling
-  - L1529 fixture: the same pool of diploma-holders stands in all three, and it is somebody
-  - L1531 the schools charge at the city's scale
-  - L1532 fixture: the price is what decides here - x3 cuts the willing share, not the seats
-  - L1534 fixture: at x1 and x3 no university filled in the month, so the willing, not the seats, set every intake
-  - L1536 fixture: the month's intake at x1 is somebody
-  - L1537 a poor city at x3 enrols fewer than at x1: the trap is back
-  - L1542 at x0 everybody who would go can afford to
-  - L1543 ...so everybody the cap lets go, goes
-  - L1545 ...and more than at x3
-  - L1546 a free place bills nothing and forgoes nothing
-  - L1582 fixture: the same pool stands in all three towns of the game, and the month enrolled somebody in each
-  - L1586 ...and the town's schools charge at its policy's scale
-  - L1588 ...so a free place in the game bills nothing and forgoes nothing
-  - L1589 the treasury's fee revenue is the scaled fees households paid
-  - L1601 ...and it collects more at the door at x3, from the students it kept
-- **L1604 16. ALL THREE SURVIVE A SAVE**
-  - L1617 fixture: a tuition-share grant was struck and interest was charged
-  - L1619 the city saved
-  - L1622 ...and loaded
-  - L1624 the grant's basis and amount came back
-  - L1626 ...and the loan rate
-  - L1627 ...and the tuition scale
-  - L1628 ...and the schools charge at it from the first read
-  - L1630 ...and the ledger knows the rate
-  - L1631 fixture: the rule re-struck from the reloaded city would not reproduce it - the body moved on
-  - L1633 the bill the month struck came back as the save struck it, not re-derived
-  - L1635 ...and so did the interest line
-  - L1639 a policy array from before the dials is still read
-  - L1640 ...as the old founding basis at the share its own slot carried, no interest, the founding price
-  - L1650 ...and an old save's own wage share is the grant it had
-  - L1652 a wrong shape is still refused whole
-  - L1661 an array from before the real grant is still read
-  - L1663 ...and its fixed grant, nominal then, pays at the load month's index what it paid
-  - L1667 ...once
-  - L1671 ...while a save from 0.7.19 on carries a real amount, and it is left alone
-- **L1674 17. A PRICE PER SCHOOL (0.7.6)**
-- **L1683 a price per school**
-  - L1696 raising the university's price moves its fee and no other kind's
-  - L1697 ...so the nine have parted
-  - L1698 ...and the every-school reading is the first kind's, unmoved
-  - L1702 one kind is held to the policy's ceiling
-  - L1709 the every-school setter moves all nine
-  - L1717 the array carries the nine on the end
-  - L1723 ...and each kind's scale comes back as it went
-  - L1726 an array of the old length is still read
-  - L1732 ...as nine equal scales, the one its slot carried
-  - L1748 fixture: the schools cost something and collected something
-  - L1749 the kinds' costs add up to the staff and buildings the page shows, to the cent
-  - L1751 ...and their fees to the tuition households paid, to the cent
-  - L1753 a kind with no school costs nothing and collects nothing
-  - L1755 ...and the university, standing, costs something
-  - L1757 the month re-struck at today's scales is what was billed
-  - L1769 the month charges the university at its own price and the college at the city's
-  - L1773 the city saved again
-  - L1776 ...and loaded
-  - L1778 the nine came back parted
-  - L1781 ...and the load path told the schools the nine, not the one
-  - L1786 ...and the month by kind came back with the save, not zero
+- **L312 1. THE PROFESSION IS GATED**
+- **L319 without a medical school, a city cannot make a doctor**
+  - L338 the fixture built hospitals, or this proves nothing
+  - L339 there ARE graduates - they simply cannot practise medicine
+  - L341 so doctor posts stand empty
+  - L348 ...but some doctors moved in anyway
+  - L349 ...and never more than the graduates who contain them
+- **L352 2. AND WITH ONE, IT CAN**
+  - L374 fixture: the students are part way through their courses
+  - L392 fixture: the school's graduates are over the hospitals' doctor posts
+  - L393 fixture: the short town's graduates are under its doctor posts
+  - L394 the school produced doctors
+  - L395 ...enough to staff the hospitals
+  - L396 ...and short of the posts, the shortfall is what stands empty
+- **L399 3. NO SCHOOL TEACHES NOBODY**
+- **L405 every school actually enrols somebody**
+  - L419 fixture: every school has children, teens or adults to draw on
+  - L426 
+  - L431 
+- **L436 4. AND DOES NOT EMPTY THE BAND IT DRAWS FROM**
+- **L443 and does not drain the band beneath it**
+  - L459 the diploma band survives having colleges above it
+  - L461 ...and the city is genuinely better educated than the bare one
+- **L466 5. A DEGREE IS A MOVE, NOT AN APPEARANCE**
+- **L473 a graduate stops being a diploma-holder**
+  - L479 fixture: the month moved people between the bands
+  - L481 the month's schooling moves people rather than making them
+  - L495 the bands plus the students, the prisoners and the owner families still add up to the workforce
+  - L497 fixture: somebody is actually studying
+- **L499 6. LICENCES CANNOT OUTNUMBER GRADUATES**
+- **L506 and a licence belongs to a person**
+  - L528 no more
+- **L532 6b. THE MONTH'S GRADUATES ARE THE GAINS (A6, 0.7.46)**
+- **L541 the month's graduates, gross**
+  - L550 fixture: somebody gained a qualification this month
+  - L551 the month's graduates are what everGraduated gained
+- **L555 7. THE PIPELINE IS ITS NARROWEST STAGE**
+  - L583 plenty of primary places
+  - L584 ...and no high school at all
+  - L585 the pipeline reports the SMALLEST, not the average
+  - L587 ...and names the building to fix
+  - L589 so the city produces no diplomas of its own at all
+  - L606 fixture: the town has children to seat
+  - L607 seats for just over the plenty line of the children are plenty of primary places
+  - L609 ...and seats for just under it are not
+- **L621 the school leavers' diplomas, gross**
+  - L622 no high school: no school leaver takes a diploma
+  - L630 fixture: a high school, and its leavers take diplomas
+  - L631 with no college to leave for, the net movement is the leavers' diplomas
+  - L635 not saved: a city read back from its state has no month's diplomas yet
+  - L645 the leavers off saved state, schoolLeavers(), are the month's diplomas, getNewDiplomas(), to the bit
+- **L648 8. THE SUBSIDY IS A REAL DIAL**
+- **L655 and tuition decides who can actually go**
+  - L692 fixture: seats stand for the whole pool, so they cannot bind the intake, and the pool is there
+  - L694 fixture: the free place is worth going for and is affordable, and the paid one is dearer
+  - L696 paying for it yourself keeps people out
+  - L697 ...and free education costs the city more
+- **L700 9. IT SURVIVES A SAVE**
+- **L705 through a save**
+  - L722 the city saved
+  - L743 the fixture actually licensed somebody
+  - L745 every licence came back
+  - L746 ...and the running totals with them
+  - L747 ...and the tuition policy the player chose
+  - L760 fixture: somebody is part way through a course
+  - L761 ...and every student came back
+  - L762 ...and they are out of the supply on both sides
+- **L767 9b. THE WAIT IS REAL**
+- **L774 the wait is real**
+  - L808 fixture: people enrolled
+  - L809 nobody graduates before the course is over
+  - L811 ...and somebody graduates once it is
+  - L813 ...while the students were out of the supply
+- **L816 10. AND THE TREASURY PAYS FOR IT**
+  - L826 the schools cost something
+  - L827 ...charged to the treasury
+  - L829 ...and on the national accounts' expenditure
+  - L832 it never pays for itself, which is the point
+  - L846 the bill is wages and buildings, and nothing else
+  - L848 ...so net cost is that, less the fees households paid
+  - L864 a generous dial collects less at the door
+  - L866 ...and the subsidy it forgave is the larger one
+- **L869 11. THE UNSKILLED BAND IS A REPORT CARD**
+- **L893 the unskilled band is a report card on the schools**
+  - L925 fixture: the unschooled city really has no basic coverage
+  - L927 fixture: the schooled one really has some
+  - L929 fixture: both towns have school leavers to teach or not
+  - L930 a city with no schools makes its own unskilled adults
+  - L932 ...and against a city with them it is a factor, not a margin
+  - L934 ...and schools are what stop it
+  - L936 nobody arrived unskilled - not one, in either city
+  - L973 fixture: the first town pays its labourers no more than the going rate, and the second over it
+  - L976 fixture: the open pair spent months at the going rate and months over it, with somebody arriving in both
+  - L978 nobody arrives unskilled into a city paying the going rate
+  - L979 ...and a city paying over it for them buys some
+- **L981 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED**
+- **L1011 the queue for a job includes the overqualified**
+  - L1035 fixture: graduates really have come down into college work
+- **L1038 THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own**
+  - L1064 fixture: the two readings of this market really do differ
+  - L1068 ...and it is not: the queue is what counts
+  - L1079 the opportunity read is the queue's, not the band's own
+  - L1081 nobody is ever written off entirely - the floor holds
+- **L1084 13. THE GRANT IS A MENU**
+- **L1108 the grant, on four bases**
+  - L1126 fixture: the students are in the books, the basket is based and the level is the one set
+  - L1138 fixture: somebody is studying, and the wage is a wage
+  - L1144 a new city grants a fixed real amount, the grant that follows prices (0.7.19)
+  - L1148 ...and the bill is the students, the amount and the expected price level, bit for bit
+  - L1150 fixture: prices here are expected off founding, so the level is a factor and not a one
+  - L1161 fixture: a young city with students, its prices still at founding (an index of one)
+  - L1167 ...where the fixed grant's bill is the old wage-share default's at the founding wage, to a part in a billion
+  - L1169 ...which is the bill the month struck and the treasury carries
+  - L1171 ...and what the students' row was handed, the same month (0.7.1: it was the
+  - L1183 a fixed grant pays the amount at the expected price level per student
+  - L1188 ...and it reaches the students as their income
+  - L1197 ...and a currency reform scales it, because it is money
+  - L1199 ...while the loan rate and the tuition scale, being ratios, stay
+  - L1204 ...and a share of tuition does not move either
+  - L1206 the fixed ceiling is an unskilled wage at founding prices
+  - L1230 fixture: last month ran a surplus, on the bridge
+  - L1236 a surplus share pays a tenth of the surplus the bridge showed, as one pool
+  - L1238 ...split evenly over this month's students
+  - L1241 a deficit month pays nothing
+  - L1243 ...and so does a surplus with nobody to split it over
+  - L1251 a tuition share is half of what the student body is charged
+  - L1257 ...each student at their own course's fee
+  - L1264 ...and it follows the tuition scale: at x2 the body's tuition is double
+  - L1277 fixture: the expected level stood a step past the table's, so the press re-struck it
+  - L1280 ...so the bill the month struck was half of the scaled tuition, re-struck at the month's level
+  - L1284 the wage share puts the old founding basis back
+- **L1288 14. THE LOAN'S RATE**
+- **L1298 the loan, at a rate**
+  - L1326 fixture: the students borrowed, and were charged nothing for it while they studied - at any rate
+  - L1328 a balance never told a rate is interest free, as it always was
+  - L1331 at 0% the repayment, the balance and the month are bit for bit what they were
+  - L1337 at 5% a graduate is charged the month's interest on the balance
+  - L1339 ...on top of the same principal as before
+  - L1341 ...so the balance falls exactly as it did
+  - L1343 ...and the month is poorer by exactly the interest
+  - L1345 the city's interest is every graduate's, summed
+  - L1348 ...and the principal repaid is what it was
+  - L1350 a screen asking what 5% would bring in gets the graduates' balances at the rate over twelve
+  - L1367 fixture: five graduates went to prison and their loans went with them
+  - L1369 a prisoner's student loan is frozen: nothing comes off it inside
+  - L1371 ...and nothing is charged on it, whatever the rate
+  - L1375 ...so a month later they owe exactly what they came in with
+  - L1377 ...while the graduates still outside kept paying, interest and all
+  - L1409 fixture: at a $50 grant the students borrowed, and the graduates owe the treasury
+  - L1419 the graduates paid interest this month
+  - L1420 ...which is the treasury's, to the penny
+  - L1422 ...as its own revenue line on the national accounts
+  - L1423 ...counted in the revenue total
+  - L1440 ...while the journal's line is principal, net of what was lent
+  - L1444 ...and the month passed the audit with the interest in it
+  - L1447 ...and the ledger was told the city's rate
+- **L1449 15. THE PRICE OF A PLACE**
+- **L1459 the price of a place**
+  - L1470 at x3 every fee is three times the founding table, and the table itself has not moved
+  - L1471 ...and so is what a household pays out of pocket
+  - L1472 at x1 the fee is the founding fee, bit for bit
+  - L1475 the schools clamp the scale to the policy's ceiling
+  - L1536 fixture: the same pool of diploma-holders stands in all three, and it is somebody
+  - L1538 the schools charge at the city's scale
+  - L1539 fixture: the price is what decides here - x3 cuts the willing share, not the seats
+  - L1541 fixture: at x1 and x3 no university filled in the month, so the willing, not the seats, set every intake
+  - L1543 fixture: the month's intake at x1 is somebody
+  - L1544 a poor city at x3 enrols fewer than at x1: the trap is back
+  - L1549 at x0 everybody who would go can afford to
+  - L1550 ...so everybody the cap lets go, goes
+  - L1552 ...and more than at x3
+  - L1553 a free place bills nothing and forgoes nothing
+  - L1589 fixture: the same pool stands in all three towns of the game, and the month enrolled somebody in each
+  - L1593 ...and the town's schools charge at its policy's scale
+  - L1595 ...so a free place in the game bills nothing and forgoes nothing
+  - L1596 the treasury's fee revenue is the scaled fees households paid
+  - L1608 ...and it collects more at the door at x3, from the students it kept
+- **L1611 16. ALL THREE SURVIVE A SAVE**
+  - L1624 fixture: a tuition-share grant was struck and interest was charged
+  - L1626 the city saved
+  - L1629 ...and loaded
+  - L1631 the grant's basis and amount came back
+  - L1633 ...and the loan rate
+  - L1634 ...and the tuition scale
+  - L1635 ...and the schools charge at it from the first read
+  - L1637 ...and the ledger knows the rate
+  - L1638 fixture: the rule re-struck from the reloaded city would not reproduce it - the body moved on
+  - L1640 the bill the month struck came back as the save struck it, not re-derived
+  - L1642 ...and so did the interest line
+  - L1646 a policy array from before the dials is still read
+  - L1647 ...as the old founding basis at the share its own slot carried, no interest, the founding price
+  - L1657 ...and an old save's own wage share is the grant it had
+  - L1659 a wrong shape is still refused whole
+  - L1668 an array from before the real grant is still read
+  - L1670 ...and its fixed grant, nominal then, pays at the load month's index what it paid
+  - L1674 ...once
+  - L1678 ...while a save from 0.7.19 on carries a real amount, and it is left alone
+- **L1681 17. A PRICE PER SCHOOL (0.7.6)**
+- **L1690 a price per school**
+  - L1703 raising the university's price moves its fee and no other kind's
+  - L1704 ...so the nine have parted
+  - L1705 ...and the every-school reading is the first kind's, unmoved
+  - L1709 one kind is held to the policy's ceiling
+  - L1716 the every-school setter moves all nine
+  - L1724 the array carries the nine on the end
+  - L1730 ...and each kind's scale comes back as it went
+  - L1733 an array of the old length is still read
+  - L1739 ...as nine equal scales, the one its slot carried
+  - L1755 fixture: the schools cost something and collected something
+  - L1756 the kinds' costs add up to the staff and buildings the page shows, to the cent
+  - L1758 ...and their fees to the tuition households paid, to the cent
+  - L1760 a kind with no school costs nothing and collects nothing
+  - L1762 ...and the university, standing, costs something
+  - L1764 the month re-struck at today's scales is what was billed
+  - L1776 the month charges the university at its own price and the college at the city's
+  - L1780 the city saved again
+  - L1783 ...and loaded
+  - L1785 the nine came back parted
+  - L1788 ...and the load path told the schools the nine, not the one
+  - L1793 ...and the month by kind came back with the save, not zero
+- **L1804 after-cost returns cause adult intake, high school unchanged**
+  - L1818 each stage uses after-cost(next)/after-cost(current)-1 through the original curve
+  - L1821 fixture: both adult stages want this course, with less return when established
+  - L1823 the mixed pool averages stage decisions through the same curve
+  - L1827 no young adults means the established decision alone
+  - L1830 no eligible adult stage means no willingness
+  - L1852 fixture: fees alone cross after-cost parity at this gross wage
+  - L1861 the costly course actually admits nobody
+  - L1865 the subsidized course actually admits the curve's flow
+  - L1872 live policy and loan changes each lower the return
+  - L1875 gross parity is now a loss after time out of work
+  - L1877 the original curve still caps at one
+  - L1888 high school still graduates from coverage and affordability, at either rate
+- **L1894 live school finance and stages survive the Game paths**
+  - L1909 the binding fixture saves only to its scratch folder
+  - L1912 the binding fixture loads
 
 ## ElectrolyserCheck.java - 72 labelled assertions
 
@@ -32470,6 +32494,59 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1570 ...and the homes by size add up to it
   - L1572 ...and the landlords' studio and family doors to it too
   - L1574 the household places are the city's hundred for each founding endowment and the stacks' places
+
+## SchoolingLadderCheck.java - 30 labelled assertions
+
+> Hand-summed monthly cash ledgers for every after-cost qualification (WG3).
+> WHY. A closed-form annuity repeated in a check could agree with the same
+> indexing error in the model; these sums book each month's wage and fee.
+> No city is played and no save folder is opened.
+
+- **L66 Every qualification against a monthly cash ledger**
+  - L82 fixture: the bills along each path are not free
+- **L109 The wages given up are counted once**
+  - L118 a free degree paying the diploma's wage costs four years of it, once
+  - L123 a degree paying the diploma's lifetime in fewer years breaks even (
+  - L126 and a degree paying a little more is a gain
+- **L129 The fees already paid are sunk for the next step**
+  - L138 fixture: the degree is under nothing after its fees
+  - L142 its holder still weighs the licence on its own bill against the degree's pay
+  - L144 ...and that is a gain
+- **L148 Fees, time, wages and all three discount inputs cause a change**
+  - L152 fixture: the three percent floor applies
+  - L153 no diploma has no course to pay for
+  - L154 a modest lead is above, without claiming a far-above shortage
+  - L156 a larger lead crosses the existing curve's full-return threshold
+  - L161 family fees lower the college's value
+  - L164 a higher college fee lowers it again
+  - L171 fixture: university takes longer at the same pay
+  - L173 the longer course is worth less
+  - L179 a higher studied-from wage raises the wages forgone and lowers the step's gain
+  - L181 while the college path's own value, which never earns the diploma's wage, holds
+  - L186 policy above the floor discounts the long course more
+  - L190 loan above policy discounts it further
+  - L194 established adults can study but have less time to earn it back
+  - L199 a dear doctor does not promise a degree a licence
+  - L200 the medical licence earns its own higher pay
+  - L203 an ungated policy job can become the degree's best prospect
+- **L206 Posts, holders and verdicts**
+  - L217 degree posts exclude licensed professions
+  - L218 medical posts are its own job
+  - L219 degree holders read the band's supply
+  - L220 medical holders read the licence
+  - L221 no posts wins over a high return
+  - L222 a very dear doctor is far above
+  - L225 equal gross pay puts adult study below its prerequisite
+
+## SchoolingPageCheck.java - 0 labelled assertions
+
+> Compares Wages' actual qualification bars with the pure model (WG3/WS2).
+> WHY. Course costs may invert a ladder; a screen must preserve the figures,
+> the sign, the common scale, the no-posts state and the model's verdicts.
+
+_(this harness does not label its checks through a helper - it prints its findings; read its header and its sections)_
+
+- **L15 Qualification bars read the model, including inversions and no posts**
 
 ## SectorFlowCheck.java - 20 labelled assertions
 

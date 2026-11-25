@@ -1161,6 +1161,15 @@ public class BuildAdviceCheck {
      * posts brought in - Engineering Services Offices, standing - and the
      * row is there. And the playtest's founding at month 9, which the old
      * rule told to build a university, gets none.
+     *
+     * WG3 (2026-11-25): the founding's students answer to the degree's pay
+     * after its cost. Its best ungated degree job pays about 1.2 diplomas,
+     * near the break-even of four years out of work, so the founding itself
+     * draws no class (Becker 1964; Freeman 1976: enrolment fell when the
+     * college premium did): no row, and none of its students without a gain.
+     * The hiring guard is still tested on the founding: one degree job is
+     * offered at three diplomas, a class would come, its posts would not
+     * hire one, and there is still no row.
      */
     static void thePipeline(Path root, Game g, List<CityNeeds.Need> all) {
         out.println("\n--- 9. no higher education without its pipeline: no more wanted than would come or be hired;"
@@ -1198,9 +1207,32 @@ public class BuildAdviceCheck {
         higherRows(u, after, "...with the offices", rows);
         assertTrue("fixture: the rows above held a school with seats and one with none", rows[0] > 0 && rows[1] > 0);
 
+        // ...THE FOUNDING ITSELF, FROM THE NINTH TO MONTH 36 (LD1, 2026-10-31): its students follow the degree's pay after cost.
+        Game n = founded(root, "founded-native", 9);
+        double comeN = CityNeeds.wouldCome(n, uni);
+        while (comeN < CityNeeds.SEATS_FLOOR && n.getMonth() < 36) {
+            quietly(() -> n.simulateMonths(1));
+            comeN = CityNeeds.wouldCome(n, uni);
+        }
+        LabourMarket nm = n.getLabourMarket();
+        SchoolingLadder.View nv = n.getEducation().schoolingLadder(nm, AdultStage.YOUNG);
+        double nativeReturn = 0;
+        for (AdultStage stage : AdultStage.values()) nativeReturn += n.getEducation().studyReturn(uni, nm, stage);
+        out.printf("      the founding at month %d: %,d people, %,.0f would come to a university; its degree pays %.2f diplomas,"
+                        + " %+.3f after cost (young)%n", n.getMonth(), n.getPopulationManager().getPopulation(), comeN,
+                nv.row(uni).paid() / nv.row(EducationType.HIGH).paid(), nv.gain(uni));
+        assertTrue("the founding's would-be students follow the degree's pay after cost: none without a gain",
+                nativeReturn > 0 || comeN == 0);
+        List<CityNeeds.Need> n9 = CityNeeds.measure(n, CityNeeds.PLAIN);
+        assertTrue("the founding gets no university row", schoolRow(n9, uni) == null);
+        assertTrue("...and no university card", !suggests(n, n9, uni));
+
         Game f = founded(root, "founded", 9);
+        Education school = f.getEducation();
+        LabourMarket market = f.getLabourMarket();
+        // Controlled offer: an existing ungated degree job pays three diploma wages; its posts stay unchanged.
+        market.getWages()[JobType.UNIV_SCIENCE.ordinal()] = 3 * market.getWage(JobType.DIPLOMA);
         double come9 = CityNeeds.wouldCome(f, uni);
-        // ...ITS FIRST MONTH FROM THE NINTH THAT A CLASS WOULD COME TO (LD1, 2026-10-31).
         while (come9 < CityNeeds.SEATS_FLOOR && f.getMonth() < 36) {
             quietly(() -> f.simulateMonths(1));
             come9 = CityNeeds.wouldCome(f, uni);
@@ -1208,9 +1240,20 @@ public class BuildAdviceCheck {
         long uniPosts = 0;
         long[] jobs = f.getBuildingManager().getTotalJobs();
         for (JobType j : JobType.values()) if (WageBand.of(j) == uni.produces()) uniPosts += jobs[j.ordinal()];
-        out.printf("      the founding at month %d: %,d people, %,.0f would come to a university, %,d university posts%n",
+        double hires9 = CityNeeds.hires(f, uni, 1);
+        assertTrue("controlled return: eligible adults and native affordability are positive",
+                school.eligibleFor(uni, f.getPopulationManager()) > 0 && school.studyAffordability(uni, market) > 0);
+        for (AdultStage stage : AdultStage.values())
+            assertTrue("controlled return: positive native after-cost return for " + stage,
+                    school.studyReturn(uni, market, stage) > 0);
+        assertTrue("controlled return: genuine graduate posts and hires both stay below a class",
+                uniPosts > 0 && uniPosts < CityNeeds.SEATS_FLOOR && hires9 > 0 && hires9 < CityNeeds.SEATS_FLOOR);
+        out.printf("      controlled-return founding at month %d: %,d people, %,.0f would come to a university, %,d university posts%n",
                 f.getMonth(), f.getPopulationManager().getPopulation(), come9, uniPosts);
-        assertTrue("fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university",
+        out.printf("      native cause: eligible %.6f, affordability %.6f, returns young %.6f established %.6f, hires %.6f%n",
+                school.eligibleFor(uni, f.getPopulationManager()), school.studyAffordability(uni, market),
+                school.studyReturn(uni, market, AdultStage.YOUNG), school.studyReturn(uni, market, AdultStage.ESTABLISHED), hires9);
+        assertTrue("fixture: controlled return from the ninth month brings at least a university class by month 36",
                 f.getMonth() >= 9 && f.getMonth() <= 36 && come9 >= CityNeeds.SEATS_FLOOR);
         List<CityNeeds.Need> f9 = CityNeeds.measure(f, CityNeeds.PLAIN);
         assertTrue("no university row there", schoolRow(f9, uni) == null);
