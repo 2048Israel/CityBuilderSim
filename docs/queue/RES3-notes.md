@@ -173,6 +173,37 @@ for 34.7); its fixes (5-10) pass, the home village 570 at m60 (main 678).
 Mailed to the orchestrator as a block with the proposed mend for section 4
 (the ask's capital on the carry's own base); section 3 is a design call.
 
+The orchestrator's calls (2026-11-25) and what they did, on the jobs trace
+(target/res3-jobs: CreditCrunchCheck's played city replayed, seed 13; main
+0.9.206 beside it):
+- Mend 1 (4f690edfc): the ask's capital is the carry's own base, cash plus
+  materials at market plus land (EconomyManager.housingStructureValue and
+  housingLandValue). The lender reads a block's rent at +0.222.
+- Mend 2a (83da694bb, OutsideCheck's fixture 1e56fcb1e): RES3 did raise the
+  unemployment. The typed market bills no rent to a household with no paid
+  door, so main's eviction test (rentDue > 0, "holds a home") never struck;
+  OFF_EI reached 250 at m270 (main 8.9), the rate 27% (main 12.5%). Struck on
+  the unfunded test alone in typed mode: mean rate from m60 15.3% (main
+  19.5%), OFF_EI 11.6, unhoused 41.4.
+- Mend 2b (383c1f74a): lodging, as decided: who funds no half share of a
+  standing home lodges with the housed beyond two to a share, up to the
+  door's people, at no bill (HousingMarket.lodging()); a lodger keeps no
+  prior claim on the doubling's room (retainHosted), which otherwise
+  displaced guests who could pay. The m253 EI cohort's 252 households with
+  no home clear. But the doubling already fills occupied doors past built
+  capacity (H120 6.6 people a door of 6, D90 5.1 of 4), so at capacity 11
+  months still leave 6-29 with no home beside vacant doors.
+- Clearing paid shares before free host places (tried, reverted): one seed
+  moved to a 105.8 peak; the room, not the order, binds.
+- Two persons a room, rooms = bedrooms + 1 (the 1891 census of England and
+  Wales' overcrowding line), traced uncommitted: one month over the watch,
+  m152, 13.4 (EI families with a child priced out of their door the month
+  their budget fell). Real CreditCrunchCheck on it: 3 FAILs (was 6), the
+  lender passes 2 of 6; the cut fixture's House is unknown in 1900 (mended
+  to the city's own single door, uncommitted); the other two read m152.
+  Mailed: the people standard, and tenure (an incumbent not yet evictable
+  keeps its door, main's rule), are the orchestrator's call.
+
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
 240–600 inclusive, with 361 observations. Native findings, audits, purity and
@@ -6166,34 +6197,3 @@ The query is on pushed8bb, fork d657 and combined record
 Only after all local names pass and owned jobs end may it start. The default
 observer is conditional on the complete box query passing, with no unresolved
 new red, then fresh local gates for its external compile and native run.
-
-The orchestrator's calls (2026-11-25) and what they did, on the jobs trace
-(target/res3-jobs: CreditCrunchCheck's played city replayed, seed 13; main
-0.9.206 beside it):
-- Mend 1 (4f690edfc): the ask's capital is the carry's own base, cash plus
-  materials at market plus land (EconomyManager.housingStructureValue and
-  housingLandValue). The lender reads a block's rent at +0.222.
-- Mend 2a (83da694bb, OutsideCheck's fixture 1e56fcb1e): RES3 did raise the
-  unemployment. The typed market bills no rent to a household with no paid
-  door, so main's eviction test (rentDue > 0, "holds a home") never struck;
-  OFF_EI reached 250 at m270 (main 8.9), the rate 27% (main 12.5%). Struck on
-  the unfunded test alone in typed mode: mean rate from m60 15.3% (main
-  19.5%), OFF_EI 11.6, unhoused 41.4.
-- Mend 2b (383c1f74a): lodging, as decided: who funds no half share of a
-  standing home lodges with the housed beyond two to a share, up to the
-  door's people, at no bill (HousingMarket.lodging()); a lodger keeps no
-  prior claim on the doubling's room (retainHosted), which otherwise
-  displaced guests who could pay. The m253 EI cohort's 252 households with
-  no home clear. But the doubling already fills occupied doors past built
-  capacity (H120 6.6 people a door of 6, D90 5.1 of 4), so at capacity 11
-  months still leave 6-29 with no home beside vacant doors.
-- Clearing paid shares before free host places (tried, reverted): one seed
-  moved to a 105.8 peak; the room, not the order, binds.
-- Two persons a room, rooms = bedrooms + 1 (the 1891 census of England and
-  Wales' overcrowding line), traced uncommitted: one month over the watch,
-  m152, 13.4 (EI families with a child priced out of their door the month
-  their budget fell). Real CreditCrunchCheck on it: 3 FAILs (was 6), the
-  lender passes 2 of 6; the cut fixture's House is unknown in 1900 (mended
-  to the city's own single door, uncommitted); the other two read m152.
-  Mailed: the people standard, and tenure (an incumbent not yet evictable
-  keeps its door, main's rule), are the orchestrator's call.
