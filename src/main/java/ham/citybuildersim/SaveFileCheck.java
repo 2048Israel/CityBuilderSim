@@ -3879,12 +3879,23 @@ public class SaveFileCheck {
         long universitiesClosed = live.getBuildingManager().retire(university,
                 live.getBuildingManager().countByName(university.getName()));
         live.getLandManager().release(universitiesClosed * university.getLandSqFt(), university.getSector(), Game.groundUse(university));
+        // RES3's town keeps its unskilled hands busy: after the schools close, the shop's two unskilled posts found
+        // -270 spare (0% staffed); the bakeries' 180 unskilled posts left it -14 (60%), and the home care service's
+        // 44 more leave +55 spare, the shop staffed in full (RES3c, 2026-11-25, the orchestrator's call 4).
+        long worksClosed = 0;
+        for (String name : new String[] {"Industrial Bakery", "Home Care Service"}) {
+            BuildingsTemplate works = template(live, name);
+            long gone = live.getBuildingManager().retire(works, live.getBuildingManager().countByName(works.getName()));
+            live.getLandManager().release(gone * works.getLandSqFt(), works.getSector(), Game.groundUse(works));
+            worksClosed += gone;
+        }
         quietly(() -> live.simulateMonths(1)); // Settle staffing and output after the fixture's closures, with its planners still held.
         for (String sector : Sectors.KEYS) live.getBusinessInvestment().releaseSector(sector);
         live.getSectors().retail().setCash(Founding.WEALTHY_CASH);
         var res3RetailStaffing = live.getSectors().retail().staffing(shop);
-        System.out.printf("   AW2 staffing %.6f now, %.6f with migration; closed %d shops, %d medical schools and %d universities%n",
-                res3RetailStaffing.shareNow, res3RetailStaffing.share, removed, closed, universitiesClosed);
+        System.out.printf("   AW2 staffing %.6f now, %.6f with migration; closed %d shops, %d medical schools, %d universities"
+                        + " and %d bakeries and care services%n",
+                res3RetailStaffing.shareNow, res3RetailStaffing.share, removed, closed, universitiesClosed, worksClosed);
         assertTrue("fixture: the short retailer can staff a new shop", res3RetailStaffing.passes());
         live.getBuildingManager().addStack(template(live, "House"), 1, false);
         live.getLandManager().setOwnedSqFt(Math.ceil(live.getLandManager().getAllocatedSqFt()));
