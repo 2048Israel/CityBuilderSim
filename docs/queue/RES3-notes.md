@@ -49,164 +49,25 @@ All paid-build, positive held-debt, physical closure, native save and ordinary
 twin/audit guards pass. Full Kept/Chart, affected follow-ups, bank and default
 measurements remain pending; the earlier dated evidence below stays labelled.
 
-The current721 full KeptCheck is CANCELLED after a genuine Java heap-space
-failure in section63, before the new medicine fixture at99-101. It has no full
-footer or native/canonical verdict and supplies no medicine acceptance claim.
-The allocation stack reaches Text layout through KeptBench.showFresh,
-againstNewHeld, pageReshapedCaused and fundLists; that identifies the allocation
-site, not yet the retained-heap cause. The same2GiB heap and GB5 runtime are
-kept. Fresh box RAM27.741GiB and free commit21.911GiB do not establish why
-the Java heap filled. No heap increase, forced collection, fixture reduction,
-skip or waiver is authorized. The helper traces the lifecycle from source.
+KeptCheck hits Java heap space in section 63, before the new medicine
+fixture. Its interrupted runs supply no full verdict or medicine pass.
+Ownership remains unresolved. On November 25 the orchestrator stopped the
+heap-dump campaign and directed a live comparison on the PC instead.
 
-Only the registered owned controller/group was stopped after the fatal error.
-All jobs ended, source guard is empty, compiled classes match the successful
-721 fast run, and all three archive hashes verify. Evidence is under the
-helper's target/integrated67/kept-chart-721-source/KeptCheck/remote, including
-oom-excerpt.txt, incomplete-status.txt, fatal-stop-provenance.txt and endguard.
-Checks archive SHA256 is
-026c6359d75b36915fdad9649a83928da6ed1f96d38c329d3831562cfc599616.
-Chart, the affected follow-ups, Bank/Central/YoungBank and default observer
-have not started; their earlier conditional permissions are held. The nine
-completed114 model checks above retain their independent accepted results.
+★ Compare main 304506de2 and RES3 ce504d07b at the same section-63 fixture
+and month, taking a live class histogram after full GC. Diff the top 30
+classes by bytes, identify the growing structure, and mend its lifecycle or
+bound. Add a fixture showing it stays bounded across months. The original
+2 GiB heap, parked-scope bound, fixture and all laws remain unchanged. Full
+GC is diagnostic only; the final ordinary KeptCheck gets no shortcut.
+The fresh RES3-keptgap helper prepares this comparison. Foreign KeptCheck
+and ensemble JVMs are active on the PC; no new JVM starts alongside them.
 
-The passive default observer had confused terminal clock600 with600 ordinary
-transitions: Game starts at1. The reviewed143cd484 patch counts completed
-post-audit callbacks and audit rows explicitly, requires the same Game within
-each before/after pair and continuous clocks, and stops at600 transitions
-with actual final clock601. LongPlaytest owns the unchanged normal schedule;
-its terminal-clock input becomes601. Measurement clocks240-600 inclusive and
-all361 requested observations stay unchanged. Native findings, money/audit,
-purity and output-error guards remain. This is a diagnostic counting repair,
-not a model change or a claim that the observer has run. Earlier unexecuted
-default payloads are superseded and remain unauthorized.
-
-Authorize one diagnostic Kept run on pushed4a5f516cb with no Java source
-instrumentation. Reviewed remote payload SHA256 is
-8af48e3a6ca25b2703365cdb083ce9fc1d4c16fc043df8ceba6397d314d53121;
-the parent verifies all four script hashes. It keeps the2GiB heap, original
-full fixture and bounds, adding one fixed HotSpot heap-dump path on the box.
-Disk preflight requires8GiB free, each file is capped at3GiB, and capture stops
-the registered owned group if run size exceeds4GiB or free disk falls below
-4GiB. A fatal result remains failed or unknown; capture cannot turn it green.
-Raw heap stays on the box with its checksum. Analysis starts only after all
-owned JVMs end, using a bounded non-JVM reader. No later run resumes on this
-permission, and no retained-heap cause or fix is claimed before evidence.
-
-The first capture wrapper itself is defective: its bare OutOfMemoryError
-substring also matches the JVM option HeapDumpOnOutOfMemoryError in the log
-header. The helper reports the false match and the parent acknowledges missing
-it in review. Its120-second cleanup cancels the run before any actual heap
-failure, with no dump, full footer or verdict. This supplies no second OOM
-claim and no acceptance. Exact owned cleanup and all three copy hashes pass;
-checks archive is
-ee64cf5e599d3f4679887ba7c46a538ea438d1d42ebc4b80aaf6f266be360762.
-Keep that run intact. Correct both wrapper checks to the actual exception
-signature and verify option-header/exception examples before a separately
-reviewed capture attempt. The original721 heap failure remains unresolved.
-
-The second payload matches java.lang.OutOfMemoryError followed by a colon in
-both its monitor and final guard. Actual option-header bytes are negative and
-actual721 exception bytes positive; the dump-only and120-second cleanup cases
-also pass without a JVM. Parent reviews the three-line remote delta, the
-launch/copy changes and all four actual hashes, then authorizes one new run.
-Remote SHA256 is
-c3e3dbee8f4819e2c64fc0663b464326aa4edbdf884fb59d168108f5e2976986.
-Source remains4a5f516cb; all heap, fixture, disk, ownership and acceptance
-limits stay unchanged. This authorization supplies no result yet.
-
-The second capture reproduces the genuine section63 Java heap-space error.
-Its single dump hits the reviewed3GiB file cap: HotSpot explicitly reports
-the file incomplete. It is retained on the box at exactly3221225472 bytes,
-SHA256 dfa4fa64105e0ac3609340d9673a977c6b2740577a7a0ad3b66c5dac1b196a0f.
-The reader does not run because its complete-file precondition is absent.
-No class ownership or retained-size conclusion follows from this partial file.
-The controller's bounded fatal cleanup ends143 with all groups empty; native
-and canonical verdicts remain unknown, and medicine is not reached. All three
-copy hashes verify, source guard is empty and compiled classes are unchanged;
-checks archive is
-5c44a73686ef69c19c9001cf03c96205885b1b579f8dd9a126af5873cce87570.
-A larger forensic file allowance is proposed separately; the Java heap,
-fixture, window, runtime bound and every law remain unchanged.
-
-Review the third capture's complete delta and all four actual script hashes.
-Authorize one new directory with a6GiB forensic file cap,8GiB run cap and
-12GiB free-disk preflight; the4GiB free-space cutoff remains. This increases
-only storage for the dump, not the2GiB JVM heap or any test allowance.
-Remote SHA256 is
-ff4fa713e231e44c6554d536a09c1abdb3d69a3511db04512cb0a6c7d4be7964.
-The partial second dump stays immutable. Full dump completion, end marker,
-owner/hash provenance and process cleanup are prerequisites to analysis.
-
-The third capture obtains the complete3437955294-byte dump, SHA256
-116dd85469d1b5a8949c5629981138281cedf6be0035896eabce452987e205e0.
-Exactly one file, actual heavy-child ownership, HotSpot's completion message,
-HPROF magic and end marker all verify. Source/class guards pass, all owned
-groups end and all three archive-copy hashes verify. Checks archive is
-3b40fb49c51522e33210c62a7c9d75d3b72baea971340857b7cd5b50ce7c17e2.
-The repeated section63 error is real; cancellation still supplies no full
-native/canonical verdict and never reaches medicine. The immutable dump stays
-on the box. The reviewed streaming inventory can now run under the shared
-lock with its256MiB/900-second bounds; class counts alone will not name a fix.
-
-The first inventory exits1 at its symbol-table guard before producing a
-histogram. The original guard does not log which of its three limits fired,
-so no particular count, length or cause is invented. The complete dump's
-checksum still verifies after failure and all analysis processes end. A
-selective two-pass reader is proposed: collect referenced class-name IDs,
-then retain complete required labels while skipping unneeded symbol text.
-All file-completeness, class-width, memory and output bounds remain required;
-no inventory or ownership conclusion is claimed from the failed attempt.
-
-Parent review catches the proposed reader writing metadata before creating
-its required fresh output directory. Fix that ordering before execution.
-A 9308-byte format-valid synthetic parser fixture then exits0: its unused
-9001-byte symbol triggers the old guard, its complete12-byte class label is
-retained, and class/int-array payloads, two roots, end/layout and hashes all
-verify. This is parser verification, not a genuine city or model check.
-Authorize actual inventory reader SHA256
-0cc0c522cf4f2a6132f05b152abed93c5ed1aa4c7dbdfc48242ee5f9159609ab
-on the complete immutable dump with the same resource and ownership bounds.
-
-The corrected actual inventory exits0 in56.622 seconds, peak RSS35316KiB;
-complete schema/end/class-width and before/after checksum checks pass, with
-all processes ended. It counts46209714 objects,12336 classes and2499 roots.
-The old guard hit a11486-byte symbol after8514 keys and246704 raw bytes;
-that symbol is not a required class label. Complete stored class labels use
-578421 bytes. The selected-label change preserves the actual class names.
-
-Actual counts include153159 Labels,92 Kept pools,7365 scopes,62317 Kept rows,
-42211 columns, one Bench, three Games and24 Scenes. There are224605 each
-CssStyleHelper and CacheContainer objects. Serialized payload and reference
-slot counts are not aligned heap sizes, retained sizes or proof of ownership.
-The213037617 reference-slot upper bound makes a blind2GiB SQLite graph an
-unsuitable next step. Prepare a bounded targeted scan for direct pool/scope
-fields and strong paths to roots before proposing a lifecycle fix.
-
-The targeted scanner and inherited-weak-reference fixture are now source
-reviewed. Add the same4GiB free-disk preflight as the inventory reader and
-count both static and instance observations within the100000 limit. The
-configuration predicts at most45932 direct observations, leaving at least
-54068 matched observations; all7365 scopes have six fields and all92 pools
-four. Four passes,8192 frontier IDs,50000 visited IDs,256MiB address space,
-900 seconds and2GiB output remain hard bounds. Missing paths prove nothing.
-
-Final scanner SHA256 is
-370d660701fec70dea5ae5b7f11708ec9a9710301486c24623307052d94d6bf5;
-fixture d67a80132ccf9322e46e354e3311f4aa38d9bca50bbbd5e64233e17aaaf51371;
-actual configuration491d79544d9453ab3878ce3f42b0ecb160ff0df3414b80cdc3f3872505298962.
-Source copies are retained in the helper's target/integrated67/heap-analysis-source
-and the builder's target/RES3-heap-targeted-370d-ready. The fixture has not
-executed: the box's exclusive lock rejects its shared-lock request before
-Python starts. A fresh builder metadata probe confirms BUSY at13:05:13 UTC
-on November25. The external job is untouched. The helper ends and all owned
-processes are stopped; no native, fixture or root-scan acceptance is claimed.
-
-★ Keep the original2GiB memory law,48 parked-scope bound and full fixture.
-Await shared box access for the tiny fixture and targeted ownership scan,
-then mend the demonstrated lifecycle cause. This is an execution-resource
-block, not a finding that the heap defect is outside RES3. No mends, review,
-ensemble or dry run is requested, and the provisional marker remains.
+The passive default observer's counting fix, 4a5f516cb, requires 600 completed
+post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
+240–600 inclusive, with 361 observations. Native findings, audits, purity and
+output-error checks remain. The observer has not run; earlier unexecuted
+payloads are superseded. This changes the diagnostic driver, not the model.
 
 Fresh merged8bb03c69f results: SaveFileCheck native/canonical0 in123 seconds,
 ReadPathCheck native/canonical0 in105 seconds, and MonetaryCheck
