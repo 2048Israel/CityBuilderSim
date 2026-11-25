@@ -31,6 +31,64 @@ larger147739 people63.842ms; historical42.515ms and larger147508 people44.926ms.
 The larger city retains141 permanent cells. These are individual ordinary
 integrated months, not isolated solver times or a hard timing benchmark.
 
+The final ensemble remains after the combined review, against the newest
+baseline (currently0.9.202). Use a fresh output directory for this final model:
+earlier RES3 attempts retain their first class snapshot and cannot be resumed
+as proof of the changed model. The label and committed baseline remain RES3.
+
+The money/saves delta for review includes the actual funded household bid,
+the saved like-for-like class rent index, and actual consumer observations
+for the nine-component reference basket. The0.058 gross return is compared
+with actual carry rather than added to it; builder ranking uses observed net
+operating returns and the feasible funded backlog. These are model changes,
+not altered policy-effect bounds. Every positive fractional financial owner
+settles its positions; optional-action thresholds retain their existing rule.
+
+The exact-load mends save held Bank books, water tariff, employer/payroll
+vectors, wage anchors, index relatives and raw physical abroad-claim weights
+through DataSave and the late rebuild. Nominal amounts scale; physical raw
+claims and relative-price coordinates retain their own units. The genuine
+shipped66 save/history pair is refused byte-intact under67, while current
+held-state and next-month twins pass. No UI code is changed. The default-null
+passive observation hook is diagnostic only, with native finding/audit/output
+failures preserved; it does not claim a completed full playtest or ensemble.
+
+Further current8bb native/canonical0 results are Labour, ExchangeRate,
+HousingDoor (899 played-month household identities and no open audit),
+Household, BuildingData, PowerPlan (35 reserve and1 spread decisions caused),
+PowerDispatch, Hydro, WaterPower (41), BuildAdvice, BuildCard, WorksFinance,
+EssentialWorks, Research (249), PublicLicence (68) and LicenceFees (45).
+Denomination is native1/batch3 for exactly7 DK1 decade labels and1 HT1-H
+TP1 premise; Invest1/3 for its single HT1-H wage premise; AutoBuild1/3 for
+main's single FS12 care-fee premise. No new red occurs in these runs.
+Kept, the complete box Bank/Central/YoungBank query and default measurement
+remain pending at this snapshot. The older results below retain their labels.
+
+Kept subsequently reports a NEW reset-law failure at section48: the card's
+own reset does not make its next kept draw equal a page built new. No current
+approval covers it. Keep the native1740-second bound and let the full run
+finish; the helper diagnoses actual state/node differences against pushed
+source. All box/default conditional starts are suspended. Do not classify the
+failure as a moved premise merely because UI files are unchanged, and do not
+weaken the reset equality or add an unproved waiver. No model patch is made
+before that diagnosis and source review.
+
+The first bounded source finding (9084) narrows the composite: its final
+fresh-page signature returned null, so reset lookup or immediate barGone is
+false. Existing output does not distinguish those flags. KeptBench's button
+helper can report a found disabled button and its bar-label helper searches
+hidden descendants too. These are candidates, not a demonstrated cause.
+The four involved files match main byte-for-byte, which alone proves nothing
+about whether the changed model exposed a product fault or absent condition.
+
+Review and add39 read-only diagnostic lines in the harness and its KeptBench
+helper: actual count/order/card identity, reset enabled/action/ancestor state,
+matching-label ancestor visibility and the real orderBar identity before the
+press, after it and after the next draw. Preserve every input, month, action,
+draw and predicate. This is instrumentation, not a mend or acceptance pass.
+Current native still finishes on its original8bb classes; no overlapping JVM
+or source edit in that running worktree is authorized.
+
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
 byte-identical through dce's later observer and harness-only commits;

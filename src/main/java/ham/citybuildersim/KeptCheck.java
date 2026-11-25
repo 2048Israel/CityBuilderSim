@@ -2741,10 +2741,15 @@ public class KeptCheck {
             // ...cleared by the card's own ↺, outside a draw: the bar goes and the next draw is a page built new.
             bench.drawKept(cards);
             String beforeClear = bench.buildCount(0) + " × " + names.get(0);
+            System.out.println("  reset before: " + bench.buildResetReads(0, names.get(0), word, beforeClear));
             boolean cleared = bench.buildStep(0, "↺");
             boolean barGone = !bench.buildBarShows(word) && !bench.buildBarShows(beforeClear);
+            System.out.println("  reset after press: found=" + cleared + " barGone=" + barGone
+                    + " " + bench.buildResetReads(0, names.get(0), word, beforeClear));
             bench.drawKept(cards);
             String afterClear = againstNew(bench, cards);
+            System.out.println("  reset after draw: difference=" + afterClear
+                    + " " + bench.buildResetReads(0, names.get(0), word, beforeClear));
             bench.home(cards);
             return new Object[]{pressed, count, barBetween, barAfter, after, pressed100, monthLater, cleared, barGone, afterClear, fillsByPress};
         });
