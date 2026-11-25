@@ -381,6 +381,11 @@ Run here, one at a time (`./batch-check.sh <name>`), the earth and world data se
   0.9.174 and queued as DM5. PW3 changes no map code; its power orders move the order in which the city's works
   arrive. The run on the need date before the calendar found the same in the same district, at m1801 to m1802 (1
   of 84 boxes, the 48th Assembly Plant). It passes by name under the ship file's `## known-reds` (contract 5.3).
+- After main's 0.9.201 merged (R6e-rest: its E22, the pressure exchanger, beside PW3's E25 in `research.json`, and
+  ResearchCheck's counts restated for both, 102 entries and 97 history rows), one at a time: **ResearchCheck,
+  ResearchViewCheck, ModernEngineeringCheck, ModernRowsCheck, PostwarRecipeCheck, HistoricalLicenceCheck,
+  DiscoveryCheck, ReadPathCheck, BuildingDataCheck, PowerPlanCheck, SaveFileCheck** green. R6e-rest leaves E24 (the
+  large-rotor wind turbine) on main's queue as R6e-rest-E24, to be resolved against PW3's dispatch after it ships.
 
 ## 5. What the default run builds, decade by decade (spec §6, "Measure first" 3)
 
@@ -441,7 +446,7 @@ first completion 55 months on at m120), and there the same mill opened at m121 (
 1.0 was read in the month before the mill opened, not because of the plant. Reality: a utility plans a large new
 load from its connection request, years ahead. A forecast that reads the draw of works under construction is a
 finding for after PW3, not mended here: REV-PW3f has the projection as it stands ("growthFactor is fine as the
-projection").
+projection"), and the orchestrator files it as its own row, PW10 (the ship file's `## queued`).
 
 Before REV-PW3's mends the run built 73 diesels, 51 turbines, 9 coal plants, 7 Oil-Fired Plants and no farms, with
 292 reserve and 11 spread suggestions.
