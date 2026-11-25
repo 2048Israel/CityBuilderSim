@@ -17,6 +17,38 @@ precede PW1-R:8bb and the later75fb reader/reset repairs are0.9.202 source.
 The new merged billing/save paths, current catalogue and default measurement
 still require verification. No old native result is promoted to a0.9.203 pass.
 
+Current114/.203 nine-check refresh is complete on the gate box; the later721
+medicine change is confined to KeptCheck and leaves this numeric model intact.
+All full footers, empty new-red files, source/class guards, copy hashes and
+owned-group end guards verify. Runtime is Temurin21.0.13+9/Linux/Monocle.
+
+| Current check | Native/batch | Seconds |
+|---|---:|---:|
+| SaveFileCheck | 0/0 | 29.2 |
+| ReadPathCheck | 0/0 | 22.1 |
+| MonetaryCheck | 0/0 | 101.6 |
+| LabourCheck | 0/0 | 11.0 |
+| ExchangeRateCheck | 0/0 | 16.3 |
+| DenominationCheck | 1/3 | 18.0 |
+| HousingMarketCheck | 0/0 | 5.4 |
+| InvestCheck | 1/3 | 10.0 |
+| ReloadCheck | 0/0 | 42.1 |
+
+Denomination has exactly7 DK1 decade lines and TP1.8195; Invest only its
+HT1-H wage premise. Fresh current Monetary original-town reduction is
+5.512698 points (24.47 to18.96 percent), pooled16-31 TOTAL3.635685 and
+non-shelter3.102148. The original and pooled TOTAL floors stay at least1
+point; values are read from current114 output, not copied from older runs.
+
+Current14/32 report replaces docs/queue/RES3-catalogue.md, SHA256
+30b039fcb1908857516c2e6360c5e68623633629e7228dc1dbc7e8f88336039b.
+Box integrated months: small282 people12.599ms; present14.042ms and larger
+147739 people13.675ms; historical13.778ms and larger147508 people9.830ms;
+141 permanent cells. Do not compare these with laptop timings as a speed law.
+All paid-build, positive held-debt, physical closure, native save and ordinary
+twin/audit guards pass. Full Kept/Chart, affected follow-ups, bank and default
+measurements remain pending; the earlier dated evidence below stays labelled.
+
 Fresh merged8bb03c69f results: SaveFileCheck native/canonical0 in123 seconds,
 ReadPathCheck native/canonical0 in105 seconds, and MonetaryCheck
 native/canonical0. Its pooled16-31 TOTAL reduction is3.635685 percentage
