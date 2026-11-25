@@ -24,7 +24,7 @@ at month 31. The unedited history has 30 rows (months 2 through 31), with
 world seed 4127. The native save header is gameVersion `0.9.201`,
 saveFormat `66`; the legacy price-index payload has 169 slots.
 The actual native save lacks `newCarTrade`, `populationWageTotals`,
-`bankHeldBooks` and `abroadClaimsById`, as the shipped model does.
+`bankHeldBooks` and `abroadClaimById` (R1g's key, shipped in 0.9.206 at format 66), as the shipped model does.
 
 No JSON value was relabelled, restamped or converted. gzip packages the
 exact raw bytes at compression level 9, with no filename and timestamp 0.

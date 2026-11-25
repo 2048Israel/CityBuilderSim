@@ -1,13 +1,13 @@
-# PopulationManager.java - 1,324 lines · 71 methods · 1 constants · model
+# PopulationManager.java - 1,363 lines · 73 methods · 1 constants · model
 
 `ham/citybuildersim/PopulationManager.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The working population: the workforce by skill band, the city's posts and
 > their wages by job type, and who fills which post (fillByBand()).
 
-**Uses:** [JobType](JobType.md) (31), [WageBand](WageBand.md) (26), [LabourMarket](LabourMarket.md) (10), [WageLadder](WageLadder.md) (7), [PayTier](PayTier.md) (3), [EducationType](EducationType.md) (2), [Currency](Currency.md) (1)
+**Uses:** [JobType](JobType.md) (31), [WageBand](WageBand.md) (27), [LabourMarket](LabourMarket.md) (10), [WageLadder](WageLadder.md) (7), [PayTier](PayTier.md) (3), [EducationType](EducationType.md) (2), [Currency](Currency.md) (1)
 
-**Used by (49):** [BankCheck](BankCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [ConstructionControlCheck](ConstructionControlCheck.md), [CrimeCheck](CrimeCheck.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FloorView](FloorView.md), [ForeignCrewsCheck](ForeignCrewsCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [Migration](Migration.md), [MoneyAudit](MoneyAudit.md), [NewGameCheck](NewGameCheck.md), [NewUnitCheck](NewUnitCheck.md), [OutsideCheck](OutsideCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [PrizeCheck](PrizeCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SchoolingLadder](SchoolingLadder.md), [SchoolingLadderCheck](SchoolingLadderCheck.md), [SchoolingPageCheck](SchoolingPageCheck.md), [SchoolingProbe](SchoolingProbe.md), [Sector](Sector.md), [ServicesScreen](ServicesScreen.md), [SimulationEngine](SimulationEngine.md), [StaffingDrawCheck](StaffingDrawCheck.md), [StaffingTieCheck](StaffingTieCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [WageLadderCheck](WageLadderCheck.md), [WantedPostsCheck](WantedPostsCheck.md), [WorksValue](WorksValue.md), [YearBookCheck](YearBookCheck.md), [ZoningCheck](ZoningCheck.md)
+**Used by (50):** [BankCheck](BankCheck.md), [BusinessServicesCheck](BusinessServicesCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [ConstructionControlCheck](ConstructionControlCheck.md), [CrimeCheck](CrimeCheck.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FloorView](FloorView.md), [ForeignCrewsCheck](ForeignCrewsCheck.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [InvestCheck](InvestCheck.md), [LabourCheck](LabourCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [LongPlaytest](LongPlaytest.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [Migration](Migration.md), [MoneyAudit](MoneyAudit.md), [NewGameCheck](NewGameCheck.md), [NewUnitCheck](NewUnitCheck.md), [OutsideCheck](OutsideCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [PrizeCheck](PrizeCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SchoolingLadder](SchoolingLadder.md), [SchoolingLadderCheck](SchoolingLadderCheck.md), [SchoolingPageCheck](SchoolingPageCheck.md), [SchoolingProbe](SchoolingProbe.md), [Sector](Sector.md), [ServicesScreen](ServicesScreen.md), [SimulationEngine](SimulationEngine.md), [StaffingDrawCheck](StaffingDrawCheck.md), [StaffingTieCheck](StaffingTieCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [Village1900Check](Village1900Check.md), [WageLadderCheck](WageLadderCheck.md), [WantedPostsCheck](WantedPostsCheck.md), [WorksValue](WorksValue.md), [YearBookCheck](YearBookCheck.md), [ZoningCheck](ZoningCheck.md)
 
 ## Sections
 
@@ -15,16 +15,17 @@
 |---:|---|
 | 26 | WHO THE WORKFORCE ACTUALLY IS |
 | 458 | WORKERS TAKE THE BEST-PAID JOB THEY QUALIFY FOR (0.7.18) |
-| 1211 | · · POPULATION OVERVIEW |
-| 1219 | · · LABOR MARKET SUMMARY |
-| 1240 | · · JOB DISTRIBUTION TABLE |
-| 1268 | · · LABOR MARKET STATUS |
+| 1101 | · THE APPRENTICES (R1g, 2026-11-19; docs/queue/R1g-notes.md, the cause and the fix) |
+| 1250 | · · POPULATION OVERVIEW |
+| 1258 | · · LABOR MARKET SUMMARY |
+| 1279 | · · JOB DISTRIBUTION TABLE |
+| 1307 | · · LABOR MARKET STATUS |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1295 | `PopulationManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 1334 | `PopulationManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -50,12 +51,14 @@
 | 862 | `private double imprisoned` | Adults serving a sentence, set from Crime each month. |
 | 867 | `private double owners` | Adults of the owner families (two a company, BO1), who take no job; set from the line each month. |
 | 872 | `private double[] studying` | Adults studying full time, by band, set from Education each month. |
+| 1114 | `public static boolean APPRENTICES_1900` | R1g's switch for the apprentices, on unless -Dr1g.apprentices=off: the controls' lever while the fix is Jerus's call, and Village1900Check's. |
+| 1117 | `private double lastApprentices` | The young who learnt a trade at work last month (R1g): for the harnesses and the trace; not saved, the heads being. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 13 | 1312 | **type** `public class PopulationManager` | The working population: the workforce by skill band, the city's posts and their wages by job type, and who fills which post (fillByBand()). |
+| 13 | 1351 | **type** `public class PopulationManager` | The working population: the workforce by skill band, the city's posts and their wages by job type, and who fills which post (fillByBand()). |
 
 ### WHO THE WORKFORCE ACTUALLY IS (lines 26-457)
 
@@ -86,7 +89,7 @@
 | 376 | 5 | `public void UpdateTotalWagePerType()` |  |
 | 403 | 54 | `public long[] getJobVacancy()` | Positions nobody qualified is available to fill. |
 
-### WORKERS TAKE THE BEST-PAID JOB THEY QUALIFY FOR (0.7.18) (lines 458-1324)
+### WORKERS TAKE THE BEST-PAID JOB THEY QUALIFY FOR (0.7.18) (lines 458-1100)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -126,17 +129,24 @@
 | 1062 | 15 | `public void trimLicencesToBand()` | Keeps the licensed counts inside the band that contains them. |
 | 1078 | 5 | `public void restoreSkilledHeads(double[] saved)` |  |
 | 1094 | 6 | `public void applyBandFlow(double[] flow)` | This month's schooling, as a net movement between bands. |
-| 1109 | 7 | `public void applySkilledFlows(double[] arrivals, double[] departures)` | Who moved in and who moved out, by skill. |
-| 1126 | 12 | `public void inferBandShareFromJobs()` | Reads a plausible skill mix off the jobs the city is currently staffing. |
-| 1139 | 13 | `public double[] getJobFillRate()` |  |
-| 1153 | 3 | `public long getWorkforce()` |  |
-| 1172 | 3 | `public long getUnemployed()` | Adults who want work and have none. |
-| 1187 | 5 | `public double getLabourForce()` | Adults who could take a post this month: the workforce less the full-time students. |
-| 1194 | 4 | `public double getUnemploymentRate()` | Unemployed as a share of everyone who could work, 0-1. |
-| 1199 | 3 | `public long[] getJobs()` |  |
-| 1203 | 3 | `public double getAdultPercent()` |  |
-| 1207 | 79 | `public void printPopulationInfo()` |  |
-| 1287 | 7 | `public void resetPopulationManager()` |  |
-| 1297 | 4 | `static { ... }` |  |
-| 1319 | 4 | `public void redenominate(double scale)` | The wage table, in the new unit. |
+
+### THE APPRENTICES (R1g, 2026-11-19; docs/queue/R1g-notes.md, the cause and the fix) (lines 1101-1363)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1127 | 9 | `public double apprentice(double comingOfAge, double tradeShare, double schooled)` | The month's apprentices: of the young who came of age, the year's trade share, less the schools' diploma-holders of the month, into the diploma band. |
+| 1138 | 1 | `public double getLastApprentices()` | The young who learnt a trade at work last month (apprentice()). |
+| 1148 | 7 | `public void applySkilledFlows(double[] arrivals, double[] departures)` | Who moved in and who moved out, by skill. |
+| 1165 | 12 | `public void inferBandShareFromJobs()` | Reads a plausible skill mix off the jobs the city is currently staffing. |
+| 1178 | 13 | `public double[] getJobFillRate()` |  |
+| 1192 | 3 | `public long getWorkforce()` |  |
+| 1211 | 3 | `public long getUnemployed()` | Adults who want work and have none. |
+| 1226 | 5 | `public double getLabourForce()` | Adults who could take a post this month: the workforce less the full-time students. |
+| 1233 | 4 | `public double getUnemploymentRate()` | Unemployed as a share of everyone who could work, 0-1. |
+| 1238 | 3 | `public long[] getJobs()` |  |
+| 1242 | 3 | `public double getAdultPercent()` |  |
+| 1246 | 79 | `public void printPopulationInfo()` |  |
+| 1326 | 7 | `public void resetPopulationManager()` |  |
+| 1336 | 4 | `static { ... }` |  |
+| 1358 | 4 | `public void redenominate(double scale)` | The wage table, in the new unit. |
 

@@ -367,6 +367,50 @@ public class BuildingsStacks {
         }
     }
 
+    /** What this month's work earned of the home contracts, the part handed abroad (FC2b) apart; nothing for a site that had nothing on it. Per the last advanceConstruction() call. */
+    private double lastHomeEarned;
+
+    public double getLastHomeEarned() { return lastHomeEarned; }
+
+    /** ...and of it the material allowance the home contracts priced in, for the material the month's work drew (R1g). */
+    private double lastHomeAllowance;
+
+    public double getLastHomeAllowance() { return lastHomeAllowance; }
+
+    /** What the home contracts still hold: what their payers have paid for work not yet earned, the ones handed abroad (FC2b) apart. */
+    public double getHomeContractValue() {
+        double v = 0;
+        for (Contract c : contracts.values()) v += c.value;
+        return Math.min(v, Math.max(0, contractValue));
+    }
+
+    /**
+     * Earns {@code amount} of the home contracts now, ahead of the work that would have earned it, each payer's contract
+     * by its share of what they hold (R1g; BuildingManager, THE CONTRACTOR'S POINTS EARNED AT HIS PRICE): the premium
+     * the payers paid for the pooled contractor's points, earned the month his points go in. The value comes off the
+     * contracts and the site's value alike, so what is earned ahead is not earned again; the units, the allowance and the
+     * points stay, drawn and done by the work as ever. Never more than the contracts hold, nor than the site's value.
+     * Adds to the month's dues and revenue; returns what it earned. Call after advanceConstruction().
+     */
+    public double earnAhead(double amount) {
+        double held = 0;
+        for (Contract c : contracts.values()) held += c.value;
+        double take = Math.min(Math.max(0, amount), getHomeContractValue());
+        if (!(take > 0)) return 0;
+        // ...each contract by its share of what the contracts hold, not of the site's value (REV-R1g2, P3): were the site's
+        // value ever below its contracts' sum, a fraction of the lesser would hand the payers' dues more than the site earns.
+        double f = Math.min(1, take / held);
+        for (Contract c : contracts.values()) {
+            double v = f >= 1 ? c.value : c.value * f;
+            c.value -= v;
+            if (v > 0) dues.add(new Due(c, v, 0, 0, false));
+        }
+        contractValue = Math.max(0, contractValue - take);
+        revenueDue += take;
+        lastHomeEarned += take;
+        return take;
+    }
+
     /*
      * ===== THE UNFITTED (R1, 2026-11-05; Equipment, EquipmentForms, docs/queue/R1-notes.md call 4) =====
      *
@@ -547,8 +591,8 @@ public class BuildingsStacks {
      * This site's claim on the foreign crews' book (REV-FC2, the second review; BuildingManager.noteAbroad(),
      * abroadOwedOf()): the work its orders handed him, in a unit only the claims of the sites with points owed share -
      * his book is theirs in proportion to their claims, so his month, and any cut of his book, falls on every site's
-     * work abroad alike, and a cancel takes the site's own and no other's. The effective physical points are saved
-     * in DataSave.abroadOwedById; abroadClaimsById also carries this raw claim-point scale without re-projecting it.
+     * work abroad alike, and a cancel takes the site's own and no other's. Saved as points (DataSave.abroadOwedById) and as
+     * the claims themselves (DataSave.abroadClaimById, R1g), which the load puts back over the points.
      */
     private double abroadClaim;
 
@@ -636,6 +680,8 @@ public class BuildingsStacks {
     public void advanceConstruction(double homeOutput, double abroadOutput, double abroadOwed, double abroadMaterials) {
         materialsDue = 0;
         revenueDue = 0;
+        lastHomeEarned = 0;
+        lastHomeAllowance = 0;
         lastFinished = 0;
         lastApplied = 0;
         lastAbroadApplied = 0;
@@ -741,6 +787,14 @@ public class BuildingsStacks {
         }
         materialsOwed = Math.max(0, materialsOwed - materialsDue);
         contractValue = Math.max(0, contractValue - revenueDue);
+        // ...and of it the home part's (R1g): all but what the contracts handed abroad earned, and the material allowance in it.
+        double abroadEarned = 0, homeAllowance = 0;
+        for (Due d : dues) {
+            if (d.abroad) abroadEarned += d.revenue;
+            else homeAllowance += d.allowance;
+        }
+        lastHomeEarned = Math.max(0, revenueDue - abroadEarned);
+        lastHomeAllowance = Math.min(lastHomeEarned, homeAllowance);
 
         // Print how many finished
         System.out.print(finished + "/" + startedConstruction + " " + template.name + "(s) finished construction.");

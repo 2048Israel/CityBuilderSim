@@ -18,6 +18,33 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.206 — R1g, the 1900 city grows — 2026-11-24, ready, see docs/queue/R1g-notes.md
+A city founded the 1900 way grows now, and the founding screen and the playtest (the gate's audit) found it by default: today's city under
+`-Dplaytest.founded=today`. It had stalled at a few hundred people, because 1901's wages paid for today's homes (rent 0.61 of take-home at
+month 60) and today's diploma posts met 1901's workers. Its homes are built to 1900's standard, and their cost moves with the households' pay,
+on its last twelve months' mean, capped at today's home (Jerus: "its cost moves with WAGES"; `-Dr1g.walk=off` holds it at 0.29 of today's).
+With no school, the young learn the year's trade at work as apprentices. On 0.9.174 the playtest's 1900 city held 1,852,269 people at month
+2,400, its rent .307 of take-home on average. The default city now starts in 1900, so the 80-run ensemble plays it too: its final
+populations are 68% of today's city's under AUTO2, 59% under ZERO_SLACK, 25% under ZERO_HOT, 24% under SHOCK and 15% under HIGH, and the
+five T2 rows read FAIL against 0.9.202's baseline (docs/ensemble/R1g.md; M1 and F1 pass in all five). The walk's months are saved, with no format bump. Village1900Check proves the stall, each fix
+and the walk. The city's repairs to its own buildings are government consumption now, paid or owed: their imported material came off GDP
+with nothing against it, so a 1900 city whose building stopped read GDP below zero (GdpCheck). The foreign contractor's points are earned at
+his price the month he builds them, their material on top, out of the contracts whose payers paid it, never more: the 1900 village, whose own crews are a handful,
+earned them at its sites' rate and imported them at his, and read GDP below zero at month 15 (ForeignCrewsCheck). The 1900 playtest is the
+slower (38 minutes for 2,400 months on the PC against 18). A farm fitting its last tractor now clears its old captive feed, so its crop
+agrees after a reload.
+
+### 0.9.205 — RG1, farm ground at a farm price, by policy — 2026-11-25, ready, see docs/queue/RG1-notes.md
+A new policy on Policy › Zoning: the fields' zone may be made a farmland reserve, as BC's Agricultural Land Reserve,
+Oregon's exclusive farm-use zones and Ontario's Greenbelt are. Its ground goes to farms alone, the fields and the city's
+own Wind and Solar Farms. It sells and is assessed at the farmland price: what a hectare of farm ground sells for in the
+nation that sells the city its land (Statistics Canada's farm land a hectare, by each nation's land factor), outside the
+crowding premium, never above the going price. A crowded city's wind farm, whose ground was three quarters of its
+capital, has it at under 1%, so the planner builds farms where it built none. The city gives up the difference on every
+sale and on the roll. It is off by default: no zone, or a zone at a share, prices the ground as before, and an older save
+reads as no reserve. FarmlandReserveCheck causes both paths. To look at on the PC: the fields' zone page, the reserve's
+card under ITS PRICE, and the dial kept while the reserve stands.
+
 ### BX2 — PackagingCheck reads BX1's zip line — 2026-11-25, ready, see docs/queue/BX2-notes.md
 BX1 named Windows' own `tar.exe` by its full path in `Build EXE.bat`, and PackagingCheck still found the zip
 by `tar -a -c`, so main was red on "the image is staged and checked after jpackage and before the zip" from

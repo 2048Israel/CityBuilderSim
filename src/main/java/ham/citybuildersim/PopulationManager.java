@@ -1098,6 +1098,45 @@ public class PopulationManager {
         }
     }
 
+    /* ----- THE APPRENTICES (R1g, 2026-11-19; docs/queue/R1g-notes.md, the cause and the fix) -----
+
+       WHY. A skill here comes from a school or in somebody's head (the rule above), and a city founded the 1900 way gets no school for
+       centuries (no posts in R1g's 2,400 months: AutoBuilder.kept() builds one only when warranted and with somebody to teach), so its
+       tradesmen died out: 59 diploma-holders at month 60, 6 at month 900, while its diploma posts stood empty and its labourers idle. In 1901
+       the model's diploma band is a trade (ArrivalMix's 1913 knot: mechanics, clerks and traders), and a trade was learnt at work.
+
+       WHAT. In a city founded the 1900 way (Game, after the month's schooling), the young who came of age this month learn a trade at the
+       year's share (ArrivalMix.tradeShareAt(): 0.23 in 1901, 0.43 in 1953), less those the schools made diploma-holders this month: so the
+       schools' graduates count instead once there are any, and a city with none still has its tradesmen. A head moved like a school's (it
+       stands among the skilled, so the unskilled band, the remainder, loses it); saved with the heads. */
+
+    /** R1g's switch for the apprentices, on unless -Dr1g.apprentices=off: the controls' lever while the fix is Jerus's call, and Village1900Check's. */
+    public static boolean APPRENTICES_1900 = !"off".equalsIgnoreCase(System.getProperty("r1g.apprentices", "on").trim());
+
+    /** The young who learnt a trade at work last month (R1g): for the harnesses and the trace; not saved, the heads being. */
+    private double lastApprentices;
+
+    /**
+     * The month's apprentices: of the young who came of age, the year's trade share, less the schools' diploma-holders of the month, into the
+     * diploma band. Nothing with the switch off. Returns how many.
+     *
+     * @param comingOfAge the teens who became adults this month (PopulationCohorts.getPromoted(TEEN))
+     * @param tradeShare the year's share of a trade (ArrivalMix.tradeShareAt())
+     * @param schooled the month's gross school-leaver diplomas (Education.getNewDiplomas()), before diploma-holders leave for degrees
+     */
+    public double apprentice(double comingOfAge, double tradeShare, double schooled) {
+        lastApprentices = 0;
+        if (!APPRENTICES_1900) return 0;
+        double learnt = Math.max(0, comingOfAge * tradeShare - Math.max(0, schooled));
+        if (!(learnt > 0)) return 0;
+        skilledHeads[WageBand.DIPLOMA.ordinal()] += learnt;
+        lastApprentices = learnt;
+        return learnt;
+    }
+
+    /** The young who learnt a trade at work last month (apprentice()). */
+    public double getLastApprentices() { return lastApprentices; }
+
     /**
      * Who moved in and who moved out, by skill.
      *

@@ -162,6 +162,26 @@ public final class ArrivalMix {
         return TODAY;   // unreachable: the month is under the last knot's January, so some knot ends after it
     }
 
+    /**
+     * The share of a game month's working arrivals who hold a trade (the diploma band; the 1913 knot's mechanics, clerks and traders), by the
+     * same look-up as at(): the first knot's before its January, the knots' shares interpolated by month between, the last knot's from its
+     * January on. What the young of a city founded the 1900 way learn without a school (R1g's apprentices, PopulationManager.apprentice()).
+     */
+    public static double tradeShareAt(int month) {
+        Knot first = KNOTS.get(0), last = KNOTS.get(KNOTS.size() - 1);
+        if (month < januaryOf(first.year())) return first.diploma();
+        if (month >= januaryOf(last.year())) return last.diploma();
+        for (int i = 1; i < KNOTS.size(); i++) {
+            Knot to = KNOTS.get(i);
+            int end = januaryOf(to.year());
+            if (month >= end) continue;
+            Knot from = KNOTS.get(i - 1);
+            int start = januaryOf(from.year());
+            return lerp(from.diploma(), to.diploma(), (month - start) / (double) (end - start));
+        }
+        return last.diploma();   // unreachable, as at()'s
+    }
+
     /** a at t = 0, b at t = 1, a straight line between. */
     private static double lerp(double a, double b, double t) {
         return a + (b - a) * t;

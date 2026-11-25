@@ -978,6 +978,20 @@ public class BuildingsTemplate {
         return this;
     }
 
+    /**
+     * Sets the cash cost and the upkeep from figures in founding money (R1g's dated home, Recipes.dateHomes()): the founding figures exactly
+     * these, today's struck from them at the unit the template was last struck at, as seedConstants() does. A home dated again and again so
+     * stands where one dated once at the same scale does, to the bit, where setCashCost() times a ratio would drift a bit a month.
+     */
+    public BuildingsTemplate setFoundingCosts(double cash, double upkeep) {
+        rememberFounding();
+        foundingCashCost = cash;
+        foundingUpkeep = upkeep;
+        cashCost = cash / struckAt;
+        this.upkeep = upkeep / struckAt;
+        return this;
+    }
+
     public BuildingsTemplate setConstructionMaterials(int constructionMaterials) {
         this.constructionMaterials = constructionMaterials;
         return this;
@@ -1094,12 +1108,9 @@ public class BuildingsTemplate {
         return Double.isNaN(foundingCashCost) ? cashCost : foundingCashCost;
     }
 
-    /** The catalogue's upkeep in founding money, for the selected residential wage scaler. */
-    public double getFoundingUpkeep() { return Double.isNaN(foundingUpkeep)?upkeep:foundingUpkeep; }
-    /** Re-strikes a dated home's baseline without cumulative monthly multiplication. */
-    public BuildingsTemplate setFoundingCosts(double cash,double upkeep) {
-        rememberFounding();foundingCashCost=cash;foundingUpkeep=upkeep;
-        cashCost=cash/struckAt;this.upkeep=upkeep/struckAt;return this;
+    /** The upkeep as the catalogue states it, in founding money, as getFoundingCashCost() states the cash cost; the upkeep itself where none was struck. */
+    public double getFoundingUpkeep() {
+        return Double.isNaN(foundingUpkeep) ? upkeep : foundingUpkeep;
     }
 
     public int getConstructionPoints() {

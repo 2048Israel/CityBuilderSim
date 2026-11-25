@@ -44,6 +44,8 @@
 
 **Uses:** [BuildAdvice](BuildAdvice.md) (300), [PowerDispatch](PowerDispatch.md) (107), [Game](Game.md) (46), [BuildingsTemplate](BuildingsTemplate.md) (36), [AutoBuilder](AutoBuilder.md) (33), [UtilitiesHandler](UtilitiesHandler.md) (14), [WorksValue](WorksValue.md) (11), [WorksFinanceCheck](WorksFinanceCheck.md) (6), [EssentialWorksCheck](EssentialWorksCheck.md) (6), [SubstationCheck](SubstationCheck.md) (5), [BuildingManager](BuildingManager.md) (5), [LandManager](LandManager.md) (4), [LandParcel](LandParcel.md) (4), [BuildingType](BuildingType.md) (3), [Substations](Substations.md) (3), [LandMarket](LandMarket.md) (3), [Good](Good.md) (3), [BuildingsStacks](BuildingsStacks.md) (2), [World](World.md) (2), [Landmasses](Landmasses.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [Traffic](Traffic.md) (2), [BuildersFirstCheck](BuildersFirstCheck.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [CareType](CareType.md) (1), [TempDirs](TempDirs.md) (1)
 
+**Used by (1):** [FarmlandReserveCheck](FarmlandReserveCheck.md)
+
 ## Sections
 
 | line | section |

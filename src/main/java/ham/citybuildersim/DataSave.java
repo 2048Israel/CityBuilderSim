@@ -99,11 +99,6 @@ public class DataSave implements Cloneable {
 
     /** RES2 bounded title/occupancy/listing cohorts; physical stock stays in buildings[]. */
     private java.util.List<HousingInventory.Holding> housingInventory;
-    private double[] homePayIndices;
-    private int homePayMonth;
-    public void setHomePayIndices(double[] indices,int month) {homePayIndices=indices;homePayMonth=month;}
-    public double[] getHomePayIndices() {return homePayIndices;}
-    public int getHomePayMonth() {return homePayMonth;}
     private HousingMarket.State housingMarket;
     public void setHousingMarket(HousingMarket.State state) { housingMarket=state; }
     public HousingMarket.State getHousingMarket() { return housingMarket; }
@@ -1216,8 +1211,6 @@ public class DataSave implements Cloneable {
      * book in proportion to them - a cancel takes its share of his book, as FC1b took its points left. No format bump.
      */
     private java.util.Map<Integer, Double> abroadOwedById;
-    /** Raw physical claim-points at their carried common scale, by building id; distinct from effective work points. */
-    private java.util.Map<Integer, Double> abroadClaimsById;
 
     public void setAbroadOwedById(java.util.Map<Integer, Double> byId) {
         this.abroadOwedById = byId == null ? new java.util.TreeMap<>() : byId;
@@ -1225,12 +1218,20 @@ public class DataSave implements Cloneable {
 
     /** The points by template id, empty for a save with none abroad, null for a save from before the key. */
     public java.util.Map<Integer, Double> getAbroadOwedById() { return abroadOwedById; }
-    public void setAbroadClaimsById(java.util.Map<Integer, Double> byId) {
-        abroadClaimsById = byId == null ? null : new java.util.TreeMap<>(byId);
+
+    /**
+     * ...and the same sites' claims in their own unit (R1g; BuildingManager.getAbroadClaimById()): the shares the premium his
+     * payers paid is earned by, to the bit, where the points are the claims rescaled to his book. Written always, an empty
+     * map when none; a save without the key reads the points as the claims, the same shares. No format bump.
+     */
+    private java.util.Map<Integer, Double> abroadClaimById;
+
+    public void setAbroadClaimById(java.util.Map<Integer, Double> byId) {
+        this.abroadClaimById = byId == null ? new java.util.TreeMap<>() : byId;
     }
-    public java.util.Map<Integer, Double> getAbroadClaimsById() {
-        return abroadClaimsById == null ? null : new java.util.TreeMap<>(abroadClaimsById);
-    }
+
+    /** The claims by template id, empty for a save with none abroad, null for a save from before the key. */
+    public java.util.Map<Integer, Double> getAbroadClaimById() { return abroadClaimById; }
 
     /**
      * The buildings still WITHOUT a piece of equipment, by template id and then by the piece's id (R1; BuildingsStacks' unfitted counts), written
@@ -1306,6 +1307,26 @@ public class DataSave implements Cloneable {
         return recipeChoices == null ? java.util.Map.of() : recipeChoices;
     }
 
+    /**
+     * The 1900 home's walk (R1g; Recipes, THE HOME'S COST MOVES WITH WAGES): the last Recipes.PAY_MONTHS months' pay index, oldest first, and the
+     * game month of the newest, written only for a city founded the 1900 way with the walk on. A save without them, every save from before R1g
+     * and every city founded the default way, starts the walk afresh at the loaded month, its window that month's pay index alone, filled over
+     * the next eleven: Gson leaves a missing key alone, so no format bump (a 1900 city saved before R1g had no dated homes to read wrongly).
+     */
+    private double[] homePayIndices;
+    private Integer homePayMonth;
+
+    /** Stores the walk's months and the month of the newest; null (no key in the file) with none. */
+    public void setHomePay(double[] months, int month) {
+        homePayIndices = months == null || months.length == 0 ? null : months.clone();
+        homePayMonth = homePayIndices == null ? null : month;
+    }
+
+    /** The walk's saved months, oldest first, or null for a save with none. */
+    public double[] getHomePayIndices() { return homePayIndices == null ? null : homePayIndices.clone(); }
+
+    /** The game month of the newest of getHomePayIndices(), 0 for a save with none. */
+    public int getHomePayMonth() { return homePayMonth == null ? 0 : homePayMonth; }
     /**
      * The fittings on site (R1b; Fittings), in the order placed, each with the template, the piece, who ordered it and the points still owed: written
      * only while there is a job, so a city with none writes no key and a save without one reads as none on site. No format bump: Gson leaves a

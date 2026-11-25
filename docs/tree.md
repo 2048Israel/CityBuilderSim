@@ -359,6 +359,11 @@ adds its line here, not in `CLAUDE.md`.
                                    way - bread baked at home from grain, the homes' lamp and stove shares,
                                    the cap on the cars, the held fuel sale through a save, today's from the
                                    last knot, and a default city reading none of it
+        Village1900Check.java      why the 1900 city stalls (R1g, 2026-11-19; docs/queue/R1g-notes.md):
+                                   the playtest's village founded the 1900 way beside today's twin, played
+                                   the playtest's way for five years - the rent over its target at 1901's
+                                   wages, the diploma posts beyond the workers, the exporters' staffing
+                                   gate, nobody arriving, and the treasury owing nothing
         Equipment.java             a piece of equipment a template carries (R1, 2026-11-05; research-design
                                    2.1-2.2): its id, since (a year, or a catalogue code: since R2 known
                                    from its entry's month in research.json),
@@ -757,7 +762,12 @@ adds its line here, not in `CLAUDE.md`.
                                    works out what each zone holds, clears the forest built on and sells,
                                    assesses and buys back zoned ground at the zone's price; the zone's
                                    taxes are the sector's own offsets (Game.setZoneTax()); ZoningCheck
-                                   holds it (docs/studies/spec-zoning.md and spec-materials.md 2.15)
+                                   holds it (docs/studies/spec-zoning.md and spec-materials.md 2.15).
+                                   The farmland reserve (RG1): the fields' zone, by policy, holds its
+                                   ground for every farm (the fields, Wind and Solar Farms) at the
+                                   farmland price, LandMarket.getFarmlandPricePerSqFt() off the nation's
+                                   farm land a hectare, outside the crowding premium (Game.
+                                   setFarmlandReserve()); FarmlandReserveCheck holds it
         ZoningView.java            Policy › Zoning as figures (0.7.109, batch Z2): the hub's four (zoned,
                                    held, the price given up, the forest kept), the dry ground as one bar
                                    cut so its parts add up to it, a zone's row, a sector's page and the

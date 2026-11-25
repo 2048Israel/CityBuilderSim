@@ -1,4 +1,4 @@
-# AutoBuilder.java - 2,841 lines · 174 methods · 14 constants · model
+# AutoBuilder.java - 2,848 lines · 175 methods · 14 constants · model
 
 `ham/citybuildersim/AutoBuilder.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -64,9 +64,9 @@
 >     open on (BuildAdvice.measuresOf()) and the burial plots, NEEDS YOU's
 > ... (94 more lines in the source)
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (181), [Game](Game.md) (93), [BuildingsTemplate](BuildingsTemplate.md) (33), [LandParcel](LandParcel.md) (31), [DecisionLog](DecisionLog.md) (19), [DebtQuote](DebtQuote.md) (17), [CityNeeds](CityNeeds.md) (15), [LandManager](LandManager.md) (13), [Auction](Auction.md) (10), [LandMarket](LandMarket.md) (9), [Landmasses](Landmasses.md) (8), [CapSetting](CapSetting.md) (8), [WorksValue](WorksValue.md) (6), [Currency](Currency.md) (5), [GameLog](GameLog.md) (5), [ConstructionControl](ConstructionControl.md) (4), [BuildingManager](BuildingManager.md) (3), [NationalAccounts](NationalAccounts.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [Ports](Ports.md) (2), [NewUnit](NewUnit.md) (2), [BridgeView](BridgeView.md) (2), [StrategicReserve](StrategicReserve.md) (1), [CareType](CareType.md) (1), [EducationType](EducationType.md) (1), [SafetyType](SafetyType.md) (1), [Sector](Sector.md) (1), [Statement](Statement.md) (1), [LicenceFees](LicenceFees.md) (1), [BuildingType](BuildingType.md) (1)... and 4 more
+**Uses:** [BuildAdvice](BuildAdvice.md) (181), [Game](Game.md) (94), [BuildingsTemplate](BuildingsTemplate.md) (34), [LandParcel](LandParcel.md) (31), [DecisionLog](DecisionLog.md) (19), [DebtQuote](DebtQuote.md) (17), [CityNeeds](CityNeeds.md) (15), [LandManager](LandManager.md) (14), [Auction](Auction.md) (10), [LandMarket](LandMarket.md) (9), [Landmasses](Landmasses.md) (8), [CapSetting](CapSetting.md) (8), [WorksValue](WorksValue.md) (6), [Currency](Currency.md) (5), [GameLog](GameLog.md) (5), [ConstructionControl](ConstructionControl.md) (4), [BuildingManager](BuildingManager.md) (3), [NationalAccounts](NationalAccounts.md) (3), [InfrastructureManager](InfrastructureManager.md) (3), [Ports](Ports.md) (2), [NewUnit](NewUnit.md) (2), [BridgeView](BridgeView.md) (2), [StrategicReserve](StrategicReserve.md) (1), [CareType](CareType.md) (1), [EducationType](EducationType.md) (1), [SafetyType](SafetyType.md) (1), [Sector](Sector.md) (1), [Statement](Statement.md) (1), [LicenceFees](LicenceFees.md) (1), [BuildingType](BuildingType.md) (1)... and 4 more
 
-**Used by (26):** [AdviceValueOracle](AdviceValueOracle.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [DataSave](DataSave.md), [EssentialWorksCheck](EssentialWorksCheck.md), [Game](Game.md), [HydroCheck](HydroCheck.md), [InvestCheck](InvestCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [PowerPlanCheck](PowerPlanCheck.md), [PowerPlantsCheck](PowerPlantsCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SubstationCheck](SubstationCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md)
+**Used by (27):** [AdviceValueOracle](AdviceValueOracle.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildScreen](BuildScreen.md), [DataSave](DataSave.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FarmlandReserveCheck](FarmlandReserveCheck.md), [Game](Game.md), [HydroCheck](HydroCheck.md), [InvestCheck](InvestCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandmassCheck](LandmassCheck.md), [LongPlaytest](LongPlaytest.md), [PowerPlanCheck](PowerPlanCheck.md), [PowerPlantsCheck](PowerPlantsCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SubstationCheck](SubstationCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md)
 
 ## Sections
 
@@ -79,8 +79,8 @@
 | 828 | THE PASS |
 | 1758 | THE ISLAND LINKS (AL1, 2026-11-09) |
 | 1960 | THE GROUND ITS ORDERS NEED (0.7.77, batch N5) |
-| 2288 | THE CAP AND THE OPEN ASKS (CD2, slice 6; D28 and D30) |
-| 2673 | THE SAVE |
+| 2295 | THE CAP AND THE OPEN ASKS (CD2, slice 6; D28 and D30) |
+| 2680 | THE SAVE |
 
 ## Enum constants
 
@@ -164,47 +164,47 @@
 | 1078 | `private Game runningGame` |  |
 | 1079 | `private int runningMonth` |  |
 | 1211 | `private final Map<String, Double> pendingUntil` | Fixed first-completion dates for pending service, saved across reloads (HW1). |
-| 2182 | `private boolean overSaid` | Whether this pass has said why over the limit it builds nothing: the first such line says it whole, the rest in short (0.7.81). |
-| 2343 | `private Auction.Cap cap` | The highest yield the builder's bonds take (D28): fair plus a point by default. |
-| 2366 | `public String measure` |  |
-| 2367 | `public String building` |  |
-| 2368 | `public int templateId` |  |
-| 2369 | `public boolean paving` |  |
-| 2370 | `public long count` |  |
-| 2371 | `public double cost` |  |
-| 2372 | `public double raised` |  |
-| 2373 | `public double toRaise` |  |
-| 2374 | `public int month` |  |
-| 2395 | `private final List<OpenAsk> asks` | The open asks, oldest first; at most one a measure. |
-| 2398 | `private final List<String> asked` | What the asks did at the last pass, a line each time one opened, was placed or was withdrawn: for the inbox (not saved, as bought is). |
-| 2679 | `public boolean on` |  |
-| 2680 | `public double slack` |  |
-| 2682 | `public Double debtToGdp` | The debt limit over a year of GDP (0.7.81): a save from before has none - its "debtLimit" was a share of revenue, which nothing reads now - and loads DEFAULT_DEBT_LIMIT; one at OLD_DEFAULT_DEBT_LIMIT, the default unti... |
-| 2684 | `public boolean cashAnyway` | "Build from cash anyway" (0.7.81): off in a save from before. |
-| 2685 | `public List<Entry> log` |  |
-| 2686 | `public List<String> held` |  |
-| 2687 | `public int lastPass` |  |
-| 2688 | `public int orders` |  |
-| 2689 | `public long buildings` |  |
-| 2690 | `public double spent` |  |
-| 2691 | `public double borrowed` |  |
-| 2692 | `public int bonds` |  |
-| 2694 | `public List<Double> paid` | monthPaid() at the last PAID_MONTHS passes (0.7.104): a save from before has none - its "recent", the budget's revenue, is not read - and reads the month's until a pass records one. |
-| 2696 | `public double landSqFt` | The ground bought for its orders (0.7.77): a save from before has none. |
-| 2697 | `public double landSpent` |  |
-| 2698 | `public int landOffers` |  |
-| 2700 | `public CapSetting.Saved cap` | The cap its bonds take (CD2, D28), the mode by name and the tail or yield: a save without one reads the default, fair plus a point. |
-| 2702 | `public List<OpenAsk> asks` | The asks open when it was saved (CD2, D30): each its order, what it raised, what is to raise and the month it opened. |
-| 2704 | `public List<PaybackHold> paybackHolds` | What the last pass held back as not paying back (PT1-M3), for the advice's card: a save from before has none, and its cards say nothing until the next pass. |
-| 2706 | `public Map<String, Double> pendingUntil` | Original first-completion dates for pending capacity, by service label (HW1). |
-| 2708 | `public Map<String, String> fundingHolds` | Last-pass essential funding reasons for the advice cards. |
-| 2710 | `public Map<String, String> crewHolds` | Reserve plans limited by an essential construction promise. |
+| 2189 | `private boolean overSaid` | Whether this pass has said why over the limit it builds nothing: the first such line says it whole, the rest in short (0.7.81). |
+| 2350 | `private Auction.Cap cap` | The highest yield the builder's bonds take (D28): fair plus a point by default. |
+| 2373 | `public String measure` |  |
+| 2374 | `public String building` |  |
+| 2375 | `public int templateId` |  |
+| 2376 | `public boolean paving` |  |
+| 2377 | `public long count` |  |
+| 2378 | `public double cost` |  |
+| 2379 | `public double raised` |  |
+| 2380 | `public double toRaise` |  |
+| 2381 | `public int month` |  |
+| 2402 | `private final List<OpenAsk> asks` | The open asks, oldest first; at most one a measure. |
+| 2405 | `private final List<String> asked` | What the asks did at the last pass, a line each time one opened, was placed or was withdrawn: for the inbox (not saved, as bought is). |
+| 2686 | `public boolean on` |  |
+| 2687 | `public double slack` |  |
+| 2689 | `public Double debtToGdp` | The debt limit over a year of GDP (0.7.81): a save from before has none - its "debtLimit" was a share of revenue, which nothing reads now - and loads DEFAULT_DEBT_LIMIT; one at OLD_DEFAULT_DEBT_LIMIT, the default unti... |
+| 2691 | `public boolean cashAnyway` | "Build from cash anyway" (0.7.81): off in a save from before. |
+| 2692 | `public List<Entry> log` |  |
+| 2693 | `public List<String> held` |  |
+| 2694 | `public int lastPass` |  |
+| 2695 | `public int orders` |  |
+| 2696 | `public long buildings` |  |
+| 2697 | `public double spent` |  |
+| 2698 | `public double borrowed` |  |
+| 2699 | `public int bonds` |  |
+| 2701 | `public List<Double> paid` | monthPaid() at the last PAID_MONTHS passes (0.7.104): a save from before has none - its "recent", the budget's revenue, is not read - and reads the month's until a pass records one. |
+| 2703 | `public double landSqFt` | The ground bought for its orders (0.7.77): a save from before has none. |
+| 2704 | `public double landSpent` |  |
+| 2705 | `public int landOffers` |  |
+| 2707 | `public CapSetting.Saved cap` | The cap its bonds take (CD2, D28), the mode by name and the tail or yield: a save without one reads the default, fair plus a point. |
+| 2709 | `public List<OpenAsk> asks` | The asks open when it was saved (CD2, D30): each its order, what it raised, what is to raise and the month it opened. |
+| 2711 | `public List<PaybackHold> paybackHolds` | What the last pass held back as not paying back (PT1-M3), for the advice's card: a save from before has none, and its cards say nothing until the next pass. |
+| 2713 | `public Map<String, Double> pendingUntil` | Original first-completion dates for pending capacity, by service label (HW1). |
+| 2715 | `public Map<String, String> fundingHolds` | Last-pass essential funding reasons for the advice cards. |
+| 2717 | `public Map<String, String> crewHolds` | Reserve plans limited by an essential construction promise. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 168 | 2674 | **type** `public final class AutoBuilder` | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and safety - each kept ahead of its demand with the player's spare margin ... |
+| 168 | 2681 | **type** `public final class AutoBuilder` | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and safety - each kept ahead of its demand with the player's spare margin ... |
 
 ### THE SETTINGS (lines 170-288)
 
@@ -364,7 +364,7 @@
 | 1937 | 3 | `private static String money(double thousands)` | Thousands of local money as the decision log writes them ("$1.2M"). |
 | 1948 | 11 | `private static String boughtWords(BuildAdvice.Measure m, String name, long n, List<LandParcel> got, double landCost, double lan...` | The inbox's line for ground bought (0.7.77): which offers, how much and at what price, the order it was for and what that order lacked - and which of the shortcut's rules picked it: one bare offer covering the shortfa... |
 
-### THE GROUND ITS ORDERS NEED (0.7.77, batch N5) (lines 1960-2287)
+### THE GROUND ITS ORDERS NEED (0.7.77, batch N5) (lines 1960-2294)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -376,67 +376,68 @@
 | 2067 | 32 | `static Ground groundFor(Game game, double lack, Set<Integer> alreadyTaken)` | The same whole-parcel selection for a projected shortage, omitting already bought offers. |
 | 2101 | 3 | `private static double linkedSqFt(LandParcel o)` | An offer's dry ground that is room for the order, square feet: its whole dry ground (getSizeSqFt()) less what of it is on a landmass the city has not linked (ET5; LandParcel.getUnlinkedDryKm2()); the whole of it for a... |
 | 2118 | 4 | `public static double lacks(Game game, BuildingsTemplate t, long n)` | The ground n of a building lack, in square feet: what they need past what is free (0.7.101) - only the order's own ground. |
-| 2124 | 4 | `public static double overFull(Game game)` | How much more ground the city's buildings stand on than it owns, in square feet (0.7.101): 0 for a city within its ground. |
-| 2137 | 3 | `public static LandParcel shortcutOffer(Game game, double lackSqFt, Set<Integer> taken)` | The offer Build's land shortcut would buy for `lackSqFt` of dry ground, the offers in `taken` passed over, bare ground only: the cheapest whose dry ground covers it, the nearer on a tie (Game.bestOffer()'s shortfall r... |
-| 2142 | 20 | `static LandParcel shortcutOffer(LandMarket market, double lackSqFt, Set<Integer> taken)` | ...on any office: the city's own, or a rehearsal's copy of it (assembled()). |
-| 2164 | 4 | `static double wait(Game game, BuildAdvice.Suggestion s, long n)` | An order's wait for n: a paving's on the Paved Road site, a building's in the queue (a sea terminal's quoted on the landmass the rule gives it, as buildStack() is asked, ET5). |
-| 2170 | 4 | `static double total(Game game, BuildAdvice.Suggestion s, long n)` | What n of the order costs: Game.quoteBuildOn() by the rule (ET5; Game.quoteBuild() for everything but a sea terminal), or Game.quotePave() for a paving. |
-| 2175 | 5 | `private void hold(BuildAdvice.Measure m, BuildAdvice.Suggestion s, Cut cut, long wanted, String line, Payback pb)` |  |
-| 2185 | 5 | `public static String gdpShare(double share)` | A share of GDP as the card writes it: "262%", "7%", "0%", and a place under a tenth: "0.4%", "7.2%". |
-| 2192 | 3 | `private String debtWords(Game game, BuildAdvice.Suggestion s, Ground ground)` | Why the money pays for none: one more and (0.7.77) the ground it lacks - over the limit, or a bond that would cross it (0.7.81). |
-| 2197 | 25 | `private String debtWords(Game game, java.util.function.DoubleSupplier price, String what, Ground ground)` | ...for an order that is not a suggestion's (AL1: an island's link): its price, asked only where the words need it, and what it is called ("one", "the link"). |
-| 2224 | 6 | `private String firstWords(Game game, BuildAdvice.Suggestion s, Ground ground)` | Why the cash pays for no first of a kind (0.7.101): built from the cash alone, and the cash over a month's tax short of one and its ground. |
-| 2240 | 9 | `static String paybackWords(Payback p)` | Why one would not pay back (0.7.104), with its figure: what each of the residents it would cover pays the city a month and what each already costs it, on average over its life, and what that leaves against its running... |
-| 2251 | 10 | `static String nothingWords(Game game, BuildAdvice.Measure m)` | Why nothing the city could build moves a measure short of its margin: water past the fresh water it owns with no sea, or no building it could staff. |
-| 2262 | 11 | `static String cutWords(Cut cut, long wanted, long n)` |  |
-| 2275 | 12 | `public static String reading(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added)` | A measure's figure as the Build tab reads it: served for a served gauge, its own reading for the rest. |
+| 2124 | 5 | `static double freeGround(Game game, BuildingsTemplate t)` | The ground the city may build one of these on without buying (RG1): free for anyone, and for a Wind or Solar Farm what the farmland reserve holds too while one stands (LandManager.reserveKeyOf()). |
+| 2131 | 4 | `public static double overFull(Game game)` | How much more ground the city's buildings stand on than it owns, in square feet (0.7.101): 0 for a city within its ground. |
+| 2144 | 3 | `public static LandParcel shortcutOffer(Game game, double lackSqFt, Set<Integer> taken)` | The offer Build's land shortcut would buy for `lackSqFt` of dry ground, the offers in `taken` passed over, bare ground only: the cheapest whose dry ground covers it, the nearer on a tie (Game.bestOffer()'s shortfall r... |
+| 2149 | 20 | `static LandParcel shortcutOffer(LandMarket market, double lackSqFt, Set<Integer> taken)` | ...on any office: the city's own, or a rehearsal's copy of it (assembled()). |
+| 2171 | 4 | `static double wait(Game game, BuildAdvice.Suggestion s, long n)` | An order's wait for n: a paving's on the Paved Road site, a building's in the queue (a sea terminal's quoted on the landmass the rule gives it, as buildStack() is asked, ET5). |
+| 2177 | 4 | `static double total(Game game, BuildAdvice.Suggestion s, long n)` | What n of the order costs: Game.quoteBuildOn() by the rule (ET5; Game.quoteBuild() for everything but a sea terminal), or Game.quotePave() for a paving. |
+| 2182 | 5 | `private void hold(BuildAdvice.Measure m, BuildAdvice.Suggestion s, Cut cut, long wanted, String line, Payback pb)` |  |
+| 2192 | 5 | `public static String gdpShare(double share)` | A share of GDP as the card writes it: "262%", "7%", "0%", and a place under a tenth: "0.4%", "7.2%". |
+| 2199 | 3 | `private String debtWords(Game game, BuildAdvice.Suggestion s, Ground ground)` | Why the money pays for none: one more and (0.7.77) the ground it lacks - over the limit, or a bond that would cross it (0.7.81). |
+| 2204 | 25 | `private String debtWords(Game game, java.util.function.DoubleSupplier price, String what, Ground ground)` | ...for an order that is not a suggestion's (AL1: an island's link): its price, asked only where the words need it, and what it is called ("one", "the link"). |
+| 2231 | 6 | `private String firstWords(Game game, BuildAdvice.Suggestion s, Ground ground)` | Why the cash pays for no first of a kind (0.7.101): built from the cash alone, and the cash over a month's tax short of one and its ground. |
+| 2247 | 9 | `static String paybackWords(Payback p)` | Why one would not pay back (0.7.104), with its figure: what each of the residents it would cover pays the city a month and what each already costs it, on average over its life, and what that leaves against its running... |
+| 2258 | 10 | `static String nothingWords(Game game, BuildAdvice.Measure m)` | Why nothing the city could build moves a measure short of its margin: water past the fresh water it owns with no sea, or no building it could staff. |
+| 2269 | 11 | `static String cutWords(Cut cut, long wanted, long n)` |  |
+| 2282 | 12 | `public static String reading(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added)` | A measure's figure as the Build tab reads it: served for a served gauge, its own reading for the rest. |
 
-### THE CAP AND THE OPEN ASKS (CD2, slice 6; D28 and D30) (lines 2288-2672)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2346 | 1 | `public Auction.Cap getCap()` | The builder's own cap. |
-| 2349 | 7 | `public void setCap(Auction.Cap cap, DecisionLog decisions)` | The cap, as the panel's chips set it; the change is a decision. |
-| 2365 | 28 | **type** `public static final class OpenAsk` | One order whose bond sold short and which waits for its money (D30): the measure by its label, the building by its name and template id (-1 and paving for the gravel roads' paving), how many, what the order costs with... |
-| 2376 | 1 | `public OpenAsk()` _(in AutoBuilder.OpenAsk)_ |  |
-| 2378 | 1 | `public String measure()` _(in AutoBuilder.OpenAsk)_ |  |
-| 2379 | 1 | `public String building()` _(in AutoBuilder.OpenAsk)_ |  |
-| 2380 | 1 | `public boolean paving()` _(in AutoBuilder.OpenAsk)_ |  |
-| 2381 | 1 | `public long count()` _(in AutoBuilder.OpenAsk)_ |  |
-| 2383 | 1 | `public double cost()` _(in AutoBuilder.OpenAsk)_ | What the order costs, its ground with it, as last priced. |
-| 2385 | 1 | `public double raised()` _(in AutoBuilder.OpenAsk)_ | What its bond sales have raised for it. |
-| 2387 | 1 | `public double toRaise()` _(in AutoBuilder.OpenAsk)_ | What is still to raise. |
-| 2389 | 1 | `public int monthOpened()` _(in AutoBuilder.OpenAsk)_ | The month it opened in. |
-| 2391 | 1 | `public int monthsOpen(int now)` _(in AutoBuilder.OpenAsk)_ | How many months it has been open at `now`. |
-| 2401 | 1 | `public List<OpenAsk> asks()` | The open asks, for the panel: the order, what is raised, what is to raise, the months open. |
-| 2404 | 1 | `public List<String> asked()` | What the last pass did with the asks, a line an event; empty when nothing happened. |
-| 2407 | 4 | `OpenAsk askFor(BuildAdvice.Measure m)` | The ask open for a measure, or null. |
-| 2413 | 4 | `private boolean askOpenFor(String label)` | Whether an ask is open for the measure of this label. |
-| 2426 | 3 | `double held(Game game, OpenAsk own)` | What the treasury holds for one ask's order right now: the cash over the reserve, less what every other ask has raised, and never under nothing (an overdraft is the treasury's, not a debt of the order's). |
-| 2431 | 5 | `public double askedRaised()` | Everything open asks have raised: the money the builder holds for their orders. |
-| 2442 | 5 | `public boolean withdraw(int index, DecisionLog decisions)` | The player withdraws an ask (the panel's button): what was raised stays in the treasury, and the log says so. |
-| 2449 | 3 | `public boolean withdraw(int index)` | ...with no decision recorded. |
-| 2454 | 10 | `private void withdrawAsk(OpenAsk a, String why, DecisionLog decisions)` | Takes an ask off the books and says why; what it raised is the treasury's. |
-| 2466 | 1 | **type** `private record Askable(BuildAdvice.Suggestion s, String name, double cost, double gap, DebtQuote quote)` | A card the money refused because its bond came up short at the builder's cap: the card, its words, what one costs with its ground, the gap past the spendable cash, and the short quote. |
-| 2469 | 9 | `private Askable askableFor(Game game, BuildAdvice.Suggestion s, String name, Ground one)` | The ask for one of a card, if its bond for the gap comes up short at the cap and the sale itself would stay within the limit; null where something else refused it. |
-| 2480 | 1 | **type** `private record Sold(DebtQuote quote, double raised)` | What an offer of the bond raised, and the quote it was. |
-| 2483 | 13 | `private Sold sell(Game game, OpenAsk ask, double need)` | Offers `need` of cash on the bond at the builder's cap and books what sells, for an ask: the money raised is the ask's. |
-| 2498 | 8 | `private void noteSale(Game game, DebtQuote q, double raisedCash, double heldOpen)` | A bond the builder sold, entered for the time skip's report (TimeSkipReport.AutoSale). |
-| 2508 | 15 | `private String askWords(OpenAsk a, DebtQuote q, double held)` | Where an ask stands, for the inbox and the card: its bond, what is raised and what is to raise. |
-| 2529 | 20 | `private boolean openAsk(Game game, BuildAdvice.Measure m, Askable a)` | Opens the ask for a card (D30): sells the bond for what it will sell, keeps the money for the order, and holds the measure on it. |
-| 2551 | 12 | `private BuildAdvice.Suggestion cardFor(Game game, List<CityNeeds.Need> all, BuildAdvice.Measure m, OpenAsk a)` | The advice's card for an ask's building, walking the ranking as the pass walks it; null where the advice no longer ranks it. |
-| 2573 | 74 | `private void reoffer(Game game, List<CityNeeds.Need> all, List<BuildAdvice.Measure> kept, OpenAsk a)` | An open ask, in the month's need-ranked pass (D30): still the advice's order? |
-| 2654 | 3 | `private boolean covered(Game game, OpenAsk a)` | Whether what the treasury holds for an ask's order pays for it: the cash over the reserve, less every other ask's raised money (held()), at least the order's cost as priced now. |
-| 2665 | 3 | `private double stillToRaise(Game game, OpenAsk a)` | What an ask has still to raise: the order's cost less the greater of what the treasury holds for it and what its sales have raised in all. |
-| 2669 | 3 | `private double stillToRaise(Game game, OpenAsk a, double cost)` |  |
-
-### THE SAVE (lines 2673-2841)
+### THE CAP AND THE OPEN ASKS (CD2, slice 6; D28 and D30) (lines 2295-2679)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2678 | 34 | **type** `public static final class State` | What is saved, under one key (DataSave.autoBuild). |
-| 2713 | 28 | `public State toState()` |  |
-| 2742 | 13 | `private static OpenAsk copyOf(OpenAsk a)` |  |
-| 2757 | 13 | `public void redenominate(double scale)` | Every figure it keeps in money, in the new unit (Game, THE CURRENCY REFORM): the open asks', and (PT1-M3) the payback holds'. |
-| 2772 | 69 | `public void restore(State s)` | Puts a saved state back; null - a save from before 0.7.73 - is off, at the defaults, with nothing done; one from 0.7.73 to 0.7.80 keeps its switch and margin and reads the default limit, "Build from cash anyway" off; ... |
+| 2353 | 1 | `public Auction.Cap getCap()` | The builder's own cap. |
+| 2356 | 7 | `public void setCap(Auction.Cap cap, DecisionLog decisions)` | The cap, as the panel's chips set it; the change is a decision. |
+| 2372 | 28 | **type** `public static final class OpenAsk` | One order whose bond sold short and which waits for its money (D30): the measure by its label, the building by its name and template id (-1 and paving for the gravel roads' paving), how many, what the order costs with... |
+| 2383 | 1 | `public OpenAsk()` _(in AutoBuilder.OpenAsk)_ |  |
+| 2385 | 1 | `public String measure()` _(in AutoBuilder.OpenAsk)_ |  |
+| 2386 | 1 | `public String building()` _(in AutoBuilder.OpenAsk)_ |  |
+| 2387 | 1 | `public boolean paving()` _(in AutoBuilder.OpenAsk)_ |  |
+| 2388 | 1 | `public long count()` _(in AutoBuilder.OpenAsk)_ |  |
+| 2390 | 1 | `public double cost()` _(in AutoBuilder.OpenAsk)_ | What the order costs, its ground with it, as last priced. |
+| 2392 | 1 | `public double raised()` _(in AutoBuilder.OpenAsk)_ | What its bond sales have raised for it. |
+| 2394 | 1 | `public double toRaise()` _(in AutoBuilder.OpenAsk)_ | What is still to raise. |
+| 2396 | 1 | `public int monthOpened()` _(in AutoBuilder.OpenAsk)_ | The month it opened in. |
+| 2398 | 1 | `public int monthsOpen(int now)` _(in AutoBuilder.OpenAsk)_ | How many months it has been open at `now`. |
+| 2408 | 1 | `public List<OpenAsk> asks()` | The open asks, for the panel: the order, what is raised, what is to raise, the months open. |
+| 2411 | 1 | `public List<String> asked()` | What the last pass did with the asks, a line an event; empty when nothing happened. |
+| 2414 | 4 | `OpenAsk askFor(BuildAdvice.Measure m)` | The ask open for a measure, or null. |
+| 2420 | 4 | `private boolean askOpenFor(String label)` | Whether an ask is open for the measure of this label. |
+| 2433 | 3 | `double held(Game game, OpenAsk own)` | What the treasury holds for one ask's order right now: the cash over the reserve, less what every other ask has raised, and never under nothing (an overdraft is the treasury's, not a debt of the order's). |
+| 2438 | 5 | `public double askedRaised()` | Everything open asks have raised: the money the builder holds for their orders. |
+| 2449 | 5 | `public boolean withdraw(int index, DecisionLog decisions)` | The player withdraws an ask (the panel's button): what was raised stays in the treasury, and the log says so. |
+| 2456 | 3 | `public boolean withdraw(int index)` | ...with no decision recorded. |
+| 2461 | 10 | `private void withdrawAsk(OpenAsk a, String why, DecisionLog decisions)` | Takes an ask off the books and says why; what it raised is the treasury's. |
+| 2473 | 1 | **type** `private record Askable(BuildAdvice.Suggestion s, String name, double cost, double gap, DebtQuote quote)` | A card the money refused because its bond came up short at the builder's cap: the card, its words, what one costs with its ground, the gap past the spendable cash, and the short quote. |
+| 2476 | 9 | `private Askable askableFor(Game game, BuildAdvice.Suggestion s, String name, Ground one)` | The ask for one of a card, if its bond for the gap comes up short at the cap and the sale itself would stay within the limit; null where something else refused it. |
+| 2487 | 1 | **type** `private record Sold(DebtQuote quote, double raised)` | What an offer of the bond raised, and the quote it was. |
+| 2490 | 13 | `private Sold sell(Game game, OpenAsk ask, double need)` | Offers `need` of cash on the bond at the builder's cap and books what sells, for an ask: the money raised is the ask's. |
+| 2505 | 8 | `private void noteSale(Game game, DebtQuote q, double raisedCash, double heldOpen)` | A bond the builder sold, entered for the time skip's report (TimeSkipReport.AutoSale). |
+| 2515 | 15 | `private String askWords(OpenAsk a, DebtQuote q, double held)` | Where an ask stands, for the inbox and the card: its bond, what is raised and what is to raise. |
+| 2536 | 20 | `private boolean openAsk(Game game, BuildAdvice.Measure m, Askable a)` | Opens the ask for a card (D30): sells the bond for what it will sell, keeps the money for the order, and holds the measure on it. |
+| 2558 | 12 | `private BuildAdvice.Suggestion cardFor(Game game, List<CityNeeds.Need> all, BuildAdvice.Measure m, OpenAsk a)` | The advice's card for an ask's building, walking the ranking as the pass walks it; null where the advice no longer ranks it. |
+| 2580 | 74 | `private void reoffer(Game game, List<CityNeeds.Need> all, List<BuildAdvice.Measure> kept, OpenAsk a)` | An open ask, in the month's need-ranked pass (D30): still the advice's order? |
+| 2661 | 3 | `private boolean covered(Game game, OpenAsk a)` | Whether what the treasury holds for an ask's order pays for it: the cash over the reserve, less every other ask's raised money (held()), at least the order's cost as priced now. |
+| 2672 | 3 | `private double stillToRaise(Game game, OpenAsk a)` | What an ask has still to raise: the order's cost less the greater of what the treasury holds for it and what its sales have raised in all. |
+| 2676 | 3 | `private double stillToRaise(Game game, OpenAsk a, double cost)` |  |
+
+### THE SAVE (lines 2680-2848)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2685 | 34 | **type** `public static final class State` | What is saved, under one key (DataSave.autoBuild). |
+| 2720 | 28 | `public State toState()` |  |
+| 2749 | 13 | `private static OpenAsk copyOf(OpenAsk a)` |  |
+| 2764 | 13 | `public void redenominate(double scale)` | Every figure it keeps in money, in the new unit (Game, THE CURRENCY REFORM): the open asks', and (PT1-M3) the payback holds'. |
+| 2779 | 69 | `public void restore(State s)` | Puts a saved state back; null - a save from before 0.7.73 - is off, at the defaults, with nothing done; one from 0.7.73 to 0.7.80 keeps its switch and margin and reads the default limit, "Build from cash anyway" off; ... |
 

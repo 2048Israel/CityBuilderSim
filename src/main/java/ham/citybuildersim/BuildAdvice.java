@@ -1352,11 +1352,36 @@ public final class BuildAdvice {
         return free * Math.min(land.getPricePerSqFt(), office) + Math.max(0, sqFt - Math.max(0, landLeft)) * office;
     }
 
-    /** Ground remaining for this order's actual land use after earlier cards' footprints. */
+    /**
+     * ...a template's ground (RG1), `landLeft` the ground it may take as
+     * availableGround() reads it: a Wind or Solar Farm in the farmland reserve
+     * while one stands - as much as the reserve holds at the reserve's price
+     * (LandManager.groundPriceFor(), the farmland price as far as the going
+     * price: what the city gives that ground up at, since it may go to
+     * nothing but a farm), the rest at landValue() on what is left past the
+     * reserve's. Every other template, and a farm with no reserve, is
+     * landValue() itself.
+     */
+    public static double landValue(Game game, BuildingsTemplate t, double sqFt, double landLeft) {
+        LandManager land = game.getLandManager();
+        String reserve = land.reserveKeyOf(t);
+        if (reserve == null) return landValue(game, sqFt, landLeft);
+        double held = land.heldBy(reserve), in = Math.min(Math.max(0, sqFt), held);
+        return in * land.groundPriceFor(reserve) + landValue(game, sqFt - in, landLeft - held);
+    }
+
+    /** The farmland reserve's held ground a template may take besides the ground free for anyone (RG1): a Wind or Solar Farm's while a reserve stands, else none. */
+    static double reserveHeldFor(Game game, BuildingsTemplate t) {
+        LandManager land = game.getLandManager();
+        String reserve = land.reserveKeyOf(t);
+        return reserve == null ? 0 : land.heldBy(reserve);
+    }
+
+    /** Ground remaining for this order's actual land use after earlier cards' footprints - and for a Wind or Solar Farm the farmland reserve's held ground while one stands (RG1, reserveHeldFor()). */
     static double availableGround(Game game, BuildingsTemplate t, double buildingGroundLeft) {
         LandManager land = game.getLandManager();
         return Math.max(0, buildingGroundLeft
-                + (land.freeForAnyone(Game.groundUse(t)) - land.getAvailableSqFt()));
+                + (land.freeForAnyone(Game.groundUse(t)) - land.getAvailableSqFt()) + reserveHeldFor(game, t));
     }
 
     /** Why the next plan lost: greater whole-life net cost, or it cannot close the need (HW1). NO_ROOM remains for historical callers. */
@@ -1489,9 +1514,18 @@ public final class BuildAdvice {
         return suggestFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, true);
     }
 
-    /** The shared Build-card and automatic full-service target, with the player's reserve setting (HW1). */
+    /**
+     * The shared Build-card and automatic full-service target, with the player's reserve setting (HW1). The reading changes nothing in
+     * the city, so the new units of the buildings under way are fitted once in it and held to its end (R1g; NewUnit.heldWhile()).
+     */
     public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                         double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving, boolean maintain) {
+        return NewUnit.heldWhile(game, () -> suggestionFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, maintain));
+    }
+
+    /** suggestFor()'s reading itself. */
+    private static Suggestion suggestionFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
+                                            double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving, boolean maintain) {
         if (AutoBuilder.essential(m) && !warranted(game, m)) return null;
         // A berth (FR3): the terminal that pays back, if any (A BERTH THAT PAYS BACK, below) - not ranked like a service.
         if (m.kind() == Kind.PORT) return portSuggestion(game, m, cashLeft, landLeft, skip);
@@ -1804,9 +1838,9 @@ public final class BuildAdvice {
         return game.getServicesManager().getUtilitiesHandler().runningPerKwh(t);
     }
 
-    /** n of a plant's capital and ground: the quote of the order, its ground at landValue() on the land left. */
+    /** n of a plant's capital and ground: the quote of the order, its ground at landValue() on the land left - a farm's in the farmland reserve first, at its price (RG1). */
     static double capitalOf(Game game, BuildingsTemplate t, long n, double landLeft) {
-        return game.quoteBuild(t, n).total + landValue(game, t.getLandSqFt() * (double) n, landLeft);
+        return game.quoteBuild(t, n).total + landValue(game, t, t.getLandSqFt() * (double) n, landLeft + reserveHeldFor(game, t));
     }
 
     /** What n of a plant cost a year: twelve months of its `capital` over lifeFactor() `life` and of its fixed running (the spread's cost, and the reserve rank's). */
@@ -2497,7 +2531,7 @@ public final class BuildAdvice {
     public static double orderLife(Game game, NewUnit u, int count, double landLeft,
                                    Map<BuildingsTemplate, Long> site) {
         BuildingsTemplate t = u.template();
-        return game.quoteBuild(t, count).total + landValue(game, t.getLandSqFt() * (double) count, landLeft)
+        return game.quoteBuild(t, count).total + landValue(game, t, t.getLandSqFt() * (double) count, landLeft + reserveHeldFor(game, t))
                 + count * running(game, u, site) * lifeFactor(game);
     }
 

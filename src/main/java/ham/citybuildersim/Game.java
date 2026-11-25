@@ -6584,10 +6584,30 @@ public class Game {
         Zoning.Zone now = landManager.getZoning().set(sector, kind, size, priceShare);
         if (now == null) return;
         if (was == null || was.kind() != now.kind() || DecisionLog.moved(was.size(), now.size())
-                || DecisionLog.moved(was.priceShare(), now.priceShare())) {
+                || DecisionLog.moved(was.dialShare(), now.dialShare())) {
             decisions.record(DecisionLog.ZONING, "Zoned " + zoneSizeWords(now) + " for " + sector + " at "
-                    + DecisionLog.pct(now.priceShare()) + " of the going price");
+                    + (now.farmland() ? "the farmland price" : DecisionLog.pct(now.dialShare()) + " of the going price"));
         }
+    }
+
+    /**
+     * The farmland reserve (RG1; Zoning's THE FARMLAND RESERVE): the fields'
+     * zone at the sellers' farmland price, outside the crowding premium, and
+     * holding ground for the city's Wind and Solar Farms too - or, off, back
+     * at its dial's share. Needs the fields' zone (setZone() first); its
+     * size, dial and used ground are kept. Off by default. Like a dial (Z3),
+     * ground already sold is not re-priced.
+     */
+    public void setFarmlandReserve(boolean on) {
+        Zoning z = landManager.getZoning();
+        Zoning.Zone was = z.zone(Zoning.RESERVE_SECTOR);
+        if (was == null || was.farmland() == on) return;
+        Zoning.Zone now = z.setFarmland(Zoning.RESERVE_SECTOR, on);
+        if (now == null) return;
+        landManager.strikeFarmland();
+        decisions.record(DecisionLog.ZONING, on
+                ? "Farmland reserve: " + zoneSizeWords(now) + " for every farm at the farmland price"
+                : "Farmland reserve lifted: " + Zoning.RESERVE_SECTOR + " at " + DecisionLog.pct(now.dialShare()) + " of the going price");
     }
 
     /** A zone's size as the log writes it: "2% of the dry ground", "40 km²". */
@@ -10890,7 +10910,10 @@ public class Game {
             c.sold(bought, paid);
             // ...a bought building's ground back to its zone, if its sector has one (0.7.107).
             // ...a works's ground leaves the works' part of the pool (standsAnywhere(), ET2), a run's the runs' (isRun(), ET4).
-            landManager.release(d.landSqFt, d.from, groundUse(buildingManager.getTemplate(d.templateId)));
+            BuildingsTemplate gone = buildingManager.getTemplate(d.templateId);
+            // ...a city's Wind or Solar Farm out of the city's farms' ground in the fields' zone, whatever the reserve is now (RG1, REV-RG1).
+            if ("City".equals(d.from) && LandManager.isCityFarm(gone)) landManager.releaseCityFarm(d.landSqFt, groundUse(gone));
+            else landManager.release(d.landSqFt, d.from, groundUse(gone));
             // ...a sea terminal's units no longer hold their island's ground (ET5).
             if (Ports.isPort(buildingManager.getTemplate(d.templateId))) landManager.getLandmasses().demolished(d.id);
             GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for %s, %s freed.",
@@ -10991,18 +11014,21 @@ public class Game {
         // ...a sea terminal on an island no port links stands on that island's own room, not the linked pool's (ET5).
         Landmasses lms = landManager.getLandmasses();
         boolean island = landmass != Landmasses.NO_LANDMASS && !lms.linked(landmass);
-        if (island ? !landManager.canAllocateOn(landmass, landNeeded) : !landManager.canAllocate(landNeeded, selected.getSector(), works)) {
+        // ...a Wind or Solar Farm in the farmland reserve while one stands (RG1, LandManager.groundKeyOf()).
+        String groundKey = landManager.groundKeyOf(selected);
+        if (island ? !landManager.canAllocateOn(landmass, landNeeded) : !landManager.canAllocate(landNeeded, groundKey, works)) {
             this.hasNewReceipt = false;
             System.out.println("Not enough land (need "
                     + LandManager.areaWords(landNeeded) + ", have "
-                    + LandManager.areaWords(island ? lms.portRoomSqFt(landmass) : landManager.freeFor(selected.getSector(), works)) + ")");
+                    + LandManager.areaWords(island ? lms.portRoomSqFt(landmass) : landManager.freeFor(groundKey, works)) + ")");
             return;
         }
 
         if (totalCost <= cash) {
             totalCost = treasuryPays(TreasuryLine.BUILDINGS, totalCost);
             if (island) landManager.allocateOn(landmass, landNeeded);
-            else landManager.allocate(landNeeded, selected.getSector(), works);
+            else if (landManager.reserveKeyOf(selected) != null) landManager.allocateCityFarm(landNeeded, works);
+            else landManager.allocate(landNeeded, groundKey, works);
             this.hasNewReceipt = true;
             this.receiptSerial++;
             lastBuildingName = buildingManager.getName(selected);
@@ -11763,7 +11789,7 @@ public class Game {
     public double freeGroundFor(BuildingsTemplate t, int asked) {
         int island = islandPortLandmass(t, asked);
         return island != Landmasses.NO_LANDMASS ? landManager.getLandmasses().portRoomSqFt(island)
-                : landManager.freeFor(t.getSector(), groundUse(t));
+                : landManager.freeFor(landManager.groundKeyOf(t), groundUse(t));
     }
 
     /**
@@ -12062,7 +12088,7 @@ public class Game {
         int landmass = portLandmassOf(template, asked);
         boolean island = landmass != Landmasses.NO_LANDMASS && !landManager.getLandmasses().linked(landmass);
         if (island ? !landManager.canAllocateOn(landmass, template.getLandSqFt() * quantity)
-                : !landManager.canAllocate(template.getLandSqFt() * quantity, template.getSector(), groundUse(template))) {
+                : !landManager.canAllocate(template.getLandSqFt() * quantity, landManager.groundKeyOf(template), groundUse(template))) {
             this.hasNewReceipt = false;
             return BuildResult.NO_LAND;
         }
@@ -12232,7 +12258,7 @@ public class Game {
                                 ? landManager.canAllocateOn(island, aheadOn.getOrDefault(island, 0.0) + t.getLandSqFt() * (double) n)
                                 : use == LandManager.Use.RUN
                                 ? landManager.canAllocateRunAfter(t.getLandSqFt() * (double) n, t.getSector(), ground, worksAhead, runsAhead)
-                                : landManager.canAllocate(ground - onIdleSlope + t.getLandSqFt() * (double) n, t.getSector(), use)) ? BuildResult.NO_LAND
+                                : landManager.canAllocate(ground - onIdleSlope + t.getLandSqFt() * (double) n, landManager.groundKeyOf(t), use)) ? BuildResult.NO_LAND
                         : null;
                 if (refused != null) {
                     if (stop != null) stop[0] = refused;
@@ -15339,7 +15365,13 @@ public class Game {
                         + economyManager.getResearchBill()
                         + economyManager.getTransitBill()
                         // ...and the licence the utilities bought abroad (R2c-P), valued at cost like the services it bought into; it is in the imports too, so GDP is unchanged.
-                        + publicIpPaid,
+                        + publicIpPaid
+                        // ...and the repairs to the city's own buildings, the roads, plants, schools, clinics, stations and terminals
+                        // (EconomyManager.CITY_MAINTAINED), at the bill chargeBuildingMaintenance() struck above, paid or owed: the city buys
+                        // the service, so it is government consumption, as a real government's road repairs are. WHY (R1g, 2026-11-24): the
+                        // builders' material imports for these repairs were in the imports while the repairs were in no final term, so a
+                        // grown city with its building stopped read GDP below zero (the 1900 city, seed 1, -360.89 at month 1135).
+                        + economyManager.getCityMaintenanceBill(),
                 // The full interest bill, foreign coupons included - the
                 // government's books should show what it paid, not only the
                 // part its own bank collected. See payForeignInterest().
@@ -16504,6 +16536,9 @@ public class Game {
         }
 
         populationManager.applyBandFlow(education.getGraduates());
+        // ...and in a city founded the 1900 way the young who came of age learn the year's trade at work (R1g; PopulationManager, THE APPRENTICES).
+        // Gross school completions cover the quota; degree graduates leaving the diploma band do not reopen it (REV-R1gc2-1).
+        if (foundedUnfitted()) populationManager.apprentice(cohorts.getPromoted(AgeBand.TEEN), ArrivalMix.tradeShareAt(getMonth()), education.getNewDiplomas());
         populationManager.addLicences(education.getLicences());
         // And whoever is in a lecture theatre is out of the labour supply
         // until they come out of it - see PopulationManager.workforceByBand().
@@ -18082,7 +18117,8 @@ public class Game {
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
         // ...and each site's work on the foreign crews' book (REV-FC2, the second review), what a cancel takes off it.
         dataSave.setAbroadOwedById(buildingManager.getAbroadOwedById());
-        dataSave.setAbroadClaimsById(buildingManager.getAbroadClaimsById());
+        // ...and the claims themselves (R1g), which the premium his payers paid is shared by: the points rescale them.
+        dataSave.setAbroadClaimById(buildingManager.getAbroadClaimById());
         // ...and the equipment each site's orders froze, only where a site has a lot (R1e; none in a city founded the default way).
         dataSave.setLotsById(buildingManager.getLotsById());
         dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
@@ -18092,7 +18128,8 @@ public class Game {
         dataSave.setPetrolPrices(motoring.petrolPricesForSave());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
-        dataSave.setHomePayIndices(recipes.payIndicesForSave(),recipes.payIndexMonth());
+        // ...and the 1900 home's walk, its months of the households' pay (R1g; none in a city founded the default way).
+        dataSave.setHomePay(recipes.payIndicesForSave(), recipes.payIndexMonth());
         dataSave.setLicenceFees(licenceFeesForSave());
         // ...and the licence the city's own patented works accrued and last paid (R2c-P).
         dataSave.setPublicIpPending(publicIpPending);
@@ -22315,6 +22352,7 @@ public class Game {
             // ...and each site's work on the foreign crews' book (REV-FC2, the second review), once the sites owe their points:
             // a save from before the key shares his book among the sites by their points owed, as FC1b's cancel cut them.
             buildingManager.restoreAbroadOwed(loaded.getAbroadOwedById());
+            buildingManager.restoreAbroadClaims(loaded.getAbroadClaimById());
             buildingManager.getHousingInventory().restore(loaded.getHousingInventory());
             getSectors().realEstate().housingMarket().restore(loaded.getHousingMarket(),buildingManager);
             // ...and the fittings on site, with them (R1b): a save with none has none.
@@ -22342,7 +22380,8 @@ public class Game {
             // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
             recipes.restore(loaded.getRecipeChoices());
-            recipes.restorePayIndices(loaded.getHomePayIndices(),loaded.getHomePayMonth());
+            // ...and the 1900 home's walk, its saved months (R1g), before the apply() below dates the fresh templates at the scale they were saved at.
+            recipes.restorePayIndices(loaded.getHomePayIndices(), loaded.getHomePayMonth());
             restoreLicenceFees(loaded.getLicenceFees());
             restorePublicLicences(loaded.getPublicIpPending(), loaded.getPublicIpPaid());
             recipes.apply(this);
@@ -23244,11 +23283,11 @@ public class Game {
                 && restoredFlows.getBankSectorDeposits() != null) {
             bank.restoreDeposits(restoredFlows.getBankHouseholdDeposits(), restoredFlows.getBankSectorDeposits());
         }
-        // The held book amounts and raw site claims, over the final rebuild. No new lending,
+        // The held book amounts and the sites' claims (R1g's abroadClaimById, put back again), over the final rebuild. No new lending,
         // funding or work is settled here: these are the exact inputs the next month reads.
         if (restoredFlows != null) {
             bank.restoreHeldBooks(restoredFlows.getBankHeldBooks());
-            buildingManager.restoreAbroadClaims(restoredFlows.getAbroadClaimsById());
+            buildingManager.restoreAbroadClaims(restoredFlows.getAbroadClaimById());
         }
         // ...and what had moved each sector's debt so far (FW2, R7), over whatever the rebuild counted.
         if (restoredFlows != null) economyManager.getBusinessDebtManager().restoreMoved(restoredFlows.getCreditMoved());

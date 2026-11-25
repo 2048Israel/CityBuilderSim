@@ -1598,7 +1598,7 @@ public final class AutoBuilder {
         double over = overFull(game);
         if (over > 0) return "the city's buildings stand on " + LandManager.areaWords(over) + " more ground than it owns, so"
                 + " no order fits on ground of its own, and it buys only an order's own. Buy that at the land office.";
-        double free = game.getLandManager().freeForAnyone(Game.groundUse(t));
+        double free = freeGround(game, t);
         return "the city has no ground for one (" + LandManager.areaWords(t.getLandSqFt()) + " each, "
                 + LandManager.areaWords(Math.max(0, free)) + " free) and no bare ground on offer to buy for it. Buy land at"
                 + " the land office.";
@@ -2117,7 +2117,14 @@ public final class AutoBuilder {
      */
     public static double lacks(Game game, BuildingsTemplate t, long n) {
         // ...a works's on any dry ground (Game.groundUse(), ET2, ET4: a run on every class); every building the city builds on flat and foothill, as ever.
-        return game.landNeededFor(t, n) - game.getLandManager().freeForAnyone(Game.groundUse(t));
+        return game.landNeededFor(t, n) - freeGround(game, t);
+    }
+
+    /** The ground the city may build one of these on without buying (RG1): free for anyone, and for a Wind or Solar Farm what the farmland reserve holds too while one stands (LandManager.reserveKeyOf()). */
+    static double freeGround(Game game, BuildingsTemplate t) {
+        LandManager land = game.getLandManager();
+        String reserve = land.reserveKeyOf(t);
+        return reserve == null ? land.freeForAnyone(Game.groundUse(t)) : land.freeFor(reserve, Game.groundUse(t));
     }
 
     /** How much more ground the city's buildings stand on than it owns, in square feet (0.7.101): 0 for a city within its ground. Since ET5 the ground it may stand on: the linked landmasses' (LandManager.getLinkedOwnedSqFt()), not the island ground across the water. */

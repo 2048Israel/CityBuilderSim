@@ -3546,7 +3546,7 @@ public class SaveFileCheck {
                     && old.get("gameVersion").getAsString().equals(version) && old.has("housingInventory") && gridShape
                     && !old.has("housingMarket") && !old.has("homePayIndices") && !old.has("usedCarTrade")
                     && !old.has("newCarTrade") && !old.has("populationWageTotals")
-                    && !old.has("bankHeldBooks") && !old.has("abroadClaimsById")
+                    && !old.has("bankHeldBooks") && !old.has("abroadClaimById")
                     && old.getAsJsonArray("householdCells").size() == old.getAsJsonArray("householdCellKeys").size() * 144 + 3
                     && oldHistory.getAsJsonArray("debtSurveys").size() > 0
                     && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(save)).equals(saveHash)

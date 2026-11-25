@@ -590,7 +590,7 @@ final class ZoningScreen {
     /** A zone's settings as the city has them - a sector with no zone: a share, nothing, at the going price. */
     Zoning.Size kindNow(String s) { Zoning.Zone z = ui.game.getZoning().zone(s); return z == null ? Zoning.Size.SHARE : z.kind(); }
     double sizeNow(String s)      { Zoning.Zone z = ui.game.getZoning().zone(s); return z == null ? 0 : z.size(); }
-    double priceNow(String s)     { Zoning.Zone z = ui.game.getZoning().zone(s); return z == null ? Zoning.MAX_PRICE_SHARE : z.priceShare(); }
+    double priceNow(String s)     { Zoning.Zone z = ui.game.getZoning().zone(s); return z == null ? Zoning.MAX_PRICE_SHARE : z.dialShare(); }
 
     /** A zone's size as the city has it, said in a unit: what its size dial reads as current in the unit staged - and what an unstaged size is, the unit staged. */
     double sizeAs(String s, Zoning.Size kind) { return convert(sizeNow(s), kindNow(s), kind); }
@@ -764,7 +764,34 @@ final class ZoningScreen {
         }
         page.getChildren().add(Kept.scope(sizeKey(s), () -> sizeCard(s, name, sector)));
         page.getChildren().add(Kept.scope(priceKey(s), () -> priceCard(s, name)));
+        if (zoned && Zoning.RESERVE_SECTOR.equals(s)) page.getChildren().add(Kept.scope("reserve", () -> reserveCard(s)));
         page.getChildren().add(Kept.scope("taxes", () -> taxesCard(s, name)));
+    }
+
+    /** THE FARMLAND RESERVE's (i) (RG1). */
+    static final String RESERVE_INFO = "A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use "
+            + "zones and Ontario's Greenbelt are: the fields' zone holds its ground for farms alone - the fields, and the Wind "
+            + "and Solar Farms the city builds - and sells it at the farmland price, what a hectare of farm ground sells for "
+            + "in the nation, not at the business price a crowded city puts on every square foot. The city gives up the "
+            + "difference on every sale and on the roll. Lifted, the zone is priced by its dial again.";
+
+    /** THE FARMLAND RESERVE (RG1): on the fields' zone alone - a chip that makes it a reserve or lifts it at once, with the farmland price against the going one. */
+    Node reserveCard(String s) {
+        Game g = ui.game;
+        Zoning.Zone z = g.getZoning().zone(s);
+        LandManager land = g.getLandManager();
+        boolean on = z != null && z.farmland();
+        String farm = money(LandManager.perM2(land.getFarmlandPricePerSqFt())), going = money(LandManager.perM2(land.getPricePerSqFt()));
+        String says = on ? "A farmland reserve: what the zone holds goes to every farm - the fields, the Wind and Solar Farms - at the "
+                + "farmland price, " + farm + " a m², against the going " + going + ". Its price dial waits for the reserve to be lifted."
+                : "Not a farmland reserve: the zone sells at its dial's share of the going price, " + going + " a m². The farmland "
+                + "price is " + farm + " a m².";
+        Label words = PolicyScreen.words(says, Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
+        HBox.setHgrow(words, Priority.ALWAYS);
+        HBox row = Kept.row(8, words, stepChip(on ? "Lift the reserve" : "Make it a farmland reserve",
+                () -> { g.setFarmlandReserve(!on); policy.showPolicyMenu(); }, false), infoButton(RESERVE_INFO, true));
+        row.setAlignment(Pos.CENTER_LEFT);
+        return PolicyScreen.card(row);
     }
 
     /** "Take the zone off" - staged, its chip in the tray - or, staged, "Keep it". */
