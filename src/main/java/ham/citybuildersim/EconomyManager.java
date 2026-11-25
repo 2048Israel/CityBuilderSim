@@ -180,6 +180,11 @@ public class EconomyManager {
         for (Sector s : sectors.all()) s.setPowerPrices(commerce, industry, works);
     }
 
+    /** The struck book's season (PW1-R), the month's load over the year's mean: each sector's bill is its draw x ratio x season x its price. Set beside setPowerPrices() wherever the book's prices are handed down, the month's strike and the load path. */
+    public void setPowerSeason(double season) {
+        for (Sector s : sectors.all()) s.setPowerSeason(season);
+    }
+
     public void setPricePerWaterUnit(double price) {
         pricePerWaterUnit = price;
         for (Sector s : sectors.all()) s.setPricePerWaterUnit(price);

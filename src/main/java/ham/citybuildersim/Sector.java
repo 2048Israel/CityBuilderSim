@@ -894,6 +894,8 @@ public abstract class Sector {
     protected double pricePerWattIndustry, pricePerWattWorks;
     /** The share, 0..1, of its billed draw that its Heavy Industry and Mining buildings take: billed at the industry price, the rest at the commerce price. Set by EconomyManager with the draw. */
     protected double highVoltageShare;
+    /** The struck book's season, the month's load over the year's mean (PW1-R): the bill is the kWh served, draw x ratio x season x the price a kW a month. Set by EconomyManager with the prices; 1 until a book is struck. */
+    protected double powerSeason = 1;
 
     public void setEnergyRatio(double r)  { energyRatio = r; }
     public void setWaterRatio(double r)   { waterRatio = r; }
@@ -905,6 +907,8 @@ public abstract class Sector {
     public void setPowerPrices(double commerce, double industry, double works) {
         pricePerWatt = commerce; pricePerWattIndustry = industry; pricePerWattWorks = works;
     }
+    public void setPowerSeason(double season) { powerSeason = Double.isFinite(season) ? Math.max(0, season) : 1; }
+    public double getPowerSeason() { return powerSeason; }
     public void setHighVoltageShare(double share) { highVoltageShare = Double.isNaN(share) ? 0 : Math.max(0, Math.min(1, share)); }
     public double getHighVoltageShare() { return highVoltageShare; }
     /** What a planner values a building's power draw at: the industry price for a high-voltage class, the commerce price for the rest. */
@@ -1046,11 +1050,12 @@ public abstract class Sector {
         return steamShare > 0 ? valueAdded * (1 - steamShare) / power : valueAdded / power;
     }
 
-    /** Charged for what was DELIVERED, not asked for - the utility books the same slice. */
+    /** Charged for what was DELIVERED, not asked for - the utility books the same slice - and on the kWh the season served it, not the year's mean (PW1-R). */
     public double getElectricityCost() {
-        if (highVoltageShare <= 0) return electricity * energyRatio * pricePerWatt;
-        if (highVoltageShare >= 1) return electricity * energyRatio * pricePerWattIndustry;
-        return electricity * energyRatio * (pricePerWatt * (1 - highVoltageShare) + pricePerWattIndustry * highVoltageShare);
+        double served = electricity * energyRatio * powerSeason;
+        if (highVoltageShare <= 0) return served * pricePerWatt;
+        if (highVoltageShare >= 1) return served * pricePerWattIndustry;
+        return served * (pricePerWatt * (1 - highVoltageShare) + pricePerWattIndustry * highVoltageShare);
     }
     public double getWaterCost()       { return water * waterRatio * pricePerWaterUnit; }
 
@@ -4335,6 +4340,7 @@ public abstract class Sector {
         java.util.Arrays.fill(wages, 0);
         java.util.Arrays.fill(jobs, 0);
         energyRatio = waterRatio = roadRatio = healthRatio = 1;
+        powerSeason = 1;
         vansKnown = false;
         tradeToDerive = false;
         resetExtras();

@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 29,064 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 29,069 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -65,7 +65,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ChipRender](map/ChipRender.md) | **none** |
 | [CityBasket](map/CityBasket.md) | **none** |
 | [CityBuilderSim](map/CityBuilderSim.md) | **none** |
-| [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, BuildAdviceCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, FB13Check, ForeignDebtCheck, FundCheck, GovernmentPlayerCheck, HydroCheck, HydrogenSteelCheck, KeptCheck, LandNationsCheck, LongPlaytest, MedicineCheck, MonetaryCheck, OilViewCheck, PolicyOpenCheck, PowerViewCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, SaveFileCheck, SubstationCheck, SulphideLeachCheck, WorldMoneysCheck, YearBookCheck |
+| [CityCalendar](map/CityCalendar.md) | ArrivalMixCheck, AuctionCheck, BasketYearCheck, BuildAdviceCheck, CalendarCheck, CausesOfDeathCheck, ChartCheck, DebtExchangeCheck, DenominationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, FB13Check, ForeignDebtCheck, FundCheck, GovernmentPlayerCheck, HydroCheck, HydrogenSteelCheck, KeptCheck, LandNationsCheck, LongPlaytest, MedicineCheck, MonetaryCheck, OilViewCheck, PolicyOpenCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RecipeCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, SaveFileCheck, SubstationCheck, SulphideLeachCheck, WorldMoneysCheck, YearBookCheck |
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForeignCrewsCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, GroundSkipCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, PowerPlantsCheck, QuarryingCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, SulphideLeachCheck, WaterCheck, WorksFinanceCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
@@ -27727,7 +27727,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L637 a book's copy keeps its sun (the month's book and the struck one)
   - L638 the row kinds keep their order, SOLAR appended: a saved kind is read by its name
 
-## PowerPriceCheck.java - 70 labelled assertions
+## PowerPriceCheck.java - 75 labelled assertions
 
 > The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck
 > book's prices, what each class is billed at them, the coal the plants burn bought from the market, the utility's margin and the
@@ -27743,77 +27743,82 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      (energy + transmission), and the energy price is the half-blocks' prices weighted by the energy each served, over the
 > ...
 
-  - L177 fixture: the
-  - L283 fixture: the old-save town's orders and its desalination plants all stand
-- **L315 PowerPriceCheck: the bills, the fuel's money and the audit, through the game's own month (PW1)**
-  - L333 0. the fixture: a town that burns coal, a mine that is dug and stocked
-  - L336 the coal row burned: the struck book's THERMAL_COAL is positive (the founding grid does not cover the town)
-  - L338 the plant made fuelled energy and the energy price is positive
-  - L339 the month is served: no half-block short, ratio 1
-  - L340 Coal Mining stands, is staffed and is stocked with coal
-  - L383 1. the struck price is the dispatch's
-  - L392 a half-block clears at the cap only when it is left short: the served ones clear under the VOLL
-  - L393 the merit order prices rise with the load: the peak half-block clears at least as high as the base half-block, and the energy price is above 0
-  - L401 2. each class's bill is its price on what was delivered, exactly
-  - L407 fixture: Retail draws power, is a commerce class (no high-voltage share) and holds the book's commerce price it is struck at
-  - L411 a commerce sector's statement electricity is draw x ratio x the commerce price of the book struck the month before, to 1e-9
-  - L416 fixture: Coal Mining draws power, all its buildings are high-voltage (Mining) and its share is 1, at the book's industry price
-  - L420 a Mining sector's statement electricity is draw x ratio x the industry price, to 1e-9
-  - L422 industry pays transmission and not distribution: its price per kW less the commerce price is -distribution x the month's hours
-  - L425 ...and read off the two statements: the Mining bill per kW delivered less the Retail bill per kW delivered is the same difference, to 1e-9 of the commerce price
-  - L427 the sectors hold the ratio of the month they were struck in: the book's, which the sectors' energy ratio is
-  - L435 3. a short half-block bills the cap
-  - L444 fixture: the homes ask
-  - L446 fixture: the short month is not served whole: its ratio is under 1
-  - L447 every short half-block carries the struck VOLL (VOLL_A_KWH over the city's unit)
-  - L449 ...and no half-block served whole does
-  - L455 the month's ratio is the energy served over the energy asked
-  - L460 a short half-block's cap is in the bill: what the energy price collects on the energy served is at least the cap on what the short half-blocks served
-  - L465 a commerce sector in the short town is billed draw x ratio x the commerce price on what was delivered, and the ratio is under 1
-  - L473 4. a fuel shock moves the next month's bills
-  - L476 fixture: the two copies are the same city before the shock: the same book, the same cash, the same month
-  - L479 fixture: the coal burned in both
-  - L489 fixture: the coal's price in force is positive, and the two copies' dispatch agree on it
-  - L495 fixture: both cities' dispatch ran the coal row
-  - L496 the shocked city's coal row has the higher marginal
-  - L497 ...the energy it ran is the same: the shock moves the price and not the order
-  - L498 the shocked city's dispatch month has the higher energy price
-  - L501 the month after, the shocked city's struck book has the higher energy price, and it is the dispatch month's
-  - L504 ...and the higher commerce and industry prices
-  - L506 ...while the bills struck that month are still at the book before the shock
-  - L511 fixture: the two cities' Retail draw and ratio are the same when the shocked prices reach the statements
-  - L513 the shocked city's commerce bill is the higher: its next bills carry the fuel
-  - L514 ...in the ratio of the two books' commerce prices, to 1e-9
-  - L523 the coal row's upkeep a kWh is the plant's US$ a MWh at the founding's price level, world money as a good's world price is struck (variableUpkeep / 1e6 x Pri...
-  - L529 dispatched again, the coal row's marginal is the price it was told x the fuel a kWh plus the upkeep at the exchange rate, to 1e-12
-  - L531 ...and the shocked city's is SHOCK times the coal's part of it, to 1e-12: the shock reaches the fuel and not the upkeep
-  - L539 5. the utility's margin is the treasury's line
-  - L542 fixture: a month with coal bought: the fuel bill is positive
-  - L545 fixture: the town's water works drew power the water's books paid for
-  - L546 the electricity income is revenue less payroll less the power bought less the fuel bill, and the water works' power sold to the water's books, to 1e-9
-  - L548 the revenue is what the sectors' statements charged for electricity
-  - L549 the services' net the treasury takes is the electricity income and the water income, to 1e-9
-  - L557 the services' net carries the fuel: with none paid it is the higher by exactly the fuel bill
-  - L559 the line the treasury took is the services' net the month's strike read
-  - L567 6. the fuel's money reaches its sellers
-  - L571 the coal the struck book burned is what the market drew for the city that month, to 1e-9
-  - L572 fixture: Coal Mining was stocked, so the city bought at home
-  - L573 fuelLocal is what Coal Mining was paid for it: the cost of the units drawn from its stock, to 1e-9
-  - L574 ...and Coal Mining's statement booked it among its sales at home
-  - L575 fuelImported is what the world was paid for the rest, to 1e-9
-  - L576 fuelLocal + fuelImported is the draw's cost
-  - L577 the upkeep is the book's variable upkeep (world money) at the exchange rate, to 1e-9
-  - L586 fixture: Coal Mining held half of the month's burn at the strike, and that month's draw is the burn, to 1e-9
-  - L588 the city bought at home what Coal Mining held and the rest abroad: both are positive, and the home part is the stock
-  - L591 ...fuelLocal pays Coal Mining and fuelImported the world, each positive, and together the draw's cost
-  - L594 ...and the upkeep is still the book's at the exchange rate
-  - L601 7. the money audit closes
-  - L614 every month of every fixture (
-  - L620 fixture: the last month bought coal at home and abroad, and ran up upkeep
-  - L621 the audit's FuelImports line is the coal bought from the world, to 1e-9
-  - L622 the audit's PlantUpkeep line is the upkeep paid abroad, to 1e-9
-  - L623 both are in TRADE: the month's imports (tradeOut) hold the two lines
-  - L624 the coal bought of the mines is a pool paying a pool: no line of its own, and the audit still closes
+  - L182 fixture: the
+  - L288 fixture: the old-save town's orders and its desalination plants all stand
+- **L320 PowerPriceCheck: the bills, the fuel's money and the audit, through the game's own month (PW1)**
+  - L339 0. the fixture: a town that burns coal, a mine that is dug and stocked
+  - L342 the coal row burned: the struck book's THERMAL_COAL is positive (the founding grid does not cover the town)
+  - L344 the plant made fuelled energy and the energy price is positive
+  - L345 the month is served: no half-block short, ratio 1
+  - L346 Coal Mining stands, is staffed and is stocked with coal
+  - L389 1. the struck price is the dispatch's
+  - L398 a half-block clears at the cap only when it is left short: the served ones clear under the VOLL
+  - L399 the merit order prices rise with the load: the peak half-block clears at least as high as the base half-block, and the energy price is above 0
+  - L407 2. each class's bill is its price on what was delivered, exactly
+  - L413 fixture: Retail draws power, is a commerce class (no high-voltage share) and holds the book's commerce price it is struck at
+  - L417 fixture: the book was struck from a dispatch of the game's own calendar and holds that month's season at the city's latitude
+  - L421 a commerce sector's statement electricity is draw x ratio x the season x the commerce price of the book struck the month before, to 1e-9
+  - L426 fixture: Coal Mining draws power, all its buildings are high-voltage (Mining) and its share is 1, at the book's industry price
+  - L430 a Mining sector's statement electricity is draw x ratio x the season x the industry price, to 1e-9
+  - L432 industry pays transmission and not distribution: its price per kW less the commerce price is -distribution x the month's hours
+  - L435 ...and read off the two statements: the Mining bill per kW of the mean delivered less the Retail bill per kW is the same difference, to 1e-9 of the commerce ...
+  - L437 the sectors hold the ratio of the month they were struck in: the book's, which the sectors' energy ratio is
+  - L445 3. a short half-block bills the cap
+  - L454 fixture: the homes ask
+  - L456 fixture: the short month is not served whole: its ratio is under 1
+  - L457 every short half-block carries the struck VOLL (VOLL_A_KWH over the city's unit)
+  - L459 ...and no half-block served whole does
+  - L465 the month's ratio is the energy served over the energy asked
+  - L470 a short half-block's cap is in the bill: what the energy price collects on the energy served is at least the cap on what the short half-blocks served
+  - L475 a commerce sector in the short town is billed draw x ratio x the season x the commerce price on what was delivered, and the ratio is under 1
+  - L483 4. a fuel shock moves the next month's bills
+  - L486 fixture: the two copies are the same city before the shock: the same book, the same cash, the same month
+  - L489 fixture: the coal burned in both
+  - L499 fixture: the coal's price in force is positive, and the two copies' dispatch agree on it
+  - L505 fixture: both cities' dispatch ran the coal row
+  - L506 the shocked city's coal row has the higher marginal
+  - L507 ...the energy it ran is the same: the shock moves the price and not the order
+  - L508 the shocked city's dispatch month has the higher energy price
+  - L511 the month after, the shocked city's struck book has the higher energy price, and it is the dispatch month's
+  - L514 ...and the higher commerce and industry prices
+  - L516 ...while the bills struck that month are still at the book before the shock
+  - L521 fixture: the two cities' Retail draw and ratio are the same when the shocked prices reach the statements
+  - L523 the shocked city's commerce bill is the higher: its next bills carry the fuel
+  - L524 ...in the ratio of the two books' commerce prices, to 1e-9
+  - L533 the coal row's upkeep a kWh is the plant's US$ a MWh at the founding's price level, world money as a good's world price is struck (variableUpkeep / 1e6 x Pri...
+  - L539 dispatched again, the coal row's marginal is the price it was told x the fuel a kWh plus the upkeep at the exchange rate, to 1e-12
+  - L541 ...and the shocked city's is SHOCK times the coal's part of it, to 1e-12: the shock reaches the fuel and not the upkeep
+  - L549 5. the utility's margin is the treasury's line
+  - L552 fixture: a month with coal bought: the fuel bill is positive
+  - L555 fixture: the town's water works drew power the water's books paid for
+  - L556 the electricity income is revenue less payroll less the power bought less the fuel bill, and the water works' power sold to the water's books, to 1e-9
+  - L558 the revenue is what the sectors' statements charged for electricity
+  - L559 the services' net the treasury takes is the electricity income and the water income, to 1e-9
+  - L567 the services' net carries the fuel: with none paid it is the higher by exactly the fuel bill
+  - L569 the line the treasury took is the services' net the month's strike read
+  - L577 6. the fuel's money reaches its sellers
+  - L581 the coal the struck book burned is what the market drew for the city that month, to 1e-9
+  - L582 fixture: Coal Mining was stocked, so the city bought at home
+  - L583 fuelLocal is what Coal Mining was paid for it: the cost of the units drawn from its stock, to 1e-9
+  - L584 ...and Coal Mining's statement booked it among its sales at home
+  - L585 fuelImported is what the world was paid for the rest, to 1e-9
+  - L586 fuelLocal + fuelImported is the draw's cost
+  - L587 the upkeep is the book's variable upkeep (world money) at the exchange rate, to 1e-9
+  - L596 fixture: Coal Mining held half of the month's burn at the strike, and that month's draw is the burn, to 1e-9
+  - L598 the city bought at home what Coal Mining held and the rest abroad: both are positive, and the home part is the stock
+  - L601 ...fuelLocal pays Coal Mining and fuelImported the world, each positive, and together the draw's cost
+  - L604 ...and the upkeep is still the book's at the exchange rate
+  - L634 7. in July and in April each class's bill is the kWh it was served at the price (PW1-R)
+  - L639 fixture: the town's calendar brings a statement struck at a
+  - L644 fixture:
+  - L650 fixture: in
+  - L673 8. the money audit closes
+  - L686 every month of every fixture (
+  - L692 fixture: the last month bought coal at home and abroad, and ran up upkeep
+  - L693 the audit's FuelImports line is the coal bought from the world, to 1e-9
+  - L694 the audit's PlantUpkeep line is the upkeep paid abroad, to 1e-9
+  - L695 both are in TRADE: the month's imports (tradeOut) hold the two lines
+  - L696 the coal bought of the mines is a pool paying a pool: no line of its own, and the audit still closes
 
 ## PowerViewCheck.java - 38 labelled assertions
 

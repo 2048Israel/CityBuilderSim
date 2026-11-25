@@ -223,6 +223,8 @@ public class SimulationEngine {
         UtilitiesHandler utility = servicesManager.getUtilitiesHandler();
         utility.strikePower();
         economyManager.setPowerPrices(utility.getPricePerWatt(), utility.getIndustryPricePerWatt(), utility.getWorksPricePerWatt());
+        // ...and its season, the kWh a kW drawn is billed on (PW1-R).
+        economyManager.setPowerSeason(utility.getPowerSeason());
         // ...and the water's, its tariff and the works' power the same book struck (PW1-W).
         economyManager.setPricePerWaterUnit(utility.getPricePerWaterUnit());
         economyManager.setEnergyRatio(servicesManager.getEnergyRatio());
