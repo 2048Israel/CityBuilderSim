@@ -320,10 +320,15 @@ rem  What goes up as the release: the whole folder under its own name, as
 rem  dist\CityBuilderSim-<version>.zip, the Earth and the source inside it.
 rem  Made before the test launch below, so nothing the game writes as it runs
 rem  gets into it.
+rem
+rem  Windows' own tar, by its full path (BX1, 2026-11-25): run from Git Bash, a
+rem  bare "tar" is Git's GNU tar, which ignores -a and writes a plain tar
+rem  under the .zip name, with exit 0. 0.9.204's went to butler so, which
+rem  refused it: "zip: not a valid zip file".
 set "ZIP=dist\%APPNAME%-%APPVER%.zip"
 if exist "%ZIP%" del /q "%ZIP%"
 echo  Zipping it as %ZIP% ...
-tar -a -c -f "%ZIP%" -C dist "%APPNAME%" 2>nul
+"%SystemRoot%\System32\tar.exe" -a -c -f "%ZIP%" -C dist "%APPNAME%" 2>nul
 if not "%ERRORLEVEL%"=="0" if exist "%ZIP%" del /q "%ZIP%"
 if not exist "%ZIP%" powershell -NoProfile -Command "Compress-Archive -Path 'dist\%APPNAME%' -DestinationPath '%ZIP%'"
 

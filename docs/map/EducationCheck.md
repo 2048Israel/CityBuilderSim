@@ -1,4 +1,4 @@
-# EducationCheck.java - 1,810 lines · 16 methods · 23 constants · harnesses
+# EducationCheck.java - 1,971 lines · 19 methods · 23 constants · harnesses
 
 `ham/citybuildersim/EducationCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -60,7 +60,7 @@
 > and the month or the course stepped by hand, where they were cities played hundreds of months. The one section still reading a condition off a played city is
 > "the queue for a job includes the overqualified", which builds the city it reads.
 
-**Uses:** [EducationType](EducationType.md) (103), [TaxPolicy](TaxPolicy.md) (74), [WageBand](WageBand.md) (45), [Education](Education.md) (40), [Game](Game.md) (38), [JobType](JobType.md) (31), [PriceLevel](PriceLevel.md) (15), [Migration](Migration.md) (11), [LabourCheck](LabourCheck.md) (9), [GameFiles](GameFiles.md) (8), [PopulationManager](PopulationManager.md) (8), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (6), [AgeBand](AgeBand.md) (5), [LabourMarket](LabourMarket.md) (4), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [Sectors](Sectors.md) (1), [TempDirs](TempDirs.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [NationalAccounts](NationalAccounts.md) (1), [MoneyAudit](MoneyAudit.md) (1), [TreasuryJournal](TreasuryJournal.md) (1)
+**Uses:** [EducationType](EducationType.md) (132), [TaxPolicy](TaxPolicy.md) (77), [WageBand](WageBand.md) (49), [Education](Education.md) (48), [Game](Game.md) (43), [JobType](JobType.md) (39), [PriceLevel](PriceLevel.md) (15), [SchoolingLadderCheck](SchoolingLadderCheck.md) (13), [AdultStage](AdultStage.md) (12), [Migration](Migration.md) (11), [GameFiles](GameFiles.md) (10), [LabourCheck](LabourCheck.md) (10), [PopulationManager](PopulationManager.md) (9), [PopulationCohorts](PopulationCohorts.md) (9), [AgeBand](AgeBand.md) (7), [PayTier](PayTier.md) (7), [HouseholdBalance](HouseholdBalance.md) (7), [FamilyModel](FamilyModel.md) (6), [LabourMarket](LabourMarket.md) (6), [SchoolingLadder](SchoolingLadder.md) (6), [FamilyStructure](FamilyStructure.md) (4), [Household](Household.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [TempDirs](TempDirs.md) (2), [EconomyManager](EconomyManager.md) (2), [StudentHousehold](StudentHousehold.md) (2), [PrisonerHousehold](PrisonerHousehold.md) (2), [Sectors](Sectors.md) (1), [PriceLevelCheck](PriceLevelCheck.md) (1), [NationalAccounts](NationalAccounts.md) (1)... and 2 more
 
 **Used by (3):** [DebtExchangeCheck](DebtExchangeCheck.md), [HistoryCheck](HistoryCheck.md), [OutsideCheck](OutsideCheck.md)
 
@@ -68,26 +68,26 @@
 
 | line | section |
 |---:|---|
-| 305 | · 1. THE PROFESSION IS GATED |
-| 345 | · 2. AND WITH ONE, IT CAN |
-| 392 | · 3. NO SCHOOL TEACHES NOBODY |
-| 429 | · 4. AND DOES NOT EMPTY THE BAND IT DRAWS FROM |
-| 459 | · 5. A DEGREE IS A MOVE, NOT AN APPEARANCE |
-| 492 | · 6. LICENCES CANNOT OUTNUMBER GRADUATES |
-| 525 | · 6b. THE MONTH'S GRADUATES ARE THE GAINS (A6, 0.7.46) |
-| 548 | · 7. THE PIPELINE IS ITS NARROWEST STAGE |
-| 641 | · 8. THE SUBSIDY IS A REAL DIAL |
-| 693 | · 9. IT SURVIVES A SAVE |
-| 760 | · 9b. THE WAIT IS REAL |
-| 809 | · 10. AND THE TREASURY PAYS FOR IT |
-| 862 | · 11. THE UNSKILLED BAND IS A REPORT CARD |
-| 974 | · 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED |
-| 1031 | · · THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own |
-| 1077 | · 13. THE GRANT IS A MENU |
-| 1281 | · 14. THE LOAN'S RATE |
-| 1442 | · 15. THE PRICE OF A PLACE |
-| 1604 | · 16. ALL THREE SURVIVE A SAVE |
-| 1674 | · 17. A PRICE PER SCHOOL (0.7.6) |
+| 312 | · 1. THE PROFESSION IS GATED |
+| 352 | · 2. AND WITH ONE, IT CAN |
+| 399 | · 3. NO SCHOOL TEACHES NOBODY |
+| 436 | · 4. AND DOES NOT EMPTY THE BAND IT DRAWS FROM |
+| 466 | · 5. A DEGREE IS A MOVE, NOT AN APPEARANCE |
+| 499 | · 6. LICENCES CANNOT OUTNUMBER GRADUATES |
+| 532 | · 6b. THE MONTH'S GRADUATES ARE THE GAINS (A6, 0.7.46) |
+| 555 | · 7. THE PIPELINE IS ITS NARROWEST STAGE |
+| 648 | · 8. THE SUBSIDY IS A REAL DIAL |
+| 700 | · 9. IT SURVIVES A SAVE |
+| 767 | · 9b. THE WAIT IS REAL |
+| 816 | · 10. AND THE TREASURY PAYS FOR IT |
+| 869 | · 11. THE UNSKILLED BAND IS A REPORT CARD |
+| 981 | · 12. THE QUEUE FOR A JOB INCLUDES THE OVERQUALIFIED |
+| 1038 | · · THIS PREMISE USED TO READ `open[dip] > ownHeads[dip]` - "on its own |
+| 1084 | · 13. THE GRANT IS A MENU |
+| 1288 | · 14. THE LOAN'S RATE |
+| 1449 | · 15. THE PRICE OF A PLACE |
+| 1611 | · 16. ALL THREE SURVIVE A SAVE |
+| 1681 | · 17. A PRICE PER SCHOOL (0.7.6) |
 
 ## Constants
 
@@ -127,7 +127,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 67 | 1744 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
+| 67 | 1905 | **type** `public class EducationCheck` | Verifies the schools: who gets taught, who is allowed to practise, and what it costs. |
 | 75 | 4 | `static void quietly(Runnable work)` |  |
 | 80 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 85 | 6 | `static BuildingsTemplate t(Game g, String name)` |  |
@@ -141,7 +141,10 @@
 | 256 | 7 | `static boolean seeded(Game g, EducationType type, double students, int monthsLeft)` | Students put into a course and into the town's books (FS16): finishing()'s cohort, and then the population manager told who is out of the supply (Education.getStudying()) and the families who the students are (setSeek... |
 | 282 | 7 | `static double[] priceTownHeads()` | The skilled heads of the hand-fed poor town (FS16): PRICE_TOWN_DIPLOMAS diploma-holders and a few above them. |
 | 291 | 11 | `static long[] priceTownPosts()` | The posts of the hand-fed poor town (FS16): 500 for the diploma-holders, and a few labouring and graduate ones. |
-| 303 | 1491 | `public static void main(String[] args) throws Exception` |  |
-| 1796 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
-| 1803 | 7 | `static void cleanUp(Path root)` |  |
+| 303 | 1498 | `public static void main(String[] args) throws Exception` |  |
+| 1803 | 88 | `static void afterCostReturns()` | WG3: fee and stage changes must reach actual intake through the original curve. |
+| 1893 | 40 | `static void afterCostBinding() throws Exception` | WG3's actual Game binding, through construction, a month and a load, using scratch saves only. |
+| 1934 | 21 | `static void assertStudyBinding(Game game, String path)` |  |
+| 1957 | 6 | `static double journalLine(Game g, String label)` | Last month's journal line by its label, or NaN for none. |
+| 1964 | 7 | `static void cleanUp(Path root)` |  |
 

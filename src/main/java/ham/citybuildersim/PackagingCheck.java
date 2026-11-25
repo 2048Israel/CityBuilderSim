@@ -335,10 +335,11 @@ public class PackagingCheck {
             check("it runs the named JDK's own jlink and jpackage", bat.contains("\"%JDK%\\bin\\jlink.exe\"") && bat.contains("\"%JDK%\\bin\\jpackage.exe\"")
                     && bat.contains("--runtime-image \"build\\runtime\""), null);
             int jdkCheck = bat.indexOf("Packaging jdk"), fetch = bat.indexOf("Packaging fetch"), jpackage = bat.indexOf("\"%JDK%\\bin\\jpackage.exe\""),
-                    stage = bat.indexOf("Packaging stage"), verify = bat.indexOf("Packaging verify"), zip = bat.indexOf("tar -a -c"),
+                    stage = bat.indexOf("Packaging stage"), verify = bat.indexOf("Packaging verify"), zip = bat.indexOf("\"%SystemRoot%\\System32\\tar.exe\" -a -c -f \"%ZIP%\""),
                     unfit = bat.indexOf(":unfit");
             check("the JDK is held to the pins and the archives fetched before jpackage", jdkCheck > 0 && fetch > jdkCheck && jpackage > fetch, null);
             check("the image is staged and checked after jpackage and before the zip", stage > jpackage && verify > stage && zip > verify, null);
+            check("the zip is made by Windows' own tar, never a tar found on PATH (BX1)", zip > 0 && !bat.matches("(?ms).*^tar\\s.*"), null);
             check("a failed stage or check goes to the removal of the image", bat.contains("Packaging stage \"%SOURCES%\" \"dist\\%APPNAME%\"\nif not \"%ERRORLEVEL%\"==\"0\" goto unfit")
                     && bat.contains("Packaging verify \"dist\\%APPNAME%\"\nif not \"%ERRORLEVEL%\"==\"0\" goto unfit")
                     && unfit > zip && bat.indexOf("rmdir /s /q \"dist\\%APPNAME%\"", unfit) > unfit, null);

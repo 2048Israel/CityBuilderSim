@@ -154,7 +154,8 @@ final class PolicyScreen {
      */
     static final String[] POLICY_TAX_PAGES =
             {"Everything", "Profit", "Sales", "Wage", "Property", "Fuel", "Port dues"};
-    static final String[] POLICY_WAGE_PAGES    = {"The floor"};
+    static final String[] POLICY_WAGE_PAGES    = {"The floor", "The ladder"};
+    private AdultStage schoolingStage = AdultStage.YOUNG;
     /** Money's middle page (XR2): how the D$ is held - its regime, the peg or the band, who pays at the strong edge, what the dial aims at. */
     static final String CURRENCY_PAGE = "The currency";
     static final String[] POLICY_MONEY_PAGES   = {"The policy rate", CURRENCY_PAGE, "Currency reform"};
@@ -162,8 +163,8 @@ final class PolicyScreen {
 
     /** Each page's icon on its tab, in the pages' order (the crane for the port dues, FR4). */
     static final String[] TAX_ICONS = {Icons.OVERVIEW, Icons.SECTOR, Icons.SHOPS, Icons.STAFF, Icons.HOMES, Icons.DROP, Icons.CRANE};
-    /** ...Wages' one, the staff. */
-    static final String[] WAGE_ICONS = {Icons.STAFF};
+    /** ...Wages' floor and qualification ladder. */
+    static final String[] WAGE_ICONS = {Icons.STAFF, Icons.EDUCATION};
     /** ...Money's: the bank for the policy rate, the two arrows for the currency (XR2), the banknote for the currency reform. */
     static final String[] MONEY_ICONS = {Icons.BANK, Icons.EXCHANGE, Icons.BANKNOTE};
     /** ...and the promises': the cane, the staff, food, health, education and the sector icon for the subsidies. */
@@ -256,7 +257,10 @@ final class PolicyScreen {
                     hubPage(p);
                 } else {
                     switch (policyArea) {
-                        case WAGES -> floorPage(p);
+                        case WAGES -> {
+                            if ("The ladder".equals(policyPage)) schoolingPage(p);
+                            else floorPage(p);
+                        }
                         case MONEY -> {
                             if ("Currency reform".equals(policyPage)) reformPage(p);
                             else if (CURRENCY_PAGE.equals(policyPage)) currencyPage(p);
@@ -289,7 +293,7 @@ final class PolicyScreen {
 
             VBox frame = Kept.column(Palette.GAP, Kept.scope("head", this::head));
             String[] pages = pagesOf(policyArea);
-            // A strip of one tab is a tab that does nothing, so Wages has none; Zoning's adds a tab a zone.
+            // A strip of one tab does nothing; Zoning adds a tab per zone.
             if (ZONING.equals(policyArea)) {
                 frame.getChildren().add(Kept.scope("tabs", () -> zoning.tabs()));
             } else if (pages.length > 1) {
@@ -3020,6 +3024,73 @@ final class PolicyScreen {
                 "The floor in today's money: " + floorTieWords(market) + ".", null));
         if (moved) rules.add(new Rule(cashThen, Palette.ACCENT, true, "staged " + moneyFull(cashThen), "The floor as staged, in today's money.", null));
         return scaleRows(rows, scale * 1.05, rules, 220, 170, 12);
+    }
+
+    /* ===================================================================
+       WAGES - the qualification ladder (WG3, including WS2)
+       =================================================================== */
+
+    /** The translated zero and common scale let a negative after-cost value extend left without changing Pieces. */
+    record SchoolingBars(double zero, double scale, List<ScaleRow> rows) { }
+
+    /** Pure drawing inputs, shared with SchoolingProbe: no course arithmetic belongs in a screen. */
+    static SchoolingBars schoolingBars(SchoolingLadder.View view, PopulationManager people) {
+        double least = 0, most = 0;
+        for (SchoolingLadder.Row row : view.rows()) {
+            least = Math.min(least, row.afterCost());
+            most = Math.max(most, Math.max(row.paid(), Math.max(row.afterCost(), row.target())));
+        }
+        double zero = -least;
+        List<ScaleRow> bars = new ArrayList<>();
+        for (SchoolingLadder.Row row : view.rows()) {
+            long posts = SchoolingLadder.posts(row, people);
+            SchoolingLadder.Verdict verdict = view.verdict(row.qualification(), posts);
+            String tone = posts <= 0 ? Palette.CONTROL_EDGE : Palette.MONEY;
+            String afterTone = row.afterCost() < 0 ? Palette.WARN : Palette.GOOD;
+            List<Run> runs = List.of(
+                    Run.of(zero, row.paid(), tone).tip("Paid now: " + moneyFull(row.paid()) + " a month"),
+                    Run.of(zero + Math.min(0, row.afterCost()), Math.abs(row.afterCost()), afterTone).outlined()
+                            .tip("After cost: " + moneyFull(row.afterCost()) + " a level month"));
+            List<Tick> walk = Math.abs(row.target() - row.paid()) > WALK_SHOWN * row.paid()
+                    ? List.of(new Tick(zero + row.target(), Palette.TEXT_MUTED, 1, null,
+                            "Where this job's wage is walking: " + moneyFull(row.target()) + "; no policy change staged"))
+                    : List.of();
+            bars.add(ScaleRow.of(row.label(), moneyFull(row.paid()) + " / " + moneyFull(row.afterCost()), runs)
+                    .marks(walk));
+            String cost = row.months() == 0 ? "no course" : row.months() + " months · family fees " + money(row.fees())
+                    + " · wages forgone " + money(row.forgone());
+            bars.add(ScaleRow.caption(people(posts) + " posts · "
+                    + people(SchoolingLadder.holders(row, people)) + " holders · "
+                    + cost + " · " + verdict.words(), null));
+        }
+        return new SchoolingBars(zero, Math.max(most - least, 1e-6) * 1.05, List.copyOf(bars));
+    }
+
+    void schoolingPage(VBox page) {
+        Education schools = ui.game.getEducation();
+        // The same call enrolment reads (REV-WG3), so the page and the intake cannot drift apart.
+        SchoolingLadder.View view = schools.schoolingLadder(ui.game.getLabourMarket(), schoolingStage);
+        String[] stages = java.util.Arrays.stream(AdultStage.values()).map(AdultStage::getLabel).toArray(String[]::new);
+        page.getChildren().add(chipStrip(stages, schoolingStage.getLabel(), Palette.SIZE_LABEL, picked -> {
+            for (AdultStage stage : AdultStage.values()) if (stage.getLabel().equals(picked)) schoolingStage = stage;
+            showPolicyMenu();
+        }));
+        page.getChildren().add(sectionHead("THE QUALIFICATION LADDER",
+                "Pay after cost is a whole path: every fee along it after subsidy, and nothing earned while it studies, valued at the dearer of the loan rate, "
+                        + "the policy rate and a three percent annual floor (an estimate of a family's price of waiting). The wages forgone are what the step below earns meanwhile, "
+                        + "so they are already in the gap between two bars, not taken off again. A licence follows the university years; each row's details show its own course's bill. "
+                        + "A diploma's fees precede adult work; high-school enrollment keeps its coverage and affordability rule. Wages and fees stay at today's level, not a forecast.",
+                quiet(view.workingMonths() + " expected working months left · money at " + FORMAT.pct(view.annualRate()) + " a year")));
+        page.getChildren().add(muted("Solid: paid now. Outline: pay after cost. Faint tick: the wage's own walk. Figures: paid / after cost, a month."));
+        SchoolingBars bars = schoolingBars(view, ui.game.getPopulationManager());
+        page.getChildren().add(card(scaleRows(bars.rows(), bars.scale(), List.of(new Rule(bars.zero(), Palette.TEXT_MUTED,
+                false, "zero", "Negative after-cost pay extends to the left of zero.", null)), 200, 230, 12)));
+        page.getChildren().add(noteLine("Both adult stages may study; the shorter working life changes what a course is worth.",
+                "Enrollment applies the same return curve to each stage's after-cost gain, then weights those decisions by the city's current adult-stage shares. "
+                        + "Qualification pools are split pro rata, as in the households model; no adult stage means no applicants. "
+                        + "Holder counts are the band's labour supply, or the recorded holders of a professional licence. "
+                        + "The bars compare the selected stage's expected work left, not everybody's actual age. "
+                        + "Steps can invert. A far-above verdict means the gain reaches full willingness on the model's curve; seats or affordability can still stop people.", 1100));
     }
 
     /** THE MINIMUM WAGE on its dial card: read in today's money, set in founding money (D6); the tie and who is paid it under the reading, the preview of the floor's own move beside the dial. */

@@ -53,7 +53,8 @@ public class AllChecks {
         "ReplayCheck", "StaffingDrawCheck", "StaffingTieCheck", "OwnerCheck",
         "HousingInventoryCheck", "HousingChoiceCheck", "HousingMarketCheck",
         "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck", "ER1Check", "PostwarRecipeCheck", "ModernEngineeringCheck", "ModernRowsCheck", "YoungBankCheck", "NewUnitCheck", "FitoutCheck", "FB13Check", "GroundSkipCheck",
-        "ForeignChoiceCheck"
+        "ForeignChoiceCheck",
+        "SchoolingLadderCheck", "SchoolingPageCheck"
     };
 
     /** How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. */
