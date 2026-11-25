@@ -2717,10 +2717,14 @@ population rose: AUTO2 1,466,969 to 6,262,849; ZERO_SLACK 750,928 to
 to 104,940. T1 went from 14/16 at m1,286 to 16/16 at m576. AUTO2 A3,
 SHOCK K2, HIGH R1, R2 and R3 went from FAIL to PASS, and ZERO_HOT H2 from
 VACUOUS to PASS (13/16 below). This is the 1900 city growing, the
-batch's "Done when". Each move is the batch's own mends (sections 13
-on): the negative GDP gone, the households housed, and the contractor's
-work earned at his price, so the builders' cash no longer runs down
-under his bill.
+batch's "Done when". Much of the rise is main's own: between the two
+runs main moved from 0.9.180 to 0.9.202, and its own AUTO2 final rose
+from 2,532,050 to 9,174,482 (3.6 times). The 1900 city's share of
+main's rose from 58% to 68% (AUTO2). The batch's own part is the
+restart's mends (2026-11-24 on): the negative GDP's two causes, mended
+so that F1 holds, and the contractor's work earned at his price with
+its material on top. The ensemble does not separate the two parts, and
+no run of R1g on 0.9.202 without those mends was made.
 
 **Against main's today-founded city, why the falls are real.** Every T2
 reads FAIL, because main's baseline is a city founded today and this
