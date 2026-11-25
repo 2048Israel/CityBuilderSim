@@ -9762,14 +9762,16 @@ public class KeptCheck {
     }
 
     /**
-     * KeptCheck's city, Danzik: LongPlaytest's probe city, its minimum wage pinned at the going rate, played CITY_MONTHS by the advisor.
+     * KeptCheck's city, Danzik: LongPlaytest's probe city, today's (probeTodayCity(); R1g: the playtest founds the 1900 city since, and
+     * this one's sections assert what a city founded the default way has, every discovery known and its equipment fitted), its minimum
+     * wage pinned at the going rate, played CITY_MONTHS by the advisor.
      * KeptTimingCheck costs its pages on the same city. WHY the pin (WG1-D, 2026-11-10; FS5): it was put there for two lines that read what
      * this city's path gave (section 68's Government Overview, now KeptTimingCheck's, and a Trade pixel line, now BF1-K's caused probe), and
      * since FS4 and FS5 no section's premise is the city's; it stays for the city's size. On its own floor the city reached month 605 with
      * 7,066 people (FS5, on main 4f1056f11), against 2,075 pinned, and KeptTimingCheck's budgets are set on the pinned city's pages.
      */
     static Game playedCity(GameFiles files) throws Exception {
-        Game g = fx(() -> LongPlaytest.probeCity(files, null));
+        Game g = fx(() -> LongPlaytest.probeTodayCity(files, null));
         fx(() -> {
             g.getLabourMarket().setMinimumWage(g.getLabourMarket().getGoingRate());
             return null;
