@@ -4535,3 +4535,37 @@ is still refused without conversion. Detailed field evidence is at helper
 target/cpi-native-0e76/evidence (archive SHA256
 57b1c80eeadf32a40042f25c4672240ecc47e048907174e9853fc9bec10c3493)
 and box ~/cbs/runs/res3-cpi-0e76d1ff9-20261124.
+
+Exact 9b6f066e4 compiles and coverage improves to 171 passes/eight
+failures (helper fc78). Every initial native data/history equality and
+ordinary nominal/historical next-month twin now passes under the same
+assertions, verifying the two reviewed fixes. Eight failures remain in
+the default/historical reformed next-month guards, current inputs and
+data comparisons. All four money audits still pass; exact identity is
+not waived. No DebtStatisticsCheck, MonetaryCheck or other normal check
+has begun. All own JVM/runner jobs ended, snapshots are retained, and
+the helper traces derived/cached pre-step state against the now-identical
+serialized reload state. No further cause or fix is claimed yet.
+
+The remaining trace rules out patching the housing offers cache: that
+cache is rebuilt before clearing. No further production cause is proved.
+Adopt one bounded read-only cached-input observation in the finding,
+patch SHA256
+a441881d6d1500d135a423b84ad9a857eb60064cec32271557a7dd0d20164e0c.
+Review confirms existing pure reads of economy/population wage vectors,
+utility tariffs, builder material/FX/expected-level inputs, expectations,
+CPI relatives/parity and three existing templates' cash/upkeep/jobs and
+power/water quantities. It calls no quote, forecast, refresh or reprice.
+Record original/fresh/running at the same phase and immediately before
+the step, and add before/after exact money/claim/stock/index guards to
+prove that observation is pure. Every existing failing assertion, input,
+threshold and execution order remains; no speculative normalization or
+production fix is made. Compile and replay only the standalone finding
+on the pushed observation candidate, then diagnose those recorded inputs.
+
+The 9b6f artifacts are at helper target/cpi-native-9b6f/evidence and box
+~/cbs/runs/res3-cpi-9b6f066e4-20261124. Raw snapshot archive SHA256
+b83f0dba6f7cf38242e6aa777f3f231c46584e66302e9bd6b6c39553c52bd197;
+full evidence SHA256
+415f9fae8d19b2525f1a6438d743a20797129697cdf24b9c44bdf154fa2f140e.
+All owned jobs ended; every normal harness stage remains unrun.

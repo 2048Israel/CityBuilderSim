@@ -202,13 +202,52 @@ public final class CpiCoverageFinding {
         return SAVED_AT.matcher(raw).replaceFirst(match -> match.group(1) + "0");
     }
 
+    /** Bounded read-only evidence for money inputs not represented by the native save's cached totals. */
+    private static void cachedInputs(Game g, String label, String role) throws Exception {
+        var em = g.getEconomyManager();
+        var bm = g.getBuildingManager();
+        var pm = g.getPopulationManager();
+        var index = g.getPriceIndex();
+        Guards beforeObservation = guards(g);
+        double[] indexBeforeObservation = index.toSaveArray();
+        StringBuilder text = new StringBuilder();
+        text.append("month=").append(g.getMonth()).append("\nunit=").append(g.getDenomination().getUnit()).append('\n');
+        text.append("em.wages=").append(Arrays.toString(em.getWageRates())).append('\n');
+        text.append("em.staffedWages=").append(Arrays.toString(em.getStaffedWagePerType())).append('\n');
+        text.append("pm.wages=").append(Arrays.toString(pm.getWagesPerType())).append('\n');
+        text.append("pm.totalWages=").append(Arrays.toString(pm.getTotalWagePerType())).append('\n');
+        text.append("em.power=").append(em.getPricePerWatt()).append(",").append(em.getIndustryPricePerWatt()).append(",").append(em.getWorksPricePerWatt()).append('\n');
+        text.append("em.water=").append(em.getPricePerWaterUnit()).append('\n');
+        text.append("bm.material=").append(bm.getConstructionMaterialPrice()).append("\nbm.exchange=").append(bm.getExchangeRate()).append("\nbm.expected=").append(bm.getExpectedLevel()).append('\n');
+        text.append("expectations.struck=").append(g.getExpectations().getStruckLevel()).append("\nexpectations.current=").append(g.getExpectations().getExpectedLevel()).append('\n');
+        text.append("index.parity=").append(index.getParityLevel()).append('\n');
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++)
+            text.append("index.relative.").append(k).append('=').append(index.getRelative(k)).append(";level=").append(index.getComponentLevel(k)).append('\n');
+        for (String name : new String[] { "House", "Convenience Store", "Coal Power Plant" }) {
+            var t = bm.getTemplateByName(name);
+            text.append("template.").append(name).append(".cash=").append(t.getCashCost()).append(";upkeep=").append(t.getUpkeep()).append('\n');
+            text.append("template.").append(name).append(".power=").append(t.getElectricityConsumption()).append(";water=").append(t.getWaterConsumption()).append(";powerprice=").append(em.getPowerPriceFor(t)).append('\n');
+            for (JobType job : JobType.values()) text.append("template.").append(name).append(".jobs.").append(job).append('=').append(t.getJobs(job)).append('\n');
+        }
+        text.append("guards.before=").append(beforeObservation).append("\nguards.after=").append(guards(g)).append('\n');
+        Path folder = Path.of("target", "cpi-native-snapshots", Long.toString(ProcessHandle.current().pid()), "cached-inputs");
+        Files.createDirectories(folder);
+        Path output = folder.resolve(label.replace(' ', '-') + "-" + role + ".txt");
+        Files.writeString(output, text, StandardCharsets.UTF_8);
+        CpiReferenceFinding.OUT.println("cached inputs " + output);
+        check(label + " " + role + " cached observation preserves exact money/claims/stocks", beforeObservation.equals(guards(g)));
+        check(label + " " + role + " cached observation preserves exact saved index state", Arrays.equals(indexBeforeObservation, index.toSaveArray()));
+    }
+
     private static void nativeTwins(Game g, GameFiles files, String label) throws Exception {
         quietly(() -> g.saveGame(10, "CPI coverage"));
         String data = nativeText(files, false), history = nativeText(files, true);
+        cachedInputs(g, label, "original");
         Guards expected = guards(g);
         List<Double> inputs = currentInputs(g);
         Game fresh = new Game(files);
         quietly(() -> fresh.loadGameSave(10));
+        cachedInputs(fresh, label, "fresh");
         check(label + " fresh load preserves exact observed transport flows and money/claim/stock guards", expected.equals(guards(fresh)));
         check(label + " fresh load preserves current food/rent/transport acquisition inputs", inputs.equals(currentInputs(fresh)));
         quietly(() -> fresh.saveGame(10, "CPI coverage"));
@@ -216,11 +255,15 @@ public final class CpiCoverageFinding {
         check(label + " fresh load preserves every native history value", history.equals(nativeText(files, true)));
         Game running = new Game(files);
         quietly(() -> { running.newGame(); running.simulateMonths(2); running.loadGameSave(10); });
+        cachedInputs(running, label, "running");
         check(label + " load into a running city replaces its old observations and exact guards", expected.equals(guards(running)));
         check(label + " running load preserves current food/rent/transport acquisition inputs", inputs.equals(currentInputs(running)));
         quietly(() -> running.saveGame(10, "CPI coverage"));
         check(label + " running load preserves every native data value", data.equals(nativeText(files, false)));
         check(label + " running load preserves every native history value", history.equals(nativeText(files, true)));
+        cachedInputs(g, label, "original-before-step");
+        cachedInputs(fresh, label, "fresh-before-step");
+        cachedInputs(running, label, "running-before-step");
         quietly(() -> { g.simulateMonths(1); fresh.simulateMonths(1); running.simulateMonths(1); });
         check(label + " next-month twins preserve exact transport, cash, claims and stocks", guards(g).equals(guards(fresh)) && guards(g).equals(guards(running)));
         check(label + " next-month twins preserve current food/rent/transport acquisition inputs", currentInputs(g).equals(currentInputs(fresh)) && currentInputs(g).equals(currentInputs(running)));
