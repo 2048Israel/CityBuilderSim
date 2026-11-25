@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — FB11, held towns: why no works pays, and the advisor's land funding — 2026-11-25, ready, see docs/queue/FB11-notes.md
 The playtest's player buys the ground a sector waits on with a bond, where its cash share could not. While the city's landlords or a works wait for
