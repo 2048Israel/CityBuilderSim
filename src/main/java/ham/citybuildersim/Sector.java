@@ -915,6 +915,10 @@ public abstract class Sector {
     public double powerPriceFor(BuildingsTemplate t) {
         return BuildingsTemplate.isHighVoltage(t) ? pricePerWattIndustry : pricePerWatt;
     }
+    /** What its works' surplus is paid: the struck book's price of a kW the works sold the grid (Sector.getPowerSoldValue()). */
+    public double worksTariff() {
+        return pricePerWattWorks;
+    }
     public void setPricePerWaterUnit(double p)  { pricePerWaterUnit = p; }
     /** Draw at nameplate, off its own buildings. Set by EconomyManager each month. */
     public void setElectricityConsumption(double kw)  {

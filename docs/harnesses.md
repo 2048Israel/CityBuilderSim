@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 29,069 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 29,075 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -102,7 +102,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EarthProj](map/EarthProj.md) | EarthCheck, EarthDepositsCheck, EarthTerrainCheck, GlobeCheck, LandNationsCheck, LandmassCheck, MapCheck, PartnerCallsCheck, PartnersCheck, PriceLevelCheck |
 | [EarthSite](map/EarthSite.md) | BridgeCheck, CopperRefiningCheck, DeterminismCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, HydroCheck, LandCheck, LandNationsCheck, LandmassCheck, LongPlaytest, NewGameCheck, PartnersCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, SlopeCheck |
 | [EarthTerrain](map/EarthTerrain.md) | BridgeCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FB13Check, GatewayCheck, GlobeCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LandCheck, LandmassCheck, MapCheck, NewGameCheck, ReadPathCheck, SaveFileCheck, SlopeCheck |
-| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CopperBufferCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, FoodProcessingCheck, ForeignChoiceCheck, FundLedgerCheck, GdpCheck, GovernmentViewCheck, GroundInputCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MortgageCheck, NewGameCheck, OilCheck, OrderDoorCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, UndemandedFeedCheck, WellCheck, ZoningCheck, ZoningViewCheck |
+| [EconomyManager](map/EconomyManager.md) | AgricultureCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, CapitalFlowCheck, CopperBufferCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DebtExchangeCheck, DiscoveryCheck, EducationCheck, FoodProcessingCheck, ForeignChoiceCheck, FundLedgerCheck, GdpCheck, GovernmentViewCheck, GroundInputCheck, HealthCheck, HoldersCheck, HousingCheck, InvestCheck, KeptCheck, LabourCheck, LandClassCheck, LongPlaytest, MaterialsCheck, MortgageCheck, NewGameCheck, OilCheck, OrderDoorCheck, OutsideCheck, PassThroughCheck, PlaytestFixCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, RailDepotCheck, ReadPathCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SupplierCreditCheck, TreasuryCheck, UndemandedFeedCheck, WellCheck, ZoningCheck, ZoningViewCheck |
 | [Education](map/Education.md) | EducationCheck, EssentialWorksCheck, ExpectationsCheck, LongPlaytest, PriceLevelCheck |
 | [EducationType](map/EducationType.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, DiscoveryCheck, EducationCheck, EssentialWorksCheck, ExpectationsCheck, KeptCheck, LongPlaytest, NewUnitCheck, OutsideCheck, PriceLevelCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, StaffingDrawCheck |
 | [Equipment](map/Equipment.md) | DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, KeptCheck, LicenceFeesCheck, ModernEngineeringCheck, ModernRowsCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, ScaleCheck |
@@ -285,7 +285,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, WaterPowerCheck |
 | [RecipeChange](map/RecipeChange.md) | ModernEngineeringCheck, ModernRowsCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck |
 | [RecipeChanges](map/RecipeChanges.md) | FittingCheck, HistoricalLicenceCheck, ModernEngineeringCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck |
-| [Recipes](map/Recipes.md) | DiscoveryCheck, FieldOperatorsCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, ModernEngineeringCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, WaterPowerCheck |
+| [Recipes](map/Recipes.md) | DiscoveryCheck, FieldOperatorsCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, MaterialsCheck, ModernEngineeringCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, WaterPowerCheck |
 | [Recording](map/Recording.md) | ReplayCheck, SaveFileCheck |
 | [Reenactor](map/Reenactor.md) | **none** |
 | [RefineryFlow](map/RefineryFlow.md) | BuildCardCheck, BuildingDataCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, OilCheck, OilViewCheck, PostwarRecipeCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, SaveFileCheck |
@@ -23195,7 +23195,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L611 ...Retail's spare money, in particular: times the scale
   - L612 ...and Materials' earnings and its money's income scale together, so its return at a scaled price is unmoved
 
-## MaterialsCheck.java - 179 labelled assertions
+## MaterialsCheck.java - 185 labelled assertions
 
 > The materials chains, checked: the shared machinery every chain stands on
 > (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and
@@ -23211,207 +23211,214 @@ _(this harness does not label its checks through a helper - it prints its findin
 > of it, stayed the same to the byte at I2); and from I3 each chain's rows are
 > ...
 
-- **L284 1. the city's value of a works' output and feed, split at the month's imports and exports**
-  - L296 fixture: steel the city imported 1,000 t of this month, machinery it exported 400 t of, materials it traded none of
-  - L300 made here, up to what the city imported a unit is worth the net import price, to the bit
-  - L302 ...past it the net export price: 1,500 t is 1,000 at the import price and 500 at the export price, to the bit
-  - L304 ...so the first unit is worth cityValue(), to the bit, and the game's reading is the market's own tally
-  - L308 used here, up to what the city exported a unit costs the net export price - what it would no longer ship - and
-  - L312 ...and the mirrors: what the city exported, made here, is worth the net export price; what it imported, used
-  - L315 a good the city traded none of: made here its net export price on every unit, cityValue()'s (0.7.105, R1); used
-  - L324 a part whose price the world does not quote reads the local price: vans past the city's imports, which the world will
-  - L328 no units, or no market, are worth nothing
-- **L335 2. the whole-cost gate refuses a cash-rich sector's case A, which the rule to 0.7.111 passed**
-  - L358 fixture: an Electric Arc Furnace whose case A earns half the hurdle on its whole cost, Heavy Industry holding that cost in its
-  - L366 the rule to 0.7.111 (ON_ITS_BORROWING) passed it: nothing borrowed, so it asked only that it earn something
-  - L368 the rule in force (ON_ITS_WHOLE_COST, the default) refuses it at the money: the whole cost is tested whoever pays
-  - L383 the four cases are the study's (its 2.5): A feed imported, output exported; B feed and output at the export price;
-  - L389 ...with its consumables at the exchange factor and its power at the tariff in them: ownCosts() is consumables x rate
-- **L400 3. captive use: a good a works makes and uses goes to its own need first, and no sale is booked for it**
-  - L412 fixture: two Electric Arc Furnaces of a works sector, each using 400 t of the 1,200 t of steel it makes, and 200 of the 500
-  - L418 a flow good: its own need is made first - min(made, needed), 800 t - and the market is brought the rest, 1,600 t
-  - L421 ...and it asks the market for none of it, while its scrap it asks for whole
-  - L425 the ledger books the 1,600 t it shipped as a sale, and nothing for the 800 t it used: no sale and no purchase of it
-  - L430 a stockable good the same: its need, 400 units, asked of nobody
-  - L434 ...and what it makes for the market - for home, for the ship and idled - is the 600 past it
-  - L439 a works needing more than it makes uses all it makes and asks the market for the rest: 2,400 t made, 1,600 t asked
-  - L456 three sectors in the game keep captive goods, Iron & Steel (a ProcessingSector since 0.7.120): since 0.7.123 its
-- **L493 4. a works' own power: billed net, the surplus sold to the grid, and the city's utility pays it**
-  - L497 a building buys from the grid its draw past what it makes and sells the grid what it makes past its draw: none made,
-  - L510 fixture: three Industrial Bakeries making three times their draw and two Bakeries half theirs, three months on
-  - L512 the sector's surplus is its buildings' power past their draws, and its bill its net draw at the ratio and the tariff
-  - L516 its statement's powerSold is the surplus at the works' price (the struck book's), undimmed by the grid, and in its revenue past its sales
-  - L519 ...and in its operating income, every cost taken off the revenue it is in
-  - L529 the grid's consumption is every building's net draw, and the works' surplus is added to what it generates, whatever
-  - L534 fixture: the town's water works drew power the water's books paid for
-  - L535 the utility pays the works what their statements booked, out of its electricity income, which gains what the water's books
-  - L540 the month's money audit closes, the pair noted - the sectors' power sold and the utility's power bought - each off its
-  - L548 its powerSold crosses a save (SectorState), to the bit, and the twin's utility pays the same
-- **L556 5. consumables: bought from the world at the rate and the exchange factor, an import, in TRADE**
-  - L567 a works with none buys none, and books nothing
-  - L572 fixture: two Electric Arc Furnaces with 35 (world thousands) of consumables a month each, the world's money at 1.37
-  - L575 bought: their nameplate at the operating rate and the exchange factor, an import named Consumables on the input line
-  - L579 ...struck: in the statement's imports and inputs, and named among its inputs that are not a good
-  - L585 in the town, the bakeries' consumables are in Industry's imports, and the audit sees them leave in TRADE and closes
-- **L594 6. a processing sector's plan: what a works would make less what it would use, at the margin, less its costs**
-  - L615 a candidate earns what it makes at outValue() less what it uses at inValue(), at the rate, less its running and
-  - L619 ...and the last one standing the mirror: what it makes at inValue(), what losing it would cost the city, and what it
-  - L623 a refusal of its feed is the first gate it fails (a chain's own feed gate; none by default)
-  - L632 in a town Iron & Steel's candidates are its nine works (the two furnaces since 0.7.120, and since 0.7.123 the
-  - L639 ...and it orders the best that passes every gate, or says why not
-- **L647 7. idle, then shed: a kind of works whose last one loses money six months running may be sold**
-  - L666 fixture: four Electric Arc Furnaces whose last one loses money, one Steel Mini-Mill that earns
-  - L678 each month the losing kind counts one more idle month, and the earning kind none
-  - L679 ...under IDLE_MONTHS no kind is singled out: both are the distress rule's, and the spare-capacity rule has no
-  - L682 at IDLE_MONTHS the losing kind may be sold and the earning kind may not
-  - L683 ...the spare-capacity rule's measure is nothing used against its buildings, one a building
-  - L688 ...so, losing money six months, the rule sells a quarter of the foundries and nothing else
-  - L693 the idle months cross a save, by the template's id (extras idleMonths.<id>), the working kind's none
-  - L702 a month the foundry earns clears its count, and no kind may be singled out again
-- **L709 8. Mining on the extraction base: iron's counts, a mine on a free site, the dig, spare once worked out**
-  - L716 Mining is an ExtractionSector on iron's ground, its good iron ore
-  - L719 its sites owned and worked are the iron ones (LandManager.getIronDeposits(), Game.minesCommitted())
-  - L723 with free sites and ore in the ground it sinks an Iron Mine, or says why not (the staff, the ground)
-  - L731 its dig is the iron's tally (LandManager.extractIron()): what it lifted is what the ground gave, and kept for the land
-  - L735 ...with every site worked there is none left to dig, and while there is ore its plant is not spare
-  - L740 once the ore is out all its plant is spare: nothing used against its nameplate
-- **L765 9. the iron rows of batch I3 at parity: the study's four cases and its years abroad, to its rounding**
-  - L771 fixture: the game's founding tariffs are the study's: D$10 a kW a month, D$50 a unit of water
-  - L784 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
-  - L795 the
-  - L800 ...and its cost over a year of what it would sell abroad is the study's
-  - L817 where caseEarns() and the study differ: the mine's diesel is a feed at the case's price, not D$0.60 a litre in its
-- **L826 10. a save from before the split is refused, in P7's words and its file untouched; this build's loads**
-  - L829 the floor is at or past the split's format (GameVersion): a save one format older is no longer readable, and one
-  - L849 fixture: a town whose two furnaces bought scrap three months, saved by this build in its own format, SCRAP in it by name
-  - L861 its twin written down to format 36 and stamped 0.7.115 is refused in P7's words: the build that saved it, which still
-  - L865 ...nothing of it applied, and its file byte for byte as it was
-  - L873 this build's own save loads, its month, the scrap market's price and the furnaces' scrap as saved
-- **L912 11. the integrated route's rows of batch I4 at parity: the study's four cases and its years abroad, to its rounding**
-  - L923 the
-  - L936 its consumables are the study's running cost less its wages, the power it buys from the grid and its water
-  - L948 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
-  - L953 ...and its cost over a year of what it would sell abroad is the study's
-  - L969 the yard's old steel is in every case at 70% of scrap's export price, D$210 a tonne at parity: 10,500 t, D$2,205k
-  - L981 on imported feed for export (case A) no works of the route earns past 0.25% of its cost a month at parity (the study's
-- **L988 12. old steel: the four sources at 85%, a yard buying it pro rata at 70% of scrap's export price, the rest to landfill**
-  - L1000 each source arises at RECOVERY (85%) of the steel in it, kept by its seller: 100 cars at 0.9 t the households', two Houses
-  - L1020 the yards take a quarter of what stands: from every seller a quarter of theirs, each paid its tonnes at the price; the
-  - L1028 ...and asked for more than arose they take what arose, no more, and nothing goes to landfill
-  - L1031 ...a month nothing arose records nothing, and pays nobody
-  - L1049 the households are paid for their cars into their savings, all of it, by the cars each scrapped
-  - L1059 fixture: a town's Scrap Yard standing, its pool handed 4,000 t of old steel from the households' cars and 3,000 t from
-  - L1068 the yard makes its scrap from what arose, at 1.05 t of old steel a tonne, no more than arose, and buys it at 70% of scrap's
-  - L1075 each seller paid pro rata: the households into their savings and on the yard's input billed by them, the fabricators by
-  - L1087 struck: the fabricators' sale is \"
-  - L1097 a second yard is refused its feed while the old steel past what the yard standing takes is under FEED_GATE of one
-  - L1111 ...with 30,000 t arising it is fed, weighed on the share of nameplate the pool fills, paying 70% for its old steel and
-  - L1120 a yard keeps no van for its 10,000 t of scrap, which is bulk and goes by Haulage's trucks (FR2): no van, no van's capital
-  - L1152 in a town played four months, the yard buying each month's old steel: every month's audit closes, the households' part
-  - L1165 the pool crosses a save (DataSave.oldMetal) to the bit - what stands by seller and source, the last month's record and
-- **L1178 13. captive coke and pig iron: the ovens' coke to the furnaces first, their pig iron to the shop, nothing booked for either**
-  - L1194 fixture: Iron & Steel's real rows, one Coke Ovens, two Mini Blast Furnaces and one Oxygen Steel Shop, the coke and pig iron
-  - L1198 the coke: the furnaces' 13,500 t met first out of the ovens' 40,000, the market bid none of it
-  - L1202 ...and what the ovens make for the market - for home, for the ship and idled - is the 26,500 t past it
-  - L1206 the pig iron: all the furnaces' 30,000 t to the shop, none to the market, and the shop bids for the 216,500 t past it
-  - L1210 ...no sale and no purchase booked for what it handed itself: no pig iron sold or bought, no coke bought
-  - L1227 its vans move its GOODS tonnes less what the works hands itself (Sector.tonnesMoved(), FR2): the route's coke, pig iron, ore,
-- **L1237 14. the works' own power: the ovens and the furnace sell what they make past their draws, the shop buys the rest**
-  - L1258 fixture: a town with the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop standing, four months on
-  - L1262 its statement's powerSold is the ovens' 5,800 kW and the furnace's 8,600 at the works' price, in its revenue past its sales;
-  - L1266 the utility pays the works what their statement booked, and the grid counts their surplus as generation
-  - L1269 the month's money audit closes
-- **L1304 15. Iron Mining's rows of batch I5 at parity: by type and size, the study's four cases and its years abroad, to its rounding**
-  - L1312 the Iron Mine (14) stands on one site of a hematite field, ore as dug (ANY until batch I5)
-  - L1320 the
-  - L1331 ...its ground the iron sites it takes, an iron site's ground each (Resource.IRON.siteKm2())
-  - L1338 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
-  - L1349 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
-  - L1352 ...and its cost over a year of what it would sell abroad is the study's
-  - L1365 the open pit burns the Iron Mine's diesel a tonne; the magnetite works burn none
-- **L1373 16. a mine fits its field: twenty sites of one field of its type for a large mine, never magnetite works on hematite**
-  - L1383 fixture: a town's iron by fiat, one field of 19 hematite sites (ground by fiat is the first type), none magnetite
-  - L1389 a works of twenty sites is refused on a field of nineteen: no deposit for it, before the money
-  - L1391 ...where one-site Iron Mines fit, nineteen and not twenty
-  - L1393 a magnetite works is refused on hematite, nineteen sites free: the small one and the large
-  - L1398 ...and the plan orders the mine that fits, the Iron Mine - never the pit or a magnetite works
-  - L1402 on a field of twenty the works of twenty fits, one and not two
-  - L1408 ...and the plan orders the one of the two that earns more on its whole cost, its freight in it
-  - L1417 a run counts the sites its orders take, not the orders: an Iron Mine ahead leaves the pit nineteen, the pit ahead
-  - L1421 with the pit standing its twenty sites are taken: not one Iron Mine more fits, and the sites committed are twenty
-  - L1425 ...a twenty-first site takes one more Iron Mine, and still no magnetite works
-- **L1454 17. on real fields of both types: what fits, the plan's choice, the dig by type with W exact, and retirement by type**
-  - L1479 fixture: a city on world
-  - L1486 as many twenty-site works fit as the fields of their type hold twenty sites, each on one field: the open pits on
-  - L1492 ...one-site works on every site of their type and not one more; magnetite works never on the hematite's
-  - L1514 the plan's order is the best earnings on the whole cost, freight in, of the mines that fit, staff and pay
-  - L1518 ...its freight in what it earns and costs: the open pit's vans carry its goods alone, the diesel it burns and not its ore
-  - L1539 fixture: two Iron Mines and two magnetite works standing, a month's ore asked of them at the sector's rate
-  - L1541 each type's share of the ask comes out of its own ground: the hematite as dug, the magnetite three tonnes of rock a tonne
-  - L1546 ...E rising by the ground taken out, the land office's month the same tonnes, and W by type to the tonne
-  - L1549 ...and from the first dig by type the save carries E by type
-  - L1553 while both types have ore no mine is spare, and any may be sold
-  - L1558 once the hematite is out the Iron Mines are spare - nothing used against their nameplate - while the magnetite has ore
-  - L1561 ...and only they may be sold, by the spare-capacity rule and the distress rule alike
-  - L1563 ...no hematite works is ordered on hematite sites with no ore under them, a magnetite one still may be
-  - L1568 ...and the next month's dig gives the hematite mines nothing and the magnetite works their share
-- **L1579 18. a kind's year (CY1): a month noted once, a year kept, the lesser of the two, the count idle over its year, and a save's round trip**
-  - L1586 a second note in the same month replaces the first: one month kept, its mean the second's
-  - L1589 ...and a note in the next month is a second month: the mean of both
-  - L1592 a figure that is not finite is not noted
-  - L1593 a kind never noted reads no months and no mean
-  - L1608 TRAILING_MONTHS (
-  - L1612 ...the months kept rise by one a month to TRAILING_MONTHS and no further
-  - L1613 lesser() is the month's where the year is not a number, and else the lower of the two
-  - L1635 premise: on FC2's figures (+54k, -83k, -33k) the count that a working month starts again (noteMonth(kind, standing, idle)) never reaches
-  - L1639 CY1: the same figures count every month idle from the second - the working months too, the year's mean below nothing - and the kind may be shed from the first
-  - L1651 one losing month in a year of paying ones counts one idle month, and the next paying month starts the count again
-  - L1662 a kind idle IDLE_MONTHS (
-  - L1668 ...and the month after that, losing again with the year below nothing, it may be shed again
-  - L1672 a kind idle IDLE_MONTHS running whose last month loses but whose year pays (the mean above nothing) may not be shed
-  - L1694 a holding smaller than at the kind's last note starts its year again (the new figure alone), its count going on; an equal, a larger and an unknown (NaN) hold...
-  - L1700 ...a smaller holding and a paying month: the year is that month alone and the count starts again, as it would not on the year that lagged
-  - L1711 the holding survives saveMargins/restoreMargins (HOLDING_KEY): a smaller holding noted after the restore starts the year again, an equal one does not
-  - L1717 none standing clears the kind's count and its year
-  - L1720 ...and the next one standing starts a year of its own: its first month alone, not idle
-  - L1727 a figure that is not a number counts as a working month (it did) and is not kept in the year
-  - L1751 a save carries each kind's year and what its last one earned, and the planner read back has the same means to the bit
-  - L1755 ...and what it held before the restore is gone
-  - L1770 a key with an age that is no number, none or past the year, one with no kind or no age, a figure that is not finite and a key of
-  - L1777 a map without the keys (a save from before CY1), or none, reads no months and no mean
-- **L1823 19. a one-month spike orders no works (CY1): the month alone passes, its year does not, and the order waits for the year**
-  - L1847 fixture: rod's export price at half the literal for TRAILING_MONTHS - 1 (
-  - L1861 premise: in the spike month the month alone passes every gate - the planner's best is a Rod Mill - and the town on main's rule orders one
-  - L1864 CY1: its year's mean is under the hurdle, so the plan orders no Rod Mill, and its words give the year: its mean over its last months against the month's
-  - L1868 ...and the city orders none that month, as it had none before
-  - L1892 the order waits for the year: with rod paying on, the city orders its first Rod Mill after the spike month and within TRAILING_MONTHS (
-  - L1895 ...and the held planner agrees: until the month it plans one, every paying month passes alone and its year's mean sits under the hurdle
-- **L1903 20. a three-month cycle whose year does not pay builds nothing at its peaks, so its troughs strand no works (CY1)**
-  - L1947 premise: at a peak the month alone passes every gate and clears the hurdle (the peaks do not all: the town's tallies move as the cycle runs), and at every pe...
-  - L1951 premise: on main's rule the town orders Rod Mills at the peaks, and they stand losing in a trough
-  - L1953 CY1: the plan builds nothing at any month of the cycle, at the peaks the month alone passes least of all
-  - L1955 ...so the city orders no Rod Mill over
-- **L1963 21. a feed-short works orders no mill (CY1): its works that would run under FEED_GATE of nameplate on last month's make are refused one more**
-  - L1979 fixture: three Rod Mills and a wire works, rod unpaid: the mills make some rod and idle most of their nameplate, under FEED_GATE (
-  - L1982 the run the sector reads is the Output row's own, made over made and idled times last month's capacity over today's, and it is under FEED_GATE
-  - L1986 ...so a Rod Mill's first gate is its feed, and its refusal says the works would run at that share of nameplate on last month's make
-  - L1991 a kind none of whose goods' works stand is not refused on it: a smelter's run reads nothing and its feed gate is open
-  - L2004 premise: the loaded town has read no month yet: its save loaded, no Output row for rod, and the Rod Mills as many as were saved
-  - L2007 CY1 (REV-CY1): the feed gate's run survives a save: before any month runs the loaded town reads the saved town's run, under FEED_GATE, and refuses a Rod Mill...
-  - L2022 rod paying, the same mills run at or above FEED_GATE of nameplate and their feed gate is open
-  - L2034 Rod Mills standing in a town with no month run since: no Output row, a run of nothing (NaN) and no refusal on the feed
-- **L2054 22. an idle works is shed over its year (CY1): a kind whose last one loses two months in three counts them all, and may be sold**
-  - L2087 premise: the last Rod Mill earns something in a peak month (a working month that starts main's count again) and loses in the two between; the count that a wo...
-  - L2090 CY1: the count rises every month of the cycle, the working months with it, and reaches IDLE_MONTHS (
-  - L2094 ...so the Rod Mill may be sold and the spare-capacity rule has a measure: nothing used against the idle kind's buildings
-  - L2117 premise: the sector's own losing streak is under RETIREMENT_LOSS_MONTHS (
-  - L2120 CY1: the rule sells the idle kind on its own year, and the city's month sells a Rod Mill
-  - L2123 CY1: the sale's reason names the idle kind and its months over its year, not the sector's own \"0 months of losses\"
-  - L2129 CY1: the sale started the last Rod Mill's year again: the month after it has that month's figure alone for its year, not the year's mean before it
-  - L2174 premise: a month in which the last Rod Mill earns something while its idle count is at IDLE_MONTHS (
-  - L2179 CY1 (REV-CY1): ...the kind may not be sold on that note, though its count is at IDLE_MONTHS: the last one paid, so the sector counts no idle works and offers
-  - L2189 CY1 (REV-CY1): the next month's retirement, run on that note, sells none: the Rod Mill count is unchanged across it
-  - L2200 ...and nothing else was braking it: the month after, the last one losing again in its month and over its year, the rule may shed it and the retirement sells ...
+- **L285 1. the city's value of a works' output and feed, split at the month's imports and exports**
+  - L297 fixture: steel the city imported 1,000 t of this month, machinery it exported 400 t of, materials it traded none of
+  - L301 made here, up to what the city imported a unit is worth the net import price, to the bit
+  - L303 ...past it the net export price: 1,500 t is 1,000 at the import price and 500 at the export price, to the bit
+  - L305 ...so the first unit is worth cityValue(), to the bit, and the game's reading is the market's own tally
+  - L309 used here, up to what the city exported a unit costs the net export price - what it would no longer ship - and
+  - L313 ...and the mirrors: what the city exported, made here, is worth the net export price; what it imported, used
+  - L316 a good the city traded none of: made here its net export price on every unit, cityValue()'s (0.7.105, R1); used
+  - L325 a part whose price the world does not quote reads the local price: vans past the city's imports, which the world will
+  - L329 no units, or no market, are worth nothing
+- **L336 2. the whole-cost gate refuses a cash-rich sector's case A, which the rule to 0.7.111 passed**
+  - L359 fixture: an Electric Arc Furnace whose case A earns half the hurdle on its whole cost, Heavy Industry holding that cost in its
+  - L367 the rule to 0.7.111 (ON_ITS_BORROWING) passed it: nothing borrowed, so it asked only that it earn something
+  - L369 the rule in force (ON_ITS_WHOLE_COST, the default) refuses it at the money: the whole cost is tested whoever pays
+  - L384 the four cases are the study's (its 2.5): A feed imported, output exported; B feed and output at the export price;
+  - L390 ...with its consumables at the exchange factor and its power at the tariff in them: ownCosts() is consumables x rate
+- **L401 3. captive use: a good a works makes and uses goes to its own need first, and no sale is booked for it**
+  - L413 fixture: two Electric Arc Furnaces of a works sector, each using 400 t of the 1,200 t of steel it makes, and 200 of the 500
+  - L419 a flow good: its own need is made first - min(made, needed), 800 t - and the market is brought the rest, 1,600 t
+  - L422 ...and it asks the market for none of it, while its scrap it asks for whole
+  - L426 the ledger books the 1,600 t it shipped as a sale, and nothing for the 800 t it used: no sale and no purchase of it
+  - L431 a stockable good the same: its need, 400 units, asked of nobody
+  - L435 ...and what it makes for the market - for home, for the ship and idled - is the 600 past it
+  - L440 a works needing more than it makes uses all it makes and asks the market for the rest: 2,400 t made, 1,600 t asked
+  - L457 three sectors in the game keep captive goods, Iron & Steel (a ProcessingSector since 0.7.120): since 0.7.123 its
+- **L494 4. a works' own power: billed net, the surplus sold to the grid, and the city's utility pays it**
+  - L498 a building buys from the grid its draw past what it makes and sells the grid what it makes past its draw: none made,
+  - L511 fixture: three Industrial Bakeries making three times their draw and two Bakeries half theirs, three months on
+  - L513 the sector's surplus is its buildings' power past their draws, and its bill its net draw at the ratio, the month's season (PW1-R: the kWh served) and the tariff
+  - L518 its statement's powerSold is the surplus at the works' price (the struck book's), undimmed by the grid, and in its revenue past its sales
+  - L521 ...and in its operating income, every cost taken off the revenue it is in
+  - L531 the grid's consumption is every building's net draw, and the works' surplus is added to what it generates, whatever
+  - L536 fixture: the town's water works drew power the water's books paid for
+  - L537 the utility pays the works what their statements booked, out of its electricity income, which gains what the water's books
+  - L542 the month's money audit closes, the pair noted - the sectors' power sold and the utility's power bought - each off its
+  - L550 its powerSold crosses a save (SectorState), to the bit, and the twin's utility pays the same
+- **L558 5. consumables: bought from the world at the rate and the exchange factor, an import, in TRADE**
+  - L569 a works with none buys none, and books nothing
+  - L574 fixture: two Electric Arc Furnaces with 35 (world thousands) of consumables a month each, the world's money at 1.37
+  - L577 bought: their nameplate at the operating rate and the exchange factor, an import named Consumables on the input line
+  - L581 ...struck: in the statement's imports and inputs, and named among its inputs that are not a good
+  - L587 in the town, the bakeries' consumables are in Industry's imports, and the audit sees them leave in TRADE and closes
+- **L596 6. a processing sector's plan: what a works would make less what it would use, at the margin, less its costs**
+  - L617 a candidate earns what it makes at outValue() less what it uses at inValue(), at the rate, less its running and
+  - L621 ...and the last one standing the mirror: what it makes at inValue(), what losing it would cost the city, and what it
+  - L625 a refusal of its feed is the first gate it fails (a chain's own feed gate; none by default)
+  - L634 in a town Iron & Steel's candidates are its nine works (the two furnaces since 0.7.120, and since 0.7.123 the
+  - L641 ...and it orders the best that passes every gate, or says why not
+- **L649 7. idle, then shed: a kind of works whose last one loses money six months running may be sold**
+  - L668 fixture: four Electric Arc Furnaces whose last one loses money, one Steel Mini-Mill that earns
+  - L680 each month the losing kind counts one more idle month, and the earning kind none
+  - L681 ...under IDLE_MONTHS no kind is singled out: both are the distress rule's, and the spare-capacity rule has no
+  - L684 at IDLE_MONTHS the losing kind may be sold and the earning kind may not
+  - L685 ...the spare-capacity rule's measure is nothing used against its buildings, one a building
+  - L690 ...so, losing money six months, the rule sells a quarter of the foundries and nothing else
+  - L695 the idle months cross a save, by the template's id (extras idleMonths.<id>), the working kind's none
+  - L704 a month the foundry earns clears its count, and no kind may be singled out again
+- **L711 8. Mining on the extraction base: iron's counts, a mine on a free site, the dig, spare once worked out**
+  - L718 Mining is an ExtractionSector on iron's ground, its good iron ore
+  - L721 its sites owned and worked are the iron ones (LandManager.getIronDeposits(), Game.minesCommitted())
+  - L725 with free sites and ore in the ground it sinks an Iron Mine, or says why not (the staff, the ground)
+  - L733 its dig is the iron's tally (LandManager.extractIron()): what it lifted is what the ground gave, and kept for the land
+  - L737 ...with every site worked there is none left to dig, and while there is ore its plant is not spare
+  - L742 once the ore is out all its plant is spare: nothing used against its nameplate
+- **L767 9. the iron rows of batch I3 at parity: the study's four cases and its years abroad, to its rounding**
+  - L773 fixture: the game's founding tariffs are the study's: D$10 a kW a month, D$50 a unit of water
+  - L786 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
+  - L797 the
+  - L802 ...and its cost over a year of what it would sell abroad is the study's
+  - L819 where caseEarns() and the study differ: the mine's diesel is a feed at the case's price, not D$0.60 a litre in its
+- **L828 10. a save from before the split is refused, in P7's words and its file untouched; this build's loads**
+  - L831 the floor is at or past the split's format (GameVersion): a save one format older is no longer readable, and one
+  - L851 fixture: a town whose two furnaces bought scrap three months, saved by this build in its own format, SCRAP in it by name
+  - L863 its twin written down to format 36 and stamped 0.7.115 is refused in P7's words: the build that saved it, which still
+  - L867 ...nothing of it applied, and its file byte for byte as it was
+  - L875 this build's own save loads, its month, the scrap market's price and the furnaces' scrap as saved
+- **L914 11. the integrated route's rows of batch I4 at parity: the study's four cases and its years abroad, to its rounding**
+  - L925 the
+  - L938 its consumables are the study's running cost less its wages, the power it buys from the grid and its water
+  - L950 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
+  - L955 ...and its cost over a year of what it would sell abroad is the study's
+  - L971 the yard's old steel is in every case at 70% of scrap's export price, D$210 a tonne at parity: 10,500 t, D$2,205k
+  - L983 on imported feed for export (case A) no works of the route earns past 0.25% of its cost a month at parity (the study's
+- **L990 12. old steel: the four sources at 85%, a yard buying it pro rata at 70% of scrap's export price, the rest to landfill**
+  - L1002 each source arises at RECOVERY (85%) of the steel in it, kept by its seller: 100 cars at 0.9 t the households', two Houses
+  - L1022 the yards take a quarter of what stands: from every seller a quarter of theirs, each paid its tonnes at the price; the
+  - L1030 ...and asked for more than arose they take what arose, no more, and nothing goes to landfill
+  - L1033 ...a month nothing arose records nothing, and pays nobody
+  - L1051 the households are paid for their cars into their savings, all of it, by the cars each scrapped
+  - L1061 fixture: a town's Scrap Yard standing, its pool handed 4,000 t of old steel from the households' cars and 3,000 t from
+  - L1070 the yard makes its scrap from what arose, at 1.05 t of old steel a tonne, no more than arose, and buys it at 70% of scrap's
+  - L1077 each seller paid pro rata: the households into their savings and on the yard's input billed by them, the fabricators by
+  - L1089 struck: the fabricators' sale is \"
+  - L1099 a second yard is refused its feed while the old steel past what the yard standing takes is under FEED_GATE of one
+  - L1113 ...with 30,000 t arising it is fed, weighed on the share of nameplate the pool fills, paying 70% for its old steel and
+  - L1122 a yard keeps no van for its 10,000 t of scrap, which is bulk and goes by Haulage's trucks (FR2): no van, no van's capital
+  - L1154 in a town played four months, the yard buying each month's old steel: every month's audit closes, the households' part
+  - L1167 the pool crosses a save (DataSave.oldMetal) to the bit - what stands by seller and source, the last month's record and
+- **L1180 13. captive coke and pig iron: the ovens' coke to the furnaces first, their pig iron to the shop, nothing booked for either**
+  - L1196 fixture: Iron & Steel's real rows, one Coke Ovens, two Mini Blast Furnaces and one Oxygen Steel Shop, the coke and pig iron
+  - L1200 the coke: the furnaces' 13,500 t met first out of the ovens' 40,000, the market bid none of it
+  - L1204 ...and what the ovens make for the market - for home, for the ship and idled - is the 26,500 t past it
+  - L1208 the pig iron: all the furnaces' 30,000 t to the shop, none to the market, and the shop bids for the 216,500 t past it
+  - L1212 ...no sale and no purchase booked for what it handed itself: no pig iron sold or bought, no coke bought
+  - L1229 its vans move its GOODS tonnes less what the works hands itself (Sector.tonnesMoved(), FR2): the route's coke, pig iron, ore,
+- **L1239 14. the works' own power: the ovens and the furnace sell what they make past their draws, the shop buys the rest**
+  - L1260 fixture: a town with the Coke Ovens, the Blast Furnace and the Oxygen Steel Shop standing, four months on
+  - L1264 its statement's powerSold is the ovens' 5,800 kW and the furnace's 8,600 at the works' price, in its revenue past its sales;
+  - L1269 the utility pays the works what their statement booked, and the grid counts their surplus as generation
+  - L1272 the month's money audit closes
+- **L1307 15. Iron Mining's rows of batch I5 at parity: by type and size, the study's four cases and its years abroad, to its rounding**
+  - L1315 the Iron Mine (14) stands on one site of a hematite field, ore as dug (ANY until batch I5)
+  - L1323 the
+  - L1334 ...its ground the iron sites it takes, an iron site's ground each (Resource.IRON.siteKm2())
+  - L1341 its consumables are the study's running cost less its wages, power, water and diesel (at the study's D$0.60 a litre)
+  - L1352 ...its four cases (SpreadPlanner.caseEarns(), at parity) are the study's to its rounding:
+  - L1355 ...and its cost over a year of what it would sell abroad is the study's
+  - L1368 the open pit burns the Iron Mine's diesel a tonne; the magnetite works burn none
+- **L1376 16. a mine fits its field: twenty sites of one field of its type for a large mine, never magnetite works on hematite**
+  - L1386 fixture: a town's iron by fiat, one field of 19 hematite sites (ground by fiat is the first type), none magnetite
+  - L1392 a works of twenty sites is refused on a field of nineteen: no deposit for it, before the money
+  - L1394 ...where one-site Iron Mines fit, nineteen and not twenty
+  - L1396 a magnetite works is refused on hematite, nineteen sites free: the small one and the large
+  - L1401 ...and the plan orders the mine that fits, the Iron Mine - never the pit or a magnetite works
+  - L1405 on a field of twenty the works of twenty fits, one and not two
+  - L1411 ...and the plan orders the one of the two that earns more on its whole cost, its freight in it
+  - L1420 a run counts the sites its orders take, not the orders: an Iron Mine ahead leaves the pit nineteen, the pit ahead
+  - L1424 with the pit standing its twenty sites are taken: not one Iron Mine more fits, and the sites committed are twenty
+  - L1428 ...a twenty-first site takes one more Iron Mine, and still no magnetite works
+- **L1457 17. on real fields of both types: what fits, the plan's choice, the dig by type with W exact, and retirement by type**
+  - L1482 fixture: a city on world
+  - L1489 as many twenty-site works fit as the fields of their type hold twenty sites, each on one field: the open pits on
+  - L1495 ...one-site works on every site of their type and not one more; magnetite works never on the hematite's
+  - L1517 the plan's order is the best earnings on the whole cost, freight in, of the mines that fit, staff and pay
+  - L1521 ...its freight in what it earns and costs: the open pit's vans carry its goods alone, the diesel it burns and not its ore
+  - L1542 fixture: two Iron Mines and two magnetite works standing, a month's ore asked of them at the sector's rate
+  - L1544 each type's share of the ask comes out of its own ground: the hematite as dug, the magnetite three tonnes of rock a tonne
+  - L1549 ...E rising by the ground taken out, the land office's month the same tonnes, and W by type to the tonne
+  - L1552 ...and from the first dig by type the save carries E by type
+  - L1556 while both types have ore no mine is spare, and any may be sold
+  - L1561 once the hematite is out the Iron Mines are spare - nothing used against their nameplate - while the magnetite has ore
+  - L1564 ...and only they may be sold, by the spare-capacity rule and the distress rule alike
+  - L1566 ...no hematite works is ordered on hematite sites with no ore under them, a magnetite one still may be
+  - L1571 ...and the next month's dig gives the hematite mines nothing and the magnetite works their share
+- **L1582 18. a kind's year (CY1): a month noted once, a year kept, the lesser of the two, the count idle over its year, and a save's round trip**
+  - L1589 a second note in the same month replaces the first: one month kept, its mean the second's
+  - L1592 ...and a note in the next month is a second month: the mean of both
+  - L1595 a figure that is not finite is not noted
+  - L1596 a kind never noted reads no months and no mean
+  - L1611 TRAILING_MONTHS (
+  - L1615 ...the months kept rise by one a month to TRAILING_MONTHS and no further
+  - L1616 lesser() is the month's where the year is not a number, and else the lower of the two
+  - L1638 premise: on FC2's figures (+54k, -83k, -33k) the count that a working month starts again (noteMonth(kind, standing, idle)) never reaches
+  - L1642 CY1: the same figures count every month idle from the second - the working months too, the year's mean below nothing - and the kind may be shed from the first
+  - L1654 one losing month in a year of paying ones counts one idle month, and the next paying month starts the count again
+  - L1665 a kind idle IDLE_MONTHS (
+  - L1671 ...and the month after that, losing again with the year below nothing, it may be shed again
+  - L1675 a kind idle IDLE_MONTHS running whose last month loses but whose year pays (the mean above nothing) may not be shed
+  - L1697 a holding smaller than at the kind's last note starts its year again (the new figure alone), its count going on; an equal, a larger and an unknown (NaN) hold...
+  - L1703 ...a smaller holding and a paying month: the year is that month alone and the count starts again, as it would not on the year that lagged
+  - L1714 the holding survives saveMargins/restoreMargins (HOLDING_KEY): a smaller holding noted after the restore starts the year again, an equal one does not
+  - L1720 none standing clears the kind's count and its year
+  - L1723 ...and the next one standing starts a year of its own: its first month alone, not idle
+  - L1730 a figure that is not a number counts as a working month (it did) and is not kept in the year
+  - L1754 a save carries each kind's year and what its last one earned, and the planner read back has the same means to the bit
+  - L1758 ...and what it held before the restore is gone
+  - L1773 a key with an age that is no number, none or past the year, one with no kind or no age, a figure that is not finite and a key of
+  - L1780 a map without the keys (a save from before CY1), or none, reads no months and no mean
+- **L1826 19. a one-month spike orders no works (CY1): the month alone passes, its year does not, and the order waits for the year**
+  - L1850 fixture: rod's export price at half the literal for TRAILING_MONTHS - 1 (
+  - L1864 premise: in the spike month the month alone passes every gate - the planner's best is a Rod Mill - and the town on main's rule orders one
+  - L1867 CY1: its year's mean is under the hurdle, so the plan orders no Rod Mill, and its words give the year: its mean over its last months against the month's
+  - L1871 ...and the city orders none that month, as it had none before
+  - L1895 the order waits for the year: with rod paying on, the city orders its first Rod Mill after the spike month and within TRAILING_MONTHS (
+  - L1898 ...and the held planner agrees: until the month it plans one, every paying month passes alone and its year's mean sits under the hurdle
+- **L1906 20. a three-month cycle whose year does not pay builds nothing at its peaks, so its troughs strand no works (CY1)**
+  - L1950 premise: at a peak the month alone passes every gate and clears the hurdle (the peaks do not all: the town's tallies move as the cycle runs), and at every pe...
+  - L1954 premise: on main's rule the town orders Rod Mills at the peaks, and they stand losing in a trough
+  - L1956 CY1: the plan builds nothing at any month of the cycle, at the peaks the month alone passes least of all
+  - L1958 ...so the city orders no Rod Mill over
+- **L1966 21. a feed-short works orders no mill (CY1): its works that would run under FEED_GATE of nameplate on last month's make are refused one more**
+  - L1982 fixture: three Rod Mills and a wire works, rod unpaid: the mills make some rod and idle most of their nameplate, under FEED_GATE (
+  - L1985 the run the sector reads is the Output row's own, made over made and idled times last month's capacity over today's, and it is under FEED_GATE
+  - L1989 ...so a Rod Mill's first gate is its feed, and its refusal says the works would run at that share of nameplate on last month's make
+  - L1994 a kind none of whose goods' works stand is not refused on it: a smelter's run reads nothing and its feed gate is open
+  - L2007 premise: the loaded town has read no month yet: its save loaded, no Output row for rod, and the Rod Mills as many as were saved
+  - L2010 CY1 (REV-CY1): the feed gate's run survives a save: before any month runs the loaded town reads the saved town's run, under FEED_GATE, and refuses a Rod Mill...
+  - L2025 rod paying, the same mills run at or above FEED_GATE of nameplate and their feed gate is open
+  - L2037 Rod Mills standing in a town with no month run since: no Output row, a run of nothing (NaN) and no refusal on the feed
+- **L2057 22. an idle works is shed over its year (CY1): a kind whose last one loses two months in three counts them all, and may be sold**
+  - L2090 premise: the last Rod Mill earns something in a peak month (a working month that starts main's count again) and loses in the two between; the count that a wo...
+  - L2093 CY1: the count rises every month of the cycle, the working months with it, and reaches IDLE_MONTHS (
+  - L2097 ...so the Rod Mill may be sold and the spare-capacity rule has a measure: nothing used against the idle kind's buildings
+  - L2120 premise: the sector's own losing streak is under RETIREMENT_LOSS_MONTHS (
+  - L2123 CY1: the rule sells the idle kind on its own year, and the city's month sells a Rod Mill
+  - L2126 CY1: the sale's reason names the idle kind and its months over its year, not the sector's own \"0 months of losses\"
+  - L2132 CY1: the sale started the last Rod Mill's year again: the month after it has that month's figure alone for its year, not the year's mean before it
+  - L2177 premise: a month in which the last Rod Mill earns something while its idle count is at IDLE_MONTHS (
+  - L2182 CY1 (REV-CY1): ...the kind may not be sold on that note, though its count is at IDLE_MONTHS: the last one paid, so the sector counts no idle works and offers
+  - L2192 CY1 (REV-CY1): the next month's retirement, run on that note, sells none: the Rod Mill count is unchanged across it
+  - L2203 ...and nothing else was braking it: the month after, the last one losing again in its month and over its year, the rule may shed it and the retirement sells ...
+- **L2211 23. the planner weighs a works' own power as it is paid (PW1-R): what replaces its draw at its class's price, the surplus at the works' p...**
+  - L2229 fixture: section 14's town, four months on: the Coke Ovens make more power than they draw, and the struck book pays
+  - L2237 its own costs are its consumables at the rate and the exchange factor, less its draw replaced at the industry price and its surplus
+  - L2252 the last one standing earns what its surplus gains at a works' price a tenth higher, and no more: lastEarns() rises by the surplus
+  - L2267 the industry price a tenth higher moves its own-power credit by its draw replaced times the rise alone (to 1e-12): the surplus is not paid the industry price
+  - L2284 a recipe of the ovens is weighed at the industry price for its draw and the works' for its surplus, and a shop's at the commerce price
+  - L2288 the month's money audit closes
 
 ## MedicineCheck.java - 67 labelled assertions
 
