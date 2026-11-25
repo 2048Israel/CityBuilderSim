@@ -1140,3 +1140,56 @@ restatement stands. Both points are done:
   founding is unchanged at 1.15 diplomas and −3.2% after cost.
 - KeptCheck was not re-run for P3. The view it draws is the same object from
   the same owners, so the drawing does not change.
+
+### The ensemble (the review's go) and its gate condition
+
+**The 80 runs.** On 4686bd100, the final model with P2 and P3, on the gate
+box: 80 of 80 runs, scored here against `docs/ensemble/0.9.203.md` and
+committed as `docs/ensemble/WG3.md`. **PASS.**
+- Hard criteria 10 of 10: M1 0 months and F1 0/16 in every policy. F1
+  counts LongPlaytest's own findings, "households with no home" among them,
+  through `LongPlaytest.runPlayer`, so no run of any policy raised it.
+- 25 of 26 criteria (one retired), no verdict changed.
+- The trace moves, modestly. Medians against 0.9.203's:
+  - A1: 2.68% [2.20 to 3.05], against 2.75%.
+  - A2: 16 months [6 to 24], against 14 [4 to 37]. FAIL in both, a soft
+    criterion.
+  - S1: 2.63%, against 2.63%.
+  - K1: 16.07%, against 15.39%.
+  - R3: −2.64%, against −2.73%.
+  - T1: 16/16 seeds reach 40,000 people at m308, against m320.
+  - T2: 9,206,904, against 9,023,330.
+
+**Evictions and households with no home against main's spread.** The
+ensemble has no eviction column, and its baseline has none either.
+- ★ Call taken: a paired diagnostic, not a baseline. It is AUTO2's 16 seeds
+  on the box, run once on WG3 (9a37b27ce) and once on main (304506de2, a
+  detached worktree, removed afterwards). Both runs add
+  `-Densemble.extra=evicted=getHouseholdBalance.getEvicted;unhoused=getUnemployment.getUnhoused`.
+- Both runs are in `target/ensemble/WG3-evict` and `WG3-evict-main`, and
+  `target/diag/evict.sh` sums them. Over 2,400 months:
+
+| AUTO2, 16 seeds | main | WG3 |
+|---|---|---|
+| evictions over the run | 54,200 [7,828 to 179,634] | 89,989 [14,473 to 176,383] |
+| the most unhoused in a month | 11,515 [718 to 77,571] | 14,872 [1,927 to 37,912] |
+
+- WG3's range lies inside main's on both. Seed for seed, WG3 is higher in 8
+  of 16 seeds (evictions) and 10 of 16 (the worst month), so there is no
+  shift beyond a chaotic city's own spread, and no trace is owed. The
+  no-home finding is F1's 0/16.
+- LongPlaytest's single city (342k) is one draw from this spread.
+
+**The grown cities' degree pays.** The reading is an uncommitted copy of the
+driver (`target/diag/src`), with the ratio of the best ungated degree wage
+to the diploma wage and the gain after cost added as columns. AUTO2, run
+here to m1200:
+- seed 0: 2.29, 2.76, 2.32, 2.54 and 2.45 at m240, m480, m720, m960 and
+  m1200;
+- seed 1: 2.64, 2.59, 2.48, 2.42 and 2.46.
+
+Both are above 1.2 everywhere past the founding (m36: 1.34), so no
+labour-market row is owed. The degree's gain after cost runs 0.6 to 1.3,
+near or past full willingness, while university students sit at its seats
+(2,000, then 4,000-6,000). That is the page's "too few seats" verdict, and
+the auto-builder's to answer, not WG3's.
