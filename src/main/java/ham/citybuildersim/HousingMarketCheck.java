@@ -190,7 +190,7 @@ public final class HousingMarketCheck {
         near("compact planner cost is the actual door invoice",compactCost,g.doorPriceOf(compact,1));
         near("House planner cost is the actual door invoice",houseCost,g.doorPriceOf(house,1));
         // Open at an electricity bill equal to the compact form's gross capital
-        // return, then halve that tariff. Existing asks retain their opening quote;
+        // return, then lower that tariff (below). Existing asks retain their opening quote;
         // no rent, yield, template cost or preference is fitted to the ranking.
         double openingPower=compactCost*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12/compact.getElectricityConsumption();
         double households=compact.getDwellings()+house.getDwellings();
@@ -200,8 +200,25 @@ public final class HousingMarketCheck {
         var compactKey=new HousingInventory.Key(compact.getId(),compact.getHousingRecipe().mix().getFirst().id());
         var houseKey=new HousingInventory.Key(house.getId(),house.getHousingRecipe().mix().getFirst().id());
         near("compact opening quote is its actual operating floor",market.price(compactKey),em.housingCarry(compact));
-        near("House opening quote keeps the unchanged gross reference",market.price(houseKey),houseCost*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12);
-        em.setPricePerWatt(openingPower/2);
+        // The ask's capital is the home's market value, the carry's own base (RES3c, 4f690edfc), not the door's invoice.
+        near("House opening quote keeps the unchanged gross reference",market.price(houseKey),
+                (em.housingStructureValue(house)+em.housingLandValue(house))*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12);
+        // ...then move the tariff to where the gross and net winners part (RES3c). Since the ask's capital is the home's market
+        // value (4f690edfc), the House's gross per project dollar fell, and at half the tariff the compact form won both ways.
+        // The carry is linear in the tariff: read at two tariffs, it gives the tariff where the two forms' net per project
+        // dollar are equal and where the first build hurdle would bind, and the fixture stands halfway between.
+        var opening=market.forecast(g);
+        double openIncomeC=opening.income(compact,1),openIncomeH=opening.income(house,1);
+        em.setPricePerWatt(0);double compactAt0=em.housingCarry(compact),houseAt0=em.housingCarry(house);
+        em.setPricePerWatt(openingPower);
+        double compactPer=(em.housingCarry(compact)-compactAt0)/openingPower,housePer=(em.housingCarry(house)-houseAt0)/openingPower;
+        double parity=((openIncomeH-houseAt0)/houseCost-(openIncomeC-compactAt0)/compactCost)/(housePer/houseCost-compactPer/compactCost);
+        double margin=1+ham.citybuildersim.sectors.RealEstate.BUILD_MARGIN;
+        double hurdle=Math.min((openIncomeC/margin-compactAt0)/compactPer,(openIncomeH/margin-houseAt0)/housePer);
+        out.printf(Locale.ROOT,"   the tariff parts the winners from %.6g of the opening; the first hurdle binds at %.6g%n",
+                parity/openingPower,hurdle/openingPower);
+        check("fixture: a tariff parts the gross and net winners inside both build hurdles",parity>0&&parity<hurdle);
+        em.setPricePerWatt((parity+hurdle)/2);
         var forecast=market.forecast(g);
         double compactIncome=forecast.income(compact,1),houseIncome=forecast.income(house,1);
         double compactCarry=em.housingCarry(compact),houseCarry=em.housingCarry(house);
@@ -210,6 +227,8 @@ public final class HousingMarketCheck {
         check("both alternatives clear the unchanged operating hurdle",compactIncome>em.housingBuildHurdle(compact)&&houseIncome>em.housingBuildHurdle(house));
         check("the compact form wins on gross receipts per actual project dollar",compactIncome/compactCost>houseIncome/houseCost);
         check("the gross winner has higher operating carry per project dollar",compactCarry/compactCost>houseCarry/houseCost);
+        out.printf(Locale.ROOT,"   per project dollar: gross House %.6g compact %.6g; net House %.6g compact %.6g%n",houseIncome/houseCost,
+                compactIncome/compactCost,(houseIncome-houseCarry)/houseCost,(compactIncome-compactCarry)/compactCost);
         check("House dominates on actual net operating income per project dollar",(houseIncome-houseCarry)/houseCost>(compactIncome-compactCarry)/compactCost);
         var choice=re.plan(plans,g);
         check("the actual planner chooses the net operating winner",choice.build&&choice.template==house);
@@ -549,7 +568,7 @@ public final class HousingMarketCheck {
             var bm=g.getBuildingManager();var house=bm.getTemplate(0);bm.addStack(house,100,true);
             if(ordinary)bm.addStack(bm.getTemplate(1),2,true);
             double quantity=g.getFamilies().get(single.shape(),single.tier(),single.stage());
-            double structure=g.quoteBuild(house,1).total,full=g.doorPriceOf(house,1);
+            double structure=g.getEconomyManager().housingStructureValue(house),full=structure+g.getEconomyManager().housingLandValue(house);
             double ask=HousingForms.of(0).homeCapital(house.getHousingRecipe().mix().getFirst().id(),structure,full-structure)
                     *ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
             double budget=ordinary?ask*2:ask/4;
@@ -586,7 +605,7 @@ public final class HousingMarketCheck {
         var c=g.getHouseholdBalance().cells().stream().filter(h->h instanceof WorkingHousehold w&&w.shape()==FamilyStructure.COUPLE
                 &&g.getFamilies().get(w.shape(),w.tier(),w.stage())>0).map(h->(WorkingHousehold)h).findFirst().orElseThrow();
         var bm=g.getBuildingManager();var t=bm.getTemplate(0);bm.addStack(t,100,true);
-        double structure=g.quoteBuild(t,1).total,full=g.doorPriceOf(t,1);
+        double structure=g.getEconomyManager().housingStructureValue(t),full=structure+g.getEconomyManager().housingLandValue(t);
         double ask=HousingForms.of(0).homeCapital(t.getHousingRecipe().mix().getFirst().id(),structure,full-structure)*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
         double count=g.getFamilies().get(c.shape(),c.tier(),c.stage());
         var d=new HousingChoice.Demand(c.key(),count,c.size(),c.shape().dependants(),false,c.tier().ordinal(),c.stage()==AdultStage.YOUNG,ask*.75);
@@ -614,7 +633,7 @@ public final class HousingMarketCheck {
         var c=g.getHouseholdBalance().cells().stream().filter(h->h instanceof WorkingHousehold w&&w.shape()==FamilyStructure.COUPLE
                 &&g.getFamilies().get(w.shape(),w.tier(),w.stage())>0).map(h->(WorkingHousehold)h).findFirst().orElseThrow();
         var bm=g.getBuildingManager();var t=bm.getTemplate(HousingForms.ALL.getFirst().id());bm.addStack(t,1,true);
-        double structure=g.quoteBuild(t,1).total,full=g.doorPriceOf(t,1);
+        double structure=g.getEconomyManager().housingStructureValue(t),full=structure+g.getEconomyManager().housingLandValue(t);
         double ask=HousingForms.of(t.getId()).homeCapital(t.getHousingRecipe().mix().getFirst().id(),structure,full-structure)
                 *ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
         var d=new HousingChoice.Demand(c.key(),2,c.size(),c.shape().dependants(),false,c.tier().ordinal(),c.stage()==AdultStage.YOUNG,ask*2);
@@ -645,7 +664,7 @@ public final class HousingMarketCheck {
         out.println("--- scarce free host space goes to households that cannot fund a vacant share ---");
         Game g=new Game(GameFiles.scratch("res3-scarce-free-host"));g.run();
         var bm=g.getBuildingManager();var t=bm.getTemplate(0);bm.addStack(t,2,true);
-        double structure=g.quoteBuild(t,1).total,full=g.doorPriceOf(t,1);
+        double structure=g.getEconomyManager().housingStructureValue(t),full=structure+g.getEconomyManager().housingLandValue(t);
         double ask=HousingForms.of(0).homeCapital(t.getHousingRecipe().mix().getFirst().id(),structure,full-structure)*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
         var market=g.getSectors().realEstate().housingMarket();
         var result=market.clear(g,List.of(new HousingChoice.Demand("host",1,2,0,false,0,false,2*ask),
@@ -668,7 +687,7 @@ public final class HousingMarketCheck {
     }
     static void fundedHost(){
         Game g=new Game(GameFiles.scratch("res3-funded-host"));g.run();var bm=g.getBuildingManager();var t=bm.getTemplate(0);bm.addStack(t,1,true);
-        double structure=g.quoteBuild(t,1).total,full=g.doorPriceOf(t,1);
+        double structure=g.getEconomyManager().housingStructureValue(t),full=structure+g.getEconomyManager().housingLandValue(t);
         double ask=HousingForms.of(0).homeCapital(t.getHousingRecipe().mix().getFirst().id(),structure,full-structure)*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
         String host=g.getHouseholdBalance().cell(FamilyStructure.COUPLE,PayTier.UNSKILLED).key();
         String guest=g.getHouseholdBalance().cell(FamilyStructure.SENIOR_ALONE,PayTier.UNSKILLED).key();
