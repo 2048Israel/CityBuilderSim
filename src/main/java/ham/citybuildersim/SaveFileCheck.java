@@ -73,7 +73,7 @@ public class SaveFileCheck {
         assertTrue("native format61 save/history refusal preserves both files and a running loaded twin", nativeGrid61Refusal(false));
         assertTrue("HC1 native format61 refusal preserves bytes and the running loaded twin", nativeCard61Refusal(false));
         assertTrue("PW5 format63: native shipped format62 refusal preserves both files and the running loaded twin", nativeGrid62Refusal(false));
-        assertTrue("RES3 refuses the genuine shipped format62, format63, format64 and format65 pairs with both files and the running city intact", nativeHousingBoundaryRefusal(false));
+        assertTrue("RES3 refuses the genuine shipped format62, format63, format64, format65 and format66 pairs with both files and the running city intact", nativeHousingBoundaryRefusal(false));
         System.out.println("--- R2c: paid IP service flows cross the save objects ---");
         assertTrue("nonzero IP charges survive DataSave, HistorySave and the load restorers", LicenceFeesCheck.saveChecks());
         assertTrue("the public works' licence crosses DataSave, HistorySave and the load restorers between its capture and its payment", PublicLicenceCheck.saveChecks());
@@ -3354,7 +3354,7 @@ public class SaveFileCheck {
                 Files.copy(full.getGameFiles().historyFile(1), oldest.historyFile(slot));
             }
         }
-        // The format-66 boundary is res3-format65's real pair from shipped FC2b 0.9.198,
+        // The format-67 boundary is res3-format66's real pair from shipped R6e-rest 0.9.201,
         // not today's schema with yesterday's format number pasted onto it.
         byte[] boundaryBytes = nativeHousingBoundaryBytes("save");
         Files.write(oldest.saveFile(10), boundaryBytes);
@@ -3507,11 +3507,11 @@ public class SaveFileCheck {
     }
 
     static byte[] nativeHousingBoundaryBytes(String name) throws IOException {
-        return nativeFixtureBytes("res3-format65", name);
+        return nativeFixtureBytes("res3-format66", name);
     }
 
     static boolean nativeHousingBoundaryRefusal(boolean readPaths) {
-        return GameVersion.OLDEST_LOADABLE_FORMAT - 1 == 65
+        return GameVersion.OLDEST_LOADABLE_FORMAT - 1 == 66
                 && nativeHousingFixtureRefusal(62, "0.9.191",
                         "4c2d3ae2e2fd4c4168b24446ab06d0f6db158d0a0b71b0a7018a8a621ba8ad0c",
                         "953d14f3113bf858b73f242370fcdb103fe76d818dcf001a6d4384fc8fa87a87", readPaths)
@@ -3522,7 +3522,10 @@ public class SaveFileCheck {
                         "e86d6f648d9f3b806397bca6c846de2c53f6f02b45867ddfb57f54a072d8662b", readPaths)
                 && nativeHousingFixtureRefusal(65, "0.9.198",
                         "be8f72e5c39f0bc2147d63fb44bc84a8bffa1777cf7c3432bf622e4807352082",
-                        "3b4339debc58574aa470d3429e8f144f63e202ea509dd999fd4fe9b444919877", readPaths);
+                        "3b4339debc58574aa470d3429e8f144f63e202ea509dd999fd4fe9b444919877", readPaths)
+                && nativeHousingFixtureRefusal(66, "0.9.201",
+                        "43f82bba8e92d69fcb0e26625cd23e494af880643adc4201b204dc1374b35166",
+                        "9b7a70fdb88856a31c3b1e7926f51bf127590170ac279ae0d5700162ee033dd8", readPaths);
     }
 
     private static boolean nativeHousingFixtureRefusal(int format, String version, String saveHash,
@@ -3541,6 +3544,8 @@ public class SaveFileCheck {
             boolean genuine = contractPoints && format < GameVersion.OLDEST_LOADABLE_FORMAT && old.get("saveFormat").getAsInt() == format
                     && old.get("gameVersion").getAsString().equals(version) && old.has("housingInventory") && gridShape
                     && !old.has("housingMarket") && !old.has("homePayIndices") && !old.has("usedCarTrade")
+                    && !old.has("newCarTrade") && !old.has("populationWageTotals")
+                    && !old.has("bankHeldBooks") && !old.has("abroadClaimsById")
                     && old.getAsJsonArray("householdCells").size() == old.getAsJsonArray("householdCellKeys").size() * 144 + 3
                     && oldHistory.getAsJsonArray("debtSurveys").size() > 0
                     && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(save)).equals(saveHash)

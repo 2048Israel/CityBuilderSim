@@ -4952,3 +4952,51 @@ fresh MG1 and no other owned JVM, and deliver raw hashes/schema/history
 evidence plus deterministic gzip resources. Current67 native checks
 remain held until the real66 pair and refusal assertions are installed.
 No current-schema re-stamp or fabricated digest is used.
+
+The completed pre-merge00946 local SaveFileCheck is green (308d):
+native/batch0, 1,274 passes/zero failures, including every actual31-series
+nonempty/exact/non-NaN predicate, genuine older pairs and saved-money
+guards. All 2,524 non-SaveFile class hashes match7ba; no production change
+was used to fix the count. ReadPathCheck also returns native/batch0
+(6e3f). Stop the old sequence after that active stage; no Denomination,
+HousingMarket or Invest is launched on the old model. All own heavy/
+controller jobs end before the separate shipped-main producer begins.
+Archive target/cpi-local-0094/evidence-local-0094-complete.tar.gz retains
+those source-labelled results and its evidence.sha256. They are valid
+pre-R6e-rest/format66 results, not current format67 passes. The merged
+model and real new refusal boundary remain to verify.
+
+The real shipped66 producer completes all four stages at exit0 (debc),
+using clean fresh 78ed673151e487359b44cbac44b6994b16ec6182 and the unchanged
+external producer from0cce237e2 (SHA256
+d91af226d799166726e1383fcb753a422bf05b96ec9cca52224b5a3a8bce90db).
+All 683 source/resource/pom/script blobs match shipped Git, 2,486 classes
+are freshly compiled, and same-run class-origin records place 625 model
+classes under that shipped target/classes. No RES3 model classes are
+reused. Oracle21.0.4, pinned assets and fresh MG1 pass each native step.
+
+The native pair is .201/66, month31 after the shipped month19 probe and
+twelve additional months, seed4127; history has 30 rows, months2-31,
+and two debt surveys. Its legacy index has169 slots and its141 household
+keys have20307 values. Parent independently verifies both raw and gzip
+hashes, timestamp-zero gzip headers, grid shape, native version/format,
+card-cell width and absence of every RES3-only market/car/wage/book/raw-
+claim field. Copy the exact pair and provenance README to
+src/main/resources/fixtures/res3-format66. No JSON byte is retagged.
+
+Raw save SHA256
+43f82bba8e92d69fcb0e26625cd23e494af880643adc4201b204dc1374b35166;
+raw history9b7a70fdb88856a31c3b1e7926f51bf127590170ac279ae0d5700162ee033dd8.
+gzip save1ddaefe71c53dad0500bf5497e00b725bde9c5788f67833eeed61718c295ccc4;
+gzip history6535fdcb892dc6f73b465210678b71911c461194f773fc594f8ad6ddcb68b6a9.
+Producer evidence07f0b27f158fd00e72c3a3128a00d9d8d6f712e9dd0e3dce1b4c6a52d45762cd,
+prepared resources83b1960ba42654c576052edcdbf72334a36891d486ef4b338ff161aa3c8691cf,
+at helper target/cpi-format66-producer-78ed. All owned local/remote jobs end.
+
+Extend SaveFileCheck's existing exact-hash native refusal chain with66,
+point the one-below-floor boundary to this genuine pair, and update both
+SaveFile/ReadPath descriptive rows to67. Retain every old62-65 case,
+HC1/PW5 native pair, file/history comparison and running-manager/city
+identity guard. Strengthen provenance with absence of the new car,
+population-wage, held-bank and raw-claim fields. Current integrated67
+native checks remain pending; producer success is not a refusal pass.

@@ -1628,7 +1628,7 @@ public class ReadPathCheck {
         assertTrue("native format61 refusal and repeated reads preserve an actual running loaded twin and both files", SaveFileCheck.nativeGrid61Refusal(true));
         assertTrue("HC1 native format61 refusal and repeated reads preserve both files and the running loaded twin", SaveFileCheck.nativeCard61Refusal(true));
         assertTrue("PW5 format63: native shipped format62 refusal and repeated reads preserve both files and the running loaded twin", SaveFileCheck.nativeGrid62Refusal(true));
-        assertTrue("RES3 format66: native format62, format63, format64 and format65 refusal and repeated reads preserve both files and the running loaded twin", SaveFileCheck.nativeHousingBoundaryRefusal(true));
+        assertTrue("RES3 format67: native format62, format63, format64, format65 and format66 refusal and repeated reads preserve both files and the running loaded twin", SaveFileCheck.nativeHousingBoundaryRefusal(true));
         out.println("--- R0f: the dated Money readers keep the saved rule still ---");
         assertTrue("reading dated Money keeps the gold episode, its exit and the inherited rate unchanged", MoneyDatesCheck.readChecks());
 
