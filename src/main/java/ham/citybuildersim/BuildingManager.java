@@ -5802,6 +5802,17 @@ public class BuildingManager {
      * its share alone (plan()).
      */
     public java.util.List<Completion> advanceConstruction(int constructionOutput, int foreignPoints) {
+        return advanceConstruction(constructionOutput, foreignPoints, 0);
+    }
+
+    /**
+     * ...and his book's price a point, `foreignPrice` (R1g; SimulationEngine passes his offer's): each site earns the part
+     * of its month that was his at it - BuildingsStacks, THE CONTRACTOR'S POINTS EARNED AT HIS PRICE. His part is struck
+     * before the sites advance as Game.settleForeignCrews() bills it after: the points built past the city's own month
+     * and its overtime, never more than he offered, as a share of every site's points built alike (his crews spread over
+     * the sites as the month is, plan()). No price, or no points of his, and the month is the one it was.
+     */
+    public java.util.List<Completion> advanceConstruction(int constructionOutput, int foreignPoints, double foreignPrice) {
 
         java.util.List<Completion> finished = new java.util.ArrayList<>();
         materialsDue = 0;
@@ -5809,6 +5820,9 @@ public class BuildingManager {
         pointsBuilt = 0;
         abroadPointsBuilt = 0;
         abroadBill = 0;
+        foreignEarned = 0;
+        hisShare = 0;
+        hisPrice = 0;
         contractsDue.clear();
         controlEvents = new ConstructionControl.Events();
 
@@ -5839,17 +5853,36 @@ public class BuildingManager {
             boolean planned = engaged || !deathCareFirst().isEmpty() || !buildersOwnOnSite().isEmpty();
             if (planned) plan = lastPlan = plan(constructionOutput, foreignPoints);
             double[] share = planned ? plan.work : siteShares(constructionOutput);
+            if (HIS_PRICE && foreignPoints > 0 && foreignPrice > 0) {
+                // His part of the month built (R1g), read before the advance: every site's home part and every demolition as they will take it.
+                double ahead = 0;
+                for (int k = 0; k < stacks.size(); k++) {
+                    BuildingsStacks stack = stacks.get(k);
+                    ConstructionControl.Abroad rec = control.abroadOf(ConstructionControl.keyOf(stack.getBuilding()));
+                    ahead += stack.homeAppliedFor(share[k], rec == null ? 0 : rec.owed);
+                }
+                if (engaged) {
+                    java.util.List<ConstructionControl.Demolition> sites = control.demolitions();
+                    for (int j = 0; j < sites.size(); j++) ahead += Math.max(0, Math.min(plan.work[stacks.size() + 1 + j], sites.get(j).owed()));
+                }
+                double ownMonth = constructionOutput - foreignPoints + (engaged ? plan.overtimePoints : 0);
+                double his = Math.max(0, Math.min(ahead - Math.max(0, ownMonth), foreignPoints));
+                hisShare = ahead > 0 ? his / ahead : 0;
+                hisPrice = foreignPrice;
+            }
             for (int k = 0; k < stacks.size(); k++) {
                 BuildingsStacks stack = stacks.get(k);
                 String siteKey = ConstructionControl.keyOf(stack.getBuilding());
                 ConstructionControl.Abroad rec = control.abroadOf(siteKey);
                 if (rec == null) {
-                    stack.advanceConstruction(share[k]);
+                    stack.advanceConstruction(share[k], 0, 0, 0, hisShare, hisPrice);
                     pointsBuilt += stack.getLastApplied();
+                    foreignEarned += stack.getLastHisEarned();
                 } else {
                     // The part handed to the foreign crews (FC2b) is built at the pace struck at the handover, apart from
                     // the share the city's crews' rule gave the rest: pointsBuilt stays the city's crews' and FC2's pooled work.
-                    stack.advanceConstruction(share[k], Math.min(rec.owed, rec.pace), rec.owed, rec.materials);
+                    stack.advanceConstruction(share[k], Math.min(rec.owed, rec.pace), rec.owed, rec.materials, hisShare, hisPrice);
+                    foreignEarned += stack.getLastHisEarned();
                     double abroad = stack.getLastAbroadApplied();
                     rec.owed = Math.max(0, rec.owed - abroad);
                     rec.materials = Math.max(0, rec.materials - stack.getLastAbroadMaterials());
@@ -5932,6 +5965,20 @@ public class BuildingManager {
 
     /** What the builders owe the foreign crews for it, in the city's money (FC2b): the points built at each site's price. */
     public double getAbroadBill() { return abroadBill; }
+
+    /** R1g's switch (on unless -Dr1g.hisprice=off; ForeignCrewsCheck section 9 plays a twin with it off): the sites earn the contractor's points at his price. */
+    public static boolean HIS_PRICE = !"off".equalsIgnoreCase(System.getProperty("r1g.hisprice", "on").trim());
+
+    /**
+     * The share of every site's points built this month that was the foreign contractor's (FC1, FC2), and his price a
+     * point, as advanceConstruction() struck them before the sites advanced (R1g); nothing in a month without him.
+     */
+    private double hisShare, hisPrice;
+
+    /** ...and what the sites earned of their contracts for his points at that price (R1g): his bill, but where a site's value ran out first. */
+    private double foreignEarned;
+
+    public double getForeignEarned() { return foreignEarned; }
 
     /* =====================================================================
        THE PLAYER'S HAND ON THE QUEUE (0.7.22)
@@ -7072,6 +7119,16 @@ public class BuildingManager {
             boolean done = applied >= owedNow;
             double earned = done ? site.value
                     : owedNow > 0 ? Math.min(site.value, site.value * applied / owedNow) : 0;
+            // ...the contractor's part of it at his price, as a stack's is (R1g; BuildingsStacks, THE CONTRACTOR'S POINTS EARNED AT HIS PRICE).
+            double his = hisShare > 0 && hisPrice > 0 ? Math.min(applied, hisShare * applied) : 0;
+            if (his > 0 && !done && owedNow > 0) {
+                double hisPart = Math.min(Math.max(0, site.value), his * hisPrice), rest = Math.max(0, site.value - hisPart);
+                double homeOwed = owedNow - his;
+                earned = Math.min(Math.max(0, site.value), hisPart + (homeOwed > 0 ? rest * Math.min(1, Math.max(0, applied - his) / homeOwed) : rest));
+                foreignEarned += hisPart;
+            } else if (his > 0) {
+                foreignEarned += Math.min(earned, his * hisPrice);
+            }
             site.progress = done ? site.points : site.progress + applied;
             site.value = Math.max(0, site.value - earned);
             pointsBuilt += applied;

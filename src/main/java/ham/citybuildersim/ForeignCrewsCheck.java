@@ -72,7 +72,11 @@ import static ham.citybuildersim.ConstructionTrapCheck.template;
  *      pad's preparation in its building's share, and the queue counts the preparation owed on its site.
  *   8. A CURRENCY REFORM: a reform dividing the money by 1,000 divides his book's price a point by 1,000, and the offer's,
  *      and his next bill is his points at it - not a thousandfold abroad at the old unit's price.
- *   9. THE AUDIT: every month played here balanced to the cent and left nothing moving after it.
+ *   9. HIS WORK EARNED AT HIS PRICE (R1g): his book priced at DEARER times the rate a point the sites earn, his points most
+ *      of the month, as R1g's 1900 village met it (0.42 against 0.29, GDP -51 at month 15): with -Dr1g.hisprice=off the
+ *      builders recognise less work than they pay him for; on, the sites earn his points at his price, what they earn for
+ *      them is his bill, the month's work is at least it, and his bill is the twin's.
+ *  10. THE AUDIT: every month played here balanced to the cent and left nothing moving after it.
  *
  * Every fixture causes its condition.
  */
@@ -171,7 +175,8 @@ public class ForeignCrewsCheck {
         theSplit(root);
         theReform(reformed);
         reformed = null;
-        out.println("\n--- 9. the audit ---");
+        hisPrice(root);
+        out.println("\n--- 10. the audit ---");
         audited("in every month here");
 
         out.printf("%n%d assertions made here%n", checked);
@@ -859,6 +864,61 @@ public class ForeignCrewsCheck {
         double t = 0;
         for (double v : m.values()) t += v;
         return t;
+    }
+
+    /* ============================ 9. HIS WORK EARNED AT HIS PRICE (R1g) ============================ */
+
+    /**
+     * How many times the rate a point the sites earn section 9 prices his book at: twice. R1g's 1900 village met 0.42 a
+     * point against its sites' 0.29 (seed 4, month 14 of the 0.9.201 ensemble), dearer work on his book and his crews spread
+     * over cheaper sites; twice puts the month plainly past it.
+     */
+    static final double DEARER = 2;
+
+    /** The sites' contract value a point still owed, over every site on the city. */
+    static double sitesRate(BuildingManager bm) {
+        double value = 0, owed = 0;
+        for (BuildingsStacks s : bm.getStacksUnderConstruction()) {
+            value += s.getContractValue();
+            owed += Math.max(0, s.owedPoints());
+        }
+        return owed > 0 ? value / owed : Double.NaN;
+    }
+
+    /** One point more handed him at the price that lifts his book's price a point to DEARER times the sites' rate. */
+    static void dearer(Game g) {
+        Construction c = g.getSectors().construction();
+        double book = c.getForeignBook(), want = DEARER * sitesRate(g.getBuildingManager());
+        c.handAbroad(1, c.getForeignBookShare(), want * (book + 1) - c.getForeignBookPrice() * book);
+    }
+
+    static void hisPrice(Path root) {
+        out.println("\n--- 9. his work earned at his price: each site earns the contractor's points at what he bills for them, out of its own contract (R1g) ---");
+        Game on = backlog(root, "his-price-on", LONG_MONTHS), off = backlog(root, "his-price-off", LONG_MONTHS);
+        dearer(on);
+        dearer(off);
+        Construction cOn = on.getSectors().construction(), cOff = off.getSectors().construction();
+        double rate = sitesRate(on.getBuildingManager()), price = cOn.getForeignBookPrice();
+        month(on);
+        BuildingManager.HIS_PRICE = false;
+        try {
+            month(off);
+        } finally {
+            BuildingManager.HIS_PRICE = true;
+        }
+        double built = cOn.getForeignPointsThisMonth(), bill = cOn.getForeignBillThisMonth(), work = cOn.getRecognisedThisMonth();
+        double earned = on.getBuildingManager().getForeignEarned(), workOff = cOff.getRecognisedThisMonth(), billOff = cOff.getForeignBillThisMonth();
+        double own = on.getBuildingOutputAtEveryPost();
+        out.printf(Locale.ROOT, "  his book %,.4f a point against the sites' %,.4f; he built %,.0f points beside the sites' own month of %,.0f; billed %,.4f;"
+                + " the sites earned %,.4f for his points and %,.4f in all (off: %,.4f in all, billed %,.4f)%n",
+                price, rate, built, own, bill, earned, work, workOff, billOff);
+        near("fixture: his book is priced at DEARER times the sites' rate a point", price, DEARER * rate, 1e-9 * DEARER * rate);
+        ok("fixture: his points are most of the month, in the city and its twin", built > own && cOff.getForeignPointsThisMonth() == built);
+        ok("with -Dr1g.hisprice=off the sites earn his points at their own rate: the builders recognise less work than they pay him for"
+                + " (GDP's investment under the import, R1g's month 15)", workOff < billOff);
+        near("on, each site earns his points at his price: what the sites earned for them is his bill", earned, bill, 1e-9 * bill);
+        ok("...so the month's work the builders recognise is at least his bill", work >= bill);
+        exact("...and his bill is the twin's: the switch moves what the sites earn, not what he is paid", bill, billOff);
     }
 
     /* ============================ 8. A CURRENCY REFORM ============================ */

@@ -355,12 +355,18 @@ public class BuildingsStacks {
      * once a month.
      */
     private void takeDues(java.util.Map<String, Contract> map, double fraction, boolean drawn, boolean abroad) {
+        takeDues(map, fraction, fraction, drawn, abroad);
+    }
+
+    /** ...the value at {@code valueFraction}, the material, its allowance and the points at {@code fraction} (R1g: the contractor's points earned at his price). */
+    private void takeDues(java.util.Map<String, Contract> map, double fraction, double valueFraction, boolean drawn, boolean abroad) {
         java.util.Iterator<Contract> it = map.values().iterator();
         while (it.hasNext()) {
             Contract c = it.next();
-            double f = Math.max(0, Math.min(1, fraction));
-            double v = c.value * f, u = c.units * f, a = c.allowance * f, p = c.points * f;
-            if (f >= 1) { v = c.value; u = c.units; a = c.allowance; p = c.points; }
+            double f = Math.max(0, Math.min(1, fraction)), fv = Math.max(0, Math.min(1, valueFraction));
+            double v = c.value * fv, u = c.units * f, a = c.allowance * f, p = c.points * f;
+            if (f >= 1) { u = c.units; a = c.allowance; p = c.points; }
+            if (fv >= 1) v = c.value;
             c.value -= v; c.units -= u; c.allowance -= a; c.points -= p;
             if (v > 0 || u > 0 || a > 0) dues.add(new Due(c, v, drawn ? u : 0, a, abroad));
             if (c.value <= 1e-12 && c.units <= 1e-12 && c.allowance <= 1e-12 && c.points <= 1e-12) it.remove();
@@ -633,6 +639,56 @@ public class BuildingsStacks {
      * before; a site that empties takes everything due, both maps whole.
      */
     public void advanceConstruction(double homeOutput, double abroadOutput, double abroadOwed, double abroadMaterials) {
+        advanceConstruction(homeOutput, abroadOutput, abroadOwed, abroadMaterials, 0, 0);
+    }
+
+    /*
+     * ----- THE CONTRACTOR'S POINTS EARNED AT HIS PRICE (R1g, 2026-11-25) -----
+     * The foreign contractor's month (FC1, FC2) is spread over the sites as the month is (BuildingManager.plan()), and the
+     * builders pay him his book's price a point, what the payers were quoted for the work handed him (REV-FC2). Each site
+     * earned his points at its own contract's rate a point, so a month that was mostly his, at a price over that rate, had
+     * the builders pay abroad more than the work they recognised: R1g's 1900 village, its own crews a few dozen points
+     * beside his 400 at 0.42 a point against 0.29, read GDP -51 at month 15 (the 0.9.201 ensemble, seeds 4-7). A general
+     * contractor passing a subcontract through at cost recognises the sub's work at what it costs (the input method,
+     * progress by the costs put in place), so each site now earns the part of its month that was his at his price, out of
+     * its own contract value, and the rest of that value over the rest of its points, as before. Every site still earns
+     * its whole contract and no more; only when it is earned moves. A month with none of his points is the one it was.
+     */
+
+    /** The home part of the month's work {@code homeOutput} would apply here, with {@code abroadOwed} of it owed abroad (FC2b): the advance's own figure, read before it. */
+    public double homeAppliedFor(double homeOutput, double abroadOwed) {
+        if (underConstruction == 0) return 0;
+        double owedPoints = pointsOnSite() - constructionProgress;
+        double abroadPart = abroadOwed > 0 ? Math.min(abroadOwed, Math.max(0, owedPoints)) : 0;
+        double homePart = owedPoints - abroadPart;
+        return Math.max(0, Math.min(homeOutput, Math.max(0, homePart)));
+    }
+
+    /** What the last advance earned of this site's contract for the contractor's points on it, at his price (0 with none). */
+    private double lastHisEarned;
+
+    public double getLastHisEarned() { return lastHisEarned; }
+
+    /**
+     * Value earned on {@code value} owed over {@code owed} points, of which {@code done} were applied this month and
+     * {@code his} of those the contractor's: his at {@code price} a point, never past the value, and the rest of the value
+     * over the rest of the points owed.
+     */
+    private double earnedWithHis(double value, double owed, double done, double his, double price) {
+        double hisPart = Math.min(Math.max(0, value), his * price);
+        lastHisEarned += hisPart;
+        double rest = Math.max(0, value - hisPart), homeOwed = owed - his;
+        double home = homeOwed > 0 ? rest * Math.min(1, Math.max(0, done - his) / homeOwed) : rest;
+        return Math.min(Math.max(0, value), hisPart + home);
+    }
+
+    /**
+     * ...with {@code hisShare} of the home part's work the foreign contractor's this month (FC1, FC2; BuildingManager's
+     * share of the month built that was his) at {@code hisPrice} a point: see THE CONTRACTOR'S POINTS EARNED AT HIS PRICE.
+     */
+    public void advanceConstruction(double homeOutput, double abroadOutput, double abroadOwed, double abroadMaterials,
+                                    double hisShare, double hisPrice) {
+        lastHisEarned = 0;
         materialsDue = 0;
         revenueDue = 0;
         lastFinished = 0;
@@ -710,18 +766,26 @@ public class BuildingsStacks {
         // The material and the money, in proportion to the work - and all of
         // what is left when the site empties, so nothing is owed on a
         // finished building.
+        // ...the contractor's points of the home part's work (R1g): his share of the month built, at his price.
+        double his = hisShare > 0 && hisPrice > 0 ? Math.min(homeApplied, hisShare * homeApplied) : 0;
         if (underConstruction == 0) {
             lastAbroadMaterials = abroadMaterials > 0 ? Math.min(abroadMaterials, Math.max(0, materialsOwed)) : 0;
             materialsDue = materialsOwed;
             revenueDue = contractValue;
+            if (his > 0) lastHisEarned = Math.min(Math.max(0, contractValue), his * hisPrice);
             takeDues(contracts, 1, true, false);
             takeDues(abroadContracts, 1, true, true);
         } else if (owedPoints > 0) {
             if (abroadPart == 0 && abroadContracts.isEmpty()) {
                 double done = applied;
                 materialsDue = Math.min(materialsOwed, materialsOwed * done / owedPoints);
-                revenueDue = Math.min(contractValue, contractValue * done / owedPoints);
-                takeDues(contracts, done / owedPoints, true, false);
+                if (his > 0) {
+                    revenueDue = earnedWithHis(contractValue, owedPoints, done, his, hisPrice);
+                    takeDues(contracts, done / owedPoints, contractValue > 0 ? revenueDue / contractValue : 0, true, false);
+                } else {
+                    revenueDue = Math.min(contractValue, contractValue * done / owedPoints);
+                    takeDues(contracts, done / owedPoints, true, false);
+                }
             } else {
                 // Each part earns by its own fraction done (FC2b): the home contracts and the home share of the material
                 // by the home part's, the contracts handed abroad and the abroad part's units by the abroad part's.
@@ -733,8 +797,15 @@ public class BuildingsStacks {
                 double abroadValue = 0;
                 for (Contract c : abroadContracts.values()) abroadValue += c.value;
                 abroadValue = Math.min(contractValue, abroadValue);
-                revenueDue = (contractValue - abroadValue) * fh + abroadValue * fa;
-                takeDues(contracts, fh, true, false);
+                if (his > 0) {
+                    double homeValue = contractValue - abroadValue;
+                    double homeEarned = earnedWithHis(homeValue, homePart, homeApplied, his, hisPrice);
+                    revenueDue = homeEarned + abroadValue * fa;
+                    takeDues(contracts, fh, homeValue > 0 ? homeEarned / homeValue : fh, true, false);
+                } else {
+                    revenueDue = (contractValue - abroadValue) * fh + abroadValue * fa;
+                    takeDues(contracts, fh, true, false);
+                }
                 takeDues(abroadContracts, fa, true, true);
             }
         }
