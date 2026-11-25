@@ -4569,3 +4569,35 @@ b83f0dba6f7cf38242e6aa777f3f231c46584e66302e9bd6b6c39553c52bd197;
 full evidence SHA256
 415f9fae8d19b2525f1a6438d743a20797129697cdf24b9c44bdf154fa2f140e.
 All owned jobs ended; every normal harness stage remains unrun.
+
+The exact 65d92f4e6 replay compiles, with 219 passes/eight unchanged
+failures. All 48 added observation-purity guards pass. The bounded
+pre-step records establish a concrete reload defect: after reform the
+live base water tariff is 1.2941731921489209e-6, while both fresh and
+running loads use .001294173192148921 (one thousand times higher).
+The sea-power marginal term is zero in all six reformed records.
+UtilitiesHandler.redenominate scales the held base tariff, but PowerState
+omits it; the factory default survives load and is pushed to the economy
+and sectors. UtilitiesHandler is byte-identical to pre-CPI ff123698a.
+Smaller wage/template/index ulps are also observed; their causal effect
+and the remaining exact guards are not assumed fixed by this discovery.
+
+Review and adopt patch SHA256
+d0bfb4b88ef57be30e7986c153dfeaaf5c374ae53f4342e3fac7d918abcb5fce:
+PowerState.waterTariff saves the held base tariff in local money per
+water unit, excluding the separately struck power charge. toPowerState
+captures it and restorePowerState restores it before rebuilding inputs.
+Existing DataSave.powerBooks and load wiring carry the state; the existing
+redenomination scales the live field once. No price is recomputed and no
+transfer, rate, fixture, tolerance or comparison changes. The old-saves
+rule applies: missing this state would load a reformed city wrongly, so
+the already owed unshipped66/floor66 remains required over shipped65;
+there is no further unshipped bump or conversion. Verify exact twins and
+the affected water/power checks on the next pushed candidate.
+
+Helper target/cpi-native-65d9 retains the 44 raw saves/histories and 24
+pre-step records, differences and source evidence. Raw archive SHA256
+dfa0558c84857f530fbb3ae92f12824dd1074746aca3d0f2d1b6a9017b1c53c7;
+full box evidence SHA256
+37315e3fa2b0701191585e531399e7cb511d5ed1b3d4db48ecc76aba752482bc.
+All owned jobs ended. Normal monetary and other harnesses remain unrun.

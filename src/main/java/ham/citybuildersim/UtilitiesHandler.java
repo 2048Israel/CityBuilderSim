@@ -855,6 +855,8 @@ public class UtilitiesHandler {
         public Substations.Costs pendingGridCosts;
         /** What the water's books paid the power's this month for the works' power, and the update the next strike prices it on (PW1-W); absent in older saves. */
         public double waterPowerPaid;
+        /** The held tariff in local money per water unit, excluding the struck power charge. */
+        public double waterTariff;
         public WaterDraw pendingWater;
     }
 
@@ -867,7 +869,7 @@ public class UtilitiesHandler {
         s.fuelPaidMonth = fuelPaidMonth;
         s.pendingMonth = latest.copy(); s.pendingDispatch = latestRecord;
         s.pendingGridCosts = latestGridCosts;
-        s.waterPowerPaid = waterPowerPaid; s.pendingWater = latestWater;
+        s.waterPowerPaid = waterPowerPaid; s.waterTariff = pricePerWaterUnit; s.pendingWater = latestWater;
         return s;
     }
 
@@ -926,6 +928,7 @@ public class UtilitiesHandler {
         pendingLoadedWater = s == null ? null : s.pendingWater;
         waterPowerPaid = s == null ? 0 : s.waterPowerPaid;
         if (s == null) { fuelLocal = fuelImported = upkeepPaid = 0; paidDispatchMonth = fuelPaidMonth = -1; return; }
+        pricePerWaterUnit = s.waterTariff;
         setFuelPaid(s.fuelLocal, s.fuelImported, s.upkeepPaid, s.fuelImportedByGood);
         paidDispatchMonth = s.paidDispatchMonth;
         fuelPaidMonth = s.fuelPaidMonth;
