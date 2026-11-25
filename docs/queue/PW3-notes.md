@@ -261,10 +261,13 @@ and PW2's ground finding (REV-PW2).
     | 8 | 23,103 | 28,261 | 27,798 | 17,557 |
     | 14 | 22,137 | 24,670 | 25,310 | 21,585 |
   - **PowerPlanCheck 8a's table**: every case the last four reviews found, each fixture red under the form it
-    guards. A helper ran F0 to F5 on f907d8327 (`target/h/PPC-red-F*.txt`); F6 was run on 9766940e4 and F7 on the
-    calendar's mend. The town is one coal plant (214,523 kW of firm supply) on the 10,000 kW founding grid. Fixtures
-    (1) to (iv) know coal alone, (v) to (vii) coal (355 months) and the Diesel Station (30), and (viii) and (ix) coal,
-    with the diesel brought by the calendar.
+    guards. A helper ran F0 to F5 on f907d8327 (`target/h/PPC-red-F*.txt`); F6 was run on 9766940e4, F7 on the
+    calendar's mend and F8 on REV-PW3g's (v'). The town is one coal plant (214,523 kW of firm supply) on the 10,000 kW founding grid. Fixtures
+    (1) to (iv) know coal alone, (v) to (vii), (v') and (v'') coal (355 months) and the Diesel Station (30), and
+    (viii) and (ix) coal, with the diesel brought by the calendar. REV-PW3g's P1: (v) and (vii) are late (the seasonal
+    peak short a month before coal's completion) and (viii) is (v)'s draw, so timely()'s late clause decides all three
+    and its cost clause, the rule's (c), had no fixture; (v') puts coal on its last on-time month, where the cost
+    clause alone keeps it waiting.
 
     | the case | its fixture | red under |
     |---|---|---|
@@ -275,6 +278,8 @@ and PW2's ground finding (REV-PW2).
     | two firm rows of different leads (REV-PW3f's P1) | (v) short at coal's completion (against 256,253) and covered at the diesel's (201,402), the gap at coal's opening 25%, 4 diesels meeting it for less (0.01272 a kW against 0.07225): nothing | F4, each row at its own lead alone (no need date): 1 Coal Power Plant |
     | | (vii) the same, the diesel's fuel 16 times the world's price, so coal is the cheaper (0.07245 against 0.08180), short a month before coal's completion: nothing | F6, the late row weighed on its cost alone: 1 Coal Power Plant, (vii) alone |
     | | (vi) short at the diesel's own completion (224,523 kW against 226,791): 2 Diesel Stations | a control: green under F4; red under F5 (every due row held), with 19 others |
+    | | (v') the seasonal peak at its line half a month before coal's completion, at the world's fuel prices: short at the completion and covered a month before it (coal on time, not late) and at the diesel's; the gap at coal's opening 20,425 kW, 9%, 2 diesels closing it for less (0.01523 a kW against 0.1936): nothing | F8, timely()'s cost clause gone (the late clause alone): 1 Coal Power Plant, (v') alone |
+    | | (v'') its twin, the diesel's fuel 64 times the world's price, so coal is the cheaper (0.1936 against 0.3038): 1 Coal Power Plant | a control |
     | a faster row the calendar brings (LongPlaytest's m102 Oil-Fired Plant) | (viii) (v)'s draw at the world's fuel prices, the diesel off the menu now and on it 12 months on (`ARRIVES`): 4 diesels close the gap at coal's opening for less (0.01310 a kW against 0.07245), on line 62.8 months on, inside coal's 355: nothing | F7, only the rows on the menu now weighed: 1 Coal Power Plant, (viii) alone |
     | | (ix) the diesel brought 357 months on, past coal's lead: 1 Coal Power Plant | a control |
 
@@ -386,6 +391,8 @@ Run here, one at a time (`./batch-check.sh <name>`), the earth and world data se
   ResearchViewCheck, ModernEngineeringCheck, ModernRowsCheck, PostwarRecipeCheck, HistoricalLicenceCheck,
   DiscoveryCheck, ReadPathCheck, BuildingDataCheck, PowerPlanCheck, SaveFileCheck** green. R6e-rest leaves E24 (the
   large-rotor wind turbine) on main's queue as R6e-rest-E24, to be resolved against PW3's dispatch after it ships.
+- After REV-PW3g's P1 ((v') and (v''), §2), one at a time: **PowerPlanCheck** green, 113 lines; (v') red under F8
+  alone (`target/h/PPC-red-F8.txt`: 1 Coal Power Plant, 1 FAILED), and (v'') green under it.
 
 ## 5. What the default run builds, decade by decade (spec §6, "Measure first" 3)
 
@@ -446,7 +453,7 @@ first completion 55 months on at m120), and there the same mill opened at m121 (
 1.0 was read in the month before the mill opened, not because of the plant. Reality: a utility plans a large new
 load from its connection request, years ahead. A forecast that reads the draw of works under construction is a
 finding for after PW3, not mended here: REV-PW3f has the projection as it stands ("growthFactor is fine as the
-projection"), and the orchestrator files it as its own row, PW10 (the ship file's `## queued`).
+projection"), and the orchestrator has filed it on the queue as PF1.
 
 Before REV-PW3's mends the run built 73 diesels, 51 turbines, 9 coal plants, 7 Oil-Fired Plants and no farms, with
 292 reserve and 11 spread suggestions.
@@ -729,10 +736,12 @@ on main's 0.9.200), was scored against `docs/ensemble/0.9.199.md` (main keeps no
 
 **HIGH's median** (REV-PW3f's P2): 694,440 against 0.9.199's 734,788, 5.5% under; the sixth run's 623,344 was 15%
 under.
-- Seed 2, the lowest (99,878), is the sixth run's town row for row over all 720 months, and the power planner is not
-  its cause. Its power is served at 1.0 at every sample, and its orders to m260 are two Diesel Stations (m154,
-  $1.9M; m251, $2.5M). It forks from the fifth run's town between m150 and m200 (7,814 people at m200 against
-  8,149), and only the fifth run's took off (23,842 at m300, 608,703 at m720). The fourth, sixth and seventh grow
+- Seed 2, the lowest (99,878), is the sixth run's town row for row over all 720 months. Its power is served at 1.0
+  at every sample, and its orders to m260 are two Diesel Stations (m154, $1.9M; m251, $2.5M). Its fork from the
+  fifth run's town follows the first of them (REV-PW3g): the two are the same town row for row to m153, and at m154
+  this one orders one works more, the diesel, its debt 23.7M against 21.8M, with power served at 1.0 in both. From
+  there it falls behind (7,814 people at m200 against 8,149), and only the fifth run's took off (23,842 at m300,
+  608,703 at m720). The fourth, sixth and seventh grow
   at half that pace (15,052 at m300) and stall at about 43,000 from m540 to m600. Through that stall water is
   served at 0.44 for 25 months (m541 to m565) and the city's debt rises from 167M at m500 to 809M at m600: the
   water hold of ZERO_HOT's seeds 6, 9 and 15 above (main's, OA1 on the queue) is the likely class, not traced
