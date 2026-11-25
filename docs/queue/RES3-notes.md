@@ -49,7 +49,8 @@ vectors, wage anchors, index relatives and raw physical abroad-claim weights
 through DataSave and the late rebuild. Nominal amounts scale; physical raw
 claims and relative-price coordinates retain their own units. The genuine
 shipped66 save/history pair is refused byte-intact under67, while current
-held-state and next-month twins pass. No UI code is changed. The default-null
+held-state and next-month twins pass. Existing CPI readers are adapted to the
+nine-component model. The default-null
 passive observation hook is diagnostic only, with native finding/audit/output
 failures preserved; it does not claim a completed full playtest or ensemble.
 
@@ -107,6 +108,15 @@ sections before the actual reset flags are known; it cannot supply acceptance
 evidence. Remove the stop branch before the final full run. Source-only patch
 96c750ce53d7c74733e55ae85d27bade6684da2f7b1b6298e94bd8865c32f41c is reviewed
 and applied; no native starts until the earlier owned jobs end and fresh gates pass.
+
+The PolicyScreen compatibility patch29603823bd604a1b5bcf69a12df7b4cb0046651c72be29540540d5e5cd30afbf
+preserves the first five colours and adds four existing palette colours for
+new cars, petrol, lamp oil and home coal in authoritative PriceIndex order.
+It removes stale five-part link wording. Every weight, name, price, history
+read and loop remains; no truncation, padding or numerical model change.
+HistoryScreen's index/weight trace catalogue and component preset also omit
+the four new parts; prepare the same narrow reader compatibility repair,
+preserving old trace keys. These are required reader mends, not a new UI flow.
 
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
