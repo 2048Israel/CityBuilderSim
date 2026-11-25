@@ -57,6 +57,23 @@ public final class HousingChoiceCheck {
         check("old A footprint and bill remain exact",p.leases().getFirst().count()==1&&p.leases().getFirst().bill()==20);
         check("old remaining payer becomes full truthfully",p.leases().getFirst().funding().equals(new HousingChoice.Funding(1,0,0)));
         check("new B takes exactly one normal full payer",p.leases().getLast().funding().equals(new HousingChoice.Funding(1,0,0))&&p.leases().getLast().households()==1);
+        // RES3c, 2026-11-25: every half paired where the payers left equal the doors only in exact arithmetic (the 1900
+        // town's month 26, CpiReferenceFinding's: a D90 lease of 0.0015320668 doors). The households less the pairs came
+        // out a rounding under the doors, the Invalid lease stopped the month and the home fuel was never struck.
+        double edgeFull=0.001322724656172436,edgeHalf=4.186842980481003E-4,edgeCount=0.0015320668051964862,edgeHouseholds=0.0017414089542205362;
+        double edgePairs=edgeHalf/2;
+        check("fixture: the households less the paired halves come out under the doors in floating point",edgeHouseholds-edgePairs<edgeCount);
+        var edgeHome=o("A-edge",edgeCount,6,120,1,0,false,20);   // the lease fills its own door, so a mover goes to B
+        var edge=new HousingChoice.Lease("edge",edgeHome.key(),edgeCount,edgeCount*20,edgeHouseholds,new HousingChoice.Funding(edgeFull,edgeHalf,0));
+        HousingChoice.Completion ep=null;
+        try{ep=HousingChoice.completePaidExcess(List.of(d("edge",edgeHouseholds,2,0,0,30)),List.of(edgeHome,b),List.of(edge),7);}catch(IllegalArgumentException e){System.out.println("   "+e);}
+        check("every half paired at the doors' edge completes, with no Invalid lease",ep!=null);
+        if(ep!=null){
+            var stays=ep.leases().stream().filter(l->l.home().equals(edgeHome.key())).findFirst().orElseThrow();
+            check("...every pair's mover moves",Math.abs(ep.moved()-edgePairs)<=1e-12*edgePairs);
+            check("...the old door keeps its doors and its bill exactly",stays.count()==edgeCount&&stays.bill()==edge.bill());
+            check("...its households all full payers now, and no fewer than its doors",stays.funding().half()==0&&stays.households()>=stays.count());
+        }
         p=HousingChoice.completePaidExcess(List.of(d("old",2,2,0,0,12)),List.of(a,b),old,7);
         check("B12 cannot leave an unaffordable remaining full payer",p.moved()==0&&p.leases().equals(old));
         var hosted=List.of(new HousingChoice.Lease("host",a.key(),.5,20,1,new HousingChoice.Funding(1,0,0)),new HousingChoice.Lease("guest",a.key(),.5,0,1,new HousingChoice.Funding(0,0,1)));

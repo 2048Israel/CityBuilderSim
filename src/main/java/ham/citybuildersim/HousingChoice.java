@@ -260,8 +260,11 @@ public final class HousingChoice {
             double n=Math.min(eligible[i],eligible[i]*Math.min(1,moved.getOrDefault(l.cell(),0.0)/gaps.get(l.cell())));
             if(!(n>0)){all.add(l);continue;}
             var f=l.funding();
-            // Two paid halves become one remaining full payer and one normal mover.
-            all.add(new Lease(l.cell(),l.home(),l.count(),l.bill(),l.households()-n,new Funding(f.full()+n,Math.max(0,f.half()-2*n),f.sponsored())));
+            // Two paid halves become one remaining full payer and one normal mover. The households left are the new
+            // funding's, never under the doors: with every half paired they are the doors exactly, which households - n
+            // missed by a rounding below, and the Invalid lease stopped the month (RES3c, 2026-11-25).
+            var paired=new Funding(f.full()+n,Math.max(0,f.half()-2*n),f.sponsored());
+            all.add(new Lease(l.cell(),l.home(),l.count(),l.bill(),Math.max(l.count(),paired.households()),paired));
         }
         all.addAll(added);return new Completion(coalesce(all),moved.values().stream().mapToDouble(Double::doubleValue).sum());
     }
