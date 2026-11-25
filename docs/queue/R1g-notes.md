@@ -2247,3 +2247,163 @@ returns it to Queued.
 [r1g-yard-inventory]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/NationalAccounts.java#L516
 [r1g-yard-g]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/NationalAccounts.java#L644
 [r1g-yard-homes]: https://github.com/2048Israel/CityBuilderSim/blob/627174320f11063976b6f05abdf68cfe72e1adc9/src/main/java/ham/citybuildersim/Recipes.java#L369
+
+## 2026-11-24: the restart
+
+R1gb (Claude, Opus), on the orchestrator's return of R1g to Queued (contract
+section 6), from 8732c443d (cut from 0.9.180). Sections 12-20 above stay as
+the record of the earlier attempts; this section is the batch from here.
+
+### Main merged
+
+- origin/main b17b75d42 (0.9.200) merged at cd7ef6360. No source file
+  conflicted; the 25 generated indexes that did were taken from main and
+  regenerated on the merged tree (b29f6f527). `--fast` green.
+- The save format stays main's (65). R1g's one saved field, the 1900 home's
+  walk (`DataSave.homePayIndices`, `homePayMonth`), needs no bump, as in
+  section 6: Gson leaves a missing key alone, and no older save reads it
+  wrongly. When R6e-rest (66) or RES3 (67) ships first, the format is
+  theirs, merged.
+
+### The negative GDP: the cause, the fixture, the mend
+
+**What the kept trace says** (`target/ensemble/R1gc2-gdp1-1145`, and the
+builders' struck statements in `R1gc2-ledger1-1145/statements.jsonl`,
+0.9.180, AUTO2 seed 1): at month 1135 the treasury went from +11,629 to
+-68,211 and building stopped (I construction 3,616 to 0). That month the
+builders' statement holds 3,474.96 of MATERIALS bought abroad, 203 units at
+that month's quote of about 17.1 (the 0.4658 literal times the inflated
+world level, a helper's static trace), against revenue of 1,064.41, all
+"Repairs billed". The builders book as revenue only what was paid
+(`receiveMaintenance(bill - owed)`), and the broke treasury paid none of
+the city's bill.
+
+**The component.** The repair bill on the city's own buildings
+(`EconomyManager.CITY_MAINTAINED`: electricity, water, infrastructure,
+healthcare, education, safety, ports), struck by
+`Game.chargeBuildingMaintenance()`, was in no final term. G (the
+`updateNationalAccounts` call in `Game`) summed the services' payroll and
+upkeep, research, transit and the public licence, and not the repairs.
+`EconomyManager.updateNationalAccounts` takes off as imports every material
+the builders bought abroad (`construction.statement().imports`), the
+repairs' included. So every month the city's repair materials were
+subtracted with nothing against them. While the 1900 city built, its
+investment hid this; when the works stopped, GDP fell below zero.
+
+**Reality.** A month's GDP below zero is an accounting fault, not an
+economy. A government's repairs to its roads and buildings are part of its
+final consumption: its non-market output is valued at the sum of its costs,
+the repairs it buys included (SNA 2008, ch. 9, government final consumption
+expenditure; ordinary maintenance and repairs are intermediate consumption
+of the producer, here the city). They are recorded when the service is
+delivered, paid or not (accrual).
+
+**The fixture** (GdpCheck, the new section "the city's repairs to its own
+roads are government consumption, not negative output (R1g)"): a city of
+600 Paved Roads only, enough for one road's repair a month (450 units of
+material against the yard's own `BASE_MATERIALS`, 36), with the yard empty
+and every sector, branch, auto-builder and advance held. It is played once
+paid (`WEALTHY_CASH`) and once owed (no cash, no advances).
+- Without the mend (6ae15f7a3's Game.java reverted): G 0.00, NX -236.05
+  and GDP -236.05 in both arms; 7 FAILED.
+- With the mend: G 411.67, the bill, paid or owed; GDP 175.63, the
+  builders' value added, the bill less what they bought abroad; green.
+- The earlier attempts' section 19 fixture measured the same city and the
+  same -236.05. Its stop on the yard's 36 free units was a premise of its
+  own, not the model's: the yard is used first, the rest is bought abroad.
+
+**The mend** (6ae15f7a3): G adds `economyManager.getCityMaintenanceBill()`,
+the month's bill, struck by `chargeBuildingMaintenance()` above the call,
+in the same strike as the imports it matches. It is one term.
+
+**One check restated, not weakened.** GdpCheck's "G counts the schools' and
+transit's cost" (0.7.49) read G as the services alone. With the repairs, G
+read 97.01 against 57.38, because its town of services has roads, plants
+and a school to repair. It now adds the month's bill by the model's own
+getter, beside a fixture assertion that the bill is above 0: "G counts the
+schools' and transit's cost, and the city's repairs (R1g)". Its town is
+unchanged.
+
+- ★ **Accrual, not cash.** G counts the bill, not what the treasury paid.
+  Recommended, and taken: the material is drawn and imported in full
+  either way (`chargeBuildingMaintenance` draws before payment), and real
+  accounts record the service when delivered. Counting by cash would leave
+  the fault in every broke month, which is when it struck.
+- **Left as they are, and named.**
+  - The bank's branch repairs: their imported material is in the imports
+    and the repair is in no final term, as HL1's bank upkeep was before
+    HL1 took it out of the imports. A few branches; not this failure.
+  - A helper's static trace found that the repair draw counts every stack,
+    while the bills count only buildings a sector owns, the city's
+    categories and the branches. A building of another category with no
+    owning sector would be drawn for and billed to nobody. Nothing shows
+    that it matters; the ensemble's F1 decides.
+
+**The trace on today's merged code** (the brief's step 2; label
+`R1g-probe1`, on the gate box, 6ae15f7a3, `SEEDS=1 POLICIES="AUTO2
+ZERO_SLACK" -Densemble.months=1200`, 2.1 min). On today's main the seed-1
+1900 city no longer stalls: 1,164,169 people at month 1130, against 11,379
+on 0.9.180. Monthly and annual GDP are positive in all 1,199 months of both
+runs, the money audit passes in every month, and neither run has a finding.
+The old failing month is therefore not reached on the merged code. The
+fixture above is the proof of the mend; the full ensemble is the proof of
+the city. The two-run subset scores nothing (`score.py` needs the policy
+set) and is not committed.
+
+### The harnesses on the merged code (one at a time on the laptop)
+
+- **GdpCheck**: green (above).
+- **Village1900Check** (R1g's own): three red on the merge, all in the
+  stall's proof (sections 2-4, the village played with R1g's switches off
+  beside today's twin). Identical figures with the GDP mend reverted, so
+  main moved them, not the mend.
+  - A helper's trace found two moves. The unfixed village's rent share
+    fell from 0.769 to 0.717, so its pull rose from 0.390 to 0.418 and the
+    city its conditions support went from 279 to 308 against 291 people.
+    Today's twin shrank, from 749 to 588 people at month 60, and could
+    staff 0.639 of a Fabrication Shop at month 30, against 0.935 before.
+    No single main commit was pinned; the 0.9.177-0.9.200 bisect was not
+    run.
+  - The causes still show, and every one of their assertions passes: rent
+    0.717 of take-home, diploma posts 141 for 34.7 workers, the shop held
+    at the gate, no exporter, the money not the cause.
+  - ★ Restated, three reds only (1c9081731), with no other label and no
+    dial value moved:
+    - **Section 2:** the rent binds. Before the pulls
+      (`Migration.getLastDrawBeforePulls()`), its jobs and homes support
+      732 for 291, over the new dial `UNPULLED` (2) times its people. The
+      room it is left to grow is 0.059, against the twin's 0.225.
+    - **Section 3:** the skills, at the gate month and by the diploma
+      band. The village has 32.6 diploma workers for its shop's 248 posts;
+      the twin has 150.3 for its 62. This is what the gate claim stood
+      for; the twin's 0.639 is a lack of hands, which is main's.
+    - **Section 4:** the draw against its cause. The village draws 0.276
+      of the twin's late arrivals, under its rent pull's share, 0.460.
+      The old "under `STALLED` (0.1)" held while the village sat on its
+      target and drew none; on today's main a trickle closes the 17-person
+      gap. Growth since founding was tried first and is no measure: cities
+      start empty, and 291 against 588 is 0.49. `STALLED` stays section
+      5's floor.
+  - Green (exit 0).
+- **CreditCrunchCheck**: one new red, "no month of the crunch leaves more
+  than one household with no home (LongPlaytest's watch)", 9.10 at m151.
+  Its fixture asserts all pass: FS9 made them cause what they read.
+  - Its played crunch replays `LongPlaytest.played(null)`, the 1900 city
+    since R1g. On the same tree with `-Dplaytest.founded=today` it is
+    green: the owners put in 3,089 against 1,162, the bank is short in 51
+    crunch months against 116, and nobody goes without a home.
+  - ★ Named, not mended here: a known-reds row under HT1-H, the queued
+    row for fixtures that find their condition in the played city with
+    their sweep shipped (FS9, 11-22). Recommended, because a poorer city's
+    owners not covering a capital-short bank is a real effect. The mend
+    is HT1-H's: cause the crunch rather than find it. The 11-21 attempt
+    named the same class under FS9 before it shipped. Pinning the harness
+    to today's city instead would hide the 1900 effect.
+- **HousingDoorCheck**: exit 3, its one red the FS11 row as on 11-21. FS11
+  is still queued.
+- **ReloadCheck**: green (exit 0). The two RN2 rows are dropped: RN2 has
+  shipped, its save lines with it.
+- The five 11-21 CreditCrunchCheck fixture rows under FS9 are dropped:
+  they pass on the merged code.
+- **LongPlaytest** (the PB1 row, households' UnsettledFees) is not run
+  here (38 minutes on the 1900 path); the dry run judges it.
