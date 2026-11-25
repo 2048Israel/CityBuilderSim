@@ -58,7 +58,9 @@ public final class HousingChoice {
         public Lease(String cell,HousingInventory.Key home,double count,double bill){this(cell,home,count,bill,count,new Funding(count,0,0));}
         public Lease { quantity(count);quantity(bill);quantity(households);
             double rounding=FamilyModel.packingRounding(households);
-            if(cell==null||cell.isBlank()||home==null||funding==null||households<count||households>2*count+rounding
+            // Two to a share binds who funds the door. A guest rides on its hosts: the doubling's two to a share
+            // (half a door each), a lodger with no door of its own up to the door's people (HousingMarket.lodging(), RES3c).
+            if(cell==null||cell.isBlank()||home==null||funding==null||households<count||households-funding.sponsored()>2*count+rounding
                     ||Math.abs(funding.households()-households)>rounding
                     ||count>funding.doors()+funding.sponsored()/2+rounding)throw new IllegalArgumentException("Invalid lease"); }
         public Lease scale(double factor){return new Lease(cell,home,count*factor,bill*factor,households*factor,funding.scale(factor));}
