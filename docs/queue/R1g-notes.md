@@ -2841,3 +2841,10 @@ Each one, and what was done about it:
     stays until the dry run shows the box's playtest green too (the box
     may part from the PC's path), then it goes; PB1 stays queued, its
     early months' share of fees being the finding.
+- KeptCheck on the merged code, on the PC once RES3 released the slot
+  (`target/r1gd-kept.txt`): exit 3, known red only. The same four lines
+  as run 7: main's HT1-H fixture row and the three this ship file names
+  under HT1-H. Section 63 searched Restaurants (170 matches); the live
+  heap after release was 1,406.8 MiB of 2,048 (the bound 1,536). The box's
+  software renderer keeps more on the heap (FS5: 175-340 MiB), so the dry
+  run's heap line is the one to watch.
