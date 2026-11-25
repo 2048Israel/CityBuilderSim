@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 29,001 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 29,003 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -34700,7 +34700,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1077 ...and puts spend / rate / price in ounces in the vault
   - L1078 ...and no other balance beyond the US$ (the city holds US$ and gold)
 
-## Village1900Check.java - 51 labelled assertions
+## Village1900Check.java - 53 labelled assertions
 
 > Why the 1900 city stalls (R1g's finding), and what R1g's two switches change: the playtest's village founded the 1900 way, played the
 > playtest's way for five years beside its twin founded today's way. Not part of the game.
@@ -34712,71 +34712,73 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   1. THE TWO CITIES: one founding, the playtest's (LongPlaytest.founding()), one of them founded the 1900 way, both founded and played the
 >      way LongPlaytest.main() does it (its switches, the village by hand, the advisor at the run's stops, the automatic works)
 >   2. THE RENT: 1901's wages pay for today's homes, so the 1900 village's households pay well over TARGET_RENT_BURDEN of their
->      take-home in rent, the affordability pull cuts the city its conditions support under the people already in it, and today's
->      twin pays under DEAR_RENT times the target, the line the village is over (0.331 at month 60 on 0.9.174, 0.232 on 0.9.159)
+>      take-home in rent, the affordability pull cuts its draw below today's twin's, and the rent is what binds: without the pull the
+>      city the village's jobs and homes would support is over UNPULLED times its people, and with it the room the village has to grow
 > ...
 
-- **L120 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way**
-  - L121 the 1900 village is founded the 1900 way
-  - L122 today's twin is founded today's way
-  - L123 both are played to month
-- **L149 2. the rent: 1901's wages pay for today's homes**
-  - L158 the 1900 village's households pay over
-  - L160 today's twin's households pay under
-  - L162 so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it
-  - L165 and the city the 1900 village's conditions support is smaller than the people already in it
-  - L168 while today's twin's supports more than its people
-- **L175 3. the skills: posts drawn for today's diploma-holders, and 1901's workers**
-  - L181 the 1900 village's diploma posts outnumber its diploma workers over
-  - L183 today's twin's diploma workers cover its diploma posts
-  - L188 the 1900
-  - L191 the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a
-  - L193 today's twin could staff at least MIN_STAFFABLE_TO_ORDER of one
-- **L200 4. the stall: almost nobody comes, no exporter is built, and the money is not what holds it**
-  - L206 the 1900 village draws under
-  - L209 while people still arrive in today's twin
-  - L210 no
-  - L211 and its
-  - L216 the 1900 village's treasury holds cash and owes nothing, so the dated money is not what holds it
-  - L220 and it holds more cash a head than today's twin, which grows on less
-- **L227 5. the 1900 home (Recipes.HOMES_1900): built to 1900's standard, and the rent a 1901 household pays**
-  - L233 the 1900 home is built at about three tenths of today's: Recipes.homeScale() between a fifth and two fifths
-  - L235 the village's
-  - L238 its materials and its points are today's times the scale, rounded
-  - L242 and its plot is today's
-  - L243 the city knows the home is dated
-  - L250 the 1900 home's households pay at most
-  - L252 and it draws at least
-- **L259 6. the apprentices (PopulationManager.APPRENTICES_1900): the young learn the year's trade at work**
-  - L264 the young learn trades in the 1900 village
-  - L265 as many as came of age times the year's trade share, there being no school
-  - L268 so the village holds more diploma workers than the stalled one
-  - L270 and the stalled village, the switch off, made none
-- **L276 7. today's city does not move: both switches on and both off, the same city to the bit**
-  - L278 the same people
-  - L280 the same cash and the same month's GDP
-  - L283 the same rent burden and the same workers by band
-  - L285 the same
-  - L288 and no apprentice
-- **L295 8. the walk (Recipes.HOME_WALK): the home's cost moves with the households' pay, on its last twelve months' mean**
-  - L306 each month takes the households' pay once: the window grows by a month a month to PAY_MONTHS and holds there
-  - L310 the pay each month takes is Recipes.homeScaleOfPay() as the month before ended (the households' pay, founding money, over today's)
-  - L315 the
-  - L317 ...which the village's pay has moved off homeScale(), 1901's household, by more than a hundredth
-  - L326 the village saved and loaded into a fresh Game holds the same months, to the bit, and its
-  - L332 ...and a month on, both have taken the same month's pay and stand at the same scale, to the bit
-- **L466 9. the last horse: fitting every farm clears the captive crop**
-  - L476 fixture: unfitted farms feed their horses from the crop
-  - L484 fixture: every farm now has its tractor, so no crop is captive
-  - L487 the next crop keeps none of the last horse's feed
-- **L493 10. school diplomas cover the apprentice quota before degree outflow**
-  - L524 fixture: both school towns are founded the 1900 way with the same skilled heads
-  - L526 fixture: college and university students are due to finish next month
-  - L539 fixture: gross school diplomas already cover a positive apprentice quota
-  - L540 fixture: college and university completions leave the diploma band and put net movement below the quota
-  - L543 fixture: both controls have the same gross diplomas and net school/degree flows
-  - L545 Game adds no extra trade qualification after the schools cover the quota
-  - L547 the actual Game month keeps the school-only control's skilled heads, including degree outflow
+- **L128 1. the two cities: the playtest's founding, the 1900 way and today's, played the playtest's way**
+  - L129 the 1900 village is founded the 1900 way
+  - L130 today's twin is founded today's way
+  - L131 both are played to month
+- **L157 2. the rent: 1901's wages pay for today's homes**
+  - L166 the 1900 village's households pay over
+  - L168 today's twin's households pay under
+  - L170 so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it
+  - L178 the rent is what binds: before the pulls, the city the 1900 village's jobs and homes would support is over
+  - L180 ...so the room it leaves the village to grow (the target over its people, less one) is under today's twin's
+  - L182 while today's twin's supports more than its people
+- **L189 3. the skills: posts drawn for today's diploma-holders, and 1901's workers**
+  - L195 the 1900 village's diploma posts outnumber its diploma workers over
+  - L197 today's twin's diploma workers cover its diploma posts
+  - L202 the 1900
+  - L205 the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a
+  - L209 today's twin's diploma workers at month
+  - L211 while the 1900 village's do not cover its own
+- **L218 4. the stall: almost nobody comes, no exporter is built, and the money is not what holds it**
+  - L228 the 1900 village draws a smaller share of today's twin's arrivals in the last
+  - L230 while people still arrive in today's twin
+  - L231 no
+  - L232 and its
+  - L237 the 1900 village's treasury holds cash and owes nothing, so the dated money is not what holds it
+  - L241 and it holds more cash a head than today's twin, which grows on less
+- **L248 5. the 1900 home (Recipes.HOMES_1900): built to 1900's standard, and the rent a 1901 household pays**
+  - L254 the 1900 home is built at about three tenths of today's: Recipes.homeScale() between a fifth and two fifths
+  - L256 the village's
+  - L259 its materials and its points are today's times the scale, rounded
+  - L263 and its plot is today's
+  - L264 the city knows the home is dated
+  - L271 the 1900 home's households pay at most
+  - L273 and it draws at least
+- **L280 6. the apprentices (PopulationManager.APPRENTICES_1900): the young learn the year's trade at work**
+  - L285 the young learn trades in the 1900 village
+  - L286 as many as came of age times the year's trade share, there being no school
+  - L289 so the village holds more diploma workers than the stalled one
+  - L291 and the stalled village, the switch off, made none
+- **L297 7. today's city does not move: both switches on and both off, the same city to the bit**
+  - L299 the same people
+  - L301 the same cash and the same month's GDP
+  - L304 the same rent burden and the same workers by band
+  - L306 the same
+  - L309 and no apprentice
+- **L316 8. the walk (Recipes.HOME_WALK): the home's cost moves with the households' pay, on its last twelve months' mean**
+  - L327 each month takes the households' pay once: the window grows by a month a month to PAY_MONTHS and holds there
+  - L331 the pay each month takes is Recipes.homeScaleOfPay() as the month before ended (the households' pay, founding money, over today's)
+  - L336 the
+  - L338 ...which the village's pay has moved off homeScale(), 1901's household, by more than a hundredth
+  - L347 the village saved and loaded into a fresh Game holds the same months, to the bit, and its
+  - L353 ...and a month on, both have taken the same month's pay and stand at the same scale, to the bit
+- **L488 9. the last horse: fitting every farm clears the captive crop**
+  - L498 fixture: unfitted farms feed their horses from the crop
+  - L506 fixture: every farm now has its tractor, so no crop is captive
+  - L509 the next crop keeps none of the last horse's feed
+- **L515 10. school diplomas cover the apprentice quota before degree outflow**
+  - L546 fixture: both school towns are founded the 1900 way with the same skilled heads
+  - L548 fixture: college and university students are due to finish next month
+  - L561 fixture: gross school diplomas already cover a positive apprentice quota
+  - L562 fixture: college and university completions leave the diploma band and put net movement below the quota
+  - L565 fixture: both controls have the same gross diplomas and net school/degree flows
+  - L567 Game adds no extra trade qualification after the schools cover the quota
+  - L569 the actual Game month keeps the school-only control's skilled heads, including degree outflow
 
 ## WageLadderCheck.java - 63 labelled assertions
 

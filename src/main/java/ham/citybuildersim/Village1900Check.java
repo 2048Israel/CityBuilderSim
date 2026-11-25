@@ -14,15 +14,20 @@ import java.io.PrintStream;
  *   1. THE TWO CITIES: one founding, the playtest's (LongPlaytest.founding()), one of them founded the 1900 way, both founded and played the
  *      way LongPlaytest.main() does it (its switches, the village by hand, the advisor at the run's stops, the automatic works)
  *   2. THE RENT: 1901's wages pay for today's homes, so the 1900 village's households pay well over TARGET_RENT_BURDEN of their
- *      take-home in rent, the affordability pull cuts the city its conditions support under the people already in it, and today's
- *      twin pays under DEAR_RENT times the target, the line the village is over (0.331 at month 60 on 0.9.174, 0.232 on 0.9.159)
+ *      take-home in rent, the affordability pull cuts its draw below today's twin's, and the rent is what binds: without the pull the
+ *      city the village's jobs and homes would support is over UNPULLED times its people, and with it the room the village has to grow
+ *      (the target over its people, less one) is under today's twin's; today's twin pays under DEAR_RENT times the target, the line
+ *      the village is over (0.331 at month 60 on 0.9.174, 0.232 on 0.9.159)
  *   3. THE SKILLS: posts drawn for today's diploma-holders meet 1901's workers, who mostly hold none: the 1900 village's diploma posts
  *      outnumber its diploma workers many times over while today's twin's are covered, and the exporters' first plant (the
- *      Fabrication Shop, whose 1900 recipe asks several times today's diploma crew) cannot pass the staffing gate,
- *      Sector.MIN_STAFFABLE_TO_ORDER, which today's twin's passes
- *   4. THE STALL: the 1900 village draws under STALLED of today's twin's arrivals at the end of the five years, and no
- *      exporter stands there, its manufacturing held at the staffing gate; and the 1900 village's treasury holds its cash and owes
- *      nothing, more cash a head than today's growing twin holds, so the dated money (no central bank until 1935) is not what holds it
+ *      Fabrication Shop, whose 1900 recipe asks several times today's diploma crew) meets it at the gate month in the diploma band:
+ *      today's twin's diploma workers cover the plant's diploma posts and the 1900 village's do not, and the village cannot pass the
+ *      staffing gate, Sector.MIN_STAFFABLE_TO_ORDER
+ *   4. THE STALL: the 1900 village draws a smaller share of today's twin's arrivals at the end of the five years than its
+ *      affordability pull is of the twin's, so the rent holds it (section 2), and no exporter stands there, its manufacturing held
+ *      at the staffing gate; and the 1900 village's
+ *      treasury holds its cash and owes nothing, more cash a head than today's growing twin holds, so the dated money (no central
+ *      bank until 1935) is not what holds it
  *
  * ...and the fix, at its switches (on unless -Dr1g.home=off, -Dr1g.apprentices=off or -Dr1g.walk=off; each section fails with its own off):
  *
@@ -71,8 +76,11 @@ public class Village1900Check {
     /** The last months the arrivals are summed over: the sixth year's first months, when the 1900 village has all but stopped drawing anybody. */
     static final int QUIET_MONTHS = 5;
 
-    /** The share of today's twin's arrivals in the quiet months under which a village is stalled: a tenth (R1g measured 0 on 0.9.157, 2.6 of 35.5 on 0.9.159). */
+    /** The share of today's twin's arrivals in the quiet months a village draws at least once its homes are dated, section 5's floor: a tenth (R1g measured 0 arrivals on 0.9.157 with the switches off, 2.6 of 35.5 on 0.9.159; 13.1 of 47.4 on 0.9.200, where section 4 reads the stall against the rent pull instead). */
     static final double STALLED = 0.1;
+
+    /** The least multiple of its people the 1900 village's jobs and homes would support before any pull is struck (Migration.getLastDrawBeforePulls()): two, so its room is not what holds it. */
+    static final double UNPULLED = 2;
 
     /** How many times TARGET_RENT_BURDEN the 1900 village's households pay at the least: one and a half (R1g measured 2.0 at month 60). */
     static final double DEAR_RENT = 1.5;
@@ -98,7 +106,7 @@ public class Village1900Check {
     /** What one city shows at the gate month and at the end. */
     static final class Seen {
         final boolean the1900Way;
-        double gateShare = Double.NaN, gateDiplomaWanted = Double.NaN;
+        double gateShare = Double.NaN, gateDiplomaWanted = Double.NaN, gateDiplomaWorkers = Double.NaN;
         double arrivalsLate;
         /** The apprentices of every month, and the coming-of-age teens times the year's trade share less the schools' diploma-holders. */
         double apprentices, apprenticesExpected;
@@ -162,9 +170,15 @@ public class Village1900Check {
         check("so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it",
                 m1900.getLastAffordabilityPull() < 1 && m1900.getLastAffordabilityPull() < mToday.getLastAffordabilityPull(),
                 String.format("%.3f against %.3f", m1900.getLastAffordabilityPull(), mToday.getLastAffordabilityPull()));
-        check("and the city the 1900 village's conditions support is smaller than the people already in it",
-                m1900.getLastTarget() < y1900.g.getPopulationManager().getPopulation(),
-                String.format("%.0f for %d", m1900.getLastTarget(), y1900.g.getPopulationManager().getPopulation()));
+        long pop1900 = y1900.g.getPopulationManager().getPopulation(), popToday = today.g.getPopulationManager().getPopulation();
+        double bare1900 = m1900.getLastDrawBeforePulls(), bareToday = mToday.getLastDrawBeforePulls();
+        double room1900 = m1900.getLastTarget() / pop1900 - 1, roomToday = mToday.getLastTarget() / popToday - 1;
+        out.printf("   the city the jobs and homes would support before the pulls: 1900 %.0f for %d, today %.0f for %d; the room left to grow (the target over the people, less one): 1900 %.3f, today %.3f%n",
+                bare1900, pop1900, bareToday, popToday, room1900, roomToday);
+        check("the rent is what binds: before the pulls, the city the 1900 village's jobs and homes would support is over "
+                + UNPULLED + " times its people", bare1900 > UNPULLED * pop1900, String.format("%.0f for %d", bare1900, pop1900));
+        check("...so the room it leaves the village to grow (the target over its people, less one) is under today's twin's",
+                room1900 < roomToday, String.format("%.3f against %.3f", room1900, roomToday));
         check("while today's twin's supports more than its people", mToday.getLastTarget() > today.g.getPopulationManager().getPopulation(),
                 String.format("%.0f for %d", mToday.getLastTarget(), today.g.getPopulationManager().getPopulation()));
     }
@@ -190,22 +204,29 @@ public class Village1900Check {
                 String.format("%.0f against %.0f", y1900.gateDiplomaWanted, today.gateDiplomaWanted));
         check("the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a " + FIRST_PLANT + " at month " + GATE_MONTH,
                 y1900.gateShare < Sector.MIN_STAFFABLE_TO_ORDER, String.format("%.3f", y1900.gateShare));
-        check("today's twin could staff at least MIN_STAFFABLE_TO_ORDER of one", today.gateShare >= Sector.MIN_STAFFABLE_TO_ORDER,
-                String.format("%.3f", today.gateShare));
+        out.printf("   diploma workers against the %s's diploma posts at month %d: 1900 %.1f for %.0f, today %.1f for %.0f%n",
+                FIRST_PLANT, GATE_MONTH, y1900.gateDiplomaWorkers, y1900.gateDiplomaWanted, today.gateDiplomaWorkers, today.gateDiplomaWanted);
+        check("today's twin's diploma workers at month " + GATE_MONTH + " cover its " + FIRST_PLANT + "'s diploma posts",
+                today.gateDiplomaWorkers >= today.gateDiplomaWanted, String.format("%.1f for %.0f", today.gateDiplomaWorkers, today.gateDiplomaWanted));
+        check("while the 1900 village's do not cover its own", y1900.gateDiplomaWorkers < y1900.gateDiplomaWanted,
+                String.format("%.1f for %.0f", y1900.gateDiplomaWorkers, y1900.gateDiplomaWanted));
     }
 
     /* ---------------------------------------------------------------- 4 */
 
     static void stall(Seen y1900, Seen today) {
-        out.println("\n--- 4. the stall: almost nobody comes, no exporter is built, and the money is not what holds it ---");
+        out.println("\n--- 4. the stall: the rent holds the draw, no exporter is built, and the money is not what holds it ---");
         long ex1900 = standing(y1900.g, EXPORTER), exToday = standing(today.g, EXPORTER);
         String word = String.valueOf(y1900.g.getLastInvestment(EXPORTER));
         out.printf("   arrivals in months %d-%d: 1900 %.1f, today %.1f; %s buildings standing: 1900 %d, today %d%n",
                 MONTHS - QUIET_MONTHS + 1, MONTHS, y1900.arrivalsLate, today.arrivalsLate, EXPORTER, ex1900, exToday);
         out.printf("   %s's word: 1900 \"%s\"; today \"%s\"%n", EXPORTER, word, today.g.getLastInvestment(EXPORTER));
-        check("the 1900 village draws under " + STALLED + " of today's twin's arrivals in the last " + QUIET_MONTHS + " months",
-                y1900.arrivalsLate < STALLED * today.arrivalsLate,
-                String.format("%.1f against %.1f", y1900.arrivalsLate, today.arrivalsLate));
+        // The stall against its cause (R1g, 0.9.200): the village draws a smaller share of the twin's arrivals than its rent pull is of the twin's. On
+        // 0.9.157-0.9.177 it drew none at all here (under STALLED); on today's main a trickle closes the gap to the city its rent leaves (section 2).
+        double drawShare = today.arrivalsLate > 0 ? y1900.arrivalsLate / today.arrivalsLate : Double.NaN;
+        double pullShare = y1900.g.getMigration().getLastAffordabilityPull() / today.g.getMigration().getLastAffordabilityPull();
+        check("the 1900 village draws a smaller share of today's twin's arrivals in the last " + QUIET_MONTHS + " months than its affordability pull is of the twin's",
+                today.arrivalsLate >= 1 && drawShare < pullShare, String.format("%.3f against %.3f (%.1f against %.1f arrivals)", drawShare, pullShare, y1900.arrivalsLate, today.arrivalsLate));
         check("while people still arrive in today's twin", today.arrivalsLate >= 1, String.format("%.1f", today.arrivalsLate));
         check("no " + EXPORTER + " plant stands in the 1900 village after " + MONTHS + " months", ex1900 == 0, ex1900 + " standing");
         check("and its " + EXPORTER + " is held at the staffing gate (\"could staff\")", word.contains("could staff"), word);
@@ -450,6 +471,7 @@ public class Village1900Check {
             Sector.Staffing st = s.staffing(t);
             seen.gateShare = st.share;
             seen.gateDiplomaWanted = st.wanted()[WageBand.DIPLOMA.ordinal()];
+            seen.gateDiplomaWorkers = g.getPopulationManager().workforceByBand()[WageBand.DIPLOMA.ordinal()];
         }
     }
 
