@@ -193,7 +193,9 @@ import java.util.List;
  *      the avenue stands on both sides of the reserve and counts what it does not lay there (avenueBroken) as the same reserve
  *      from the start does; no building off the reserve moves; every check holds.
  *  20. frontage avenues beside a diagonal highway: MF2's original strip-use and verge-end fixture, plus the
- *      plan laws, both diagonal headings, dated arrival on built cells and deterministic replay.
+ *      plan laws, both diagonal headings, dated arrival on built cells and deterministic replay; and (RR1) the highway
+ *      turning at both ends of its diagonal: each frontage run ends where it last crosses a street, none a stair
+ *      step past it alongside that street, and no run's tip is a dead end.
  *
  * THE CHECKS, after every plan (spec 2.4; the prototype's, and H5):
  *   - one network: its streets one piece, four-connected (a street beneath a
@@ -379,7 +381,7 @@ public class PlanCheck {
             }
         };
         BuildingVisual.Type[] types = BuildingVisual.table(new BuildingCatalog().load());
-        replay(types);
+        replay(typesAsDrawn());
         gameRules(types);
         highways(types);
         howFull(types);
@@ -849,6 +851,28 @@ public class PlanCheck {
     /* =====================================================================
        1. THE PORT: THE PROTOTYPE'S TEST DISTRICT, REPLAYED
        ===================================================================== */
+
+    /* ----- the boxes those plans were made from (PW2, 2026-11-23) -----
+       Section 1 and section 10 (b) hold plans box for box: the prototype's (its digests from 0.7.90) and 0.8.11's
+       comb, pinned with latticeOnly. Both were made from the catalogue of then, in which the Coal Power Plant (id 9,
+       one of the test district's buildings and of Jerus's city's) stood on 2,000,000 sq ft. PW2 gave it 200 acres
+       (8,712,000), so its box is over four times the one they were drawn with and every box placed after it moved
+       (32,907 plots of buildings against the table's 32,217). Those plans draw it on its ground of then, as
+       GatewayCheck 21 draws the terminals on theirs from before SL1; every other type, and the planner, is today's,
+       and the rest of section 10 sees today's 200-acre plant (REV-PW2b). */
+
+    /** The Coal Power Plant's ground as the prototype and 0.8.11 drew it, sq ft. */
+    static final double COAL_GROUND_DRAWN = 2_000_000;
+
+    /** The Coal Power Plant's catalogue id. */
+    static final int COAL_PLANT = 9;
+
+    /** Today's types with the Coal Power Plant on COAL_GROUND_DRAWN: section 1's, and section 10 (b)'s pinned plans. */
+    static BuildingVisual.Type[] typesAsDrawn() {
+        List<BuildingsTemplate> catalogue = new BuildingCatalog().load();
+        for (BuildingsTemplate t : catalogue) if (t.getId() == COAL_PLANT) t.setLandSqFt(COAL_GROUND_DRAWN);
+        return BuildingVisual.table(catalogue);
+    }
 
     /** The prototype's test district: its ground (TEST_GROUND, the district's frame), its buildings, and one of its three budgets (0 his roads, 1 the same trips paved, 2 half that). */
     static DistrictPlan.Input testDistrict(BuildingVisual.Type[] types, int budget, boolean prototype) {
@@ -1576,8 +1600,11 @@ public class PlanCheck {
     /** LONG's roads, a factor of his (section 4's 75% fill): 0.5 - too little road for the ladder to square a homes cell, so all of them keep long blocks. */
     static final double LONG_ROADS = 0.5;
 
-    /** SQUARED's: 0.7 - road enough to square most of the homes cells and not to make boulevards of them. */
-    static final double SQUARED_ROADS = 0.7;
+    /** SQUARED's: 0.75 - road enough to square most of the homes cells (10 of 17) and not to make boulevards of them. PW2, 2026-11-23: it was 0.7, on the ladder's step, which squared 1 of 17 with the coal plant on 2,000,000 sq ft and none of 16 on PW2's 200 acres. */
+    static final double SQUARED_ROADS = 0.75;
+
+    /** SQUARED's factor as 0.8.11 drew it, 0.7: the plan (b) pins to 0.8.11's digests is made with it, on the ground of then (typesAsDrawn()). */
+    static final double SQUARED_ROADS_0811 = 0.7;
 
     /** BOULEVARD's: 1, his own - road enough for boulevards, squared cells among them. */
     static final double BOULEVARD_ROADS = 1;
@@ -1607,10 +1634,14 @@ public class PlanCheck {
 
     /** Section 10's fixture k (LAYOUT_FIXTURES): the flat district with his roads times a factor, or the test district's ground and budget k - 3; with combOnly when asked. */
     static DistrictPlan.Input layoutInput(BuildingVisual.Type[] types, int k, boolean combOnly) {
+        return layoutInput(types, k, combOnly, k == 0 ? LONG_ROADS : k == 1 ? SQUARED_ROADS : BOULEVARD_ROADS);
+    }
+
+    /** ...with the flat fixtures' roads at this factor of his (the test district's ground ignores it). */
+    static DistrictPlan.Input layoutInput(BuildingVisual.Type[] types, int k, boolean combOnly, double roads) {
         DistrictPlan.Input in;
         if (k < 3) {
             in = flatMix(types, FILLS[0], true, false);
-            double roads = k == 0 ? LONG_ROADS : k == 1 ? SQUARED_ROADS : BOULEVARD_ROADS;
             in.gravel *= roads;
             in.paved *= roads;
         } else {
@@ -1730,12 +1761,13 @@ public class PlanCheck {
         int[] dead = new int[n], deadOff = new int[n], deadVaried = new int[n];
         int[][] total = new int[2][3];
         long[][] share = new long[6][2];
+        BuildingVisual.Type[] asDrawn = typesAsDrawn();
         for (int k = 0; k < n; k++) {
             in[k] = layoutInput(types, k, false);
             on[k] = DistrictPlan.make(in[k]);
             off[k] = DistrictPlan.make(layoutInput(types, k, true));
-            // CL4: the digests below are 0.8.11's plans, from before the avenues - the same fixture with latticeOnly as well.
-            DistrictPlan.Input lattice = layoutInput(types, k, true);
+            // CL4: the digests below are 0.8.11's plans, from before the avenues - the same fixture with latticeOnly as well, on the ground and with the roads 0.8.11 drew (typesAsDrawn(), SQUARED_ROADS_0811).
+            DistrictPlan.Input lattice = layoutInput(asDrawn, k, true, k == 1 ? SQUARED_ROADS_0811 : k == 0 ? LONG_ROADS : BOULEVARD_ROADS);
             lattice.latticeOnly = true;
             pinned[k] = DistrictPlan.make(lattice);
             fig[k] = figures(on[k], in[k]);
@@ -5395,6 +5427,83 @@ public class PlanCheck {
         check("the + floor also holds along each frontage arm with its own origin (" + frontageBad + ")", frontageBad == 0);
         out.printf("      plan laws: pieces %d closest + %d, reach %d, on street %d, highway verge %d, avenue floor %d%n", f.pieces, f.closestPlus, f.outOfReach, f.onStreet, f.besideHighway, f.avenueBad);
         check("the frontage district keeps every existing plan law", f.holds(p, in));
+        frontageTurns(types);
+    }
+
+    /**
+     * Section 20's turns (RR1): the diagonal highway turns at both ends of its run along a row - west at its north-west end,
+     * east at its south-east one, as Jerus's fjord city's (0.9.181, his shots 2 and 4) did where its link arm leaves the
+     * spine - its run RR1_TURN_NW to RR1_TURN_SE columns, FRONTAGE_OFFSET off the main diagonal as the section's own.
+     */
+    static final int RR1_TURN_NW = 100, RR1_TURN_SE = 200;
+
+    /** Section 20's turns: the district laid that Z highway, its frontage arms running on LATTICE steps past each turn (frontageArm()). */
+    static DistrictPlan.Input turnsInput(BuildingVisual.Type[] types) {
+        final int n = DistrictPlan.FRAME;
+        DistrictPlan.Input in = flatMix(types, FULL_FILL, true, false);
+        for (int x = 0; x < n; x++) {
+            if (x <= RR1_TURN_NW || x >= RR1_TURN_SE) {
+                int y = (x <= RR1_TURN_NW ? RR1_TURN_NW : RR1_TURN_SE) - FRONTAGE_OFFSET;
+                in.fixed[y * n + x] = DistrictPlan.FIXED_HIGHWAY;
+                continue;
+            }
+            for (int dy = 0; dy <= 1; dy++) in.fixed[(x - FRONTAGE_OFFSET - dy) * n + x] = DistrictPlan.FIXED_HIGHWAY;
+        }
+        return in;
+    }
+
+    /**
+     * Section 20 (RR1): a frontage arm ends where it last crosses a street, not a stair step past it. Its extent runs LATTICE
+     * steps past the highway's diagonal (FA1), so where the highway turns the run ended wherever the extent did: in Jerus's
+     * fjord city a step past the boulevard on each side of the highway, two plots alongside the street with junction marks to
+     * nowhere. Read on the plan's frontage bands, FRONTAGE_GAP off the diagonal's line each side: a run's tip (an avenue plot
+     * with one avenue plot of its band beside it, off the frame's edge) is a stub past its crossing when a plain street beside
+     * it is beside another avenue plot of its band - the run crossed that street and came back alongside it.
+     */
+    static void frontageTurns(BuildingVisual.Type[] types) {
+        final int n = DistrictPlan.FRAME;
+        DistrictPlan p = DistrictPlan.make(turnsInput(types));
+        int tips = 0, stubs = 0, deadTips = 0, past = 0;
+        for (int side = -1; side <= 1; side += 2) {
+            int band = FRONTAGE_OFFSET + side * DistrictPlan.FRONTAGE_GAP;
+            for (int q = 0; q < DistrictPlan.AREA; q++) {
+                int x = q % n, y = q / n;
+                if (!onBand(p, x, y, band)) continue;
+                if (x < RR1_TURN_NW - 1 || x > RR1_TURN_SE + 1) past++;
+                if (x == 0 || y == 0 || x == n - 1 || y == n - 1) continue;
+                int along = 0, streets = 0;
+                for (int d = 0; d < 4; d++) {
+                    int sx = x + TilePainter.DX[d], sy = y + TilePainter.DY[d], s = sy * n + sx;
+                    if (p.street[s] != 0) streets++;
+                    if (onBand(p, sx, sy, band)) along++;
+                }
+                if (along != 1) continue;
+                tips++;
+                if (streets < 2) deadTips++;
+                boolean stub = false;
+                for (int d = 0; d < 4 && !stub; d++) {
+                    int sx = x + TilePainter.DX[d], sy = y + TilePainter.DY[d], s = sy * n + sx;
+                    if (p.street[s] == 0 || p.avenue[s] != 0) continue;
+                    for (int e = 0; e < 4 && !stub; e++) {
+                        int ux = sx + TilePainter.DX[e], uy = sy + TilePainter.DY[e];
+                        stub = (ux != x || uy != y) && onBand(p, ux, uy, band);
+                    }
+                }
+                if (stub) stubs++;
+            }
+        }
+        out.printf("      (RR1) the highway turning at both ends of its diagonal: %d frontage plots past the turns, %d run tips, %d of them a stub past the street they crossed, %d dead ends%n",
+                past, tips, stubs, deadTips);
+        check("(RR1) fixture: the frontage arms run on past the highway's turns at both ends of its diagonal, and their runs end in the district", past > 0 && tips > 0);
+        check("(RR1) ...each run ends where it last crosses a street, none a stair step past it alongside that street (red before RR1: Jerus's boulevard)", stubs == 0);
+        check("(RR1) ...and no run's tip is a dead end", deadTips == 0);
+    }
+
+    /** Whether plot (x, y) of the plan is an avenue plot on the frontage band whose line (x - y) is `band` or one more: a staircase's two plots a column. */
+    static boolean onBand(DistrictPlan p, int x, int y, int band) {
+        int n = DistrictPlan.FRAME;
+        if (x < 0 || y < 0 || x >= n || y >= n || p.avenue == null || p.avenue[y * n + x] == 0) return false;
+        return x - y == band || x - y == band + 1;
     }
 
     /** Later arrivals open more frontage cells without disturbing the cells already built. */

@@ -567,6 +567,7 @@ public class ShortSellingCheck {
         double room = Math.min(Exchange.MAX_SHORT_INTEREST * cityReg.getOutstanding(f), city.getHouseholdBalance().sharesHeld(f) + cityReg.getCityMarketShares(f));
         double want = .9 * room;
         double at = cityEx.fair(f) * (1 + Exchange.SHORT_BAND);
+        handDeskMeans(city, f, want);
         cityEx.tradeForCheck(f, Exchange.WORLD_SHORT, OrderBook.Side.SELL, at, want);
         double sold = filled(cityEx.tradeForCheck(f, Exchange.DESK, OrderBook.Side.BUY, at, want));
         cityEx.bookOf(f).withdrawAll();
@@ -575,6 +576,30 @@ public class ShortSellingCheck {
         out.printf("   %s: %,.0f shares in issue, the fund holds %,.0f, short %,.0f (%.2f%% of the shares outstanding)%n", Equity.COMPANIES[f],
                 cityReg.getShares(f), cityReg.getCityMarketShares(f), cityEx.shortShares(f), 100 * cityEx.shortShares(f) / cityReg.getOutstanding(f));
         return fundGot > 0 && sold > 0 && cityEx.shortShares(f) == sold ? new Shorted(city, f) : null;
+    }
+
+    /**
+     * FC2, 2026-11-23: THE DESK GIVEN THE MEANS TO BUY THE SHORT, between months. Whatever the bank's equity lacks of the desk's two
+     * limits at fair value is put in its till, with the short's shares added (Exchange.POSITION_LIMIT in the company, BOOK_LIMIT over
+     * its whole book). Bank.setCash is the lever, as FloatLinkCheck.handBankRoom() hands its room. The fixture sells the short "to a
+     * desk with the means to buy" and causes everything else. On FC2's path the 48-month town's bank stood on D$382 of equity, with
+     * 29,793 of Construction's shares on its desk already (D$304 at fair value, over a quarter of its equity). So the desk bid
+     * nothing and no short opened (room 14,025, want 12,623, sold 0). Nothing is put in where the equity covers both limits.
+     * Returns the cash put in.
+     */
+    static double handDeskMeans(Game city, int f, double shares) {
+        Bank bank = city.getBank();
+        Equity reg = city.getEquity();
+        Exchange ex = city.getExchange();
+        double book = 0;
+        for (int c = 0; c < Equity.COMPANIES.length; c++) if (c != Equity.BANK) book += Math.max(0, reg.getDealerShares(c)) * ex.fair(c);
+        double adds = shares * ex.fair(f);
+        double needs = Math.max((Math.max(0, reg.getDealerShares(f)) * ex.fair(f) + adds) / Exchange.POSITION_LIMIT,
+                (book + adds) / Exchange.BOOK_LIMIT);
+        double lacking = needs - bank.equity();
+        if (!(lacking > 0)) return 0;
+        bank.setCash(bank.getCash() + lacking);
+        return lacking;
     }
 
     /** A whole month of a city, with a short open, a dividend paid on it and the lending fee: the audit balances. */
@@ -816,8 +841,8 @@ public class ShortSellingCheck {
 
         // The fee, on the quote the book stood at before the step. 700 and 100 can be lent, 100 are short: well under HARD_TO_BORROW.
         Bench feed = standard();
-        feed.poor.lockout = 1;                                  // both cells locked out of buying, so the fee is all that reaches their savings
-        feed.rich.lockout = 1;
+        feed.poor.shutOut = 1;                                  // both cells locked out of buying, so the fee is all that reaches their savings
+        feed.rich.shutOut = 1;
         feed.open(Exchange.DESK, feed.shortAsk(), 100);
         double lendable = feed.hb.sharesHeld(INDUSTRY) + feed.reg.getCityMarketShares(INDUSTRY);
         double u = feed.shortShares() / lendable;
@@ -1204,8 +1229,8 @@ public class ShortSellingCheck {
 
         // The fund's books. The fixture of section 4's fee: 700 can be lent by the cells and the fund, 100 are short.
         Bench feed = standard();
-        feed.poor.lockout = 1;
-        feed.rich.lockout = 1;
+        feed.poor.shutOut = 1;
+        feed.rich.shutOut = 1;
         feed.open(Exchange.DESK, feed.shortAsk(), 100);
         feed.city.step(0);
         double toFund = feed.ex.lendingFeeToFund(INDUSTRY);
@@ -1252,22 +1277,31 @@ public class ShortSellingCheck {
         double s2 = 3_000;
         double[] none = new double[HouseholdBalance.ROWS];
         double[][] nobody = new double[FamilyStructure.values().length][PayTier.values().length];
-        HouseholdBalance leaving = ExchangeCheck.savers(20.0, 4.0);
-        Equity regLeaving = ExchangeCheck.equity();
-        regLeaving.listIfUnlisted(INDUSTRY, 10_000, leaving);
-        Household leaver = ExchangeCheck.couple(leaving);
-        leaver.shares[INDUSTRY] += s2 / leaver.households();
-        double held2 = leaving.sharesHeld(INDUSTRY);
-        leaving.advanceMonth((st, t) -> nobody[st.ordinal()][t.ordinal()], none, 0, none, none, .25, .05, 1);
-        double taken = leaving.getSharesTakenAway(INDUSTRY);
-        assertTrue("fixture: the town holds " + String.format("%,.0f", held2) + " shares, the 10,000 founders' and 3,000 a short sold it, and they all leave: "
-                + String.format("%,.0f", taken), held2 == 13_000 && Math.abs(taken - 13_000) < 1e-6);
-        Equity regKnown = ExchangeCheck.equity();
-        regKnown.listIfUnlisted(INDUSTRY, 10_000, ExchangeCheck.savers(20.0, 4.0));
-        regKnown.followEmigrants(leaving, c -> c == INDUSTRY ? s2 : 0);
-        close("told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short", regKnown.getForeignShares(INDUSTRY), 13_000, 1e-6);
-        regLeaving.followEmigrants(leaving);
-        close("...as the one-argument form, which knows of no short, caps them at the shares in issue", regLeaving.getForeignShares(INDUSTRY), 10_000, 1e-6);
+        // Each register owns its own departure batch: HT1 deliberately hands one batch off only once.
+        for (boolean knownShort : new boolean[] { true, false }) {
+            HouseholdBalance leaving = ExchangeCheck.savers(20.0, 4.0);
+            Equity regLeaving = ExchangeCheck.equity();
+            regLeaving.listIfUnlisted(INDUSTRY, 10_000, leaving);
+            Household leaver = ExchangeCheck.couple(leaving);
+            leaver.shares[INDUSTRY] += s2 / leaver.households();
+            double held2 = leaving.sharesHeld(INDUSTRY);
+            leaving.advanceMonth((st, t) -> nobody[st.ordinal()][t.ordinal()], none, 0, none, none, .25, .05, 1);
+            double taken = leaving.getSharesTakenAway(INDUSTRY);
+            assertTrue("fixture: the town holds " + String.format("%,.0f", held2) + " shares, the 10,000 founders' and 3,000 a short sold it, and they all leave: "
+                    + String.format("%,.0f", taken), held2 == 13_000 && Math.abs(taken - 13_000) < 1e-6);
+            assertTrue("fixture: this register's real departure batch has not been handed off", !leaving.departuresHandedOff());
+            if (knownShort) {
+                regLeaving.followEmigrants(leaving, c -> c == INDUSTRY ? s2 : 0);
+                close("told what is short, the register holds them all abroad: the holdings add to the shares in issue plus the short", regLeaving.getForeignShares(INDUSTRY), 13_000, 1e-6);
+            } else {
+                regLeaving.followEmigrants(leaving);
+                close("...as the one-argument form, which knows of no short, caps them at the shares in issue", regLeaving.getForeignShares(INDUSTRY), 10_000, 1e-6);
+            }
+            assertTrue("the receiving register consumes the departure batch once", leaving.departuresHandedOff());
+            double handed = regLeaving.getForeignShares(INDUSTRY);
+            regLeaving.followEmigrants(leaving, c -> c == INDUSTRY ? s2 : 0);
+            close("another handoff cannot add the same departing shares again", regLeaving.getForeignShares(INDUSTRY), handed, 0);
+        }
 
         // A company with no shares in issue and a short open (edge 3): what the short sold goes with it, and a later listing holds only the founders'.
         Bench gone = standard();
@@ -1326,6 +1360,13 @@ public class ShortSellingCheck {
        ======================================================================= */
 
     /**
+     * ★ How many times the month before's financial inflow and outflow section 9's sale and purchase are, at least: so a line the audit
+     * left out would show past the town's own flows. Ten until R1g, whose 48-month town paid out $9.43 the month before (main's $0.87)
+     * against the purchase's $59.33.
+     */
+    static final int OVER_THE_MONTH = 5;
+
+    /**
      * Section 9 (LF1b): a cell selling a share to the world and a cell buying one from it, made by the fixture inside the real month
      * (Game.settleProbeForTest: after the exchange's month has opened, before its step and the audit) at a price inside the spread, so that
      * no other order on the book fills. The cells and the world are both outside the pools, so neither trade moves a pool and the month
@@ -1360,8 +1401,9 @@ public class ShortSellingCheck {
         if (seller == null) { sectionEnd(); return; }
         final Household cell = seller;
         // [0, 1] the month's two figures before the fixture's trades; [2, 3] the shares each filled; [4, 5] the figures' rise; [6, 7] the cell's
-        // savings' change at the sale and at the purchase; [8] the world's holding's; [9] the price; [10, 11] the quantities asked.
-        double[] seen = new double[12];
+        // savings' change at the sale and at the purchase; [8] the world's holding's; [9] the price; [10, 11] the quantities asked; [12] the
+        // capital-gains tax the sale paid (HouseholdBalance.sellShares(): the gain over the basis, taxed as it is realised).
+        double[] seen = new double[13];
         city.settleProbeForTest = after -> {
             if (after) return;
             seen[0] = ex.getHouseholdsSoldAbroad();
@@ -1373,8 +1415,10 @@ public class ShortSellingCheck {
             double q1 = .5 * cell.shares[f] * cell.households(), q2 = .5 * q1;
             double savings = cell.savings, abroad = reg.getForeignShares(f);
             ex.tradeForCheck(f, Exchange.WORLD, OrderBook.Side.BUY, p, q1);
+            double taxed = hb.getCapitalGainsTax();
             seen[2] = filled(ex.tradeForCheck(f, Exchange.CELL + cell.key(), OrderBook.Side.SELL, p, q1));
             seen[6] = (cell.savings - savings) * cell.households();
+            seen[12] = hb.getCapitalGainsTax() - taxed;
             savings = cell.savings;
             ex.tradeForCheck(f, Exchange.WORLD, OrderBook.Side.SELL, p, q2);
             seen[3] = filled(ex.tradeForCheck(f, Exchange.CELL + cell.key(), OrderBook.Side.BUY, p, q2));
@@ -1394,7 +1438,9 @@ public class ShortSellingCheck {
         assertTrue("fixture: no cell had traded a share with the world that month before the fixture's two trades", seen[0] == 0 && seen[1] == 0);
         close("fixture: a cell sold the world half its " + Equity.COMPANIES[f] + " at $" + String.format("%.4f", p) + ", inside the spread", seen[2], q1, 1e-9 * q1);
         close("...and the exchange's sale abroad rose by it, at that price", seen[4], q1 * p, 1e-9 * q1 * p);
-        close("...the money in its savings", seen[6], q1 * p, 1e-9 * q1 * p);
+        out.printf("   the sale's capital-gains tax $%,.4f%n", seen[12]);
+        close("...the money in its savings, less the capital-gains tax on its gain (R1g: the town moved, and the cell sells at a gain)",
+                seen[6], q1 * p - seen[12], 1e-9 * q1 * p);
         close("fixture: the same cell bought half of that back from the world, at the same price", seen[3], q2, 1e-9 * q2);
         close("...and the exchange's purchase abroad rose by it", seen[5], q2 * p, 1e-9 * q2 * p);
         close("...the money out of its savings", seen[7], -q2 * p, 1e-9 * q2 * p);
@@ -1410,8 +1456,8 @@ public class ShortSellingCheck {
         close("...with its half into their savings, the same size", a.figures.getOrDefault("- shares HouseholdsSoldAbroad (into their savings)", 0.0), sold, tol);
         close("the audit's line for the cells' purchase abroad is the exchange's figure", a.figures.getOrDefault("- shares HouseholdsBoughtAbroad", 0.0), bought, tol);
         close("...with its half out of their savings, the same size", a.figures.getOrDefault("+ shares HouseholdsBoughtAbroad (from their savings)", 0.0), bought, tol);
-        assertTrue("fixture: the sale is over ten times the town's whole financial inflow the month before, the purchase ten times its outflow",
-                seen[4] > 10 * monthBefore.financialIn && seen[5] > 10 * monthBefore.financialOut);
+        assertTrue("fixture: the sale is over " + OVER_THE_MONTH + " times the town's whole financial inflow the month before, the purchase "
+                + OVER_THE_MONTH + " times its outflow", seen[4] > OVER_THE_MONTH * monthBefore.financialIn && seen[5] > OVER_THE_MONTH * monthBefore.financialOut);
         assertTrue("the balance of payments' financial inflow holds the sale: $" + String.format("%,.4f", a.financialIn), a.financialIn >= sold - MoneyAudit.CENT);
         assertTrue("...and its financial outflow the purchase: $" + String.format("%,.4f", a.financialOut), a.financialOut >= bought - MoneyAudit.CENT);
         ForeignAccounts fx = city.getForeignAccounts();

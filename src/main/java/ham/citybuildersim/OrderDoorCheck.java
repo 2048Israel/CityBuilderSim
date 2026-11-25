@@ -20,16 +20,23 @@ import java.util.Locale;
  * the door on the bank's capital, where HN1 had made the landlords' a halving.
  *
  * The city is the ensemble's AUTO2 seed 12, founded and played as the
- * ensemble plays it, to the first month from FROM at which its landlord stands
- * at HN1-A's edge. Each order is then put to Game.consider() itself, by
- * reflection (as BankFailureCheck puts one to retire()), between months, on
- * the till the fixture sets.
+ * ensemble plays it, to month FROM. There the two conditions of HN1-A's edge
+ * that are prices are set by hand (FS9): the yard left YARD_SHARE of a block's
+ * materials, and the market's materials, made here and imported, at DEAR over
+ * the planner's world price (GoodsMarket.setLocalPrice(), setWorldPrices()).
+ * WHY: the harness searched m200-420 for the first month the played landlord
+ * stood at the edge, and on HT1's path (0.9.184) none did: the door was at or
+ * under the planner in 170 of 220 months, the yard holding a block or the
+ * market's materials cheaper than the world's. Each order is then put to
+ * Game.consider() itself, by reflection (as BankFailureCheck puts one to
+ * retire()), between months, on the till the fixture sets.
  *
  * What this has to prove:
  *   1. the fixture: a month whose landlord is past its first year and asks its
  *      register for nothing on two blocks, holds nothing abroad, whose quote
  *      supports an issue, whose yard is short of a block's materials so the
- *      door's price of one is over the planner's, the lender's test passing
+ *      door's price of one is over the planner's (both set by hand, the
+ *      market's price read back at the door's draw), the lender's test passing
  *      two on the down payment at the door's price and the bank not short of
  *      capital for them; and a shopkeeper whose register and money abroad
  *      bring its till at the door to under half a store. Ground for three
@@ -57,8 +64,12 @@ public class OrderDoorCheck {
 
     /** The ensemble's seed HN1's harness plays (HousingDoorCheck.SEED). */
     static final int SEED = 12;
-    /** The months searched for the landlord's edge: from FROM, to TO at most. */
-    static final int FROM = 200, TO = 420;
+    /** The month the city is played to, the edge's prices then set by hand (FS9: no search). */
+    static final int FROM = 200;
+    /** ★ The yard the fixture leaves, a share of one block's materials: short of a block, as main's own edge was (204 of 377 at m206). */
+    static final double YARD_SHARE = .5;
+    /** ★ The market's materials at the door over the planner's world price, set by hand: within HN1-A's measured 2-5%. */
+    static final double DEAR = .035;
     /** The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). */
     static final double TARGET = .02;
     static final String RE = Sectors.REAL_ESTATE;
@@ -68,6 +79,10 @@ public class OrderDoorCheck {
     static final double TILL = 1.5, SHORT_TILL = .5;
     /** The plots the fixture may buy for its ground. */
     static final int MAX_PLOTS = 60;
+    /** What the households' means for an offering stand at, over the order's down payment, once the fixture has lifted them: the offering is taken whole, never pro rata of a shortfall. */
+    static final double OWNERS_COVER = 2;
+    /** The rounds the fixture lifts the households' savings in, each reading the model's means after it (liftOwnersMeans()). */
+    static final int LIFT_ROUNDS = 30;
 
     static void check(String label, boolean ok) {
         out.println((ok ? "  ok   " : "  FAIL ") + label);
@@ -110,6 +125,24 @@ public class OrderDoorCheck {
                 k -> bi.carryOf(t, k, lt.insured())).quantity() == n;
     }
 
+    /**
+     * Lifts the households' savings until their means for an offering, the model's own (HouseholdBalance.offeringMeans(),
+     * subscribe()'s weighing), stand at `lift` or over it: every cell with households in it by the same sum a household,
+     * the shortfall over the share of the excess a household puts in, doubled each round after the first (a cell's
+     * cushion and its debt-free share take part of each), the model's figure read after every round. The households' means
+     * are the owners' means on this order (the world's side of the offering buys only on a trailing yield, which is the
+     * town's own and not the fixture's to cause).
+     */
+    static void liftOwnersMeans(Game g, double lift) {
+        HouseholdBalance hb = g.getHouseholdBalance();
+        double people = 0;
+        for (Household c : hb.cells()) if (!c.isEmpty()) people += c.households;
+        for (int round = 0; round < LIFT_ROUNDS && people > 0 && hb.offeringMeans() < lift; round++) {
+            double per = (lift - hb.offeringMeans()) / (HouseholdBalance.SHARE_OF_EXCESS * people) * Math.pow(2, round);
+            for (Household c : hb.cells()) if (!c.isEmpty()) c.savings += per;
+        }
+    }
+
     /** HN1-A's landlord at its edge, its ground apart (bought: buyGround()), read and never acted on. */
     static boolean landlordAtTheEdge(Game g) {
         BuildingsTemplate block = LongPlaytest.template(g, BLOCK);
@@ -147,6 +180,57 @@ public class OrderDoorCheck {
         return bought;
     }
 
+    /**
+     * HN1-A's two prices, by hand: the yard left YARD_SHARE of a block, and the market's materials, the makers' and the
+     * world's landed, at DEAR over what the planner prices them at (BuildingManager.getConstructionMaterialPrice()). The
+     * landed price's freight moves with the world price it is set from (bandFreight()), so the set is repeated to its fixed point.
+     */
+    static void shortAndDear(Game g, BuildingsTemplate block) {
+        g.getBuildingManager().setConstructionMaterials((long) (block.getConstructionMaterials() * YARD_SHARE));
+        GoodsMarket mat = g.getMarkets().get(Good.MATERIALS);
+        double dear = dearPrice(g);
+        mat.setLocalPrice(dear);
+        for (int i = 0; i < 8; i++) mat.setWorldPrices(dear / mat.getExchangeRate() - mat.freightChange(), mat.getWorldExportSet());
+    }
+
+    /** What the fixture prices the market's materials at: DEAR over the planner's price. */
+    static double dearPrice(Game g) {
+        return g.getBuildingManager().getConstructionMaterialPrice() * (1 + DEAR);
+    }
+
+    /** Each condition of the edge, printed, so a fixture that misses it says which. */
+    static void edgeParts(Game g, BuildingsTemplate block) {
+        EconomyManager em = g.getEconomyManager();
+        BusinessDebtManager credit = em.getBusinessDebtManager();
+        int c = Equity.indexOf(RE);
+        double one = door(g, block, 1), two = door(g, block, 2);
+        out.printf(Locale.ROOT, "  a block at the door %.4f (the quote %.4f), the planner %.4f%n", one, g.quoteBuild(block, 1).total, g.getBusinessInvestment().getCostOf(block, 1));
+        HouseholdBalance households = g.getHouseholdBalance();
+        double borrowed = 0, bills = 0;
+        for (Household h : households.cells()) {
+            borrowed += h.borrowed * h.households;
+            bills += h.emergencyBill * h.households;
+        }
+        out.printf(Locale.ROOT, "  native card inputs: people %d, card book %.12g, borrowed this month %.12g, loan fees %.12g, interest %.12g, unexpected bills %.12g%n",
+                g.getPopulationManager().getPopulation(), households.totalDebt(), borrowed, households.totalLoanFees(), households.totalInterest(), bills);
+        Game.LenderTest lender = g.lenderTest(RE, block);
+        BusinessInvestment investment = g.getBusinessInvestment();
+        long passedOne = Mortgage.decide(1, k -> door(g, block, k), Mortgage.ownFundsFor(one), lender.noi(), lender.tested(),
+                k -> investment.carryOf(block, k, lender.insured())).quantity();
+        long passedTwo = Mortgage.decide(2, k -> door(g, block, k), Mortgage.ownFundsFor(two), lender.noi(), lender.tested(),
+                k -> investment.carryOf(block, k, lender.insured())).quantity();
+        out.printf(Locale.ROOT, "  at m%d: door one %.12g, two %.12g; the register would raise %.12g and %.12g; NOI %.12g, tested rate %.12g; lender quantities %d/1 and %d/2; tested orders asked %d, passed %d%n",
+                g.getMonth(), one, two, raise(g, RE, one), raise(g, RE, two), lender.noi(), lender.tested(), passedOne, passedTwo, asked, passed);
+        out.printf("  the edge's parts: ground for three %b; listed %b, regime %s, raises nothing on one %b and two %b;"
+                        + " quote supports an issue %b; nothing abroad %b; lending open and not banned %b; door over planner %b;"
+                        + " lender passes one %b and two %b; bank not short for two %b; shopkeeper ready %b%n",
+                ground(g, block, 3), c >= 0, c < 0 ? "-" : g.getEquity().getRegime(c), raisesNothing(g, RE, one),
+                raisesNothing(g, RE, two), c >= 0 && g.getExchange().quoteSupportsIssue(c), em.getForeignAssets(RE) == 0,
+                credit.isLendingOpen() && !credit.isBorrowingBlocked(RE),
+                one > g.getBusinessInvestment().getCostOf(block, 1) * (1 + 1e-6), lenderPasses(g, block, 1),
+                lenderPasses(g, block, 2), !credit.mortgageShortOfCapital(RE, two - Mortgage.ownFundsFor(two)), shopkeeperReady(g));
+    }
+
     /** What the landlord's order told the door: asked, its price of one and of the order, the till, what the lender passed. */
     static long asked, passed;
     static double priceOne, priceAsked, tillAtOrder;
@@ -162,25 +246,60 @@ public class OrderDoorCheck {
         consider.invoke(g, d, investor.invoke(g, d.sector));
     }
 
-    public static void main(String[] args) throws Exception {
-        out = System.out;
-        Locale.setDefault(Locale.ROOT);   // as the ensemble plays it; the advisor's counts read "1,234"
+    /** A failed played premise gets a native input control, without moving the tested city's edge. */
+    static void traceClosedCards() throws Exception {
+        Game closed = new Game(GameFiles.scratch("orderdoor-closed-cards"), LongPlaytest.played(null));
         PrintStream quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
-        // LongPlaytest's founding reads its seed here, as the ensemble sets it; each harness has its JVM.
-        System.setProperty("playtest.seed", Integer.toString(SEED));
-        GameFiles files = GameFiles.scratch("orderdoor");
-        final Game g;
         PrintStream was = LongPlaytest.out;
         LongPlaytest.out = quiet;
         System.setOut(quiet);
         try {
-            g = new Game(files, LongPlaytest.played(null));
-            g.run();
-            foundAndPlay(g);
+            closed.run();
+            closed.getHouseholdBalance().setCardLenderOpenForHarness(false);
+            foundAndPlay(closed);
+            BuildingsTemplate block = LongPlaytest.template(closed, BLOCK);
+            buyGround(closed, block, 3);
+            shortAndDear(closed, block);
+            Method refresh = Game.class.getDeclaredMethod("refreshLand");
+            refresh.setAccessible(true);
+            refresh.invoke(closed);
         } finally {
             LongPlaytest.out = was;
             System.setOut(out);
         }
+        out.println("  diagnostic control: identical founding and plan, card lending held shut from the first month");
+        edgeParts(closed, LongPlaytest.template(closed, BLOCK));
+    }
+
+    /** Independent orders start with the prepared town's real cash, material stock and holdings. */
+    static Game independent(Game prepared, String label) throws Exception {
+        if (!prepared.prepareSaveForChecks(10, "order-door independent case").write().whole())
+            throw new AssertionError("The prepared order-door snapshot was not written whole");
+        GameFiles from = prepared.getGameFiles(), files = GameFiles.scratch("orderdoor-" + label);
+        java.nio.file.Files.createDirectories(files.saveFile(10).getParent());
+        java.nio.file.Files.createDirectories(files.historyFile(10).getParent());
+        java.nio.file.Files.copy(from.saveFile(10), files.saveFile(10));
+        java.nio.file.Files.copy(from.historyFile(10), files.historyFile(10));
+        Game copy = new Game(files);
+        PrintStream real = System.out;
+        try (PrintStream silence = new PrintStream(OutputStream.nullOutputStream())) {
+            System.setOut(silence);
+            copy.loadGameSave(10);
+        } finally {
+            System.setOut(real);
+        }
+        if (copy.getLoadFailure() != null || copy.getMonth() != prepared.getMonth())
+            throw new AssertionError("The independent order-door snapshot did not load");
+        // These are the fixture's explicit price inputs, not a month's settled market.
+        shortAndDear(copy, LongPlaytest.template(copy, BLOCK));
+        Method refreshLand = Game.class.getDeclaredMethod("refreshLand");
+        refreshLand.setAccessible(true);
+        refreshLand.invoke(copy);
+        watch(copy);
+        return copy;
+    }
+
+    static void watch(Game g) {
         g.watchOrders(new BusinessInvestment.OrderWatch() {
             @Override public void invested(BusinessInvestment.Decision decision, double cash, double perUnitProfit, Game.Afford found) {
                 tillAtProject = cash;
@@ -195,12 +314,63 @@ public class OrderDoorCheck {
                 passed = found.quantity();
             }
         });
+    }
+
+    public static void main(String[] args) throws Exception {
+        out = System.out;
+        Locale.setDefault(Locale.ROOT);   // as the ensemble plays it; the advisor's counts read "1,234"
+        PrintStream quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
+        // LongPlaytest's founding reads its seed here, as the ensemble sets it; each harness has its JVM.
+        System.setProperty("playtest.seed", Integer.toString(SEED));
+        GameFiles files = GameFiles.scratch("orderdoor");
+        final Game g;
+        PrintStream was = LongPlaytest.out;
+        LongPlaytest.out = quiet;
+        System.setOut(quiet);
+        boolean played;
+        int groundPlots = 0;
+        try {
+            g = new Game(files, LongPlaytest.played(null));
+            g.run();
+            foundAndPlay(g);
+            played = !stuck && g.getMonth() == FROM;
+            if (played) {
+                BuildingsTemplate block = LongPlaytest.template(g, BLOCK);
+                groundPlots = buyGround(g, block, 3);
+                shortAndDear(g, block);
+                // The planner reads the land as the month's plan does, refreshed before it asks (Game.runPrivateInvestment()):
+                // after the plots, or it prices the ground bought as ground still to buy (as CreditCrunchCheck 4 does).
+                Method refreshLand = Game.class.getDeclaredMethod("refreshLand");
+                refreshLand.setAccessible(true);
+                refreshLand.invoke(g);
+            }
+        } finally {
+            LongPlaytest.out = was;
+            System.setOut(out);
+        }
+        watch(g);
 
         out.println("--- 1. the fixture: a landlord at HN1-A's edge, and a shopkeeper ---");
-        boolean edge = !stuck && edged;
         BuildingsTemplate block = LongPlaytest.template(g, BLOCK), store = LongPlaytest.template(g, STORE);
-        check(String.format("the ensemble's seed %d reaches the edge between m%d and m%d (at m%d)", SEED, FROM, TO, g.getMonth()), edge);
-        if (!edge) { finish(); return; }
+        check(String.format("fixture: the ensemble's seed %d played to FROM (m%d, at m%d)", SEED, FROM, g.getMonth()), played);
+        if (!played) { finish(); return; }
+        out.println("  played city wires " + SubstationCheck.gridReading(g));
+        UtilitiesHandler.Book power = g.getServicesManager().getUtilitiesHandler().getStruckBook();
+        out.printf("  billed power: %.3f kWh served, %.3f free founding grid, %.3f fuelled plants, %.3f wind, %.3f hydro, %.3f works; fuel %s; highest block price %.9f%n",
+                power.servedKwh, power.gridKwh, power.fuelledKwh, power.windKwh, power.hydroKwh, power.worksKwh,
+                power.fuel, java.util.Arrays.stream(power.price).max().orElse(0));
+        check("fixture: the played city has the wire capacity its billed and closing peaks need at the order-door month",
+                SubstationCheck.gridCovered(g));
+        GoodsMarket mat = g.getMarkets().get(Good.MATERIALS);
+        out.printf("  %d plots bought for three blocks; the yard left %,d; the materials at %.6f made here and %.6f landed,"
+                        + " against the planner's %.6f%n", groundPlots, g.getBuildingManager().getConstructionMaterials(),
+                mat.getLocalPrice(), mat.importPrice(), g.getBuildingManager().getConstructionMaterialPrice());
+        check("fixture: the market's materials, made here and landed, at DEAR over the planner's price, by hand",
+                near(mat.getLocalPrice(), dearPrice(g)) && near(mat.importPrice(), dearPrice(g)));
+        edgeParts(g, block);
+        boolean edge = ground(g, block, 3) && landlordAtTheEdge(g) && shopkeeperReady(g);
+        check("fixture: there the landlord stands at HN1-A's edge, with ground for three blocks, and the shopkeeper is ready", edge);
+        if (!edge) { traceClosedCards(); finish(); return; }
         EconomyManager em = g.getEconomyManager();
         BusinessDebtManager credit = em.getBusinessDebtManager();
         double plan1 = g.getBusinessInvestment().getCostOf(block, 1), door1 = door(g, block, 1);
@@ -213,23 +383,40 @@ public class OrderDoorCheck {
 
         out.println("--- 2. HN1-A: a landlord's order at the door's own price ---");
         for (long n = 1; n <= 2; n++) {
-            em.setSectorCash(RE, 0);
-            double doorN = door(g, block, n), raisedBefore = em.getEquityRaised(RE);
-            int written = credit.getMortgagesWrittenThisMonth();
+            Game orderGame = independent(g, "mortgage-" + n);
+            EconomyManager orderEm = orderGame.getEconomyManager();
+            BusinessDebtManager orderCredit = orderEm.getBusinessDebtManager();
+            BuildingsTemplate orderBlock = LongPlaytest.template(orderGame, BLOCK);
+            orderEm.setSectorCash(RE, 0);
+            double doorN = door(orderGame, orderBlock, n), raisedBefore = orderEm.getEquityRaised(RE);
+            // FC2, 2026-11-23: the owners' raise is capped by the households' means for an offering (HouseholdBalance.subscribe():
+            // a share of what a cell holds past three months of take-home), and the world buys the rest only on a trailing yield.
+            // On FC2's path the town's means were 121.0861 against a down payment of 101.7570 for one block and 236.2606 for two
+            // (two cost 1486.0212 there, its second block priced at the foreign crews' excess): the owners raised 121.0861, the
+            // lender was shown a down payment on one block, and the order was trimmed from 2. On main's path two cost less and
+            // the means held; on RES3's the means differ again. So the fixture lifts the households' savings, before the order
+            // and only where the means fall short of its down payment, until they stand at OWNERS_COVER times the down payment
+            // the door's own price asks, so the owners are able to raise it whatever the price.
+            double down = Mortgage.ownFundsFor(doorN);
+            HouseholdBalance owners = orderGame.getHouseholdBalance();
+            if (owners.offeringMeans() < down) liftOwnersMeans(orderGame, OWNERS_COVER * down);
+            check("fixture: the households' means for the offering, the model's (HouseholdBalance.offeringMeans()), cover the order's down payment (" + n + ")",
+                    owners.offeringMeans() >= down);
+            int written = orderCredit.getMortgagesWrittenThisMonth();
             asked = passed = 0;
-            consider(g, new BusinessInvestment.Decision(RE, block, n, "FB15's order of " + n, true));
-            String line = g.getLastInvestment(RE);
+            consider(orderGame, new BusinessInvestment.Decision(RE, orderBlock, n, "FB15's order of " + n, true));
+            String line = orderGame.getLastInvestment(RE);
             out.printf("  an order of %d: price %.4f against the door's %.4f; the owners put in %.4f, the down payment at"
                     + " that price %.4f; the lender passed %d; \"%s\"%n", n, priceAsked, doorN,
-                    em.getEquityRaised(RE) - raisedBefore, Mortgage.ownFundsFor(priceAsked), passed, line);
+                    orderEm.getEquityRaised(RE) - raisedBefore, Mortgage.ownFundsFor(priceAsked), passed, line);
             check("fixture: the owners put in the order's down payment, all the till held at the order (" + n + ")",
                     asked == n && near(tillAtOrder, Mortgage.ownFundsFor(priceAsked))
-                            && near(em.getEquityRaised(RE) - raisedBefore, tillAtOrder) && passed == n);
+                            && near(orderEm.getEquityRaised(RE) - raisedBefore, tillAtOrder) && passed == n);
             if (n == 1) check("the order's price of one is the door's", near(priceOne, door1));
             else check("the order's price of two is the door's", near(priceAsked, doorN));
             check(n == 1 ? "an order of one, its down payment raised to the order's own figure, is built on a mortgage at the door"
                             : "an order of two the same way is built whole, not halved at the door",
-                    credit.getMortgagesWrittenThisMonth() == written + 1
+                    orderCredit.getMortgagesWrittenThisMonth() == written + 1
                             && line.startsWith(String.format("Built %d %s on an insured mortgage", n, BLOCK))
                             && !line.contains("trimmed"));
         }
@@ -246,6 +433,7 @@ public class OrderDoorCheck {
         for (int k = 1; k <= SIX; k++) doors[k] = door(g, store, k);
         // The till is set so that, with what its register raises and it brings home, it holds TILL stores at the door.
         em.setSectorCash(shop, Math.max(0, TILL * one - shopBrings(g, store)));
+        Game shortSide = independent(g, "short-till");
         boolean groundForSix = ground(g, store, SIX),
                 markedBefore = credit.wasRefusedForCapital(shop) || credit.wasProjectRefusedForCapital(shop);
         carried = 0;
@@ -280,15 +468,18 @@ public class OrderDoorCheck {
         out.printf("  the bank shut, with %.4f in the till at the door: \"%s\"%n", held, line);
         check("with the bank shut, the order is held whole, the till that holds one untouched, as on main (REV-FB15)",
                 groundAgain && held >= door(g, store, 1) && !line.startsWith("Built") && near(em.getSectorCash(shop), held));
-        em.setSectorCash(shop, Math.max(0, SHORT_TILL * door(g, store, 1) - shopBrings(g, store)));
+        EconomyManager shortEm = shortSide.getEconomyManager();
+        shortSide.getEconomyManager().getBusinessDebtManager().setCapitalRule(0, false);
+        BuildingsTemplate shortStore = LongPlaytest.template(shortSide, STORE);
+        shortEm.setSectorCash(shop, Math.max(0, SHORT_TILL * door(shortSide, shortStore, 1) - shopBrings(shortSide, shortStore)));
         tillAtProject = -1;
-        consider(g, new BusinessInvestment.Decision(shop, store, SIX, "FB15's order of " + SIX, true));
-        line = g.getLastInvestment(shop);
+        consider(shortSide, new BusinessInvestment.Decision(shop, shortStore, SIX, "FB15's order of " + SIX, true));
+        line = shortSide.getLastInvestment(shop);
         held = tillAtProject;
         out.printf("  with %.4f in the till at the door: \"%s\"%n", held, line);
         check("from the other side, a till short of one at the door is held whole, in the bank's words",
-                held >= 0 && held < door(g, store, 1) && line.startsWith("Holding: the bank is rebuilding its capital")
-                        && near(em.getSectorCash(shop), held));
+                held >= 0 && held < door(shortSide, shortStore, 1) && line.startsWith("Holding: the bank is rebuilding its capital")
+                        && near(shortEm.getSectorCash(shop), held));
         finish();
     }
 
@@ -301,23 +492,17 @@ public class OrderDoorCheck {
        THE ENSEMBLE'S FOUNDING (as HousingDoorCheck plays it), to the edge
        ===================================================================== */
 
-    static boolean stuck, edged;
+    static boolean stuck;
 
-    // ...and stopped at the first month-end from FROM with the landlord at its edge and the shopkeeper ready, the
-    // ground for three blocks bought (buyGround()), every later step a no-op.
+    // ...and stopped at the month-end FROM, every later step a no-op (FS9: the edge is then caused, not searched for).
     static void run(Game g, int months) {
-        for (int i = 0; i < months && !stuck && !edged && g.getMonth() < TO; i++) {
+        for (int i = 0; i < months && !stuck && g.getMonth() < FROM; i++) {
             int before = g.getMonth();
             DebtManager dm = g.getDebtManager();
             if (dm.getInflationTarget() != TARGET) dm.setInflationTarget(TARGET);
             if (!dm.isAutopilot()) dm.setAutopilot(true);
             LongPlaytest.runPlayer(g, 1);
             if (g.getMonth() == before) stuck = true;
-            if (g.getMonth() >= FROM && landlordAtTheEdge(g) && shopkeeperReady(g)) {
-                BuildingsTemplate block = LongPlaytest.template(g, BLOCK);
-                buyGround(g, block, 3);
-                edged = ground(g, block, 3) && landlordAtTheEdge(g) && shopkeeperReady(g);
-            }
         }
     }
 
@@ -344,7 +529,7 @@ public class OrderDoorCheck {
         run(g, 6);
         LongPlaytest.ensureSchools(g);
         int stop = 0;
-        while (g.getMonth() < TO && !stuck && !edged) {
+        while (g.getMonth() < FROM && !stuck) {
             stop++;
             int skip = switch (stop % 6) {
                 case 0 -> 100;
@@ -356,13 +541,15 @@ public class OrderDoorCheck {
             };
             skip = Math.min(skip, LongPlaytest.longestSkip());
             run(g, skip);
-            if (g.getMonth() >= TO || stuck || edged) break;
+            if (g.getMonth() >= FROM || stuck) break;
             LongPlaytest.ensureSchools(g);
             for (int move = 0; move < LongPlaytest.movesPerLook(); move++) {
-                if (LongPlaytest.advise(g) == null) break;
+                if (g.getMonth() >= FROM || LongPlaytest.advise(g) == null) break;
                 run(g, 1);
             }
             run(g, 2);
+            // FS9: the player acts on no month past FROM, so the city at FROM is the ensemble's at that month-end.
+            if (g.getMonth() >= FROM || stuck) break;
             if (stop % 19 == 0) {
                 DebtManager m = g.getDebtManager();
                 if (m.foreignWindowOpen() && m.foreignRate() < m.getRate()) {

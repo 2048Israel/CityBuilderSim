@@ -255,6 +255,8 @@ public class ScaleCheck {
         System.setOut(quiet);
         try {
             g.run();
+            // PW2: keepAhead()'s plan builds a Wind Farm when power is short, which a 1900 city knows only from its year; its research found it first.
+            EssentialWorksCheck.knowWind(g);
             g.getDebtManager().setAutopilot(LongPlaytest.AUTOPILOT);
             g.setRolloverMode(LongPlaytest.ROLLOVER);
             g.setRescueMode(LongPlaytest.RESCUE_AUTO ? TreasuryFund.RescueMode.AUTOMATIC : TreasuryFund.RescueMode.BUTTON);
@@ -269,6 +271,7 @@ public class ScaleCheck {
             System.setOut(real);
         }
         playTown(g, months);
+        if (Boolean.getBoolean("cbs.pw5.traceFixtures")) System.out.println("PW5_SCALE_BASE " + SubstationCheck.gridReading(g));
     }
 
     /** Section 6's town played on by keepAhead()'s plan to its month, a month at a time and quietly (ST3; FS2 split it from ownTown() for the strike). */
@@ -294,6 +297,13 @@ public class ScaleCheck {
         BuildingManager b = g.getBuildingManager();
         long people = g.getPopulationManager().getPopulation();
         LongPlaytest.keepGroundAhead(g);
+        double peak = Substations.peak(b.getTotalDouble(BuildingsTemplate::powerBought),
+                java.util.Arrays.stream(PowerDispatch.SEASON).max().orElseThrow());
+        if (peak > g.getServicesManager().getUtilitiesHandler().getFoundingGridKw()) {
+            long wanted = (long) Math.ceil(peak / (Substations.SUBSTATION_MW * 1000.0));
+            long missing = wanted - b.getQuantity(Substations.ID) - b.underConstructionByName("Substation");
+            if (missing > 0) LongPlaytest.build(g, "Substation", missing);
+        }
         ahead(g, g.getEnergyRatio() < 1, "Wind Farm");
         ahead(g, g.getWaterRatio() < 1, "Water Treatment Plant");
         ahead(g, g.getRoadRatio() < 1, "Paved Road");
@@ -321,7 +331,53 @@ public class ScaleCheck {
         System.exit(fails == 0 ? 0 : 1);
     }
 
+    /** The desk drains a book through its native spread rule, including its last small holdings. */
+    static void paperDeskRemainder(Path root) throws Exception {
+        for (boolean fault : new boolean[]{false, true}) {
+            GameFiles files = new GameFiles(root.resolve("paper-" + fault), root.resolve("paper-" + fault + "-no-legacy"));
+            Game g = lineOff(new Game(files, LongPlaytest.founding()));
+            quietly(g::run);
+            HouseholdBalance hb = g.getHouseholdBalance();
+            int i = 0;
+            for (Household c : hb.cells()) {
+                c.households = (i % 5 + 1) * .5;
+                c.paper = c.canInvest() ? ((i + 3) % 13 + 1) / 7.0 : 0;
+                i++;
+            }
+            double opening = hb.totalPaper();
+            Debt first = g.getDebtManager().addLongTermBond(1000 * opening, 240, g.getMonth(), .03);
+            Debt second = g.getDebtManager().addLongTermBond(1000 * opening, 360, g.getMonth(), .04);
+            // Independent additions can differ by an ulp. The fault is real extra face, not rounding.
+            first.householdPrincipal = Math.nextUp(.4 * opening) * (fault ? 1.01 : 1);
+            second.householdPrincipal = Math.nextUp(.6 * opening);
+            double register0 = g.getDebtManager().householdPrincipal();
+            double bankFace0 = g.getBank().getCityBook(), bankCash0 = g.getBank().getCash();
+            double raised = 0, worst = 0, smallestFault = Double.POSITIVE_INFINITY;
+            for (int step = 0; step < 320; step++) {
+                raised += hb.sellPaperForSpread(0, 1);
+                double live = hb.totalPaper(), registered = g.getDebtManager().householdPrincipal();
+                // This fixture deliberately goes below apart()'s absolute floor:
+                // read the actual positive remainder, however small it becomes.
+                double miss = Math.abs(registered - live) / Math.max(Math.abs(registered), Math.abs(live));
+                worst = Math.max(worst, miss); smallestFault = Math.min(smallestFault, miss);
+            }
+            double remaining = hb.totalPaper(), register = g.getDebtManager().householdPrincipal();
+            out.printf("      paper desk %s: opening %.17g, remaining %.17g, register %.17g, worst relative %.3g%n",
+                    fault ? "fault" : "rounding", opening, remaining, register, worst);
+            assertTrue("fixture: native spread sales leave less than a billionth of the opening paper book, still above zero",
+                    opening > 0 && remaining > 0 && remaining < opening * 1e-9 && raised > 0);
+            if (!fault) {
+                assertTrue("the paper desk keeps its shrinking register equal to its holders through 320 native sales", worst <= REGISTER_WITHIN);
+                assertTrue("the desk's cash and face each move to the bank once, including the small remainder",
+                        apart(bankCash0 - g.getBank().getCash(), raised) <= REGISTER_WITHIN
+                        && apart(g.getBank().getCityBook() - bankFace0, register0 - register) <= REGISTER_WITHIN);
+            } else assertTrue("the fault: proportional sales preserve a real register mismatch instead of resetting it to the holders",
+                    smallestFault > REGISTER_WITHIN);
+        }
+    }
+
     static void run(Path root) throws Exception {
+        paperDeskRemainder(root);
 
         /* ============== 1. the fixture, and its copy K times over ============== */
         out.println("--- the founded city, and its copy K times over past 2^31 people ---");
@@ -522,6 +578,8 @@ public class ScaleCheck {
             long places = city.getHouseholdCapacity();
             quietly(() -> city.saveGame(10, "scalecheck grown"));
             tried++;
+            if (Boolean.getBoolean("cbs.pw5.traceFixtures"))
+                out.println("PW5_SCALE_CANDIDATE people=" + townPeople + " places=" + places + " " + SubstationCheck.gridReading(city));
             // ...and its own next FREE_MONTHS, which the copies are read against (0.7.55).
             Original o = new Original(city);
             if (o.calm()) {
@@ -1108,11 +1166,20 @@ public class ScaleCheck {
         double worst = 0;
         for (int c = 0; c < Equity.COMPANIES.length; c++) {
             double register = g.getEquity().getDomesticShares(c), held = g.getHouseholdBalance().sharesHeld(c);
-            worst = Math.max(worst, Math.abs(register - held) / Math.max(1e-9,
-                    Math.max(Math.abs(g.getEquity().getShares(c)), Math.max(Math.abs(register), Math.abs(held)))));
+            double miss = Math.abs(register - held) / Math.max(1e-9,
+                    Math.max(Math.abs(g.getEquity().getShares(c)), Math.max(Math.abs(register), Math.abs(held))));
+            if (miss > REGISTER_WITHIN) out.printf("      register mismatch m%d %s: issue %.17g, register %.17g, holders %.17g, relative %.17g%n",
+                    g.getMonth(), Equity.COMPANIES[c], g.getEquity().getShares(c), register, held, miss);
+            worst = Math.max(worst, miss);
         }
-        worst = Math.max(worst, apart(g.getBondMarket().faceHeldByHouseholds(), g.getHouseholdBalance().totalBonds()));
-        return Math.max(worst, apart(g.getDebtManager().householdPrincipal(), g.getHouseholdBalance().totalPaper()));
+        double bonds = apart(g.getBondMarket().faceHeldByHouseholds(), g.getHouseholdBalance().totalBonds());
+        if (bonds > REGISTER_WITHIN) out.printf("      register mismatch m%d corporate bonds: register %.17g, holders %.17g, relative %.17g%n",
+                g.getMonth(), g.getBondMarket().faceHeldByHouseholds(), g.getHouseholdBalance().totalBonds(), bonds);
+        worst = Math.max(worst, bonds);
+        double paper = apart(g.getDebtManager().householdPrincipal(), g.getHouseholdBalance().totalPaper());
+        if (paper > REGISTER_WITHIN) out.printf("      register mismatch m%d city paper: register %.17g, holders %.17g, relative %.17g%n",
+                g.getMonth(), g.getDebtManager().householdPrincipal(), g.getHouseholdBalance().totalPaper(), paper);
+        return Math.max(worst, paper);
     }
 
     static double apart(double a, double b) {
@@ -1567,7 +1634,15 @@ public class ScaleCheck {
             // and Freight's carried.<stream> is the share of each stream the railway carries (0.7.86), which the copy loaded K times
             // over and so hauled K squared tonnes once its town had a line (section 9 on IC1's town: Manufacturing's haulage sank it,
             // and the bank with it, in the first month).
-            + "^crewsNeeded$|^carried\\.)");
+            + "^crewsNeeded$|^carried\\.|"
+            // FC2, 2026-11-23: the builders' staffing the month was worked at (Construction's workFill, the sector's averageFill), a
+            // share; the copy loaded it K times over, so its first month's crews worked K times the posts they had - the K = 10 copy
+            // 191,249 points where its month is 18,983 - and since FC2 the points no site took are sold abroad, so its GDP read the
+            // phantom crews' month (worst 8.10e-01 of 0.140 in section 9). Main's copies left those points idle, unsold.
+            + "(^|\\.)workFill$|"
+            // PW1-R, 2026-11-25: the struck book's season, the month's load over the year's mean, which its bills carry; the copy loaded
+            // it K times over and billed every class K times its kWh (the K = 617,055 copy's treasury 1.6e10 to 3.1e13 in a month).
+            + "(^|\\.)season$)");
 
     /*
      * THE NAMES THE PATTERN READ WRONG (0.7.54). The scaled copy's first month
@@ -1590,7 +1665,12 @@ public class ScaleCheck {
             "repairsThisMonth", "lastMonthSales", "demandAtPrice", "buildings", "sharesBoughtBack", "zeroRated",
             // FW9, 2026-10-25: the borrowing costs a business has yet to expense are dollars in a schedule, and the units of
             // construction material a business holds are a quantity; "Left" and "building" read them as months and as a kind.
-            "borrowingChargesLeft", "buildingMaterials");
+            "borrowingChargesLeft", "buildingMaterials",
+            // FC2, 2026-11-23: the builders' month with the foreign crews and the world - the points the crews built and their
+            // bill, the points handed them, the points sold abroad and the receipts, which the audit books the month after - are
+            // points and dollars; "Month" read them as months, and the copy's second month booked the city's receipts, not K's.
+            "foreignPointsThisMonth", "foreignBillThisMonth", "handedAbroadThisMonth", "exportPointsThisMonth",
+            "exportReceiptsThisMonth");
 
     /** The save's top-level keys scaled: scale_save.py's list, less the works yard. */
     static final String[] TOP = { "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxCharged",
@@ -1603,6 +1683,8 @@ public class ScaleCheck {
             "lotsById",
             "materialsOwedById", "contractValueById", "cohorts", "skilledWorkforce", "housingOccupancy",
             "populationTrend", "treasuryJournalAmounts", "governmentMonth", "householdStatement",
+            // OG1's saved aggregate site-work demand and outstanding work grow with the copied city.
+            "buildersWork", "buildersOwedAfterAdvance",
             "sectors", "markets", "businessDebts", "sectorBooks", "sectorBooksBefore", "creditStatements",
             "salesTax", "mortgageRepaid", "insuranceClaims", "subsidyPaid", "writeOffTotals",
             // ...and the drivers' fuel as 6d drew it (0.7.62): the bill, its imported part and the litres, all
@@ -1612,7 +1694,10 @@ public class ScaleCheck {
             "householdGraduates",
             // ...and the power plants' struck book and the fuel they paid (PW1, 2026-11-11): its load, its kWh, its fuel and its
             // upkeep are the city's size, its prices and its ratio the pattern leaves; unscaled, the copy bought one city's coal.
-            "powerBooks" };
+            "powerBooks",
+            // ...and each site's work on the foreign crews' book (FC2, REV-FC2's claims, abroadOwedById): points owed on a site, K times over
+            // as the points on site are; unscaled, the copy's sites claimed one city's share of a book K times the city's.
+            "abroadOwedById" };
 
     /** The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. */
     static final java.util.Set<String> NAMED = java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks",
@@ -1798,7 +1883,7 @@ public class ScaleCheck {
                 "allotFirmsFace", "allotFirmsCash", "allotWorldFace", "allotWorldCash", "issueDiscount", "bankDiscount", "householdDiscount",
                 "centralBankDiscount", "firmDiscount", "worldDiscount", "unsettledDiscount",
                 "carryingValue", "lastExpenseOwn", "lastCouponOwn", "face", "proceeds", "lastUpliftOwn", "lastUpliftPaidOwn",
-                "principalPerSlice");
+                "principalPerSlice", "custodyReservedFace", "custodyReservedDiscount");
         // The builders' contracts still on site: their value, the units of material still to draw and the allowance priced in.
         named(d.get("contractRecords"), k, "value", "units", "allowance");
         // The construction queue's runs: how many of a stack have opened and what its orders cost, K times as the stack is. Its
@@ -1810,6 +1895,7 @@ public class ScaleCheck {
         exchange(d, k);
         bonds(d, k);
         fund(d, k);
+        investmentTaxesAndCustody(d, k);
 
         // The hot money and the carry trade: the stock, what arrived and left, the carry book, the city's paper the world holds
         // and what left on doubt, K times over; the panic's month, the deposit share and the count of stops stay.
@@ -1928,7 +2014,7 @@ public class ScaleCheck {
         if (!d.has("equity")) return;
         JsonArray a = d.getAsJsonArray("equity");
         int r = Equity.RECORD_MONTHS, per = Equity.SLOTS;
-        if (per != 3 * r + 19 || a.size() % per != 0) {
+        if (per != 3 * r + 21 || a.size() % per != 0) {
             throw new IllegalStateException("ScaleCheck.registerOfShares(): equity's slots a company are not the layout it reads");
         }
         for (int b = 0; b < a.size(); b += per) {
@@ -1938,6 +2024,7 @@ public class ScaleCheck {
             for (int i = 10; i <= 11; i++) a.set(b + 2 * r + i, times(a.get(b + 2 * r + i), k));    // the desk's shares, bought back
             for (int i = 0; i < r; i++) a.set(b + 2 * r + 12 + i, times(a.get(b + 2 * r + 12 + i), k)); // dividends paid
             for (int i = 13; i <= 17; i++) a.set(b + 3 * r + i, times(a.get(b + 3 * r + i), k));    // the city's shares and rescue, its dividends, the founders' book, buybacks paid
+            for (int i = 19; i <= 20; i++) a.set(b + 3 * r + i, times(a.get(b + 3 * r + i), k));    // passive custody's units and actual dividend cash; the derived flag at18 stays
         }
     }
 
@@ -1960,6 +2047,7 @@ public class ScaleCheck {
         JsonObject e = d.getAsJsonObject("exchangeState");
         for (JsonElement b : e.getAsJsonArray("books")) book(b.getAsJsonObject(), k);
         whole(e, "emigrantShares", k);
+        whole(e, "taxEmigrantsGross", k); whole(e, "taxEmigrantsRetained", k);
         whole(e, "buybackBudget", k);
         // ...what each company's spare money, its net income and its money's income came to: totals, K times (EM1).
         for (String field : new String[] { "spare", "earnings", "moneyIncome" }) whole(e, field, k);
@@ -1979,14 +2067,16 @@ public class ScaleCheck {
     static void bonds(JsonObject d, long k) {
         if (!d.has("bondMarket")) return;
         JsonObject m = d.getAsJsonObject("bondMarket");
-        named(m.get("bonds"), k, "issued", "face", "households", "bank", "bankCost", "world", "city", "companies", "writtenOff");
+        named(m.get("bonds"), k, "issued", "face", "households", "bank", "bankCost", "world", "city", "custody", "companies", "writtenOff");
         for (JsonElement b : m.getAsJsonArray("books")) book(b.getAsJsonObject(), k);
         // the month: money but for the issues (20) and the counts of sells and trades (26, 27, 28, 31).
         allBut(m, "month", k, 20, 26, 27, 28, 31);
         // life: money but for the issues (15), the sells (16, 17) and the trades (19).
         allBut(m, "life", k, 15, 16, 17, 19);
         slots(m, "lastIssueFigures", k, 0);
-        for (String f : new String[] { "issuedBySector", "proceedsBySector", "repaidBySector", "boughtBySector", "couponsBySector" }) whole(m, f, k);
+        for (String f : new String[] { "issuedBySector", "proceedsBySector", "repaidBySector", "boughtBySector", "couponsBySector",
+                "dueHouseholds", "dueBank", "dueWorld", "dueCity", "dueCustody", "dueCompanies", "dueCells", "recordDueCells",
+                "dueByIssuer", "dueCityById", "dueCustodyById", "couponCash", "couponIssuerDebit", "couponBankPaid" }) whole(m, f, k);
     }
 
     /** The city's fund: its cash and what it paid in and drew, its resolutions, orders and ledger; its dial, its months and its limits and prices stay. */
@@ -2001,10 +2091,36 @@ public class ScaleCheck {
                 "householdsValue", "worldShares", "worldValue", "fundShares", "fundValue", "preferredCancelled", "warrantsCancelled");
         named(f.get("hand"), k, "amount", "units", "filled", "spent");
         named(f.get("posted"), k, "amount", "units", "filled", "spent");
-        if (f.has("ledger")) {
-            JsonObject l = f.getAsJsonObject("ledger");
-            named(l.get("lots"), k, "acb", "realized", "proceeds", "acbOut", "bought", "income", "incomeBefore", "boughtValue", "lastIncome");
-            named(l.get("activity"), k, "units", "money", "realized", "asked", "lapsed", "value");
+        ledger(f.get("ledger"), k);
+    }
+
+    /** The same average-cost ledger on either owner: book amounts and acquired units grow; months, IDs and prices stay. */
+    static void ledger(JsonElement value, long k) {
+        if (value == null || value.isJsonNull()) return;
+        JsonObject l = value.getAsJsonObject();
+        named(l.get("lots"), k, "acb", "realized", "proceeds", "acbOut", "bought", "income", "incomeBefore", "boughtValue", "lastIncome");
+        named(l.get("activity"), k, "units", "money", "realized", "asked", "lapsed", "value");
+    }
+
+    /** HT1's aggregate stocks/receipts grow with the city; per-household cell basis/claims stay on the cells above. */
+    static void investmentTaxesAndCustody(JsonObject d, long k) {
+        if (d.has("householdInvestmentTaxes")) {
+            JsonArray a = d.getAsJsonArray("householdInvestmentTaxes");
+            int slots = HouseholdBalance.TAX_FLOW_SLOTS;
+            expect(a, 2 * slots + 1, "householdInvestmentTaxes");
+            // Actual receipts/assessments/losses, in both windows; calls per pooled cell (2,3) and the window flag stay.
+            for (int i = 0; i < 2 * slots; i++) if (i % slots != 2 && i % slots != 3) a.set(i, times(a.get(i), k));
+        }
+        if (d.has("securedHouseholdTaxes")) {
+            JsonArray a = d.getAsJsonArray("securedHouseholdTaxes");
+            expect(a, 4 * Equity.COMPANIES.length + 1, "securedHouseholdTaxes");
+            for (int i = 0; i < a.size() - 1; i++) a.set(i, times(a.get(i), k)); // G, transit units/claim and gross handoff; once-only flag stays
+        }
+        whole(d, "securedForeignTaxes", k); scalar(d, "unbackedCustodyPaper", k);
+        if (d.has("estateCustody") && !d.get("estateCustody").isJsonNull()) {
+            JsonObject c = d.getAsJsonObject("estateCustody");
+            for (String key : new String[] { "shares", "bonds", "usd", "cars", "lossCarried", "pendingPaper", "pendingCoupons", "flows", "pending" }) whole(c, key, k);
+            ledger(c.get("ledger"), k); // passive holdings remain distinct from ordinary fund/rescue stock
         }
     }
 

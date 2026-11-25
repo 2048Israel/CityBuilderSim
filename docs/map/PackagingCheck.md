@@ -1,6 +1,6 @@
-# PackagingCheck.java - 380 lines · 9 methods · 1 constants · harnesses
+# PackagingCheck.java - 381 lines · 9 methods · 1 constants · harnesses
 
-`ham/citybuildersim/PackagingCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PackagingCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime
 > files, the libraries' texts and the complete corresponding source archives, unchanged, and a
@@ -55,7 +55,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 323 | **type** `public class PackagingCheck` | The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime files, the libraries' texts and the complete corresponding source archives, unchanged, and a build that lacks any of them... |
+| 58 | 324 | **type** `public class PackagingCheck` | The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime files, the libraries' texts and the complete corresponding source archives, unchanged, and a build that lacks any of them... |
 | 62 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 68 | 8 | `static boolean names(List<String> problems, String...words)` | True when some problem contains every one of the words. |
 | 81 | 13 | `static Properties fixturePins(Path cache) throws IOException` | Pins of two small fixture archives, the rest as the real pins have them. |
@@ -64,6 +64,6 @@
 | 134 | 1 | **type** `record Fixture(Path cache, Path image, Properties pins)` | A complete, staged fixture image and its cache and pins. |
 | 136 | 8 | `static Fixture staged() throws IOException` |  |
 | 145 | 3 | `static List<String> verify(Fixture f) throws IOException` |  |
-| 149 | 223 | `public static void main(String[] args) throws Exception` |  |
-| 373 | 7 | `static void deleteTree(Path root) throws IOException` |  |
+| 149 | 224 | `public static void main(String[] args) throws Exception` |  |
+| 374 | 7 | `static void deleteTree(Path root) throws IOException` |  |
 

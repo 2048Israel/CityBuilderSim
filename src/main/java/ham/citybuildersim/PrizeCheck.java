@@ -1429,15 +1429,16 @@ public class PrizeCheck {
 
     /**
      * BF1: a prize does not give its owners cash. `amount` credited to the city's owners who could take up an offering (HouseholdBalance.subscribe()'s
-     * test: not empty, investing, trading shares, owing nothing, not locked out or going short), by their households; what was credited.
+     * test: not empty, investing, trading shares, with a debt-free participating share and not going short), by eligible households; what was credited.
      */
     static double creditOwners(Game village, double amount) {
         java.util.List<Household> cells = village.getHouseholdBalance().cells();
         double[] weight = new double[cells.size()];
         for (int i = 0; i < weight.length; i++) {
             Household cell = cells.get(i);
-            if (!cell.isEmpty() && cell.canInvest() && cell.tradesShares() && cell.debt <= 0
-                    && cell.lockout <= 0 && !cell.isGoingShort()) weight[i] = cell.households();
+            double eligible = village.getHouseholdBalance().debtFreeShare(cell);
+            if (!cell.isEmpty() && cell.canInvest() && cell.tradesShares() && eligible > 0
+                    && !cell.isGoingShort()) weight[i] = cell.households() * eligible;
         }
         return village.getHouseholdBalance().creditByWeight(amount, weight);
     }

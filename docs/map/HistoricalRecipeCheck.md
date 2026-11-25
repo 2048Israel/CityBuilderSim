@@ -1,6 +1,6 @@
 # HistoricalRecipeCheck.java - 743 lines · 31 methods · 2 constants · harnesses
 
-`ham/citybuildersim/HistoricalRecipeCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistoricalRecipeCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Each sourced 1900 undo runs before its entry, knowledge alone does not fit
 > equipment, independent pieces compose, and the default city stays modern.
@@ -11,7 +11,7 @@
 
 **Uses:** [Good](Good.md) (78), [Game](Game.md) (26), [BuildingsTemplate](BuildingsTemplate.md) (23), [RecipeCheck](RecipeCheck.md) (21), [JobType](JobType.md) (15), [Refining](Refining.md) (15), [RefineryFlow](RefineryFlow.md) (15), [ResearchCatalog](ResearchCatalog.md) (14), [EquipmentCheck](EquipmentCheck.md) (11), [Recipes](Recipes.md) (10), [BuildingsStacks](BuildingsStacks.md) (9), [Resource](Resource.md) (8), [Trade](Trade.md) (6), [PolicyDates](PolicyDates.md) (5), [FittingCheck](FittingCheck.md) (4), [DataSave](DataSave.md) (4), [Deposit](Deposit.md) (4), [BuildCard](BuildCard.md) (4), [Traffic](Traffic.md) (3), [RefineryView](RefineryView.md) (3), [OilView](OilView.md) (3), [ResearchView](ResearchView.md) (3), [Equipment](Equipment.md) (2), [Sector](Sector.md) (2), [CopperMining](CopperMining.md) (2), [Forms1900Check](Forms1900Check.md) (2), [PriceLevel](PriceLevel.md) (1), [Freight](Freight.md) (1), [Founding](Founding.md) (1), [EquipmentFit](EquipmentFit.md) (1)... and 5 more
 
-**Used by (4):** [FitoutCheck](FitoutCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [NewUnitCheck](NewUnitCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md)
+**Used by (7):** [FitoutCheck](FitoutCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [ModernRowsCheck](ModernRowsCheck.md), [NewUnitCheck](NewUnitCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [WaterPowerCheck](WaterPowerCheck.md)
 
 ## Constants
 

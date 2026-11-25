@@ -1140,6 +1140,24 @@ public class TaxPolicy {
     /** The dial's top: twice the default. */
     public static final double MAX_PORT_DUES = 2.0;
 
+    /** The share of a net realised gain taxed at the holder's wage rate (HT1, accepted call 4). */
+    public static final double DEFAULT_CAPITAL_GAINS_INCLUSION = .5;
+    private double capitalGainsInclusion = DEFAULT_CAPITAL_GAINS_INCLUSION;
+
+    public double getCapitalGainsInclusion() { return capitalGainsInclusion; }
+
+    public void setCapitalGainsInclusion(double share) {
+        double was = capitalGainsInclusion;
+        capitalGainsInclusion = clamp(share, 1);
+        if (was != capitalGainsInclusion) decided("tax", "Capital gains inclusion to " + String.format("%.2f%%", capitalGainsInclusion * 100));
+    }
+
+    /** Integration credits the company profit tax already borne by a dividend (HT1, accepted call 2). */
+    public double dividendTaxRate(double wageRate, String company) {
+        double profit = effectiveProfitRate(Equity.COMPANIES[Equity.BANK].equals(company) ? Sectors.RETAIL : company);
+        return profit >= 1 ? 0 : Math.max(0, wageRate - profit) / (1 - profit);
+    }
+
     private double portDues = DEFAULT_PORT_DUES;
 
     /** The port dues dial: the multiple of the default due Freight pays the city a tonne across a berth, 0 to MAX_PORT_DUES (FR3). */
@@ -1466,6 +1484,7 @@ public class TaxPolicy {
     /** A detached copy of every dial (0.7.36): setters on it clamp as here and record nothing. See PolicyPreview. */
     public TaxPolicy copy() {
         TaxPolicy c = new TaxPolicy();
+        c.capitalGainsInclusion = capitalGainsInclusion;
         c.profitTaxRate = profitTaxRate;
         c.salesTaxRate = salesTaxRate;
         c.wageTaxRate = wageTaxRate;
@@ -1533,7 +1552,9 @@ public class TaxPolicy {
     public static final int STATE_BEFORE_PORT_DUES = STATE_BEFORE_FUEL_DUTY + 1;
 
     /** This build's array: the port dues dial on top (FR3). */
-    public static final int STATE_SLOTS = STATE_BEFORE_PORT_DUES + 1;
+    public static final int STATE_BEFORE_CAPITAL_GAINS = STATE_BEFORE_PORT_DUES + 1;
+    /** The inclusion dial appended by HT1. */
+    public static final int STATE_SLOTS = STATE_BEFORE_CAPITAL_GAINS + 1;
 
     /**
      * The city rates and the wage-band offsets as one array, city rates
@@ -1625,6 +1646,7 @@ public class TaxPolicy {
         // The port dues dial of FR3, on the end: an older save is one slot
         // shorter and reads 1.0, the default due, which is the city it was.
         state[i++] = portDues;
+        state[i++] = capitalGainsInclusion;
         return state;
     }
 
@@ -1709,6 +1731,7 @@ public class TaxPolicy {
         if (i < state.length) setFoodAssistance(state[i++]);
         if (i < state.length) setFuelDuty(state[i++]);
         if (i < state.length) setPortDues(state[i++]);
+        if (i < state.length) setCapitalGainsInclusion(state[i++]);
     }
 
     /**
@@ -1769,6 +1792,7 @@ public class TaxPolicy {
      * after (openAtFounding()): the income taxes at the founding rate and every promise at zero.
      */
     public void reset() {
+        capitalGainsInclusion = DEFAULT_CAPITAL_GAINS_INCLUSION;
         setIncomeTaxRate(DEFAULT_INCOME_TAX);
         propertyTaxRate = DEFAULT_PROPERTY_TAX;
         transitFare = DEFAULT_TRANSIT_FARE;

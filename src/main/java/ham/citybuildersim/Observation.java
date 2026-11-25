@@ -27,9 +27,9 @@ public final class Observation {
             "ScaleCheck",
             "AutoBuildCheck", "PriceLevelCheck",
             "FittingCheck", "BuildAdviceCheck",
-            "ConstructionControlCheck", "KeptCheck",
-            "BankCheck", "HealthCheck",
-            "CapitalFlowCheck", "HousingCheck", "PrizeCheck");
+            "ConstructionControlCheck",
+            "HealthCheck",
+            "HousingCheck", "PrizeCheck");
 
     /** A path reading with no dependent laws, such as a sample share. */
     static boolean reached(String label, boolean reached) {

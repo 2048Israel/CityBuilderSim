@@ -48,20 +48,12 @@ public class EquityCheck {
         return e;
     }
 
-    /** Households: a hundred unskilled couples with this much saved each, struck once so they have a take-home. */
+    /** Debt-free savers at the offering boundary, before a new card/shock month. */
     static HouseholdBalance savers(double savedEach, double takeHome) {
         HouseholdBalance hb = new HouseholdBalance();
-        double[][] mix = new double[FamilyStructure.values().length][PayTier.values().length];
-        mix[FamilyStructure.COUPLE.ordinal()][PayTier.UNSKILLED.ordinal()] = 100;
-        double[] income = new double[HouseholdBalance.ROWS];
-        income[PayTier.UNSKILLED.ordinal()] = 100 * takeHome;
-        double[] none = new double[HouseholdBalance.ROWS];
-        double[] spent = new double[HouseholdBalance.ROWS];
-        // One month, with nothing spent, so they hold the buffer plus the
-        // month; then the savings are set to the figure the fixture wants.
-        hb.advanceMonth((s, t) -> mix[s.ordinal()][t.ordinal()], income, 0, none, spent, .25, .05, 1);
+        hb.censusOnly((shape, tier) -> shape == FamilyStructure.COUPLE && tier == PayTier.UNSKILLED ? 100 : 0);
         Household c = hb.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
-        c.savings = savedEach;
+        c.disposable = takeHome; c.savings = savedEach;
         return hb;
     }
 
@@ -100,6 +92,7 @@ public class EquityCheck {
         // A household in debt, locked out, or short does not buy.
         HouseholdBalance owing = savers(20.0, 4.0);
         owing.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED).debt = 1.0;
+        owing.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED).revolving = 1; // every household in this fixture owes
         Equity e2 = new Equity();
         e2.offer(INDUSTRY, 1_000, 0, owing, DebtManager.WORLD_BASE_RATE);
         close("a household that owes the bank buys nothing", e2.getRaisedHomeThisMonth(INDUSTRY), 0, 1e-9);

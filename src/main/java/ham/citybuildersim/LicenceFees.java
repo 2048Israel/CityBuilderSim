@@ -111,41 +111,49 @@ public final class LicenceFees {
                 : ProcessingSector.cityLegs(t, rate, owner.legPrice());
         // The works' power at what their class is billed (PW1, REV-PW1c): Heavy Industry and Mining the energy and transmission.
         return gross - plans.standingRunningCostOf(t) - plans.standingCostOf(owner, t)
-                - SpreadPlanner.ownCosts(t, rate, game.getMarkets().getExchangeRate(), owner.powerPriceFor(t)) - freight;
+                - SpreadPlanner.ownCosts(t, rate, game.getMarkets().getExchangeRate(), owner.powerPriceFor(t), owner.worksTariff()) - freight;
     }
 
-    /** The common dispatch share of these outputs, including direct exports and captive production. */
+    /** This template's actual run, not another template's co-produced share of the same sector good. */
     private static double productionRate(BuildingsTemplate t, Sector owner) {
         if (owner instanceof Refining) return owner.getOperatingRate();
         double rate = 0;
-        for (var e : t.goodsMade().entrySet()) {
-            Sector.Output row = owner.output(e.getKey());
-            if (row.capacity > 0) rate = Math.max(rate, (row.produced + row.exportBound + row.captive) / row.capacity);
-        }
-        return Math.min(owner.getOperatingRate(), rate);
+        for (Good good : t.goodsMade().keySet()) rate = Math.max(rate, creditedOutputRate(t, owner, good, owner.getOperatingRate()));
+        return rate;
+    }
+
+    /** Actual units credited to one template's output, at the producer's native order weights; the captured typed-flow/refinery rate stays authoritative. */
+    static double creditedOutputRate(BuildingsTemplate t, Sector owner, Good good, double runRate) {
+        if (owner instanceof Refining || owner instanceof ExtractionSector && !good.stockable() || !(t.makes(good) > 0)) return runRate;
+        Sector.Output row = owner.output(good);
+        if (!(row.capacity > 0)) return 0;
+        // A previous horse/feed pass's field is not fresh captive production
+        // once this producer no longer consumes its own good.
+        double made = row.produced + row.exportBound + (owner.captive(good) ? row.captive : 0);
+        return Math.max(0, Math.min(runRate, made / row.capacity * owner.productionWeight(t, good)));
     }
 
     /** A running recipe's value under the standing output/input price roles. */
-    private static double standingRecipeValue(Recipe recipe, Recipes.Prices p, SpreadPlanner.Values values, double rate) {
+    private static double standingRecipeValue(BuildingsTemplate t, Sector owner, Recipe recipe, Recipes.Prices p, SpreadPlanner.Values values, double rate) {
         double value = 0;
-        for (var e : recipe.makes().entrySet()) value += values.in(e.getKey(), e.getValue() * rate);
+        for (var e : recipe.makes().entrySet()) value += values.in(e.getKey(), e.getValue() * creditedOutputRate(t, owner, e.getKey(), rate));
         for (var e : recipe.uses().entrySet()) value -= values.out(e.getKey(), e.getValue() * rate);
         for (JobType type : JobType.values()) value -= recipe.getJobs(type) * p.wages()[type.ordinal()];
-        return value - (recipe.getElectricity() - recipe.getGen()) * p.pricePerWatt()
+        return value - Recipes.powerCost(recipe, p)
                 - recipe.getWater() * p.pricePerWaterUnit() - recipe.getConsumables() * p.exchange() * rate;
     }
 
-    private static double standingRecipeFee(Game game, BuildingsTemplate t, Recipe recipe, Recipes.Prices p, double rate) {
+    private static double standingRecipeFee(Game game, BuildingsTemplate t, Sector owner, Recipe recipe, Recipes.Prices p, double rate) {
         if (!payable(recipe.getSince(), game.getMonth(), game.getResearch())) return 0;
         SpreadPlanner.Values values = SpreadPlanner.values(game.getMarkets());
         double before = Double.NEGATIVE_INFINITY;
         int date = ResearchCatalog.knownFrom(recipe.getSince());
         for (Recipe old : t.getRecipes()) {
             if (ResearchCatalog.knownFrom(old.getSince()) >= date || !old.knownAt(game.getMonth(), game.getResearch())) continue;
-            before = Math.max(before, standingRecipeValue(old, p, values, rate));
+            before = Math.max(before, standingRecipeValue(t, owner, old, p, values, rate));
         }
         if (before == Double.NEGATIVE_INFINITY) before = 0;
-        return onGain(recipe.getSince(), game.getMonth(), game.getResearch(), standingRecipeValue(recipe, p, values, rate) - before);
+        return onGain(recipe.getSince(), game.getMonth(), game.getResearch(), standingRecipeValue(t, owner, recipe, p, values, rate) - before);
     }
 
     /**
@@ -177,7 +185,7 @@ public final class LicenceFees {
         int accrualMonth = game.getMonth();
         double rate = Math.max(0, Math.min(1, standing ? dispatchRate : owner.getOperatingRate()));
         if (recipe != null && charged.add(recipe.getSince()) && recipe.knownAt(game.getMonth(), game.getResearch())) {
-            bill += standing ? standingRecipeFee(game, t, recipe, prices, rate)
+            bill += standing ? standingRecipeFee(game, t, owner, recipe, prices, rate)
                     : recipeFee(t, recipe, accrualMonth, prices, game.getResearch()) * rate;
         }
         bill += RecipeChanges.recipeFee(game, t, owner, recipe, standing, rate, charged, standing ? null : fitted);
@@ -286,6 +294,7 @@ public final class LicenceFees {
                 BuildingsTemplate t = stack.getBuilding();
                 if (stockPhase(t) != stock || !(owner.getOperatingRate() > 0)) continue;
                 double rate = !stock && owner instanceof ExtractionSector mine ? flowExtractionRate(mine, t) : productionRate(t, owner);
+                if (!(rate > 0)) continue;
                 double bill = stackBill(game, stack, owner, rate);
                 if (bill > 0) bills.add(new Bill(owner, t.getId(), stack.getQuantity(), bill));
             }
@@ -363,9 +372,12 @@ public final class LicenceFees {
         return t != null && game.isCitysToDemolish(t);
     }
 
-    /** What the grid delivers with its nameplate moved, by UtilitiesHandler.updateEnergyRatio()'s rule: output, capped by what the city asks (R2c-P). */
-    static double powerDelivered(UtilitiesHandler u, double nameplate) {
-        return Math.max(0, Math.min(u.getConsumption(), Math.max(0, u.getProduction() + nameplate * u.getAverageUtilityFill())));
+    /**
+     * What the grid delivers with this template's nameplate moved (R2c-P): since PW1-L the energy the month's dispatch serves with the
+     * template's row moved (UtilitiesHandler.deliveredWith()), not the flat rule's output capped by the draw, which served every kW alike.
+     */
+    static double powerDelivered(UtilitiesHandler u, BuildingsTemplate t, double nameplate) {
+        return Math.max(0, u.deliveredWith(t, nameplate));
     }
 
     /** What the water works deliver with the fresh and the sea nameplates moved, by UtilitiesHandler.waterOutput()'s rule, capped by what the city asks (R2c-P). */
@@ -403,7 +415,7 @@ public final class LicenceFees {
         UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
         Recipes.Prices prices = Recipes.pricesOf(game);
         if (t.getCategory() == BuildingType.ELECTRICITY)
-            return (powerDelivered(u, move) - powerDelivered(u, move - drop)) * prices.pricePerWatt();
+            return (powerDelivered(u, t, move) - powerDelivered(u, t, move - drop)) * prices.pricePerWatt();
         boolean sea = t.isSeaWater();
         return (waterDelivered(game, u, sea ? 0 : move, sea ? move : 0)
                 - waterDelivered(game, u, sea ? 0 : move - drop, sea ? move - drop : 0)) * prices.pricePerWaterUnit();
@@ -414,6 +426,8 @@ public final class LicenceFees {
      * with it less that delivered without it, at the planners' tariff. pieceId null is the building entry (the state's buildings gone, less
      * their running cost, `running` a building); a piece is every building of the state lacking it. The grid's nameplate is moved from the
      * city as it stands to this state (STANDING: the stack's own state moves it nothing; NEW: the new buildings are added to it).
+     * A piece's gain adds the power its buildings would draw more without it, at the commerce price (EconomyManager.getPowerPriceFor(), a water works not being high voltage):
+     * E22's pressure exchanger serves no more water, it saves the Desalination Plant's electricity (R6e-rest).
      */
     private static double entryGain(Game game, BuildingsTemplate t, Fitting f, String pieceId, double running) {
         long per = f.standing() ? f.n() : 1;
@@ -427,7 +441,9 @@ public final class LicenceFees {
         if (pieceId == null) return served(game, t, move, plate * f.n()) - f.n() * running;
         Map<String, Long> less = new TreeMap<>(f.counts());
         less.put(pieceId, per);
-        return served(game, t, move, (plate - RecipeChanges.productionAt(game, t, less, per, f.ids())) * f.n());
+        double saved = (RecipeChanges.electricityAt(game, t, less, per, f.ids()) - RecipeChanges.electricityAt(game, t, f.counts(), per, f.ids()))
+                * f.n() * game.getEconomyManager().getPowerPriceFor(t);
+        return served(game, t, move, (plate - RecipeChanges.productionAt(game, t, less, per, f.ids())) * f.n()) + saved;
     }
 
     /** The share of a life's weight (BuildAdvice.LIFE_MONTHS' annuity at the monthly rate i) that a patent's term left at atMonth covers (R2c-P, REV-R2c-P-1): 0 once it has ended, 1 while a whole life fits inside it. */

@@ -238,6 +238,7 @@ public class BuildCardCheck {
         theGates(g);
         theVerdict(g);
         theKinds(g);
+        shortWords();
         theRun(g);
         theServed(g);
         theInterest(g);
@@ -301,18 +302,20 @@ public class BuildCardCheck {
                 }
             }
         }
-        // ...every building the city knows: in a city founded today's way the catalogue less the near future's (R6b's call 1), which it never knows and no card shows.
-        int catalogue = 0, nearFuture = 0;
+        // ...every building the city knows: in a city founded today's way the catalogue less the near future's (R6b's call 1), which it never knows and no card shows,
+        // and since PW2 less the power plants whose year has not come (Jerus's Q2: each from its since), shown on none either.
+        int catalogue = 0, nearFuture = 0, notYet = 0;
         boolean nearOnNone = true;
         Set<String> every = new HashSet<>(market);
         every.addAll(city);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
             if (g.getBuildingManager().isTemplateKnown(t)) catalogue++;
             else if (ResearchCatalog.nearFuture(t.getSinceText())) { nearFuture++; nearOnNone &= !every.contains(t.getName()); }
+            else if (t.getCategory() == BuildingType.ELECTRICITY && !t.knownAt(g.getMonth())) { notYet++; nearOnNone &= !every.contains(t.getName()); }
         }
         assertTrue("every building in the catalogue the city knows (" + catalogue + ") is on a card", every.size() == catalogue);
-        assertTrue("...and the near future's (" + nearFuture + "), which a city founded today's way never knows, on none",
-                nearFuture > 0 && nearFuture == g.getBuildingManager().getTemplates().size() - catalogue && nearOnNone);
+        assertTrue("...and the near future's (" + nearFuture + ") and the power plants not yet built anywhere (" + notYet + "), which the city does not know, on none",
+                nearFuture > 0 && nearFuture + notYet == g.getBuildingManager().getTemplates().size() - catalogue && nearOnNone);
         assertTrue("...a market building on exactly one, in one group (" + market.size() + " market buildings)",
                 marketTwice == 0 && market.size() + city.size() == catalogue);
         assertTrue("...and every card and group has a name", named);
@@ -989,7 +992,7 @@ public class BuildCardCheck {
     static final Object[][] KIND_EXAMPLES = {
             { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind.BUILDING },
             { "Built 1 House on an insured mortgage - 73 households need a door a child is allowed in", BuildCard.WordKind.BUILDING },
-            { "Sold 3 Fabrication Shop - six months of losses (plot back to the city for $1,200)", BuildCard.WordKind.SELLING },
+            { "Scrapped 3 Fabrication Shop - six months of losses (plot back to the city for $1,200)", BuildCard.WordKind.SELLING },
             { "Sold 1 Diner to the city by compulsory purchase, for $40,000", BuildCard.WordKind.SELLING },
             { "Holding: no land - needs 0.0446 km², 0.0301 km² free", BuildCard.WordKind.LAND },
             { "Holding: the city is short of homes - ground is worth more to live on", BuildCard.WordKind.LAND },
@@ -1094,7 +1097,9 @@ public class BuildCardCheck {
         assertTrue("an order on site is BUILDING whatever the word, and the land-blocked list is LAND",
                 BuildCard.wordKind("Holding: no margin in it", true, false) == BuildCard.WordKind.BUILDING
                 && BuildCard.wordKind("Holding: no margin in it", false, true) == BuildCard.WordKind.LAND
-                && BuildCard.wordKind("Sold 1 Diner - losses", false, true) == BuildCard.WordKind.SELLING);
+                && BuildCard.wordKind("Scrapped 1 Diner - losses", false, true) == BuildCard.WordKind.SELLING
+                && BuildCard.wordKind("Sold 1 Diner to the city by compulsory purchase", false, true) == BuildCard.WordKind.SELLING
+                && BuildCard.wordKind("Scrapped 1 Diner - losses", true, true) == BuildCard.WordKind.BUILDING);
 
         // One sector's investors: its own buildings, its word, and building while investors are.
         boolean own = true;
@@ -1134,6 +1139,19 @@ public class BuildCardCheck {
         assertTrue("...and a sector with nothing on site does not: " + mines.kind() + ", " + mines.word(),
                 !mines.theirs() && mines.kind() == BuildCard.wordKind(mines.word(), false, mines.landBlocked()));
     }
+    /** The compact card's text-only reader, without constructing a screen or starting the toolkit. */
+    static void shortWords() throws ReflectiveOperationException {
+        var shortWord = Class.forName("ham.citybuildersim.ui.SectorScreen").getDeclaredMethod("shortWord", String.class);
+        shortWord.setAccessible(true);
+        assertTrue("the compact card shortens Scrapped at the existing dash, keeping quantity and building",
+                "Scrapped 3 Fabrication Shop".equals(shortWord.invoke(null, (String) KIND_EXAMPLES[2][0])));
+        String sale = (String) KIND_EXAMPLES[3][0];
+        assertTrue("the compact card keeps the full compulsory-purchase Sold line without a dash",
+                sale.equals(shortWord.invoke(null, sale)));
+        assertTrue("the compact card still shortens Built at the existing dash",
+                "Built 2 Industrial Bakery".equals(shortWord.invoke(null, (String) KIND_EXAMPLES[0][0])));
+    }
+
     /* ============================ 9. A RUN OF ORDERS ============================ */
 
     static Map<BuildingsTemplate, Long> run(Object... pairs) {
@@ -1242,8 +1260,11 @@ public class BuildCardCheck {
         boolean networks = true, roads = true, crowds = true, covers = true, words = true;
         for (int k = 250; k <= 3000; k++) {
             double x = k / 1000.0;
+            // ...power's yellow its reserve (PW3: POWER_YELLOW, 1 / (1 + PowerDispatch.RESERVE)), water's NETWORK_YELLOW
             CityNeeds.Served net = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, 1 / x);
-            networks &= net.level() == CityNeeds.level(x, CityNeeds.NETWORK_YELLOW, CityNeeds.NETWORK_RED, true);
+            networks &= net.level() == CityNeeds.level(x, CityNeeds.POWER_YELLOW, CityNeeds.NETWORK_RED, true);
+            CityNeeds.Served wet = CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, 1 / x);
+            networks &= wet.level() == CityNeeds.level(x, CityNeeds.NETWORK_YELLOW, CityNeeds.NETWORK_RED, true);
             CityNeeds.Served road = CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, 1 / x);
             roads &= road.level() == CityNeeds.level(x, InfrastructureManager.STRAINED, InfrastructureManager.FREE_FLOW, true);
             CityNeeds.Served seats = CityNeeds.verdict(CityNeeds.Kind.HIGHER_SCHOOL, CareType.NONE, 1 / x);
@@ -1267,7 +1288,7 @@ public class BuildCardCheck {
                         && (v.level() != 0 || v.share() >= 1);
             }
         }
-        assertTrue("a network's verdict on what it serves is NEEDS YOU's level on its load, at every load from 25% to 300%", networks);
+        assertTrue("a network's verdict on what it serves is NEEDS YOU's level on its load, at every load from 25% to 300% (power's yellow its reserve, PW3)", networks);
         assertTrue("...the road's, on STRAINED and FREE_FLOW", roads);
         assertTrue("...a school's seats, on who would come and be hired over them - and a crowd off the list but over its seats is amber", crowds);
         assertTrue("...care and the basic ladder, listed, the row's level; off the list, green only at 100% and amber under it", covers);
@@ -1276,9 +1297,15 @@ public class BuildCardCheck {
         CityNeeds.Served jerus = CityNeeds.verdict(CityNeeds.Kind.CARE, CareType.GENERAL, .9);
         assertTrue("general care at 90%, past GENERAL_YELLOW and off the list, is amber and short - no tick (Jerus's case)",
                 .9 > CityNeeds.GENERAL_YELLOW && jerus.level() == 1 && CityNeeds.SHORT.equals(jerus.word()));
-        CityNeeds.Served over = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, 1.2);
+        CityNeeds.Served over = CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, 1.2);
         assertTrue("a network serving 120%, a fifth in hand, is tight: amber, though over 100%",
                 over.level() == 1 && CityNeeds.TIGHT.equals(over.word()));
+        // PW3: power wants its reserve in hand (PowerDispatch.RESERVE, NERC's margin), not water's quarter.
+        double reserve = 1 + PowerDispatch.RESERVE;
+        CityNeeds.Served thin = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, reserve * .99);
+        CityNeeds.Served kept = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, reserve * 1.01);
+        assertTrue("power serving just under 1 + RESERVE is tight: amber, though over 100%; just over it, enough",
+                thin.level() == 1 && CityNeeds.TIGHT.equals(thin.word()) && kept.level() == 0 && CityNeeds.ENOUGH.equals(kept.word()));
         CityNeeds.Served full = CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, 1 / 1.8);
         assertTrue("the road 180% full serves 56%: red, short",
                 CityNeeds.servedPct(full.share()).equals("56%") && full.level() == 2 && CityNeeds.SHORT.equals(full.word()));
@@ -1293,6 +1320,13 @@ public class BuildCardCheck {
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         InfrastructureManager road = g.getInfrastructureManager();
         List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
+        // PW1, PW3: power is planned for the year's peak hour, so its row and its ring are the grid's own figure against the peak hour's draw,
+        // losses in (PowerDispatch.PLAN_PEAK_HOUR), while no wind or sun stands; a wind or solar farm's average past its credit comes off the
+        // firm supply, so with one standing they are at most that figure. PW1-R (REV-PW1's lows): both read what the town holds, not assume it.
+        boolean variable = false;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates())
+            variable |= (t.isWind() || t.isSolar()) && g.getBuildingManager().getQuantity(t.getId()) > 0;
+        double gridAtPeak = u.getPowerServed() / PowerDispatch.PLAN_PEAK_HOUR;
         boolean rows = true;
         int servedRows = 0, listedRows = 0;
         for (CityNeeds.Need n : all) {
@@ -1302,15 +1336,17 @@ public class BuildCardCheck {
             if (n.level() > 0) listedRows++;
             double want = switch (n.kind()) {
                 // PW1: the POWER row read the handler's average (getPowerServed(), production over consumption); it reads the advice's pair, the firm
-                // supply over the calm peak's draw (BuildAdvice.served()), as the cards do.
-                case POWER -> BuildAdvice.served(g, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of());
+                // supply over the calm peak's draw (BuildAdvice.served()), as the cards do. It was held to BuildAdvice.served(), itself (REV-PW1's
+                // lows); it is held to the grid's own figure at the peak hour's draw, below (PW1-R).
+                case POWER -> gridAtPeak;
                 case WATER -> u.getWaterServed();
                 case ROADS -> road.getServed();
                 case CARE -> CityNeeds.careServed(g, n.care(), g.getCohorts(), g.getPopulationManager().getJobFillRate());
                 case BASIC_SCHOOLS -> g.getEducation().basicCoverage();
                 default -> CityNeeds.servedShare(n.a(), n.b());
             };
-            rows &= Double.doubleToLongBits(v.share()) == Double.doubleToLongBits(want);
+            rows &= n.kind() != CityNeeds.Kind.POWER ? Double.doubleToLongBits(v.share()) == Double.doubleToLongBits(want)
+                    : variable ? v.share() > 0 && v.share() <= want * (1 + 1e-9) : Math.abs(v.share() / want - 1) < 1e-9;
             // listed with nothing on the way: the row's colour; never red off the list; on the way only ever lowers the level
             rows &= n.onSite() == 0 && n.level() > 0 ? v.level() == n.level()
                     : n.level() == 0 ? v.level() < 2 : v.level() >= n.level();
@@ -1322,7 +1358,8 @@ public class BuildCardCheck {
                     : CityNeeds.servedPct(v.share()) + " served") || n.reading().startsWith("nothing supplying");
         }
         assertTrue("every served NEEDS YOU row (" + servedRows + " in the town, " + listedRows + " listed) reads its owner's "
-                + "figure, to the bit, as served, in the colour of its level where it is listed", rows && servedRows >= 6);
+                + "figure, to the bit (power's the grid's own at the peak hour's draw, to 1e-9, at most it with wind or sun standing: "
+                + variable + "), as served, in the colour of its level where it is listed", rows && servedRows >= 6);
 
         boolean measures = true;
         int counted = 0;
@@ -1347,10 +1384,11 @@ public class BuildCardCheck {
                 + "supply over its demand, the arc that held to 0-1; the police, the cells and the dead are not served", measures);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         BuildAdvice.Measure roadM = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
-        // PW1: power is planned for the calm peak, so its ring is the grid's own figure against the peak block's draw, losses in
-        // (PowerDispatch.PLAN_PEAK); this city has no wind, whose non-firm part (1 - WIND_FIRM) would come off the supply.
-        assertTrue("...power's ring is the grid's own figure at the peak's draw (to 1e-9) and the road's the road's, to the bit; transit has no verdict",
-                Math.abs(BuildAdvice.served(g, power, Map.of()) * PowerDispatch.PLAN_PEAK / u.getPowerServed() - 1) < 1e-9
+        // ...the ring as the row (above): the grid's own figure at the peak hour's draw with no wind or sun, at most it with either (PW1-R).
+        double ring = BuildAdvice.served(g, power, Map.of());
+        assertTrue("...power's ring is the grid's own figure at the peak hour's draw (to 1e-9; at most it with wind or sun standing: " + variable
+                        + ") and the road's the road's, to the bit; transit has no verdict",
+                (variable ? ring > 0 && ring <= gridAtPeak * (1 + 1e-9) : Math.abs(ring / gridAtPeak - 1) < 1e-9)
                 && Double.doubleToLongBits(BuildAdvice.served(g, roadM, Map.of())) == Double.doubleToLongBits(road.getServed())
                 && BuildAdvice.verdict(g, BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT), Map.of()).level() == -1
                 && Double.doubleToLongBits(BuildAdvice.served(g, BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT), Map.of()))

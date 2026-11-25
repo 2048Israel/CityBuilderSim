@@ -494,6 +494,47 @@ public class LandMarket {
     /** What a business pays the city per square foot, in thousands. */
     public double getSalePricePerSqFt()   { return salePricePerSqFt; }
 
+    /* ------------------------------ FARMLAND (RG1) ------------------------------
+       The sellers' farmland price: what the farmland reserve sells and assesses
+       its ground at (Zoning's THE FARMLAND RESERVE). The reference nation's
+       published farmland a hectare - Canada's, Statistics Canada's farm land and
+       buildings at July 1 2024, US$9,563.86 a hectare in LandFactors' table
+       (land-2024.json) - carried to 2025's dollars by the US CPI and struck on
+       the local anchor as BASE_PRICE_PER_SQ_FT is, so it is farmlandOfBase() of
+       the anchor (0.130: $0.091 a square foot against the base's $0.70, the
+       "farm average $0.10" of THE CROWDING PREMIUM); times the land factor of the
+       nation the city stands in this month (LandSellers.host(),
+       LandFactors.factorAt()), the seller of its own ground and of every plot
+       no other nation owns. No crowding premium and no scarcity: the ground at
+       what a farm's ground sells for there, at the price level the city
+       expects. A generated world has no sellers and is Canada's, at factor 1.
+       ------------------------------------------------------------------------- */
+
+    /** farmlandOfBase(), once read. */
+    private static double farmlandOfBase = Double.NaN;
+
+    /** The reference nation's farmland a square foot over BASE_PRICE_PER_SQ_FT: its price a hectare (LandFactors.referenceUsdPerHectare(), US$ of 2024) in 2025's dollars, a thousandth (money here is in thousands) over a hectare's square feet, at the founding's level as the base is. Read from the table, not set. */
+    public static double farmlandOfBase() {
+        double f = farmlandOfBase;
+        if (Double.isNaN(f)) {
+            f = LandFactors.referenceUsdPerHectare() * PriceLevel.usCpi(PriceLevel.LAST_YEAR) / PriceLevel.usCpi(LandFactors.BASE_YEAR)
+                    / 1000 / (LandManager.SQ_FT_PER_KM2 / 100) * PriceLevel.FACTOR / BASE_PRICE_PER_SQ_FT;
+            farmlandOfBase = f;
+        }
+        return f;
+    }
+
+    /** The land factor of the nation the city stands in, this month (LandFactors.factorAt()): 1 with no sellers, as every offer then is. */
+    public double hostLandFactor() {
+        LandFactors f = sellers == null ? null : sellers.factors();
+        return f == null ? 1.0 : f.factorAt(sellers.host(), month);
+    }
+
+    /** The sellers' farmland price a square foot, local money in thousands (RG1): the anchor times farmlandOfBase() times the host's land factor - no crowding premium, no scarcity. */
+    public double getFarmlandPricePerSqFt() {
+        return basePricePerSqFt * farmlandOfBase() * hostLandFactor();
+    }
+
     /**
      * A city's crowding (0.7.55): its people per square kilometre of the land
      * it owns - the measure the premium reads. 0 with nobody; with people and
@@ -1525,6 +1566,29 @@ public class LandMarket {
         frozen.groundUsdPerSqFt = groundUsdPerSqFt;
         frozen.usPriceLevel = usPriceLevel;
         return new Quoter(frozen, land);
+    }
+
+    /**
+     * A copy of this office on a copy of its land, to buy offers on one after another with nothing of the city's moved (PW3, REV-PW3 #1, #2): the
+     * offers standing (as DataSave carries them, getOffersState() and its two companions), the next id, the prices struck, the month, the sellers and the
+     * landmasses as they are. LandManager.rehearse() buys on it as buyParcel() buys, and what it lists is what the same purchases list on the city's own
+     * office: listing draws on no random stream (GridOffers.list() reads the grid and the standing rectangles, measure() the world's ground and the
+     * prices struck), so the same purchases in the same order list the same offers under the same ids at the same prices. Null on a bare office and where
+     * the land cannot be copied.
+     */
+    LandMarket rehearsal() {
+        if (land == null) return null;
+        CityLand copy = land.copy();
+        if (copy == null) return null;
+        LandMarket r = new LandMarket();
+        r.land = copy;
+        r.sellers = sellers;
+        r.landmasses = landmasses;
+        r.month = month;
+        r.basePricePerSqFt = basePricePerSqFt;
+        r.restorePriceState(getPriceState());
+        r.restoreOffers(getOffersState(), getOffersReliefState(), getOffersSellersState(), nextId);
+        return r;
     }
 
     /**

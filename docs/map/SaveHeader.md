@@ -1,6 +1,6 @@
 # SaveHeader.java - 119 lines · 20 methods · 0 constants · model
 
-`ham/citybuildersim/SaveHeader.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SaveHeader.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Just enough of a save to label it on the slot list.
 > 
@@ -21,7 +21,7 @@
 
 **Uses:** [GameVersion](GameVersion.md) (2), [Founding](Founding.md) (1)
 
-**Used by (10):** [Game](Game.md), [GameFiles](GameFiles.md), [ReloadCheck](ReloadCheck.md), [ReplayCheck](ReplayCheck.md), [SaveDump](SaveDump.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SavedCities](SavedCities.md), [ScaleCheck](ScaleCheck.md), [UserInterface](UserInterface.md)
+**Used by (11):** [Game](Game.md), [GameFiles](GameFiles.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [ReloadCheck](ReloadCheck.md), [ReplayCheck](ReplayCheck.md), [SaveDump](SaveDump.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SavedCities](SavedCities.md), [ScaleCheck](ScaleCheck.md), [UserInterface](UserInterface.md)
 
 ## Fields (state)
 

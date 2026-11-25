@@ -899,11 +899,19 @@ public final class TreasuryFund {
 
     /** ...taken by the market that posts them: the share orders, or the bond orders. */
     List<HandOrder> takeHandOrders(boolean bonds) {
+        return takeHandOrders(bonds, false);
+    }
+
+    /** Share sales post before their potential buyers decide (RS1); buys keep their place after the rule. */
+    List<HandOrder> takeShareSales() { return takeHandOrders(false, true); }
+
+    /** Removes just the requested orders, preserving the queue and reservations of the rest. */
+    private List<HandOrder> takeHandOrders(boolean bonds, boolean salesOnly) {
         List<HandOrder> out = new ArrayList<>();
         java.util.Iterator<HandOrder> it = hand.iterator();
         while (it.hasNext()) {
             HandOrder o = it.next();
-            if (o.bond == bonds) { out.add(o); it.remove(); }
+            if (o.bond == bonds && (!salesOnly || !o.buy)) { out.add(o); it.remove(); }
         }
         return out;
     }

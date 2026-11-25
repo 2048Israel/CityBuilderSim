@@ -184,7 +184,9 @@ public class ResearchViewCheck {
         });
         // The farms and the mills (b) and (d) read stand through the months played: their sectors held, building and retiring (CU2: on the
         // chained world prices the village's two Mixed Farms and the two Pulp Mills were retired by month 14, where main kept a farm and both mills).
-        for (String name : new String[] { "Mixed Farm", "Grain Farm", "Pulp Mill" }) g.getBusinessInvestment().holdSector(template(g, name).getSector());
+        // The Bakery's too, which also holds its fitting, a sector's order like a building (EquipmentFit.choose()): (b)'s drive stays off the stack (R1g:
+        // in the village of 1900 homes the Bakery fitted its electric drive by month 14).
+        for (String name : new String[] { "Mixed Farm", "Grain Farm", "Pulp Mill", "Bakery" }) g.getBusinessInvestment().holdSector(template(g, name).getSector());
         int months = ResearchView.NEW_MONTHS + 1;
         // PE1 found here at the month that makes the Electric Arc Furnace NEW_MONTHS - 1 months old when the clock gets there (month 1 + months).
         int foundAt = 1 + months - (ResearchView.NEW_MONTHS - 1);

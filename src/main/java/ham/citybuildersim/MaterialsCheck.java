@@ -1,8 +1,10 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.CopperRefining;
 import ham.citybuildersim.sectors.ExtractionSector;
 import ham.citybuildersim.sectors.Haulage;
 import ham.citybuildersim.sectors.HeavyIndustry;
+import ham.citybuildersim.sectors.Manufacturing;
 import ham.citybuildersim.sectors.Mining;
 import ham.citybuildersim.sectors.ProcessingSector;
 import ham.citybuildersim.sectors.SpreadPlanner;
@@ -267,6 +269,12 @@ public class MaterialsCheck {
         mineRows();
         mineFits();
         mineTypes();
+        trailingYear();
+        spikeMonth();
+        threeMonthCycle();
+        feedShortWorks();
+        idleOverYear();
+        ownPowerPlanned();
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -502,9 +510,10 @@ public class MaterialsCheck {
         double gross = b.totalBySector(Sectors.INDUSTRY, x -> BuildingsTemplate.isBilledForUtilities(x) ? x.getElectricityConsumption() : 0);
         report("fixture: three Industrial Bakeries making three times their draw and two Bakeries half theirs, three months on",
                 surplus > 0 && net > 0 && net < gross, String.format("Industry draws %,.0f kW net of %,.0f, sells %,.0f kW", net, gross, surplus));
-        assertTrue("the sector's surplus is its buildings' power past their draws, and its bill its net draw at the ratio and the tariff",
+        assertTrue("the sector's surplus is its buildings' power past their draws, and its bill its net draw at the ratio, the month's season (PW1-R: the kWh served) and the tariff",
                 industry.getPowerSurplus() == surplus
-                        && industry.getElectricityCost() == net * industry.getEnergyRatio() * price);
+                        && industry.getElectricityCost() == net * industry.getEnergyRatio() * industry.getPowerSeason() * price
+                        && industry.getPowerSeason() == u.getPowerSeason());
         Sector.Statement st = industry.statement();
         assertTrue("its statement's powerSold is the surplus at the works' price (the struck book's), undimmed by the grid, and in its revenue past its sales",
                 st.powerSold == surplus * worksPrice && st.powerSold > 0
@@ -512,12 +521,23 @@ public class MaterialsCheck {
         assertTrue("...and in its operating income, every cost taken off the revenue it is in",
                 st.operatingIncome == st.revenue - st.inputs - st.payroll - st.electricity - st.water - st.maintenance);
         double allNet = b.getTotalDouble(BuildingsTemplate::powerBought), allSold = b.getTotalDouble(BuildingsTemplate::powerSold);
-        assertTrue("the grid's consumption is every building's net draw, and the works' surplus is added to what it generates, whatever"
+        // PW3 (PW1-P's fifth gap): what the grid generates is the founding grid at the pooled utility fill (whole at none) and each plant
+        // standing at its own posts' fill (a hydro station at its water), as updateEnergyRatio() offers them; the works' surplus on top.
+        double fill = u.getAverageUtilityFill(), generated = u.getFoundingGridKw() * (fill == 0 ? 1 : fill);
+        for (BuildingsTemplate p : b.getTemplates()) {
+            long n = p.getCategory() != BuildingType.ELECTRICITY || Substations.isSubstation(p) ? 0 : b.getQuantity(p.getId());
+            if (n > 0) generated += p.getProduction1() * n * (p.isHydro() ? (u.plantFill(p) > 0 ? 1 : 0) : u.plantFill(p));
+        }
+        report("the grid's consumption is every building's net draw, and the works' surplus is added to what it generates, whatever"
                 + " the utility's staffing", u.getConsumption() == allNet && u.getWorksPower() == allSold && allSold == surplus
-                && u.getProduction() == (u.getAverageUtilityFill() == 0 ? 10000 : u.getBaseProduction() * u.getAverageUtilityFill()) + allSold);
-        assertTrue("the utility pays the works what their statements booked, out of its electricity income",
+                && Math.abs(u.getProduction() - (generated + allSold)) <= 1e-9 * (generated + allSold),
+                String.format("production %,.4f against %,.4f generated and %,.4f sold", u.getProduction(), generated, allSold));
+        // PW1-W: the water's books pay the power's for the water works' draw, a line of the electricity income (UtilitiesHandler, THE WATER'S POWER).
+        report("fixture: the town's water works drew power the water's books paid for", u.getWaterPowerPaid() > 0, String.format("%,.6f", u.getWaterPowerPaid()));
+        assertTrue("the utility pays the works what their statements booked, out of its electricity income, which gains what the water's books"
+                        + " pay it for the water works' power",
                 u.getPowerBought() == g.getEconomyManager().getSectorPowerSold() && u.getPowerBought() == st.powerSold
-                        && u.getElectricityIncome() == u.getElectricityRevenue() - u.getElectricityPayroll() - u.getPowerBought());
+                        && u.getElectricityIncome() == u.getElectricityRevenue() - u.getElectricityPayroll() - u.getPowerBought() + u.getWaterPowerPaid());
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         report("the month's money audit closes, the pair noted - the sectors' power sold and the utility's power bought - each off its"
                         + " own book", audit.relative() < 1e-4 && audit.detail.contains("chk + sectors PowerSold")
@@ -1242,9 +1262,10 @@ public class MaterialsCheck {
                 String.format("Iron & Steel sells %,.0f kW, buys %,.0f", heavy.getPowerSurplus(), bought));
         Sector.Statement st = heavy.statement();
         assertTrue("its statement's powerSold is the ovens' 5,800 kW and the furnace's 8,600 at the works' price, in its revenue past its sales;"
-                        + " its bill the shop's 26,600 at the ratio and the industry price (Heavy Industry takes power at high voltage)",
+                        + " its bill the shop's 26,600 at the ratio, the month's season and the industry price (Heavy Industry takes power at high voltage)",
                 st.powerSold == sold * worksPrice && st.powerSold > 0 && st.revenue == st.localSales + st.exports + st.otherRevenue + st.powerSold
-                        && heavy.getElectricityCost() == bought * heavy.getEnergyRatio() * industryPrice);
+                        && heavy.getElectricityCost() == bought * heavy.getEnergyRatio() * heavy.getPowerSeason() * industryPrice
+                        && heavy.getPowerSeason() == u.getPowerSeason());
         assertTrue("the utility pays the works what their statement booked, and the grid counts their surplus as generation",
                 u.getPowerBought() == g.getEconomyManager().getSectorPowerSold() && u.getWorksPower() >= sold);
         MoneyAudit.Result audit = g.getLastMoneyAudit();
@@ -1550,5 +1571,720 @@ public class MaterialsCheck {
         assertTrue("...and the next month's dig gives the hematite mines nothing and the magnetite works their share",
                 Math.abs(dug.produced - dug.planned * (2 * magnetite.makes(Good.IRON)) / mining.getCapacity(Good.IRON)) < 1e-6
                         && land.getRemaining(iron, hem) == 0 && LandCheck.wByType(land));
+    }
+
+    /* ============================ 18. a kind's year (CY1) ============================ */
+
+    /** What FC2's seed 1 appraised one more Rod Mill at, a month at a time (D$k): +54k, -83k and -33k, over and over, against a hurdle of 45k. */
+    static final double[] FC2_CYCLE = { 54, -83, -33 };
+
+    static void trailingYear() {
+        out.println("\n--- 18. a kind's year (CY1): a month noted once, a year kept, the lesser of the two, the count idle over its year, and a save's round trip ---");
+        final int n = SpreadPlanner.TRAILING_MONTHS;
+
+        // THE YEAR, PURE.
+        SpreadPlanner p = new SpreadPlanner();
+        p.noteMargin("A", 1, 10);
+        p.noteMargin("A", 1, 30);
+        assertTrue("a second note in the same month replaces the first: one month kept, its mean the second's",
+                p.marginMonths("A") == 1 && p.marginOverYear("A") == 30);
+        p.noteMargin("A", 2, 50);
+        assertTrue("...and a note in the next month is a second month: the mean of both", p.marginMonths("A") == 2 && p.marginOverYear("A") == 40);
+        p.noteMargin("A", 3, Double.NaN);
+        p.noteMargin("A", 3, Double.POSITIVE_INFINITY);
+        assertTrue("a figure that is not finite is not noted", p.marginMonths("A") == 2 && p.marginOverYear("A") == 40);
+        assertTrue("a kind never noted reads no months and no mean", p.marginMonths("none") == 0 && Double.isNaN(p.marginOverYear("none"))
+                && Double.isNaN(p.lastOverYear("none")));
+        SpreadPlanner q = new SpreadPlanner();
+        int months = n + 3;
+        double all = 0, lastYear = 0;
+        boolean rises = true;
+        for (int m = 1; m <= months; m++) {
+            double figure = 100 + 7.0 * m * m;
+            q.noteMargin("A", m, figure);
+            rises &= q.marginMonths("A") == Math.min(m, n);
+            all += figure;
+            if (m > months - n) lastYear += figure;
+        }
+        all /= months;
+        lastYear /= n;
+        report("TRAILING_MONTHS (" + n + ") + 3 months noted keep the last TRAILING_MONTHS, and the mean is theirs, not all " + months + "'s",
+                q.marginMonths("A") == n && near(q.marginOverYear("A"), lastYear) && !near(q.marginOverYear("A"), all),
+                String.format("%d kept; mean %,.3fk, the last %d months' %,.3fk, all %d's %,.3fk", q.marginMonths("A"), q.marginOverYear("A"), n, lastYear,
+                        months, all));
+        assertTrue("...the months kept rise by one a month to TRAILING_MONTHS and no further", rises);
+        assertTrue("lesser() is the month's where the year is not a number, and else the lower of the two",
+                SpreadPlanner.lesser(5, Double.NaN) == 5 && SpreadPlanner.lesser(-5, Double.NaN) == -5 && SpreadPlanner.lesser(5, 3) == 3
+                        && SpreadPlanner.lesser(3, 5) == 3 && SpreadPlanner.lesser(-2, -2) == -2);
+
+        // THE COUNT OVER ITS YEAR: FC2's cycle of the last one's earnings.
+        SpreadPlanner year = new SpreadPlanner(), mains = new SpreadPlanner();
+        int mainsMax = 0, reachedAt = -1, peaksCounted = 0, countedAt = -1;
+        boolean everyMonth = true;
+        for (int m = 1; m <= 3 * SpreadPlanner.IDLE_MONTHS; m++) {
+            double earns = FC2_CYCLE[(m - 1) % FC2_CYCLE.length];
+            int before = year.idleMonths("rod");
+            year.noteMonth("rod", true, m, earns);
+            mains.noteMonth("rod", true, earns < 0);
+            mainsMax = Math.max(mainsMax, mains.idleMonths("rod"));
+            if (m >= 2) everyMonth &= year.idleMonths("rod") == before + 1;
+            if (m >= 2 && earns > 0 && year.idleMonths("rod") == before + 1) peaksCounted++;
+            if (countedAt < 0 && year.idleMonths("rod") >= SpreadPlanner.IDLE_MONTHS) countedAt = m;
+            if (reachedAt < 0 && year.mayShed("rod")) reachedAt = m;
+        }
+        // REV-CY1: a paying month sells none, so the kind is shed from the first losing month the count has reached IDLE_MONTHS by.
+        int losingFrom = countedAt;
+        while (losingFrom > 0 && FC2_CYCLE[(losingFrom - 1) % FC2_CYCLE.length] >= 0) losingFrom++;
+        report("premise: on FC2's figures (+54k, -83k, -33k) the count that a working month starts again (noteMonth(kind, standing, idle)) never reaches"
+                        + " IDLE_MONTHS (" + SpreadPlanner.IDLE_MONTHS + ")",
+                mainsMax > 0 && mainsMax < SpreadPlanner.IDLE_MONTHS && !mains.mayShed("rod"),
+                String.format("its count reached %d", mainsMax));
+        report("CY1: the same figures count every month idle from the second - the working months too, the year's mean below nothing - and the kind may be shed from the first"
+                        + " losing month its count has reached IDLE_MONTHS by (REV-CY1: a paying month sells none)",
+                everyMonth && peaksCounted > 0 && countedAt > 0 && countedAt <= SpreadPlanner.IDLE_MONTHS + 1 && reachedAt == losingFrom && year.mayShed("rod"),
+                String.format("the count reached %d at month %d, mayShed from month %d; %d working months counted; mean over its year %,.1fk", SpreadPlanner.IDLE_MONTHS,
+                        countedAt, reachedAt, peaksCounted, year.lastOverYear("rod")));
+        SpreadPlanner one = new SpreadPlanner();
+        for (int m = 1; m < n; m++) one.noteMonth("rod", true, m, 50);
+        int working = one.idleMonths("rod");
+        one.noteMonth("rod", true, n, -10);
+        int lost = one.idleMonths("rod");
+        boolean shed = one.mayShed("rod");
+        one.noteMonth("rod", true, n + 1, 50);
+        report("one losing month in a year of paying ones counts one idle month, and the next paying month starts the count again",
+                working == 0 && lost == 1 && !shed && one.idleMonths("rod") == 0,
+                String.format("%d, then %d, then %d", working, lost, one.idleMonths("rod")));
+
+        // SOLD ONLY IN A MONTH IT LOSES IN AND OVER ITS YEAR (REV-CY1): a paying month, though the year's mean lags it, sells none.
+        final int idleMonths = SpreadPlanner.IDLE_MONTHS;
+        SpreadPlanner lag = new SpreadPlanner();
+        for (int m = 1; m <= idleMonths; m++) lag.noteMonth("rod", 3.0, m, -100);
+        boolean bothLose = lag.mayShed("rod");
+        int atIdle = lag.idleMonths("rod");
+        lag.noteMonth("rod", 3.0, idleMonths + 1, 20);
+        report("a kind idle IDLE_MONTHS (" + idleMonths + ") running, its last month and its year both losing, may be shed; and the month after, the last one paying while the year's mean"
+                        + " still lags below nothing, it may not, though its count is past IDLE_MONTHS",
+                bothLose && atIdle == idleMonths && lag.idleMonths("rod") == idleMonths + 1 && lag.lastOverYear("rod") < 0 && !lag.mayShed("rod"),
+                String.format("count %d, may shed %s; then count %d, year D$%,.1fk, may shed %s", atIdle, bothLose, lag.idleMonths("rod"), lag.lastOverYear("rod"),
+                        lag.mayShed("rod")));
+        lag.noteMonth("rod", 3.0, idleMonths + 2, -30);
+        assertTrue("...and the month after that, losing again with the year below nothing, it may be shed again", lag.mayShed("rod") && lag.idleMonths("rod") == idleMonths + 2);
+        SpreadPlanner rich = new SpreadPlanner();
+        rich.noteMonth("rod", 3.0, 1, 1_000);
+        for (int m = 2; m <= idleMonths + 1; m++) rich.noteMonth("rod", 3.0, m, -10);
+        report("a kind idle IDLE_MONTHS running whose last month loses but whose year pays (the mean above nothing) may not be shed",
+                rich.idleMonths("rod") == idleMonths && rich.lastOverYear("rod") > 0 && !rich.mayShed("rod"),
+                String.format("count %d, year D$%,.1fk, may shed %s", rich.idleMonths("rod"), rich.lastOverYear("rod"), rich.mayShed("rod")));
+
+        // A HOLDING SMALLER THAN AT THE LAST NOTE (one sold) STARTS THE YEAR AGAIN; an equal, a larger and an unknown one do not.
+        final double held = 4;
+        double[] prior = new double[n - 1];
+        double priorSum = 0;
+        for (int m = 1; m < n; m++) priorSum += prior[m - 1] = -50 - m;
+        double[] holdings = { held - 1, held, held + 1, Double.NaN };
+        String[] names = { "smaller", "equal", "larger", "unknown (NaN)" };
+        boolean cleared = true, kept = true;
+        StringBuilder holdingsSeen = new StringBuilder();
+        for (int i = 0; i < holdings.length; i++) {
+            SpreadPlanner h = new SpreadPlanner();
+            for (int m = 1; m < n; m++) h.noteMonth("rod", held, m, prior[m - 1]);
+            h.noteMonth("rod", holdings[i], n, -9);
+            double expectAll = (priorSum - 9) / n;
+            if (i == 0) cleared = h.lastOverYear("rod") == -9 && h.idleMonths("rod") == n && h.mayShed("rod");
+            else kept &= near(h.lastOverYear("rod"), expectAll) && h.idleMonths("rod") == n;
+            holdingsSeen.append(String.format("%s: year D$%,.2fk; ", names[i], h.lastOverYear("rod")));
+        }
+        report("a holding smaller than at the kind's last note starts its year again (the new figure alone), its count going on; an equal, a larger and an unknown (NaN) holding keep the year",
+                cleared && kept, holdingsSeen.toString());
+        SpreadPlanner paid = new SpreadPlanner();
+        for (int m = 1; m < n; m++) paid.noteMonth("rod", held, m, prior[m - 1]);
+        int idleBefore = paid.idleMonths("rod");
+        paid.noteMonth("rod", held - 1, n, 30);
+        assertTrue("...a smaller holding and a paying month: the year is that month alone and the count starts again, as it would not on the year that lagged",
+                idleBefore == n - 1 && paid.lastOverYear("rod") == 30 && paid.idleMonths("rod") == 0 && !paid.mayShed("rod"));
+        // ...and the holding survives a save: a smaller one after the restore still clears the year, an equal one does not.
+        SpreadPlanner kept1 = new SpreadPlanner(), cleared1 = new SpreadPlanner(), saved = new SpreadPlanner();
+        for (int m = 1; m < n; m++) saved.noteMonth("rod", held, m, prior[m - 1]);
+        Map<String, Double> held1 = new LinkedHashMap<>();
+        saved.saveMargins(held1);
+        kept1.restoreMargins(held1);
+        cleared1.restoreMargins(held1);
+        kept1.noteMonth("rod", held, n, 30);
+        cleared1.noteMonth("rod", held - 1, n, 30);
+        report("the holding survives saveMargins/restoreMargins (HOLDING_KEY): a smaller holding noted after the restore starts the year again, an equal one does not",
+                held1.get(SpreadPlanner.HOLDING_KEY + "rod") != null && held1.get(SpreadPlanner.HOLDING_KEY + "rod") == held && cleared1.lastOverYear("rod") == 30
+                        && near(kept1.lastOverYear("rod"), (priorSum + 30) / n),
+                String.format("saved holding %s; after the restore a holding of %.0f: year D$%,.2fk, of %.0f: D$%,.2fk", held1.get(SpreadPlanner.HOLDING_KEY + "rod"), held - 1,
+                        cleared1.lastOverYear("rod"), held, kept1.lastOverYear("rod")));
+        year.noteMonth("rod", false, 100, Double.NaN);
+        assertTrue("none standing clears the kind's count and its year", year.idleMonths("rod") == 0 && !year.mayShed("rod")
+                && Double.isNaN(year.lastOverYear("rod")));
+        year.noteMonth("rod", true, 101, 20);
+        assertTrue("...and the next one standing starts a year of its own: its first month alone, not idle",
+                year.lastOverYear("rod") == 20 && year.idleMonths("rod") == 0);
+        SpreadPlanner blank = new SpreadPlanner();
+        blank.noteMonth("rod", true, 1, -5);
+        blank.noteMonth("rod", true, 2, -5);
+        int before = blank.idleMonths("rod");
+        blank.noteMonth("rod", true, 3, Double.NaN);
+        assertTrue("a figure that is not a number counts as a working month (it did) and is not kept in the year",
+                before == 2 && blank.idleMonths("rod") == 0 && blank.lastOverYear("rod") == -5);
+
+        // THE SAVE: each kind's year and its mean, exactly.
+        SpreadPlanner a = new SpreadPlanner();
+        for (int m = 1; m <= n + 2; m++) {
+            a.noteMargin("108", m, 40 + 13.37 * m);
+            a.noteMargin("109", m, -250 + 3.1 * m * m);
+            a.noteMonth("108", true, m, 17.3 - 2.9 * m);
+            a.noteMonth("109", true, m, 61.1 + 0.37 * m);
+        }
+        Map<String, Double> extras = new LinkedHashMap<>();
+        a.saveMargins(extras);
+        SpreadPlanner b = new SpreadPlanner();
+        b.noteMargin("old", 1, 9);
+        b.restoreMargins(extras);
+        boolean same = true;
+        StringBuilder seen = new StringBuilder();
+        for (String kind : new String[] { "108", "109" }) {
+            same &= b.marginOverYear(kind) == a.marginOverYear(kind) && b.marginMonths(kind) == a.marginMonths(kind) && a.marginMonths(kind) == n
+                    && b.lastOverYear(kind) == a.lastOverYear(kind) && !Double.isNaN(a.lastOverYear(kind));
+            seen.append(String.format("%s: %d months, mean %,.6fk, last one's %,.6fk; ", kind, b.marginMonths(kind), b.marginOverYear(kind),
+                    b.lastOverYear(kind)));
+        }
+        report("a save carries each kind's year and what its last one earned, and the planner read back has the same means to the bit",
+                same && extras.containsKey(SpreadPlanner.MARGIN_KEY + "108." + (n - 1)) && !extras.containsKey(SpreadPlanner.MARGIN_KEY + "108." + n)
+                        && extras.containsKey(SpreadPlanner.LAST_KEY + "109.0"),
+                seen.toString());
+        assertTrue("...and what it held before the restore is gone", b.marginMonths("old") == 0 && Double.isNaN(b.marginOverYear("old")));
+        Map<String, Double> bad = new LinkedHashMap<>();
+        bad.put(SpreadPlanner.MARGIN_KEY + "K.x", 1.0);
+        bad.put(SpreadPlanner.MARGIN_KEY + "K." + n, 2.0);
+        bad.put(SpreadPlanner.MARGIN_KEY + "K.-1", 3.0);
+        bad.put(SpreadPlanner.MARGIN_KEY + ".0", 4.0);
+        bad.put(SpreadPlanner.MARGIN_KEY + "K", 5.0);
+        bad.put(SpreadPlanner.LAST_KEY + "K.", 6.0);
+        bad.put(SpreadPlanner.MARGIN_KEY + "K.0", Double.NaN);
+        bad.put("other.K.0", 7.0);
+        SpreadPlanner c = new SpreadPlanner();
+        c.restoreMargins(bad);
+        boolean none = c.marginMonths("K") == 0 && Double.isNaN(c.marginOverYear("K")) && Double.isNaN(c.lastOverYear("K"));
+        bad.put(SpreadPlanner.MARGIN_KEY + "K.1", 8.0);
+        c.restoreMargins(bad);
+        assertTrue("a key with an age that is no number, none or past the year, one with no kind or no age, a figure that is not finite and a key of"
+                        + " another prefix are ignored; a good key beside them is read",
+                none && c.marginMonths("K") == 1 && c.marginOverYear("K") == 8 && Double.isNaN(c.lastOverYear("K")));
+        c.restoreMargins(Map.of());
+        boolean empty = c.marginMonths("K") == 0 && Double.isNaN(c.marginOverYear("K"));
+        c.noteMargin("K", 1, 5);
+        c.restoreMargins(null);
+        assertTrue("a map without the keys (a save from before CY1), or none, reads no months and no mean",
+                empty && c.marginMonths("K") == 0 && Double.isNaN(c.marginOverYear("K")) && Double.isNaN(c.lastOverYear("K")));
+    }
+
+    /* ============================ the copper town the next sections play ============================ */
+
+    /** A copper town on the literals with one Electrolytic Refinery standing (the cathode a Rod Mill runs on) and `mills` Rod Mills, the hands hired, two months settled. */
+    static Game rodTown(String label, int mills) {
+        return CopperRefiningCheck.copperWorks(label, 0, 1, mills, Double.NaN);
+    }
+
+    /** One real month with rod's world prices paying a mill or not (CopperRefiningCheck.rodPays(), rodUnpaid()), the hands hired first so the staffing gate refuses no one. */
+    static void rodMonth(Game g, boolean pays) {
+        if (pays) CopperRefiningCheck.rodPays(g);
+        else CopperRefiningCheck.rodUnpaid(g);
+        handWorkers(g);
+        quietly(() -> g.simulateMonths(1));
+    }
+
+    /** ...with the planner's year emptied first, so that month's plan weighs the month alone: the town on main's rule (to CY1). */
+    static void monthAlone(Game g, boolean pays) {
+        g.getSectors().copperRefining().planner().restoreMargins(Map.of());
+        rodMonth(g, pays);
+    }
+
+    /** Rod Mills standing and under construction. */
+    static long rodMills(Game g) {
+        BuildingManager b = g.getBuildingManager();
+        BuildingsTemplate rod = b.getTemplate(CopperRefining.ROD_MILL);
+        return b.getQuantity(rod.getId()) + b.underConstructionByName(rod.getName());
+    }
+
+    /** What Copper Refining owes, loans and bonds. */
+    static double refiningDebt(Game g) {
+        return g.getEconomyManager().getBusinessDebtManager().getPrincipal(Sectors.COPPER_REFINING);
+    }
+
+    /** The candidate for one template in an appraisal; null for none. */
+    static SpreadPlanner.Candidate candidate(List<SpreadPlanner.Candidate> all, BuildingsTemplate t) {
+        for (SpreadPlanner.Candidate c : all) if (c.template().getId() == t.getId()) return c;
+        return null;
+    }
+
+    /* ============================ 19. a one-month spike orders no works (CY1) ============================ */
+
+    static void spikeMonth() {
+        out.println("\n--- 19. a one-month spike orders no works (CY1): the month alone passes, its year does not, and the order waits for the year ---");
+        final int n = SpreadPlanner.TRAILING_MONTHS;
+        // The city plays its own plan() each month; its twin plays on main's rule (the year emptied before each month); the third is held, and the check asks
+        // its planner once a month, after the month, with the hands hired - the premise and the words, on a state the plan would have read.
+        Game g = rodTown("materialscheck-spike", 0), twin = rodTown("materialscheck-spike-twin", 0), h = rodTown("materialscheck-spike-held", 0);
+        CopperRefining hr = h.getSectors().copperRefining();
+        BuildingsTemplate rod = g.getBuildingManager().getTemplate(CopperRefining.ROD_MILL);
+        String kind = ProcessingSector.kindOf(rod);
+        BusinessInvestment hp = h.getBusinessInvestment();
+        hp.holdSector(Sectors.COPPER_REFINING);
+        boolean calm = true;
+        double worst = Double.NEGATIVE_INFINITY, lowestHurdle = Double.POSITIVE_INFINITY;
+        for (int k = 1; k < n; k++) {
+            rodMonth(g, false);
+            monthAlone(twin, false);
+            rodMonth(h, false);
+            handWorkers(h);
+            SpreadPlanner.Candidate c = candidate(hr.appraise(hp, h), rod);
+            BusinessInvestment.Decision d = hr.plan(hp, h);
+            double hurdle = hr.planner().hurdle(hr, hp, h, rod, 1, c.cost());
+            calm &= rodMills(g) == 0 && rodMills(twin) == 0 && !d.build && !c.passes() && c.refusal(SpreadPlanner.Gate.MONEY) != null && c.earns() < hurdle;
+            worst = Math.max(worst, c.earns());
+            lowestHurdle = Math.min(lowestHurdle, hurdle);
+        }
+        report("fixture: rod's export price at half the literal for TRAILING_MONTHS - 1 (" + (n - 1) + ") months: the month alone is under the money gate every month, and"
+                        + " neither the city nor its twin on main's rule orders a Rod Mill",
+                calm, String.format("a Rod Mill's best month earns D$%,.1fk against a hurdle of D$%,.1fk or more", worst, lowestHurdle));
+
+        // THE SPIKE MONTH: rod pays for one month.
+        rodMonth(g, true);
+        monthAlone(twin, true);
+        rodMonth(h, true);
+        handWorkers(h);
+        SpreadPlanner.Candidate c = candidate(hr.appraise(hp, h), rod);
+        SpreadPlanner.Candidate best = SpreadPlanner.best(hr.appraise(hp, h));
+        double hurdle = hr.planner().hurdle(hr, hp, h, rod, 1, c.cost());
+        BusinessInvestment.Decision d = hr.plan(hp, h);
+        double year = hr.planner().marginOverYear(kind);
+        report("premise: in the spike month the month alone passes every gate - the planner's best is a Rod Mill - and the town on main's rule orders one",
+                best != null && best.template().getId() == rod.getId() && c.passes() && c.earns() > hurdle && rodMills(twin) > 0,
+                String.format("the month earns D$%,.1fk against a hurdle of D$%,.1fk; its twin has %d Rod Mills", c.earns(), hurdle, rodMills(twin)));
+        report("CY1: its year's mean is under the hurdle, so the plan orders no Rod Mill, and its words give the year: its mean over its last months against the month's",
+                year < hurdle && !(d.build && d.template.getId() == rod.getId()) && d.reason != null && d.reason.contains("its mean over its last " + hr.planner().marginMonths(kind)
+                        + " months"),
+                String.format("mean D$%,.1fk over %d months against D$%,.1fk; \"%s\"", year, hr.planner().marginMonths(kind), hurdle, d.reason));
+        report("...and the city orders none that month, as it had none before", rodMills(g) == 0 && refiningDebt(g) <= refiningDebt(twin),
+                String.format("%d Rod Mills; debt D$%,.0fk against its twin's D$%,.0fk", rodMills(g), refiningDebt(g), refiningDebt(twin)));
+
+        // THE OTHER SIDE: rod keeps paying, and the year comes to pass.
+        int orderedAt = 0, plansAt = 0, waited = 0, passesAlone = 1;
+        boolean underWhileWaiting = year < hurdle;
+        for (int k = 2; k <= n; k++) {
+            rodMonth(g, true);
+            if (orderedAt == 0 && rodMills(g) > 0) orderedAt = k;
+            if (plansAt == 0) {
+                rodMonth(h, true);
+                handWorkers(h);
+                c = candidate(hr.appraise(hp, h), rod);
+                hurdle = hr.planner().hurdle(hr, hp, h, rod, 1, c.cost());
+                d = hr.plan(hp, h);
+                year = hr.planner().marginOverYear(kind);
+                if (d.build && d.template.getId() == rod.getId()) plansAt = k;
+                else {
+                    waited++;
+                    if (c.passes()) passesAlone++;
+                    underWhileWaiting &= year < hurdle;
+                }
+            }
+        }
+        report("the order waits for the year: with rod paying on, the city orders its first Rod Mill after the spike month and within TRAILING_MONTHS (" + n + ") paying months",
+                orderedAt > 1 && orderedAt <= n && rodMills(g) > 0, String.format("ordered in paying month %d of %d; %d Rod Mills, debt D$%,.0fk", orderedAt, n,
+                        rodMills(g), refiningDebt(g)));
+        report("...and the held planner agrees: until the month it plans one, every paying month passes alone and its year's mean sits under the hurdle",
+                plansAt > 1 && plansAt <= n && passesAlone == waited + 1 && underWhileWaiting,
+                String.format("plans one in paying month %d; %d months it declined, each passing alone and with its year under the hurdle", plansAt, waited + 1));
+    }
+
+    /* ============================ 20. a three-month cycle whose year does not pay builds nothing at its peaks (CY1) ============================ */
+
+    static void threeMonthCycle() {
+        out.println("\n--- 20. a three-month cycle whose year does not pay builds nothing at its peaks, so its troughs strand no works (CY1) ---");
+        final int n = SpreadPlanner.TRAILING_MONTHS;
+        Game g = rodTown("materialscheck-cycle", 0), twin = rodTown("materialscheck-cycle-twin", 0), h = rodTown("materialscheck-cycle-held", 0);
+        CopperRefining hr = h.getSectors().copperRefining(), tr = twin.getSectors().copperRefining();
+        BuildingsTemplate rod = g.getBuildingManager().getTemplate(CopperRefining.ROD_MILL), trod = twin.getBuildingManager().getTemplate(CopperRefining.ROD_MILL);
+        String kind = ProcessingSector.kindOf(rod);
+        BusinessInvestment hp = h.getBusinessInvestment();
+        hp.holdSector(Sectors.COPPER_REFINING);
+        // ...a year of the trough first, so the cycle is read on a full year (a short one reads the months it has).
+        for (int k = 1; k <= n; k++) {
+            rodMonth(g, false);
+            monthAlone(twin, false);
+            rodMonth(h, false);
+        }
+        int peaks = 0, passAlone = 0, yearUnder = 0, declinedAtPass = 0, mostMills = 0, firstPeak = 0;
+        boolean everBuilt = false;
+        double firstMonth = Double.NaN, firstYear = Double.NaN, firstHurdle = Double.NaN, stranded = Double.NaN;
+        for (int k = 1; k <= 2 * n; k++) {
+            boolean peak = k % 3 == 0;
+            rodMonth(g, peak);
+            monthAlone(twin, peak);
+            rodMonth(h, peak);
+            handWorkers(h);
+            SpreadPlanner.Candidate c = candidate(hr.appraise(hp, h), rod);
+            BusinessInvestment.Decision d = hr.plan(hp, h);
+            mostMills = (int) Math.max(mostMills, rodMills(g));
+            everBuilt |= d.build;
+            if (peak) {
+                double hurdle = hr.planner().hurdle(hr, hp, h, rod, 1, c.cost()), year = hr.planner().marginOverYear(kind);
+                peaks++;
+                if (year < hurdle) yearUnder++;
+                if (c.passes() && c.earns() > hurdle) {
+                    if (passAlone++ == 0) {
+                        firstPeak = peaks;
+                        firstMonth = c.earns();
+                        firstYear = year;
+                        firstHurdle = hurdle;
+                    }
+                    if (!d.build) declinedAtPass++;
+                }
+            } else {
+                stranded = tr.lastEarns(trod);
+            }
+        }
+        report("premise: at a peak the month alone passes every gate and clears the hurdle (the peaks do not all: the town's tallies move as the cycle runs), and at every peak the year's mean sits under it",
+                peaks == 2 * n / 3 && passAlone > 0 && yearUnder == peaks,
+                String.format("%d peaks, %d passing alone, %d with the year under the hurdle; the first passing peak (%d): the month D$%,.1fk, its year's mean D$%,.1fk, the hurdle D$%,.1fk",
+                        peaks, passAlone, yearUnder, firstPeak, firstMonth, firstYear, firstHurdle));
+        report("premise: on main's rule the town orders Rod Mills at the peaks, and they stand losing in a trough",
+                rodMills(twin) > 0 && stranded < 0, String.format("%d Rod Mills, the last one earning D$%,.1fk a month in the last trough", rodMills(twin), stranded));
+        report("CY1: the plan builds nothing at any month of the cycle, at the peaks the month alone passes least of all",
+                !everBuilt && declinedAtPass == passAlone, String.format("%d of %d peaks that passed alone declined; no build in %d months", declinedAtPass, passAlone, 2 * n));
+        report("...so the city orders no Rod Mill over " + (2 * n) + " months of the cycle and its debt is not raised for one: it is under its twin's, which is",
+                rodMills(g) == 0 && mostMills == 0 && refiningDebt(g) < refiningDebt(twin),
+                String.format("%d Rod Mills in the city, %d in its twin; debt D$%,.0fk against D$%,.0fk", rodMills(g), rodMills(twin), refiningDebt(g), refiningDebt(twin)));
+    }
+
+    /* ============================ 21. a feed-short works orders no mill (CY1) ============================ */
+
+    static void feedShortWorks() {
+        out.println("\n--- 21. a feed-short works orders no mill (CY1): its works that would run under FEED_GATE of nameplate on last month's make are refused one more ---");
+        // (a) the short works: three Rod Mills on imported cathode, rod's export price half the literal, a Wire & Cable Works beside them to ask for some: they make
+        // what the wire works asks for and idle the rest of the nameplate.
+        Game g = CopperRefiningCheck.copperWorks("materialscheck-feedshort", 0, 0, 3, Double.NaN);
+        CopperRefining cr = g.getSectors().copperRefining();
+        BuildingManager b = g.getBuildingManager();
+        BuildingsTemplate rod = b.getTemplate(CopperRefining.ROD_MILL), smelter = b.getTemplate(CopperRefining.SMELTER);
+        BusinessInvestment plans = g.getBusinessInvestment();
+        plans.holdSector(Sectors.COPPER_REFINING);   // the works stand as the fixture put them: the subject is the gate, not the planner's orders
+        quietly(() -> b.addStack(b.getTemplate(Manufacturing.WIRE_CABLE_WORKS), 1, true));
+        for (int k = 0; k < 4; k++) rodMonth(g, false);
+        Sector.Output ro = cr.outputRow(Good.COPPER_ROD);
+        double made = ro == null ? 0 : ro.produced + ro.exportBound + ro.captive, full = ro == null ? 0 : made + ro.idled;
+        double now = cr.getCapacity(Good.COPPER_ROD);   // none on site: the fixture's check below
+        double expect = ro == null ? Double.NaN : Math.min(1, made / full * ro.capacity / now);
+        double run = cr.standingRun(rod);
+        report("fixture: three Rod Mills and a wire works, rod unpaid: the mills make some rod and idle most of their nameplate, under FEED_GATE (" + SpreadPlanner.FEED_GATE + ") of it",
+                ro != null && made > 0 && ro.idled > made && made / full < SpreadPlanner.FEED_GATE && b.getUnderConstructionBySector(Sectors.COPPER_REFINING) == 0,
+                ro == null ? "none" : String.format("made %,.0f t, idled %,.0f t of %,.0f t", made, ro.idled, ro.capacity));
+        report("the run the sector reads is the Output row's own, made over made and idled times last month's capacity over today's, and it is under FEED_GATE",
+                near(run, expect) && run < SpreadPlanner.FEED_GATE && run > 0, String.format("%.4f (the row's %.4f)", run, expect));
+        SpreadPlanner.Candidate c = cr.appraise(rod, plans);
+        String words = c.refusal(SpreadPlanner.Gate.FEED);
+        report("...so a Rod Mill's first gate is its feed, and its refusal says the works would run at that share of nameplate on last month's make",
+                c.failed() == SpreadPlanner.Gate.FEED && words != null && words.contains("of nameplate on last month's make")
+                        && words.contains(String.format("%.0f%%", 100 * run)) && words.contains(String.format("%.0f%%", 100 * SpreadPlanner.FEED_GATE)),
+                String.valueOf(words));
+        SpreadPlanner.Candidate other = cr.appraise(smelter, plans);
+        report("a kind none of whose goods' works stand is not refused on it: a smelter's run reads nothing and its feed gate is open",
+                Double.isNaN(cr.standingRun(smelter)) && other.refusal(SpreadPlanner.Gate.FEED) == null, String.format("%s", cr.standingRun(smelter)));
+
+        // (a, saved) the run crosses a save (REV-CY1): the month's Output rows are not saved, so the month after a load read none and the gate stood open on a works
+        // it should refuse. The whole city is saved to its scratch files (never a save slot of the player's) and read back by a fresh game.
+        double savedRun = cr.standingRun(rod);
+        quietly(() -> g.saveGame(10, "feedshort"));
+        Game back = new Game(g.getGameFiles());
+        quietly(() -> back.loadGameSave(10));
+        CopperRefining br = back.getSectors().copperRefining();
+        BuildingsTemplate backRod = back.getBuildingManager().getTemplate(CopperRefining.ROD_MILL);
+        double backRun = br.standingRun(backRod);
+        String backWords = br.appraise(backRod, back.getBusinessInvestment()).refusal(SpreadPlanner.Gate.FEED);
+        report("premise: the loaded town has read no month yet: its save loaded, no Output row for rod, and the Rod Mills as many as were saved",
+                back.getLoadFailure() == null && br.outputRow(Good.COPPER_ROD) == null && back.getBuildingManager().getQuantity(backRod.getId()) == b.getQuantity(rod.getId()),
+                String.format("%s; %d Rod Mills", back.getLoadFailure() == null ? "loaded" : back.getLoadFailure(), back.getBuildingManager().getQuantity(backRod.getId())));
+        report("CY1 (REV-CY1): the feed gate's run survives a save: before any month runs the loaded town reads the saved town's run, under FEED_GATE, and refuses a Rod Mill on its feed",
+                near(backRun, savedRun) && backRun < SpreadPlanner.FEED_GATE && backWords != null && backWords.contains("of nameplate on last month's make")
+                        && backWords.contains(String.format("%.0f%%", 100 * backRun)),
+                String.format("saved %.6f, loaded %.6f; %s", savedRun, backRun, backWords));
+
+        // (b) the other side: rod paying, the same mills run their whole nameplate.
+        Game paid = CopperRefiningCheck.copperWorks("materialscheck-feedpays", 0, 0, 3, Double.NaN);
+        CopperRefining pr = paid.getSectors().copperRefining();
+        BuildingManager pb = paid.getBuildingManager();
+        paid.getBusinessInvestment().holdSector(Sectors.COPPER_REFINING);
+        quietly(() -> pb.addStack(pb.getTemplate(Manufacturing.WIRE_CABLE_WORKS), 1, true));
+        for (int k = 0; k < 4; k++) rodMonth(paid, true);
+        Sector.Output po = pr.outputRow(Good.COPPER_ROD);
+        double prun = pr.standingRun(rod);
+        SpreadPlanner.Candidate pc = pr.appraise(rod, paid.getBusinessInvestment());
+        report("rod paying, the same mills run at or above FEED_GATE of nameplate and their feed gate is open",
+                po != null && po.produced + po.exportBound + po.captive > 0 && prun >= SpreadPlanner.FEED_GATE && pc.refusal(SpreadPlanner.Gate.FEED) == null
+                        && pc.failed() != SpreadPlanner.Gate.FEED,
+                String.format("run %.4f; made %,.0f t, idled %,.0f t", prun, po == null ? 0 : po.produced + po.exportBound + po.captive, po == null ? 0 : po.idled));
+
+        // (c) nothing to read: Rod Mills standing in a town no month has run in since its rows were made.
+        Game fresh = CopperMiningCheck.copperTown("materialscheck-norows", 0);
+        fresh.playOnLiterals();
+        BuildingManager fb = fresh.getBuildingManager();
+        quietly(() -> fb.addStack(fb.getTemplate(CopperRefining.ROD_MILL), 3, true));
+        CopperRefining fr = fresh.getSectors().copperRefining();
+        SpreadPlanner.Candidate fc = fr.appraise(rod, fresh.getBusinessInvestment());
+        report("Rod Mills standing in a town with no month run since: no Output row, a run of nothing (NaN) and no refusal on the feed",
+                fr.outputRow(Good.COPPER_ROD) == null && Double.isNaN(fr.standingRun(rod)) && fc.refusal(SpreadPlanner.Gate.FEED) == null,
+                String.format("%s", fr.standingRun(rod)));
+    }
+
+    /* ============================ 22. an idle works is shed over its year (CY1) ============================ */
+
+    /** Rod's world prices, import and export, at `scale` times the literal: a month that pays the last Rod Mill something or loses it more. */
+    static void rodAt(Game g, double scale) {
+        Good rod = Good.COPPER_ROD;
+        g.getMarkets().get(rod).setWorldPrices(rod.worldImportPrice() * scale, rod.worldExportPrice() * scale);
+    }
+
+    /** Rod's prices in the trough of the cycle of section 22: half the literal, so the last Rod Mill loses money on every tonne of its feed. */
+    static final double TROUGH_SCALE = .5;
+
+    /** ...and in its peak: 1.3 times the literal, which pays the last Rod Mill a little. */
+    static final double PEAK_SCALE = 1.3;
+
+    static void idleOverYear() {
+        out.println("\n--- 22. an idle works is shed over its year (CY1): a kind whose last one loses two months in three counts them all, and may be sold ---");
+        final int idleMonths = SpreadPlanner.IDLE_MONTHS;
+        Game g = CopperRefiningCheck.copperWorks("materialscheck-idleyear", 0, 0, 3, Double.NaN);
+        CopperRefining cr = g.getSectors().copperRefining();
+        BuildingManager b = g.getBuildingManager();
+        BuildingsTemplate rod = b.getTemplate(CopperRefining.ROD_MILL);
+        BusinessInvestment plans = g.getBusinessInvestment();
+        String kind = ProcessingSector.kindOf(rod);
+        quietly(() -> b.addStack(b.getTemplate(Manufacturing.WIRE_CABLE_WORKS), 1, true));
+        int standing = (int) b.getQuantity(rod.getId()), k = 0, mainsCount = 0, mainsMax = 0, peaks = 0, countedOnPeaks = 0, trough = 0;
+        boolean steady = true;
+        double peakEarns = Double.NaN, troughEarns = Double.NaN;
+        // The sector is the city's own, unheld: its plan and its retirement are the real ones.
+        while (k < 3 * idleMonths && !(cr.idleBuildings() > 0)) {
+            boolean peak = k % 3 == 2;
+            rodAt(g, peak ? PEAK_SCALE : TROUGH_SCALE);
+            handWorkers(g);
+            int before = cr.idleMonths(rod);
+            quietly(() -> g.simulateMonths(1));
+            double last = cr.lastEarns(rod);
+            mainsCount = last < 0 ? mainsCount + 1 : 0;
+            mainsMax = Math.max(mainsMax, mainsCount);
+            steady &= cr.idleMonths(rod) == before + 1;
+            if (last >= 0) {
+                peaks++;
+                peakEarns = last;
+                if (cr.idleMonths(rod) == before + 1) countedOnPeaks++;
+            } else {
+                trough++;
+                troughEarns = last;
+            }
+            k++;
+        }
+        report("premise: the last Rod Mill earns something in a peak month (a working month that starts main's count again) and loses in the two between; the count that a working month starts again never reaches IDLE_MONTHS",
+                peaks > 0 && trough > 0 && mainsMax > 0 && mainsMax < idleMonths,
+                String.format("%d months of the cycle: the peak's D$%,.1fk, the trough's D$%,.1fk; main's count reached %d of %d", k, peakEarns, troughEarns, mainsMax, idleMonths));
+        report("CY1: the count rises every month of the cycle, the working months with it, and reaches IDLE_MONTHS (" + idleMonths + ")",
+                steady && peaks > 0 && countedOnPeaks == peaks && cr.idleMonths(rod) >= idleMonths && cr.planner().mayShed(kind),
+                String.format("%d idle months after %d; the last one's mean over its year D$%,.1fk", cr.idleMonths(rod), k, cr.planner().lastOverYear(kind)));
+        double[] measure = cr.retirementDemandAndCapacity(g);
+        report("...so the Rod Mill may be sold and the spare-capacity rule has a measure: nothing used against the idle kind's buildings",
+                cr.idleBuildings() == standing && cr.mayRetire(rod) && measure != null && measure[0] == 0 && measure[1] == standing,
+                measure == null ? "no measure" : String.format("{%,.0f, %,.0f}", measure[0], measure[1]));
+
+        // THE SALE, the cycle played on: the sector is unheld and none of its works is on site, so Game.runRetirement() sells the idle kind
+        // on its own year, though the sector's losing streak, which each paying month starts again, is under RETIREMENT_LOSS_MONTHS (CY1).
+        while (k % 3 != 1) {
+            rodAt(g, k % 3 == 2 ? PEAK_SCALE : TROUGH_SCALE);
+            handWorkers(g);
+            quietly(() -> g.simulateMonths(1));
+            k++;
+        }
+        int streak = plans.getLossMonths(Sectors.COPPER_REFINING);
+        long millsBefore = b.getQuantity(rod.getId()), orders = b.getUnderConstructionBySector(Sectors.COPPER_REFINING);
+        double[] now = cr.retirementDemandAndCapacity(g);
+        final int idleAtSale = cr.idleMonths(rod);
+        final double yearAtSale = cr.planner().lastOverYear(kind);
+        BusinessInvestment.Decision d = now == null ? BusinessInvestment.Decision.no(Sectors.COPPER_REFINING, "no idle kind")
+                : plans.planRetirement(cr, now[0], now[1], orders);
+        rodAt(g, TROUGH_SCALE);
+        handWorkers(g);
+        quietly(() -> g.simulateMonths(1));
+        long millsAfter = b.getQuantity(rod.getId());
+        report("premise: the sector's own losing streak is under RETIREMENT_LOSS_MONTHS (" + BusinessInvestment.RETIREMENT_LOSS_MONTHS
+                        + "), the wait that held an idle kind before CY1", streak < BusinessInvestment.RETIREMENT_LOSS_MONTHS,
+                String.format("%d months", streak));
+        report("CY1: the rule sells the idle kind on its own year, and the city's month sells a Rod Mill",
+                orders == 0 && d.build && d.template == rod && d.quantity >= 1 && millsAfter < millsBefore,
+                String.format("%s (%s); %d Rod Mills before the month, %d after", d.build ? d.template.getName() + " x" + d.quantity : "no", d.reason, millsBefore, millsAfter));
+        report("CY1: the sale's reason names the idle kind and its months over its year, not the sector's own \"0 months of losses\"",
+                d.build && d.reason.startsWith(String.format("%s idle %d months over its year", rod.getName(), idleAtSale))
+                        && d.reason.startsWith(rod.getName() + " idle ") && !d.reason.contains("0 months of losses") && idleAtSale >= idleMonths,
+                d.reason);
+        // ...and the holding that fell by the sale started the last one's year again (REV-CY1): the month's figure alone, not the seven before it.
+        double figureAfter = cr.lastEarns(rod), yearAfter = cr.planner().lastOverYear(kind);
+        report("CY1: the sale started the last Rod Mill's year again: the month after it has that month's figure alone for its year, not the year's mean before it",
+                millsAfter < millsBefore && near(yearAfter, figureAfter) && !near(yearAfter, yearAtSale),
+                String.format("D$%,.1fk over its year after the month's sale, D$%,.1fk before it (the month's figure D$%,.1fk)", yearAfter, yearAtSale, figureAfter));
+
+        idleLagsItsYear(idleMonths);
+    }
+
+    /**
+     * REV-CY1: the month a kind's last works PAID while its year's mean still lagged below nothing. The count (a month counts idle when it or the year is
+     * below nothing) was at IDLE_MONTHS and past it, and with nothing else braking the sale Game.runRetirement() sold ceil 25% of the kind each month on the lag.
+     * It cannot come after a sale - one starts the year again, and a month after is a paying figure alone (the count starts again) or a losing one (sold
+     * again) - so it is played on the cycle's own first peak at the count, the year nothing but its troughs and that peak.
+     */
+    static void idleLagsItsYear(int idleMonths) {
+        Game g = CopperRefiningCheck.copperWorks("materialscheck-idlelag", 0, 0, 3, Double.NaN);
+        CopperRefining cr = g.getSectors().copperRefining();
+        BuildingManager b = g.getBuildingManager();
+        BuildingsTemplate rod = b.getTemplate(CopperRefining.ROD_MILL);
+        String kind = ProcessingSector.kindOf(rod);
+        quietly(() -> b.addStack(b.getTemplate(Manufacturing.WIRE_CABLE_WORKS), 1, true));
+        final long standing = b.getQuantity(rod.getId());
+        int k = 0, lagAt = -1, lagCount = 0;
+        double lagLast = Double.NaN, lagYear = Double.NaN;
+        boolean lagMayShed = true, sold = false;
+        long lagMills = -1;
+        double lagIdle = -1;
+        double[] measure = null;
+        while (k < 3 * idleMonths && lagAt < 0) {
+            rodAt(g, k % 3 == 2 ? PEAK_SCALE : TROUGH_SCALE);
+            handWorkers(g);
+            quietly(() -> g.simulateMonths(1));
+            double last = cr.lastEarns(rod);
+            sold |= b.getQuantity(rod.getId()) < standing;
+            if (last >= 0 && cr.idleMonths(rod) >= idleMonths && cr.planner().lastOverYear(kind) < 0) {
+                lagAt = k;
+                lagLast = last;
+                lagCount = cr.idleMonths(rod);
+                lagYear = cr.planner().lastOverYear(kind);
+                lagMayShed = cr.planner().mayShed(kind);
+                lagMills = b.getQuantity(rod.getId());
+                measure = cr.retirementDemandAndCapacity(g);
+                lagIdle = cr.idleBuildings();
+            }
+            k++;
+        }
+        report("premise: a month in which the last Rod Mill earns something while its idle count is at IDLE_MONTHS (" + idleMonths
+                        + ") or past it and its year's mean is still below nothing, and none was sold before it",
+                lagAt >= 0 && lagLast >= 0 && lagCount >= idleMonths && lagYear < 0 && !sold && lagMills == standing,
+                String.format("month %d of the cycle: the last one earned D$%,.1fk, %d idle months, D$%,.1fk over its year; %d Rod Mills standing", lagAt + 1,
+                        lagLast, lagCount, lagYear, lagMills));
+        report("CY1 (REV-CY1): ...the kind may not be sold on that note, though its count is at IDLE_MONTHS: the last one paid, so the sector counts no idle works and offers"
+                        + " the retirement no measure for it",
+                !lagMayShed && lagIdle == 0 && measure == null,
+                String.format("mayShed %s, %,.0f idle works, %s", lagMayShed, lagIdle, measure == null ? "no measure" : "a measure"));
+        // The next real month: its start runs Game.runRetirement() on that note.
+        rodAt(g, k % 3 == 2 ? PEAK_SCALE : TROUGH_SCALE);
+        handWorkers(g);
+        quietly(() -> g.simulateMonths(1));
+        k++;
+        long after = b.getQuantity(rod.getId());
+        report("CY1 (REV-CY1): the next month's retirement, run on that note, sells none: the Rod Mill count is unchanged across it",
+                after == lagMills && b.getUnderConstructionBySector(Sectors.COPPER_REFINING) == 0,
+                String.format("%d Rod Mills before the month, %d after", lagMills, after));
+        // ...and nothing else was braking it: the last one loses again that month, in it and over its year, and the retirement of the month after sells one.
+        boolean mayAgain = cr.planner().mayShed(kind), losing = cr.lastEarns(rod) < 0;
+        int idleNow = cr.idleMonths(rod);
+        double yearNow = cr.planner().lastOverYear(kind);
+        rodAt(g, k % 3 == 2 ? PEAK_SCALE : TROUGH_SCALE);
+        handWorkers(g);
+        quietly(() -> g.simulateMonths(1));
+        long later = b.getQuantity(rod.getId());
+        report("...and nothing else was braking it: the month after, the last one losing again in its month and over its year, the rule may shed it and the retirement sells a Rod Mill",
+                mayAgain && losing && idleNow >= idleMonths && yearNow < 0 && later < after,
+                String.format("%d idle months, D$%,.1fk over its year, mayShed %s; %d Rod Mills before the month, %d after", idleNow, yearNow, mayAgain, after, later));
+    }
+
+    /* ============================ 23. the planner weighs a works' own power as it is paid ============================ */
+
+    static void ownPowerPlanned() {
+        out.println("\n--- 23. the planner weighs a works' own power as it is paid (PW1-R): what replaces its draw at its class's price, the surplus at the works' price ---");
+        GameFiles files = GameFiles.scratch("materialscheck-ownpower");
+        Game g = town(files);
+        BuildingManager b = g.getBuildingManager();
+        quietly(() -> {
+            b.addStack(b.getTemplate(HeavyIndustry.COKE_OVENS), 1, true);
+            b.addStack(b.getTemplate(HeavyIndustry.BLAST_FURNACE), 1, true);
+            b.addStack(b.getTemplate(HeavyIndustry.OXYGEN_STEEL_SHOP), 1, true);
+            g.buildStack(b.getTemplateByName("Coal Power Plant"), 1, true);
+            // ...four months, as section 14 plays them: the furnace and the shop load the grid past what the ovens make, so a book is struck at a price above nothing.
+            g.simulateMonths(4);
+        });
+        HeavyIndustry heavy = g.getSectors().heavyIndustry();
+        EconomyManager econ = g.getEconomyManager();
+        BuildingsTemplate ovens = b.getTemplate(HeavyIndustry.COKE_OVENS);
+        double gen = ovens.getGen(), draw = ovens.getElectricityConsumption();
+        double commerce = econ.getPricePerWatt(), industry = econ.getIndustryPricePerWatt(), works = econ.getWorksPricePerWatt();
+        double factor = heavy.exchangeFactor(), rate = .8, tariff = heavy.tariff(), worksTariff = heavy.worksTariff();
+        report("fixture: section 14's town, four months on: the Coke Ovens make more power than they draw, and the struck book pays"
+                        + " the works' surplus a price apart from what Heavy Industry is billed",
+                b.getQuantity(HeavyIndustry.COKE_OVENS) == 1 && gen > draw && draw > 0 && ovens.getConsumables() > 0
+                        && industry > 0 && works > 0 && industry != works && tariff == industry && worksTariff == works,
+                String.format("%,.0f kW made past a %,.0f kW draw; commerce %.6g, industry %.6g (sector %.6g), works %.6g (sector %.6g) a kW", gen, draw, commerce, industry, tariff, works, worksTariff));
+
+        double own = SpreadPlanner.ownCosts(ovens, rate, factor, tariff, worksTariff);
+        double byHand = ovens.getConsumables() * rate * factor - Math.min(gen, draw) * tariff - (gen - draw) * worksTariff;
+        report("its own costs are its consumables at the rate and the exchange factor, less its draw replaced at the industry price and its surplus"
+                        + " past the draw at the works' price (to 1e-12)",
+                Math.abs(own - byHand) <= 1e-12 * Math.abs(byHand) && byHand != SpreadPlanner.ownCosts(ovens, rate, factor, tariff),
+                String.format("D$%.6gk a month, not the flat price's D$%.6gk", own, SpreadPlanner.ownCosts(ovens, rate, factor, tariff)));
+
+        // ...the idle book's figure for the works that stand: the works' price moved by a tenth, and the last one earns the surplus times that more.
+        double d = .1 * works;
+        double lastBefore = heavy.lastEarns(ovens), lastAfter, lastBack;
+        try {
+            econ.setPowerPrices(commerce, industry, works + d);
+            lastAfter = heavy.lastEarns(ovens);
+        } finally {
+            econ.setPowerPrices(commerce, industry, works);
+        }
+        lastBack = heavy.lastEarns(ovens);
+        report("the last one standing earns what its surplus gains at a works' price a tenth higher, and no more: lastEarns() rises by the surplus"
+                        + " times the rise (to 1e-9), and falls back with the price",
+                Double.isFinite(lastBefore) && Double.isFinite(lastAfter) && lastBack == lastBefore
+                        && Math.abs((lastAfter - lastBefore) - (gen - draw) * d) <= 1e-9 * Math.abs(lastBefore),
+                String.format("D$%.6gk a month, then D$%.6gk (+%.4gk of the %.4gk surplus x the rise)", lastBefore, lastAfter,
+                        lastAfter - lastBefore, (gen - draw) * d));
+
+        // ...and the industry price moved by the same: it moves what replaces the draw, and not the surplus.
+        double ownMoved;
+        try {
+            econ.setPowerPrices(commerce, industry + d, works);
+            ownMoved = SpreadPlanner.ownCosts(ovens, rate, factor, heavy.tariff(), heavy.worksTariff());
+        } finally {
+            econ.setPowerPrices(commerce, industry, works);
+        }
+        report("the industry price a tenth higher moves its own-power credit by its draw replaced times the rise alone (to 1e-12): the surplus is not paid the industry price",
+                Math.abs((ownMoved - own) - (-Math.min(gen, draw) * d)) <= 1e-12 * Math.max(Math.abs(own), Math.abs(ownMoved)),
+                String.format("%.6g against %.6g", ownMoved - own, -Math.min(gen, draw) * d));
+
+        // ...REV-PW1c: the recipes' prices are the class's, as the planner's are. This town has no street wires, so its commerce and industry prices are one:
+        // the commerce price is moved a tenth of the works' above the industry's while they are read, so a shop's and the ovens' cannot be mistaken for each other.
+        BuildingsTemplate shop = b.getTemplateByName("Small Grocery Store");
+        Recipes.Prices heavyPrices, shopPrices;
+        double commerceNow;
+        try {
+            econ.setPowerPrices(commerce + d, industry, works);
+            commerceNow = econ.getPricePerWatt();
+            heavyPrices = Recipes.pricesOf(g, ovens);
+            shopPrices = Recipes.pricesOf(g, shop);
+        } finally {
+            econ.setPowerPrices(commerce, industry, works);
+        }
+        assertTrue("a recipe of the ovens is weighed at the industry price for its draw and the works' for its surplus, and a shop's at the commerce price",
+                heavyPrices.pricePerWatt() == industry && heavyPrices.worksPricePerWatt() == works
+                        && shopPrices.pricePerWatt() == commerceNow && commerceNow != industry);
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        report("the month's money audit closes", audit.relative() < 1e-4, String.format("residual %.3g of what moved", audit.relative()));
     }
 }

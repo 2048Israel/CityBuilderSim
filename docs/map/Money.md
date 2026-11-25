@@ -1,6 +1,6 @@
 # Money.java - 411 lines · 36 methods · 2 constants · interface
 
-`ham/citybuildersim/ui/Money.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/Money.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Every figure the interface prints as money, in one place.
 > 
@@ -13,7 +13,7 @@
 
 **Uses:** [Currency](Currency.md) (11), [Formats](Formats.md) (5), [PriceLevel](PriceLevel.md) (1), [LandManager](LandManager.md) (1)
 
-**Used by (33):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LandClassCheck](LandClassCheck.md), [LandScreen](LandScreen.md), [MoneySignCheck](MoneySignCheck.md), [NewUnitCheck](NewUnitCheck.md), [PartnersPage](PartnersPage.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [ReplayGraphLayer](ReplayGraphLayer.md), [RunWorksCheck](RunWorksCheck.md), [ServicesScreen](ServicesScreen.md), [StatementView](StatementView.md), [SummaryScreen](SummaryScreen.md), [TradeBandCheck](TradeBandCheck.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md), [WorldData](WorldData.md), [WorldDataCheck](WorldDataCheck.md), [ZoningScreen](ZoningScreen.md)
+**Used by (35):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LandClassCheck](LandClassCheck.md), [LandScreen](LandScreen.md), [MoneySignCheck](MoneySignCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [NewUnitCheck](NewUnitCheck.md), [PartnersPage](PartnersPage.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [PriceLevelCheck](PriceLevelCheck.md), [Rankings](Rankings.md), [RankingsCheck](RankingsCheck.md), [RankingsScreen](RankingsScreen.md), [ReplayGraphLayer](ReplayGraphLayer.md), [RunWorksCheck](RunWorksCheck.md), [SchoolingProbe](SchoolingProbe.md), [ServicesScreen](ServicesScreen.md), [StatementView](StatementView.md), [SummaryScreen](SummaryScreen.md), [TradeBandCheck](TradeBandCheck.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md), [VaultTable](VaultTable.md), [WorldData](WorldData.md), [WorldDataCheck](WorldDataCheck.md), [ZoningScreen](ZoningScreen.md)
 
 ## Sections
 

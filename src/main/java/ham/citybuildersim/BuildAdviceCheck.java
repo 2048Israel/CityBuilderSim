@@ -141,8 +141,8 @@ public class BuildAdviceCheck {
      * nine hundred houses on one paved road, no clinic or daycare (the
      * founding's own care only), a school of each basic stage, a college, a
      * university and four medical schools
-     * (so doctors are short: the schools take more than the city has), two
-     * police stations and home care - every sector held, so nothing is built
+     * (so doctors are short: the schools take more than the city has), no
+     * police and home care - every sector held, so nothing is built
      * but by this fixture's hand - played three years; then on site a gravel
      * road and three small childcare centres of the city's own (three Home
      * Daycares until 0.7.71 resized them), and with onSiteClinic
@@ -152,6 +152,15 @@ public class BuildAdviceCheck {
      * capacity, childcare 26%, a person caught and not held - and until
      * 0.7.51 the law school red with no seats for 28, a row NEEDS YOU no
      * longer lists: it wants no more students than the city would hire.
+     *
+     * NO POLICE, CAUSED (PW2, 2026-11-23). The list ordered two Police
+     * Stations, and until PW2 the treasury refused them (NEEDS_FUNDING: the
+     * Coal Power Plant at 1,071,816 of cash left too little), so the city
+     * calibrated above had none and its crime was red for that. PW2's coal
+     * plant at 776,914 left room, the stations stood, and crime read 0.2x
+     * Canada's with the cells enough: NEEDS YOU listed three needs a
+     * city-built building answers, not five. The fixture orders none, the
+     * city it was calibrated on (2.5x Canada's, one caught and not held).
      */
     static Game shortCity(Path root, String name, boolean onSiteClinic) {
         return shortCity(root, name, onSiteClinic, Set.of());
@@ -177,7 +186,7 @@ public class BuildAdviceCheck {
                     { "Commercial Bank", "1" }, { "Convenience Store", "10" }, { "House", "900" },
                     { "Elementary School", "1" }, { "Middle School", "1" }, { "High School", "1" },
                     { "Community College", "1" }, { "University", "1" }, { "Medical School", "4" },
-                    { "Construction Depot", "4" }, { "Paved Road", "1" }, { "Police Station", "2" },
+                    { "Construction Depot", "4" }, { "Paved Road", "1" },
                     { "Home Care Service", "2" } }) {
                 if (without.contains(w[0])) continue;
                 g.buildStack(template(g, w[0]), Integer.parseInt(w[1]), true);
@@ -545,6 +554,8 @@ public class BuildAdviceCheck {
                 bm.addStack(mine, 1, true);
                 return bm.getStaffedSafetyCapacity(kind, fill) - before;
             }
+            case GRID:
+                return mine.getCapacity();
             case POWER: case WATER: {
                 // The utilities' generation, one more standing, at that building's own staffing.
                 return mine.getProduction1() * BuildAdvice.staffing(mine, fill);
@@ -639,6 +650,23 @@ public class BuildAdviceCheck {
         return readByTheModel(twin, m);
     }
 
+    /**
+     * The model's firm supply (PW3): the handler's production - the founding grid at the pooled fill, the works' power, each plant at
+     * its own posts' fill and a station at its water - less each wind and solar farm's average beyond its credit at the city's share.
+     */
+    static double modelFirm(Game twin) {
+        UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
+        BuildingManager bm = twin.getBuildingManager();
+        double[] fill = twin.getPopulationManager().getJobFillRate();
+        double share = BuildAdvice.variableShare(twin, Map.of()), nonFirm = 0;
+        for (BuildingsTemplate t : bm.getTemplates()) {
+            if (t.getCategory() == BuildingType.ELECTRICITY && (t.isWind() || t.isSolar())) {
+                nonFirm += bm.getQuantity(t.getId()) * t.getProduction1() * BuildAdvice.staffing(t, fill) * (1 - BuildAdvice.credit(twin, t, share));
+            }
+        }
+        return u.getProduction() - nonFirm;
+    }
+
     /** The students a school above the ladder would get and hire, read before the order stood (builtAndRead()). */
     static double wantBefore = Double.NaN;
 
@@ -647,16 +675,17 @@ public class BuildAdviceCheck {
         double[] fill = twin.getPopulationManager().getJobFillRate();
         BuildingManager bm = twin.getBuildingManager();
         switch (m.kind()) {
+            case GRID: {
+                UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
+                double carry = Math.max(u.getFoundingGridKw(), bm.getQuantity(Substations.ID) * Substations.SUBSTATION_MW * 1000);
+                double season = PowerDispatch.season(CityCalendar.monthOfYear(twin.getMonth()));
+                return u.getConsumption() * season * PowerDispatch.PLAN_PEAK / carry;
+            }
             case POWER: {
                 UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
-                // PW1: the peak block's draw (PLAN_PEAK) over the production less what the standing wind does not deliver in its calmest half-block (WIND_FIRM).
-                double nonFirm = 0;
-                for (BuildingsTemplate t : bm.getTemplates()) {
-                    if (t.getCategory() == BuildingType.ELECTRICITY && t.isWind()) {
-                        nonFirm += bm.getQuantity(t.getId()) * t.getProduction1() * (1 - PowerDispatch.WIND_FIRM);
-                    }
-                }
-                return u.getConsumption() * PowerDispatch.PLAN_PEAK / (u.getProduction() - nonFirm * u.getAverageUtilityFill());
+                // PW1, PW3: the year's peak hour's draw (PLAN_PEAK_HOUR) over the model's production less what the standing wind and sun
+                // do not deliver in the peak hours (each farm at its own posts' fill, its credit at the city's share).
+                return u.getConsumption() * PowerDispatch.PLAN_PEAK_HOUR / modelFirm(twin);
             }
             case WATER: {
                 UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
@@ -1132,6 +1161,15 @@ public class BuildAdviceCheck {
      * posts brought in - Engineering Services Offices, standing - and the
      * row is there. And the playtest's founding at month 9, which the old
      * rule told to build a university, gets none.
+     *
+     * WG3 (2026-11-25): the founding's students answer to the degree's pay
+     * after its cost. Its best ungated degree job pays about 1.2 diplomas,
+     * near the break-even of four years out of work, so the founding itself
+     * draws no class (Becker 1964; Freeman 1976: enrolment fell when the
+     * college premium did): no row, and none of its students without a gain.
+     * The hiring guard is still tested on the founding: one degree job is
+     * offered at three diplomas, a class would come, its posts would not
+     * hire one, and there is still no row.
      */
     static void thePipeline(Path root, Game g, List<CityNeeds.Need> all) {
         out.println("\n--- 9. no higher education without its pipeline: no more wanted than would come or be hired;"
@@ -1169,9 +1207,32 @@ public class BuildAdviceCheck {
         higherRows(u, after, "...with the offices", rows);
         assertTrue("fixture: the rows above held a school with seats and one with none", rows[0] > 0 && rows[1] > 0);
 
+        // ...THE FOUNDING ITSELF, FROM THE NINTH TO MONTH 36 (LD1, 2026-10-31): its students follow the degree's pay after cost.
+        Game n = founded(root, "founded-native", 9);
+        double comeN = CityNeeds.wouldCome(n, uni);
+        while (comeN < CityNeeds.SEATS_FLOOR && n.getMonth() < 36) {
+            quietly(() -> n.simulateMonths(1));
+            comeN = CityNeeds.wouldCome(n, uni);
+        }
+        LabourMarket nm = n.getLabourMarket();
+        SchoolingLadder.View nv = n.getEducation().schoolingLadder(nm, AdultStage.YOUNG);
+        double nativeReturn = 0;
+        for (AdultStage stage : AdultStage.values()) nativeReturn += n.getEducation().studyReturn(uni, nm, stage);
+        out.printf("      the founding at month %d: %,d people, %,.0f would come to a university; its degree pays %.2f diplomas,"
+                        + " %+.3f after cost (young)%n", n.getMonth(), n.getPopulationManager().getPopulation(), comeN,
+                nv.row(uni).paid() / nv.row(EducationType.HIGH).paid(), nv.gain(uni));
+        assertTrue("the founding's would-be students follow the degree's pay after cost: none without a gain",
+                nativeReturn > 0 || comeN == 0);
+        List<CityNeeds.Need> n9 = CityNeeds.measure(n, CityNeeds.PLAIN);
+        assertTrue("the founding gets no university row", schoolRow(n9, uni) == null);
+        assertTrue("...and no university card", !suggests(n, n9, uni));
+
         Game f = founded(root, "founded", 9);
+        Education school = f.getEducation();
+        LabourMarket market = f.getLabourMarket();
+        // Controlled offer: an existing ungated degree job pays three diploma wages; its posts stay unchanged.
+        market.getWages()[JobType.UNIV_SCIENCE.ordinal()] = 3 * market.getWage(JobType.DIPLOMA);
         double come9 = CityNeeds.wouldCome(f, uni);
-        // ...ITS FIRST MONTH FROM THE NINTH THAT A CLASS WOULD COME TO (LD1, 2026-10-31).
         while (come9 < CityNeeds.SEATS_FLOOR && f.getMonth() < 36) {
             quietly(() -> f.simulateMonths(1));
             come9 = CityNeeds.wouldCome(f, uni);
@@ -1179,9 +1240,20 @@ public class BuildAdviceCheck {
         long uniPosts = 0;
         long[] jobs = f.getBuildingManager().getTotalJobs();
         for (JobType j : JobType.values()) if (WageBand.of(j) == uni.produces()) uniPosts += jobs[j.ordinal()];
-        out.printf("      the founding at month %d: %,d people, %,.0f would come to a university, %,d university posts%n",
+        double hires9 = CityNeeds.hires(f, uni, 1);
+        assertTrue("controlled return: eligible adults and native affordability are positive",
+                school.eligibleFor(uni, f.getPopulationManager()) > 0 && school.studyAffordability(uni, market) > 0);
+        for (AdultStage stage : AdultStage.values())
+            assertTrue("controlled return: positive native after-cost return for " + stage,
+                    school.studyReturn(uni, market, stage) > 0);
+        assertTrue("controlled return: genuine graduate posts and hires both stay below a class",
+                uniPosts > 0 && uniPosts < CityNeeds.SEATS_FLOOR && hires9 > 0 && hires9 < CityNeeds.SEATS_FLOOR);
+        out.printf("      controlled-return founding at month %d: %,d people, %,.0f would come to a university, %,d university posts%n",
                 f.getMonth(), f.getPopulationManager().getPopulation(), come9, uniPosts);
-        assertTrue("fixture: a month of a Standard founding, from the ninth, that at least a class would come to a university",
+        out.printf("      native cause: eligible %.6f, affordability %.6f, returns young %.6f established %.6f, hires %.6f%n",
+                school.eligibleFor(uni, f.getPopulationManager()), school.studyAffordability(uni, market),
+                school.studyReturn(uni, market, AdultStage.YOUNG), school.studyReturn(uni, market, AdultStage.ESTABLISHED), hires9);
+        assertTrue("fixture: controlled return from the ninth month brings at least a university class by month 36",
                 f.getMonth() >= 9 && f.getMonth() <= 36 && come9 >= CityNeeds.SEATS_FLOOR);
         List<CityNeeds.Need> f9 = CityNeeds.measure(f, CityNeeds.PLAIN);
         assertTrue("no university row there", schoolRow(f9, uni) == null);
@@ -1564,7 +1636,7 @@ public class BuildAdviceCheck {
     }
 
     static void powerForTheCalmPeak(Game fixture) {
-        out.println("\n--- 14. power is planned for the calm peak (PW1): a wind farm adds its firm kW, the figure is the peak's draw over the firm supply ---");
+        out.println("\n--- 14. power is planned for the peak (PW1; PW3 the year's peak hour): a wind farm adds its credit there, the figure is the peak hour's draw over the firm supply ---");
         // The short city's twin (it stands staffed, with its Coal Power Plant), six Wind Farms standing in it and the month's services pass run.
         Game g = twin(fixture);
         Map<BuildingsTemplate, Long> six = new LinkedHashMap<>();
@@ -1578,28 +1650,36 @@ public class BuildAdviceCheck {
                 wind.isWind() && !coal.isWind() && staffWind > 0 && staffCoal > 0
                         && g.getBuildingManager().getQuantity(wind.getId()) >= 6 && g.getBuildingManager().getQuantity(coal.getId()) >= 1);
 
-        // (a) the unit: a wind farm's average x WIND_FIRM, a coal plant's all, each at its own staffing.
+        // (a) the unit: a wind farm's average x its credit at the share with one more standing (PW3: WIND_PEAK_CREDIT, falling with the
+        // variable rows' share of the energy), a coal plant's all, each at its own staffing.
+        double shareWithOne = BuildAdvice.variableShare(g, Map.of(wind, 1L));
+        double credit = PowerDispatch.WIND_PEAK_CREDIT * PowerDispatch.creditFall(shareWithOne);
+        // ...in this small city six farms make several times its energy, so the credit is at its floor (PowerPlanCheck walks the line).
+        assertTrue(String.format("fixture: seven Wind Farms make %.2f times the city's energy, past CREDIT_HALF: their credit is CREDIT_FLOOR of WIND_PEAK_CREDIT", shareWithOne),
+                shareWithOne >= PowerDispatch.CREDIT_HALF && PowerDispatch.creditFall(shareWithOne) == PowerDispatch.CREDIT_FLOOR);
         double perWind = BuildAdvice.unit(g, power, wind) / wind.getProduction1();
         double perCoal = BuildAdvice.unit(g, power, coal) / coal.getProduction1();
-        close("(a) a Wind Farm's power unit per kW of its average is WIND_FIRM of a Coal Power Plant's, staffing aside",
-                perWind / perCoal, PowerDispatch.WIND_FIRM * staffWind / staffCoal, 1e-12);
+        close("(a) a Wind Farm's power unit per kW of its average is its credit at that share (WIND_PEAK_CREDIT x creditFall()) of a Coal Power Plant's, staffing aside",
+                perWind / perCoal, credit * staffWind / staffCoal, 1e-12);
         close("...and built() (the card sets it beside unit()) counts the same firm kW, fully staffed",
-                BuildAdvice.built(g, power, wind) / wind.getProduction1(), PowerDispatch.WIND_FIRM, 1e-12);
+                BuildAdvice.built(g, power, wind) / wind.getProduction1(), credit, 1e-12);
         bits("...a Coal Power Plant's built() is its whole average", BuildAdvice.built(g, power, coal), coal.getProduction1());
 
-        // (b) the figure: the peak block's draw over the firm supply, off the handler's own figures.
+        // (b) the figure: the peak hour's draw over the firm supply, off the handler's own figures.
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         Map<BuildingsTemplate, Long> none = new LinkedHashMap<>();
         long windStanding = g.getBuildingManager().getQuantity(wind.getId());
-        double firm = (u.getBaseProduction() - windStanding * wind.getProduction1() * (1 - PowerDispatch.WIND_FIRM)) * u.getAverageUtilityFill();
+        double shareNow = BuildAdvice.variableShare(g, none);
+        double firm = u.getProduction() - windStanding * wind.getProduction1() * staffWind
+                * (1 - PowerDispatch.WIND_PEAK_CREDIT * PowerDispatch.creditFall(shareNow));
         double figure = BuildAdvice.figure(g, power, none);
-        close("(b) power's figure is the draw x PLAN_PEAK over the firm supply (the base less the wind's non-firm part, at the utilities' fill)",
-                figure, u.getConsumption() * PowerDispatch.PLAN_PEAK / firm, 1e-9);
+        close("(b) power's figure is the draw x PLAN_PEAK_HOUR over the firm supply (the model's production less the wind's average beyond its credit, at its own posts' fill)",
+                figure, u.getConsumption() * PowerDispatch.PLAN_PEAK_HOUR / firm, 1e-9);
         assertTrue("...which is more than the average's draw over its production, the wind standing counted at its average",
                 figure > u.getConsumption() / u.getProduction());
         double[] sd = BuildAdvice.supplyDemand(g, power, none);
-        close("...and supplyDemand() is the firm supply against the peak's draw", sd[0], firm, 1e-9);
-        close("...the draw the peak's, losses in", sd[1], u.getConsumption() * PowerDispatch.PLAN_PEAK, 1e-9);
+        close("...and supplyDemand() is the firm supply against the peak hour's draw", sd[0], firm, 1e-9);
+        close("...the draw the peak hour's, losses in", sd[1], u.getConsumption() * PowerDispatch.PLAN_PEAK_HOUR, 1e-9);
 
         // (c) a shortfall of five wind farms' average, caused by homes added to the demand.
         Map<BuildingsTemplate, Long> short1 = new LinkedHashMap<>();
@@ -1683,7 +1763,7 @@ public class BuildAdviceCheck {
         assertTrue("...on the firm supply against the peak's draw (supplyDemand()), not production against consumption",
                 row != null && row.a() == sd[0] && row.b() == sd[1] && row.a() < u.getProduction());
         assertTrue("...read as served at the calm peak: \"" + (row == null ? null : row.reading()) + "\"",
-                row != null && row.reading().equals(CityNeeds.servedPct(CityNeeds.servedShare(sd[0], sd[1])) + " " + CityNeeds.SERVED + CityNeeds.AT_THE_CALM_PEAK));
+                row != null && row.reading().equals(CityNeeds.servedPct(CityNeeds.servedShare(sd[0], sd[1])) + " " + CityNeeds.SERVED + CityNeeds.AT_THE_PEAK_HOUR));
 
         // (b) the card: the Build screen offers power (the cards are driven by the rows).
         BuildAdvice.Suggestion card = powerCard(BuildAdvice.suggest(g, all));

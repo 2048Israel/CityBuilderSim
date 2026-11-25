@@ -28,6 +28,82 @@ the gate box and holds it whole, a gate there waiting for it and it for a gate
 a red playtest or a slower line mailed to `jerus` and the gate's keeper, naming
 the batch (BW1).
 
+**A question for Jerus is a mail, or it is not asked** (Jerus, 2026-11-23,
+desk chat: "IF IT has FUKING qauestion, how am i suppopsed to know if they dont
+fuking send it as a question"). WHY: on 11-23 four questions sat only in the
+orchestrator's chat replies, none reached his phone, and RES3's lane stood idle
+from 14:40; his phone buzzes only on mail to `jerus`. So every question goes as
+its own mail, `cbs-bus.exe send jerus --kind question --urgent --as
+orchestrator --body "..."`, one mail per question, readable alone on a phone:
+what waits on it, the options in plain words, the pick and why, and what
+happens if he does not answer. A question in a chat reply, a note or a report
+does not count as asked. The same holds for any builder whose brief lets it
+talk to him directly.
+
+**Never wait on him; ask only what is his** (Jerus, 2026-11-23, desk chat:
+"even if the orchestrator asks, im probably going to take hours to answer,
+cause im extremely busy. and if they start sending a bunch of uselss
+questions, im going to take even longer to respond"). A batch held on his
+answer is parked at once (QUEUE's Pending) and gives up its lane to the next
+startable row; it takes the next free lane after he answers. Ask only what
+`docs/contract.md` reserves to him (weakening a check, a design call the rules
+give no recommendation to take, spending, anything outside the repository);
+decide the rest and tell him in the ship note. Never ask about lanes, order,
+pace or whether to go ahead. One mail per decision, sent once: no reminders,
+no "still waiting". Keep it to a few short lines with the question first (his
+phone cut 11-23's long ones off). Scheduling, ordering, bundling, which batch
+goes first or with which, lanes and pace are always the orchestrator's, never
+a choice put to him (Jerus, 2026-11-23, on PW7's re-bake: "thats something the
+orchestrator handles, if it asks me im not going to know whats better"). What
+truly needs his hands (a file only he has, an account, a purchase, a release,
+his PC) goes as a request for that one action, not a choice between plans.
+The test before any question: does he know something the orchestrator does
+not? He knows what the game is to be (its feel, its scope, its player), his
+money, his accounts and his time; the orchestrator knows the code, the data,
+the checks, the order of work and how the real world behaves. An answer that
+rests on the latter is decided and said at ship (Jerus, 2026-11-23: "there are
+alot of questions where i literally know less").
+
+**A check red on new behaviour: check reality first** (Jerus, 2026-11-23, desk
+chat: "sometimes its as simple as check reality"). WHY: RES3's lenders held
+housing back at high rates, homes finished later and rents rose, and
+MonetaryCheck went red; all three options put to him treated that as a defect,
+yet it is how the real world works (high rates cut building and shelter costs
+then rise, US 2022-24; the cost channel; the price puzzle), and his answer was
+"even reality higher interest rates doesnt always equal liwer inflation". So,
+for the orchestrator, every builder and every reviewer: (1) ask whether the
+real world does it, looking it up when unsure (the data, the economics,
+history); (2) if it does, the model is right and the check's law incomplete:
+restate the check to the real law, keep what still holds, add an assertion
+that the real effect is there, and cite the evidence in the notes; never hide
+it with a fixture change or call it noise; (3) if it does not, it is a defect:
+mend it; (4) only what reality cannot settle goes to Jerus.
+
+**The laptop's restart: the drain** (MemWatch SPEC 16, 2026-11-25, from the
+MW-restart session). MemWatch restarts the laptop itself when Windows holds
+back memory. WHY: memory, not CPU, runs short on the PC, and only a restart
+gives back what Windows holds.
+1. MemWatch starts a drain when Windows' own memory is 4 GB over this boot's
+   baseline, or committed stays at 90% for 10 minutes (at most once a day).
+   The orchestrator then gets an URGENT instruction from memwatch: "a restart
+   of the laptop is pending".
+2. While it stands: start no gate, ensemble, dry run, nightly or session from
+   the laptop. Launched sessions get no new turns (their mail waits in
+   `new\`); the orchestrator still gets turns until it says clear.
+3. When nothing of the orchestrator's runs on the laptop (no `gate-box.sh`,
+   no ssh to the box, no check), it replies
+   `cbs-bus send memwatch --kind info --re <the instruction's id> --body clear`.
+4. MemWatch restarts once nothing is mid-turn and Jerus has been away 30
+   minutes, with 10 minutes' notice to him. He can hold it 6 hours from
+   MemWatch's window or the phone.
+5. After the boot comes an urgent "laptop back": carry on and start what was
+   held. A launched turn the restart cut off resumes by itself with "the PC
+   restarted mid-turn; redo what was in flight".
+6. If nothing is clear within 2 hours, "the laptop's restart is off for now"
+   comes: carry on; a new instruction comes before the next try. At 95%
+   committed MemWatch does not wait for the clear, only for the
+   orchestrator's turn to end.
+
 ## Dispatch
 
 - **Read live budget at the start of EVERY turn and immediately before every

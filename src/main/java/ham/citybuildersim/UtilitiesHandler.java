@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.ToDoubleFunction;
+import java.util.function.Supplier;
 
 /**
  *
@@ -71,6 +72,7 @@ public class UtilitiesHandler {
     public void setFoundingEndowments(long endowments) { this.foundingEndowments = Math.max(1, endowments); }
 
     private double baseGrid()  { return BASE_GRID_KW * foundingEndowments; }
+    public double getFoundingGridKw() { return baseGrid(); }
     private double baseWater() { return BASE_WATER_SUPPLY * foundingEndowments; }
 
     /**
@@ -90,6 +92,10 @@ public class UtilitiesHandler {
      * month against the lowest full-time wage of $800.
      *
      * Today's figure, priced at the founding's level (times PriceLevel.FACTOR, EP1).
+     * Since PW1-W the water's tariff before its works' power: the price a unit is
+     * this and, while the sea's water is needed, the sea works' power over the water
+     * the sea delivers, or spread over the water served while they stand mostly idle
+     * (THE WATER'S POWER, below).
      */
     private double pricePerWaterUnit = .05 * PriceLevel.FACTOR;
 
@@ -255,7 +261,12 @@ public class UtilitiesHandler {
         if (fresh * fill > cap) return (wells + desal) * fill + cap;
         return (fresh + desal + wells) * fill;
     }
-    public double getPricePerWaterUnit()   { return pricePerWaterUnit; }
+    /** What a unit of water is billed at: the tariff and the struck book's water power a unit delivered (PW1-W); the tariff alone until a month strikes one. */
+    public double getPricePerWaterUnit()   { return pricePerWaterUnit + getWaterPowerPerUnit(); }
+    /** What a planner prices a unit of water at (PW1-R, REV-PW1-R): the tariff and the works' power a unit at the struck commerce price, the year's mean, the season left out, so a works' choice does not swing with the month; the bills charge getPricePerWaterUnit(), the season in. */
+    public double getMeanPricePerWaterUnit() { return pricePerWaterUnit + (latestWater == null ? 0 : latestWater.marginalKwPerUnit() * struck.commercePrice); }
+    /** The water's tariff before its works' power: main's constant, $50 a unit at the founding's level. */
+    public double getWaterTariff()         { return pricePerWaterUnit; }
 
     /**
      * SERVED (0.7.41): what the grid generates over what the city asks of
@@ -296,7 +307,8 @@ public class UtilitiesHandler {
      */
     public double getElectricityRevenue() {
         if (billedByStatement) return billedElectricityRevenue;
-        return Math.min(billedElectricityDraw * energyRatio, production) * getPricePerWatt();
+        // ...and on the kWh served, the season's draw (PW1-R).
+        return Math.min(billedElectricityDraw * energyRatio, production) * struck.season * getPricePerWatt();
     }
 
     /*
@@ -404,7 +416,7 @@ public class UtilitiesHandler {
      */
     public double getWaterRevenue() {
         if (billedByStatement) return billedWaterRevenue;
-        return billedWaterDraw * waterRatio * pricePerWaterUnit;
+        return billedWaterDraw * waterRatio * getPricePerWaterUnit();
     }
 
     /*
@@ -438,11 +450,15 @@ public class UtilitiesHandler {
         if (bought != 0) income -= bought;
         // ...and the fuel and the upkeep its plants burned abroad and at home (PW1), taken only when there is some, so a month without is struck as it was.
         double fuelBill = getFuelBill();
-        return fuelBill != 0 ? income - fuelBill : income;
+        if (fuelBill != 0) income -= fuelBill;
+        // ...and what the water's books paid it for the water works' power (PW1-W), taken only when there is some.
+        return waterPowerPaid != 0 ? income + waterPowerPaid : income;
     }
 
     public double getWaterIncome() {
-        return getWaterRevenue() - getWaterPayroll();
+        double income = getWaterRevenue() - getWaterPayroll();
+        // ...less its works' power, bought of the power's books at the commerce price (PW1-W): the same sum the power's books take, so the two utilities' net moves by nothing.
+        return waterPowerPaid != 0 ? income - waterPowerPaid : income;
     }
 
     private static double sum(double[] a) {
@@ -479,8 +495,15 @@ public class UtilitiesHandler {
        Until a month is struck the book holds the founding tariff, "still at founding: no month
        has cleared".
 
-       Nothing calls strikePower(), seedConstants() or setFuelPaid() yet; the money constants
-       are re-struck by Game.restrikeMoneyConstants() in the slice that wires them.
+       THE LAG (REV-PW1's lows, PW1-R). The book a statement is struck at was dispatched at the end
+       of the month before the one it bills, at that month's calendar: July's statement (struck at
+       the top of August) is billed at June's dispatch, its ratio, its price and its season, 1.088
+       and not July's 1.193 on the north's calendar. The fuel bought at the same strike
+       (Game.buyPowerFuel()) is that dispatch's, so the bills and the fuel agree on its kWh, a
+       bill being the kWh served, draw x ratio x season x the price a kW of the mean (Book.season):
+       the month's power lags the calendar by a month, and the utility's margin takes none of it.
+       SimulationEngine.updateEconomy() calls strikePower(), Game.buyPowerFuel() setFuelPaid(); the
+       money constants are re-struck by Game.restrikeMoneyConstants().
        ===================================================================== */
 
     /** The founding tariff a kW a month, D$10 at the founding's level, held by the struck book until a month has cleared (the tariff the game had before PW1). */
@@ -502,6 +525,119 @@ public class UtilitiesHandler {
     /** The month last dispatched, and the rows it ran. */
     private PowerDispatch.Month latest = new PowerDispatch.Month();
     private List<PowerDispatch.Row> latestRows = new ArrayList<>();
+
+    /** Observation sources only: the absolute dispatch month and the existing build advice's firm supply. */
+    private IntSupplier observationMonth;
+    private DoubleSupplier firmSupply;
+    private DispatchRecord latestRecord;
+    private int paidDispatchMonth = -1;
+    private int fuelPaidMonth = -1;
+    private PowerDispatch.Month pendingLoadedMonth;
+    private DispatchRecord pendingLoadedRecord;
+    private Supplier<Substations.Costs> gridCostSource;
+    private Substations.Costs latestGridCosts, pendingLoadedGridCosts;
+
+    /** Real city grid costs; a bare dispatch fixture without a city keeps its unconstrained wires. */
+    public void setGridCostSource(Supplier<Substations.Costs> source) { gridCostSource = source; }
+
+    /* ----- THE WATER'S POWER (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price") -----
+     *
+     * The water works (the Water Treatment Plants, the Desalination Plants) drew their power as the city's own buildings, billed to
+     * nobody: PW1 then billed every customer at the merit order's price and both wires while the water still sold at its constant tariff,
+     * so a Desalination Plant's 10,880 kW cost more than its water earned and a patented one earned no licence (PublicLicenceCheck 5 and
+     * 6, REV-PW1c). Now the sea's water is priced as PW1 prices power, at its margin. The city's water is of two kinds, the land's (the
+     * founding wells and the fresh works) first and then the sea's, the order updateWaterRatio() and waterOutput() already make it in.
+     * While the sea's water is needed, the price a unit is the tariff and the sea works' draw, whole, at the commerce price of the book
+     * struck (energy and both wires, what BuildAdvice costs the city's works at), over the water the sea delivers: the water at the
+     * margin covers its works' power, and the land's water earns the rest. That holds while the sea delivers at least SEA_MARGIN_SHARE of
+     * its output at the fill. Under it the sea works stand mostly idle, and their whole draw over a sliver of water would have no bound
+     * (one unit past the land's water would pay all of it on every unit served): their power is spread over the water served instead,
+     * recovered once, but over no more than that share of their output: a unit pays at most their power over the water served, which
+     * is at least the land's, or over that share where the city serves more (REV-PW1-W 1). At the share the sea's water and that share of its output are one divisor, so the price has no step
+     * there. While the land's water serves, the price is the tariff, which pays the fresh works' power (900 kW for their 60,000 units,
+     * against the sea's 10,880): put on top, even spread over the water served as the idle sea's is, it was 1.43 times the tariff in
+     * SubstationCheck's works town and priced its coal chain out (PW5-F1). The water's books buy all the works' power, the land's and
+     * the sea's, of the power's books at that commerce price, paid at the top of the next month with the fuel (Game.buyPowerFuel()),
+     * inside the treasury's pool: the power's books take what the water's pay, so the utilities' net moves by nothing, and what reaches
+     * the treasury is the customers' water bills. The draw is whole, not at the month's ratio: a short grid rations the works' power
+     * but not their water (updateWaterRatio() reads the staffing fill alone), so the water they make is costed at the power it needs.
+     */
+
+    /**
+     * The share of the sea works' output at the fill the sea must deliver to be the water's margin alone: at it or past it the sea's
+     * water pays their power, under it their power is spread over the water served, over no more than this share of that output.
+     */
+    public static final double SEA_MARGIN_SHARE = .5;
+
+    /** kW the fresh works and the sea's works draw from the grid, standing (ServicesManager, the WATER category's power bought). */
+    private double freshWorksDraw, seaWorksDraw;
+
+    /**
+     * One update's water works: their draw (kW), the water each kind delivered (units), the land's (the founding wells' and the fresh
+     * works') first, then the sea's, and the sea works' output at the fill (units).
+     */
+    public record WaterDraw(double freshKw, double seaKw, double landDelivered, double seaDelivered, double seaOutput) {
+        /** The sea works' draw a unit while the sea delivers (THE WATER'S POWER); 0 while the land's water serves, its tariff paying its works' power. */
+        double marginalKwPerUnit() {
+            if (seaDelivered <= 0) return 0;
+            return seaKw / Math.max(seaDelivered, Math.min(landDelivered + seaDelivered, SEA_MARGIN_SHARE * seaOutput));
+        }
+    }
+
+    /** The update last made, what the month's water is priced on, and the one a load brings back (restorePendingPower()). */
+    private WaterDraw latestWater, pendingLoadedWater;
+
+    /** What the water's books paid the power's for the works' power this month, city money (setWaterPowerPaid()). */
+    private double waterPowerPaid;
+
+    public void setWaterWorksDraw(double freshKw, double seaKw) {
+        freshWorksDraw = Double.isFinite(freshKw) ? Math.max(0, freshKw) : 0;
+        seaWorksDraw = Double.isFinite(seaKw) ? Math.max(0, seaKw) : 0;
+    }
+
+    public double getWaterWorksDraw() { return freshWorksDraw + seaWorksDraw; }
+
+    /** The last update's water works; null before the first update. */
+    public WaterDraw getLatestWaterDraw() { return latestWater; }
+
+    /** The water's power a unit: the sea works' draw a unit while the sea delivers, served at the book's season (PW1-R) and the struck commerce price; 0 while the land's water serves and before any update. */
+    public double getWaterPowerPerUnit() { return latestWater == null ? 0 : latestWater.marginalKwPerUnit() * struck.season * struck.commercePrice; }
+
+    /** All the water works' power, the kWh served them at the book's season (PW1-R) and the struck commerce price, what the water's books owe the power's for the month of the last update. */
+    public double getWaterPowerBill() { return latestWater == null ? 0 : (latestWater.freshKw() + latestWater.seaKw()) * struck.season * struck.commercePrice; }
+
+    /** What the water's books pay the power's this month for the works' power (Game.buyPowerFuel(), the month just ended's bill, before the next strike). */
+    public void setWaterPowerPaid(double paid) { waterPowerPaid = Double.isFinite(paid) ? Math.max(0, paid) : 0; }
+
+    public double getWaterPowerPaid() { return waterPowerPaid; }
+
+
+    public void setPowerObservationSources(IntSupplier month, DoubleSupplier firm) {
+        observationMonth = month;
+        firmSupply = firm;
+    }
+
+    /** Reserved aggregate row ids; catalogue rows keep their permanent nonnegative ids. */
+    public static final int WORKS_ID = -1, GRID_ID = -2, FIXTURE_ID = -3;
+
+    /** One catalogue row's actual run and clearing receipts, not its profit or its fuel purchase bill. */
+    public record RowRecord(int id, int sourceIndex, PowerDispatch.Kind kind, Good fuel, double offeredKw, double nameplateKw,
+            double waterKwh, double fuelPerKwh, double upkeepPerKwh,
+            double kwh, double fuelUnits, double receipts, double marginal, double upkeepWorld, List<Double> runKw) {
+        public RowRecord { runKw = List.copyOf(runKw); }
+        RowRecord scaled(double scale) {
+            return new RowRecord(id, sourceIndex, kind, fuel, offeredKw, nameplateKw, waterKwh, fuelPerKwh, upkeepPerKwh, kwh, fuelUnits, receipts * scale,
+                    marginal * scale, upkeepWorld, runKw);
+        }
+    }
+
+    /** Immutable bounded aggregates, captured at dispatch, before another month can change fleet, fuel or prices. */
+    public record DispatchRecord(int month, double firmKw, List<RowRecord> rows) {
+        public DispatchRecord { rows = List.copyOf(rows); }
+        DispatchRecord scaled(double scale) {
+            return new DispatchRecord(month, firmKw, rows.stream().map(r -> r.scaled(scale)).toList());
+        }
+    }
 
     /** The month last struck: the founding tariff until one is. */
     private Book struck = Book.founding();
@@ -525,6 +661,36 @@ public class UtilitiesHandler {
 
     /** The calendar month, 1 to 12, for the season; null: no season. */
     public void setCalendarMonth(IntSupplier month) { this.calendarMonth = month; }
+
+    /** Where the city stands and what its solar farms stand on (PW3): its latitude (NaN for a generated world, the US fleet's) and whether the tracker (research E25) is known; null: NaN, and tracked (today's figures). */
+    private DoubleSupplier latitudeSource;
+    private java.util.function.BooleanSupplier trackerSource;
+
+    /** The city's latitude and whether its solar farms track the sun (PW3): the wind's, the sun's and the river's months are read there. */
+    public void setPlace(DoubleSupplier latitude, java.util.function.BooleanSupplier trackers) {
+        this.latitudeSource = latitude;
+        this.trackerSource = trackers;
+    }
+
+    /** The city's latitude, NaN for a generated world or a bare fixture. */
+    public double latitude() {
+        double lat = latitudeSource == null ? Double.NaN : latitudeSource.getAsDouble();
+        return Double.isFinite(lat) ? lat : Double.NaN;
+    }
+
+    /** Whether the city's solar farms track the sun (research E25 known); a bare fixture's do, today's figure. */
+    public boolean trackers() { return trackerSource == null || trackerSource.getAsBoolean(); }
+
+    /** The calendar month dispatched, 1 to 12; 0 for a fixture with no calendar (no season, no weather by month). */
+    private int monthOfYear() { return calendarMonth == null ? 0 : calendarMonth.getAsInt(); }
+
+    /** A plant's own staffing (PW3, PW1-P's fifth gap): its posts' fill at the city's fill rate by job; the pooled fill for a handler never given the rates. */
+    private double ownFill(BuildingsTemplate t, double pooled) {
+        return fillRate == null || !fillRatesGiven ? pooled : BuildAdvice.staffing(t, fillRate);
+    }
+
+    /** The fill a plant of this kind runs at in the merit order (PW3): its own posts' at the city's fill rate by job, the pooled utility fill for a handler never given the rates. */
+    public double plantFill(BuildingsTemplate t) { return ownFill(t, averageUtilityFill); }
 
     private double fuelPrice(Good g) {
         return fuelPriceSource != null ? fuelPriceSource.applyAsDouble(g) : g.worldImportPrice();
@@ -552,16 +718,29 @@ public class UtilitiesHandler {
         public double ratio, energyPrice;
         /** City money a kW a month: commerce and light industry (the energy and all the wires), Heavy Industry and Mining (the energy and transmission), and the works' surplus. */
         public double commercePrice, industryPrice, worksPrice;
+        /**
+         * The dispatch's season, its load over the year's mean (PowerDispatch.Month.season): the prices are a kW of the year's mean draw,
+         * and a bill is the kWh served, draw x ratio x season x price (PW1-R); 1 in the founding book and in a save from before it.
+         */
+        public double season = 1;
         /** Per half-block: the price a kWh, the load, and what was left unserved, kW. */
         public double[] price = new double[PowerDispatch.HALVES], load = new double[PowerDispatch.HALVES], unserved = new double[PowerDispatch.HALVES];
         /** The month's kWh asked, served and curtailed, and made by the fuelled plants, the wind, the hydro, the works and the founding grid. */
         public double askedKwh, servedKwh, curtailedKwh, fuelledKwh, windKwh, hydroKwh, worksKwh, gridKwh;
+        /** ...and by the sun (PW2); absent in an older save, which had no solar farm. */
+        public double solarKwh;
         /** The variable upkeep the plants ran up, thousands of the WORLD's money. */
         public double upkeepWorld;
         /** Fuel burned: good name to units. */
         public LinkedHashMap<String, Double> fuel = new LinkedHashMap<>();
         /** True once a month has been struck into this book; false in the founding book, for the screens to say "still at founding". */
         public boolean cleared;
+        /** Optional observations: absent in older saves, never back-filled from the ending fleet. */
+        public DispatchRecord dispatch;
+        public int struckMonth = -1;
+        public double transmissionPrice, distributionPrice;
+        /** The grid costs captured with this dispatch; paid by existing city flows, recovered in the wires' tariff. */
+        public Substations.Costs gridCosts;
 
         /** The book before any month has cleared: the founding tariff, ratio 1, nothing made. */
         public static Book founding() {
@@ -573,19 +752,26 @@ public class UtilitiesHandler {
 
         Book copy() {
             Book b = new Book();
-            b.ratio = ratio; b.energyPrice = energyPrice;
+            b.ratio = ratio; b.energyPrice = energyPrice; b.season = season;
             b.commercePrice = commercePrice; b.industryPrice = industryPrice; b.worksPrice = worksPrice;
             b.price = price.clone(); b.load = load.clone(); b.unserved = unserved.clone();
             b.askedKwh = askedKwh; b.servedKwh = servedKwh; b.curtailedKwh = curtailedKwh;
             b.fuelledKwh = fuelledKwh; b.windKwh = windKwh; b.hydroKwh = hydroKwh; b.worksKwh = worksKwh; b.gridKwh = gridKwh;
+            b.solarKwh = solarKwh;
             b.upkeepWorld = upkeepWorld;
             b.fuel = new LinkedHashMap<>(fuel);
             b.cleared = cleared;
+            b.dispatch = dispatch; b.struckMonth = struckMonth;
+            b.gridCosts = gridCosts;
+            b.transmissionPrice = transmissionPrice; b.distributionPrice = distributionPrice;
             return b;
         }
     }
 
     private static void scale(Book b, double scale) {
+        if (b.gridCosts != null) b.gridCosts = b.gridCosts.scaled(scale);
+        b.transmissionPrice *= scale; b.distributionPrice *= scale;
+        if (b.dispatch != null) b.dispatch = b.dispatch.scaled(scale);
         b.energyPrice *= scale; b.commercePrice *= scale; b.industryPrice *= scale; b.worksPrice *= scale;
         for (int s = 0; s < b.price.length; s++) b.price[s] *= scale;
     }
@@ -595,10 +781,19 @@ public class UtilitiesHandler {
         PowerDispatch.Month m = latest;
         Book b = new Book();
         b.ratio = m.ratio;
+        b.season = m.season;
+        b.dispatch = latestRecord;
+        b.struckMonth = observationMonth == null ? -1 : observationMonth.getAsInt();
+        b.gridCosts = latestGridCosts;
+        double wires = latestGridCosts != null && m.servedKwh > 0
+                ? latestGridCosts.total() / (m.servedKwh * (1 - PowerDispatch.GRID_LOSSES)) : 0;
+        double longWires = latestGridCosts == null ? transmission : wires * Substations.TRANSMISSION_SHARE;
+        double streetWires = latestGridCosts == null ? distribution : wires * (1 - Substations.TRANSMISSION_SHARE);
+        b.transmissionPrice = longWires; b.distributionPrice = streetWires;
         b.energyPrice = m.energyPrice;
         // Commerce and light industry pay the energy and all the wires; Heavy Industry and Mining take power at high voltage and pay the energy and the long wires alone (spec 2.6).
-        b.commercePrice = (m.energyPrice + transmission + distribution) * PowerDispatch.MONTH_HOURS;
-        b.industryPrice = (m.energyPrice + transmission) * PowerDispatch.MONTH_HOURS;
+        b.commercePrice = (m.energyPrice + longWires + streetWires) * PowerDispatch.MONTH_HOURS;
+        b.industryPrice = (m.energyPrice + longWires) * PowerDispatch.MONTH_HOURS;
         // The works are paid what their kWh cleared at; with none standing, the generation price (the energy less the losses it carries).
         PowerDispatch.Row works = null;
         for (PowerDispatch.Row r : latestRows) if (r.kind == PowerDispatch.Kind.MUST_RUN && WORKS_ROW.equals(r.name)) works = r;
@@ -610,6 +805,7 @@ public class UtilitiesHandler {
             switch (r.kind) {
                 case MUST_RUN -> b.worksKwh += r.kwh;
                 case WIND -> b.windKwh += r.kwh;
+                case SOLAR -> b.solarKwh += r.kwh;
                 case HYDRO -> b.hydroKwh += r.kwh;
                 case FUELLED -> { if (GRID_ROW.equals(r.name)) b.gridKwh += r.kwh; else b.fuelledKwh += r.kwh; }
             }
@@ -648,6 +844,9 @@ public class UtilitiesHandler {
         return n;
     }
 
+    /** The struck book's season, the month's load over the year's mean: a kW drawn is billed season x the price a kW a month (PW1-R). */
+    public double getPowerSeason() { return struck.season; }
+
     /** What commerce and light industry pay a kW a month (the struck commerce price). */
     public double getPricePerWatt() { return struck.commercePrice; }
 
@@ -667,6 +866,8 @@ public class UtilitiesHandler {
 
     /** ...with the imported part good by good (Game.buyPowerFuel()). */
     public void setFuelPaid(double local, double imported, double upkeep, Map<String, Double> importedByGood) {
+        paidDispatchMonth = struck.dispatch == null ? -1 : struck.dispatch.month();
+        fuelPaidMonth = observationMonth == null ? -1 : observationMonth.getAsInt();
         this.fuelLocal = Double.isFinite(local) ? local : 0;
         this.fuelImported = Double.isFinite(imported) ? imported : 0;
         this.upkeepPaid = Double.isFinite(upkeep) ? upkeep : 0;
@@ -686,12 +887,23 @@ public class UtilitiesHandler {
     public double getFuelImported() { return fuelImported; }
     public double getUpkeepPaid() { return upkeepPaid; }
     public double getFuelBill() { return fuelLocal + fuelImported + upkeepPaid; }
+    public int getPaidDispatchMonth() { return paidDispatchMonth; }
+    public int getFuelPaidMonth() { return fuelPaidMonth; }
 
     /** What the save keeps of the merit order: the struck book and the fuel paid (a later slice wires it to DataSave). */
     public static final class PowerState {
         public Book struck;
         public double fuelLocal, fuelImported, upkeepPaid;
         public Map<String, Double> fuelImportedByGood;
+        public int paidDispatchMonth = -1;
+        public int fuelPaidMonth = -1;
+        /** The completed closing dispatch, still awaiting the next strike; optional in older saves. */
+        public PowerDispatch.Month pendingMonth;
+        public DispatchRecord pendingDispatch;
+        public Substations.Costs pendingGridCosts;
+        /** What the water's books paid the power's this month for the works' power, and the update the next strike prices it on (PW1-W); absent in older saves. */
+        public double waterPowerPaid;
+        public WaterDraw pendingWater;
     }
 
     public PowerState toPowerState() {
@@ -699,6 +911,11 @@ public class UtilitiesHandler {
         s.struck = struck.copy();
         s.fuelLocal = fuelLocal; s.fuelImported = fuelImported; s.upkeepPaid = upkeepPaid;
         s.fuelImportedByGood = new LinkedHashMap<>(fuelImportedByGood);
+        s.paidDispatchMonth = paidDispatchMonth;
+        s.fuelPaidMonth = fuelPaidMonth;
+        s.pendingMonth = latest.copy(); s.pendingDispatch = latestRecord;
+        s.pendingGridCosts = latestGridCosts;
+        s.waterPowerPaid = waterPowerPaid; s.pendingWater = latestWater;
         return s;
     }
 
@@ -717,12 +934,49 @@ public class UtilitiesHandler {
         struck.ratio = energyRatio;
     }
 
+    /** Restores the completed closing flow after the load's LAST derived-services rebuild, for the next strike. */
+    public void restorePendingPower() {
+        // Derived services have just rebuilt. Their new dispatch cannot replace the completed flow the next strike consumes.
+        if (pendingLoadedMonth != null && pendingLoadedRecord != null) {
+            latest = pendingLoadedMonth; latestRecord = pendingLoadedRecord;
+            latestGridCosts = pendingLoadedGridCosts;
+            latestRows = new ArrayList<>();
+            for (RowRecord r : latestRecord.rows().stream().sorted(java.util.Comparator.comparingInt(RowRecord::sourceIndex)).toList()) {
+                String name = r.id() == WORKS_ID ? WORKS_ROW : r.id() == GRID_ID ? GRID_ROW : "plants";
+                if (plants != null) for (BuildingsTemplate t : plants.keySet()) if (t.getId() == r.id()) { name = t.getName(); break; }
+                PowerDispatch.Row row = switch (r.kind()) {
+                    case MUST_RUN -> PowerDispatch.Row.mustRun(name, r.offeredKw());
+                    case WIND -> PowerDispatch.Row.wind(name, r.offeredKw());
+                    case SOLAR -> PowerDispatch.Row.solar(name, r.offeredKw());
+                    case HYDRO -> PowerDispatch.Row.hydro(name, r.offeredKw(), r.waterKwh(), r.upkeepPerKwh());
+                    case FUELLED -> PowerDispatch.Row.fuelled(name, r.offeredKw(), r.marginal(), r.fuel(), r.fuelPerKwh(), r.upkeepPerKwh());
+                };
+                for (int s = 0; s < PowerDispatch.HALVES; s++) row.gen[s] = r.runKw().get(s);
+                row.kwh = r.kwh(); row.fuelUnits = r.fuelUnits(); row.earned = r.receipts();
+                latestRows.add(row);
+            }
+            energyRatio = latest.ratio;
+        }
+        // ...and the water's update the next strike prices the works' power on (PW1-W); an older save has none and keeps the rebuild's, from the same stock.
+        if (pendingLoadedWater != null) latestWater = pendingLoadedWater;
+        pendingLoadedWater = null;
+        pendingLoadedMonth = null; pendingLoadedRecord = null;
+        pendingLoadedGridCosts = null;
+    }
+
     /** Restores a save's book and fuel paid; a save with none (null, or no book) leaves the founding book. */
     public void restorePowerState(PowerState s) {
         struck = s == null || s.struck == null ? Book.founding() : s.struck.copy();
         seedOnLoad = s == null || s.struck == null;
-        if (s == null) { fuelLocal = fuelImported = upkeepPaid = 0; return; }
+        pendingLoadedMonth = s == null || s.pendingMonth == null ? null : s.pendingMonth.copy();
+        pendingLoadedRecord = s == null ? null : s.pendingDispatch;
+        pendingLoadedGridCosts = s == null ? null : s.pendingGridCosts;
+        pendingLoadedWater = s == null ? null : s.pendingWater;
+        waterPowerPaid = s == null ? 0 : s.waterPowerPaid;
+        if (s == null) { fuelLocal = fuelImported = upkeepPaid = 0; paidDispatchMonth = fuelPaidMonth = -1; return; }
         setFuelPaid(s.fuelLocal, s.fuelImported, s.upkeepPaid, s.fuelImportedByGood);
+        paidDispatchMonth = s.paidDispatchMonth;
+        fuelPaidMonth = s.fuelPaidMonth;
     }
 
     //setters
@@ -781,7 +1035,10 @@ public class UtilitiesHandler {
      */
     public void updateEnergyRatio() {
         double fill = averageUtilityFill;
-        production = baseProduction * fill;
+        int month = monthOfYear();
+        // A bare fixture's plants at the pooled fill, as they were; a city's founding grid at the pooled fill and each plant at its own
+        // posts' fill (PW3, PW1-P's fifth gap: one farm's posts no longer lower every other plant's output), a station at its water.
+        production = plants == null ? baseProduction * fill : baseGrid() * fill;
         if(fill == 0) production = baseGrid();
         // ...and what the works sell the grid, whatever the utility's staffing (0.7.112, THE POWER THE WORKS MAKE).
         if (worksPower > 0) production += worksPower;
@@ -799,28 +1056,139 @@ public class UtilitiesHandler {
                 BuildingsTemplate t = e.getKey();
                 long n = e.getValue() == null ? 0 : e.getValue();
                 if (n <= 0) continue;
-                // The upkeep is US$ a MWh at today's level (buildings.json): over 1e6 thousands a kWh, times FACTOR the founding's dollars, as
-                // a good's world price is struck; the exchange rate (the world's price level in it) then makes it the month's city money, as it
-                // does the fuel's. PW1: read as today's dollars it was 38.6 times too dear, nine-tenths of a coal plant's marginal.
-                double kw = t.getProduction1() * n * fill, upkeep = t.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR, perKwh = t.fuelPerKwh();
-                if (t.isHydro()) {
-                    // A station's month is its water (its production1 over the month), levelled under its nameplate and its staffing.
-                    double average = t.getProduction1() * n * (fill > 0 ? 1 : 0);
-                    rows.add(PowerDispatch.Row.hydro(t.getName(), t.getNameplate() * n * fill, average * PowerDispatch.MONTH_HOURS, upkeep));
-                    production += average - kw;
-                } else if (t.isWind()) {
-                    rows.add(PowerDispatch.Row.wind(t.getName(), kw));
-                } else if (perKwh > 0) {
-                    rows.add(PowerDispatch.Row.fuelled(t.getName(), kw, fuelPrice(t.getFuel()) * perKwh + upkeep * exchangeRate(),
-                            t.getFuel(), perKwh, upkeep));
-                } else {
-                    rows.add(PowerDispatch.Row.fuelled(t.getName(), kw, 0, null, 0, 0));
-                }
+                double own = ownFill(t, fill);
+                rows.add(rowFor(t, n, 0, own, month));
+                // A station's month is its water, its production1 over the month, whatever its staffing's share of its nameplate.
+                production += t.getProduction1() * n * (t.isHydro() ? (own > 0 ? 1 : 0) : own);
             }
         }
-        latest = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(calendarMonth == null ? 0 : calendarMonth.getAsInt()), voll);
+        latestGridCosts = gridCostSource == null ? null : gridCostSource.get();
+        latest = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(month, latitude()), voll,
+                latestGridCosts == null ? Double.POSITIVE_INFINITY : latestGridCosts.carryKw());
         latestRows = rows;
         energyRatio = latest.ratio;
+        // Keep the dispatch's own order and figures; no screen runs the dispatch or reprices a row.
+        List<RowRecord> records = new ArrayList<>();
+        for (int index : latest.getMeritOrder()) {
+            PowerDispatch.Row r = rows.get(index);
+            int id = WORKS_ROW.equals(r.name) ? WORKS_ID : GRID_ROW.equals(r.name) ? GRID_ID : FIXTURE_ID;
+            double nameplate = r.kw;
+            if (plants != null) for (Map.Entry<BuildingsTemplate, Long> e : plants.entrySet()) {
+                if (!e.getKey().getName().equals(r.name)) continue;
+                id = e.getKey().getId();
+                nameplate = e.getKey().getNameplate() * e.getValue();
+                break;
+            }
+            List<Double> run = new ArrayList<>();
+            for (double kw : r.gen) run.add(kw);
+            records.add(new RowRecord(id, index, r.kind, r.fuel, r.kw, nameplate, r.waterKwh, r.fuelPerKwh, r.upkeepPerKwh, r.kwh, r.fuelUnits,
+                    r.earned, r.marginal, r.kwh * r.upkeepPerKwh, run));
+        }
+        latestRecord = new DispatchRecord(observationMonth == null ? -1 : observationMonth.getAsInt(),
+                firmSupply == null ? -1 : firmSupply.getAsDouble(), records);
+    }
+
+    /**
+     * The row n of a template make at this staffing, their output at nameplate moved by extraKw (0: the row the month runs, to the bit).
+     * The upkeep is US$ a MWh at today's level (buildings.json): over 1e6 thousands a kWh, times FACTOR the founding's dollars, as a good's
+     * world price is struck; the exchange rate (the world's price level in it) then makes it the month's city money, as it does the fuel's.
+     * PW1: read as today's dollars it was 38.6 times too dear, nine-tenths of a coal plant's marginal.
+     */
+    private PowerDispatch.Row rowFor(BuildingsTemplate t, long n, double extraKw, double fill, int month) {
+        double plate = t.getProduction1() * n + extraKw;
+        double kw = plate * fill, upkeep = t.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR, perKwh = t.fuelPerKwh();
+        double lat = latitude();
+        if (t.isHydro()) {
+            // A station's month is its water (its production1 over the month, times the river's month: PW3), levelled under its nameplate and its staffing; a move moves both by the station's own proportion.
+            double average = plate * (fill > 0 ? 1 : 0) * PowerDispatch.hydroMonth(month, lat);
+            double extraCap = extraKw != 0 && t.getProduction1() > 0 ? extraKw * t.getNameplate() / t.getProduction1() : 0;
+            return PowerDispatch.Row.hydro(t.getName(), (t.getNameplate() * n + extraCap) * fill, average * PowerDispatch.MONTH_HOURS, upkeep);
+        }
+        // PW3: the wind's month, and the sun's month at the city's latitude on the rack it stands on.
+        if (t.isWind()) return PowerDispatch.Row.wind(t.getName(), kw * PowerDispatch.windMonth(month, lat));
+        if (t.isSolar()) return PowerDispatch.Row.solar(t.getName(), kw * PowerDispatch.solarMonth(month, lat, trackers()));
+        if (perKwh > 0) return PowerDispatch.Row.fuelled(t.getName(), kw, marginalOf(t), t.getFuel(), perKwh, upkeep);
+        return PowerDispatch.Row.fuelled(t.getName(), kw, 0, null, 0, 0);
+    }
+
+    /** What a kWh a plant runs costs this month, city money: a fuelled row's marginalOf(), a station's variable upkeep at the exchange rate (its water is free), a wind or solar farm's nothing. */
+    public double runningPerKwh(BuildingsTemplate t) {
+        return t.isHydro() ? t.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR * exchangeRate() : marginalOf(t);
+    }
+
+    /** What a kWh of a fuelled plant costs to run this month, city money: its fuel at the city's price and its variable upkeep at the exchange rate; 0 for a row that burns nothing. */
+    public double marginalOf(BuildingsTemplate t) {
+        double perKwh = t.fuelPerKwh(), upkeep = t.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR;
+        return perKwh > 0 ? fuelPrice(t.getFuel()) * perKwh + upkeep * exchangeRate() : 0;
+    }
+
+    /**
+     * The kW the grid delivers its customers with one template's output at nameplate moved by moveKw (PW1-L): the month's dispatch run
+     * again on the rows it ran, at the same draw, season, cap price and wires, that template's row made at its output moved (a template
+     * with no row gains one; a bare fixture's single row of plants takes the move), and the draw delivered at the ratio it comes to, as
+     * the bills deliver it. The flat rule it replaces (output capped by the draw) served every kW of the month alike, so a plant read as
+     * idle in a month whose calm peak it carried. The month's own rows are copied, never run again: the struck figures stand.
+     */
+    public double deliveredWith(BuildingsTemplate t, double moveKw) {
+        double fill = averageUtilityFill;
+        List<PowerDispatch.Row> rows = new ArrayList<>();
+        boolean moved = false;
+        for (PowerDispatch.Row r : latestRows) {
+            if (t != null && plants != null && !moved && t.getName().equals(r.name)) {
+                long n = 0;
+                for (Map.Entry<BuildingsTemplate, Long> e : plants.entrySet())
+                    if (e.getKey().getId() == t.getId() && e.getValue() != null) n = e.getValue();
+                // The row's own price and fuel, at the output moved.
+                PowerDispatch.Row own = rowFor(t, n, moveKw, ownFill(t, fill), monthOfYear());
+                rows.add(r.offering(own.kw, own.waterKwh));
+                moved = true;
+            } else if (t != null && plants == null && !moved && "plants".equals(r.name)) {
+                // A handler nobody has told of its plants: its one row of plants, free to run, takes the move, as the flat rule moved its output.
+                rows.add(r.offering(r.kw + moveKw * fill, 0));
+                moved = true;
+            } else {
+                rows.add(r.offering(r.kw, r.waterKwh));
+            }
+        }
+        if (!moved && moveKw > 0 && t != null)
+            rows.add(plants == null ? PowerDispatch.Row.fuelled("plants", moveKw * fill, 0, null, 0, 0) : rowFor(t, 0, moveKw, ownFill(t, fill), monthOfYear()));
+        PowerDispatch.Month m = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(monthOfYear(), latitude()), voll,
+                latestGridCosts == null ? Double.POSITIVE_INFINITY : latestGridCosts.carryKw());
+        return consumption * m.ratio;
+    }
+
+    /**
+     * What the city's power costs to run for a year at today's draw with these plants added (PW3, the planner's spread): the twelve
+     * calendar months dispatched on the plants standing plus `added`, each month's load, wind, sun and water at the city's place, and the
+     * twelve summed - a fuelled row's kWh at its marginal cost, a station's at its variable upkeep, and every kWh left unserved at the
+     * cap price (voll). City money a year. Nothing struck moves: the rows are made fresh and dispatched aside.
+     */
+    public double yearRunning(Map<BuildingsTemplate, Long> added) {
+        double fill = averageUtilityFill, carry = latestGridCosts == null ? Double.POSITIVE_INFINITY : latestGridCosts.carryKw();
+        Map<BuildingsTemplate, Long> fleet = new LinkedHashMap<>();
+        if (plants != null) fleet.putAll(plants);
+        if (added != null) for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) if (e.getValue() != null) fleet.merge(e.getKey(), e.getValue(), Long::sum);
+        double cost = 0;
+        for (int month = 1; month <= 12; month++) {
+            List<PowerDispatch.Row> rows = new ArrayList<>();
+            if (worksPower > 0) rows.add(PowerDispatch.Row.mustRun(WORKS_ROW, worksPower));
+            rows.add(PowerDispatch.Row.fuelled(GRID_ROW, baseGrid() * (fill > 0 ? fill : 1), 0, null, 0, 0));
+            if (plants == null) {
+                double watts = (baseProduction - baseGrid()) * fill;
+                if (watts > 0) rows.add(PowerDispatch.Row.fuelled("plants", watts, 0, null, 0, 0));
+            }
+            for (Map.Entry<BuildingsTemplate, Long> e : fleet.entrySet()) {
+                long n = e.getValue() == null ? 0 : e.getValue();
+                if (n > 0) rows.add(rowFor(e.getKey(), n, 0, ownFill(e.getKey(), fill), month));
+            }
+            PowerDispatch.Month m = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(month, latitude()), voll, carry);
+            for (PowerDispatch.Row r : rows) {
+                cost += r.kwh * r.marginal;
+                if (r.kind == PowerDispatch.Kind.HYDRO) cost += r.kwh * r.upkeepPerKwh * exchangeRate();
+            }
+            for (int s = 0; s < PowerDispatch.HALVES; s++) cost += m.unserved[s] * PowerDispatch.halfHours(s) * voll;
+        }
+        return cost;
     }
 
     public void updateWaterRatio() {
@@ -853,6 +1221,10 @@ public class UtilitiesHandler {
         waterRatio = (waterConsumption > 0)
                 ? Math.min(waterProduction / waterConsumption, 1)
                 : 1;
+        // ...and the month's water works, which price the month's water (PW1-W, THE WATER'S POWER) while the sea's is needed: the land's water first, the wells'
+        // and the fresh works', then the sea's, each kind's delivered the demand it takes past the kind before it.
+        double served = Math.min(waterConsumption, waterProduction), land = Math.min(waterConsumption, waterProduction - desalOutput);
+        latestWater = new WaterDraw(freshWorksDraw, seaWorksDraw, Math.max(0, land), Math.max(0, served - land), desalOutput);
     }
 
     /**
@@ -926,7 +1298,11 @@ public class UtilitiesHandler {
     public void updateJobFillRate(double[] fillRate) {
 
         System.arraycopy(fillRate, 0, this.fillRate, 0, fillRate.length);
+        fillRatesGiven = true;
     }
+
+    /** Whether the city's fill rates by job have been handed in (updateJobFillRate()): until they are, every plant runs at the pooled fill. */
+    private boolean fillRatesGiven;
 
     //printers
     public void printUtilitiesInfo() {
@@ -995,7 +1371,8 @@ public class UtilitiesHandler {
         System.out.println("   households have no cash, so resident water is unbilled.)");
         System.out.printf("  Water Sales:                    %s%n", Currency.writing().write(formatter.format(waterRev)));
         System.out.printf("  Payroll Expense:                -%s%n", Currency.writing().write(formatter.format(waterPay)));
-        System.out.printf("  NET INCOME (WATER):             %s%n", Currency.writing().write(formatter.format(waterRev - waterPay)));
+        if (waterPowerPaid != 0) System.out.printf("  The Works' Power:               -%s%n", Currency.writing().write(formatter.format(waterPowerPaid)));
+        System.out.printf("  NET INCOME (WATER):             %s%n", Currency.writing().write(formatter.format(getWaterIncome())));
 
         if (waterRatio < 1.0) {
             System.out.println("\n[CRITICAL] WATER SUPPLY SHORTAGE");
@@ -1045,6 +1422,9 @@ public class UtilitiesHandler {
         transmission *= scale;
         distribution *= scale;
         scale(struck, scale);
+        if (latestRecord != null) latestRecord = latestRecord.scaled(scale);
+        if (latestGridCosts != null) latestGridCosts = latestGridCosts.scaled(scale);
+        if (pendingLoadedGridCosts != null) pendingLoadedGridCosts = pendingLoadedGridCosts.scaled(scale);
         // ...and the month last dispatched, which strikePower() would read in the old unit.
         latest.energyPrice *= scale;
         for (int s = 0; s < latest.price.length; s++) latest.price[s] *= scale;
@@ -1052,6 +1432,7 @@ public class UtilitiesHandler {
         fuelLocal    *= scale;
         fuelImported *= scale;
         upkeepPaid   *= scale;
+        waterPowerPaid *= scale;
         pricePerWaterUnit *= scale;
         billedElectricityRevenue *= scale;
         billedWaterRevenue       *= scale;

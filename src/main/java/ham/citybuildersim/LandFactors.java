@@ -215,6 +215,9 @@ public final class LandFactors {
     /** The nation's land a hectare, US dollars of BASE_YEAR (the table's: a published price, the fit's, or Canada's where it lacks the figures); the reference's for a number outside 1..nationCount(). */
     public double usdPerHectare(int nation) { return usdHa[nation < 1 || nation > n ? 0 : nation]; }
 
+    /** The reference nation's land a hectare, US dollars of BASE_YEAR, from the table alone with no world file: Statistics Canada's farm land and buildings at July 1 (Table 32-10-0047-01), what the farmland reserve's price is struck from (LandMarket.farmlandOfBase(), RG1). */
+    public static double referenceUsdPerHectare() { return table().byIso3().get(REFERENCE).usdHa(); }
+
     /** How sure the table is of the nation's price: WorldData.MARK_PUBLISHED (3) where a statistical office publishes it, MARK_ESTIMATE (1) for the fit or Canada's price, MARK_NONE (0) for a nation the table lacks. */
     public int mark(int nation) { return nation < 1 || nation > n ? WorldData.MARK_NONE : mark[nation]; }
 

@@ -43,6 +43,19 @@ import java.util.Map;
  *      cent; the audit closes every month.
  *   5. A grocer whose till covers its stock takes none.
  *   6. Saved and loaded, what it owes and what it bought on credit come back.
+ *
+ * FIXTURES (FS9). Items 2-6 run in a town stood at once (addStack, no construction, farms
+ * among it so there is a supplier in the city) and played only until the shops expect to sell
+ * (Retail.expectedBaskets() > 0, at most WARM_AT_MOST months, a fixture that fails when the
+ * bound passes): a sale and a running shop are what the suppliers' limit is read from, and
+ * neither has a door to set. Each month's order is then set by hand between months: the
+ * shelf emptied (setStoreInventory) and the till set (setSectorCash) - covering, in the month
+ * of item 5, and nought in the trap's; the lender's room shut by a claim of 1.2 times its
+ * assets and its quarter (issueLoan, recordStatement), no month played between them; the shelf
+ * made up to the baskets the credit was lent for before the strike that repays it, once the
+ * stock is asserted to have reached it, so the sale the credit is repaid out of sells what it
+ * was lent for. WHY: the town played two years moved under the sizes and the sale these were
+ * read off, and a month of the stood town's lopsided delivery sells a third of what was lent for.
  */
 public class SupplierCreditCheck {
 
@@ -149,7 +162,10 @@ public class SupplierCreditCheck {
 
     /* ============================ 2-6. IN A CITY ============================ */
 
-    /** A city with households, shops, a bank and the food plants: founded, built, played two years. BondCheck's, without its second branch. */
+    /**
+     * A town with households, shops, a bank and the food plants: founded and stood at once, no month played (FS9; it was played
+     * two years, BondCheck's, without its second branch). Farms stand with it, so there is a supplier in the city to be owed.
+     */
     static Game city(Path root, String name) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
         Game g = new Game(files);
@@ -160,15 +176,18 @@ public class SupplierCreditCheck {
             b.addStack(b.getTemplateByName("House"), 300, true);
             b.addStack(b.getTemplateByName("Convenience Store"), 12, true);
             b.addStack(b.getTemplateByName("Bakery"), 3, true);
+            b.addStack(b.getTemplateByName("Mixed Farm"), 3, true);
             b.addStack(b.getTemplateByName("Construction Depot"), 3, true);
             b.addStack(b.getTemplateByName("Coal Power Plant"), 2, true);
             b.addStack(b.getTemplateByName("Water Treatment Plant"), 1, true);
             g.setAutoSubsidised(Sectors.INDUSTRY, true);
             g.getBusinessInvestment().holdSector(Sectors.RETAIL);
-            g.simulateMonths(24);
         });
         return g;
     }
+
+    /** The most months the town is played for its shops to expect a sale: a bound, not a count - the fixture fails when it passes. */
+    static final int WARM_AT_MOST = 12;
 
     static int closedMonths, playedMonths;
 
@@ -203,12 +222,33 @@ public class SupplierCreditCheck {
         SupplierCredit ledger = shops.supplierCredit();
 
         /*
-         * 5 FIRST: A TILL THAT COVERS ITS STOCK. A year's takings put in the
-         * till between months; the month's order fits in it.
+         * PLAYED UNTIL THE SHOPS EXPECT TO SELL, AND NO LONGER (FS9). What
+         * the suppliers would wait for is read off the shops' expectation
+         * (Retail.expectedBaskets(): what the households asked for at the last
+         * sale, up to the coverage times the operating rate), and a town stood
+         * at once has had no sale and runs its shops at nought: both come over
+         * the months of its first sales, and neither has a door to set. So the
+         * town is played only until they do, and this fails as a fixture if
+         * they have not by WARM_AT_MOST. Every later month's order is set by
+         * hand below.
          */
-        em.setSectorCash(R, shops.getCash() + 12 * Math.max(1, shops.statement().revenue));
+        int warm = 0;
+        while (!(shops.expectedBaskets() > 0) && warm < WARM_AT_MOST) { play(g); warm++; }
+        out.printf("   the shops expect to sell after %d month(s) of the town's first sales%n", warm);
+        assertTrue("fixture: the first sales were asked for and the shops run, so the shops expect to sell", shops.expectedBaskets() > 0);
+
+        /*
+         * 5 FIRST: A TILL THAT COVERS ITS STOCK. The shelf emptied between
+         * months, so the month's order is the whole shelf, and the till the
+         * city's founding purse - more than any order: the same month the trap
+         * is, with the till the one thing that differs.
+         */
+        shops.setStoreInventory(0);
+        em.setSectorCash(R, Founding.WEALTHY_CASH);
         play(g);
         assertTrue("fixture: the shops ordered stock this month", shops.getOrderValue() > 0);
+        assertTrue("fixture: and their suppliers would have waited for some of it, so none was taken only because the till covered it",
+                ledger.getLimit() > 0);
         close("a grocer whose till covers its stock buys none of it on credit", ledger.boughtTotal(), 0, 0);
         play(g);
         close("...and owes its suppliers nothing at the strike", ledger.owedTotal(), 0, 0);
@@ -220,14 +260,18 @@ public class SupplierCreditCheck {
          * by the takings the strike is about to bank, so the month starts
          * with nothing from the sale before. Its sale this month sells
          * nothing, so the till has nothing to restock with - the month 0.7.43
-         * left empty-shelved until a loan came.
+         * left empty-shelved until a loan came. All of it set between months
+         * (FS9): the till first, the lender's reading of it refreshed, the
+         * claim sized on what it reads, and no month played between the claim
+         * and its quarter.
          */
+        em.setSectorCash(R, -shops.pending().revenue());
+        em.pushBalanceSheetInputs();
+        em.refreshCreditAssets();
         credit.issueLoan(R, Math.max(0, 1.2 * credit.getAssets(R) - credit.getPrincipal(R)), g.getMonth());
-        play(g);
         for (int q = 0; q < BusinessDebtManager.STATEMENT_MONTHS; q++) {
             credit.recordStatement(R, credit.getPrincipal(R), credit.getPrincipal(R) / 1.2);
         }
-        em.setSectorCash(R, -shops.pending().revenue());
         shops.setStoreInventory(0);
         MoneyAudit.Result r = play(g);
         double limit = ledger.getLimit(), budget = shops.getPurchaseBudget(), bought = shelfBought(shops);
@@ -241,6 +285,8 @@ public class SupplierCreditCheck {
         assertTrue("it restocks on its suppliers' credit", bought > 0 && onCredit > 0);
         close("...all of it on their credit", onCredit, bought, 1e-9 * bought);
         assertTrue("...and no more than they would wait for", bought <= limit * (1 + 1e-9));
+        close("...the credit it took: the stock its till and its lender could not cover, within what they would wait for",
+                onCredit, Math.min(limit, Math.max(0, bought - Math.max(0, budget - limit))), 1e-9 * Math.max(1, bought));
         close("what they would wait for: SUPPLIER_CREDIT_MONTHS of the baskets it expects at their landed cost",
                 shops.supplierCreditLimit(), ham.citybuildersim.sectors.Retail.SUPPLIER_CREDIT_MONTHS
                         * shops.expectedBaskets() * shops.basketLandedCost(), 1e-9 * Math.max(1, limit));
@@ -249,6 +295,22 @@ public class SupplierCreditCheck {
         assertTrue("the month closes", BondCheck.closes(r));
         Map<String, Double> boughtFrom = new LinkedHashMap<>();
         for (String k : ledger.suppliers()) boughtFrom.put(k, ledger.boughtFrom(k));
+
+        /*
+         * THE SALE THE CREDIT IS REPAID OUT OF, SET (FS9). The credit was lent
+         * for the baskets the shops expect to sell, at what they cost to bring
+         * in; what sells is whole baskets, the scarcest good of the delivery
+         * first (Retail.basketsOnShelf()), and what a stood town's suppliers
+         * fill is lopsided - left as delivered, a third of the expected baskets
+         * sold (186 of 551) and the takings were under what it owed, which is a
+         * town still filling its larders and not what this section is about. It
+         * is about the strike repaying out of the sale of the stock it lent
+         * for, so once the stock has reached the shelf (asserted below, on what
+         * the order month left there) the shelf is made up to the baskets the
+         * credit was lent for, as many as the suppliers would wait for.
+         */
+        long onShelf = shops.getStoreInventory();
+        shops.setStoreInventory((int) Math.ceil(ham.citybuildersim.sectors.Retail.SUPPLIER_CREDIT_MONTHS * shops.expectedBaskets()));
 
         /* ---------------------------- 3. AT THE STRIKE ---------------------------- */
         out.println("\n--- at the strike: it owes its suppliers, on both sides' books, and the world's share crosses the audit ---");
@@ -294,7 +356,7 @@ public class SupplierCreditCheck {
         }
         long sold = shops.getProductsSold();
         out.printf("   the month after: sold %,d baskets of the %,.0f it expected%n", sold, shops.expectedBaskets());
-        assertTrue("the stock it bought on credit reached the shelf, and sold", sold > 0);
+        assertTrue("the stock it bought on credit reached the shelf, and sold", onShelf > 0 && sold > 0);
 
         /* ---------------------------- 6. SAVED AND LOADED ---------------------------- */
         Map<String, Double> owedThen = new LinkedHashMap<>(), boughtThen = new LinkedHashMap<>();

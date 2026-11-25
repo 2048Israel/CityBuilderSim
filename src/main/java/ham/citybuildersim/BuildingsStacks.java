@@ -17,6 +17,9 @@ public class BuildingsStacks {
 
     /** Points the most recent advanceConstruction() call put into buildings: never more than the stack owed (0.7.17). Not saved: monthly. */
     private double lastApplied;
+
+    /** ...of which the foreign crews' part (FC2b), and the units that part drew. Set by advanceConstruction(), read once. Not saved. */
+    private double lastAbroadApplied, lastAbroadMaterials;
     private double constructionProgress;
 
     /**
@@ -86,6 +89,8 @@ public class BuildingsStacks {
         /** ...and what share of it: one for a credit or a purpose-built rental's rebate, less for a smaller rebate. */
         double recovered;
         double value, units, allowance;
+        /** The points of work its payer's orders put on site still owed (FC2b), earned at the same fraction as its value: what a payer's share of a shared site is read by. */
+        double points;
         Contract(String payer, boolean creditable) { this(payer, creditable ? 1 : 0); }
         Contract(String payer, double recovered) {
             this.payer = payer;
@@ -96,6 +101,7 @@ public class BuildingsStacks {
         public double getUnits()     { return units; }
         public double getAllowance() { return allowance; }
         public double getRecovered() { return recovered; }
+        public double getPoints()    { return points; }
     }
 
     /** ...and one payer's share of this month's work: the contract it earned, the units drawn for it and the allowance they took. Set by advanceConstruction(), read once. */
@@ -105,13 +111,25 @@ public class BuildingsStacks {
         /** The share of the tax on it the payer gets back. See Contract. */
         public final double recovered;
         public final double revenue, units, allowance;
-        Due(Contract c, double revenue, double units, double allowance) {
+        /** Whether it is the payer's contract handed to the foreign crews (FC2b), earned by their part of the site's work and not the city's builders'. */
+        public final boolean abroad;
+        Due(Contract c, double revenue, double units, double allowance) { this(c, revenue, units, allowance, false); }
+        Due(Contract c, double revenue, double units, double allowance, boolean abroad) {
             this.payer = c.payer; this.creditable = c.creditable; this.recovered = c.recovered;
             this.revenue = revenue; this.units = units; this.allowance = allowance;
+            this.abroad = abroad;
         }
     }
 
     private final java.util.LinkedHashMap<String, Contract> contracts = new java.util.LinkedHashMap<>();
+    /**
+     * ...and the contracts handed to the foreign crews (FC2b; ConstructionControl, G. ABROAD): a payer's share of this
+     * site's remaining work, built by them at the pace and price struck at the handover, apart from the city's crews'
+     * rule. The stack stays one stack - its buildings finish front first, whoever paid - and its work splits in two, the
+     * home part (the crews' rule) and the abroad part (theirs); each payer's contract is earned by its own part.
+     * Saved with the others (BuildingManager.ContractRecord, abroad=true).
+     */
+    private final java.util.LinkedHashMap<String, Contract> abroadContracts = new java.util.LinkedHashMap<>();
     private final java.util.List<Due> dues = new java.util.ArrayList<>();
 
     /**
@@ -138,6 +156,7 @@ public class BuildingsStacks {
      * a city founded the default way), or none, adds no lot: those buildings are loose (see THE ORDERS' EQUIPMENT ON SITE).
      */
     public void startConstruction(long n, Fitout fit) {
+        if (n > 0) claimAfresh();
         underConstruction += n;
         materialsOwed += template.getConstructionMaterials() * (double) n;
         if (n > 0 && fit != null && fit.isChosen() && fit.template() == template) addLot(n, fit);
@@ -151,6 +170,7 @@ public class BuildingsStacks {
      * (BuildingManager's owed sums; resumeShell() keeps it through a shell). Nothing for no points.
      */
     void addPreparation(double points) {
+        if (points > 0) claimAfresh();
         if (points > 0) constructionProgress -= points;
     }
 
@@ -181,16 +201,91 @@ public class BuildingsStacks {
 
     /** Restores one payer's contract from a save, or sets an older save's up (Game, OLD CONTRACTS). The stack's own totals are restored apart. */
     public void restoreContract(String payer, double recovered, double value, double units, double allowance) {
-        Contract c = contracts.computeIfAbsent(payer, k -> new Contract(k, recovered));
+        restoreContract(payer, recovered, value, units, allowance, 0, false);
+    }
+
+    /** ...with the points it still owes (FC2b), into the contracts handed abroad when {@code abroad}; an older save's carry none. */
+    public void restoreContract(String payer, double recovered, double value, double units, double allowance,
+                                double points, boolean abroad) {
+        Contract c = (abroad ? abroadContracts : contracts).computeIfAbsent(payer, k -> new Contract(k, recovered));
         c.recovered = Math.max(0, Math.min(1, recovered));
         c.creditable = c.recovered > 0;
         c.value = Math.max(0, value);
         c.units = Math.max(0, units);
         c.allowance = Math.max(0, allowance);
+        c.points = points > 0 && Double.isFinite(points) ? points : 0;
     }
 
     /** The payers' contracts on this stack, in the order they were placed. */
     public java.util.Collection<Contract> getContracts() { return contracts.values(); }
+
+    /**
+     * Adds the points an order of this payer's put on site (FC2b) to its home contract: what a payer's share of a shared
+     * site is read by (homePointsShare()). Creates no contract - the order is booked first (bookContract()) - and ignores
+     * points that are not finite and over nothing.
+     */
+    void addPoints(String payer, double points) {
+        if (!(points > 0) || !Double.isFinite(points)) return;
+        Contract c = contracts.get(payer);
+        if (c != null) c.points += points;
+    }
+
+    /** The contracts handed to the foreign crews (FC2b), in the order they went: an unmodifiable view, empty for a site none is abroad on. */
+    public java.util.Collection<Contract> getAbroadContracts() {
+        return java.util.Collections.unmodifiableCollection(abroadContracts.values());
+    }
+
+    /** Whether any of this site's work is handed to the foreign crews (FC2b). */
+    public boolean hasAbroad() { return !abroadContracts.isEmpty(); }
+
+    /**
+     * Hands a payer's home contract to the foreign crews (FC2b): it moves, whole, from the contracts the city's crews'
+     * rule earns to the ones the foreign crews' part does, merged into the payer's contract there when it has one - value,
+     * units, allowance and points summed, the share recovered averaged by value as bookContract() does. Nothing for a
+     * payer with no home contract.
+     */
+    void handAbroad(String payer) {
+        Contract c = contracts.remove(payer);
+        if (c == null) return;
+        Contract a = abroadContracts.get(payer);
+        if (a == null) { abroadContracts.put(payer, c); return; }
+        if (a.recovered != c.recovered && a.value + c.value > 0) {
+            a.recovered = (a.recovered * a.value + c.recovered * c.value) / (a.value + c.value);
+            a.creditable = a.recovered > 0;
+        }
+        a.value += c.value;
+        a.units += c.units;
+        a.allowance += c.allowance;
+        a.points += c.points;
+    }
+
+    /**
+     * What the payer paid the foreign crews over its home contract (FC2b): booked to its abroad contract and to the
+     * stack's own book (contractValue), earned as their part of the work is done. Nothing for no abroad contract of the
+     * payer's or an amount not over nothing.
+     */
+    void bookAbroad(String payer, double amount) {
+        Contract a = abroadContracts.get(payer);
+        if (a == null || !(amount > 0) || !Double.isFinite(amount)) return;
+        a.value += amount;
+        contractValue += amount;
+    }
+
+    /**
+     * The payer's share of the work still owed at home (FC2b): its points over the home contracts' points, or - when none
+     * carries any (an older save) - its value over their values, or - when none carries a value - an equal share. Exactly
+     * one for the only home contract, nothing for a payer with none.
+     */
+    public double homePointsShare(String payer) {
+        Contract c = contracts.get(payer);
+        if (c == null) return 0;
+        if (contracts.size() == 1) return 1;
+        double points = 0, value = 0;
+        for (Contract o : contracts.values()) { points += o.points; value += o.value; }
+        if (points > 0) return c.points / points;
+        if (value > 0) return c.value / value;
+        return 1.0 / contracts.size();
+    }
 
     /**
      * Whether what is on site is the city's alone (0.7.22): buildings on
@@ -200,7 +295,8 @@ public class BuildingsStacks {
      * divided by who paid for which building.
      */
     public boolean isCitysOwn() {
-        if (underConstruction <= 0 || contracts.isEmpty()) return false;
+        // ...a site with work abroad is not the city's to reorder, rush or stop (FC2b).
+        if (underConstruction <= 0 || contracts.isEmpty() || hasAbroad()) return false;
         for (Contract c : contracts.values()) if (!"City".equals(c.payer)) return false;
         return true;
     }
@@ -240,6 +336,7 @@ public class BuildingsStacks {
 
     /** ...with the lots it was stopped with (R1e): back on site behind what is there, each with its set; a shell with none comes back loose. */
     void resumeShell(long buildings, double progress, double owedUnits, java.util.List<Lot> stopped) {
+        if (buildings > 0) claimAfresh();
         underConstruction += Math.max(0, buildings);
         // ...a shell cancelled before its site's preparation was done holds it owed, progress below nothing (addPreparation()): it goes back as owed.
         constructionProgress += progress;
@@ -251,19 +348,67 @@ public class BuildingsStacks {
     /** This month's work, payer by payer - per the last advanceConstruction() call. */
     public java.util.List<Due> getDues() { return dues; }
 
-    /** Each payer's share of the month's work: the same fraction of its contract, its units and its allowance as the stack's work was of what it owed; drawn=false when the work drew no material (nothing on site). */
-    private void takeDues(double fraction, boolean drawn) {
-        dues.clear();
-        java.util.Iterator<Contract> it = contracts.values().iterator();
+    /**
+     * Each payer's share of the month's work, of the contracts in {@code map} (the home ones, or the ones handed abroad,
+     * FC2b): the same fraction of its contract, its units, its allowance and its points as the work was of what it owed;
+     * drawn=false when the work drew no material (nothing on site). Adds to the dues - advanceConstruction() clears them
+     * once a month.
+     */
+    private void takeDues(java.util.Map<String, Contract> map, double fraction, boolean drawn, boolean abroad) {
+        java.util.Iterator<Contract> it = map.values().iterator();
         while (it.hasNext()) {
             Contract c = it.next();
             double f = Math.max(0, Math.min(1, fraction));
-            double v = c.value * f, u = c.units * f, a = c.allowance * f;
-            if (f >= 1) { v = c.value; u = c.units; a = c.allowance; }
-            c.value -= v; c.units -= u; c.allowance -= a;
-            if (v > 0 || u > 0 || a > 0) dues.add(new Due(c, v, drawn ? u : 0, a));
-            if (c.value <= 1e-12 && c.units <= 1e-12 && c.allowance <= 1e-12) it.remove();
+            double v = c.value * f, u = c.units * f, a = c.allowance * f, p = c.points * f;
+            if (f >= 1) { v = c.value; u = c.units; a = c.allowance; p = c.points; }
+            c.value -= v; c.units -= u; c.allowance -= a; c.points -= p;
+            if (v > 0 || u > 0 || a > 0) dues.add(new Due(c, v, drawn ? u : 0, a, abroad));
+            if (c.value <= 1e-12 && c.units <= 1e-12 && c.allowance <= 1e-12 && c.points <= 1e-12) it.remove();
         }
+    }
+
+    /** What this month's work earned of the home contracts, the part handed abroad (FC2b) apart; nothing for a site that had nothing on it. Per the last advanceConstruction() call. */
+    private double lastHomeEarned;
+
+    public double getLastHomeEarned() { return lastHomeEarned; }
+
+    /** ...and of it the material allowance the home contracts priced in, for the material the month's work drew (R1g). */
+    private double lastHomeAllowance;
+
+    public double getLastHomeAllowance() { return lastHomeAllowance; }
+
+    /** What the home contracts still hold: what their payers have paid for work not yet earned, the ones handed abroad (FC2b) apart. */
+    public double getHomeContractValue() {
+        double v = 0;
+        for (Contract c : contracts.values()) v += c.value;
+        return Math.min(v, Math.max(0, contractValue));
+    }
+
+    /**
+     * Earns {@code amount} of the home contracts now, ahead of the work that would have earned it, each payer's contract
+     * by its share of what they hold (R1g; BuildingManager, THE CONTRACTOR'S POINTS EARNED AT HIS PRICE): the premium
+     * the payers paid for the pooled contractor's points, earned the month his points go in. The value comes off the
+     * contracts and the site's value alike, so what is earned ahead is not earned again; the units, the allowance and the
+     * points stay, drawn and done by the work as ever. Never more than the contracts hold, nor than the site's value.
+     * Adds to the month's dues and revenue; returns what it earned. Call after advanceConstruction().
+     */
+    public double earnAhead(double amount) {
+        double held = 0;
+        for (Contract c : contracts.values()) held += c.value;
+        double take = Math.min(Math.max(0, amount), getHomeContractValue());
+        if (!(take > 0)) return 0;
+        // ...each contract by its share of what the contracts hold, not of the site's value (REV-R1g2, P3): were the site's
+        // value ever below its contracts' sum, a fraction of the lesser would hand the payers' dues more than the site earns.
+        double f = Math.min(1, take / held);
+        for (Contract c : contracts.values()) {
+            double v = f >= 1 ? c.value : c.value * f;
+            c.value -= v;
+            if (v > 0) dues.add(new Due(c, v, 0, 0, false));
+        }
+        contractValue = Math.max(0, contractValue - take);
+        revenueDue += take;
+        lastHomeEarned += take;
+        return take;
     }
 
     /*
@@ -442,6 +587,26 @@ public class BuildingsStacks {
         return points;
     }
 
+    /**
+     * This site's claim on the foreign crews' book (REV-FC2, the second review; BuildingManager.noteAbroad(),
+     * abroadOwedOf()): the work its orders handed him, in a unit only the claims of the sites with points owed share -
+     * his book is theirs in proportion to their claims, so his month, and any cut of his book, falls on every site's
+     * work abroad alike, and a cancel takes the site's own and no other's. Saved as points (DataSave.abroadOwedById).
+     */
+    private double abroadClaim;
+
+    public double getAbroadClaim() { return abroadClaim; }
+    public void setAbroadClaim(double claim) { abroadClaim = claim > 0 && Double.isFinite(claim) ? claim : 0; }
+
+    /**
+     * New work on a site that owed nothing starts with no claim on his book (REV-FC2, the third review): what its orders
+     * before claimed was the work of a site that has finished, or stopped, and a load reads none for it (BuildingManager.
+     * getAbroadOwedById() saves only the sites with points owed). An order quoted at home notes nothing (noteAbroad()), so
+     * a claim kept past the site's end would wake with it and take a share of the others' work on his book - and part the
+     * city from its loaded twin at the next cancel. Called as an order, a shell restarted or a preparation goes on site.
+     */
+    private void claimAfresh() { if (!(owedPoints() > 0)) abroadClaim = 0; }
+
     /** Points still owed on site: every building's points less the progress made (a foothill's preparation owed reads as more). */
     public double owedPoints() {
         return pointsOnSite() - constructionProgress;
@@ -480,17 +645,46 @@ public class BuildingsStacks {
     }
 
     // for immediate add
+    private java.util.function.LongPredicate mayRemove = n -> true;
+    private java.util.function.Consumer<BuildingsStacks> physicalChanged = s -> { };
+
+    /** Inventory hooks protect conveyed titles; stacks remain physical authority. */
+    void bindHousing(java.util.function.LongPredicate guard,
+                     java.util.function.Consumer<BuildingsStacks> changed) {
+        mayRemove = guard; physicalChanged = changed;
+    }
+
     public void addQuantity(long n) {
+        if (n < 0 && !mayRemove.test(-n)) throw new IllegalStateException("Housing titles prevent removal");
         long before = quantity;
         quantity += n;
         if (quantity < before) lowerUnfitted(before);
+        physicalChanged.accept(this);
     }
 
     public void advanceConstruction(double constructionOutput) {
+        advanceConstruction(constructionOutput, 0, 0, 0);
+    }
+
+    /**
+     * The month's work on a site with part of it handed to the foreign crews (FC2b): {@code homeOutput} is what the
+     * city's crews' rule gives it, {@code abroadOutput} what the foreign crews build on it, {@code abroadOwed} the points
+     * still owed abroad and {@code abroadMaterials} the units that part still draws. The abroad part is the least of what
+     * is owed abroad and what the site owes; the home part the rest. Each output is applied to its own part, never past it,
+     * and the sum feeds the finishing as ever - the buildings finish front first, whoever paid. The material and the money
+     * follow each part's own fraction done: the home contracts and the home share of the material at the home part's, the
+     * abroad contracts and the abroad part's units at the abroad part's. A site with none abroad is advanced exactly as
+     * before; a site that empties takes everything due, both maps whole.
+     */
+    public void advanceConstruction(double homeOutput, double abroadOutput, double abroadOwed, double abroadMaterials) {
         materialsDue = 0;
         revenueDue = 0;
+        lastHomeEarned = 0;
+        lastHomeAllowance = 0;
         lastFinished = 0;
         lastApplied = 0;
+        lastAbroadApplied = 0;
+        lastAbroadMaterials = 0;
         dues.clear();
         lastFinishedLoose = 0;
         lastFinishedWithout.clear();
@@ -504,7 +698,8 @@ public class BuildingsStacks {
             materialsOwed = 0;
             revenueDue = contractValue;
             contractValue = 0;
-            takeDues(1, false);
+            takeDues(contracts, 1, false, false);
+            takeDues(abroadContracts, 1, false, true);
             // ...and no points are kept for an order nobody has placed
             // (0.7.17): see BuildingManager, EVERY BUILDING GETS THE CREW IT
             // CAN USE.
@@ -525,8 +720,16 @@ public class BuildingsStacks {
          * by adding the points back up, which can land a hair short in
          * floating point and hold the last building a month.
          */
-        double applied = Math.max(0, Math.min(constructionOutput, Math.max(0, owedPoints)));
+        // ...the abroad part (FC2b) is what the foreign crews owe of it, never past what the site owes; the home part the rest.
+        double abroadPart = abroadOwed > 0 ? Math.min(abroadOwed, Math.max(0, owedPoints)) : 0;
+        double homePart = owedPoints - abroadPart;
+        double homeApplied = Math.max(0, Math.min(homeOutput, Math.max(0, homePart)));
+        double abroadApplied = abroadOutput > 0 ? Math.min(abroadOutput, abroadPart) : 0;
+        // ...both parts handed all they owe finish the site at exactly what it owes, not at the parts added back up.
+        double applied = homeApplied >= homePart && abroadApplied >= abroadPart
+                ? Math.max(0, owedPoints) : homeApplied + abroadApplied;
         lastApplied = applied;
+        lastAbroadApplied = abroadApplied;
         double remainingOutput = applied + constructionProgress;
         constructionProgress = 0;
 
@@ -546,6 +749,7 @@ public class BuildingsStacks {
 
         long startedConstruction = underConstruction + finished;
         quantity += finished;
+        if (finished > 0) physicalChanged.accept(this);
         constructionProgress = underConstruction > 0 ? remainingOutput : 0;
         lastFinished = finished;
 
@@ -553,17 +757,43 @@ public class BuildingsStacks {
         // what is left when the site empties, so nothing is owed on a
         // finished building.
         if (underConstruction == 0) {
+            lastAbroadMaterials = abroadMaterials > 0 ? Math.min(abroadMaterials, Math.max(0, materialsOwed)) : 0;
             materialsDue = materialsOwed;
             revenueDue = contractValue;
-            takeDues(1, true);
+            takeDues(contracts, 1, true, false);
+            takeDues(abroadContracts, 1, true, true);
         } else if (owedPoints > 0) {
-            double done = applied;
-            materialsDue = Math.min(materialsOwed, materialsOwed * done / owedPoints);
-            revenueDue = Math.min(contractValue, contractValue * done / owedPoints);
-            takeDues(done / owedPoints, true);
+            if (abroadPart == 0 && abroadContracts.isEmpty()) {
+                double done = applied;
+                materialsDue = Math.min(materialsOwed, materialsOwed * done / owedPoints);
+                revenueDue = Math.min(contractValue, contractValue * done / owedPoints);
+                takeDues(contracts, done / owedPoints, true, false);
+            } else {
+                // Each part earns by its own fraction done (FC2b): the home contracts and the home share of the material
+                // by the home part's, the contracts handed abroad and the abroad part's units by the abroad part's.
+                double fh = homePart > 0 ? homeApplied / homePart : 0;
+                double fa = abroadPart > 0 ? abroadApplied / abroadPart : 0;
+                double abroadMat = abroadMaterials > 0 ? Math.min(abroadMaterials, Math.max(0, materialsOwed)) : 0;
+                lastAbroadMaterials = abroadMat * fa;
+                materialsDue = (materialsOwed - abroadMat) * fh + lastAbroadMaterials;
+                double abroadValue = 0;
+                for (Contract c : abroadContracts.values()) abroadValue += c.value;
+                abroadValue = Math.min(contractValue, abroadValue);
+                revenueDue = (contractValue - abroadValue) * fh + abroadValue * fa;
+                takeDues(contracts, fh, true, false);
+                takeDues(abroadContracts, fa, true, true);
+            }
         }
         materialsOwed = Math.max(0, materialsOwed - materialsDue);
         contractValue = Math.max(0, contractValue - revenueDue);
+        // ...and of it the home part's (R1g): all but what the contracts handed abroad earned, and the material allowance in it.
+        double abroadEarned = 0, homeAllowance = 0;
+        for (Due d : dues) {
+            if (d.abroad) abroadEarned += d.revenue;
+            else homeAllowance += d.allowance;
+        }
+        lastHomeEarned = Math.max(0, revenueDue - abroadEarned);
+        lastHomeAllowance = Math.min(lastHomeEarned, homeAllowance);
 
         // Print how many finished
         System.out.print(finished + "/" + startedConstruction + " " + template.name + "(s) finished construction.");
@@ -613,6 +843,16 @@ public class BuildingsStacks {
         return lastApplied;
     }
 
+    /** ...of which the foreign crews' part on a site handed them (FC2b), per the last advanceConstruction() call. */
+    public double getLastAbroadApplied() {
+        return lastAbroadApplied;
+    }
+
+    /** The units the abroad part drew (FC2b), per the last advanceConstruction() call: part of getMaterialsDue(). */
+    public double getLastAbroadMaterials() {
+        return lastAbroadMaterials;
+    }
+
     /**
      * Drops progress past what the stack owes - all of it with nothing on
      * site - and returns how many points that was. The load path's, for a
@@ -638,9 +878,12 @@ public class BuildingsStacks {
 
     /** Scraps finished buildings. Floors at zero rather than going negative. The unfitted ones go first (see the unfitted counts). */
     public void removeQuantity(long amount) {
+        if (amount < 0) throw new IllegalArgumentException("Negative removal");
+        if (!mayRemove.test(Math.min(quantity, amount))) throw new IllegalStateException("Housing titles prevent removal");
         long before = quantity;
         quantity = Math.max(quantity - amount, 0);
         if (quantity < before) lowerUnfitted(before);
+        physicalChanged.accept(this);
     }
 
     public long getUnderConstruction() {
@@ -700,6 +943,7 @@ public class BuildingsStacks {
     public void redenominate(double scale) {
         contractValue *= scale;
         for (Contract c : contracts.values()) { c.value *= scale; c.allowance *= scale; }
+        for (Contract c : abroadContracts.values()) { c.value *= scale; c.allowance *= scale; }
     }
 
     //setters

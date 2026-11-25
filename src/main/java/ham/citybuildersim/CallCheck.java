@@ -374,10 +374,28 @@ public class CallCheck {
             city.buildStack(template(city, "Construction Depot"), 4, false);
             city.buildStack(template(city, "Coal Power Plant"), 1, false);
             city.buildStack(template(city, "Commercial Bank"), 1, false);
-            city.simulateMonths(60);
-            for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) city.simulateMonths(1);
+            for (int m = 0; m < 60; m++) { city.simulateMonths(1); keepBankOverDesk(city); }
+            for (int i = 0; i < 36 && city.getMigration().getLastDecliningShare() > 0; i++) { city.simulateMonths(1); keepBankOverDesk(city); }
         });
         return city;
+    }
+
+    /**
+     * FC2, 2026-11-23: THE BANK'S CAPITAL KEPT OVER ITS SHARE DESK'S BOOK, between months, by what its equity lacks put in its till
+     * (Bank.setCash, as FloatLinkCheck.handBankRoom() hands its room): what the desk holds could then fall to nothing and leave the bank
+     * standing. On FC2's path the bank's desk held 678,651 of Manufacturing's shares, D$14,600 to D$20,700 of securities on D$4,900 to
+     * D$8,800 of equity; the price slid from month 56, the marks took D$200 to D$1,450 a month, and in month 61 the bank stood at -12, in
+     * resolution, so at the sale it bid nothing ("the bank stands at the sale" and both "room" lines failed, though capital was handed).
+     * The section asserts the city's own paper, not the desk's luck in a share, so on any path the desk's book cannot fail the bank, as
+     * the held firms' loans cannot (PW1, below). Nothing if its equity covers the book, or once it is in resolution (cash does not
+     * clear that). Returns the cash put in.
+     */
+    static double keepBankOverDesk(Game city) {
+        Bank bank = city.getBank();
+        double lacking = bank.getSecurities() - bank.equity();
+        if (!(lacking > 0) || bank.isInsolvent()) return 0;
+        bank.setCash(bank.getCash() + lacking);
+        return lacking;
     }
 
     /** The world with an appetite for the city's paper: a tenth of the hot money it had, as early in a boom. */
@@ -469,7 +487,7 @@ public class CallCheck {
         List<String> heldHere = new ArrayList<>();
         for (Sector s : city.getSectors().all())
             if (!city.getBusinessInvestment().isHeld(s.key())) { city.getBusinessInvestment().holdSector(s.key()); heldHere.add(s.key()); }
-        for (int i = 0; i < 24; i++) play(city);
+        for (int i = 0; i < 24; i++) { play(city); keepBankOverDesk(city); }
         for (String key : heldHere) city.getBusinessInvestment().releaseSector(key);
         check("a city played two years that never asked for one has no callable piece (" + bonds(city) + " bond lines on its books)",
                 callables(city).isEmpty());

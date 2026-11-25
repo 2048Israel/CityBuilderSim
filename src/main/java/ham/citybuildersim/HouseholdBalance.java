@@ -135,7 +135,7 @@ public class HouseholdBalance {
     public static final double RISK_SLOPE = .015;
 
     /** Nobody is charged more than this, however deep they are. */
-    public static final double MAX_RATE = .36;
+    public static final double MAX_RATE = Bank.CARD_RATE_CAP;
 
     /**
      * How much of the money above subsistence a household spends.
@@ -378,30 +378,12 @@ public class HouseholdBalance {
        could never be repaid - a permanent condition rather than an event, and
        nothing in the model ever closed it out.
 
-       Now it closes: the debt is written off against the bank, the savings go
-       with it, the cell cannot borrow for a year, and some of them leave. All
-       three parts matter. Without the lockout a broke cell cycles straight back
-       into debt and the bank bleeds on a loop; without the emigration poverty
-       costs the city nothing; and without the write-off the money vanishes
-       instead of landing on somebody, which is the whole reason the bank exists.
-
-       PER CELL, since the cells exist: an unskilled large family at its ceiling
-       discharges while the unskilled single adult next door keeps its credit
-       line, where before the whole tier was locked out together.
+       HC1 makes that consequence a share inside each cell. Late balances cure
+       or charge off; the charged-off share's savings repay its debt first,
+       the bank takes the remaining book loss, that share is shut out for a
+       year on the stock's decay, and a quarter leave. Its neighbours keep
+       their own cards. A cell-wide income ceiling no longer triggers discharge.
        ===================================================================== */
-
-    /**
-     * Months of income owed at which a household stops being able to carry it.
-     *
-     * The credit ceiling is six months; this is past it, because reaching the
-     * ceiling is not the same as failing - a household at the ceiling that can
-     * still service the interest is merely poor. What fails is the one that
-     * cannot, so the trigger is BOTH: at the ceiling, and short of the shop.
-     */
-    public static final double BANKRUPT_AT_MONTHS = CREDIT_LIMIT_MONTHS * .98;
-
-    /** Share of a stuck cell that goes under in a month. A trickle, not a purge. */
-    public static final double BANKRUPT_RATE = .04;
 
     /** Months a discharged household cannot borrow. */
     public static final int LOCKOUT_MONTHS = 12;
@@ -441,6 +423,209 @@ public class HouseholdBalance {
      * household (a bare fixture), today's rule"); Game switches it on.
      */
     private boolean ownerLine;
+
+    private TaxPolicy investmentPolicy = new TaxPolicy();
+    private java.util.function.BiConsumer<String, Double> investmentTaxReceipt = (line, amount) -> {};
+    private java.util.function.IntToDoubleFunction investmentPrice = c -> 0;
+    /** Fixed tax-book slots: two receipts, two call counts, domestic/foreign gains receipts, assessment, loss, consolidation. */
+    public static final int TAX_FLOW_SLOTS = 9;
+    private static final int CG = 0, DIV = 1, GAINS_CALLS = 2, DIV_CALLS = 3,
+            DOMESTIC_CG = 4, FOREIGN_CG = 5, ASSESSED = 6, CLAIM_LOSS = 7, CONSOLIDATED = 8;
+    private final double[] taxFlows = new double[TAX_FLOW_SLOTS], pendingTaxFlows = new double[TAX_FLOW_SLOTS];
+    private boolean taxWindow = true;
+    private final double[] governmentClaim = new double[Equity.COMPANIES.length];
+    private final double[] departingTaxShares = new double[Equity.COMPANIES.length];
+    private final double[] departingTaxClaim = new double[Equity.COMPANIES.length];
+    private boolean departuresHandedOff = true;
+    private Equity investmentRegister;
+    private java.util.function.IntToDoubleFunction sharesShort = c -> 0;
+
+    /** Wires HT1 to the city's policy, live quotes and actual treasury receipts. */
+    public void setInvestmentTaxes(TaxPolicy policy, java.util.function.IntToDoubleFunction prices,
+                                   java.util.function.BiConsumer<String, Double> receipt) {
+        investmentPolicy = policy; investmentPrice = prices; investmentTaxReceipt = receipt;
+    }
+    public void attachInvestmentRegister(Equity register, java.util.function.IntToDoubleFunction shorts) {
+        investmentRegister = register; sharesShort = shorts;
+        register.attachTaxBook(this);
+    }
+    private void taxFlow(int slot, double amount) { (taxWindow ? taxFlows : pendingTaxFlows)[slot] += amount; }
+    public void beginTaxMonth() {
+        if (taxWindow) return;
+        System.arraycopy(pendingTaxFlows, 0, taxFlows, 0, TAX_FLOW_SLOTS);
+        java.util.Arrays.fill(pendingTaxFlows, 0); taxWindow = true;
+    }
+    public void closeTaxMonth() { taxWindow = false; }
+    private void resetTaxBook() {
+        java.util.Arrays.fill(taxFlows, 0); java.util.Arrays.fill(pendingTaxFlows, 0);
+        java.util.Arrays.fill(governmentClaim, 0); java.util.Arrays.fill(departingTaxShares, 0);
+        java.util.Arrays.fill(departingTaxClaim, 0); departuresHandedOff = true; taxWindow = true;
+    }
+    private void startDepartures() {
+        if (!departuresHandedOff && investmentRegister != null) investmentRegister.followEmigrants(this, sharesShort);
+        for (double claim : departingTaxClaim) if (!departuresHandedOff && claim > 0)
+            throw new IllegalStateException("Unhanded secured departure cannot be discarded");
+        java.util.Arrays.fill(departingTaxShares, 0); java.util.Arrays.fill(departingTaxClaim, 0);
+        departuresHandedOff = false;
+    }
+    boolean departuresHandedOff() { return departuresHandedOff; }
+    void departuresHandedOff(boolean done) { departuresHandedOff = done; }
+    double departingTaxShares(int c) { return departingTaxShares[c]; }
+    double departingTaxClaim(int c) { return departingTaxClaim[c]; }
+
+    /** Working households use their job band's rate; every other holder uses the wage base. */
+    double investmentWageRate(Household c) {
+        if (c instanceof WorkingHousehold) for (JobType job : JobType.values()) if (PayTier.of(job) == c.tier())
+            return investmentPolicy.effectiveWageRate(WageBand.of(job));
+        return investmentPolicy.getWageTaxRate();
+    }
+    private void receiveInvestmentTax(boolean gain, double amount) { receiveInvestmentTax(gain, amount, false); }
+    private void receiveInvestmentTax(boolean gain, double amount, boolean foreign) {
+        taxFlow(gain ? CG : DIV, amount);
+        if (gain) taxFlow(foreign ? FOREIGN_CG : DOMESTIC_CG, amount);
+        if (amount != 0) investmentTaxReceipt.accept(gain ? "Capital gains tax" : "Dividend tax", amount);
+    }
+    /** Actual collection of an existing claim, not another assessment. */
+    void collectForeignTax(int company, double amount) {
+        governmentClaim[company] -= amount; receiveInvestmentTax(true, amount, true);
+    }
+    void extinguishForeignTax(int company, double amount) { loseClaim(company, amount); }
+    private void loseClaim(int company, double amount) {
+        if (!(amount > 0)) return;
+        governmentClaim[company] -= amount; taxFlow(CLAIM_LOSS, amount);
+    }
+    private double collectClaim(Household c, int company, double available) {
+        double paid = Math.min(c.taxClaim[company], Math.max(0, available));
+        c.taxClaim[company] -= paid; governmentClaim[company] -= paid * c.households;
+        receiveInvestmentTax(true, paid * c.households);
+        if (c.taxClaim[company] == 0) c.taxShares[company] = 0;
+        return paid;
+    }
+    private void extinguishClaim(Household c, int company) {
+        loseClaim(company, c.taxClaim[company] * c.households);
+        c.taxClaim[company] = c.taxShares[company] = 0;
+    }
+
+    /** A month's losses offset gains in either fill order; only unused losses survive. */
+    double realizeGain(Household c, double gain) {
+        double taxable;
+        if (gain >= 0) {
+            double used = Math.min(c.lossCarried, gain); c.lossCarried -= used; taxable = gain - used;
+        } else {
+            double refund = Math.min(c.taxedGains, -gain); c.lossCarried += -gain - refund; taxable = -refund;
+        }
+        c.taxedGains += taxable;
+        double tax = taxable * investmentPolicy.getCapitalGainsInclusion() * investmentWageRate(c);
+        taxFlow(GAINS_CALLS, 1); taxFlow(ASSESSED, tax * c.households);
+        receiveInvestmentTax(true, tax * c.households); return tax;
+    }
+    double sellShares(Household c, int company, double quantity, double price) {
+        double held = c.shares[company], tagged = c.taxShares[company];
+        double sold = Math.min(held, Math.max(0, quantity));
+        double taggedSold = held > 0 ? tagged * Math.min(1, sold / held) : 0;
+        double out = FundLedger.basisReleased(c.basis[company], sold, held);
+        c.basis[company] -= out; c.shares[company] = Math.max(0, held - sold);
+        double proceeds = sold * price;
+        double net = proceeds - realizeGain(c, proceeds - out);
+        double collected = collectClaim(c, company, sold > 0 ? Math.max(0, net) * taggedSold / sold : 0);
+        if (c.taxClaim[company] > 0) {
+            c.taxShares[company] = Math.max(0, tagged - taggedSold);
+            if (sold == held || taggedSold == tagged) extinguishClaim(c, company);
+        }
+        return net - collected;
+    }
+    public double getCapitalGainsTax() { return taxFlows[CG]; }
+    public double getDividendTax() { return taxFlows[DIV]; }
+    public double getDomesticCapitalGainsTax() { return taxFlows[CG] - taxFlows[FOREIGN_CG]; }
+    public double getForeignCapitalGainsTax() { return taxFlows[FOREIGN_CG]; }
+    public double getCapitalTaxAssessed() { return taxFlows[ASSESSED]; }
+    public double getCapitalTaxWrittenOff() { return taxFlows[CLAIM_LOSS]; }
+    public double getCapitalTaxConsolidated() { return taxFlows[CONSOLIDATED]; }
+    public long getGainAssessments() { return (long) taxFlows[GAINS_CALLS]; }
+    public long getDividendAssessments() { return (long) taxFlows[DIV_CALLS]; }
+    public double getCapitalTaxOutstanding() { return java.util.Arrays.stream(governmentClaim).sum(); }
+    public double securedClaimCounterpart() {
+        double total = investmentRegister == null ? 0 : investmentRegister.foreignTaxOutstanding();
+        for (Household c : cells) for (double claim : c.taxClaim) total += claim * c.households;
+        if (!departuresHandedOff) for (double claim : departingTaxClaim) total += claim;
+        return total;
+    }
+    public double[] investmentTaxesToSave() {
+        double[] out = new double[2 * TAX_FLOW_SLOTS + 1];
+        System.arraycopy(taxFlows, 0, out, 0, TAX_FLOW_SLOTS);
+        System.arraycopy(pendingTaxFlows, 0, out, TAX_FLOW_SLOTS, TAX_FLOW_SLOTS);
+        out[out.length - 1] = taxWindow ? 1 : 0; return out;
+    }
+    public void restoreInvestmentTaxes(double[] state) {
+        java.util.Arrays.fill(taxFlows, 0); java.util.Arrays.fill(pendingTaxFlows, 0);
+        taxWindow = false;
+        if (state == null || (state.length != 4 && state.length != 2 * TAX_FLOW_SLOTS + 1)) return;
+        // The original four slots keep their meanings; absent appended fields remain zero.
+        System.arraycopy(state, 0, taxFlows, 0, Math.min(TAX_FLOW_SLOTS, state.length));
+        if (state.length > TAX_FLOW_SLOTS) {
+            System.arraycopy(state, TAX_FLOW_SLOTS, pendingTaxFlows, 0, TAX_FLOW_SLOTS);
+            taxWindow = state[state.length - 1] > 0;
+        }
+    }
+    public double[] securedTaxesToSave() {
+        int n = Equity.COMPANIES.length; double[] out = new double[4 * n + 1];
+        System.arraycopy(governmentClaim, 0, out, 0, n); System.arraycopy(departingTaxShares, 0, out, n, n);
+        System.arraycopy(departingTaxClaim, 0, out, 2*n, n); System.arraycopy(lastSharesTakenAway, 0, out, 3*n, n);
+        out[4*n] = departuresHandedOff ? 1 : 0; return out;
+    }
+    public void restoreSecuredTaxes(double[] state) {
+        java.util.Arrays.fill(governmentClaim, 0); java.util.Arrays.fill(departingTaxShares, 0);
+        java.util.Arrays.fill(departingTaxClaim, 0); departuresHandedOff = true;
+        int n = Equity.COMPANIES.length;
+        if (state == null || state.length != 4*n+1) return;
+        System.arraycopy(state, 0, governmentClaim, 0, n); System.arraycopy(state, n, departingTaxShares, 0, n);
+        System.arraycopy(state, 2*n, departingTaxClaim, 0, n); System.arraycopy(state, 3*n, lastSharesTakenAway, 0, n);
+        departuresHandedOff = state[4*n] > 0;
+    }
+
+    private EstateCustody custody;
+    private BondMarket custodyBonds;
+    public void attachCustody(EstateCustody owner, BondMarket market) { custody = owner; custodyBonds = market; }
+
+    /** One transferred fraction, assessed before pooling; no person/estate history is retained. */
+    private final class Deemed {
+        final double[][] security = new double[4][Equity.COMPANIES.length];
+        double loss, cashTax;
+        Deemed(Household from, double count, double cash) { this(from, count, cash, true); }
+        Deemed(Household from, double count, double cash, boolean collectCash) {
+            double gain = 0, positives = 0; double[] positive = new double[Equity.COMPANIES.length];
+            for (int c = 0; c < positive.length; c++) {
+                security[0][c] = from.shares[c] * count;
+                security[1][c] = security[0][c] * Math.max(0, investmentPrice.applyAsDouble(c));
+                security[2][c] = from.taxShares[c] * count; security[3][c] = from.taxClaim[c] * count;
+                double g = security[1][c] - from.basis[c] * count;
+                gain += g; positive[c] = Math.max(0, g); positives += positive[c];
+            }
+            loss = Math.max(0, from.lossCarried * count - gain);
+            double assessed = Math.max(0, gain - from.lossCarried * count)
+                    * investmentPolicy.getCapitalGainsInclusion() * investmentWageRate(from);
+            cashTax = collectCash ? Math.min(assessed, Math.max(0, cash)) : 0;
+            taxFlow(GAINS_CALLS, 1); taxFlow(ASSESSED, assessed);
+            receiveInvestmentTax(true, cashTax);
+            double deferred = assessed - cashTax, left = deferred;
+            int last = -1; for (int c = 0; c < positive.length; c++) if (positive[c] > 0) last = c;
+            for (int c = 0; c < positive.length; c++) if (positive[c] > 0) {
+                double unpaid = c == last ? left : Math.min(left, deferred * positive[c] / positives);
+                left -= unpaid; governmentClaim[c] += unpaid;
+                security[3][c] += unpaid;
+                if (unpaid > 0) security[2][c] = security[0][c]; // union, never double-tag existing units
+            }
+        }
+        double stock(Stock st, Household from, double count) {
+            if (st.securityCompany() >= 0) return security[st.securityPart()][st.securityCompany()];
+            return st.lossStock() ? loss : st.get(from) * count;
+        }
+        void leave() {
+            for (int c = 0; c < departingTaxShares.length; c++) {
+                departingTaxShares[c] += security[2][c]; departingTaxClaim[c] += security[3][c];
+            }
+        }
+    }
 
     /**
      * Per company: -1 when it has no owner family; 0 or more when it has one,
@@ -621,6 +806,17 @@ public class HouseholdBalance {
         for (Household c : cells) {
             c.capitalCeiling = free ? Double.POSITIVE_INFINITY : c.debt * (1 + growth);
         }
+    }
+
+    /**
+     * Harness-only lender input for a native window with no card offers or
+     * draws. This is not an exclusion stock: census and monthly cures must
+     * not reopen the fixture's lender. All cells exist from construction,
+     * including the empty cells that later receive arrivals. Not saved;
+     * a fixture loading another city must supply its lender again.
+     */
+    void setCardLenderOpenForHarness(boolean open) {
+        for (Household c : cells) c.cardLenderOpenForHarness = open;
     }
 
     /** What the bank sets aside against the families' debt (0.7.8), summed cell by cell - see Household.lossAllowance(). */
@@ -1050,11 +1246,13 @@ public class HouseholdBalance {
         lastEstateRepaid = 0;
         lastEstateWrittenOff = 0;
         lastEstatePassed = 0;
+        beginTaxMonth();
+        startDepartures();
         lastPoolSavings = 0;
         lastAbroadTakenAway = 0;
         lastCareSkipped = 0;
         java.util.Arrays.fill(lastSharesTakenAway, 0);
-        for (Household c : cells) c.dividends = 0;
+        for (Household c : cells) { c.dividends = 0; c.taxedGains = 0; }
         /*
          * WHAT THE SHOPS ACTUALLY HANDED OVER, as a share of what was asked
          * for at the price (2026-09-17; Retail.getHouseholdShare(), sold over
@@ -1238,7 +1436,7 @@ public class HouseholdBalance {
                 lastEvicted += c.evicted;
             }
 
-            lastWrittenOff += c.discharge();
+            lastWrittenOff += c.chargeOff();
             lastSeized += c.seizedSavings * c.households;
             lastLeaving += c.bankrupt * LEAVE_ON_BANKRUPTCY;
 
@@ -1519,6 +1717,16 @@ public class HouseholdBalance {
         void set(Household c, double perHousehold);
         /** A stock an orphan never claims from the pool (HS1's review): a debt, a loan or a car - no credit, no licence. */
         default boolean notAChildsToClaim() { return false; }
+        /** The share holding whose distribution this basis follows, or -1 for another stock. */
+        default int securityCompany() { return -1; }
+        default int securityPart() { return -1; }
+        default boolean lossStock() { return false; }
+        /** Borrower status ends with the borrower; an estate settles the debt separately. */
+        default boolean borrowerStatus() { return false; }
+        /** A charged-off household leaves with no card debt or active card status. */
+        default double bankruptPosition(Household c) { return get(c); }
+        default int custodyKind() { return 0; } // 1 USD, 2 cars, 3 city paper
+        default int bondId() { return -1; }
     }
 
     /**
@@ -1533,10 +1741,15 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.savings; }
             public void set(Household c, double v) { c.savings = v; }
+            public double bankruptPosition(Household c) {
+                return c.bankruptcyLeaving > 0 ? Math.min(c.savings / c.bankruptcyLeaving,
+                        c.bankruptcyCash / c.bankruptcyLeaving) : 0;
+            }
         });
         stocks.add(new Stock() {
             public double get(Household c) { return c.debt; }
             public void set(Household c, double v) { c.debt = v; }
+            public double bankruptPosition(Household c) { return 0; }
             public boolean notAChildsToClaim() { return true; }
         });
         for (int k = 0; k < Equity.COMPANIES.length; k++) {
@@ -1544,11 +1757,14 @@ public class HouseholdBalance {
             stocks.add(new Stock() {
                 public double get(Household c) { return c.shares[company]; }
                 public void set(Household c, double v) { c.shares[company] = v; }
+                public int securityCompany() { return company; }
+                public int securityPart() { return 0; }
             });
         }
         stocks.add(new Stock() {
             public double get(Household c) { return c.abroad; }
             public void set(Household c, double v) { c.abroad = v; }
+            public int custodyKind() { return 1; }
         });
         // The student loan follows the graduate into a family - and out of
         // the city with one who leaves, which the treasury writes off.
@@ -1576,6 +1792,7 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.cars; }
             public void set(Household c, double v) { c.cars = v; }
+            public int custodyKind() { return 2; }
             public boolean notAChildsToClaim() { return true; }
         });
         // ...and the city's paper (0.7.1), named like the loans, not "the last one".
@@ -1583,6 +1800,7 @@ public class HouseholdBalance {
         stocks.add(new Stock() {
             public double get(Household c) { return c.paper; }
             public void set(Household c, double v) { c.paper = v; }
+            public int custodyKind() { return 3; }
         });
         /*
          * ...and the businesses' bonds (0.7.12), BOND BY BOND since round 2:
@@ -1605,11 +1823,142 @@ public class HouseholdBalance {
             // square of the bonds a cell holds, every month.
             stocks.add(new Stock() {
                 public double get(Household c) { return c.bondFace(bond); }
+                public int bondId() { return bond; }
                 public void set(Household c, double v) { if (v > 0) c.bondFace.put(bond, v); else c.bondFace.remove(bond); }
             });
         }
+        for (int k = 0; k < Equity.COMPANIES.length; k++) {
+            final int company = k;
+            stocks.add(new Stock() {
+                public double get(Household c) { return c.basis[company]; }
+                public void set(Household c, double v) { c.basis[company] = v; }
+                public int securityCompany() { return company; }
+                public int securityPart() { return 1; }
+            });
+        }
+        for (int k = 0; k < Equity.COMPANIES.length; k++) {
+            final int company = k;
+            stocks.add(new Stock() {
+                public double get(Household c) { return c.taxShares[company]; }
+                public void set(Household c, double v) { c.taxShares[company] = v; }
+                public int securityCompany() { return company; }
+                public int securityPart() { return 2; }
+            });
+            stocks.add(new Stock() {
+                public double get(Household c) { return c.taxClaim[company]; }
+                public void set(Household c, double v) { c.taxClaim[company] = v; }
+                public int securityCompany() { return company; }
+                public int securityPart() { return 3; }
+            });
+        }
+        stocks.add(new Stock() {
+            public boolean lossStock() { return true; }
+            public double get(Household c) { return c.lossCarried; }
+            public void set(Household c, double v) { c.lossCarried = v; }
+        });
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.revolving; }
+            public void set(Household c, double v) { c.revolving = v; }
+            public double bankruptPosition(Household c) { return 0; }
+            public boolean borrowerStatus() { return true; }
+            public boolean notAChildsToClaim() { return true; }
+        });
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.lateDebt; }
+            public void set(Household c, double v) { c.lateDebt = v; }
+            public double bankruptPosition(Household c) { return 0; }
+            public boolean borrowerStatus() { return true; }
+            public boolean notAChildsToClaim() { return true; }
+        });
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.lateShare; }
+            public void set(Household c, double v) { c.lateShare = v; }
+            public double bankruptPosition(Household c) { return 0; }
+            public boolean borrowerStatus() { return true; }
+            public boolean notAChildsToClaim() { return true; }
+        });
+        stocks.add(new Stock() {
+            public double get(Household c) { return c.shutOut; }
+            public void set(Household c, double v) { c.shutOut = v; }
+            public double bankruptPosition(Household c) { return 1; }
+            public boolean borrowerStatus() { return true; }
+            public boolean notAChildsToClaim() { return true; }
+        });
         bondStockIds = order;
         return stocks;
+    }
+
+    /** One existing row/city routing calculation shared by every component of each security. */
+    private final class SecurityRoute {
+        final double[] delta = new double[cells.length], rowKeep = new double[Household.STOCK_GROUPS],
+                rowReceipt = new double[cells.length], cityReceipt = new double[cells.length], gone = new double[cells.length];
+        final double cityKeep;
+        SecurityRoute(double[] fresh, double[] before, Stock stock) {
+            double[] loss = new double[Household.STOCK_GROUPS], gain = new double[Household.STOCK_GROUPS], moved = new double[Household.STOCK_GROUPS];
+            for (int i = 0; i < cells.length; i++) {
+                delta[i] = fresh[i] - before[i]; double weight = Math.abs(delta[i]) * poolWeight(cells[i], stock);
+                if (delta[i] < 0) loss[cells[i].stockGroup()] += weight; else gain[cells[i].stockGroup()] += weight;
+            }
+            double cityLoss = 0, cityGain = 0;
+            for (int r = 0; r < loss.length; r++) {
+                moved[r] = Math.min(loss[r], gain[r]); rowKeep[r] = loss[r] > 0 ? Math.min(1, moved[r]/loss[r]) : 0;
+                cityLoss += Math.max(0, loss[r] - moved[r]); cityGain += Math.max(0, gain[r] - moved[r]);
+            }
+            double cityMoved = Math.min(cityLoss, cityGain);
+            cityKeep = cityLoss > 0 ? Math.min(1, cityMoved/cityLoss) : 0;
+            double cityShare = cityGain > 0 ? Math.min(1, cityMoved/cityGain) : 0;
+            for (int i = 0; i < cells.length; i++) {
+                int r = cells[i].stockGroup();
+                if (delta[i] < 0) gone[i] = -delta[i] * (1-rowKeep[r]) * (1-cityKeep);
+                if (!(delta[i] > 0)) continue;
+                double weight = delta[i] * poolWeight(cells[i], stock);
+                double fromRow = gain[r] > 0 ? Math.min(weight, weight*moved[r]/gain[r]) : 0;
+                double rest = Math.max(0, weight-fromRow), fromCity = Math.min(rest, rest*cityShare);
+                rowReceipt[i] = moved[r] > 0 ? fromRow/moved[r] : 0;
+                cityReceipt[i] = cityMoved > 0 ? fromCity/cityMoved : 0;
+            }
+        }
+        void move(double[] fresh, double[] before) {
+            for (int company = 0; company < Equity.COMPANIES.length; company++) {
+                double[][] row = new double[4][Household.STOCK_GROUPS]; double[] city = new double[4];
+                for (int i = 0; i < cells.length; i++) if (delta[i] < 0) {
+                    int r = cells[i].stockGroup(); double count = -delta[i];
+                    double[] values = security(cells[i], company);
+                    for (int part = 0; part < 4; part++) {
+                        row[part][r] += values[part]*count*rowKeep[r];
+                        city[part] += values[part]*count*(1-rowKeep[r])*cityKeep;
+                    }
+                }
+                for (int i = 0; i < cells.length; i++) if (delta[i] > 0 && fresh[i] > 0) {
+                    double[] values = security(cells[i], company); int r = cells[i].stockGroup();
+                    for (int part = 0; part < 4; part++) values[part] = Math.max(0,
+                            (values[part]*before[i] + row[part][r]*rowReceipt[i] + city[part]*cityReceipt[i])/fresh[i]);
+                    security(cells[i], company, values);
+                }
+            }
+        }
+    }
+    private static double[] security(Household h, int c) { return new double[] {h.shares[c], h.basis[c], h.taxShares[c], h.taxClaim[c]}; }
+    private static void security(Household h, int c, double[] v) {
+        h.shares[c]=v[0]; h.basis[c]=v[1]; h.taxShares[c]=v[2]; h.taxClaim[c]=v[3];
+    }
+    private boolean spreadSecurity(int company, double[] amount, int group) {
+        double held = 0, live = 0;
+        for (Household d : cells) if (!d.isEmpty() && (group < 0 || d.stockGroup() == group)) {
+            held += d.shares[company]*d.households; live += d.households;
+        }
+        if (!(live > 0)) return false;
+        double[] weights = new double[cells.length];
+        for (int i=0;i<cells.length;i++) {
+            Household d=cells[i]; if (d.isEmpty() || (group >= 0 && d.stockGroup()!=group)) continue;
+            weights[i]=held>0 ? d.shares[company]/held : 1/live;
+        }
+        for (int i=0;i<cells.length;i++) if (weights[i]>0) {
+            double[] values=security(cells[i],company);
+            for(int part=0;part<4;part++) values[part]+=amount[part]*weights[i];
+            security(cells[i],company,values);
+        }
+        return true;
     }
 
     /**
@@ -1655,15 +2004,32 @@ public class HouseholdBalance {
             beforeShares[ownerIndex] = fresh[ownerIndex];
         }
 
+        SecurityRoute securityRoute = new SecurityRoute(fresh, beforeShares, stocks.get(2));
+        SecurityRoute cashRoute = new SecurityRoute(fresh, before, stocks.get(0));
+        double[][] securitiesOut = new double[4][Equity.COMPANIES.length];
+        double poolTax = 0;
+        for (int i = 0; i < n; i++) if (securityRoute.gone[i] > 0) {
+            // Only cash actually leaving from this same source can pay; owner retention can make the two anonymous pools differ.
+            Deemed d = new Deemed(cells[i], securityRoute.gone[i], cells[i].savings * Math.min(securityRoute.gone[i], cashRoute.gone[i]));
+            poolTax += d.cashTax; d.leave();
+            for (int part = 0; part < 4; part++) for (int c = 0; c < Equity.COMPANIES.length; c++)
+                securitiesOut[part][c] += d.security[part][c];
+        }
         double[] left = new double[stocks.size()];
         for (int k = 0; k < stocks.size(); k++) {
-            boolean loans = k == loanSlot;
-            boolean shares = k >= 2 && k < 2 + Equity.COMPANIES.length;
-            left[k] = flowLeft[k] + moveStock(stocks.get(k), fresh, loans ? beforeLoans : shares ? beforeShares : before, k == 0 ? buffer : null);
+            Stock st = stocks.get(k);
+            if (st.securityCompany() >= 0) left[k] = flowLeft[k] + securitiesOut[st.securityPart()][st.securityCompany()];
+            else left[k] = flowLeft[k] + moveStock(st, fresh, k == loanSlot ? beforeLoans : before, k == 0 ? buffer : null);
         }
+        left[0] -= poolTax;
+        securityRoute.move(fresh, beforeShares);
         if (ownersLeave) {
             double keep = before[ownerIndex] / fresh[ownerIndex];
-            for (int k = 0; k < Equity.COMPANIES.length; k++) cells[ownerIndex].shares[k] *= keep;
+            for (int k = 0; k < Equity.COMPANIES.length; k++) {
+                cells[ownerIndex].shares[k] *= keep;
+                cells[ownerIndex].basis[k] *= keep;
+                cells[ownerIndex].taxShares[k] *= keep; cells[ownerIndex].taxClaim[k] *= keep;
+            }
         }
         // Each cell's bonds total, from the bonds that moved (round 2).
         if (bondStockIds.length > 0) for (Household c : cells) c.recountBonds();
@@ -1694,7 +2060,11 @@ public class HouseholdBalance {
         double paperGone = left[paperSlot];
         if (paperGone > 0 && paperDesk != null) {
             double cash = paperGone * paperRatio;
-            paperDesk.buy(paperGone, cash);
+            // The pool has moved the stocks but not yet the cell counts. Read the
+            // surviving book at the fresh counts, plus the face leaving it.
+            double heldBefore = paperGone;
+            for (int i = 0; i < n; i++) heldBefore += cells[i].paper * fresh[i];
+            paperDesk.buy(paperGone, cash, heldBefore);
             lastTakenAway += cash;
         }
         /*
@@ -1779,7 +2149,16 @@ public class HouseholdBalance {
         for (Household c : cells) {
             if (!c.isEmpty()) continue;
             boolean held = false;
+            for (int company = 0; company < Equity.COMPANIES.length; company++) {
+                double[] amount = security(c, company); boolean any = false;
+                for (int part = 0; part < 4; part++) { amount[part] *= c.households; any |= amount[part] != 0; }
+                security(c, company, new double[4]);
+                if (!any) continue;
+                held = true;
+                if (!spreadSecurity(company, amount, c.stockGroup())) spreadSecurity(company, amount, -1);
+            }
             for (Stock s : stocks) {
+                if (s.securityCompany() >= 0) continue;
                 double amount = s.get(c) * c.households;
                 s.set(c, 0);
                 if (amount == 0) continue;
@@ -2056,6 +2435,7 @@ public class HouseholdBalance {
     private static final class Move {
         final int kind, from, to, tier, heirs;
         double out, in;
+        boolean bankrupt;
         Move(int kind, int from, int to, int tier, double out, double in) {
             this(kind, from, to, tier, -1, out, in);
         }
@@ -2088,6 +2468,13 @@ public class HouseholdBalance {
         double[] b0 = new double[n];
         for (int i = 0; i < n; i++) b0[i] = cells[i].households;
         Plan plan = new Plan(b0.clone());
+        for (int i = 0; i < n; i++) {
+            double gone = Math.min(b0[i], Math.max(0, cells[i].bankruptcyLeaving) * b0[i]);
+            if (gone > 0) {
+                Move m = new Move(LEAVING, i, OUT_OF_THE_CITY, -1, gone, 0);
+                m.bankrupt = true; plan.moves.add(m);
+            }
+        }
         double retire = flows[FLOW_RETIRE], ageOn = flows[FLOW_AGE_ON], leave = flows[FLOW_LEAVE];
         double evicted = flows[FLOW_EVICTED];
         double retireEstablished = flows[FLOW_RETIRE_ESTABLISHED], ageUp = flows[FLOW_AGE_UP];
@@ -2098,7 +2485,7 @@ public class HouseholdBalance {
         if (useUp) java.util.Arrays.fill(flows, 0);
         if (retire + ageOn + leave + evicted + die[AgeBand.ADULT.ordinal()]
                 + die[AgeBand.SENIOR.ordinal()] + die[AgeBand.ELDER.ordinal()]
-                + retireEstablished + ageUp <= 0) return plan;
+                + retireEstablished + ageUp <= 0 && plan.moves.isEmpty()) return plan;
 
         double[] toSenior = shapeShares(census, b0, AgeBand.SENIOR);
         double[] toElder = shapeShares(census, b0, AgeBand.ELDER);
@@ -2106,7 +2493,7 @@ public class HouseholdBalance {
 
         for (int i = 0; i < n; i++) {
             Household c = cells[i];
-            double h = b0[i];
+            double h = b0[i] * (1 - Math.min(1, Math.max(0, c.bankruptcyLeaving)));
             if (!(h > 0)) continue;
             int g = c.grownUps();
             if (c instanceof WorkingHousehold w) {
@@ -2144,10 +2531,12 @@ public class HouseholdBalance {
 
         // No cell loses more households than it has: a source's moves are scaled together.
         double[] out = new double[n];
+        double[] discharged = new double[n];
         for (Move m : plan.moves) out[m.from] += m.out;
+        for (Move m : plan.moves) if (m.bankrupt) discharged[m.from] += m.out;
         for (Move m : plan.moves) {
-            if (out[m.from] > b0[m.from]) {
-                double keep = b0[m.from] / out[m.from];
+            if (!m.bankrupt && out[m.from] > b0[m.from]) {
+                double keep = Math.max(0, b0[m.from] - discharged[m.from]) / (out[m.from] - discharged[m.from]);
                 m.out *= keep;
                 m.in *= keep;
             }
@@ -2269,6 +2658,33 @@ public class HouseholdBalance {
         double[] b = new double[n];
         for (int i = 0; i < n; i++) b[i] = cells[i].households;
         if (plan == null || plan.moves.isEmpty()) return b;
+        // Discharged households leave first, from their source cell and with
+        // their own zero card balance. Re-average only the survivors before
+        // ageing, estates and the anonymous census pools can move their books.
+        for (Move m : plan.moves) if (m.bankrupt) {
+            Household c = cells[m.from];
+            double count = b[m.from], remaining = count - m.out;
+            double[] departing = new double[k], opening = new double[k];
+            for (int s = 0; s < k; s++) {
+                opening[s] = stocks.get(s).get(c);
+                departing[s] = stocks.get(s).bankruptPosition(c) * m.out;
+            }
+            Deemed d = new Deemed(c, m.out, departing[0]);
+            for (int s = 0; s < k; s++) {
+                Stock st = stocks.get(s);
+                left[s] += st.securityCompany() >= 0 || st.lossStock()
+                        ? d.stock(st, c, m.out) : departing[s];
+                st.set(c, remaining > 0 ? Math.max(0, (opening[s] * count - departing[s]) / remaining) : 0);
+            }
+            left[0] -= d.cashTax; d.leave();
+            lastFlowHouseholds[LEAVING] += m.out;
+            lastFlowSavings[LEAVING] += departing[0];
+            b[m.from] = remaining;
+            c.bankruptcyLeaving = c.bankruptcyCash = 0;
+        }
+        double[] after = b.clone(), arriving = new double[n];
+        for (Move m : plan.moves) if (!m.bankrupt) { after[m.from] -= m.out; if (m.to >= 0) arriving[m.to] += m.in; }
+        for (int i = 0; i < n; i++) after[i] = Math.max(0, after[i]) + arriving[i];
         double[][] in = new double[n][];
         double[] inHouseholds = new double[n];
         // By the tier, and the heirs' stage within it (HS2): slot 0 either, then each stage.
@@ -2276,6 +2692,7 @@ public class HouseholdBalance {
         double[][] estate = new double[PayTier.values().length * heirSlots][];
 
         for (Move m : plan.moves) {
+            if (m.bankrupt) continue;
             Household from = cells[m.from];
             lastFlowHouseholds[m.kind] += m.out;
             lastFlowSavings[m.kind] += from.savings * m.out;
@@ -2284,7 +2701,9 @@ public class HouseholdBalance {
                 for (int s = 0; s < k; s++) in[m.to][s] += stocks.get(s).get(from) * m.out;
                 inHouseholds[m.to] += m.in;
             } else if (m.to == OUT_OF_THE_CITY) {
-                for (int s = 0; s < k; s++) left[s] += stocks.get(s).get(from) * m.out;
+                Deemed d = new Deemed(from, m.out, from.savings * m.out);
+                for (int s = 0; s < k; s++) left[s] += d.stock(stocks.get(s), from, m.out);
+                left[0] -= d.cashTax; d.leave();
             } else {
                 int slot = m.tier * heirSlots + m.heirs + 1;
                 if (estate[slot] == null) estate[slot] = new double[k];
@@ -2294,13 +2713,19 @@ public class HouseholdBalance {
                 double repaid = Math.min(saved, owed);
                 lastEstateRepaid += repaid;
                 lastEstateWrittenOff += owed - repaid;
-                e[0] += saved - repaid;
+                AdultStage heirs = m.heirs < 0 ? null : AdultStage.values()[m.heirs];
+                boolean unclaimed = !hasHeir(PayTier.values()[m.tier], heirs, after);
+                Deemed d = new Deemed(from, m.out, saved - repaid, !unclaimed);
+                if (unclaimed && custodyBonds != null)
+                    custodyBonds.transferRecordedCouponToCustody(from.key(), m.out / from.households);
+                e[0] += saved - repaid - d.cashTax;
                 left[1] += owed - repaid;
                 left[loanSlot] += from.studentDebt * m.out;
-                for (int s = 2; s < k; s++) if (s != loanSlot) e[s] += stocks.get(s).get(from) * m.out;
+                for (int s = 2; s < k; s++) if (s != loanSlot && !stocks.get(s).borrowerStatus())
+                    e[s] += d.stock(stocks.get(s), from, m.out);
             }
         }
-        for (Move m : plan.moves) b[m.from] -= m.out;
+        for (Move m : plan.moves) if (!m.bankrupt) b[m.from] -= m.out;
         for (int i = 0; i < n; i++) {
             if (b[i] < 0) b[i] = 0;
             if (in[i] == null) continue;
@@ -2351,10 +2776,39 @@ public class HouseholdBalance {
             lastEstatePassed += e[0];
             return;
         }
-        for (int s = 0; s < e.length; s++) left[s] += e[s];
+        if (custody == null) throw new IllegalStateException("No receiving owner for an unclaimed estate");
+        double[] units = new double[Equity.COMPANIES.length], basis = units.clone(), claims = units.clone();
+        java.util.Map<Integer, Double> bonds = new java.util.LinkedHashMap<>();
+        double dollars = 0, cars = 0, paper = 0, loss = 0;
+        for (int s = 0; s < e.length; s++) {
+            Stock st = stocks.get(s); int company = st.securityCompany();
+            if (company >= 0) {
+                if (st.securityPart() == 0) units[company] = e[s];
+                if (st.securityPart() == 1) basis[company] = e[s];
+                if (st.securityPart() == 3) claims[company] = e[s];
+            }
+            if (st.bondId() >= 0 && e[s] != 0) bonds.put(st.bondId(), e[s]);
+            if (st.custodyKind() == 1) dollars = e[s];
+            if (st.custodyKind() == 2) cars = e[s];
+            if (st.custodyKind() == 3) paper = e[s];
+            if (st.lossStock()) loss = e[s];
+        }
+        custody.receive(e[0], units, basis, bonds, dollars, cars, loss, paper);
+        // Only after receiving the actual property, cancel the treasury's self-claims without tax cash.
+        for (int company = 0; company < claims.length; company++) {
+            governmentClaim[company] -= claims[company]; taxFlow(CONSOLIDATED, claims[company]);
+        }
     }
 
     /** Whether a cell inherits in a pass of passOn(): 0 the tier's heirs' stage, 1 the tier's, 2 the city's working households. */
+    private boolean hasHeir(PayTier tier, AdultStage heirs, double[] counts) {
+        for (int pass = heirs == null ? 1 : 0; pass < 3; pass++) {
+            double weight = 0;
+            for (int i = 0; i < cells.length; i++) if (heirOf(cells[i], counts[i], pass, tier, heirs)) weight += counts[i] * cells[i].grownUps();
+            if (weight > 0) return true;
+        }
+        return false;
+    }
     private static boolean heirOf(Household c, double households, int pass, PayTier tier, AdultStage heirs) {
         if (!(c instanceof WorkingHousehold w) || c.isEmpty() || !(households > 0)) return false;
         if (pass == 2) return true;
@@ -2989,7 +3443,7 @@ public class HouseholdBalance {
          * bars it: a family that cannot buy its groceries this month is not
          * signing a finance agreement this month either.
          */
-        if (c.isEmpty() || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
+        if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
         double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
         if (spare <= 0) return 0;
         /*
@@ -3125,6 +3579,8 @@ public class HouseholdBalance {
             // ...and the bank's loan fee added to what is owed (0.7.7), as on
             // the credit line. See Household.fundShortfall().
             c.debt += lent * (1 + Bank.LOAN_FEE);
+            if (lent > 0) c.revolving += Math.min(Math.max(0, c.cardAccess(c.disposable) - c.revolving), got);
+            c.boundCards();
             financed += lent * c.households;
             carFees += lent * Bank.LOAN_FEE * c.households;
             spent += got * price * c.households;
@@ -3486,7 +3942,7 @@ public class HouseholdBalance {
      * which is the whole reason this good is here.
      */
     private double luxuryBudgetOf(Household c) {
-        if (c.isEmpty() || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
+        if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
         if (!(c.luxuryWant > 0)) return 0;
         double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
         if (spare <= 0) return 0;
@@ -3593,7 +4049,7 @@ public class HouseholdBalance {
      * is measured elsewhere.
      */
     private double mealBudgetOf(Household c) {
-        if (c.isEmpty() || !c.canInvest() || c.lockout > 0 || c.isGoingShort()) return 0;
+        if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
         if (!(c.mealWant > 0)) return 0;
         double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
         if (spare <= 0) return 0;
@@ -3890,7 +4346,7 @@ public class HouseholdBalance {
     /** A split or consolidation: every household's count of the company by the factor. */
     public void splitShares(int company, double k) {
         if (!(k > 0) || k == 1) return;
-        for (Household c : cells) c.shares[company] *= k;
+        for (Household c : cells) { c.shares[company] *= k; c.taxShares[company] *= k; }
         lastSharesTakenAway[company] *= k;
     }
 
@@ -3983,6 +4439,14 @@ public class HouseholdBalance {
      */
     boolean owes(Household c) { return c.debt > minMove; }
 
+    /** Share whose cash may buy investments: cards/exclusion belong to their holders, not every neighbour (HC1). */
+    public double debtFreeShare(Household c) {
+        // A raw indebted fixture without a supplied holder distribution is
+        // conservatively ineligible; this does not invent or convert holders.
+        if (owes(c) && !(c.revolving > 0)) return 0;
+        return Math.max(0, Math.min(1, 1 - (owes(c) ? c.revolving : 0) - c.shutOut));
+    }
+
     /** Local currency per dollar, this month: what the paper abroad is worth here. Set by Game before the strike. */
     private double localPerUsd = ForeignAccounts.OPENING_RATE;
 
@@ -3995,12 +4459,15 @@ public class HouseholdBalance {
     /** Dollars the households that left this month took with them. Nothing crosses the border. */
     private double lastAbroadTakenAway;
 
+    /** The existing foreign coupon is paid home; the USD principal stays abroad. */
+    static double foreignCouponUsd(double dollars, double worldRate) { return dollars * Math.max(0, worldRate) / 12; }
+
     /**
      * Every household decides where to keep its idle money: what is past the
      * cushion goes abroad towards the target share, a little a month; what
-     * is abroad comes home when the target falls. A household in debt, locked
-     * out or going short holds nothing abroad. The coupon is rolled where it
-     * is earned. Called once a month, after the shares have traded and before
+     * is abroad comes home when the target falls. HC1 uses the debt-free,
+     * unexcluded share's cash budget, and none while going short. The coupon is paid home; the
+     * USD principal stays abroad. Called once a month, after the shares have traded and before
      * the audit strikes.
      *
      * @param depositRate what the bank pays savers, annual
@@ -4048,7 +4515,7 @@ public class HouseholdBalance {
                change the other two need to exist. A coupon is income, not a
                bigger bond.
                ============================================================= */
-            double earnedUsd = c.abroad * Math.max(0, worldRate) / 12;
+            double earnedUsd = foreignCouponUsd(c.abroad, worldRate);
             c.foreignInterest = earnedUsd * rate;
             c.savings += c.foreignInterest;
             c.investmentIncome += c.foreignInterest;
@@ -4057,11 +4524,12 @@ public class HouseholdBalance {
             if (!c.canInvest()) continue;
 
             double held = c.abroad * rate;
-            boolean eligible = !owes(c) && c.lockout <= 0 && !c.isGoingShort();
+            double freeShare = debtFreeShare(c);
+            boolean eligible = freeShare > 0 && !c.isGoingShort();
 
             double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             double spare = c.savings - cushion;
-            double target = eligible && spare + held > 0 ? (spare + held) * targetShare : 0;
+            double target = eligible && spare + held > 0 ? (spare + held) * targetShare * freeShare : 0;
             double gap = target - held;
             double move;
             if (gap > 0) {
@@ -4166,8 +4634,8 @@ public class HouseholdBalance {
      * face off every piece of paper's household share pro rata.
      */
     public interface PaperDesk {
-        /** The desk buys this much face of the households' paper for this much cash. */
-        void buy(double face, double cash);
+        /** The desk buys face / heldBefore of the opening household book for this much cash. */
+        void buy(double face, double cash, double heldBefore);
     }
 
     private PaperDesk paperDesk;
@@ -4232,11 +4700,11 @@ public class HouseholdBalance {
     }
 
     private boolean mayBuyPaper(Household c) {
-        return !c.isEmpty() && c.canInvest() && !owes(c) && c.lockout <= 0 && !c.isGoingShort();
+        return !c.isEmpty() && c.canInvest() && debtFreeShare(c) > 0 && !c.isGoingShort();
     }
 
     private double spareFor(Household c) {
-        return Math.max(0, c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable));
+        return Math.max(0, c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * debtFreeShare(c);
     }
 
     /** What every eligible household could put into paper: savings past the cushion, in total. */
@@ -4329,8 +4797,9 @@ public class HouseholdBalance {
         double cashPer = Math.min(needPer, c.paper * paperRatio);
         double facePer = Math.min(c.paper, cashPer / paperRatio);
         cashPer = facePer * paperRatio;
+        double heldBefore = totalPaper();
         c.paper -= facePer;
-        paperDesk.buy(facePer * c.households, cashPer * c.households);
+        paperDesk.buy(facePer * c.households, cashPer * c.households, heldBefore);
         return cashPer;
     }
 
@@ -4345,7 +4814,7 @@ public class HouseholdBalance {
      */
     public double sellPaperForSpread(double bookYield, double depositRate) {
         if (paperDesk == null || bookYield > Math.max(0, depositRate)) return 0;
-        double raised = 0;
+        double raised = 0, faceSold = 0, heldBefore = totalPaper();
         for (Household c : cells) {
             if (c.isEmpty() || !c.canInvest() || c.paper <= 0) continue;
             double facePer = c.paper * OutwardInvestment.HOME_SPEED;
@@ -4354,9 +4823,10 @@ public class HouseholdBalance {
             c.paper -= facePer;
             c.savings += cashPer;
             c.paperSold += cashPer;
-            paperDesk.buy(facePer * c.households, cashPer * c.households);
+            faceSold += facePer * c.households;
             raised += cashPer * c.households;
         }
+        if (faceSold > 0) paperDesk.buy(faceSold, raised, heldBefore);
         return raised;
     }
 
@@ -4738,16 +5208,62 @@ public class HouseholdBalance {
 
     /** Households discharged this month, and the share of them leaving the city. */
     public double getBankrupt(int row) { return sumRow(row, Household::bankrupt); }
-    public double getLeavingCity()     { return lastLeaving; }
+    public double getLeavingCity()     { return sum(c -> c.bankruptcyLeaving * c.households); }
+
+    /** The actual source families, rather than a city-wide average household size. */
+    public record BankruptcyDepartures(double[] ages, double[] stages) {
+        public double people() { return java.util.Arrays.stream(ages).sum(); }
+    }
+
+    /** Bound one source-preserving departure plan to the people still alive this month. */
+    public BankruptcyDepartures prepareBankruptcyDepartures(PopulationCohorts cohorts) {
+        double[] ages = new double[AgeBand.values().length], stages = new double[AdultStage.values().length];
+        for (Household c : cells) {
+            double count = c.bankruptcyLeaving * c.households;
+            if (!(count > 0)) continue;
+            if (c.shape() != null) {
+                for (AgeBand a : AgeBand.values()) ages[a.ordinal()] += count * c.shape().membersOf(a);
+                ages[AgeBand.CHILD.ordinal()] += count * Math.max(0, c.headcount() - c.shape().size());
+            } else {
+                ages[AgeBand.ADULT.ordinal()] += count * c.grownUps();
+                ages[AgeBand.CHILD.ordinal()] += count * Math.max(0, c.headcount() - c.grownUps());
+            }
+            double adults = count * (c.shape() == null ? c.grownUps() : c.shape().membersOf(AgeBand.ADULT));
+            if (c instanceof WorkingHousehold w) stages[w.stage().ordinal()] += adults;
+            else for (AdultStage s : AdultStage.values()) stages[s.ordinal()] += adults
+                    * (cohorts.get(AgeBand.ADULT) > 0 ? cohorts.get(s) / cohorts.get(AgeBand.ADULT) : 0);
+        }
+        double keep = 1;
+        for (AgeBand a : AgeBand.values()) if (ages[a.ordinal()] > 0)
+            keep = Math.min(keep, cohorts.get(a) / ages[a.ordinal()]);
+        for (AdultStage s : AdultStage.values()) if (stages[s.ordinal()] > 0)
+            keep = Math.min(keep, cohorts.get(s) / stages[s.ordinal()]);
+        keep = Math.max(0, Math.min(1, keep));
+        for (Household c : cells) { c.bankruptcyLeaving *= keep; c.bankruptcyCash *= keep; }
+        for (int i = 0; i < ages.length; i++) ages[i] *= keep;
+        for (int i = 0; i < stages.length; i++) stages[i] *= keep;
+        return new BankruptcyDepartures(ages, stages);
+    }
+
+    /** Migration may cap total departures; apply that same cap to every source and its cash. */
+    public BankruptcyDepartures limitBankruptcyDepartures(BankruptcyDepartures plan, double admitted) {
+        double keep = plan.people() > 0 ? Math.max(0, Math.min(1, admitted / plan.people())) : 1;
+        if (keep == 1) return plan;
+        for (Household c : cells) { c.bankruptcyLeaving *= keep; c.bankruptcyCash *= keep; }
+        double[] ages = plan.ages().clone(), stages = plan.stages().clone();
+        for (int i = 0; i < ages.length; i++) ages[i] *= keep;
+        for (int i = 0; i < stages.length; i++) stages[i] *= keep;
+        return new BankruptcyDepartures(ages, stages);
+    }
 
     /** True when any cell of the row the bank has stopped lending to is still locked out. */
     public boolean isLockedOut(int row){ return getLockout(row) > 0; }
 
-    /** The longest lockout standing in the row. */
+    /** Legacy row indicator: a shut-out share exists; the actual position is Household.shutOut(). */
     public int getLockout(int row) {
         int longest = 0;
         for (Household c : cells) {
-            if (c.row() == row && !c.isEmpty()) longest = Math.max(longest, c.lockout);
+            if (c.row() == row && !c.isEmpty()) longest = Math.max(longest, c.lockout());
         }
         return longest;
     }
@@ -4774,6 +5290,8 @@ public class HouseholdBalance {
         lastEstateRepaid = 0;
         lastEstateWrittenOff = 0;
         lastEstatePassed = 0;
+        beginTaxMonth();
+        startDepartures();
         lastPoolSavings = 0;
         lastAbroadTakenAway = 0;
         java.util.Arrays.fill(lastSharesTakenAway, 0);
@@ -4922,13 +5440,15 @@ public class HouseholdBalance {
      * saving worth doing on its own.
      */
     public void creditDepositInterest(double total) {
+        for (Household c : cells) c.depositIncome = 0;
         if (total <= 0) return;
         double base = totalSavings();
         if (base <= 0) return;
         for (Household c : cells) {
             if (c.savings <= 0 || c.isEmpty()) continue;
             double share = c.totalSavings() / base;
-            c.savings += total * share / c.households;
+            c.depositIncome = total * share / c.households;
+            c.savings += c.depositIncome;
         }
         lastDepositInterest = total;
     }
@@ -5050,14 +5570,7 @@ public class HouseholdBalance {
         double[] want = new double[cells.length];
         double total = 0;
         for (int i = 0; i < cells.length; i++) {
-            Household c = cells[i];
-            if (c.isEmpty() || !c.canInvest() || owes(c) || c.lockout > 0 || c.isGoingShort()) continue;
-            // The owner line takes no offering (BO1): its stakes dilute.
-            if (!c.tradesShares()) continue;
-            double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
-            double excess = c.savings - cushion;
-            if (excess <= 0) continue;
-            want[i] = excess * SHARE_OF_EXCESS * c.households;
+            want[i] = offeringWant(cells[i]);
             total += want[i];
         }
         if (total <= 0) return 0;
@@ -5070,9 +5583,32 @@ public class HouseholdBalance {
             double paidPer = want[i] * scale / c.households;
             c.savings -= paidPer;
             c.shares[company] += paidPer / price;
+            c.basis[company] += paidPer;
             taken += paidPer * c.households;
         }
         return taken;
+    }
+
+    /**
+     * What the households would put into an offering today, in all (REV-FC2b): subscribe()'s own weighing, cell by cell, of
+     * a share (SHARE_OF_EXCESS) of what a cell that may buy shares holds past SHARE_CUSHION_MONTHS of its take-home, by its
+     * debt-free share. The most an offering of any size raises from them; OrderDoorCheck's fixture reads it.
+     */
+    public double offeringMeans() {
+        double total = 0;
+        for (Household c : cells) total += offeringWant(c);
+        return total;
+    }
+
+    /** One cell's want for an offering, as subscribe() weighs it: nothing for a cell that may not, or will not, buy. */
+    private double offeringWant(Household c) {
+        if (c.isEmpty() || !c.canInvest() || debtFreeShare(c) <= 0 || c.isGoingShort()) return 0;
+        // The owner line takes no offering (BO1): its stakes dilute.
+        if (!c.tradesShares()) return 0;
+        double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+        double excess = c.savings - cushion;
+        if (excess <= 0) return 0;
+        return excess * SHARE_OF_EXCESS * c.households * debtFreeShare(c);
     }
 
     /**
@@ -5098,12 +5634,17 @@ public class HouseholdBalance {
      *         nothing to issue); false when the company waits for its family
      */
     public boolean grantFounders(int company, double shares) {
+        return grantFounders(company, shares, Equity.FOUNDING_PRICE);
+    }
+
+    public boolean grantFounders(int company, double shares, double price) {
         if (!(shares > 0)) return true;
         if (ownerLine) {
             if (ownerFloorMonths[company] < 0) ownerFloorMonths[company] = 0;
             Household o = owners();
             if (o.isEmpty()) return false;
             o.shares[company] += shares / o.households;
+            o.basis[company] += shares * price / o.households;
             return true;
         }
         double weight = 0;
@@ -5112,6 +5653,7 @@ public class HouseholdBalance {
         for (Household c : cells) {
             if (c.isEmpty()) continue;
             c.shares[company] += shares * c.grownUps() / weight;
+            c.basis[company] += shares * price * c.grownUps() / weight;
         }
         return true;
     }
@@ -5127,11 +5669,15 @@ public class HouseholdBalance {
         for (Household c : cells) {
             if (c.isEmpty() || c.shares[company] <= 0) continue;
             double each = c.shares[company] * perShare;
-            c.savings += each;
-            c.dividends += each;
+            double tax = each * investmentPolicy.dividendTaxRate(investmentWageRate(c), Equity.COMPANIES[company]);
+            receiveInvestmentTax(false, tax * c.households);
+            taxFlow(DIV_CALLS, 1);
+            double retained = collectClaim(c, company, (each - tax) * c.taxShares[company] / c.shares[company]);
+            c.savings += each - tax - retained;
+            c.dividends += each - tax - retained;
             // ...and the household knows it has it, next time it plans a month.
             // See Household.investmentIncome.
-            c.investmentIncome += each;
+            c.investmentIncome += each - tax - retained;
             paid += each * c.households;
         }
         return paid;
@@ -5154,8 +5700,9 @@ public class HouseholdBalance {
         for (Household c : cells) {
             if (c.isEmpty() || c.shares[company] <= 0) continue;
             double each = c.shares[company] * perShare;
-            c.savings += each;
-            c.investmentIncome += each;
+            double retained = collectClaim(c, company, each * c.taxShares[company] / c.shares[company]);
+            c.savings += each - retained;
+            c.investmentIncome += each - retained;
             paid += each * c.households;
         }
         return paid;
@@ -5164,16 +5711,26 @@ public class HouseholdBalance {
     /**
      * EVERY CELL GIVES UP ITS SHARES OF ONE COMPANY, for nothing: a failed
      * bank's resolution (0.7.14; Equity.takeAllForCity() - the old owners
-     * are wiped out, CDIC). Nothing is paid, so no cash moves: the loss is a
-     * valuation, and the households are outside the audited pools, so the
-     * audit has nothing to see. What this month's leavers took with them is
+     * are wiped out, CDIC). There are no disposal proceeds. In an open tax
+     * month the realised loss can refund current tax; between presses it
+     * carries forward without refunding stale gains. What leavers took is
      * the world's now, and goes with the world's.
      *
      * @return the shares the households held, all cells together
      */
     public double surrenderShares(int company) {
         double gone = sharesHeld(company);
-        for (Household c : cells) c.shares[company] = 0;
+        for (Household c : cells) {
+            extinguishClaim(c, company);
+            if (c.basis[company] > 0) {
+                if (taxWindow) c.savings -= realizeGain(c, -c.basis[company]);
+                else c.lossCarried += c.basis[company];
+            }
+            c.shares[company] = 0;
+            c.basis[company] = 0;
+        }
+        if (!departuresHandedOff) loseClaim(company, departingTaxClaim[company]);
+        departingTaxShares[company] = departingTaxClaim[company] = 0;
         lastSharesTakenAway[company] = 0;
         return gone;
     }
@@ -5437,9 +5994,45 @@ public class HouseholdBalance {
     public static final int CELL_SLOTS_BEFORE_AFTER_FIXED = CELL_SLOTS_BEFORE_MEANS_INCOME + 1;
 
     /** Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month's meals eaten out, the share who paid for care, the city's paper, its bonds, the last sale's baskets got, asked and needed and its food assistance, the means test's smoothed investment income, and the month's income after its fixed bills. */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_AFTER_FIXED + 1;
+    public static final int CELL_SLOTS_BEFORE_BASIS = CELL_SLOTS_BEFORE_AFTER_FIXED + 1;
+    /** Basis by company, loss carry and the current month's taxable gains appended by HT1. */
+    public static final int CELL_SLOTS_BEFORE_SECURED_TAX = CELL_SLOTS_BEFORE_BASIS + Equity.COMPANIES.length + 2;
+    /** The tagged units and limited claims, appended after the basis checkpoint. */
+    public static final int CELL_SLOTS_BEFORE_CARDS = CELL_SLOTS_BEFORE_SECURED_TAX + 2 * Equity.COMPANIES.length;
+    /** Four card stocks, ten settled figures and two pending departure positions (HC1). */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_CARDS + 16;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
+    public double totalEmergencyBills() {
+        double sum = 0; for (Household c : cells) sum += c.emergencyBill * c.households; return sum;
+    }
+
+    public DebtStatistics.Snapshot debtStatistics() { return DebtStatistics.of(this, null, null); }
+
+    private java.util.function.DoubleSupplier carAssetPrice = () -> 0;
+    private java.util.function.DoubleSupplier assetExchangeRate = () -> localPerUsd;
+
+    /** The city's current used-car mark, injected like its rent/census readers. */
+    public void setCarAssetPrice(java.util.function.DoubleSupplier price) { carAssetPrice = price == null ? () -> 0 : price; }
+
+    /** Closing exchange rate for valuing assets, distinct from the settlement's opening rate. */
+    public void setAssetExchangeRate(java.util.function.DoubleSupplier rate) { assetExchangeRate = rate; }
+
+    /** The assets this model has: financial holdings and cars; owner homes arrive with HO1. */
+    public double assets(Household c) {
+        return financialAssets(c) + c.cars * Math.max(0, carAssetPrice.getAsDouble());
+    }
+
+    /** A cell's financial assets at this month's marks, per household (HC2). */
+    public double financialAssets(Household c) {
+        double assets = c.savings + c.abroad * Math.max(0, assetExchangeRate.getAsDouble())
+                + c.paper * Math.max(0, paperRatio) + c.bonds * Math.max(0, bondRatio);
+        if (exchange != null) for (int company = 0; company < c.shares.length; company++) {
+            assets += c.shares[company] * Math.max(0, exchange.price(company));
+        }
+        return Math.max(0, assets);
+    }
+
     public String[] cellKeys() {
         String[] keys = new String[cells.length];
         for (int i = 0; i < cells.length; i++) keys[i] = cells[i].key();
@@ -5453,7 +6046,7 @@ public class HouseholdBalance {
         for (Household c : cells) {
             out[i++] = c.savings;
             out[i++] = c.debt;
-            out[i++] = c.lockout;
+            out[i++] = 0; // reserved: former cell-wide countdown
             out[i++] = c.households;
             out[i++] = c.want;
             out[i++] = c.planned;
@@ -5474,6 +6067,19 @@ public class HouseholdBalance {
             out[i++] = c.assistance;
             out[i++] = c.meansIncome;
             out[i++] = c.afterFixed;
+            for (double basis : c.basis) out[i++] = basis;
+            out[i++] = c.lossCarried;
+            out[i++] = c.taxedGains;
+            for (double units : c.taxShares) out[i++] = units;
+            for (double claim : c.taxClaim) out[i++] = claim;
+            out[i++] = c.revolving; out[i++] = c.lateDebt; out[i++] = c.lateShare; out[i++] = c.shutOut;
+            out[i++] = c.minimumPaid; out[i++] = c.emergencyBill; out[i++] = c.cardWrittenOff;
+            out[i++] = c.disposable; out[i++] = c.bankrupt;
+            out[i++] = c.minimumDue;
+            out[i++] = c.depositIncome;
+            out[i++] = c.studentRepaid; out[i++] = c.studentInterest;
+            out[i++] = c.rate;
+            out[i++] = c.bankruptcyLeaving; out[i++] = c.bankruptcyCash;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -5533,11 +6139,14 @@ public class HouseholdBalance {
         final int wasBeforeGroceries = wasBeforeBonds + 1;
         final int wasBeforeMeans   = wasBeforeGroceries + 4;
         final int wasBeforeAfterFixed = wasBeforeMeans + 1;
-        final int wasFull          = wasBeforeAfterFixed + 1;
+        final int wasBeforeBasis   = wasBeforeAfterFixed + 1;
+        final int wasBeforeSecured = wasBeforeBasis + savedShares + 2;
+        final int wasBeforeCards   = wasBeforeSecured + 2 * savedShares;
+        final int wasFull          = wasBeforeCards + 16;
 
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != wasFull && slots != wasBeforeAfterFixed
+                || (slots != wasFull && slots != wasBeforeCards && slots != wasBeforeSecured && slots != wasBeforeBasis && slots != wasBeforeAfterFixed
                     && slots != wasBeforeMeans && slots != wasBeforeGroceries
                     && slots != wasBeforeBonds && slots != wasBeforePaper
                     && slots != wasBeforeCare && slots != wasBeforeMeals
@@ -5570,7 +6179,7 @@ public class HouseholdBalance {
             if (c == null) { i += slots; continue; }
             c.savings     = saved[i++];
             c.debt        = saved[i++];
-            c.lockout     = (int) Math.round(saved[i++]);
+            i++; // reserved: former cell-wide countdown
             c.households  = saved[i++];
             c.want        = saved[i++];
             c.planned     = saved[i++];
@@ -5630,7 +6239,32 @@ public class HouseholdBalance {
             // ...and the month's income after its fixed bills (A4, 0.7.46),
             // over the rebuild's re-strike from the moment of loading - this
             // runs after it. One from before keeps the re-strike, as it did.
-            if (slots >= wasFull) c.afterFixed = saved[i++];
+            if (slots >= wasBeforeBasis) c.afterFixed = saved[i++];
+            java.util.Arrays.fill(c.basis, 0);
+            c.lossCarried = c.taxedGains = 0;
+            if (slots >= wasBeforeSecured) {
+                for (int k = 0; k < savedShares; k++) {
+                    double cost = saved[i++];
+                    if (shareSlot[k] >= 0) c.basis[shareSlot[k]] = Math.max(0, cost);
+                }
+                c.lossCarried = Math.max(0, saved[i++]);
+                c.taxedGains = Math.max(0, saved[i++]);
+            }
+            java.util.Arrays.fill(c.taxShares, 0); java.util.Arrays.fill(c.taxClaim, 0);
+            if (slots >= wasBeforeCards) {
+                for (int k = 0; k < savedShares; k++) { double value = saved[i++]; if (shareSlot[k] >= 0) c.taxShares[shareSlot[k]] = value; }
+                for (int k = 0; k < savedShares; k++) { double value = saved[i++]; if (shareSlot[k] >= 0) c.taxClaim[shareSlot[k]] = value; }
+            }
+            if (slots >= wasFull) {
+                c.revolving = saved[i++]; c.lateDebt = saved[i++]; c.lateShare = saved[i++]; c.shutOut = saved[i++];
+                c.minimumPaid = saved[i++]; c.emergencyBill = saved[i++]; c.cardWrittenOff = saved[i++];
+                c.disposable = saved[i++]; c.bankrupt = saved[i++];
+                c.minimumDue = saved[i++];
+                c.depositIncome = saved[i++];
+                c.studentRepaid = saved[i++]; c.studentInterest = saved[i++];
+                c.rate = saved[i++];
+                c.bankruptcyLeaving = saved[i++]; c.bankruptcyCash = saved[i++];
+            }
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];
@@ -5693,7 +6327,7 @@ public class HouseholdBalance {
              // a position is: a saved dust is still a dust. See moveStock().
             c.savings = Math.max(0, saved[r]);
             c.debt = Math.max(0, saved[rows + r]);
-            c.lockout = (int) Math.round(saved[rows * 2 + r]);
+            // Former row lockout has no role in the share-based card ledger.
             if (current) {
                 c.want        = saved[rows * 4 + r];
                 c.planned     = saved[rows * 5 + r];
@@ -5761,6 +6395,7 @@ public class HouseholdBalance {
         lastEstateRepaid = 0;
         lastEstateWrittenOff = 0;
         lastEstatePassed = 0;
+        resetTaxBook();
         lastPoolSavings = 0;
         graduating = 0;
         lastGraduated = 0;
@@ -5791,6 +6426,10 @@ public class HouseholdBalance {
      * delivered share is a share.
      */
     public void redenominate(double scale) {
+        for (int k = 0; k < TAX_FLOW_SLOTS; k++) if (k != GAINS_CALLS && k != DIV_CALLS) {
+            taxFlows[k] *= scale; pendingTaxFlows[k] *= scale;
+        }
+        for (int c = 0; c < governmentClaim.length; c++) { governmentClaim[c] *= scale; departingTaxClaim[c] *= scale; }
         minMove *= scale;
         lastWrittenOff *= scale;
         lastSeized *= scale;

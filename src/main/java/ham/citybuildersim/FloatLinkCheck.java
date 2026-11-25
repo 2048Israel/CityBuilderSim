@@ -561,6 +561,7 @@ public class FloatLinkCheck {
     static Game playedCity(String label) {
         GameFiles files = GameFiles.scratch(label);
         Game city = new Game(files);
+        boolean[] ordersPlaced = { true };
         // R0b call 7: the causes of 1900 held off, before a month (for every caller of this town, DeskCheck's among them, and the twins loaded
         // from it). The curve this town's lines are sold on, and so what they trade at against what they are carried at, is sized on today's
         // deaths; on 1900's causes DeskCheck's second line (sold at par at the higher rates, the dial then cut to the floor) was worth 510.6
@@ -597,13 +598,32 @@ public class FloatLinkCheck {
             // built for nobody is retired, and the founding yard alone raised this town to 256 people by month 62, whose
             // asks were too small for the fixed fee the near-par assertions read against.
             city.buildStack(template(city, "Construction Depot"), 2, true);
-            city.buildStack(template(city, "House"), 300, false);
-            city.buildStack(template(city, "Convenience Store"), 6, false);
-            city.buildStack(template(city, "Industrial Bakery"), 2, false);
-            city.buildStack(template(city, "Construction Depot"), 4, false);
-            city.buildStack(template(city, "Coal Power Plant"), 1, false);
-            city.buildStack(template(city, "Commercial Bank"), 1, false);
-            city.simulateMonths(60);
+            // FC2, 2026-11-23: EVERY ORDER OF THE TOWN PLACED, THE CASH HANDED WHERE THE TOWN'S OWN FELL SHORT. On FC2's path the 300 Houses
+            // and the rest queued ahead of the plant are traded with the world (the work past the queue's threshold goes to the foreign crews
+            // at the base price times 1 + their excess share), so they took D$6,451 of the D$64,709 the founding is given, and the Coal
+            // Power Plant (D$62,266 on that queue) found D$58,258 and was refused (NEEDS_FUNDING), without a word, as buildStack() returns
+            // the refusal and this town read nothing. The town stood without its plant: 300 Houses, 6 shops, 2 bakeries and 6 depots built
+            // by month 19 and no power, a tax of D$35 a month (month 62, 775 people) where the town it was written against raised 242, a
+            // third of a year of it D$154 against the D$654 the fixed fee asks. The orders are placed funded: where the cash is under the
+            // quote of an order (the quote buildStack() itself asks), the quote is handed, as the cash the founding was given for them.
+            ordersPlaced[0] &= orderFunded(city, "House", 300);
+            ordersPlaced[0] &= orderFunded(city, "Convenience Store", 6);
+            ordersPlaced[0] &= orderFunded(city, "Industrial Bakery", 2);
+            ordersPlaced[0] &= orderFunded(city, "Construction Depot", 4);
+            ordersPlaced[0] &= orderFunded(city, "Coal Power Plant", 1);
+            ordersPlaced[0] &= orderFunded(city, "Commercial Bank", 1);
+            city.simulateMonths(55);
+            // FC2, 2026-11-23: THE TOWN STILL BUILDING AT THE SALE. The sale is sized on a third of a year of the town's tax (saleOf(), so that
+            // the fixture's own debt does not move the credit spread), and this town's tax is its building's: the sales tax on the materials of
+            // the orders and the builders' profit tax. On main's queue the orders ran to month 72 (BA1: the town goes quiet then, with the sections
+            // reading months 63 to 80). On FC2's the work past the queue's threshold goes to the foreign crews, the orders above were built by
+            // month 33 (a tax of D$381 to D$596 a month from month 7 to 31, D$52 from month 34 to 62 on 932 to 1,209 people, 8 of it sales tax),
+            // and a third of a year of it at the sale was D$210 against the D$657 the fixed fee asks (the least sale). The fixture causes the
+            // building instead of waiting for a queue to still be there: a second Coal Power Plant, ordered at month 55 on whatever queue is
+            // left, so that five months on, at the sale (month 62), the builders are at it and the tax is D$467 a month (a third of a year of it
+            // D$1,870), on FC2's path as on one with the queue long.
+            ordersPlaced[0] &= orderFunded(city, "Coal Power Plant", 1);
+            city.simulateMonths(5);
             // FS14: the one condition no setter pins - nobody leaving (a tier in decline sends its paper to the bank's desk on the way out) -
             // is played to, bounded, and FAILS as a fixture just below if the bound passes. The bank's room for the sales, which this loop
             // used to wait for (BA1, up to 60 more months), is handed by readyCity() (handBankRoom()), not waited for.
@@ -611,7 +631,21 @@ public class FloatLinkCheck {
         });
         check("fixture: no pay tier in the played town is in decline, so nobody leaves while the paper is watched",
                 city.getMigration().getLastDecliningShare() == 0);
+        check("fixture: every order the played town queued was placed (none refused for want of cash, land or the like), so the town stands as written",
+                ordersPlaced[0]);
         return city;
+    }
+
+    /**
+     * FC2, 2026-11-23: one order of the played town, placed funded: the cash handed, where the city's own is under the order's quote (Game.quoteBuildOn(), the
+     * total buildStack() itself weighs against the cash), by that quote, so the cash the town goes on with is what it had before the order. Returns whether the
+     * order was placed (BuildResult.SUCCESS): a refusal buildStack() gives for land, ore or the like is the fixture's to see, not to hand cash for.
+     */
+    static boolean orderFunded(Game city, String name, long quantity) {
+        BuildingsTemplate t = template(city, name);
+        double quote = city.quoteBuildOn(t, quantity, Landmasses.CHOSEN).total;
+        if (quote > city.getCash()) city.setCashForTest(city.getCash() + quote);
+        return city.buildStack(t, quantity, false) == Game.BuildResult.SUCCESS;
     }
 
     /** FS14: the most months the played city is given past its settling for no tier to be in decline. */
@@ -691,10 +725,18 @@ public class FloatLinkCheck {
         double buyers = hb.spareForPaper() - before;
         for (Household c : hb.cells()) if (!c.isEmpty()) c.savings -= 1;
         if (!(buyers > 0)) return false;
-        double each = (target - before) / buyers;
+        // FC2, 2026-11-23: the lift lands a billionth over the target, never on it. On FC2's path DeskCheck's second sale asked the spare the
+        // first had (D$8,242.19197530423) and the lift to it landed at D$8,242.191975304228, the last place of a float under, so the fixture line
+        // (a spare at least what it was for the first sale) failed by 2e-12 on the arithmetic of a sum over 53 cells and no condition of the town;
+        // on another path the same sum rounds the other way. The target asked for is the least, as the doc above says: a billionth over it is
+        // D$0.000008 of spare here.
+        double each = (target * (1 + LIFT_OVER) - before) / buyers;
         for (Household c : hb.cells()) if (!c.isEmpty()) c.savings += each;
         return true;
     }
+
+    /** FC2: how far over the target liftSpare() raises the spare (a billionth), so that the last place of a float in the sum over the cells never decides a fixture line. */
+    static final double LIFT_OVER = 1e-9;
 
     /**
      * FS14: the bank handed its room for this face of the city's paper, as the auction counts it (Game.auctionBidders(): its equity over

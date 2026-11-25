@@ -1121,6 +1121,32 @@ public class BusinessDebtManager {
         return getLoanPrincipal(sector) + getBondPrincipal(sector);
     }
 
+    /**
+     * (AP2) getPrincipal() of every sector of Sectors.KEYS, in that order, from one pass over the loans: each sector's loans
+     * are summed in the book's order from nothing, as getLoanPrincipal() sums them, so every figure is the same to the bit.
+     * An auction's bidders ask it of every sector (OutwardInvestment.idleWealth()), and each works' financing quotes auctions.
+     */
+    public double[] getPrincipalsByKey() {
+        String[] keys = Sectors.KEYS;
+        double[] owed = new double[keys.length];
+        for (BusinessDebt loan : loans) {
+            Integer i = KeyAt.AT.get(loan.getSector());
+            if (i != null) owed[i] += loan.getOutstandingPrincipal();
+        }
+        for (int i = 0; i < keys.length; i++) owed[i] += getBondPrincipal(keys[i]);
+        return owed;
+    }
+
+    /** Each sector key's place in Sectors.KEYS (getPrincipalsByKey()), built the first time it is asked. */
+    private static final class KeyAt {
+        static final Map<String, Integer> AT;
+        static {
+            Map<String, Integer> at = new java.util.HashMap<>();
+            for (int i = 0; i < Sectors.KEYS.length; i++) at.putIfAbsent(Sectors.KEYS[i], i);
+            AT = java.util.Collections.unmodifiableMap(at);
+        }
+    }
+
     /** What every business owes, bank loans and bonds together: getPrincipal() over every sector (0.7.32, the Finances tab's bond market, which summed it itself). */
     public double getEverythingOwed() {
         double total = 0;

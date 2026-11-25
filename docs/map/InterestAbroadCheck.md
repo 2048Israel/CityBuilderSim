@@ -1,6 +1,6 @@
 # InterestAbroadCheck.java - 1,230 lines · 41 methods · 13 constants · harnesses
 
-`ham/citybuildersim/InterestAbroadCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/InterestAbroadCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The central banks of the eight moneys the vault holds and the price of money the city reads (batch XR4, interest abroad; spec-exchange-rates 3.8,
 > Jerus's calls 9 and 11): PolicyRates' monthly rate of each bank - the real table to December 2025 on Historical (its January 2000 rate held through
@@ -55,7 +55,7 @@
 
 **Uses:** [PolicyRates](PolicyRates.md) (106), [WorldMoneys](WorldMoneys.md) (45), [CapitalFlows](CapitalFlows.md) (45), [DebtManager](DebtManager.md) (36), [ForeignAccounts](ForeignAccounts.md) (21), [Game](Game.md) (20), [Nations](Nations.md) (18), [WorldData](WorldData.md) (11), [World](World.md) (10), [ForeignCheck](ForeignCheck.md) (9), [HistorySave](HistorySave.md) (6), [Founding](Founding.md) (3), [WorldMarket](WorldMarket.md) (2), [PriceLevel](PriceLevel.md) (2), [Equity](Equity.md) (2), [GameFiles](GameFiles.md) (1), [Bank](Bank.md) (1), [YearBook](YearBook.md) (1), [MoneyAudit](MoneyAudit.md) (1)
 
-**Used by (2):** [DebtMoneysCheck](DebtMoneysCheck.md), [PegAnchorCheck](PegAnchorCheck.md)
+**Used by (3):** [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [PegAnchorCheck](PegAnchorCheck.md)
 
 ## Sections
 

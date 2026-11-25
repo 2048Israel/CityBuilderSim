@@ -127,6 +127,24 @@ public final class YearBook {
         flow(m, "bankFees", "what the bank took in fees - accounts and new loans - in thousands");
         flow(m, "bankProvisions", "what the bank set aside for loan losses - the allowance's rise and what it wrote off beyond it - in thousands");
         flow(m, "bankDividends", "what the bank paid its owners, in thousands");
+        flow(m, "capitalTaxAssessed", "capital gains tax assessed, cash and deferred, in thousands (HT1)");
+        level(m, "capitalTaxOutstanding", "secured capital gains tax still unpaid, in thousands (HT1)");
+        flow(m, "capitalTaxWrittenOff", "genuinely extinguished secured claims, noncash, in thousands (HT1)");
+        flow(m, "capitalTaxConsolidated", "own-treasury claims consolidated without cash, in thousands (HT1)");
+        flow(m, "unclaimedReceipts", "actual cash received as unclaimed property, in thousands (HT1)");
+        flow(m, "custodyNoncash", "local acquisition book received in kind, no cash, in thousands (HT1)");
+        flow(m, "custodyLoss", "custody asset cost extinguished, noncash, in thousands (HT1)");
+        flow(m, "custodyDebtGain", "issuer carrying less received holder book on own-paper consolidation, noncash, in thousands (HT1)");
+        flow(m, "custodyPaperRetired", "own-paper face actually consolidated after settlement, in thousands (HT1)");
+        level(m, "custodyBook", "custody local security acquisition cost held, in thousands (HT1)");
+        level(m, "custodyPaper", "custody city-paper face awaiting native retirement, in thousands (HT1)");
+        level(m, "custodyPaperFinding", "explicit unmatched city-paper entitlement, a finding, in thousands (HT1)");
+        level(m, "custodyUsd", "unclaimed US dollars held, not local cash or reserves (HT1)");
+        level(m, "custodyCars", "unclaimed idle physical cars (HT1)");
+        level(m, "custodyLossCarry", "inherited loss carry memo held, in thousands (HT1)");
+        level(m, "custodyCouponDue", "record-date coupons awaiting actual payment, in thousands (HT1)");
+        flow(m, "capitalGainsTax", "households' net capital gains tax paid to the treasury, in thousands (HT1)");
+        flow(m, "dividendTax", "households' integrated dividend tax paid to the treasury, in thousands (HT1)");
         flow(m, "taxWage", "wage tax collected, in thousands");
         flow(m, "taxProperty", "property tax collected, in thousands");
         flow(m, "taxSales", "sales tax collected net of input credits, in thousands");
@@ -297,6 +315,10 @@ public final class YearBook {
     private static Map<String, Rule> prefixRules() {
         Map<String, Rule> m = new LinkedHashMap<>();
         m.put("crime:", new Rule(Kind.FLOW, "crimes of that cause"));
+        m.put("powerFlow:", new Rule(Kind.FLOW, "struck dispatch energy in kWh, or row fuel units; source month is powerLevel:dispatchMonth"));
+        m.put("powerMoney:", new Rule(Kind.FLOW, "power clearing receipts or fuel/upkeep payments in thousands; payments name their own source month"));
+        m.put("powerPrice:", new Rule(Kind.RATE, "power tariff or clearing/marginal price, thousands per kWh"));
+        m.put("powerLevel:", new Rule(Kind.LEVEL, "power observation: source month, firm/peak/load/unserved kW at the strike"));
         m.put("households:", new Rule(Kind.LEVEL, "households of that shape standing"));
         m.put(HistorySave.priceKey(""), new Rule(Kind.RATE, "the dealer's quote per founding share, in thousands"));
         m.put(HistorySave.valueKey(""), new Rule(Kind.RATE, "fair value per founding share, in thousands"));

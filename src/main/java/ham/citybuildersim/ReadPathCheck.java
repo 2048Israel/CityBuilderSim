@@ -77,6 +77,13 @@ public class ReadPathCheck {
      * move the price and nothing in the shared snapshot.
      */
     static void bankPrint(Game g, Map<String, Double> into) {
+        var housing = g.getBuildingManager().getHousingInventory();
+        into.put("housing.cohorts", (double) housing.forSave().size());
+        for (var row : housing.forSave()) {
+            String key = "housing." + row.recipe + "." + row.dwelling + "." + row.owner;
+            into.put(key + ".owned", row.owned); into.put(key + ".occupied", row.occupied);
+            into.put(key + ".listedVacant", row.listedVacant); into.put(key + ".listedOccupied", row.listedOccupied);
+        }
         Bank b = g.getBank();
         into.put("bank.cash", b.getCash());
         into.put("bank.depositRate", b.depositRate());
@@ -281,6 +288,17 @@ public class ReadPathCheck {
      * the same report fields these print.
      */
     static void readEverything(Game g) {
+        g.getHouseholdBalance().debtStatistics();
+        for (PayTier tier : PayTier.values()) DebtStatistics.of(g.getHouseholdBalance(), tier, null);
+        for (DebtStatistics.Stage stage : DebtStatistics.Stage.values()) DebtStatistics.of(g.getHouseholdBalance(), null, stage);
+        g.getHistorySave().getDebtSurveys();
+        var housing = g.getBuildingManager().getHousingInventory();
+        housing.homes(); housing.pipelineHomes(); housing.capacity(); housing.foundingCapacity(); housing.homesBySize();
+        for (var row : housing.stock()) for (var owner : HousingInventory.Owner.values()) {
+            housing.owned(row.key(), owner); housing.occupied(row.key(), owner); housing.vacant(row.key(), owner);
+            housing.listed(row.key(), owner, false); housing.listed(row.key(), owner, true);
+            housing.allocate(row.key(), owner, 0, 100, 100, 100);
+        }
 
         EconomyManager e = g.getEconomyManager();
         ham.citybuildersim.sectors.Retail c = g.getSectors().retail();
@@ -390,6 +408,7 @@ public class ReadPathCheck {
         // diplomas, the homes' draws, the long-sick ring in people
         g.getEducation().getNewDiplomas();
         s.getUtilitiesHandler().getHomesElectricityDraw();
+        PowerView.of(g);
         s.getUtilitiesHandler().getHomesWaterDraw();
         for (int k = 0; k < Sickness.RING; k++) g.getSickness().peopleInSlot(g.getCohorts(), k);
         // ...and what the Infrastructure screen added (0.7.29): the curve at
@@ -1590,6 +1609,7 @@ public class ReadPathCheck {
 
     public static void main(String[] args) throws Exception {
         out = System.out;
+        assertTrue("HT1 appended household stocks and struck flows survive both read paths", CapitalGainsCheck.saveChecks());
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         out.println("--- XR7: reads keep the support already bought under a peg ---");
         Game supported = CurrencyRegimeCheck.supportedTown("xr7-read-support");
@@ -1603,7 +1623,11 @@ public class ReadPathCheck {
         assertTrue("reading paid IP charges and net planner gains keeps the money still", LicenceFeesCheck.readChecks());
         assertTrue("reading the public works' licence and its planners keeps the money still", PublicLicenceCheck.readChecks());
         assertTrue("live and loaded rail reads keep the saved steam period when its depot is gone", HistoricalLicenceCheck.readChecks());
-
+        assertTrue("R6e current E21 loads keep physical choices through real reads; formats58/59 are refused without changing a running city", ModernEngineeringCheck.readChecks());
+        assertTrue("native format60 refusal and repeated reads preserve an actual running loaded twin and both files", SaveFileCheck.nativeCard60Refusal(true));
+        assertTrue("native format61 refusal and repeated reads preserve an actual running loaded twin and both files", SaveFileCheck.nativeGrid61Refusal(true));
+        assertTrue("HC1 native format61 refusal and repeated reads preserve both files and the running loaded twin", SaveFileCheck.nativeCard61Refusal(true));
+        assertTrue("PW5 format63: native shipped format62 refusal and repeated reads preserve both files and the running loaded twin", SaveFileCheck.nativeGrid62Refusal(true));
         out.println("--- R0f: the dated Money readers keep the saved rule still ---");
         assertTrue("reading dated Money keeps the gold episode, its exit and the inherited rate unchanged", MoneyDatesCheck.readChecks());
 

@@ -1,6 +1,6 @@
-# ZoningScreen.java - 1,122 lines · 71 methods · 24 constants · interface
+# ZoningScreen.java - 1,149 lines · 72 methods · 25 constants · interface
 
-`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's
 > ground and its zones on one page, a sector's zone on its own page of dial
@@ -38,7 +38,7 @@
 > PolicyPreview's (the tax take, THE BUDGET, zoningTaxChange()) and
 > LandManager's - ZoningViewCheck holds them; nothing here adds up a figure.
 
-**Uses:** [PolicyScreen](PolicyScreen.md) (75), [Palette](Palette.md) (73), [ZoningView](ZoningView.md) (64), [Kept](Kept.md) (56), [Zoning](Zoning.md) (52), [LandManager](LandManager.md) (42), [Icons](Icons.md) (16), [Pieces](Pieces.md) (15), [PolicyPreview](PolicyPreview.md) (9), [Money](Money.md) (9), [TaxPolicy](TaxPolicy.md) (6), [Sector](Sector.md) (4), [Ladder](Ladder.md) (4), [BuildCard](BuildCard.md) (4), [Game](Game.md) (3), [UserInterface](UserInterface.md) (2), [Formats](Formats.md) (2), [Forestry](Forestry.md) (2), [LandMap](LandMap.md) (1), [Sectors](Sectors.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
+**Uses:** [PolicyScreen](PolicyScreen.md) (77), [Palette](Palette.md) (75), [ZoningView](ZoningView.md) (64), [Kept](Kept.md) (58), [Zoning](Zoning.md) (54), [LandManager](LandManager.md) (45), [Icons](Icons.md) (16), [Pieces](Pieces.md) (15), [PolicyPreview](PolicyPreview.md) (9), [Money](Money.md) (9), [TaxPolicy](TaxPolicy.md) (6), [Sector](Sector.md) (4), [Game](Game.md) (4), [Ladder](Ladder.md) (4), [BuildCard](BuildCard.md) (4), [UserInterface](UserInterface.md) (2), [Formats](Formats.md) (2), [Forestry](Forestry.md) (2), [LandMap](LandMap.md) (1), [Sectors](Sectors.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
 **Used by (3):** [BuildScreen](BuildScreen.md), [KeptBench](KeptBench.md), [PolicyScreen](PolicyScreen.md)
 
@@ -52,8 +52,8 @@
 | 310 | THE GROUND (board 1) |
 | 541 | THE STAGED SET: the zone's and the law's keys, beside the taxes' |
 | 722 | A SECTOR'S ZONE (board 2): HOW MUCH GROUND, ITS PRICE, ITS TAXES |
-| 1010 | THE FOREST LAW (board 3) |
-| 1091 | THE HUB'S CARD (Policy's fifth area card) |
+| 1037 | THE FOREST LAW (board 3) |
+| 1118 | THE HUB'S CARD (Policy's fifth area card) |
 
 ## Constants
 
@@ -82,7 +82,8 @@
 | 733 | `ZoningScreen.PRICE_INFO` | `"What the city sells the zone's ground at, as a share of the going business p...` | ITS PRICE's (i). |
 | 738 | `ZoningScreen.TAXES_INFO` | `"A zone's taxes are its sector's own rates: the city's rate and the sector's ...` | ITS TAXES' (i). |
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
-| 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the for...` | The law's (i) on its page. |
+| 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive fa...` | THE FARMLAND RESERVE's (i) (RG1). |
+| 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the for...` | The law's (i) on its page. |
 
 ## Fields (state)
 
@@ -95,7 +96,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 1054 | **type** `final class ZoningScreen` | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial cards, and the forest law on a third - drawn in Policy's own style (the... |
+| 69 | 1081 | **type** `final class ZoningScreen` | Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's ground and its zones on one page, a sector's zone on its own page of dial cards, and the forest law on a third - drawn in Policy's own style (the... |
 | 74 | 4 | `ZoningScreen(PolicyScreen policy, UserInterface ui)` |  |
 
 ### THE PAGES (lines 79-188)
@@ -174,38 +175,39 @@
 | 699 | 19 | `Region tray()` | The tray (Policy's, 0.7.36): a chip a change, THE BUDGET before and after the set, "Apply it" or "Apply all N", and "Leave it as it is". |
 | 720 | 1 | `static String applyWords(int count)` | "Apply it", "Apply all 3". |
 
-### A SECTOR'S ZONE (board 2): HOW MUCH GROUND, ITS PRICE, ITS TAXES (lines 722-1009)
+### A SECTOR'S ZONE (board 2): HOW MUCH GROUND, ITS PRICE, ITS TAXES (lines 722-1036)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 745 | 24 | `void zonePage(VBox page, String s)` |  |
-| 771 | 14 | `Node offControl(String s, String name, boolean off)` | "Take the zone off" - staged, its chip in the tray - or, staged, "Keep it". |
-| 787 | 23 | `VBox sizeCard(String s, String name, Sector sector)` | HOW MUCH GROUND: the unit's two chips over the dial, staged before → after. |
-| 817 | 13 | `Label unitChip(String s, String words, Zoning.Size to, Zoning.Size kind)` | One unit's chip: lit when it is the unit; a click stages the other - the zone's own ground said in it, or a staged size carried over, snapped to the new unit's step (an unstaged size is the city's, in whichever unit i... |
-| 832 | 18 | `java.util.function.DoubleFunction<List<Effect>> sizeEffects(String s, ZoningView.Page now)` | HOW MUCH GROUND's effects at any value of its thumb (pure: the probe reads them): what it carries, what it holds, the ground left free for anyone, its ground at the going price. |
-| 852 | 12 | `VBox priceCard(String s, String name)` | ITS PRICE: 0-100% of the going price a m², and what it gives up. |
-| 866 | 16 | `java.util.function.DoubleFunction<List<Effect>> priceEffects(String s, ZoningView.Page now)` | ITS PRICE's effects at any value of its thumb (pure: the probe reads them): a plot's ground, the price given up on what it holds, the tax relief, THE BUDGET. |
-| 884 | 1 | **type** `record Dial(Node words, String key, Ladder ladder, double at)` | One dial of a card of several: its words, its key, its ladder (unbuilt) and where its thumb sits. |
-| 887 | 53 | `static VBox multiDialCard(String svg, String title, String info, String status, List<Dial> dials, BiFunction<String, Double, Li...` | A dial card of several dials (ITS TAXES, the forest law): their words and ladders down the left, what they would do at the right, following whichever thumb moves. |
-| 942 | 7 | `static String taxKey(Zoning.Tax t, String s)` | A tax row's key, as Policy › Taxes' rows have it. |
-| 951 | 4 | `static String taxName(Zoning.Tax t)` | "Profit", "Sales", "Property". |
-| 957 | 5 | `static String taxWords(Zoning.Tax t, double city, double offset, double rate, double then, double paid)` | A tax row's words over its dial: "PROFIT · the city's 15.00% −2.00 pts → 13.00% · $1.2M last month". |
-| 964 | 40 | `VBox taxesCard(String s, String name)` | ITS TAXES: the sector's three offsets, as Policy › Taxes' rows, the same keys. |
-| 1006 | 3 | `static String sameDials(String name)` | The study's line: "The same dials as Policy › Taxes: a move here moves it for every Agriculture building." |
+| 745 | 25 | `void zonePage(VBox page, String s)` |  |
+| 779 | 17 | `Node reserveCard(String s)` | THE FARMLAND RESERVE (RG1): on the fields' zone alone - a chip that makes it a reserve or lifts it at once, with the farmland price against the going one. |
+| 798 | 14 | `Node offControl(String s, String name, boolean off)` | "Take the zone off" - staged, its chip in the tray - or, staged, "Keep it". |
+| 814 | 23 | `VBox sizeCard(String s, String name, Sector sector)` | HOW MUCH GROUND: the unit's two chips over the dial, staged before → after. |
+| 844 | 13 | `Label unitChip(String s, String words, Zoning.Size to, Zoning.Size kind)` | One unit's chip: lit when it is the unit; a click stages the other - the zone's own ground said in it, or a staged size carried over, snapped to the new unit's step (an unstaged size is the city's, in whichever unit i... |
+| 859 | 18 | `java.util.function.DoubleFunction<List<Effect>> sizeEffects(String s, ZoningView.Page now)` | HOW MUCH GROUND's effects at any value of its thumb (pure: the probe reads them): what it carries, what it holds, the ground left free for anyone, its ground at the going price. |
+| 879 | 12 | `VBox priceCard(String s, String name)` | ITS PRICE: 0-100% of the going price a m², and what it gives up. |
+| 893 | 16 | `java.util.function.DoubleFunction<List<Effect>> priceEffects(String s, ZoningView.Page now)` | ITS PRICE's effects at any value of its thumb (pure: the probe reads them): a plot's ground, the price given up on what it holds, the tax relief, THE BUDGET. |
+| 911 | 1 | **type** `record Dial(Node words, String key, Ladder ladder, double at)` | One dial of a card of several: its words, its key, its ladder (unbuilt) and where its thumb sits. |
+| 914 | 53 | `static VBox multiDialCard(String svg, String title, String info, String status, List<Dial> dials, BiFunction<String, Double, Li...` | A dial card of several dials (ITS TAXES, the forest law): their words and ladders down the left, what they would do at the right, following whichever thumb moves. |
+| 969 | 7 | `static String taxKey(Zoning.Tax t, String s)` | A tax row's key, as Policy › Taxes' rows have it. |
+| 978 | 4 | `static String taxName(Zoning.Tax t)` | "Profit", "Sales", "Property". |
+| 984 | 5 | `static String taxWords(Zoning.Tax t, double city, double offset, double rate, double then, double paid)` | A tax row's words over its dial: "PROFIT · the city's 15.00% −2.00 pts → 13.00% · $1.2M last month". |
+| 991 | 40 | `VBox taxesCard(String s, String name)` | ITS TAXES: the sector's three offsets, as Policy › Taxes' rows, the same keys. |
+| 1033 | 3 | `static String sameDials(String name)` | The study's line: "The same dials as Policy › Taxes: a move here moves it for every Agriculture building." |
 
-### THE FOREST LAW (board 3) (lines 1010-1090)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1019 | 40 | `void forestPage(VBox page)` |  |
-| 1066 | 9 | `static String crewRuleWords(BuildCard.CrewRule rule, BuildingsTemplate smallest)` | The crew rule in a line (0.7.142; spec-zoning board 3: "room for 1 more crew now; the forest carries 7"): a crew is added only while the forest Forestry may cut lasts FOREST_CREW_MONTHS of every crew's cut - BuildCard... |
-| 1077 | 13 | `List<Effect> forestEffects(ZoningView.Forest now, String key, double v)` | WHAT IT WOULD DO at any value of either thumb (pure: the probe reads them): the wood kept standing for ever, the most that may be cut, the forest a building may take, the ground free for anyone. |
-
-### THE HUB'S CARD (Policy's fifth area card) (lines 1091-1122)
+### THE FOREST LAW (board 3) (lines 1037-1117)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1096 | 14 | `VBox areaCard()` | Policy's ZONING area card: the zoned ground, the dry ground as slices, the zones' line and the law. |
-| 1112 | 8 | `static SegmentBar areaSlices(List<Slice> slices)` | Area slices as one bar, a part's name and ground its tooltip. |
-| 1121 | 1 | `static String pct0(double share)` |  |
+| 1046 | 40 | `void forestPage(VBox page)` |  |
+| 1093 | 9 | `static String crewRuleWords(BuildCard.CrewRule rule, BuildingsTemplate smallest)` | The crew rule in a line (0.7.142; spec-zoning board 3: "room for 1 more crew now; the forest carries 7"): a crew is added only while the forest Forestry may cut lasts FOREST_CREW_MONTHS of every crew's cut - BuildCard... |
+| 1104 | 13 | `List<Effect> forestEffects(ZoningView.Forest now, String key, double v)` | WHAT IT WOULD DO at any value of either thumb (pure: the probe reads them): the wood kept standing for ever, the most that may be cut, the forest a building may take, the ground free for anyone. |
+
+### THE HUB'S CARD (Policy's fifth area card) (lines 1118-1149)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1123 | 14 | `VBox areaCard()` | Policy's ZONING area card: the zoned ground, the dry ground as slices, the zones' line and the law. |
+| 1139 | 8 | `static SegmentBar areaSlices(List<Slice> slices)` | Area slices as one bar, a part's name and ground its tooltip. |
+| 1148 | 1 | `static String pct0(double share)` |  |
 

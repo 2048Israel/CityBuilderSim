@@ -762,9 +762,9 @@ final class SectorScreen {
         return si.word().startsWith("Holding: ") ? si.word().substring("Holding: ".length()) : si.word();
     }
 
-    /** A word's short form for a card: a "Built" or "Sold" word up to its " - " (the frame's line and the tooltip have the rest). */
+    /** A word's short form for a card: a "Built", "Sold" or "Scrapped" word up to its " - " (the frame's line and the tooltip have the rest). */
     static String shortWord(String words) {
-        if (!(words.startsWith("Built ") || words.startsWith("Sold "))) return words;
+        if (!(words.startsWith("Built ") || words.startsWith("Sold ") || words.startsWith("Scrapped "))) return words;
         int cut = words.indexOf(" - ");
         return cut > 0 ? words.substring(0, cut) : words;
     }
@@ -1476,6 +1476,15 @@ final class SectorScreen {
             if (Math.abs(part.getValue()) < .0000005) continue;
             Kept.scope("part:" + part.getKey(), () -> {
                 box.getChildren().add(bookDetailRow(part.getKey(), part.getValue(), false));
+            });
+            named++;
+        }
+        // ...and the work it sold abroad (FC2): an export with no good behind it, named as it was sold (Sector.servicesSoldParts()).
+        for (java.util.Map.Entry<String, Double> part : sector.servicesSoldParts().entrySet()) {
+            if (Math.abs(part.getValue()) < .0000005) continue;
+            Kept.scope("sold:" + part.getKey(), () -> {
+                box.getChildren().add(bookDetailRow(part.getKey(), part.getValue(), false));
+                box.getChildren().add(bookDetailRow("all of it sold abroad", part.getValue(), true));
             });
             named++;
         }

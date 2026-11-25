@@ -1,6 +1,6 @@
-# QuarryingCheck.java - 638 lines · 13 methods · 18 constants · harnesses
+# QuarryingCheck.java - 639 lines · 13 methods · 18 constants · harnesses
 
-`ham/citybuildersim/QuarryingCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/QuarryingCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Quarrying, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1,
 > 2.3, 2.4, 2.10, 4 and 5's I7 row; the study's - materials-chains-research.md
@@ -64,7 +64,7 @@
 > 
 > ... (3 more lines in the source)
 
-**Uses:** [Good](Good.md) (135), [Quarrying](Quarrying.md) (34), [Sectors](Sectors.md) (15), [Deposit](Deposit.md) (13), [BuildingManager](BuildingManager.md) (13), [PriceLevel](PriceLevel.md) (11), [Game](Game.md) (10), [LandManager](LandManager.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (9), [World](World.md) (9), [Equity](Equity.md) (7), [MoneyAudit](MoneyAudit.md) (5), [CityLand](CityLand.md) (5), [Sector](Sector.md) (4), [LandCheck](LandCheck.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Resource](Resource.md) (3), [Markets](Markets.md) (3), [GoodsMarket](GoodsMarket.md) (3), [MaterialsCheck](MaterialsCheck.md) (3), [Traffic](Traffic.md) (3), [Ports](Ports.md) (3), [PriceLevelCheck](PriceLevelCheck.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [CementConcrete](CementConcrete.md) (2), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2)... and 6 more
+**Uses:** [Good](Good.md) (135), [Quarrying](Quarrying.md) (34), [Sectors](Sectors.md) (15), [Deposit](Deposit.md) (13), [BuildingManager](BuildingManager.md) (13), [PriceLevel](PriceLevel.md) (11), [Game](Game.md) (10), [LandManager](LandManager.md) (10), [BuildingsTemplate](BuildingsTemplate.md) (9), [World](World.md) (9), [Equity](Equity.md) (7), [MoneyAudit](MoneyAudit.md) (6), [CityLand](CityLand.md) (5), [Sector](Sector.md) (4), [LandCheck](LandCheck.md) (4), [SpreadPlanner](SpreadPlanner.md) (4), [Resource](Resource.md) (3), [Markets](Markets.md) (3), [GoodsMarket](GoodsMarket.md) (3), [MaterialsCheck](MaterialsCheck.md) (3), [Traffic](Traffic.md) (3), [Ports](Ports.md) (3), [PriceLevelCheck](PriceLevelCheck.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [CementConcrete](CementConcrete.md) (2), [BuildingType](BuildingType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [LandMarket](LandMarket.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [JobType](JobType.md) (2)... and 6 more
 
 **Used by (1):** [CementConcreteCheck](CementConcreteCheck.md)
 
@@ -74,12 +74,12 @@
 |---:|---|
 | 121 | 1. the carry |
 | 221 | 2. the sector on the registry, after Coal Mining |
-| 292 | 3. the three rows against the study |
-| 395 | 4. hard rock makes aggregate only |
-| 423 | 5. the packing |
-| 469 | 6. the dig by type |
-| 518 | 7. the plan |
-| 560 | the fixture |
+| 293 | 3. the three rows against the study |
+| 396 | 4. hard rock makes aggregate only |
+| 424 | 5. the packing |
+| 470 | 6. the dig by type |
+| 519 | 7. the plan |
+| 561 | the fixture |
 
 ## Constants
 
@@ -89,33 +89,33 @@
 | 85 | `QuarryingCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
 | 117 | `QuarryingCheck.STONE` | `Resource.STONE` | Stone, the resource its quarries dig. |
 | 119 | `QuarryingCheck.LIME` | `Deposit.FieldType.LIMESTONE, HARD = Deposit.FieldType.HARD_ROCK` | Stone's two types of field (Resource.typesOf()): limestone, and hard rock. |
-| 295 | `QuarryingCheck.ROWS` | `{ Quarrying.QUARRY, Quarrying.LARGE_QUARRY, Quarrying.DIMENSION_STONE_QUARRY }` | Quarrying's rows, by their permanent ids, in the study's 6.4 order. |
-| 298 | `QuarryingCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(15_000, 90_000, 6_000)` | The study's 6.4: each one's cost, D$ thousands all in. |
-| 301 | `QuarryingCheck.STUDY_POSTS` | `{ 22, 125, 17 }` | ...its posts. |
-| 304 | `QuarryingCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(163, 981, 104)` | ...its running cost a month, D$ thousands. |
-| 307 | `QuarryingCheck.STUDY_MAKES` | `{ 40_000, 250_000, 1_000 }` | ...what it makes a month, t: stone, stone, blocks. |
-| 310 | `QuarryingCheck.STUDY_SITES` | `{ 1, 3, 1 }` | ...the sites it takes, and of which type (null for either; the study's 6.4). |
-| 312 | `QuarryingCheck.STUDY_TYPES` | `{ null, null, HARD }` | ...and the type of field each stands on (null for either). |
-| 315 | `QuarryingCheck.BLOCKS_DIG` | `3` | ...and the tonnes of rock a tonne of blocks takes (spec 2.4: "dimension stone 3"); stone is a tonne a tonne. |
-| 318 | `QuarryingCheck.CRUSH_KWH` | `1.7` | The research's crushing, kWh a tonne of stone dug: 1.7, the middle of the study's 6.2 "1.6-1.8" [S18]. |
-| 321 | `QuarryingCheck.HOURS` | `730` | The hours of a month the study reads its kW at: its 2.2, "3,700 kW for 6,000 t a month is 450 kWh a tonne" - 450 x 6,000 / 3,700, 730 to the hour. |
-| 324 | `QuarryingCheck.STUDY_ROUNDING` | `.05, STUDY_ROUNDING_POINT =.5` | The study's rounding: its returns to a tenth of a point, "about 10%" to the point. |
-| 327 | `QuarryingCheck.STUDY_EXPORTING_LOW` | `1.6, STUDY_EXPORTING_HIGH = 1.7, STUDY_REPLACING = 10` | The returns the study's 6.5 states, % of the cost a month: the Quarry's and the Large Quarry's exporting at D$10, and replacing imports at D$40. |
-| 634 | `QuarryingCheck.FOUND_KM2` | `.3` | The dry ground a fixture town is founded on round its field, km2: the default city's rings (CityLand.found()). |
-| 637 | `QuarryingCheck.MAX_RING` | `6` | How many cells round the founding site's the fixture looks for its field in. |
+| 296 | `QuarryingCheck.ROWS` | `{ Quarrying.QUARRY, Quarrying.LARGE_QUARRY, Quarrying.DIMENSION_STONE_QUARRY }` | Quarrying's rows, by their permanent ids, in the study's 6.4 order. |
+| 299 | `QuarryingCheck.STUDY_COSTS` | `PriceLevelCheck.atFounding(15_000, 90_000, 6_000)` | The study's 6.4: each one's cost, D$ thousands all in. |
+| 302 | `QuarryingCheck.STUDY_POSTS` | `{ 22, 125, 17 }` | ...its posts. |
+| 305 | `QuarryingCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(163, 981, 104)` | ...its running cost a month, D$ thousands. |
+| 308 | `QuarryingCheck.STUDY_MAKES` | `{ 40_000, 250_000, 1_000 }` | ...what it makes a month, t: stone, stone, blocks. |
+| 311 | `QuarryingCheck.STUDY_SITES` | `{ 1, 3, 1 }` | ...the sites it takes, and of which type (null for either; the study's 6.4). |
+| 313 | `QuarryingCheck.STUDY_TYPES` | `{ null, null, HARD }` | ...and the type of field each stands on (null for either). |
+| 316 | `QuarryingCheck.BLOCKS_DIG` | `3` | ...and the tonnes of rock a tonne of blocks takes (spec 2.4: "dimension stone 3"); stone is a tonne a tonne. |
+| 319 | `QuarryingCheck.CRUSH_KWH` | `1.7` | The research's crushing, kWh a tonne of stone dug: 1.7, the middle of the study's 6.2 "1.6-1.8" [S18]. |
+| 322 | `QuarryingCheck.HOURS` | `730` | The hours of a month the study reads its kW at: its 2.2, "3,700 kW for 6,000 t a month is 450 kWh a tonne" - 450 x 6,000 / 3,700, 730 to the hour. |
+| 325 | `QuarryingCheck.STUDY_ROUNDING` | `.05, STUDY_ROUNDING_POINT =.5` | The study's rounding: its returns to a tenth of a point, "about 10%" to the point. |
+| 328 | `QuarryingCheck.STUDY_EXPORTING_LOW` | `1.6, STUDY_EXPORTING_HIGH = 1.7, STUDY_REPLACING = 10` | The returns the study's 6.5 states, % of the cost a month: the Quarry's and the Large Quarry's exporting at D$10, and replacing imports at D$40. |
+| 635 | `QuarryingCheck.FOUND_KM2` | `.3` | The dry ground a fixture town is founded on round its field, km2: the default city's rings (CityLand.found()). |
+| 638 | `QuarryingCheck.MAX_RING` | `6` | How many cells round the founding site's the fixture looks for its field in. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 81 | `static int fails` |  |
-| 631 | `static String lastSearch` | The last fixture's search, for its report: each field tried, its sites, the town's of the type and of the other. |
+| 632 | `static String lastSearch` | The last fixture's search, for its report: each field tried, its sites, the town's of the type and of the other. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 79 | 560 | **type** `public class QuarryingCheck` | Quarrying, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.10, 4 and 5's I7 row; the study's - materials-chains-research.md - 1.4, 6 and 8): the third materials chain's digging industry, on... |
+| 79 | 561 | **type** `public class QuarryingCheck` | Quarrying, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.10, 4 and 5's I7 row; the study's - materials-chains-research.md - 1.4, 6 and 8): the third materials chain's digging industry, on... |
 | 87 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 92 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 97 | 5 | `static void quietly(Runnable r)` |  |
@@ -127,46 +127,46 @@
 |---:|---:|---|---|
 | 123 | 97 | `static void carry()` |  |
 
-### 2. the sector on the registry, after Coal Mining (lines 221-291)
+### 2. the sector on the registry, after Coal Mining (lines 221-292)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 223 | 68 | `static void sector()` |  |
+| 223 | 69 | `static void sector()` |  |
 
-### 3. the three rows against the study (lines 292-394)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 329 | 65 | `static void rows()` |  |
-
-### 4. hard rock makes aggregate only (lines 395-422)
+### 3. the three rows against the study (lines 293-395)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 397 | 25 | `static void hardRock()` |  |
+| 330 | 65 | `static void rows()` |  |
 
-### 5. the packing (lines 423-468)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 425 | 43 | `static void packing()` |  |
-
-### 6. the dig by type (lines 469-517)
+### 4. hard rock makes aggregate only (lines 396-423)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 471 | 46 | `static void dig()` |  |
+| 398 | 25 | `static void hardRock()` |  |
 
-### 7. the plan (lines 518-559)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 520 | 39 | `static void plan()` |  |
-
-### the fixture (lines 560-638)
+### 5. the packing (lines 424-469)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 570 | 34 | `static Game stoneTown(String label, Deposit.FieldType type, int limestoneSites)` | A town to quarry in: MaterialsCheck's and CoalMiningCheck's (the Wealthy preset's cash and ground, homes, shops, power and water), its land founded instead on the stone field of `type` nearest the default founding sit... |
-| 606 | 23 | `static List<Deposit> nearest(World w, Deposit.FieldType type)` | The stone fields of a type whose centre plot is dry ground, nearest a world's founding site first, cell ring by cell ring to MAX_RING; hard rock's of at least four sites, so the packing has room. |
+| 426 | 43 | `static void packing()` |  |
+
+### 6. the dig by type (lines 470-518)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 472 | 46 | `static void dig()` |  |
+
+### 7. the plan (lines 519-560)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 521 | 39 | `static void plan()` |  |
+
+### the fixture (lines 561-639)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 571 | 34 | `static Game stoneTown(String label, Deposit.FieldType type, int limestoneSites)` | A town to quarry in: MaterialsCheck's and CoalMiningCheck's (the Wealthy preset's cash and ground, homes, shops, power and water), its land founded instead on the stone field of `type` nearest the default founding sit... |
+| 607 | 23 | `static List<Deposit> nearest(World w, Deposit.FieldType type)` | The stone fields of a type whose centre plot is dry ground, nearest a world's founding site first, cell ring by cell ring to MAX_RING; hard rock's of at least four sites, so the packing has room. |
 

@@ -304,9 +304,17 @@ public class Game {
         }
 
         buildingManager = new BuildingManager();
-        // ...a city founded the default way knows every building but the near future's (R6b's call 1: ResearchCatalog.NEAR_FUTURE).
-        buildingManager.setTemplateKnown(t -> foundedUnfitted() ? knows(t) : !ResearchCatalog.nearFuture(t.getSinceText()));
+        // ...a city founded the default way knows every building but the near future's (R6b's call 1: ResearchCatalog.NEAR_FUTURE), and since
+        // PW2 every power plant from the year it was first built, in every city (spec-electricity 2.9, Jerus's Q2, 2026-11-02: "the rec, later
+        // research will change this"): a 1900 city builds coal and hydro, as 1900 did.
+        buildingManager.setTemplateKnown(t -> foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY ? knows(t)
+                : !ResearchCatalog.nearFuture(t.getSinceText()));
+        // ...and the same calendar ahead, for the power planner's need date (PW3: a plant the menu brings in time is one it can weigh).
+        buildingManager.setTemplateKnownIn((t, months) -> foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY
+                ? t.knownAt(month + months, research) : !ResearchCatalog.nearFuture(t.getSinceText()));
         economyManager = new EconomyManager(buildingManager);
+        householdBalance.setInvestmentTaxes(economyManager.getTaxPolicy(), c -> getExchange().price(c), this::receiveInvestmentTax);
+        householdBalance.attachInvestmentRegister(equity, c -> getExchange().shortShares(c));
         // ...and the city's strategic reserve, its trader in crude's market (0.7.85).
         reserve = new StrategicReserve();
         economyManager.getMarkets().setCity(reserve);
@@ -405,6 +413,8 @@ public class Game {
         // ...and their whole month, every post offered, which with the sites' says how short they are:
         // the scarcity price of a point and the foreign contractor's orders (FC1; BuildersShort).
         buildingManager.setOutputAtEveryPost(this::getConstructionOutputAtEveryPost);
+        // ...and the foreign crews' book (FC2): the queue at home is the queue less it (BuildingManager.queueAtHome()).
+        buildingManager.setForeignBook(() -> getSectors().construction().getForeignBook());
         // ...and the overtime on the city's rushed sites is wages the
         // households are paid (0.7.22; PopulationManager, THE OVERTIME ON A
         // RUSHED SITE IS WAGES), read off the builders who pay it.
@@ -438,6 +448,9 @@ public class Game {
         fund.reset();
         exchange.attachFund(fund);
         bondMarket.attachFund(fund);
+        estateCustody.reset();
+        estateCustody.attach(equity, debtManager, bondMarket, this::receiveUnclaimedCash, this::getMonth);
+        householdBalance.attachCustody(estateCustody, bondMarket);
         ownersWipedAbroadThisMonth = 0;
         bankedClearedAtLoad = 0;
         economyManager.setBondMarket(bondMarket);
@@ -488,6 +501,13 @@ public class Game {
         });
         servicesManager.setExchangeRate(() -> getMarkets() == null ? 1 : getMarkets().getExchangeRate());
         servicesManager.setCalendarMonth(() -> CityCalendar.monthOfYear(getMonth()));
+        // PW3: the wind's, the sun's and the river's month at the city's latitude (a generated world's has none: the US fleet's year),
+        // and the sun's rack, a fixed one until the utility tracker is known (research E25).
+        servicesManager.getUtilitiesHandler().setPlace(() -> getFounding() == null ? Double.NaN : getFounding().getEarthLat(),
+                () -> getResearch() == null || getResearch().known("E25", getMonth()));
+        servicesManager.getUtilitiesHandler().setGridCostSource(() -> Substations.costs(this));
+        servicesManager.getUtilitiesHandler().setPowerObservationSources(this::getMonth,
+                () -> BuildAdvice.supplyDemand(this, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of())[0]);
         // ...and the grid is not sized for the power a factory turns with steam on site (R0c; ServicesManager.setSteamShareSource()).
         servicesManager.setSteamShareSource(key -> {
             Sector sector = economyManager.getSectors().byKey(key);
@@ -505,6 +525,7 @@ public class Game {
         migration = new Migration();
         labourMarket = new LabourMarket();
         education = new Education();
+        education.setStudyFinance(economyManager.getTaxPolicy(), debtManager::getPolicyRate, cohorts);
         skipReport = new TimeSkipReport();
         households = new HouseholdAccounts();
         householdBalance.reset();
@@ -1217,6 +1238,8 @@ public class Game {
      */
     private void policyHearsTheMonth() {
         moneyHearsTheMonth();
+        // ...and the bank which capital rule stands (bankHearsTheRule()), before the month reads it.
+        bankHearsTheRule();
         // ...and the households what a pensioner is paid, from the first month: HouseholdAccounts opens on the 45% default, and the month's own
         // push (where the households are told their bills) comes after anything that reads it. The founding opens the pension at zero (OP1).
         households.setPensionPerSenior(economyManager.getTaxPolicy().pensionPerSenior());
@@ -1226,6 +1249,15 @@ public class Game {
         recipes.apply(this);
         // ...and the sectors the 1900 forms their unfitted buildings leave (R1; EquipmentForms): nothing in a city with none unfitted.
         equipmentForms.apply(this);
+    }
+
+    /**
+     * Tells the bank which capital rule stands (R6f, L8; Bank, BASEL III IS A DATE): the conservation buffer from the month L8 is known, the
+     * minimum alone before it; today's rule in a city founded the default way, which knows every row. Said where the month is heard and again
+     * at a load once the founding and the finds are back (loadGame()), since neither is saved with the bank.
+     */
+    private void bankHearsTheRule() {
+        bank.hearCapitalRule(!foundedUnfitted() || research.known("L8", month));
     }
 
     /** The recipes each template's buildings run, chosen in a city founded the 1900 way and saved there (R1c): nothing in any other. */
@@ -1564,8 +1596,20 @@ public class Game {
             labs.put(f, standing);
             labResearchers.put(f, Research.filledResearchers(f, standing * Research.LAB_POSTS, fill));
         }
-        if (foundedUnfitted()) research.month(month, getWorldSeed(), researchers, labs, labResearchers, populationManager.getWagesPerType());
-        else research.idleMonth(researchers, labs, labResearchers);
+        if (foundedUnfitted()) {
+            research.month(month, getWorldSeed(), researchers, labs, labResearchers, populationManager.getWagesPerType());
+            hearTheFinds();
+        } else research.idleMonth(researchers, labs, labResearchers);
+    }
+
+    /**
+     * What the month's finds change at once (R6f review, REV-R6f P1 and P2): a row found this month is known all of it (Research.known()),
+     * so the bank hears its capital rule again and the sickness its medicine, at the coverage the month noted. Without it a city that found
+     * L8 or a stays row ahead of history ran the old rule to the month's end, and a reload of that month read the new one.
+     */
+    private void hearTheFinds() {
+        bankHearsTheRule();
+        sickness.setMedicine(medicalRows(), month, healthcare.getCoverage(CareType.GENERAL));
     }
 
     /**
@@ -3686,6 +3730,21 @@ public class Game {
     }
 
     /**
+     * What buying these offers one after another moves of the treasury's cash, in local money, paid the way the toggle says (PW3, REV-PW3 #1):
+     * converting, their local prices at today's rate; from the vault, the dollars the vault lacks of their prices together at that rate
+     * (landTopUpLocal()'s figure). The offers need not stand on the shelf - a rehearsal's (LandManager.rehearse()) are not on it - so this takes
+     * them, where the figures above take ids.
+     */
+    public double landCashFor(java.util.List<LandParcel> parcels) {
+        double usd = 0, local = 0;
+        for (LandParcel parcel : parcels) {
+            usd += parcel.getPriceUsd();
+            local += parcel.localPrice(foreign.getRate());
+        }
+        return landPaidFromVault ? Math.max(0, usd - foreign.getReservesUsd()) * foreign.getRate() : local;
+    }
+
+    /**
      * Buys these plots in the order given, each through buyLandParcel() -
      * paid the way the toggle says, one at a time, as the market's rule
      * has it - and stops at the first it cannot. How many were bought. The
@@ -4658,6 +4717,9 @@ public class Game {
             double feeEach = householdBalance.getAccountFee();
             bank.setCustomers(feeEach > 0 ? householdBalance.totalAccountFees() / feeEach : 0);
             bank.bookLoanFees(householdBalance.totalLoanFees());
+            // HC1: the bill settled in the household waterfall has one seller.
+            getSectors().businessServices().sellHouseholdEmergencies(householdBalance.totalEmergencyBills(),
+                    tax.effectiveSalesRate(Sectors.BUSINESS_SERVICES));
 
             /*
              * THE PEOPLE OUTSIDE THE FAMILIES' MONTH, on the city's side.
@@ -6398,27 +6460,36 @@ public class Game {
     }
 
     /**
-     * The fuel the plants burned, bought (PW1; UtilitiesHandler, THE MERIT ORDER), at the top of the month beside the railway's diesel:
-     * the struck book's fuel by good, drawn from the market for the city (Markets.draw(): the sellers' stock first, booked on their rows
-     * before the strike banks their ledgers, and the rest from the world), and the plants' variable upkeep, bought abroad at the
-     * exchange rate. What came to is told to the utility every month (zeros when there is nothing), which pays it out of its takings in
-     * the month's servicesNet, inside the audit's window; the coal from the world and the upkeep are told to the national accounts as
-     * imports. The local coal is a pool paying a pool (the treasury to Coal Mining), the sellers' sales the draw booked.
+     * The fuel the plants burned, bought (PW1; UtilitiesHandler, THE MERIT ORDER; PW2 for every fuel), at the top of the month beside
+     * the railway's diesel: the struck book's fuel by good - thermal coal, fuel oil, diesel and wood pellets, by the MWh their rows
+     * burned - drawn from the market for the city (Markets.draw(): the sellers' stock first, booked on their rows before the strike
+     * banks their ledgers, and the rest from the world), and the plants' variable upkeep, bought abroad at the exchange rate. What
+     * came to is told to the utility every month (zeros when there is nothing), which pays it out of its takings in the month's
+     * servicesNet, inside the audit's window; each fuel from the world and the upkeep are told to the national accounts as imports.
+     * The local fuel is a pool paying a pool (the treasury to its seller: Coal Mining, Refining, Wood Products), the sellers' sales
+     * the draw booked.
      */
     private void buyPowerFuel() {
         UtilitiesHandler utility = servicesManager.getUtilitiesHandler();
         UtilitiesHandler.Book book = utility.getStruckBook();
         double local = 0, imported = 0;
         java.util.Map<String, Double> byGood = new java.util.LinkedHashMap<>();
+        // A city with no markets (a bare fixture) draws no fuel and pays the upkeep at par, the exchange rate the utility reads then (REV-PW1's lows, PW1-R).
+        Markets markets = getMarkets();
         for (java.util.Map.Entry<String, Double> e : book.fuel.entrySet()) {
-            double units = e.getValue();
-            if (!(units > 0)) continue;
-            Markets.Draw d = getMarkets().draw(Good.valueOf(e.getKey()), null, Trade.CITY, units, getSectors());
+            double units = e.getValue() == null ? 0 : e.getValue();
+            // ...and a fuel a save names that this build has no good for is dropped, not the load (Good.byName(), as every saved good name is read).
+            Good fuel = Good.byName(e.getKey());
+            if (!(units > 0) || fuel == null || markets == null) continue;
+            Markets.Draw d = markets.draw(fuel, null, Trade.CITY, units, getSectors());
             local += d.localCost();
             imported += d.importCost();
             byGood.merge(e.getKey(), d.importCost(), Double::sum);
         }
-        utility.setFuelPaid(local, imported, book.upkeepWorld * getMarkets().getExchangeRate(), byGood);
+        utility.setFuelPaid(local, imported, book.upkeepWorld * (markets == null ? 1 : markets.getExchangeRate()), byGood);
+        // ...and the water works' power of the month just ended, at the same book's commerce price, which the water's books pay the power's
+        // in this month's services net (PW1-W, UtilitiesHandler's THE WATER'S POWER).
+        utility.setWaterPowerPaid(utility.getWaterPowerBill());
     }
 
     /**
@@ -6502,10 +6573,30 @@ public class Game {
         Zoning.Zone now = landManager.getZoning().set(sector, kind, size, priceShare);
         if (now == null) return;
         if (was == null || was.kind() != now.kind() || DecisionLog.moved(was.size(), now.size())
-                || DecisionLog.moved(was.priceShare(), now.priceShare())) {
+                || DecisionLog.moved(was.dialShare(), now.dialShare())) {
             decisions.record(DecisionLog.ZONING, "Zoned " + zoneSizeWords(now) + " for " + sector + " at "
-                    + DecisionLog.pct(now.priceShare()) + " of the going price");
+                    + (now.farmland() ? "the farmland price" : DecisionLog.pct(now.dialShare()) + " of the going price"));
         }
+    }
+
+    /**
+     * The farmland reserve (RG1; Zoning's THE FARMLAND RESERVE): the fields'
+     * zone at the sellers' farmland price, outside the crowding premium, and
+     * holding ground for the city's Wind and Solar Farms too - or, off, back
+     * at its dial's share. Needs the fields' zone (setZone() first); its
+     * size, dial and used ground are kept. Off by default. Like a dial (Z3),
+     * ground already sold is not re-priced.
+     */
+    public void setFarmlandReserve(boolean on) {
+        Zoning z = landManager.getZoning();
+        Zoning.Zone was = z.zone(Zoning.RESERVE_SECTOR);
+        if (was == null || was.farmland() == on) return;
+        Zoning.Zone now = z.setFarmland(Zoning.RESERVE_SECTOR, on);
+        if (now == null) return;
+        landManager.strikeFarmland();
+        decisions.record(DecisionLog.ZONING, on
+                ? "Farmland reserve: " + zoneSizeWords(now) + " for every farm at the farmland price"
+                : "Farmland reserve lifted: " + Zoning.RESERVE_SECTOR + " at " + DecisionLog.pct(now.dialShare()) + " of the going price");
     }
 
     /** A zone's size as the log writes it: "2% of the dry ground", "40 km²". */
@@ -6814,7 +6905,7 @@ public class Game {
         economyManager.setSectorCash(decision.sector, seller.getCash() - repaid);
 
         lastInvestment.put(decision.sector,
-                String.format("Sold %,d %s - %s%s%s",
+                String.format("Scrapped %,d %s - %s%s%s",
                         scrapped, decision.template.getName(), decision.reason,
                         proceeds > 0
                                 ? String.format(" (plot back to the city for %s)",
@@ -8435,15 +8526,14 @@ public class Game {
     /**
      * The site output an order's wait is read at, for the interest on it (BA1; BusinessInvestment.carryOf(), THE INTEREST
      * ON THE WAIT): the builders' output for the sites after the repairs, every post offered, plus the foreign
-     * contractor's month while it takes orders (BuildingManager.foreignCrewsTakeOrders()), since then it builds them
-     * (FC1; foreignCrewsOffer()). WHY the contractor: a city whose repairs take every point leaves the sites none, so
+     * contractor's month as the next offer would strike it (FC2; BuildingManager.foreignMonthNow(): his book and the
+     * overflow at home, nothing while the queue at home is within the threshold), since he builds the queue's points
+     * beside them (foreignCrewsOffer()). WHY the contractor: a city whose repairs take every point leaves the sites none, so
      * every wait would read endless and every order's carry infinite, and the builders' own depot - the way out of
      * the trap (ConstructionTrapCheck) - would fail the interest test the contractor exists to let it pass.
      */
     public double orderWaitOutput() {
-        double output = getBuildingOutputAtEveryPost();
-        if (!buildingManager.foreignCrewsTakeOrders()) return output;
-        return output + BuildersShort.foreignCapacity(getConstructionOutputAtEveryPost(), buildingManager.largestDepotPoints());
+        return getBuildingOutputAtEveryPost() + buildingManager.foreignMonthNow();
     }
 
     /**
@@ -8538,61 +8628,264 @@ public class Game {
         return fittings.isEmpty() ? afterRepairs : afterRepairs - fittingPoints(afterRepairs);
     }
 
-    /* ----- THE FOREIGN CREWS (FC1) -----
+    /* ----- THE FOREIGN CREWS (FC1; always on offer since FC2) -----
        Jerus's 2026-11-01 trap: the repairs take every point the builders have, the sites advance by nothing, and the
-       builders' own depot waits for points the repairs never leave. While the points left for the sites, every post
-       offered, are under a floor of the builders' month (BuildersShort.foreignTakesOrders()) a foreign contractor takes
-       every order (Construction.bill()) and the builders' own depots on site, builds at a capacity of its own, and is
-       paid by the builders at its price as an import of services (Construction.payForeignCrews()). The month's
-       arithmetic is these two methods, called around the sites' advance by SimulationEngine.simulateMonth(). */
+       builders' own depot waits for points the repairs never leave. FC1's contractor came under a floor of the month;
+       since FC2 (Jerus, 2026-11-22: "make it a imported/exported good") he is always on offer at the base price and an
+       excess in the world's money (BuildersShort, THE FOREIGN CREWS, ALWAYS ON OFFER): each month the queue at home past
+       the threshold is handed to him, he builds his book at a month that grows with it, at an excess that rises with
+       that month, and is paid by the builders as an import of services (Construction.payForeignCrews()); and the points
+       the builders' own crews had and no site took, while the queue at home is under the knee, are sold abroad, an
+       export of services (Construction.sellPointsAbroad()). The month's arithmetic is these two methods, called around
+       the sites' advance by SimulationEngine.simulateMonth(). */
 
     /**
      * What the foreign contractor puts into the sites this month, as it was offered before the advance: the points
-     * (a whole number, as the sites' output is), how many of them are the builders' own depots' (served first), and
-     * its price a point struck now on the queue before the advance.
+     * (a whole number, as the sites' output is), his price a point and the excess share in it - the price and share his
+     * book's points were handed at (REV-FC2), each handover's struck on the base then and the curve's share at the month
+     * it made him run; and what a point the builders' crews have spare fetches abroad this
+     * month, nothing while the queue at home is past the knee (BuildingManager.exportPriceOf()).
      */
-    public record ForeignOffer(int points, double depotPoints, double pricePerPoint) {
-        /** No contractor at work: every figure nothing. */
-        public static final ForeignOffer NONE = new ForeignOffer(0, 0, 0);
+    public record ForeignOffer(int points, double pricePerPoint, double excessShare, double exportPricePerPoint) {
+        /** No trade at all: every figure nothing. */
+        public static final ForeignOffer NONE = new ForeignOffer(0, 0, 0, 0);
     }
 
     /**
-     * The contractor's month, offered: its book (cut first to what is still owed on site, Construction.capForeignBook();
-     * a cancelled order left it when it stopped, FC1b) and, while it takes orders, the builders' own depots on site, up to its capacity
-     * (BuildersShort.foreignCapacity()); its price a point is BuildersShort.FOREIGN_PRICE times the city's price
-     * before any premium. NONE with no work or no capacity. Called once a month, before the sites advance.
+     * The foreign crews' part of an order of {@code n} of {@code t} placed now (REV-FC2): its buildings past the threshold,
+     * their points and the share they go to the crews at (BuildingManager.abroadOfOrder(), on the order's points as its
+     * equipment takes them, Fitout.of()) - what the quote prices that work at and what billing it hands the crews. Null
+     * with no trade on, or no template.
+     */
+    public BuildingManager.OrderAbroad abroadOfOrder(BuildingsTemplate t, long n) {
+        if (t == null) return null;
+        return buildingManager.abroadOfOrder(0, 0, Fitout.of(this, t).points(), Math.max(1, n), t);
+    }
+
+    /**
+     * The contractor's month, offered: his book cut first to what is still owed on site (Construction.capForeignBook();
+     * a cancelled order left it when it stopped, FC1b), the points the orders billed since the last offer handed him
+     * counted as the month's (Construction.closeHandovers(): REV-FC2, an order's buildings past the threshold go on his
+     * book as it is billed, at what its payer was quoted for them), then his month on that book
+     * (BuildersShort.foreignMonth(): the book in the threshold's months, never under the builders' largest depot), billed
+     * at the price a point the book's points were handed at (Construction.getForeignBookPrice()), so the builders pass on
+     * what the payers paid for the work abroad. An older save's book, which carried no price, is struck at the curve's
+     * share at his month and the base now (Construction.priceUnpricedBook()). NONE with no trade on (BuildingManager.
+     * foreignTradeOn(): the builders have no month at all, or the switch is off). Called once a month, before the sites
+     * advance.
      */
     public ForeignOffer foreignCrewsOffer() {
         ham.citybuildersim.sectors.Construction builders = getSectors().construction();
         builders.capForeignBook(buildingManager.getRemainingConstructionPoints());
-        boolean takesOrders = buildingManager.foreignCrewsTakeOrders();
-        double depots = takesOrders ? buildingManager.buildersOwnOwed() : 0;
-        double work = builders.getForeignBook() + depots;
-        double capacity = BuildersShort.foreignCapacity(getConstructionOutputAtEveryPost(),
-                buildingManager.largestDepotPoints());
-        int points = (int) Math.round(Math.min(capacity, work));
-        if (points <= 0) return ForeignOffer.NONE;
-        return new ForeignOffer(points, Math.min(depots, points),
-                BuildersShort.FOREIGN_PRICE * buildingManager.basePricePerPoint());
+        builders.closeHandovers();
+        BuildingManager.ForeignTerms terms = buildingManager.foreignTerms();
+        if (terms == null) return ForeignOffer.NONE;
+        builders.priceUnpricedBook(terms.share(), terms.base() * (1 + terms.share()));
+        double work = builders.getForeignBook();
+        double month = BuildersShort.foreignMonth(work, terms.thresholdMonths(), buildingManager.largestDepotPoints());
+        int points = (int) Math.round(Math.min(month, work));
+        return new ForeignOffer(Math.max(0, points), points > 0 ? builders.getForeignBookPrice() : 0, points > 0 ? builders.getForeignBookShare() : 0,
+                BuildingManager.exportPriceOf(terms));
     }
 
     /**
-     * The contractor's month settled, after the sites advanced: it built what the sites took past the city's own month
-     * (`pastOwnMonth`, the points built less the builders' site output), never more than it offered. The depots'
-     * points are the builders', served first, so its book comes down by what it built beyond them; the builders pay it
-     * the points it built at its price, an import of services (Construction.payForeignCrews()); and a month with none
-     * sets the month's figures to nothing. A month it built something is one line of the log.
+     * The contractor's month settled, after the sites advanced: he built what the sites took past the city's own month
+     * (`pastOwnMonth`, the points built less the builders' site output), never more than he offered; his book comes down
+     * by it and the builders pay him the points he built at his price, an import of services
+     * (Construction.payForeignCrews()). And the points the city's own month had that no site took - `pastOwnMonth`
+     * under nothing - the builders sell abroad at the offer's price while it has one (Construction.sellPointsAbroad()),
+     * an export of services; a month he built anything has none spare. A month with neither sets the month's figures to
+     * nothing. A month either happened is one line of the log.
      */
     public void settleForeignCrews(ForeignOffer offer, double pastOwnMonth) {
         ham.citybuildersim.sectors.Construction builders = getSectors().construction();
-        double built = Math.max(0, Math.min(Double.isNaN(pastOwnMonth) ? 0 : pastOwnMonth, offer.points()));
-        builders.takeFromForeignBook(Math.max(0, built - offer.depotPoints()));
+        double past = Double.isNaN(pastOwnMonth) ? 0 : pastOwnMonth;
+        double built = Math.max(0, Math.min(past, offer.points()));
+        builders.takeFromForeignBook(built);
         double bill = built * offer.pricePerPoint();
         builders.payForeignCrews(built, bill);
+        double spare = offer.exportPricePerPoint() > 0 ? Math.max(0, -past) : 0;
+        builders.sellPointsAbroad(spare, spare * offer.exportPricePerPoint());
         if (built > 0) {
-            System.out.println(String.format("Foreign crews built %,.0f points for the builders, billed %s; %,.0f points left on their book, and they %s orders.",
-                    built, DecisionLog.money(bill), builders.getForeignBook(),
-                    buildingManager.foreignCrewsTakeOrders() ? "still take" : "no longer take"));
+            System.out.println(String.format("Foreign crews built %,.0f points for the builders at +%.0f%%, billed %s; %,.0f points left on their book.",
+                    built, offer.excessShare() * 100, DecisionLog.money(bill), builders.getForeignBook()));
+        }
+        if (builders.getExportPointsThisMonth() > 0) {
+            System.out.println(String.format("The builders sold %,.0f spare points abroad for %s.",
+                    builders.getExportPointsThisMonth(), DecisionLog.money(builders.getExportReceiptsThisMonth())));
+        }
+    }
+
+    /* ===== THE CHOICES THAT USE THE FOREIGN CREWS (FC2b, 2026-11-24) =====
+       Jerus, 2026-11-22: "allowing businesses to even decide to pay more to finish sooner (for example, something finished in 20 months is
+       better than something finished in 100 months, cause thats 80 more months of paying interest...)" and "also let the city itself do it,
+       like per building, aka for example if roads are causing the issues then you could pay more to get just roads fixed". A payer hands its
+       share of one site's remaining work to the foreign crews (BuildingManager.abroadTermsOf(), handSiteAbroad()): they build it at their pace
+       and at their price, and the extra over the home price is the payer's. What each payer weighs is the saving to it against that extra: a
+       business by the saving to it - BuildersShort.broughtForward() of its earnings, which is the interest on its cost for the months saved
+       and its earnings over that interest brought forward, the two parts with no double count - the city by the interest on its cost alone
+       (its site earns no money), at its long real rate. Money already spent is sunk: only the work still to do moves. WHY: the two quotes
+       are both true - the home price at the home wait, the crews' price at their pace - and which one a payer takes is its own sum, so the
+       choice is the payer's and the model does not make it for it. */
+
+    /**
+     * The businesses' choice, once a month, before the month's offer (SimulationEngine.simulateMonth(): so the offer prices the crews' load with
+     * any new site in it): each payer that is a sector (not the city, not the builders, whose depots go first already) on a site with no record
+     * of work abroad hands its share of the site to the foreign crews when the extra it pays (the crews' excess over the home premium, in
+     * the builders' tax it gets back as buildFor() credits it) is under what the months saved are worth to it - BuildersShort.broughtForward()
+     * of its building's estimated monthly profit at the real rate of a loan for the extra (the wait's own rate, BusinessInvestment.
+     * realTestRate()). At most one handover a stack a month. Nothing without foreign trade (BuildingManager.foreignTradeOn()); a payer that
+     * cannot borrow the extra it is short does not hand. The extra is paid as fit() pays: cash first, the shortfall borrowed, the builders
+     * billed it; the books' half is BuildingManager.handSiteAbroad().
+     */
+    public void investorsHandAbroad() {
+        if (!buildingManager.foreignTradeOn()) return;
+        ham.citybuildersim.sectors.Construction builders = getSectors().construction();
+        double rB = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, buildersSalesRate()));
+        for (BuildingsStacks stack : buildingManager.getStacksUnderConstruction()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (buildingManager.getControl().abroadOf(ConstructionControl.keyOf(t)) != null) continue;
+            for (BuildingsStacks.Contract c : new ArrayList<>(stack.getContracts())) {
+                String payer = c.payer;
+                if ("City".equals(payer) || getSectors().byKey(payer) == null || payer.equals(builders.key())) continue;
+                BuildingManager.AbroadTerms terms = buildingManager.abroadTermsOf(t, payer, orderWaitOutput());
+                if (terms == null || !(terms.monthsAbroad() < terms.monthsHome())) continue;
+                // What it costs the payer: the extra grossed up for the builders' tax, net of the share of it the payer gets back (buildFor()'s rule).
+                double gross = terms.extra() / (1 - rB);
+                double cost = gross * (1 - c.getRecovered() * rB);
+                Investor inv = sectorInvestor(payer);
+                double borrowed = Math.max(0, gross - inv.getCash());
+                double annual = judged(payer, borrowed).tested();
+                double i = businessInvestment.realTestRate(annual) / 12;
+                double perMonth = businessInvestment.estimatedMonthlyProfit(payer, t) * terms.buildings();
+                if (!(perMonth > 0)) continue;
+                double saving = BuildersShort.broughtForward(perMonth, i, terms.monthsAbroad(), terms.monthsHome());
+                double interest = BuildersShort.interestSaved(businessInvestment.getCostOf(t, 1) * terms.buildings(), i,
+                        terms.monthsAbroad(), terms.monthsHome());
+                if (!(cost < saving)) continue;
+                double short_ = gross - inv.getCash();
+                if (short_ > SHORTFALL_DUST * Math.max(1, gross)) {
+                    if (!inv.canBorrow(short_)) continue;
+                    inv.borrow(short_, month);
+                }
+                if (gross > 0) {
+                    inv.spend(gross);
+                    builders.bill(gross, 0);
+                }
+                double interestSaved = Double.isFinite(interest) ? interest : 0;
+                buildingManager.handSiteAbroad(terms, month, gross, interestSaved, Double.isFinite(saving) ? saving - interestSaved : 0);
+                System.out.println(String.format("%s handed its %s %s to the foreign crews: %,.0f points at %,.0f/month, %s against %s, paid %s over the home price; worth %s to it.",
+                        payer, abroadCount(terms.buildings()), terms.building(), terms.points(), terms.pace(),
+                        abroadMonths(terms.monthsAbroad()), abroadMonths(terms.monthsHome()), DecisionLog.money(gross),
+                        Double.isFinite(saving) ? DecisionLog.money(saving) : "all it earns"));
+                break;
+            }
+        }
+    }
+
+    /** A count of buildings for the log: whole when it is, one place otherwise (a share of a stack is not always whole). */
+    private static String abroadCount(double n) {
+        return Math.abs(n - Math.rint(n)) < 0.05 ? String.format("%,.0f", n) : String.format("%,.1f", n);
+    }
+
+    /** A wait for the log: "12 months", or "never" for one that does not end. */
+    private static String abroadMonths(double months) {
+        return Double.isFinite(months) ? String.format("%,.0f months", months) : "never";
+    }
+
+    /** The city's card for one of its sites (abroadPreview()): open with its figures, or not open with the reason in {@code why}; the months saved are endless when the wait at home is. */
+    public record AbroadCard(boolean open, String why, String key, String building, double points, double pace, double pricePerPoint,
+                             double extra, double monthsHome, double monthsAbroad, double monthsSaved, double interestSaved) {
+        /** A card that is not open: the reason, the site's key and name, every figure nothing. */
+        static AbroadCard closed(String why, String key, String building) {
+            return new AbroadCard(false, why, key, building, 0, 0, 0, 0, 0, 0, 0, 0);
+        }
+    }
+
+    /**
+     * The city's card for one of its sites (FC2b; the Construction screen): what handing the site to the foreign crews would take and bring,
+     * as handSiteAbroad() would strike it now. Not open when there is no foreign trade, the site is not the city's own, a record of work
+     * abroad stands, there is nothing left to build, or the crews would not finish sooner. Open: the site's points, the crews' pace and price
+     * a point, the extra the city pays (the crews' excess over the home premium, the builders' tax in it), the months at home against abroad
+     * and the months saved, and the interest saved - the interest on the building's cost for those months at the city's long real rate
+     * (BuildAdvice.lifeRate()): the city's site earns no money, so that is all it saves. Reads; books nothing.
+     */
+    public AbroadCard abroadPreview(String key) {
+        BuildingsStacks stack = buildingManager.stackOfKey(key);
+        String name = stack == null ? "" : stack.getName();
+        if (!buildingManager.foreignTradeOn()) return AbroadCard.closed("no foreign trade", key, name);
+        if (buildingManager.getControl().abroadOf(key) != null) return AbroadCard.closed("already with the foreign crews", key, name);
+        if (!buildingManager.isCitySite(key)) return AbroadCard.closed("not the city's own site", key, name);
+        if (stack == null) return AbroadCard.closed("not a building site", key, name);
+        BuildingManager.AbroadTerms terms = cityAbroadTerms(key);
+        if (terms == null) return AbroadCard.closed("nothing left to build", key, name);
+        if (!(terms.monthsAbroad() < terms.monthsHome())) return AbroadCard.closed("no sooner abroad", key, name);
+        double rB = Math.max(0, Math.min(TaxPolicy.MAX_INCOME_TAX, buildersSalesRate()));
+        double extra = terms.extra() / (1 - rB);
+        double saved = terms.monthsHome() - terms.monthsAbroad();
+        double interestSaved = BuildersShort.interestSaved(businessInvestment.getCostOf(stack.getBuilding(), 1) * terms.buildings(),
+                BuildAdvice.lifeRate(this) / 12, terms.monthsAbroad(), terms.monthsHome());
+        return new AbroadCard(true, "", key, terms.building(), terms.points(), terms.pace(), terms.pricePerPoint(), extra,
+                terms.monthsHome(), terms.monthsAbroad(), saved, interestSaved);
+    }
+
+    /** The terms the city's share of a site would be handed on now (abroadPreview(), handSiteAbroad()): null for no stack or nothing to hand. */
+    private BuildingManager.AbroadTerms cityAbroadTerms(String key) {
+        BuildingsStacks stack = buildingManager.stackOfKey(key);
+        return stack == null ? null : buildingManager.abroadTermsOf(stack.getBuilding(), "City", orderWaitOutput());
+    }
+
+    /**
+     * The city hands one of its sites to the foreign crews (FC2b), per building, as the player chooses it (Jerus: "if roads are causing the
+     * issues then you could pay more to get just roads fixed"): null once handed, else why not - as abroadPreview() refuses, or the
+     * treasury cannot pay the extra (the city's cash and what it can borrow, as fit() asks them). A rushed site's rush is stopped first
+     * (rushSite()): the rush is the home crews' overtime, and the site is no longer the city's to rush. The extra is paid from the treasury as
+     * a capital line (TreasuryLine.BUILDINGS), billed to the builders, and booked on the site's abroad contract
+     * (BuildingManager.handSiteAbroad()), with the interest saved the card showed.
+     */
+    public String handSiteAbroad(String key) {
+        AbroadCard card = abroadPreview(key);
+        if (!card.open()) return card.why();
+        // The treasury is asked before the rush is touched: a refusal leaves the site as it was.
+        double short_ = card.extra() - government.getCash();
+        boolean borrows = short_ > SHORTFALL_DUST * Math.max(1, card.extra());
+        if (borrows && !government.canBorrow(short_)) {
+            return "the treasury holds " + DecisionLog.money(government.getCash()) + " and the crews' extra costs " + DecisionLog.money(card.extra());
+        }
+        if (buildingManager.getControl().rushOf(key) != null) {
+            rushSite(key, false);
+            // ...and the card read again: without the overtime the wait at home is the rule's, so the months saved and the interest are against that.
+            card = abroadPreview(key);
+            if (!card.open()) return card.why();
+        }
+        BuildingManager.AbroadTerms terms = cityAbroadTerms(key);
+        if (terms == null) return "nothing left to build";
+        if (borrows) government.borrow(short_, month);
+        double paid = 0;
+        if (card.extra() > 0) {
+            paid = treasuryPays(TreasuryLine.BUILDINGS, card.extra());
+            cityCapitalSpending += paid;
+            getSectors().construction().bill(paid, 0);
+        }
+        buildingManager.handSiteAbroad(terms, month, paid, card.interestSaved(), 0);
+        System.out.println(String.format("The city handed its %s %s to the foreign crews: %,.0f points at %,.0f/month, %s against %s, paid %s over the home price; saves %s of interest.",
+                abroadCount(terms.buildings()), terms.building(), terms.points(), terms.pace(), abroadMonths(terms.monthsAbroad()),
+                abroadMonths(terms.monthsHome()), DecisionLog.money(paid), DecisionLog.money(card.interestSaved())));
+        return null;
+    }
+
+    /**
+     * The crews on the sites handed them, settled after the sites advanced (FC2b): the builders pay the foreign crews for the points they
+     * built this month on those sites (BuildingManager.getAbroadPointsBuilt(), getAbroadBill()), an import of services as FC1's book is paid
+     * (Construction.payCrewsOnSites()); their points are not in getPointsBuilt(). Called every month, so a month with none sets both figures
+     * to nothing. A month with any is one line of the log.
+     */
+    public void settleCrewsOnSites() {
+        double points = buildingManager.getAbroadPointsBuilt(), bill = buildingManager.getAbroadBill();
+        getSectors().construction().payCrewsOnSites(points, bill);
+        if (points > 0) {
+            System.out.println(String.format("Foreign crews built %,.0f points on the sites handed to them, billed %s.",
+                    points, DecisionLog.money(bill)));
         }
     }
 
@@ -9165,6 +9458,24 @@ public class Game {
             return this;
         }
 
+        /**
+         * The order's work past the threshold (REV-FC2; BuildingManager.abroadOfOrder(), Game.abroadWork()): its points,
+         * its buildings' and the same share of its other parts', the foreign crews' share on them and what the sticker
+         * charges a point for that work - each part's base a point and that share - which billing the order hands the
+         * crews' book (Construction.handAbroad()). All 0 for a quote with no trade on, with nothing past the threshold,
+         * or of no template's order.
+         */
+        public double abroadPoints, abroadShare, abroadPricePerPoint;
+
+        BuildQuote withAbroad(double[] work) { return withAbroad(work[0], work[1], work[2]); }
+
+        BuildQuote withAbroad(double points, double share, double pricePerPoint) {
+            this.abroadPoints = Math.max(0, points);
+            this.abroadShare = share;
+            this.abroadPricePerPoint = pricePerPoint;
+            return this;
+        }
+
         /** ...that equipment; null for a quote of no template's order (a shell's restart: its buildings keep their own). */
         public Fitout fitout() { return fitout; }
 
@@ -9329,8 +9640,9 @@ public class Game {
     }
 
     /** What the orders before one in a run have taken of the ground (ET2): their square feet, the part of it works's (and, ET4, the part runs'), and the foothill their orders prepare (buildRunInvoice()); and (FC1) the points they put on the queue, which the builders' scarcity price reads. */
-    private record GroundAhead(double ground, double works, double runs, double prepared, java.util.Map<Integer, Double> islands, double queue) {
-        GroundAhead(double ground, double works, double runs, double prepared) { this(ground, works, runs, prepared, java.util.Map.of(), 0); }
+    private record GroundAhead(double ground, double works, double runs, double prepared, java.util.Map<Integer, Double> islands, double queue, double abroad,
+                               java.util.Map<BuildingsTemplate, Double> site) {
+        GroundAhead(double ground, double works, double runs, double prepared) { this(ground, works, runs, prepared, java.util.Map.of(), 0, 0, java.util.Map.of()); }
     }
 
     private static final GroundAhead NO_GROUND_AHEAD = new GroundAhead(0, 0, 0, 0);
@@ -9375,7 +9687,10 @@ public class Game {
         // ...and on the equipment the order's buildings come with (R1e; Fitout.of()), chosen here and frozen on site when
         // the order is accepted: its shell and pieces' cash and points, the template's own in a city founded the default way.
         Fitout fit = Fitout.of(this, selected);
-        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), fit.points(), quantity);
+        // ...its buildings past the threshold at the foreign crews' share for the month they make them run, the order on
+        // site in the base a point (REV-FC2; BuildingManager.abroadOfOrder()), and handed to them at that when it is billed.
+        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), ahead.abroad(), fit.points(), quantity, selected, ahead.site());
+        BuildingManager.OrderAbroad abroad = buildingManager.abroadOfOrder(ahead.queue(), ahead.abroad(), fit.points(), quantity, selected, ahead.site());
         double prepCost = (prepPoints > 0 ? preparationCost(prepPoints) : 0) * scarcity;
         double sticker = buildingManager.nonMaterialCost(fit) * quantity * scarcity;
         if (prepCost > 0) sticker += prepCost;
@@ -9418,7 +9733,33 @@ public class Game {
                 need == null ? 0 : need.sqFt(), worksPoints, worksCost,
                 need == null ? new double[4] : need.mix(),
                 span == null ? 0 : span.lengthM(), bridgePoints, bridgeCost,
-                deep == null ? 0 : deep.depthM(), deepPoints, deepCost).withFitout(fit);
+                deep == null ? 0 : deep.depthM(), deepPoints, deepCost).withFitout(fit)
+                .withAbroad(abroadWork(abroad, fit, quantity, prepPoints, worksPoints, bridgePoints, deepPoints,
+                        (prepPoints > 0 ? preparationCost(prepPoints) : 0) + (need == null ? 0 : need.cost())
+                                + (span == null ? 0 : span.cost()) + (deep == null ? 0 : deep.cost())));
+    }
+
+    /**
+     * An order's work abroad as its quote hands it (REV-FC2, the second review): its buildings' points past the threshold
+     * (BuildingManager.abroadOfOrder()) and the same share of its preparation, works, bridge and deep water - the order's
+     * every part goes abroad in the share its buildings do, so the multiple the quote prices them all at, (1 - a) times
+     * the city's own premium and a times the crews' share, a the share of its buildings' points abroad, is the price of
+     * each part where it is built. {points, share, price a point}: the buildings at their base a point and the share, the
+     * parts at their own base ({@code extrasBase}, before the multiple) and the share, the mean of the two by the point.
+     * The parts are owed on the order's own site with its buildings, abroad and at home alike (BuildingsStacks.
+     * addPreparation(): progress below nothing, placed by processBuildOrder() and buildFor()), so the queue counts them
+     * (BuildingManager.getRemainingConstructionPoints(), queueAtHome()) and the cut of his book to what the sites owe
+     * (Construction.capForeignBook()) stands on them (the third review; ForeignCrewsCheck section 7's foothill works).
+     */
+    private double[] abroadWork(BuildingManager.OrderAbroad abroad, Fitout fit, long quantity, double prepPoints,
+                                       double worksPoints, double bridgePoints, double deepPoints, double extrasBase) {
+        double buildingPoints = fit.points() * (double) Math.max(1, quantity);
+        if (abroad == null || !(abroad.points() > 0) || !(buildingPoints > 0)) return new double[] {0, 0, 0};
+        double a = Math.min(1, abroad.points() / buildingPoints), s = abroad.share();
+        double extras = Math.max(0, prepPoints) + Math.max(0, worksPoints) + Math.max(0, bridgePoints) + Math.max(0, deepPoints);
+        double points = abroad.points() + a * extras;
+        double money = abroad.points() * buildingManager.nonMaterialCost(fit) / fit.points() * (1 + s) + a * Math.max(0, extrasBase) * (1 + s);
+        return new double[] {points, s, money / points};
     }
 
     /** One building's construction points as an order's quote froze them (R1e): its fitout's, the template's own without one. */
@@ -9926,8 +10267,9 @@ public class Game {
     private BuildQuote demolitionPrice(BuildingsTemplate t, double workPoints, double points, double months) {
         double perPoint = t.getConstructionPoints() > 0
                 ? buildingManager.nonMaterialCost(t) / t.getConstructionPoints() : 0;
-        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort).
-        double sticker = ConstructionControl.DEMOLITION_SHARE * workPoints * perPoint * buildingManager.orderPriceMultiplier();
+        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort), built at home and priced at
+        // home's (REV-FC2, the second review: never the foreign crews' share; BuildingManager.homePriceMultiplier()).
+        double sticker = ConstructionControl.DEMOLITION_SHARE * workPoints * perPoint * buildingManager.homePriceMultiplier();
         return new BuildQuote(1, sticker, 0, 0, new Markets.Draw(0, 0, 0, 0, 0), 0,
                 buildingManager.getConstructionMaterialPrice(), 0, landManager.getAvailableSqFt(), months,
                 buildersSalesRate(), plantSalesRate());
@@ -10208,12 +10550,13 @@ public class Game {
         BuildingsTemplate t = shell == null ? null : buildingManager.getTemplate(shell.templateId);
         if (t == null || t.getConstructionPoints() <= 0) return null;
         double pointsLeft = Math.max(0, shellPoints(shell, t) - shell.progress);
-        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort).
+        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort), built at home and priced at
+        // home's (REV-FC2, the second review: never the foreign crews' share; BuildingManager.homePriceMultiplier()).
         double sticker = shell.lots == null || shell.lots.isEmpty()
                 ? buildingManager.nonMaterialCost(t) * pointsLeft / t.getConstructionPoints()
-                * buildingManager.orderPriceMultiplier()
+                * buildingManager.homePriceMultiplier()
                 // ...and a shell whose orders froze their equipment (R1e) at what its buildings, so fitted out, cost a point.
-                : shellValue(shell, t) * pointsLeft / Math.max(1e-9, shellPoints(shell, t)) * buildingManager.orderPriceMultiplier();
+                : shellValue(shell, t) * pointsLeft / Math.max(1e-9, shellPoints(shell, t)) * buildingManager.homePriceMultiplier();
         double needed = Math.max(0, shell.materialsOwed);
         double yard = buildingManager.getConstructionMaterials();
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, Math.max(0, needed - yard), getSectors());
@@ -10281,6 +10624,8 @@ public class Game {
         double fromYard = deliverYardToSites(t, q.materialsNeeded);
         double paid = treasuryPays(TreasuryLine.BUILDINGS, q.total);
         buildingManager.bookContract(t, "City", 0, paid, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        // ...and the points it put on site, what its share of a shared site is read by (FC2b).
+        buildingManager.noteContractPoints(t, "City", pointsLeft);
         cityCapitalSpending += paid;
         getSectors().construction().bill(paid, pointsLeft);
         decisions.record(DecisionLog.CONSTRUCTION, "Restarted " + t.getName() + " for " + DecisionLog.money(q.total));
@@ -10332,10 +10677,11 @@ public class Game {
         double needed = Math.max(0, to.getConstructionMaterials() - from.getConstructionMaterials()) * (double) n;
         double yard = buildingManager.getConstructionMaterials();
         Markets.Draw boughtIn = getMarkets().quote(Good.MATERIALS, Math.max(0, needed - yard), getSectors());
-        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort).
+        // ...at the builders' scarcity multiple like every order's work (FC1; BuildersShort), built at home and priced at
+        // home's (REV-FC2, the second review: never the foreign crews' share; BuildingManager.homePriceMultiplier()).
         double sticker = (buildingManager.nonMaterialCost(to)
                 + ConstructionControl.DEMOLITION_SHARE * buildingManager.nonMaterialCost(from)) * n
-                * buildingManager.orderPriceMultiplier();
+                * buildingManager.homePriceMultiplier();
         // ...and its surface's bitumen (0.7.83): a Paved Road's, the bed having none (bitumenForPaving()).
         Markets.Draw bitumen = getMarkets().quote(Good.BITUMEN, bitumenForPaving() * (double) n, getSectors());
         return new BuildQuote(n, sticker, needed, yard, boughtIn,
@@ -10376,6 +10722,8 @@ public class Game {
         drawBitumen(q.bitumenNeeded);
         double paid = treasuryPays(TreasuryLine.BUILDINGS, q.total);
         buildingManager.bookContract(to, "City", 0, paid, Math.max(0, q.materialsNeeded - fromYard), q.allowance);
+        // ...and the points it put on site, what its share of a shared site is read by (FC2b).
+        buildingManager.noteContractPoints(to, "City", to.getConstructionPoints() * (double) n);
         cityCapitalSpending += paid;
         getSectors().construction().bill(paid, to.getConstructionPoints() * (double) n);
         buildingManager.getControl().addPaving(n, ahead, month);
@@ -10507,16 +10855,18 @@ public class Game {
 
         // C. The cancelled orders, stopped: the city's contract left comes
         // back out of the builders' book, the work it was for off their order
-        // book's points - and off the foreign contractor's (FC1b), but for a
-        // depot of theirs served first, which he never had on it - or a
-        // restart would put its points on his book a second time.
+        // book's points - and off the foreign contractor's (FC1b) the site's
+        // own work on his book (REV-FC2, the second review: its claim, none
+        // for an order quoted at home), or a restart would put its points on
+        // his book a second time.
         for (ConstructionControl.Refund r : controlThisMonth.refunds) {
             double back = Math.max(0, r.value());
             if (back > 0) {
                 cash += back;
                 cityCapitalSpending -= back;
             }
-            builders.cancelOrder(back, r.points(), r.servedFirst() ? 0 : r.points());
+            // ...his book after his month (settleForeignCrews(), above) in the site's share of it, never more than its points left.
+            builders.cancelOrder(back, r.points(), Math.min(r.points(), r.bookShare() * builders.getForeignBook()));
             r.shell().month = month;
             r.shell().refunded += back;
             GameLog.note(String.format("The city's %d %s stopped: %s back, the shell kept.", r.buildings(),
@@ -10546,7 +10896,10 @@ public class Game {
             c.sold(bought, paid);
             // ...a bought building's ground back to its zone, if its sector has one (0.7.107).
             // ...a works's ground leaves the works' part of the pool (standsAnywhere(), ET2), a run's the runs' (isRun(), ET4).
-            landManager.release(d.landSqFt, d.from, groundUse(buildingManager.getTemplate(d.templateId)));
+            BuildingsTemplate gone = buildingManager.getTemplate(d.templateId);
+            // ...a city's Wind or Solar Farm out of the city's farms' ground in the fields' zone, whatever the reserve is now (RG1, REV-RG1).
+            if ("City".equals(d.from) && LandManager.isCityFarm(gone)) landManager.releaseCityFarm(d.landSqFt, groundUse(gone));
+            else landManager.release(d.landSqFt, d.from, groundUse(gone));
             // ...a sea terminal's units no longer hold their island's ground (ET5).
             if (Ports.isPort(buildingManager.getTemplate(d.templateId))) landManager.getLandmasses().demolished(d.id);
             GameLog.note(String.format("Demolished %d %s: %,.0f units of material to the builders for %s, %s freed.",
@@ -10647,18 +11000,21 @@ public class Game {
         // ...a sea terminal on an island no port links stands on that island's own room, not the linked pool's (ET5).
         Landmasses lms = landManager.getLandmasses();
         boolean island = landmass != Landmasses.NO_LANDMASS && !lms.linked(landmass);
-        if (island ? !landManager.canAllocateOn(landmass, landNeeded) : !landManager.canAllocate(landNeeded, selected.getSector(), works)) {
+        // ...a Wind or Solar Farm in the farmland reserve while one stands (RG1, LandManager.groundKeyOf()).
+        String groundKey = landManager.groundKeyOf(selected);
+        if (island ? !landManager.canAllocateOn(landmass, landNeeded) : !landManager.canAllocate(landNeeded, groundKey, works)) {
             this.hasNewReceipt = false;
             System.out.println("Not enough land (need "
                     + LandManager.areaWords(landNeeded) + ", have "
-                    + LandManager.areaWords(island ? lms.portRoomSqFt(landmass) : landManager.freeFor(selected.getSector(), works)) + ")");
+                    + LandManager.areaWords(island ? lms.portRoomSqFt(landmass) : landManager.freeFor(groundKey, works)) + ")");
             return;
         }
 
         if (totalCost <= cash) {
             totalCost = treasuryPays(TreasuryLine.BUILDINGS, totalCost);
             if (island) landManager.allocateOn(landmass, landNeeded);
-            else landManager.allocate(landNeeded, selected.getSector(), works);
+            else if (landManager.reserveKeyOf(selected) != null) landManager.allocateCityFarm(landNeeded, works);
+            else landManager.allocate(landNeeded, groundKey, works);
             this.hasNewReceipt = true;
             this.receiptSerial++;
             lastBuildingName = buildingManager.getName(selected);
@@ -10738,8 +11094,14 @@ public class Game {
                 if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
                 if (quote.bridgePoints > 0) billedPoints += quote.bridgePoints;
                 if (quote.deepWaterPoints > 0) billedPoints += quote.deepWaterPoints;
-                // ...the template with it (FC1): a depot the builders serve first is not on the foreign contractor's book too.
-                getSectors().construction().bill(totalCost, billedPoints, selected);
+                getSectors().construction().bill(totalCost, billedPoints);
+                // ...and its buildings past the threshold handed to the foreign crews now, at what the sticker charged a
+                // point for them (REV-FC2's P1): the builders bill on to the crews what the city paid for that work.
+                getSectors().construction().handAbroad(quote.abroadPoints, quote.abroadShare, quote.abroadPricePerPoint);
+                // ...and the site's claim on his book, what a cancel takes off it (REV-FC2, the second review).
+                buildingManager.noteAbroad(selected, billedPoints, quote.abroadPoints);
+                // ...and the points it put on site, what its share of a shared site is read by (FC2b).
+                buildingManager.noteContractPoints(selected, "City", billedPoints);
             }
 
             System.out.println(quantity + " " + selected.getName()
@@ -10759,7 +11121,7 @@ public class Game {
 
     
     
-    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST, NO_RIVER, NO_BRIDGE, NOT_KNOWN}
+    public enum BuildResult {SUCCESS, NEEDS_FUNDING, NO_LAND, NO_DEPOSIT, NO_LICENCE, FAILED, NO_COAST, NO_RIVER, NO_BRIDGE, NOT_KNOWN, NO_WATER}
 
     /* =======================================================================
        HALF THE PRACTICE, BEFORE THE DOORS OPEN (2026-09-12)
@@ -11188,6 +11550,19 @@ public class Game {
         return t == null || !t.isHydro() || hydroSlotsFree(t) >= n;
     }
 
+    /* ===== THE STEAM PLANTS' COOLING WATER (PW2, 2026-11-23; spec-electricity 2.3; BuildingsTemplate, THE COOLING WATER) =====
+
+       A coal, oil-fired or biomass plant (BuildingsTemplate.cooling()) is cooled once-through by the sea, a lake or a river
+       the city owns, and takes nothing from its water: an order for one in a city that owns none is refused NO_WATER, before
+       land and money, as a hydro station with no river is refused NO_RIVER. Any owned water serves, on any landmass: the
+       plant's own ground beside it is not surveyed (a later refinement, with a dry-cooled row for a city with none). A plant
+       standing is never stopped by water sold back: only new orders are held. */
+
+    /** Whether this order has water to cool it: true for every building but a steam plant, which needs owned sea, lake or river. */
+    public boolean hasCoolingFor(BuildingsTemplate t) {
+        return t == null || !t.cooling() || landManager.getSeaKm2() > 0 || landManager.getFreshKm2() > 0;
+    }
+
     /* ===== THE LONG BRIDGES' CROSSING (ET6, 2026-10-26; BridgeSurvey, BridgeWorks, Bridges) =====
 
        A Highway, Rail or Road Bridge is ordered toward a far landmass the card picks (chooseBridgeLandmass(): one order's,
@@ -11400,7 +11775,7 @@ public class Game {
     public double freeGroundFor(BuildingsTemplate t, int asked) {
         int island = islandPortLandmass(t, asked);
         return island != Landmasses.NO_LANDMASS ? landManager.getLandmasses().portRoomSqFt(island)
-                : landManager.freeFor(t.getSector(), groundUse(t));
+                : landManager.freeFor(landManager.groundKeyOf(t), groundUse(t));
     }
 
     /**
@@ -11508,6 +11883,10 @@ public class Game {
             return false;   // no river with a drop to dam (HY1)
         }
 
+        if (!hasCoolingFor(template)) {
+            return false;   // no water to cool a steam plant (PW2)
+        }
+
         if (template.isBridge()) {
             return false;   // a long bridge is the city's order alone (ET6): its crossing is the card's pick
         }
@@ -11593,8 +11972,13 @@ public class Game {
         if (quote.prepPoints > 0) billedPoints += quote.prepPoints;
         if (quote.worksPoints > 0) billedPoints += quote.worksPoints;
         if (quote.deepWaterPoints > 0) billedPoints += quote.deepWaterPoints;
-        // ...the template with it (FC1): a depot the builders serve first is not on the foreign contractor's book too.
-        getSectors().construction().bill(totalCost - landPrice, billedPoints, template);
+        getSectors().construction().bill(totalCost - landPrice, billedPoints);
+        // ...and its buildings past the threshold handed to the foreign crews now, at what the payer's sticker charged a
+        // point for them (REV-FC2's P1): the builders bill on to the crews what the payer paid for that work.
+        getSectors().construction().handAbroad(quote.abroadPoints, quote.abroadShare, quote.abroadPricePerPoint);
+        buildingManager.noteAbroad(template, billedPoints, quote.abroadPoints);
+        // ...and the points it put on site, what its share of a shared site is read by (FC2b).
+        buildingManager.noteContractPoints(template, payer.getName(), billedPoints);
 
         return true;
     }
@@ -11618,15 +12002,64 @@ public class Game {
     }
 
     /**
+     * What refuses an order before land and before money (PW3, REV-PW3 #2): buildStack()'s refusals that are neither the ground nor the cash,
+     * in its order - null when none does. Nothing changes: buildStack() asks it first, and the automatic builder asks it before it buys a square
+     * foot of ground or sells a bond for the order, so an order the builders would refuse moves no money.
+     */
+    public BuildResult blocker(BuildingsTemplate template, long quantity, int asked) {
+        if (!buildingManager.isTemplateKnown(template)) {
+            return BuildResult.NOT_KNOWN;
+        }
+
+        // Ore before land and before money: a mine with nowhere to dig is not a
+        // funding problem, and offering the player a bond to fix it would be a
+        // lie about what is wrong.
+        if (!hasDepositFor(template, quantity)) {
+            return BuildResult.NO_DEPOSIT;
+        }
+
+        // ...and the sea before land and money, for the same reason (0.7.59):
+        // a desalination plant with no coast is not a funding problem.
+        if (!hasCoastFor(template, quantity, asked)) {
+            return BuildResult.NO_COAST;
+        }
+
+        // ...and the river before land and money, for the same reason (HY1): a hydro station with no river with a
+        // drop on the ground the city owns, or none left of its slots, is not a funding problem.
+        if (!hasRiverFor(template, quantity)) {
+            return BuildResult.NO_RIVER;
+        }
+
+        // ...and the cooling water before land and money, for the same reason (PW2): a steam plant with no sea, lake or river owned.
+        if (!hasCoolingFor(template)) {
+            return BuildResult.NO_WATER;
+        }
+
+        // ...and the crossing before land and money (ET6): a bridge with no path across the water is not a funding problem.
+        if (!hasBridgeFor(template, quantity)) {
+            return BuildResult.NO_BRIDGE;
+        }
+
+        // Licences before land and before money, for the same reason as ore: a
+        // firm with nobody to practise is not a funding problem, and offering a
+        // bond to fix it would be a lie about what is wrong.
+        if (!hasLicencesFor(template, quantity)) {
+            return BuildResult.NO_LICENCE;
+        }
+        return null;
+    }
+
+    /**
      * ...for a landmass (ET5): a sea terminal stands on `asked` - Landmasses.CHOSEN (the card's pick, else the rule), RULE
      * (the rule alone: the automatic builder never links an island) or an id - resolved once here, after the ore and the
      * coast are known, and carried into the order. For an island no port links the ground it needs is that island's own room
      * (LandManager.canAllocateOn()), not the linked pool's; every other order is asked what it always was.
      */
     public BuildResult buildStack(BuildingsTemplate template, long quantity, boolean noConstruction, int asked){
-        if (!buildingManager.isTemplateKnown(template)) {
+        BuildResult blocked = blocker(template, quantity, asked);
+        if (blocked != null) {
             this.hasNewReceipt = false;
-            return BuildResult.NOT_KNOWN;
+            return blocked;
         }
         double totalCost = noConstruction
                 ? template.getCashCost() * quantity
@@ -11636,47 +12069,12 @@ public class Game {
         // caller has already been offered a T-Bill: without this the player can
         // borrow three hundred million to fund a building the city has nowhere
         // to put, and only find out after the debt is issued.
-        // Ore before land and before money: a mine with nowhere to dig is not a
-        // funding problem, and offering the player a bond to fix it would be a
-        // lie about what is wrong.
-        if (!hasDepositFor(template, quantity)) {
-            this.hasNewReceipt = false;
-            return BuildResult.NO_DEPOSIT;
-        }
-
-        // ...and the sea before land and money, for the same reason (0.7.59):
-        // a desalination plant with no coast is not a funding problem.
-        if (!hasCoastFor(template, quantity, asked)) {
-            this.hasNewReceipt = false;
-            return BuildResult.NO_COAST;
-        }
-
-        // ...and the river before land and money, for the same reason (HY1): a hydro station with no river with a
-        // drop on the ground the city owns, or none left of its slots, is not a funding problem.
-        if (!hasRiverFor(template, quantity)) {
-            this.hasNewReceipt = false;
-            return BuildResult.NO_RIVER;
-        }
-
-        // ...and the crossing before land and money (ET6): a bridge with no path across the water is not a funding problem.
-        if (!hasBridgeFor(template, quantity)) {
-            this.hasNewReceipt = false;
-            return BuildResult.NO_BRIDGE;
-        }
-
-        // Licences before land and before money, for the same reason as ore: a
-        // firm with nobody to practise is not a funding problem, and offering a
-        // bond to fix it would be a lie about what is wrong.
-        if (!hasLicencesFor(template, quantity)) {
-            this.hasNewReceipt = false;
-            return BuildResult.NO_LICENCE;
-        }
 
         // ...a sea terminal's landmass, once (ET5): an island no port links holds it on its own room.
         int landmass = portLandmassOf(template, asked);
         boolean island = landmass != Landmasses.NO_LANDMASS && !landManager.getLandmasses().linked(landmass);
         if (island ? !landManager.canAllocateOn(landmass, template.getLandSqFt() * quantity)
-                : !landManager.canAllocate(template.getLandSqFt() * quantity, template.getSector(), groundUse(template))) {
+                : !landManager.canAllocate(template.getLandSqFt() * quantity, landManager.groundKeyOf(template), groundUse(template))) {
             this.hasNewReceipt = false;
             return BuildResult.NO_LAND;
         }
@@ -11751,17 +12149,25 @@ public class Game {
         double total = 0, bitumenAhead = 0;
         // ...and the ground the orders before it take and the foothill they prepare, which the next is asked for after them (ET2).
         // ...and (ET4) the part of it that is runs', which take their share of every class and push buildings off the flat.
-        double groundAhead = 0, worksAhead = 0, runsAhead = 0, preparedAhead = 0, queueAhead = 0;
+        double groundAhead = 0, worksAhead = 0, runsAhead = 0, preparedAhead = 0, queueAhead = 0, abroadAhead = 0;
         // ...and (ET5) the sea terminals ahead of it that stand on an island no port links, by island: they take its room, not the linked ground.
         java.util.Map<Integer, Double> islandsAhead = new java.util.HashMap<>();
+        // ...and (REV-FC2, the second review) the points they put on site by template, which the foreign crews' threshold reads.
+        java.util.Map<BuildingsTemplate, Double> siteAhead = new java.util.LinkedHashMap<>();
         for (java.util.Map.Entry<BuildingsTemplate, Long> e : run.entrySet()) {
             if (e.getKey() == null || e.getValue() == null || e.getValue() <= 0) continue;
             BuildQuote q = quoteBuild(e.getKey(), e.getValue(), yard, bitumenAhead,
-                    new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead, islandsAhead, queueAhead));
+                    new GroundAhead(groundAhead, worksAhead, runsAhead, preparedAhead, islandsAhead, queueAhead, abroadAhead,
+                            new java.util.LinkedHashMap<>(siteAhead)));
             total += q.total;
             // ...and the points the order puts on the queue, as bill() is handed them: the next is priced on the queue with them (FC1),
             // its fitout's points a building (R1e, REV-R1e), as processBuildOrder() bills them.
             queueAhead += pointsEach(e.getKey(), q) * (double) e.getValue() + q.prepPoints + q.worksPoints + q.bridgePoints + q.deepWaterPoints;
+            // ...and the part of them it hands the foreign crews when it is billed (REV-FC2), which leaves the queue at home.
+            abroadAhead += q.abroadPoints;
+            // ...and its buildings' points on its stack (BuildingsStacks.pointsOnSite(): a building's fitout points; the prep and
+            // the works are queued, not on a stack).
+            siteAhead.merge(e.getKey(), pointsEach(e.getKey(), q) * (double) e.getValue(), Double::sum);
             double land = e.getKey().getLandSqFt() * (double) e.getValue();
             LandManager.Use use = groundUse(e.getKey());
             int island = islandPortLandmass(e.getKey(), Landmasses.CHOSEN);
@@ -11795,7 +12201,7 @@ public class Game {
         return runAhead(run, null);
     }
 
-    /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_COAST, NO_RIVER, NO_BRIDGE (ET6), NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
+    /** What the first order that would not go ahead is refused for - NO_DEPOSIT, NO_COAST, NO_RIVER, NO_WATER (PW2), NO_BRIDGE (ET6), NO_LICENCE or NO_LAND - or SUCCESS when every order passes. */
     public BuildResult buildRunStop(java.util.Map<BuildingsTemplate, Long> run) {
         BuildResult[] stop = { BuildResult.SUCCESS };
         runAhead(run, stop);
@@ -11831,13 +12237,14 @@ public class Game {
                         : !hasDepositFor(t, n, pool < 0 ? 0 : onSites[pool], packedAhead) ? BuildResult.NO_DEPOSIT
                         : !hasCoastFor(t, n) ? BuildResult.NO_COAST
                         : !hasRiverFor(t, hydroAhead + n) ? BuildResult.NO_RIVER
+                        : !hasCoolingFor(t) ? BuildResult.NO_WATER
                         : !hasBridgeFor(t, n) ? BuildResult.NO_BRIDGE
                         : !hasLicencesFor(t, n) ? BuildResult.NO_LICENCE
                         : !(island != Landmasses.NO_LANDMASS
                                 ? landManager.canAllocateOn(island, aheadOn.getOrDefault(island, 0.0) + t.getLandSqFt() * (double) n)
                                 : use == LandManager.Use.RUN
                                 ? landManager.canAllocateRunAfter(t.getLandSqFt() * (double) n, t.getSector(), ground, worksAhead, runsAhead)
-                                : landManager.canAllocate(ground - onIdleSlope + t.getLandSqFt() * (double) n, t.getSector(), use)) ? BuildResult.NO_LAND
+                                : landManager.canAllocate(ground - onIdleSlope + t.getLandSqFt() * (double) n, landManager.groundKeyOf(t), use)) ? BuildResult.NO_LAND
                         : null;
                 if (refused != null) {
                     if (stop != null) stop[0] = refused;
@@ -13869,6 +14276,8 @@ public class Game {
         salvageThisMonth.clear();
         salvageBySector.clear();
         salvageUsedThisMonth = 0;
+        householdBalance.beginTaxMonth();
+        estateCustody.beginMonth();
         double[] poolsBefore = MoneyAudit.pools(this);
         double householdsBefore = MoneyAudit.householdsHeld(this);
         double pooledBefore = 0;
@@ -14023,6 +14432,7 @@ public class Game {
         // for the rest below. See THE HOUSEHOLDS TAKE THEIR SHARE.
         if (settleProbeForTest != null) settleProbeForTest.accept(false);
         householdsTakeTheirShare();
+        estateCustody.consolidatePaper();
         if (settleProbeForTest != null) settleProbeForTest.accept(true);
         debtManager.processAllDebts(this);
 
@@ -14078,8 +14488,12 @@ public class Game {
         // Less the coupons on the businesses' bonds (0.7.12), which are their
         // holders': the bank takes its own beside the loans' interest, and the
         // market pays the rest at its step.
-        bank.takeInterest(interestDue, sectorInterestPaid - bondMarket.getCouponsStruck());
-        bank.takeBondCoupons(bondMarket.getCouponsDueToBank());
+        double issuerCoupons = bondMarket.getCouponsStruck();
+        bank.takeInterest(interestDue, sectorInterestPaid - issuerCoupons);
+        bondMarket.recordCouponIssuerCharge(issuerCoupons);
+        double bankCoupon = bondMarket.getCouponsDueToBank();
+        bank.takeBondCoupons(bankCoupon);
+        bondMarket.recordCouponBankPayment(bankCoupon);
 
         refreshBank();
         lender.projectLoansSettled();
@@ -14322,6 +14736,7 @@ public class Game {
         // ...and the households, by the same rule, with what the owners were
         // just paid. See HouseholdBalance.investAbroad().
         householdBalance.investAbroad(bank.depositRate(), debtManager.worldRate(), foreign.getRate());
+        estateCustody.payForeignCoupon(debtManager.worldRate(), foreign.getRate());
         // ...and the city's paper, when the spread that brought them in has
         // gone (0.7.1): home to the bank's desk, a little a month.
         householdBalance.sellPaperForSpread(debtManager.householdBookYield(), bank.depositRate());
@@ -14581,7 +14996,12 @@ public class Game {
         rateHistory[month % 12] = foreign.getRate();
         if (rateHistoryFilled < 12) rateHistoryFilled++;
 
+        economyManager.getNationalAccounts().setInvestmentTaxes(householdBalance.getCapitalGainsTax(), householdBalance.getDividendTax());
+        economyManager.getNationalAccounts().setCapitalTaxClaims(householdBalance.getCapitalTaxAssessed(),
+                householdBalance.getCapitalTaxOutstanding(), householdBalance.getCapitalTaxWrittenOff(), householdBalance.getCapitalTaxConsolidated());
+        economyManager.getNationalAccounts().setEstateCustody(estateCustody);
         takeTreasuryMonth();
+        householdBalance.closeTaxMonth(); estateCustody.closeMonth();
 
         dataSave.setCash(cash);
 
@@ -14931,7 +15351,13 @@ public class Game {
                         + economyManager.getResearchBill()
                         + economyManager.getTransitBill()
                         // ...and the licence the utilities bought abroad (R2c-P), valued at cost like the services it bought into; it is in the imports too, so GDP is unchanged.
-                        + publicIpPaid,
+                        + publicIpPaid
+                        // ...and the repairs to the city's own buildings, the roads, plants, schools, clinics, stations and terminals
+                        // (EconomyManager.CITY_MAINTAINED), at the bill chargeBuildingMaintenance() struck above, paid or owed: the city buys
+                        // the service, so it is government consumption, as a real government's road repairs are. WHY (R1g, 2026-11-24): the
+                        // builders' material imports for these repairs were in the imports while the repairs were in no final term, so a
+                        // grown city with its building stopped read GDP below zero (the 1900 city, seed 1, -360.89 at month 1135).
+                        + economyManager.getCityMaintenanceBill(),
                 // The full interest bill, foreign coupons included - the
                 // government's books should show what it paid, not only the
                 // part its own bank collected. See payForeignInterest().
@@ -15384,7 +15810,8 @@ public class Game {
         servicesManager.updateServices();
         economyManager.setPowerPrices(servicesManager.getUtilitiesHandler().getPricePerWatt(),
                 servicesManager.getUtilitiesHandler().getIndustryPricePerWatt(), servicesManager.getUtilitiesHandler().getWorksPricePerWatt());
-        economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
+        economyManager.setPowerSeason(servicesManager.getUtilitiesHandler().getPowerSeason());
+        economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit(), servicesManager.getMeanPricePerWaterUnit());
         // The month's bill on the city's own patented works (R2c-P), struck once the utilities hold the month's output and prices; paid at the next strike.
         publicIpPending = LicenceFees.capturePublic(this);
 
@@ -15857,8 +16284,8 @@ public class Game {
          * the month's migration rather than folded into it, because it is a
          * push from the balance sheet and has nothing to say about wages.
          */
-        migration.setBankruptcyDepartures(householdBalance.getLeavingCity()
-                * Math.max(1, families.averageHouseholdSize()));
+        HouseholdBalance.BankruptcyDepartures discharged = householdBalance.prepareBankruptcyDepartures(cohorts);
+        migration.setBankruptcyDepartures(discharged.people());
 
         /*
          * ...and what a flat costs here, which is a PULL rather than a push and
@@ -15881,7 +16308,7 @@ public class Game {
         // arrivals are drawn from. A city founded the default way holds none and draws from WageBand's ceilings alone, as it always did.
         migration.setYearMix(foundedUnfitted() ? ArrivalMix.at(month) : null);
 
-        cohorts.migrate(migration.monthlyNet(
+        double netMigration = migration.monthlyNet(
                 population,
                 populationManager.getTotalJobs(),
                 getHouseholdCapacity(),
@@ -15894,7 +16321,9 @@ public class Game {
                 // ageing pyramid something to manage rather than merely endure.
                 seniorCoverage,
                 labourMarket,
-                populationManager));
+                populationManager);
+        discharged = householdBalance.limitBankruptcyDepartures(discharged, migration.getLastBankruptcyDepartures());
+        cohorts.migrate(netMigration, discharged);
 
         population = populationManager.applyPopulation(
                 Math.round(cohorts.total()), adultsAlreadyHere);
@@ -16009,6 +16438,7 @@ public class Game {
         double unplaced = families.house(stock);
         families.squeezeUnplaced(unplaced);
         families.noteUnplaced(families.house(stock));
+        buildingManager.getHousingInventory().match(families.occupiedBySize());
 
         // What the landlords can bill, off the match rather than off an
         // average, and split by which segment the door was in. See
@@ -16129,6 +16559,9 @@ public class Game {
         }
 
         populationManager.applyBandFlow(education.getGraduates());
+        // ...and in a city founded the 1900 way the young who came of age learn the year's trade at work (R1g; PopulationManager, THE APPRENTICES).
+        // Gross school completions cover the quota; degree graduates leaving the diploma band do not reopen it (REV-R1gc2-1).
+        if (foundedUnfitted()) populationManager.apprentice(cohorts.getPromoted(AgeBand.TEEN), ArrivalMix.tradeShareAt(getMonth()), education.getNewDiplomas());
         populationManager.addLicences(education.getLicences());
         // And whoever is in a lecture theatre is out of the labour supply
         // until they come out of it - see PopulationManager.workforceByBand().
@@ -16483,6 +16916,9 @@ public class Game {
         householdBalance.setOutsideCensus(this::outsideHouseholds);
         householdBalance.setRentShares(this::rentShareOf);
         householdBalance.setHousedShares(this::housedShareOf);
+        householdBalance.setCarAssetPrice(() -> motoring.getUsedCarPrice() > 0 ? motoring.getUsedCarPrice()
+                : getMarkets().get(Good.CARS).getLocalPrice() * HouseholdBalance.USED_CAR_FLOOR);
+        householdBalance.setAssetExchangeRate(() -> this.foreign.getRate());
         householdBalance.setOutsideDependants(this::outsideDependantsOf);
         // The owner line (BO1) runs in a city by its dial, on since BO1-S; a bare fixture, which never switches it, grants the founders' shares by grown-ups.
         householdBalance.setOwnerLine(OwnerHousehold.IN_CITIES);
@@ -16691,6 +17127,8 @@ public class Game {
      * See BondMarket, and CorporateBond for the instrument.
      */
     private final BondMarket bondMarket = new BondMarket();
+    private final EstateCustody estateCustody = new EstateCustody();
+    public EstateCustody getEstateCustody() { return estateCustody; }
     public BondMarket getBondMarket() { return bondMarket; }
 
     /**
@@ -17006,7 +17444,10 @@ public class Game {
         // ...and the strategic reserve's crude, bought from the world and shipped to it (0.7.85).
         UtilitiesHandler utility = servicesManager.getUtilitiesHandler();
         java.util.Map<Good, Double> powerFuel = new java.util.EnumMap<>(Good.class);
-        for (java.util.Map.Entry<String, Double> e : utility.getFuelImportedByGood().entrySet()) powerFuel.merge(Good.valueOf(e.getKey()), e.getValue(), Double::sum);
+        for (java.util.Map.Entry<String, Double> e : utility.getFuelImportedByGood().entrySet()) {
+            Good fuel = Good.byName(e.getKey());   // a name this build has no good for is dropped (PW1-R)
+            if (fuel != null) powerFuel.merge(fuel, e.getValue(), Double::sum);
+        }
         return economyManager.getSectors().tradeByGood(getHouseholdCarImports(), getHouseholdFuelImports(), reserve.getSettledImports(), reserve.getSettledExports(),
                 powerFuel, utility.getUpkeepPaid());
     }
@@ -17633,10 +18074,17 @@ public class Game {
         dataSave.setContractRecords(buildingManager.getContractRecords());
         // ...and the buildings still without a piece of equipment, where a stack has any (R1; none in a played city).
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
+        // ...and each site's work on the foreign crews' book (REV-FC2, the second review), what a cancel takes off it.
+        dataSave.setAbroadOwedById(buildingManager.getAbroadOwedById());
+        // ...and the claims themselves (R1g), which the premium his payers paid is shared by: the points rescale them.
+        dataSave.setAbroadClaimById(buildingManager.getAbroadClaimById());
         // ...and the equipment each site's orders froze, only where a site has a lot (R1e; none in a city founded the default way).
         dataSave.setLotsById(buildingManager.getLotsById());
+        dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
+        // ...and the 1900 home's walk, its months of the households' pay (R1g; none in a city founded the default way).
+        dataSave.setHomePay(recipes.payIndicesForSave(), recipes.payIndexMonth());
         dataSave.setLicenceFees(licenceFeesForSave());
         // ...and the licence the city's own patented works accrued and last paid (R2c-P).
         dataSave.setPublicIpPending(publicIpPending);
@@ -17721,6 +18169,11 @@ public class Game {
         dataSave.setHouseholdGraduates(householdBalance.graduatesToSave());
         // ...and the month's flows the next census carries (HS1).
         dataSave.setHouseholdFlows(householdBalance.flowsToSave());
+        dataSave.setEstateCustody(estateCustody.toState());
+        dataSave.setUnbackedCustodyPaper(debtManager.unbackedCustodyPaper());
+        dataSave.setHouseholdInvestmentTaxes(householdBalance.investmentTaxesToSave());
+        dataSave.setSecuredHouseholdTaxes(householdBalance.securedTaxesToSave());
+        dataSave.setSecuredForeignTaxes(equity.foreignTaxesToSave());
         dataSave.setBankCash(bank.getCash());
         // ...and its desk's inventory as it carries it, at the last step's mark (FL1): the quote can have moved since.
         dataSave.setBankSecurities(bank.getSecurities());
@@ -17901,6 +18354,11 @@ public class Game {
         dataSave.setSectorLossMonths(businessInvestment.getLossMonthsState());
         dataSave.setSectorOperatingLossMonths(businessInvestment.getOperatingLossMonthsState());
         dataSave.setPopulationTrend(businessInvestment.getPopulationHistory());
+        // ...and the work the city sends the builders (OG1): what their next depot order is sized to.
+        dataSave.setBuildersWork(businessInvestment.getSiteWorkOrdered());
+        dataSave.setBuildersOwedAfterAdvance(businessInvestment.getOthersOwedAfterAdvance());
+        // ...and what a used car went for in the month, the households' cars' mark (PW2; DataSave.usedCarPrice).
+        dataSave.setUsedCarPrice(motoring.getUsedCarPrice());
         dataSave.setCityCapitalSpending(cityCapitalSpending);
         dataSave.setCityMaintenancePaid(cityMaintenancePaid);
         // ...and the investors' last word on each sector (0.7.102, A22): words written inside the tick.
@@ -18704,24 +19162,28 @@ public class Game {
 
     /**
      * THE BANK BUYS THE HOUSEHOLDS' PAPER (0.7.1), for the waterfall, the
-     * spread gone, or a household on its way out of the city: this much face
-     * for this much cash, off every piece's household share pro rata, onto
+     * spread gone, or a household on its way out of the city: the fraction
+     * face / heldBefore for this much cash, off each line's household face, onto
      * the bank's book with the unearned discount riding on it. The cash
      * leaves the bank's pool for a household - declared by MoneyAudit as
      * "- desk PaperBoughtFromHouseholds".
      */
-    private void desksBuysHouseholdPaper(double face, double cash) {
+    private void desksBuysHouseholdPaper(double face, double cash, double heldBefore) {
         double held = debtManager.householdPrincipal();
-        if (!(face > 0) || held <= 0) return;
-        double take = Math.min(face, held);
-        double unearned = 0;
+        if (!(face > 0) || !(heldBefore > 0) || held <= 0) return;
+        // The household ledger names the share sold. Apply that share to each
+        // line: repeated absolute subtractions otherwise leave old rounding on
+        // the register as a book of hundreds dwindles to a millionth of one.
+        // A real relative mismatch remains a mismatch; no register is reset.
+        double share = Math.min(1, face / heldBefore);
+        double take = 0, unearned = 0;
         // BD1: the book's figure and the carried one before any face moves, for the re-strike below.
         double carriedBefore = bank.getUnearnedDiscount(), bookBefore = debtManager.bankUnearnedDiscount();
         for (Debt d : debtManager.getDebt()) {
             double mine = d.householdPrincipal();
             if (mine <= 0) continue;
-            double off = mine >= held ? take : take * mine / held;
-            off = Math.min(off, mine);
+            double off = share >= 1 ? mine : mine * share;
+            take += off;
             unearned += d.pass(Debt.Holder.HOUSEHOLDS, Debt.Holder.BANK, off);
         }
         bank.buyPaperFromHouseholds(cash, take, unearned);
@@ -19631,6 +20093,18 @@ public class Game {
     /** The named non-budget movements, this month and last. See TreasuryJournal. */
     private final TreasuryJournal treasuryJournal = new TreasuryJournal();
 
+    /** Actual unclaimed property or issuer cash; no receivable/mark credits this sink (HT1). */
+    private void receiveUnclaimedCash(double amount) {
+        cash += amount; treasuryJournal.record("Unclaimed estates and receipts", amount);
+    }
+
+    /** The household has paid this cash already, from a fill or its dividend (HT1). */
+    private void receiveInvestmentTax(String line, double amount) {
+        cash += amount;
+        treasuryJournal.record(line, amount);
+    }
+
+
     private void takeTreasuryMonth() {
         treasuryClosing = cash;
         treasuryRaised  = treasuryRaisedSoFar;
@@ -19641,7 +20115,8 @@ public class Game {
                 + economyManager.getNationalAccounts().getUpliftNotCash()
                 - economyManager.getNationalAccounts().getRetiredGain()
                 // CD7: the exchange gain on the dollar paper is in the surplus and moved no cash.
-                - economyManager.getNationalAccounts().getDebtExchangeGain();
+                - economyManager.getNationalAccounts().getDebtExchangeGain()
+                - estateCustody.debtGain();
         treasuryRecorded = true;
         // Struck with the rest: last month's lines become the ones the bridge
         // shows, and the month in progress opens empty - here, at the bottom
@@ -19729,7 +20204,7 @@ public class Game {
      * above it is worse than no caret.
      */
     public java.util.List<TreasuryJournal.Entry> getTreasuryJournal() {
-        return treasuryJournal.lastMonth();
+        return treasuryJournal.bridgeLines();
     }
 
     /** The journal itself, for the harnesses that read past the getter above. */
@@ -19786,6 +20261,10 @@ public class Game {
     public java.util.List<TreasuryJournal.Entry> getEarnedToBudget() {
         NationalAccounts na = economyManager.getNationalAccounts();
         return java.util.List.of(
+                new TreasuryJournal.Entry("Capital gains tax", na.getCapitalGainsTax()),
+                new TreasuryJournal.Entry("Dividend tax", na.getDividendTax()),
+                new TreasuryJournal.Entry("Unclaimed estates and receipts", na.getUnclaimedReceipts()),
+                new TreasuryJournal.Entry("Own estate paper consolidation, noncash", na.getCustodyDebtGain()),
                 new TreasuryJournal.Entry("Land sold", na.getLandSales()),
                 new TreasuryJournal.Entry("Land bought", -na.getLandPurchases()),
                 new TreasuryJournal.Entry("Buildings", -na.getCapitalSpending()),
@@ -20991,13 +21470,21 @@ public class Game {
             buildingManager.getJobArrayByName("Commercial Bank"));
 
     economyManager.updateEcon();
+    // RN2: ...and the landlord's count of its places put back as the save held it, once the count above has run from nothing:
+    // the live city moves its closed homes' share at its next month's count, and so does this one (RealEstate.restoreLoadedCapacity()).
+    getSectors().realEstate().restoreLoadedCapacity();
+    // RES2: construction consumes the previous period's staffing before this month's wage count.
+    getSectors().construction().restoreLoadedWorkFill();
 
     servicesManager.updateServices();
 
     // ...at the struck book's three prices (PW1): the commerce, the industry and the works'.
+    servicesManager.getUtilitiesHandler().restorePendingPower();
     economyManager.setPowerPrices(servicesManager.getUtilitiesHandler().getPricePerWatt(),
             servicesManager.getUtilitiesHandler().getIndustryPricePerWatt(), servicesManager.getUtilitiesHandler().getWorksPricePerWatt());
-    economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit());
+    // ...and its season, the kWh the month's bills are struck on (PW1-R).
+    economyManager.setPowerSeason(servicesManager.getUtilitiesHandler().getPowerSeason());
+    economyManager.setPricePerWaterUnit(servicesManager.getPricePerWaterUnit(), servicesManager.getMeanPricePerWaterUnit());
 
     // refreshEconPrices(), NOT finalEconUpdate() - the latter clears every
     // market and has every maker produce. Calling it here ran a month of
@@ -21182,6 +21669,12 @@ public class Game {
 
     // Load game
     public void loadGame(int slot) {
+        // A cold direct load needs the same physical catalogue as the menu load (RES2).
+        // Otherwise every building is skipped, so the restored titles have no physical stock.
+        if (!initialized) {
+            loadGameSave(slot);
+            return;
+        }
         // Every dial the load puts back goes through its setter, and none of
         // it is a decision (0.7.23): the log is held for the whole load.
         decisions.hold();
@@ -21387,6 +21880,8 @@ public class Game {
                     loaded.getHouseholdCells(), loaded.getEquityKeys());
             // The owner line (BO1): which companies have a family, and their months at the floor; null on an older save.
             householdBalance.restoreOwnerLine(loaded.getOwnerFamilies());
+            householdBalance.restoreInvestmentTaxes(loaded.getHouseholdInvestmentTaxes());
+            householdBalance.restoreSecuredTaxes(loaded.getSecuredHouseholdTaxes());
             bank.setCash(loaded.getBankCash());
             bank.setBranchesCapitalised(loaded.getBankBranchesCapitalised());
             bank.setProfitLastMonth(loaded.getBankProfitLastMonth());
@@ -21586,6 +22081,7 @@ public class Game {
             outward.restore(loaded.getOutwardInvestment());
             // ...or whose companies had no owners yet.
             equity.restore(loaded.getEquityKeys(), loaded.getEquity());
+            equity.restoreForeignTaxes(loaded.getEquityKeys(), loaded.getSecuredForeignTaxes());
             // ...or no market. The desk's mark is put back from the quote and
             // the inventory, without calling the difference income.
             // ...on its books since 0.7.12 round 2; a save from before them
@@ -21799,6 +22295,11 @@ public class Game {
             // ...and the equipment each site's orders froze (R1e), after the sites' counts (restoreConstruction(), above): a save with none
             // reads every building on site as the whole template, its pieces decided at the finish, as it was ordered.
             buildingManager.restoreLots(loaded.getLotsById());
+            // ...and each site's work on the foreign crews' book (REV-FC2, the second review), once the sites owe their points:
+            // a save from before the key shares his book among the sites by their points owed, as FC1b's cancel cut them.
+            buildingManager.restoreAbroadOwed(loaded.getAbroadOwedById());
+            buildingManager.restoreAbroadClaims(loaded.getAbroadClaimById());
+            buildingManager.getHousingInventory().restore(loaded.getHousingInventory());
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());
             // ...and the city's research (R3): its grants, the posts the month struck, the work piled and the finds, with the bill that month paid.
@@ -21818,9 +22319,14 @@ public class Game {
                 economyManager.setResearch(savedResearch.payroll, savedResearch.costs);
                 prizePaid = Double.isFinite(savedResearch.prizePaid) ? Math.max(0, savedResearch.prizePaid) : 0;
             }
+            // ...and the bank its capital rule again (R6f, L8), now the founding and the finds are back: policyHearsTheMonth(), far above, said it
+            // before either was, so a loaded 1900 city before 2013 would have held today's buffer until the next month's top.
+            bankHearsTheRule();
             // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
             recipes.restore(loaded.getRecipeChoices());
+            // ...and the 1900 home's walk, its saved months (R1g), before the apply() below dates the fresh templates at the scale they were saved at.
+            recipes.restorePayIndices(loaded.getHomePayIndices(), loaded.getHomePayMonth());
             restoreLicenceFees(loaded.getLicenceFees());
             restorePublicLicences(loaded.getPublicIpPending(), loaded.getPublicIpPaid());
             recipes.apply(this);
@@ -22116,6 +22622,7 @@ public class Game {
             }
 
             debtManager.setDebt(loadedDebts);
+            debtManager.restoreUnbackedCustodyPaper(loaded.getUnbackedCustodyPaper());
 
             /*
              * ...AND WHETHER THE PAPER STILL OWED FOR CARRIES ITS OWN DISCOUNT
@@ -22179,6 +22686,7 @@ public class Game {
             // any sector's interest bill off them. An older save has none: a
             // city whose businesses owe only the bank, which is what it was.
             bondMarket.restore(loaded.getBondMarket());
+            estateCustody.restore(loaded.getEstateCustody());
             // ...and each cell's own face of them (round 2) - put back again
             // below, after the rebuild's census, with the cells' other stocks.
             restoreCellBonds(loaded);
@@ -22300,6 +22808,10 @@ public class Game {
             if (!causesOfDeath.restore(restoredFlows.getCausesOfDeath())) causesOfDeath.reset();
             healthcare.restore(restoredFlows.getHealthcare());
             healthcare.restoreAccessState(restoredFlows.getHealthcareAccess());
+            // ...and the medicine the city knows (R2f; R6f review, REV-R6f P2), derived from the finds, the month and the coverage the month
+            // noted, all restored by now: unsaved, it read today's (1, 1, 0) until the next month's demographics, so a 1900 city before a
+            // stays row (M12 among them) showed a faster recovery loaded than it ran.
+            sickness.setMedicine(medicalRows(), month, healthcare.getCoverage(CareType.GENERAL));
 
             labourMarket.restore(restoredFlows.getLabour());
             wantedPosts.restore(restoredFlows.getWantedPosts());
@@ -22332,6 +22844,8 @@ public class Game {
             businessInvestment.restoreLossMonths(restoredFlows.getSectorLossMonths());
             businessInvestment.restoreOperatingLossMonths(restoredFlows.getSectorOperatingLossMonths());
             businessInvestment.restorePopulationHistory(restoredFlows.getPopulationTrend());
+            businessInvestment.restoreSiteWork(restoredFlows.getBuildersWork(), restoredFlows.getBuildersOwedAfterAdvance());
+            motoring.restoreUsedCarPrice(restoredFlows.getUsedCarPrice() == null ? 0 : restoredFlows.getUsedCarPrice());
             cityCapitalSpending = restoredFlows.getCityCapitalSpending();
             cityMaintenancePaid = restoredFlows.getCityMaintenancePaid();
             // ...and the investors' last word on each sector (0.7.102, A22): an older save has none, which
@@ -22602,6 +23116,11 @@ public class Game {
             householdBalance.restoreCells(restoredFlows.getHouseholdCellKeys(),
                     restoredFlows.getHouseholdCells(), restoredFlows.getEquityKeys());
             householdBalance.restoreOwnerLine(restoredFlows.getOwnerFamilies());
+            householdBalance.restoreInvestmentTaxes(restoredFlows.getHouseholdInvestmentTaxes());
+            householdBalance.restoreSecuredTaxes(restoredFlows.getSecuredHouseholdTaxes());
+            estateCustody.restore(restoredFlows.getEstateCustody());
+            debtManager.restoreUnbackedCustodyPaper(restoredFlows.getUnbackedCustodyPaper());
+            equity.restoreForeignTaxes(restoredFlows.getEquityKeys(), restoredFlows.getSecuredForeignTaxes());
             // ...and each cell's own bonds with them, for the same reason: the
             // rebuild's census folds a cell it reads under half a household
             // into the rest, bonds and all, and the cell arrays above put
@@ -22992,6 +23511,7 @@ public class Game {
         sectorBooks.redenominate(scale);
         priceIndex.redenominate(scale);
         householdBalance.redenominate(scale);
+        estateCustody.redenominate(scale);
         households.redenominate(scale);
         unemployment.redenominate(scale);
         studentLoansLent *= scale;  studentLoansRepaid *= scale;  studentLoansWrittenOff *= scale;

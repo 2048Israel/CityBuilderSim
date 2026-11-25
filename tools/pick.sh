@@ -134,6 +134,7 @@ FILENAME == ARGV[1] { idx[$1] = $2; nidx++; next }
         if (b ~ /\.json$/) print "H\tLongPlaytest"
         next
     }
+    if (f == "Build EXE.bat") { print "H\tPackagingCheck"; next }   # BX2: BX1 changed the bat, and no pick ran the check that reads it
     if (f ~ /^(docs|tools)\/ensemble\//) { print "H\tEnsembleCheck"; next }
     print "N\t" f
 }

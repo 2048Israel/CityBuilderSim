@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.9.180";
+    public static final String VERSION = "0.9.207";
 
     /**
      * The save shape.
@@ -8354,7 +8354,42 @@ public final class GameVersion {
      *     strangers' money rather than their own. It is refused, naming the
      *     build that still opens it. No conversion is written.
      * --------------------------------------------------------------------- */
-    public static final int SAVE_FORMAT = 58;
+    /* R6e: PRE-GM CROP RECIPES (format 60).
+     * A native pre-E21 May-1996 save of shipped format 59 has a fitted
+     * farm's tractor recipe without E21's missing-change flag. Restoring
+     * that choice into this catalogue gives Mixed/Grain Farm 69/500 CROPS
+     * immediately, instead of 69/1.22 and 500/1.22. Next month's selection
+     * repairs it too late. The floor rises with the format; no conversion.
+     */
+    // PW5 after HC1's shipped format 62: closing grid costs are a saved flow
+    // absent from that native layout. Format and floor rise together; no conversion.
+    /* R6f: THE CONTACT CENTRE BEFORE THE AI ASSISTANT (format 64).
+     * B10 gives the Contact Centre a missing-change flag, as E21 gave the
+     * farms: in a 1900 city before Nov 2020 its choice is now "default~B10",
+     * which is saved, where format 63 held "default", which is not. A
+     * format-63 save of such a city would load its Contact Centres at
+     * today's 255 agents a building, not 290.7, until the next month's
+     * choice. The floor rises with the format; no conversion.
+     */
+    /* FC2b: A CONTRACT'S POINTS (format 65).
+     * A site shared by payers is now divided by the points each payer's
+     * orders put on it (BuildingsStacks.Contract.points, saved in the
+     * contract records), which a payer's share of the site handed to the
+     * foreign crews is struck on. A format-64 save holds no points: once
+     * an order adds points to one payer's contract on a shared site, the
+     * share by points reads the older payers' work there as none. The
+     * floor rises with the format; no conversion.
+     */
+    /* R6e-rest: THE DESALINATION PLANT BEFORE THE PRESSURE EXCHANGER (format 66).
+     * E22 gives the Desalination Plant a piece, the pressure exchanger, as
+     * every patentable change on a city work is one: a plant that finishes
+     * before June 1997 is saved as lacking it (the stack's unfitted count)
+     * and runs 13,454 kW until the player's Fit. A format-65 save holds no
+     * count for a piece that did not exist, so its plants would load as
+     * fitted and draw today's 10,880 kW from June 1997 with no fitting
+     * built. The floor rises with the format; no conversion.
+     */
+    public static final int SAVE_FORMAT = 66;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8364,6 +8399,16 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
+     * 66 since batch R6e-rest (THE DESALINATION PLANT BEFORE THE PRESSURE
+     * EXCHANGER above: an older city's Desalination Plant holds no
+     * unfitted exchanger and loads as fitted, at today's draw).
+     * 65 from batch FC2b (A CONTRACT'S POINTS above: an older save's
+     * contracts hold no points and a shared site's shares read wrongly).
+     * 64 from batch R6f (THE CONTACT CENTRE BEFORE THE AI ASSISTANT above:
+     * an older 1900 city's Contact Centre holds no missing-B10 flag and loads
+     * its agents at today's count).
+     * 60 from batch R6e (PRE-GM CROP RECIPES above: an older native choice
+     * has no missing-E21 flag and loads its crop coefficient as modern).
      * 58 since batch HS2 (TWO ADULT STAGES above: a save's households hold
      * no adult stage, and its working cells' money would load all into the
      * established). 57 from batch HS1 (MONEY FOLLOWS PEOPLE above: a save's retired cells
@@ -8412,7 +8457,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 58;
+    public static final int OLDEST_LOADABLE_FORMAT = 66;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

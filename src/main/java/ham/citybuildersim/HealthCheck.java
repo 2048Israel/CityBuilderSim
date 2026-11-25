@@ -1244,6 +1244,9 @@ public class HealthCheck {
         double[] liftedShare = new double[scales.length];
         double[] bedsShortMonths = new double[scales.length];
         double[] clinicsEnd = new double[scales.length];
+        double[] cardDraws = new double[scales.length];
+        double[] maxCardRoom = new double[scales.length];
+        int[] closedCreditMonths = new int[scales.length];
         // ...and the clinics each month added, struck in the free twin's months and laid again in the others', so the same buildings stand in every twin (the
         // buildings' upkeep below is read as the same figure) and a place for each of them is the premise it is read against.
         int[] bedsAdded = new int[48 + window];
@@ -1360,8 +1363,10 @@ public class HealthCheck {
                     c.savings = 0;
                     c.abroad = 0;
                     java.util.Arrays.fill(c.shares, 0);
-                    c.lockout = HouseholdBalance.LOCKOUT_MONTHS;
                 }
+                // A closed lender is the fixture's input, not a borrower's
+                // exclusion share, which HC1 rightly releases as months pass.
+                town.getHouseholdBalance().setCardLenderOpenForHarness(false);
                 // ...AND NO BUSINESS BUILDS DURING THE WINDOW (LD1, 2026-10-31).
                 for (String key : Sectors.KEYS) town.getBusinessInvestment().holdSector(key);
                 town.getEconomyManager().getTaxPolicy().setHealthFeeScale(scales[k]);
@@ -1370,9 +1375,24 @@ public class HealthCheck {
                     liftedShare[k] = betweenTheBills(town);
                     trucksKeepUp(town);
                     standing = keepBedsAhead(town, standing, bedsAdded, step++, k == 0);
-                    // WN3 (after EM1): THE BANK STAYS SHUT FOR THE WINDOW.
-                    for (Household c : town.getHouseholdBalance().cells()) c.lockout = HouseholdBalance.LOCKOUT_MONTHS;
                     town.simulateMonths(1);
+                    boolean closed = true;
+                    for (Household c : town.getHouseholdBalance().cells()) {
+                        cardDraws[k] += c.borrowed() * c.households();
+                        double cardRoom = c.creditRoom(c.disposable());
+                        maxCardRoom[k] = Math.max(maxCardRoom[k], cardRoom);
+                        closed &= c.borrowed() == 0 && cardRoom == 0;
+                    }
+                    if (closed) closedCreditMonths[k]++;
+                    if (m == window - 1 && k == 2) {
+                        for (Household c : town.getHouseholdBalance().cells()) {
+                            CareLift input = LIFTED.get(c);
+                            if (input == null || c.households() < 10) continue;
+                            System.err.printf("  lifted %s: households %.3f, base bill %.9g, old wallet seed %.9g, spread seed %.9g, old seed's extra retained cash %.9g, spendable %.9g, basket %.9g, after fixed %.9g, savings %.9g, drawn %.9g, paper %.9g, abroad %.9g, bonds %.9g, planned %.9g, care %.6f%n",
+                                    c.key(), c.households(), input.bill(), input.walletSeed(), input.spreadSeed(), input.extraCash(),
+                                    c.spendable(), c.subsistence, c.afterFixed, c.savings, c.drawn(), c.paper, c.abroad, c.bonds, c.planned, c.carePaid());
+                        }
+                    }
                     Healthcare hc = town.getHealthcare();
                     double treated = 0, offered = 0;
                     for (CareType care : CareType.values()) {
@@ -1415,16 +1435,22 @@ public class HealthCheck {
                 hungerAtEnd[k] = town.getHouseholdBalance().getHungerRate();
             } finally { System.setOut(out); }
             Healthcare hc = town.getHealthcare();
-            System.out.printf("  fees x%.2f: %,.0f people, served %.1f%% of those offered care over %d months,"
+            System.out.printf("  fees x%.2f at m%d: %,.0f people, served %.6f%% of those offered care over %d months,"
                     + " sick %.2f%% (baseline %.2f%%), %,.0f died (%,.0f over seventy), priced out in %.0f months,"
                     + " %,.0f last month (childcare %,.0f / general %,.0f / senior %,.0f), hunger %.0f%%"
                     + " (%.1f%% over the last year: %.1f priced out of a basket, %.1f short on the shelf)%n",
-                    scales[k], town.getCohorts().total(), meanAffordable[k] * 100, window,
+                    scales[k], town.getMonth(), town.getCohorts().total(), meanAffordable[k] * 100, window,
                     meanSick[k] * 100, meanBaseline[k] * 100, deathsOver[k], eldersLost[k], pricedOutMonths[k],
                     hc.getPricedOutTotal(), hc.getPricedOut(CareType.CHILDCARE),
                     hc.getPricedOut(CareType.GENERAL), hc.getPricedOut(CareType.SENIOR),
                     hungerAtEnd[k] * 100, hungerYear[k] * 100, hungerYearPriced[k] * 100, hungerYearShelf[k] * 100);
+            System.out.printf("  native closed lender: %d/%d months with no card draw or planned card room; total advances %.12g, largest room %.12g%n",
+                    closedCreditMonths[k], window, cardDraws[k], maxCardRoom[k]);
         }
+        assertTrue("WN3: the bank stays shut through every native month, including the next plan",
+                closedCreditMonths[0] == window && closedCreditMonths[1] == window && closedCreditMonths[2] == window);
+        assertTrue("fixture: the bisection leaves the original wallet's cash target under its retained-buffer formula",
+                biggestLiftError <= 1e-9);
         Observation.reached("fixture: the poor city has somebody at the eat-less step", hungerAtEnd[1] > 0);
         // HX1, RN1-F: the three lines below are the fixture's own (betweenTheBills(), keepBedsAhead()), caused and not waited for, so a miss is the fixture's fault and fails.
         System.out.printf("  between one bill and fifteen: %.1f%% of the people at x%.2f, %.1f%% at x%.2f (the last month's lift); %,.0f, %,.0f and %,.0f clinics at the end%n",
@@ -1759,6 +1785,23 @@ public class HealthCheck {
 
     /** What each cell was charged for care in the month just run (the bill its last plan struck), by cell: betweenTheBills() reads the month's money before that bill. */
     static final java.util.IdentityHashMap<Household, Double> CHARGED = new java.util.IdentityHashMap<>();
+    record CareLift(double bill, double walletSeed, double spreadSeed, double extraCash) {}
+    static final java.util.IdentityHashMap<Household, CareLift> LIFTED = new java.util.IdentityHashMap<>();
+    static double biggestLiftError;
+
+    /** The buffer mean that leaves `left` after `gap`, keeping the native lognormal spread. */
+    static double bufferForCashAfterGap(double gap, double left) {
+        if (!(left > 0)) return 0;
+        if (!(gap > 0)) return left;
+        double low = 0, high = gap + left;
+        for (int i = 0; i < 80; i++) {
+            double mid = low + (high - low) / 2;
+            if (mid == low || mid == high) break;
+            double retained = mid - gap + CellSpread.shortfall(gap, mid, CellSpread.SAVINGS_SIGMA);
+            if (retained < left) low = mid; else high = mid;
+        }
+        return high;
+    }
 
     /**
      * HX1, RN1-F: the households the drain left short of a basket are given the savings that leave them, after the month's rent, fixed bills and the shopping
@@ -1768,8 +1811,11 @@ public class HealthCheck {
      * people, as HouseholdAccounts splits it), and each cell's money before the bill it was charged is struck from last month's after-fixed plus what it was
      * charged then: struck from the month's after-fixed alone the fixture swung between a household that paid in full and one that paid nothing, every
      * other month (x15: 100% paid, then none, then 100%), the swing affordCare()'s own comment warns of. Returns the share of the people lifted.
+     * HC1: invert the model's retained-buffer mean to leave the original wallet's cash target; simply using the old seed leaves an extra
+     * lognormal tail. The ordinary gap is struck from that same last plan and bill; the unexpected bill still settles natively afterwards.
      */
     static double betweenTheBills(Game town) {
+        LIFTED.clear();
         Healthcare hc = town.getHealthcare();
         double paying = 0;
         for (Household c : town.getHouseholdBalance().cells()) {
@@ -1787,7 +1833,17 @@ public class HealthCheck {
             double lift = BETWEEN_THE_BILLS * bill + c.subsistence + c.planned - before;
             CHARGED.put(c, charged);
             if (before - c.subsistence >= BETWEEN_THE_BILLS * bill) continue;   // more than that: left as it is
-            c.savings = Math.max(0, lift);
+            // The old single wallet left max(seed-gap,0). HC1 retains the
+            // lognormal tail too: seed-gap+shortfall(gap,seed). Invert that
+            // closed form to give the same cash target, not an extra tail.
+            double walletSeed = Math.max(0, lift);
+            double gap = Math.max(0, c.planned - before + charged);
+            double left = Math.max(0, walletSeed - gap);
+            c.savings = bufferForCashAfterGap(gap, left);
+            double retained = c.savings - gap + CellSpread.shortfall(gap, c.savings, CellSpread.SAVINGS_SIGMA);
+            biggestLiftError = Math.max(biggestLiftError, Math.abs(retained - left));
+            double extra = walletSeed - gap + CellSpread.shortfall(gap, walletSeed, CellSpread.SAVINGS_SIGMA) - left;
+            LIFTED.put(c, new CareLift(bill, walletSeed, c.savings, extra));
             lifted += c.people();
         }
         return paying > 0 ? lifted / paying : 0;

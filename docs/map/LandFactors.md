@@ -1,6 +1,6 @@
-# LandFactors.java - 232 lines · 18 methods · 5 constants · model
+# LandFactors.java - 235 lines · 19 methods · 5 constants · model
 
-`ham/citybuildersim/LandFactors.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandFactors.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Each nation's land factor: what a hectare of its land costs against a hectare of Canada's (1, D21), at the founding and as its output a head moves
 > against Canada's. A pure model; the land office multiplies today's dollar formula by the seller's factor (WN5; LandSellers says who sells which plot).
@@ -28,7 +28,7 @@
 
 **Uses:** [Nations](Nations.md) (9), [WorldData](WorldData.md) (4), [WorldMoneys](WorldMoneys.md) (1)
 
-**Used by (7):** [Game](Game.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandTable](LandTable.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md)
+**Used by (8):** [FarmlandReserveCheck](FarmlandReserveCheck.md), [Game](Game.md), [LandMarket](LandMarket.md), [LandNationsCheck](LandNationsCheck.md), [LandSellers](LandSellers.md), [LandTable](LandTable.md), [PartnersCheck](PartnersCheck.md), [PartnersView](PartnersView.md)
 
 ## Sections
 
@@ -65,7 +65,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 194 | **type** `public final class LandFactors` | Each nation's land factor: what a hectare of its land costs against a hectare of Canada's (1, D21), at the founding and as its output a head moves against Canada's. |
+| 39 | 197 | **type** `public final class LandFactors` | Each nation's land factor: what a hectare of its land costs against a hectare of Canada's (1, D21), at the founding and as its output a head moves against Canada's. |
 | 64 | 9 | `private LandFactors(int n, int reference, double elasticity, double[] usdHa, double[] level, int[] mark, String[] source)` |  |
 
 ### THE TABLE (lines 74-166)
@@ -90,15 +90,16 @@
 | 184 | 9 | `public double factorAt(int nation, int gameMonth)` | The nation's land factor in a game month: 1.0 exactly for the reference, 1.0 for a number outside 1..nationCount(), the level at the founding when no path is handed or in the founding's month, else the level times (th... |
 | 198 | 9 | `private static double move(Nations paths, int nation, int t)` | What a nation's output a head has done since the founding, by month t (months since January of Nations.FIRST_YEAR): its year's over its first year's, log-linear between Januaries as WorldMoneys.priceLevel() reads a ye... |
 
-### WHAT A CALLER READS (lines 208-232)
+### WHAT A CALLER READS (lines 208-235)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 213 | 1 | `public double level(int nation)` | The nation's factor at the founding (month 0), 1.0 for a number outside 1..nationCount(). |
 | 216 | 1 | `public double usdPerHectare(int nation)` | The nation's land a hectare, US dollars of BASE_YEAR (the table's: a published price, the fit's, or Canada's where it lacks the figures); the reference's for a number outside 1..nationCount(). |
-| 219 | 1 | `public int mark(int nation)` | How sure the table is of the nation's price: WorldData.MARK_PUBLISHED (3) where a statistical office publishes it, MARK_ESTIMATE (1) for the fit or Canada's price, MARK_NONE (0) for a nation the table lacks. |
-| 222 | 1 | `public String source(int nation)` | Where the price comes from: a source id of the table ("eurostat", "usda", "statcan"), "fit", or "none" (Canada's price used). |
-| 225 | 1 | `public int reference()` | The number of the reference nation (Canada), 0 where the world file lacks it. |
-| 228 | 1 | `public double elasticity()` | The exponent a factor moves with its nation's output a head against Canada's: the fit's elasticity of land's price on output a head. |
-| 231 | 1 | `public int nationCount()` | How many nations there are (the world file's N). |
+| 219 | 1 | `public static double referenceUsdPerHectare()` | The reference nation's land a hectare, US dollars of BASE_YEAR, from the table alone with no world file: Statistics Canada's farm land and buildings at July 1 (Table 32-10-0047-01), what the farmland reserve's price i... |
+| 222 | 1 | `public int mark(int nation)` | How sure the table is of the nation's price: WorldData.MARK_PUBLISHED (3) where a statistical office publishes it, MARK_ESTIMATE (1) for the fit or Canada's price, MARK_NONE (0) for a nation the table lacks. |
+| 225 | 1 | `public String source(int nation)` | Where the price comes from: a source id of the table ("eurostat", "usda", "statcan"), "fit", or "none" (Canada's price used). |
+| 228 | 1 | `public int reference()` | The number of the reference nation (Canada), 0 where the world file lacks it. |
+| 231 | 1 | `public double elasticity()` | The exponent a factor moves with its nation's output a head against Canada's: the fit's elasticity of land's price on output a head. |
+| 234 | 1 | `public int nationCount()` | How many nations there are (the world file's N). |
 

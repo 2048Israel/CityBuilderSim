@@ -148,6 +148,21 @@ public class BuildingCatalog {
         return templates;
     }
 
+    /** RES2 immutable mix metadata; absence keeps hand-built/mod templates compatible. */
+    private void readHousing(JsonObject o, BuildingsTemplate template) {
+        if (!o.has("housing")) return;
+        JsonObject h = o.getAsJsonObject("housing");
+        java.util.List<HousingRecipe.Dwelling> mix = new java.util.ArrayList<>();
+        for (com.google.gson.JsonElement e : h.getAsJsonArray("mix")) {
+            JsonObject d = e.getAsJsonObject();
+            mix.add(new HousingRecipe.Dwelling(string(d, "id"), (int) number(d, "count"),
+                    (int) number(d, "capacity"), number(d, "area"), (int) number(d, "bedrooms"),
+                    number(d, "quality"), number(d, "privateParking"), number(d, "includedParking"),
+                    number(d, "costWeight")));
+        }
+        template.setHousingRecipe(new HousingRecipe(string(h, "form"), mix, number(h, "sharedParking")));
+    }
+
     private BuildingsTemplate readBuilding(JsonObject o, Set<Integer> seenIds) {
 
         String name = string(o, "name");
@@ -228,7 +243,10 @@ public class BuildingCatalog {
                 .setFuel(string(o, "fuel"))
                 .setHeatRate(number(o, "heatRate"))
                 .setVariableUpkeep(number(o, "variableUpkeep"))
-                .setVariable(string(o, "variable"));
+                .setVariable(string(o, "variable"))
+                // ...and the water it cools by and the months no crew builds it faster than (PW2; spec-electricity 2.3): absent, none.
+                .setCooling(flag(o, "cooling"))
+                .setBuildMonths((int) number(o, "buildMonths"));
 
         readCare(o, template, name);
         readJobs(o, template, name);
@@ -238,6 +256,7 @@ public class BuildingCatalog {
         readRequiresLicence(o, template, name);
         readSector(o, template, name);
         readSource(o, template, name);
+        readHousing(o, template);
         readRefinery(o, template, name);
         readPort(o, template, name);
         readOffshore(o, template, name);

@@ -1,6 +1,6 @@
-# ResearchCatalog.java - 389 lines · 26 methods · 12 constants · model
+# ResearchCatalog.java - 408 lines · 27 methods · 13 constants · model
 
-`ham/citybuildersim/ResearchCatalog.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ResearchCatalog.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The research catalogue (R2): every discovery the city's schools can make, read out of research.json: its code, the field that researches it,
 > what it unlocks (a building, a piece of equipment, a recipe, a drug), history's date, the discoveries it needs first and the work it takes.
@@ -18,7 +18,7 @@
 
 **Uses:** [PolicyDates](PolicyDates.md) (4), [CityCalendar](CityCalendar.md) (2)
 
-**Used by (45):** [BuildCardCheck](BuildCardCheck.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [Equipment](Equipment.md), [EquipmentCheck](EquipmentCheck.md), [FB13Check](FB13Check.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HistorySave](HistorySave.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [Inbox](Inbox.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MedicalRows](MedicalRows.md), [MedicineCheck](MedicineCheck.md), [NewUnitCheck](NewUnitCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PrizeCheck](PrizeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [Recipe](Recipe.md), [RecipeChange](RecipeChange.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Research](Research.md), [ResearchCheck](ResearchCheck.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [YearBook](YearBook.md)
+**Used by (49):** [BuildCardCheck](BuildCardCheck.md), [BuildingCatalog](BuildingCatalog.md), [BuildingManager](BuildingManager.md), [BuildingsTemplate](BuildingsTemplate.md), [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [Equipment](Equipment.md), [EquipmentCheck](EquipmentCheck.md), [FB13Check](FB13Check.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HistorySave](HistorySave.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [Inbox](Inbox.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MedicalRows](MedicalRows.md), [MedicineCheck](MedicineCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [ModernRowsCheck](ModernRowsCheck.md), [NewUnitCheck](NewUnitCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PowerPlantsCheck](PowerPlantsCheck.md), [PrizeCheck](PrizeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [Recipe](Recipe.md), [RecipeChange](RecipeChange.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Research](Research.md), [ResearchCheck](ResearchCheck.md), [ResearchPreview](ResearchPreview.md), [ResearchPreviewCheck](ResearchPreviewCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [WaterPowerCheck](WaterPowerCheck.md), [YearBook](YearBook.md)
 
 ## Sections
 
@@ -27,8 +27,8 @@
 | 38 | THE WORK RULE (research-design.md 1.8; docs/studies/research-model/research_model.py: E1950, GROWTH) |
 | 90 | THE NEAR FUTURE (R6b, 2026-11-16; docs/studies/research-near-future.md 2 rules 5 and 6, its 9's calls 1 and 2) |
 | 166 | · the catalogue |
-| 233 | READING THE FILE |
-| 361 | · the readers |
+| 252 | READING THE FILE |
+| 380 | · the readers |
 
 ## Enum constants
 
@@ -59,6 +59,7 @@
 | 109 | `ResearchCatalog.NEAR_FUTURE` | `PolicyDates.monthOf(2025, 1)` | The first month of the near future, January 2025 (research-near-future 2 rule 6, "2025 and later only"): a row dated from it on is no part of today's figures, so a city founded the default way never knows it. |
 | 112 | `ResearchCatalog.KINDS` | `List.of("building", "equipment", "recipe", "drug")` | What a discovery can unlock, as the file spells it; an entry names one or two. |
 | 169 | `ResearchCatalog.Holder.INSTANCE` | `load()` |  |
+| 216 | `ResearchCatalog.KNOWN_FROM` | `new java.util.concurrent.ConcurrentHashMap<>()` | knownFrom()'s answer by the "since" it was given (R1g, 2026-11-19). |
 
 ## Fields (state)
 
@@ -72,7 +73,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 34 | 356 | **type** `public final class ResearchCatalog` | The research catalogue (R2): every discovery the city's schools can make, read out of research.json: its code, the field that researches it, what it unlocks (a building, a piece of equipment, a recipe, a drug), histor... |
+| 34 | 375 | **type** `public final class ResearchCatalog` | The research catalogue (R2): every discovery the city's schools can make, read out of research.json: its code, the field that researches it, what it unlocks (a building, a piece of equipment, a recipe, a drug), histor... |
 
 ### THE WORK RULE (research-design.md 1.8; docs/studies/research-model/research_model.py: E1950, GROWTH) (lines 38-89)
 
@@ -97,7 +98,7 @@
 | 153 | 3 | `public boolean is(String kind)` _(in ResearchCatalog.Entry)_ | Whether it unlocks that kind ("building", "equipment", "recipe" or "drug"). |
 | 161 | 4 | `private ResearchCatalog(List<Entry> entries)` |  |
 
-### the catalogue (lines 166-232)
+### the catalogue (lines 166-251)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -106,27 +107,28 @@
 | 178 | 3 | `public List<Entry> entries()` | Every discovery, in the file's order (the studies' order). |
 | 183 | 3 | `public Entry entry(String code)` | The discovery with that code, or null for none. |
 | 188 | 4 | `public int worldMonth(String code)` | The game month history has a discovery in; Integer.MAX_VALUE for a code not in the catalogue, which is never known. |
-| 198 | 9 | `public static int knownFrom(String since)` | The game month a "since" is known from: a whole number is a year, known from its January (PolicyDates.monthOf(year, 1)); a code is known from its entry's worldMonth(); a blank "since" or a code not in the catalogue is... |
-| 212 | 5 | `public static boolean nearFuture(String since)` | Whether a "since" names a near-future row (Entry.isNearFuture()): a code in the catalogue dated from NEAR_FUTURE on. |
-| 219 | 8 | `public static int workAtRuleYear(Size size)` | The researcher-years a kind of discovery took in WORK_RULE_YEAR. |
-| 229 | 3 | `public static double workByRule(Size size, Field field, int year)` | The work rule: what a kind of discovery took in WORK_RULE_YEAR, grown at its field's rate to the year, in researcher-years. |
+| 199 | 9 | `public static int knownFrom(String since)` | The game month a "since" is known from: a whole number is a year, known from its January (PolicyDates.monthOf(year, 1)); a code is known from its entry's worldMonth(); a blank "since" or a code not in the catalogue is... |
+| 219 | 7 | `private static int readKnownFrom(String s)` | The reading itself, of a trimmed, non-blank "since": a whole number is a year, anything else a code. |
+| 231 | 5 | `public static boolean nearFuture(String since)` | Whether a "since" names a near-future row (Entry.isNearFuture()): a code in the catalogue dated from NEAR_FUTURE on. |
+| 238 | 8 | `public static int workAtRuleYear(Size size)` | The researcher-years a kind of discovery took in WORK_RULE_YEAR. |
+| 248 | 3 | `public static double workByRule(Size size, Field field, int year)` | The work rule: what a kind of discovery took in WORK_RULE_YEAR, grown at its field's rate to the year, in researcher-years. |
 
-### READING THE FILE (lines 233-360)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 237 | 12 | `private static ResearchCatalog load()` |  |
-| 254 | 31 | `static ResearchCatalog parse(String json)` | The catalogue a text of research.json makes. |
-| 287 | 51 | `private static Entry readEntry(JsonObject o, Set<String> seen)` | The entry an object makes, or null (reported) for one that is not usable. |
-| 340 | 15 | `private void reportNeeds()` | Reports each need that is not a code in the catalogue and each that history dates after its entry; the entry stays. |
-| 357 | 3 | `private static void report(String message)` | Every report is a println, like the rest of the game's log. |
-
-### the readers (lines 361-389)
+### READING THE FILE (lines 252-379)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 363 | 4 | `private static String string(JsonObject o, String key)` |  |
-| 368 | 4 | `private static int integer(JsonObject o, String key)` |  |
-| 373 | 4 | `private static boolean flag(JsonObject o, String key)` |  |
-| 379 | 10 | `private static List<String> strings(JsonObject o, String key)` | A list of strings, blanks left out; an absent key or a value that is not an array is the empty list. |
+| 256 | 12 | `private static ResearchCatalog load()` |  |
+| 273 | 31 | `static ResearchCatalog parse(String json)` | The catalogue a text of research.json makes. |
+| 306 | 51 | `private static Entry readEntry(JsonObject o, Set<String> seen)` | The entry an object makes, or null (reported) for one that is not usable. |
+| 359 | 15 | `private void reportNeeds()` | Reports each need that is not a code in the catalogue and each that history dates after its entry; the entry stays. |
+| 376 | 3 | `private static void report(String message)` | Every report is a println, like the rest of the game's log. |
+
+### the readers (lines 380-408)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 382 | 4 | `private static String string(JsonObject o, String key)` |  |
+| 387 | 4 | `private static int integer(JsonObject o, String key)` |  |
+| 392 | 4 | `private static boolean flag(JsonObject o, String key)` |  |
+| 398 | 10 | `private static List<String> strings(JsonObject o, String key)` | A list of strings, blanks left out; an absent key or a value that is not an array is the empty list. |
 

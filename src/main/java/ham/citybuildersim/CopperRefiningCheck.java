@@ -113,9 +113,11 @@ import java.util.Locale;
  *      WORLD_YEARS Januaries (four of the charge's large peaks, Nations.CHARGE_YEARS
  *      apart), each year's mine, smelter and refinery making something and
  *      the January's solve read (the market's solved year the year played).
- *      (a) Copper Refining's own result from its books (revenue less inputs)
- *      is above 0 in every year played after the founding year (the works'
- *      ramp, printed), and the smelter's margin a tonne of
+ *      (a) Copper Refining's own result from its books, on what it sold
+ *      (its revenue less the inputs of the months that made what it sold: a
+ *      month's cathode sells at the next month's strike, asserted), is above 0
+ *      in every year played after the founding year (the works' ramp,
+ *      printed), and the smelter's margin a tonne of
  *      anode at the export side - anode's price less concentrate's over the
  *      anode a tonne of it yields - is above 0 every January. (b) The charge's
  *      cycle is seen: that margin over cathode's price follows the year's
@@ -1202,6 +1204,9 @@ public class CopperRefiningCheck {
     /** The large peaks of the charge the years played must hold: three, so the cycle is seen more than once. */
     static final int PEAKS_HELD = 3;
 
+    /** How far a month's cathode sold may part from the month before's made, a share of it, for section 10 (a) to read a year's sales against the inputs of the months before them. */
+    static final double LAG_SLACK = .01;
+
     /** The least correlation of the smelter's margin over cathode with the treatment part over cathode, over the solves played: .98 measured (.9818 over the 41 solves of 1900-1940, 2026-11-16), this a little below it. */
     static final double CYCLE_SEEN = .95;
 
@@ -1264,6 +1269,7 @@ public class CopperRefiningCheck {
             b.addStack(b.getTemplate(CopperRefining.SMELTER), 1, true);
             b.addStack(b.getTemplate(CopperRefining.ELECTROLYTIC_REFINERY), 1, true);
         });
+        SubstationCheck.generationWires(g); // PW5: this forty-year price-chain fixture needs wires for its standing generation.
         MaterialsCheck.handWorkers(g);
         // ...the two sectors out of the planner's hands: the works ramp up for most of a year on a town of a few hundred workers, losing, and the planner sells spare capacity
         // after BusinessInvestment.RETIREMENT_LOSS_MONTHS months of loss (it did, in the ninth month); the subject here is the chain's prices, not the planner's retiring.
@@ -1281,6 +1287,11 @@ public class CopperRefiningCheck {
                         cr.getCapacity(Good.ANODE), cr.getCapacity(Good.COPPER), sulphide, CopperMiningCheck.lastSearch));
         double[] conc = new double[WORLD_YEARS + 2], anode = new double[WORLD_YEARS + 2], cathode = new double[WORLD_YEARS + 2];
         double[] revenue = new double[WORLD_YEARS + 2], inputs = new double[WORLD_YEARS + 2];
+        // ...and the inputs of what each year sold: a month's cathode sells at the next month's strike, so a month's revenue is paid for by the month
+        // before's inputs (the months from the first full year whose cathode sold is the month before's made are counted, for (a)'s premise).
+        double[] soldInputs = new double[WORLD_YEARS + 2];
+        double lastInputs = 0, lastMade = 0;
+        int shipped = 0, lagged = 0;
         // ...each solve of the market, read at the month it struck: the first is the founding's (the first month played strikes at the second game month), the rest the Januaries (the twelfth month played strikes January 1901): year,
         // the concentrate's and the anode's charge, the export and import prices of concentrate, anode and cathode, the city's exchange rate. A year's flows are those of the months its solve struck; the last solve strikes one month.
         java.util.List<double[]> januaries = new java.util.ArrayList<>();
@@ -1303,6 +1314,14 @@ public class CopperRefiningCheck {
             cathode[y] += refined == null ? 0 : refined.produced;
             revenue[y] += cr.statement().revenue;
             inputs[y] += cr.statement().inputs;
+            soldInputs[y] += lastInputs;
+            lastInputs = cr.statement().inputs;
+            double made = refined == null ? 0 : refined.produced, sold = refined == null ? 0 : refined.soldLocal + refined.exported;
+            if (lastMade > 0 && y >= 1) {
+                shipped++;
+                if (Math.abs(sold - lastMade) <= LAG_SLACK * lastMade) lagged++;
+            }
+            lastMade = made;
             if (solved != last) {
                 if (last >= 0 && solved != last + 1) gaps++;
                 last = solved;
@@ -1313,15 +1332,15 @@ public class CopperRefiningCheck {
         }
         int n = januaries.size();
         double[] margin = new double[n], treatment = new double[n];
-        out.printf("      year  charge conc/anode   conc export/import   anode export/import   cathode export/import   margin  treatment  made: conc, anode, cathode;  result%n");
+        out.printf("      year  charge conc/anode   conc export/import   anode export/import   cathode export/import   margin  treatment  made: conc, anode, cathode;  result: the year's inputs, on what it sold%n");
         for (int k = 0; k < n; k++) {
             double[] j = januaries.get(k);
             // The smelter's margin a tonne of anode at the export side, over cathode's: anode's price less its concentrate's (a tonne of anode takes 1 / yield of it).
             margin[k] = (j[5] - j[3] / yield) / j[7];
             // The treatment part (concentrate's charge less anode's: the smelter's fee, in the copper's price at the literals) over cathode's price, in the city's money.
             treatment[k] = (j[1] - j[2]) * Good.COPPER.worldExportPrice() * j[9] / j[7];
-            out.printf("      %d  %.4f/%.4f  %.3f/%.3f  %.3f/%.3f  %.3f/%.3f  %.4f  %.4f  %,.0f %,.0f %,.0f  %,.0f%n", (int) j[0], j[1], j[2], j[3], j[4], j[5], j[6],
-                    j[7], j[8], margin[k], treatment[k], conc[k], anode[k], cathode[k], revenue[k] - inputs[k]);
+            out.printf("      %d  %.4f/%.4f  %.3f/%.3f  %.3f/%.3f  %.3f/%.3f  %.4f  %.4f  %,.0f %,.0f %,.0f  %,.0f, %,.0f%n", (int) j[0], j[1], j[2], j[3], j[4], j[5], j[6],
+                    j[7], j[8], margin[k], treatment[k], conc[k], anode[k], cathode[k], revenue[k] - inputs[k], revenue[k] - soldInputs[k]);
         }
         if (!market) {
             report("the city has a world market in every month played", false, "none after " + n + " solves");
@@ -1351,11 +1370,20 @@ public class CopperRefiningCheck {
 
         // (a) the chain pays: from the first full year at rate. The founding year is the works' ramp (most of a year on a town of a few hundred workers,
         // the note at holdSector above), what a works costs while it starts and not what the prices pay; its result is printed, not held.
+        // Each year's result is on what it sold, as a works' books count it (IAS 2, Inventories, paragraph 34: the cost of what is sold is an
+        // expense in the period its revenue is recognised): its revenue less the inputs of the months that made what it sold. A month's cathode
+        // sells at the next month's strike (the premise, asserted from the first full year; in the founding year the shed is withheld while the
+        // works start), so on the year's own inputs a works restarting after a slump books a month of inputs ahead of their sales, the founding's
+        // ramp again. PW3's dry run (2026-11-25): the works held at about 744 t of cathode a month from mid-1935, power served throughout,
+        // restarting at 1,853 in late 1937: D$-152 on the year's inputs, D$337 on what it sold.
+        report("(a) a month's cathode sells at the next month's strike: from the first full year, in every month after one that made it, what is sold is the month before's made, "
+                        + "to LAG_SLACK (" + LAG_SLACK + ")", shipped > 0 && lagged == shipped, String.format("%d of %d months", lagged, shipped));
         StringBuilder lost = new StringBuilder(), thin = new StringBuilder();
         double worst = Double.POSITIVE_INFINITY, thinnest = Double.POSITIVE_INFINITY;
-        out.printf("      the founding year %d, the works ramping: Copper Refining's revenue less its inputs D$%,.0f%n", first, revenue[0] - inputs[0]);
+        out.printf("      the founding year %d, the works ramping: Copper Refining's revenue less the inputs of what it sold D$%,.0f (less the year's inputs, D$%,.0f)%n",
+                first, revenue[0] - soldInputs[0], revenue[0] - inputs[0]);
         for (int y = 1; y < WORLD_YEARS; y++) {
-            double result = revenue[y] - inputs[y];
+            double result = revenue[y] - soldInputs[y];
             worst = Math.min(worst, result);
             if (!(result > 0)) lost.append(first + y).append(String.format(" (D$%,.0f) ", result));
         }
@@ -1363,7 +1391,8 @@ public class CopperRefiningCheck {
             thinnest = Math.min(thinnest, margin[k]);
             if (!(margin[k] > 0)) thin.append((int) januaries.get(k)[0]).append(String.format(" (%.4f) ", margin[k]));
         }
-        report("(a) Copper Refining's own result, its revenue less its inputs, is above 0 in every year played after the founding year's ramp", lost.length() == 0,
+        report("(a) Copper Refining's own result on what it sold, its revenue less the inputs of the months that made it, is above 0 in every year played "
+                        + "after the founding year's ramp", lost.length() == 0,
                 lost.length() == 0 ? String.format("%d years, the least D$%,.0f", WORLD_YEARS - 1, worst) : "not in " + lost);
         report("(a) ...and the smelter's margin a tonne of anode, at the export side, is above 0 every January", thin.length() == 0,
                 thin.length() == 0 ? String.format("%d solves, the least %.4f of cathode's price", n, thinnest) : "not in " + thin);

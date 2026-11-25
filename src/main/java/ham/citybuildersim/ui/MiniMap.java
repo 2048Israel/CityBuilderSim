@@ -228,6 +228,15 @@ final class MiniMap {
         start();
     }
 
+    /** A no-window bench keeps the stamp hidden and needs no frame pump. */
+    void stopPumpForBench() {
+        pump.stop();
+        running = false;
+        hidePreview();
+    }
+
+    boolean pumpRunningForBench() { return running; }
+
     private void start() {
         if (!running) {
             running = true;

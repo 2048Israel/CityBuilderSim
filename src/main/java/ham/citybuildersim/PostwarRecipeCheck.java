@@ -82,7 +82,7 @@ public final class PostwarRecipeCheck {
                 count++;
             }
         }
-        check("all 27 postwar template changes were exercised", count == 27, "rows " + count);
+        check("all 31 template changes were exercised (27 retained postwar rows, R6f's B10, both E21 farms and R6e-rest's E22 on the Desalination Plant)", count == 31, "rows " + count);
     }
 
     static void pair(String name, String firstCode, String firstPiece, String secondCode, String secondPiece) throws Exception {

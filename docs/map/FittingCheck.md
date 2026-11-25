@@ -1,6 +1,6 @@
-# FittingCheck.java - 1,412 lines · 43 methods · 3 constants · harnesses
+# FittingCheck.java - 1,414 lines · 43 methods · 3 constants · harnesses
 
-`ham/citybuildersim/FittingCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FittingCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city
 > founded the 1900 way, what a building that finishes comes with, and the fitting itself - ordered, paid, bought and worked, ranked with the
@@ -52,7 +52,7 @@
 
 **Uses:** [Game](Game.md) (70), [EquipmentFit](EquipmentFit.md) (56), [EquipmentCheck](EquipmentCheck.md) (54), [BuildingsStacks](BuildingsStacks.md) (30), [Good](Good.md) (30), [Founding](Founding.md) (25), [Equipment](Equipment.md) (22), [Sector](Sector.md) (16), [BusinessInvestment](BusinessInvestment.md) (14), [BuildingsTemplate](BuildingsTemplate.md) (10), [Fittings](Fittings.md) (9), [GameFiles](GameFiles.md) (8), [Forms1900Check](Forms1900Check.md) (7), [SpreadPlanner](SpreadPlanner.md) (7), [DataSave](DataSave.md) (6), [MoneyAudit](MoneyAudit.md) (6), [RecipeChanges](RecipeChanges.md) (4), [BuildingManager](BuildingManager.md) (3), [Observation](Observation.md) (3), [Construction](Construction.md) (3), [GoodsMarket](GoodsMarket.md) (3), [Currency](Currency.md) (2), [World](World.md) (2), [Nations](Nations.md) (2), [Sectors](Sectors.md) (2), [Recipes](Recipes.md) (2), [JobType](JobType.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [MaterialsCheck](MaterialsCheck.md) (1), [Agriculture](Agriculture.md) (1)... and 7 more
 
-**Used by (17):** [ArrivalMixCheck](ArrivalMixCheck.md), [BasketYearCheck](BasketYearCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [EquipmentCheck](EquipmentCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [KeptCheck](KeptCheck.md), [MedicineCheck](MedicineCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [WageLadderCheck](WageLadderCheck.md)
+**Used by (20):** [ArrivalMixCheck](ArrivalMixCheck.md), [BasketYearCheck](BasketYearCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [EquipmentCheck](EquipmentCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FitoutCheck](FitoutCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [KeptCheck](KeptCheck.md), [MedicineCheck](MedicineCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [ModernRowsCheck](ModernRowsCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeCheck](RecipeCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [SubstationCheck](SubstationCheck.md), [WageLadderCheck](WageLadderCheck.md)
 
 ## Sections
 
@@ -92,7 +92,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 60 | 1353 | **type** `public class FittingCheck` | Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city founded the 1900 way, what a building that finishes comes with, and the fi... |
+| 60 | 1355 | **type** `public class FittingCheck` | Fitting the equipment (R1b): the 1900 forms at rest between the presses, a Game's forms cleared when it founds or loads another city, the city founded the 1900 way, what a building that finishes comes with, and the fi... |
 | 68 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 73 | 1 | `static void check(String label, boolean ok)` |  |
 | 76 | 4 | `static void near(String label, double actual, double expected, double rel)` | A figure against the harness's own, to a relative tolerance (and an absolute floor for a figure that is nothing). |
@@ -189,7 +189,7 @@
 | 1101 | 8 | `static String stateLine(Game g)` | Every sector's cash and the treasury, the counts and the jobs, as one line: two cities are alike when their lines are equal. |
 | 1110 | 55 | `static void sectionEleven() throws Exception` |  |
 
-### 12. a default city orders none (lines 1166-1412)
+### 12. a default city orders none (lines 1166-1414)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -200,5 +200,5 @@
 | 1313 | 25 | `static void taxedFitting()` | A sales tax in force (open from the founding since OP1) is a caused premise, and its capital credit must actually reach the owner (R1d). |
 | 1340 | 9 | `static double farmContribution(Game g)` | Value the live sector's crop, input and job getters; a tractor changes these three and no utility draw. |
 | 1351 | 34 | `static void mixedFarmTractor() throws Exception` | R1d review: compare one real fitted tractor against mixed-stack Agriculture at its world date. |
-| 1387 | 24 | `static void foreignWhileFitting()` | Repairs can occupy all local crews while the foreign contractor still advances sites (R1d review). |
+| 1387 | 26 | `static void foreignWhileFitting()` | Repairs can occupy all local crews while the foreign contractor still advances sites (R1d review). |
 

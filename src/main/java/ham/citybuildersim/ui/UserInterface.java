@@ -433,6 +433,12 @@ public class UserInterface extends Application {
         return miniMap == null ? null : miniMap.node();
     }
 
+    void stopMiniMapPumpForBench() {
+        if (miniMap != null) miniMap.stopPumpForBench();
+    }
+
+    boolean miniMapPumpRunningForBench() { return miniMap != null && miniMap.pumpRunningForBench(); }
+
     /** Every kept node of the chrome let go: the next draw of the header, the envelope and the rail makes them all new. */
     void forgetChrome() {
         headerPool.forget();

@@ -122,7 +122,13 @@ public class HomeRailCheck {
      * is the harness's), and TradeBandCheck's reload of a railed city reads the band as the save holds it.
      */
     static Game railed(GameFiles files, int depots, int spurs, int lines, String berth, int months, boolean pelletsPay) {
+        return railed(files, depots, spurs, lines, berth, months, pelletsPay, null);
+    }
+
+    static Game railed(GameFiles files, int depots, int spurs, int lines, String berth, int months, boolean pelletsPay,
+                       java.util.function.Consumer<Game> beforeMonths) {
         Game g = pelletsPay ? HaulageCheck.base(files, true) : HaulageCheck.played(files, BASE_MONTHS);
+        if (beforeMonths != null) quietly(() -> beforeMonths.accept(g));
         if (pelletsPay) {
             // THE DEFAULTS PUT BACK IN THE FIXTURE (R0, diagnostic - see the batch notes; OP1): these cities' premise is a plant that buys at
             // home and lands every month, a boundary that fills the track in the month read and in the one before it (the home bill is struck at
@@ -146,16 +152,41 @@ public class HomeRailCheck {
         return g;
     }
 
-    /** (GW1) The most months untilFractional() plays on: the staffing gate's city fills a depot and four spurs with the boundary's tonnes only after some two years. */
+    /** (GW1) The most months untilFractional() plays on; reaching a partial share remains a strict fixture gate. */
     static final int FRACTIONAL_MONTHS = 60;
 
-    /** ...played on, up to FRACTIONAL_MONTHS, until the railway's room after the boundary's tonnes is short of the city's: the share in force strictly between nothing and all. */
+    /**
+     * Two copies of the base town's productive stock make its home offer wider than one spur's step. A spur count sized from the actual
+     * boundary offer can then leave positive room short of the home offer, rather than hoping fixed four-spur traffic drifts there.
+     * Real wires cover the enlarged stock; commodity quotes and every strict share/bill assertion are unchanged.
+     */
+    static void doubleTown(Game g) {
+        BuildingManager bm = g.getBuildingManager();
+        LandManager land = g.getLandManager();
+        land.restoreSites(Resource.IRON, 2L * land.getIronDeposits(), 2 * land.getIronReserveTonnes());
+        for (String name : new String[] { "House", "Convenience Store", "Small Grocery Store", "Paved Road", "Coal Power Plant",
+                "Water Treatment Plant", "Construction Depot", "Iron Mine", "Pelletising Plant" }) {
+            BuildingsTemplate t = bm.getTemplateByName(name);
+            HaulageCheck.lay(g, name, (int) bm.getQuantity(t.getId()));
+        }
+        SubstationCheck.peakWires(g);
+    }
+
+    /** Size real spurs from the played boundary offer, then let normal months strike a strict partial home share, within the original guard. */
     static void untilFractional(Game g) {
-        // (GW1) A year was enough on main's path; with the staffing gate's draw a depot and four spurs left room for all the city's tonnes (56,135 t of room against 30,323 t offered
-        // at 12 months on, share 1.0000), the boundary's 196,275 of 248,958 t filling the railway up with the months (219,865 at 39) and the share first under 1 at 28 months (0.9948).
         Freight fr = g.getSectors().freight();
+        BuildingsTemplate spur = g.getBuildingManager().getTemplateByName("Rail Spur");
+        double step = spur.getRailCapacity();
+        double boundary = fr.getOfferedTonnes(), home = fr.getHomeOffered();
+        int spurs = (int) Math.floor(Math.max(0, boundary - fr.stationTonnes()) / step) + 1;
+        report("fixture: the played home offer exceeds a spur's step, so real spurs can leave positive room short of the home tonnes",
+                home > step && boundary > fr.stationTonnes() && spurs > 0,
+                String.format("%,.0f t home, %,.0f t boundary, %,.0f t a spur; %d spurs with the depot", home, boundary, step, spurs));
+        quietly(() -> HaulageCheck.lay(g, "Rail Spur", spurs));
         int guard = 0;
         while (!(fr.getHomeShare() > 0 && fr.getHomeShare() < 1) && guard++ < FRACTIONAL_MONTHS) quietly(g::toggleNextMonth);
+        System.out.printf("      partial-share fixture reached m%d after %d of %d guarded months with %d spurs%n",
+                g.getMonth(), guard, FRACTIONAL_MONTHS, spurs);
     }
 
     /** The home and quay shares put where a fixture wants them, through the sector's own save and restore (the shares are struck at a haul, so a fixture cannot reach them by moving the room). */
@@ -300,8 +331,11 @@ public class HomeRailCheck {
         // literals with pellets paying, as `rail`: on the world file's band under Random the plant ran every other month in the draws of 1900 (EP1),
         // and in the idle months the city offered the railway 0 t and its boundary dealt 53,202 of the 199,167 t of track.
         Game trackOnly = railed(GameFiles.scratch("homerailcheck-track"), 0, 0, 4, null, 3, true);
-        Game tight = railed(GameFiles.scratch("homerailcheck-tight"), 1, 3, 0, null, 8, true);
-        Game rail = railed(GameFiles.scratch("homerailcheck-rail"), 1, 4, 0, null, 3, true);
+        // ...two spurs, not three (CY1, 2026-11-24): on three the boundary hovered within 4% of the track (main dipped under it in m18 and
+        // m19, and CY1, its Pulp Mill held on money at m4 not on staff, in m22: a share set then, billed in the month read). Two leave
+        // 149,375 t of track under 202,120 t or more of boundary bulk in every month m17-m23.
+        Game tight = railed(GameFiles.scratch("homerailcheck-tight"), 1, 2, 0, null, 8, true);
+        Game rail = railed(GameFiles.scratch("homerailcheck-rail"), 1, 0, 0, null, 3, true, HomeRailCheck::doubleTown);
         untilFractional(rail);
         Game yard = railed(yardFiles, 1, 0, 0, "Bulk Berth", 4);
         Game spurBerth = railed(GameFiles.scratch("homerailcheck-spurberth"), 0, 3, 4, "Bulk Berth", 4);
@@ -393,6 +427,8 @@ public class HomeRailCheck {
 
     static void dealt(Game tight, Game rail) {
         System.out.println("\n--- 2. dealt after the boundary: what the track and the stations leave of the boundary's tonnes, never more ---");
+        System.out.println("      tight fixture " + SubstationCheck.gridReading(tight));
+        System.out.println("      fractional fixture " + SubstationCheck.gridReading(rail));
 
         // Hand-made cases, each causing one cap to bind. {capacity, stations, sidings, bulk dealt, goods dealt, offer, tonnes taken}.
         double[][] hand = {
@@ -468,14 +504,14 @@ public class HomeRailCheck {
         // In the cities themselves.
         Freight ft = tight.getSectors().freight();
         double boundaryDealt = RailDepotCheck.dealtNow(ft);
-        report("a played city whose boundary fills the railway (a depot and three spurs): the city's own bulk is offered and none is dealt",
+        report("a played city whose boundary fills the railway (a depot and two spurs): the city's own bulk is offered and none is dealt",
                 ft.getHomeOffered() > 0 && near(boundaryDealt, ft.getCapacityTonnes(), 1e-9) && same(ft.getHomeShare(), 0) && same(ft.getHomeBill(), 0),
                 String.format("%,.0f t offered, the boundary dealt %,.0f of %,.0f t, home share %s", ft.getHomeOffered(), boundaryDealt, ft.getCapacityTonnes(), ft.getHomeShare()));
 
         Freight fr = rail.getSectors().freight();
         double taken = fr.getHomeShare() * fr.getHomeOffered();
         double left = fr.getCapacityTonnes() - RailDepotCheck.dealtNow(fr);
-        report("...and one the boundary leaves room in (a depot and four spurs): the city's tonnes are exactly the room left, the share in force strictly between nothing and all",
+        report("...and one the boundary leaves room in (a depot and spurs sized from its offer): the city's tonnes are exactly the room left, the share in force strictly between nothing and all",
                 fr.getHomeShare() > 0 && fr.getHomeShare() < 1 && fr.getHomeOffered() > taken && near(taken, left, 1e-9),
                 String.format("share %.4f of %,.0f t offered = %,.0f t; the boundary dealt %,.0f of %,.0f t, %,.0f t left", fr.getHomeShare(), fr.getHomeOffered(),
                         taken, RailDepotCheck.dealtNow(fr), fr.getCapacityTonnes(), left));

@@ -1,6 +1,6 @@
 # EquipmentFit.java - 403 lines · 23 methods · 1 constants · model
 
-`ham/citybuildersim/EquipmentFit.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EquipmentFit.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > What a piece of equipment would earn a building and what it would cost, and whether that pays: research-design 2.2's rule, steps 1 to 4, and
 > each piece's verdict, read on demand and never in the month.
@@ -25,7 +25,7 @@
 
 **Uses:** [Equipment](Equipment.md) (18), [BuildingsTemplate](BuildingsTemplate.md) (14), [Game](Game.md) (11), [Recipes](Recipes.md) (9), [Haulage](Haulage.md) (7), [SpreadPlanner](SpreadPlanner.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [Sector](Sector.md) (4), [Good](Good.md) (4), [RecipeChanges](RecipeChanges.md) (4), [Agriculture](Agriculture.md) (3), [Research](Research.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [Recipe](Recipe.md) (2), [JobType](JobType.md) (2), [NewUnit](NewUnit.md) (2), [Currency](Currency.md) (2), [HydroSites](HydroSites.md) (1), [Markets](Markets.md) (1), [LicenceFees](LicenceFees.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [Fittings](Fittings.md) (1)
 
-**Used by (24):** [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [Fitout](Fitout.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [NewUnit](NewUnit.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [SectorScreen](SectorScreen.md)
+**Used by (25):** [DiscoveryCheck](DiscoveryCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [Fitout](Fitout.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [Game](Game.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [ModernRowsCheck](ModernRowsCheck.md), [NewUnit](NewUnit.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [ResearchCheck](ResearchCheck.md), [ResearchScreen](ResearchScreen.md), [ResearchView](ResearchView.md), [ResearchViewCheck](ResearchViewCheck.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 

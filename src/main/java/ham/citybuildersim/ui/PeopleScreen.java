@@ -51,8 +51,8 @@ import static ham.citybuildersim.ui.Levers.*;
  * page is kept between redraws, the study's pilot: drawPage() runs through
  * Kept over the nodes it made last month (UserInterface.keepMenu()), so a
  * month that lands sets its figures on the page on show instead of building
- * another. KeptCheck holds the kept page to one built new. Household money is
- * drawn as before.
+ * another. Since KP7 Household money has a pool of its own too. KeptCheck
+ * holds both kept pages to ones built new.
  */
 final class PeopleScreen {
 
@@ -2962,7 +2962,7 @@ final class PeopleScreen {
        statement left them out and did not foot).
        ===================================================================== */
 
-    /** Which cell of the grid is open, as "tier:shape", or "OUT:" and a ledger's key. Empty for none. */
+    /** Which cell is open: "tier:shape", with ":YOUNG" for that stage, or "OUT:" and a ledger's key. Empty for none. */
     String openCell = "";
 
     /** Set by a click that opens a cell, so the panel it opened is brought into view. */
@@ -2978,7 +2978,7 @@ final class PeopleScreen {
             + "fees and the shopping.";
 
     /** The order a household pays in, and what happens when it comes up short: the verdict's (i). */
-    static final String PAID_IN_ORDER = "The order is fixed: the payslip first, then rent, then the fees, and "
+    static final String PAID_IN_ORDER = "The order is fixed: the payslip first, then rent, then the fees and the card minimum, and "
             + "the shop takes what is left. A household short of the last one "
             + "spends its savings, then borrows — at a rate that climbs with what "
             + "it already owes — and only when both are gone does it eat less. "
@@ -3023,10 +3023,10 @@ final class PeopleScreen {
         HouseholdBalance bal = ui.game.getHouseholdBalance();
         FamilyModel families = ui.game.getFamilies();
         int kinds = 0, shortKinds = 0;
-        for (FamilyStructure shape : FamilyStructure.values()) {
+        for (AdultStage stage : AdultStage.values()) for (FamilyStructure shape : FamilyStructure.values()) {
             if (shape.isRetired()) continue;
             for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
-                HouseholdAccounts.Statement s = hh.statementFor(families, shape, PayTier.values()[t]);
+                HouseholdAccounts.Statement s = hh.statementFor(families, shape, PayTier.values()[t], stage);
                 if (s.households() < .5) continue;
                 kinds++;
                 if (s.left() < 0) shortKinds++;
@@ -3119,9 +3119,10 @@ final class PeopleScreen {
         return out;
     }
 
-    /** The grid's key for a cell: "tier:SHAPE" for a family, "OUT:" and its ledger's key for the rest. */
+    /** A family's stage key (the young append ":YOUNG"), or "OUT:" and the ledger's key for the rest. */
     static String gridKey(Household c) {
-        if (c instanceof WorkingHousehold && c.tier() != null) return c.tier().ordinal() + ":" + c.shape().name();
+        if (c instanceof WorkingHousehold working && c.tier() != null)
+            return c.tier().ordinal() + ":" + c.shape().name() + working.stage().keySuffix();
         return "OUT:" + c.key();
     }
 
@@ -3187,6 +3188,9 @@ final class PeopleScreen {
 
     /** The books' pane as last drawn, for the scroll to hold the panel at the top of the view. */
     private Books books;
+
+    /** HC2's survey filters persist with this page, independently of the open household. */
+    final HouseholdDebtPanel debtPanel = new HouseholdDebtPanel();
 
     /** Whether the scroll listener is on the menu's scroller yet: once, for the window's life. */
     private boolean booksHooked = false;
@@ -3260,8 +3264,21 @@ final class PeopleScreen {
                 Kept.scope("put by head", () -> sectionHead("WHAT THEY HAVE PUT BY", hint("every household together"))),
                 Kept.scope("put by", () -> putByCards(bal)));
         page.getChildren().addAll(Kept.scope("put by chips", () -> putByChips(bal, families)));
+        page.getChildren().addAll(
+                Kept.scope("debt head", () -> sectionHead("HOUSEHOLD DEBT", hint("who carries a balance, and who struggles to pay"))),
+                Kept.scope("debt", this::debtCard));
 
         ui.setPage(page);
+    }
+
+    /** HC2: the current month or latest annual survey, by tier, stage and counting unit. */
+    VBox debtCard() {
+        VBox c = card(6);
+        c.getChildren().add(debtPanel.draw(ui.game, this::showHouseholdMenu, false));
+        VBox table = detailsOpen.contains("debt")
+                ? Kept.scope("debt table", () -> debtPanel.table(debtPanel.snapshot(ui.game))) : null;
+        c.getChildren().add(details("debt", "by debt kind, with income and payment burdens", table));
+        return c;
     }
 
     /** The four money vitals as a bar, centred. */
@@ -3492,8 +3509,38 @@ final class PeopleScreen {
         VBox statement = detailsOpen.contains("statement") ? Kept.scope("statement", () -> cityStatement(hh)) : null;
         VBox c = card(6);
         c.getChildren().addAll(fall, words(end, Palette.SIZE_LABEL, Palette.TEXT_MUTED),
+                Kept.scope("lifeMoney", this::lifeMoneyLines),
                 details("statement", "the month as a statement", statement));
         return c;
+    }
+
+    /* =====================================================================
+       HOUSEHOLD MONEY BY LIFE STAGE (HS3): the month's transfers and taxes.
+       These are disclosures beside the income statement: inheritances move
+       existing wealth, and investment taxes are already netted from returns.
+       They are never added to the wage waterfall or its saving total twice.
+       ===================================================================== */
+
+    /** The model's month, in dollars; every amount comes from its owning ledger. */
+    record MoneyLine(String label, double amount) { }
+
+    List<MoneyLine> lifeMoney() {
+        HouseholdBalance bal = ui.game.getHouseholdBalance();
+        return List.of(new MoneyLine("Estate cash passed to heirs", toDollars(bal.getEstatePassed())),
+                new MoneyLine("Estate debt repaid", toDollars(bal.getEstateRepaid())),
+                new MoneyLine("Estate debt written off", toDollars(bal.getEstateWrittenOff())),
+                new MoneyLine("Tax on realised gains", toDollars(bal.getCapitalGainsTax())),
+                new MoneyLine("Tax on dividends", toDollars(bal.getDividendTax())));
+    }
+
+    VBox lifeMoneyLines() {
+        VBox lines = Kept.column(0);
+        lines.getChildren().add(panelBlockHead("Estates and investment taxes this month"));
+        for (MoneyLine line : lifeMoney()) Kept.scope(line.label(), () ->
+                lines.getChildren().add(statementLine(line.label(), tightMoney(line.amount(), false))));
+        lines.getChildren().add(note("Estates transfer existing wealth. Investment taxes are paid from investment returns; "
+                + "these lines are separate from the wages and spending above."));
+        return lines;
     }
 
     /** The city's month as the statement it was, with the bank's account fees on a line of their own (0.7.27). */
@@ -3595,8 +3642,8 @@ final class PeopleScreen {
         double cutOff = 0, lockedOut = 0;
         Household worst = null;
         for (Household c : bal.cells()) {
-            if (c.isLockedOut()) lockedOut += c.households();
-            else if (c.isCutOff()) cutOff += c.households();
+            lockedOut += c.households() * c.shutOut();
+            if (c.isCutOff()) cutOff += c.households() * (1 - c.shutOut());
             if ((c.isLockedOut() || c.isCutOff()) && c.households() >= .5
                     && (worst == null || c.households() > worst.households())) worst = c;
         }
@@ -3679,30 +3726,37 @@ final class PeopleScreen {
         });
 
         int line = 1;
-        for (FamilyStructure shape : FamilyStructure.values()) {
-            if (shape.isRetired()) continue;
+        for (AdultStage stage : AdultStage.values()) {
+            boolean stageHeaded = false;
+            for (FamilyStructure shape : FamilyStructure.values()) {
+                if (shape.isRetired() || !stage.forms(shape)) continue;
 
-            // A shape nobody in the city lives in is not a row worth a line.
-            boolean lived = false;
-            for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
-                if (hh.statementFor(families, shape, PayTier.values()[t]).households() >= .5) {
-                    lived = true;
-                }
-            }
-            if (!lived) continue;
-
-            final int at = line;
-            Kept.scope("shape:" + shape.name(), () -> {
-                grid.add(gridCell(shape.getLabel(), Palette.TEXT_BODY,
-                        Palette.SIZE_CAPTION, false), 0, at);
-
+                // A shape nobody of this stage lives in is not a row worth a line.
+                boolean lived = false;
                 for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
-                    final int tier = t;
-                    grid.add(Kept.scope(tier, () -> cashCell(hh, families, shape, PayTier.values()[tier], tier)),
-                            t + 1, at);
+                    if (hh.statementFor(families, shape, PayTier.values()[t], stage).households() >= .5) {
+                        lived = true;
+                    }
                 }
-            });
-            line++;
+                if (!lived) continue;
+                if (!stageHeaded) {
+                    line = gridSectionRow(grid, "stage:" + stage, stage.getLabel() + " · " + stage.getAges(), line);
+                    stageHeaded = true;
+                }
+
+                final int at = line;
+                Kept.scope("shape:" + shape.name() + ":" + stage, () -> {
+                    grid.add(gridCell(shape.getLabel(), Palette.TEXT_BODY,
+                            Palette.SIZE_CAPTION, false), 0, at);
+
+                    for (int t = 0; t < HouseholdAccounts.RETIRED; t++) {
+                        final int tier = t;
+                        grid.add(Kept.scope(tier, () -> cashCell(hh, families, shape, PayTier.values()[tier], tier, stage)),
+                                t + 1, at);
+                    }
+                });
+                line++;
+            }
         }
 
         /* THE TIER ITSELF, on the bottom line - the average of the column above
@@ -3799,7 +3853,9 @@ final class PeopleScreen {
             Label head = Kept.label(caption);
             head.setWrapText(true);
             head.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_LABEL));
-            HBox row = Kept.row(Palette.GAP_TIGHT, head, infoButton(BELOW_THE_RULE, false));
+            HBox row = Kept.row(Palette.GAP_TIGHT, head, infoButton(key.startsWith("stage:")
+                    ? "Each adult stage keeps its own households and books. The columns are their pay tiers; click a cell for that stage's month and wealth."
+                    : BELOW_THE_RULE, false));
             row.setAlignment(Pos.CENTER_LEFT);
             row.setMaxWidth(Double.MAX_VALUE);
             row.setStyle("-fx-padding: 14 0 3 0;"
@@ -3992,9 +4048,9 @@ final class PeopleScreen {
      * income says which without another column of figures.
      */
     Label cashCell(HouseholdAccounts hh, FamilyModel families,
-                           FamilyStructure shape, PayTier tier, int tierIndex) {
+                           FamilyStructure shape, PayTier tier, int tierIndex, AdultStage stage) {
 
-        HouseholdAccounts.Statement s = hh.statementFor(families, shape, tier);
+        HouseholdAccounts.Statement s = hh.statementFor(families, shape, tier, stage);
 
         if (s.households() < .5) {
             return moneyCell("—", Palette.TEXT_LABEL, " -fx-padding: 4 4 4 4;");
@@ -4007,7 +4063,7 @@ final class PeopleScreen {
                 ? Math.min(1, Math.abs(s.left()) / Math.abs(s.income())) : 0;
         double alpha = .08 + severity * .30;
 
-        String key = tierIndex + ":" + shape.name();
+        String key = tierIndex + ":" + shape.name() + stage.keySuffix();
         boolean open = key.equals(openCell);
 
         Label cell = moneyCell(tightMoney(left, !householdPerFamily),
@@ -4020,7 +4076,7 @@ final class PeopleScreen {
                 + (open ? " -fx-border-color: " + Palette.ACCENT
                         + "; -fx-border-radius: " + Palette.RADIUS_TIGHT + ";" : ""));
 
-        Kept.tip(cell, shape.getLabel() + ", " + hh.getRowLabel(tierIndex)
+        Kept.tip(cell, shape.getLabel() + ", " + hh.getRowLabel(tierIndex) + ", " + stage.getLabel() + " " + stage.getAges()
                 + "\n" + formatter.format(Math.round(s.households())) + " of them"
                 + "\nclick for the month", 300);
 
@@ -4224,6 +4280,11 @@ final class PeopleScreen {
 
         panel.getChildren().add(statementLine("Owed to lenders", costMoney(owe),
                 own.debt() > 0 ? Palette.BAD : null));
+        panel.getChildren().add(statementLine("Holding a card balance / behind on payments",
+                String.format("%.2f%% / %.2f%%", 100 * own.revolving(), 100 * own.lateShare())));
+        panel.getChildren().add(statementLine("Minimum payment due this month", costMoney(toDollars(own.minimumDue()))));
+        panel.getChildren().add(statementLine("...minimum principal paid", tightMoney(toDollars(own.minimumPaid()), false)));
+        panel.getChildren().add(statementLine("Unexpected bills paid", costMoney(toDollars(own.emergencyBill()))));
         if (own.debt() > 0) {
             panel.getChildren().add(statementLine(
                     String.format("Interest at %.1f%% a year", own.rate() * 100),
@@ -4237,9 +4298,9 @@ final class PeopleScreen {
             panel.getChildren().add(statementLine("...paid off this month",
                     tightMoney(toDollars(own.repaid()), false), Palette.GOOD));
         }
-        if (own.bankrupt() > .005) {
+        if (own.cardWrittenOff() > .005) {
             panel.getChildren().add(statementLine("...written off this month",
-                    tightMoney(toDollars(own.bankrupt()), false), Palette.BAD));
+                    tightMoney(toDollars(own.cardWrittenOff()), false), Palette.BAD));
         }
 
         /*
@@ -4251,8 +4312,7 @@ final class PeopleScreen {
          */
         double room = toDollars(own.creditRoom(own.disposable()));
         panel.getChildren().add(statementLine("Room still to borrow",
-                own.isLockedOut() ? "none - locked out" : tightMoney(room, false),
-                own.isLockedOut() ? Palette.BAD : room > .5 ? null : Palette.WARN));
+                tightMoney(room, false), room > .5 ? null : Palette.WARN));
 
         if (own.studentDebt() > 0) {
             panel.getChildren().add(statementLine("Student loan outstanding",
@@ -4418,9 +4478,9 @@ final class PeopleScreen {
 
         if (own.isLockedOut()) {
             panel.getChildren().add(note(String.format(
-                    "Discharged: nothing will lend to them for another %d month%s, and what "
-                    + "they cannot pay for they go without.",
-                    own.lockout(), own.lockout() == 1 ? "" : "s")));
+                    "%.2f%% of this cell is excluded from card credit after a charge-off. "
+                    + "The excluded share returns over a year; neighbours retain their own access.",
+                    100 * own.shutOut())));
         } else if (own.isCutOff()) {
             panel.getChildren().add(note(
                     "At the credit ceiling: what they cannot fund, they go without."));
@@ -4548,12 +4608,14 @@ final class PeopleScreen {
 
         if (families == null) return null;
 
-        String[] parts = openCell.split(":", 2);
+        String[] parts = openCell.split(":");
         int tierIndex;
         FamilyStructure shape;
+        AdultStage stage;
         try {
             tierIndex = Integer.parseInt(parts[0]);
             shape = FamilyStructure.valueOf(parts[1]);
+            stage = parts.length == 3 ? AdultStage.valueOf(parts[2]) : AdultStage.ESTABLISHED;
         } catch (RuntimeException bad) {
             openCell = "";
             return null;
@@ -4564,8 +4626,9 @@ final class PeopleScreen {
         }
 
         PayTier tier = PayTier.values()[tierIndex];
-        HouseholdAccounts.Statement s = hh.statementFor(families, shape, tier);
-        Household own = bal.cell(shape, tier);
+        HouseholdAccounts.Statement s = hh.statementFor(families, shape, tier, stage);
+        Household own = bal.cell(shape, tier, stage);
+        if (own == null || s.households() < .5) { openCell = ""; return null; }
         double left = toDollars(s.left());
 
         VBox panel = Kept.column(0);
@@ -4573,32 +4636,12 @@ final class PeopleScreen {
         panel.setStyle("-fx-padding: 10 14 12 14;"
                 + Palette.block(Palette.PANEL, Palette.ACCENT));
 
-        /*
-         * THE ESTABLISHED'S BOOKS WHERE THE YOUNG HOLD SOME OF THE CELL (HS2).
-         * The grid's cell is both adult stages; the ledger below is the
-         * established's own cell, and the young keep books of their own, so
-         * the panel says whose they are and how many young it leaves out.
-         */
-        Household youngCell = bal.cell(shape, tier, AdultStage.YOUNG);
-        double youngHomes = youngCell == null ? 0 : youngCell.households();
-        boolean both = youngCell != null && !youngCell.isEmpty();
         Label who = Kept.label(shape.getLabel() + "  ·  " + hh.getRowLabel(tierIndex)
-                + (both ? "  ·  established, 35-69" : ""));
+                + "  ·  " + stage.getLabel() + ", " + stage.getAges());
         who.setStyle(Palette.words(Palette.SIZE_HEADING, Palette.ACCENT)
                 + " -fx-font-weight: bold;");
         panel.getChildren().add(who);
         panel.getChildren().add(panelWho(bal, own));
-        if (both) {
-            panel.getChildren().add(Kept.scope("youngToo", () -> {
-                Label young = Kept.label("...and " + people(youngHomes)
-                        + " young households, 18-34, on books of their own");
-                young.setWrapText(true);
-                young.setMaxWidth(STATEMENT - 28);
-                young.setStyle(Palette.words(Palette.SIZE_CAPTION, Palette.TEXT_MUTED)
-                        + " -fx-padding: 0 0 6 0;");
-                return young;
-            }));
-        }
 
         /*
          * WHAT COMES IN, SPLIT IN TWO. statementFor() adds a wage per earner to

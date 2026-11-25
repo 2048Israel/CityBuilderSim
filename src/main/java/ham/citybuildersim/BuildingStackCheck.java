@@ -626,6 +626,14 @@ public class BuildingStackCheck {
         double price = s.getLandManager().buybackPriceFor(shop.getLandSqFt() * 3, shop.getSector());
         long gone = shed(s, retire, investor, shop, 3);
         same("a shed of three scraps three", gone, 3);
+        String word = s.getLastInvestment(shop.getSector());
+        out.println("      retirement word: " + word);
+        assertTrue("the actual retirement says Scrapped with its quantity and plot",
+                word.startsWith("Scrapped 3 " + shop.getName() + " - ")
+                        && word.contains(" (plot back to the city for "));
+        assertTrue("...and still reads as SELLING ahead of land, or BUILDING for an order on site",
+                BuildCard.wordKind(word, false, true) == BuildCard.WordKind.SELLING
+                        && BuildCard.wordKind(word, true, true) == BuildCard.WordKind.BUILDING);
         same("...off the stack: three fewer stand", sm.getQuantity(shop.getId()), stands - 3);
         same("...the two on site are not touched", sm.getStack(shop).getUnderConstruction(), 2);
         same("...and the stack count is what it was", sm.getStackCount(), shopStacks);
@@ -635,6 +643,8 @@ public class BuildingStackCheck {
         assertTrue("...the log has the three", s.getDemolitionLog().size() == logged0 + 1 && newest(s).quantity == 3);
         near("...and what was paid for the plot", newest(s).proceeds, price, 1e-6);
         Game.Salvage sold = s.getSalvageThisMonth().size() > salvaged0 ? s.getSalvageThisMonth().get(s.getSalvageThisMonth().size() - 1) : null;
+        assertTrue("...its material-sale wording follows what the builders actually paid",
+                sold != null && word.contains(" (its material to the builders for ") == (sold.paid() > 0));
         assertTrue("...and the material of the three, a share of it, is sold to the builders: three buildings, units to the share",
                 sold != null && sold.buildings() == 3
                         && Math.abs(sold.units() - shop.getConstructionMaterials() * 3.0 * ConstructionControl.SALVAGE_SHARE) <= 1e-9 * shop.getConstructionMaterials());

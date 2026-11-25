@@ -76,7 +76,7 @@ public final class WorksValue {
         double groundCash = ground.take(g.landNeededFor(t, count));
         Maintenance maintenance = new Maintenance(t, count, usableGround, cashLeft, q.total + groundCash, ground);
         Relief relief = relief(g, m, site, order, lead, maintenance);
-        return new Value(q.total, BuildAdvice.landValue(g, footprint, usableGround), relief.futureCapital(),
+        return new Value(q.total, BuildAdvice.landValue(g, t, footprint, usableGround), relief.futureCapital(),
                 relief.futureUnits(), relief.financing(), relief.running(),
                 relief.avoided(), payroll, returned * factor + returned / count * relief.futureMonths(),
                 jobs, count * BuildAdvice.unfilledPosts(u, fill), lead, relief.used());
@@ -152,7 +152,7 @@ public final class WorksValue {
             double unbuilt = Math.max(0, owned - allocated - zoning.keptShare() * forest);
             double held = 0;
             for (Zoning.Zone zone : zoning.zones())
-                held += Math.max(0, zone.targetSqFt(owned) - zone.usedSqFt());
+                held += Math.max(0, zone.targetSqFt(owned) - zone.builtSqFt());
             double anyone = Math.max(0, unbuilt - held);
             if (use == LandManager.Use.WORKS) return anyone;
             double runSlope = owned > 0 ? Math.min(runs * slope / owned, slope) : 0;
@@ -273,7 +273,7 @@ public final class WorksValue {
                         double area = t.getLandSqFt() * (double) extra[0];
                         double landLeft = Math.max(0, maintenance.landLeft() - initialFootprint
                                 - futureUnits * (double) t.getLandSqFt());
-                        double land = BuildAdvice.landValue(g, area, landLeft);
+                        double land = BuildAdvice.landValue(g, t, area, landLeft);
                         double paidAt = Math.max(0, months - futureLead);
                         double discount = Math.pow(1 + rate, -paidAt);
                         futureCapital += (cashCost + land) * discount;
@@ -452,6 +452,12 @@ public final class WorksValue {
         return schedule;
     }
 
+    /** The units of a site its queue opens by `months` from now (PW3, PW1-P's second gap: the power planner's reserve test counts a plant from its opening, not from its order). */
+    public static Map<BuildingsTemplate, Long> openBy(Game g, Map<BuildingsTemplate, Long> site, double months) {
+        if (site.isEmpty()) return site;
+        return completedAt(g, completionSchedule(g, site), Double.isFinite(months) ? Math.max(0, months) : 0);
+    }
+
     /** Quote-completed units at this date. Priority delay precedes the first unit in full. */
     private static Map<BuildingsTemplate, Long> completedAt(Game g,
             Map<BuildingsTemplate, PendingWork> schedule, double months) {
@@ -529,7 +535,7 @@ public final class WorksValue {
             double valueAdded = Math.max(0, book.revenue - book.inputs - book.electricity - book.water);
             double oldFactor, a, b;
             switch (m.kind()) {
-                case POWER: oldFactor = sector.getEnergyRatio(); a = pre; b = post; break;
+                case POWER: case GRID: oldFactor = sector.getEnergyRatio(); a = pre; b = post; break;
                 case WATER: oldFactor = sector.getWaterRatio(); a = pre; b = post; break;
                 case ROADS: case HIGHWAYS: case TRANSIT: {
                     double[] mix = traffic.get(sector);
@@ -565,7 +571,7 @@ public final class WorksValue {
                 default: continue;
             }
             // A zero observed factor gives no defensible book-based potential; no invented output or multiplier.
-            if (m.kind() == BuildAdvice.Kind.POWER) {
+            if (m.kind() == BuildAdvice.Kind.POWER || m.kind() == BuildAdvice.Kind.GRID) {
                 double perPoint = sector.perPointOfGrid(valueAdded);   // steam needs no grid (R1d)
                 if (perPoint > 0) result += perPoint * at.k() * Math.max(0, b - a);
             } else if (oldFactor > 0) result += valueAdded / oldFactor * at.k() * Math.max(0, b - a);

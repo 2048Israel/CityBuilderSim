@@ -122,6 +122,15 @@ Gold's price a year 1971-2025, the sources' figures as printed (55 lines); `Gold
 | Cox and Singer, USGS Bulletin 1693, Mineral Deposit Models (1986), USGS-authored gold setting descriptions | public domain, a US government work | https://pubs.usgs.gov/bul/1693/report.pdf | yes | none required, credited as above |
 | BEA NIPA Handbook, chapter 8, treatment of gold in the SNA and US accounts | public domain, a US government work | https://www.bea.gov/system/files/2019-12/Chapter-8.pdf | yes | BEA credited in GD4 notes, methods only, no figures copied |
 
+### Wind, solar and hydro by month and place: `PowerDispatch` (in the code; PW3, 2026-11-23)
+
+Each fleet's month as an index on the twelve's mean, and a solar farm's yield by 10-degree latitude band (fixed rack and single-axis tracker) over the US fleet's places; `docs/studies/electricity/pvgis.py` and `out/pvgis.txt`. Read on 2026-11-23.
+
+| source | licence | read at | commercial | attribution it asks |
+|---|---|---|---|---|
+| US EIA, Electric Power Monthly, table 6.07.B (2025: wind, solar PV and conventional hydro by month) | public domain | https://www.eia.gov/about/copyrights_reuse.php | yes | Source: U.S. Energy Information Administration, with the publication date |
+| PVGIS 5.3 (European Commission, JRC), PVcalc on ERA5: a 1 kWp system's months, fixed and tracked, at the bands' places | CC BY 4.0, by the Commission's legal notice the PVGIS pages link ("reuse is allowed, provided appropriate credit is given and changes are indicated") | https://commission.europa.eu/legal-notice_en | yes | "PVGIS (c) European Communities, 2001-2025", and the change (the bands averaged and normalised): in `tools/world/ATTRIBUTION.txt` |
+
 ### Not data, but shipped
 
 | what | licence | commercial | what it asks |
@@ -186,3 +195,22 @@ EP1 will bake history from 1900 (`docs/studies/spec-1900-start.md`). The verdict
 
 - `tools/earth/ATTRIBUTION-2.txt` goes beside the exe as `data/earth-2-ATTRIBUTION.txt` (ET1), and since LC1 `tools/world/ATTRIBUTION.txt` as `data/world-ATTRIBUTION.txt`: the Rankings' file and the two fixtures are in the jar, so their credits travel with it.
 - In the game, the Rankings' (i) names each source with its licence. No screen shows the full credits: both attribution files said "the Credits page", which does not exist. A Credits page, from the title screen, showing both files and the fonts' notice, is CR1; until then the files beside the exe are the credits, which CC BY allows ("any reasonable manner").
+
+
+## 5. R6e's GM crop proxy (read 2026-11-21)
+
+| source | licence | read at | commercial | attribution / changed mapping |
+|---|---|---|---|---|
+| Klümper, W. and Qaim, M. (2014), A Meta-Analysis of the Impacts of Genetically Modified Crops, PLOS ONE 9(11): e111629 | CC BY 4.0; the article's copyright notice links this deed | https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0111629 ; https://creativecommons.org/licenses/by/4.0/ | yes, with attribution | Credit and DOI in tools/world/ATTRIBUTION.txt, shipped beside the exe. The game uses the abstract's rounded 22% as an approximate all-CROPS mapping on Grain/Mixed Farm; body21% and the heterogeneous crops, traits and countries remain disclosed. Modern anchors stay500/69; pre-GM output is anchor/1.22, independently additive beside PE20/E10. No paper, table or image is copied. |
+| USDA ERS, Recent Trends in GE Adoption (updated 2025-12-12) | factual commercial-introduction date, no dataset or image copied | https://www.ers.usda.gov/data-products/adoption-of-genetically-engineered-crops-in-the-united-states/recent-trends-in-ge-adoption | date fact | 1996; June is the game's placeholder, monthKnown=false. |
+
+## 6. R6e-rest's pressure exchanger (read 2026-11-24)
+
+Single figures, each a fact (the rule above; the study's section 2): the game states what was measured, in its own words, and copies no table, image or wording.
+
+| source | licence | read at | commercial | attribution / changed mapping |
+|---|---|---|---|---|
+| Energy Recovery Inc., ships 20,000th PX Pressure Exchanger (23 Apr 2019) | the maker's release; a date fact | https://energyrecovery.com/media-center/energy-recovery-reaches-landmark-ships-20000th-px-pressure-exchanger/ | date fact | E22's 1997, Canary Islands; June is the game's placeholder, monthKnown=false. |
+| Stover, R.L. (2010), Desalination and Water Treatment 13:33-41, doi:10.5004/dwt.2010.1064, pp38-39 | the publisher's copyright; a figure quoted is a fact | https://www.deswater.com/DWT_articles/TDWT_I_13_01-03_tfja/TDWT_A_10513367/TDWT_A_10513367_O.pdf | figure fact | Las Palmas III's SWRO process 3.49 to 2.68 kWh/m3 after the PX retrofit; the game applies the ratio to the RO step alone. |
+| US DOE, Seawater Desalination Bandwidth Study (Oct 2017), pp16, 24 | a US government work | https://www.energy.gov/sites/default/files/2017/12/f46/Seawater_desalination_bandwidth_study_2017.pdf | yes | The RO step with energy recovery, 2.7 kWh/m3 (Carlsbad), as the part of the plant's 3.449 kWh/m3 the step applies to. |
+| Lemes et al. (2013), Desalination and Water Treatment 51:749-758, doi:10.1080/19443994.2012.699342, abstract | CC BY-NC-ND 4.0 | https://doi.org/10.1080/19443994.2012.699342 | evidence only | The cross-check only (Las Palmas III whole plant 5.18 to 4.15 kWh/m3); no number of it is in the game. |

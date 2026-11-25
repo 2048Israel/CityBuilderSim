@@ -89,7 +89,9 @@ import java.util.Set;
  *      the ask and the cap. The time skip's report lists the sales.
  *
  *  11. THE REAL RUN (D33). LongPlaytest's fixture city on automatic building for
- *      1,200 months, every booked sale seen as it is counted: the mechanic fires,
+ *      1,200 months, every booked sale seen as it is counted: the mechanic fires
+ *      (caused since AS1: a bill sold at the run's end to households handed twice
+ *      its face, so the checks judge at least that sale whatever the run booked),
  *      every tail is nothing or more, none sells more than was asked. It prints
  *      the count - sales, tails over a point, short sales, the largest tail - and
  *      asserts no rate: the count is what the cap's default is a judgement about.
@@ -100,7 +102,8 @@ import java.util.Set;
  * until its builders are not short; 7 and 8 on the lineup city (lineupCity(),
  * sixty months played), its households handed HANDED_SPARE past their cushion
  * (handSpare()); 12 on the 1900 city twelve months on, handed twice the bill's
- * face; 11 is the long run, kept played as the auction's audit (FS15).
+ * face; 11 is the long run, kept played as the auction's audit (FS15), its
+ * own count printed and its last sale caused on its city (AS1).
  */
 public class AuctionCheck {
 
@@ -1147,17 +1150,39 @@ public class AuctionCheck {
                 }
             });
         } finally {
-            tally.probeForTest = null;
             LongPlaytest.AUTOBUILD = flag;
             LongPlaytest.out = was;
         }
         double seconds = (System.currentTimeMillis() - started) / 1000.0;
-        int sales = tally.auctionSales(), over = tally.auctionTailsOverPoint(), shorts = tally.auctionShortSales();
+        int runSales = tally.auctionSales(), runOver = tally.auctionTailsOverPoint(), runShorts = tally.auctionShortSales();
         out.printf("   %d months in %.0f s: %,d sale(s), $%,.0fk sold of $%,.0fk asked; %,d tail(s) over a point (%.1f%%),"
-                + " %,d short; the largest tail %.1f bp%n", g.getMonth(), seconds, sales, tally.faceSold(), tally.faceAsked(),
-                over, sales > 0 ? 100.0 * over / sales : 0, shorts, tally.largestTail() * 10_000);
+                + " %,d short; the largest tail %.1f bp%n", g.getMonth(), seconds, runSales, tally.faceSold(), tally.faceAsked(),
+                runOver, runSales > 0 ? 100.0 * runOver / runSales : 0, runShorts, tally.largestTail() * 10_000);
         assertTrue("the city played the run", g.getMonth() >= months);
-        assertTrue("the mechanic fires: the treasury booked sales at auction", sales > 0);
+        /*
+         * AS1: THE SALE THE LINE COUNTS, CAUSED. The run's own count is the judgement's data and is printed above; it is not a premise.
+         * LongPlaytest's city booked 0 sales in its 1,200 months on OE1's first mend, 9 ($68.8M) on the old estimate and 7 ($50.1M) on
+         * OE1's last, so "the mechanic fires" read a played path. The sale is a bill the player sells in the run's city at its end, the
+         * probe still on the tally: its buyers caused as section 12 causes them (the households handed twice its face past their
+         * cushion, FS15's lever), its face twice the smallest deal worth arranging (Game.minimumIssueSize()), so it is a sale and not a
+         * sliver; every check below then judges at least this one sale, whatever the run booked.
+         */
+        double granule = Game.BUILD_NOTE_GRANULE;
+        double ask = Math.max(10 * granule, 2 * g.minimumIssueSize());
+        int seenBefore = seen[0];
+        DebtQuote bill;
+        try {
+            handSpare(g, 2 * ask);
+            bill = g.quoteTBill(ask, 6, granule);
+            if (!bill.isEmpty()) quietly(() -> g.handleTBillLogic(ask, 6, granule));
+        } finally {
+            tally.probeForTest = null;
+        }
+        assertTrue("fixture: at the run's end the households hold twice the bill's face past their cushion, and its quote is a sale",
+                !bill.isEmpty() && bill.auction() != null && bill.auction().sold() > 0);
+        int sales = tally.auctionSales(), over = tally.auctionTailsOverPoint(), shorts = tally.auctionShortSales();
+        assertTrue("the mechanic fires: the treasury booked sales at auction, the bill sold at the run's end among them: counted once, and seen as it was booked",
+                sales == runSales + 1 && seen[0] == seenBefore + 1);
         assertTrue("every booked sale's tail was nothing or more", !bad[0]);
         assertTrue("...none sold more than was asked, and none sold nothing", !bad[1] && !bad[2]);
         assertTrue("the tally counted every sale the run booked, the tails over a point and the short ones among them",
@@ -1496,10 +1521,12 @@ public class AuctionCheck {
         // FS15: and more, one at a time, while the town's builders are still short (a town moved by a change to the month
         // may need more than FC1's eight); until FS15 an Observation stood here.
         BuildingManager builders = a.getBuildingManager();
-        for (int more = 0; more < 64 && (builders.foreignCrewsTakeOrders() || builders.orderPriceMultiplier() != 1.0); more++)
+        // FC2: "no foreign crews" is now no work going abroad (BuildingManager.ordersGoAbroad(), the queue at home past the
+        // threshold), FC1's foreignCrewsTakeOrders() gone with its floor.
+        for (int more = 0; more < 64 && (builders.ordersGoAbroad() || builders.orderPriceMultiplier() != 1.0); more++)
             a.buildStack(ChildcareCheck.template(a, "Construction Depot"), 1, true);
-        boolean notShort = !builders.foreignCrewsTakeOrders() && builders.orderPriceMultiplier() == 1.0;
-        assertTrue("fixture: the builders are not short - no foreign crews and the order price at its base, so a quote does not jump between the passes",
+        boolean notShort = !builders.ordersGoAbroad() && builders.orderPriceMultiplier() == 1.0;
+        assertTrue("fixture: the builders are not short - no work going abroad and the order price at its base, so a quote does not jump between the passes",
                 notShort);
         if (!notShort) return;
 
