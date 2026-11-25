@@ -5,15 +5,17 @@ retain the successive HC1, AP2, PW5, FC2 and later integration evidence.
 
 ## Current integration and validation, 2026-11-25
 
-The latest integration is6db8db4a9, merging main d657b3a83 and shipped
-PW3 0.9.202. PW3 retains format/floor66; RES3 stays67. The genuine66 pair
+The latest integration is114528489, merging main304506de2 and shipped
+PW1-R0.9.203. Main retains format/floor66; RES3 stays67. The genuine66 pair
 below is from unedited shipped R6e-rest0.9.201 at78ed67315.
 Substation155, RES3 homes156-166 and existing power167-171 retain their IDs;
 nextId is172. The genuine unedited shipped66 save/history pair is committed,
 and current SaveFileCheck refuses it with both files and the running city intact.
 No conversion or current-schema restamping is used. The newest ensemble
-baseline is now docs/ensemble/0.9.202.md. The checks below precede the PW3
-merge; its affected verification and the default measurement are still pending.
+baseline is now docs/ensemble/0.9.203.md. The labelled native results below
+precede PW1-R:8bb and the later75fb reader/reset repairs are0.9.202 source.
+The new merged billing/save paths, current catalogue and default measurement
+still require verification. No old native result is promoted to a0.9.203 pass.
 
 Fresh merged8bb03c69f results: SaveFileCheck native/canonical0 in123 seconds,
 ReadPathCheck native/canonical0 in105 seconds, and MonetaryCheck
@@ -168,6 +170,31 @@ three two-second samples; pinned Oracle21.0.4/absolute C:/ assets/parallel1.
 Controller88265 ends0, no owned jobs remain. Regenerate the maps for the
 actual reset fixture and both CPI readers. Full Kept/Chart and subsequent
 bank/default evidence remain pending; no economic-model source changed.
+
+The complete75fb GB5 Kept run finishes normally in297.5 seconds, native2 and
+canonical4 with footer2FAILED. The new same-Childcare/held2/shown2 finding and
+the original reset/bar/fresh assertion pass; the nine-component Policy reader
+renders without the former crash and all sections complete. One PAPER1-of-6
+failure matches main's HT1-H record. The medicine-reach sentence is NEW and
+unapproved; no FS5 waiver is used. All remote groups/controller end normally,
+all three copied archive hashes verify. This proves the two repairs on their
+named0.9.202 source, not a full pass. Hold Chart, bank and default runs while
+the helper diagnoses and causes the medicine fixture's intended condition.
+
+PW1-R ships0.9.203 during this run. Merge114528489 brings main304506de2
+cleanly into source; only12 generated documents conflict and take main's
+copies pending regeneration. Power bills now use the struck season; planners
+read annual-mean water prices while bills use the season, and the load path
+restores that season. RES3's held water tariff and billed-once homes remain.
+Main still has format66, so67 and the genuine0.9.201 format66 pair remain
+correct. The newest baseline is0.9.203. The earlier source-labelled model
+checks and14/32 report require affected integrated refresh before review.
+
+Root114 --fast does not start: fresh MG1 has3.750 GiB available RAM,
+8.532 GiB free commit and25.868-percent CPU. It is a refused launch, not a
+compile or test failure. Retain target/RES3-root-fast-114528489-20261125-062558.
+Request box compile/maps and the source-driven affected checks rather than
+waiting for laptop memory; no local JVM is left active and no guard is waived.
 
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
