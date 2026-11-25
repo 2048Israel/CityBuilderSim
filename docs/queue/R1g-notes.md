@@ -2624,7 +2624,7 @@ order asked. The rest of section 9 holds unchanged.
   room (`lastHomeRoom`). On this run: 240.9 to 12.6, the last home's
   room 1.24.
 - *Section 4's order.* At `TO` the played city's policy rate is 0.2631
-  (the currency regime's rate, `Game`'s policy-rate block), its insured
+  (the autopilot's inflation rule on 18% inflation; see REV-R1g3 below), its insured
   rate 0.2707, and the lender tests at 0.2381. It passed 1 of the 6,
   which the till buys outright, so the door never asked the bank and the
   capital trim the section proves never happened. On the reviewed form
@@ -2646,3 +2646,51 @@ ForeignCrewsCheck, CreditCrunchCheck, ForeignChoiceCheck,
 ConstructionTrapCheck, ConstructionControlCheck, ForeignCheck,
 PegAnchorCheck, GdpCheck and Village1900Check are green. ForeignDebtCheck
 is red only on main's known serial-schedule line. `--fast` is green.
+
+### REV-R1g3's mends (2026-11-25)
+
+The narrow review of the material hunk (REV-R1g3): SHIP, no P1, and the
+go for the fresh ensemble. Two P2s, mended beside it:
+
+- **ForeignCrewsCheck section 9's upper side** (6c6535e25). "Work >= bill
+  + material" holds even with the material counted twice. Now the
+  month's work past his bill and his points' material is also asserted
+  to be at most the city's own share of the twin's work (one less his
+  share of the points, times the twin's work less its escalation) plus
+  the month's escalation. On HEAD it holds at equality: 5.2314 against
+  4.3642 + 0.8672, since this fixture hands nothing abroad. To test the
+  check, `onSites` was mutated for one run to take off the allowance
+  twice. The line went red at 200.58 against 4.67 - 10.22 (that run's
+  log: `target/r1g-fc-twice.log`), and the source was put back.
+- **CreditCrunchCheck's held rate: reality.** A helper traced the m270
+  rate (logs `target/r1g-rate-on.log`, `target/r1g-rate-off.log`).
+  - *The rate.* The played inflation at m270 is 0.1802. The currency has
+    floated since about m130, with the aim at inflation and the
+    autopilot on, so the rate is `DebtManager.advisedPolicyRate()`, the
+    autopilot's Taylor rule: 0.03 + 1.5 x (0.1754 - 0.02) = 0.2631 on
+    m269's inflation, and the insured rate is 0.76 points over it. The
+    note above first called it the currency's rate, which was wrong. The
+    rate is real for that inflation (US 1981: fed funds about 19% on CPI
+    about 11%), so it is not a defect, and the held .08 stays an honest
+    fixture for the section's subject, the capital trim. The check now
+    prints the played inflation beside the expected (0.1802 and 0.0326),
+    and `ORDER_RATE`'s sentence says this.
+  - *The path.* Over m150-270 the rate swings. It is past 0.15 in 13
+    months (first m160-169, peaking at 0.2318 at m163, then again from
+    m268), and at 0 in 32 months, while inflation is negative in 32. The
+    m160 spell is rent, after the check's own cut of homes at m150. The
+    m268-270 spell is groceries up 40% since m257 (the shelf at its cap
+    of 1.5 times its floor price, 91-97% of baskets delivered), plus
+    luxury up 44% in one step at m266.
+  - *R1g or main.* With `-Dr1g.hisprice=off` the paths part from m132,
+    the m160 spell stays (a peak of 0.2241), and m270 reads 0.1277 on
+    6.8% inflation. R1g's switch moves when the swings come, not whether
+    they come. The rule, the shelf's pricing (`Retail.repriceShelf`) and
+    the index (`PriceIndex`) are main's, and none of them is in R1g's
+    diff.
+  - *Seen in passing, main's.* The index held luxury at 1.4262 for over
+    100 months while no counter sold any, as the counter's own price
+    drifted to 2.04. It then caught up in one step, worth up to 6.6 of
+    the 18 points of inflation at its 0.15 weight cap. The rule answers
+    that, and a grocery shortage, as if they were demand. That is put to
+    the orchestrator, not mended here.

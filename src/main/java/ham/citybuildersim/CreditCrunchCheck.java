@@ -501,7 +501,9 @@ public final class CreditCrunchCheck {
     /**
      * ★ The insured mortgage rate the order is read at (R1g): a calm market's, so the lender's test passes more of the
      * order than the till buys outright and what trims it is the bank's capital. The played crunch's own rate at TO moves
-     * with the city: R1g's seed 13 ran its policy rate to 0.26 on its currency, and the lender passed one block, the till's.
+     * with the city: on R1g's seed 13 the autopilot's inflation rule (the currency floating) ran the policy rate to 0.26 on
+     * 18% inflation at m270, a real rate for that (US 1981: fed funds about 19% on about 11%), and the lender passed one
+     * block, the till's.
      */
     static final double ORDER_RATE = .08;
 
@@ -577,9 +579,9 @@ public final class CreditCrunchCheck {
         check("fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage",
                 groundForAll && quote && askedThisMonth == ORDER && shortThisMonth);
         out.printf(Locale.ROOT, "   the lender's test passed %d of the %d, a block's rent read %.3f a month at %.4f a year tested (insured held at %.4f,"
-                        + " the played city's %.4f on a policy rate of %.4f; inflation expected %.4f)%n",
+                        + " the played city's %.4f on a policy rate of %.4f; inflation %.4f, expected %.4f)%n",
                 lenderPassed, ORDER, lenderNoi, lenderRate, desk.getInsuredMortgageRate(), playedRate, playedPolicy,
-                g.getBusinessInvestment().getExpectedInflation());
+                g.getPriceIndex().inflation(), g.getBusinessInvestment().getExpectedInflation());
         check("fixture: the lender's test passes more than the till buys outright, so the door asks the bank for a mortgage", lenderPassed > 1);
         out.printf(Locale.ROOT, "   the door %s the planner by %.1f%%%n", whole > plan ? "over" : "under", 100 * Math.abs(whole - plan) / plan);
         check("fixture: the door's price of the order is not the planner's (the yard emptied: its materials at the market's quote)",

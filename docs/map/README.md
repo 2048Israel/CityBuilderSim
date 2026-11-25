@@ -4,7 +4,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 639 files, 694,820 lines, 30,356 methods, 6,787 constants. `GameVersion.VERSION` is "0.9.202", `SAVE_FORMAT` 66.
+**The tree:** 639 files, 694,822 lines, 30,356 methods, 6,787 constants. `GameVersion.VERSION` is "0.9.202", `SAVE_FORMAT` 66.
 
 ## model (280 files)
 
@@ -432,7 +432,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CopperMiningCheck.java](CopperMiningCheck.md) | 526 | 13 | Copper Mining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 4 and 5's I8 row; the study's - materials-chains-research.... | 5 |
 | [CopperRefiningCheck.java](CopperRefiningCheck.md) | 1,485 | 31 | Copper Refining, checked (0.7.133, batch I8; docs/studies/spec-materials.md 2.1, 2.7, 2.9, 2.12, 4 and 5's I8 row; the study's - materials-chains-r... | 1 |
 | [CreditCheck.java](CreditCheck.md) | 2,245 | 19 | Verifies private-sector credit: pricing, origination, rollover, cash conservation. | 0 |
-| [CreditCrunchCheck.java](CreditCrunchCheck.md) | 709 | 19 | A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose leverage ratio binds, standing in its band between its leverage minimum and it... | 0 |
+| [CreditCrunchCheck.java](CreditCrunchCheck.md) | 711 | 19 | A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose leverage ratio binds, standing in its band between its leverage minimum and it... | 0 |
 | [CreditsCheck.java](CreditsCheck.md) | 462 | 10 | The Credits page shows every attribution file the exe ships, in full, and the fonts' notice and licence, the libraries' licences and notices, the J... | 0 |
 | [CrimeCheck.java](CrimeCheck.md) | 370 | 8 | Crime, the police and the prisons: every claim in claude/crime-has-reasons.md, each with its own cause. | 0 |
 | [CrossingCheck.java](CrossingCheck.md) | 520 | 27 | Short crossings of bridgeable water (ET6; spec-earth2-terrain 6.2, D12): the shallow sea is water a road or a railway may bridge, exactly as fresh ... | 0 |

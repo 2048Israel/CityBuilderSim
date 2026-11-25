@@ -6497,7 +6497,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 496 | `CreditCrunchCheck.ORDER` | `6` | ★ The order caused (REV-FB15): main's seed 13 asked for up to six blocks while its bank was short (m190-194). |
 | 498 | `CreditCrunchCheck.TILL` | `1.5` | ★ The till the order meets, in the door's price of one block: one block outright, whatever the issue brings. |
 | 500 | `CreditCrunchCheck.MAX_PLOTS` | `60` | The plots the fixture may buy for the order's ground. |
-| 506 | `CreditCrunchCheck.ORDER_RATE` | `.08` | ★ The insured mortgage rate the order is read at (R1g): a calm market's, so the lender's test passes more of the order than the till buys outright and what trims it is the bank's capital. |
+| 508 | `CreditCrunchCheck.ORDER_RATE` | `.08` | ★ The insured mortgage rate the order is read at (R1g): a calm market's, so the lender's test passes more of the order than the till buys outright and what trims it is the bank's capital. |
 
 ### CrossingCheck.java ([map](map/CrossingCheck.md))
 

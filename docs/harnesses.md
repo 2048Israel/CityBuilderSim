@@ -6793,15 +6793,15 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L472 ...every month leaving more than WATCH with no home is one the landlords asked for homes the bank was short of capital for
   - L474 ...and they clear: once the owners' first homes stand, no month leaves more than WATCH with no home (LongPlaytest's watch)
   - L486 ...and no played month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)
-- **L525 4. an order the owners' issue falls short of, the bank short: the door trims it for the capital**
-  - L575 fixture: the bank held in its band and the rule struck on it: leverage binding, the insured mortgages rationed,
-  - L577 fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage
-  - L583 fixture: the lender's test passes more than the till buys outright, so the door asks the bank for a mortgage
-  - L585 fixture: the door's price of the order is not the planner's (the yard emptied: its materials at the market's quote)
-  - L588 the lender read the order at the door's own price, and the owners were offered what the till lacked at it (HN1-A)
-  - L590 fixture: ...and their issue fell short of it
-  - L591 the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys
-  - L593 ...and is not left marked as held for the bank's capital (REV-HN1-1)
+- **L527 4. an order the owners' issue falls short of, the bank short: the door trims it for the capital**
+  - L577 fixture: the bank held in its band and the rule struck on it: leverage binding, the insured mortgages rationed,
+  - L579 fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage
+  - L585 fixture: the lender's test passes more than the till buys outright, so the door asks the bank for a mortgage
+  - L587 fixture: the door's price of the order is not the planner's (the yard emptied: its materials at the market's quote)
+  - L590 the lender read the order at the door's own price, and the owners were offered what the till lacked at it (HN1-A)
+  - L592 fixture: ...and their issue fell short of it
+  - L593 the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys
+  - L595 ...and is not left marked as held for the bank's capital (REV-HN1-1)
 
 ## CreditsCheck.java - 71 labelled assertions
 
