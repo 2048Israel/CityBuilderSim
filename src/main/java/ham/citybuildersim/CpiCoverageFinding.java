@@ -270,9 +270,11 @@ public final class CpiCoverageFinding {
         quietly(() -> g.saveGame(10, "CPI coverage"));
         data = nativeText(files, false); history = nativeText(files, true);
         quietly(() -> fresh.saveGame(10, "CPI coverage"));
-        check(label + " fresh twin next month preserves all native data and history", data.equals(nativeText(files, false)) && history.equals(nativeText(files, true)));
+        String freshNextData = nativeText(files, false), freshNextHistory = nativeText(files, true);
+        check(label + " fresh twin next month preserves all native data and history", data.equals(freshNextData) && history.equals(freshNextHistory));
         quietly(() -> running.saveGame(10, "CPI coverage"));
-        check(label + " running twin next month preserves all native data and history", data.equals(nativeText(files, false)) && history.equals(nativeText(files, true)));
+        String runningNextData = nativeText(files, false), runningNextHistory = nativeText(files, true);
+        check(label + " running twin next month preserves all native data and history", data.equals(runningNextData) && history.equals(runningNextHistory));
         check(label + " all three actual next-month money audits close", g.getLastMoneyAudit().relative() < 1e-10
                 && fresh.getLastMoneyAudit().relative() < 1e-10 && running.getLastMoneyAudit().relative() < 1e-10);
     }

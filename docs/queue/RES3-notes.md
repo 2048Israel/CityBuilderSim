@@ -4675,3 +4675,49 @@ be4b097b79577e34c3f458c90e2be46254093b39173b32106297c6737142077b;
 full native evidence SHA256
 e5b0221fad63794d8593bf55f47e868ebc10020f59ca99497cb43a56c2841d21.
 All owned jobs ended. No current normal monetary pass is claimed.
+
+Exact 18c8dd4b9 compiles; coverage records 223 passes/four failures
+(8c23), including all 48 observation-purity guards passing. Both
+default and historical reformed exact money/claims/transport/stock
+guards and current-acquisition inputs now pass. Four fresh/running
+next-month native data/history conjunctions remain for the two
+reformed fixtures. Their field-level cause is still being compared;
+no exact comparison is waived. Runner/JVM ended and snapshots are
+retained; no normal check or additional native run has begun.
+
+The bounded 18c8dd4b9 comparison identifies the remaining DATA fields
+(6fb7/df50): default has eighteen differences, fifteen bank history/
+opening-equity fields plus three abroadOwedById shares (ids 8/65/69);
+historical has eleven bank fields only. All other DATA fields/order,
+initial/native ordinary twins and exact monetary/claim/stock/acquisition
+guards pass. Bank.redenominate scales its held books/loan vectors, while
+load refreshBank recomputes from scaled claims; the next startMonth files
+the held books and opening equity before refreshing them. Observed
+business loans are 8.747001236790421 versus 8.747001236790425, mortgages
+4.248843591525243 versus 4.248843591525244. This is not evidence of a
+different transaction, and no monetary assertion is relaxed.
+
+FC2's effective per-id physical points are foreignBook times rawClaim
+over sumRaw; restore currently uses those effective points as raw weights.
+New orders then add/reweight in the changed scale. The actual prior raw
+weights were not retained, so exact numerical reproduction of those three
+share differences is not claimed. Authorize source preparation of a
+minimal held Bank-book snapshot and raw-weight persistence, retaining
+existing effective points and funding/getter equations. Require actual
+units and every addition/scaler/load-order consumer to be proved before
+adoption; cancellation in a ratio alone does not establish dimensionless
+units. No new loan, cash, equity, settlement, gate or normalization is
+authorized. Any production diff still needs review/push/exact native GO.
+
+Adopt the separately reviewed finding-only patch SHA256
+4964b80b95d4557f81d69a43f5b46669e6b4c6217e3274b0afead4ca574e02c6:
+read fresh/running next-month DATA and HISTORY into locals before each
+existing dataEqual-and-historyEqual assertion. Its predicates, saves,
+steps and model state stay unchanged; this retains history evidence
+even when DATA fails. No native rerun is authorized for this patch alone.
+Raw 18c8 snapshot SHA256
+c41433f85d13e92dbf07657ac059e6078e52d1748d444ae3ad4f4e04dc9dc9ce;
+full evidence SHA256
+5e7c954e489dc8da450a3e993638fb8e48fd0b05981e4d7cba9e77cac574cafd,
+at helper target/cpi-native-18c8. All owned jobs ended; normal checks
+remain unrun, and the source-only bank/claim proposal remains open.
