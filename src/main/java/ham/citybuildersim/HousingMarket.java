@@ -142,7 +142,7 @@ public final class HousingMarket {
         for(ClassState c:classes.values())if(c.available&&(c.capacity>FamilyModel.STUDIO_MAX_SIZE)==family){money+=c.ask;weight+=c.capacity;}
         return weight>0?money/weight:0;
     }
-    /** Reads the existing builder's taxed work/material/land quote; no second construction timer. */
+    /** Strikes each class's capital at the home's market value and its carry; no second construction timer. */
     private void quote(Game game) {
         var bm=game.getBuildingManager();var em=game.getEconomyManager();var re=game.getSectors().realEstate();
         double totalBasis=0;
@@ -150,9 +150,12 @@ public final class HousingMarket {
         Set<HousingInventory.Key> opening=new HashSet<>();
         for(BuildingsTemplate t:bm.getTemplates()){
             if(!re.key().equals(t.getSector()))continue;
-            double structure=game.quoteBuild(t,1).total;
-            double full=game.doorPriceOf(t,1);
-            double land=Math.max(0,full-structure);
+            // The capital a landlord's gross yield is struck on is the home's market value, the base its repairs and property
+            // tax are on (EconomyManager.housingStructureValue(), RES3c): not the door, which charges only the materials beyond
+            // the builders' yard, so a dated 1900 block asked a yield on under two thirds of the value its carry was struck on.
+            double structure=em.housingStructureValue(t);
+            double land=em.housingLandValue(t);
+            double full=structure+land;
             // Whole-project utilities and payroll belong here once, alongside the repair/property carry.
             carry.put(t.getId(),em.housingCarry(t));
             HousingRecipe r=t.getHousingRecipe();if(r==null)continue;

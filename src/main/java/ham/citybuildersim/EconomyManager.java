@@ -606,9 +606,9 @@ public class EconomyManager {
     public double housingCarry(BuildingsTemplate t) {
         if (t == null || buildingManager == null) return 0;
         double materials = t.getConstructionMaterials() * Math.max(0, buildingManager.getConstructionMaterialPrice());
-        double structure = t.getCashCost() + materials;
+        double structure = housingStructureValue(t);
         // ...its plot at its zone's price while the landlords' zone holds it (0.7.107, groundPriceFor()).
-        double land = t.getLandSqFt() * groundPriceFor(t);
+        double land = housingLandValue(t);
         double full = structure + land;
         if (full <= 0) return 0;
         double monthlyPropertyRate = taxPolicy.effectiveMonthlyPropertyRate(sectors.realEstate());
@@ -624,6 +624,25 @@ public class EconomyManager {
                 + full * monthlyPropertyRate + payroll
                 + t.getElectricityConsumption()*getPowerPriceFor(t)
                 + t.getWaterConsumption()*getPricePerWaterUnit();
+    }
+
+    /**
+     * A landlord's home's structure at its market value (RES3c, the orchestrator's call on REV-RES3z's block, 2026-11-25): its cash cost
+     * with every material at the market's price, the base housingCarry() strikes the repairs and the property tax on, and with
+     * housingLandValue() the base a landlord's gross yield is struck on (HousingMarket.quote()). WHY: the class asks were struck on the
+     * door, which charges only the materials beyond the builders' yard, so a 1900 city's dated Low-Rise block, whose 141 materials the
+     * yard held, asked a yield on 141 and paid a carry struck on about 233: rent 1.088 a month against carry 1.176, and the lender read
+     * a negative rent (CreditCrunchCheck section 4). A gross yield is on what the property is worth, the base its repairs and tax are on.
+     */
+    public double housingStructureValue(BuildingsTemplate t) {
+        if (t == null || buildingManager == null) return 0;
+        return t.getCashCost() + t.getConstructionMaterials() * Math.max(0, buildingManager.getConstructionMaterialPrice());
+    }
+
+    /** ...and its plot at its zone's price while the landlords' zone holds it (0.7.107, groundPriceFor()). */
+    public double housingLandValue(BuildingsTemplate t) {
+        if (t == null || buildingManager == null) return 0;
+        return t.getLandSqFt() * groundPriceFor(t);
     }
 
     /** The cheapest way to house one more person, land included, per segment. */
