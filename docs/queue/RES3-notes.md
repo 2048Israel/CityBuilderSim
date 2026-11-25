@@ -183,6 +183,31 @@ The213037617 reference-slot upper bound makes a blind2GiB SQLite graph an
 unsuitable next step. Prepare a bounded targeted scan for direct pool/scope
 fields and strong paths to roots before proposing a lifecycle fix.
 
+The targeted scanner and inherited-weak-reference fixture are now source
+reviewed. Add the same4GiB free-disk preflight as the inventory reader and
+count both static and instance observations within the100000 limit. The
+configuration predicts at most45932 direct observations, leaving at least
+54068 matched observations; all7365 scopes have six fields and all92 pools
+four. Four passes,8192 frontier IDs,50000 visited IDs,256MiB address space,
+900 seconds and2GiB output remain hard bounds. Missing paths prove nothing.
+
+Final scanner SHA256 is
+370d660701fec70dea5ae5b7f11708ec9a9710301486c24623307052d94d6bf5;
+fixture d67a80132ccf9322e46e354e3311f4aa38d9bca50bbbd5e64233e17aaaf51371;
+actual configuration491d79544d9453ab3878ce3f42b0ecb160ff0df3414b80cdc3f3872505298962.
+Source copies are retained in the helper's target/integrated67/heap-analysis-source
+and the builder's target/RES3-heap-targeted-370d-ready. The fixture has not
+executed: the box's exclusive lock rejects its shared-lock request before
+Python starts. A fresh builder metadata probe confirms BUSY at13:05:13 UTC
+on November25. The external job is untouched. The helper ends and all owned
+processes are stopped; no native, fixture or root-scan acceptance is claimed.
+
+★ Keep the original2GiB memory law,48 parked-scope bound and full fixture.
+Await shared box access for the tiny fixture and targeted ownership scan,
+then mend the demonstrated lifecycle cause. This is an execution-resource
+block, not a finding that the heap defect is outside RES3. No mends, review,
+ensemble or dry run is requested, and the provisional marker remains.
+
 Fresh merged8bb03c69f results: SaveFileCheck native/canonical0 in123 seconds,
 ReadPathCheck native/canonical0 in105 seconds, and MonetaryCheck
 native/canonical0. Its pooled16-31 TOTAL reduction is3.635685 percentage
