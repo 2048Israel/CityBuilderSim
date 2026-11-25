@@ -16,6 +16,9 @@ public final class RentObservationProbe {
     private static int openingMonth, openingClear, captured;
     private static long openingPopulation;
     private static boolean paired;
+    private static final int ORDINARY_MONTHS = 600, EXPECTED_INITIAL_CLOCK = 1;
+    private static Game openingGame;
+    private static int initialClock = -1, lastSettledClock = -1, ordinarySteps, ordinaryRows;
 
     public static void main(String[] args) throws Exception {
         if (args.length != 1) throw new IllegalArgumentException("one external output directory required");
@@ -28,7 +31,8 @@ public final class RentObservationProbe {
         System.setProperty("playtest.world", "random");
         System.setProperty("playtest.pathSeed", "48213");
         System.setProperty("playtest.seed", "0");
-        System.setProperty("playtest.months", "600");
+        // TARGET_MONTHS is a terminal game clock, not a transition count (Game starts at 1).
+        System.setProperty("playtest.months", Integer.toString(EXPECTED_INITIAL_CLOCK + ORDINARY_MONTHS));
         Path output = Path.of(args[0]);
         Files.createDirectories(output);
         months = new PrintWriter(Files.newBufferedWriter(output.resolve("monthly.jsonl")));
@@ -43,6 +47,16 @@ public final class RentObservationProbe {
 
     private static void observe(Game game, Boolean before) {
         if (before) {
+            if (paired) throw new IllegalStateException("second opening callback before settlement");
+            if (initialClock < 0) {
+                initialClock = game.getMonth();
+                if (initialClock != EXPECTED_INITIAL_CLOCK)
+                    throw new IllegalStateException("unexpected DEFAULT initial clock " + initialClock);
+                lastSettledClock = initialClock;
+            }
+            if (game.getMonth() != lastSettledClock || ordinarySteps >= ORDINARY_MONTHS)
+                throw new IllegalStateException("ordinary clock/callback gap at " + game.getMonth());
+            openingGame = game;
             openingMonth = game.getMonth();
             openingPopulation = game.getPopulationManager().getPopulation();
             var housing = game.getSectors().realEstate().housingMarket();
@@ -56,13 +70,18 @@ public final class RentObservationProbe {
             return;
         }
         int month = game.getMonth();
-        if (!paired || month != openingMonth + 1)
+        if (!paired || game != openingGame || month != openingMonth + 1)
             throw new IllegalStateException("unpaired ordinary month " + openingMonth + " -> " + month);
         paired = false;
+        openingGame = null;
+        int completed = ordinarySteps + 1;
+        if (month != initialClock + completed)
+            throw new IllegalStateException("ordinary step/clock mismatch " + completed + " at " + month);
         double[] indexBefore = game.getPriceIndex().toSaveArray();
         double[] cellBefore = game.getHouseholdBalance().toSaveArray();
         Map<String,Object> audit = new LinkedHashMap<>();
-        audit.put("month",month); audit.put("phase","after unchanged LongPlaytest.audit/countWorks, before traceMonth");
+        audit.put("month",month); audit.put("initialClock",initialClock); audit.put("ordinaryStep",completed);
+        audit.put("phase","after unchanged LongPlaytest.audit/countWorks, before traceMonth");
         audit.put("ordinaryFindingKinds",LongPlaytest.findings.size());
         audit.put("ordinaryFindingCount",LongPlaytest.findings.values().stream().mapToInt(f->f.count).sum());
         audit.put("findings",JSON.toJsonTree(LongPlaytest.findings));
@@ -74,13 +93,20 @@ public final class RentObservationProbe {
         if (!Arrays.equals(indexBefore, game.getPriceIndex().toSaveArray())
                 || !Arrays.equals(cellBefore, game.getHouseholdBalance().toSaveArray()))
             throw new IllegalStateException("observer changed saved index/household values");
+        ordinarySteps = completed;
+        ordinaryRows++;
+        lastSettledClock = month;
         months.flush(); cells.flush(); ordinary.flush();
-        if (month == 600) {
+        if (ordinarySteps == ORDINARY_MONTHS) {
+            if (ordinaryRows != ORDINARY_MONTHS || month != initialClock + ORDINARY_MONTHS)
+                throw new IllegalStateException("ordinary callback/row/clock count differs");
             if (captured != 361) throw new IllegalStateException("window has " + captured + " observations");
             boolean ordinaryClear=LongPlaytest.findings.isEmpty()&&LongPlaytest.MoneyFixtures.fails==0;
             boolean outputClear=!months.checkError()&&!cells.checkError()&&!ordinary.checkError();
             months.close(); cells.close(); ordinary.close();
-            LongPlaytest.out.println("RENT_OBSERVATION_COMPLETE month=600 rows=361 diagnostic_only=true ordinary_clear="+ordinaryClear
+            LongPlaytest.out.println("RENT_OBSERVATION_COMPLETE initial_clock="+initialClock+" final_clock="+month
+                    +" ordinary_steps="+ordinarySteps+" ordinary_rows="+ordinaryRows+" observed_clock=240-600 rows="+captured
+                    +" diagnostic_only=true ordinary_clear="+ordinaryClear
                     +" output_clear="+outputClear+" finding_kinds="+LongPlaytest.findings.size()+" money_fixture_fails="+LongPlaytest.MoneyFixtures.fails);
             // LongPlaytest.main catches Throwable and then starts unrelated final
             // harness probes. Stop this sole diagnostic JVM after its last ordinary

@@ -12,10 +12,10 @@ Substation155, RES3 homes156-166 and existing power167-171 retain their IDs;
 nextId is172. The genuine unedited shipped66 save/history pair is committed,
 and current SaveFileCheck refuses it with both files and the running city intact.
 No conversion or current-schema restamping is used. The newest ensemble
-baseline is now docs/ensemble/0.9.203.md. The labelled native results below
-precede PW1-R:8bb and the later75fb reader/reset repairs are0.9.202 source.
-The new merged billing/save paths, current catalogue and default measurement
-still require verification. No old native result is promoted to a0.9.203 pass.
+baseline is now docs/ensemble/0.9.203.md. Results labelled8bb or75fb below
+precede PW1-R and remain0.9.202 evidence. The current114 refresh verifies the
+merged billing/save paths and catalogue; the default measurement is pending.
+No old native result is promoted to a0.9.203 pass.
 
 Current114/.203 nine-check refresh is complete on the gate box; the later721
 medicine change is confined to KeptCheck and leaves this numeric model intact.
@@ -48,6 +48,38 @@ Box integrated months: small282 people12.599ms; present14.042ms and larger
 All paid-build, positive held-debt, physical closure, native save and ordinary
 twin/audit guards pass. Full Kept/Chart, affected follow-ups, bank and default
 measurements remain pending; the earlier dated evidence below stays labelled.
+
+The current721 full KeptCheck is CANCELLED after a genuine Java heap-space
+failure in section63, before the new medicine fixture at99-101. It has no full
+footer or native/canonical verdict and supplies no medicine acceptance claim.
+The allocation stack reaches Text layout through KeptBench.showFresh,
+againstNewHeld, pageReshapedCaused and fundLists; that identifies the allocation
+site, not yet the retained-heap cause. The same2GiB heap and GB5 runtime are
+kept. Fresh box RAM27.741GiB and free commit21.911GiB do not establish why
+the Java heap filled. No heap increase, forced collection, fixture reduction,
+skip or waiver is authorized. The helper traces the lifecycle from source.
+
+Only the registered owned controller/group was stopped after the fatal error.
+All jobs ended, source guard is empty, compiled classes match the successful
+721 fast run, and all three archive hashes verify. Evidence is under the
+helper's target/integrated67/kept-chart-721-source/KeptCheck/remote, including
+oom-excerpt.txt, incomplete-status.txt, fatal-stop-provenance.txt and endguard.
+Checks archive SHA256 is
+026c6359d75b36915fdad9649a83928da6ed1f96d38c329d3831562cfc599616.
+Chart, the affected follow-ups, Bank/Central/YoungBank and default observer
+have not started; their earlier conditional permissions are held. The nine
+completed114 model checks above retain their independent accepted results.
+
+The passive default observer had confused terminal clock600 with600 ordinary
+transitions: Game starts at1. The reviewed143cd484 patch counts completed
+post-audit callbacks and audit rows explicitly, requires the same Game within
+each before/after pair and continuous clocks, and stops at600 transitions
+with actual final clock601. LongPlaytest owns the unchanged normal schedule;
+its terminal-clock input becomes601. Measurement clocks240-600 inclusive and
+all361 requested observations stay unchanged. Native findings, money/audit,
+purity and output-error guards remain. This is a diagnostic counting repair,
+not a model change or a claim that the observer has run. Earlier unexecuted
+default payloads are superseded and remain unauthorized.
 
 Fresh merged8bb03c69f results: SaveFileCheck native/canonical0 in123 seconds,
 ReadPathCheck native/canonical0 in105 seconds, and MonetaryCheck
