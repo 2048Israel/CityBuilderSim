@@ -34734,7 +34734,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L205 the 1900 village could staff under MIN_STAFFABLE_TO_ORDER of a
   - L209 today's twin's diploma workers at month
   - L211 while the 1900 village's do not cover its own
-- **L218 4. the stall: almost nobody comes, no exporter is built, and the money is not what holds it**
+- **L218 4. the stall: the rent holds the draw, no exporter is built, and the money is not what holds it**
   - L228 the 1900 village draws a smaller share of today's twin's arrivals in the last
   - L230 while people still arrive in today's twin
   - L231 no
