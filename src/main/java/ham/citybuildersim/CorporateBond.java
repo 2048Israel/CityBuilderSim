@@ -62,7 +62,8 @@ import java.util.Map;
  * this is the cells' sum; round 1 held one pool with a claim per cell), the
  * bank (with what it paid, its cost), each company that bought it by sector,
  * and the world - and since 0.7.14 a fifth, the city's fund (TreasuryFund),
- * which buys on the book and never at issue. They always add up to the face
+ * which buys on the book and never at issue. HT1 adds a sixth, passive
+ * unclaimed-estate custody, separate from that fund. They always add up to the face
  * outstanding; a default writes every one of them down by the same share
  * (writeDown()). A save from before 0.7.14 has no `city` and reads nothing.
  *
@@ -97,6 +98,9 @@ public class CorporateBond implements Cloneable {
     double world;
     /** The city's fund's face (0.7.14): bought on the book by its rule or the player's hand, never at issue. */
     double city;
+    /** Passive unclaimed-estate owner, separate from the fund. */
+    double custody;
+    public double custody() { return custody; }
     Map<String, Double> companies = new LinkedHashMap<>();
 
     /** Face written off by defaults over its life. */
@@ -166,7 +170,7 @@ public class CorporateBond implements Cloneable {
     public boolean isMatured(int month) { return month >= maturityMonth; }
 
     /** What the holder classes hold, added up - the city's fund among them since 0.7.14: the face outstanding, to the dust. */
-    public double held() { return households + bank + world + city + companiesTotal(); }
+    public double held() { return households + bank + world + city + custody + companiesTotal(); }
 
     /* ============================== its value ============================== */
 
@@ -228,6 +232,7 @@ public class CorporateBond implements Cloneable {
         bankCost *= keep;
         world *= keep;
         city *= keep;
+        custody *= keep;
         companies.replaceAll((k, v) -> v * keep);
         writtenOff += before - face;
         return before - face;
@@ -242,6 +247,7 @@ public class CorporateBond implements Cloneable {
         bankCost *= scale;
         world *= scale;
         city *= scale;
+        custody *= scale;
         writtenOff *= scale;
         companies.replaceAll((k, v) -> v * scale);
     }

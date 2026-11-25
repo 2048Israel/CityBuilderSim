@@ -1,6 +1,6 @@
 # CopperBufferCheck.java - 250 lines · 10 methods · 2 constants · harnesses
 
-`ham/citybuildersim/CopperBufferCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CopperBufferCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > A stock buffer must not buy feed worth more than its undemanded output (CPB1).
 > 

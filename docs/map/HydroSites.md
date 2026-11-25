@@ -1,6 +1,6 @@
 # HydroSites.java - 440 lines · 31 methods · 13 constants · model
 
-`ham/citybuildersim/HydroSites.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HydroSites.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The city's hydro sites: where a river and a drop lie on the ground it owns - the places a Hydro Station can be ordered
 > (HY1, 2026-10-26; docs/queue/HY1-notes.md 1.1).
@@ -31,7 +31,7 @@
 
 **Uses:** [World](World.md) (8), [EarthData](EarthData.md) (4), [EarthProj](EarthProj.md) (3), [EarthTerrain](EarthTerrain.md) (2), [CityLand](CityLand.md) (1), [LandGrid](LandGrid.md) (1), [Landmasses](Landmasses.md) (1)
 
-**Used by (10):** [BuildCard](BuildCard.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [Forms1900Check](Forms1900Check.md), [HeavyIndustry](HeavyIndustry.md), [HydroCheck](HydroCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LandManager](LandManager.md), [Sector](Sector.md)
+**Used by (11):** [BuildCard](BuildCard.md), [ElectrolyserCheck](ElectrolyserCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [Forms1900Check](Forms1900Check.md), [HeavyIndustry](HeavyIndustry.md), [HydroCheck](HydroCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [LandManager](LandManager.md), [ModernRowsCheck](ModernRowsCheck.md), [Sector](Sector.md)
 
 ## Sections
 

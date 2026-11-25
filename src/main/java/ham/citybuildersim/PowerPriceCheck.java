@@ -17,23 +17,30 @@ import java.util.Map;
  * (UtilitiesHandler.strikePower()); its ratio is month t's, its prices are what the statements are struck at at the top of month
  * t+1, and its coal is drawn from the market at that strike and paid in t+1's servicesNet. So a harness reads the book a statement is
  * struck at, and the draw and ratio the sector holds, BEFORE the month that strikes it runs (Step), and the statement after it.
+ * Its season is month t-1's too: month t's statement bills the kWh that dispatch served, June's season for July's (UtilitiesHandler's
+ * THE LAG, PW1-R), and the coal bought at the same strike is that dispatch's.
  *
  * What this has to prove:
  *   1. THE STRUCK PRICE IS THE DISPATCH'S: commerce pays (energy + transmission + distribution) x month's hours, industry
  *      (energy + transmission), and the energy price is the half-blocks' prices weighted by the energy each served, over the
  *      energy served, over (1 - losses), recomputed from the book's own price[], load[] and unserved[].
- *   2. EACH CLASS'S BILL IS ITS PRICE ON WHAT WAS DELIVERED, EXACTLY: a commerce sector's statement is draw x ratio x the
- *      commerce price, a Mining sector's (every building high-voltage) draw x ratio x the industry price; industry pays no
- *      distribution.
+ *   2. EACH CLASS'S BILL IS ITS PRICE ON WHAT WAS DELIVERED, EXACTLY: a commerce sector's statement is draw x ratio x season x
+ *      the commerce price, a Mining sector's (every building high-voltage) draw x ratio x season x the industry price, the season
+ *      the book's dispatch ran at (PW1-R: the kWh served, not the year's mean); industry pays no distribution.
  *   3. A SHORT HALF-BLOCK BILLS THE CAP: on a city asking twice the plant, every short half-block carries the struck VOLL, and
  *      the month's ratio is the energy served over the energy asked.
  *   4. A FUEL SHOCK MOVES THE NEXT MONTH'S BILLS: two copies of one city, one with the coal's price tripled in the dispatch: its
  *      coal row's marginal, its energy price, its struck prices and then its commerce bills are higher.
- *   5. THE UTILITY'S MARGIN IS THE TREASURY'S LINE: income = revenue - payroll - power bought - fuel bill, and the services' net
- *      the treasury takes carries it.
+ *   5. THE UTILITY'S MARGIN IS THE TREASURY'S LINE: income = revenue - payroll - power bought - fuel bill + the water works' power the water's
+ *      books buy (PW1-W), and the services' net the treasury takes carries it.
  *   6. THE FUEL'S MONEY REACHES ITS SELLERS: the coal the book burned is what the market drew for the city, what Coal Mining
  *      was paid is fuelLocal, what the world was paid fuelImported, and the upkeep is the book's at the exchange rate.
- *   7. THE MONEY AUDIT CLOSES over every month of every fixture, with the coal bought at home and abroad, and the two TRADE
+ *   7. IN JULY AND IN APRIL EACH CLASS'S BILL IS THE KWH IT WAS SERVED AT THE PRICE (PW1-R): the town played on through its own
+ *      calendar to a book struck at a July dispatch and one at an April dispatch, the season read off the game's calendar at the
+ *      city's latitude; each class's statement is draw x ratio x season x the month's hours x its price a kWh, the mean-kWh bill
+ *      times the season (above it in July, under it in April), and the utility's revenue is every billed class's kWh served at its
+ *      price, so its margin no longer takes the season's kWh.
+ *   8. THE MONEY AUDIT CLOSES over every month of every fixture, with the coal bought at home and abroad, and the two TRADE
  *      lines (utilities FuelImports, utilities PlantUpkeep) carry the imports and the upkeep.
  *
  * Every expected figure is the model's own constant or getter; every fixture CAUSES its condition: the founding grid is free
@@ -110,7 +117,7 @@ public class PowerPriceCheck {
         /** The coal Coal Mining held before the month. */
         double coalHeld;
         /** After: the fuel paid, the margin's terms, the treasury's line. */
-        double fuelLocal, fuelImported, upkeep, revenue, payroll, bought, income, waterIncome, net, treasury, charges;
+        double fuelLocal, fuelImported, upkeep, revenue, payroll, bought, income, waterIncome, net, treasury, charges, waterPower;
         /** After: the coal drawn for the city this month: units from Coal Mining, units from the world, what each cost. */
         double localUnits, importedUnits, localCost, importedCost;
         /** After: the exchange rate, Coal Mining's statement's coal sold at home, the coal row of the dispatch the month ended on. */
@@ -167,6 +174,12 @@ public class PowerPriceCheck {
                 Game.BuildResult r = g.buildStack(b.getTemplateByName(o[0]), Integer.parseInt(o[1]), true);
                 if (r != Game.BuildResult.SUCCESS) failed.append(o[0]).append(' ').append(r).append("; ");
             }
+            // PW5: this harness isolates generation and fuel prices, so its wires must carry even its short town's peak.
+            int wires = (int) Math.ceil(Substations.peak(HOMES * kw, java.util.Arrays.stream(PowerDispatch.SEASON).max().orElseThrow())
+                    / (Substations.SUBSTATION_MW * 1000));
+            g.setCashForTest(g.getCash() + g.quoteBuild(b.getTemplateByName("Substation"), Math.max(1, wires)).total);
+            Game.BuildResult grid = g.buildStack(b.getTemplateByName("Substation"), Math.max(1, wires), true);
+            if (grid != Game.BuildResult.SUCCESS) failed.append("Substation ").append(grid);
         });
         check("fixture: the " + label + " town's orders all stand", failed.length() == 0, "refused: " + failed);
         return new City(label, g, mine);
@@ -212,6 +225,7 @@ public class PowerPriceCheck {
         st.bought = u.getPowerBought();
         st.income = u.getElectricityIncome();
         st.waterIncome = u.getWaterIncome();
+        st.waterPower = u.getWaterPowerPaid();
         st.net = g.getServicesManager().getServiceNetIncome();
         st.treasury = g.getEconomyManager().getUtilityIncome();
         st.charges = g.getEconomyManager().getSectorElectricityCharges();
@@ -299,6 +313,51 @@ public class PowerPriceCheck {
                 && near(held, savedRatio, 1e-12) && draw > 0 && near(bill, want, 1e-9);
     }
 
+    /* ---------- the struck book through a save, for SaveFileCheck (PW1-R) ---------- */
+
+    /**
+     * A saved city that holds a struck book reads it back field for field (REV-PW1's third follow-up: the only round trip was in memory,
+     * PowerDispatchCheck 10, so the Gson read-back of Book was unchecked), through the save's own file (DataSave.powerBooks) and the load
+     * path (UtilitiesHandler's restore and Book.copy()). THE FIXTURE CAUSES IT: the mine town played WARM months burns coal, and every
+     * number in its book is then given a value of its own, so a field the save drops or copy() forgets reads back as its default, and two
+     * fields swapped read back each other's. Every public field of Book by reflection, so a field added later is held to it too.
+     */
+    static boolean bookChecks() throws Exception {
+        City c = play(town("book-save", true, 0), WARM);
+        UtilitiesHandler.Book b = c.u.getStruckBook();
+        boolean burned = b.cleared && !b.fuel.isEmpty() && b.dispatch != null && b.gridCosts != null;
+        check("fixture: the town's book is struck from a month that burned coal, with its dispatch and its grid costs", burned);
+        double v = 0.375;
+        int numbers = 0;
+        for (java.lang.reflect.Field f : UtilitiesHandler.Book.class.getFields()) {
+            if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+            if (f.getType() == double.class) { f.setDouble(b, v += 1); numbers++; }
+            else if (f.getType() == double[].class) for (int i = 0; i < ((double[]) f.get(b)).length; i++) { ((double[]) f.get(b))[i] = v += 1; numbers++; }
+        }
+        for (Map.Entry<String, Double> e : b.fuel.entrySet()) { e.setValue(v += 1); numbers++; }
+        GameFiles files = c.g.getGameFiles();
+        boolean written = c.g.saveGame(10, "the struck book, every number its own").ok;
+        boolean inFile = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(files.saveFile(10))).getAsJsonObject().has("powerBooks");
+        Game back = new Game(files);
+        quietly(() -> back.loadGameSave(10));
+        UtilitiesHandler.Book r = back.getServicesManager().getUtilitiesHandler().getStruckBook();
+        List<String> differ = new ArrayList<>();
+        int fields = 0;
+        for (java.lang.reflect.Field f : UtilitiesHandler.Book.class.getFields()) {
+            if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+            fields++;
+            Object a = f.get(b), z = f.get(r);
+            boolean same = a instanceof double[] x ? java.util.Arrays.equals(x, (double[]) z)
+                    : a == null || f.getType().isPrimitive() || a instanceof Map ? java.util.Objects.equals(a, z)
+                    : new com.google.gson.Gson().toJson(a).equals(new com.google.gson.Gson().toJson(z));
+            if (!same) differ.add(f.getName());
+        }
+        boolean distinctCopy = r != b && r.price != b.price && r.fuel != b.fuel;
+        System.out.printf("   the book's %d fields, %d numbers each its own, saved and loaded: %s%n", fields, numbers,
+                differ.isEmpty() ? "every one read back" : "differ: " + differ);
+        return burned && written && inFile && distinctCopy && numbers > 20 && differ.isEmpty();
+    }
+
     /* =====================================================================
        MAIN
        ===================================================================== */
@@ -315,6 +374,7 @@ public class PowerPriceCheck {
         fuelShock();
         margin(mine);
         fuelMoney(mine);
+        seasonBills(mine);
         auditCloses(mine);
         System.out.println(fails == 0 ? "PowerPriceCheck: all ok (" + checks + " checks)" : "PowerPriceCheck: " + fails + " FAILED of " + checks);
         System.exit(fails);
@@ -350,7 +410,10 @@ public class PowerPriceCheck {
 
     static void pricesOfBook(String who, Game g, UtilitiesHandler.Book b) {
         double unit = unitOf(g), hours = PowerDispatch.MONTH_HOURS;
-        double transmission = PowerDispatch.TRANSMISSION_A_KWH / unit, distribution = PowerDispatch.DISTRIBUTION_A_KWH / unit;
+        double wires = b.gridCosts == null || b.servedKwh <= 0 ? 0 : b.gridCosts.total() / (b.servedKwh * (1 - PowerDispatch.GRID_LOSSES));
+        double transmission = wires * Substations.TRANSMISSION_SHARE, distribution = wires * (1 - Substations.TRANSMISSION_SHARE);
+        check(who + ": the bill carries the substations' captured costs", b.gridCosts != null && b.gridCosts.count() > 0);
+        check(who + ": the grid's costs include posts actually filled and paid", b.gridCosts != null && b.gridCosts.payroll() > 0);
         check(who + ": commerce pays the energy and all the wires: (energy + TRANSMISSION + DISTRIBUTION) x the month's hours, at the city's unit",
                 near(b.commercePrice, (b.energyPrice + transmission + distribution) * hours, 1e-12), f(b.commercePrice) + " against " + f((b.energyPrice + transmission + distribution) * hours));
         check(who + ": industry pays the energy and the transmission alone: (energy + TRANSMISSION) x the month's hours",
@@ -391,14 +454,18 @@ public class PowerPriceCheck {
         section("2. each class's bill is its price on what was delivered, exactly");
         Step st = c.last();
         UtilitiesHandler.Book book = st.book;
-        double unit = unitOf(c.g), hours = PowerDispatch.MONTH_HOURS, distribution = PowerDispatch.DISTRIBUTION_A_KWH / unit;
+        double unit = unitOf(c.g), hours = PowerDispatch.MONTH_HOURS, distribution = book.distributionPrice;
 
         double[] retail = st.held.get(Sectors.RETAIL);
         check("fixture: Retail draws power, is a commerce class (no high-voltage share) and holds the book's commerce price it is struck at",
                 retail[0] > 0 && retail[2] == 0 && retail[3] == book.commercePrice, "draw " + retail[0] + " share " + retail[2] + " price " + f(retail[3]) + " against " + f(book.commercePrice));
+        // PW1-R: a bill is the kWh served, and the dispatch served the season's draw; the season is read off the game's own calendar.
+        double season = dispatchedSeason(c, book);
+        check("fixture: the book was struck from a dispatch of the game's own calendar and holds that month's season at the city's latitude",
+                book.dispatch != null && book.season == season, "book " + book.season + " against " + season);
         double retailBill = st.bills.get(Sectors.RETAIL);
-        double want = retail[0] * retail[1] * book.commercePrice;
-        check("a commerce sector's statement electricity is draw x ratio x the commerce price of the book struck the month before, to 1e-9",
+        double want = retail[0] * retail[1] * season * book.commercePrice;
+        check("a commerce sector's statement electricity is draw x ratio x the season x the commerce price of the book struck the month before, to 1e-9",
                 near(retailBill, want, 1e-9), f(retailBill) + " against " + f(want));
 
         double[] mining = st.held.get(Sectors.COAL_MINING);
@@ -406,13 +473,13 @@ public class PowerPriceCheck {
         check("fixture: Coal Mining draws power, all its buildings are high-voltage (Mining) and its share is 1, at the book's industry price",
                 mining[0] > 0 && allHigh && mining[2] == 1 && mining[4] == book.industryPrice, "draw " + mining[0] + " share " + mining[2] + " price " + f(mining[4]) + " against " + f(book.industryPrice));
         double mineBill = st.bills.get(Sectors.COAL_MINING);
-        double wantMine = mining[0] * mining[1] * book.industryPrice;
-        check("a Mining sector's statement electricity is draw x ratio x the industry price, to 1e-9",
+        double wantMine = mining[0] * mining[1] * season * book.industryPrice;
+        check("a Mining sector's statement electricity is draw x ratio x the season x the industry price, to 1e-9",
                 near(mineBill, wantMine, 1e-9), f(mineBill) + " against " + f(wantMine));
         check("industry pays transmission and not distribution: its price per kW less the commerce price is -distribution x the month's hours",
                 Math.abs((book.industryPrice - book.commercePrice) + distribution * hours) <= 1e-12 * book.commercePrice, f(book.industryPrice - book.commercePrice) + " against " + f(-distribution * hours));
-        double perKw = mineBill / (mining[0] * mining[1]), perKwRetail = retailBill / (retail[0] * retail[1]);
-        check("...and read off the two statements: the Mining bill per kW delivered less the Retail bill per kW delivered is the same difference, to 1e-9 of the commerce price",
+        double perKw = mineBill / (mining[0] * mining[1] * season), perKwRetail = retailBill / (retail[0] * retail[1] * season);
+        check("...and read off the two statements: the Mining bill per kW of the mean delivered less the Retail bill per kW is the same difference, to 1e-9 of the commerce price",
                 Math.abs((perKw - perKwRetail) + distribution * hours) <= 1e-9 * book.commercePrice, f(perKw - perKwRetail));
         check("the sectors hold the ratio of the month they were struck in: the book's, which the sectors' energy ratio is",
                 retail[1] == book.ratio && mining[1] == book.ratio, "retail " + retail[1] + " mining " + mining[1] + " book " + book.ratio);
@@ -451,8 +518,8 @@ public class PowerPriceCheck {
                 b.energyPrice * (1 - PowerDispatch.GRID_LOSSES) * b.servedKwh >= voll * shortServed * (1 - 1e-12), f(b.energyPrice * (1 - PowerDispatch.GRID_LOSSES) * b.servedKwh) + " against " + f(voll * shortServed));
         Step st = c.last();
         double[] retail = st.held.get(Sectors.RETAIL);
-        double want = retail[0] * retail[1] * st.book.commercePrice;
-        check("a commerce sector in the short town is billed draw x ratio x the commerce price on what was delivered, and the ratio is under 1",
+        double want = retail[0] * retail[1] * st.book.season * st.book.commercePrice;
+        check("a commerce sector in the short town is billed draw x ratio x the season x the commerce price on what was delivered, and the ratio is under 1",
                 retail[1] < 1 && near(st.bills.get(Sectors.RETAIL), want, 1e-9), "ratio " + retail[1]);
         sectionEnd();
     }
@@ -530,8 +597,10 @@ public class PowerPriceCheck {
         Step st = c.last();
         double fuelBill = st.fuelLocal + st.fuelImported + st.upkeep;
         check("fixture: a month with coal bought: the fuel bill is positive", fuelBill > 0 && c.u.getFuelBill() == fuelBill, f(fuelBill));
-        double want = st.revenue - st.payroll - st.bought - fuelBill;
-        check("the electricity income is revenue less payroll less the power bought less the fuel bill, to 1e-9",
+        // ...and since PW1-W plus the water works' power, which the water's books buy of the power's (WaterPowerCheck 3 holds the transfer).
+        double want = st.revenue - st.payroll - st.bought - fuelBill + st.waterPower;
+        check("fixture: the town's water works drew power the water's books paid for", st.waterPower > 0, f(st.waterPower));
+        check("the electricity income is revenue less payroll less the power bought less the fuel bill, and the water works' power sold to the water's books, to 1e-9",
                 near(st.income, want, 1e-9) || Math.abs(st.income - want) <= 1e-9 * st.revenue, f(st.income) + " against " + f(want));
         check("the revenue is what the sectors' statements charged for electricity", near(st.revenue, st.charges, 1e-12), f(st.revenue) + " against " + f(st.charges));
         check("the services' net the treasury takes is the electricity income and the water income, to 1e-9",
@@ -585,8 +654,70 @@ public class PowerPriceCheck {
 
     /* ---------- 7 ---------- */
 
+    /** The season the book's dispatch ran at, read off the game's own calendar: SEASON at the dispatch's calendar month and the city's latitude; NaN for a book with no dispatch. */
+    static double dispatchedSeason(City c, UtilitiesHandler.Book b) {
+        return b.dispatch == null ? Double.NaN : PowerDispatch.season(CityCalendar.monthOfYear(b.dispatch.month()), c.u.latitude());
+    }
+
+    /** The first statement struck at a book whose dispatch ran in that calendar month and burned coal, played on through the town's own calendar if none has been yet; null if a year brings none. */
+    static Step struckIn(City c, int monthOfYear) {
+        for (int i = 0; ; i++) {
+            for (Step st : c.steps) {
+                if (st.book.dispatch != null && CityCalendar.monthOfYear(st.book.dispatch.month()) == monthOfYear && st.book.energyPrice > 0) return st;
+            }
+            if (i >= 13) return null;
+            run(c);
+        }
+    }
+
+    /**
+     * PW1-R (REV-PW1's first follow-up): the dispatch serves draw x season x the month's hours, the fuel is bought on those kWh, and
+     * the bill was draw x ratio x the price a kW of the year's mean: July billed 16% under, March and April 14% over, the margin taking
+     * the gap. A utility bills the metered energy, the kWh delivered in the month. THE FIXTURE CAUSES IT: the town is played on to a
+     * book struck at a July dispatch (SEASON's highest) and one at an April dispatch (under the mean), and each statement is set
+     * against the kWh it was served at its price a kWh, the energy and the wires, never the kW-month price the model multiplies.
+     */
+    static void seasonBills(City c) {
+        section("7. in July and in April each class's bill is the kWh it was served at the price (PW1-R)");
+        double hours = PowerDispatch.MONTH_HOURS;
+        for (int monthOfYear : new int[] { 7, 4 }) {
+            String name = monthOfYear == 7 ? "July" : "April";
+            Step st = struckIn(c, monthOfYear);
+            check("fixture: the town's calendar brings a statement struck at a " + name + " dispatch's book that burned coal", st != null);
+            if (st == null) continue;
+            UtilitiesHandler.Book book = st.book;
+            double season = dispatchedSeason(c, book);
+            boolean away = monthOfYear == 7 ? season > 1 : season < 1;
+            check("fixture: " + name + "'s season at the city's latitude is " + (monthOfYear == 7 ? "above" : "under") + " the year's mean, and the book holds it",
+                    away && book.season == season, "season " + season + ", the book's " + book.season);
+            double commerceKwh = book.energyPrice + book.transmissionPrice + book.distributionPrice, industryKwh = book.energyPrice + book.transmissionPrice;
+            double[] retail = st.held.get(Sectors.RETAIL), mining = st.held.get(Sectors.COAL_MINING);
+            double retailKwh = retail[0] * retail[1] * season * hours, miningKwh = mining[0] * mining[1] * season * hours;
+            double retailBill = st.bills.get(Sectors.RETAIL), mineBill = st.bills.get(Sectors.COAL_MINING);
+            check("fixture: in " + name + " Retail (commerce) and Coal Mining (all high-voltage) draw power and are billed",
+                    retailKwh > 0 && miningKwh > 0 && retail[2] == 0 && mining[2] == 1 && retailBill > 0 && mineBill > 0);
+            check(name + ": the commerce sector's bill is its kWh served, draw x ratio x season x the month's hours, at the energy and both wires a kWh, to 1e-9",
+                    near(retailBill, retailKwh * commerceKwh, 1e-9), f(retailBill) + " against " + f(retailKwh * commerceKwh));
+            check(name + ": the Mining sector's bill is its kWh served at the energy and the long wires a kWh, to 1e-9",
+                    near(mineBill, miningKwh * industryKwh, 1e-9), f(mineBill) + " against " + f(miningKwh * industryKwh));
+            double meanBill = retail[0] * retail[1] * book.commercePrice;
+            check(name + ": the bill is the year's mean-kWh bill times the season, " + (monthOfYear == 7 ? "above" : "under") + " it, to 1e-9",
+                    near(retailBill / meanBill, season, 1e-9), f(retailBill / meanBill) + " against " + f(season));
+            // The revenue: every billed class's kWh served at its price a kWh, the high-voltage share at the energy and the long wires.
+            double served = 0;
+            for (double[] h : st.held.values()) served += h[0] * h[1] * season * hours * (commerceKwh * (1 - h[2]) + industryKwh * h[2]);
+            check(name + ": the utility's revenue is every billed class's kWh served at its price, so its margin no longer takes the season's kWh, to 1e-9",
+                    near(st.revenue, served, 1e-9) || Math.abs(st.revenue - served) <= 1e-9 * st.revenue, f(st.revenue) + " against " + f(served));
+            System.out.printf("   %s: season %.4f, Retail %s kWh billed %s (the mean-kWh bill %s), the revenue %s%n",
+                    name, season, f(retailKwh), f(retailBill), f(meanBill), f(st.revenue));
+        }
+        sectionEnd();
+    }
+
+    /* ---------- 8 ---------- */
+
     static void auditCloses(City c) {
-        section("7. the money audit closes");
+        section("8. the money audit closes");
         int open = 0;
         double worst = 0;
         String worstAt = "";

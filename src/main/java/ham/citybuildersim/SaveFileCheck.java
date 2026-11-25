@@ -65,9 +65,14 @@ public class SaveFileCheck {
     }
 
     public static void main(String[] args) throws Exception {
+        assertTrue("HT1 basis, loss, policy and tax flows cross both loaders", CapitalGainsCheck.saveChecks());
         System.out.println("--- XR7: support already bought under a peg crosses the save ---");
         assertTrue("nonzero hold support crosses DataSave JSON and Game's loader without billing the whole gap again", CurrencyRegimeCheck.savedHoldSupportChecks());
-
+        assertTrue("R6e current E21 choices survive immediate and next-month loads; native pre-E21 formats58/59 are refused intact", ModernEngineeringCheck.saveChecks());
+        assertTrue("native format60 save/history refusal preserves both files and a running loaded twin", nativeCard60Refusal());
+        assertTrue("native format61 save/history refusal preserves both files and a running loaded twin", nativeGrid61Refusal(false));
+        assertTrue("HC1 native format61 refusal preserves bytes and the running loaded twin", nativeCard61Refusal(false));
+        assertTrue("PW5 format63: native shipped format62 refusal preserves both files and the running loaded twin", nativeGrid62Refusal(false));
         System.out.println("--- R2c: paid IP service flows cross the save objects ---");
         assertTrue("nonzero IP charges survive DataSave, HistorySave and the load restorers", LicenceFeesCheck.saveChecks());
         assertTrue("the public works' licence crosses DataSave, HistorySave and the load restorers between its capture and its payment", PublicLicenceCheck.saveChecks());
@@ -78,6 +83,9 @@ public class SaveFileCheck {
 
         System.out.println("--- PW1: a save from before the struck book loads at the ratio its load computes (REV-PW1c) ---");
         assertTrue("a city short of power saved without its book (format 58, before PW1) loads with the ratio its load dispatched in its book, not the founding book's 1, and runs and bills its first month at the ratio it saved and the founding tariff, as before PW1", PowerPriceCheck.saveChecks());
+        assertTrue("power dispatch observations and history survive the actual save/load", PowerViewCheck.saveChecks());
+        assertTrue("completed pending power survives repeated saves, the actual load, next native month and currency reform", PowerViewCheck.pendingSaveChecks());
+        assertTrue("a saved city that holds a struck book reads it back field for field (powerBooks, PW1-R): every number of it its own, through the save's file, the load and Book.copy()", PowerPriceCheck.bookChecks());
 
 
         /* ==================== 1. where it goes ==================== */
@@ -566,10 +574,14 @@ public class SaveFileCheck {
         city.buildStack(store, storesOrdered, false);
         assertTrue("fixture: the depots were ordered, three of the builders' months and one over (" + depotOrder + ")", depotOrder == Game.BuildResult.SUCCESS);
         // FS17: more points than the sites can have in the month at the very most - the builders' nameplate and the foreign contractor's
-        // month on top (BuildersShort.foreignCapacity()) - so the stack cannot finish in the one month and the work is on site by the model's rule.
+        // month on top - so the stack cannot finish in the one month and the work is on site by the model's rule. FC2: his month is
+        // the work he holds in the threshold's months, never under the largest depot (BuildersShort.foreignMonth()); struck on the
+        // whole queue at the shortest threshold there is, the knee, it is the most he could take this month.
+        BuildingManager orderedIn = city.getBuildingManager();
+        double orderPoints = depotsOrdered * (double) depot.getConstructionPoints();
         assertTrue("fixture: the order is more than the sites' month can build",
-                depotsOrdered * (double) depot.getConstructionPoints() > buildersMonth
-                        + BuildersShort.foreignCapacity(buildersMonth, city.getBuildingManager().largestDepotPoints()));
+                orderPoints > buildersMonth + BuildersShort.foreignMonth(orderedIn.getRemainingConstructionPoints(),
+                        BuildersShort.KNEE_MONTHS, orderedIn.largestDepotPoints()));
         city.simulateMonths(1);
 
         long depotsUnderWay = city.getBuildingManager().getUnderConstructionById()[depot.getId()];
@@ -614,6 +626,9 @@ public class SaveFileCheck {
         long peopleAfter = reloaded.getPopulationManager().getPopulation();
 
         BuildingManager after = reloaded.getBuildingManager();
+        assertTrue("RES2 inventory cohorts survive the actual load rebuild",
+                new com.google.gson.Gson().toJson(city.getBuildingManager().getHousingInventory().forSave())
+                        .equals(new com.google.gson.Gson().toJson(after.getHousingInventory().forSave())));
         assertEquals("depots still under construction",
                 after.getUnderConstructionById()[depot.getId()], depotsUnderWay);
         assertEquals("stores still under construction",
@@ -1515,6 +1530,29 @@ public class SaveFileCheck {
                 withoutMeans.savings = 0;
                 withoutMeans.abroad = 0;
                 withoutMeans.paper = 0;
+                // PW5: the waterfall can still sell this cell's securities. Give them to another populated cell,
+                // preserving every issuer's shares, debt, holder totals and acquisition/tax stocks for the save checks.
+                Household receiver = null;
+                for (Household c : full.getHouseholdBalance().cells()) {
+                    if (c != withoutMeans && !c.isEmpty() && (receiver == null || c.households() > receiver.households())) receiver = c;
+                }
+                assertTrue("fixture: another household cell receives the poor cell's securities", receiver != null);
+                if (receiver != null) {
+                    double per = withoutMeans.households() / receiver.households();
+                    for (int company = 0; company < withoutMeans.shares.length; company++) {
+                        receiver.shares[company] += withoutMeans.shares[company] * per;
+                        receiver.basis[company] += withoutMeans.basis[company] * per;
+                        receiver.taxShares[company] += withoutMeans.taxShares[company] * per;
+                        receiver.taxClaim[company] += withoutMeans.taxClaim[company] * per;
+                        withoutMeans.shares[company] = withoutMeans.basis[company] = 0;
+                        withoutMeans.taxShares[company] = withoutMeans.taxClaim[company] = 0;
+                    }
+                    for (var bond : withoutMeans.bondFace.entrySet())
+                        receiver.putBondFace(bond.getKey(), receiver.bondFace(bond.getKey()) + bond.getValue() * per);
+                    receiver.recountBonds();
+                    withoutMeans.bondFace.clear();
+                    withoutMeans.recountBonds();
+                }
                 withoutMeans.debt += withoutMeans.creditRoom(withoutMeans.disposable());
             }
             full.simulateMonths(1);
@@ -1542,6 +1580,17 @@ public class SaveFileCheck {
         // ...and the spread planner's idle months (0.7.82), which no city founds with: two kinds idle, the rest working.
         full.getSectors().refining().planner().setIdleMonthsForTest("ASPHALT", 4);
         full.getSectors().refining().planner().setIdleMonthsForTest("COKER", 9);
+        // ...and Copper Refining's planner's year (CY1), which no city founds with: what one more of two kinds was appraised to earn over more months than the year
+        // keeps, each month's figure its own, and what the last Rod Mill standing earned over five, noted at the holding it stood at (REV-CY1: a smaller one starts the year again).
+        ham.citybuildersim.sectors.SpreadPlanner copperYear = full.getSectors().copperRefining().planner();
+        final String yearSmelter = ham.citybuildersim.sectors.ProcessingSector.kindOf(full.getBuildingManager().getTemplate(ham.citybuildersim.sectors.CopperRefining.SMELTER));
+        final String yearRod = ham.citybuildersim.sectors.ProcessingSector.kindOf(full.getBuildingManager().getTemplate(ham.citybuildersim.sectors.CopperRefining.ROD_MILL));
+        for (int m = 1; m <= ham.citybuildersim.sectors.SpreadPlanner.TRAILING_MONTHS + 4; m++) {
+            copperYear.noteMargin(yearSmelter, m, -900.25 + 17.125 * m);
+            copperYear.noteMargin(yearRod, m, 61.5 - 0.765625 * m * m);
+        }
+        final double rodHolding = 7;
+        for (int m = 1; m <= 5; m++) copperYear.noteMonth(yearRod, rodHolding, m, 40.75 - 19.5 * m);
         // ...and the wells' vintages (0.7.84), which no city founds with: two batches, struck as given.
         java.util.List<ham.citybuildersim.sectors.Oil.Vintage> vintages = java.util.List.of(
                 new ham.citybuildersim.sectors.Oil.Vintage(full.getMonth() - 30, 3, ham.citybuildersim.sectors.Oil.WellKind.LAND),
@@ -1600,6 +1649,10 @@ public class SaveFileCheck {
         portState.billedCrudeShip = "SUEZMAX";
         portState.heldBack = 123.5; portState.crudeSeaIn = 900.25; portState.crudeSeaOut = 100.125; portState.crudeTrade = 9_999.5;
         full.getPorts().restore(portState);
+        // The fixture has replaced the ports' in-force shares between ticks.
+        // Hand those shares to the markets as the native haul and the loader do,
+        // before saving: otherwise the live twin buys its next diesel at the old band.
+        full.getSectors().freight().reapplyBand(full.getPorts());
 
         /*
          * THE WORLD'S SHORT (EM2): a position the exchange carries beside the register's holdings, the shares the cells and the fund lend against
@@ -1726,6 +1779,29 @@ public class SaveFileCheck {
         }
         assertTrue("the refiners' idle months by kind, the spread planner's (0.7.82)", idle
                 && back.getSectors().refining().idleMonths(ham.citybuildersim.sectors.RefineryFlow.Kind.COKER) == 9);
+        // ...and the processing planners' year (CY1): Copper Refining's, one more's and the last one's, kind by kind, in the order the figures were noted.
+        ham.citybuildersim.sectors.SpreadPlanner thenYear = full.getSectors().copperRefining().planner(),
+                nowYear = back.getSectors().copperRefining().planner();
+        assertTrue("fixture: Copper Refining's planner holds a full year of one more's earnings for two kinds and five months of the last Rod Mill's",
+                thenYear.marginMonths(yearSmelter) == ham.citybuildersim.sectors.SpreadPlanner.TRAILING_MONTHS
+                        && thenYear.marginMonths(yearRod) == ham.citybuildersim.sectors.SpreadPlanner.TRAILING_MONTHS
+                        && Double.isFinite(thenYear.marginOverYear(yearSmelter)) && Double.isFinite(thenYear.marginOverYear(yearRod))
+                        && Double.isFinite(thenYear.lastOverYear(yearRod)) && Double.isNaN(thenYear.lastOverYear(yearSmelter))
+                        && thenYear.marginOverYear(yearSmelter) != thenYear.marginOverYear(yearRod));
+        assertEquals("the processing planners' year, one more's: the smelter's months (CY1)", nowYear.marginMonths(yearSmelter), thenYear.marginMonths(yearSmelter));
+        same("...its mean", nowYear.marginOverYear(yearSmelter), thenYear.marginOverYear(yearSmelter));
+        assertEquals("...the Rod Mill's months", nowYear.marginMonths(yearRod), thenYear.marginMonths(yearRod));
+        same("...its mean", nowYear.marginOverYear(yearRod), thenYear.marginOverYear(yearRod));
+        same("...and what the last Rod Mill earned, over its year", nowYear.lastOverYear(yearRod), thenYear.lastOverYear(yearRod));
+        assertTrue("...the smelter, none of which stood, has no last one's year after the load either", Double.isNaN(nowYear.lastOverYear(yearSmelter)));
+        java.util.Map<String, Double> thenExtras = new java.util.TreeMap<>(), nowExtras = new java.util.TreeMap<>();
+        thenYear.saveMargins(thenExtras);
+        nowYear.saveMargins(nowExtras);
+        assertTrue("...and the figures themselves, month by month, newest first", !thenExtras.isEmpty() && thenExtras.equals(nowExtras));
+        assertTrue("...and the holding the last Rod Mill's figures were noted at (REV-CY1), in the saved extras and read back the same: a smaller one would start its year again",
+                Double.valueOf(rodHolding).equals(thenExtras.get(ham.citybuildersim.sectors.SpreadPlanner.HOLDING_KEY + yearRod))
+                        && Double.valueOf(rodHolding).equals(nowExtras.get(ham.citybuildersim.sectors.SpreadPlanner.HOLDING_KEY + yearRod))
+                        && !nowExtras.containsKey(ham.citybuildersim.sectors.SpreadPlanner.HOLDING_KEY + yearSmelter));
         assertTrue("the wells' vintages, each batch's month, count and kind (0.7.84)",
                 back.getSectors().oil().vintages().equals(vintages));
         assertTrue("the oil at sea's platforms - each one's field, wells and month - and pipelines, each one's field,"
@@ -1905,6 +1981,24 @@ public class SaveFileCheck {
         }
         same("...the orders resting on their books", backOrders, liveOrders);
         same("the households' bonds", back.getHouseholdBalance().totalBonds(), full.getHouseholdBalance().totalBonds());
+        boolean cardsMatch = true;
+        for (Household c : full.getHouseholdBalance().cells()) {
+            Household t = back.getHouseholdBalance().cellByKey(c.key());
+            cardsMatch &= t != null && c.revolving == t.revolving && c.lateDebt == t.lateDebt
+                    && c.lateShare == t.lateShare && c.shutOut == t.shutOut
+                    && c.minimumPaid == t.minimumPaid && c.minimumDue == t.minimumDue
+                    && c.emergencyBill == t.emergencyBill && c.cardWrittenOff == t.cardWrittenOff && c.rate == t.rate;
+            cardsMatch &= t != null && c.bankruptcyLeaving == t.bankruptcyLeaving && c.bankruptcyCash == t.bankruptcyCash;
+        }
+        assertTrue("HC1 card positions and settled flows cross the loader", cardsMatch);
+        assertTrue("HC2 annual debt surveys cross the history loader",
+                full.getHistorySave().getDebtSurveys().equals(back.getHistorySave().getDebtSurveys()));
+        // PW2: the month's used-car price, the households' cars' mark in their assets (DataSave.usedCarPrice): unsaved, a loaded city
+        // marked them at the showroom's floor until its next month, and the line below parted in debtToAssets by 3.7e-9.
+        same("the month's used-car price crosses the loader, the households' cars' mark", back.getMotoring().getUsedCarPrice(),
+                full.getMotoring().getUsedCarPrice());
+        assertTrue("HC2 current debt statistics cross the fully populated city loader exactly",
+                full.getHouseholdBalance().debtStatistics().equals(back.getHouseholdBalance().debtStatistics()));
         // ...each cell's own, bond by bond, by the cell's name (0.7.12 round 2).
         int cellsWithBonds = 0, cellsBack = 0;
         for (Household c : full.getHouseholdBalance().cells()) {
@@ -3202,38 +3296,58 @@ public class SaveFileCheck {
          * build's is - nothing of it applied, its file as it was, the
          * player told which build saved it and still opens it. Until 0.7.108
          * the loader refused no older format but the sectors' break, so a bump
-         * alone refused nothing. The fixtures are the city saved above with
-         * its format written down to one below the floor, to the floor, and up
-         * past this build; its build a stamp no build wrote, so words naming
-         * it can only have come from the save.
+         * alone refused nothing. The old city is now the genuine .188
+         * format-60 save/history pair shared with HC1. Separate synthetic
+         * header fixtures still exercise exactly one below the current floor,
+         * the floor itself, a missing build stamp, and a future format.
          */
         GameFiles oldest = new GameFiles(root.resolve("oldest"), root.resolve("no-legacy"));
         Files.createDirectories(oldest.saveFile(1).getParent());
         String citySaved = Files.readString(full.getGameFiles().saveFile(1));
         int savedMonth = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject().get("month").getAsInt();
-        String olderBuild = "P7-fixture";
-        com.google.gson.JsonObject below = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject();
-        below.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT - 1);
-        below.addProperty("gameVersion", olderBuild);
-        Files.writeString(oldest.saveFile(2), new com.google.gson.Gson().toJson(below));
+        byte[] native60Save = native60Bytes("save"), native60History = native60Bytes("history");
+        com.google.gson.JsonObject below = com.google.gson.JsonParser.parseString(
+                new String(native60Save, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+        String olderBuild = below.get("gameVersion").getAsString();
+        assertTrue("REV-RES2 P3: the format60 fixture has its native pre-inventory schema and original build",
+                below.get("saveFormat").getAsInt() == 60 && !below.has("housingInventory")
+                        && below.get("gameVersion").getAsString().equals("0.9.188"));
+        Files.write(oldest.saveFile(2), native60Save);
+        Files.write(oldest.historyFile(2), native60History);
         com.google.gson.JsonObject unstamped = below.deepCopy();
         unstamped.remove("gameVersion");
         Files.writeString(oldest.saveFile(3), new com.google.gson.Gson().toJson(unstamped));
         com.google.gson.JsonObject newer = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject();
         newer.addProperty("saveFormat", GameVersion.SAVE_FORMAT + 1);
         Files.writeString(oldest.saveFile(4), new com.google.gson.Gson().toJson(newer));
-        for (int slot = 2; slot <= 4; slot++) {
+        for (int slot = 3; slot <= 4; slot++) {
             if (Files.isRegularFile(full.getGameFiles().historyFile(1))) {
                 Files.copy(full.getGameFiles().historyFile(1), oldest.historyFile(slot));
             }
         }
+        // Keep the original exact boundary test even when a later floor is
+        // more than one above the fixed historical format-60 artifact.
+        com.google.gson.JsonObject boundary = com.google.gson.JsonParser.parseString(citySaved).getAsJsonObject();
+        boundary.addProperty("saveFormat", GameVersion.OLDEST_LOADABLE_FORMAT - 1);
+        boundary.addProperty("gameVersion", "P7-boundary");
+        byte[] boundaryBytes = new com.google.gson.Gson().toJson(boundary).getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Files.write(oldest.saveFile(10), boundaryBytes);
+        Files.copy(full.getGameFiles().historyFile(1), oldest.historyFile(10));
+        SaveHeader boundaryHeader = oldest.readHeader(10);
+        assertTrue("fixture: exactly one below the floor still reads as an older, unloadable header",
+                boundaryHeader != null && boundaryHeader.getSaveFormat() == GameVersion.OLDEST_LOADABLE_FORMAT - 1
+                        && boundaryHeader.isNoLongerReadable() && !boundaryHeader.isFromNewerBuild() && !oldest.slotIsLoadable(10));
+        Game boundaryRefused = new Game(oldest);
+        quietly(() -> boundaryRefused.loadGameSave(10));
+        assertTrue("the exact one-below-floor boundary is refused without applying it or rewriting its bytes",
+                refusedAtTheFloor(oldest, 10, boundaryRefused, boundaryBytes));
         java.util.Map<String, byte[]> folderBefore = folderBytes(root.resolve("oldest"));
         assertTrue("fixture: three saves and their histories in the folder",
                 folderBefore.size() >= 3 && Files.isRegularFile(oldest.saveFile(2)));
 
         SaveHeader old = oldest.readHeader(2);
-        assertTrue("fixture: its header reads, a format one below the floor",
-                old != null && old.getSaveFormat() == GameVersion.OLDEST_LOADABLE_FORMAT - 1);
+        assertTrue("fixture: its native format60 header reads below the floor",
+                old != null && old.getSaveFormat() == 60 && old.getSaveFormat() < GameVersion.OLDEST_LOADABLE_FORMAT);
         assertTrue("the header says this build can no longer read it, not that it is newer",
                 old.isNoLongerReadable() && !old.isFromNewerBuild() && !old.isReadableHere());
         assertTrue("...so the slot list marks it and offers no load: there, not damaged, not loadable",
@@ -3254,7 +3368,7 @@ public class SaveFileCheck {
                         && turnedAway.getLoadFailure().contains("can no longer read"));
         assertTrue("...and the log says the same, with the save's format and this build's",
                 log.contains(GameFiles.slotLabel(2)) && log.contains(GameVersion.noLongerReadable(olderBuild))
-                        && log.contains("save format " + (GameVersion.OLDEST_LOADABLE_FORMAT - 1))
+                        && log.contains("save format " + old.getSaveFormat())
                         && log.contains("reads formats " + GameVersion.OLDEST_LOADABLE_FORMAT + " to " + GameVersion.SAVE_FORMAT));
         assertEquals("...and nothing of it is applied", turnedAway.getMonth(), 1);
 
@@ -3296,6 +3410,19 @@ public class SaveFileCheck {
 
         refusedIntoARunningCity(oldest, atFloor, olderBuild, newer);
 
+        // 'back' became fundCity above and was deliberately changed by those
+        // separate rescue/fund fixtures. Load the untouched populated save
+        // again so this continuation compares actual twins.
+        Game continued = new Game(full.getGameFiles());
+        quietly(() -> continued.loadGameSave(1));
+        assertTrue("REV-HC1 P5: the populated continuation starts from its actual format-62 save", continued.getLoadFailure() == null);
+        assertTrue("REV-HC1 P5: the populated format-62 city continues its card stocks, services, loan book and capital", CardCheck.continues(full, continued));
+        // FC2: the continuation above met a company consolidated past a trillion to one (Real Estate, 1e-28 of its founding
+        // shares), which the load put back at a trillion until FC2; the load's rule itself, whatever a city reaches.
+        bits("FC2: a split factor deeper than a trillion to one loads as it was saved", Exchange.carriedSplitFactor(1e-28), 1e-28);
+        assertTrue("...and none, a negative or a NaN at the floor the load always had",
+                Exchange.carriedSplitFactor(0) == 1e-12 && Exchange.carriedSplitFactor(-1) == 1e-12
+                        && Exchange.carriedSplitFactor(Double.NaN) == 1e-12);
         onEarth(root);
         everyIdCrossesASave(root);
         worldMarketCrossesASave(root);
@@ -3312,6 +3439,106 @@ public class SaveFileCheck {
         fails += LoadConservation.fails;
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
+    }
+
+    /** Exact native .188 bytes, shared with HC1; no current JSON is converted. */
+    static byte[] native60Bytes(String name) throws IOException {
+        return nativeFixtureBytes("hc1-format60", name);
+    }
+
+    static byte[] nativeCardBytes(int format, String name) throws IOException {
+        return nativeFixtureBytes("hc1-format" + format, name);
+    }
+
+    private static byte[] nativeFixtureBytes(String directory, String name) throws IOException {
+        try (var in = SaveFileCheck.class.getResourceAsStream("/fixtures/" + directory + "/" + name + ".json.gz")) {
+            if (in == null) throw new IOException("Missing native fixture " + directory + "/" + name);
+            try (var zipped = new java.util.zip.GZIPInputStream(in)) { return zipped.readAllBytes(); }
+        }
+    }
+
+    /** A native .188 record, with the actual 128-slot old cell layout and old history. */
+    static boolean nativeCard60Refusal() { return nativeCard60Refusal(false); }
+
+    static boolean nativeCard60Refusal(boolean readPaths) {
+        return nativeOldFormatRefusal(readPaths, 60, "0.9.188", "hc1-format60",
+                "9e0be412f32e7676190042f3341040a1f07d7b51e6018902cc0b79641808a186",
+                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
+    }
+
+    /** Native RES2 saves carry housing inventory but no PW5 closing grid costs. */
+    static boolean nativeGrid61Refusal(boolean readPaths) {
+        return nativeOldFormatRefusal(readPaths, 61, "0.9.189", "pw5-format61",
+                "f94833347a6e7bbd16cd151899b7c3984e729e96012a80d948198cf3cf97572a",
+                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
+    }
+
+    /** Keep HC1's independently captured RES2 pair and its refusal assertion. */
+    static boolean nativeCard61Refusal(boolean readPaths) {
+        return nativeOldFormatRefusal(readPaths, 61, "0.9.189", "hc1-format61",
+                "1d352d140f18d816e3f3f81797ab23805e719677905cf306fb35fee782a464de",
+                "96f979fb5aa13adf36165eb07170410ba9190f2000a553574e982863348637bf");
+    }
+
+    /** HC1's published native card layout still has no PW5 closing grid costs. */
+    static boolean nativeGrid62Refusal(boolean readPaths) {
+        return nativeOldFormatRefusal(readPaths, 62, "0.9.190", "pw5-format62",
+                "c28b7a4c3e30b7cb90686a93e6d3832d33717532cb85ba040d511fbcdd5721a3",
+                "c12d06bde4e5844f4c4e260175f5e51f7828b77a126dc610fbb21a6dca712a6b");
+    }
+
+    private static boolean nativeOldFormatRefusal(boolean readPaths, int format, String version, String directory,
+                                                 String saveHash, String historyHash) {
+        try {
+            byte[] save = nativeFixtureBytes(directory, "save"), history = nativeFixtureBytes(directory, "history");
+            var old = com.google.gson.JsonParser.parseString(new String(save, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+            var oldHistory = com.google.gson.JsonParser.parseString(new String(history, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+            int keys = old.getAsJsonArray("householdCellKeys").size();
+            boolean housingShape = old.has("housingInventory") == (format >= 61);
+            // The native pre-card records have 128 slots; HC1 adds sixteen.
+            boolean cellShape = old.getAsJsonArray("householdCells").size() == keys * (format >= 62 ? 144 : 128) + 3
+                    && oldHistory.has("debtSurveys") == (format >= 62);
+            boolean genuine = housingShape && cellShape && old.get("saveFormat").getAsInt() == format && old.get("gameVersion").getAsString().equals(version)
+                    && oldHistory.getAsJsonArray("month").size() > 0
+                    && !old.getAsJsonObject("powerBooks").has("pendingGridCosts")
+                    && !old.getAsJsonObject("powerBooks").getAsJsonObject("struck").has("gridCosts")
+                    && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(save))
+                            .equals(saveHash)
+                    && java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(history))
+                            .equals(historyHash);
+            Game source = quietlyGet(() -> LongPlaytest.probeCity(GameFiles.scratch("refuse-native" + format), null));
+            GameFiles files = source.getGameFiles();
+            if (!source.prepareSaveForChecks(10, "HC1 current before refusal").write().whole()) return false;
+            Game running = new Game(files);
+            quietly(() -> running.loadGameSave(10));
+            if (running.getLoadFailure() != null || running.getMonth() != source.getMonth()) return false;
+            if (readPaths) for (int i = 0; i < 3; i++) ReadPathCheck.readEverything(running);
+            Files.createDirectories(files.saveFile(10).getParent());
+            Files.write(files.saveFile(10), save); Files.write(files.historyFile(10), history);
+            Game fresh = new Game(files);
+            quietly(() -> fresh.loadGameSave(10));
+            boolean floor = refusedAtTheFloor(files, 10, fresh, save)
+                    && java.util.Arrays.equals(history, Files.readAllBytes(files.historyFile(10)));
+            var gson = new com.google.gson.Gson();
+            var before = gson.toJsonTree(running.prepareSaveForChecks(10, "HC1 refusal unchanged").data()).getAsJsonObject();
+            String beforeHistory = gson.toJson(running.getHistorySave());
+            var historyObject = running.getHistorySave();
+            var managers = running.getBuildingManager();
+            var economy = running.getEconomyManager();
+            int month = running.getMonth(); double cash = running.getCash();
+            quietly(() -> running.loadGameSave(10));
+            if (readPaths) for (int i = 0; i < 3; i++) ReadPathCheck.readEverything(running);
+            var after = gson.toJsonTree(running.prepareSaveForChecks(10, "HC1 refusal unchanged").data()).getAsJsonObject();
+            boolean untouched = java.util.Arrays.equals(save, Files.readAllBytes(files.saveFile(10)))
+                    && java.util.Arrays.equals(history, Files.readAllBytes(files.historyFile(10)));
+            boolean intact = running.getBuildingManager() == managers && running.getEconomyManager() == economy
+                    && running.getHistorySave() == historyObject
+                    && running.getMonth() == month && running.getCash() == cash
+                    && beforeHistory.equals(gson.toJson(running.getHistorySave())) && jsonDiff(before, after, java.util.Set.of("savedAt")).isEmpty();
+            boolean refused = !files.slotIsLoadable(10) && GameVersion.noLongerReadable(version).equals(running.getLoadFailure());
+            if (!(genuine && floor && untouched && intact && refused)) System.out.printf("Native%d: genuine=%s, floor=%s, bytes=%s, city=%s, refused=%s%n", format, genuine, floor, untouched, intact, refused);
+            return genuine && floor && untouched && intact && refused;
+        } catch (Exception ex) { ex.printStackTrace(); return false; }
     }
 
     /** Two readings that must be the same double, to the bit. */
@@ -3343,45 +3570,56 @@ public class SaveFileCheck {
                 + (Migration.BRAKE_FROM_MONTH - 1) + " and " + Migration.BRAKE_FROM_MONTH + " (WG2-R) ---");
         int tiers = PayTier.values().length;
         int monthsSlot = tiers * Migration.DECLINE_MONTHS + tiers;   // the months recorded: the last slot of the wage history
-        for (int n = Migration.BRAKE_FROM_MONTH - 1; n <= Migration.BRAKE_FROM_MONTH; n++) {
-            String at = "at " + n + " months recorded: ";
-            Game city = new Game(new GameFiles(root.resolve("brake-" + n), root.resolve("no-legacy")));
-            city.run();
-            city.setCashForTest(Founding.WEALTHY_CASH);
-            city.buildStack(template(city, "House"), 300, false);
-            city.buildStack(template(city, "Convenience Store"), 6, false);
-            city.simulateMonths(40);
+        // FC2: the town this section was written on is caught in the builders' trap (main: 23.8% out of work, 0.1 arrivals a
+        // month), and the 300 Houses were the lever only through it: the foreign crews, always on
+        // offer since FC2, take the queue past the threshold and build them, and the town fills (647 people, 612 posts, none
+        // out of work, 29.7 arrivals). What this section reads is Migration's months recorded through a save, not the
+        // builders, so the town is played as written - the builders' price and the foreign crews off for this section alone,
+        // as HoldersCheck has them for its JVM (BuildingManager.buildersShortOn), and back on after it.
+        BuildingManager.buildersShortOn = false;
+        try {
+            for (int n = Migration.BRAKE_FROM_MONTH - 1; n <= Migration.BRAKE_FROM_MONTH; n++) {
+                String at = "at " + n + " months recorded: ";
+                Game city = new Game(new GameFiles(root.resolve("brake-" + n), root.resolve("no-legacy")));
+                city.run();
+                city.setCashForTest(Founding.WEALTHY_CASH);
+                city.buildStack(template(city, "House"), 300, false);
+                city.buildStack(template(city, "Convenience Store"), 6, false);
+                city.simulateMonths(40);
 
-            Migration migration = city.getMigration();
-            double[] aged = migration.toSaveArray();
-            aged[monthsSlot] = n - 1;
-            migration.restore(aged);
-            city.simulateMonths(1);
-            PopulationManager people = city.getPopulationManager();
-            System.out.printf("   %s city month: out of work %.4f, brake %.4f, arrivals %,.2f%n",
-                    at, people.getUnemploymentRate(), migration.getLastBrake(), migration.getLastArrivals());
-            assertTrue(at + "fixture: months recorded are " + n, migration.toSaveArray()[monthsSlot] == n);
-            assertTrue(at + "fixture: brakeApplies() is n >= BRAKE_FROM_MONTH",
-                    migration.brakeApplies() == (n >= Migration.BRAKE_FROM_MONTH));
-            assertTrue(at + "fixture: the city drew people", migration.getLastTarget() > 0);
-            // The lever is jobs: 300 houses and 6 shops leave the town far past the healthy share out of work (past the stop, so the
-            // brake that bites cuts the arrivals to 0). The month before the threshold, the same town is young and unbraked.
-            assertTrue(at + "fixture: out of work past HEALTHY_OUT_OF_WORK, so there is a brake to read",
-                    people.getUnemploymentRate() > Migration.HEALTHY_OUT_OF_WORK);
-            assertTrue(at + "fixture: the month's brake " + (n >= Migration.BRAKE_FROM_MONTH ? "bit, under 1" : "is 1, the city is young"),
-                    n >= Migration.BRAKE_FROM_MONTH ? migration.getLastBrake() < 1 : migration.getLastBrake() == 1);
+                Migration migration = city.getMigration();
+                double[] aged = migration.toSaveArray();
+                aged[monthsSlot] = n - 1;
+                migration.restore(aged);
+                city.simulateMonths(1);
+                PopulationManager people = city.getPopulationManager();
+                System.out.printf("   %s city month: out of work %.4f, brake %.4f, arrivals %,.2f%n",
+                        at, people.getUnemploymentRate(), migration.getLastBrake(), migration.getLastArrivals());
+                assertTrue(at + "fixture: months recorded are " + n, migration.toSaveArray()[monthsSlot] == n);
+                assertTrue(at + "fixture: brakeApplies() is n >= BRAKE_FROM_MONTH",
+                        migration.brakeApplies() == (n >= Migration.BRAKE_FROM_MONTH));
+                assertTrue(at + "fixture: the city drew people", migration.getLastTarget() > 0);
+                // The lever is jobs: 300 houses and 6 shops leave the town far past the healthy share out of work (past the stop, so the
+                // brake that bites cuts the arrivals to 0). The month before the threshold, the same town is young and unbraked.
+                assertTrue(at + "fixture: out of work past HEALTHY_OUT_OF_WORK, so there is a brake to read",
+                        people.getUnemploymentRate() > Migration.HEALTHY_OUT_OF_WORK);
+                assertTrue(at + "fixture: the month's brake " + (n >= Migration.BRAKE_FROM_MONTH ? "bit, under 1" : "is 1, the city is young"),
+                        n >= Migration.BRAKE_FROM_MONTH ? migration.getLastBrake() < 1 : migration.getLastBrake() == 1);
 
-            assertTrue(at + "saved", city.saveGame(1, "brake").ok);
-            Game twin = new Game(city.getGameFiles());
-            twin.loadGameSave(1);
-            assertTrue(at + "the twin loaded", twin.getLoadFailure() == null);
-            sameBrake(at + "the twin ", twin, city, monthsSlot);
+                assertTrue(at + "saved", city.saveGame(1, "brake").ok);
+                Game twin = new Game(city.getGameFiles());
+                twin.loadGameSave(1);
+                assertTrue(at + "the twin loaded", twin.getLoadFailure() == null);
+                sameBrake(at + "the twin ", twin, city, monthsSlot);
 
-            city.simulateMonths(1);
-            twin.simulateMonths(1);
-            System.out.printf("   %s month on: out of work %.4f, brake %.4f, arrivals %,.2f%n",
-                    at, people.getUnemploymentRate(), migration.getLastBrake(), migration.getLastArrivals());
-            sameBrake(at + "a month on, the twin ", twin, city, monthsSlot);
+                city.simulateMonths(1);
+                twin.simulateMonths(1);
+                System.out.printf("   %s month on: out of work %.4f, brake %.4f, arrivals %,.2f%n",
+                        at, people.getUnemploymentRate(), migration.getLastBrake(), migration.getLastArrivals());
+                sameBrake(at + "a month on, the twin ", twin, city, monthsSlot);
+            }
+        } finally {
+            BuildingManager.buildersShortOn = true;
         }
     }
 

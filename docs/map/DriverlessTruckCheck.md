@@ -1,6 +1,6 @@
 # DriverlessTruckCheck.java - 419 lines · 23 methods · 1 constants · harnesses
 
-`ham/citybuildersim/DriverlessTruckCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DriverlessTruckCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The driverless truck (R6b, FE1): the Truck Depot's second piece of equipment, the kit that ends the driver's cab, and what a depot fitted with it does
 > to Haulage: a truck that carries more tonnes a month and a depot that keeps oversight posts where it kept drivers.

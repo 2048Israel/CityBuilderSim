@@ -361,6 +361,8 @@ public final class AutoBuilder {
     /** The ground it has bought for its orders (0.7.77): dry square feet, its price in local money, and how many offers. */
     private double landSqFt, landSpent;
     private int landOffers;
+    /** Offers bought past the listing an order's ground was planned from (PW3, ASSEMBLE_MOST): PowerPlanCheck's count, not saved. */
+    private int assembledOffers;
 
     /** The ground the last pass bought, a line a purchase, for the inbox (not saved: the pass that writes it runs before the month's notices are taken, loaded or not). */
     private final List<String> bought = new ArrayList<>();
@@ -454,6 +456,8 @@ public final class AutoBuilder {
     public double getLandSqFt() { return landSqFt; }
     public double getLandSpent() { return landSpent; }
     public int getLandOffers() { return landOffers; }
+    /** Offers bought past the listing an order's ground was planned from since the city was opened (PW3): not saved. */
+    public int getAssembledOffers() { return assembledOffers; }
 
     /** The ground the last pass bought for its orders, a line a purchase saying what and why; empty when it bought none. */
     public List<String> bought() { return Collections.unmodifiableList(bought); }
@@ -586,6 +590,7 @@ public final class AutoBuilder {
         for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             if (!m.serves(t) || !(BuildAdvice.built(game, m, t) > 0)) continue;
             if (t.isHydro() && game.hydroSlotsFree(t) < 1) continue;
+            if (!game.hasCoolingFor(t)) continue;
             double[] after = BuildAdvice.supplyDemand(game, m, Map.of(t, 1L));
             if (!(after[1] > 0) || after[0] / after[1] <= share + 1e-12) continue;
             Ground ground = groundFor(game, t, 1);
@@ -985,7 +990,7 @@ public final class AutoBuilder {
      */
     public static boolean essential(BuildAdvice.Measure m) {
         switch (m.kind()) {
-            case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: case DEATH: case PLOTS:
+            case POWER: case WATER: case ROADS: case HIGHWAYS: case CARE: case DEATH: case PLOTS: case GRID:
             case SCHOOL: case POLICE: case CELLS: return true;
             default: return false;
         }
@@ -1210,13 +1215,20 @@ public final class AutoBuilder {
         Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(game, m);
         Double due = pendingUntil.get(m.label());
         boolean shortAhead = !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, 0, slack));
-        if (shortAhead && due != null && game.getMonth() > due) return Map.of();
-        // A slow site cannot cover service that faster work can deliver sooner.
-        if (essential(m) && BuildAdvice.units(site) > 0) {
+        // HW1: past its deadline a site that has not covered the shortage counts nothing. Not power's (PW3): its planner reads each
+        // plant on site at its revised opening (WorksValue.openBy(), the builders' queue), so a late plant counts from when it will
+        // open and a candidate opening sooner is still ordered; dropped whole, every late plant was ordered again, each order
+        // crowding the builders and slipping the next deadline (seed 1: 19 coal plants in the 1960s, the firm supply 6 times the peak).
+        if (shortAhead && due != null && game.getMonth() > due && m.kind() != BuildAdvice.Kind.POWER) return Map.of();
+        // A slow site cannot cover service that faster work can deliver sooner. Power's planner reads each plant on site from its
+        // own opening at each candidate's (PW3, WorksValue.openBy()), so a slow power site is kept: dropped whole, a second coal plant
+        // would be ordered against the shortfall the first already meets at its opening.
+        if (essential(m) && m.kind() != BuildAdvice.Kind.POWER && BuildAdvice.units(site) > 0) {
             double first = BuildAdvice.firstCompletion(game, m, site);
             for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
                 if (!m.serves(t) || !(BuildAdvice.built(game, m, t) > 0)) continue;
                 if (t.isHydro() && game.hydroSlotsFree(t) < 1) continue;
+                if (!game.hasCoolingFor(t)) continue;
                 double lead = game.quoteBuild(t, 1).months;
                 if (Double.isFinite(lead) && Math.ceil(lead) < first
                         && !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, lead, slack)))
@@ -1224,6 +1236,19 @@ public final class AutoBuilder {
             }
         }
         return site;
+    }
+
+    /**
+     * The months until a measure's pending first completion is due (HW1's saved promise), from this month; NaN with none.
+     * Power's planner (PW3) reads it: a candidate opening before the promise counts the site only from each plant's opening
+     * (WorksValue.openBy(), PW1-P's second gap); one opening after it counts the site whole while the promise stands, as
+     * pendingCapacity() does, since each order shares the builders and puts back what is on site: read from its opening, the
+     * site that order slows would order again the next month, and the next. NaN too once the promise has expired (past its
+     * deadline, as pendingCapacity() reads it): every candidate then reads the site by each plant's revised opening.
+     */
+    public double promisedMonths(Game game, BuildAdvice.Measure m) {
+        Double due = pendingUntil.get(m.label());
+        return due == null || game.getMonth() > due ? Double.NaN : due - game.getMonth();
     }
 
     private void rememberPending(Game game, BuildAdvice.Measure m, boolean newOrder) {
@@ -1344,8 +1369,11 @@ public final class AutoBuilder {
 
     private CrewLimit crewLimit(Game game, List<BuildAdvice.Measure> kept, BuildAdvice.Measure measure,
                                 BuildAdvice.Suggestion suggestion, long wanted) {
+        // PW3, 2026-11-24: "short now" is BuildAdvice.lacksNow(), not !maintained(NOW): power's plan is the year's peak hour (1.631 of the mean)
+        // and the month's dispatch serves the peak block of its highest month (1.507), so a city whose firm supply lay between the two read power as short, and every
+        // other essential order "waited to preserve Power's quoted first completion" (roads, schools and care held 12 months, power fully served).
         if (pendingUntil.isEmpty() || essential(measure)
-                && !BuildAdvice.maintained(game, measure, Map.of(), BuildAdvice.NOW))
+                && BuildAdvice.lacksNow(game, measure))
             return new CrewLimit(wanted, null);
         String blocked = pendingDelay(game, kept, measure, suggestion, wanted);
         if (blocked == null) return new CrewLimit(wanted, null);
@@ -1368,8 +1396,9 @@ public final class AutoBuilder {
         double points = 0;
         for (BuildAdvice.Measure current : kept) {
             Double due = pendingUntil.get(current.label());
+            // PW3, 2026-11-24: a measure the month does not lack holds nothing (lacksNow(): power's peak block in the year's highest month, not the plan's peak hour; see crewLimit()).
             if (due == null || current.equals(measure) || !essential(current) || current.serves(additional)
-                    || BuildAdvice.maintained(game, current, Map.of(), BuildAdvice.NOW)) continue;
+                    || !BuildAdvice.lacksNow(game, current)) continue;
             if (quote == null) {
                 quote = suggestion.paving() ? game.quotePave(count) : game.quoteBuild(additional, count);
                 // ...the order's buildings at the points their equipment takes (R1e; the quote's fitout, the template's own in a default city).
@@ -1576,6 +1605,17 @@ public final class AutoBuilder {
     }
 
     /**
+     * A harness's door to place() (PW3, REV-PW3 #2; PowerPlanCheck 7c): n of a suggestion the pass would take, its ground planned as the pass
+     * plans it, placed as the pass places it. False where there is no ground to be had for it or place() held it.
+     */
+    boolean placeForTest(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, long n) {
+        Ground ground = s.paving() ? Ground.NONE : groundFor(game, s.template(), n);
+        if (ground == null) return false;
+        String name = s.paving() ? ConstructionControl.PAVE_FROM + ", paved" : s.template().getName();
+        return place(game, m, s, name, n, n, Cut.NONE, ground, null, null, null);
+    }
+
+    /**
      * Places n of a suggestion, its ground bought first (0.7.77), borrowing
      * what the spendable cash does not cover, and writes it down; false where
      * it could not (the order is then held, and an ask stays open).
@@ -1592,7 +1632,30 @@ public final class AutoBuilder {
         String before = reading(game, m, new LinkedHashMap<>());
         double cost = total(game, s, n);
         double landShort = s.paving() ? 0 : Math.max(0, lacks(game, s.template(), n));
-        double gap = cost + ground.cash() - spendableFor(game, from);
+        // BEFORE ANY MONEY MOVES (PW3, REV-PW3 #2): an order that cannot be placed buys no ground and sells no bond.
+        // The builders' refusals that are neither ground nor money (Game.buildStack() asks the same blocker()): the order is held with their reason.
+        if (!s.paving()) {
+            Game.BuildResult blocked = game.blocker(s.template(), n, Landmasses.RULE);
+            if (blocked != null) {
+                hold(m, s, Cut.NONE, wanted, m.label() + ": " + n + " " + name + " could not be placed (" + blocked
+                        + "); no ground was bought and no bond sold for it.", weighed);
+                return false;
+            }
+        }
+        // ...the ground secured: the offers the order buys, the listing's and then those past it, held on a rehearsal (assembled()), the city's
+        // office untouched; where they cannot cover the order it is held with the market as it was.
+        List<LandParcel> buy = ground.offers();
+        if (ground.more() > 0 && !s.paving()) {
+            buy = assembled(game, lacks(game, s.template(), n), ground.offers());
+            if (buy == null) {
+                hold(m, s, Cut.NONE, wanted, m.label() + ": the ground for " + n + " " + name
+                        + " could not be had, so none was bought and no bond sold for it.", weighed);
+                return false;
+            }
+        }
+        // ...and its exact cost: the cash the land office's toggle makes of paying for exactly these offers, each at the price it is listed at.
+        double landCash = game.landCashFor(buy);
+        double gap = cost + landCash - spendableFor(game, from);
         // Overdrawn, the bond clears the overdraft too, as Build's funding page counts it (Game.buildFundingGap()).
         double overdraft = Math.max(0, -game.getCash());
         double raised = 0;
@@ -1613,12 +1676,18 @@ public final class AutoBuilder {
             borrowed += raised;
             noteSale(game, bond, raised, 0);
         }
-        // The ground first, each offer as the land office's Buy buys it - paid the way its toggle says.
+        // The ground first, each offer as the land office's Buy buys it - paid the way its toggle says: the offers held, in the order they were
+        // held, each standing at the price the rehearsal listed it at (each purchase lists the place's next, as it did on the copy).
         double rate = game.getForeignAccounts().getRate(), landCost = 0, landSq = 0;
         List<LandParcel> got = new ArrayList<>();
         List<String> places = new ArrayList<>();
-        for (LandParcel o : ground.offers()) {
-            if (!game.buyLandParcel(o.getId())) break;
+        boolean assembled = true;
+        for (LandParcel held : buy) {
+            LandParcel o = game.getLandManager().getMarket().find(held.getId());
+            if (o == null || o.getPriceUsd() != held.getPriceUsd() || !game.buyLandParcel(o.getId())) {
+                assembled = false;
+                break;
+            }
             got.add(o);
             places.add(o.where());
             landCost += o.localPrice(rate);
@@ -1627,9 +1696,12 @@ public final class AutoBuilder {
         landOffers += got.size();
         landSqFt += landSq;
         landSpent += landCost;
-        if (got.size() < ground.offers().size()) {
+        assembledOffers += Math.max(0, got.size() - ground.offers().size());
+        if (!assembled) {
+            // ...a residual failure the held ground should have left none of: an offer gone or priced otherwise than on the rehearsal. What was bought stays the city's.
             if (!got.isEmpty()) bought.add(boughtWords(m, name, n, got, landCost, landShort, ground) + " Its order could not be placed.");
-            hold(m, s, Cut.NONE, wanted, m.label() + ": the ground for " + n + " " + name + " could not be bought.", weighed);
+            hold(m, s, Cut.NONE, wanted, m.label() + ": the ground for " + n + " " + name + " could not be bought as it was held ("
+                    + got.size() + " of " + buy.size() + " offers).", weighed);
             return false;
         }
         // ...a sea terminal by the rule alone (ET5 D10): home if the city owns shore on it, else a landmass it has linked - never an island no port
@@ -1725,7 +1797,8 @@ public final class AutoBuilder {
             if (l.kind() == BuildAdvice.LinkKind.BRIDGE || o.asked() == Landmasses.RULE) { onLinked = o; break; }
         }
         Ground ground = onLinked == null ? Ground.NONE : groundFor(game, onLinked.template(), 1);
-        if (ground == null) {
+        // A link's ground is the listing's alone: its terminal or landings are bought from what is offered (PW3 assembles an order's).
+        if (ground == null || ground.more() > 0) {
             holdLink(game, l, building, wanted + "; " + groundWords(game, onLinked.template()));
             return;
         }
@@ -1919,10 +1992,19 @@ public final class AutoBuilder {
        reaches it: it is a step of a remit order.
        ===================================================================== */
 
-    /** The ground an order lacks, as the offers it would buy for it in turn, the cash that takes, and whether one offer covers it all. */
-    public record Ground(List<LandParcel> offers, double cash, boolean covers) {
+    /**
+     * The ground an order lacks, as the offers it would buy for it in turn, the cash that takes, and whether one offer covers it all;
+     * `more` the dry ground past those offers it buys offer by offer as each purchase lists the place's next (PW3, ASSEMBLE_MOST). `cash`
+     * is what paying for all of them moves, the offers past the listing at their own prices as a rehearsal lists them (assembled(), REV-PW3 #1) -
+     * what place() pays; only for a projection past offers not yet bought (AdviceValueOracle's, `alreadyTaken` not empty) is the ground past the
+     * listing estimated at the land office's price a square foot (LandManager.getOfficePricePerSqFt()), as WorksValue prices ground no offer standing holds.
+     */
+    public record Ground(List<LandParcel> offers, double cash, boolean covers, double more) {
         /** No ground to buy: the order fits what is free. */
         static final Ground NONE = new Ground(List.of(), 0, true);
+
+        /** Ground planned from the listing alone, nothing past it. */
+        public Ground(List<LandParcel> offers, double cash, boolean covers) { this(offers, cash, covers, 0); }
 
         /** Their dry ground, in square feet. */
         public double sqFt() {
@@ -1940,7 +2022,48 @@ public final class AutoBuilder {
         return groundFor(game, lack, Set.of());
     }
 
-    /** The same whole-parcel selection for a projected shortage, omitting already bought offers. */
+    /**
+     * The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth
+     * (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on a founded city's ground (LandCheck.coalBuysItsGround()).
+     */
+    public static final int ASSEMBLE_MOST = 4 * LandMarket.OFFERS;
+
+    /**
+     * The offers an order buys for `lack` square feet of ground, in the order it buys them (PW3, REV-PW3 #1, #2): the planned listing's offers first,
+     * then - while what is held does not cover the lack - the offer shortcutOffer() picks of the shelf as each purchase has listed it, up to
+     * ASSEMBLE_MOST offers in all. Bought on a rehearsal (LandManager.rehearse()), so nothing of the city's moves and each offer is at the price it is
+     * listed at, which place() then pays. What is held counts as covering by the dry ground it adds on linked land (linkedSqFt()), as groundFor() counts
+     * what it plans. Null when ASSEMBLE_MOST offers or the bare ground on the shelf cannot cover the lack, or no rehearsal can be made.
+     */
+    static List<LandParcel> assembled(Game game, double lack, List<LandParcel> listed) {
+        LandManager.Rehearsal rehearsal = game.getLandManager().rehearse(game.getPopulationManager().getPopulation());
+        if (rehearsal == null) return null;
+        List<LandParcel> held = new ArrayList<>();
+        double sqFt = 0;
+        for (LandParcel o : listed) {
+            LandParcel p = rehearsal.hold(o.getId());
+            if (p == null) return null;
+            held.add(p);
+            sqFt += linkedSqFt(p);
+        }
+        while (lack - sqFt > 0) {
+            if (held.size() >= ASSEMBLE_MOST) return null;
+            LandParcel o = shortcutOffer(rehearsal.market(), lack - sqFt, Set.of());
+            LandParcel p = o == null ? null : rehearsal.hold(o.getId());
+            if (p == null) return null;
+            held.add(p);
+            sqFt += linkedSqFt(p);
+        }
+        return held;
+    }
+
+    /**
+     * The same whole-parcel selection for a projected shortage, omitting already bought offers. When the listing standing runs out
+     * short of it (PW3, REV-PW2: a young city's offers hold a few acres each, a coal plant asks 200), the rest is bought offer by offer
+     * as each purchase lists the place's next (LandManager.buyParcel()), so long as the offers it would take, at the planned ones' average
+     * size, are no more than ASSEMBLE_MOST - and then bought on a rehearsal (assembled()) that says whether bare ground within ASSEMBLE_MOST offers
+     * covers it and what the whole offers cost; null past that, where they cannot, or with no bare offer at all.
+     */
     static Ground groundFor(Game game, double lack, Set<Integer> alreadyTaken) {
         if (!(lack > 0)) return Ground.NONE;
         List<LandParcel> picks = new ArrayList<>();
@@ -1948,14 +2071,30 @@ public final class AutoBuilder {
         double got = 0;
         while (lack - got > 0) {
             LandParcel o = shortcutOffer(game, lack - got, taken);
-            if (o == null) return null;
+            if (o == null) break;
             picks.add(o);
             taken.add(o.getId());
             got += linkedSqFt(o);
         }
+        if (picks.isEmpty() || !(got > 0)) return null;
         List<Integer> ids = picks.stream().map(LandParcel::getId).toList();
         double cash = game.isLandPaidFromVault() ? game.landTopUpLocal(ids) : game.landPriceLocal(ids);
-        return new Ground(List.copyOf(picks), cash, picks.size() == 1 && linkedSqFt(picks.get(0)) >= lack);
+        double more = Math.max(0, lack - got);
+        if (more > 0) {
+            double offers = Math.ceil(more / (got / picks.size()));
+            if (picks.size() + offers > ASSEMBLE_MOST) return null;
+            if (alreadyTaken.isEmpty()) {
+                // ...the whole offers past the listing at their own prices, exactly what place() pays (PW3, REV-PW3 #1): bought on a rehearsal, the city's
+                // office and land untouched, the choices place() will make; none when no offers cover the lack.
+                List<LandParcel> held = assembled(game, lack, picks);
+                if (held == null) return null;
+                cash = game.landCashFor(held);
+            } else {
+                // ...a projection past offers not yet bought (AdviceValueOracle's stack): no purchase is rehearsed for ground only estimated, and its cash is not read.
+                cash += more * game.getLandManager().getOfficePricePerSqFt();
+            }
+        }
+        return new Ground(List.copyOf(picks), cash, picks.size() == 1 && linkedSqFt(picks.get(0)) >= lack, more);
     }
 
     /** An offer's dry ground that is room for the order, square feet: its whole dry ground (getSizeSqFt()) less what of it is on a landmass the city has not linked (ET5; LandParcel.getUnlinkedDryKm2()); the whole of it for an offer with none. */
@@ -1996,7 +2135,11 @@ public final class AutoBuilder {
      * not: the order may borrow); null with no bare offer left.
      */
     public static LandParcel shortcutOffer(Game game, double lackSqFt, Set<Integer> taken) {
-        LandMarket market = game.getLandManager().getMarket();
+        return shortcutOffer(game.getLandManager().getMarket(), lackSqFt, taken);
+    }
+
+    /** ...on any office: the city's own, or a rehearsal's copy of it (assembled()). */
+    static LandParcel shortcutOffer(LandMarket market, double lackSqFt, Set<Integer> taken) {
         // ...by buildable ground, preparation counted (ET3, spec-earth2-terrain 5.2): the flat and foothill must cover
         // the lack, offers rank by price with their foothill prepared, and the best value is the buildable ground a
         // dollar while any offer in the running has some. All flat, every one of these is the dry figure itself.

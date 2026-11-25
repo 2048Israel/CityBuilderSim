@@ -322,6 +322,24 @@ public class HistorySave {
     private List<Double> bankProfit = new ArrayList<>();
     private List<Double> bankBranches = new ArrayList<>();
     private List<Double> householdSavings = new ArrayList<>();
+    private List<Double> capitalGainsTax = new ArrayList<>();
+    private List<Double> unclaimedReceipts = new ArrayList<>();
+    private List<Double> custodyNoncash = new ArrayList<>();
+    private List<Double> custodyLoss = new ArrayList<>();
+    private List<Double> custodyDebtGain = new ArrayList<>();
+    private List<Double> custodyPaperRetired = new ArrayList<>();
+    private List<Double> custodyBook = new ArrayList<>();
+    private List<Double> custodyPaper = new ArrayList<>();
+    private List<Double> custodyPaperFinding = new ArrayList<>();
+    private List<Double> custodyUsd = new ArrayList<>();
+    private List<Double> custodyCars = new ArrayList<>();
+    private List<Double> custodyLossCarry = new ArrayList<>();
+    private List<Double> custodyCouponDue = new ArrayList<>();
+    private List<Double> dividendTax = new ArrayList<>();
+    private List<Double> capitalTaxConsolidated = new ArrayList<>();
+    private List<Double> capitalTaxWrittenOff = new ArrayList<>();
+    private List<Double> capitalTaxOutstanding = new ArrayList<>();
+    private List<Double> capitalTaxAssessed = new ArrayList<>();
 
     /* ------------------------ the price of money (0.7.7) ------------------------
 
@@ -593,6 +611,21 @@ public class HistorySave {
        ------------------------------------------------------------------ */
     private Map<String, List<Double>> researchSeries = new LinkedHashMap<>();
 
+    /** Struck power observations, at the strike month; source dispatch and paid dispatch months are separate series. */
+    private Map<String, List<Double>> powerSeries = new LinkedHashMap<>();
+    /** Annual household debt surveys (HC2), on their own year axis. */
+    private List<DebtStatistics.Survey> debtSurveys = new ArrayList<>();
+
+    public List<DebtStatistics.Survey> getDebtSurveys() { return List.copyOf(debtSurveys); }
+
+    private void recordPower(Game game) {
+        Map<String, Double> values = PowerView.series(PowerView.of(game));
+        if (values.isEmpty()) return; // An older save carries no row observations: no reconstruction.
+        for (String key : values.keySet()) powerSeries.computeIfAbsent(key, k -> new ArrayList<>());
+        // A row that leaves the fleet ran zero, including a gap before it returns. Sparse tail alignment must not erase that gap.
+        for (Map.Entry<String, List<Double>> e : powerSeries.entrySet()) e.getValue().add(values.getOrDefault(e.getKey(), 0.0));
+    }
+
     /** The series of a field's researchers (the city's and the labs'): "researchersEngineering", "researchersMedicine", "researchersBusiness", "researchersLaw". */
     public static String researchersKey(ResearchCatalog.Field field) {
         return "researchers" + capitalised(field.name().toLowerCase(java.util.Locale.ROOT));
@@ -775,6 +808,7 @@ public class HistorySave {
         schoolBill.add(round2(schools.getNetCost()));
 
         energyRatio.add(round4(game.getEnergyRatio()));
+        recordPower(game);
         waterRatio.add(round4(game.getWaterRatio()));
         roadRatio.add(round4(game.getRoadRatio()));
         sickRate.add(round4(game.getHealth().getSickRate()));
@@ -840,6 +874,24 @@ public class HistorySave {
         bankProfit.add(round2(lender.getNetIncome()));
         bankBranches.add(round2(lender.getBranches()));
         householdSavings.add(round2(game.getHouseholds().getCumulativeSaving()));
+        capitalGainsTax.add(round2(game.getHouseholdBalance().getCapitalGainsTax()));
+        unclaimedReceipts.add(round2(game.getEstateCustody().cashReceived()));
+        custodyNoncash.add(round2(game.getEstateCustody().noncashReceived()));
+        custodyLoss.add(round2(game.getEstateCustody().assetLoss()));
+        custodyDebtGain.add(round2(game.getEstateCustody().debtGain()));
+        custodyPaperRetired.add(round2(game.getEstateCustody().paperConsolidated()));
+        custodyBook.add(round2(game.getEstateCustody().getLedger().acbHeld()));
+        custodyPaper.add(round2(game.getEstateCustody().pendingPaper()));
+        custodyPaperFinding.add(round2(game.getEstateCustody().paperFinding()));
+        custodyUsd.add(round2(game.getEstateCustody().usd()));
+        custodyCars.add(round2(game.getEstateCustody().cars()));
+        custodyLossCarry.add(round2(game.getEstateCustody().lossCarried()));
+        custodyCouponDue.add(round2(game.getEstateCustody().pendingCoupons()));
+        dividendTax.add(round2(game.getHouseholdBalance().getDividendTax()));
+        capitalTaxConsolidated.add(round2(game.getHouseholdBalance().getCapitalTaxConsolidated()));
+        capitalTaxWrittenOff.add(round2(game.getHouseholdBalance().getCapitalTaxWrittenOff()));
+        capitalTaxOutstanding.add(round2(game.getHouseholdBalance().getCapitalTaxOutstanding()));
+        capitalTaxAssessed.add(round2(game.getHouseholdBalance().getCapitalTaxAssessed()));
 
         double policy = game.getDebtManager().getPolicyRate();
         policyRate.add(round4(policy));
@@ -974,6 +1026,7 @@ public class HistorySave {
         basketsAsked.add(round2(finite(shops.getDemandAtPrice())));
         basketsHanded.add((double) shops.getProductsSold());
         HouseholdBalance fed = game.getHouseholdBalance();
+        if (game.getMonth() % 12 == 0) debtSurveys.add(DebtStatistics.survey(fed, game.getMonth()));
         hunger.add(round4(finite(fed.getHungerRate())));
         hungerPricedOut.add(round4(finite(fed.getHungerPricedOut())));
         householdsAssisted.add(round2(finite(fed.getHouseholdsAssisted())));
@@ -1103,7 +1156,9 @@ public class HistorySave {
      * Harnesses only (0.7.55): one more month on every series this history
      * has, each value asked of `value` by the series' name, then the fold
      * recordMonth() ends with - so a history can be grown past MONTHLY_KEPT
-     * without a city behind it. A Long series takes the value rounded.
+     * without a city behind it. A Long series takes the value rounded. A
+     * year's debt survey repeats its last groups on the added year axis,
+     * just as each monthly series repeats its last value in a padded history.
      */
     @SuppressWarnings("unchecked")
     void appendMonth(int m, java.util.function.ToDoubleFunction<String> value) {
@@ -1114,6 +1169,10 @@ public class HistorySave {
             double v = value.applyAsDouble(e.getKey());
             boolean whole = !list.isEmpty() ? list.get(0) instanceof Long : LONG_SERIES.contains(e.getKey());
             list.add(whole ? (Number) Math.round(v) : (Number) v);
+        }
+        if (m % 12 == 0 && !debtSurveys.isEmpty()) {
+            DebtStatistics.Survey last = debtSurveys.get(debtSurveys.size() - 1);
+            debtSurveys.add(new DebtStatistics.Survey(m, last.groups()));
         }
         foldOldYears();
     }
@@ -1214,6 +1273,7 @@ public class HistorySave {
         hunger = copy(loaded.hunger);
         hungerPricedOut = copy(loaded.hungerPricedOut);
         householdsAssisted = copy(loaded.householdsAssisted);
+        debtSurveys = loaded.debtSurveys == null ? new ArrayList<>() : new ArrayList<>(loaded.debtSurveys);
         mealMargin = copy(loaded.mealMargin);
         mealTargetMargin = copy(loaded.mealTargetMargin);
         luxuryMargin = copy(loaded.luxuryMargin);
@@ -1283,6 +1343,24 @@ public class HistorySave {
         bankProfit = copy(loaded.bankProfit);
         bankBranches = copy(loaded.bankBranches);
         householdSavings = copy(loaded.householdSavings);
+        capitalGainsTax = copy(loaded.capitalGainsTax);
+        unclaimedReceipts = copy(loaded.unclaimedReceipts);
+        custodyNoncash = copy(loaded.custodyNoncash);
+        custodyLoss = copy(loaded.custodyLoss);
+        custodyDebtGain = copy(loaded.custodyDebtGain);
+        custodyPaperRetired = copy(loaded.custodyPaperRetired);
+        custodyBook = copy(loaded.custodyBook);
+        custodyPaper = copy(loaded.custodyPaper);
+        custodyPaperFinding = copy(loaded.custodyPaperFinding);
+        custodyUsd = copy(loaded.custodyUsd);
+        custodyCars = copy(loaded.custodyCars);
+        custodyLossCarry = copy(loaded.custodyLossCarry);
+        custodyCouponDue = copy(loaded.custodyCouponDue);
+        dividendTax = copy(loaded.dividendTax);
+        capitalTaxConsolidated = copy(loaded.capitalTaxConsolidated);
+        capitalTaxWrittenOff = copy(loaded.capitalTaxWrittenOff);
+        capitalTaxOutstanding = copy(loaded.capitalTaxOutstanding);
+        capitalTaxAssessed = copy(loaded.capitalTaxAssessed);
         policyRate = copy(loaded.policyRate);
         bankPrime = copy(loaded.bankPrime);
         bankDepositRate = copy(loaded.bankDepositRate);
@@ -1365,6 +1443,7 @@ public class HistorySave {
 
         worldMoney = copyMap(loaded.worldMoney);
         researchSeries = copyMap(loaded.researchSeries);
+        powerSeries = copyMap(loaded.powerSeries);
 
         // The trade by partner (WN3): each year's table rebuilt, so a table read by Gson (a list it made) is the immutable one the model keeps.
         tradeByPartner = new ArrayList<>();
@@ -1534,11 +1613,13 @@ public class HistorySave {
             dropEmpty(copy.sectorWorkers);
             dropEmpty(copy.worldMoney);
             dropEmpty(copy.researchSeries);
+            dropEmpty(copy.powerSeries);
         }
         if (dropped > 0 && copy.tradeByPartner != null) {
             int thisYear = CityCalendar.yearOf(lastMonth);
             copy.tradeByPartner.removeIf(t -> t.year() >= thisYear);
         }
+        if (copy.debtSurveys != null) copy.debtSurveys.removeIf(s -> s.month() > lastMonth);
         return copy;
     }
 
@@ -1911,6 +1992,24 @@ public class HistorySave {
         map.put("bankProfit", bankProfit);
         map.put("bankBranches", bankBranches);
         map.put("householdSavings", householdSavings);
+        map.put("capitalGainsTax", capitalGainsTax);
+        map.put("unclaimedReceipts", unclaimedReceipts);
+        map.put("custodyNoncash", custodyNoncash);
+        map.put("custodyLoss", custodyLoss);
+        map.put("custodyDebtGain", custodyDebtGain);
+        map.put("custodyPaperRetired", custodyPaperRetired);
+        map.put("custodyBook", custodyBook);
+        map.put("custodyPaper", custodyPaper);
+        map.put("custodyPaperFinding", custodyPaperFinding);
+        map.put("custodyUsd", custodyUsd);
+        map.put("custodyCars", custodyCars);
+        map.put("custodyLossCarry", custodyLossCarry);
+        map.put("custodyCouponDue", custodyCouponDue);
+        map.put("dividendTax", dividendTax);
+        map.put("capitalTaxConsolidated", capitalTaxConsolidated);
+        map.put("capitalTaxWrittenOff", capitalTaxWrittenOff);
+        map.put("capitalTaxOutstanding", capitalTaxOutstanding);
+        map.put("capitalTaxAssessed", capitalTaxAssessed);
         map.put("policyRate", policyRate);
         map.put("bankPrime", bankPrime);
         map.put("bankDepositRate", bankDepositRate);
@@ -2011,6 +2110,7 @@ public class HistorySave {
         if (worldMoney != null) map.putAll(worldMoney);
         // ...and the research's, where the city is founded the 1900 way (R5).
         if (researchSeries != null) map.putAll(researchSeries);
+        if (powerSeries != null) map.putAll(powerSeries);
         return map;
     }
 
@@ -2073,7 +2173,7 @@ public class HistorySave {
         scaleAll(scale, fxRate, fxParity, fxFair, fxShadow, currentAccount, exportsAbroad, importsAbroad, ipCharges, ipAccrued, publicIpCharges, publicIpAccrued,
                 businessDebt, businessBonds, bankDeposits, bankLent, bankEquity, bankWriteOffs,
                 bankCapacity, bankProfit,
-                householdSavings, bankFees,
+                householdSavings, unclaimedReceipts, custodyNoncash, custodyLoss, custodyDebtGain, custodyPaperRetired, custodyBook, custodyPaper, custodyPaperFinding, custodyLossCarry, custodyCouponDue, capitalGainsTax, dividendTax, capitalTaxAssessed, capitalTaxOutstanding, capitalTaxWrittenOff, capitalTaxConsolidated, bankFees,
                 bankAllowance, bankProvisions, bankDividends,
                 taxWage, taxProperty, taxSales, taxBusiness, taxIndustrial,
                 contributions, pensionBill, healthBill,
@@ -2089,8 +2189,12 @@ public class HistorySave {
         if (sectorNetIncome != null) for (List<Double> s : sectorNetIncome.values()) scaleAll(scale, s);
         // The research's spend (R5) is money; its researchers and the share of the equipment fitted are not.
         if (researchSeries != null && researchSeries.get(RESEARCH_SPEND) != null) scaleAll(scale, researchSeries.get(RESEARCH_SPEND));
+        if (powerSeries != null) for (Map.Entry<String, List<Double>> e : powerSeries.entrySet()) {
+            if (e.getKey().startsWith("powerMoney:") || e.getKey().startsWith("powerPrice:")) scaleAll(scale, e.getValue());
+        }
         // The trade by partner's finished years (DZ1): each cell's value out and in is money; the tables are immutable, so the list takes the scaled ones.
         if (tradeByPartner != null) tradeByPartner.replaceAll(t -> t.scaled(scale));
+        if (debtSurveys != null) debtSurveys.replaceAll(s -> s.scaled(scale));
     }
 
     @SafeVarargs

@@ -421,6 +421,7 @@ public final class MoneyAudit {
                 + sectors.automotive().pending().salesToHouseholds
                 + sectors.luxuryRetail().pending().salesToHouseholds
                 + sectors.restaurants().pending().salesToHouseholds
+                + sectors.businessServices().pending().salesToHouseholds
                 // ...and the households' old steel and copper the yards have bought and paid into their savings at once
                 // (HouseholdBalance.creditScrappedCars()), which the buyer's books strike a press later, where the line
                 // "- sectors OldMetalToHouseholds" reads it: in the savings, not yet out of the pools, so it comes OFF what
@@ -601,12 +602,13 @@ public final class MoneyAudit {
     static final String[] POOL_NAMES = poolNames();
 
     private static String[] poolNames() {
-        String[] names = new String[Sectors.KEYS.length + 4];
+        String[] names = new String[Sectors.KEYS.length + 5];
         names[0] = "city";
         for (int i = 0; i < Sectors.KEYS.length; i++) names[1 + i] = Sectors.KEYS[i].toLowerCase();
         names[Sectors.KEYS.length + 1] = "order book";
         names[Sectors.KEYS.length + 2] = "bank";
         names[Sectors.KEYS.length + 3] = "fund";
+        names[Sectors.KEYS.length + 4] = "bond coupon clearing";
         return names;
     }
 
@@ -677,6 +679,7 @@ public final class MoneyAudit {
          * households and the world, declared below. See TreasuryFund.
          */
         pools[i++] = g.getFund().getCash();
+        pools[i++] = g.getBondMarket().couponClearingCash();
         return pools;
     }
 
@@ -1047,6 +1050,11 @@ public final class MoneyAudit {
          * carries migrants' transfers, as a real one does (spec-wealth 3.4, item 4).
          */
         in += credit.apply("+ households ArrivedWith", g.getHouseholdBalance().getArrivedWith(), Scope.FINANCIAL);
+        in += credit.apply("+ unclaimed HouseholdCash", g.getEstateCustody().cashFromHouseholds(), Scope.DOMESTIC);
+        in += credit.apply("+ unclaimed ForeignCoupon", g.getEstateCustody().foreignCoupon(), Scope.INCOME);
+        in += credit.apply("+ households CapitalGainsTax", g.getHouseholdBalance().getDomesticCapitalGainsTax(), Scope.DOMESTIC);
+        in += credit.apply("+ foreign SecuredCapitalTaxCollected", g.getHouseholdBalance().getForeignCapitalGainsTax(), Scope.FINANCIAL);
+        in += credit.apply("+ households DividendTax", g.getHouseholdBalance().getDividendTax(), Scope.DOMESTIC);
         in += credit.apply("+ households LeftWith (from their savings)", g.getHouseholdBalance().getTakenAway(), Scope.DOMESTIC);
         /*
          * THE CARS THE HOUSEHOLDS BOUGHT FROM ABROAD (2026-09-16).
@@ -1624,7 +1632,8 @@ public final class MoneyAudit {
         note.accept("chk property tax collected", e.getTotalPropertyTax());
         double localSales = 0, localPurchases = 0, bills = 0;
         for (Sector s : sectors.all()) {
-            localSales += s.statement().localSales - s.statement().salesToHouseholds;
+            localSales += s.statement().localSales - s.statement().salesToHouseholds
+                    + s.statement().otherParts.getOrDefault(Sector.HOUSEHOLD_SERVICES, 0.0);
             localPurchases += s.statement().localPurchases;
             bills += s.statement().electricity + s.statement().water;
         }

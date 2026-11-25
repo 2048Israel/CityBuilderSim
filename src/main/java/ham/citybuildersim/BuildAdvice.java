@@ -226,7 +226,7 @@ public final class BuildAdvice {
      * docs/queue/FR3.md 5.4), last: the berths of one kind of cargo (A BERTH
      * THAT PAYS BACK, below).
      */
-    public enum Kind { POWER, WATER, ROADS, TRANSIT, CARE, DEATH, PLOTS, SCHOOL, POLICE, CELLS, HIGHWAYS, PORT }
+    public enum Kind { POWER, WATER, ROADS, TRANSIT, CARE, DEATH, PLOTS, SCHOOL, POLICE, CELLS, HIGHWAYS, PORT, GRID }
 
     /** One measure: a kind, and the care type or the school it is about - or, for PORT, the cargo (null for every other kind). */
     public record Measure(Kind kind, CareType care, EducationType school, Ports.Cargo cargo) {
@@ -241,7 +241,8 @@ public final class BuildAdvice {
         public boolean serves(BuildingsTemplate t) {
             if (t == null) return false;
             switch (kind) {
-                case POWER:   return t.getCategory() == BuildingType.ELECTRICITY;
+                case POWER:   return t.getCategory() == BuildingType.ELECTRICITY && !Substations.isSubstation(t);
+                case GRID:    return Substations.isSubstation(t);
                 case WATER:   return t.getCategory() == BuildingType.WATER;
                 // The streets' roads: a highway gives no access and is the through need's (FR7).
                 case ROADS:   return t.getCategory() == BuildingType.INFRASTRUCTURE && t.getCapacity() > 0 && !t.isHighway();
@@ -261,7 +262,7 @@ public final class BuildAdvice {
         /** The category its buildings are in. */
         public String category() {
             switch (kind) {
-                case POWER: case WATER:        return UTILITIES;
+                case POWER: case WATER: case GRID: return UTILITIES;
                 case ROADS: case HIGHWAYS: case TRANSIT: return ROADS;
                 case CARE: case DEATH: case PLOTS: return HEALTHCARE;
                 case SCHOOL:                   return EDUCATION;
@@ -274,6 +275,7 @@ public final class BuildAdvice {
         public String label() {
             switch (kind) {
                 case POWER:   return "Power";
+                case GRID:    return "Power grid";
                 case WATER:   return "Water";
                 case ROADS:   return "Streets";
                 case HIGHWAYS: return "Through traffic";
@@ -290,7 +292,7 @@ public final class BuildAdvice {
         }
 
         /** True for a figure that is a load - the share of a network's capacity in use. */
-        public boolean isLoad() { return kind == Kind.POWER || kind == Kind.WATER || kind == Kind.ROADS; }
+        public boolean isLoad() { return kind == Kind.POWER || kind == Kind.WATER || kind == Kind.ROADS || kind == Kind.GRID; }
     }
 
     /** The measures a city category's page opens on, in its ring order; empty for a market category. */
@@ -301,6 +303,7 @@ public final class BuildAdvice {
         switch (c.name()) {
             case UTILITIES:
                 out.add(Measure.of(Kind.POWER));
+                out.add(Measure.of(Kind.GRID));
                 out.add(Measure.of(Kind.WATER));
                 break;
             case ROADS:
@@ -444,11 +447,15 @@ public final class BuildAdvice {
         if (!m.serves(t) && !(m.kind() == Kind.ROADS && t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway())) return 0;
         double[] fill = game.getPopulationManager().getJobFillRate();
         switch (m.kind()) {
+            case GRID: return Substations.SUBSTATION_MW * 1000;
             case POWER:
                 // A hydro station adds power only while a slot of the city's river is free (HY1: Game.hydroSlotsFree()).
                 if (t.isHydro() && game.hydroSlotsFree(t) < 1) return 0;
-                // PW1, 2026-11-11: power is planned for the calm peak, so a wind farm adds its firm kW (PowerDispatch.WIND_FIRM of its average), not the average.
-                return u.getProduction1() * (t.isWind() ? PowerDispatch.WIND_FIRM : 1) * staffing(u, fill);
+                // ...and a steam plant only where the city owns water to cool it (PW2: Game.hasCoolingFor()).
+                if (!game.hasCoolingFor(t)) return 0;
+                // PW3, 2026-11-23: power is planned for the year's peak hour, so a wind or solar farm adds its credit there at the city's place,
+                // falling with the variable rows' share with it standing (credit(), THE FIRM SUPPLY); every other row its production1.
+                return u.getProduction1() * credit(game, t, variableShare(game, Map.of(t, 1L))) * firmFill(t, staffing(u, fill));
             case WATER: {
                 /*
                  * THE WATER UNIT (0.7.59, batch J2): a fresh plant adds no
@@ -491,8 +498,8 @@ public final class BuildAdvice {
     public static double built(Game game, Measure m, NewUnit u) {
         BuildingsTemplate t = u.template();
         switch (m.kind()) {
-            // PW1, 2026-11-11: a wind farm's firm kW, as unit() counts it (the card sets the one beside the other).
-            case POWER: return u.getProduction1() * (t.isWind() ? PowerDispatch.WIND_FIRM : 1);
+            // PW1, 2026-11-11: a wind farm's firm kW, as unit() counts it (the card sets the one beside the other); PW3 its credit at the city's place.
+            case POWER: return u.getProduction1() * credit(game, t, variableShare(game, Map.of(t, 1L)));
             case WATER: return u.getProduction1();
             case ROADS: case HIGHWAYS: return t.getCapacity();
             case TRANSIT:           return t.getTransitCapacity();
@@ -594,44 +601,36 @@ public final class BuildAdvice {
         BuildingManager bm = game.getBuildingManager();
         double k = p.scale();
         switch (m.kind()) {
-            case POWER:
+            case GRID: {
+                double[] sd = supplyDemand(game, m, added, p);
+                return sd[0] > 0 ? sd[1] / sd[0] : sd[1] > 0 ? Double.POSITIVE_INFINITY : 0;
+            }
+            case POWER: {
+                // PW3: the year's peak hour's draw over the firm supply (THE FIRM SUPPLY, below).
+                double[] sd = powerSupplyDemand(game, added, p);
+                return sd[0] > 0 ? sd[1] / sd[0] : Double.POSITIVE_INFINITY;
+            }
             case WATER: {
                 // UtilitiesHandler: production = (built + base) x the utilities'
                 // pooled fill, Σ fill x jobs / Σ jobs over both utilities' posts.
                 UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
-                boolean power = m.kind() == Kind.POWER;
                 long[] je = bm.getJobArrayPerCategory(BuildingType.ELECTRICITY);
                 long[] jw = bm.getJobArrayPerCategory(BuildingType.WATER);
                 double jobs = 0;
                 for (int i = 0; i < je.length; i++) jobs += je[i] + jw[i];
                 double filled = u.getAverageUtilityFill() * jobs;
-                double base = power ? u.getBaseProduction() : u.getBaseWaterProduction();
-                // PW1, 2026-11-11: power is planned for the calm peak (spec-electricity 6, "the advice must be peak-aware"): the supply
-                // is the FIRM supply, the base less what wind does not deliver in its calmest half-block, and the demand is the peak
-                // block's draw with the grid's losses in (PowerDispatch.PLAN_PEAK). Water is as it was, to the bit.
-                double nonFirm = 0;
-                if (power) {
-                    for (BuildingsTemplate t : bm.getTemplates()) {
-                        if (t.getCategory() == BuildingType.ELECTRICITY && t.isWind()) {
-                            nonFirm += bm.getQuantity(t.getId()) * t.getProduction1() * (1 - PowerDispatch.WIND_FIRM);
-                        }
-                    }
-                }
-                // ...and water's two parts, the fresh held to the city's limit (0.7.59).
+                double base = u.getBaseWaterProduction();
+                // ...and water's two parts, the fresh held to the city's limit (0.7.59). (Power's own figure is PW3's, THE FIRM SUPPLY.)
                 double fresh = u.getFreshNameplate(), desal = u.getDesalNameplate();
-                double demand = k * (power ? u.getConsumption() : u.getWaterConsumption())
-                        + (power ? WorksValue.pendingPowerLoad(game, p.months()) : 0);
+                double demand = k * u.getWaterConsumption();
                 for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
                     BuildingsTemplate t = e.getKey();
                     long n = e.getValue();
                     NewUnit nu = adding(game, t, n);
-                    if (t.getCategory() == (power ? BuildingType.ELECTRICITY : BuildingType.WATER)) {
-                        base += n * nu.getProduction1();
-                        if (power && t.isWind()) nonFirm += n * nu.getProduction1() * (1 - PowerDispatch.WIND_FIRM);
-                    }
+                    if (t.getCategory() == BuildingType.WATER) base += n * nu.getProduction1();
                     if (t.isFreshWater()) fresh += n * nu.getProduction1();
                     if (t.isSeaWater()) desal += n * nu.getProduction1();
-                    demand += n * (power ? nu.getElectricityConsumption() : nu.getWaterConsumption());
+                    demand += n * nu.getWaterConsumption();
                     if (t.getCategory() == BuildingType.ELECTRICITY || t.getCategory() == BuildingType.WATER) {
                         for (JobType job : JobType.values()) {
                             int posts = nu.getJobs(job);
@@ -642,14 +641,10 @@ public final class BuildAdvice {
                     }
                 }
                 double average = jobs > 0 ? filled / jobs : 1;
-                if (power) {
-                    base -= nonFirm;
-                    demand *= PowerDispatch.PLAN_PEAK;
-                }
-                double supply = average == 0 ? (power ? 10000 : 8000) : base * average;
+                double supply = average == 0 ? 8000 : base * average;
                 // Past the fresh water limit the fresh plants treat the cap (UtilitiesHandler,
                 // THE FRESH WATER LIMIT); short of it, the line above to the bit.
-                if (!power && fresh * average > u.getFreshCap()) {
+                if (fresh * average > u.getFreshCap()) {
                     supply = UtilitiesHandler.waterOutput(fresh, desal, average, u.getFreshCap());
                 }
                 return supply > 0 ? demand / supply : Double.POSITIVE_INFINITY;
@@ -694,6 +689,91 @@ public final class BuildAdvice {
         }
     }
 
+    /* ----- THE FIRM SUPPLY (PW3, 2026-11-23; spec-electricity 2.8) -----
+       Power is planned for the year's peak hour (PowerDispatch.PLAN_PEAK_HOUR, losses in), and the supply that meets
+       it is the FIRM supply: the founding grid at the utilities' pooled fill, the works' own power sold to the grid
+       (PW1-P's first gap: it was left out, so a city of works was told to build plants it did not need), and every
+       plant at its own posts' fill (the fifth: one farm's posts no longer lower every plant's output) times its
+       credit - a fuelled row's production1 is its availability already and a station's its water, so 1, and a wind
+       or solar farm its output in the peak hours at the city's place, falling as the variable rows make more of the
+       city's energy (PowerDispatch.windCredit(), solarCredit()). The NEEDS YOU line is the reserve test's,
+       CityNeeds.POWER_YELLOW. ----- */
+
+    /** The variable rows' share of the city's energy with these added: the wind and solar farms' average kW (the sun's at the city's place) over the city's draw; 0 drawing nothing. */
+    public static double variableShare(Game game, Map<BuildingsTemplate, Long> added) {
+        UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+        double draw = u.getConsumption();
+        if (!(draw > 0)) return 0;
+        BuildingManager bm = game.getBuildingManager();
+        double sun = PowerDispatch.solarYear(u.latitude(), u.trackers()), kw = 0;
+        // ...the standing stacks, not the catalogue: a plant off the menu still stands and still generates.
+        for (BuildingsStacks stack : bm.getStacksView()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.isWind() || t.isSolar()) kw += stack.getQuantity() * t.getProduction1() * (t.isSolar() ? sun : 1);
+        }
+        for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
+            BuildingsTemplate t = e.getKey();
+            if (t.isWind() || t.isSolar()) kw += e.getValue() * adding(game, t, e.getValue()).getProduction1() * (t.isSolar() ? sun : 1);
+        }
+        return Math.max(0, kw) / draw;
+    }
+
+    /** A plant's firm kW over its production1 at this share of the city's energy from the variable rows: a wind farm's and a solar farm's credit at the city's place and rack (PowerDispatch), every other row's 1. */
+    public static double credit(Game game, BuildingsTemplate t, double share) {
+        if (t.isWind()) return PowerDispatch.windCredit(share);
+        if (t.isSolar()) {
+            UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+            return PowerDispatch.solarCredit(u.latitude(), u.trackers(), share);
+        }
+        return 1;
+    }
+
+    /** The share of a plant's production1 its staffing gives: its posts' fill, a hydro station's all of it with anybody on shift (its water, as UtilitiesHandler counts a station's month). */
+    static double firmFill(BuildingsTemplate t, double staffed) {
+        return t.isHydro() ? (staffed > 0 ? 1 : 0) : staffed;
+    }
+
+    /** Power's {firm supply, the peak hour's draw}, kW, with these buildings standing as well, at `p`'s demand: THE FIRM SUPPLY above. */
+    private static double[] powerSupplyDemand(Game game, Map<BuildingsTemplate, Long> added, Ahead p) {
+        UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+        BuildingManager bm = game.getBuildingManager();
+        double[] fill = game.getPopulationManager().getJobFillRate();
+        long[] je = bm.getJobArrayPerCategory(BuildingType.ELECTRICITY);
+        long[] jw = bm.getJobArrayPerCategory(BuildingType.WATER);
+        double jobs = 0;
+        for (int i = 0; i < je.length; i++) jobs += je[i] + jw[i];
+        double filled = u.getAverageUtilityFill() * jobs;
+        double demand = p.scale() * u.getConsumption() + WorksValue.pendingPowerLoad(game, p.months());
+        double share = variableShare(game, added), firm = Math.max(0, u.getWorksPower());
+        // ...each standing stack (not the catalogue's templates: a plant off the menu still stands), at its own posts' fill.
+        for (BuildingsStacks stack : bm.getStacksView()) {
+            BuildingsTemplate t = stack.getBuilding();
+            long q = stack.getQuantity();
+            if (t.getCategory() == BuildingType.ELECTRICITY && q > 0)
+                firm += q * t.getProduction1() * credit(game, t, share) * firmFill(t, staffing(t, fill));
+        }
+        for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
+            BuildingsTemplate t = e.getKey();
+            long n = e.getValue();
+            NewUnit nu = adding(game, t, n);
+            demand += n * nu.getElectricityConsumption();
+            if (t.getCategory() == BuildingType.ELECTRICITY) firm += n * nu.getProduction1() * credit(game, t, share) * firmFill(t, staffing(nu, fill));
+            // ...and the posts of a utility added join the pool the founding grid runs at, as UtilitiesHandler pools them.
+            if (t.getCategory() == BuildingType.ELECTRICITY || t.getCategory() == BuildingType.WATER) {
+                for (JobType job : JobType.values()) {
+                    int posts = nu.getJobs(job);
+                    if (posts == 0) continue;
+                    jobs += (double) n * posts;
+                    filled += (double) n * posts * (job.ordinal() < fill.length ? fill[job.ordinal()] : 1);
+                }
+            }
+        }
+        double pooled = jobs > 0 ? filled / jobs : 1;
+        // The founding grid at the pooled fill, and at its size with nobody on shift (UtilitiesHandler.updateEnergyRatio()).
+        firm += u.getFoundingGridKw() * (pooled > 0 ? pooled : 1);
+        return new double[] {Math.max(0, firm), demand * PowerDispatch.PLAN_PEAK_HOUR};
+    }
+
     /**
      * What the measure has against what it needs, with these buildings
      * standing as well, in the measure's own unit: generation or treatment
@@ -716,19 +796,26 @@ public final class BuildAdvice {
         BuildingManager bm = game.getBuildingManager();
         double k = p.scale();
         switch (m.kind()) {
-            case POWER: case WATER: {
+            case GRID: {
+                UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+                double n = bm.getQuantity(Substations.ID);
+                double draw = k * u.getConsumption() + WorksValue.pendingPowerLoad(game, p.months());
+                for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
+                    if (Substations.isSubstation(e.getKey())) n += e.getValue();
+                    draw += e.getValue() * adding(game, e.getKey(), e.getValue()).getElectricityConsumption();
+                }
+                double supply = Math.max(u.getFoundingGridKw(), n * Substations.SUBSTATION_MW * 1000);
+                double season = PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth()));
+                return new double[] {supply, Substations.peak(draw, season)};
+            }
+            case POWER:
+                return powerSupplyDemand(game, added, p);
+            case WATER: {
                 double load = figure(game, m, added, p);
                 UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
-                double demand = k * (m.kind() == Kind.POWER ? u.getConsumption() : u.getWaterConsumption())
-                        + (m.kind() == Kind.POWER ? WorksValue.pendingPowerLoad(game, p.months()) : 0);
-                for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
-                    NewUnit nu = adding(game, e.getKey(), e.getValue());
-                    demand += e.getValue() * (m.kind() == Kind.POWER
-                            ? nu.getElectricityConsumption() : nu.getWaterConsumption());
-                }
-                // PW1, 2026-11-11: figure() reads power against the peak block's draw, so the demand here is that draw and the supply
-                // is the firm supply it implies (shortfall() then reads peak draw / NETWORK_YELLOW less firm supply).
-                if (m.kind() == Kind.POWER) demand *= PowerDispatch.PLAN_PEAK;
+                double demand = k * u.getWaterConsumption();
+                for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet())
+                    demand += e.getValue() * adding(game, e.getKey(), e.getValue()).getWaterConsumption();
                 return new double[] {load > 0 ? demand / load : 0, demand};
             }
             case ROADS: {
@@ -838,7 +925,7 @@ public final class BuildAdvice {
     /** Whether a measure's gauge reads as served (0.7.41): power, water, the road, transit, care and the schools. */
     public static boolean isServed(Measure m) {
         switch (m.kind()) {
-            case POWER: case WATER: case ROADS: case HIGHWAYS: case TRANSIT: case CARE: case SCHOOL: return true;
+            case POWER: case WATER: case ROADS: case HIGHWAYS: case TRANSIT: case CARE: case SCHOOL: case GRID: return true;
             default: return false;
         }
     }
@@ -1037,7 +1124,9 @@ public final class BuildAdvice {
      */
     public static boolean clear(Measure m, double figure) {
         switch (m.kind()) {
-            case POWER: case WATER: return figure < CityNeeds.NETWORK_YELLOW;
+            case GRID: return figure <= 1;
+            case POWER: return figure < CityNeeds.POWER_YELLOW;
+            case WATER: return figure < CityNeeds.NETWORK_YELLOW;
             case ROADS:   return figure < InfrastructureManager.STRAINED;
             case HIGHWAYS: return figure < CityNeeds.HIGHWAY_MIN_FILL;
             case CARE:    return figure > (m.care() == CareType.GENERAL ? CityNeeds.GENERAL_YELLOW : CityNeeds.OTHER_CARE_YELLOW);
@@ -1217,11 +1306,25 @@ public final class BuildAdvice {
         return !(sd[1] > 0) || sd[0] >= sd[1];
     }
 
+    /**
+     * What the city lacks this month (PW3, 2026-11-24): every measure but power is lacking when it is not maintained now; power is short when
+     * the firm supply is below the draw of the peak block in the year's highest month (PowerDispatch.PLAN_PEAK_SEASON), the block the month's
+     * dispatch serves and charges at its worst: the peak hour (PLAN_PEAK_HOUR) is the plan's, not the month's, and the peak block at the
+     * year's mean (PLAN_PEAK) leaves the highest month's unserved.
+     */
+    public static boolean lacksNow(Game game, Measure m) {
+        if (m.kind() != Kind.POWER) return !maintained(game, m, Map.of(), NOW);
+        if (!warranted(game, m)) return false;
+        double[] sd = supplyDemand(game, m, Map.of(), NOW);
+        return sd[1] > 0 && sd[0] < sd[1] * PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR;
+    }
+
     /** Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. */
     public static final double FIRST_WORK_SHARE = .30;
 
     /** Below a useful share of the smallest work, no shortage is declared or forced (HW1). */
     public static boolean warranted(Game game, Measure m) {
+        if (m.kind() == Kind.GRID) return supplyDemand(game, m, Map.of())[1] > 0;
         if (!AutoBuilder.essential(m)) return true;
         double demand = supplyDemand(game, m, Map.of())[1];
         if (!(demand > 0)) return false;
@@ -1353,7 +1456,8 @@ public final class BuildAdvice {
 
     /** One building weighed for a need: its count at its projection, and where it ranks - or, paving, gravel roads paved (0.7.70). */
     private record Weighed(BuildingsTemplate t, int tier, double per, double unit, long count,
-                           boolean closes, boolean fits, Ahead ahead, double lead, boolean paving, WorksValue.Value value) { }
+                           boolean closes, boolean fits, Ahead ahead, double lead, boolean paving, WorksValue.Value value,
+                           double rank) { }
 
     /** One need's suggestion, or null when what is on site already keeps it ahead or no building can help. */
     static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft) {
@@ -1394,24 +1498,44 @@ public final class BuildAdvice {
         Map<BuildingsTemplate, Long> site = maintain ? game.getAutoBuilder().pendingCapacity(game, m) : onSite(game, m);
         double whenOnSite = figure(game, m, site);
         // JUDGEMENT: what is on site already keeps it ahead, sized as an order placed now would be - nothing to add.
-        boolean full = maintain && AutoBuilder.essential(m);
-        if (!full && ahead(game, m, site, opening(game, 0, slack))) return null;
+        // PW3 (PW1-P's second gap): power's site counts a plant only from its opening, so a plant still going up past the
+        // order's horizon does not keep it ahead; and power passed is weighed by the spread (THE POWER PLANNER, below).
+        boolean full = maintain && AutoBuilder.essential(m), power = m.kind() == Kind.POWER;
         double before = need != null ? need.value() : figure(game, m, new LinkedHashMap<>());
+        Ahead now = opening(game, 0, slack);
+        // ...and the automatic path's promise (HW1, AutoBuilder.promisedMonths()): a candidate opening after the site's first
+        // completion is due counts the site whole while the promise stands; NaN (none, or the Build card's) reads every one by opening.
+        double promised = full && power ? game.getAutoBuilder().promisedMonths(game, m) : Double.NaN;
+        if (!full && ahead(game, m, power ? WorksValue.openBy(game, site, now.months()) : site, now))
+            return power ? spread(game, need, m, site, before, whenOnSite, cashLeft, landLeft, skip) : null;
 
         List<Weighed> weighed = new ArrayList<>();
+        // PW3: what each power candidate was read with (the plants open at its own opening, and its lead), for placeFarms() below.
+        Map<BuildingsTemplate, Map<BuildingsTemplate, Long>> opened = new LinkedHashMap<>();
+        Map<BuildingsTemplate, Double> leads = new LinkedHashMap<>();
+        // ...and every firm row the city could order, the faster ones each due row is weighed against (THE NEED DATE, below), each with
+        // the months until the menu brings it (0 for a row known now).
+        Map<BuildingsTemplate, Integer> firmRows = new LinkedHashMap<>();
+        // ...and the rows due by the waiver alone whose need date is already past their last on-time month (late, below).
+        java.util.Set<BuildingsTemplate> late = new java.util.HashSet<>();
         for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
             // The streets' candidates: every road and line but a highway, which gives no access (FR7); the highways' the Elevated Highway alone.
             boolean candidate = m.kind() == Kind.ROADS
                     ? t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway() : m.serves(t);
             if (!candidate || skip.contains(t)) continue;
+            // PW3 (REV-PW3 #3): the reserve test credits a wind or solar farm at its falling credit (THE FIRM SUPPLY), as planners credit
+            // them at their ELCC, and holds its count to the farms that keep the variable rows' share of the energy at or under
+            // PowerDispatch.CREDIT_HALF (reserveMost()): past it a fleet adds only the floor's tenth, so wind alone never passes the test.
+            // The firm rows are ranked by the screening curve and a farm that closes the gap is weighed against that pick (placeFarms()).
             double unit = unit(game, m, t);
             if (maintain && roadKind(m) && unit <= 0) unit = built(game, m, t);
             // A building the city cannot staff at all, or one that does not
             // move the figure, serves nothing.
             if (!(unit > 0)) continue;
+            if (power && !isFarm(t)) firmRows.put(t, 0);
             // Counted twice: at today's demand with the slack, for the order's
             // own wait; then at the demand it opens to after that wait.
-            long most = m.kind() == Kind.POWER && t.isHydro() ? Math.min(MOST, game.hydroSlotsFree(t)) : MOST;
+            long most = power ? reserveMost(game, t, site) : MOST;
             Map<BuildingsTemplate, Long> one = plus(new LinkedHashMap<>(), t, 1);
             long[] today = count(game, m, site, one, new Ahead(0, 1, slack), most, maintain);
             if (today[0] <= 0 && !full) continue;
@@ -1419,18 +1543,53 @@ public final class BuildAdvice {
             double lead;
             Ahead p;
             long[] found;
+            Map<BuildingsTemplate, Long> at = site;
             while (true) {
                 lead = game.quoteBuild(t, n).months;
                 p = opening(game, lead, slack);
-                found = count(game, m, site, one, p, most, maintain);
+                // PW3: power's own test is at its opening, with what the site has open by then (WorksValue.openBy()); past the
+                // automatic path's promise, the site whole (above).
+                if (power) {
+                    at = lead > promised ? site : WorksValue.openBy(game, site, lead);
+                    most = reserveMost(game, t, at);
+                }
+                found = count(game, m, at, one, p, most, maintain);
                 if (!full || found[0] <= n) break;
                 n = found[0];
             }
+            // ...and a plant whose own opening the site already covers is not a reserve order (the spread may still weigh it).
+            if (power && (full ? maintained(game, m, at, p) : ahead(game, m, at, p))) continue;
             if (found[0] <= 0) {
                 if (!full || found[1] != 1) continue;
                 found = new long[] {1, 1};
             }
+            // PW3, the row's own test (2026-11-24, REV-PW3c to REV-PW3e): a gap at its opening under FIRST_WORK_SHARE (Jerus's HW1 share) of
+            // what the order adds is a need only when the seasonal peak (PowerDispatch.PLAN_PEAK_SEASON: the peak block of the year's highest
+            // month, what the month's dispatch serves at its worst) is short at the row's own completion: its lead and the town's growth over it,
+            // no horizon and no slack. A gap only the opening's horizon and slack project waits for the share (the ensemble: a 67,410 kW plant
+            // for a 29 kW gap 60 months out, $8.1M borrowed). A row that passes is due: the need date falls at or before its completion, so this
+            // month is its last on time, or it is late: due by the waiver alone and short a month before its completion too. Which due row
+            // orders is decided over them all after the loop (THE NEED DATE).
+            if (power) {
+                double wait = Double.isNaN(lead) ? 0 : Math.max(0, lead);
+                double[] sd = supplyDemand(game, m, at, p);
+                boolean share = sd[1] - sd[0] >= FIRST_WORK_SHARE * found[0] * unit;
+                if (!share && !seasonalShort(game, m, at, wait)) continue;
+                double prior = Math.max(0, wait - 1);
+                if (!share && seasonalShort(game, m, prior > promised ? site : WorksValue.openBy(game, site, prior), prior)) late.add(t);
+            }
             boolean closes = found[1] == 1;
+            // PW3 (REV-PW3 #3): a firm row (all but wind and solar) is ranked by the screening curve; a wind or solar farm by its net cost
+            // (reserveRank()): the total for one that closes the gap, which placeFarms() weighs against the firm pick, and a firm kW added
+            // for one that does not. A farm that adds no firm kW is no reserve.
+            boolean farm = power && (t.isWind() || t.isSolar());
+            double rank = !power ? 0 : farm ? reserveRank(game, t, found[0], closes, lead, at, p, landLeft)
+                    : screening(game, t, found[0], at, p, landLeft);
+            if (farm && !(rank < Double.POSITIVE_INFINITY)) continue;
+            if (power) {
+                opened.put(t, at);
+                leads.put(t, lead);
+            }
             boolean fits = game.landNeededFor(t, found[0]) <= availableGround(game, t, landLeft);
             // Every candidate's figure since 0.7.101: its order over its life
             // for each unit it will serve - see A BUILDING OVER ITS LIFE. (A
@@ -1440,14 +1599,43 @@ public final class BuildAdvice {
             WorksValue.Value value = WorksValue.of(game, m, onSite(game, m), t, found[0], landLeft, cashLeft);
             double per = value.perUsed();
             // Automatic building can buy land: its full price ranks it, rather than a free-land veto (HW1).
-            weighed.add(new Weighed(t, closes ? 0 : 1, per, unit, found[0], closes, fits, p,
+            // PW3: power's reserve order is ranked by the screening curve among the firm rows, and a wind or solar farm by its net cost
+            // (above), within HW1's tier; every other measure by the plan's present value, as HW1 ranks it.
+            int tier = closes ? 0 : 1;
+            weighed.add(new Weighed(t, tier, per, unit, found[0], closes, fits, p,
                     game.quoteBuild(t, found[0]).months,
-                    false, value));
+                    false, value, power ? rank : value.net()));
+        }
+        // PW3, THE NEED DATE (REV-PW3f's P1, 2026-11-24): a due row orders only when no faster firm row, one that can still be on line by
+        // the date, meets the need at its opening for less (timely()). Each row tested at its own lead, the slowest and biggest was the one
+        // that passed: the Oil-Fired Plant's 102.8-month lead saw the seasonal gap of m205 that the 30-month Diesel Station could still
+        // meet, and LongPlaytest borrowed $13.7M at m102; before that, an 86,181 kW plant for towns drawing 3,000 kW (REV-PW3d) and, with the
+        // share held until the month was short, every diesel a whole lead late (REV-PW3e).
+        // A firm row the calendar brings onto the menu within a due row's lead is weighed too, by its arrival and its own lead: a 1908
+        // town short in 1917 does not commit to the 1900 Oil-Fired Plant while the 1910 Diesel Station can still meet the date.
+        if (power && !weighed.isEmpty()) {
+            double longest = 0;
+            for (Weighed w : weighed) longest = Math.max(longest, w.lead());
+            for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+                if (!m.serves(t) || isFarm(t) || skip.contains(t) || firmRows.containsKey(t) || game.getBuildingManager().isTemplateKnown(t))
+                    continue;
+                for (int k = 1; k < longest; k++)
+                    if (game.getBuildingManager().isTemplateKnownIn(t, k)) {
+                        if (unit(game, m, t) > 0) firmRows.put(t, k);
+                        break;
+                    }
+            }
+        }
+        if (power) {
+            List<Weighed> due = new ArrayList<>(weighed);
+            weighed.clear();
+            for (Weighed w : due)
+                if (timely(game, m, w, opened.get(w.t()), late.contains(w.t()), site, promised, firmRows, maintain, landLeft)) weighed.add(w);
         }
         // ...and the city's gravel roads, paved (0.7.70): no ground to fit.
         Weighed paving = m.kind() == Kind.ROADS && !noPaving ? weighPaving(game, m, site, landLeft, slack, maintain, cashLeft) : null;
         if (paving != null) weighed.add(paving);
-        if (weighed.isEmpty()) return null;
+        if (weighed.isEmpty()) return power ? spread(game, need, m, site, before, whenOnSite, cashLeft, landLeft, skip) : null;
         /*
          * JUDGEMENTS, in this order: one that can keep the need ahead beats
          * one that cannot; within that tier the whole plan's net present
@@ -1455,12 +1643,22 @@ public final class BuildAdvice {
          * not override the sum. A tie keeps
          * the catalogue's order (the sort is stable).
          */
-        weighed.sort(java.util.Comparator.comparingInt(Weighed::tier).thenComparingDouble(w -> w.value().net()));
+        weighed.sort(java.util.Comparator.comparingInt(Weighed::tier).thenComparingDouble(Weighed::rank));
+        if (power) placeFarms(game, weighed, opened, leads, landLeft);
         Weighed best = weighed.get(0);
         // Plan the chosen work before its actual order can open. A cheaper small
-        // alternative can wait for its own lead, while a coal-sized plan starts earlier.
-        if (full && maintained(game, m, site, opening(game, best.lead(), slack))) return null;
+        // alternative can wait for its own lead, while a coal-sized plan starts earlier. (Power's candidates were each
+        // tested at their own opening above.)
+        if (full && !power && maintained(game, m, site, opening(game, best.lead(), slack))) return null;
+        if (power) RESERVE_ORDERS.incrementAndGet();
         Weighed next = weighed.size() > 1 ? weighed.get(1) : null;
+        return suggestion(game, need, m, site, before, whenOnSite, best, next, cashLeft, landLeft);
+    }
+
+    /** A need's suggestion from the building ranked first, and the one after it (null with none): its quote, its figures and its ground. */
+    private static Suggestion suggestion(Game game, CityNeeds.Need need, Measure m, Map<BuildingsTemplate, Long> site,
+                                         double before, double whenOnSite, Weighed best, Weighed next,
+                                         double cashLeft, double landLeft) {
         Lost lost = next == null ? null
                 : next.closes() != best.closes() ? Lost.CANNOT_CLOSE
                 : Lost.DEARER;
@@ -1491,6 +1689,294 @@ public final class BuildAdvice {
                 Math.max(0, game.landNeededFor(best.t(), n) - availableGround(game, best.t(), landLeft)),
                 next == null ? null : next.t(), next == null ? Double.NaN : next.per(), lost,
                 credit ? q.total - Math.max(0, cashLeft) : 0, false, best.value(), next == null ? null : next.value());
+    }
+
+    /* =====================================================================
+       THE POWER PLANNER (PW3, 2026-11-23; spec-electricity 2.8)
+
+       Two rules replace HW1's life-cost ranking for power, which treated a
+       wind farm's average as firm and ranked a 325 MW coal plant by its price
+       a kW whatever slice of the load it would serve.
+
+       1. THE RESERVE TEST. The firm supply (THE FIRM SUPPLY) must cover the
+          year's peak hour with the player's reserve at each order's own
+          opening, counting a plant on site only from when it opens. While it
+          does not, the order is the plant cheapest a firm kW-year in the
+          SLICE the gap lies in - all year where the firm supply is under the
+          base block's load, the shoulder's and the peak's hours where it is
+          under the shoulder's, the peak's alone above - its capital at the
+          real rate over its life (lifeFactor()), its fixed running and its
+          fuel for those hours, over the firm kW the gap can use (a unit
+          bigger than the gap pays for its idle part): the screening curve.
+          That curve picks among the firm rows (everything but wind and
+          solar), HW1's tier of those that close the gap first.
+          A wind or solar farm is a candidate at the credit the firm supply
+          gives it (planners credit them at their ELCC toward the reserve
+          margin: NREL, docs.nlr.gov/docs/fy14osti/61182.pdf), a credit that
+          falls as the variable rows' share of the energy rises; its count is
+          held to the farms that keep that share at or under
+          PowerDispatch.CREDIT_HALF (reserveMost()), where the credit has
+          reached its floor and a fleet adds only a tenth: so wind alone
+          never passes the test. A farm whose credit closes the gap is
+          compared with the screening curve's firm pick on total net cost
+          (reserveRank(): the year's capital at the real rate and fixed
+          running, less the year's running it saves, the twelve months
+          dispatched with it as the spread reads it), so that a farm carries
+          the thermal capital it avoids (PJM's Net CONE: the cost of new
+          entry less its energy margins): the farm that costs less is the
+          reserve order, the lowest of several, and with no firm row closing
+          the farms rank among themselves by it. A farm that cannot close is
+          ranked after the firm rows that do, by its net cost a firm kW it
+          adds at its own opening. A gap under FIRST_WORK_SHARE of what the
+          order adds is a need only when the seasonal peak
+          (PowerDispatch.PLAN_PEAK_SEASON: the peak block of the year's
+          highest month) is short at the plant's own completion, its lead
+          and the town's growth over it, no horizon and no slack: a gap the
+          opening's horizon and slack alone project waits (2026-11-24: an
+          order for a 29 kW gap, 60 months out, borrowed $8.1M).
+          THE NEED DATE (REV-PW3f): a row that passes is due, the date the
+          forecast first falls short at or before its completion; it orders
+          only when no faster firm row, which could still be on line by
+          then, meets the need at its opening for less (timely()), and a
+          row due by the waiver alone and already past its last on-time
+          month is no candidate while a faster row can still be on line by
+          the date, whatever it costs. So a
+          long-lead unit is committed early only as the least-cost way to
+          meet the date, a few-MW gap waits for the diesel's own last
+          on-time month, and a month already short orders the cheapest at
+          once (REV-PW3d, an 86,181 kW plant for towns drawing 3,000 kW;
+          REV-PW3e, every diesel a lead late; REV-PW3f, the Oil-Fired Plant
+          for a gap the diesel could still meet). The
+          month's own reading of "short" is lacksNow(): that same block, which
+          the dispatch serves at its worst, not the plan's peak hour, so the
+          holds on every other essential order are not set by a reserve the
+          month never uses.
+       2. THE SPREAD. When the test passes, a plant is still ordered if one
+          more saves the year's running more than it costs: the twelve months
+          dispatched again with it (UtilitiesHandler.yearRunning(), at today's
+          draw), the fuel and the shortage it displaces against its capital
+          over its life and its fixed running, the best saving a dollar of
+          capital first, one at a time.
+       ===================================================================== */
+
+    /** Power's reserve orders suggested (the reserve test fired): PowerPlanCheck's count, never a decision. */
+    public static final java.util.concurrent.atomic.AtomicLong RESERVE_ORDERS = new java.util.concurrent.atomic.AtomicLong();
+
+    /** Power's spread orders suggested (the spread fired): PowerPlanCheck's count, never a decision. */
+    public static final java.util.concurrent.atomic.AtomicLong SPREAD_ORDERS = new java.util.concurrent.atomic.AtomicLong();
+
+    /** The game's hours a year: twelve months of PowerDispatch.MONTH_HOURS. */
+    static final double YEAR_HOURS = 12 * PowerDispatch.MONTH_HOURS;
+
+    /** The slices of the load, the screening curve's (spec 2.8): 0 the base, 1 the shoulder and the peak, 2 the peak alone. */
+    public static int slice(double firmKw, double meanDrawKw) {
+        double lossless = 1 - PowerDispatch.GRID_LOSSES;
+        if (firmKw < meanDrawKw * PowerDispatch.BLOCK_LOAD[PowerDispatch.BASE] / lossless) return 0;
+        if (firmKw < meanDrawKw * PowerDispatch.BLOCK_LOAD[PowerDispatch.SHOULDER] / lossless) return 1;
+        return 2;
+    }
+
+    /** The hours a year a slice's kW is needed: all of them for the base, the shoulder's and the peak's blocks for the shoulder, the peak's alone above (PowerDispatch.BLOCK_HOURS). */
+    public static double sliceHours(int slice) {
+        double share = 0;
+        for (int b = slice == 0 ? 0 : slice == 1 ? PowerDispatch.SHOULDER : PowerDispatch.PEAK; b < PowerDispatch.BLOCKS; b++)
+            share += PowerDispatch.BLOCK_HOURS[b];
+        return share * YEAR_HOURS;
+    }
+
+    /**
+     * The most of a power plant the reserve test counts with `at` open (PW3, REV-PW3 #3): a hydro station's the slots its river has free
+     * (HY1); a wind or solar farm's the farms that keep the variable rows' share of the energy (variableShare(), the figure the credit
+     * falls by) at or under PowerDispatch.CREDIT_HALF, past which a fleet adds only CREDIT_FLOOR's tenth, no reserve a planner builds;
+     * every other row MOST. 0 skips the candidate.
+     */
+    static long reserveMost(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Long> at) {
+        if (t.isHydro()) return Math.min(MOST, game.hydroSlotsFree(t));
+        if (!(t.isWind() || t.isSolar())) return MOST;
+        double have = variableShare(game, at), each = variableShare(game, plus(at, t, 1)) - have;
+        // A city drawing nothing has no share to fall by.
+        if (!(each > 0)) return MOST;
+        return Math.max(0, Math.min(MOST, (long) Math.floor((PowerDispatch.CREDIT_HALF - have) / each + 1e-9)));
+    }
+
+    /** What a kWh a plant runs costs the city: a fuelled row's fuel and variable upkeep (UtilitiesHandler.marginalOf()), a station's variable upkeep, a wind or solar farm's nothing. */
+    public static double runningPerKwh(Game game, BuildingsTemplate t) {
+        return game.getServicesManager().getUtilitiesHandler().runningPerKwh(t);
+    }
+
+    /** n of a plant's capital and ground: the quote of the order, its ground at landValue() on the land left. */
+    static double capitalOf(Game game, BuildingsTemplate t, long n, double landLeft) {
+        return game.quoteBuild(t, n).total + landValue(game, t.getLandSqFt() * (double) n, landLeft);
+    }
+
+    /** What n of a plant cost a year: twelve months of its `capital` over lifeFactor() `life` and of its fixed running (the spread's cost, and the reserve rank's). */
+    static double yearCost(Game game, BuildingsTemplate t, long n, double capital, double life) {
+        return 12 * (capital / life + n * runningCostAt(game, NewUnit.of(game, t), 0));
+    }
+
+    /**
+     * n of a plant's price a firm kW-year for the slice the gap at `p`'s demand lies in, with `at` open (the screening curve, rule 1):
+     * twelve months of its capital and ground over lifeFactor() and of its fixed running (yearCost()), and its running a kWh for the
+     * slice's hours, over the firm kW of the gap it serves; +infinity for one that adds no firm kW. The firm rows' rank.
+     */
+    static double screening(Game game, BuildingsTemplate t, long n, Map<BuildingsTemplate, Long> at, Ahead p, double landLeft) {
+        Measure m = Measure.of(Kind.POWER);
+        double[] sd = supplyDemand(game, m, at, p);
+        double firm = n * unit(game, m, t), used = Math.min(firm, Math.max(0, sd[1] - sd[0]));
+        if (!(used > 0)) return Double.POSITIVE_INFINITY;
+        double hours = sliceHours(slice(sd[0], sd[1] / PowerDispatch.PLAN_PEAK_HOUR));
+        double year = yearCost(game, t, n, capitalOf(game, t, n, landLeft), lifeFactor(game));
+        return (year + runningPerKwh(game, t) * used * hours) / used;
+    }
+
+    /**
+     * A plant's net cost a year (PW3, REV-PW3 #3), lower first: n of it, its yearCost() less the year's running it saves
+     * (UtilitiesHandler.yearRunning() on what is on site by `lead`, the plant's own opening, as spreads() reads it). A wind or solar
+     * farm's rank, and the firm pick's to weigh it against (placeFarms()). For one that `closes` the gap it is the total; for one
+     * that does not, that net cost a firm kW added (PJM's Net CONE), over the firm supply with it at `at` open at `p`'s demand
+     * less without. +infinity for one that adds no firm kW.
+     */
+    static double reserveRank(Game game, BuildingsTemplate t, long n, boolean closes, double lead, Map<BuildingsTemplate, Long> at, Ahead p,
+                              double landLeft) {
+        Measure m = Measure.of(Kind.POWER);
+        double added = supplyDemand(game, m, plus(at, t, n), p)[0] - supplyDemand(game, m, at, p)[0];
+        if (!(added > 0)) return Double.POSITIVE_INFINITY;
+        UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+        Map<BuildingsTemplate, Long> base = WorksValue.openBy(game, onSite(game, m), lead);
+        double saved = u.yearRunning(base) - u.yearRunning(plus(base, t, n));
+        double net = yearCost(game, t, n, capitalOf(game, t, n, landLeft), lifeFactor(game)) - saved;
+        return closes ? net : net / added;
+    }
+
+    /**
+     * Whether a power row that passed its own test, so is due (the need date falls at or before its completion), orders now: THE NEED
+     * DATE (PW3, REV-PW3f). Reality's rule, written once: one need date, the first month the forecast falls short; the candidates the
+     * firm rows that can be on line by then; among them the least-cost by the screening curve, a long-lead unit committed early only as
+     * the least-cost way to meet the date; a few-MW gap a diesel, ordered at the last month it can still be on time; a month already
+     * short ordering at once. Each row's own test reads the date at its own completion, so the rows that can still be on line by it are
+     * the faster ones. `d` waits (false) while a faster firm row:
+     * - can still be on line by the need date, its completion covered, when `d` is `late` (due by the waiver alone, the seasonal peak
+     *   short a month before its own completion too): `d` is no candidate, whatever it costs;
+     * - or, its order for the gap at `d`'s opening (`at`, `d.ahead()`) built within `d`'s own lead, closes a gap `d` does not (HW1's
+     *   tier) or closes it at a lower cost: the screening curve against a firm row's, the total net cost against a farm's
+     *   (placeFarms()'s comparison).
+     * That row orders at its own last on-time month instead, when it is due itself. In a month already short every row is late and none
+     * covered at its completion, and the cheapest orders at once. `site` and `promised` read a faster row's completion as the loop does.
+     * `firm` maps each firm row to the months until the menu brings it, which its completion counts from (0 for a row known now).
+     */
+    private static boolean timely(Game game, Measure m, Weighed d, Map<BuildingsTemplate, Long> at, boolean late,
+                                  Map<BuildingsTemplate, Long> site, double promised, Map<BuildingsTemplate, Integer> firm,
+                                  boolean maintain, double landLeft) {
+        for (Map.Entry<BuildingsTemplate, Integer> row : firm.entrySet()) {
+            BuildingsTemplate u = row.getKey();
+            double one = row.getValue() + game.quoteBuild(u, 1).months;
+            if (u == d.t() || !(one < d.lead())) continue;
+            if (late && !seasonalShort(game, m, one > promised ? site : WorksValue.openBy(game, site, one), one)) return false;
+            long[] c = count(game, m, at, plus(new LinkedHashMap<>(), u, 1), d.ahead(), reserveMost(game, u, at), maintain);
+            if (c[0] <= 0 || c[1] != 1) continue;
+            double soon = row.getValue() + game.quoteBuild(u, c[0]).months;
+            if (!(soon < d.lead())) continue;
+            if (!d.closes()) return false;
+            double cost = isFarm(d.t()) ? reserveRank(game, u, c[0], true, soon, at, d.ahead(), landLeft)
+                    : screening(game, u, c[0], at, d.ahead(), landLeft);
+            if (cost < d.rank()) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Whether the seasonal peak (PowerDispatch.PLAN_PEAK_SEASON, the peak block of the year's highest month) is short `months` on, with
+     * `at` open: the town's growth to then (BusinessInvestment.growthFactor()), no horizon past it and no slack. A row's completion in
+     * suggestFor()'s own test, and THE NEED DATE's reading of which rows can still be on line by it (timely()).
+     */
+    static boolean seasonalShort(Game game, Measure m, Map<BuildingsTemplate, Long> at, double months) {
+        double[] sd = supplyDemand(game, m, at, new Ahead(months, game.getBusinessInvestment().growthFactor(months), 0));
+        return sd[1] > 0 && sd[0] < sd[1] * PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR;
+    }
+
+    /** A wind or solar farm: the rows whose credit falls with their share (reserveMost(), placeFarms()). */
+    private static boolean isFarm(BuildingsTemplate t) { return t.isWind() || t.isSolar(); }
+
+    /**
+     * Where the farms that close the gap stand among the sorted candidates (PW3, REV-PW3 #3; the reviewer's: a farm's credit avoids a
+     * thermal plant's capital). `weighed` is sorted by tier and rank, the firm closers first by the screening curve; a closing farm
+     * carries its total net cost as its rank (reserveRank()). The farms whose total is below the firm pick's, computed by the same
+     * formula at the pick's own n and lead, go first, the lowest first; then the firm closers; then the dearer farms; then the rest
+     * (HW1's second tier). With no firm closer the farms lead, by their totals.
+     */
+    private static void placeFarms(Game game, List<Weighed> weighed, Map<BuildingsTemplate, Map<BuildingsTemplate, Long>> opened,
+                                   Map<BuildingsTemplate, Double> leads, double landLeft) {
+        List<Weighed> farms = new ArrayList<>(), rest = new ArrayList<>();
+        for (Weighed w : weighed) (w.closes() && isFarm(w.t()) ? farms : rest).add(w);
+        if (farms.isEmpty()) return;
+        farms.sort(java.util.Comparator.comparingDouble(Weighed::rank));
+        Weighed pick = rest.isEmpty() || !rest.get(0).closes() ? null : rest.get(0);
+        double firm = pick == null ? Double.POSITIVE_INFINITY
+                : reserveRank(game, pick.t(), pick.count(), true, leads.get(pick.t()), opened.get(pick.t()), pick.ahead(), landLeft);
+        List<Weighed> order = new ArrayList<>();
+        int f = 0, r = 0;
+        while (f < farms.size() && farms.get(f).rank() < firm) order.add(farms.get(f++));
+        while (r < rest.size() && rest.get(r).closes()) order.add(rest.get(r++));
+        while (f < farms.size()) order.add(farms.get(f++));
+        while (r < rest.size()) order.add(rest.get(r++));
+        weighed.clear();
+        weighed.addAll(order);
+    }
+
+    /** One more of a plant weighed by the spread (rule 2): the year's running it saves, what it costs a year, and the net over its capital. */
+    public record Spread(BuildingsTemplate template, double saved, double cost, double capital) {
+        /** What it saves a year less what it costs a year, city money. */
+        public double net() { return saved - cost; }
+        /** ...over its capital and ground: the saving a dollar, what the spread ranks by. */
+        public double ratio() { return capital > 0 ? net() / capital : Double.NEGATIVE_INFINITY; }
+    }
+
+    /**
+     * Every power plant the city could order one more of, weighed by the spread with what is on site standing at that plant's own
+     * opening (WorksValue.openBy() at its quoted lead, as the reserve test reads a site; PW3, REV-PW3 #4); `skip` left out.
+     */
+    public static List<Spread> spreads(Game game, double landLeft, java.util.Set<BuildingsTemplate> skip) {
+        Measure m = Measure.of(Kind.POWER);
+        UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+        Map<BuildingsTemplate, Long> site = onSite(game, m);
+        double life = lifeFactor(game);
+        List<Spread> out = new ArrayList<>();
+        for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
+            if (!m.serves(t) || skip.contains(t) || !(unit(game, m, t) > 0)) continue;
+            // PW3: a plant on site counts from its opening, as the reserve test reads it: one that opens after this plant does is not running
+            // when this one is, so it takes none of its saving (nor blocks it for years while its site is delayed).
+            Map<BuildingsTemplate, Long> base = WorksValue.openBy(game, site, game.quoteBuild(t, 1).months);
+            double saved = u.yearRunning(base) - u.yearRunning(plus(base, t, 1));
+            double capital = capitalOf(game, t, 1, landLeft);
+            double cost = yearCost(game, t, 1, capital, life);
+            out.add(new Spread(t, saved, cost, capital));
+        }
+        return out;
+    }
+
+    /** Power with the reserve test passed (rule 2): one of the plant whose next unit saves the most a dollar of capital, when it saves more than it costs; null when none does. */
+    private static Suggestion spread(Game game, CityNeeds.Need need, Measure m, Map<BuildingsTemplate, Long> site,
+                                     double before, double whenOnSite, double cashLeft, double landLeft,
+                                     java.util.Set<BuildingsTemplate> skip) {
+        List<Spread> all = spreads(game, landLeft, skip);
+        all.sort(java.util.Comparator.comparingDouble(Spread::ratio).reversed());
+        Spread top = all.isEmpty() ? null : all.get(0);
+        if (top == null || !(top.net() > 0)) return null;
+        BuildingsTemplate t = top.template();
+        double lead = game.quoteBuild(t, 1).months;
+        Ahead p = opening(game, lead, game.getAutoBuilder().getSlack());
+        WorksValue.Value value = WorksValue.of(game, m, onSite(game, m), t, 1, landLeft, cashLeft);
+        boolean fits = game.landNeededFor(t, 1) <= availableGround(game, t, landLeft);
+        Weighed best = new Weighed(t, 0, value.perUsed(), unit(game, m, t), 1, true, fits, p, lead, false, value, -top.ratio());
+        Weighed next = null;
+        if (all.size() > 1 && all.get(1).net() > 0) {
+            Spread s2 = all.get(1);
+            WorksValue.Value v2 = WorksValue.of(game, m, onSite(game, m), s2.template(), 1, landLeft, cashLeft);
+            next = new Weighed(s2.template(), 0, v2.perUsed(), unit(game, m, s2.template()), 1, true, true, p,
+                    game.quoteBuild(s2.template(), 1).months, false, v2, -s2.ratio());
+        }
+        SPREAD_ORDERS.incrementAndGet();
+        return suggestion(game, need, m, site, before, whenOnSite, best, next, cashLeft, landLeft);
     }
 
     /**
@@ -1925,7 +2411,7 @@ public final class BuildAdvice {
         WorksValue.Value value = WorksValue.paving(game, m, site, found[0], landLeft, cashLeft);
         double per = value.perUsed();
         BuildingsTemplate to = game.getBuildingManager().getTemplateByName(ConstructionControl.PAVE_TO);
-        return new Weighed(to, closes ? 0 : 1, per, unit, found[0], closes, true, p, lead, true, value);
+        return new Weighed(to, closes ? 0 : 1, per, unit, found[0], closes, true, p, lead, true, value, value.net());
     }
 
     /* =====================================================================
@@ -2036,9 +2522,13 @@ public final class BuildAdvice {
      */
     public static double shortfall(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p) {
         switch (m.kind()) {
+            case GRID: {
+                double[] sd = supplyDemand(game, m, added, p);
+                return sd[1] - sd[0];
+            }
             case POWER: case WATER: {
                 double[] sd = supplyDemand(game, m, added, p);
-                return sd[1] / CityNeeds.NETWORK_YELLOW - sd[0];
+                return sd[1] / (m.kind() == Kind.POWER ? CityNeeds.POWER_YELLOW : CityNeeds.NETWORK_YELLOW) - sd[0];
             }
             case ROADS: {
                 InfrastructureManager r = roads(game, added, p.scale());

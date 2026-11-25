@@ -166,18 +166,26 @@ public class MedicineCheck {
         row("M8", Group.BUILDING);
         row("M9", Group.STAYS);
         row("M10", Group.STAYS);
+        row("M12", Group.STAYS);
     }
 
-    /** The rows that shorten general care's stays: PM5 first, then the later four. */
+    /** The rows that shorten general care's stays: PM5 first, then the later four, then the rows with their own measure (M12, R6f). */
     static List<String> staysRows() {
         List<String> rows = new ArrayList<>();
         rows.add("PM5");
         rows.addAll(Sickness.LATER_STAYS_ROWS);
+        rows.add("M12");
         return rows;
     }
 
+    /** A stays row's share, typed here from the constants: PM5's, M12's, or the even split's. */
     static double staysShare(String code) {
-        return code.equals("PM5") ? Sickness.STAYS_BEFORE_PM5 : Sickness.STAYS_BEFORE_LATER_ROW;
+        return code.equals("PM5") ? Sickness.STAYS_BEFORE_PM5 : code.equals("M12") ? Sickness.STAYS_BEFORE_M12 : Sickness.STAYS_BEFORE_LATER_ROW;
+    }
+
+    /** A 1900 city's stays factor before any stays row: STAYS_BEFORE_PM5, STAYS_BEFORE_LATER_ROW for each later row, and STAYS_BEFORE_M12. */
+    static double allStaysBefore() {
+        return Sickness.STAYS_BEFORE_PM5 * Math.pow(Sickness.STAYS_BEFORE_LATER_ROW, Sickness.LATER_STAYS_ROWS.size()) * Sickness.STAYS_BEFORE_M12;
     }
 
     public static void main(String[] args) {
@@ -205,7 +213,7 @@ public class MedicineCheck {
         for (Entry e : ResearchCatalog.get().entries()) if (e.field() == ResearchCatalog.Field.MEDICINE) catalogue.add(e.code());
         check("the catalogue's medicine rows, in file order, are exactly MedicalRows.CODES", catalogue.equals(MedicalRows.CODES),
                 catalogue + " against " + MedicalRows.CODES);
-        check("...and are the same sixteen codes whatever the order", new HashSet<>(catalogue).equals(new HashSet<>(MedicalRows.CODES))
+        check("...and are the same codes whatever the order", new HashSet<>(catalogue).equals(new HashSet<>(MedicalRows.CODES))
                 && catalogue.size() == MedicalRows.CODES.size(), catalogue + " against " + MedicalRows.CODES);
         check("the check's own table lists the catalogue's medicine rows", TABLE.keySet().equals(new HashSet<>(catalogue)) && TABLE.size() == catalogue.size(),
                 TABLE.keySet().toString());
@@ -219,11 +227,11 @@ public class MedicineCheck {
             if (groups == null) continue;
             check(code + " is a STEP row exactly when CausesOfDeath.STEPS has a step for it",
                     groups.contains(Group.STEP) == stepCodes.contains(code), groups + ", in STEPS: " + stepCodes.contains(code));
-            check(code + " is a STAYS row exactly when it is PM5 or in Sickness.LATER_STAYS_ROWS",
+            check(code + " is a STAYS row exactly when it is PM5, in Sickness.LATER_STAYS_ROWS or M12",
                     groups.contains(Group.STAYS) == stays.contains(code), groups + ", in the stays rows: " + stays.contains(code));
             if (groups.contains(Group.NOTHING)) {
-                check(code + " moves nothing: in no other group, in neither STEPS nor LATER_STAYS_ROWS",
-                        groups.size() == 1 && !stepCodes.contains(code) && !Sickness.LATER_STAYS_ROWS.contains(code), groups.toString());
+                check(code + " moves nothing: in no other group, in neither STEPS nor Sickness.STAYS_ROWS",
+                        groups.size() == 1 && !stepCodes.contains(code) && !Sickness.STAYS_ROWS.contains(code), groups.toString());
             }
         }
         boolean stepsAreMedical = true, staysAreMedical = true;
@@ -231,6 +239,13 @@ public class MedicineCheck {
         for (String code : Sickness.LATER_STAYS_ROWS) staysAreMedical &= catalogue.contains(code);
         check("every code in CausesOfDeath.STEPS is a medical row", stepsAreMedical, stepCodes.toString());
         check("every code in Sickness.LATER_STAYS_ROWS is a medical row", staysAreMedical, Sickness.LATER_STAYS_ROWS.toString());
+        check("Sickness.STAYS_ROWS, the list staysFactor() reads, is exactly the stays rows typed here, in their order", Sickness.STAYS_ROWS.equals(stays),
+                Sickness.STAYS_ROWS + " against " + stays);
+        boolean shares = true;
+        for (String code : stays) shares &= Sickness.staysBefore(code) == staysShare(code);
+        check("...and Sickness.staysBefore() gives each the share typed here", shares);
+        near("the even split and the rows with their own measure come home to 1950's 10.0 days against 2022-23's 7.3: STAYS_BEFORE_LATER_ROW to the fourth times STAYS_BEFORE_M12",
+                Math.pow(Sickness.STAYS_BEFORE_LATER_ROW, Sickness.LATER_STAYS_ROWS.size()) * Sickness.STAYS_BEFORE_M12, 7.3 / 10.0, 1e-12);
     }
 
     /* ==================== 2. the steps are history's ==================== */
@@ -380,9 +395,8 @@ public class MedicineCheck {
         boolean after1900 = true;
         for (String code : stays) { months.add(world(code)); after1900 &= world(code) > 1; }
         check("fixture: the stays rows are dated in different months, all after the first", months.size() == stays.size() && after1900, months.toString());
-        near("general care's part of the recovery in month 1 is STAYS_BEFORE_PM5 times STAYS_BEFORE_LATER_ROW for each later row",
-                Sickness.staysFactor(rows, 1),
-                Sickness.STAYS_BEFORE_PM5 * Math.pow(Sickness.STAYS_BEFORE_LATER_ROW, Sickness.LATER_STAYS_ROWS.size()), 1e-12);
+        near("general care's part of the recovery in month 1 is STAYS_BEFORE_PM5 times STAYS_BEFORE_LATER_ROW for each later row and STAYS_BEFORE_M12",
+                Sickness.staysFactor(rows, 1), allStaysBefore(), 1e-12);
         for (String code : stays) {
             int w = world(code);
             nearRel(code + ": the stays factor in its month over the month before is one over its share",
@@ -491,7 +505,7 @@ public class MedicineCheck {
 
         /* the stays rows, and TODAY the ring of before R2f */
         Sickness d = twin(nothingFound(), 1);
-        double stays = Sickness.STAYS_BEFORE_PM5 * Math.pow(Sickness.STAYS_BEFORE_LATER_ROW, Sickness.LATER_STAYS_ROWS.size());
+        double stays = allStaysBefore();
         nearRel("a twin on 1900's rows at month 1 recovers at the untreated share plus the served part times the stays factors, general care at 1",
                 d.getLastRecovery(), Sickness.RECOVERY_UNTREATED + (Sickness.RECOVERY_SERVED - Sickness.RECOVERY_UNTREATED) * stays, 1e-12);
         Sickness today = twin(MedicalRows.TODAY, 1);
@@ -543,10 +557,10 @@ public class MedicineCheck {
         play(old, 2);
         play(today, 2);
 
-        double stays = Sickness.STAYS_BEFORE_PM5 * Math.pow(Sickness.STAYS_BEFORE_LATER_ROW, Sickness.LATER_STAYS_ROWS.size());
+        double stays = allStaysBefore();
         Sickness ring = old.getSickness();
         double coverage = old.getHealthcare().getCoverage(CareType.GENERAL);
-        near("the 1900 village's stays factor after two months is STAYS_BEFORE_PM5 times STAYS_BEFORE_LATER_ROW for each later row",
+        near("the 1900 village's stays factor after two months is STAYS_BEFORE_PM5 times STAYS_BEFORE_LATER_ROW for each later row and STAYS_BEFORE_M12",
                 ring.getStaysFactor(), stays, 1e-12);
         near("...its long slot recovers at LONG_RECOVERY_BEFORE_M1", ring.getLongRecovery(), Sickness.LONG_RECOVERY_BEFORE_M1, 1e-12);
         check("fixture: its general care covers some of the people", coverage > 0, String.valueOf(coverage));

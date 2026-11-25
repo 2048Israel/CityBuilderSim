@@ -1,6 +1,6 @@
-# PowerDispatchCheck.java - 412 lines · 24 methods · 1 constants · harnesses
+# PowerDispatchCheck.java - 413 lines · 24 methods · 1 constants · harnesses
 
-`ham/citybuildersim/PowerDispatchCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PowerDispatchCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The month's merit order (PW1, 2026-11-11; PowerDispatch, UtilitiesHandler's struck book): the load cut in six half-blocks, the
 > works first, the wind at its weather, the hydro levelling the load, the fuelled rows by marginal cost, the price each half-block
@@ -41,8 +41,8 @@
 | 203 | · 6 |
 | 234 | · 7 |
 | 264 | · 8 |
-| 321 | · 9 |
-| 344 | · 10 |
+| 322 | · 9 |
+| 345 | · 10 |
 
 ## Constants
 
@@ -60,7 +60,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 373 | **type** `public class PowerDispatchCheck` | The month's merit order (PW1, 2026-11-11; PowerDispatch, UtilitiesHandler's struck book): the load cut in six half-blocks, the works first, the wind at its weather, the hydro levelling the load, the fuelled rows by ma... |
+| 40 | 374 | **type** `public class PowerDispatchCheck` | The month's merit order (PW1, 2026-11-11; PowerDispatch, UtilitiesHandler's struck book): the load cut in six half-blocks, the works first, the wind at its weather, the hydro levelling the load, the fuelled rows by ma... |
 | 44 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 49 | 1 | `static void check(String label, boolean ok)` |  |
 | 51 | 3 | `static boolean near(double a, double b, double tol)` |  |
@@ -113,7 +113,7 @@
 |---:|---:|---|---|
 | 236 | 27 | `static void meritOrder()` |  |
 
-### 8 (lines 264-320)
+### 8 (lines 264-321)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -122,17 +122,17 @@
 | 281 | 1 | `static String text(JsonObject o, String key)` |  |
 | 284 | 5 | `static BuildingsTemplate fromRow(String name) throws Exception` | A template built from a row's own keys, whatever the catalog reads of them. |
 | 290 | 5 | `static BuildingsTemplate catalogRow(String name)` |  |
-| 296 | 24 | `static void fuelPerKwh() throws Exception` |  |
+| 296 | 25 | `static void fuelPerKwh() throws Exception` |  |
 
-### 9 (lines 321-343)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 323 | 20 | `static void worksFirst()` |  |
-
-### 10 (lines 344-412)
+### 9 (lines 322-344)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 346 | 66 | `static void struckBook() throws Exception` |  |
+| 324 | 20 | `static void worksFirst()` |  |
+
+### 10 (lines 345-413)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 347 | 66 | `static void struckBook() throws Exception` |  |
 

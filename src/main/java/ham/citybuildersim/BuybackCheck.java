@@ -450,7 +450,10 @@ public class BuybackCheck {
             city.buildStack(template(city, "Convenience Store"), 6, false);
             city.buildStack(template(city, "Industrial Bakery"), 2, false);
             city.buildStack(template(city, "Construction Depot"), 4, false);
-            city.buildStack(template(city, "Coal Power Plant"), 1, false);
+            // NO COAL PLANT, THE CITY THESE SECTIONS WERE WRITTEN AGAINST (PW2, 2026-11-23). The list ordered one, and until PW2 the
+            // treasury refused it (NEEDS_FUNDING), so the town ran on its founding's power; PW2's refigured plant is cheaper and was
+            // bought, a 60-month site that took the crews from the houses (252 of 300 by month 61, against 300 by 37) and the bank's
+            // room to bid. Without it the town is main's to the figure through month 97, the founding's power serving it all.
             city.buildStack(template(city, "Commercial Bank"), 1, false);
             // FS13, 2026-11-20: the sixty months are the stage and no more. A play-until on the migration's declining share (up to 36 months more) stood
             // here with no fixture on it; no section's premise reads the town's people or their leaving now - every one of them is caused by the sale

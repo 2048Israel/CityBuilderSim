@@ -1,6 +1,6 @@
 # SchoolingLadderCheck.java - 171 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/SchoolingLadderCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SchoolingLadderCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Hand-summed monthly cash ledgers for every after-cost qualification (WG3).
 > WHY. A closed-form annuity repeated in a check could agree with the same

@@ -89,8 +89,23 @@ public class ER1Check {
         check("premise: a linked offer remains available for the counterfactual",
                 offer != null && LandMarket.hasLinkedDry(offer));
         if (offer != null) {
-            g.setCashForTest(offer.localPrice(g.getForeignAccounts().getRate())
-                    / LongPlaytest.GROUND_AHEAD_CASH_SHARE * (1 + BuildAdvice.SLACK));
+            // FC2, 2026-11-23: the cash was sized from the offer read with no cash, when no parcel was affordable and the whole
+            // listing's best value was the offer (Game.bestOffer(): the running is the parcels the cash affords). Restored, the
+            // cash affords more of them and the best of those was another, dearer one: 4.08 the offer read and 4.62 the one the
+            // look found, the cash 42.88 for the first and so a budget of 4.29, and the look bought none and counted short, the
+            // shop's plot never freed. So the cash is sized from the offer the cash itself brings, until it covers that offer's
+            // price as the look's budget reads it (a tenth, with the slack): the offer the look buys then is the one the cash
+            // was sized from, on any listing.
+            double rate = g.getForeignAccounts().getRate();
+            double restored = offer.localPrice(rate) / LongPlaytest.GROUND_AHEAD_CASH_SHARE * (1 + BuildAdvice.SLACK);
+            for (int i = 0; i <= land.getMarket().getListing().size(); i++) {
+                g.setCashForTest(restored);
+                LandParcel brought = g.bestOffer(Game.LandNeed.room());
+                double needed = brought == null ? 0
+                        : brought.localPrice(rate) / LongPlaytest.GROUND_AHEAD_CASH_SHARE * (1 + BuildAdvice.SLACK);
+                if (needed <= restored) break;
+                restored = needed;
+            }
             quietly(() -> LongPlaytest.keepGroundAhead(g));
             check("the same ground rule now buys land and permits a plot for the held shop",
                     land.getOwnedSqFt() > owned

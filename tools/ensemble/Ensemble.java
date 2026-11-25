@@ -354,7 +354,8 @@ public class Ensemble {
                     default -> 120;
                 };
                 skip = Math.min(skip, LongPlaytest.longestSkip());
-                run(g, skip);
+                // ...its ground watched across the skip, as LongPlaytest.main's (LP-G1: THE GROUND, WATCHED ACROSS A SKIP).
+                LongPlaytest.skipWatchingGround(g, Math.max(0, Math.min(skip, endMonth - g.getMonth())), () -> run(g, 1));
                 if (g.getMonth() >= endMonth || stuck) break;
                 LongPlaytest.ensureSchools(g);
 

@@ -1166,6 +1166,51 @@ public class Bank {
         return loanRate(policyAnnual, 0, RISK_HOUSEHOLD);
     }
 
+    /** Bank of Canada card APR at a neutral policy rate (S2, spec-credit-housing). */
+    public static final double CARD_NEUTRAL_RATE = .2135;
+    /** Spread over a sound bank's neutral household line, before borrower risk. */
+    public static final double CARD_SPREAD = CARD_NEUTRAL_RATE - DebtManager.NEUTRAL_RATE
+            - BASE_LOSS_RATE - (CAPITAL_RATIO + Bank.CONSERVATION_BUFFER) * (requiredReturn() - DebtManager.NEUTRAL_RATE);
+    /** Canada's criminal APR ceiling, effective January 2025 (S29). */
+    public static final double CARD_RATE_CAP = .35;
+    /** Issuers' common Canadian minimum (FCAC, S5). */
+    public static final double CARD_MINIMUM = .03;
+    /** Principal paid alongside the interest when that exceeds the percentage minimum. */
+    public static final double CARD_MIN_PRINCIPAL = .01;
+    /** Estimated unexpected expenses: two in a year. */
+    public static final double CARD_SHOCK_CHANCE = 1.0 / 6;
+    /** Estimated unexpected bill in months of take-home. */
+    public static final double CARD_SHOCK_MONTHS = .75;
+    /** Estimated spare income used for additional repayment. */
+    public static final double CARD_PAYDOWN = .12;
+    /** Estimated share of late balances catching up each month. */
+    public static final double CARD_CURE = .15;
+    /** Stock/hazard equivalent of Fed 3.82% charge-offs / 2.85% delinquency (S3). */
+    public static final double CARD_CHARGE_OFF_MONTHS = 12 * 2.85 / 3.82;
+    /** Estimated lender acceptance in the bottom tier. */
+    public static final double CARD_BOTTOM_ACCESS = .60;
+    /** Estimated lender acceptance above the bottom tier. */
+    public static final double CARD_OTHER_ACCESS = .95;
+
+    /** The card's base price; Household adds its holders' own risk and enforces the cap. */
+    public double cardRate(double policyAnnual) {
+        return Math.min(CARD_RATE_CAP, householdRate(policyAnnual) + CARD_SPREAD);
+    }
+
+    /** No card without positive income; a charge-off excludes its share, not its neighbours. */
+    public static double cardAccess(double income, PayTier tier, double shutOut) {
+        if (!(income > 0)) return 0;
+        double accepted = tier == PayTier.UNSKILLED ? CARD_BOTTOM_ACCESS : CARD_OTHER_ACCESS;
+        return accepted * Math.max(0, 1 - Math.min(1, shutOut));
+    }
+
+    /** Performing balances' annual loss plus late balances' charge-off before cure. */
+    public static double cardAllowance(double debt, double late) {
+        late = Math.min(Math.max(0, debt), Math.max(0, late));
+        double lossShare = 1 / (1 + CARD_CURE * CARD_CHARGE_OFF_MONTHS);
+        return Math.max(0, debt - late) * BASE_LOSS_RATE + late * lossShare;
+    }
+
     /**
      * What a good credit pays to borrow here: prime, since 0.7.7. One
      * definition, so the carry trade and the screens cannot drift. It was
@@ -4178,8 +4223,6 @@ public class Bank {
     /** Leverage past which a business borrower is in trouble ("stage 2"): BusinessDebtManager.MAX_LOAN_TO_ASSETS, the most the shortfall desk lends against a borrower's assets - past it the bank would not lend it another dollar to cover a loss. Since 0.7.8's staging a line each FIRM is read against, so a sector at it has half its book in stage 2 (stageTwoShare()), and past it most (getStage()). */
     public static final double SECTOR_WATCH_LEVERAGE = BusinessDebtManager.MAX_LOAN_TO_ASSETS;
 
-    /** Months of income owed past which a family's credit line is in trouble ("stage 2"): half its ceiling, HouseholdBalance.CREDIT_LIMIT_MONTHS - from there it owes more of its room than it has left. */
-    public static final double HOUSEHOLD_WATCH_MONTHS = HouseholdBalance.CREDIT_LIMIT_MONTHS / 2;
 
     /** The key the families' book is saved and shown under, beside the sectors' names. */
     public static final String HOUSEHOLD_BOOK = "Households";
@@ -4292,27 +4335,6 @@ public class Bank {
         return BASE_LOSS_RATE * (Math.max(0, lgd) / BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT);
     }
 
-    /** A household cell in trouble: owing past HOUSEHOLD_WATCH_MONTHS of its income. */
-    public static boolean householdWatched(double monthsOwed) {
-        return monthsOwed > HOUSEHOLD_WATCH_MONTHS;
-    }
-
-    /**
-     * The allowance a household cell's debt holds: its year's expected loss
-     * while sound; once it is in trouble its whole debt - a discharge writes
-     * all of it off (Household.discharge()) - scaled from nothing at
-     * HOUSEHOLD_WATCH_MONTHS to all of it at the discharge line,
-     * HouseholdBalance.BANKRUPT_AT_MONTHS. Never less than the year's loss.
-     */
-    public static double householdAllowance(double debt, double monthsOwed) {
-        if (!(debt > 0)) return 0;
-        double stage1 = debt * BASE_LOSS_RATE;
-        if (!householdWatched(monthsOwed)) return stage1;
-        double closeness = Math.min(1, (monthsOwed - HOUSEHOLD_WATCH_MONTHS)
-                / (HouseholdBalance.BANKRUPT_AT_MONTHS - HOUSEHOLD_WATCH_MONTHS));
-        return Math.max(stage1, debt * closeness);
-    }
-
     /** Each sector's allowance by name, what each held when the month opened, and what each was written off by this month. */
     private final java.util.Map<String, Double> sectorAllowance = new java.util.LinkedHashMap<>();
     private final java.util.Map<String, Double> openingSectorAllowance = new java.util.LinkedHashMap<>();
@@ -4343,7 +4365,7 @@ public class Bank {
      *                    readings a new loan is priced on, and the loss is
      *                    struck on today's debt
      * @param households  the families' allowance, summed cell by cell with
-     *                    householdAllowance() (HouseholdBalance.lossAllowance())
+     *                    cardAllowance() (HouseholdBalance.lossAllowance())
      * @param householdsWatched the debt of the cells in trouble
      */
     public void provide(java.util.Map<String, double[]> sectors, double households, double householdsWatched) {
@@ -4480,6 +4502,36 @@ public class Bank {
     /** The least buffer a bank holds over the minimum: the Basel III capital conservation buffer, 2.5% of risk-weighted assets (BCBS, December 2010). */
     public static final double CONSERVATION_BUFFER = .025;
 
+    /*
+     * BASEL III IS A DATE (R6f, L8): the conservation buffer is Basel III's,
+     * in force in Canada from 1 Jan 2013 (OSFI's capital guideline). The 8%
+     * minimum, CAPITAL_RATIO, is the total-capital one, the 1988 Accord's,
+     * which Basel III left "at the existing level of 8.0%" (BIS, 12 Sep
+     * 2010); this bank's capital is all common equity, so the common-equity
+     * and Tier 1 minimums under it (2% and 4% before, 4.5% and 6% after)
+     * never bind. So before L8 a bank holds over the minimum only what its
+     * own worst year asks. Game tells it which rule stands at the founding,
+     * at the top of every month and on a load (Game.policyHearsTheMonth()):
+     * today's in a city founded the default way, which knows every row, and
+     * in a 1900 city from the month L8 is known there. Not saved: the month
+     * and the city's research say it again.
+     */
+
+    /** The least buffer a bank holds over the minimum before Basel III (L8): none was required, so its buffer is its worst year alone (BIS, 12 Sep 2010: the conservation buffer is Basel III's). */
+    public static final double BUFFER_BEFORE_L8 = 0;
+
+    /** Whether the Basel III conservation buffer is the city's rule this month: true until Game says otherwise, as in every city that knows L8. */
+    private boolean conservationBufferRequired = true;
+
+    /** Hears which capital rule stands this month: true from the month L8 is known (always, in a city founded the default way). */
+    public void hearCapitalRule(boolean basel3) { conservationBufferRequired = basel3; }
+
+    /** Whether the Basel III conservation buffer is the rule this month (L8). */
+    public boolean conservationBufferRequired() { return conservationBufferRequired; }
+
+    /** The least buffer the rule asks over the minimum this month: CONSERVATION_BUFFER once L8 is known, BUFFER_BEFORE_L8 before. */
+    public double bufferFloor() { return conservationBufferRequired ? CONSERVATION_BUFFER : BUFFER_BEFORE_L8; }
+
     /** How far over its target a bank runs before it calls its capital surplus: 2.5 points, the gap between the ~13.5% Canada's big banks held and the 11% OSFI expected of them (June 2026). */
     public static final double MANAGEMENT_CUSHION = .025;
 
@@ -4577,8 +4629,8 @@ public class Bank {
      */
     public static final double MAX_BUFFER = .085;
 
-    /** Its buffer over the minimum: the worst year it has recorded, never less than CONSERVATION_BUFFER nor more than MAX_BUFFER. */
-    public double capitalBuffer() { return Math.min(MAX_BUFFER, Math.max(CONSERVATION_BUFFER, worstLossRate)); }
+    /** Its buffer over the minimum: the worst year it has recorded, never less than the rule's floor (bufferFloor(): CONSERVATION_BUFFER from L8) nor more than MAX_BUFFER. */
+    public double capitalBuffer() { return Math.min(MAX_BUFFER, Math.max(bufferFloor(), worstLossRate)); }
 
     /** THE TARGET it chooses: the city's minimum and its own buffer. */
     public double capitalTarget() { return CAPITAL_RATIO + capitalBuffer(); }
@@ -6537,7 +6589,7 @@ public class Bank {
                 fundingPosition(), depositPayoutHeld,
                 fundsTransferPrice(policyAnnual, term), runningCostRate(), expectedLossRate(),
                 capitalCharge(policyAnnual, term, RISK_BUSINESS), prime(policyAnnual),
-                householdRate(policyAnnual), carryRate(policyAnnual),
+                cardRate(policyAnnual), carryRate(policyAnnual),
                 Math.max(0, policyAnnual) + CentralBank.WINDOW_PENALTY,
                 fundsTransferPrice(policyAnnual, Mortgage.MORTGAGE_TERM_MONTHS),
                 insuredMortgageRate(policyAnnual),
@@ -6594,9 +6646,14 @@ public class Bank {
                     + " cost %.1f%% of its risk-weighted book, and no regulator asks for more",
                     MAX_BUFFER * 100, worstLossRate * 100);
         }
-        if (worstLossRate > CONSERVATION_BUFFER) {
+        if (worstLossRate > bufferFloor()) {
             return String.format("the minimum and its worst year of losses, %.1f%% of its risk-weighted"
                     + " book - so a year like that one would still leave it at the minimum", worstLossRate * 100);
+        }
+        if (!conservationBufferRequired) {
+            return lossMonths < YEAR_MONTHS
+                    ? "the minimum alone - no buffer over it is required before Basel III (2013), and it has not lived a year to judge its losses by"
+                    : "the minimum alone - no buffer over it is required before Basel III (2013), and it has lost nothing in a year";
         }
         if (lossMonths < YEAR_MONTHS) {
             return String.format("the minimum and the standard %.1f-point buffer - it has not lived a year"

@@ -1081,6 +1081,13 @@ public class HouseholdAccounts {
                 income - tax - rentDue - feesDue - shop);
     }
 
+    /** One adult stage's households on the same per-household statement (HS3); reading it changes no books. */
+    public Statement statementFor(FamilyModel families, FamilyStructure shape, PayTier tier, AdultStage stage) {
+        Statement s = statementFor(families, shape, tier);
+        double homes = families == null || !stage.forms(shape) ? 0 : families.get(shape, tier, stage);
+        return new Statement(homes, s.people(), s.income(), s.tax(), s.rent(), s.fees(), s.shopping(), s.left());
+    }
+
     public double getRowWages(int row)      { return rowWages[row]; }
     public double getRowTax(int row)        { return rowTax[row]; }
     public double getRowRent(int row)       { return rowRent[row]; }

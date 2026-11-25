@@ -1,6 +1,6 @@
-# RailCheck.java - 790 lines · 8 methods · 0 constants · harnesses
+# RailCheck.java - 816 lines · 9 methods · 0 constants · harnesses
 
-`ham/citybuildersim/RailCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RailCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The railway: what it charges, who pays it, and what it does to the band.
 > 
@@ -38,9 +38,9 @@
 > 
 > See claude/transport-and-the-freight-band.md and sectors.Freight.
 
-**Uses:** [Good](Good.md) (21), [Freight](Freight.md) (19), [Traffic](Traffic.md) (15), [Ports](Ports.md) (11), [Sectors](Sectors.md) (9), [Markets](Markets.md) (8), [Sector](Sector.md) (7), [Game](Game.md) (6), [BuildingManager](BuildingManager.md) (5), [GoodsMarket](GoodsMarket.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [GameFiles](GameFiles.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [SectorState](SectorState.md) (2), [CarCheck](CarCheck.md) (2), [Founding](Founding.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [Haulage](Haulage.md) (1), [PriceLevel](PriceLevel.md) (1), [TrainSchedule](TrainSchedule.md) (1), [Statement](Statement.md) (1)
+**Uses:** [Good](Good.md) (21), [Freight](Freight.md) (19), [Traffic](Traffic.md) (15), [Ports](Ports.md) (11), [Sectors](Sectors.md) (10), [Markets](Markets.md) (8), [Game](Game.md) (8), [Sector](Sector.md) (7), [BuildingManager](BuildingManager.md) (5), [GoodsMarket](GoodsMarket.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [GameFiles](GameFiles.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [SubstationCheck](SubstationCheck.md) (2), [SectorState](SectorState.md) (2), [CarCheck](CarCheck.md) (2), [Haulage](Haulage.md) (1), [PriceLevel](PriceLevel.md) (1), [TrainSchedule](TrainSchedule.md) (1), [Founding](Founding.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [Statement](Statement.md) (1)
 
-**Used by (1):** [GdpCheck](GdpCheck.md)
+**Used by (2):** [GdpCheck](GdpCheck.md), [SubstationCheck](SubstationCheck.md)
 
 ## Sections
 
@@ -50,9 +50,9 @@
 | 115 | · 2. THE TWO HALVES ADD UP |
 | 181 | · 3. THE LAND, THE ROAD AND THE CATALOGUE |
 | 252 | · 4. THE SECTOR, IN A CITY |
-| 571 | · 5. AND IT SURVIVES A RELOAD |
-| 661 | · 6. THE MONTH'S TRADE ACROSS A SAVE (A1, 0.7.46) |
-| 704 | · 7. ITS TONNES BY KIND, THE MAP'S TRAINS' (0.8.2, batch FR1) |
+| 528 | · 5. AND IT SURVIVES A RELOAD |
+| 618 | · 6. THE MONTH'S TRADE ACROSS A SAVE (A1, 0.7.46) |
+| 661 | · 7. ITS TONNES BY KIND, THE MAP'S TRAINS' (0.8.2, batch FR1) |
 
 ## Fields (state)
 
@@ -64,13 +64,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 43 | 748 | **type** `public class RailCheck` | The railway: what it charges, who pays it, and what it does to the band. |
+| 43 | 774 | **type** `public class RailCheck` | The railway: what it charges, who pays it, and what it does to the band. |
 | 47 | 7 | `static void quietly(Runnable r)` |  |
 | 55 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 60 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 66 | 3 | `static boolean same(double a, double b)` | Bitwise, not near. |
 | 70 | 3 | `static boolean near(double a, double b, double tol)` |  |
-| 74 | 669 | `public static void main(String[] args)` |  |
-| 753 | 15 | `static void lay(Game game, String name, int count)` | Track, handed to the city rather than waited for. |
-| 774 | 16 | `static boolean allInputsAddUp(Game game)` | The goods bought, plus the services named, come to the input line - for every sector, every month. |
+| 74 | 626 | `public static void main(String[] args)` |  |
+| 702 | 67 | `static void prepareTradeTown(Game game, java.util.function.Consumer<Game> setup)` | The m37 steel town, with real wires before its months and an optional wires counterfactual. |
+| 779 | 15 | `static void lay(Game game, String name, int count)` | Track, handed to the city rather than waited for. |
+| 800 | 16 | `static boolean allInputsAddUp(Game game)` | The goods bought, plus the services named, come to the input line - for every sector, every month. |
 

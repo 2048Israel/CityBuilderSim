@@ -45,26 +45,9 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * The People page on a scene of its own - no stage, no window - drawn kept and built new, for
- * KeptCheck (study UP4): the harness's hands on the page, since what it reaches is the ui
- * package's own. Since UP2 the window's chrome too: the header at the window's width and the rail
- * at its height, each on a scene of its own, drawn by the real refreshHeader() and
- * refreshTabRail() - kept, or with every node new (the pools swapped for empty ones, as a rebuild
- * made them). Since KP1 City History too, on the same scene: its page drawn kept and built new, the
- * hands on what reshapes it, the pointer on its big chart, and the real show methods for what the clock decides.
- * Since KP2 Infrastructure, Services and the land office too, as {@link Page}s: one small shape for the three, each drawn
- * kept from its screen's pool and built new from an empty one, with the hands on what reshapes them, on the fare dial and
- * City History's filter box (the controls) and on the nodes a pointer styles (the hover).
- * Since KP3 the Build screen (the Overview and every category, with the hands on a ring, an order dialled by a card's
- * stepper, a stat card pinned and automatic building), the pages a build is stopped on, the funding and fell-short pages,
- * and the construction page (its tabs, a building picked to demolish, the find box), as Pages of the same shape.
- * Since KP4 the Sectors tab: the list and a business's five pages in both views as Pages, with the hands on a business, a page,
- * the view, Show more, Freight's divisions, the folds and a statement's notes and columns, the pictures the pages hold (the refinery's,
- * a materials industry's, a leg's bar), the figures that count up and the waterfall and ring that grow and sweep, the oil reserve's
- * dials, and the card, the door and the crumb the pointer rests on.
- * Since UP7 the drawer's pinned bar and the construction tab too, each a box made once on a scene of its own and drawn by the real
- * refreshDrawerBar() and refreshConstructionTab() (kept, and built new), and the header's speed reading, its pace swapped for one on a
- * clock the harness moves by hand.
+ * The game's kept screens on scenes of their own, without a stage, for KeptCheck and KeptTimingCheck.
+ * Each Page draws the real screen code from its retained pool or an empty pool. The methods below
+ * expose controls, hover, charts, chrome and comparison state to the model-package harnesses.
  *
  * <p>WHY. A kept page is right only if every month's redraw over last month's nodes ends where
  * a page built new from the same city would; the one way to know is to build both and compare
@@ -244,12 +227,13 @@ public final class KeptBench {
 
     /**
      * The minimap's node hidden (never removed: it stays in the rail where the rail puts it). In a
-     * scene it starts its own pump, which draws a map of the city; the bench has no use for that,
-     * and a node out of view returns from its tick at once.
+     * scene it starts its own pump, which the bench stops: an invisible stamp still belongs to
+     * its scene, so the timer would otherwise retain a completed fixture's entire UI.
      */
     private void keepMiniMapOff() {
         Node mini = ui.miniMapNode();
         if (mini != null && mini.isVisible()) mini.setVisible(false);
+        ui.stopMiniMapPumpForBench();
     }
 
     /** The envelope drawn on its own, as a notice read elsewhere draws it (refreshInboxButton()). */
@@ -744,8 +728,7 @@ public final class KeptBench {
     }
 
     /**
-     * The page laid out again, as the next frames would, until a pass moves nothing (at most SETTLE_PASSES): a wrapped
-     * label's height settles over a pass or two, and the scroller's under the frame a pass after that.
+     * Repeat layout until quiet, including a scroller whose changed content invalidated its bars.
      */
     public void settle() throws Exception {
         settlePasses();
@@ -802,9 +785,7 @@ public final class KeptBench {
     }
 
     /**
-     * Every animation a draw started on the page run to its end, as a pulse would have: a scene with no window has none. Its
-     * on-finished handler runs too (a pulse that reaches the end calls it; a jump and a stop do not): the glow a built tag flashes
-     * is taken off by it, and a count-up's last word set. The page is laid out again after this, not before (see KeptCheck.againstNew).
+     * Finish page animations and their handlers before layout, as a real pulse does on a window.
      */
     public void finishPageAnimations() {
         each(column, KeptBench::finishOne);
@@ -1112,10 +1093,7 @@ public final class KeptBench {
        ===================================================================== */
 
     /**
-     * One of the three pages on the bench: the name the window shows it under, the screen's own pool, how it is
-     * drawn from a pool (what the screen's show method works out first, then the page's code as a kept draw) and how
-     * it goes back to the page it opens on. Drawn from the screen's pool it is the kept page; from an empty one, the
-     * page built new, as every redraw was before KP2.
+     * A screen, its retained pool, its drawing code and the hand that opens its home.
      */
     public final class Page {
         private final String name, screen;
@@ -1435,7 +1413,8 @@ public final class KeptBench {
                 + (keptPools == null ? 0 : keptPools.length) + (keptPanelPools == null ? 0 : keptPanelPools.length)
                 + (keptFramePools == null ? 0 : keptFramePools.length) + (keptHistoryPool == null ? 0 : 1)
                 + (keptChipPools == null ? 0 : keptChipPools.length) + keptLegend.size() + keptRanges.size()
-                + (chartParents == null ? 0 : chartParents.length);
+                + (chartParents == null ? 0 : chartParents.length) + (keptReferenceOwner == null ? 0 : 1)
+                + (keptScreenBody == null ? 0 : 1) + (keptScreenTargets == null ? 0 : 1 + keptScreenTargets.size());
     }
 
     /** An unattached picture counted by the bench: only the diagnostic map could keep it alive. */
@@ -1578,11 +1557,33 @@ public final class KeptBench {
     /** What the kept page held when a page was built new in its place: its top nodes, and what every box under it held. */
     private List<Node> keptPage = List.of();
     private java.util.Map<Pane, List<Node>> keptBoxes = new java.util.IdentityHashMap<>();
+    private Object keptReferenceOwner, keptScreenBody;
+    private java.util.Map<String, Node> keptScreenTargets;
+
+    /** FS5: Bank and Government fresh draws overwrite their body/target owners. Restore them without a healing redraw. */
+    @SuppressWarnings("unchecked")
+    private void screenReferences(Object owner, boolean save) throws ReflectiveOperationException {
+        var body = owner.getClass().getDeclaredField("body");
+        var targets = owner.getClass().getDeclaredField("targets");
+        body.setAccessible(true);
+        targets.setAccessible(true);
+        var live = (java.util.Map<String, Node>) targets.get(owner);
+        if (save) {
+            Object originalBody = body.get(owner);
+            var originalTargets = new java.util.HashMap<>(live);
+            keptReferenceOwner = owner;
+            keptScreenBody = originalBody;
+            keptScreenTargets = originalTargets;
+        } else {
+            body.set(owner, keptScreenBody);
+            live.clear();
+            live.putAll(keptScreenTargets);
+        }
+    }
+
 
     /**
-     * The page built new in place of the kept one (an empty pool, every node new) and laid out, as every redraw was
-     * before KP2: {its draw ms, CSS ms, layout ms}. What the page shares with the kept one - the land office's map - is
-     * taken into the new page, so every box under the kept page is noted for restoreKeptPage() to put its children back.
+     * Draw with an empty pool, saving the kept boxes and proven screen owners for exact restore.
      */
     public double[] showFresh(Page p) throws Exception {
         ensureWindow();
@@ -1590,29 +1591,118 @@ public final class KeptBench {
         keptPage = new ArrayList<>(column.getChildren());
         keptBoxes = new java.util.IdentityHashMap<>();
         for (Node n : keptPage) boxesOf(n, keptBoxes);
-        double ms = p.draw.applyAsDouble(new Kept.Pool());
-        double[] pass = passes();
-        return new double[]{ms, pass[0], pass[1]};
+        Object owner = p.screen.equals("showGovernmentMenu") ? ui.governmentScreen
+                : p.screen.equals("showBankMenu") ? ui.bankScreen : null;
+        try {
+            if (owner != null) screenReferences(owner, true);
+            double ms = p.draw.applyAsDouble(new Kept.Pool());
+            double[] pass = passes();
+            return new double[]{ms, pass[0], pass[1]};
+        } catch (Exception | Error failure) {
+            if (owner != null) {
+                try { restoreKeptPage(); }
+                catch (Exception | Error cleanup) { failure.addSuppressed(cleanup); }
+            }
+            throw failure;
+        }
     }
 
-    /** The kept page back in the column, every box holding what it held, and laid out. */
+    /** The kept page and its captured owners back, without a redraw that could heal a faulty kept value. */
     public void restoreKeptPage() throws Exception {
-        ui.setPage(keptPage.toArray(new Node[0]));
-        for (java.util.Map.Entry<Pane, List<Node>> e : keptBoxes.entrySet()) Kept.set(e.getKey().getChildren(), e.getValue());
-        passes();
-        keptPage = List.of();
-        keptBoxes.clear();
-        release(scene);
+        try {
+            ui.setPage(keptPage.toArray(new Node[0]));
+            for (java.util.Map.Entry<Pane, List<Node>> e : keptBoxes.entrySet()) Kept.set(e.getKey().getChildren(), e.getValue());
+            passes();
+        } finally {
+            try {
+                if (keptReferenceOwner != null) screenReferences(keptReferenceOwner, false);
+            } finally {
+                keptReferenceOwner = null;
+                keptScreenBody = null;
+                keptScreenTargets = null;
+                keptPage = List.of();
+                keptBoxes.clear();
+                release(scene);
+            }
+        }
+    }
+
+    public record ReleasedComparison(List<java.lang.ref.WeakReference<Node>> fresh, boolean signature,
+                                     boolean counters, boolean nodes, boolean roots, boolean aborted) { }
+
+    /** An actual temporary page held deliberately by the release guard's negative control. */
+    private List<Node> retainedComparisonControl = List.of();
+
+    /** Drop only the negative control's deliberately retained roots. */
+    public void clearComparisonReleaseControl() {
+        retainedComparisonControl = List.of();
+        release();
+    }
+
+    /** Eight comparisons of an already active Government page; the last deliberately aborts after making its fresh graph. */
+    public ReleasedComparison retiredGovernmentComparisons() throws Exception {
+        return retiredGovernmentComparisons(false);
+    }
+
+    /** The same release fixture, optionally retaining its first actual fresh page as a leak control. */
+    public ReleasedComparison retiredGovernmentComparisons(boolean retain) throws Exception {
+        if (!"showGovernmentMenu".equals(ui.currentScreen)) throw new IllegalStateException("Government must already be active");
+        return retiredComparisons(government(), retain);
+    }
+
+    /** The same ordinary/aborted/leaked-page fixture for the Bank's proven body and target owners. */
+    public ReleasedComparison retiredBankComparisons(boolean retain) throws Exception {
+        if (!"showBankMenu".equals(ui.currentScreen)) throw new IllegalStateException("Bank must already be active");
+        return retiredComparisons(bank(), retain);
+    }
+
+    private ReleasedComparison retiredComparisons(Page page, boolean retain) throws Exception {
+        finishPageAnimations();
+        settle();
+        var keptNodes = nodesOnPage();
+        var signature = signature();
+        int[] counts = counts(page);
+        List<java.lang.ref.WeakReference<Node>> fresh = new ArrayList<>();
+        Runnable remember = () -> {
+            var distinct = nodesOnPage().stream().filter(n -> !keptNodes.contains(n)).toList();
+            if (retain && retainedComparisonControl.isEmpty()) retainedComparisonControl = distinct;
+            for (Node n : distinct) fresh.add(new java.lang.ref.WeakReference<>(n));
+        };
+        boolean sameSignature = true, sameCounters = true, sameNodes = true, cleared = true, aborted = false;
+        for (int i = 0; i < 8; i++) {
+            if (i == 7) {
+                Page failing = new Page(page.name, page.screen, page.pool, pool -> {
+                    page.draw.applyAsDouble(pool);
+                    finishPageAnimations();
+                    remember.run();
+                    throw new IllegalStateException("FS5 comparison abort fixture");
+                }, page.home);
+                try { showFresh(failing); }
+                catch (IllegalStateException expected) {
+                    if (!"FS5 comparison abort fixture".equals(expected.getMessage())) throw expected;
+                    aborted = true;
+                }
+            } else {
+                showFresh(page);
+                finishPageAnimations();
+                settle();
+                remember.run();
+                restoreKeptPage();
+            }
+            sameSignature &= signature.equals(signature());
+            sameCounters &= java.util.Arrays.equals(counts, counts(page));
+            sameNodes &= keptNodes.equals(nodesOnPage());
+            cleared &= comparisonRoots() == 0;
+        }
+        release();
+        return new ReleasedComparison(fresh, sameSignature, sameCounters, sameNodes, cleared, aborted);
     }
 
     private final WritableImage tiny = new WritableImage(1, 1);
     private final javafx.scene.SnapshotParameters tinyView = new javafx.scene.SnapshotParameters();
 
     /**
-     * What a scene with no window never lets go: a scene is synchronised to its renderer by a pulse, and the nodes that changed wait in its dirty list
-     * (strongly held) until one comes - so every page built new and taken off the scene again stayed in memory, about 5 MB a page, until the next
-     * snapshot (KP5, slice D: the Bank's reshaping alone built 200 and took the 2 GB a harness JVM has). A snapshot of one pixel does the
-     * synchronising and costs nothing to draw.
+     * KP5: one-pixel snapshots drain dirty-node lists on scenes that have no window to pulse them.
      */
     public void release() {
         release(scene, headerScene, railScene, cityScene, sitesScene, listScene, barScene, tabScene);
@@ -1621,6 +1711,264 @@ public final class KeptBench {
     private void release(Scene... scenes) {
         tinyView.setViewport(new javafx.geometry.Rectangle2D(0, 0, 1, 1));
         for (Scene s : scenes) s.getRoot().snapshot(tinyView, tiny);
+    }
+
+    /**
+     * FS5/GB5: {canvases, targets, heap targets, heap bytes} reachable from the UI and its scenes.
+     * Read NGCanvas texture buffers; software stores pixels on heap while D3D/ES2 use video memory.
+     * This measures found buffers only; unexplained residual bytes remain subject to the hard heap bound.
+     */
+    public long[] canvasTargets() {
+        return canvasTargetsProbe(null);
+    }
+
+    /** Actual live Canvas textures: the cache purge must preserve these exact objects. */
+    public java.util.Set<Object> canvasTargetIdentities() {
+        var targets = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object, Boolean>());
+        canvasTargetsProbe(targets);
+        return targets;
+    }
+
+    private List<Node> retainedNodes() {
+        if (!javafx.application.Platform.isFxApplicationThread()) throw new IllegalStateException("node discovery needs the FX thread");
+        java.util.Set<Object> seen = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        java.util.Set<Class<?>> classes = new java.util.HashSet<>();
+        java.util.ArrayDeque<Object> todo = new java.util.ArrayDeque<>();
+        java.util.function.Consumer<Object> push = o -> { if (o != null) todo.push(o); };
+        push.accept(ui);
+        for (Scene sc : new Scene[]{scene, headerScene, railScene, cityScene, sitesScene, listScene, barScene, tabScene}) if (sc != null) push.accept(sc.getRoot());
+        List<Node> nodes = new ArrayList<>();
+        while (!todo.isEmpty()) {
+            Object o = todo.pop();
+            if (!seen.add(o)) continue;
+            if (o instanceof Node n) {
+                nodes.add(n);
+                push.accept(n.getParent());
+                if (n instanceof javafx.scene.Parent pa) for (Node k : pa.getChildrenUnmodifiable()) push.accept(k);
+                if (n instanceof Labeled l) push.accept(l.getGraphic());
+                if (n instanceof ScrollPane sp) push.accept(sp.getContent());
+                push.accept(n.getClip());
+                if (n.hasProperties()) for (Object v : n.getProperties().values()) push.accept(v);
+            }
+            if (o instanceof java.util.Collection<?> c) { for (Object v : c) push.accept(v); continue; }
+            if (o instanceof java.util.Map<?, ?> m) { for (java.util.Map.Entry<?, ?> e : m.entrySet()) { push.accept(e.getKey()); push.accept(e.getValue()); } continue; }
+            if (o instanceof Object[] a) { for (Object v : a) push.accept(v); continue; }
+            for (Class<?> k = o.getClass(); k != null && k.getName().startsWith("ham.citybuildersim.ui."); k = k.getSuperclass()) {
+                boolean first = classes.add(k);
+                for (java.lang.reflect.Field f : k.getDeclaredFields()) {
+                    if (f.getType().isPrimitive()) continue;
+                    boolean isStatic = java.lang.reflect.Modifier.isStatic(f.getModifiers());
+                    if (isStatic && !first) continue;
+                    try {
+                        f.setAccessible(true);
+                        push.accept(f.get(isStatic ? null : o));
+                    } catch (ReflectiveOperationException | RuntimeException skip) {
+                        // a field the walk may not read (a hidden class's): what it holds is not counted
+                    }
+                }
+            }
+        }
+        return nodes;
+    }
+
+    /** Reconstructible bitmap caches on the exact retained node graph, including skin viewport children. */
+    public java.util.Set<Object> bitmapCaches() throws ReflectiveOperationException {
+        return bitmapCaches(retainedNodes());
+    }
+
+    private static java.util.Set<Object> bitmapCaches(List<Node> nodes) throws ReflectiveOperationException {
+        if (!javafx.application.Platform.isFxApplicationThread()) throw new IllegalStateException("cache discovery needs the FX thread");
+        var peer = Node.class.getDeclaredField("peer");
+        var filter = Class.forName("com.sun.javafx.sg.prism.NGNode").getDeclaredField("cacheFilter");
+        peer.setAccessible(true);
+        filter.setAccessible(true);
+        var caches = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object, Boolean>());
+        for (Node node : nodes) {
+            Object ng = peer.get(node);
+            if (ng != null && filter.get(ng) != null) caches.add(filter.get(ng));
+        }
+        return caches;
+    }
+
+    private long[] canvasTargetsProbe(java.util.Set<Object> identities) {
+        var canvases = retainedNodes().stream().filter(javafx.scene.canvas.Canvas.class::isInstance)
+                .map(javafx.scene.canvas.Canvas.class::cast).toList();
+        long holding = 0, onHeap = 0, bytes = 0;
+        try {
+            java.lang.reflect.Field peerField = Node.class.getDeclaredField("peer");
+            peerField.setAccessible(true);
+            Class<?> texture = Class.forName("com.sun.prism.Texture");
+            java.lang.reflect.Method w = texture.getMethod("getPhysicalWidth"), h = texture.getMethod("getPhysicalHeight");
+            for (javafx.scene.canvas.Canvas c : canvases) {
+                Object peer = peerField.get(c);
+                if (peer == null) continue;
+                boolean any = false, heap = false;
+                for (Class<?> k = peer.getClass(); k != null && k != Object.class; k = k.getSuperclass()) {
+                    for (java.lang.reflect.Field f : k.getDeclaredFields()) {
+                        if (f.getType().isPrimitive() || java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+                        f.setAccessible(true);
+                        Object buf = f.get(peer);
+                        if (buf == null) continue;
+                        List<Object> targets = new ArrayList<>();
+                        if (texture.isInstance(buf)) targets.add(buf);
+                        else if (buf.getClass().getName().startsWith("com.sun.javafx.sg.prism.NGCanvas$")) {
+                            for (java.lang.reflect.Field g : buf.getClass().getDeclaredFields()) {
+                                if (g.getType().isPrimitive() || java.lang.reflect.Modifier.isStatic(g.getModifiers())) continue;
+                                g.setAccessible(true);
+                                Object t = g.get(buf);
+                                if (texture.isInstance(t)) targets.add(t);
+                            }
+                        }
+                        for (Object t : targets) {
+                            if (identities != null) identities.add(t);
+                            any = true;
+                            if (t.getClass().getName().startsWith("com.sun.prism.sw.")) {
+                                heap = true;
+                                bytes += 4L * ((Number) w.invoke(t)).longValue() * ((Number) h.invoke(t)).longValue();
+                            }
+                        }
+                    }
+                }
+                if (any) holding++;
+                if (heap) onHeap++;
+            }
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return new long[]{canvases.size(), -1, -1, -1};
+        }
+        return new long[]{canvases.size(), holding, onHeap, bytes};
+    }
+
+    /** The renderer Prism draws with (its pipeline's class: SWPipeline in software, D3DPipeline on Direct3D, ES2Pipeline), or why it could not be asked. */
+    public static String renderer() {
+        try {
+            Object p = Class.forName("com.sun.prism.GraphicsPipeline").getMethod("getPipeline").invoke(null);
+            return p == null ? "none" : p.getClass().getSimpleName();
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return "not asked (" + e.getClass().getSimpleName() + ")";
+        }
+    }
+
+    /**
+     * FS5: release only reusable, unlocked Decora images before weighing live UI ownership.
+     * ImagePool.pruneCache leaves locked images and every node/Canvas/CacheFilter reference intact.
+     * Called on the harness thread after an FX drain; Prism owns the textures on its render thread.
+     * Returns {pools, idle before/after, locked before/after, filters, cached before/after}.
+     */
+    public static int[] releaseIdleEffectImages() throws Exception {
+        return releaseRendererImages(java.util.Set.of(), true);
+    }
+
+    /** Release only reconstructible node bitmaps, leaving their nodes, cached flags and Canvas drawing buffers intact. */
+    public static int[] invalidateBitmapImages(java.util.Set<Object> caches) throws Exception {
+        return releaseRendererImages(caches, false);
+    }
+
+    /** Normalize reconstructible node bitmaps and idle pool images before the fixed object budget. */
+    public static int[] releaseRendererImages(java.util.Set<Object> caches) throws Exception {
+        return releaseRendererImages(caches, true);
+    }
+
+    /** REV-FS5: a missing render callback must fail the check rather than wait forever. */
+    private static final int RENDER_RELEASE_SECONDS = 60;
+
+    private static int[] releaseRendererImages(java.util.Set<Object> caches, boolean pruneIdle) throws Exception {
+        if (javafx.application.Platform.isFxApplicationThread()) throw new IllegalStateException("cache release needs the harness thread");
+        int[] counts = new int[8];
+        var done = new java.util.concurrent.CountDownLatch(1);
+        var error = new java.util.concurrent.atomic.AtomicReference<Throwable>();
+        Runnable release = () -> {
+            try {
+                Class<?> renderer = Class.forName("com.sun.scenario.effect.impl.Renderer");
+                Class<?> poolType = Class.forName("com.sun.scenario.effect.impl.ImagePool");
+                var map = renderer.getDeclaredField("rendererMap");
+                var imagePool = renderer.getDeclaredField("imagePool");
+                var idle = poolType.getDeclaredField("unlocked");
+                var locked = poolType.getDeclaredField("locked");
+                var prune = poolType.getDeclaredMethod("pruneCache");
+                for (var f : new java.lang.reflect.Field[]{map, imagePool, idle, locked}) f.setAccessible(true);
+                prune.setAccessible(true);
+                java.util.Set<Object> pools = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+                synchronized (renderer) {
+                    for (Object r : ((java.util.Map<?, ?>) map.get(null)).values()) pools.add(imagePool.get(r));
+                }
+                for (Object pool : pools) synchronized (pool) {
+                    counts[0]++;
+                    counts[1] += ((java.util.List<?>) idle.get(pool)).size();
+                    counts[3] += ((java.util.List<?>) locked.get(pool)).size();
+                }
+                Class<?> filter = Class.forName("com.sun.javafx.sg.prism.CacheFilter");
+                var image = filter.getDeclaredField("cachedImageData");
+                var invalidate = filter.getMethod("invalidate");
+                image.setAccessible(true);
+                for (Object cache : caches) {
+                    counts[5]++;
+                    if (image.get(cache) != null) counts[6]++;
+                    invalidate.invoke(cache);
+                    if (image.get(cache) != null) counts[7]++;
+                }
+                for (Object pool : pools) synchronized (pool) {
+                    if (pruneIdle) prune.invoke(pool);
+                    counts[2] += ((java.util.List<?>) idle.get(pool)).size();
+                    counts[4] += ((java.util.List<?>) locked.get(pool)).size();
+                }
+            } catch (Throwable failure) {
+                error.set(failure);
+            } finally {
+                done.countDown();
+            }
+        };
+        Class<?> toolkit = Class.forName("com.sun.javafx.tk.Toolkit");
+        Class<?> job = Class.forName("com.sun.javafx.tk.RenderJob");
+        toolkit.getMethod("addRenderJob", job).invoke(toolkit.getMethod("getToolkit").invoke(null),
+                job.getConstructor(Runnable.class).newInstance(release));
+        // RenderJob.run() uses runAndReset(), so its Future never completes; wait on our own completion.
+        if (!done.await(RENDER_RELEASE_SECONDS, java.util.concurrent.TimeUnit.SECONDS))
+            throw new java.util.concurrent.TimeoutException("Prism cache release did not finish within " + RENDER_RELEASE_SECONDS + " seconds");
+        if (error.get() != null) throw new Exception("idle effect-image release failed", error.get());
+        return counts;
+    }
+
+    /** The actual fixture UI remains usable after its bench ends, then must release when its owner drops. */
+    public record FixtureLifecycle(java.lang.ref.WeakReference<KeptBench> bench,
+            java.lang.ref.WeakReference<?> ui, Object[] heldUi, boolean started, boolean stopped) {
+        public void drop() { heldUi[0] = null; }
+    }
+
+    public static FixtureLifecycle retiredRendererFixture() throws Exception {
+        KeptBench other = new KeptBench(null);
+        // Attaching the actual rail creates MiniMap and starts its AnimationTimer, even without a city/window.
+        other.ui.refreshTabRail();
+        boolean started = other.ui.miniMapPumpRunningForBench();
+        other.passes();
+        boolean stopped = !other.ui.miniMapPumpRunningForBench();
+        other.release();
+        return new FixtureLifecycle(new java.lang.ref.WeakReference<>(other),
+                new java.lang.ref.WeakReference<>(other.ui), new Object[]{other.ui}, started, stopped);
+    }
+
+    /** A real skin viewport's reconstructible bitmap, containing a non-reconstructible Canvas drawing. */
+    public record BitmapPicture(javafx.scene.layout.StackPane root, ScrollPane pane, Label label) {
+        public int[] pixels() throws Exception { passes(root.getScene(), root); return pixelsOf(root); }
+        public Node viewport() { return pane.lookup(".viewport"); }
+        public java.util.Set<Object> caches() throws ReflectiveOperationException { return bitmapCaches(List.of(viewport())); }
+        public void state(String text) { label.setText(text); }
+    }
+
+    /** ScrollPaneSkin itself enables the viewport bitmap cache; no production cache flag is changed. */
+    public BitmapPicture bitmapCachePicture() throws Exception {
+        var label = new Label("state A");
+        var canvas = new javafx.scene.canvas.Canvas(80, 60);
+        canvas.getGraphicsContext2D().setFill(javafx.scene.paint.Color.RED);
+        canvas.getGraphicsContext2D().fillRect(3, 4, 40, 30);
+        var content = new VBox(4, label, canvas);
+        for (int i = 0; i < 40; i++) content.getChildren().add(new Label("row " + i));
+        var pane = new ScrollPane(content);
+        pane.setFitToWidth(true);
+        var host = new javafx.scene.layout.StackPane(pane);
+        var sc = new Scene(host, 640, 360);
+        ui.applyTheme(sc);
+        passes(sc, host);
+        return new BitmapPicture(host, pane, label);
     }
 
     /** Every box (Pane) under a node and the children it holds now. */
@@ -2211,13 +2559,14 @@ public final class KeptBench {
     }
 
     /** The stopped pages' kinds, by the way the model refuses an order. */
-    public static final List<String> STOPPED = List.of("deposit", "coast", "river", "bridge", "licence", "land");
+    public static final List<String> STOPPED = List.of("deposit", "coast", "river", "bridge", "licence", "land", "water");
 
     private static Game.BuildResult refusalOf(String kind) {
         return switch (kind) {
             case "deposit" -> Game.BuildResult.NO_DEPOSIT;
             case "coast" -> Game.BuildResult.NO_COAST;
             case "river" -> Game.BuildResult.NO_RIVER;
+            case "water" -> Game.BuildResult.NO_WATER;
             case "bridge" -> Game.BuildResult.NO_BRIDGE;
             case "licence" -> Game.BuildResult.NO_LICENCE;
             case "land" -> Game.BuildResult.NO_LAND;
@@ -2231,6 +2580,7 @@ public final class KeptBench {
             case "deposit" -> Game.siteOf(t) != null;
             case "coast" -> ham.citybuildersim.Ports.isPort(t) || t.getName().equals("Desalination Plant");
             case "river" -> ham.citybuildersim.BuildCard.hydro(ui.game, t) != null;
+            case "water" -> t.cooling();
             case "bridge" -> t.isBridge();
             case "licence" -> t.getRequiresLicence() != null;
             default -> true;
@@ -2267,6 +2617,7 @@ public final class KeptBench {
             case "deposit" -> "showNoDepositMenu";
             case "coast" -> "showNoCoastMenu";
             case "river" -> "showNoRiverMenu";
+            case "water" -> "showNoWaterMenu";
             case "bridge" -> "showNoBridgeMenu";
             case "licence" -> "showNoLicenceMenu";
             case "land" -> "showNoLandMenu";
@@ -2276,6 +2627,7 @@ public final class KeptBench {
             case "deposit" -> () -> s.drawNoDeposit(t, quantity, title, types);
             case "coast" -> () -> s.drawNoCoast(t, quantity, title, types);
             case "river" -> () -> s.drawNoRiver(t, quantity, title, types);
+            case "water" -> () -> s.drawNoWater(t, quantity, title, types);
             case "bridge" -> () -> s.drawNoBridge(t, quantity, title, types);
             case "licence" -> () -> s.drawNoLicence(t, quantity, title, types);
             default -> () -> s.drawNoLand(t, quantity, title, types);
@@ -3756,6 +4108,7 @@ public final class KeptBench {
      * the public applyCss() and layout() instead, which restyle every node and so cost more.
      */
     public double[] passes() throws Exception {
+        keepMiniMapOff();
         return passes(scene, column);
     }
 
@@ -5093,7 +5446,7 @@ public final class KeptBench {
 
     /**
      * The cells of the grid that can be opened on the city as it is, by the key the grid opens them under, in the grid's order: a
-     * family's cell with anybody in it ("tier:SHAPE", the tier's number), then the rows below the rule ("OUT:" and the ledger's key -
+     * family's cell in each adult stage ("tier:SHAPE", the young append ":YOUNG"), then the rows below the rule ("OUT:" and the ledger's key -
      * the retired, the out of work, the students, the orphans, the prison).
      */
     public List<String> householdCells() {
@@ -5101,10 +5454,12 @@ public final class KeptBench {
         ham.citybuildersim.HouseholdBalance bal = ui.game.getHouseholdBalance();
         ham.citybuildersim.FamilyModel families = ui.game.getFamilies();
         List<String> out = new ArrayList<>();
+        for (ham.citybuildersim.AdultStage stage : ham.citybuildersim.AdultStage.values())
         for (ham.citybuildersim.FamilyStructure shape : ham.citybuildersim.FamilyStructure.values()) {
             if (shape.isRetired()) continue;
             for (int t = 0; t < ham.citybuildersim.HouseholdAccounts.RETIRED; t++) {
-                if (hh.statementFor(families, shape, ham.citybuildersim.PayTier.values()[t]).households() >= .5) out.add(t + ":" + shape.name());
+                if (hh.statementFor(families, shape, ham.citybuildersim.PayTier.values()[t], stage).households() >= .5)
+                    out.add(t + ":" + shape.name() + stage.keySuffix());
             }
         }
         for (ham.citybuildersim.Household h : ui.peopleScreen.belowTheRule(bal, families)) out.add("OUT:" + h.key());
@@ -5125,6 +5480,15 @@ public final class KeptBench {
     /** The city's month's statement ("the month as a statement") opened or closed, as a click on its toggle would. */
     public void householdStatement(boolean open) {
         fold(ui.peopleScreen.detailsOpen, "statement", open);
+    }
+
+    /** HC2's visible debt-survey filters, with its comparison opened as its details chip does. */
+    public void householdDebt(String tier, String stage, boolean adult, boolean annual) {
+        ui.peopleScreen.debtPanel.tier = tier;
+        ui.peopleScreen.debtPanel.stage = stage;
+        ui.peopleScreen.debtPanel.adult = adult;
+        ui.peopleScreen.debtPanel.annual = annual;
+        fold(ui.peopleScreen.detailsOpen, "debt", true);
     }
 
     /**
@@ -5154,6 +5518,12 @@ public final class KeptBench {
     /** Household money forgotten, as another city opened would leave it: nothing kept (People's page too, which shares the screen's forget()). */
     public void forgetHousehold() {
         ui.peopleScreen.forget();
+    }
+
+    /** The window's scroller used by Household money's real redraw (HS3). */
+    public ScrollPane householdScroller() {
+        ensureWindow();
+        return ui.menuScroller;
     }
 
     /* =====================================================================
@@ -5392,6 +5762,97 @@ public final class KeptBench {
         List<String> out = new ArrayList<>();
         sign(n, "", out);
         return out;
+    }
+
+    /** FS5H: actual native signatures through rendered words, empty words, an unchanged draw and raw CountUp text return. */
+    public record BlankLabels(String name, List<List<String>> signatures, boolean rendered,
+                              boolean identities, int made, boolean pixels, boolean graphic) { }
+
+    public List<BlankLabels> blankLabelsProbe() throws Exception {
+        var schedule = SectorScreen.class.getDeclaredMethod("scheduleRow", String.class, double[].class,
+                double.class, double.class, boolean.class, boolean.class);
+        schedule.setAccessible(true);
+        List<BlankLabels> out = new ArrayList<>();
+        for (int kind = 0; kind < 3; kind++) for (boolean scroll : kind == 2 ? new boolean[]{false} : new boolean[]{false, true}) {
+            final int at = kind;
+            boolean[] blank = {false};
+            javafx.scene.text.Text graphic = kind == 2 ? new javafx.scene.text.Text("real Text graphic") : null;
+            Node[] node = new Node[1];
+            Kept.Pool pool = new Kept.Pool();
+            Runnable draw = () -> Kept.draw(pool, () -> node[0] = blankLabelNode(at, blank[0], graphic, schedule));
+            draw.run();
+            Node original = node[0];
+            Pane host = blankLabelHost(original, scroll);
+            blankLabelPasses(host);
+            Label reading = kind == 0 ? (Label) ((Pane) original).getChildren().getFirst()
+                    : kind == 1 ? (Label) ((Pane) original).getChildren().get(2) : (Label) original;
+            String words = reading.getText();
+            boolean rendered = reading.getChildrenUnmodifiable().stream().anyMatch(n ->
+                    n instanceof javafx.scene.text.Text t && n != graphic && n.isVisible() && !t.getText().isEmpty());
+            List<Node> originals = new ArrayList<>();
+            each(original, originals::add);
+            List<List<String>> signatures = new ArrayList<>();
+            boolean identities = true, pixels = true, visible = true;
+            int made = 0;
+            for (int phase = 0; phase < 4; phase++) {
+                blank[0] = phase < 2;
+                if (phase == 2) reading.setText(words); // CountUp writes this way: no Kept.label call.
+                else draw.run();
+                blankLabelPasses(host);
+                made += pool.lastMade();
+                List<Node> now = new ArrayList<>();
+                each(node[0], now::add);
+                identities &= node[0] == original && originals.equals(now);
+                visible &= graphic == null || graphic.isVisible() && graphic.getBoundsInParent().getWidth() > 0;
+                Node[] fresh = new Node[1];
+                javafx.scene.text.Text freshGraphic = kind == 2 ? new javafx.scene.text.Text("real Text graphic") : null;
+                Kept.draw(new Kept.Pool(), () -> fresh[0] = blankLabelNode(at, blank[0], freshGraphic, schedule));
+                Pane freshHost = blankLabelHost(fresh[0], scroll);
+                blankLabelPasses(freshHost);
+                signatures.add(signLines(node[0]));
+                signatures.add(signLines(fresh[0]));
+                pixels &= java.util.Arrays.equals(pixelsOf(host), pixelsOf(freshHost));
+                freshHost.getChildren().clear();
+            }
+            out.add(new BlankLabels((kind == 0 ? "Lending's 150px blank header" : kind == 1 ? "the debt schedule's "
+                    + (SectorScreen.DEBT_KIND + 5 * SectorScreen.DEBT_FIGURE + SectorScreen.SCHEDULE_RATE
+                    + SectorScreen.SCHEDULE_RUNS + 7 * Palette.GAP) + "px row" : "a label with a real Text graphic")
+                    + (scroll ? " inside a ScrollPane" : ""), signatures, rendered, identities, made, pixels, visible));
+            host.getChildren().clear();
+        }
+        return out;
+    }
+
+    private static Node blankLabelNode(int kind, boolean blank, javafx.scene.text.Text graphic, java.lang.reflect.Method schedule) {
+        if (kind == 0) {
+            javafx.scene.layout.GridPane grid = Pieces.grid(new double[]{150, 100, 100, 96, 90}, Pieces.rightAfterFirst(5));
+            Pieces.gridHead(grid, blank ? "" : "Construction", "this month", "in total", "went under", "status");
+            return grid;
+        }
+        if (kind == 2) {
+            Label label = Kept.label(blank ? "" : "a rendered reading", graphic);
+            label.setStyle(Palette.words(Palette.SIZE_BODY, Palette.TEXT_BODY));
+            return label;
+        }
+        try {
+            return (Node) schedule.invoke(null, "Its suppliers", new double[]{123, blank ? Double.NaN : 456, 789, 0, 0},
+                    Double.NaN, 0d, false, false);
+        } catch (ReflectiveOperationException failure) { throw new IllegalStateException(failure); }
+    }
+
+    private Pane blankLabelHost(Node node, boolean scroll) {
+        VBox page = new VBox(node);
+        page.setFillWidth(false);
+        page.setMaxWidth(Region.USE_PREF_SIZE);
+        if (!scroll) return probeHost(page, WIDTH, 900);
+        ScrollPane pane = new ScrollPane(page);
+        pane.setFitToWidth(true);
+        pane.setPrefSize(WIDTH, 700);
+        return probeHost(pane, WIDTH, 900);
+    }
+
+    private static void blankLabelPasses(Pane host) throws Exception {
+        for (int i = 0; i < SETTLE_PASSES; i++) passes(host.getScene(), host);
     }
 
     /** A quote of the buyback ladder: six slices of Buyback.Holder's four, their faces times `scale`, the face taken (when `taken`) too. */

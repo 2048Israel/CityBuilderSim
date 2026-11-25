@@ -1,6 +1,6 @@
 # RecipeChange.java - 68 lines · 5 methods · 0 constants · model
 
-`ham/citybuildersim/RecipeChange.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RecipeChange.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > One discovery's signed undo, relative to a template's immutable modern figures.
 > 
@@ -10,7 +10,7 @@
 
 **Uses:** [Good](Good.md) (8), [JobType](JobType.md) (4), [ResearchCatalog](ResearchCatalog.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (1), [PriceLevel](PriceLevel.md) (1), [Research](Research.md) (1)
 
-**Used by (7):** [BuildingCatalog](BuildingCatalog.md), [BuildingsTemplate](BuildingsTemplate.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md)
+**Used by (9):** [BuildingCatalog](BuildingCatalog.md), [BuildingsTemplate](BuildingsTemplate.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [ModernRowsCheck](ModernRowsCheck.md), [NewUnitCheck](NewUnitCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md)
 
 ## Methods, in file order
 

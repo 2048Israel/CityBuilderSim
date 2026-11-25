@@ -245,7 +245,8 @@ public class QuarryingCheck {
                 HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD - HouseholdBalance.CELL_SLOTS_BEFORE_SHARES == Equity.COMPANIES.length);
         assertTrue("...the audit's pools the city, a pool a sector in the keys' order - quarrying's and cement & concrete's after coal's - and the"
                         + " three after",
-                MoneyAudit.POOL_NAMES.length == keys.length + 4 && MoneyAudit.POOL_NAMES[at + 1].equals("quarrying")
+                MoneyAudit.POOL_NAMES.length == keys.length + 5
+                && MoneyAudit.POOL_NAMES[keys.length + 4].equals("bond coupon clearing") && MoneyAudit.POOL_NAMES[at + 1].equals("quarrying")
                         && MoneyAudit.POOL_NAMES[at + 2].equals("cement & concrete") && MoneyAudit.POOL_NAMES[keys.length + 1].equals("order book"));
         double[] sheets = new Bank().sheetYearToSave();
         assertTrue("...and the bank's year of sheets files a column of loans and of interim financing a sector", (int) sheets[2] == keys.length);

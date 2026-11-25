@@ -216,6 +216,19 @@ public final class CopperRefining extends ProcessingSector {
         return buildings == null ? 0 : buildings.underConstructionBySector(key(), t -> t.oldMetal(Good.COPPER));
     }
 
+    /**
+     * Its feed gate (CY1; ProcessingSector.underRunRefusal()): no more of a kind while its works
+     * that make the same goods, standing and on site, would run under FEED_GATE of nameplate on
+     * last month's make. WHY: a works buys its feed on the market, so nothing refused a mill for
+     * want of cathode; FC2's seed 1 stood 180 Rod Mills for 1.44 Mt of rod a month against
+     * 0.69 Mt of the city's cathode, at about a quarter of nameplate, the rest of the cathode
+     * not paying at the import price, and still ordered one a month.
+     */
+    @Override
+    protected String feedRefusal(BuildingsTemplate t) {
+        return underRunRefusal(t);
+    }
+
     /** Old copper arisen in the pool's last month past what the refineries standing and on site take at nameplate: what one more would run on. */
     public double spareOldCopper() {
         OldMetal.Pool pool = pool();

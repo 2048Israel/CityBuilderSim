@@ -1,6 +1,6 @@
-# ShortSellingCheck.java - 1,456 lines · 52 methods · 7 constants · harnesses
+# ShortSellingCheck.java - 1,490 lines · 53 methods · 7 constants · harnesses
 
-`ham/citybuildersim/ShortSellingCheck.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ShortSellingCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that
 > causes it, not on a city that happens to show it.
@@ -50,7 +50,7 @@
 > Every claim is CAUSED: a book emptied and given one trade, then the orders a line names and no others; a bid or an ask put on it by a participant
 > with the means to stand behind it.
 
-**Uses:** [Exchange](Exchange.md) (110), [Equity](Equity.md) (40), [OrderBook](OrderBook.md) (40), [MarketCheck](MarketCheck.md) (23), [Game](Game.md) (21), [MoneyAudit](MoneyAudit.md) (21), [KeptBench](KeptBench.md) (21), [FundLedger](FundLedger.md) (19), [ExchangeCheck](ExchangeCheck.md) (17), [Household](Household.md) (17), [FundView](FundView.md) (15), [LongPlaytest](LongPlaytest.md) (10), [HouseholdBalance](HouseholdBalance.md) (8), [TreasuryFund](TreasuryFund.md) (4), [TempDirs](TempDirs.md) (2), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [OwnerHousehold](OwnerHousehold.md) (2), [Sectors](Sectors.md) (1), [Bank](Bank.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1)
+**Uses:** [Exchange](Exchange.md) (113), [Equity](Equity.md) (42), [OrderBook](OrderBook.md) (40), [MarketCheck](MarketCheck.md) (23), [Game](Game.md) (22), [MoneyAudit](MoneyAudit.md) (21), [KeptBench](KeptBench.md) (21), [FundLedger](FundLedger.md) (19), [Household](Household.md) (17), [ExchangeCheck](ExchangeCheck.md) (15), [FundView](FundView.md) (15), [LongPlaytest](LongPlaytest.md) (10), [HouseholdBalance](HouseholdBalance.md) (8), [TreasuryFund](TreasuryFund.md) (4), [Bank](Bank.md) (2), [TempDirs](TempDirs.md) (2), [GameFiles](GameFiles.md) (2), [BuildingsTemplate](BuildingsTemplate.md) (2), [ForeignAccounts](ForeignAccounts.md) (2), [OwnerHousehold](OwnerHousehold.md) (2), [Sectors](Sectors.md) (1), [OrderSearchCheck](OrderSearchCheck.md) (1), [FamilyStructure](FamilyStructure.md) (1), [PayTier](PayTier.md) (1)
 
 **Used by (4):** [FundCheck](FundCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [HoldersCheck](HoldersCheck.md), [RefineryCheck](RefineryCheck.md)
 
@@ -61,7 +61,7 @@
 | 150 | THE BENCH (sections 2 to 5): the same market as Table, but valued on its record, with holders to lend and a fund to b... |
 | 244 | · 1. the quote |
 | 340 | THE LINES OF SECTIONS 2 TO 5 |
-| 1324 | THE CELLS' SHARES ABROAD (LF1b), SECTION 9 |
+| 1358 | THE CELLS' SHARES ABROAD (LF1b), SECTION 9 |
 
 ## Constants
 
@@ -72,8 +72,8 @@
 | 155 | `ShortSellingCheck.SHARES` | `1_000, YEARLY = 30` |  |
 | 238 | `ShortSellingCheck.LAST` | `1.5` | What the last trade of the lines below was, fair value's $1 being neither it nor the middle of anything they rest. |
 | 353 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
-| 1060 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
-| 1068 | `ShortSellingCheck.TRADE_ABROAD_MONTH` | `RUN_START + 1` | SX2 (FS14): the month of the run in which the cells' trades with the world are caused, as section 9 causes them, the run's first: the ordinary cell holding the most of the company the cells hold most of by value (the ... |
+| 1085 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
+| 1093 | `ShortSellingCheck.TRADE_ABROAD_MONTH` | `RUN_START + 1` | SX2 (FS14): the month of the run in which the cells' trades with the world are caused, as section 9 causes them, the run's first: the ordinary cell holding the most of the company the cells hold most of by value (the ... |
 
 ## Fields (state)
 
@@ -98,22 +98,22 @@
 | 171 | `final double fair` |  |
 | 530 | `final Game city` |  |
 | 531 | `final int firm` |  |
-| 1104 | `Exchange ex` |  |
-| 1105 | `Equity reg` |  |
-| 1106 | `int months, auditBad, driftBad, shortCompanyMonths, bubbleMonths, bankBubbleMonths` |  |
-| 1107 | `double worstAudit, worstDrift, mostShort` |  |
-| 1109 | `int abroadSoldMonths, abroadBoughtMonths, abroadLinesBad` | ...and the cells' share trades with the world (LF1b): the months each was made, what it came to, and the months a line was not its figure. |
-| 1110 | `double abroadSold, abroadBought` |  |
-| 1112 | `final double[] causedAbroad` | ...and SX2's caused month (TRADE_ABROAD_MONTH): the shares the cell sold the world and bought back, and the company (-1 if none was traded). |
-| 1113 | `double causedSold, causedBought` |  |
-| 1114 | `String worstWhere` |  |
-| 1115 | `long seconds` |  |
+| 1129 | `Exchange ex` |  |
+| 1130 | `Equity reg` |  |
+| 1131 | `int months, auditBad, driftBad, shortCompanyMonths, bubbleMonths, bankBubbleMonths` |  |
+| 1132 | `double worstAudit, worstDrift, mostShort` |  |
+| 1134 | `int abroadSoldMonths, abroadBoughtMonths, abroadLinesBad` | ...and the cells' share trades with the world (LF1b): the months each was made, what it came to, and the months a line was not its figure. |
+| 1135 | `double abroadSold, abroadBought` |  |
+| 1137 | `final double[] causedAbroad` | ...and SX2's caused month (TRADE_ABROAD_MONTH): the shares the cell sold the world and bought back, and the company (-1 if none was traded). |
+| 1138 | `double causedSold, causedBought` |  |
+| 1139 | `String worstWhere` |  |
+| 1140 | `long seconds` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 1398 | **type** `public class ShortSellingCheck` | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, not on a city that happens to show it. |
+| 59 | 1432 | **type** `public class ShortSellingCheck` | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, not on a city that happens to show it. |
 | 66 | 5 | `static void assertTrue(String label, boolean ok)` |  |
 | 72 | 10 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 85 | 4 | `static void section(String title)` |  |
@@ -151,7 +151,7 @@
 | 231 | 5 | `static double rateAt(double utilisation)` | The fee a year the lenders are paid at this many shares short of this many lendable (Exchange.lendingRate()), as the dials say. |
 | 240 | 99 | `public static void main(String[] args) throws Exception` |  |
 
-### THE LINES OF SECTIONS 2 TO 5 (lines 340-1323)
+### THE LINES OF SECTIONS 2 TO 5 (lines 340-1357)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -164,25 +164,26 @@
 | 521 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 529 | 5 | **type** `static final class Shorted` | A town with the world short of one company (openShort()): the town, and the company's index. |
 | 532 | 1 | `Shorted(Game city, int firm)` _(in ShortSellingCheck.Shorted)_ |  |
-| 540 | 39 | `static Shorted openShort(String label)` | The playtest's town, 48 months old, with the world short of the company that pays a dividend and has most in the households' hands: the fund comes to hold 4% of it, bought from the cell that holds most, and the world ... |
-| 581 | 68 | `static void theCity()` | A whole month of a city, with a short open, a dividend paid on it and the lending fee: the audit balances. |
-| 656 | 80 | `static void theWipe(Game city, int firm)` | A company with no shares in issue and no book, with a short open and the world holding some of it, in the real month (LF1c): the month's listing finds no book and leaves it unlisted, the exchange's step cancels what t... |
-| 742 | 35 | `static void theWords(Game city, int firm, double feesRowed)` | The Fund screen's words for what the short's lending fee added to the fund's record (LF1c): the row of the month's fees says what it is instead of its kind's name, a share's write-off is not a bond's ("its face gone")... |
-| 779 | 9 | `static double lineOf(String detail, String label)` | The number a line of the audit's detail ends in (its label, then the amount at two places), 0 when the month has no such line. |
-| 789 | 76 | `static void theLender()` |  |
-| 866 | 88 | `static void theCalls()` |  |
-| 959 | 33 | `static void sameShort(String when, Game live, Game back, int f, double tol)` | Section 6's two cities, the saved and the loaded, read the same way: every figure of the short the exchange carries (Exchange.State), on the company the world is short of and over all of them, to this tolerance of eac... |
-| 993 | 66 | `static void theSave() throws Exception` |  |
-| 1071 | 30 | `static java.util.function.Consumer<Boolean> tradeAbroad(Game city, double[] done)` | SX2: the settle probe that makes section 7's caused trades with the world (TRADE_ABROAD_MONTH): [0] the shares sold, [1] bought, [2] the company. |
-| 1103 | 14 | **type** `static final class Run` | What a run of the playtest's city counted. |
-| 1122 | 3 | `static Run play(boolean shorts, String label)` | The playtest's city (the default founding, its player's rhythm) played to RUN_MONTHS, with the world's shorts on or off, every month audited and every company's register checked: the holdings against the shares in iss... |
-| 1127 | 68 | `static Run play(boolean shorts, boolean tradeAbroad, String label)` | ...and with SX2's trades with the world caused in TRADE_ABROAD_MONTH when `tradeAbroad`. |
-| 1202 | 121 | `static void theBooks() throws Exception` | Section 8 (LF1): the lending fee on the lenders' books - the fund's counters and its ledger's row - and the four edges the stranger's review found at EM2's gate, each caused by a fixture first: the fee charged on shar... |
+| 540 | 40 | `static Shorted openShort(String label)` | The playtest's town, 48 months old, with the world short of the company that pays a dividend and has most in the households' hands: the fund comes to hold 4% of it, bought from the cell that holds most, and the world ... |
+| 590 | 14 | `static double handDeskMeans(Game city, int f, double shares)` | FC2, 2026-11-23: THE DESK GIVEN THE MEANS TO BUY THE SHORT, between months. |
+| 606 | 68 | `static void theCity()` | A whole month of a city, with a short open, a dividend paid on it and the lending fee: the audit balances. |
+| 681 | 80 | `static void theWipe(Game city, int firm)` | A company with no shares in issue and no book, with a short open and the world holding some of it, in the real month (LF1c): the month's listing finds no book and leaves it unlisted, the exchange's step cancels what t... |
+| 767 | 35 | `static void theWords(Game city, int firm, double feesRowed)` | The Fund screen's words for what the short's lending fee added to the fund's record (LF1c): the row of the month's fees says what it is instead of its kind's name, a share's write-off is not a bond's ("its face gone")... |
+| 804 | 9 | `static double lineOf(String detail, String label)` | The number a line of the audit's detail ends in (its label, then the amount at two places), 0 when the month has no such line. |
+| 814 | 76 | `static void theLender()` |  |
+| 891 | 88 | `static void theCalls()` |  |
+| 984 | 33 | `static void sameShort(String when, Game live, Game back, int f, double tol)` | Section 6's two cities, the saved and the loaded, read the same way: every figure of the short the exchange carries (Exchange.State), on the company the world is short of and over all of them, to this tolerance of eac... |
+| 1018 | 66 | `static void theSave() throws Exception` |  |
+| 1096 | 30 | `static java.util.function.Consumer<Boolean> tradeAbroad(Game city, double[] done)` | SX2: the settle probe that makes section 7's caused trades with the world (TRADE_ABROAD_MONTH): [0] the shares sold, [1] bought, [2] the company. |
+| 1128 | 14 | **type** `static final class Run` | What a run of the playtest's city counted. |
+| 1147 | 3 | `static Run play(boolean shorts, String label)` | The playtest's city (the default founding, its player's rhythm) played to RUN_MONTHS, with the world's shorts on or off, every month audited and every company's register checked: the holdings against the shares in iss... |
+| 1152 | 68 | `static Run play(boolean shorts, boolean tradeAbroad, String label)` | ...and with SX2's trades with the world caused in TRADE_ABROAD_MONTH when `tradeAbroad`. |
+| 1227 | 130 | `static void theBooks() throws Exception` | Section 8 (LF1): the lending fee on the lenders' books - the fund's counters and its ledger's row - and the four edges the stranger's review found at EM2's gate, each caused by a fixture first: the fee charged on shar... |
 
-### THE CELLS' SHARES ABROAD (LF1b), SECTION 9 (lines 1324-1456)
+### THE CELLS' SHARES ABROAD (LF1b), SECTION 9 (lines 1358-1490)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1336 | 85 | `static void theCellsAbroad()` | Section 9 (LF1b): a cell selling a share to the world and a cell buying one from it, made by the fixture inside the real month (Game.settleProbeForTest: after the exchange's month has opened, before its step and the a... |
-| 1422 | 34 | `static void howOften()` |  |
+| 1370 | 85 | `static void theCellsAbroad()` | Section 9 (LF1b): a cell selling a share to the world and a cell buying one from it, made by the fixture inside the real month (Game.settleProbeForTest: after the exchange's month has opened, before its step and the a... |
+| 1456 | 34 | `static void howOften()` |  |
 

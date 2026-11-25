@@ -1,6 +1,6 @@
 # SchoolingLadder.java - 148 lines · 14 methods · 2 constants · model
 
-`ham/citybuildersim/SchoolingLadder.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SchoolingLadder.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > What each qualification pays after its course's cost, as a level monthly wage.
 > 

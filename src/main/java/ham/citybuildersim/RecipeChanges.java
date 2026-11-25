@@ -311,6 +311,19 @@ public final class RecipeChanges {
         return production;
     }
 
+    /**
+     * The draw of a building with these unfitted counts and these running recipes, in kW, by compose()'s own sum (R6e-rest; package-private for
+     * LicenceFees.entryGain(), whose public gain of a piece that saves power, E22's pressure exchanger, is the power it saves).
+     * A template with no process improvements keeps its one figure.
+     */
+    static double electricityAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity, String[] ids) {
+        if (t.getRecipeChanges().isEmpty()) return t.getElectricityConsumption();
+        String[] chosen = ids == null ? new String[] {t.defaultRecipe().getId(), t.defaultRecipe().getId()} : ids;
+        Map<String, Double> absent = absencesAt(game, t, counts, quantity, chosen);
+        long unfitted = t.recipePieceId() == null ? 0 : Math.min(quantity, counts.getOrDefault(t.recipePieceId(), 0L));
+        return compose(t, base(t, chosen[0]), quantity - unfitted, base(t, chosen[1]), unfitted, absent, chosen[0]).getElectricity();
+    }
+
     private static double valueAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity,
                                   String[] ids, Recipes.Prices prices, boolean proposed) {
         Map<String, Double> absent = absencesAt(game, t, counts, quantity, ids);
@@ -519,7 +532,7 @@ public final class RecipeChanges {
                     || !c.knownAt(game.getMonth(), game.getResearch())
                     || !LicenceFees.payable(c.since(), game.getMonth(), game.getResearch()) || !charged.add(c.since())) continue;
             double benefit = gain(t, c, absent, missing -> compose(t, process, missing, process.getId()),
-                    r -> standing ? standingValue(r, prices, values, rate) : Recipes.value(r, prices) * rate,
+                    r -> standing ? standingValue(t, owner, r, prices, values, rate) : Recipes.value(r, prices) * rate,
                     change -> extraValue(t, change, extra, actualFeed) * rate);
             bill += LicenceFees.onGain(c.since(), game.getMonth(), game.getResearch(), benefit);
         }
@@ -527,13 +540,13 @@ public final class RecipeChanges {
     }
 
     /** R2c's standing price roles: dispatched goods and consumables, fixed posts and utilities. */
-    private static double standingValue(Recipe r, Recipes.Prices p,
+    private static double standingValue(BuildingsTemplate t, Sector owner, Recipe r, Recipes.Prices p,
                                        ham.citybuildersim.sectors.SpreadPlanner.Values values, double rate) {
         double value = 0;
-        for (var e : r.makes().entrySet()) value += values.in(e.getKey(), e.getValue() * rate);
+        for (var e : r.makes().entrySet()) value += values.in(e.getKey(), e.getValue() * LicenceFees.creditedOutputRate(t, owner, e.getKey(), rate));
         for (var e : r.uses().entrySet()) value -= values.out(e.getKey(), e.getValue() * rate);
         for (JobType type : JobType.values()) value -= r.getJobs(type) * p.wages()[type.ordinal()];
-        return value - (r.getElectricity() - r.getGen()) * p.pricePerWatt()
+        return value - Recipes.powerCost(r, p)
                 - r.getWater() * p.pricePerWaterUnit() - r.getConsumables() * p.exchange() * rate;
     }
 

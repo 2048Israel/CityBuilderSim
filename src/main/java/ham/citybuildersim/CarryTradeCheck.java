@@ -41,6 +41,17 @@ import java.nio.file.Path;
  *      borrowers buy the city's money back: the dial's share of the book is
  *      repaid on top of the ordinary month, inside the month's repaid and the
  *      change returned, and a book told a level of 0 is the old book to the bit.
+ *
+ * FIXTURES (FS9). Sections 1-4 and 6 run on bare CapitalFlows with the spread, the premium and
+ * the bank's headroom handed to the rule. Section 5 is a built city, played AUDITED_MONTHS with
+ * an audit each (the identities: the money still balances every month, and what the bank lends
+ * crosses the border), and what it needs of the town is caused and read against the rule: the
+ * policy rate set to its floor (DebtManager.MIN_POLICY_RATE) so the city is cheaper than the
+ * world, the bank's branches stood at once and capitalised through its own door (buildStack
+ * with no construction, Bank.openBranches() and injectCapital()) so its capital is there from the
+ * first month, and the rule's own reading of month one asserted - a spread over nought and a
+ * headroom and a target over nought - instead of the months it was seen lending on one path.
+ * WHY: the played town moved under the month its branches opened and its book first grew.
  */
 public class CarryTradeCheck {
 
@@ -210,7 +221,7 @@ public class CarryTradeCheck {
         Path root = TempDirs.create("carrytrade");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
 
-        double worstResidual = 0, movedOut = 0, lentTotal = 0;
+        double worstResidual = 0, movedOut = 0, lentTotal = 0, spread = 0, room = 0, carryTarget = 0;
         int monthsLending = 0;
         System.setOut(quiet);
         try {
@@ -230,8 +241,23 @@ public class CarryTradeCheck {
             city.buildStack(city.getBuildingManager()
                     .getTemplateByName("Water Treatment Plant"), 1, false);
             city.buildStack(city.getBuildingManager().getTemplateByName("Paved Road"), 30, false);
+            /*
+             * THE BANK'S SPARE BOOK, GIVEN (FS9). The carry lends what the bank
+             * has room for (Bank.headroom(), net of every domestic borrower, read
+             * by Game each month), and the bank had room only once its branches
+             * were built and opened out of the construction queue: a town that
+             * moved under the months this waited for. Now the branches stand at
+             * once (no construction), are counted and capitalised through the
+             * bank's own door (openBranches() names the paid-in capital they are
+             * founded with, injectCapital() puts it in), and the room is asserted
+             * below against the rule's threshold before a month is played.
+             */
             city.buildStack(city.getBuildingManager()
-                    .getTemplateByName("Commercial Bank"), 3, false);
+                    .getTemplateByName("Commercial Bank"), 3, true);
+            Bank lender = city.getBank();
+            long branches = city.getBuildingManager().countByName("Commercial Bank");
+            lender.refresh(branches, 0, 0, 0, 0, 0);
+            lender.injectCapital(lender.openBranches(branches));
             /*
              * THE FIXTURE HAS TO CAUSE THE CONDITION - fortieth sighting. The
              * carry needs the city to be CHEAPER than the world, and a city
@@ -240,12 +266,27 @@ public class CarryTradeCheck {
              * have asserted "the carry reaches the border" in a city where no
              * carry was possible, and passed by never testing anything.
              */
-            city.getDebtManager().setPolicyRate(0);
-            for (int m = 0; m < 36; m++) {
+            city.getDebtManager().setPolicyRate(DebtManager.MIN_POLICY_RATE);
+            for (int m = 0; m < AUDITED_MONTHS; m++) {
                 city.simulateMonths(1);
                 MoneyAudit.Result r = city.getLastMoneyAudit();
                 if (r != null) worstResidual = Math.max(worstResidual, Math.abs(r.relative()));
                 double lent = city.getBank().getCarryLent();
+                /*
+                 * THE RULE'S OWN THRESHOLD, read in the first month it ran
+                 * (CapitalFlows.carryTakeMonth()): the spread it took is the
+                 * world's rate less what the loan costs here less the country
+                 * premium, and its target is the bank's headroom share times
+                 * the appetite for that spread. A spread over nought and a bank
+                 * with room to lend it is a carry the rule must take, so a book
+                 * that does not build is the rule's fault and not a town that
+                 * never had one.
+                 */
+                if (m == 0) {
+                    spread = city.getCapitalFlows().getCarrySpread();
+                    room = city.getBank().headroom();
+                    carryTarget = city.getCapitalFlows().getCarryTarget();
+                }
                 if (lent > 0) {
                     monthsLending++;
                     lentTotal += lent;
@@ -260,6 +301,10 @@ public class CarryTradeCheck {
                 + " book $%,.0fk, worst residual %.2e%n",
                 monthsLending, lentTotal, movedOut,
                 city.getBank().getCarryBook(), worstResidual);
+        out.printf("   the rule's threshold in month one: spread %.2f points net of the premium, headroom $%,.0fk, target $%,.0fk%n",
+                spread * 100, room, carryTarget);
+        assertTrue("fixture: the carry's spread is over nought: the world pays more than it costs here, net of the premium", spread > 0);
+        assertTrue("fixture: the bank has spare book to lend it from (its headroom), and the rule's target is over nought", room > 0 && carryTarget > 0);
         assertTrue("fixture: a cheap city really is borrowed from", monthsLending > 0);
         assertTrue("what the bank lends crosses the border", movedOut >= lentTotal - 1e-6);
         assertTrue("...and every month of it still balances", worstResidual < 1e-6);
@@ -370,6 +415,9 @@ public class CarryTradeCheck {
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
+
+    /** The months the built city is played with an audit each: the book builds a share of its gap a month (CARRY_BORROW_SPEED), so a longer play audits more of its build. */
+    static final int AUDITED_MONTHS = 36;
 
     /** A month at the city's edge, with an outflow on the financial account. */
     static MoneyAudit.Result bop(double exports, double imports, double borrowedOut) {

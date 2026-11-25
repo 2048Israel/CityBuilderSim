@@ -1,15 +1,15 @@
-# DebtManager.java - 3,505 lines · 280 methods · 43 constants · model
+# DebtManager.java - 3,541 lines · 284 methods · 43 constants · model
 
-`ham/citybuildersim/DebtManager.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DebtManager.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The city's borrowing: every bond, note and dollar bond the treasury owes,
 > the market that prices the next one, and the policy rate every price of
 > money in the city is built on - the player's dial, or the rule's with the
 > autopilot on (0.7.0).
 
-**Uses:** [Debt](Debt.md) (84), [YieldCurve](YieldCurve.md) (38), [DecisionLog](DecisionLog.md) (14), [CallTree](CallTree.md) (10), [InflationLinkedBond](InflationLinkedBond.md) (8), [LongTermBond](LongTermBond.md) (7), [WorldMoneys](WorldMoneys.md) (7), [FloatingRateNote](FloatingRateNote.md) (6), [ShortTermTBill](ShortTermTBill.md) (5), [CityCalendar](CityCalendar.md) (5), [Auction](Auction.md) (5), [ForeignAccounts](ForeignAccounts.md) (4), [AuctionTally](AuctionTally.md) (4), [Ladder](Ladder.md) (4), [CentralBank](CentralBank.md) (4), [Expectations](Expectations.md) (3), [Bank](Bank.md) (2), [MediumTermBond](MediumTermBond.md) (1), [Game](Game.md) (1)
+**Uses:** [Debt](Debt.md) (89), [YieldCurve](YieldCurve.md) (38), [DecisionLog](DecisionLog.md) (14), [CallTree](CallTree.md) (10), [InflationLinkedBond](InflationLinkedBond.md) (8), [LongTermBond](LongTermBond.md) (7), [WorldMoneys](WorldMoneys.md) (7), [FloatingRateNote](FloatingRateNote.md) (6), [ShortTermTBill](ShortTermTBill.md) (5), [CityCalendar](CityCalendar.md) (5), [Auction](Auction.md) (5), [ForeignAccounts](ForeignAccounts.md) (4), [AuctionTally](AuctionTally.md) (4), [Ladder](Ladder.md) (4), [CentralBank](CentralBank.md) (4), [Expectations](Expectations.md) (3), [Bank](Bank.md) (2), [MediumTermBond](MediumTermBond.md) (1), [GameLog](GameLog.md) (1), [Game](Game.md) (1)
 
-**Used by (62):** [AuctionCheck](AuctionCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BookDesk](BookDesk.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CentralBankCheck](CentralBankCheck.md), [CityNeeds](CityNeeds.md), [CreditCheck](CreditCheck.md), [CreditCrunchCheck](CreditCrunchCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DataSave](DataSave.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [DeskCheck](DeskCheck.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [Expectations](Expectations.md), [ExpectationsCheck](ExpectationsCheck.md), [FB13Check](FB13Check.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignCouponView](ForeignCouponView.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [Game](Game.md), [GoldStandardCheck](GoldStandardCheck.md), [GovernmentScreen](GovernmentScreen.md), [GovernmentViewCheck](GovernmentViewCheck.md), [HoldersCheck](HoldersCheck.md), [HousingCheck](HousingCheck.md), [HousingDoorCheck](HousingDoorCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [MortgageCheck](MortgageCheck.md), [OrderDoorCheck](OrderDoorCheck.md), [OwnerCheck](OwnerCheck.md), [PartnersCheck](PartnersCheck.md), [PegAnchorCheck](PegAnchorCheck.md), [Pieces](Pieces.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [SimulationEngine](SimulationEngine.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md), [VaultView](VaultView.md), [YieldCurve](YieldCurve.md)
+**Used by (66):** [AuctionCheck](AuctionCheck.md), [Bank](Bank.md), [BankCheck](BankCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BookDesk](BookDesk.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CapitalGainsCheck](CapitalGainsCheck.md), [CardCheck](CardCheck.md), [CarryTradeCheck](CarryTradeCheck.md), [CentralBankCheck](CentralBankCheck.md), [CityNeeds](CityNeeds.md), [CreditCheck](CreditCheck.md), [CreditCrunchCheck](CreditCrunchCheck.md), [CurrencyCheck](CurrencyCheck.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DataSave](DataSave.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [DeskCheck](DeskCheck.md), [EquityCheck](EquityCheck.md), [EstateCustody](EstateCustody.md), [ExchangeCheck](ExchangeCheck.md), [Expectations](Expectations.md), [ExpectationsCheck](ExpectationsCheck.md), [FB13Check](FB13Check.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignCouponView](ForeignCouponView.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundScreen](FundScreen.md), [Game](Game.md), [GoldStandardCheck](GoldStandardCheck.md), [GovernmentScreen](GovernmentScreen.md), [GovernmentViewCheck](GovernmentViewCheck.md), [HoldersCheck](HoldersCheck.md), [HousingCheck](HousingCheck.md), [HousingDoorCheck](HousingDoorCheck.md), [InterestAbroadCheck](InterestAbroadCheck.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [MoneyDatesCheck](MoneyDatesCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [MortgageCheck](MortgageCheck.md), [OrderDoorCheck](OrderDoorCheck.md), [OwnerCheck](OwnerCheck.md), [PartnersCheck](PartnersCheck.md), [PegAnchorCheck](PegAnchorCheck.md), [Pieces](Pieces.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RestructureCheck](RestructureCheck.md), [SaveFileCheck](SaveFileCheck.md), [SectorScreen](SectorScreen.md), [SimulationEngine](SimulationEngine.md), [TreasuryCheck](TreasuryCheck.md), [UserInterface](UserInterface.md), [VaultView](VaultView.md), [YieldCurve](YieldCurve.md)
 
 ## Sections
 
@@ -21,17 +21,17 @@
 | 324 | · HOW STRICT (0.7.52) |
 | 783 | THE RATE THE FOREIGN PAPER IS VALUED AT |
 | 1016 | WHAT THE WORLD CHARGES, AND WHEN IT STOPS ANSWERING |
-| 1613 | · THE CITY'S BOOKS, IN TOTAL (CD3, spec-city-debt.md section 5) |
-| 1719 | · WHAT THE FINANCES TAB DRAWS THE DEBT FROM (0.7.32) |
-| 2033 | THE CURVE (0.7.1) |
-| 2181 | · the expectations the curve is built from (CD1) |
-| 2465 | · the price index, and the paths a floater and a linker are priced on (CD5) |
-| 2582 | · the call (CD4, spec-city-debt.md section 6.4) |
-| 2715 | · what the month's close keeps for the debt screens (CD6, spec-city-debt.md section 7) |
-| 2867 | · who holds it (0.7.1) |
-| 3011 | THE RATE, TAKEN APART - for the Finances screen and nothing else. |
-| 3314 | · WHAT THE AUCTION STARTS FROM, AND WHERE A SALE GOES (CD2) |
-| 3345 | · FAIR AT THE SALE, FOR A FLOATER AND A LINKER (CD5, spec-city-debt.md |
+| 1647 | · THE CITY'S BOOKS, IN TOTAL (CD3, spec-city-debt.md section 5) |
+| 1753 | · WHAT THE FINANCES TAB DRAWS THE DEBT FROM (0.7.32) |
+| 2067 | THE CURVE (0.7.1) |
+| 2215 | · the expectations the curve is built from (CD1) |
+| 2499 | · the price index, and the paths a floater and a linker are priced on (CD5) |
+| 2616 | · the call (CD4, spec-city-debt.md section 6.4) |
+| 2749 | · what the month's close keeps for the debt screens (CD6, spec-city-debt.md section 7) |
+| 2901 | · who holds it (0.7.1) |
+| 3045 | THE RATE, TAKEN APART - for the Finances screen and nothing else. |
+| 3348 | · WHAT THE AUCTION STARTS FROM, AND WHERE A SALE GOES (CD2) |
+| 3379 | · FAIR AT THE SALE, FOR A FLOATER AND A LINKER (CD5, spec-city-debt.md |
 
 ## Enum constants
 
@@ -79,21 +79,21 @@
 | 1081 | `DebtManager.WINDOW_SHUT_SERVICE_SHARE` | `.45` | ...and above this share of exports going out in service, likewise. |
 | 1084 | `DebtManager.DEFAULT_SCAR` | `.10` | What a default abroad adds to the premium the day it happens. |
 | 1087 | `DebtManager.SCAR_DECAY` | `.9885` | ...and how much of the scar is left after each month. |
-| 1658 | `DebtManager.BOOK_KINDS` | `{ "NOTE", "SERIAL", "TERM", "FLOAT", "LINKED" }` | The kinds of paper the interest is booked by, as Debt.getType() calls them: the notes, the serial bonds, the bonds, the floaters, the linkers. |
-| 1818 | `DebtManager.LADDER_YEARS` | `12` | How many calendar years the ladder draws before it totals the rest as "later". |
-| 1821 | `DebtManager.LADDER_KINDS` | `{ "NOTE", "SERIAL", "TERM" }` | The ladder's instruments, in its order: what Debt.getType() calls each, short to long. |
-| 2096 | `DebtManager.TERM_PREMIUM_10Y` | `.0050` | The premium on ten-year money, in points of annual rate: Jerus's numbers to settle, roughly half a point at ten years. |
-| 2099 | `DebtManager.TERM_PREMIUM_20Y` | `.0090` | ...on twenty-year money. |
-| 2102 | `DebtManager.TERM_PREMIUM_30Y` | `.0115` | ...on thirty-year money. |
-| 2105 | `DebtManager.TERM_PREMIUM_40Y` | `.0135` | ...on forty-year money. |
-| 2108 | `DebtManager.TERM_PREMIUM_50Y` | `.0150` | ...on fifty-year money, and on anything longer: the long end, a point and a half over the dial. |
-| 2111 | `DebtManager.TERM_PREMIUM` | `{ TERM_PREMIUM_10Y, TERM_PREMIUM_20Y, TERM_PREMIUM_30Y, TERM_PREMIUM_40Y, TER...` | The table, at 10, 20, 30, 40 and 50 years: the curve's points (40 is no longer a term a bond is sold at, CD2, but it still shapes the line between 30 and 50). |
-| 2679 | `DebtManager.A_POINT` | `0.01` | A point on the curve (CD6): the rise in every rate that valueOfAPoint() prices a piece at, 1% a year. |
-| 2726 | `DebtManager.CURVE_TENORS` | `{ 3, 6, 12, 24, 60, 120, 240, 360, 480, 600 }` | The maturities, in months, the curve is drawn and kept at: three months to fifty years. |
-| 2729 | `DebtManager.CURVE_KEPT` | `25` | The months of the curve kept: today, a year ago and two years ago. |
-| 2732 | `DebtManager.CURVE_ROW` | `2 + 2 * CURVE_TENORS.length` | A curve-book row: the month, the dial, the city's zero rate at each of CURVE_TENORS, the world's at each. |
-| 3373 | `DebtManager.FAIR_COUPON_STEPS` | `100` | The halvings of the bisection above: far past what a double keeps of a bracket of one unit of yield. |
-| 3486 | `DebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 1692 | `DebtManager.BOOK_KINDS` | `{ "NOTE", "SERIAL", "TERM", "FLOAT", "LINKED" }` | The kinds of paper the interest is booked by, as Debt.getType() calls them: the notes, the serial bonds, the bonds, the floaters, the linkers. |
+| 1852 | `DebtManager.LADDER_YEARS` | `12` | How many calendar years the ladder draws before it totals the rest as "later". |
+| 1855 | `DebtManager.LADDER_KINDS` | `{ "NOTE", "SERIAL", "TERM" }` | The ladder's instruments, in its order: what Debt.getType() calls each, short to long. |
+| 2130 | `DebtManager.TERM_PREMIUM_10Y` | `.0050` | The premium on ten-year money, in points of annual rate: Jerus's numbers to settle, roughly half a point at ten years. |
+| 2133 | `DebtManager.TERM_PREMIUM_20Y` | `.0090` | ...on twenty-year money. |
+| 2136 | `DebtManager.TERM_PREMIUM_30Y` | `.0115` | ...on thirty-year money. |
+| 2139 | `DebtManager.TERM_PREMIUM_40Y` | `.0135` | ...on forty-year money. |
+| 2142 | `DebtManager.TERM_PREMIUM_50Y` | `.0150` | ...on fifty-year money, and on anything longer: the long end, a point and a half over the dial. |
+| 2145 | `DebtManager.TERM_PREMIUM` | `{ TERM_PREMIUM_10Y, TERM_PREMIUM_20Y, TERM_PREMIUM_30Y, TERM_PREMIUM_40Y, TER...` | The table, at 10, 20, 30, 40 and 50 years: the curve's points (40 is no longer a term a bond is sold at, CD2, but it still shapes the line between 30 and 50). |
+| 2713 | `DebtManager.A_POINT` | `0.01` | A point on the curve (CD6): the rise in every rate that valueOfAPoint() prices a piece at, 1% a year. |
+| 2760 | `DebtManager.CURVE_TENORS` | `{ 3, 6, 12, 24, 60, 120, 240, 360, 480, 600 }` | The maturities, in months, the curve is drawn and kept at: three months to fifty years. |
+| 2763 | `DebtManager.CURVE_KEPT` | `25` | The months of the curve kept: today, a year ago and two years ago. |
+| 2766 | `DebtManager.CURVE_ROW` | `2 + 2 * CURVE_TENORS.length` | A curve-book row: the month, the dial, the city's zero rate at each of CURVE_TENORS, the world's at each. |
+| 3407 | `DebtManager.FAIR_COUPON_STEPS` | `100` | The halvings of the bisection above: far past what a double keeps of a bracket of one unit of yield. |
+| 3521 | `DebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -127,46 +127,47 @@
 | 1434 | `private double costOfFunds` | What the bank pays for the money it lends the city. |
 | 1490 | `private double advances` | What the treasury owes its central bank in advances (0.7.0), pushed in with the overdraft. |
 | 1501 | `private final AuctionTally auctionTally` | THE CITY'S AUCTIONS, COUNTED (CD2, D33): every domestic sale that booked, its tail and its cover, and the last one's figures. |
-| 1630 | `private double interestBooked` | This month's interest expense on the city's paper: every piece's carrying value at its effective rate, a month. |
-| 1633 | `private double amortisedBooked` | ...and the part of it that is not coupon: the discount amortised, below nothing for a premium. |
-| 1640 | `private double upliftBooked` | The month's inflation uplift on the linked bonds (CD5): the indexation each booked as its carrying value caught up with the price index (InflationLinkedBond.index()), summed. |
-| 1643 | `private double upliftPaidBooked` | ...and the uplift the month PAID in cash: a linker's indexed principal over its face, in its last month. |
-| 1655 | `private final double[] interestByKind` | THE INTEREST BOOKED, BY KIND (CD6): the month's interest expense on each kind of paper, in BOOK_KINDS' order, struck in processAllDebts() beside interestBooked from the same figures, so the five add up to getInterestB... |
-| 2184 | `private double struckInflation` | The inflation the rule read when the month's expectations were struck (strikeExpectations()); NaN until something strikes them. |
-| 2187 | `private double struckExpected` | ...and the inflation the city expected then (Expectations.getExpectedInflation()); NaN until struck. |
-| 2261 | `private transient java.util.function.BooleanSupplier tiedSource` |  |
-| 2268 | `private transient java.util.function.Supplier<String> tieMoneySource` |  |
-| 2291 | `final double floor, inflation, expected, target, tie` |  |
-| 2292 | `final Strictness strictness` |  |
-| 2293 | `final double[] path` |  |
-| 2301 | `final double[] path` |  |
-| 2302 | `final double gdpSpread, revenueSpread, ceiling, share` |  |
-| 2303 | `final YieldCurve curve` |  |
-| 2310 | `private transient volatile PathEntry pathCache` |  |
-| 2311 | `private transient volatile CurveEntry curveCache` |  |
-| 2423 | `final YieldCurve curve` |  |
-| 2424 | `final double sigma` |  |
-| 2425 | `final CallTree tree` |  |
-| 2429 | `private transient volatile TreeEntry treeCache` |  |
-| 2463 | `private transient java.util.function.DoubleSupplier rateVolatility` |  |
-| 2482 | `private transient java.util.function.DoubleSupplier priceIndexSource` |  |
-| 2484 | `private transient volatile PathEntry policyPathCache` |  |
-| 2518 | `final double inflation, expected, target` |  |
-| 2519 | `final double[] growth` |  |
-| 2525 | `private transient volatile GrowthEntry growthCache` |  |
-| 2607 | `final double rate` |  |
-| 2608 | `final double floor` |  |
-| 2609 | `final YieldCurve curve` |  |
-| 2613 | `private transient volatile WorldEntry worldCache` |  |
-| 2734 | `private final java.util.ArrayList<double[]> curveBook` |  |
-| 2737 | `private boolean recording` | True: the month's close records the book. |
-| 3007 | `private double accretedForBank` | This month's accretion on the bank's share, struck in processAllDebts() before the month's payments; handed to the bank at the settle. |
+| 1549 | `private double unbackedCustodyPaper` | HT1: a genuine unmatched entitlement is retained explicitly, never borrowed from another holder. |
+| 1664 | `private double interestBooked` | This month's interest expense on the city's paper: every piece's carrying value at its effective rate, a month. |
+| 1667 | `private double amortisedBooked` | ...and the part of it that is not coupon: the discount amortised, below nothing for a premium. |
+| 1674 | `private double upliftBooked` | The month's inflation uplift on the linked bonds (CD5): the indexation each booked as its carrying value caught up with the price index (InflationLinkedBond.index()), summed. |
+| 1677 | `private double upliftPaidBooked` | ...and the uplift the month PAID in cash: a linker's indexed principal over its face, in its last month. |
+| 1689 | `private final double[] interestByKind` | THE INTEREST BOOKED, BY KIND (CD6): the month's interest expense on each kind of paper, in BOOK_KINDS' order, struck in processAllDebts() beside interestBooked from the same figures, so the five add up to getInterestB... |
+| 2218 | `private double struckInflation` | The inflation the rule read when the month's expectations were struck (strikeExpectations()); NaN until something strikes them. |
+| 2221 | `private double struckExpected` | ...and the inflation the city expected then (Expectations.getExpectedInflation()); NaN until struck. |
+| 2295 | `private transient java.util.function.BooleanSupplier tiedSource` |  |
+| 2302 | `private transient java.util.function.Supplier<String> tieMoneySource` |  |
+| 2325 | `final double floor, inflation, expected, target, tie` |  |
+| 2326 | `final Strictness strictness` |  |
+| 2327 | `final double[] path` |  |
+| 2335 | `final double[] path` |  |
+| 2336 | `final double gdpSpread, revenueSpread, ceiling, share` |  |
+| 2337 | `final YieldCurve curve` |  |
+| 2344 | `private transient volatile PathEntry pathCache` |  |
+| 2345 | `private transient volatile CurveEntry curveCache` |  |
+| 2457 | `final YieldCurve curve` |  |
+| 2458 | `final double sigma` |  |
+| 2459 | `final CallTree tree` |  |
+| 2463 | `private transient volatile TreeEntry treeCache` |  |
+| 2497 | `private transient java.util.function.DoubleSupplier rateVolatility` |  |
+| 2516 | `private transient java.util.function.DoubleSupplier priceIndexSource` |  |
+| 2518 | `private transient volatile PathEntry policyPathCache` |  |
+| 2552 | `final double inflation, expected, target` |  |
+| 2553 | `final double[] growth` |  |
+| 2559 | `private transient volatile GrowthEntry growthCache` |  |
+| 2641 | `final double rate` |  |
+| 2642 | `final double floor` |  |
+| 2643 | `final YieldCurve curve` |  |
+| 2647 | `private transient volatile WorldEntry worldCache` |  |
+| 2768 | `private final java.util.ArrayList<double[]> curveBook` |  |
+| 2771 | `private boolean recording` | True: the month's close records the book. |
+| 3041 | `private double accretedForBank` | This month's accretion on the bank's share, struck in processAllDebts() before the month's payments; handed to the bank at the settle. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 18 | 3488 | **type** `public class DebtManager` | The city's borrowing: every bond, note and dollar bond the treasury owes, the market that prices the next one, and the policy rate every price of money in the city is built on - the player's dial, or the rule's with t... |
+| 18 | 3524 | **type** `public class DebtManager` | The city's borrowing: every bond, note and dollar bond the treasury owes, the market that prices the next one, and the policy rate every price of money in the city is built on - the player's dial, or the rule's with t... |
 | 24 | 1 | `public void recordTo(DecisionLog log)` | Wires this to its city's decision log (Game.buildWorld()). |
 | 26 | 3 | `private void decided(String kind, String label)` |  |
 
@@ -272,7 +273,7 @@
 | 1005 | 5 | `public double getForeignCouponUsd()` | Next month's coupon bill on the foreign paper, in US$ at the month's cross rates (a dollar piece's in dollars as it is owed; CD8: another money's coupon times its US$ per unit). |
 | 1011 | 4 | `public boolean hasForeignDebt()` |  |
 
-### WHAT THE WORLD CHARGES, AND WHEN IT STOPS ANSWERING (lines 1016-1612)
+### WHAT THE WORLD CHARGES, AND WHEN IT STOPS ANSWERING (lines 1016-1646)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -326,220 +327,225 @@
 | 1514 | 1 | `public AuctionTally.Last lastAuction()` | The sale last booked, or null before the first. |
 | 1532 | 4 | `public double[] marketToSave()` | THE MARKET'S LAST STRIKE, for the save (0.7.14): the four inputs it was last handed - a month's output, a month's tax, the overdraft, the advances - and the rate it struck on them. |
 | 1538 | 9 | `public void restoreMarket(double[] saved)` | ...and back, over the load path's own strike; an older save has none and keeps that strike. |
-| 1548 | 3 | `public List<Debt> getDebt()` |  |
-| 1552 | 60 | `public void processAllDebts(Game game)` |  |
+| 1550 | 1 | `public double unbackedCustodyPaper()` |  |
+| 1551 | 1 | `public void restoreUnbackedCustodyPaper(double face)` |  |
+| 1552 | 18 | `public double reserveCustodyPaper(double face)` |  |
+| 1570 | 1 | **type** `public record CustodyRetirement(double face, double gain)` |  |
+| 1571 | 10 | `public CustodyRetirement consolidateCustodyPaper()` |  |
+| 1582 | 3 | `public List<Debt> getDebt()` |  |
+| 1586 | 60 | `public void processAllDebts(Game game)` |  |
 
-### THE CITY'S BOOKS, IN TOTAL (CD3, spec-city-debt.md section 5) (lines 1613-1718)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1645 | 1 | `public double getInterestBooked()` |  |
-| 1646 | 1 | `public double getAmortisedBooked()` |  |
-| 1661 | 4 | `static int bookKind(String type)` | A type's place in BOOK_KINDS; a type that is none of them is a term loan's, as ladderKind() reads it. |
-| 1667 | 1 | `public double getInterestBookedOf(String type)` | The month's interest expense on one kind of paper (a BOOK_KINDS entry), in local money: the Government tab's row of the budget's interest line. |
-| 1670 | 1 | `double[] interestByKindToSave()` | The interest by kind as a save carries it: a copy, in BOOK_KINDS' order. |
-| 1673 | 4 | `void restoreInterestByKind(double[] saved)` | ...and put back by a load; null or the wrong length (an older save) reads as zeros. |
-| 1679 | 1 | `public double getUpliftBooked()` | The month's inflation uplift on linked bonds, booked (CD5): an expense, not cash. |
-| 1682 | 1 | `public double getUpliftPaid()` | ...and the part of it the month paid in cash (a linker's last month): in the cash coupons the holders were paid, and the uplift line's, not the interest line's. |
-| 1690 | 1 | `public double getCouponBooked()` | The coupons the month's books paid: its interest expense less what was amortised. |
-| 1693 | 5 | `public double getCarryingValue()` | What the city's paper is carried at, every piece together, in local money: what the balance sheet shows (face less the unamortised discount, plus the premium). |
-| 1700 | 1 | `public double getFairValue()` | What the city's paper is worth on the market today, every piece together: the note a government discloses and does not book (getTotalMarketValue()). |
-| 1711 | 7 | `public double getNotePrincipal()` | Face value of the discount notes outstanding. |
-
-### WHAT THE FINANCES TAB DRAWS THE DEBT FROM (0.7.32) (lines 1719-2032)
+### THE CITY'S BOOKS, IN TOTAL (CD3, spec-city-debt.md section 5) (lines 1647-1752)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1739 | 5 | `public double getMonthlyCoupon()` | What the paper pays in coupon next month, in cash, every piece together, in local money: the pieces' own getMonthlyCoupon(), summed - the Finances tab's COUPON. |
-| 1746 | 5 | `public double getUpliftDueNextMonth()` | The inflation uplift the linked bonds pay next month, with their last coupon, every piece together, in local money (CD6): cash beside getMonthlyCoupon(), and the uplift line's in the budget. |
-| 1753 | 5 | `public double getPrincipalOf(String type)` | Principal outstanding of one kind of paper, by Debt.getType() - "NOTE", "SERIAL" or "TERM" - at home and abroad, in local money. |
-| 1765 | 5 | `public double getPrincipalOfLadderKind(int kind)` | Principal outstanding of one kind as the ladder draws it (CD5; LADDER_KINDS' index, 0 the notes, 1 the serial bonds, 2 the bonds): a floating-rate note's face and an inflation-linked bond's are the bonds', as ladderKi... |
-| 1777 | 8 | `public double dueWithin(int months)` | Everything the city's paper asks of it over the next `months` months, coupons and principal together, in local money - the first `months` of every piece's remainingCashFlows(), the ladder's own read: the Debt service ... |
-| 1787 | 10 | `public double dueAbroadWithinUsd(int months)` | ...of the foreign paper alone, in US$ at the month's cross rates (0.7.40; a dollar piece's in the dollars it is owed in, another money's in its own units times its US$ per unit, CD8): the first `months` of each foreig... |
-| 1807 | 4 | `public double valuationRate(Debt paper)` | The one flat rate at which a piece's payments price to marketValue(): its yield to maturity on the price a buyback pays (CD1; until then the curve read at the months it has left, which was the rate marketValue() had d... |
-| 1813 | 3 | `public double underFace(Debt paper)` | What buying a piece back today would save against its face: its principal less marketValue() - below nothing when it costs a premium to retire (the Finances tab's book, which subtracted them itself). |
-| 1824 | 3 | `public static int ladderKind(String type)` | A kind's place in LADDER_KINDS: a note 0, a serial 1, anything else - a term loan - 2. |
-| 1838 | 9 | **type** `public record Rung(int fromYear, int toYear, int fromMonth, int toMonth, double[] byKind, double[] abroadBy...` | One rung of the ladder: a calendar year of payments, from its first month on the ladder to its last - a whole year, but the first, which starts next month, and the one the last payment falls in, which ends with it; bo... |
-| 1841 | 1 | `public double owed()` _(in DebtManager.Rung)_ | What the city's paper asks in it. |
-| 1843 | 1 | `public double abroad()` _(in DebtManager.Rung)_ | ...of which in dollars. |
-| 1845 | 1 | `public double total()` _(in DebtManager.Rung)_ | ...and with the proposed issue's. |
-| 1854 | 4 | **type** `public record Ladder(List<Rung> years, Rung later, int heaviest, double owed, double proposed)` | The ladder: LADDER_YEARS calendar years from next month's, and what falls after them as one "later" rung (null when nothing does); which of the years is the heaviest (-1 with nothing owed in them) - never "later", whi... |
-| 1856 | 1 | `public double total()` _(in DebtManager.Ladder)_ | What is owed and what the proposed issue would ask, together. |
-| 1860 | 1 | `public Ladder ladder(int month)` | The ladder as the city owes it, struck in `month`. |
-| 1876 | 50 | `public Ladder ladder(int month, double[] extra)` | WHEN IT FALLS DUE, BY THE CALENDAR YEAR IT IS PAID IN (0.7.32, the Finances spec's D4). |
-| 1934 | 7 | `public double getPricedDebt()` | Everything the city owes, including what it is overdrawn and what it owes the central bank in advances. |
-| 1948 | 7 | `public double getIndexationOwed()` | What the linked bonds owe past their face today (CD5): each one's face times how far its ratio is over 1 - nothing for a ratio at or under 1, because the deflation floor means the face is owed whatever the index did. |
-| 1967 | 3 | `public boolean retire(Debt debt)` | Takes one bond off the books. |
-| 1972 | 7 | `public double getTotalMarketValue()` | What every outstanding bond would cost to buy back today: marketValue() of each, every payment at its own month's factor on the curve. |
-| 1992 | 12 | `private double spreadFor(double debt, double annualCapacity)` | What one measure adds to the rate: a linear ramp, then flat. |
-| 2028 | 4 | `private double priceAt(double debt)` | The curve itself: a floor, plus up to ten points from each measure. |
+| 1679 | 1 | `public double getInterestBooked()` |  |
+| 1680 | 1 | `public double getAmortisedBooked()` |  |
+| 1695 | 4 | `static int bookKind(String type)` | A type's place in BOOK_KINDS; a type that is none of them is a term loan's, as ladderKind() reads it. |
+| 1701 | 1 | `public double getInterestBookedOf(String type)` | The month's interest expense on one kind of paper (a BOOK_KINDS entry), in local money: the Government tab's row of the budget's interest line. |
+| 1704 | 1 | `double[] interestByKindToSave()` | The interest by kind as a save carries it: a copy, in BOOK_KINDS' order. |
+| 1707 | 4 | `void restoreInterestByKind(double[] saved)` | ...and put back by a load; null or the wrong length (an older save) reads as zeros. |
+| 1713 | 1 | `public double getUpliftBooked()` | The month's inflation uplift on linked bonds, booked (CD5): an expense, not cash. |
+| 1716 | 1 | `public double getUpliftPaid()` | ...and the part of it the month paid in cash (a linker's last month): in the cash coupons the holders were paid, and the uplift line's, not the interest line's. |
+| 1724 | 1 | `public double getCouponBooked()` | The coupons the month's books paid: its interest expense less what was amortised. |
+| 1727 | 5 | `public double getCarryingValue()` | What the city's paper is carried at, every piece together, in local money: what the balance sheet shows (face less the unamortised discount, plus the premium). |
+| 1734 | 1 | `public double getFairValue()` | What the city's paper is worth on the market today, every piece together: the note a government discloses and does not book (getTotalMarketValue()). |
+| 1745 | 7 | `public double getNotePrincipal()` | Face value of the discount notes outstanding. |
 
-### THE CURVE (0.7.1) (lines 2033-2180)
+### WHAT THE FINANCES TAB DRAWS THE DEBT FROM (0.7.32) (lines 1753-2066)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2122 | 8 | `public static double termPremium(int months)` | What a lender adds for tying money up this many months, before the central bank compresses any of it. |
-| 2144 | 7 | `public double compression(int months)` | What the central bank's holdings take off the premium at this many months: the premium, times the share of the city's term paper it actually holds (not its target) over CentralBank.FULL_COMPRESSION_SHARE, times Centra... |
-| 2159 | 5 | `public double compressionAt(double share, int months)` | ...at a share of the term paper of the caller's (0.7.36): what holding `share` would take off the premium at this many months, compression()'s rule with the share given - the Policy tab's holdings dial, whose thirty-y... |
-| 2171 | 3 | `public double curveRateAtShare(int months, double share)` | The curve at a maturity with the central bank holding `share` of the term paper (0.7.36): curveRate()'s credit judgement and premium, less compressionAt() that share - the thirty-year rate "once the book has moved" to... |
-| 2176 | 4 | `private double termShapeAt(double share, int months)` | The premium less the compression at a central-bank share of the term paper: the curve's shape over the short end. |
+| 1773 | 5 | `public double getMonthlyCoupon()` | What the paper pays in coupon next month, in cash, every piece together, in local money: the pieces' own getMonthlyCoupon(), summed - the Finances tab's COUPON. |
+| 1780 | 5 | `public double getUpliftDueNextMonth()` | The inflation uplift the linked bonds pay next month, with their last coupon, every piece together, in local money (CD6): cash beside getMonthlyCoupon(), and the uplift line's in the budget. |
+| 1787 | 5 | `public double getPrincipalOf(String type)` | Principal outstanding of one kind of paper, by Debt.getType() - "NOTE", "SERIAL" or "TERM" - at home and abroad, in local money. |
+| 1799 | 5 | `public double getPrincipalOfLadderKind(int kind)` | Principal outstanding of one kind as the ladder draws it (CD5; LADDER_KINDS' index, 0 the notes, 1 the serial bonds, 2 the bonds): a floating-rate note's face and an inflation-linked bond's are the bonds', as ladderKi... |
+| 1811 | 8 | `public double dueWithin(int months)` | Everything the city's paper asks of it over the next `months` months, coupons and principal together, in local money - the first `months` of every piece's remainingCashFlows(), the ladder's own read: the Debt service ... |
+| 1821 | 10 | `public double dueAbroadWithinUsd(int months)` | ...of the foreign paper alone, in US$ at the month's cross rates (0.7.40; a dollar piece's in the dollars it is owed in, another money's in its own units times its US$ per unit, CD8): the first `months` of each foreig... |
+| 1841 | 4 | `public double valuationRate(Debt paper)` | The one flat rate at which a piece's payments price to marketValue(): its yield to maturity on the price a buyback pays (CD1; until then the curve read at the months it has left, which was the rate marketValue() had d... |
+| 1847 | 3 | `public double underFace(Debt paper)` | What buying a piece back today would save against its face: its principal less marketValue() - below nothing when it costs a premium to retire (the Finances tab's book, which subtracted them itself). |
+| 1858 | 3 | `public static int ladderKind(String type)` | A kind's place in LADDER_KINDS: a note 0, a serial 1, anything else - a term loan - 2. |
+| 1872 | 9 | **type** `public record Rung(int fromYear, int toYear, int fromMonth, int toMonth, double[] byKind, double[] abroadBy...` | One rung of the ladder: a calendar year of payments, from its first month on the ladder to its last - a whole year, but the first, which starts next month, and the one the last payment falls in, which ends with it; bo... |
+| 1875 | 1 | `public double owed()` _(in DebtManager.Rung)_ | What the city's paper asks in it. |
+| 1877 | 1 | `public double abroad()` _(in DebtManager.Rung)_ | ...of which in dollars. |
+| 1879 | 1 | `public double total()` _(in DebtManager.Rung)_ | ...and with the proposed issue's. |
+| 1888 | 4 | **type** `public record Ladder(List<Rung> years, Rung later, int heaviest, double owed, double proposed)` | The ladder: LADDER_YEARS calendar years from next month's, and what falls after them as one "later" rung (null when nothing does); which of the years is the heaviest (-1 with nothing owed in them) - never "later", whi... |
+| 1890 | 1 | `public double total()` _(in DebtManager.Ladder)_ | What is owed and what the proposed issue would ask, together. |
+| 1894 | 1 | `public Ladder ladder(int month)` | The ladder as the city owes it, struck in `month`. |
+| 1910 | 50 | `public Ladder ladder(int month, double[] extra)` | WHEN IT FALLS DUE, BY THE CALENDAR YEAR IT IS PAID IN (0.7.32, the Finances spec's D4). |
+| 1968 | 7 | `public double getPricedDebt()` | Everything the city owes, including what it is overdrawn and what it owes the central bank in advances. |
+| 1982 | 7 | `public double getIndexationOwed()` | What the linked bonds owe past their face today (CD5): each one's face times how far its ratio is over 1 - nothing for a ratio at or under 1, because the deflation floor means the face is owed whatever the index did. |
+| 2001 | 3 | `public boolean retire(Debt debt)` | Takes one bond off the books. |
+| 2006 | 7 | `public double getTotalMarketValue()` | What every outstanding bond would cost to buy back today: marketValue() of each, every payment at its own month's factor on the curve. |
+| 2026 | 12 | `private double spreadFor(double debt, double annualCapacity)` | What one measure adds to the rate: a linear ramp, then flat. |
+| 2062 | 4 | `private double priceAt(double debt)` | The curve itself: a floor, plus up to ten points from each measure. |
 
-### the expectations the curve is built from (CD1) (lines 2181-2464)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2201 | 4 | `public void strikeExpectations(double inflationNow, double expectedInflation)` | Strikes the two figures the curve's expected dial is built from: the inflation the rule reads (this month's) and the inflation the city expects (where it settles). |
-| 2207 | 3 | `public boolean isStruck()` | True once the curve's expectations have been struck and are numbers. |
-| 2212 | 1 | `public double getStruckInflation()` | The inflation the rule read when the month struck the curve's expectations, a fraction a year; NaN unstruck. |
-| 2215 | 1 | `public double getStruckExpected()` | ...and the inflation the city expected then; NaN unstruck. |
-| 2228 | 3 | `public double ruleNow()` | WHAT THE RULE WOULD SET THE DIAL TO AT TODAY'S INFLATION (CD6): the rule the market expects the dial to close on (YieldCurve.expectedPath()'s R(0)), advisedPolicyRate() at the inflation the month struck; the dial itse... |
-| 2238 | 3 | `public double settledDial()` | ...and where the market expects the dial to settle (CD6): the rule at the inflation the city expects it to settle at, which the path approaches with the gap closed (expectedPath()'s limit); the dial when nothing is st... |
-| 2251 | 4 | `public boolean isTied()` | IS THE DIAL TIED TO THE ANCHOR'S RATE (XR5, PRICE ON THE TIED PATH)? |
-| 2257 | 3 | `public void setTiedSource(java.util.function.BooleanSupplier source)` | Hands the manager whether the city's dial is tied to its anchor's rate (Game: the peg is the regime in force), so it can price the tied path without knowing the currency. |
-| 2264 | 3 | `public void setTieMoneySource(java.util.function.Supplier<String> source)` | Hands the manager the code of the money the peg is kept in (Game: ForeignAccounts.getPegAnchorCode(), WN4b), so the tied dial reads that money's central bank's rate. |
-| 2271 | 4 | `public String tieMoney()` | The money the dial is tied to (WN4b): the peg's anchor's code while the dial is tied (isTied()); null when it is not, or nobody handed a source. |
-| 2277 | 3 | `public double tieRate()` | The rate the tied dial stands over (WN4b): the world's rate in the anchor's money, worldRate(tieMoney()) - the US's for a peg to the US$ and for a dial not tied, to the bit. |
-| 2290 | 9 | **type** `private static final class PathEntry` | The expected dial's path and the curve built on it are CACHED, because marketValue() runs for every piece several times a month and quoteRate() walks a fixed point that builds a curve in each pass. |
-| 2294 | 4 | `PathEntry(double floor, double inflation, double expected, double target, double tie, Strictness strictness, double[] path)` _(in DebtManager.PathEntry)_ |  |
-| 2300 | 9 | **type** `private static final class CurveEntry` |  |
-| 2304 | 4 | `CurveEntry(double[] path, double gdpSpread, double revenueSpread, double ceiling, double share, YieldCurve curve)` _(in DebtManager.CurveEntry)_ |  |
-| 2313 | 3 | `private static boolean same(double a, double b)` |  |
-| 2326 | 21 | `private double[] pathFor(double floor)` | The dial the market expects from this floor: the rule's path from the struck expectations, or the floor held flat when nothing is struck - and since XR5, with the dial tied to its anchor's rate (isTied(), a peg), the ... |
-| 2355 | 16 | `private YieldCurve curveAt(double debt)` | The curve this debt would be priced on: the expected dial plus the credit judgement at this debt (spreadFor() on a year of output and a year of tax, clamped at the ceiling), the shape the term premium and the central ... |
-| 2373 | 3 | `public YieldCurve curve()` | THE CURVE (CD1): the city's own, on what it owes now - a discount factor for every month to fifty years. |
-| 2383 | 3 | `public double curveRate(int months)` | THE CURVE: what the city's paper of this many months is worth to a lender today - the zero rate at that maturity, on what the city owes now: the compounded forward rates of the dial the market expects, plus the shape. |
-| 2397 | 11 | `public double marketValue(Debt paper)` | What this paper would fetch today: the present value of what it still owes, EACH PAYMENT AT ITS OWN MONTH'S FACTOR (CD1) - the city's curve() for its own paper, the world's (worldCurveAt()) for a dollar bond since 0.7... |
-| 2417 | 4 | `private double callableValue(LongTermBond bond, YieldCurve curve, double[] flows)` | A callable bond's value (CD4): what the tree prices its remaining payments at on today's curve, with the city's right to call it at its principal from the first call month on (LongTermBond.monthsToFirstCall()), at the... |
-| 2422 | 6 | **type** `private static final class TreeEntry` |  |
-| 2426 | 1 | `TreeEntry(YieldCurve curve, double sigma, CallTree tree)` _(in DebtManager.TreeEntry)_ |  |
-| 2438 | 7 | `private CallTree treeOn(YieldCurve curve, double sigma, int months)` | The tree fitted to this curve at this volatility, long enough for a schedule of this many months: built once and kept while the curve (one object while its inputs stand, curveAt()) and the volatility stand, and refitt... |
-| 2452 | 4 | `public double rateVolatility()` | The volatility of the city's short rate, a year, that a callable piece is valued at: Game's measure of its own history (Game.rateVolatility(), handed in with setRateVolatility()), the floor (CallTree.RATE_VOL_FLOOR) f... |
-| 2458 | 4 | `public void setRateVolatility(java.util.function.DoubleSupplier source)` | Hands the manager the city's volatility, so it can value a callable piece without knowing the city's history. |
-
-### the price index, and the paths a floater and a linker are priced on (CD5) (lines 2465-2581)
+### THE CURVE (0.7.1) (lines 2067-2214)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2472 | 4 | `public double priceIndexLevel()` | The city's price index now (PriceIndex.getIndex()), as a linked bond is indexed on it: what Game hands in with setPriceIndexSource(), read afresh each time so a reloaded index is the one read. |
-| 2478 | 3 | `public void setPriceIndexSource(java.util.function.DoubleSupplier source)` | Hands the manager the price index, so it can index a linked bond without knowing the city's prices. |
-| 2495 | 21 | `public double[] expectedPolicyPath()` | THE DIAL THE MARKET EXPECTS FROM THE POLICY RATE, t = 0 the dial now (CD5): what a floating-rate note's coupons are priced on - the same expected path the curve is built on (YieldCurve.expectedPath()), started from th... |
-| 2517 | 7 | **type** `private static final class GrowthEntry` |  |
-| 2520 | 3 | `GrowthEntry(double inflation, double expected, double target, double[] growth)` _(in DebtManager.GrowthEntry)_ |  |
-| 2535 | 19 | `public double[] expectedInflationGrowth()` | THE PRICE INDEX THE MARKET EXPECTS, month by month (CD5): entry j is the growth of the index in the month j months ahead, (1 + pi(j))^(1/12), with pi(j) = expected + (now - expected) x e^(-j / Expectations.ADAPT_MONTH... |
-| 2561 | 7 | `public double[] pricingFlows(Debt paper)` | The payments the market prices a piece on (CD5): a floating-rate note's coupons at the dial it expects (expectedPolicyPath()), a linked bond's on the index it expects (expectedInflationGrowth(), the next payment on th... |
-| 2577 | 4 | `public double realYieldOf(InflationLinkedBond paper)` | The real yield of a linked bond at its market value (CD5): the known schedule - the real coupon on the principal as the index stands now, held flat, and the indexed principal at the end - solved for the yield that mak... |
+| 2156 | 8 | `public static double termPremium(int months)` | What a lender adds for tying money up this many months, before the central bank compresses any of it. |
+| 2178 | 7 | `public double compression(int months)` | What the central bank's holdings take off the premium at this many months: the premium, times the share of the city's term paper it actually holds (not its target) over CentralBank.FULL_COMPRESSION_SHARE, times Centra... |
+| 2193 | 5 | `public double compressionAt(double share, int months)` | ...at a share of the term paper of the caller's (0.7.36): what holding `share` would take off the premium at this many months, compression()'s rule with the share given - the Policy tab's holdings dial, whose thirty-y... |
+| 2205 | 3 | `public double curveRateAtShare(int months, double share)` | The curve at a maturity with the central bank holding `share` of the term paper (0.7.36): curveRate()'s credit judgement and premium, less compressionAt() that share - the thirty-year rate "once the book has moved" to... |
+| 2210 | 4 | `private double termShapeAt(double share, int months)` | The premium less the compression at a central-bank share of the term paper: the curve's shape over the short end. |
 
-### the call (CD4, spec-city-debt.md section 6.4) (lines 2582-2714)
+### the expectations the curve is built from (CD1) (lines 2215-2498)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2591 | 4 | `public static double callSavingOn(YieldCurve curve, Debt paper, double fee)` | The present value a call would save, per the study: the line's remaining payments at this curve, as a bond that cannot be called, less what the call pays (its principal) and less what selling the paper again costs (th... |
-| 2597 | 3 | `public double callSaving(Debt paper, double fee)` | callSavingOn() the city's curve. |
-| 2602 | 3 | `public static boolean worthCalling(double saving, double principal)` | True when a saving passes CallTree.WORTH_CALLING of the principal called (D24). |
-| 2606 | 6 | **type** `private static final class WorldEntry` |  |
-| 2610 | 1 | `WorldEntry(double rate, double floor, YieldCurve curve)` _(in DebtManager.WorldEntry)_ |  |
-| 2629 | 3 | `public YieldCurve worldCurveAt(double shortRate)` | THE WORLD'S CURVE as a YieldCurve (CD1): the world's short rate held flat, and the term premium table (termPremium()) on top - the one definition of what a dollar payment this many months away is discounted by, for th... |
-| 2642 | 8 | `public YieldCurve worldCurveAt(String code, double shortRate)` | ...in a money of the eight (CD9, 2026-11-08), floored at THAT money's own policy rate (worldRate(code)), not at the city's MIN_RATE: the city's floor is the cheapest it will lend at home, and a franc sold abroad at 0.... |
-| 2652 | 3 | `public double foreignFactor(int months)` | What a dollar payment this many months away is discounted by: (1 + foreignCurveRate(months)/12)^(-months), on worldCurveAt(foreignRate()). |
-| 2657 | 3 | `public double foreignFactor(String code, int months)` | ...in a money of the eight (CD8): on worldCurveAt(code, foreignRate(code)), that money's level. |
-| 2662 | 9 | `public double yieldOf(Debt paper)` | The yield to maturity of a piece on the price a buyback pays: a RESULT of marketValue(), not the rate it was priced at (CD1). |
-| 2673 | 4 | `public double priceOfPar(Debt paper)` | Where a piece trades against par, as a percentage of what is still owed on it: marketValue() over its outstanding principal x 100; 0 when nothing is owed. |
-| 2692 | 12 | `public double valueOfAPoint(Debt paper)` | WHAT A POINT MOVES (CD6): what the piece's worth falls by if every rate on its curve (the world's for dollar paper, as marketValue() uses) rises a point, A_POINT - its pricing flows (pricingFlows()) worth at the curve... |
-| 2710 | 4 | `public double durationOf(Debt paper)` | ...and the piece's duration, in years (CD6): valueOfAPoint() over its worth and the point, V / (marketValue x A_POINT) - the finite difference, the one definition. |
+| 2235 | 4 | `public void strikeExpectations(double inflationNow, double expectedInflation)` | Strikes the two figures the curve's expected dial is built from: the inflation the rule reads (this month's) and the inflation the city expects (where it settles). |
+| 2241 | 3 | `public boolean isStruck()` | True once the curve's expectations have been struck and are numbers. |
+| 2246 | 1 | `public double getStruckInflation()` | The inflation the rule read when the month struck the curve's expectations, a fraction a year; NaN unstruck. |
+| 2249 | 1 | `public double getStruckExpected()` | ...and the inflation the city expected then; NaN unstruck. |
+| 2262 | 3 | `public double ruleNow()` | WHAT THE RULE WOULD SET THE DIAL TO AT TODAY'S INFLATION (CD6): the rule the market expects the dial to close on (YieldCurve.expectedPath()'s R(0)), advisedPolicyRate() at the inflation the month struck; the dial itse... |
+| 2272 | 3 | `public double settledDial()` | ...and where the market expects the dial to settle (CD6): the rule at the inflation the city expects it to settle at, which the path approaches with the gap closed (expectedPath()'s limit); the dial when nothing is st... |
+| 2285 | 4 | `public boolean isTied()` | IS THE DIAL TIED TO THE ANCHOR'S RATE (XR5, PRICE ON THE TIED PATH)? |
+| 2291 | 3 | `public void setTiedSource(java.util.function.BooleanSupplier source)` | Hands the manager whether the city's dial is tied to its anchor's rate (Game: the peg is the regime in force), so it can price the tied path without knowing the currency. |
+| 2298 | 3 | `public void setTieMoneySource(java.util.function.Supplier<String> source)` | Hands the manager the code of the money the peg is kept in (Game: ForeignAccounts.getPegAnchorCode(), WN4b), so the tied dial reads that money's central bank's rate. |
+| 2305 | 4 | `public String tieMoney()` | The money the dial is tied to (WN4b): the peg's anchor's code while the dial is tied (isTied()); null when it is not, or nobody handed a source. |
+| 2311 | 3 | `public double tieRate()` | The rate the tied dial stands over (WN4b): the world's rate in the anchor's money, worldRate(tieMoney()) - the US's for a peg to the US$ and for a dial not tied, to the bit. |
+| 2324 | 9 | **type** `private static final class PathEntry` | The expected dial's path and the curve built on it are CACHED, because marketValue() runs for every piece several times a month and quoteRate() walks a fixed point that builds a curve in each pass. |
+| 2328 | 4 | `PathEntry(double floor, double inflation, double expected, double target, double tie, Strictness strictness, double[] path)` _(in DebtManager.PathEntry)_ |  |
+| 2334 | 9 | **type** `private static final class CurveEntry` |  |
+| 2338 | 4 | `CurveEntry(double[] path, double gdpSpread, double revenueSpread, double ceiling, double share, YieldCurve curve)` _(in DebtManager.CurveEntry)_ |  |
+| 2347 | 3 | `private static boolean same(double a, double b)` |  |
+| 2360 | 21 | `private double[] pathFor(double floor)` | The dial the market expects from this floor: the rule's path from the struck expectations, or the floor held flat when nothing is struck - and since XR5, with the dial tied to its anchor's rate (isTied(), a peg), the ... |
+| 2389 | 16 | `private YieldCurve curveAt(double debt)` | The curve this debt would be priced on: the expected dial plus the credit judgement at this debt (spreadFor() on a year of output and a year of tax, clamped at the ceiling), the shape the term premium and the central ... |
+| 2407 | 3 | `public YieldCurve curve()` | THE CURVE (CD1): the city's own, on what it owes now - a discount factor for every month to fifty years. |
+| 2417 | 3 | `public double curveRate(int months)` | THE CURVE: what the city's paper of this many months is worth to a lender today - the zero rate at that maturity, on what the city owes now: the compounded forward rates of the dial the market expects, plus the shape. |
+| 2431 | 11 | `public double marketValue(Debt paper)` | What this paper would fetch today: the present value of what it still owes, EACH PAYMENT AT ITS OWN MONTH'S FACTOR (CD1) - the city's curve() for its own paper, the world's (worldCurveAt()) for a dollar bond since 0.7... |
+| 2451 | 4 | `private double callableValue(LongTermBond bond, YieldCurve curve, double[] flows)` | A callable bond's value (CD4): what the tree prices its remaining payments at on today's curve, with the city's right to call it at its principal from the first call month on (LongTermBond.monthsToFirstCall()), at the... |
+| 2456 | 6 | **type** `private static final class TreeEntry` |  |
+| 2460 | 1 | `TreeEntry(YieldCurve curve, double sigma, CallTree tree)` _(in DebtManager.TreeEntry)_ |  |
+| 2472 | 7 | `private CallTree treeOn(YieldCurve curve, double sigma, int months)` | The tree fitted to this curve at this volatility, long enough for a schedule of this many months: built once and kept while the curve (one object while its inputs stand, curveAt()) and the volatility stand, and refitt... |
+| 2486 | 4 | `public double rateVolatility()` | The volatility of the city's short rate, a year, that a callable piece is valued at: Game's measure of its own history (Game.rateVolatility(), handed in with setRateVolatility()), the floor (CallTree.RATE_VOL_FLOOR) f... |
+| 2492 | 4 | `public void setRateVolatility(java.util.function.DoubleSupplier source)` | Hands the manager the city's volatility, so it can value a callable piece without knowing the city's history. |
 
-### what the month's close keeps for the debt screens (CD6, spec-city-debt.md section 7) (lines 2715-2866)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2739 | 1 | `void setRecordingForTest(boolean on)` |  |
-| 2746 | 9 | `public void recordTheBook(int month)` | Records the month's close: every piece's price against par and its carrying value per 100 of what is owed (Debt.recordPath()), then the curve (the zero rates at CURVE_TENORS, the dial and the world's rates) in the cur... |
-| 2756 | 17 | `private void recordCurve(int month)` |  |
-| 2775 | 6 | `private double[] curveRowAgo(int months)` | The row recorded this many months before the newest, or null when none was: the book is read by the month, not by place. |
-| 2783 | 4 | `public double[] curveMonthsAgo(int months)` | The city's zero rates at CURVE_TENORS as the curve stood this many months before the newest month recorded (0 the newest); null when that month was not kept - none recorded, or more than CURVE_KEPT - 1 months back. |
-| 2789 | 4 | `public double[] worldCurveMonthsAgo(int months)` | ...and the world's, at the same tenors (foreignCurveRate()); null likewise. |
-| 2795 | 4 | `public double policyRateMonthsAgo(int months)` | ...and the dial that month; NaN when that month was not kept. |
-| 2801 | 1 | `public int curveBookSize()` | How many months the curve book holds. |
-| 2804 | 5 | `double[][] curveBookToSave()` | The curve book as a save carries it: a copy, one row a month, oldest first - [month, dial, the city's rates, the world's]. |
-| 2811 | 12 | `void restoreCurveBook(double[][] saved)` | ...and put back by a load; null (an older save) or a row of the wrong length (a changed tenor list) is not kept, and the book is built afresh from the next close. |
-| 2825 | 3 | `public static boolean isTermPaper(Debt paper)` | True for the city's own term paper - serial and term, not the notes: what the central bank's dial holds. |
-| 2830 | 5 | `public double termPrincipal()` | The city's own term paper outstanding, at face: the base of the holdings dial. |
-| 2837 | 9 | `public double centralBankShareOfTerm()` | The share of it the central bank holds - the compression's measure. |
-| 2857 | 9 | `public double centralBankShareOfPaper()` | The central bank's share of ALL the city's own paper outstanding, at face, every maturity - the notes it never buys in the denominator - the floor's measure (0.7.15, floorRate()). |
-
-### who holds it (0.7.1) (lines 2867-3010)
+### the price index, and the paths a floater and a linker are priced on (CD5) (lines 2499-2615)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2870 | 5 | `public double householdPrincipal()` | What the city's households hold of its own paper, at face. |
-| 2877 | 5 | `public double centralBankPrincipal()` | ...the central bank, at face. |
-| 2884 | 5 | `public double firmPrincipal()` | ...the businesses, at face (CD2, slice 4). |
-| 2891 | 5 | `public double worldPrincipal()` | ...the world, at face (CD2, slice 5). |
-| 2898 | 5 | `public double bankPrincipal()` | ...and the commercial bank: the domestic principal less the other four. |
-| 2911 | 5 | `public double bankBook()` | ...of which the paper the bank has PAID for: what its book carries. |
-| 2918 | 15 | `public double[] bookValues()` | Each holder's book at the curve: 0 the households, 1 the central bank, 2 the bank, 3 the businesses, 4 the world. |
-| 2939 | 4 | `public double householdBookRatio()` | The households' book at market over its face: ONE RATIO A MONTH, which is what their paper counts for in their net worth and what the desk pays them for it. |
-| 2950 | 4 | `public double firmBookRatio()` | The businesses' book at market over its face (CD2, slice 4): the households' twin, ONE RATIO A MONTH - what a dollar of face of their paper is worth, what the desk pays them for it. |
-| 2956 | 10 | `public double firmBookYield()` | What the businesses' paper yields at today's curve: the households' twin, weighted by what the businesses hold of each piece; the short rate when they hold none. |
-| 2973 | 4 | `public double worldBookRatio()` | The world's book at market over its face (CD2, slice 5): the households' twin, one ratio a month - what a dollar of face of the paper it holds is worth at the curve, which is what the auction counts of it beside its h... |
-| 2979 | 10 | `public double householdBookYield()` | What the households' paper yields at today's curve (each piece's yieldOf(), its yield to maturity on the price a buyback pays), weighted by what they hold of each piece; the short rate when they hold none. |
-| 2997 | 8 | `public double bankUnearnedDiscount()` | The discount the bank has not yet earned on what it holds: every piece's unaccreted remainder, in the share of its principal the bank holds. |
-| 3009 | 1 | `public double getAccretedForBank()` |  |
+| 2506 | 4 | `public double priceIndexLevel()` | The city's price index now (PriceIndex.getIndex()), as a linked bond is indexed on it: what Game hands in with setPriceIndexSource(), read afresh each time so a reloaded index is the one read. |
+| 2512 | 3 | `public void setPriceIndexSource(java.util.function.DoubleSupplier source)` | Hands the manager the price index, so it can index a linked bond without knowing the city's prices. |
+| 2529 | 21 | `public double[] expectedPolicyPath()` | THE DIAL THE MARKET EXPECTS FROM THE POLICY RATE, t = 0 the dial now (CD5): what a floating-rate note's coupons are priced on - the same expected path the curve is built on (YieldCurve.expectedPath()), started from th... |
+| 2551 | 7 | **type** `private static final class GrowthEntry` |  |
+| 2554 | 3 | `GrowthEntry(double inflation, double expected, double target, double[] growth)` _(in DebtManager.GrowthEntry)_ |  |
+| 2569 | 19 | `public double[] expectedInflationGrowth()` | THE PRICE INDEX THE MARKET EXPECTS, month by month (CD5): entry j is the growth of the index in the month j months ahead, (1 + pi(j))^(1/12), with pi(j) = expected + (now - expected) x e^(-j / Expectations.ADAPT_MONTH... |
+| 2595 | 7 | `public double[] pricingFlows(Debt paper)` | The payments the market prices a piece on (CD5): a floating-rate note's coupons at the dial it expects (expectedPolicyPath()), a linked bond's on the index it expects (expectedInflationGrowth(), the next payment on th... |
+| 2611 | 4 | `public double realYieldOf(InflationLinkedBond paper)` | The real yield of a linked bond at its market value (CD5): the known schedule - the real coupon on the principal as the index stands now, held flat, and the indexed principal at the end - solved for the yield that mak... |
 
-### THE RATE, TAKEN APART - for the Finances screen and nothing else. (lines 3011-3313)
+### the call (CD4, spec-city-debt.md section 6.4) (lines 2616-2748)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3037 | 5 | `public double rateAtPolicy(double policy)` | What the city would be quoted if the policy rate were this instead. |
-| 3049 | 1 | `public double baseComponent()` | The floor everybody pays: the policy rate, or the bank's cost of funds if that is higher - on the share of the city's paper the bank and the households hold, since 0.7.15; the central bank's share is priced at the pol... |
-| 3052 | 1 | `public double gdpSpread()` | What the debt costs against the size of the economy. |
-| 3055 | 1 | `public double revenueSpread()` | ...and against what the city can actually collect. |
-| 3058 | 3 | `public double gdpStress()` | How much of the worst case each measure has used up, 0 to 1. |
-| 3062 | 3 | `public double revenueStress()` |  |
-| 3067 | 1 | `public double overTheWorld()` | What the city's own rate is over the world's (0.7.36): the short end against worldRate() - the difference hot money follows. |
-| 3070 | 1 | `public double overTheWorldAt(double policy)` | ...at a policy rate of the caller's: rateAtPolicy() against the world's. |
-| 3073 | 1 | `public static double maxSpreadPerMeasure()` | The most either measure can add on its own. |
-| 3076 | 1 | `public static double fullStressMultiple()` | Years of GDP, or of revenue, at which a measure has said all it can. |
-| 3079 | 1 | `public double annualCapacityGdp()` | A year of output, as the market is pricing it. |
-| 3082 | 1 | `public double annualCapacityRevenue()` | ...and a year of tax, likewise. |
-| 3085 | 3 | `public boolean atCeiling()` | True when the quoted rate is pinned at the top of the curve. |
-| 3100 | 3 | `public double expectedDialOver(int months)` | The dial the market expects, averaged over this many months, and nothing else in the rate: the compounded forwards less the credit spread. |
-| 3105 | 3 | `public double creditSpread()` | What the credit judgement adds to the forward, as the curve carries it: the two spreads, or the room under the ceiling if less - the same in every month, the middle term of curveRate(m) == expectedDialOver(m) + credit... |
-| 3110 | 3 | `public double expectedDialIn(int monthsAhead)` | The dial the market expects this many months ahead (0 this month: the floor). |
-| 3158 | 3 | `public double floorRate()` | What a spotless city pays: the policy rate - since 0.7.0, see THE FLOOR IS REAL NOW - but never less than the money costs the bank that lends it. |
-| 3169 | 6 | `private double floorAt(double policy)` | ...at a policy rate of the caller's: the one definition floorRate() and rateAtPolicy() both read, so the Policy tab's "what moving the dial does" splits the floor as the market does. |
-| 3183 | 3 | `public double bankFloorRate()` | The bank's floor, unsplit: the policy rate, or the bank's cost of funds plus Bank.MIN_MARGIN if that is higher - what the share of the city's paper the central bank does not hold is priced at, and the whole floor unti... |
-| 3188 | 3 | `public double ceilingRate()` | What a hopeless one pays - both measures maxed out. |
-| 3199 | 10 | `public void updateInterest()` | Re-prices the standing rate off what the city owes right now. |
-| 3230 | 3 | `public double quoteRate(double requested, java.util.function.DoubleUnaryOperator faceOf)` | What a NEW loan of this size would cost - priced with itself included. |
-| 3242 | 3 | `public double quoteRate(double requested, java.util.function.DoubleUnaryOperator faceOf, int months)` | ...at a maturity (0.7.1): the same fixed point, read as the curve's zero rate for that many months (none: the short rate). |
-| 3247 | 3 | `public double quoteRate(double requested)` | Straight-line version for instruments whose face value IS the request. |
-| 3252 | 3 | `public double quoteRate(double requested, int months)` | ...at a maturity. |
-| 3271 | 11 | `public YieldCurve quoteCurve(double requested, java.util.function.ToDoubleFunction<YieldCurve> faceOf)` | THE CURVE A NEW LOAN IS PRICED ON, with itself included (CD1): the fixed point quoteRate() walks, returned as the whole curve instead of one rate read off it. |
-| 3284 | 3 | `public YieldCurve quoteCurve(double faceIsRequest)` | ...for an instrument whose face value IS the request: one pass, the loan priced in. |
-| 3303 | 10 | `private double debtAfterProceedsOf(double received)` | The debt the loan lands ON TOP OF - which is not simply what is owed now. |
+| 2625 | 4 | `public static double callSavingOn(YieldCurve curve, Debt paper, double fee)` | The present value a call would save, per the study: the line's remaining payments at this curve, as a bond that cannot be called, less what the call pays (its principal) and less what selling the paper again costs (th... |
+| 2631 | 3 | `public double callSaving(Debt paper, double fee)` | callSavingOn() the city's curve. |
+| 2636 | 3 | `public static boolean worthCalling(double saving, double principal)` | True when a saving passes CallTree.WORTH_CALLING of the principal called (D24). |
+| 2640 | 6 | **type** `private static final class WorldEntry` |  |
+| 2644 | 1 | `WorldEntry(double rate, double floor, YieldCurve curve)` _(in DebtManager.WorldEntry)_ |  |
+| 2663 | 3 | `public YieldCurve worldCurveAt(double shortRate)` | THE WORLD'S CURVE as a YieldCurve (CD1): the world's short rate held flat, and the term premium table (termPremium()) on top - the one definition of what a dollar payment this many months away is discounted by, for th... |
+| 2676 | 8 | `public YieldCurve worldCurveAt(String code, double shortRate)` | ...in a money of the eight (CD9, 2026-11-08), floored at THAT money's own policy rate (worldRate(code)), not at the city's MIN_RATE: the city's floor is the cheapest it will lend at home, and a franc sold abroad at 0.... |
+| 2686 | 3 | `public double foreignFactor(int months)` | What a dollar payment this many months away is discounted by: (1 + foreignCurveRate(months)/12)^(-months), on worldCurveAt(foreignRate()). |
+| 2691 | 3 | `public double foreignFactor(String code, int months)` | ...in a money of the eight (CD8): on worldCurveAt(code, foreignRate(code)), that money's level. |
+| 2696 | 9 | `public double yieldOf(Debt paper)` | The yield to maturity of a piece on the price a buyback pays: a RESULT of marketValue(), not the rate it was priced at (CD1). |
+| 2707 | 4 | `public double priceOfPar(Debt paper)` | Where a piece trades against par, as a percentage of what is still owed on it: marketValue() over its outstanding principal x 100; 0 when nothing is owed. |
+| 2726 | 12 | `public double valueOfAPoint(Debt paper)` | WHAT A POINT MOVES (CD6): what the piece's worth falls by if every rate on its curve (the world's for dollar paper, as marketValue() uses) rises a point, A_POINT - its pricing flows (pricingFlows()) worth at the curve... |
+| 2744 | 4 | `public double durationOf(Debt paper)` | ...and the piece's duration, in years (CD6): valueOfAPoint() over its worth and the point, V / (marketValue x A_POINT) - the finite difference, the one definition. |
 
-### WHAT THE AUCTION STARTS FROM, AND WHERE A SALE GOES (CD2) (lines 3314-3344)
+### what the month's close keeps for the debt screens (CD6, spec-city-debt.md section 7) (lines 2749-2900)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3330 | 3 | `public double fairYield(Auction.Kind kind, int months, double extraFace)` | The yield an auction of this paper starts from - fair (spec-city-debt.md section 4): what the curve says the paper is worth with `extraFace` of new debt on the books (quoteCurve(): the issue is priced into the credit ... |
-| 3335 | 9 | `public static double fairYieldOn(YieldCurve curve, Auction.Kind kind, int months)` | ...read off a curve already in hand: the one the sale is priced on (Game.runAuction() asks quoteCurve() once and reads both from it). |
+| 2773 | 1 | `void setRecordingForTest(boolean on)` |  |
+| 2780 | 9 | `public void recordTheBook(int month)` | Records the month's close: every piece's price against par and its carrying value per 100 of what is owed (Debt.recordPath()), then the curve (the zero rates at CURVE_TENORS, the dial and the world's rates) in the cur... |
+| 2790 | 17 | `private void recordCurve(int month)` |  |
+| 2809 | 6 | `private double[] curveRowAgo(int months)` | The row recorded this many months before the newest, or null when none was: the book is read by the month, not by place. |
+| 2817 | 4 | `public double[] curveMonthsAgo(int months)` | The city's zero rates at CURVE_TENORS as the curve stood this many months before the newest month recorded (0 the newest); null when that month was not kept - none recorded, or more than CURVE_KEPT - 1 months back. |
+| 2823 | 4 | `public double[] worldCurveMonthsAgo(int months)` | ...and the world's, at the same tenors (foreignCurveRate()); null likewise. |
+| 2829 | 4 | `public double policyRateMonthsAgo(int months)` | ...and the dial that month; NaN when that month was not kept. |
+| 2835 | 1 | `public int curveBookSize()` | How many months the curve book holds. |
+| 2838 | 5 | `double[][] curveBookToSave()` | The curve book as a save carries it: a copy, one row a month, oldest first - [month, dial, the city's rates, the world's]. |
+| 2845 | 12 | `void restoreCurveBook(double[][] saved)` | ...and put back by a load; null (an older save) or a row of the wrong length (a changed tenor list) is not kept, and the book is built afresh from the next close. |
+| 2859 | 3 | `public static boolean isTermPaper(Debt paper)` | True for the city's own term paper - serial and term, not the notes: what the central bank's dial holds. |
+| 2864 | 5 | `public double termPrincipal()` | The city's own term paper outstanding, at face: the base of the holdings dial. |
+| 2871 | 9 | `public double centralBankShareOfTerm()` | The share of it the central bank holds - the compression's measure. |
+| 2891 | 9 | `public double centralBankShareOfPaper()` | The central bank's share of ALL the city's own paper outstanding, at face, every maturity - the notes it never buys in the denominator - the floor's measure (0.7.15, floorRate()). |
 
-### FAIR AT THE SALE, FOR A FLOATER AND A LINKER (CD5, spec-city-debt.md (lines 3345-3505)
+### who holds it (0.7.1) (lines 2901-3044)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3363 | 8 | `public static double fairMargin(YieldCurve curve, double[] policyPath, int months)` | The margin over the policy rate that prices a floating-rate note of these months at 100 on this curve: each coupon at the dial the path expects when it is paid (FloatingRateNote.flowsFor()), the face at the end, found... |
-| 3385 | 8 | `public static double fairRealCoupon(YieldCurve curve, double[] growth, int months)` | The real coupon that prices a NEW inflation-linked bond of these months at 100 on this curve: the first payment on a ratio of 1, each later month's grown by the growth the market expects (InflationLinkedBond.ratiosFor... |
-| 3395 | 3 | `public double fairMargin(int months, double extraFace)` | fairMargin() on the curve a sale of `extraFace` is priced on and the dial the market expects now: the Borrow page's term column. |
-| 3400 | 3 | `public double fairRealCoupon(int months, double extraFace)` | fairRealCoupon() on the curve a sale of `extraFace` is priced on and the index the market expects now. |
-| 3410 | 4 | `public double breakevenInflation(int months, double extraFace)` | The inflation a linked line prices in (CD5): the nominal par yield of this term less the real coupon that prices a linked bond at 100 - the breakeven the market's two lines disagree by. |
-| 3422 | 3 | `public double parYield(int months, double extraFace)` | The nominal coupon a new bullet bond of these months sells at par for (CD6): the par yield of the curve a sale of `extraFace` is priced on, YieldCurve.parYield() - the figure breakevenInflation() takes fairRealCoupon(... |
-| 3437 | 6 | `public static double amortizingParYield(YieldCurve curve, int years)` | The one coupon that prices an amortizing bond of these years at 100 on a curve: every payment of its schedule at its own month's factor. |
-| 3453 | 3 | `public Debt benchmarkLine(int years)` | The bond line a sale at this term goes into (spec-city-debt.md section 2.2, D6, D14): the city's own LongTermBond - not dollar paper, and not a callable one (CD4: a sale that is not callable never reopens a line that ... |
-| 3463 | 13 | `public Debt benchmarkLine(int years, boolean callable)` | ...of a callable sale (CD4): a callable sale reopens only a callable line of the same term whose first call sits as far from its start as the sale's would (CallTree.firstCallYears()), and a sale that is not callable n... |
-| 3477 | 3 | `public void clearDebts()` |  |
-| 3481 | 4 | `public void setDebt(List<Debt> debts)` |  |
-| 3488 | 4 | `static { ... }` |  |
-| 3494 | 10 | `public void redenominate(double scale)` | The city's debt book, in the new unit. |
+| 2904 | 5 | `public double householdPrincipal()` | What the city's households hold of its own paper, at face. |
+| 2911 | 5 | `public double centralBankPrincipal()` | ...the central bank, at face. |
+| 2918 | 5 | `public double firmPrincipal()` | ...the businesses, at face (CD2, slice 4). |
+| 2925 | 5 | `public double worldPrincipal()` | ...the world, at face (CD2, slice 5). |
+| 2932 | 5 | `public double bankPrincipal()` | ...and the commercial bank: the domestic principal less the other four. |
+| 2945 | 5 | `public double bankBook()` | ...of which the paper the bank has PAID for: what its book carries. |
+| 2952 | 15 | `public double[] bookValues()` | Each holder's book at the curve: 0 the households, 1 the central bank, 2 the bank, 3 the businesses, 4 the world. |
+| 2973 | 4 | `public double householdBookRatio()` | The households' book at market over its face: ONE RATIO A MONTH, which is what their paper counts for in their net worth and what the desk pays them for it. |
+| 2984 | 4 | `public double firmBookRatio()` | The businesses' book at market over its face (CD2, slice 4): the households' twin, ONE RATIO A MONTH - what a dollar of face of their paper is worth, what the desk pays them for it. |
+| 2990 | 10 | `public double firmBookYield()` | What the businesses' paper yields at today's curve: the households' twin, weighted by what the businesses hold of each piece; the short rate when they hold none. |
+| 3007 | 4 | `public double worldBookRatio()` | The world's book at market over its face (CD2, slice 5): the households' twin, one ratio a month - what a dollar of face of the paper it holds is worth at the curve, which is what the auction counts of it beside its h... |
+| 3013 | 10 | `public double householdBookYield()` | What the households' paper yields at today's curve (each piece's yieldOf(), its yield to maturity on the price a buyback pays), weighted by what they hold of each piece; the short rate when they hold none. |
+| 3031 | 8 | `public double bankUnearnedDiscount()` | The discount the bank has not yet earned on what it holds: every piece's unaccreted remainder, in the share of its principal the bank holds. |
+| 3043 | 1 | `public double getAccretedForBank()` |  |
+
+### THE RATE, TAKEN APART - for the Finances screen and nothing else. (lines 3045-3347)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3071 | 5 | `public double rateAtPolicy(double policy)` | What the city would be quoted if the policy rate were this instead. |
+| 3083 | 1 | `public double baseComponent()` | The floor everybody pays: the policy rate, or the bank's cost of funds if that is higher - on the share of the city's paper the bank and the households hold, since 0.7.15; the central bank's share is priced at the pol... |
+| 3086 | 1 | `public double gdpSpread()` | What the debt costs against the size of the economy. |
+| 3089 | 1 | `public double revenueSpread()` | ...and against what the city can actually collect. |
+| 3092 | 3 | `public double gdpStress()` | How much of the worst case each measure has used up, 0 to 1. |
+| 3096 | 3 | `public double revenueStress()` |  |
+| 3101 | 1 | `public double overTheWorld()` | What the city's own rate is over the world's (0.7.36): the short end against worldRate() - the difference hot money follows. |
+| 3104 | 1 | `public double overTheWorldAt(double policy)` | ...at a policy rate of the caller's: rateAtPolicy() against the world's. |
+| 3107 | 1 | `public static double maxSpreadPerMeasure()` | The most either measure can add on its own. |
+| 3110 | 1 | `public static double fullStressMultiple()` | Years of GDP, or of revenue, at which a measure has said all it can. |
+| 3113 | 1 | `public double annualCapacityGdp()` | A year of output, as the market is pricing it. |
+| 3116 | 1 | `public double annualCapacityRevenue()` | ...and a year of tax, likewise. |
+| 3119 | 3 | `public boolean atCeiling()` | True when the quoted rate is pinned at the top of the curve. |
+| 3134 | 3 | `public double expectedDialOver(int months)` | The dial the market expects, averaged over this many months, and nothing else in the rate: the compounded forwards less the credit spread. |
+| 3139 | 3 | `public double creditSpread()` | What the credit judgement adds to the forward, as the curve carries it: the two spreads, or the room under the ceiling if less - the same in every month, the middle term of curveRate(m) == expectedDialOver(m) + credit... |
+| 3144 | 3 | `public double expectedDialIn(int monthsAhead)` | The dial the market expects this many months ahead (0 this month: the floor). |
+| 3192 | 3 | `public double floorRate()` | What a spotless city pays: the policy rate - since 0.7.0, see THE FLOOR IS REAL NOW - but never less than the money costs the bank that lends it. |
+| 3203 | 6 | `private double floorAt(double policy)` | ...at a policy rate of the caller's: the one definition floorRate() and rateAtPolicy() both read, so the Policy tab's "what moving the dial does" splits the floor as the market does. |
+| 3217 | 3 | `public double bankFloorRate()` | The bank's floor, unsplit: the policy rate, or the bank's cost of funds plus Bank.MIN_MARGIN if that is higher - what the share of the city's paper the central bank does not hold is priced at, and the whole floor unti... |
+| 3222 | 3 | `public double ceilingRate()` | What a hopeless one pays - both measures maxed out. |
+| 3233 | 10 | `public void updateInterest()` | Re-prices the standing rate off what the city owes right now. |
+| 3264 | 3 | `public double quoteRate(double requested, java.util.function.DoubleUnaryOperator faceOf)` | What a NEW loan of this size would cost - priced with itself included. |
+| 3276 | 3 | `public double quoteRate(double requested, java.util.function.DoubleUnaryOperator faceOf, int months)` | ...at a maturity (0.7.1): the same fixed point, read as the curve's zero rate for that many months (none: the short rate). |
+| 3281 | 3 | `public double quoteRate(double requested)` | Straight-line version for instruments whose face value IS the request. |
+| 3286 | 3 | `public double quoteRate(double requested, int months)` | ...at a maturity. |
+| 3305 | 11 | `public YieldCurve quoteCurve(double requested, java.util.function.ToDoubleFunction<YieldCurve> faceOf)` | THE CURVE A NEW LOAN IS PRICED ON, with itself included (CD1): the fixed point quoteRate() walks, returned as the whole curve instead of one rate read off it. |
+| 3318 | 3 | `public YieldCurve quoteCurve(double faceIsRequest)` | ...for an instrument whose face value IS the request: one pass, the loan priced in. |
+| 3337 | 10 | `private double debtAfterProceedsOf(double received)` | The debt the loan lands ON TOP OF - which is not simply what is owed now. |
+
+### WHAT THE AUCTION STARTS FROM, AND WHERE A SALE GOES (CD2) (lines 3348-3378)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3364 | 3 | `public double fairYield(Auction.Kind kind, int months, double extraFace)` | The yield an auction of this paper starts from - fair (spec-city-debt.md section 4): what the curve says the paper is worth with `extraFace` of new debt on the books (quoteCurve(): the issue is priced into the credit ... |
+| 3369 | 9 | `public static double fairYieldOn(YieldCurve curve, Auction.Kind kind, int months)` | ...read off a curve already in hand: the one the sale is priced on (Game.runAuction() asks quoteCurve() once and reads both from it). |
+
+### FAIR AT THE SALE, FOR A FLOATER AND A LINKER (CD5, spec-city-debt.md (lines 3379-3541)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3397 | 8 | `public static double fairMargin(YieldCurve curve, double[] policyPath, int months)` | The margin over the policy rate that prices a floating-rate note of these months at 100 on this curve: each coupon at the dial the path expects when it is paid (FloatingRateNote.flowsFor()), the face at the end, found... |
+| 3419 | 8 | `public static double fairRealCoupon(YieldCurve curve, double[] growth, int months)` | The real coupon that prices a NEW inflation-linked bond of these months at 100 on this curve: the first payment on a ratio of 1, each later month's grown by the growth the market expects (InflationLinkedBond.ratiosFor... |
+| 3429 | 3 | `public double fairMargin(int months, double extraFace)` | fairMargin() on the curve a sale of `extraFace` is priced on and the dial the market expects now: the Borrow page's term column. |
+| 3434 | 3 | `public double fairRealCoupon(int months, double extraFace)` | fairRealCoupon() on the curve a sale of `extraFace` is priced on and the index the market expects now. |
+| 3444 | 4 | `public double breakevenInflation(int months, double extraFace)` | The inflation a linked line prices in (CD5): the nominal par yield of this term less the real coupon that prices a linked bond at 100 - the breakeven the market's two lines disagree by. |
+| 3456 | 3 | `public double parYield(int months, double extraFace)` | The nominal coupon a new bullet bond of these months sells at par for (CD6): the par yield of the curve a sale of `extraFace` is priced on, YieldCurve.parYield() - the figure breakevenInflation() takes fairRealCoupon(... |
+| 3471 | 6 | `public static double amortizingParYield(YieldCurve curve, int years)` | The one coupon that prices an amortizing bond of these years at 100 on a curve: every payment of its schedule at its own month's factor. |
+| 3487 | 3 | `public Debt benchmarkLine(int years)` | The bond line a sale at this term goes into (spec-city-debt.md section 2.2, D6, D14): the city's own LongTermBond - not dollar paper, and not a callable one (CD4: a sale that is not callable never reopens a line that ... |
+| 3497 | 13 | `public Debt benchmarkLine(int years, boolean callable)` | ...of a callable sale (CD4): a callable sale reopens only a callable line of the same term whose first call sits as far from its start as the sale's would (CallTree.firstCallYears()), and a sale that is not callable n... |
+| 3511 | 4 | `public void clearDebts()` |  |
+| 3516 | 4 | `public void setDebt(List<Debt> debts)` |  |
+| 3523 | 4 | `static { ... }` |  |
+| 3529 | 11 | `public void redenominate(double scale)` | The city's debt book, in the new unit. |
 

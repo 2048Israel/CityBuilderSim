@@ -1,6 +1,6 @@
-# ProcessingSector.java - 650 lines · 57 methods · 0 constants · sectors
+# ProcessingSector.java - 777 lines · 63 methods · 1 constants · sectors
 
-`ham/citybuildersim/sectors/ProcessingSector.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/ProcessingSector.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > A sector that turns goods into other goods in works it builds by what
 > pays: the template every processing industry of the materials chains
@@ -64,9 +64,9 @@
 > price past it), so a works that replaces imports is not shed because one
 > ... (15 more lines in the source)
 
-**Uses:** [SpreadPlanner](SpreadPlanner.md) (71), [BuildingsTemplate](BuildingsTemplate.md) (38), [Good](Good.md) (25), [NewUnit](NewUnit.md) (21), [BusinessInvestment](BusinessInvestment.md) (12), [Game](Game.md) (5), [Sector](Sector.md) (4), [Traffic](Traffic.md) (4), [Haulage](Haulage.md) (4), [GoodsMarket](GoodsMarket.md) (2), [Currency](Currency.md) (2), [BuildingType](BuildingType.md) (1), [Trade](Trade.md) (1)
+**Uses:** [SpreadPlanner](SpreadPlanner.md) (86), [BuildingsTemplate](BuildingsTemplate.md) (46), [Good](Good.md) (33), [NewUnit](NewUnit.md) (21), [BusinessInvestment](BusinessInvestment.md) (13), [Game](Game.md) (6), [Sector](Sector.md) (4), [Traffic](Traffic.md) (4), [Haulage](Haulage.md) (4), [Currency](Currency.md) (3), [GoodsMarket](GoodsMarket.md) (2), [BuildingType](BuildingType.md) (1), [Trade](Trade.md) (1)
 
-**Used by (20):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [CementConcrete](CementConcrete.md), [CementConcreteCheck](CementConcreteCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ExtractionSector](ExtractionSector.md), [Forestry](Forestry.md), [HaulageCheck](HaulageCheck.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [RecipeCheck](RecipeCheck.md), [Sector](Sector.md), [WoodProducts](WoodProducts.md), [WoodProductsCheck](WoodProductsCheck.md)
+**Used by (22):** [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BusinessInvestment](BusinessInvestment.md), [CementConcrete](CementConcrete.md), [CementConcreteCheck](CementConcreteCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [ExtractionSector](ExtractionSector.md), [Forestry](Forestry.md), [HaulageCheck](HaulageCheck.md), [HeavyIndustry](HeavyIndustry.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [Manufacturing](Manufacturing.md), [MaterialsCheck](MaterialsCheck.md), [RecipeCheck](RecipeCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [WoodProducts](WoodProducts.md), [WoodProductsCheck](WoodProductsCheck.md)
 
 ## Sections
 
@@ -74,22 +74,30 @@
 |---:|---|
 | 125 | · captive use (Sector, CAPTIVE USE) |
 | 133 | · the candidates |
-| 473 | · the plan |
-| 523 | · idle, then shed |
-| 583 | · its idle months across a save |
-| 601 | THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md |
+| 483 | · the plan |
+| 571 | · idle, then shed |
+| 634 | · the run its works made (CY1) |
+| 694 | · its idle months across a save |
+| 728 | THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md |
+
+## Constants
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 666 | `ProcessingSector.RUN_KEY` | `"run."` | The prefix of each good's last run in its saved extras ("run.<GOOD>.made", ".full", ".capacity"). |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 99 | `private final SpreadPlanner planner` | Its spread planner: its money gate and its kinds' idle months. |
+| 663 | `private final Map<Good, double[]> lastRun` | What each good its works make was made at, at the last month's end: {made, made and idled, the capacity it was made on}; the month's Output rows are not saved. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 96 | 555 | **type** `public abstract class ProcessingSector extends Sector` | A sector that turns goods into other goods in works it builds by what pays: the template every processing industry of the materials chains extends (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.6a and 2.7). |
+| 96 | 682 | **type** `public abstract class ProcessingSector extends Sector` | A sector that turns goods into other goods in works it builds by what pays: the template every processing industry of the materials chains extends (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.6a and 2.7). |
 | 101 | 3 | `protected ProcessingSector(String key, String label, BuildingType group)` |  |
 | 106 | 1 | `public SpreadPlanner planner()` | Its spread planner (a check or a probe sets its money gate for the counterfactual). |
 | 115 | 9 | `public void shipUnsoldStock(Good g, GoodsMarket market)` | The planner's world buyers also buy from its wholesale shed (BF1). |
@@ -100,7 +108,7 @@
 |---:|---:|---|---|
 | 129 | 3 | `public boolean captive(Good g)` | Every good it both makes and uses goes to its own need first. |
 
-### the candidates (lines 133-472)
+### the candidates (lines 133-482)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -112,69 +120,80 @@
 | 172 | 3 | `protected double offMarketFeed(BuildingsTemplate t, double rate)` | What one of `t` pays a month at `rate` (the share of nameplate it runs at) for a feed no market sells: nothing by default (HeavyIndustry's Scrap Yard: its old steel). |
 | 177 | 3 | `public double exchangeFactor()` | What its works' consumables are paid at: the exchange factor every world price is converted at; 1 with no markets. |
 | 182 | 3 | `public double tariff()` | What its works' power buys at: the industry price of the struck book, as Heavy Industry is billed (every works of a processing sector is Heavy Industry: high voltage, the energy and the long wires, spec-electricity 2.6). |
-| 187 | 3 | `public double worksTariff()` | What its works' surplus is paid: the struck book's price of a kW the works sold the grid (Sector.getPowerSoldValue()). |
-| 192 | 3 | `public static double gross(BuildingsTemplate t, SpreadPlanner.Values v, double rate)` | What one of `t` would make less what it would use a month at `rate`, each valued as one more of it would change the city's trade (pure): made at Values.out(), used at Values.in(). |
-| 197 | 6 | `public static double gross(NewUnit t, SpreadPlanner.Values v, double rate)` | ...for one new building already resolved (QN1): its own makes and uses. |
-| 205 | 6 | `public static double grossStanding(BuildingsTemplate t, SpreadPlanner.Values v, double rate)` | ...and what the last one of `t` standing makes less what it uses (pure; the mirror): made at Values.in() - what losing it would cost - and used at Values.out(), what losing it would free. |
-| 218 | 4 | `public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city, double fac...` | One building weighed (pure in its arguments): what one more would earn a month at the city's values and the frame's rate - gross() less its running and standing costs and SpreadPlanner.ownCosts() - asked every gate, i... |
-| 224 | 7 | `public static SpreadPlanner.Candidate estimate(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city, double factor, doubl...` | ...for one new building already resolved (QN1): its own makes, uses, posts, draw, consumables and power. |
-| 241 | 5 | `public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city, double fac...` | ...run at `share` of the sector's rate for want of a feed no market sells, paying `other` a month past its running, standing and own costs - that feed (offMarketFeed()) and its freight (freightRunning()) - and costing... |
-| 248 | 10 | `public static SpreadPlanner.Candidate estimate(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city, double factor, doubl...` | ...for one new building already resolved (QN1). |
-| 260 | 5 | `public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city, double factor, double tariff)` | What the last one of `t` standing earns a month (pure): grossStanding() less the same costs a candidate's earnings lose. |
-| 267 | 7 | `public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city, double factor, double tari...` | ...run at `share` of the sector's rate and paying `other` a month past its running, standing and own costs (0.7.123): lastEarns() above at a share of 1 and none. |
-| 313 | 3 | `public static double vansFor(BuildingsTemplate t)` | Vans one of `t` keeps: the GOODS tonnes it moves in and out at nameplate over Sector.TONNES_PER_VAN (pure; Sector.tonnesMoved()'s count, template by template). |
-| 318 | 13 | `public static double vansFor(NewUnit t)` | ...for one new building already resolved (QN1): the goods tonnes its own recipe moves. |
-| 333 | 3 | `public static double fleetRunning(BuildingsTemplate t, SpreadPlanner.Values v, double rate)` | What one of `t`'s vans cost a month at `rate` (pure): a Sector.VAN_LIFE_MONTHS-th of its vans worn out, and the diesel its vans burn at the rate, each at what it costs here. |
-| 338 | 5 | `public static double fleetRunning(NewUnit t, SpreadPlanner.Values v, double rate)` | ...for one new building already resolved (QN1). |
-| 345 | 3 | `public static double fleetCapital(BuildingsTemplate t, SpreadPlanner.Values v)` | ...and buying them (pure): its vans at what a van costs here. |
-| 350 | 4 | `public static double fleetCapital(NewUnit t, SpreadPlanner.Values v)` | ...for one new building already resolved (QN1). |
-| 362 | 3 | `public static double cityLegs(BuildingsTemplate t, double rate, Haulage.LegPrice p)` | What the city legs of `t`'s bulk cost a month at `rate` (pure; FR2): `rate` times every bulk unit it uses at nameplate, in tonnes, at what a received tonne's leg costs (p.in()) plus every bulk unit it makes, in tonnes... |
-| 367 | 15 | `public static double cityLegs(NewUnit t, double rate, Haulage.LegPrice p)` | ...for one new building already resolved (QN1): the bulk its own recipe uses and makes. |
-| 384 | 3 | `public static double freightRunning(BuildingsTemplate t, SpreadPlanner.Values v, double rate, Haulage.LegPrice p)` | What one more of `t` pays for its freight a month at `rate` (pure; FR2): its vans' wear and diesel, and its bulk's city legs at the quote. |
-| 389 | 3 | `public static double freightRunning(NewUnit t, SpreadPlanner.Values v, double rate, Haulage.LegPrice p)` | ...for one new building already resolved (QN1). |
-| 394 | 3 | `private SpreadPlanner.Candidate weigh(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city)` | One of `t` weighed by this sector at the city's values: its feed's share and price, and its freight, with it. |
-| 399 | 7 | `private SpreadPlanner.Candidate weigh(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city)` | ...for one new building already resolved (QN1): the feed it takes and the freight it moves are its own recipe's. |
-| 421 | 12 | `protected SpreadPlanner.Values values()` | The city's values a works of its is weighed at this month: SpreadPlanner.values(), limestone carried into aggregate counted as exported (above). |
-| 443 | 6 | `protected SpreadPlanner.Values plannedValues()` | The city's values one more works of its is weighed at (BA1, 2026-11-02): values(), past what its works on site will make and use (SpreadPlanner.after()). |
-| 451 | 11 | `public List<SpreadPlanner.Candidate> appraise(BusinessInvestment plans, Game game)` | Every building of its the planner weighs, weighed now at the city's values and the game's gates, in the catalogue's order. |
-| 464 | 3 | `public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans)` | One building of its weighed now. |
-| 469 | 3 | `public SpreadPlanner.Candidate appraise(NewUnit u, BusinessInvestment plans)` | ...for one new building already resolved (QN1). |
+| 187 | 3 | `public static double gross(BuildingsTemplate t, SpreadPlanner.Values v, double rate)` | What one of `t` would make less what it would use a month at `rate`, each valued as one more of it would change the city's trade (pure): made at Values.out(), used at Values.in(). |
+| 192 | 6 | `public static double gross(NewUnit t, SpreadPlanner.Values v, double rate)` | ...for one new building already resolved (QN1): its own makes and uses. |
+| 200 | 6 | `public static double grossStanding(BuildingsTemplate t, SpreadPlanner.Values v, double rate)` | ...and what the last one of `t` standing makes less what it uses (pure; the mirror): made at Values.in() - what losing it would cost - and used at Values.out(), what losing it would free. |
+| 215 | 4 | `public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city, double fac...` | One building weighed (pure in its arguments): what one more would earn a month at the city's values and the frame's rate - gross() less its running and standing costs and SpreadPlanner.ownCosts() - asked every gate, i... |
+| 221 | 4 | `public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city, double fac...` | ...with its own draw's power at `tariff` and its surplus at `worksTariff`, as the bill pays it (PW1-R). |
+| 227 | 7 | `public static SpreadPlanner.Candidate estimate(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city, double factor, doubl...` | ...for one new building already resolved (QN1): its own makes, uses, posts, draw, consumables and power. |
+| 244 | 5 | `public static SpreadPlanner.Candidate estimate(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city, double fac...` | ...run at `share` of the sector's rate for want of a feed no market sells, paying `other` a month past its running, standing and own costs - that feed (offMarketFeed()) and its freight (freightRunning()) - and costing... |
+| 251 | 10 | `public static SpreadPlanner.Candidate estimate(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city, double factor, doubl...` | ...for one new building already resolved (QN1), its surplus at `worksTariff` (PW1-R). |
+| 263 | 4 | `public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city, double factor, double tariff)` | What the last one of `t` standing earns a month (pure): grossStanding() less the same costs a candidate's earnings lose; its power at the one flat `tariff`, a check's frame. |
+| 269 | 6 | `public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city, double factor, double tari...` | ...with its own draw's power at `tariff` and its surplus at `worksTariff`, as the bill pays it (PW1-R). |
+| 277 | 7 | `public static double lastEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city, double factor, double tari...` | ...run at `share` of the sector's rate and paying `other` a month past its running, standing and own costs (0.7.123): lastEarns() above at a share of 1 and none. |
+| 323 | 3 | `public static double vansFor(BuildingsTemplate t)` | Vans one of `t` keeps: the GOODS tonnes it moves in and out at nameplate over Sector.TONNES_PER_VAN (pure; Sector.tonnesMoved()'s count, template by template). |
+| 328 | 13 | `public static double vansFor(NewUnit t)` | ...for one new building already resolved (QN1): the goods tonnes its own recipe moves. |
+| 343 | 3 | `public static double fleetRunning(BuildingsTemplate t, SpreadPlanner.Values v, double rate)` | What one of `t`'s vans cost a month at `rate` (pure): a Sector.VAN_LIFE_MONTHS-th of its vans worn out, and the diesel its vans burn at the rate, each at what it costs here. |
+| 348 | 5 | `public static double fleetRunning(NewUnit t, SpreadPlanner.Values v, double rate)` | ...for one new building already resolved (QN1). |
+| 355 | 3 | `public static double fleetCapital(BuildingsTemplate t, SpreadPlanner.Values v)` | ...and buying them (pure): its vans at what a van costs here. |
+| 360 | 4 | `public static double fleetCapital(NewUnit t, SpreadPlanner.Values v)` | ...for one new building already resolved (QN1). |
+| 372 | 3 | `public static double cityLegs(BuildingsTemplate t, double rate, Haulage.LegPrice p)` | What the city legs of `t`'s bulk cost a month at `rate` (pure; FR2): `rate` times every bulk unit it uses at nameplate, in tonnes, at what a received tonne's leg costs (p.in()) plus every bulk unit it makes, in tonnes... |
+| 377 | 15 | `public static double cityLegs(NewUnit t, double rate, Haulage.LegPrice p)` | ...for one new building already resolved (QN1): the bulk its own recipe uses and makes. |
+| 394 | 3 | `public static double freightRunning(BuildingsTemplate t, SpreadPlanner.Values v, double rate, Haulage.LegPrice p)` | What one more of `t` pays for its freight a month at `rate` (pure; FR2): its vans' wear and diesel, and its bulk's city legs at the quote. |
+| 399 | 3 | `public static double freightRunning(NewUnit t, SpreadPlanner.Values v, double rate, Haulage.LegPrice p)` | ...for one new building already resolved (QN1). |
+| 404 | 3 | `private SpreadPlanner.Candidate weigh(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city)` | One of `t` weighed by this sector at the city's values: its feed's share and price, and its freight, with it. |
+| 409 | 7 | `private SpreadPlanner.Candidate weigh(NewUnit u, SpreadPlanner.Values v, SpreadPlanner.City city)` | ...for one new building already resolved (QN1): the feed it takes and the freight it moves are its own recipe's. |
+| 431 | 12 | `protected SpreadPlanner.Values values()` | The city's values a works of its is weighed at this month: SpreadPlanner.values(), limestone carried into aggregate counted as exported (above). |
+| 453 | 6 | `protected SpreadPlanner.Values plannedValues()` | The city's values one more works of its is weighed at (BA1, 2026-11-02): values(), past what its works on site will make and use (SpreadPlanner.after()). |
+| 461 | 11 | `public List<SpreadPlanner.Candidate> appraise(BusinessInvestment plans, Game game)` | Every building of its the planner weighs, weighed now at the city's values and the game's gates, in the catalogue's order. |
+| 474 | 3 | `public SpreadPlanner.Candidate appraise(BuildingsTemplate t, BusinessInvestment plans)` | One building of its weighed now. |
+| 479 | 3 | `public SpreadPlanner.Candidate appraise(NewUnit u, BusinessInvestment plans)` | ...for one new building already resolved (QN1). |
 
-### the plan (lines 473-522)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 476 | 3 | `static String a(String name)` | "a Coke Oven", "an Electric Arc Furnace". |
-| 490 | 24 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to build, and what (THE PLAN, above): of its works that pass the gates, the one that earns most on its cost; with none, ground if ground was all that stood in the way, else the best-fed candidate's refusal, wo... |
-| 517 | 5 | `public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans)` | What one more of its works would earn its owner a month: the planner's estimate (THE PLAN) - what Game.consider() tests the order on, and the build card shows. |
-
-### idle, then shed (lines 523-582)
+### the plan (lines 483-570)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 526 | 3 | `public static String kindOf(BuildingsTemplate t)` | A kind's name in the idle book and the extras: its template's id, which is permanent. |
-| 532 | 3 | `public void endOfMonth(Game game)` | The month's end: each kind of its works counted idle or working (IDLE, THEN SHED). |
-| 537 | 10 | `protected void noteIdleWorks(Game game)` | Each kind of its works standing counted idle (the last one earns below nothing at the month's values) or working; a kind with none standing clears its count. |
-| 549 | 3 | `public int idleMonths(BuildingsTemplate t)` | Months a kind of its works has stood idle running (extras idleMonths.<id>). |
-| 554 | 8 | `public double idleBuildings()` | Its buildings of the kinds idle long enough to shed, standing. |
-| 565 | 4 | `public boolean mayRetire(BuildingsTemplate t)` | A kind idle long enough while one is; any of its buildings while none is (the distress rule's, as every maker's plant is). |
-| 572 | 4 | `public double[] retirementDemandAndCapacity(Game game)` | The spare-capacity rule's measure: {0, the idle kinds' buildings} while a kind stands idle long enough to shed; otherwise none - a works shrinks on distress (the mills' rule to 0.7.119). |
-| 579 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its buildings is measured in, for the retirement rules: one building, for a works. |
+| 486 | 3 | `static String a(String name)` | "a Coke Oven", "an Electric Arc Furnace". |
+| 502 | 26 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Whether to build, and what (THE PLAN, above): of its works that pass the gates, the one that earns most on its cost; with none, ground if ground was all that stood in the way, else the best-fed candidate's refusal, wo... |
+| 535 | 19 | `private List<SpreadPlanner.Candidate> overYear(List<SpreadPlanner.Candidate> month, BusinessInvestment plans, Game game, Map<Bu...` | Each candidate tested on the lesser of its month's earnings and its year's (SpreadPlanner, OVER ITS YEAR; CY1): the month's noted for its kind first, then a candidate whose year reads lower is asked its gates again on... |
+| 556 | 6 | `private String yearWords(BuildingsTemplate t, Map<BuildingsTemplate, Double> held)` | The plan's words for a candidate its year held lower: its mean over the months noted, against the month's; nothing for one the month decided. |
+| 565 | 5 | `public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans)` | What one more of its works would earn its owner a month: the planner's estimate (THE PLAN) - what Game.consider() tests the order on, and the build card shows. |
 
-### its idle months across a save (lines 583-600)
+### idle, then shed (lines 571-633)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 586 | 3 | `protected void saveExtras(Map<String, Double> extras)` |  |
-| 592 | 3 | `protected void restoreExtras(Map<String, Double> extras)` | A save without them reads none. |
-| 597 | 3 | `protected void resetExtras()` |  |
+| 574 | 3 | `public static String kindOf(BuildingsTemplate t)` | A kind's name in the idle book and the extras: its template's id, which is permanent. |
+| 580 | 4 | `public void endOfMonth(Game game)` | The month's end: what its works made (THE RUN ITS WORKS MADE), then each kind of its works counted idle or working (IDLE, THEN SHED). |
+| 586 | 12 | `protected void noteIdleWorks(Game game)` | Each kind of its works standing counted idle (the last one earns below nothing at the month's values) or working; a kind with none standing clears its count. |
+| 600 | 3 | `public int idleMonths(BuildingsTemplate t)` | Months a kind of its works has stood idle running (extras idleMonths.<id>). |
+| 605 | 8 | `public double idleBuildings()` | Its buildings of the kinds idle long enough to shed, standing. |
+| 616 | 4 | `public boolean mayRetire(BuildingsTemplate t)` | A kind idle long enough while one is; any of its buildings while none is (the distress rule's, as every maker's plant is). |
+| 623 | 4 | `public double[] retirementDemandAndCapacity(Game game)` | The spare-capacity rule's measure: {0, the idle kinds' buildings} while a kind stands idle long enough to shed; otherwise none - a works shrinks on distress (the mills' rule to 0.7.119). |
+| 630 | 3 | `public double unitsOf(BuildingsTemplate t)` | What one of its buildings is measured in, for the retirement rules: one building, for a works. |
 
-### THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md (lines 601-650)
+### the run its works made (CY1) (lines 634-693)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 615 | 14 | `private double lastOneEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city)` | What the last one of `t` standing earns a month at `v` and `city`: lastEarns() at the share of nameplate its feed fills (feedShareStanding()), that feed and its lorries in its costs - IDLE, THEN SHED's test, and the p... |
-| 631 | 3 | `public boolean isWeighed(BuildingsTemplate t)` | Whether the plan weighs a building of its, and the idle book counts its kind (weighs()): one that makes something. |
-| 636 | 4 | `public double lastEarns(BuildingsTemplate t)` | What the last one of `t` standing earns a month at this month's values, as IDLE, THEN SHED counts it (lastOneEarns()) - below nothing an idle month; NaN with no city or markets. |
-| 642 | 8 | `public double lastEarnsAt(BuildingsTemplate t, double rate)` | Standing earnings on the production actually dispatched, whose rate already includes feed/order limits (R2c). |
+| 647 | 14 | `public double standingRun(BuildingsTemplate t)` | The share of nameplate the works that make `t`'s goods would run at on last month's make, counted over those standing and on site now (CY1): of each good `t` makes, what was made (Output's produced, export-bound and c... |
+| 669 | 8 | `private void noteRun()` | Notes the month's Output rows (THE RUN ITS WORKS MADE): of each good, what was made (produced, export-bound and captive), that and what was idled, and the capacity, where both are above nothing. |
+| 685 | 8 | `protected String underRunRefusal(BuildingsTemplate t)` | A feed gate on the run (CY1; a client's feedRefusal() may return it): no more of `t` while the works standing and on site that make its goods would run under FEED_GATE of nameplate on last month's make - the gate Heav... |
+
+### its idle months across a save (lines 694-727)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 697 | 10 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 710 | 11 | `protected void restoreExtras(Map<String, Double> extras)` | A save without them reads none; one from before CY1 no year, which its planner fills again (SpreadPlanner.restoreMargins()). |
+| 723 | 4 | `protected void resetExtras()` |  |
+
+### THE PICTOGRAMS' READS (0.7.141, batch I11; docs/studies/spec-materials.md (lines 728-777)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 742 | 14 | `private double lastOneEarns(BuildingsTemplate t, SpreadPlanner.Values v, SpreadPlanner.City city)` | What the last one of `t` standing earns a month at `v` and `city`: lastEarns() at the share of nameplate its feed fills (feedShareStanding()), that feed and its lorries in its costs - IDLE, THEN SHED's test, and the p... |
+| 758 | 3 | `public boolean isWeighed(BuildingsTemplate t)` | Whether the plan weighs a building of its, and the idle book counts its kind (weighs()): one that makes something. |
+| 763 | 4 | `public double lastEarns(BuildingsTemplate t)` | What the last one of `t` standing earns a month at this month's values, as IDLE, THEN SHED counts it (lastOneEarns()) - below nothing an idle month; NaN with no city or markets. |
+| 769 | 8 | `public double lastEarnsAt(BuildingsTemplate t, double rate)` | Standing earnings on the production actually dispatched, whose rate already includes feed/order limits (R2c). |
 

@@ -2487,10 +2487,127 @@ final class ServicesScreen {
         }
         eventLines(page, "Utilities", events);
         page.getChildren().add(Kept.scope("enough head", () -> sectionHead("IS THERE ENOUGH FOR WHAT THE CITY DRAWS", null,
-                hint("the bar: now solid, at full staff light, the city's ask the white tick"))));
+                words("the bar: now solid, at full staff light, the city's ask the white tick", Palette.SIZE_LABEL, Palette.TEXT_MUTED))));
         // Kept (KP2): each capacity row a scope keyed by what it is (UtilityRow.key(): power, water).
-        for (UtilityRow r : utilityRows(all)) page.getChildren().add(Kept.scope(r.key(), () -> utilityCard(r)));
+        for (UtilityRow r : utilityRows(all)) {
+            page.getChildren().add(Kept.scope(r.key(), () -> utilityCard(r)));
+            if ("power".equals(r.key())) page.getChildren().add(Kept.scope("power market", () -> powerMarket(PowerView.of(ui.game))));
+        }
         page.getChildren().add(Kept.scope("road", () -> roadCard(all)));
+    }
+
+    /** The retained dispatch's six supply stacks and its matching prices; the capacity card above remains today's plant. */
+    VBox powerMarket(PowerView.View v) {
+        VBox body = Kept.column(12);
+        body.getChildren().add(sectionHead("HOW THE POWER RAN", null,
+                words("generation and load; clearing prices per MWh generated", Palette.SIZE_LABEL, Palette.TEXT_MUTED)));
+        if (!v.cleared()) {
+            body.getChildren().add(words("No month has cleared yet. Businesses still use the founding tariff.", Palette.SIZE_BODY, Palette.TEXT_MUTED));
+            return card(body);
+        }
+        String dispatch = powerMonth(v.dispatchMonth());
+        body.getChildren().add(words("Dispatch: " + dispatch + " · tariffs set " + powerMonth(v.struckMonth())
+                + ", used for bills recorded " + powerMonth(v.struckMonth() < 0 ? -1 : v.struckMonth() + 1), Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        body.getChildren().add(words("Load and generation include grid losses. Delivered energy is what reaches the meters.", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        body.getChildren().add(lane(List.of(
+                bottomLine(powerEnergy(v.askedKwh()), "asked at the grid", null, Palette.TEXT_HEAD),
+                bottomLine(powerEnergy(v.generatedKwh()), "generated", null, Palette.PEOPLE),
+                bottomLine(powerEnergy(v.deliveredKwh()), "delivered to meters", null, Palette.PEOPLE),
+                bottomLine(powerEnergy(v.curtailedKwh()), "curtailed generation", null, Palette.WARN),
+                bottomLine(powerEnergy(v.unservedKwh()), "unserved at the grid", null, v.unservedKwh() > 0 ? Palette.BAD : Palette.TEXT_HEAD))));
+        if (v.recorded()) {
+            double scale = v.peakKw();
+            for (int s = 0; s < v.halves().size(); s++) {
+                final int half = s;
+                final double axis = scale;
+                body.getChildren().add(Kept.scope("half " + s, () -> {
+                    PowerView.Half h = v.halves().get(half);
+                    List<Segment> segments = new ArrayList<>();
+                    for (PowerView.Row row : v.rows()) {
+                        double kw = row.record().runKw().get(half);
+                        segments.add(new Segment(kw, powerColour(row.record().id()), false, null, null,
+                                row.name() + ": " + power(kw), null));
+                    }
+                    return Kept.column(4,
+                            words(h.name() + " · " + String.format("%,.0f h", h.hours()) + " · " + powerPrice(h.price())
+                                    + " · unserved " + power(h.unservedKw()), Palette.SIZE_LABEL, Palette.TEXT_HEAD),
+                            segmentBar(segments, axis > 0 ? axis : 1,
+                                    List.of(new Tick(h.askedKw(), Palette.TEXT_HEAD, 2, null, "asked " + power(h.askedKw()))), 0, 14));
+                }));
+            }
+            body.getChildren().add(words("The white tick is the load. Colours follow the rows below, in the order they ran.", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+            if (v.firmKw() >= 0) body.getChildren().add(Kept.scope("reserve", () -> Kept.column(4,
+                    words("Firm capacity " + power(v.firmKw()) + " against peak " + power(v.peakKw()), Palette.SIZE_BODY, Palette.TEXT_HEAD),
+                    segmentBar(List.of(new Segment(v.firmKw(), Palette.PEOPLE, false, null, null, "firm " + power(v.firmKw()), null)),
+                            Math.max(1, Math.max(v.firmKw(), v.peakKw())),
+                            List.of(new Tick(v.peakKw(), Palette.TEXT_HEAD, 2, null, "peak " + power(v.peakKw()))), 0, 12),
+                    words("Firm is the build planner's staffed dependable supply; wind counts at its calm output. Nameplate is listed separately for each plant.",
+                            Palette.SIZE_CAPTION, Palette.TEXT_MUTED))));
+            body.getChildren().add(words("MERIT ORDER · RUN, FUEL AND RECEIPTS", Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+            for (PowerView.Row row : v.rows()) body.getChildren().add(Kept.scope(row.record().id(), () -> powerRun(row)));
+            body.getChildren().add(words("Receipts are generation valued at each half's clearing price, before fuel, upkeep and payroll. They are not plant profit or customers' total bills.",
+                    Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        } else body.getChildren().add(words("This save did not record the dispatch rows or firm capacity. Those details will appear after another month clears.",
+                Palette.SIZE_BODY, Palette.TEXT_MUTED));
+        PowerView.Bill b = v.bill();
+        body.getChildren().add(words("WHAT THE TARIFF PAYS FOR · per MWh delivered", Palette.SIZE_LABEL, Palette.TEXT_HEAD));
+        body.getChildren().add(words("Energy including grid losses " + powerPrice(b.energy())
+                + (v.recorded() ? " · transmission " + powerPrice(b.transmission()) + " · distribution " + powerPrice(b.distribution()) : " · wire parts were not recorded"),
+                Palette.SIZE_BODY, Palette.TEXT_LABEL));
+        body.getChildren().add(words("Commerce and light industry " + powerPrice(b.commerce()) + " · Heavy Industry and Mining " + powerPrice(b.industry()),
+                Palette.SIZE_BODY, Palette.TEXT_HEAD));
+        body.getChildren().add(words("Heavy Industry and Mining pay transmission only. Homes draw power but receive no household power bill.", Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+        PowerView.Payment p = v.paid();
+        body.getChildren().add(words("Fuel and variable upkeep paid " + powerMonth(p.month()) + " for dispatch " + powerMonth(p.dispatchMonth())
+                + ": local fuel " + tightMoney(toDollars(p.localFuel())) + " · imported fuel " + tightMoney(toDollars(p.importedFuel()))
+                + " · upkeep " + tightMoney(toDollars(p.upkeep())), Palette.SIZE_BODY, Palette.TEXT_LABEL));
+        return card(body);
+    }
+
+    VBox powerRun(PowerView.Row row) {
+        UtilitiesHandler.RowRecord r = row.record();
+        String fuel = r.fuel() == null ? "no fuel burned" : String.format("%,.3f", r.fuelUnits()) + " "
+                + (r.fuel() == Good.THERMAL_COAL ? "t thermal coal" : r.fuel().name().toLowerCase(java.util.Locale.ROOT).replace('_', ' '));
+        return Kept.column(3,
+                words(row.name(), Palette.SIZE_BODY, powerColour(r.id())),
+                words(powerEnergy(r.kwh()) + " generated · " + fuel + " · clearing receipts " + tightMoney(toDollars(r.receipts())), Palette.SIZE_BODY, Palette.TEXT_LABEL),
+                words("Offered " + power(r.offeredKw()) + (r.id() >= 0 ? " · nameplate " + power(r.nameplateKw()) : "")
+                        + " · dispatch marginal cost " + powerPrice(r.marginal()), Palette.SIZE_CAPTION, Palette.TEXT_MUTED));
+    }
+
+    static String powerMonth(int month) { return month < 0 ? "not recorded" : CityCalendar.format(month); }
+    static String powerEnergy(double kwh) { return String.format("%,.1f MWh", kwh / 1000); }
+    static String powerPrice(double thousandsPerKwh) { return tightMoney(toDollars(thousandsPerKwh * 1000)) + "/MWh"; }
+    static String powerColour(int id) {
+        if (id == UtilitiesHandler.WORKS_ID) return Palette.BUSINESS;
+        String[] tones = {Palette.PEOPLE, Palette.MONEY, Palette.BUILDING, Palette.PEOPLE_LIGHT, Palette.MONEY_LIGHT, Palette.BUILDING_LIGHT};
+        return tones[Math.floorMod(id, tones.length)];
+    }
+
+    /** The utility columns wrap when their readable side widths leave no room for the middle, without widening the scrolled page. */
+    static javafx.scene.layout.FlowPane utilityColumns(Region left, Region middle, Region right, double leftWidth, double rightWidth) {
+        javafx.scene.layout.FlowPane row = Kept.flow(18, 12);
+        row.setAlignment(Pos.TOP_LEFT);
+        row.setMinWidth(0);
+        row.getChildren().addAll(left, middle, right);
+        Region[] columns = {left, middle, right};
+        double[] widths = {leftWidth, 0, rightWidth};
+        for (int i = 0; i < columns.length; i++) {
+            Region column = columns[i];
+            column.setMinWidth(0);
+            if (i == 2 && rightWidth < 0) continue; // The road door keeps its natural width after CSS.
+            if (column.getProperties().get("services.utility.columns") == row) continue;
+            final int index = i;
+            column.prefWidthProperty().unbind();
+            column.prefWidthProperty().bind(javafx.beans.binding.Bindings.createDoubleBinding(() -> {
+                double available = Math.max(0, row.getWidth());
+                double endWidth = rightWidth < 0 ? right.prefWidth(-1) : rightWidth;
+                double between = available - leftWidth - endWidth - 2 * row.getHgap();
+                return index == 1 ? (between >= leftWidth ? between : available) : Math.min(widths[index], available);
+            }, row.widthProperty(), row.hgapProperty(), right.widthProperty()));
+            column.getProperties().put("services.utility.columns", row);
+        }
+        return row;
     }
 
     /**
@@ -2523,9 +2640,8 @@ final class ServicesScreen {
         HBox.setHgrow(says, Priority.ALWAYS);
         says.setMaxWidth(Double.MAX_VALUE);
         Label go = door("Infrastructure › Roads", Palette.PEOPLE, () -> ui.infrastructureScreen.open("Roads"));
-        HBox row = Kept.row(18, left, says, go);
-        row.setAlignment(Pos.CENTER_LEFT);
-        return card(() -> ui.infrastructureScreen.open("Roads"), "Infrastructure › Roads", row);
+        return card(() -> ui.infrastructureScreen.open("Roads"), "Infrastructure › Roads",
+                utilityColumns(left, says, go, 220, Region.USE_COMPUTED_SIZE));
     }
 
     /**
@@ -2554,7 +2670,7 @@ final class ServicesScreen {
         double[] lines = CityNeeds.servedLines(CityNeeds.Kind.POWER, CareType.NONE);
         out.add(new UtilityRow("Power", Icons.UTILITIES, CityNeeds.servedPct(power.share()), BuildScreen.servedWords(power),
                 BuildScreen.servedTone(power), could, now, asked,
-                List.of(new Tick(CityNeeds.NETWORK_YELLOW * now, Palette.TEXT_MUTED, 1, null,
+                List.of(new Tick(CityNeeds.POWER_YELLOW * now, Palette.TEXT_MUTED, 1, null,
                         "NEEDS YOU lists the grid once the city asks past here: then it serves "
                                 + CityNeeds.servedPct(lines[0]) + " or less of what it asks")),
                 List.of(Part.of("business, billed", billed, Palette.BUSINESS),
@@ -2609,7 +2725,7 @@ final class ServicesScreen {
         reading.setAlignment(Pos.BASELINE_LEFT);
         VBox left = Kept.column(4, titled, reading);
         left.setMinWidth(220);
-        left.setPrefWidth(220);
+        // utilityColumns owns the preferred width, including retained redraws.
         left.setMaxWidth(220);
 
         double scale = Math.max(r.asked(), r.could()) * 1.05;
@@ -2631,12 +2747,10 @@ final class ServicesScreen {
         Label shortLine = words(r.shortWords(), Palette.SIZE_BODY, Palette.TEXT_HEAD);
         VBox right = Kept.column(8, shortLine, doorPill(r.goWords(), Icons.BUILD, Palette.BUILDING, r.go()));
         right.setMinWidth(254);
-        right.setPrefWidth(254);
+        // utilityColumns owns the preferred width, including retained redraws.
         right.setMaxWidth(254);
 
-        HBox row = Kept.row(18, left, middle, right);
-        row.setAlignment(Pos.TOP_LEFT);
-        return card(row, details("utilities:" + r.key(), "price, billed, unbilled and staff turnout",
+        return card(utilityColumns(left, middle, right, 220, 254), details("utilities:" + r.key(), "price, billed, unbilled and staff turnout",
                 () -> new Node[] {utilityStatement(r.key())}));
     }
 
@@ -2681,6 +2795,8 @@ final class ServicesScreen {
             return column(statementLine("Price per kW a month, shops, offices and light industry", cash(uh.getPricePerWatt())),
                     statementLine("...Heavy Industry and Mining, at high voltage", cash(uh.getIndustryPricePerWatt())),
                     statementLine("...paid the works for their surplus", cash(uh.getWorksPricePerWatt())),
+                    // PW1-R: a bill is the kWh served, the price a kW of the year's mean draw times the season the book's month was dispatched at.
+                    statementLine("Billed on the kWh served: the month's load, of the year's mean", pct(uh.getPowerSeason())),
                     statementLine("Energy, a MWh, at the month's clearing prices", cash(uh.getEnergyPricePerMwh())),
                     uh.isFoundingBook() ? Kept.scope("founding", () -> statementNote("Still at founding: no month has cleared.")) : null,
                     coalBurned > 0 ? Kept.scope("coal burned", () -> statementLine("Coal burned", String.format("%,.0f t", coalBurned))) : null,
@@ -2693,11 +2809,15 @@ final class ServicesScreen {
                     statementLine("Staff turnout", pct(uh.getAverageUtilityFill())),
                     statementNote("The businesses pay the market's price: the energy at each half-block's clearing "
                             + "price plus the wires — shops and offices both wires, heavy industry and mines the long "
-                            + "ones alone. Households are not billed for power or water, so the homes' draw is real "
+                            + "ones alone, on the kWh the month served them: a month of peak load bills more than its "
+                            + "kW at the prices above, a mild one less. Households are not billed for power or water, so the homes' draw is real "
                             + "load and no revenue. One workforce runs power and water both."));
         }
         // The water's; the road's statement went with its row (0.7.29: Infrastructure › Roads has it).
+        double worksPower = uh.getWaterPowerPerUnit();
         return column(statementLine("Price per unit", cash(uh.getPricePerWaterUnit())),
+                // ...and the sea works' power in it, while the sea is needed (PW1-W): their draw at the market's price over the water the sea delivered.
+                worksPower != 0 ? Kept.scope("water price power", () -> statementLine("...of which the sea works' power", cash(worksPower))) : null,
                 statementLine("Residents", people(uh.getResidentWaterDraw()) + " units"),
                 statementLine("Buildings", people(uh.getBuildingWaterDraw()) + " units"),
                 statementTotal("Total draw", people(uh.getWaterConsumption()) + " units", null),
@@ -3327,8 +3447,14 @@ final class ServicesScreen {
         List<Slice> powerCosts = new ArrayList<>(List.of(new Slice("power wages", elecPay, Palette.MONEY)));
         if (uh.getPowerBought() != 0) powerCosts.add(new Slice("power bought", uh.getPowerBought(), Palette.MONEY_LIGHT));
         if (uh.getFuelBill() != 0) powerCosts.add(new Slice("fuel and upkeep", uh.getFuelBill(), Palette.MONEY_DARK));
+        // ...and the water works' power, which the water's books buy of the power's (PW1-W): a sale on one side, a cost on the other, when there is some.
+        double waterPower = uh.getWaterPowerPaid();
+        List<Slice> powerSales = new ArrayList<>(List.of(new Slice("power sales", elecSales, Palette.PEOPLE)));
+        if (waterPower != 0) powerSales.add(new Slice("sold to the water works", waterPower, Palette.PEOPLE_LIGHT));
+        List<Slice> waterCosts = new ArrayList<>(List.of(new Slice("water wages", waterPay, Palette.MONEY)));
+        if (waterPower != 0) waterCosts.add(new Slice("the works' power", waterPower, Palette.MONEY_LIGHT));
         page.getChildren().add(Kept.scope("power", () -> moneyBars("power: sales",
-                List.of(new Slice("power sales", elecSales, Palette.PEOPLE)),
+                powerSales,
                 "power: costs",
                 powerCosts,
                 bottomLine(tightMoney(toDollars(uh.getElectricityIncome())), "power's net income",
@@ -3336,9 +3462,9 @@ final class ServicesScreen {
                         Palette.TEXT_HEAD))));
         page.getChildren().add(Kept.scope("water", () -> moneyBars("water: sales",
                 List.of(new Slice("water sales", waterSales, Palette.PEOPLE)),
-                "water: wages",
-                List.of(new Slice("water wages", waterPay, Palette.MONEY)),
-                bottomLine(tightMoney(toDollars(waterSales - waterPay)), "water's net income",
+                waterPower != 0 ? "water: costs" : "water: wages",
+                waterCosts,
+                bottomLine(tightMoney(toDollars(uh.getWaterIncome())), "water's net income",
                         pct(billedShare(uh.getBilledWaterDraw(), uh.getWaterConsumption())) + " of it billed",
                         Palette.TEXT_HEAD))));
         page.getChildren().add(Kept.scope("both", () -> Kept.row(24,
@@ -3389,9 +3515,10 @@ final class ServicesScreen {
          */
         // What the plants bought, a line each only when there is some (a scope each, Kept): the works' power, the fuel at home and abroad, the upkeep paid abroad.
         double powerBought = uh.getPowerBought(), fuelHome = uh.getFuelLocal(), fuelAbroad = uh.getFuelImported(), upkeepAbroad = uh.getUpkeepPaid();
-        double fuelBill = uh.getFuelBill();
+        double fuelBill = uh.getFuelBill(), waterPower = uh.getWaterPowerPaid();
         return column(statementHead("Electric power"),
                 bookRow("Sales", elecSales, null),
+                waterPower != 0 ? Kept.scope("sold to the water", () -> bookRow("Sold to the water works", waterPower, null)) : null,
                 bookRow("Wages", -elecPay, null),
                 powerBought != 0 ? Kept.scope("power bought", () -> bookRow("Power bought from the works", -powerBought, null)) : null,
                 fuelHome != 0 ? Kept.scope("fuel home", () -> bookRow("Fuel, bought in the city", -fuelHome, null)) : null,
@@ -3406,7 +3533,8 @@ final class ServicesScreen {
                 statementHead("Water"),
                 bookRow("Sales", waterSales, null),
                 bookRow("Wages", -waterPay, null),
-                statementTotal("Net income", tightMoney(toDollars(waterSales - waterPay), false), null),
+                waterPower != 0 ? Kept.scope("water works power", () -> bookRow("The works' power, at the market's price", -waterPower, null)) : null,
+                statementTotal("Net income", tightMoney(toDollars(uh.getWaterIncome()), false), null),
                 statementNote(String.format("%s of %s units billed, %s of it. Households are not billed for "
                         + "power or water, so the rest is supplied and never paid for.",
                         people(uh.getBilledWaterDraw()), people(uh.getWaterConsumption()),

@@ -1028,9 +1028,9 @@ public class EducationCheck {
         double[] chance = schooled.getMigration().getLastOpportunity();
         int dip = WageBand.COLLEGE.ordinal();   // the band the graduates flood (see above)
 
-        System.out.printf("   college jobs %,.0f - %,.0f college-holders, but %,.0f in the queue"
+        System.out.printf("   at m%d college jobs %,.0f - %,.0f college-holders, but %,.0f in the queue"
                 + " once the graduates come down.  opportunity %.2f%n",
-                open[dip], ownHeads[dip], queue[dip], chance[dip]);
+                schooled.getMonth(), open[dip], ownHeads[dip], queue[dip], chance[dip]);
 
         assertTrue("fixture: graduates really have come down into college work",
                 queue[dip] > ownHeads[dip] * 1.2);

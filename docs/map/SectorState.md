@@ -1,6 +1,6 @@
-# SectorState.java - 282 lines · 6 methods · 0 constants · model
+# SectorState.java - 294 lines · 6 methods · 0 constants · model
 
-`ham/citybuildersim/SectorState.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SectorState.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > One sector, as a save carries it.
 > 
@@ -19,7 +19,7 @@
 
 **Uses:** [Sector](Sector.md) (16), [Good](Good.md) (13), [Statement](Statement.md) (4)
 
-**Used by (17):** [BooksCheck](BooksCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FreightViewCheck](FreightViewCheck.md), [FuelSplit](FuelSplit.md), [GoldMiningCheck](GoldMiningCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HomeRailCheck](HomeRailCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [TradeBandCheck](TradeBandCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [VanCheck](VanCheck.md)
+**Used by (18):** [BooksCheck](BooksCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FreightViewCheck](FreightViewCheck.md), [FuelSplit](FuelSplit.md), [GoldMiningCheck](GoldMiningCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HomeRailCheck](HomeRailCheck.md), [HousingCheck](HousingCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [TradeBandCheck](TradeBandCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [VanCheck](VanCheck.md)
 
 ## Fields (state)
 
@@ -52,34 +52,37 @@
 | 155 | `public Map<String, Double> capitalBySupplier` | Sector.Ledger.capitalBySupplier (0.7.19): the builders' work on its premises this month, which the tax credit is struck on at the next strike. |
 | 157 | `public double oldMetalSold` | Sector.Ledger.oldMetalSold (0.7.123, batch I4): its old steel sold to the yards this month, named apart at the strike. |
 | 159 | `public double upkeepSold` | Sector.Ledger.upkeepSold (HL1): the upkeep sold to the city's services and the bank this month, in transit until the next strike. |
-| 161 | `public double paidToCity` | Sector.Ledger.paidToCity (FR3): the dues it pays the city this month, in its inputs. |
-| 214 | `public double revenue, inputs, payroll, electricity, water, maintenance` |  |
-| 215 | `public double operatingIncome, interest, propertyTax, salesTax, preTaxIncome, profitTax, netIncome` |  |
-| 216 | `public double localSales, exports, otherRevenue, salesToHouseholds, localPurchases, imports` |  |
-| 217 | `public Map<String, Double> purchasesBySupplier` |  |
-| 218 | `public Map<String, SplitState> sold` |  |
-| 219 | `public Map<String, SplitState> bought` |  |
-| 220 | `public Map<String, Double> otherParts` |  |
-| 222 | `public Map<String, Double> otherInputs` | The named non-goods part of the input line. |
-| 224 | `public double paidEarlier` | Sector.Statement.paidEarlier (0.7.8); an older save reads none. |
-| 226 | `public Map<String, Double> capitalBySupplier` | Sector.Statement.capitalBySupplier and capitalTaxCredit (0.7.19); an older save reads none. |
-| 227 | `public double capitalTaxCredit` |  |
-| 229 | `public double borrowingCosts` | Sector.Statement.borrowingCosts (0.7.102, A16); an older save reads none, which is what it expensed. |
-| 231 | `public double powerSold` | Sector.Statement.powerSold (0.7.112, batch I2); an older save reads none, which is what it sold. |
-| 233 | `public double foreignIncome` | Sector.Statement.foreignIncome (HD1, 2026-10-29): the coupon on its dollars abroad, paid home and inside the profit; an older save reads none, which is what it earned. |
+| 161 | `public double householdServices` | The pending household-service receipt, named and struck next month (HC1). |
+| 163 | `public double paidToCity` | Sector.Ledger.paidToCity (FR3): the dues it pays the city this month, in its inputs. |
+| 165 | `public Map<String, Double> servicesSold` | Sector.Ledger.servicesSold (FC2): the exports with no good behind them, by name (the builders' work sold abroad), in transit until the next strike. |
+| 222 | `public double revenue, inputs, payroll, electricity, water, maintenance` |  |
+| 223 | `public double operatingIncome, interest, propertyTax, salesTax, preTaxIncome, profitTax, netIncome` |  |
+| 224 | `public double localSales, exports, otherRevenue, salesToHouseholds, localPurchases, imports` |  |
+| 225 | `public Map<String, Double> purchasesBySupplier` |  |
+| 226 | `public Map<String, SplitState> sold` |  |
+| 227 | `public Map<String, SplitState> bought` |  |
+| 228 | `public Map<String, Double> otherParts` |  |
+| 230 | `public Map<String, Double> otherInputs` | The named non-goods part of the input line. |
+| 232 | `public double paidEarlier` | Sector.Statement.paidEarlier (0.7.8); an older save reads none. |
+| 234 | `public Map<String, Double> capitalBySupplier` | Sector.Statement.capitalBySupplier and capitalTaxCredit (0.7.19); an older save reads none. |
+| 235 | `public double capitalTaxCredit` |  |
+| 237 | `public double borrowingCosts` | Sector.Statement.borrowingCosts (0.7.102, A16); an older save reads none, which is what it expensed. |
+| 239 | `public double powerSold` | Sector.Statement.powerSold (0.7.112, batch I2); an older save reads none, which is what it sold. |
+| 241 | `public double foreignIncome` | Sector.Statement.foreignIncome (HD1, 2026-10-29): the coupon on its dollars abroad, paid home and inside the profit; an older save reads none, which is what it earned. |
+| 243 | `public Map<String, Double> servicesSold` | Sector.Statement.servicesSold (FC2): the struck month's exports with no good behind them, by name, inside its exports and revenue. |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 261 | **type** `public final class SectorState` | One sector, as a save carries it. |
+| 22 | 273 | **type** `public final class SectorState` | One sector, as a save carries it. |
 | 111 | 3 | **type** `public static final class SplitState` | A good's money in a save: what it sold or bought at home and abroad. |
 | 115 | 10 | `static Map<String, SplitState> splitsOf(Map<Good, Sector.Split> from)` |  |
 | 126 | 12 | `static Map<Good, Sector.Split> splitsTo(Map<String, SplitState> from)` |  |
-| 143 | 68 | **type** `public static final class LedgerState` | The month in progress, unstruck. |
-| 163 | 20 | `static LedgerState of(Sector.Ledger l)` _(in SectorState.LedgerState)_ |  |
-| 184 | 26 | `Sector.Ledger toLedger()` _(in SectorState.LedgerState)_ |  |
-| 213 | 69 | **type** `public static final class StatementState` | The month last struck. |
-| 235 | 22 | `static StatementState of(Sector.Statement t)` _(in SectorState.StatementState)_ |  |
-| 258 | 23 | `Sector.Statement toStatement()` _(in SectorState.StatementState)_ |  |
+| 143 | 76 | **type** `public static final class LedgerState` | The month in progress, unstruck. |
+| 167 | 22 | `static LedgerState of(Sector.Ledger l)` _(in SectorState.LedgerState)_ |  |
+| 190 | 28 | `Sector.Ledger toLedger()` _(in SectorState.LedgerState)_ |  |
+| 221 | 73 | **type** `public static final class StatementState` | The month last struck. |
+| 245 | 23 | `static StatementState of(Sector.Statement t)` _(in SectorState.StatementState)_ |  |
+| 269 | 24 | `Sector.Statement toStatement()` _(in SectorState.StatementState)_ |  |
 

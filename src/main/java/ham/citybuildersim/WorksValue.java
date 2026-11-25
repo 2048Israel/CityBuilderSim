@@ -452,6 +452,12 @@ public final class WorksValue {
         return schedule;
     }
 
+    /** The units of a site its queue opens by `months` from now (PW3, PW1-P's second gap: the power planner's reserve test counts a plant from its opening, not from its order). */
+    public static Map<BuildingsTemplate, Long> openBy(Game g, Map<BuildingsTemplate, Long> site, double months) {
+        if (site.isEmpty()) return site;
+        return completedAt(g, completionSchedule(g, site), Double.isFinite(months) ? Math.max(0, months) : 0);
+    }
+
     /** Quote-completed units at this date. Priority delay precedes the first unit in full. */
     private static Map<BuildingsTemplate, Long> completedAt(Game g,
             Map<BuildingsTemplate, PendingWork> schedule, double months) {
@@ -529,7 +535,7 @@ public final class WorksValue {
             double valueAdded = Math.max(0, book.revenue - book.inputs - book.electricity - book.water);
             double oldFactor, a, b;
             switch (m.kind()) {
-                case POWER: oldFactor = sector.getEnergyRatio(); a = pre; b = post; break;
+                case POWER: case GRID: oldFactor = sector.getEnergyRatio(); a = pre; b = post; break;
                 case WATER: oldFactor = sector.getWaterRatio(); a = pre; b = post; break;
                 case ROADS: case HIGHWAYS: case TRANSIT: {
                     double[] mix = traffic.get(sector);
@@ -565,7 +571,7 @@ public final class WorksValue {
                 default: continue;
             }
             // A zero observed factor gives no defensible book-based potential; no invented output or multiplier.
-            if (m.kind() == BuildAdvice.Kind.POWER) {
+            if (m.kind() == BuildAdvice.Kind.POWER || m.kind() == BuildAdvice.Kind.GRID) {
                 double perPoint = sector.perPointOfGrid(valueAdded);   // steam needs no grid (R1d)
                 if (perPoint > 0) result += perPoint * at.k() * Math.max(0, b - a);
             } else if (oldFactor > 0) result += valueAdded / oldFactor * at.k() * Math.max(0, b - a);

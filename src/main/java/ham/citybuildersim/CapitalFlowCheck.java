@@ -32,6 +32,17 @@ import java.nio.file.Path;
  *      where it was earned: the dollars held grow by it, the till pays the tax
  *      and the dividend and receives none of it - while the rate moving the
  *      dollars is a revaluation, no income.
+ *
+ * FIXTURES (FS9). Sections 1-6 run on bare CapitalFlows (and a bare Bank in 6) with the spread, the premium and the reserves handed to the rule. Section 7
+ * is a built city played AUDITED_MONTHS with an audit each (the identity: the money balances every month): its carry is caused by
+ * the dial (setPolicyRate(.06) over the floor DebtManager.floorRate(), asserted over the world's rate and the country premium
+ * before a month runs) and what arrives is read against the rule - ARRIVAL_SPEED of the gap to the target each month, a position
+ * over MIN_STOCK and never past the target - not against a spread or a stock the played city happened to reach. Section 8 sets its
+ * tills, the borrower's loan and the bank's rate by hand. Section 9 is a twin of two cities, the rate pinned (ForeignAccounts.pinRate())
+ * at one rate and pinned again a set rateMove higher between the two struck months, and the builders' profit set by booking a sale
+ * to them in each struck month (Sector.sellOldMetal() with Sector.billForService() on the copper refiners, as CopperRefining books
+ * one), so the twin is in profit and the rate moves by cause. WHY: the played city moved under them - the twin was a few hundred
+ * dollars short of a profit and the dollars' rate moved or did not as its market drew - and the laws beneath were skipped, not run.
  */
 public class CapitalFlowCheck {
 
@@ -279,7 +290,7 @@ public class CapitalFlowCheck {
         Path root = TempDirs.create("hotmoney");
         Game city = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
 
-        double worst = 0;
+        double worst = 0, floorOverWorld = 0, ruleGap = 0, peakTarget = 0;
         System.setOut(quiet);
         try {
             city.run();
@@ -319,9 +330,24 @@ public class CapitalFlowCheck {
              * city is put well past it, and the spread is asserted as well as
              * the arrival, so the reason it passes is the reason it names.
              */
-            city.getDebtManager().setPolicyRate(.06);
-            for (int m = 0; m < 180; m++) {
+            DebtManager dial = city.getDebtManager();
+            dial.setPolicyRate(.06);
+            /*
+             * THE CARRY IS CAUSED, AND READ OFF THE RULE (FS9). CapitalFlows.takeMonth() offers a spread of the better of what the bank pays
+             * savers and the city's own rate, less the world's rate and the city's country premium, and nothing under nought; the city's own
+             * rate is never under DebtManager.floorRate(), which stands on the dial. So the dial put at 6% before a month has run puts the
+             * floor over the world's rate and the city's risk, and that is the fixture asserted below - not a half-point of spread that a
+             * played city happened to offer.
+             */
+            floorOverWorld = dial.floorRate() - dial.worldRate() - dial.countryPremium();
+            CapitalFlows cf = city.getCapitalFlows();
+            for (int m = 0; m < AUDITED_MONTHS; m++) {
+                double stockBefore = cf.getStock();
                 city.simulateMonths(1);
+                // the rule's own month (CapitalFlows.takeMonth()): what arrives is ARRIVAL_SPEED of the gap up to the target, and nothing when the target is under the stock or a stop is on (its target nought)
+                double gap = Math.abs(cf.getArrived() - CapitalFlows.ARRIVAL_SPEED * Math.max(0, cf.getTarget() - stockBefore)) / Math.max(1, cf.getTarget());
+                if (gap > ruleGap) ruleGap = gap;
+                if (cf.getTarget() > peakTarget) peakTarget = cf.getTarget();
                 double r = city.getLastMoneyAudit().relative();
                 if (Math.abs(r) > Math.abs(worst)) worst = r;
             }
@@ -338,20 +364,27 @@ public class CapitalFlowCheck {
 
         assertTrue("fixture: every order of the build list was taken, the power plant among them",
                 fixtureListBuilt);
-        boolean carryOffered = Observation.reached("fixture: the city actually offered a carry over the world",
-                flows.getPeakSpread() > 0.005,
-                "real-city hot-money arrival and peak-stock readings");
+        assertTrue("fixture: the dial puts the city's own rate over the world's and its risk, so a carry is offered",
+                floorOverWorld > 0);
 
         /*
          * COUNT HOW OFTEN IT ACTUALLY FIRES - K1 in the design queue, earned by
          * out-migration shipping fully tested and firing zero times in 4,002
          * months. A harness proves the code does what it was told; it never
-         * proves the situation it was told about happens.
+         * proves the situation it was told about happens. (FS9: the situation
+         * is now CAUSED - the dial above - so what arrives is a law, and its
+         * size is the rule's: each month's arrival is ARRIVAL_SPEED of the gap
+         * up to the target, and a position is real money when it is over
+         * MIN_STOCK, the size under which CapitalFlows writes a position off,
+         * and no more than the target it closes on.)
          */
-        if (carryOffered) assertTrue("hot money actually arrives in a real city that offers a carry",
+        assertTrue("hot money actually arrives in a real city that offers a carry",
                 flows.getLifetimeArrived() > 0);
-        if (carryOffered) assertTrue("...in real money, not a rounding error",
-                flows.getPeakStock() > 1000);
+        assertTrue("...every month's by the rule: ARRIVAL_SPEED of the gap up to the target", ruleGap < 1e-9);
+        assertTrue("...in real money, not a rounding error",
+                flows.getPeakStock() > CapitalFlows.MIN_STOCK);
+        assertTrue("...and never more than the target the rule gives it",
+                flows.getPeakStock() <= peakTarget * (1 + 1e-9));
         assertTrue("...and the books balance every month it does",
                 Math.abs(worst) < 1e-9);
 
@@ -527,25 +560,77 @@ public class CapitalFlowCheck {
          */
         String earner = Sectors.CONSTRUCTION;
         double topUp = 1_000;
+        // The sale booked to the builders in each struck month (FS9): D$100k, set over the loss the plain twin made in a month, so the twin is in profit by what was booked and not by what its city happened to earn.
+        double bookedSale = 100;
+        // The step the rate is moved by between the two struck months (FS9), as a share of the rate the twins stood at: the revaluation of the dollars held is what was set.
+        double rateMove = .04;
         Game plainCity = couponCity("couponplain"), heldCity = couponCity("couponheld");
         Sector plainSector = plainCity.getSectors().byKey(earner), heldSector = heldCity.getSectors().byKey(earner);
         /*
-         * ...AND THE CURRENCY LEFT TO FLOAT (IC1, 2026-11-01), so that the coupon is the twins' one difference. The founding
-         * regime leans against a fall (ForeignAccounts, A RESERVE DEFENDS A CURRENCY): the central bank sells dollars against a
+         * ...AND THE RATE PINNED, THEN MOVED BY A SET STEP (IC1, 2026-11-01; FS9), so that the coupon is the twins' one difference. The
+         * founding regime leans against a fall (ForeignAccounts, A RESERVE DEFENDS A CURRENCY): the central bank sells dollars against a
          * month's net outflow, and the coupon is income in, so where the city's second year runs a deficit of about its size the
-         * defence parts the twins by it. It did on the path where an idle builder's crews are spare for the staffing gate: the plain
-         * twin's vault sold against the month's deficit (a move of -0.0112 in the rate, from the intervention) and the held twin's,
-         * with the coupon in its current account, did not (none), so the rates parted by 1% in the first month with dollars, and
-         * the second month's books were struck at two rates: the held twin's profit differed from its twin's by the coupon and
-         * 0.0019k more. On main's path there was no deficit, so no sale. Under a float the vault sells nothing in either twin, and
-         * the rate moves the same under both cities, which the premise needs; it still moves (the assertion below that it does).
+         * defence parts the twins by it (a move of -0.0112 in the rate on the path where an idle builder's crews are spare for the
+         * staffing gate, the second month's books struck at two rates). IC1 left the currency to float, and whether the rate then
+         * moved between the two struck months was a thing the played city did or did not do. The rate is held now
+         * (ForeignAccounts.pinRate(), the model's lever for a fixture that measures something else: a pinned rate is not defended by a
+         * sale, so the twins part by nothing but the coupon) at the rate both twins stood at, and between the two struck months both are
+         * pinned again, one RATE_MOVE higher: the rate moves under the dollars held by what was set.
          */
-        plainCity.getForeignAccounts().setRegime(ForeignAccounts.Regime.FLOAT);
-        heldCity.getForeignAccounts().setRegime(ForeignAccounts.Regime.FLOAT);
+        double rate0 = plainCity.getForeignAccounts().getRate();
+        plainCity.getForeignAccounts().pinRate(rate0);
+        heldCity.getForeignAccounts().pinRate(rate0);
+        /*
+         * ...AND THE BUILDERS' PROFIT SET (FS9). The plain twin earned a few hundred dollars short of a profit in the month struck on the
+         * path it was played down (a loss of 0.3k: a profit tax with nothing to take, and the laws under it asked of a city that was
+         * not there). The model has no setter for a sector's income, so the sale is booked as the model books one between two sectors:
+         * Sector.sellOldMetal() on the seller and Sector.billForService() on the buyer, as CopperRefining.settle() does it - other revenue
+         * for the builders, an input for the copper refiners, a transfer within the sectors that the audit nets. The buyer is topped up with
+         * the sale of both months (a till put in between two months is not accounted for in the month measured, as above).
+         */
         plainSector.addCash(topUp);
         heldSector.addCash(topUp);
+        plainCity.getSectors().byKey(Sectors.COPPER_REFINING).addCash(2 * bookedSale);
+        heldCity.getSectors().byKey(Sectors.COPPER_REFINING).addCash(2 * bookedSale);
+        /*
+         * FC2, 2026-11-23: ...AND THE BUILDERS HOLD NO DOLLARS AND OWE THE BANK, in both twins, so that the plain twin holds none on any
+         * path. The twin's builders were not dollar-free on FC2's path: they held US$1.14k abroad from the founding years, and owing
+         * nothing, with D$986k in the till and the world 2 points over the bank, they sent D$32.6k more abroad in the first month
+         * (OutwardInvestment.takeMonth(): a sector sends its idle cash out when it owes nothing, and a borrower keeps its money home,
+         * section 8) and as much again in the month struck, so the twin held US$49.4k at the hand-over, its coupon was 0.0556k and not
+         * none, and the capital it sent out parted from its twin's by what it moved (-570.5 against -537.0). On main's path the builders
+         * were in debt after a big order; on FC2's the foreign crews' work and the spare work they sold abroad left them owing nothing. The
+         * condition is caused and not read. The dollars of the builders are put at nothing in both twins (OutwardInvestment.restore(), the
+         * lever this section hands the dollars with), and a claim of LOAN_BY_HAND is written on them in both through the lender's own door
+         * (BusinessDebtManager.issueLoan(), as BankCheck's tab city writes one), with the bank's cash it is paid out of and the builders'
+         * till it is paid into moving with it, before the first month, where the top-up above is put in and the month is not measured. A
+         * sector that owes sends nothing abroad, so the plain twin holds none in either month; the twin that is handed dollars below
+         * recalls some at the rule's speed, which the laws below read as the month's move. ...AND THE BUILDERS HOLD NONE OF THE CITY'S BONDS: they
+         * held D$96 of them on FC2's path (one bought while they owed nothing), and a borrower sells what it holds at a limit that reads its
+         * wealth, the dollars in it, so the twin that was handed dollars sold D$0.050 of them in the month struck and its twin D$0.093, and the
+         * till moved by 4.3e-5 more than the tax, the dollars and the buyback name. Their bonds are handed to the world in both twins, so no
+         * bond is sold in either.
+         */
+        double handLoan = LOAN_BY_HAND;
+        for (Game twin : new Game[] {plainCity, heldCity}) {
+            double[] noDollars = twin.getOutwardInvestment().toSaveArray();
+            noDollars[7 + 3 * java.util.Arrays.asList(Sectors.KEYS).indexOf(earner)] = 0;
+            twin.getOutwardInvestment().restore(noDollars);
+            for (CorporateBond bond : twin.getBondMarket().getBonds()) {
+                double face = bond.company(earner);
+                if (face <= 0) continue;
+                bond.companies.remove(earner);
+                bond.world += face;
+            }
+            twin.getEconomyManager().getBusinessDebtManager().issueLoan(earner, handLoan, twin.getMonth());
+            twin.getBank().setCash(twin.getBank().getCash() - handLoan);
+            twin.getSectors().byKey(earner).addCash(handLoan);
+        }
         quietMonth(plainCity);
         quietMonth(heldCity);
+        assertTrue("fixture: the builders still owe the bank in both twins, so neither sends dollars abroad",
+                plainCity.getEconomyManager().getBusinessDebtManager().getPrincipal(earner) > 0
+                        && heldCity.getEconomyManager().getBusinessDebtManager().getPrincipal(earner) > 0);
         boolean sameCity = plainCity.getMonth() == heldCity.getMonth()
                 && Double.compare(plainCity.getForeignAccounts().getRate(), heldCity.getForeignAccounts().getRate()) == 0;
         for (Sector x : plainCity.getSectors().all()) {
@@ -561,6 +646,8 @@ public class CapitalFlowCheck {
         assertTrue("fixture: a sector really holds dollars abroad and its twin holds none",
                 held.getUsd(earner) == heldUsd && plainCity.getOutwardInvestment().getUsd(earner) == 0);
 
+        bookSale(plainCity, earner, bookedSale);
+        bookSale(heldCity, earner, bookedSale);
         quietMonth(plainCity);
         quietMonth(heldCity);
         double monthRate = held.getLastRate();
@@ -595,20 +682,19 @@ public class CapitalFlowCheck {
         close("...nor in what it sold: the twins' revenue is the same", heldStatement.revenue, plainStatement.revenue, 1e-9);
         assertTrue("the coupon twins use the same profit-tax rate",
                 Double.compare(taxRate, plainSector.getTaxRate()) == 0);
-        boolean profitableTwin = Observation.reached("fixture: the twin is in profit, so the profit tax has something to take",
-                plainStatement.preTaxIncome > 0 && plainStatement.profitTax > 0 && taxRate > 0,
-                "positive-profit coupon tax, net, dividend and cash comparisons");
+        assertTrue("fixture: the twin is in profit, so the profit tax has something to take",
+                plainStatement.preTaxIncome > 0 && plainStatement.profitTax > 0 && taxRate > 0);
         close("profit before tax differs by the coupon",
                 heldStatement.preTaxIncome - plainStatement.preTaxIncome, coupon, 1e-9);
-        if (profitableTwin) close("...the profit tax by the coupon x the tax rate",
+        close("...the profit tax by the coupon x the tax rate",
                 heldStatement.profitTax - plainStatement.profitTax, coupon * taxRate, 1e-9);
-        if (profitableTwin) close("...the profit it kept by the coupon x (1 - the tax rate)",
+        close("...the profit it kept by the coupon x (1 - the tax rate)",
                 heldStatement.netIncome - plainStatement.netIncome, coupon * (1 - taxRate), 1e-9);
         close("...and its books read the same coupon", heldMonth.foreignInterest(), coupon, 1e-9);
 
         // ...the till pays the tax on it and none of it arrives: what the month moved abroad or home, what the thieves
         // took of the larger till (a share of it) and the shares each bought back (the same, by the guard above), aside.
-        if (profitableTwin) close("the till moved only by the tax: the coupon x the tax rate less, none of it received",
+        close("the till moved only by the tax: the coupon x the tax rate less, none of it received",
                 (heldMonth.cash() - plainMonth.cash()) + (heldMonth.investedAbroad() - plainMonth.investedAbroad())
                         + (heldMonth.stolen() - plainMonth.stolen())
                         + (heldMonth.sharesBoughtBack() - plainMonth.sharesBoughtBack()),
@@ -633,39 +719,41 @@ public class CapitalFlowCheck {
                 coupon + held.getMovedThisMonth(earner), 1e-9 * Math.max(1, Math.abs(coupon + held.getMovedThisMonth(earner))));
 
         int company = Equity.indexOf(earner);
-        if (profitableTwin) close("the dividend it will be struck on is larger by PAYOUT x the coupon x (1 - the tax rate)",
+        close("the dividend it will be struck on is larger by PAYOUT x the coupon x (1 - the tax rate)",
                 heldCity.getEquity().dividendDue(company, heldMonth.netIncome())
                         - plainCity.getEquity().dividendDue(company, plainMonth.netIncome()),
                 Equity.PAYOUT * coupon * (1 - taxRate), 1e-9);
 
         // ...and the register values the business on what it earned, its money at face beside it (EM1): the coupon is in the profit
         // since HD2, so it is taken out of the income the register records, and counted with what its money earns.
-        if (profitableTwin) close("the register reads the business without the coupon: the twin's net income",
+        close("the register reads the business without the coupon: the twin's net income",
                 heldMonth.businessNetIncome(), plainMonth.netIncome(), 1e-9);
-        if (profitableTwin) close("...the coupon after its tax is left to what its money earns: the coupon x (1 - the tax rate)",
+        close("...the coupon after its tax is left to what its money earns: the coupon x (1 - the tax rate)",
                 heldMonth.foreignInterestAfterTax(), coupon * (1 - taxRate), 1e-9);
         close("...and the register's earnings are the twin's, the same twelve months",
                 heldCity.getEquity().getTrailingIncome(company) - plainCity.getEquity().getTrailingIncome(company), 0, 1e-9);
 
         // ...and the next month pays it, and the rate has moved under the dollars it still holds.
         double usdBefore = held.getUsd(earner), rateBefore = held.getLastRate();
+        plainCity.getForeignAccounts().pinRate(rate0 * (1 + rateMove));
+        heldCity.getForeignAccounts().pinRate(rate0 * (1 + rateMove));
+        bookSale(plainCity, earner, bookedSale);
+        bookSale(heldCity, earner, bookedSale);
         quietMonth(plainCity);
         quietMonth(heldCity);
         SectorBooks.SectorMonth plainNext = plainCity.getSectorBooks().get(earner);
         SectorBooks.SectorMonth heldNext = heldCity.getSectorBooks().get(earner);
         double paidMore = heldNext.dividendsPaid() - plainNext.dividendsPaid();
         out.printf("   the next month's dividend: %,.3fk against %,.3fk%n", heldNext.dividendsPaid(), plainNext.dividendsPaid());
-        if (profitableTwin) assertTrue("the dividend paid the next month is larger", paidMore > 0);
-        if (profitableTwin) close("...by PAYOUT x the coupon x (1 - the tax rate)", paidMore, Equity.PAYOUT * coupon * (1 - taxRate), 1e-6);
+        assertTrue("the dividend paid the next month is larger", paidMore > 0);
+        close("...by PAYOUT x the coupon x (1 - the tax rate)", paidMore, Equity.PAYOUT * coupon * (1 - taxRate), 1e-6);
 
         double rateNow = held.getLastRate();
         double couponNext = held.getInterestThisMonth(earner);
         out.printf("   the rate moved from %.6f to %.6f under US$%,.0fk: revalued %,.3fk%n", rateBefore, rateNow, usdBefore,
                 SectorStatements.abroadRevalued(heldNext, heldMonth));
-        Observation.reached("main: fixture: the rate moved between the two struck months",
-                "fixture: the rate moved between the two struck months",
-                Math.abs(rateNow - rateBefore) > 1e-6,
-                "");
+        assertTrue("fixture: the rate moved between the two struck months", Math.abs(rateNow - rateBefore) > 1e-6);
+        close("...by the step that was set", rateNow - rateBefore, rate0 * rateMove, 1e-9);
         assertTrue("fixture: the till covered that month's dividend too, so no dollars were called home",
                 heldNext.openingCash() >= heldNext.dividendsPaid());
         close("what it holds abroad, revalued, is the dollars held x the rate's move",
@@ -685,13 +773,16 @@ public class CapitalFlowCheck {
         // so where the plain twin is at a loss the dollars' twin pays tax on the coupon less that loss. The twin's second month was a
         // profit on main (construction billed 162k, pre-tax 65k) and is a loss under the quote (the city's building went another
         // way: it billed 21.5k, pre-tax -5.1k), so 0.766k of the coupon went untaxed: the floor of the tax, no money from nowhere
-        // (0.766k is 15% of 5.1k). The first month's twin is asserted in profit above; the second month's profit was never caused.
+        // (0.766k is 15% of 5.1k). FS9: the second month's profit is caused as the first's is - the sale is booked again before it - and
+        // asserted below, so the shield is nothing here; the law keeps its form for the day a loss is booked.
+        assertTrue("fixture: the twin is in profit in the second month too, so no loss of its own shields the coupon from the profit tax",
+                plainNext.preTaxIncome() > 0);
         double lossShield = Math.min(couponNext, Math.max(0, -plainNext.preTaxIncome()));
         out.printf("   the second month: the twin's pre-tax %,.3fk, so %,.3fk of the coupon's %,.3fk is shielded from the profit tax%n",
                 plainNext.preTaxIncome(), lossShield, couponNext);
         close("the profit tax the second coupon paid is the coupon x the tax rate, less what the twin's loss shields of it",
                 heldNext.tax() - plainNext.tax(), taxRate * (couponNext - lossShield), 1e-9);
-        if (profitableTwin) close("over both months the till moved only by the tax on both coupons and the extra dividend",
+        close("over both months the till moved only by the tax on both coupons and the extra dividend",
                 (heldNext.cash() - plainNext.cash())
                         + (heldMonth.investedAbroad() - plainMonth.investedAbroad())
                         + (heldNext.investedAbroad() - plainNext.investedAbroad())
@@ -743,6 +834,18 @@ public class CapitalFlowCheck {
             g.simulateMonths(24);
         } finally { System.setOut(out); }
         return g;
+    }
+
+    /** The months the hot city is played with an audit each: ten panic windows (PANIC_MONTHS), so the money arrives, runs home in a stop and comes back over the audit. */
+    static final int AUDITED_MONTHS = 10 * CapitalFlows.PANIC_MONTHS;
+
+    /** The claim written by hand on the builders in each coupon twin (FC2, 2026-11-23), D$100k: a tenth of the till the twins are topped up with, so the builders owe the bank and send no dollars abroad. */
+    static final double LOAN_BY_HAND = 100;
+
+    /** A sale of old metal booked to a seller as the model books one (CopperRefining.settle()): other revenue for the seller, an input for the copper refiners, a transfer within the sectors. */
+    static void bookSale(Game g, String seller, double amount) {
+        g.getSectors().byKey(seller).sellOldMetal(amount);
+        g.getSectors().byKey(Sectors.COPPER_REFINING).billForService(seller, OldMetal.LINE, amount);
     }
 
     /** One month of a city, its log kept quiet. */

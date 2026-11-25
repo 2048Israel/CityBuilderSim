@@ -1,6 +1,6 @@
-# PopulationCohorts.java - 835 lines · 53 methods · 2 constants · model
+# PopulationCohorts.java - 845 lines · 54 methods · 2 constants · model
 
-`ham/citybuildersim/PopulationCohorts.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PopulationCohorts.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The city's age pyramid, and since the switch, the city's POPULATION.
 > 
@@ -38,9 +38,9 @@
 > and leak people steadily in a large one; the pyramid is a distribution and it
 > is allowed to hold fractions. Only the DISPLAY rounds.
 
-**Uses:** [AgeBand](AgeBand.md) (57), [AdultStage](AdultStage.md) (25)
+**Uses:** [AgeBand](AgeBand.md) (59), [AdultStage](AdultStage.md) (27), [HouseholdBalance](HouseholdBalance.md) (1)
 
-**Used by (41):** [ArrivalMixCheck](ArrivalMixCheck.md), [BuildAdvice](BuildAdvice.md), [CareType](CareType.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [Crime](Crime.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [HousingCheck](HousingCheck.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [OutsideCheck](OutsideCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [SchoolingLadderCheck](SchoolingLadderCheck.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [StaffingDrawCheck](StaffingDrawCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [WorksFinanceCheck](WorksFinanceCheck.md)
+**Used by (43):** [ArrivalMixCheck](ArrivalMixCheck.md), [BuildAdvice](BuildAdvice.md), [CardCheck](CardCheck.md), [CareType](CareType.md), [CausesOfDeathCheck](CausesOfDeathCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [Crime](Crime.md), [CrimeCheck](CrimeCheck.md), [DeathRecordCheck](DeathRecordCheck.md), [Education](Education.md), [EducationCheck](EducationCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [Healthcare](Healthcare.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdMemoryCheck](HouseholdMemoryCheck.md), [HouseholdStageCheck](HouseholdStageCheck.md), [HousingCheck](HousingCheck.md), [Inbox](Inbox.md), [KeptCheck](KeptCheck.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [Migration](Migration.md), [MoneyWordsCheck](MoneyWordsCheck.md), [OutsideCheck](OutsideCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PopulationCheck](PopulationCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SavedCities](SavedCities.md), [SchoolingLadderCheck](SchoolingLadderCheck.md), [ServicesScreen](ServicesScreen.md), [Sickness](Sickness.md), [SicknessCheck](SicknessCheck.md), [StaffingDrawCheck](StaffingDrawCheck.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
 ## Sections
 
@@ -48,14 +48,14 @@
 |---:|---|
 | 131 | · reading |
 | 227 | · ageing |
-| 634 | · saving |
+| 644 | · saving |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 59 | `PopulationCohorts.BIRTHS_PER_1000_PER_YEAR` | `15.0` | Births per thousand residents per year. |
-| 676 | `PopulationCohorts.LEGACY_BANDS` | `{ "BABY", "CHILD", "TEEN", "ADULT", "SENIOR" }` | The bands a save written before names existed must be read with. |
+| 686 | `PopulationCohorts.LEGACY_BANDS` | `{ "BABY", "CHILD", "TEEN", "ADULT", "SENIOR" }` | The bands a save written before names existed must be read with. |
 
 ## Fields (state)
 
@@ -87,7 +87,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 796 | **type** `public class PopulationCohorts` | The city's age pyramid, and since the switch, the city's POPULATION. |
+| 40 | 806 | **type** `public class PopulationCohorts` | The city's age pyramid, and since the switch, the city's POPULATION. |
 | 129 | 1 | `public PopulationCohorts()` |  |
 
 ### reading (lines 131-226)
@@ -128,7 +128,7 @@
 | 206 | 7 | `public double workingAge()` | Everyone of working age. |
 | 221 | 5 | `public double dependencyRatio()` | Children and seniors per hundred working-age adults. |
 
-### ageing (lines 227-633)
+### ageing (lines 227-643)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -138,22 +138,23 @@
 | 295 | 3 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double birthFactor)` | The same month, with the people who stayed sick dying as well. |
 | 308 | 4 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double[] violence, double birthFactor)` | ...and the people violence killed (2026-09-11). |
 | 322 | 139 | `public void advanceMonth(double[] mortalityFactor, double[] illness, double[] violence, double[] causes, double birthFactor)` | ...and the people the causes of death of 1900 took (R0b). |
-| 478 | 25 | `public void migrate(double netArrivals)` | People moving in, or out. |
-| 512 | 16 | `public double leave(AgeBand of, double people)` | People of one band leaving the city on their own account - not the proportional migration above. |
-| 557 | 11 | `private void seedFrom(long livePopulation)` | Gives an empty pyramid the shape a settled population of this size has. |
-| 580 | 6 | `public static double equilibriumShare(AgeBand of)` | What share of a settled city sits in this band, solved from the rates. |
-| 588 | 3 | `public static double settledYoungShareOfAdults()` | Of a settled city's adults, the young's share (HS2): what the People screen sets beside the city's own, and how a save without the stages splits its adults. |
-| 593 | 6 | `public static double equilibriumShare(AdultStage of)` | ...and what share of a settled city sits in one adult stage (HS2): the two add to the adults'. |
-| 607 | 26 | `private static double[] equilibriumWeights()` | The bands' weights, then the adult stages' (HS2). |
+| 463 | 8 | `public void migrate(double netArrivals, HouseholdBalance.BankruptcyDepartures discharged)` | Discharged source families leave first; only the other net movers use population shares. |
+| 488 | 25 | `public void migrate(double netArrivals)` | People moving in, or out. |
+| 522 | 16 | `public double leave(AgeBand of, double people)` | People of one band leaving the city on their own account - not the proportional migration above. |
+| 567 | 11 | `private void seedFrom(long livePopulation)` | Gives an empty pyramid the shape a settled population of this size has. |
+| 590 | 6 | `public static double equilibriumShare(AgeBand of)` | What share of a settled city sits in this band, solved from the rates. |
+| 598 | 3 | `public static double settledYoungShareOfAdults()` | Of a settled city's adults, the young's share (HS2): what the People screen sets beside the city's own, and how a save without the stages splits its adults. |
+| 603 | 6 | `public static double equilibriumShare(AdultStage of)` | ...and what share of a settled city sits in one adult stage (HS2): the two add to the adults'. |
+| 617 | 26 | `private static double[] equilibriumWeights()` | The bands' weights, then the adult stages' (HS2). |
 
-### saving (lines 634-835)
+### saving (lines 644-845)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 679 | 6 | `public static String[] saveBands()` | The names this build would write beside the pyramid. |
-| 686 | 19 | `public double[] toSaveArray()` |  |
-| 707 | 3 | `public void restore(double[] saved)` | A pyramid saved before the names travelled with it. |
-| 725 | 80 | `public void restore(String[] bands, double[] saved)` | Puts a saved pyramid back, each band found BY NAME. |
-| 807 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
-| 813 | 22 | `public void reset()` |  |
+| 689 | 6 | `public static String[] saveBands()` | The names this build would write beside the pyramid. |
+| 696 | 19 | `public double[] toSaveArray()` |  |
+| 717 | 3 | `public void restore(double[] saved)` | A pyramid saved before the names travelled with it. |
+| 735 | 80 | `public void restore(String[] bands, double[] saved)` | Puts a saved pyramid back, each band found BY NAME. |
+| 817 | 5 | `private static AgeBand bandNamed(String name)` | The band of that name, or null if this build has no such band. |
+| 823 | 22 | `public void reset()` |  |
 

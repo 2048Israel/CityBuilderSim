@@ -103,6 +103,9 @@ import java.util.function.Predicate;
  *  13. THE FULL FILE. The delta's islands read Rotterdam's landmass in the model's reader, Goeree does not; PEI is apart,
  *      Halifax and Dartmouth one, Medellin on 2; Rotterdam played 1,200 months, the books audited at every look; whether the test
  *      player placed a terminal off home is printed, the run's path (FS7: its buying is section 8's, its linking IslandLinkCheck 8's).
+ *  14. A TILE'S LANDMASS IDS ARE KEPT, THE SAME AS READ FROM THE CELLS (AP2). On the fixture's Rotterdam, every tile of a window about the
+ *      founding tile gives the same ids as EarthTerrain.idsNearDrawn() reads from the cells, the same array on a second ask, and the same
+ *      again after tiles by the thousand have filled the keep (EarthTerrain.IDS_KEPT) and it has been cleared.
  *
  * The waits on the builders (sections 5, 6 and 12, and IslandLinkCheck's and BridgeCheck's that borrow it) are Wait: a site on site
  * stands once the builders' work since its order covers twice what was owed on site then, the water fill's own bound with room for
@@ -291,6 +294,7 @@ public class LandmassCheck {
         grownShort(f);
         theAudit(f);
         fullFile(theEarth());
+        theLandmassIds(data, rotterdam);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -3432,5 +3436,52 @@ public class LandmassCheck {
         a[CityLand.TOTAL] = km2;
         a[CityLand.DRY] = km2;
         return a;
+    }
+
+    /* ============================ 14. A TILE'S LANDMASS IDS (AP2) ============================ */
+
+    /** Tiles either side of the founding tile of the window section 14 reads: a window of (2 * 48 + 1) tiles a side. */
+    static final int WINDOW = 48;
+
+    static void theLandmassIds(EarthData data, World.Key rotterdam) {
+        out.println("\n--- 14. a tile's landmass ids are kept, the same as read from the cells (AP2) ---");
+        World world = World.of(rotterdam);
+        EarthTerrain e = world.earthTerrain();
+        check("the Earth fixture's world has landmasses to read", world.hasLandmasses() && world.isEarth() && data.hasRelief());
+
+        long fx = world.foundingX() / World.TILE, fy = world.foundingY() / World.TILE;
+        int tiles = 0, sameIds = 0, sameArray = 0, one = 0, two = 0;
+        for (long ty = fy - WINDOW; ty <= fy + WINDOW; ty++) {
+            for (long tx = fx - WINDOW; tx <= fx + WINDOW; tx++) {
+                int[] kept = e.idsNear(tx, ty);
+                tiles++;
+                if (Arrays.equals(kept, e.idsNearDrawn(tx, ty))) sameIds++;
+                if (e.idsNear(tx, ty) == kept) sameArray++;
+                if (kept.length >= 1) one++;
+                if (kept.length >= 2) two++;
+            }
+        }
+        report("fixture: tiles in the window hold one landmass id or more, and two or more", one > 0 && two > 0,
+                tiles + " tiles, " + one + " with an id, " + two + " with two or more");
+        report("every tile's ids, kept, are the ids read from the cells", sameIds == tiles, sameIds + " of " + tiles);
+        report("...and a second ask is the same array, not a read again", sameArray == tiles, sameArray + " of " + tiles);
+        check("a tile off the world holds no ids", e.idsNear(-1, 0).length == 0 && e.idsNear(0, -1).length == 0);
+
+        // The keep fills and is cleared: tiles by the thousand against IDS_KEPT, the first read of them given up and read again.
+        int across = (int) Math.ceil(Math.sqrt(EarthTerrain.IDS_KEPT)) + 4;
+        long tx0 = fx - across / 2, ty0 = fy - across / 2;
+        int[] firstKept = e.idsNear(tx0, ty0);
+        for (long ty = ty0; ty < ty0 + across; ty++) {
+            for (long tx = tx0; tx < tx0 + across; tx++) e.idsNear(tx, ty);
+        }
+        int[] again = e.idsNear(tx0, ty0);
+        report("a keep that has filled to IDS_KEPT and been cleared reads the first tile's ids again, the same", Arrays.equals(again, firstKept)
+                && Arrays.equals(again, e.idsNearDrawn(tx0, ty0)), (long) across * across + " tiles read against IDS_KEPT " + EarthTerrain.IDS_KEPT);
+        check("...as a new array, the old one let go with the rest, and then kept again", again != firstKept && e.idsNear(tx0, ty0) == again);
+        boolean allSame = true;
+        for (long ty = fy - WINDOW; ty <= fy + WINDOW; ty++) {
+            for (long tx = fx - WINDOW; tx <= fx + WINDOW; tx++) allSame &= Arrays.equals(e.idsNear(tx, ty), e.idsNearDrawn(tx, ty));
+        }
+        check("...and every tile of the first window still reads as the cells give it", allSame);
     }
 }

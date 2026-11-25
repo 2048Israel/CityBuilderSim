@@ -1,6 +1,6 @@
 # Observation.java - 71 lines · 5 methods · 4 constants · model
 
-`ham/citybuildersim/Observation.java` - generated 2026-11-21 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Observation.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The played city's path premises, reported without counting a failure.
 > 
@@ -10,7 +10,7 @@
 
 **Uses:** [Timing](Timing.md) (1)
 
-**Used by (15):** [AllChecks](AllChecks.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [FittingCheck](FittingCheck.md), [HealthCheck](HealthCheck.md), [HousingCheck](HousingCheck.md), [KeptCheck](KeptCheck.md), [MapCheck](MapCheck.md), [ObservationCheck](ObservationCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [ScaleCheck](ScaleCheck.md)
+**Used by (12):** [AllChecks](AllChecks.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [FittingCheck](FittingCheck.md), [HealthCheck](HealthCheck.md), [HousingCheck](HousingCheck.md), [MapCheck](MapCheck.md), [ObservationCheck](ObservationCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [ScaleCheck](ScaleCheck.md)
 
 ## Constants
 
