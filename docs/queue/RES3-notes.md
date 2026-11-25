@@ -1,14 +1,50 @@
 # RES3 — home choice, typed rents and the 14-form catalogue
 
-Built on batch/RES3 from shipped RES2 (7e484c4da), refreshed through HC1 on
-main efca2c5fd (0.9.190), merged as ef18a4b6c, and the queue-only e66c310a3.
-AP2 then shipped as 1b89c5c4c (0.9.191), merged as 9af9ee926. Final
-verification and publication status are below.
-Current integration is shipped PW5 f937d2c22 (0.9.192): RES3's new form IDs are
-156-166 after Substation 155, nextId 167, and save format/floor 64. Earlier
-63/155-165 records below describe the pre-PW5 build and its checks.
+Started on batch/RES3 from shipped RES2 (7e484c4da). The dated sections below
+retain the successive HC1, AP2, PW5, FC2 and later integration evidence.
+
+## Current integration and validation, 2026-11-25
+
+Main78ed67315 is shipped R6e-rest0.9.201, format/floor66; RES3 takes67.
+Substation155, RES3 homes156-166 and existing power167-171 retain their IDs;
+nextId is172. The genuine unedited shipped66 save/history pair is committed,
+and current SaveFileCheck refuses it with both files and the running city intact.
+No conversion or current-schema restamping is used. The newest ensemble
+baseline is docs/ensemble/0.9.201.md.
+
+Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
+pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
+byte-identical through the later passive-observer/diagnostic-only commits;
+their added hooks default to null in ordinary checks.
+
+| Check | Native/batch | Labelled checks | Seconds |
+|---|---:|---:|---:|
+| SaveFileCheck | 0/0 | 1274 | 104.2 |
+| ReadPathCheck | 0/0 | 92 | 115.9 |
+| MonetaryCheck | 0/0 | 722 | 453.3 |
+| LabourCheck | 0/0 | 248 | 43.1 |
+| ExchangeRateCheck | 0/0 | 236 | 28.4 |
+
+The unchanged pooled16-31 TOTAL policy-effect floor of at least one point
+passes at3.635685 percentage points; non-shelter reduction is3.102148 points.
+Original-town, supply, saved-observation and purity guards also pass.
+DenominationCheck is held: seven failed decade comparisons are canonical-known;
+three NEW assertions concern under-half-cell ownership and an uncaused upward-
+price premise. The bounded diagnostic retains every original predicate and
+all202 looks: exact-zero owners are0 in all206 snapshots;35109 individual
+reform stock comparisons and all purity/inventory guards pass. Lawful positive
+fractional owners cause the two legacy under-half claims. The registered scan
+correction is prepared for its normal native run; separately captured TP1
+deflation preserves every floor comparison. Combined review remains owed.
+
+Remaining named checks, current catalogue/profiles, default600-month spending
+observations, final fast/maps, combined money/saves review, final ensemble and
+dry run remain pending. The ship marker stays provisional. Earlier final,
+green, format and baseline statements below belong to their named commits.
 No user city or user save slot 1–9 is opened or written. Existing checks use
 their own isolated scratch slots; new RES3 native fixtures use slot 10.
+
+## Initial implementation
 
 The implementation adds the section 12 recipe catalogue, aggregate cell/class
 assignment and class rental ledgers. The existing builder quotes, work queue,
@@ -31,8 +67,10 @@ construction queue and work proofs are retained.
 are flows that cannot be reconstructed from closing stock. They pass through
 DataSave and the load path. A format bump and matching oldest-loadable floor
 are owed under the old-saves rule: old class IDs/mixes and missing assignments
-would read wrongly. The final format and floor are 63, advancing from HC1's
-shipped 62. No conversion code is added.
+would read wrongly. The current format and floor are67, advancing from shipped
+R6e-rest66, including saved consumer observations and held monetary state.
+Earlier boundary evidence is retained at its original source. No conversion
+code is added.
 
 Initial baseline --fast passed before source edits (52 s compile; no firm Stale
 finding). The first integrated compile exposed and corrected a pooled-weight
@@ -5130,3 +5168,85 @@ declaration; main already propagates Exception. No model or native probe has
 run or changed. Reuse the already compiled, byte-identical6dc model classes,
 verify source/class identities and compile only the corrected pushed external
 driver under fresh MG1 before the previously approved cells-only run.
+
+The corrected external driver compiles on1ce784c2c; all2527 model/harness
+class hashes match the approved6dc compile and all model/resources/pom/script
+sources match, so Maven is not repeated (1a14). Fresh native MG1 reports
+6.388 GiB available RAM,12.795 GiB free commit and25.422 percent CPU. The sole
+cells JVM completes all202 original looks and preserves exactly nine original
+failures: seven canonical-known decade comparisons and two legacy under-half
+ownership claims. It creates206 raw snapshots including the four preparatory
+before/immediate-reform reads; no TP1 or other native runs concurrently.
+
+The actual evidence (9b9d) proves exact-zero owners are0 in EVERY snapshot,
+with206/206 explicit raw-owned-position guards passing. Positive under-half
+owners are initially65/city, representing7.936244420111659 households; they
+range64-66/city and cover66 distinct keys. The first legacy culprit exists
+already before reform at month121: SINGLE_ADULT:SENIOR_PROFESSIONAL represents
+0.3938910690689519 households and owns180 nonzero positions. Savings are
+20.990887648283096 current-thousands per household,8.268123176488485 weighted;
+other positions include debt, USD, twelve equity shares/bases, eight tax
+claims,132 bond positions and card status. The raw named positions and hex
+values remain retained; these are real positive owners, not empty-cell ghosts.
+
+Every35109 individual1e-9 reform scale comparison passes, as do the unit
+guard,206 purity guards,202 native-scan/inventory agreement guards and the
+202-look guard. Reformed local money divides100; count/physical/USD positions
+retain their units. No unexpected zero-owner, immediate scale or purity
+failure occurs. Offline analysis also retains tiny later post-step differences
+without inventing an attribution: first bit difference is immediate construction
+basis,1.16e-16 relative; first above the comparison's normalization floor is a
+month122 bond position1.6921943267570264e-21 founding units versus0. The known
+decade comparisons are not changed or newly blamed from these observations.
+
+Evidence is helper target/integrated67/held-1ce: cells/cells-raw.jsonl
+(1441722078 bytes),cells.log,analysis.json with all66 keys,analysis-brief.json,
+commands,gates and source/class/JDK/asset manifests. All own native/controller
+jobs end before offline analysis. Separate TP1 authority then permits only the
+original section/unchanged wait on the same compiled1ce source with fresh MG1;
+no repeat compile or other native. Prepare a registered ownership-guard
+correction only with caused zero/positive-fraction contrasts and all original
+raw-stock, scale, money and save comparisons retained. Global isEmpty and its
+optional-action threshold remain unchanged. No corrected native has yet run.
+
+Standalone TP1 completes on the same1ce classes with native1 for ONLY its
+existing upward-price premise (4ea8). Its dynamic endpoint is0.7551; keep
+that standalone result separate from full f0 Denomination's0.8195. The
+original floor/card/lane/scale guards otherwise pass. No Maven/javac repeats;
+fresh MG1 passes at5.189 GiB available RAM,11.738 GiB free commit and26.278
+percent CPU. All own native/controller jobs end before the next source-prep.
+No extra step, input, rate, wait window, tolerance or original law changes.
+
+Final TP1 evidence (51bb/37b6) retains13 paired observations over the same
+twelve waits, months25-37: start CPI1 and plain/reformed floors7.7650391528935252
+and0.077650391528935256. End plain CPI0.75509439409361367 and floor
+5.8633375342673233; reformed CPI0.75509439409361334 and floor0.0586333753426732
+at unit100. All106 other assertions pass, including26 raw-array purity guards.
+The raw TP1 SHA256 is d610cce1fbe1c6e206a35d7683eeea21eed89928aa8d72f9472686165908aba2;
+CELLS raw SHA25630190dd4a04b0648bcdc4a8e40128d2923585acb9c5be3bfab30ffafbe5d32b4.
+Complete class manifest SHA25631f0a1492e46fd68c5ec241b986c12936b61c0de9b1d4fab16669b01ebdf1f14.
+No model/source differences or live owned jobs remain at this diagnostic handoff.
+
+★ Financial ownership belongs to every positive household count. Correct the
+registered Denomination scan's forbidden-owner criterion from the optional
+under-half threshold to absent/nonpositive counts, preserving the complete
+native holdsAnything inventory and the exact emptyHeldAfterReform==0 and
+emptyHolding==0 requirements at all202 original scan points. Keep a separate
+positive-under-half census count, the existing1/11/88 month sequence and every
+other scale, audit, money and save predicate. Global isEmpty and EMPTY_CELL's
+optional-action behavior do not change. This is an explicit criterion change,
+supported by the raw evidence above, not a label change or a model write-off.
+
+Parent reviews source-prep b18bd857 and actual census/credit APIs. Its new
+registered FinancialOwnerFinding causes an exact-zero owner with raw claims,
+plus established owners at EMPTY_CELL/2 and1.5*EMPTY_CELL through the native
+census/follow/fold path. Every stock family, including bond faces/rollup and
+security basis/tax claims, must clear for the absent owner and remain for the
+positive owners; every household-weighted claim must be conserved. Actual
+deposit-interest and paper-coupon receiver APIs must pay the fractional owner
+and add exactly the two stated inflows, with no other weighted claim change.
+Native redenomination then tests the same raw/weighted1e-9 unit law. Parent
+adds a separate raw-per-position reform comparison for the above-half owner,
+the class's WHY and the diagnostic's updated count comment. None of this
+changes production settlement or silences an original conservation/save guard.
+The corrected registered finding and Denomination native run are still pending.

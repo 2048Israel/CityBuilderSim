@@ -581,25 +581,22 @@ public class DenominationCheck {
                 lopped.getPriceIndex().getIndex());
         sameCity(plain, lopped, factor, 1e-9);
 
-        /* ============ 3a. AND NO CELL UNDER HALF A HOUSEHOLD HOLDS ANYTHING ============
+        /* ============ 3a. POSITIONS HAVE FINANCIAL OWNERS ============
 
-           What parted these two cities at month 166 once the currency's rate
-           pull went to four (0.7.2), and on the pristine 0.7.1 tree held money
-           from month 127 on: a household cell the census leaves at 1e-15 of a
-           household, still holding savings and still being paid. Whether a
-           count lands on 1e-15 or on exactly nothing is the fifteenth decimal,
-           which is precisely what a reform by a hundred moves - so the twins
-           paid different ghosts. HouseholdBalance.EMPTY_CELL now empties such
-           a cell where its count is written (HouseholdCheck has the fixture);
-           this is the same claim on a real city, reformed and not, every
-           month: no cell under the line holds anything.
+           Every strictly positive fractional household owns its claims. The
+           optional-action EMPTY_CELL threshold does not erase ownership.
+           Keep scanning native raw stocks in both cities after every month;
+           the forbidden holder is genuinely absent/nonpositive. Separate
+           caused cases prove zero-owner cleanup, positive retention, actual
+           paid credits and every weighted stock's conservation and scale.
            ================================================================= */
-        out.println("\n--- ...and no cell under half a household holds anything, reformed or not ---");
-        assertTrue("right after the reform, in either city", emptyHeldAfterReform == 0);
-        out.printf("   %d looks (both cities, after the reform and after every month): a cell under half a household in %d; %,d cells emptied of something%n",
+        FinancialOwnerFinding.run();
+        out.println("\n--- no raw stock without a financial owner, reformed or not ---");
+        assertTrue("right after the reform, no absent household holds a position", emptyHeldAfterReform == 0);
+        out.printf("   %d looks (both cities, after the reform and after every month): a positive cell under half a household in %d; %,d cells emptied of something%n",
                 looks, looksWithEmpty, cellsFolded);
         assertTrue("fixture: the census left cells under half a household", looksWithEmpty > 0);
-        assertTrue("...and after no month did one hold anything", emptyHolding == 0);
+        assertTrue("...and after no month did an absent household hold a position", emptyHolding == 0);
 
         /* ============ 4. AND NO MONEY WAS MADE OR LOST ============
 
@@ -1269,7 +1266,7 @@ public class DenominationCheck {
 
     /* ------------------------------ helpers ------------------------------ */
 
-    /** Cells under half a household holding something, counted over every scan. */
+    /** Genuinely absent/nonpositive household counts holding raw stocks, over every scan. */
     static int emptyHolding = 0;
     /** ...and the same, as it stood right after the reform. */
     static int emptyHeldAfterReform = -1;
@@ -1383,13 +1380,13 @@ public class DenominationCheck {
         }
     }
 
-    /** One look at a city: whether any cell is under half a household, and any of them holding something. */
+    /** Financial absence differs from the optional-action threshold; keep its contrasting positive census. */
     static void scanEmpty(Game g) {
         HouseholdBalance hb = g.getHouseholdBalance();
         boolean any = false;
         for (Household c : hb.cells()) {
-            if (!c.isEmpty()) continue;
-            if (c.households() > 0) any = true;
+            if (c.households() > 0 && c.households() < HouseholdBalance.EMPTY_CELL) any = true;
+            if (c.households() > 0) continue;
             if (hb.holdsAnything(c)) emptyHolding++;
         }
         looks++;

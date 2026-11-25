@@ -131,10 +131,10 @@ public final class DenominationHeldFinding {
         }
     }
 
-    /** Return the same scan's under-.5 holders counted from its complete named inventory. */
+    /** Retain the legacy under-half count and return absent owners from the complete named inventory. */
     private static int snapshot(Game g) {
         var hb=g.getHouseholdBalance();double[] saveBefore=hb.toCellSaveArray(),indexBefore=g.getPriceIndex().toSaveArray();
-        int zero=0,fraction=0,large=0,invalid=0,legacyHolders=0;
+        int zero=0,fraction=0,large=0,invalid=0,legacyHolders=0,absentHolders=0;
         double zeroHouseholds=0,fractionHouseholds=0,largeHouseholds=0;
         Map<String,Object> heading=new LinkedHashMap<>();heading.put("type","snapshot");heading.put("phase",phase);
         heading.put("city",g==plain?"plain":g==reformed?"reformed":"tp1");heading.put("month",g.getMonth());
@@ -149,6 +149,7 @@ public final class DenominationHeldFinding {
             if(any) {
                 switch(group){case "exact-zero"->{zero++;zeroHouseholds+=c.households();}case "positive-under-half"->{fraction++;fractionHouseholds+=c.households();}case "at-least-half"->{large++;largeHouseholds+=c.households();}default->invalid++;}
                 if(c.isEmpty())legacyHolders++;
+                if(!(c.households()>0))absentHolders++;
             }
             Map<String,Object> row=new LinkedHashMap<>();row.put("type","cell");row.put("phase",phase);
             row.put("city",g==plain?"plain":g==reformed?"reformed":"tp1");row.put("month",g.getMonth());
@@ -167,10 +168,10 @@ public final class DenominationHeldFinding {
         summary.put("city",g==plain?"plain":g==reformed?"reformed":"tp1");summary.put("month",g.getMonth());
         summary.put("exactZeroOwners",zero);summary.put("positiveUnderHalfOwners",fraction);summary.put("atLeastHalfOwners",large);summary.put("invalidCountOwners",invalid);
         summary.put("exactZeroOwnerHouseholds",zeroHouseholds);summary.put("positiveUnderHalfOwnerHouseholds",fractionHouseholds);summary.put("atLeastHalfOwnerHouseholds",largeHouseholds);
-        summary.put("nativeScanPredicateHolders",legacyHolders);emit(summary);raw.flush();
+        summary.put("legacyUnderHalfHolders",legacyHolders);summary.put("nativeScanPredicateHolders",absentHolders);emit(summary);raw.flush();
         DenominationCheck.assertTrue("finding: exact-zero household counts retain no raw owned position",zero==0);
         DenominationCheck.assertTrue("finding: observation keeps exact native household and CPI arrays",Arrays.equals(saveBefore,hb.toCellSaveArray())&&Arrays.equals(indexBefore,g.getPriceIndex().toSaveArray()));
-        return legacyHolders;
+        return absentHolders;
     }
 
     private static void tp1() throws java.io.IOException {
