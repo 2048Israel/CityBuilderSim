@@ -1,6 +1,6 @@
 # GroundSkipCheck.java - 326 lines · 12 methods · 5 constants · harnesses
 
-`ham/citybuildersim/GroundSkipCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GroundSkipCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The test player's ground across its long skips (LP-G1): a growing town whose ground holds the look's
 > BuildAdvice.HORIZON months but not the skip after it, skipped as the player skipped until LP-G1 and as it skips now

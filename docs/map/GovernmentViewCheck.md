@@ -1,6 +1,6 @@
 # GovernmentViewCheck.java - 403 lines · 9 methods · 0 constants · harnesses
 
-`ham/citybuildersim/GovernmentViewCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GovernmentViewCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The government's wealth bands and advice, measured without moving its books (GV1).
 > 

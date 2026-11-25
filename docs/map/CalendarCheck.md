@@ -1,6 +1,6 @@
 # CalendarCheck.java - 313 lines · 7 methods · 0 constants · harnesses
 
-`ham/citybuildersim/CalendarCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CalendarCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The date on the status bar, and the log of what the city has finished.
 > 

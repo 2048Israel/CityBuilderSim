@@ -1,6 +1,6 @@
 # BuildAdviceCheck.java - 1,749 lines · 55 methods · 2 constants · harnesses
 
-`ham/citybuildersim/BuildAdviceCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildAdviceCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS
 > YOU's list, to the quote, and to the model's own figures, in a played

@@ -1,6 +1,6 @@
 # CityNeeds.java - 1,133 lines · 49 methods · 24 constants · model
 
-`ham/citybuildersim/CityNeeds.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CityNeeds.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > NEEDS YOU, measured: everything with a lever, each against its own line, in
 > the order a city is built - the list the left panel's Summary prints, the

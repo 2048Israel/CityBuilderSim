@@ -1,6 +1,6 @@
 # ER1Check.java - 127 lines · 4 methods · 1 constants · harnesses
 
-`ham/citybuildersim/ER1Check.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ER1Check.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The growth hold when a full city's treasury cannot buy a whole land offer.
 > 

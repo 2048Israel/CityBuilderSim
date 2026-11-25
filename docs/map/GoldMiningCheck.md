@@ -1,6 +1,6 @@
 # GoldMiningCheck.java - 268 lines · 12 methods · 2 constants · harnesses
 
-`ham/citybuildersim/GoldMiningCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GoldMiningCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Gold Mining from geological fields through the mill to exports and the mint.
 > 

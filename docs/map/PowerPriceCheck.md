@@ -1,6 +1,6 @@
 # PowerPriceCheck.java - 628 lines · 27 methods · 9 constants · harnesses
 
-`ham/citybuildersim/PowerPriceCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PowerPriceCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck
 > book's prices, what each class is billed at them, the coal the plants burn bought from the market, the utility's margin and the

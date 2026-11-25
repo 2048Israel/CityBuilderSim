@@ -1,6 +1,6 @@
 # TimingCheck.java - 787 lines · 35 methods · 9 constants · harnesses
 
-`ham/citybuildersim/TimingCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TimingCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > Checks hard and soft timing, JVM forwarding, suite coverage and paired medians.
 > 

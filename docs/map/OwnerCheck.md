@@ -1,6 +1,6 @@
 # OwnerCheck.java - 995 lines · 28 methods · 7 constants · harnesses
 
-`ham/citybuildersim/OwnerCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OwnerCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The owner families (BO1): one two-adult household per company that has
 > listed and not gone broke, holding the company's founding stake alone.

@@ -1,6 +1,6 @@
 # GroundInputCheck.java - 371 lines · 17 methods · 2 constants · harnesses
 
-`ham/citybuildersim/GroundInputCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GroundInputCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > A works the ground limits buys the inputs of what its ground gives it, not of its plant (NG1).
 > 

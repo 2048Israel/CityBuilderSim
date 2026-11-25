@@ -1,6 +1,6 @@
 # SicknessCheck.java - 426 lines · 7 methods · 0 constants · harnesses
 
-`ham/citybuildersim/SicknessCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SicknessCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
 > The long sick: who stays sick, and who it kills.
 > 
