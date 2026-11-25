@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**255 harness files, 29,213 labelled assertions.** AllChecks runs 255 of them.
+**255 harness files, 29,214 labelled assertions.** AllChecks runs 255 of them.
 
 ## Which harnesses read which class
 
@@ -25688,7 +25688,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L992 ...the cell holds them, and a waiting listing lists to them
   - L993 ...the founders' shares all the owner cell's
 
-## PackagingCheck.java - 66 labelled assertions
+## PackagingCheck.java - 67 labelled assertions
 
 > The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime
 > files, the libraries' texts and the complete corresponding source archives, unchanged, and a
@@ -25767,16 +25767,17 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L335 it runs the named JDK's own jlink and jpackage
   - L340 the JDK is held to the pins and the archives fetched before jpackage
   - L341 the image is staged and checked after jpackage and before the zip
-  - L342 a failed stage or check goes to the removal of the image
-  - L345 and of this version's zip, an earlier build's left by none
-  - L347 a failed fetch stops the build
-  - L351 no exit code is read with \"if errorlevel\", which a negative code passes
-  - L353 from the runtime step on, every stop goes through :unfit
-  - L355 jpackage, jlink and the NOTICE copy each go to :unfit when they fail
-  - L356 the exe carries the game's copyright, Credits.COPYRIGHT
-  - L361 its jlink line is the pins' runtime.jlink, which the README gives
-  - L362 nopause neither pauses nor starts the game
-  - L364 every other pause is %PAUSE%
+  - L342 the zip is made by Windows' own tar, never a tar found on PATH (BX1)
+  - L343 a failed stage or check goes to the removal of the image
+  - L346 and of this version's zip, an earlier build's left by none
+  - L348 a failed fetch stops the build
+  - L352 no exit code is read with \"if errorlevel\", which a negative code passes
+  - L354 from the runtime step on, every stop goes through :unfit
+  - L356 jpackage, jlink and the NOTICE copy each go to :unfit when they fail
+  - L357 the exe carries the game's copyright, Credits.COPYRIGHT
+  - L362 its jlink line is the pins' runtime.jlink, which the README gives
+  - L363 nopause neither pauses nor starts the game
+  - L365 every other pause is %PAUSE%
 
 ## PartnerCallsCheck.java - 90 labelled assertions
 
