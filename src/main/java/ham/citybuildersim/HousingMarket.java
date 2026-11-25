@@ -74,12 +74,15 @@ public final class HousingMarket {
      * households paid nothing as guests and lodgers, the paid burden fell to 0.296 (main 0.717), and Migration read
      * a cheap city where the House asked its anchor. A mover weighs the asking rent (the orchestrator's call). The
      * doors are read from the saved classes, not the clearing's offers, which a load does not keep.
+     * A household that fits two to a share in a class's door (HousingChoice.halves(), within the census line) weighs the
+     * cheaper of the door's ask and a paid half share's, half the ask: a room in a shared house is an asked rent too, and
+     * only a guest pays nothing (the orchestrator's call, 2026-11-25).
      */
     public double askedBurden(Game game,double disposable){
         if(!active()||!(disposable>0))return Double.NaN;
         double asked=0;var doors=supply(game);
         for(var d:demand){double best=Double.POSITIVE_INFINITY;
-            for(var o:doors)if(o.count()>0&&HousingChoice.suitable(d,o,false))best=Math.min(best,o.rent());
+            for(var o:doors)if(o.count()>0&&HousingChoice.suitable(d,o,false))best=Math.min(best,HousingChoice.halves(d,o)?o.rent()/2:o.rent());
             if(Double.isFinite(best))asked+=d.count()*best;}
         return asked/disposable;
     }

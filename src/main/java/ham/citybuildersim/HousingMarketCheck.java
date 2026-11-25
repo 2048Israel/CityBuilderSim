@@ -613,6 +613,10 @@ public final class HousingMarketCheck {
         near("full rent is unaffordable, two actual households fund one door",result.leases().stream().mapToDouble(HousingChoice.Lease::households).sum(),count);
         near("doubled households occupy half as many real doors",market.occupied(),count/2);
         near("each doubled door earns one rent, not two",market.receipts(),count*ask/2);
+        // RES3c, 2026-11-25 (the orchestrator's call): a mover who fits two to a share weighs a paid half share's rent.
+        check("fixture: two of these households fit one door within its census line",
+                2*c.size()<=HousingChoice.line(t.getHousingRecipe().mix().getFirst().bedrooms()));
+        near("the asked rent a mover weighs is a half share's, half the door's ask",market.askedBurden(g,1000)*1000,count*ask/2);
         near("a half-bill budget creates no unfunded full-rent pressure in that class",
                 market.classes().stream().filter(x->x.recipe==t.getId()).mapToDouble(x->x.demand).sum(),market.occupied());
         near("actual doubled placements leave no fictional unplaced residual",result.unplaced(),0);
@@ -775,7 +779,11 @@ public final class HousingMarketCheck {
         check("door-census fixture pays for active construction jobs",
                 g.buildStack(bm.getTemplateByName("Construction Depot"),20,true)==Game.BuildResult.SUCCESS);
         check("door-census fixture builds actual compact homes",g.buildStack(bm.getTemplateByName("Studio Apartments"),5,true)==Game.BuildResult.SUCCESS);
-        g.getCohorts().migrate(500);g.toggleNextMonth();
+        // RES3c, 2026-11-25: 450, not 500. A mover who fits two to a share weighs half the ask (HousingMarket.askedBurden()),
+        // so the month before the press drew 829 people where it drew 772, they took the finished doors, and the press month's
+        // arrivals met the room cap (11.17 of 11.17) before the crowding ramp could hold them under it. With 50 fewer seekers
+        // the room is 41 and the ramp's arrivals 12.8, the scarcity and the floor premises above still caused.
+        g.getCohorts().migrate(450);g.toggleNextMonth();
         FamilyModel withoutCensus=new FamilyModel();withoutCensus.restore(PopulationCohorts.saveBands(),FamilyModel.saveShapes(),g.getFamilies().toSaveArray());
         withoutCensus.adoptCarriedUnplaced();withoutCensus.adoptCarriedDoubling();
         check("door-census control preserves the exact family matrix",Arrays.equals(g.getFamilies().toSaveArray(),withoutCensus.toSaveArray()));
@@ -807,8 +815,8 @@ public final class HousingMarketCheck {
         out.printf("   scarce-door floor %.12g (without census %.12g), crowding %.12g%n",floor,withoutCensus.minimumHomesTolerable(),crowding);
         g.toggleNextMonth();back.toggleNextMonth();running.toggleNextMonth();
         out.printf("   replacement homes finished %d; migration target %.12g; population %d%n",bm.countByName("House"),g.getMigration().getLastTarget(),g.getPopulationManager().getPopulation());
-        out.printf("   next native arrivals %.12g / %.12g / %.12g; crowding %.12g / %.12g / %.12g%n",g.getMigration().getLastArrivals(),back.getMigration().getLastArrivals(),running.getMigration().getLastArrivals(),
-                g.getMigration().getLastCrowding(),back.getMigration().getLastCrowding(),running.getMigration().getLastCrowding());
+        out.printf("   next native arrivals %.12g / %.12g / %.12g; crowding %.12g / %.12g / %.12g; room %.12g%n",g.getMigration().getLastArrivals(),back.getMigration().getLastArrivals(),running.getMigration().getLastArrivals(),
+                g.getMigration().getLastCrowding(),back.getMigration().getLastCrowding(),running.getMigration().getLastCrowding(),g.getMigration().getLastRoom());
         check("completed funded homes cause actual positive first-month arrivals",g.getMigration().getLastArrivals()>0);
         check("the migration crowding ramp is active before the physical-room cap",
                 g.getMigration().getLastCrowding()>0&&g.getMigration().getLastCrowding()<1
