@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### BX2 — PackagingCheck reads BX1's zip line — 2026-11-25, ready, see docs/queue/BX2-notes.md
 BX1 named Windows' own `tar.exe` by its full path in `Build EXE.bat`, and PackagingCheck still found the zip
