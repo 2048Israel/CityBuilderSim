@@ -130,7 +130,7 @@ public class ResearchCheck {
             new Spot("E9", 1962, 6, false),   // early 1960s
             new Spot("E17", 1984, 4, false),  // 1984, APL/UP
             new Spot("E21", 1996, 6, false),  // USDA gives 1996; June is the study placeholder
-            new Spot("E22", 1997, 6, false),  // 1997 (Stover 2010: the pressure exchanger's retrofit at Las Palmas III); June is the study placeholder
+            new Spot("E22", 1997, 6, false),  // 1997 (Energy Recovery: its first PX pressure exchanger at sea, the Canary Islands); June is the study placeholder
             new Spot("M1", 1952, 6, false),   // 1952
             new Spot("M4", 1960, 3, false),   // 1960, Seattle
             new Spot("M9", 1987, 3, false),   // 1987, Lyon

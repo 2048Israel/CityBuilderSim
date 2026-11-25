@@ -194,7 +194,7 @@ December 2024 removes nothing, and an electric fleet is a new energy path
   public gain was the service its entry delivers at the tariff, so a piece
   that saves power and serves no more water billed nothing, and E22's fee
   never reached the city. A piece's gain now adds the power its buildings
-  would draw more without it, at the works' price
+  would draw more without it, at the commerce price
   (`EconomyManager.getPowerPriceFor()`), through a new package-private
   `RecipeChanges.electricityAt()` beside `productionAt()` (compose()'s own
   sum). Only E22 is moved: the other city-work pieces (PE5 rapid sand, PE6

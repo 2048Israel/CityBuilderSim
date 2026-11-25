@@ -55,7 +55,7 @@ import java.util.Set;
  *    comes fitted at 10,880; the sea works' draw the water's books pay is the plants' count times the template's
  *    powerBought() after a real month, more than today's while a plant lacks the exchanger; no sector fits a city
  *    work's piece, and the player's Fit (Game.fitForCity()) does, after which the plant and the draw are today's; the
- *    imported exchanger's public gain inside its term is the power it saves at the works' price, and the plant's licence
+ *    imported exchanger's public gain inside its term is the power it saves at the commerce price, and the plant's licence
  *    bill SHARE of it (it serves no more water; LicenceFees.entryGain() adds the saving); a
  *    default city runs 10,880 across the month; a held city's save loads the unfitted count and the draw at once and
  *    the next month keeps them; a plant with no record of the count (a format-65 save's) is read as fitted from June 1997.
@@ -796,7 +796,7 @@ public final class ModernRowsCheck {
         double savedKw = count * (before - anchor);
         check("fixture: the plant's own row, E6, is no longer abroad under patent, so the stack's bill is E22's alone; and the works' power has a price",
                 !LicenceFees.payable("E6", drawn.getMonth(), drawn.getResearch()) && price > 0, price);
-        check("the imported exchanger's public gain is the power it saves, the plants' undone draw at the works' price"
+        check("the imported exchanger's public gain is the power it saves, the plants' undone draw at the commerce price"
                 + " (it serves no more water, so the gain is not service: LicenceFees.entryGain() adds the saving)",
                 gain > 0 && Math.abs(gain - savedKw * price) <= 1e-9 * Math.max(1, gain), gain + " vs " + savedKw + " kW at " + price);
         check("...and the plant's licence bill is SHARE of that gain while the patent runs", Math.abs(bill - LicenceFees.SHARE * gain) <= 1e-9 * Math.max(1, bill),

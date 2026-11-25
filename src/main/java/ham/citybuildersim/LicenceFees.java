@@ -426,7 +426,7 @@ public final class LicenceFees {
      * with it less that delivered without it, at the planners' tariff. pieceId null is the building entry (the state's buildings gone, less
      * their running cost, `running` a building); a piece is every building of the state lacking it. The grid's nameplate is moved from the
      * city as it stands to this state (STANDING: the stack's own state moves it nothing; NEW: the new buildings are added to it).
-     * A piece's gain adds the power its buildings would draw more without it, at the works' price (EconomyManager.getPowerPriceFor()):
+     * A piece's gain adds the power its buildings would draw more without it, at the commerce price (EconomyManager.getPowerPriceFor(), a water works not being high voltage):
      * E22's pressure exchanger serves no more water, it saves the Desalination Plant's electricity (R6e-rest).
      */
     private static double entryGain(Game game, BuildingsTemplate t, Fitting f, String pieceId, double running) {
