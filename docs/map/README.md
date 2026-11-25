@@ -4,7 +4,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 639 files, 694,813 lines, 30,356 methods, 6,787 constants. `GameVersion.VERSION` is "0.9.202", `SAVE_FORMAT` 66.
+**The tree:** 639 files, 694,820 lines, 30,356 methods, 6,787 constants. `GameVersion.VERSION` is "0.9.202", `SAVE_FORMAT` 66.
 
 ## model (280 files)
 
@@ -473,7 +473,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [FoodProcessingCheck.java](FoodProcessingCheck.md) | 639 | 7 | The third of the shelf that arrives already made. | 0 |
 | [ForeignCheck.java](ForeignCheck.md) | 2,206 | 18 | The balance of payments, and whether the boundary it is drawn on is honest. | 7 |
 | [ForeignChoiceCheck.java](ForeignChoiceCheck.md) | 1,180 | 37 | The choices that use the foreign crews (FC2b): a payer - a business by its own sum, the city from its card - hands its share of one site's remainin... | 0 |
-| [ForeignCrewsCheck.java](ForeignCrewsCheck.md) | 1,034 | 31 | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at... | 1 |
+| [ForeignCrewsCheck.java](ForeignCrewsCheck.md) | 1,041 | 31 | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at... | 1 |
 | [ForeignDebtCheck.java](ForeignDebtCheck.md) | 1,087 | 15 | Borrowing in somebody else's money. | 3 |
 | [ForestryCheck.java](ForestryCheck.md) | 707 | 21 | Forestry, checked (0.7.138, batch I9; docs/studies/spec-materials.md 2.1, 2.3, 2.4, 2.11, 4 and 5's I9 row; the study's - materials-chains-research... | 4 |
 | [FormatsCheck.java](FormatsCheck.md) | 49 | 2 | Proves the shared readable percentage rule (SX1), without the toolkit. | 0 |

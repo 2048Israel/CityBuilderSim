@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**253 harness files, 29,146 labelled assertions.** AllChecks runs 253 of them.
+**253 harness files, 29,147 labelled assertions.** AllChecks runs 253 of them.
 
 ## Which harnesses read which class
 
@@ -12353,7 +12353,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1177 ...the stack's contract value unchanged
   - L1178 ...and the card is open still, at the same extra
 
-## ForeignCrewsCheck.java - 172 labelled assertions
+## ForeignCrewsCheck.java - 173 labelled assertions
 
 > The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange
 > rate the city's money stands at and the city's own inflation; the handover of the queue past it; the supply curve
@@ -12534,23 +12534,24 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L966 fixture: his points drew material, priced into the contracts
   - L967 on, the sites earn his points at his price: what they earned for them, their material apart, is his bill
   - L968 ...so the month's work the builders recognise is at least his bill and his points' material: their value added is his margin, nil,
-  - L970 ...his bill is the twin's: the switch moves what the sites earn, not what he is paid
-  - L971 ...and the twins owe the same points: nor what is built
-  - L972 what the sites earned past the twin's, their contracts hold less: earned sooner out of what the payers paid, never more
-  - L974 ...and out of the plant's, the contract that paid his price: the cheap sites' contracts fell alike in the twins
-- **L980 8. a currency reform: his book's price a point is the city's money, divided with it**
-  - L983 fixture: his book holds points at a price
-  - L986 fixture: the reform is made
-  - L990 the book's price a point is divided by the reform
-  - L991 ...and the offer bills his month at it
-  - L996 fixture: he built in the month after
-  - L997 ...and billed them at the book's price in the new unit, not a thousandfold
-  - L1023 the builders' workers are the same with and without the foreign crews: no city worker is taken
-  - L1024 ...in every sector, not the builders' alone
-  - L1028 ...and the city offers the same posts in every tier: his crews are his own, and open none
-  - L1030 the foreign crews built in a and not in the twin
-  - L1031 a's sites took more points than the twin's
-  - L1032 ...by his month
+  - L975 ...and at most that and the city's own share of the twin's work and the month's escalation: their material counted once
+  - L977 ...his bill is the twin's: the switch moves what the sites earn, not what he is paid
+  - L978 ...and the twins owe the same points: nor what is built
+  - L979 what the sites earned past the twin's, their contracts hold less: earned sooner out of what the payers paid, never more
+  - L981 ...and out of the plant's, the contract that paid his price: the cheap sites' contracts fell alike in the twins
+- **L987 8. a currency reform: his book's price a point is the city's money, divided with it**
+  - L990 fixture: his book holds points at a price
+  - L993 fixture: the reform is made
+  - L997 the book's price a point is divided by the reform
+  - L998 ...and the offer bills his month at it
+  - L1003 fixture: he built in the month after
+  - L1004 ...and billed them at the book's price in the new unit, not a thousandfold
+  - L1030 the builders' workers are the same with and without the foreign crews: no city worker is taken
+  - L1031 ...in every sector, not the builders' alone
+  - L1035 ...and the city offers the same posts in every tier: his crews are his own, and open none
+  - L1037 the foreign crews built in a and not in the twin
+  - L1038 a's sites took more points than the twin's
+  - L1039 ...by his month
 
 ## ForeignDebtCheck.java - 111 labelled assertions
 

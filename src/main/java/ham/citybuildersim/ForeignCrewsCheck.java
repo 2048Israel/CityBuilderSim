@@ -967,6 +967,13 @@ public class ForeignCrewsCheck {
         near("on, the sites earn his points at his price: what they earned for them, their material apart, is his bill", earned, bill, 1e-9 * bill);
         ok("...so the month's work the builders recognise is at least his bill and his points' material: their value added is his margin, nil,"
                 + " not minus their material", work >= bill + material);
+        // REV-R1g3 (P2): ...and at most that, the city's own share of the twin's work and the month's escalation: the material counted once.
+        double share = built / bmOn.getPointsBuilt(), escOn = cOn.getEscalationThisMonth(), escOff = cOff.getEscalationThisMonth();
+        double cityOwn = (1 - share) * (workOff - escOff);
+        out.printf(Locale.ROOT, "  past his bill and material %,.4f; the city's own share (%,.4f of the points) of the twin's work %,.4f, the escalation %,.4f (the twin's %,.4f)%n",
+                work - bill - material, 1 - share, cityOwn, escOn, escOff);
+        ok("...and at most that and the city's own share of the twin's work and the month's escalation: their material counted once",
+                work - bill - material <= cityOwn + escOn + 1e-9 * work);
         exact("...his bill is the twin's: the switch moves what the sites earn, not what he is paid", bill, billOff);
         exact("...and the twins owe the same points: nor what is built", bmOn.getRemainingConstructionPoints(), bmOff.getRemainingConstructionPoints());
         near("what the sites earned past the twin's, their contracts hold less: earned sooner out of what the payers paid, never more",
