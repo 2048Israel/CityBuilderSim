@@ -393,6 +393,36 @@ Run here, one at a time (`./batch-check.sh <name>`), the earth and world data se
   large-rotor wind turbine) on main's queue as R6e-rest-E24, to be resolved against PW3's dispatch after it ships.
 - After REV-PW3g's P1 ((v') and (v''), §2), one at a time: **PowerPlanCheck** green, 113 lines; (v') red under F8
   alone (`target/h/PPC-red-F8.txt`: 1 Coal Power Plant, 1 FAILED), and (v'') green under it.
+- The dry run on 71df3794e (the box, `cbs-gate-PW3-eoBX1SKl`): exit 1, two harnesses newly red, neither red at main's
+  gate before it (R6e-rest's, 0.9.201).
+  - **CopperRefiningCheck** 10 (a): Copper Refining's result D$-152 in 1937. Traced on PW3's classes (a copy of the
+    harness with a trace, `target/h/cr-trace*.txt`): power is served at 1.000 in every year after the founding. The
+    works fall from about 2,200 t of cathode a month to about 744 in mid-1935, and restart at 1,853 and 1,892 t in
+    late 1937. A month's cathode sells at the next month's strike, so the restart's inputs come a month before
+    their sales (inputs 369.5 and 798.3 against sales of 244.8 and 415.2 in the two restart months): the founding
+    year's ramp again. Main's town falls as well (6,972 t in 1937) and does not restart before 1940.
+  - Reality: a works' books count the inputs of what it sold (IAS 2, Inventories, paragraph 34: the cost of what
+    is sold is an expense in the period its revenue is recognised), so the inputs a restart buys ahead of its sales
+    are stock, not a loss. (a) is restated so: the result on what it sold, the revenue less the inputs of the
+    months that made it. Its premise is asserted: from the first full year, every month's cathode sold is the
+    month before's made, to `LAG_SLACK` (469 of 469 months). It fails only in the founding year's first months, m2
+    to m5, while the shed is withheld as the works start.
+  - On PW3's run the least year is D$136, and 1937 is D$337 (D$-152 on the year's own inputs). The founding year,
+    printed and not held, is D$135.
+  - A restart caused by a fixture is not small: the town's workforce is recomputed every month
+    (`restoreWorkforce(200)` held for no month, `target/h/probe`), and a works' rate has no hook. The restated
+    measure needs no restart to be tested, since its premise is read in every month played.
+  - **KeptCheck**, its three fund fixtures at m2181: a bond held that lasts, the fund's lots held still through
+    63's choices, and one piece of every kind of paper sold. They find their condition in main's played city.
+    The harness plays LongPlaytest's probe city for 600 months; on main (R6e-rest's gate) it has 10,894 people at
+    m605, a fund of 189 lots then 87, a bond held running 119 months, and each kind of paper sold.
+  - PW3's power orders move that path: 9,967 people at m605, the fund 17 lots then 15. The bond the fixture buys
+    through the model (B:2526, a tenth of the fund's free cash) leaves none held that lasts (B:2418, 1 month). The
+    bank's rescue book, S:Bank:rescue, is bought during 63's hold, which holds the fund's rule and not the rescue.
+    Only Term 20 callable sells; the other five kinds issue nothing at the default cap.
+  - Causing the three would mean a bank that stays solvent through the hold, a fund rich enough to buy, and bids at
+    the cap, which is not small. They are HT1-H's class and are named under it in the ship file's `## known-reds`
+    (the orchestrator's call, 2026-11-25).
 
 ## 5. What the default run builds, decade by decade (spec §6, "Measure first" 3)
 
