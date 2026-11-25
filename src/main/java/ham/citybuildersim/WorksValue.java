@@ -76,7 +76,7 @@ public final class WorksValue {
         double groundCash = ground.take(g.landNeededFor(t, count));
         Maintenance maintenance = new Maintenance(t, count, usableGround, cashLeft, q.total + groundCash, ground);
         Relief relief = relief(g, m, site, order, lead, maintenance);
-        return new Value(q.total, BuildAdvice.landValue(g, footprint, usableGround), relief.futureCapital(),
+        return new Value(q.total, BuildAdvice.landValue(g, t, footprint, usableGround), relief.futureCapital(),
                 relief.futureUnits(), relief.financing(), relief.running(),
                 relief.avoided(), payroll, returned * factor + returned / count * relief.futureMonths(),
                 jobs, count * BuildAdvice.unfilledPosts(u, fill), lead, relief.used());
@@ -273,7 +273,7 @@ public final class WorksValue {
                         double area = t.getLandSqFt() * (double) extra[0];
                         double landLeft = Math.max(0, maintenance.landLeft() - initialFootprint
                                 - futureUnits * (double) t.getLandSqFt());
-                        double land = BuildAdvice.landValue(g, area, landLeft);
+                        double land = BuildAdvice.landValue(g, t, area, landLeft);
                         double paidAt = Math.max(0, months - futureLead);
                         double discount = Math.pow(1 + rate, -paidAt);
                         futureCapital += (cashCost + land) * discount;
