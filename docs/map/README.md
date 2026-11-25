@@ -4,7 +4,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 643 files, 695,294 lines, 30,393 methods, 6,779 constants. `GameVersion.VERSION` is "0.9.204", `SAVE_FORMAT` 66.
+**The tree:** 643 files, 695,295 lines, 30,393 methods, 6,779 constants. `GameVersion.VERSION` is "0.9.204", `SAVE_FORMAT` 66.
 
 ## model (281 files)
 
@@ -561,7 +561,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [OrderSearchCheck.java](OrderSearchCheck.md) | 947 | 23 | The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1). | 2 |
 | [OutsideCheck.java](OutsideCheck.md) | 783 | 5 | The people outside the families: the out of work, the students, the unhoused and the orphans (2026-09-11). | 0 |
 | [OwnerCheck.java](OwnerCheck.md) | 995 | 28 | The owner families (BO1): one two-adult household per company that has listed and not gone broke, holding the company's founding stake alone. | 1 |
-| [PackagingCheck.java](PackagingCheck.md) | 380 | 9 | The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime files, the libraries' texts and the complete corres... | 0 |
+| [PackagingCheck.java](PackagingCheck.md) | 381 | 9 | The built image carries Temurin's runtime with its notices, Microsoft's terms for the C runtime files, the libraries' texts and the complete corres... | 0 |
 | [PartnerCallsCheck.java](PartnerCallsCheck.md) | 1,322 | 40 | The ships and trains that go to their partners, as a model (batch WN7, 2026-11-01; docs/studies/spec-nations.md 9): PartnerTrade's month tonnes by ... | 0 |
 | [PartnersCheck.java](PartnersCheck.md) | 838 | 18 | The model the Trade screen's Partners board, a nation's page and The reserves read (batch WN6, "Nations: the screens"; docs/studies/spec-nations.md... | 0 |
 | [PassThroughCheck.java](PassThroughCheck.md) | 911 | 23 | Proves the city's goods are struck at a D$ that follows the D$ slowly (AN1, 2026-10-22): each month the goods' D$ closes EconomyManager.PASS_THROUG... | 0 |
