@@ -4533,6 +4533,9 @@ public class LongPlaytest {
      * its debt no more of its output than before.
      */
 
+    /** -Dplaytest.groundFunding=off plays the player as it was until FB11, no ground funded (the run is then the old one to the byte), for a trace to set beside; on when unset. */
+    static final boolean GROUND_FUNDING = !"off".equalsIgnoreCase(System.getProperty("playtest.groundFunding", "on").trim());
+
     /** Whether a sector waits on ground (FB11): last month's plans or landlords' orders refused for want of it, as Game.getLandBlockedSectors() keeps them. */
     static boolean groundDemanded(Game g) {
         return !g.getLandBlockedSectors().isEmpty();
@@ -4546,7 +4549,7 @@ public class LongPlaytest {
      * less than asked or the office then refused the offer - the money raised stays in the treasury, as buyWhole() leaves it.
      */
     static String fundGround(Game g, LandParcel p, double share, String purpose) {
-        if (p == null || !groundDemanded(g) || g.isLandPaidFromVault()) return null;
+        if (!GROUND_FUNDING || p == null || !groundDemanded(g) || g.isLandPaidFromVault()) return null;
         double local = p.localPrice(g.getForeignAccounts().getRate());
         double fromCash = Math.max(0, Math.min(share, g.getCash()));
         double gap = local - fromCash;
@@ -4647,6 +4650,7 @@ public class LongPlaytest {
                 tr.printf("PW5_GROUND_OFFER month=%d id=%s price=%.9f budget=%.9f sizeSqFt=%.9f%n",
                         g.getMonth(), best.getId(), local, budget, (double) best.getSizeSqFt());
             double cashBefore = g.getCash();
+            boolean onBond = false;
             if (local > budget || !g.canAffordParcel(best)) {
                 // ...unless a sector waits on ground: then the land office's funding page lends what the share cannot pay (FB11, ER1-F).
                 String funded = fundGround(g, best, budget, "ground kept ahead");
@@ -4656,12 +4660,14 @@ public class LongPlaytest {
                     groundAheadShort++;
                     break;
                 }
+                onBond = true;
                 groundAheadFunded++;
                 groundAheadBorrowed += g.getCash() - cashBefore + local;
             } else if (!g.buyLandParcel(best.getId())) break;
             if (traceGround) tr.printf("PW5_GROUND_BOUGHT month=%d id=%s price=%.9f fromCash=%.9f%n", g.getMonth(), best.getId(), local,
                     cashBefore - g.getCash());
-            budget -= cashBefore - g.getCash();
+            // ...the share spent by the offer's price as before, or, funded, by the part the cash paid.
+            budget -= onBond ? cashBefore - g.getCash() : local;
             groundAheadBought++;
             groundAheadSqFt += best.getSizeSqFt();
             groundAheadUsd += best.getPriceUsd();
