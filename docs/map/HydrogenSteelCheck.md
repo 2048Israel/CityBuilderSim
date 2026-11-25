@@ -1,6 +1,6 @@
 # HydrogenSteelCheck.java - 510 lines · 22 methods · 5 constants · harnesses
 
-`ham/citybuildersim/HydrogenSteelCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HydrogenSteelCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The Hydrogen Steel Works, checked (R6b, FE4: hydrogen-reduced iron, Boden, Sweden, projected June 2028): the near-future row that makes steel from
 > pellets and the grid's power alone, no coke, no limestone, no scrap, in a city that knows it.

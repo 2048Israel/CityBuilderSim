@@ -1,6 +1,6 @@
 # MoneyDatesCheck.java - 268 lines · 10 methods · 2 constants · harnesses
 
-`ham/citybuildersim/MoneyDatesCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MoneyDatesCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Proves Canada's dated gold in a city founded the 1900 way: both episodes, Money the player's from the first month, and a reserve exhaustion
 > that survives a load.

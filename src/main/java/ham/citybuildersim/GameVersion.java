@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.9.200";
+    public static final String VERSION = "0.9.201";
 
     /**
      * The save shape.
@@ -8380,8 +8380,15 @@ public final class GameVersion {
      * share by points reads the older payers' work there as none. The
      * floor rises with the format; no conversion.
      */
-    // RES3 follows FC2b's shipped format 65. Typed class quotes, leases and
-    // rental flows cannot be recovered from the pooled layout: format/floor 66.
+    /* R6e-rest: THE DESALINATION PLANT BEFORE THE PRESSURE EXCHANGER (format 66).
+     * E22 gives the Desalination Plant a piece, the pressure exchanger, as
+     * every patentable change on a city work is one: a plant that finishes
+     * before June 1997 is saved as lacking it (the stack's unfitted count)
+     * and runs 13,454 kW until the player's Fit. A format-65 save holds no
+     * count for a piece that did not exist, so its plants would load as
+     * fitted and draw today's 10,880 kW from June 1997 with no fitting
+     * built. The floor rises with the format; no conversion.
+     */
     public static final int SAVE_FORMAT = 66;
 
     /**
@@ -8392,8 +8399,9 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 66 since batch RES3: typed class leases and rental flows cannot be
-     * reconstructed from the older pooled housing layout.
+     * 66 since batch R6e-rest (THE DESALINATION PLANT BEFORE THE PRESSURE
+     * EXCHANGER above: an older city's Desalination Plant holds no
+     * unfitted exchanger and loads as fitted, at today's draw).
      * 65 from batch FC2b (A CONTRACT'S POINTS above: an older save's
      * contracts hold no points and a shared site's shares read wrongly).
      * 64 from batch R6f (THE CONTACT CENTRE BEFORE THE AI ASSISTANT above:

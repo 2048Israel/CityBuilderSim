@@ -1,6 +1,6 @@
 # Bank.java - 6,942 lines · 480 methods · 69 constants · model
 
-`ham/citybuildersim/Bank.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Bank.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The city's commercial bank: every loan in it, and every default.
 > 
