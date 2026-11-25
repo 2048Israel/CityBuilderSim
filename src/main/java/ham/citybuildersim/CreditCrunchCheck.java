@@ -323,13 +323,22 @@ public final class CreditCrunchCheck {
     static void cutToTheValve(Game g) {
         BuildingManager bm = g.getBuildingManager();
         // The played catalogue can contain only multi-home forms. Stand a paid single door so this fixture can measure
-        // the room quantum of the one-house bound, rather than assuming that a door means one household slot.
-        BuildingsTemplate single = bm.getTemplateByName("House");
+        // the room quantum of the one-house bound, rather than assuming that a door means one household slot. The
+        // House where the city knows it; R1g's 1900 city does not, so its own single door (a cottage of HOMES_1900).
+        BuildingsTemplate single = null;
+        for (BuildingsTemplate t : bm.getTemplatesBySector(g.getSectors().realEstate().key()))
+            if (t.getDwellings() == 1 && (!g.foundedUnfitted() || t.knownAt(g.getMonth(), g.getResearch()))
+                    && (single == null || "House".equals(t.getName()))) single = t;
+        check("fixture: the city knows a single-door home (" + (single == null ? "none" : single.getName()) + ")", single != null);
+        if (single == null) return;
         g.setCashForTest(Math.max(g.getCash(), g.quoteBuild(single, 1).total));
-        check("fixture: a paid single-door House stands before trimming the capacity buffer",
+        double withoutIt = room(g);
+        check("fixture: a paid single-door home stands before trimming the capacity buffer",
                 g.buildStack(single, 1, true) == Game.BuildResult.SUCCESS);
         roomAtStart = room(g);
-        singleDoorRoom = Double.POSITIVE_INFINITY;
+        // One house's room: what the door just stood added, and what any single door the cut retires takes away; the
+        // cut need not reach a single door to know it (RES3c: tenure left the 1900 city's cut short of one at m150).
+        singleDoorRoom = roomAtStart > withoutIt ? roomAtStart - withoutIt : Double.POSITIVE_INFINITY;
         java.util.List<BuildingsTemplate> homes = new java.util.ArrayList<>(bm.getTemplatesBySector(g.getSectors().realEstate().key()));
         homes.sort(java.util.Comparator.comparingInt(BuildingsTemplate::getDwellings).reversed());
         for (BuildingsTemplate t : homes) {
