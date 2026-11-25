@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**255 harness files, 29,156 labelled assertions.** AllChecks runs 255 of them.
+**256 harness files, 29,189 labelled assertions.** AllChecks runs 256 of them.
 
 ## Which harnesses read which class
 
@@ -15,9 +15,9 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [AgeBand](map/AgeBand.md) | ArrivalMixCheck, CardCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, EducationCheck, EssentialWorksCheck, HealthCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, LabourCheck, LongPlaytest, MedicineCheck, OutsideCheck, OwnerCheck, PopulationCheck, RankingsCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck, WorksFinanceCheck |
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, EquipmentCheck, FieldOperatorsCheck, FittingCheck, FoodIndustryCheck, Forms1900Check, LongPlaytest, ScaleCheck, ZoningCheck |
 | [ArrivalMix](map/ArrivalMix.md) | ArrivalMixCheck, BasketYearCheck, StaffingDrawCheck |
-| [Auction](map/Auction.md) | AuctionCheck, BuybackCheck, CallCheck, CapitalGainsCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, HoldersCheck, KeptCheck, NewGameCheck, SaveFileCheck, StepsCheck, WorksFinanceCheck |
+| [Auction](map/Auction.md) | AskProceedsCheck, AuctionCheck, BuybackCheck, CallCheck, CapitalGainsCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, HoldersCheck, KeptCheck, NewGameCheck, SaveFileCheck, StepsCheck, WorksFinanceCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
-| [AutoBuilder](map/AutoBuilder.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, EssentialWorksCheck, FarmlandReserveCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, PowerPlanCheck, PowerPlantsCheck, PublicLicenceCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, SubstationCheck, WorksFinanceCheck |
+| [AutoBuilder](map/AutoBuilder.md) | AskProceedsCheck, AuctionCheck, AutoBuildCheck, BuildAdviceCheck, EssentialWorksCheck, FarmlandReserveCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, LongPlaytest, PowerPlanCheck, PowerPlantsCheck, PublicLicenceCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, SubstationCheck, WorksFinanceCheck |
 | [Automotive](map/Automotive.md) | BuildingDataCheck, CarCheck |
 | [BalanceSheet](map/BalanceSheet.md) | BooksCheck, CreditCheck, SupplierCreditCheck |
 | [Bank](map/Bank.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildCardCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, CreditCrunchCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FloatLinkCheck, ForestryCheck, FundCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, HouseholdCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MarketCheck, ModernRowsCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, NewUnitCheck, OutsideCheck, PolicyPreviewCheck, QuarryingCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck, YoungBankCheck |
@@ -31,7 +31,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BridgeView](map/BridgeView.md) | BridgeCheck, EarthFoundingCheck, FB13Check, IslandLinkCheck, ReadPathCheck |
 | [BridgeWorks](map/BridgeWorks.md) | BridgeCheck, BuildCardCheck, FB13Check, PriceLevelCheck, SaveSlotCheck |
 | [Bridges](map/Bridges.md) | BridgeCheck, FB13Check, IslandLinkCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
-| [BuildAdvice](map/BuildAdvice.md) | AuctionCheck, AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FB13Check, FarmlandReserveCheck, ForeignChoiceCheck, GroundSkipCheck, HistoricalLicenceCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, KeptTimingCheck, LandCheck, LandmassCheck, LongPlaytest, NewUnitCheck, PowerPlanCheck, PowerPlantsCheck, PowerViewCheck, PublicLicenceCheck, ReadPathCheck, ResearchCheck, RoadCheck, SectorFlowCheck, StepsCheck, SubstationCheck, WaterCheck, WorksFinanceCheck |
+| [BuildAdvice](map/BuildAdvice.md) | AskProceedsCheck, AuctionCheck, AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FB13Check, FarmlandReserveCheck, ForeignChoiceCheck, GroundSkipCheck, HistoricalLicenceCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, KeptTimingCheck, LandCheck, LandmassCheck, LongPlaytest, NewUnitCheck, PowerPlanCheck, PowerPlantsCheck, PowerViewCheck, PublicLicenceCheck, ReadPathCheck, ResearchCheck, RoadCheck, SectorFlowCheck, StepsCheck, SubstationCheck, WaterCheck, WorksFinanceCheck |
 | [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, BuildingStackCheck, ChildcareCheck, ConstructionControlCheck, EssentialWorksCheck, HistoricalRecipeCheck, HousingCheck, HydroCheck, LandmassCheck, LongPlaytest, NewUnitCheck, OilCheck, PortCheck, PowerPlantsCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, StaffingDrawCheck, SubstationCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
 | [BuildScreen](map/BuildScreen.md) | MoneyWordsCheck |
@@ -69,7 +69,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CityLand](map/CityLand.md) | AutoBuildCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, EarthFoundingCheck, EarthTerrainCheck, ForeignCrewsCheck, ForestryCheck, FundCheck, GoldMiningCheck, GridCheck, GroundSkipCheck, HydroCheck, IslandNetCheck, IslandRailCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, PortCheck, PowerPlantsCheck, QuarryingCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SlopeCheck, SulphideLeachCheck, WaterCheck, WorksFinanceCheck, WorldCheck |
 | [CityMap](map/CityMap.md) | BridgeCheck, BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SlopeCheck, TruckRouteCheck |
 | [CityMeasures](map/CityMeasures.md) | RankingsCheck |
-| [CityNeeds](map/CityNeeds.md) | AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, LandCheck, LongPlaytest, NewUnitCheck, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
+| [CityNeeds](map/CityNeeds.md) | AskProceedsCheck, AuctionCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, ChildcareCheck, EssentialWorksCheck, LandCheck, LongPlaytest, NewUnitCheck, PlaytestFixCheck, PolicyPreviewCheck, ReadPathCheck, RoadCheck, WaterCheck, ZoningViewCheck |
 | [CityRuns](map/CityRuns.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, QuayRailCheck, RailDrawCheck, TruckRouteCheck |
 | [CityShore](map/CityShore.md) | IslandRailCheck, LandmassCheck, MapCheck, PortCheck, QuayCraneCheck, QuayRailCheck, RailDrawCheck, TruckRouteCheck |
 | [ClockPace](map/ClockPace.md) | ClockCheck, KeptCheck |
@@ -88,7 +88,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [DataSave](map/DataSave.md) | CurrencyRegimeCheck, EarthTerrainCheck, FittingCheck, GoldMiningCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HousingInventoryCheck, LandmassCheck, LicenceFeesCheck, MapCheck, ModernEngineeringCheck, MoneyDatesCheck, MoneySignCheck, PolicyOpenCheck, PopulationCheck, PostwarRecipeCheck, PublicLicenceCheck, ReplayCheck, SaveFileCheck, SaveSlotCheck |
 | [Debt](map/Debt.md) | AuctionCheck, BankCheck, BuybackCheck, CallCheck, CapitalGainsCheck, CentralBankCheck, ChartCheck, CreditCheck, CurrencyCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, GdpCheck, GovernmentViewCheck, HoldersCheck, KeptCheck, LongPlaytest, NewGameCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, TreasuryCheck, WorksFinanceCheck |
 | [DebtManager](map/DebtManager.md) | AuctionCheck, BankCheck, BondCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CardCheck, CarryTradeCheck, CentralBankCheck, CreditCheck, CreditCrunchCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DebtExchangeCheck, DebtMoneysCheck, DeskCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FB13Check, FloatLinkCheck, ForeignDebtCheck, GoldStandardCheck, GovernmentViewCheck, HoldersCheck, HousingCheck, HousingDoorCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, MonetaryCheck, MoneyDatesCheck, MoneyWordsCheck, MortgageCheck, OrderDoorCheck, OwnerCheck, PartnersCheck, PegAnchorCheck, PolicyOpenCheck, PolicyPreviewCheck, ReadPathCheck, RestructureCheck, SaveFileCheck, TreasuryCheck |
-| [DebtQuote](map/DebtQuote.md) | AuctionCheck, AutoBuildCheck, BuybackCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, PriceLevelCheck, StepsCheck, WorksFinanceCheck |
+| [DebtQuote](map/DebtQuote.md) | AskProceedsCheck, AuctionCheck, AutoBuildCheck, BuybackCheck, CallCheck, CreditCheck, CurveCheck, DebtMoneysCheck, FloatLinkCheck, ForeignDebtCheck, FundCheck, HoldersCheck, KeptCheck, LandCheck, LongPlaytest, MapCheck, NewGameCheck, PriceLevelCheck, StepsCheck, WorksFinanceCheck |
 | [DebtStatistics](map/DebtStatistics.md) | CardCheck, DebtStatisticsCheck, MoneyWordsCheck, ReadPathCheck |
 | [DecisionLog](map/DecisionLog.md) | AutoBuildCheck, BankCheck, CentralBankCheck, ChartCheck, ForeignDebtCheck, FundCheck, GoldStandardCheck, KeptCheck, LabourCheck, LongPlaytest, OilCheck, PegAnchorCheck, PolicyOpenCheck, ReadPathCheck, ResearchViewCheck, SaveFileCheck, YearBookCheck, ZoningViewCheck |
 | [DemolitionLog](map/DemolitionLog.md) | BuildingStackCheck, CalendarCheck, HouseholdCheck, MortgageCheck |
@@ -138,7 +138,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [FundLedger](map/FundLedger.md) | CapitalGainsCheck, FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [FundScreen](map/FundScreen.md) | **none** |
 | [FundView](map/FundView.md) | FundCheck, FundLedgerCheck, KeptCheck, LongPlaytest, PriceLevelCheck, ReadPathCheck, ShortSellingCheck |
-| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FB13Check, FarmlandReserveCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, GroundSkipCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [Game](map/Game.md) | AgricultureCheck, ArrivalMixCheck, AskProceedsCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DeskCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FB13Check, FarmlandReserveCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, GroundSkipCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InterventionCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PegAnchorCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, VaultMoneysCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [GameFiles](map/GameFiles.md) | AgricultureCheck, ArrivalMixCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CentralBankCheck, ChartCheck, ChildcareCheck, ClockCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, DeterminismCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, EducationCheck, EquipmentCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExchangeRateCheck, ExpectationsCheck, FarmlandReserveCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, GroundInputCheck, GroundSkipCheck, HaulageCheck, HealthCheck, HistoryCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, InboxCheck, IndustryViewCheck, InfrastructureCheck, InterestAbroadCheck, InvestCheck, IslandLinkCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandNationsCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MonetaryCheck, MoneyDatesCheck, MoneySignCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, OwnerCheck, PartnersCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PowerPlantsCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ReplayCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, SkipReportCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, StepsCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, WageLadderCheck, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMoneysCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [GameLog](map/GameLog.md) | RobustnessCheck |
 | [GamePrefs](map/GamePrefs.md) | MapCheck, ReplayCheck, TruckRouteCheck |
@@ -233,7 +233,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
 | [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, GroundInputCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LicenceFeesCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PriceLevelCheck, RailDepotCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
 | [Money](map/Money.md) | KeptCheck, LandClassCheck, MoneySignCheck, MoneyWordsCheck, NewUnitCheck, PriceLevelCheck, RankingsCheck, RunWorksCheck, TradeBandCheck, WorldDataCheck |
-| [MoneyAudit](map/MoneyAudit.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FarmlandReserveCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GroceryCheck, HistoricalLicenceCheck, HistoryCheck, HoldersCheck, HouseholdStageCheck, HousingDoorCheck, HydrogenSteelCheck, InterestAbroadCheck, InvestCheck, LandCheck, LicenceFeesCheck, LongPlaytest, MaterialsCheck, MoneyDatesCheck, MortgageCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, PortCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TreasuryCheck, WaterPowerCheck, WoodProductsCheck |
+| [MoneyAudit](map/MoneyAudit.md) | AskProceedsCheck, AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, DiscoveryCheck, EducationCheck, ExchangeCheck, ExchangeRateCheck, FarmlandReserveCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GroceryCheck, HistoricalLicenceCheck, HistoryCheck, HoldersCheck, HouseholdStageCheck, HousingDoorCheck, HydrogenSteelCheck, InterestAbroadCheck, InvestCheck, LandCheck, LicenceFeesCheck, LongPlaytest, MaterialsCheck, MoneyDatesCheck, MortgageCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, PortCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TreasuryCheck, WaterPowerCheck, WoodProductsCheck |
 | [MonthOrder](map/MonthOrder.md) | **none** |
 | [Mortgage](map/Mortgage.md) | BankFailureCheck, BooksCheck, BuildCardCheck, CreditCheck, CreditCrunchCheck, HousingDoorCheck, InvestCheck, LongPlaytest, MortgageCheck, OrderDoorCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
 | [Motoring](map/Motoring.md) | CarCheck, InfrastructureCheck, OilCheck, ReadPathCheck, TradeCostCheck |
@@ -351,11 +351,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SummaryScreen](map/SummaryScreen.md) | **none** |
 | [SupplierCredit](map/SupplierCredit.md) | BondCheck, SupplierCreditCheck |
 | [TaxPolicy](map/TaxPolicy.md) | AgricultureCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, CapitalGainsCheck, CarCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DebtExchangeCheck, DenominationCheck, EducationCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForeignChoiceCheck, Forms1900Check, GovernmentPlayerCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HomeRailCheck, HouseholdCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandlordPortCheck, LongPlaytest, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OutsideCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PortCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, SaveFileCheck, SchoolingLadderCheck, SchoolingPageCheck, TradeCostCheck, TreasuryCheck, WageLadderCheck, ZoningCheck, ZoningViewCheck |
-| [TempDirs](map/TempDirs.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CapitalGainsCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperRefiningCheck, CreditCheck, CreditsCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeterminismCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExpectationsCheck, FarmlandReserveCheck, FoodProcessingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, FoundingYardCheck, GapOrderCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, KnownRedsCheck, LabourCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, ObservationCheck, OrderSearchCheck, OutsideCheck, PackagingCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PowerPlanCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaffingDrawCheck, StaffingTieCheck, StaleCheck, SupplierCreditCheck, TimingCheck, WantedPostsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
+| [TempDirs](map/TempDirs.md) | AgricultureCheck, AskProceedsCheck, AuctionCheck, AutoBuildCheck, BankCheck, BondCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CapitalFlowCheck, CapitalGainsCheck, CarryTradeCheck, ChartCheck, ChildcareCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperRefiningCheck, CreditCheck, CreditsCheck, CrimeCheck, CurrencyCheck, CurveCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DeterminismCheck, EarthFoundingCheck, EducationCheck, EnsembleCheck, EquityCheck, EssentialWorksCheck, ExchangeCheck, ExpectationsCheck, FarmlandReserveCheck, FoodProcessingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, FoundingYardCheck, GapOrderCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HistoryCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HydroCheck, InboxCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, KnownRedsCheck, LabourCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MiningCheck, MonetaryCheck, MortgageCheck, NewGameCheck, ObservationCheck, OrderSearchCheck, OutsideCheck, PackagingCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PowerPlanCheck, PriceLevelCheck, ReadPathCheck, ReplayCheck, RestaurantsCheck, RestructureCheck, RoadCheck, RobustnessCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SicknessCheck, StaffingDrawCheck, StaffingTieCheck, StaleCheck, SupplierCreditCheck, TimingCheck, WantedPostsCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [TilePainter](map/TilePainter.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, JunctionCheck, LandmassCheck, MainLineCheck, MapCheck, PlanCheck, QuayRailCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, TruckRouteCheck |
 | [TileRaster](map/TileRaster.md) | BridgeMapCheck, CrossingCheck, EarthTerrainCheck, GlobeCheck, JunctionCheck, MainLineCheck, MapCheck, PortCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck |
 | [TimeChart](map/TimeChart.md) | **none** |
-| [TimeSkipReport](map/TimeSkipReport.md) | AuctionCheck, HealthCheck, ReloadCheck, SkipReportCheck |
+| [TimeSkipReport](map/TimeSkipReport.md) | AskProceedsCheck, AuctionCheck, HealthCheck, ReloadCheck, SkipReportCheck |
 | [Timing](map/Timing.md) | BridgeCheck, BridgeMapCheck, EarthCheck, EarthTerrainCheck, GlobeCheck, GridCheck, IslandLinkCheck, IslandNetCheck, KeptTimingCheck, LandNationsCheck, MapCheck, PartnerCallsCheck, PlanCheck, PortCheck, QuayCraneCheck, ReplayCheck, SaveSlotCheck, ScaleCheck, TimingCheck, WorldCheck, WorldMarketCheck |
 | [ToastRoom](map/ToastRoom.md) | ToastCheck |
 | [TrackCurves](map/TrackCurves.md) | GatewayCheck, JunctionCheck, MapCheck, PlanCheck, RailDrawCheck |
@@ -375,7 +375,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [UnemployedHousehold](map/UnemployedHousehold.md) | HouseholdCheck, HouseholdFlowCheck, LongPlaytest, OutsideCheck |
 | [Unemployment](map/Unemployment.md) | DeathRecordCheck, GovernmentViewCheck, LongPlaytest, OutsideCheck, PolicyPreviewCheck, ScaleCheck |
 | [UserInterface](map/UserInterface.md) | BuildMenuCheck, ClockCheck, LandCheck, MapCheck, ZoningViewCheck |
-| [UtilitiesHandler](map/UtilitiesHandler.md) | AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, ElectrolyserCheck, EssentialWorksCheck, ForestryCheck, Forms1900Check, HistoricalLicenceCheck, HydroCheck, HydrogenSteelCheck, LongPlaytest, MaterialsCheck, ModernRowsCheck, NewUnitCheck, OrderDoorCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PublicLicenceCheck, QuarryingCheck, ReadPathCheck, ResearchCheck, SubstationCheck, WaterCheck, WaterPowerCheck, WoodProductsCheck, WorksFinanceCheck |
+| [UtilitiesHandler](map/UtilitiesHandler.md) | AskProceedsCheck, AutoBuildCheck, BuildAdviceCheck, BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, ElectrolyserCheck, EssentialWorksCheck, ForestryCheck, Forms1900Check, HistoricalLicenceCheck, HydroCheck, HydrogenSteelCheck, LongPlaytest, MaterialsCheck, ModernRowsCheck, NewUnitCheck, OrderDoorCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PublicLicenceCheck, QuarryingCheck, ReadPathCheck, ResearchCheck, SubstationCheck, WaterCheck, WaterPowerCheck, WoodProductsCheck, WorksFinanceCheck |
 | [VaultTable](map/VaultTable.md) | **none** |
 | [VaultView](map/VaultView.md) | PartnersCheck |
 | [WageBand](map/WageBand.md) | ArrivalMixCheck, BankCheck, BuildAdviceCheck, BuildCardCheck, CapitalGainsCheck, EducationCheck, EssentialWorksCheck, HouseholdCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, NewUnitCheck, OutsideCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, SchoolingLadderCheck, SchoolingPageCheck, StaffingDrawCheck, StaffingTieCheck, WageLadderCheck, WantedPostsCheck, ZoningCheck |
@@ -538,7 +538,65 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L393 a city founded the default way holds no mix in any of its 24 months
   - L394 ...and the same village founded the default way draws a smaller share of its arrivals without a diploma
 
-## AuctionCheck.java - 309 labelled assertions
+## AskProceedsCheck.java - 35 labelled assertions
+
+> The bond proceeds an open ask has raised pay its works: the treasury holds them outside the operating reserve, the order is
+> placed on them, and what the month's bills drew is offered again under the debt limit (AutoBuilder.spendableFor(), held(),
+> stillToRaise()).
+> WHY (OA1, 2026-11-25). An open ask held an essential works for years: PW3's ensemble had a Water Treatment Plant's ask raise its
+> whole cost, the cash 53.4M against the order's 49.8M and the reserve 6.9M, and the old rule took the reserve out of the proceeds
+> first, so the order waited 133 months with water served at 26% - and, its sales past its cost, nothing was offered again, so
+> neither the order, a sale nor the debt limit's test ever ran. The real law: bond proceeds are restricted to the works they were
+> raised for, outside the operating reserve (GASB Statement 54; GFOA's fund-balance practice), and spent on it within months
+> (26 CFR 1.148-2(e)(2): 5% bound within six months, 85% spent within three years).
+> What this has to prove:
+> 1. The finding, caused: a town short of water, an ask whose sales raised the order's whole cost, the cash its proceeds and half
+>    the reserve; one pass orders the works from them, closes the ask, sells no bond.
+> ...
+
+  - L177 fixture: the town is short of water (supply
+  - L181 fixture: the streets are ahead of their load, so the builder has no street order to place before the water works
+  - L187 fixture: the debt limit is open - the town's debt is within it, with room (limit
+- **L193 1. the finding, caused: the proceeds the treasury holds pay the works, the reserve beside them short**
+  - L203 fixture: the ask has raised the order's whole cost, the treasury holds it - and the reserve is not beside it: the cash
+  - L207 fixture: the card the advice gives now is still the ask's building, and the treasury holds what covers it (held at least the cost)
+  - L215 the water works is ordered on the proceeds
+  - L216 ...and its ask is closed
+  - L217 ...no bond was sold: the builder's bonds, its borrowing and the city's principal stand as they were
+  - L220 ...and the cash fell by exactly what the order cost, ground with it: the proceeds paid the works
+- **L234 2. the bills drew the proceeds: the ask is offered again for what they drew, and the order is placed**
+  - L244 fixture: the ask raised the whole cost but the bills left half of it (cash under the cost), the cap is Fill with room,
+  - L258 the ask was offered again: a sale by automatic building, one more bond
+  - L259 ...for the order's gap, sold in full and no more: it raised the gap, and at most one funding lot beyond
+  - L261 ...the principal rose only by the new sale's face
+  - L262 the order was placed that pass, and the ask is closed
+  - L264 conservation: the cash after is the cash before, what the sale raised, less what the order cost
+- **L269 2b. drawn, and the market short: the bond is offered again, sells short, and the order waits for the money**
+  - L282 fixture: the bills drew half the proceeds, the bank's room is used up (deposit rate
+  - L294 the bond was offered again, by automatic building, and came up short
+  - L297 the order is not placed - no money that is not there: no order in the log, the cash only rose by what sold
+  - L299 the ask stays open, its to-raise the cost less what the treasury holds for it, and over nothing
+  - L301 the builder says the month's bills have drawn the rest and that it is offered again
+- **L312 3. the debt limit releases it: the sale of the gap would cross the limit, so the ask is withdrawn, not held**
+  - L325 fixture: the town is within its limit, and a sale of the gap would take the debt past it (ratio
+  - L333 the ask is withdrawn, and the inbox's line says the debt limit closed on it
+  - L335 ...nothing was sold: the builder's bonds and the city's principal stand, and no sale is in the month's report
+  - L337 ...no order was placed, the cash is as it was, and what the ask raised (
+- **L344 4. within months, in the played month: case 1's city, played, has the works on order and every month's money audit closes**
+  - L369 fixture: the treasury as the first pass found it is case 1's - the cash set before the month, the proceeds whole and the
+  - L372 the water works is on order by the end of the first month
+  - L373 ...and at the latest within
+  - L375 ...and every played month's money audit closed within its tolerance
+- **L379 5. without the lack, nothing changes**
+  - L388 (a) with no ask open, spendable() is the cash over the reserve, nothing under it, and an overdraft in full
+  - L397 fixture: the advice gives a water card and a power card for two asks
+  - L410 fixture: two asks open, each short of its cost, the cash whole over both and the reserve
+  - L412 (b) each ask holds the cash over the reserve less the other's raised money, as before
+  - L414 ...and the builder's own orders have the cash over the reserve less both asks' raised money
+  - L429 (c) water served in full (supply
+  - L434 ...and no ask is open or raised anything: the paper sold (
+
+## AuctionCheck.java - 308 labelled assertions
 
 > The city's paper sold at auction: one clearing yield, and what it costs.
 > 
@@ -859,22 +917,21 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1656 ...and says it waited, and the inbox says the order was placed
   - L1676 the treasury can pay for what is left of the orders: they are placed with no sale at all - no bond, no new paper,
   - L1680 ...the streets' log entry shows the bond money its ask had raised, borrowed on an earlier month, and no more
-  - L1697 treasury at the reserve, the room back: each ask is offered what it still has to raise and sells it in full (the
-  - L1701 ...but the money it raised before was drawn by the month's bills, so the treasury does not hold the cost for any: no
-  - L1714 next month, drawn again, the paper already raised is not sold twice: new sales cover only the repriced cost
-  - L1720 ...and the inbox says the month's bills drew the money and that nothing more is borrowed for it
-  - L1727 the cash back in the treasury, the orders are placed, and nothing more is borrowed: no sale, no new bond, no new debt
-  - L1763 fixture: the saved street and care reservations share actual sold proceeds without changing cash or debt
-  - L1779 fixture: the town had a funded ask open for its general care, and then twenty Health Centres stand:
-  - L1786 an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the
-  - L1794 ...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed
-  - L1802 funded withdrawal retains every dollar: cash changes only by new sales less placed orders
-  - L1804 funded withdrawal retains every bond: principal changes only by newly sold face
-  - L1816 fixture: the debt limit is under what the city owes
-  - L1817 an ask whose next sale would cross the debt limit is withdrawn, and the log says the limit closed on it: none is left
-  - L1830 the panel's withdraw(index) takes one ask off, leaves the others, leaves the cash alone, and is a decision
-  - L1841 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
-  - L1846 ...and its headlines say automatic building came up short at its cap, and how many times it sold
+  - L1721 treasury at the reserve, the money the asks raised before drawn by the month's bills, the room back: each ask is
+  - L1726 ...and the new paper is that gap and no more: what the asks' sales raised this month is at most their orders' cost
+  - L1731 ...the inbox says each order was placed on what its ask raised and the cash beside it
+  - L1735 ...and no dollar was made or lost: the month's money audit closed
+  - L1770 fixture: the saved street and care reservations share actual sold proceeds without changing cash or debt
+  - L1786 fixture: the town had a funded ask open for its general care, and then twenty Health Centres stand:
+  - L1793 an ask whose measure is no longer short is withdrawn: the log and the inbox say so, and that what it raised stays in the
+  - L1801 ...the others stay open, and nothing was given back: the cash fell in the pass by no more than the orders it placed
+  - L1809 funded withdrawal retains every dollar: cash changes only by new sales less placed orders
+  - L1811 funded withdrawal retains every bond: principal changes only by newly sold face
+  - L1823 fixture: the debt limit is under what the city owes
+  - L1824 an ask whose next sale would cross the debt limit is withdrawn, and the log says the limit closed on it: none is left
+  - L1837 the panel's withdraw(index) takes one ask off, leaves the others, leaves the cash alone, and is a decision
+  - L1848 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
+  - L1853 ...and its headlines say automatic building came up short at its cap, and how many times it sold
 
 ## AutoBuildCheck.java - 71 labelled assertions
 
@@ -35710,7 +35767,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L626 saved and reloaded: the sector's cash and its five yards the same, and the accounts' held units
   - L634 ...a month on, the two the same month to the reload's known residual: Wood Products' cash and yards, the city's cash
 
-## WorksFinanceCheck.java - 62 labelled assertions
+## WorksFinanceCheck.java - 61 labelled assertions
 
 > Essential funding reservations, actual parcel cash and quoted bond terms (HW1).
 > WHY. A plan could count available cash twice, finance fractional parcels,
@@ -35745,54 +35802,53 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L389 projected financing retains the initial and later quoted proceeds above their gaps
   - L393 the independent advice oracle retains the same hard-ledger cash
   - L430 fixture: streets have the higher current monetary loss and both works are proposed
-  - L458 fixture: the higher ask has raised its full cost, cash held is short, and a new gap loan would be available
-  - L463 fixture: 100 above reserve, 40 lower-reserved, 90 higher-cost, and the gap's capped auction sells nothing
-  - L471 the higher-loss service is actually ordered using the released cash
-  - L473 the lower funded reservation is released
-  - L475 the already funded higher-loss order sells no additional paper
-  - L477 releasing the reservation leaves outstanding debt intact
-  - L495 fixture: building-only room is short, while the order's actual use has enough owned ground
-  - L508 fixture: the flat-demand comparison borrows its build price and needs no later unit
-  - L510 owned run or works ground adds no parcel borrowing
-- **L515 the independent oracle sizes its own pending electrical load**
-  - L534 fixture: an operating power shortage has a wind proposal and a paid industrial load opens shortly (
-  - L542 the independent pending-load schedule and sizing reproduce the complete power plan
-- **L552 prospective unit completion matches the actually changed queue**
-  - L574 prospective quote places no order or cash flow, mode
-  - L579 the quoted first unit matches the actual queue after placement, mode
-  - L630 fixture: one fully covered pending care plan, unserved now, and a multiple-road reserve proposal
-  - L653 fixture: the full reserve plan would miss the saved completion, with the intended one-unit headroom
-  - L660 the reserve order respects the saved essential completion
-  - L665 the actual card explains the construction-capacity limit
-  - L670 a real reload keeps the construction-capacity reason
-  - L674 switching off clears both construction-capacity reasons
-- **L698 the hard construction-hold reader resolves the actual paving template**
-  - L708 fixture: unrelated essential services already have their operating capacity
-  - L729 fixture: physically served streets have a real paving reserve proposal with positive site output
-  - L741 fixture: even one paving would move unserved care past its one-month saved promise
-  - L755 the real automatic ask path records a paving construction hold
-  - L758 the hard hold-reason reader accepts the actual paving construction hold
-- **L763 an early street cannot cover a later highway's saved promise**
-  - L771 fixture: unrelated essential services already have their operating capacity
-  - L797 fixture: power is physically served with a wind reserve proposal, and the pending highway covers its unserved traffic (served now
-  - L820 fixture: the shared road-site map includes an early street, but even one reserve wind would postpone the highway beyond its own due
-  - L827 the actual reserve order preserves the highway-only completion promise (
-- **L838 a reserve order can promote a previously unstarved depot**
-  - L852 fixture: the town keeps one standing depot
-  - L875 fixture: physically served streets have a multi-road reserve plan while pending care covers its operating shortage
-  - L910 fixture: the reserve promotes a staffable depot past the model's builders-first threshold even though ordinary crew sharing would keep care inside its due
-  - L915 the actual reserve pass trims the promoted-depot delay and preserves care's completion
-  - L924 the full reserve actually promotes the depot and its prospective quote matches the changed queue
-- **L933 a work opening after the common comparison end earns no operating credit**
-  - L951 fixture: funded priority work delays a staffable plant beyond twenty years while operating power is physically short
-  - L958 a post-horizon opening keeps its capital and posts but claims no operating loss relief, running, tax return or later works
-- **L965 growing works share a calendar end before their actual funded choice**
-  - L968 fixture: unrelated essential services already have their operating capacity
-  - L1015 fixture: currently served streets have two growing plans, with slower dearer rail, both needing credit inside the player's limit
-  - L1029 the independent common-calendar values favour the timely road and match both complete plan sums
-  - L1036 the real automatic order takes the timely road with less new borrowing than rail requires
-  - L1065 Elevated Highway
-  - L1066 Hydro Station
+  - L465 fixture: the higher ask has raised its full cost and the treasury holds it, though the cash over the reserve
+  - L471 fixture: 100 above reserve, 40 lower-reserved, 90 higher-cost, and the gap's capped auction sells nothing
+  - L482 the lower funded reservation is released
+  - L484 the already funded higher-loss order sells no additional paper
+  - L486 releasing the reservation leaves outstanding debt intact
+  - L504 fixture: building-only room is short, while the order's actual use has enough owned ground
+  - L517 fixture: the flat-demand comparison borrows its build price and needs no later unit
+  - L519 owned run or works ground adds no parcel borrowing
+- **L524 the independent oracle sizes its own pending electrical load**
+  - L543 fixture: an operating power shortage has a wind proposal and a paid industrial load opens shortly (
+  - L551 the independent pending-load schedule and sizing reproduce the complete power plan
+- **L561 prospective unit completion matches the actually changed queue**
+  - L583 prospective quote places no order or cash flow, mode
+  - L588 the quoted first unit matches the actual queue after placement, mode
+  - L639 fixture: one fully covered pending care plan, unserved now, and a multiple-road reserve proposal
+  - L662 fixture: the full reserve plan would miss the saved completion, with the intended one-unit headroom
+  - L669 the reserve order respects the saved essential completion
+  - L674 the actual card explains the construction-capacity limit
+  - L679 a real reload keeps the construction-capacity reason
+  - L683 switching off clears both construction-capacity reasons
+- **L707 the hard construction-hold reader resolves the actual paving template**
+  - L717 fixture: unrelated essential services already have their operating capacity
+  - L738 fixture: physically served streets have a real paving reserve proposal with positive site output
+  - L750 fixture: even one paving would move unserved care past its one-month saved promise
+  - L764 the real automatic ask path records a paving construction hold
+  - L767 the hard hold-reason reader accepts the actual paving construction hold
+- **L772 an early street cannot cover a later highway's saved promise**
+  - L780 fixture: unrelated essential services already have their operating capacity
+  - L806 fixture: power is physically served with a wind reserve proposal, and the pending highway covers its unserved traffic (served now
+  - L829 fixture: the shared road-site map includes an early street, but even one reserve wind would postpone the highway beyond its own due
+  - L836 the actual reserve order preserves the highway-only completion promise (
+- **L847 a reserve order can promote a previously unstarved depot**
+  - L861 fixture: the town keeps one standing depot
+  - L884 fixture: physically served streets have a multi-road reserve plan while pending care covers its operating shortage
+  - L919 fixture: the reserve promotes a staffable depot past the model's builders-first threshold even though ordinary crew sharing would keep care inside its due
+  - L924 the actual reserve pass trims the promoted-depot delay and preserves care's completion
+  - L933 the full reserve actually promotes the depot and its prospective quote matches the changed queue
+- **L942 a work opening after the common comparison end earns no operating credit**
+  - L960 fixture: funded priority work delays a staffable plant beyond twenty years while operating power is physically short
+  - L967 a post-horizon opening keeps its capital and posts but claims no operating loss relief, running, tax return or later works
+- **L974 growing works share a calendar end before their actual funded choice**
+  - L977 fixture: unrelated essential services already have their operating capacity
+  - L1024 fixture: currently served streets have two growing plans, with slower dearer rail, both needing credit inside the player's limit
+  - L1038 the independent common-calendar values favour the timely road and match both complete plan sums
+  - L1045 the real automatic order takes the timely road with less new borrowing than rail requires
+  - L1074 Elevated Highway
+  - L1075 Hydro Station
 
 ## WorldCheck.java - 61 labelled assertions
 

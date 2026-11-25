@@ -16,7 +16,7 @@
 
 **Uses:** [BuildAdvice](BuildAdvice.md) (260), [AutoBuilder](AutoBuilder.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (48), [Game](Game.md) (41), [WorksValue](WorksValue.md) (24), [LandManager](LandManager.md) (16), [CityNeeds](CityNeeds.md) (15), [UtilitiesHandler](UtilitiesHandler.md) (13), [BuildingManager](BuildingManager.md) (12), [Traffic](Traffic.md) (11), [CareType](CareType.md) (8), [Health](Health.md) (8), [InfrastructureManager](InfrastructureManager.md) (7), [ConstructionControl](ConstructionControl.md) (6), [Sector](Sector.md) (5), [EducationType](EducationType.md) (4), [BuildingsStacks](BuildingsStacks.md) (4), [ChildcareCheck](ChildcareCheck.md) (3), [PopulationManager](PopulationManager.md) (3), [JobType](JobType.md) (3), [BuildCard](BuildCard.md) (2), [WageBand](WageBand.md) (2), [PowerDispatch](PowerDispatch.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [GameFiles](GameFiles.md) (2), [SubstationCheck](SubstationCheck.md) (1), [SafetyType](SafetyType.md) (1), [Crime](Crime.md) (1), [Education](Education.md) (1), [AgeBand](AgeBand.md) (1)... and 5 more
 
-**Used by (6):** [DeathCareFirstCheck](DeathCareFirstCheck.md), [FarmlandReserveCheck](FarmlandReserveCheck.md), [GapOrderCheck](GapOrderCheck.md), [PowerPlanCheck](PowerPlanCheck.md), [ScaleCheck](ScaleCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
+**Used by (7):** [AskProceedsCheck](AskProceedsCheck.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [FarmlandReserveCheck](FarmlandReserveCheck.md), [GapOrderCheck](GapOrderCheck.md), [PowerPlanCheck](PowerPlanCheck.md), [ScaleCheck](ScaleCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
 ## Constants
 

@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,779 constants in 643 files.**
+**6,792 constants in 644 files.**
 
 ## model (3069 constants)
 
@@ -55,9 +55,9 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 217 | `AutoBuilder.ORDER_MONTHS` | `12` | No more than opens inside this many months: the businesses' own rule for an order until BA1 (BusinessInvestment.MAX_ORDER_MONTHS, which went with the cap on orders), kept for the city's automatic o... |
 | 422 | `AutoBuilder.HELD_BACK` | `"Automatic building holds it back; "` | What the advice card's line opens with (PT1-M3); the inbox's words for the payback follow. |
 | 708 | `AutoBuilder.PAID_MONTHS` | `12` | Months of monthPaid() the payback's figure averages: a year, as a lender reads a city's accounts - a year of its own recurring revenue, the sale of its property left out, as a city's debt limit is ... |
-| 1901 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
-| 2004 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
-| 2029 | `AutoBuilder.ASSEMBLE_MOST` | `4 * LandMarket.OFFERS` | The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on ... |
+| 1923 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
+| 2026 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
+| 2051 | `AutoBuilder.ASSEMBLE_MOST` | `4 * LandMarket.OFFERS` | The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on ... |
 
 ### Bank.java ([map](map/Bank.md))
 
@@ -6022,7 +6022,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2206 constants)
+## harnesses (2219 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6073,6 +6073,24 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 81 | `ArrivalMixCheck.COLLEGE` | `WageBand.COLLEGE.ordinal()` |  |
 | 82 | `ArrivalMixCheck.UNIVERSITY` | `WageBand.UNIVERSITY.ordinal()` |  |
 | 218 | `ArrivalMixCheck.ADULT_SHARE` | `PopulationCohorts.equilibriumShare(AgeBand.ADULT)` | The adult share the fixtures run at (PopulationCheck's). |
+
+### AskProceedsCheck.java ([map](map/AskProceedsCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 32 | `AskProceedsCheck.out` | `System.out` |  |
+| 44 | `AskProceedsCheck.WATER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.WATER)` |  |
+| 45 | `AskProceedsCheck.POWER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)` |  |
+| 46 | `AskProceedsCheck.ROADS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS)` |  |
+| 49 | `AskProceedsCheck.BINDING_COMMITMENT_MONTHS` | `6` | The months the works may take to be ordered at the latest: the six-month binding-commitment test for bond proceeds (26 CFR 1.148-2(e)(2)). |
+| 52 | `AskProceedsCheck.WATER_DRAW_OVER_SUPPLY` | `3` | How many times what the plants supply the buildings are made to draw, so the town is short of water. |
+| 55 | `AskProceedsCheck.LIMIT_ROOM` | `1` | The room the debt limit is given over the town's ratio, in years of GDP: a sale of an order's gap fits within it, a second plant's whole bond does not. |
+| 58 | `AskProceedsCheck.PAVED_ROADS` | `24` | How many Paved Roads the town stands, so its streets are ahead of their load and the only works the builder wants first is water. |
+| 61 | `AskProceedsCheck.AMPLE_ROOM` | `1e9, SHORT_ROOM = 100` | The face of paper the bank has room for where the market is made ample, and where it is made short. |
+| 63 | `AskProceedsCheck.BY` | `"Automatic building"` |  |
+| 66 | `AskProceedsCheck.RESERVE_BESIDE` | `.5` | The share of the reserve the cash holds beside the proceeds in the finding: the proceeds whole, the reserve half there, so the cash is over the cost and the cash over the reserve is under it. |
+| 69 | `AskProceedsCheck.PROCEEDS_LEFT` | `.5` | The share of the proceeds the treasury still holds after the month's bills drew the rest, where the bills have drawn them. |
+| 72 | `AskProceedsCheck.WATER_RAISED` | `.6, POWER_RAISED =.3, FREE_RESERVES = 1` | The shares of their costs that section 5's two asks have raised, each short of its cost; and how many reserves of cash stand free over the reserve and the money the asks hold. |
 
 ### AuctionCheck.java ([map](map/AuctionCheck.md))
 

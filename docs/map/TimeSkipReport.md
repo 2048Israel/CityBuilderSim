@@ -44,7 +44,7 @@
 
 **Uses:** [DecisionLog](DecisionLog.md) (11), [CityCalendar](CityCalendar.md) (1), [Bank](Bank.md) (1)
 
-**Used by (7):** [AuctionCheck](AuctionCheck.md), [AutoBuilder](AutoBuilder.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [ReloadCheck](ReloadCheck.md), [SkipReportCheck](SkipReportCheck.md), [UserInterface](UserInterface.md)
+**Used by (8):** [AskProceedsCheck](AskProceedsCheck.md), [AuctionCheck](AuctionCheck.md), [AutoBuilder](AutoBuilder.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [ReloadCheck](ReloadCheck.md), [SkipReportCheck](SkipReportCheck.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
