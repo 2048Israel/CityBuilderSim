@@ -277,3 +277,23 @@ GM crop proxy (R6e)
            https://www.ers.usda.gov/data-products/adoption-of-genetically-engineered-crops-in-the-united-states/recent-trends-in-ge-adoption
            June is a model placeholder, monthKnown=false. Patentability is the native catalogue estimate,
            not a measured seed royalty; no extra seed invoice is inferred.
+
+Wind, solar and hydro by month and place (the game's code: PowerDispatch; PW3, 2026-11-23)
+
+Not part of world-1.bin: the figures are in the game's code. Each month's index is the US fleet's capacity factor
+that month over the mean of the twelve; a solar farm's yield by latitude is PVGIS's in the city's 10-degree band over
+PVGIS's at the US fleet's places, the band's months as its shape, the south's turned six months.
+
+Electric Power Monthly, table 6.07.B (US Energy Information Administration), 2025
+  Credit:  Source: U.S. Energy Information Administration, Electric Power Monthly (read 2026-11-23)
+  Licence: Public domain (https://www.eia.gov/about/copyrights_reuse.php)
+  Used for: the wind, solar and hydro fleets' capacity factor each month, and the solar fleet's 24.0% a year
+  Source:  https://www.eia.gov/electricity/monthly/epm_table_grapher.php?t=epmt_6_07_b
+
+PVGIS 5.3 (European Commission, Joint Research Centre), PVcalc, ERA5
+  Credit:  PVGIS (c) European Communities, 2001-2025
+  Licence: CC BY 4.0 (the Commission's legal notice, https://commission.europa.eu/legal-notice_en)
+  Changed: a 1 kWp system's yield a month on a fixed rack and on a single-axis tracker, at places averaged into
+           10-degree latitude bands and normalised by the game; no map, table or image is copied
+  Used for: a solar farm's yield by latitude and month, fixed before the single-axis tracker (E25) and tracked after
+  Source:  https://re.jrc.ec.europa.eu/pvg_tools/

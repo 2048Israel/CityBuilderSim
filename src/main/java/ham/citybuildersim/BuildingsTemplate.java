@@ -1368,12 +1368,12 @@ public class BuildingsTemplate {
     public boolean isSolar() { return "solar".equals(variable); }
 
     /**
-     * The share of its average a station counts as firm, what the build advice plans power by (PW1's calm peak; PW2): a wind farm's
-     * PowerDispatch.WIND_FIRM, a solar farm's SOLAR_FIRM (its darkest half-block, 0, until PW3 credits it by the peak hours), every
-     * other row all of it.
+     * The share of its average a station counts as firm alone (PW3): a wind farm's and a solar farm's output in the year's peak hours
+     * over its average with no other variable row standing, at the US fleet's place on a tracker (PowerDispatch.windCredit(0),
+     * solarCredit(NaN, true, 0)); every other row all of it. A city's own reads its place and share (BuildAdvice.credit()).
      */
     public double credit() {
-        return isWind() ? PowerDispatch.WIND_FIRM : isSolar() ? PowerDispatch.SOLAR_FIRM : 1;
+        return isWind() ? PowerDispatch.windCredit(0) : isSolar() ? PowerDispatch.solarCredit(Double.NaN, true, 0) : 1;
     }
 
     /* ----- THE COOLING WATER AND THE BUILD-TIME FLOOR (PW2, 2026-11-23; spec-electricity 2.3) -----

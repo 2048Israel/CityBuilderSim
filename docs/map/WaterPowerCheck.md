@@ -1,4 +1,4 @@
-# WaterPowerCheck.java - 385 lines · 18 methods · 2 constants · harnesses
+# WaterPowerCheck.java - 386 lines · 18 methods · 2 constants · harnesses
 
 `ham/citybuildersim/WaterPowerCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -54,9 +54,9 @@
 | 212 | · 7 |
 | 246 | · 8 |
 | 266 | · 5 |
-| 297 | · 6 |
-| 326 | · 3 |
-| 350 | · 4 |
+| 298 | · 6 |
+| 327 | · 3 |
+| 351 | · 4 |
 
 ## Constants
 
@@ -75,7 +75,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 339 | **type** `public class WaterPowerCheck` | The water priced from its cost, as PW1 prices power (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price"), with the licence's power read from the dispatch (PW1-L) and a recipe's own power weighed at the prices the... |
+| 47 | 340 | **type** `public class WaterPowerCheck` | The water priced from its cost, as PW1 prices power (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price"), with the licence's power read from the dispatch (PW1-L) and a recipe's own power weighed at the prices the... |
 | 57 | 5 | `static void check(String label, boolean ok, String detail)` |  |
 | 63 | 3 | `static boolean near(double a, double b, double rel)` |  |
 | 67 | 1 | `static String f(double v)` |  |
@@ -112,27 +112,27 @@
 |---:|---:|---|---|
 | 248 | 17 | `static void wideSliver(Game g, int n)` |  |
 
-### 5 (lines 266-296)
+### 5 (lines 266-297)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 268 | 28 | `static void licence(Game lo, Game hi)` |  |
+| 268 | 29 | `static void licence(Game lo, Game hi)` |  |
 
-### 6 (lines 297-325)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 299 | 26 | `static void recipes(Game d, int n)` |  |
-
-### 3 (lines 326-349)
+### 6 (lines 298-326)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 328 | 21 | `static void money(Game d)` |  |
+| 300 | 26 | `static void recipes(Game d, int n)` |  |
 
-### 4 (lines 350-385)
+### 3 (lines 327-350)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 352 | 33 | `static void save(Game d) throws Exception` |  |
+| 329 | 21 | `static void money(Game d)` |  |
+
+### 4 (lines 351-386)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 353 | 33 | `static void save(Game d) throws Exception` |  |
 

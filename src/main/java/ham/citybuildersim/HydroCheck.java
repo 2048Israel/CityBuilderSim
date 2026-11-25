@@ -412,11 +412,20 @@ public class HydroCheck {
         quietly(() -> stand.simulateMonths(1));
         near("each station standing adds its production1 to the grid's generation: two add twice", grid.getBaseProduction() - before, 2 * hydroOf(stand).getProduction1());
         // PW1: a station's month is its water (production1 x count x the month's hours), levelled under its nameplate by the merit order.
+        // PW3: and the river's month (PowerDispatch.hydroMonth(), EIA's hydro fleet by calendar month: high in spring, low in autumn),
+        // read for the calendar month dispatched at the city's latitude (a generated world's: the north's calendar).
         PowerDispatch.Row stationRow = null;
         for (PowerDispatch.Row r : grid.getLatestRows()) if (r.kind == PowerDispatch.Kind.HYDRO) stationRow = r;
-        assertTrue("...and the month's dispatch runs them: the hydro row's kWh is positive and at most its water, production1 x 2 x " + PowerDispatch.MONTH_HOURS + " kWh",
+        int calendar = CityCalendar.monthOfYear(stand.getMonth());
+        double river = PowerDispatch.hydroMonth(calendar, grid.latitude());
+        double water = 2 * hydroOf(stand).getProduction1() * river * PowerDispatch.MONTH_HOURS;
+        assertTrue(String.format("...and the month's dispatch runs them: the hydro row's kWh is positive and at most its water, production1 x 2 x %.0f"
+                        + " kWh x the river's month (month %d: %.4f; the row's water %.0f, %.0f expected)", (double) PowerDispatch.MONTH_HOURS, calendar, river,
+                        stationRow == null ? Double.NaN : stationRow.waterKwh, water),
                 stationRow != null && stationRow.kwh > 0 && stationRow.kwh <= stationRow.waterKwh + 1e-6
-                        && stationRow.waterKwh == 2 * hydroOf(stand).getProduction1() * PowerDispatch.MONTH_HOURS);
+                        && Math.abs(stationRow.waterKwh - water) <= 1e-9 * water);
+        assertTrue("...and the river's twelve months average its year (the index over the twelve's mean)",
+                Math.abs(java.util.stream.IntStream.rangeClosed(1, 12).mapToDouble(m -> PowerDispatch.hydroMonth(m, grid.latitude())).sum() - 12) < 1e-9);
 
         // It stands on steep ground, where a coal plant is refused for want of ground it can stand on.
         Game steepCity = LandClassCheck.city("hydrocheck-steep", 0, 0, 1, 0);

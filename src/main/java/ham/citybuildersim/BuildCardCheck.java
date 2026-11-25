@@ -1260,8 +1260,11 @@ public class BuildCardCheck {
         boolean networks = true, roads = true, crowds = true, covers = true, words = true;
         for (int k = 250; k <= 3000; k++) {
             double x = k / 1000.0;
+            // ...power's yellow its reserve (PW3: POWER_YELLOW, 1 / (1 + PowerDispatch.RESERVE)), water's NETWORK_YELLOW
             CityNeeds.Served net = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, 1 / x);
-            networks &= net.level() == CityNeeds.level(x, CityNeeds.NETWORK_YELLOW, CityNeeds.NETWORK_RED, true);
+            networks &= net.level() == CityNeeds.level(x, CityNeeds.POWER_YELLOW, CityNeeds.NETWORK_RED, true);
+            CityNeeds.Served wet = CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, 1 / x);
+            networks &= wet.level() == CityNeeds.level(x, CityNeeds.NETWORK_YELLOW, CityNeeds.NETWORK_RED, true);
             CityNeeds.Served road = CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, 1 / x);
             roads &= road.level() == CityNeeds.level(x, InfrastructureManager.STRAINED, InfrastructureManager.FREE_FLOW, true);
             CityNeeds.Served seats = CityNeeds.verdict(CityNeeds.Kind.HIGHER_SCHOOL, CareType.NONE, 1 / x);
@@ -1285,7 +1288,7 @@ public class BuildCardCheck {
                         && (v.level() != 0 || v.share() >= 1);
             }
         }
-        assertTrue("a network's verdict on what it serves is NEEDS YOU's level on its load, at every load from 25% to 300%", networks);
+        assertTrue("a network's verdict on what it serves is NEEDS YOU's level on its load, at every load from 25% to 300% (power's yellow its reserve, PW3)", networks);
         assertTrue("...the road's, on STRAINED and FREE_FLOW", roads);
         assertTrue("...a school's seats, on who would come and be hired over them - and a crowd off the list but over its seats is amber", crowds);
         assertTrue("...care and the basic ladder, listed, the row's level; off the list, green only at 100% and amber under it", covers);
@@ -1294,9 +1297,15 @@ public class BuildCardCheck {
         CityNeeds.Served jerus = CityNeeds.verdict(CityNeeds.Kind.CARE, CareType.GENERAL, .9);
         assertTrue("general care at 90%, past GENERAL_YELLOW and off the list, is amber and short - no tick (Jerus's case)",
                 .9 > CityNeeds.GENERAL_YELLOW && jerus.level() == 1 && CityNeeds.SHORT.equals(jerus.word()));
-        CityNeeds.Served over = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, 1.2);
+        CityNeeds.Served over = CityNeeds.verdict(CityNeeds.Kind.WATER, CareType.NONE, 1.2);
         assertTrue("a network serving 120%, a fifth in hand, is tight: amber, though over 100%",
                 over.level() == 1 && CityNeeds.TIGHT.equals(over.word()));
+        // PW3: power wants its reserve in hand (PowerDispatch.RESERVE, NERC's margin), not water's quarter.
+        double reserve = 1 + PowerDispatch.RESERVE;
+        CityNeeds.Served thin = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, reserve * .99);
+        CityNeeds.Served kept = CityNeeds.verdict(CityNeeds.Kind.POWER, CareType.NONE, reserve * 1.01);
+        assertTrue("power serving just under 1 + RESERVE is tight: amber, though over 100%; just over it, enough",
+                thin.level() == 1 && CityNeeds.TIGHT.equals(thin.word()) && kept.level() == 0 && CityNeeds.ENOUGH.equals(kept.word()));
         CityNeeds.Served full = CityNeeds.verdict(CityNeeds.Kind.ROADS, CareType.NONE, 1 / 1.8);
         assertTrue("the road 180% full serves 56%: red, short",
                 CityNeeds.servedPct(full.share()).equals("56%") && full.level() == 2 && CityNeeds.SHORT.equals(full.word()));
@@ -1365,10 +1374,13 @@ public class BuildCardCheck {
                 + "supply over its demand, the arc that held to 0-1; the police, the cells and the dead are not served", measures);
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         BuildAdvice.Measure roadM = BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS);
-        // PW1: power is planned for the calm peak, so its ring is the grid's own figure against the peak block's draw, losses in
-        // (PowerDispatch.PLAN_PEAK); this city has no wind, whose non-firm part (1 - WIND_FIRM) would come off the supply.
-        assertTrue("...power's ring is the grid's own figure at the peak's draw (to 1e-9) and the road's the road's, to the bit; transit has no verdict",
-                Math.abs(BuildAdvice.served(g, power, Map.of()) * PowerDispatch.PLAN_PEAK / u.getPowerServed() - 1) < 1e-9
+        // PW1, PW3: power is planned for the year's peak hour, so its ring is the grid's own figure against the peak hour's draw, losses
+        // in (PowerDispatch.PLAN_PEAK_HOUR); this city has no wind or sun, whose average past its credit would come off the supply.
+        boolean variable = false;
+        for (BuildingsTemplate t : g.getBuildingManager().getTemplates())
+            variable |= (t.isWind() || t.isSolar()) && g.getBuildingManager().getQuantity(t.getId()) > 0;
+        assertTrue("...power's ring is the grid's own figure at the peak hour's draw (to 1e-9) and the road's the road's, to the bit; transit has no verdict",
+                !variable && Math.abs(BuildAdvice.served(g, power, Map.of()) * PowerDispatch.PLAN_PEAK_HOUR / u.getPowerServed() - 1) < 1e-9
                 && Double.doubleToLongBits(BuildAdvice.served(g, roadM, Map.of())) == Double.doubleToLongBits(road.getServed())
                 && BuildAdvice.verdict(g, BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT), Map.of()).level() == -1
                 && Double.doubleToLongBits(BuildAdvice.served(g, BuildAdvice.Measure.of(BuildAdvice.Kind.TRANSIT), Map.of()))

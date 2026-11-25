@@ -292,13 +292,25 @@ public final class WorksFinanceCheck {
                     close(second, 200 * rate));
             check(type.getSimpleName() + ": the third addition reuses exactly the usable remainder", close(third, 0));
             check(type.getSimpleName() + ": exhaustion buys the third parcel at its whole price", close(fourth, 300 * rate));
+            // PW3 (Jerus, 2026-11-23: "you just buy more land"): a plan the listing cannot cover is assembled offer by offer
+            // (AutoBuilder.ASSEMBLE_MOST); unavailable is a plan past that many offers of the listing's size.
+            double offer = offers.stream().mapToDouble(o -> {
+                LandParcel listed = land.getMarket().find(o.getId());
+                return listed.getSizeSqFt() - LandManager.sqFt(listed.getUnlinkedDryKm2());
+            }).min().orElse(0);
+            double past = (AutoBuilder.ASSEMBLE_MOST + 1) * offer;
             Object unavailable = constructor.newInstance(g, clinic, 0);
-            double estimate = (double) take.invoke(unavailable, 20 * area);
+            double estimate = (double) take.invoke(unavailable, past);
             double smaller = (double) take.invoke(unavailable, area);
-            check(type.getSimpleName() + ": an unavailable large plan uses the office estimate without taking the shelf",
-                    close(estimate, 20 * area * land.getOfficePricePerSqFt()));
+            check(type.getSimpleName() + ": a plan past ASSEMBLE_MOST offers is unavailable: the office estimate, the shelf not taken",
+                    close(estimate, past * land.getOfficePricePerSqFt()));
             check(type.getSimpleName() + ": a later smaller addition still buys the first parcel's usable ground once",
                     close(smaller, 100 * rate));
+            Object assembled = constructor.newInstance(g, clinic, 0);
+            double large = (double) take.invoke(assembled, 20 * area);
+            check(type.getSimpleName() + ": a large plan within ASSEMBLE_MOST buys the whole shelf and prices what it still lacks at the office's rate",
+                    20 * area > 3 * offer && 20 * area <= AutoBuilder.ASSEMBLE_MOST * offer
+                            && close(large, 600 * rate + (20 - 3 * 1.5) * area * land.getOfficePricePerSqFt()));
         }
         check("projecting purchases leaves the live shelf and ownership alone",
                 land.getMarket().getOffersState().length == 3 && close(land.getOwnedSqFt(), land.getAllocatedSqFt()));
@@ -519,8 +531,9 @@ public final class WorksFinanceCheck {
         BuildAdvice.Suggestion plan = BuildAdvice.suggestFor(g, null,
                 BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), g.getCash(),
                 g.getLandManager().getAvailableSqFt(), g.getAutoBuilder().getSlack(), skip, true);
-        check("fixture: an operating power shortage has a wind proposal and a paid industrial load opens shortly",
-                plan != null && plan.count() > 0 && stack.getUnderConstruction() == 1
+        check("fixture: an operating power shortage has a wind proposal and a paid industrial load opens shortly ("
+                        + (plan == null ? "no proposal" : plan.count() + " " + plan.template().getName()) + ")",
+                plan != null && plan.count() > 0 && plan.template() == wind && stack.getUnderConstruction() == 1
                         && mill.getElectricityConsumption() > wind.getProduction1()
                         && bm.siteUnitMonths(mill, 1, g.getBuildingOutputAtEveryPost()) > 0
                         && bm.siteUnitMonths(mill, 1, g.getBuildingOutputAtEveryPost()) < BuildAdvice.HORIZON);
@@ -769,17 +782,23 @@ public final class WorksFinanceCheck {
         EssentialWorksCheck.powerDrawAt(g, 1 / 1.05);
         List<BuildingsTemplate> catalogue = new ArrayList<>(bm.getTemplates());
         bm.getTemplates().removeIf(t -> t.getCategory() == BuildingType.ELECTRICITY && t != wind);
-        // THE FIXTURE CAUSES IT (PW1): the advice credits a Wind Farm with its firm part only (PowerDispatch.WIND_FIRM, the calm peak), and in this
-        // town of 290,000 kW its posts pull the pooled fill down by more than that part adds, so one farm is no reserve. The fixture's farm
-        // is built 1 / WIND_FIRM larger: its firm part is the nameplate this section was written against, and one farm is a reserve again.
+        // THE FIXTURE CAUSES IT (PW1, PW3): PW1's advice credited a Wind Farm with its firm part only (PowerDispatch.WIND_FIRM, 0.33 of its
+        // average, the calm peak), and in this town of 290,000 kW its posts pull the pooled fill down by more than that part adds, so one
+        // farm was no reserve. PW3's advice credits a farm at PowerDispatch.windCredit(share): WIND_PEAK_CREDIT (0.73) of its average,
+        // falling to a tenth of that as the variable rows' share of the energy rises to CREDIT_HALF; WIND_FIRM is no longer read by it. The
+        // fixture's farm is built 1 / WIND_FIRM larger (three times the average), so the advice credits it WIND_PEAK_CREDIT / WIND_FIRM (2.2)
+        // times the average this section was written against at no share (PW1's credit was exactly that average at any share), and one
+        // farm is a reserve (the first fixture line below asserts it).
         wind.setProduction1(wind.getProduction1() / PowerDispatch.WIND_FIRM);
         try {
             AutoBuilder auto = g.getAutoBuilder();
             BuildAdvice.Suggestion reserve = BuildAdvice.suggestFor(g, null, power, g.getCash(),
                     g.getLandManager().getAvailableSqFt());
-            check("fixture: power is physically served with a wind reserve proposal, and the pending highway covers its unserved traffic",
+            check("fixture: power is physically served with a wind reserve proposal, and the pending highway covers its unserved traffic (served now "
+                            + BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW) + ", proposal "
+                            + (reserve == null ? "none" : reserve.count() + " " + reserve.template().getName()) + ")",
                     BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW) && reserve != null
-                            && !BuildAdvice.maintained(g, through, Map.of(), BuildAdvice.NOW)
+                            && reserve.template() == wind && !BuildAdvice.maintained(g, through, Map.of(), BuildAdvice.NOW)
                             && BuildAdvice.maintained(g, through, Map.of(highway, 1L), auto.target()));
             if (reserve == null) return;
             double output = g.getBuildingOutputAtEveryPost();
@@ -805,7 +824,8 @@ public final class WorksFinanceCheck {
                             && g.getMonth() + Math.ceil(highwayAfter - 1e-9) > due);
             EssentialWorksCheck.quietly(() -> auto.pass(g));
             AutoBuilder.Step step = EssentialWorksCheck.step(g, power);
-            check("the actual reserve order preserves the highway-only completion promise",
+            check("the actual reserve order preserves the highway-only completion promise (" + (step == null ? "no step"
+                            : step.outcome() + ", " + step.ordered() + " " + step.building() + ", cut " + step.cut()) + ")",
                     step != null && step.ordered() == 0 && step.cut() == AutoBuilder.Cut.BUILDERS
                             && g.getMonth() + Math.ceil(bm.siteUnitMonths(highway, 1, output) - 1e-9) <= due);
         } finally {

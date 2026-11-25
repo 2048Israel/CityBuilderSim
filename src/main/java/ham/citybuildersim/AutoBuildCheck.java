@@ -752,14 +752,15 @@ public class AutoBuildCheck {
                 if (t == null) return false;
                 Game.BuildQuote quote = paving ? g.quotePave(1) : g.quoteBuild(t, 1);
                 if (Double.isNaN(quote.months)) return true;
+                // PW3 (the R mend): the twin reads as AutoBuilder.crewLimit() and pendingDelay() do: short now is BuildAdvice.lacksNow() (power's peak block in the year's highest month, not the plan's peak hour).
                 if (AutoBuilder.essential(s.measure())
-                        && !BuildAdvice.maintained(g, s.measure(), Map.of(), BuildAdvice.NOW)) return false;
+                        && BuildAdvice.lacksNow(g, s.measure())) return false;
                 double points = t.getConstructionPoints() + quote.prepPoints + quote.worksPoints
                         + quote.bridgePoints + quote.deepWaterPoints;
                 double output = g.getBuildingOutputAtEveryPost();
                 for (BuildAdvice.Measure current : AutoBuilder.remit(g, CityNeeds.measure(g, CityNeeds.PLAIN))) {
                     if (!AutoBuilder.essential(current)
-                            || BuildAdvice.maintained(g, current, Map.of(), BuildAdvice.NOW)) continue;
+                            || !BuildAdvice.lacksNow(g, current)) continue;
                     Double due = ab.toState().pendingUntil.get(current.label());
                     if (due == null) continue;
                     double before = Double.POSITIVE_INFINITY, after = Double.POSITIVE_INFINITY;

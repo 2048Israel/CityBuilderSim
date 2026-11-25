@@ -309,6 +309,9 @@ public class Game {
         // research will change this"): a 1900 city builds coal and hydro, as 1900 did.
         buildingManager.setTemplateKnown(t -> foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY ? knows(t)
                 : !ResearchCatalog.nearFuture(t.getSinceText()));
+        // ...and the same calendar ahead, for the power planner's need date (PW3: a plant the menu brings in time is one it can weigh).
+        buildingManager.setTemplateKnownIn((t, months) -> foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY
+                ? t.knownAt(month + months, research) : !ResearchCatalog.nearFuture(t.getSinceText()));
         economyManager = new EconomyManager(buildingManager);
         householdBalance.setInvestmentTaxes(economyManager.getTaxPolicy(), c -> getExchange().price(c), this::receiveInvestmentTax);
         householdBalance.attachInvestmentRegister(equity, c -> getExchange().shortShares(c));
@@ -498,6 +501,10 @@ public class Game {
         });
         servicesManager.setExchangeRate(() -> getMarkets() == null ? 1 : getMarkets().getExchangeRate());
         servicesManager.setCalendarMonth(() -> CityCalendar.monthOfYear(getMonth()));
+        // PW3: the wind's, the sun's and the river's month at the city's latitude (a generated world's has none: the US fleet's year),
+        // and the sun's rack, a fixed one until the utility tracker is known (research E25).
+        servicesManager.getUtilitiesHandler().setPlace(() -> getFounding() == null ? Double.NaN : getFounding().getEarthLat(),
+                () -> getResearch() == null || getResearch().known("E25", getMonth()));
         servicesManager.getUtilitiesHandler().setGridCostSource(() -> Substations.costs(this));
         servicesManager.getUtilitiesHandler().setPowerObservationSources(this::getMonth,
                 () -> BuildAdvice.supplyDemand(this, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of())[0]);
@@ -3722,6 +3729,21 @@ public class Game {
     /** ...and what that third way converts out of cash: the dollars the vault lacks, in local money at today's rate. */
     public double landTopUpLocal(java.util.List<Integer> ids) {
         return landVaultGapUsd(ids) * foreign.getRate();
+    }
+
+    /**
+     * What buying these offers one after another moves of the treasury's cash, in local money, paid the way the toggle says (PW3, REV-PW3 #1):
+     * converting, their local prices at today's rate; from the vault, the dollars the vault lacks of their prices together at that rate
+     * (landTopUpLocal()'s figure). The offers need not stand on the shelf - a rehearsal's (LandManager.rehearse()) are not on it - so this takes
+     * them, where the figures above take ids.
+     */
+    public double landCashFor(java.util.List<LandParcel> parcels) {
+        double usd = 0, local = 0;
+        for (LandParcel parcel : parcels) {
+            usd += parcel.getPriceUsd();
+            local += parcel.localPrice(foreign.getRate());
+        }
+        return landPaidFromVault ? Math.max(0, usd - foreign.getReservesUsd()) * foreign.getRate() : local;
     }
 
     /**
@@ -11963,15 +11985,64 @@ public class Game {
     }
 
     /**
+     * What refuses an order before land and before money (PW3, REV-PW3 #2): buildStack()'s refusals that are neither the ground nor the cash,
+     * in its order - null when none does. Nothing changes: buildStack() asks it first, and the automatic builder asks it before it buys a square
+     * foot of ground or sells a bond for the order, so an order the builders would refuse moves no money.
+     */
+    public BuildResult blocker(BuildingsTemplate template, long quantity, int asked) {
+        if (!buildingManager.isTemplateKnown(template)) {
+            return BuildResult.NOT_KNOWN;
+        }
+
+        // Ore before land and before money: a mine with nowhere to dig is not a
+        // funding problem, and offering the player a bond to fix it would be a
+        // lie about what is wrong.
+        if (!hasDepositFor(template, quantity)) {
+            return BuildResult.NO_DEPOSIT;
+        }
+
+        // ...and the sea before land and money, for the same reason (0.7.59):
+        // a desalination plant with no coast is not a funding problem.
+        if (!hasCoastFor(template, quantity, asked)) {
+            return BuildResult.NO_COAST;
+        }
+
+        // ...and the river before land and money, for the same reason (HY1): a hydro station with no river with a
+        // drop on the ground the city owns, or none left of its slots, is not a funding problem.
+        if (!hasRiverFor(template, quantity)) {
+            return BuildResult.NO_RIVER;
+        }
+
+        // ...and the cooling water before land and money, for the same reason (PW2): a steam plant with no sea, lake or river owned.
+        if (!hasCoolingFor(template)) {
+            return BuildResult.NO_WATER;
+        }
+
+        // ...and the crossing before land and money (ET6): a bridge with no path across the water is not a funding problem.
+        if (!hasBridgeFor(template, quantity)) {
+            return BuildResult.NO_BRIDGE;
+        }
+
+        // Licences before land and before money, for the same reason as ore: a
+        // firm with nobody to practise is not a funding problem, and offering a
+        // bond to fix it would be a lie about what is wrong.
+        if (!hasLicencesFor(template, quantity)) {
+            return BuildResult.NO_LICENCE;
+        }
+        return null;
+    }
+
+    /**
      * ...for a landmass (ET5): a sea terminal stands on `asked` - Landmasses.CHOSEN (the card's pick, else the rule), RULE
      * (the rule alone: the automatic builder never links an island) or an id - resolved once here, after the ore and the
      * coast are known, and carried into the order. For an island no port links the ground it needs is that island's own room
      * (LandManager.canAllocateOn()), not the linked pool's; every other order is asked what it always was.
      */
     public BuildResult buildStack(BuildingsTemplate template, long quantity, boolean noConstruction, int asked){
-        if (!buildingManager.isTemplateKnown(template)) {
+        BuildResult blocked = blocker(template, quantity, asked);
+        if (blocked != null) {
             this.hasNewReceipt = false;
-            return BuildResult.NOT_KNOWN;
+            return blocked;
         }
         double totalCost = noConstruction
                 ? template.getCashCost() * quantity
@@ -11981,47 +12052,6 @@ public class Game {
         // caller has already been offered a T-Bill: without this the player can
         // borrow three hundred million to fund a building the city has nowhere
         // to put, and only find out after the debt is issued.
-        // Ore before land and before money: a mine with nowhere to dig is not a
-        // funding problem, and offering the player a bond to fix it would be a
-        // lie about what is wrong.
-        if (!hasDepositFor(template, quantity)) {
-            this.hasNewReceipt = false;
-            return BuildResult.NO_DEPOSIT;
-        }
-
-        // ...and the sea before land and money, for the same reason (0.7.59):
-        // a desalination plant with no coast is not a funding problem.
-        if (!hasCoastFor(template, quantity, asked)) {
-            this.hasNewReceipt = false;
-            return BuildResult.NO_COAST;
-        }
-
-        // ...and the river before land and money, for the same reason (HY1): a hydro station with no river with a
-        // drop on the ground the city owns, or none left of its slots, is not a funding problem.
-        if (!hasRiverFor(template, quantity)) {
-            this.hasNewReceipt = false;
-            return BuildResult.NO_RIVER;
-        }
-
-        // ...and the cooling water before land and money, for the same reason (PW2): a steam plant with no sea, lake or river owned.
-        if (!hasCoolingFor(template)) {
-            this.hasNewReceipt = false;
-            return BuildResult.NO_WATER;
-        }
-
-        // ...and the crossing before land and money (ET6): a bridge with no path across the water is not a funding problem.
-        if (!hasBridgeFor(template, quantity)) {
-            this.hasNewReceipt = false;
-            return BuildResult.NO_BRIDGE;
-        }
-
-        // Licences before land and before money, for the same reason as ore: a
-        // firm with nobody to practise is not a funding problem, and offering a
-        // bond to fix it would be a lie about what is wrong.
-        if (!hasLicencesFor(template, quantity)) {
-            this.hasNewReceipt = false;
-            return BuildResult.NO_LICENCE;
-        }
 
         // ...a sea terminal's landmass, once (ET5): an island no port links holds it on its own room.
         int landmass = portLandmassOf(template, asked);
