@@ -161,3 +161,22 @@ works' own power is valued at its two prices), and modestly, medians against 0.9
 - S1 2.63% against 2.47% (16 of 16 within); K1 15.39% against 15.58%, its widest seed 33.06% against 16.99%;
   R3 -2.73% against -3.25% (1 seed above +1 point, against 0); A3 no deflation spell, the final population 99.09%.
 - T1 16 of 16 seeds to 40,000 people, m320 against m325; T2 9,023,330 against 9,174,482.
+
+## 7. The dry run
+
+**First, on 17289d881** (`cbs-gate-PW1-R-lDOWlbCK`, the box): the suite in 1,041 s, stopped on four lines no record
+named, in two harnesses outside the set, both read in a played city that PW1-R's path moves (the bills follow the
+season, so the city's months part from main's). Traced, each by a temporary print (reverted), and passed by name under
+HT1-H (harness fixtures that find their condition in the played city), the ship file's known-reds rows:
+- **PassThroughCheck 3** (three lines): its twins are section 2's default founding played 240 months. On this path it
+  ends at a D$ of 1.4359 (R1g's gate on main's model: 1.1439) with Retail never past its founding stores: 4,160
+  places on the box (2,080 in the local run) against R1g's 12,480. The fixture stands 13 Small Grocery Stores at
+  once; Retail's restocking is capped by its cash and credit, and in the local trace it held no cash and was
+  purchase-limited in all 12 months (a budget of about 70 against 170 ordered), so the shelf held 3,531 of the
+  5,292 the places hand over (main's path fills it in one month). The two fixture lines fail, and the groceries'
+  pass-through (-3.1% of the step) is the law read on its unmet premise; the struck-rate laws are green.
+- **KeptCheck 49** ("a note with lines this month opened on it adds to the page", 396 then 393): the page with the
+  note open is compared with the page the choice before drew a month earlier (`pageReshapedCaused()`'s size, read
+  before `month(g)`). The trace: in the same month the page is 380 lines closed and 393 open (the note adds 13); the
+  month before drew 396. Every "the redraw and the next equal a page built new" around it is green. A fixture's
+  comparison across a month, not the screen; its mend (the closed page measured in the same month) is HT1-H's.
