@@ -7459,6 +7459,63 @@ public class KeptCheck {
         check(what + ": each month hands back nine in ten of the nodes, or more", handed / months >= HANDED_BACK);
     }
 
+    /** A real founding before the catalogue opens business in month 18 and medicine in month 66. */
+    static void researchFundingNoReach() throws Exception {
+        Currency writing = Currency.writing();
+        double factor = PriceLevel.FACTOR;
+        try {
+            Game town = fx(() -> {
+                ResearchViewCheck.ensureQuiet();
+                Game early = ResearchViewCheck.foundedVillage("kept-research-no-reach");
+                ResearchViewCheck.quietly(() -> {
+                    early.buildStack(ResearchViewCheck.template(early, "University"), 2, true);
+                    early.buildStack(ResearchViewCheck.template(early, "Institute of Technology"), 1, true);
+                    early.buildStack(ResearchViewCheck.template(early, "Medical School"), 1, true);
+                    MaterialsCheck.handWorkers(early);
+                });
+                return early;
+            });
+            KeptBench bench = fx(() -> new KeptBench(town));
+            KeptBench.Page page = fx(() -> {
+                bench.clock(false, null);
+                bench.speed(0);
+                return bench.policy("Policy, Research's Funding before the first month", "Research", "Funding");
+            });
+            ResearchView.Overview ov = fx(() -> ResearchView.overview(town));
+            ResearchPreview.Result asIs = fx(() -> ResearchView.preview(town, ResearchView.Staged.none()));
+            List<String> sig = shownWith(bench, page, null);
+            List<ResearchView.SchoolRow> schools = ResearchView.schoolRows(town);
+            boolean supported = schools.size() == 3
+                    && schools.get(0).kind() == EducationType.UNIVERSITY && schools.get(0).count() == 2
+                    && schools.get(1).kind() == EducationType.MEDICAL && schools.get(1).count() == 1
+                    && schools.get(2).kind() == EducationType.ENGINEERING && schools.get(2).count() == 1;
+            check("fixture: the actual standing schools are two Universities, one Medical School and one Institute of Technology", supported, schools.toString());
+            boolean caused = supported && town.getMonth() == 1 && town.foundedUnfitted();
+            boolean reads = true;
+            String facts = "month=" + town.getMonth();
+            for (ResearchView.FieldReach row : ov.fields()) {
+                ResearchCatalog.Field f = row.field();
+                ResearchView.Card card = ResearchView.card(town, f, ResearchView.Staged.none(), row, asIs, asIs);
+                List<String> open = town.getResearch().openProblems(f, town.getMonth()).stream().map(e -> e.code()).toList();
+                facts += "; " + f + " researching=" + card.researching() + " room=" + card.roomPosts() + " open=" + open;
+                caused &= card.researching() && card.roomPosts() > 0 && row.inReach() == open.size()
+                        && (f == ResearchCatalog.Field.ENGINEERING ? !open.isEmpty() : open.isEmpty());
+                reads &= has(sig, label(KeptBench.researchSay(card)));
+            }
+            check("fixture: real month-one schools have room in every field, engineering open and medicine/business/law waiting (" + facts + ")", caused);
+            check("the early Funding cards choose the sentences from the real model's reads", reads, facts);
+            check("...and the sentence the model's reads choose: nothing in reach for medicine, business and law (their problems wait on ideas nobody has), the problems in reach for engineering",
+                    has(sig, "Nothing in medicine is in reach") && has(sig, "Nothing in business is in reach") && has(sig, "Nothing in law is in reach")
+                            && ov.fields().get(0).inReach() > 0);
+            String difference = fx(() -> againstNew(bench, page));
+            check("the early Funding sentences on the kept page equal a page built new", difference == null, difference);
+        } finally {
+            Currency.use(writing);
+        }
+        check("the early Funding fixture leaves the formatters' money and PriceLevel.FACTOR unchanged",
+                Currency.writing() == writing && Double.doubleToLongBits(PriceLevel.FACTOR) == Double.doubleToLongBits(factor));
+    }
+
     /** Sections 99-101 (R3b): Research Overview/Funding in default and funded 1900 cities equal fresh; model reads, staged/held/applied dials are checked. */
     static void researchFunding(Game g, KeptBench defaultBench) throws Exception {
         System.out.printf("%n=== Policy > Research's Overview and Funding (R3b): the default city at month %d, and a city founded the 1900 way with schools, grants and a lab ===%n", g.getMonth());
@@ -7467,6 +7524,8 @@ public class KeptCheck {
         researchDefaultWay(g, defaultBench);
         t = tookWith("a city founded the default way (99)", t, c);
         c = checks;
+        // WHY (R3b): the shared town reaches month 130 here; its original aging windows remain below.
+        researchFundingNoReach();
         Game town = fx(KeptCheck::researchFundingTown);
         KeptBench bench = fx(() -> new KeptBench(town));
         fx(() -> {
@@ -7697,14 +7756,15 @@ public class KeptCheck {
             boolean ok = has(sig, label(fieldWord(f))) && has(sig, label(row.schoolsWords())) && has(sig, label(room)) && has(sig, label(prize))
                     && has(sig, label(Money.people(card.researchersNow()))) && has(sig, label(Math.round(card.grantPostsNow()) + " of " + card.roomPosts()))
                     && has(sig, label(Money.money(card.billNow()))) && has(sig, label(card.findsNowWords())) && has(sig, label(KeptBench.researchSay(card)));
+            System.out.printf("  Funding premise month=%d field=%s researching=%s room=%d inReach=%d open=%s sentence=%s shown=%s%n",
+                    town.getMonth(), f, card.researching(), card.roomPosts(), row.inReach(),
+                    town.getResearch().openProblems(f, town.getMonth()).stream().map(e -> e.code()).toList(),
+                    KeptBench.researchSay(card), has(sig, label(KeptBench.researchSay(card))));
             if (!ok) off += f + "; ";
             cards &= ok;
         }
         check("each card shows its field and schools, the room and what a post costs, where labs come, and the rows at the dials in force: the researchers, the posts of the room, the bill and what it would find first - the model's reads",
                 cards, off);
-        check("...and the sentence the model's reads choose: nothing in reach for medicine, business and law (their problems wait on ideas nobody has), the problems in reach for engineering",
-                has(sig, "Nothing in medicine is in reach") && has(sig, "Nothing in business is in reach") && has(sig, "Nothing in law is in reach")
-                        && ov.fields().get(0).inReach() > 0);
         ResearchView.Funding engFu = ResearchView.funding(town, eng);
         check("medicine's prize in force is in its \"A find pays out\" row (" + Money.money(town.getResearch().prize(med)) + ")",
                 has(sig, label("A find pays out")) && has(sig, label(Money.money(town.getResearch().prize(med)))));

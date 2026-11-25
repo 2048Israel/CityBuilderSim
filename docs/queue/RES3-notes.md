@@ -215,6 +215,35 @@ preserving notes/publisher records. The actual copied source/checks/classes and
 full logs remain at helper target/integrated67/helperfast-114/remote. Current
 model money/save/catalogue and default results still await their native runs.
 
+Current114/.203 SaveFile, ReadPath, Monetary, Labour and ExchangeRate native
+and canonical results pass0; Denomination completes1/3 with only its seven
+main decade lines and the unchanged TP1.8195 premise. New reds remain empty,
+full footers, all three copy hashes and empty owned groups verify. These
+results supersede their older source labels only for these named checks;
+the remaining cases are still in the approved serial box chain.
+
+The medicine source finding corrects the timing: the supporting town starts
+at19, reaches80, then the original25+25 page windows put the literal at130.
+Business can open at18 and medicine at66 under the actual catalogue lag;
+the fixture never caused its assumed empty-reach condition. The actual screen
+branch requires researching=true and positive room before its no-reach sentence.
+No guessed false-researching condition is used.
+
+★ The reviewed414d031a62eead7c196456078c09886336814909773121c04480822ba0524f62
+patch adds a separate genuine month-one unfitted founding using the existing
+ResearchViewCheck/FittingCheck scratch path, the same two Universities, one
+Institute of Technology and one Medical School, with native worker support.
+Strict findings require the actual2/1/1 school rows, month1, positive room and
+researching in every field, engineering open, the three other fields' actual
+openProblems empty, and reach counts equal those real keys. Actual model
+sentences and kept/fresh parity are checked before the unchanged literal.
+The shared town, its original aging windows, staged/grant/prize checks and
+all comparisons remain. Currency formatting is restored in finally and its
+identity/PriceLevel.FACTOR are guarded; no old clock, finds or cards are reset.
+The previous130-month case also logs its actual field reads. This is a caused
+fixture proposal now applied, not a predicted native pass. Full Kept must
+prove every precondition and the original laws on the integrated model.
+
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
 byte-identical through dce's later observer and harness-only commits;
