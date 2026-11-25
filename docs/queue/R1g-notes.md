@@ -2823,3 +2823,21 @@ Each one, and what was done about it:
   SaveFileCheck green on the PC; GroundSkipCheck exit 3 (LP-G2's known
   line alone). KeptCheck was not run again here: the PC's KeptCheck slot
   was RES3's, and run 7 above was of this code. It runs in the dry run.
+
+### Main 0.9.204 (WG3) merged, and the playtest on the merged 1900 city (2026-11-25)
+
+- Merged origin/main at ee0384007 (WG3, 0.9.204) as 8f87b238f. Only the
+  generated docs conflicted; they were taken from main and regenerated.
+- The playtest on the merged 1900 city, on the PC. Under the suite
+  (`./batch-check.sh LongPlaytest`) it ran out of AllChecks' 1,740 s at
+  m2220 of 2,400, the PC being slower than the box (the 1900 city's 38
+  minutes, above). Run directly (`java -Xmx2048m ... LongPlaytest`,
+  `target/r1gd-lp-direct.txt`), it ends "All checks passed".
+  - WG3's no-home finding (households with no home, months 380-394) does
+    not show: no FAIL line in the run.
+  - The households' UnsettledFees read a mean month of 23.2 ppm against
+    `OWN_BOUND_UNSETTLED_FEES` (30), against 86.1 before the merge: the
+    known-reds row under PB1 does not fire on the merged city. ★ The row
+    stays until the dry run shows the box's playtest green too (the box
+    may part from the PC's path), then it goes; PB1 stays queued, its
+    early months' share of fees being the finding.
