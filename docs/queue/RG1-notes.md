@@ -122,3 +122,14 @@ It is recorded as `docs/ensemble/RG1.md`.
   verdict changed. M1 is 0 and F1 0/16 under every policy.
 - **The trace is unchanged:** all 28 figures with a baseline value equal the baseline's.
 - R1g's dry run took the box partway through. The ensemble waited for it, then resumed.
+
+## The dry run
+
+`sh tools/gate.sh RG1 --dry-run` on the gate box, run `/home/jerus/cbs/runs/cbs-gate-RG1-GmcAQnsy`
+(kept there, and copied home to `%TEMP%/cbs-gate-RG1-GmcAQnsy`).
+- **Its two commits:** batch/RG1 at 5a85df455044710c25e5544a580dbf000ba2e0ae, on main
+  dc573ee27b48aedb976c05cdd24253d225171265 (BX2).
+- **Result:** gate exit 0. The suite exited 3 in 933 s with known reds only. Every red harness
+  was main's by gate.txt or known-reds.txt, none of them RG1's. The unnamed-lines file is
+  empty, and the dry run left the tree as it was.
+- The dry run waited for BX2: main was red on PackagingCheck after BX1 until it shipped.
