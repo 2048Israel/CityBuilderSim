@@ -180,3 +180,7 @@ HT1-H (harness fixtures that find their condition in the played city), the ship 
   before `month(g)`). The trace: in the same month the page is 380 lines closed and 393 open (the note adds 13); the
   month before drew 396. Every "the redraw and the next equal a page built new" around it is green. A fixture's
   comparison across a month, not the screen; its mend (the closed page measured in the same month) is HT1-H's.
+
+**Again, on 7f8fd40ec** (`cbs-gate-PW1-R-0h6Gx5B9`, the kept run judged again through the ship file's `gate-run`
+line; only the notes and the ship file changed since): **exit 0**, known reds only in 20 harnesses, the records
+`{next}` = 0.9.203, PW1-R's block on top, one Queued row (PFR1) added.
