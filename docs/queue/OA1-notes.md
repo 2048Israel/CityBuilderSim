@@ -49,74 +49,112 @@ No real city holds the money it borrowed for a works it lacks while the works go
   expenditure, unrestricted ([GFOA, Fund Balance Guidelines for the General Fund](https://www.gfoa.org/materials/fund-balance-guidelines-for-the-general-fund);
   [Minnesota OSA, fund balances after GASB 54](https://www.auditor.state.mn.us/media/jo4jyd0n/fundbalances_postgasb54_1012_statement.pdf)).
   So a reserve under its floor is not taken out of a works's proceeds.
-- **They are spent on it within months.** A tax-exempt issue for capital projects keeps its three-year temporary period
-  only if the issuer expects to incur, within six months, a substantial binding obligation to spend at least 5% of the
-  net proceeds, to spend at least 85% within three years, and to proceed with due diligence
+- **They are bound to it within months.** This is the arbitrage rules' expectation test, not a duty to spend: a tax-exempt
+  issue for capital projects keeps its three-year temporary period only if the issuer reasonably expects, at issue, to
+  incur within six months a substantial binding obligation to spend at least 5% of the net proceeds, to spend at least
+  85% within three years, and to proceed with due diligence
   ([26 CFR 1.148-2(e)(2)](https://www.ecfr.gov/current/title-26/chapter-I/subchapter-A/part-1/subject-group-ECFR3c5c9fb15635ebb/section-1.148-2)).
+  A city that borrows for a works expects to build it within months; the six months is the harness's and the dial's.
 
-The rule, restated: an ask's bond proceeds pay its works first, the reserve reckoned on the cash beside them; where the
-city's bills drew them (the model's one treasury cannot fence them), what they drew is borrowed again under the debt
-limit, and the limit, not a wait, ends the ask.
+The rule, restated: an ask's bond proceeds pay its works, as a fenced fund pays them, the reserve reckoned on the cash
+beside them. Where the city's bills drew the cash under them (the model's one treasury cannot fence them), the works is
+paid from them all the same and the operating deficit is left on the overdraft, as far as the central bank advances.
+The paper is never sold twice. Where the treasury cannot pay even with the advance, the ask waits a bounded time, then
+ends.
 
 ## 3. What changed (★ the calls)
 
 `AutoBuilder.java`, THE CAP AND THE OPEN ASKS:
-- ★ **spendableFor(own): the proceeds first.** With asks open and the cash at or over nothing, each ask's proceeds are
-  its raised money at most its order's cost (a repricing's leftover is the city's), held by the cash oldest ask first;
-  an ask holds its own proceeds plus the cash over the reserve beside every ask's. No ask, or an overdraft: as before
-  (overReserve()). Oldest first because the proceeds were raised in that order and, where the bills drew the cash under
-  them, the latest raised are the ones spent; it also leaves no loop-order bias between equals.
-- ★ **stillToRaise(): the order's gap**, the cost less spendableFor(own) (an overdraft in full), as place() and canPay()
-  reckon it. Where the bills drew the proceeds, what they drew is offered again, each sale under the limit's test, which
-  withdraws the ask when it closes. Weighed against: (i) mending cause 1 alone and keeping "the paper is never sold
-  twice": rejected, because the dead state stays reachable whenever a deficit draws the proceeds between short sales,
-  and AuctionCheck's own fixture builds exactly that state; (ii) releasing an ask whose sales passed its cost but whose
-  treasury no longer holds it: rejected, because the measure then reopens an ask and sells the same new paper through a
-  withdraw-and-reopen churn, resetting its months open, while the protected-work hold freezes the other orders
-  meanwhile. The net position is reality's: the new paper replaces the proceeds the deficit spent, where a fenced fund
-  would have left the deficit on the overdraft and the proceeds whole.
-- The debt limit stays as it was. An ask whose sale the market refuses at the player's cap still waits (D30, Jerus:
-  "stays open the ask until money raised"); not this batch's.
-- askWords(): the line for an ask whose proceeds the bills drew says that what they drew is offered again every month
-  until the order is paid or the limit closes on it (was: "nothing more is borrowed for it").
-- **Old saves:** no saved field changes (OpenAsk keeps its fields); a saved ask reads as it was and follows the new rule.
-  Nothing loads wrongly: no format bump.
+- ★ **spendableFor(own): the proceeds first** (unchanged by REV-OA1). With asks open and the cash at or over nothing,
+  each ask's proceeds are its raised money at most its order's cost (a repricing's leftover is the city's), held by the
+  cash oldest ask first. An ask holds its own proceeds plus the cash over the reserve beside every ask's. With no ask, or
+  an overdraft, it is as before (overReserve()). Oldest first because the proceeds were raised in that order: where the
+  bills drew the cash under them, the latest raised are the ones spent. It also leaves no loop-order bias between equals.
+- ★ **funded() and covered(): the fenced proceeds pay the order** (REV-OA1). An ask is covered when its raised money, or
+  what the treasury holds for it where that is more (held()), reaches the order's cost, and the treasury can pay that
+  today (payable(): the cost within Game.discretionaryRoom(), the cash plus the central bank's headroom). Where the bills
+  drew the cash, place() pays the order past the cash (Game.allowProceeds(), below): the treasury is overdrawn by what
+  the bills drew. canPay(…, own) says the same for the release of lower asks.
+- ★ **stillToRaise(): the cost less the proceeds**, or less what the treasury holds where that is more (main's formula
+  on the new spendableFor()). The paper is never sold twice; an overdraft is the treasury's, not the order's. A repricing
+  above what was raised is offered, as on main.
+- ★ **The set end: PROCEEDS_WAIT_MONTHS = 6** (a new dial). An ask raised in full that the treasury cannot pay (the bills
+  drew past the central bank's advance) sells nothing more and waits. At the first pass at which it has been open six
+  months it is withdrawn: "the month's bills have spent the proceeds and the central bank advances no more, so the
+  treasury cannot pay the order". Six is the expectation test's term. Months open is counted from the ask's opening, so
+  an ask that took long to raise its cost and then finds the treasury unable to pay is withdrawn at that pass; one
+  raised in time has the rest of its six months to wait.
+- place(): an ask's order borrows the cost past funded(). Where it would take the cash under, it is held first if the
+  treasury cannot pay it (nothing bought, nothing sold). It sets the allowance around its ground and building, clears it
+  in a finally, and its log line says the treasury is overdrawn for "the deficit a fenced fund would have left".
+- askWords(): an ask raised in full that cannot be paid says "the month's bills have drawn the rest, and the central
+  bank advances no more: nothing more is borrowed for it, and the order waits ... withdrawn once it has been open 6
+  months". These are main's two phrases with the new reason.
+
+`Game.java`, AN ORDER PAID FROM ITS OWN BOND'S PROCEEDS (a sub-banner by landPayable()):
+- `proceedsUnder`, a transient allowance (not saved), with `allowProceeds(under)` (package-private). It is added to the
+  four cash tests an order meets: buildStack() and processBuildOrder() (`totalCost <= cash + proceedsUnder`),
+  paveRoads() (`q.total > cash + proceedsUnder`) and landPayable(). It is 0 at every other moment, so the player's and
+  every other order need their cash as before. The payments go through treasuryPays() as ever, BUILDINGS and LAND
+  being discretionary lines within discretionaryRoom(), which payable() checked first.
+
+Weighed and rejected:
+- (i) OA1's first mend, which sold again what the bills drew (stillToRaise() = the cost less spendableFor()). REV-OA1:
+  only the debt limit bounded it, and a deficit wider than the market sells at the cap sold the gap, the overdraft with
+  it, every month for an order never covered, while the DEBT hold kept Water the protected work: the freeze again.
+- (ii) Bounded re-sales (a count) without the fenced order: they end in a withdrawal and a reopened ask selling again.
+- (iii) Paying past the central bank's ceiling as arrears: BUILDINGS accrues arrears past the ceiling, but no order has
+  ever been placed that way. The set end is the plainer edge.
+
+The debt limit stays as it was. An ask whose sale the market refuses at the player's cap still waits while it has money
+to raise (D30, Jerus: "stays open the ask until money raised"); its paper is bounded by its cost.
+
+**Old saves:** no saved field changes (OpenAsk keeps its fields; proceedsUnder is transient). A saved ask reads as it was
+and follows the new rule. Nothing loads wrongly, so there is no format bump.
 
 ## 4. The checks
 
-- **AskProceedsCheck (new, 42 checks): green.** Sections from its header: 1, the finding caused (a town short of water,
-  supply 49,383 against 149,637; cost 3,972.4, raised 3,972.4, cash 4,037.6, reserve 130.4): ordered from the proceeds,
-  its order selling no paper of its own (its entry's borrowing the 3,972.4 raised), the pass's money conserved; 2, the bills drew half: one sale of the gap (raised 1,991.8 for a
-  1,986.2 gap, within a lot), the order placed that pass, the cash conserved; 2b, the market short: offered again,
-  short, the order waits, and the words; 3, the limit between the ratio (2.005) and a sale's (2.469): withdrawn, nothing
-  sold, the raised money stays; 4, played: ordered in month 1, within the six-month test, every month's money audit
-  closed; 5, without the lack: no ask, spendable() is the cash over the reserve (an overdraft in full); two asks with
-  proceeds and reserve whole hold what they held before; water served in full opens no ask.
-- **Against main's AutoBuilder** (origin/main's file swapped in, run, put back; on the merged 0.9.206 code): 18 red, all in
-  sections 1 to 4 (never ordered, never offered again, never withdrawn, nothing in six months); section 5 green. The
-  harness is the finding.
-- **After merging R1g (0.9.206, the 1900 city):** section 1's pass now goes on, after the ask's plant, to order a second
-  Water Treatment Plant on its own bond (4,649.1, borrowing 4,692.6): the town's ratio, 2.018 against the fixture's limit
-  of 3.0, leaves that bond within it, where before it did not. Its two assertions read the cash and bonds over the whole
-  pass ("no bond was sold", "the cash fell by the order's cost"); restated to the claim itself: the ask's order sold no
-  paper of its own (its entry's borrowing is what the ask raised), and over the pass the cash fell by the orders' cost
-  less the new paper's proceeds (8,621.5 less 4,692.6 = 3,929.0), the principal by its face alone. Green again.
-- **AuctionCheck section 10, "the month's bills draw the money": restated (check reality).** Its four assertions stated
-  the old law (the paper not sold twice, the orders waiting on the cash) and went red; the wait they asserted is the
-  finding. Replaced by four: each ask is offered again for its gap and its order placed that month, every ask closed;
-  the new paper is that gap and no more (at most the orders' cost and ground less what the treasury held of the
-  proceeds, a granule an ask; the principal by the face asked alone); the inbox says the order was placed on what its
-  ask raised; the month's money audit closed. The run: 1 ask, 253 raised before, the cash at the pass 96; placed for
-  461, its paper raising 391 more (the gap 365 and a granule); the builder's other measures, no longer held for it,
-  ordered 4 times. The section's other assertions, and the cash coming back in "THE CASH COVERS IT", are unchanged.
-- **WorksFinanceCheck, the fully raised ask: its fixture premise restated.** It was "cash held is short", the reserve
-  and the lower ask's earmark taken out of this ask's proceeds; under the real law the treasury holds them. The fixture
-  now says that, and that the cash over the reserve beside the earmark is short of the cost and a loan of that shortfall
-  would sell; its three assertions (ordered, the lower earmark released, no additional paper) stand unchanged and green.
-  Its title: "a fully raised ask whose proceeds the treasury holds borrows nothing again".
-- **The named harnesses, one at a time, on the merged code (62a4e1551 and the section-1 restatement):** `--fast`
-  green; AskProceedsCheck, AuctionCheck, WorksFinanceCheck and EssentialWorksCheck green; AutoBuildCheck exit 3, main's
-  known red only. Before the merge also IslandLinkCheck and BuildCardCheck green. The pick: ALL (AllChecks lists the new
-  harness), so a dry run is owed; its review line says "not needed - no money, saves or threading in the diff", but the
-  batch moves the city's bond money and its works orders, so the brief has the orchestrator order a stranger's money
-  review at "mends at".
+- **AskProceedsCheck (new, 49 checks): green.** Its sections come from its header:
+  - 1, the finding caused: a town short of water (supply 49,383 against 149,637); cost 3,972.4, raised 3,972.4, cash
+    4,037.6, reserve 130.4. The works is ordered from the proceeds, its order sells no paper of its own, and the pass's
+    money is conserved.
+  - 2, the bills drew 316.4, within the central bank's 632.7 advance, Fill with room: ordered that pass, no paper for
+    it, the cash taken under. The pass's other order, a second plant, sold its own paper (5,027.9, clearing the
+    overdraft). Conserved.
+  - 2b, the same drawn treasury with the market short (a bond for the 316.4 sells 98.7), played for months: ordered in
+    month 1, its entry's borrowing the 3,972.4 raised, nothing past its cost. Every month's audit closed. (The pass
+    then opened a fresh ask for the next plant, the town needing four; it is a new ask with its own cost.)
+  - 2c, drawn past the advance (cash 1,669.8, cash plus advance 2,302.6 against 3,972.4), Fill with room, the cash and
+    the water draw set back before each month: not ordered; nothing sold twice (one lot, 67.6 for a 22.4 repricing at
+    month 4); its words; withdrawn at the pass of month 9, opened at month 3, exactly six months; every audit closed.
+  - 3, the limit between the ratio (2.0175) and a sale of the rest (2.4040) of a half-raised ask: withdrawn, nothing
+    sold, the raised money stays.
+  - 4, played: ordered in month 1, within six months, every audit closed.
+  - 5, without the lack: as before.
+- **Against main's AutoBuilder** (ca030ab08's file swapped in with the dial added so the harness compiles, run, put back,
+  recompiled): 15 red, in sections 1, 2, 2b, 2c's set end, 3's fixture (main's held() takes the reserve out of the
+  proceeds) and 4. Section 5 is green. The harness is the finding.
+- **AuctionCheck section 10, "the month's bills draw the money": main's part restored** (its four assertions and the cash
+  coming back), and one label restated with its reason. On main the order waited because "the treasury does not hold
+  the cost ... no order is placed on money that is not there". Under the fenced rule it waits because the bills drew
+  past the central bank's advance (costs 464, cash plus advance at the pass 331). The label says so, and the assertion
+  reads the treasury's room at the pass's end (a probe). The other three hold unchanged: offered what it still has to
+  raise, sold in full; not sold twice next month, the orders waiting; the inbox's "have drawn the rest" and "nothing
+  more is borrowed for it". OA1's first restatement of this part is gone.
+- **WorksFinanceCheck, the fully raised ask** (REV-OA1 #2). Its premise stays restated to the proceeds the treasury
+  holds. Its "the lower funded reservation is released" passed for a reason it did not name: the release fires for
+  "Power grid", an essential the cash cannot pay, not for streets, which their own proceeds pay. The label and its
+  condition now say that: the withdrawal line names a measure other than streets.
+- **The named harnesses, one at a time, on 278400533's base with the mend:** `--fast` green; AskProceedsCheck,
+  AuctionCheck, WorksFinanceCheck, EssentialWorksCheck, BuildCardCheck and IslandLinkCheck green; AutoBuildCheck exit
+  3, main's known red only. The pick: ALL (AllChecks lists the new harness), so a dry run is owed.
+
+## 5. REV-OA1 (the stranger's money review, 2026-11-25, on 42101f39f)
+
+NOT SHIP, one P1, mended here:
+- P1: the re-sale was bounded only by the debt limit (above, (i)). The mend is the fenced order and the set end; the
+  months-long 2b and 2c fixtures are the evidence it asked for. "No further review."
+- 2: WorksFinanceCheck's release label (section 4).
+- 3, holds: the re-sale booked like the first sale (now gone); the money closes; proceeds outside the reserve; with no
+  ask open, spending is main's.
+- 4: the 26 CFR wording (section 2, the harness header, the banner): the expectation test, not a duty to spend.
