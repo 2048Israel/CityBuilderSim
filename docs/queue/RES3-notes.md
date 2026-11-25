@@ -204,6 +204,20 @@ The orchestrator's calls (2026-11-25) and what they did, on the jobs trace
   Mailed: the people standard, and tenure (an incumbent not yet evictable
   keeps its door, main's rule), are the orchestrator's call.
 
+Decided by the orchestrator, 2026-11-25 16:33 (tell-at-ship, no question):
+(a) the unemployment mend stands; (b) lodging's standard is the 1891 census
+overcrowding line, more than two persons a room, rooms = bedrooms + 1 (the
+census of England and Wales 1891, used to 1931; H55 4, D90 6, H120 8), and
+the doubling's two to a share is held to the same line, so no occupied door
+exceeds it; (c) tenure: a sitting household not yet evictable keeps its door,
+its unpaid rent booked as main books it (Jerus 2026-09-11); (d) Migration
+reads the asked burden (the cheapest suitable vacant door's ask over
+take-home), Village1900Check's premise 1 restated to it; today's twin moving
+927 to 903 people is the honest effect. Then the named harnesses, R1g's
+no-home watch and CreditCrunchCheck green, the ensemble against 0.9.206.md,
+'RES3 dry run?'; no further review unless the ensemble moves a money or
+saves figure. Village trace: target/res3-village (helper's probes).
+
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
 240–600 inclusive, with 361 observations. Native findings, audits, purity and
