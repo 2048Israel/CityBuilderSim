@@ -75,7 +75,8 @@ import static ham.citybuildersim.ConstructionTrapCheck.template;
  *   9. HIS WORK EARNED AT HIS PRICE (R1g): his book priced at DEARER times the rate a point the sites earn, his points most
  *      of the month, as R1g's 1900 village met it (0.42 against 0.29, GDP -51 at month 15): with -Dr1g.hisprice=off the
  *      builders recognise less work than they pay him for; on, the sites earn his points at his price, what they earn for
- *      them is his bill, the month's work is at least it, and his bill is the twin's.
+ *      them is his bill, the month's work is at least it, his bill is the twin's, and what the sites earned past the
+ *      twin's their contracts hold less: earned sooner, never more.
  *  10. THE AUDIT: every month played here balanced to the cent and left nothing moving after it.
  *
  * Every fixture causes its condition.
@@ -893,12 +894,13 @@ public class ForeignCrewsCheck {
     }
 
     static void hisPrice(Path root) {
-        out.println("\n--- 9. his work earned at his price: each site earns the contractor's points at what he bills for them, out of its own contract (R1g) ---");
+        out.println("\n--- 9. his work earned at his price: the sites earn the contractor's points at what he bills for them, out of their own contracts (R1g) ---");
         Game on = backlog(root, "his-price-on", LONG_MONTHS), off = backlog(root, "his-price-off", LONG_MONTHS);
         dearer(on);
         dearer(off);
         Construction cOn = on.getSectors().construction(), cOff = off.getSectors().construction();
         double rate = sitesRate(on.getBuildingManager()), price = cOn.getForeignBookPrice();
+        double heldOn = held(on.getBuildingManager()), heldOff = held(off.getBuildingManager());
         month(on);
         BuildingManager.HIS_PRICE = false;
         try {
@@ -909,16 +911,27 @@ public class ForeignCrewsCheck {
         double built = cOn.getForeignPointsThisMonth(), bill = cOn.getForeignBillThisMonth(), work = cOn.getRecognisedThisMonth();
         double earned = on.getBuildingManager().getForeignEarned(), workOff = cOff.getRecognisedThisMonth(), billOff = cOff.getForeignBillThisMonth();
         double own = on.getBuildingOutputAtEveryPost();
+        double fellOn = heldOn - held(on.getBuildingManager()), fellOff = heldOff - held(off.getBuildingManager());
         out.printf(Locale.ROOT, "  his book %,.4f a point against the sites' %,.4f; he built %,.0f points beside the sites' own month of %,.0f; billed %,.4f;"
                 + " the sites earned %,.4f for his points and %,.4f in all (off: %,.4f in all, billed %,.4f)%n",
                 price, rate, built, own, bill, earned, work, workOff, billOff);
+        out.printf(Locale.ROOT, "  the sites' contracts fell %,.4f over the month, the twin's %,.4f%n", fellOn, fellOff);
         near("fixture: his book is priced at DEARER times the sites' rate a point", price, DEARER * rate, 1e-9 * DEARER * rate);
         ok("fixture: his points are most of the month, in the city and its twin", built > own && cOff.getForeignPointsThisMonth() == built);
         ok("with -Dr1g.hisprice=off the sites earn his points at their own rate: the builders recognise less work than they pay him for"
                 + " (GDP's investment under the import, R1g's month 15)", workOff < billOff);
-        near("on, each site earns his points at his price: what the sites earned for them is his bill", earned, bill, 1e-9 * bill);
+        near("on, the sites earn his points at his price: what they earned for them is his bill", earned, bill, 1e-9 * bill);
         ok("...so the month's work the builders recognise is at least his bill", work >= bill);
         exact("...and his bill is the twin's: the switch moves what the sites earn, not what he is paid", bill, billOff);
+        near("...and what the sites earned past the twin's, their contracts hold less: earned sooner out of what the payers paid, never more",
+                fellOn - fellOff, work - workOff, 1e-9 * Math.max(1, work));
+    }
+
+    /** What the sites' contracts still hold, over every site on the city: what their payers paid for work not yet earned. */
+    static double held(BuildingManager bm) {
+        double v = 0;
+        for (BuildingsStacks s : bm.getStacksUnderConstruction()) v += s.getContractValue();
+        return v;
     }
 
     /* ============================ 8. A CURRENCY REFORM ============================ */

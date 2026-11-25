@@ -2,7 +2,7 @@
 
 Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,750 constants in 638 files.**
+**6,751 constants in 638 files.**
 
 ## model (3047 constants)
 
@@ -285,10 +285,10 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 75 | `BuildingManager.MATERIALS_WORLD_PRICE` | `Good.MATERIALS.worldImportPrice()` | What a unit of construction material costs, in the city's money. |
 | 5439 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
-| 6249 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
-| 6431 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
-| 8142 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 9465 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 6337 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
+| 6519 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
+| 8231 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
+| 9554 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BuildingVisual.java ([map](map/BuildingVisual.md))
 
@@ -5999,7 +5999,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 743 | `ZoningScreen.GROUND_CAVEAT` | `"Ground as it stands: what the city buys next widens a share."` | The caveat a zone's ground owes: amounts, not places. |
 | 1015 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2200 constants)
+## harnesses (2201 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6967,23 +6967,24 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 82 | `ForeignCrewsCheck.MOST_ROADS` | `100` | The most single roads a walk adds after its jump: the jump stops JUMP_SHORT roads under the limit, so a handful reach it. |
-| 85 | `ForeignCrewsCheck.JUMP_SHORT` | `3` | How many roads under the model's own figure a walk's jump stops, so the roads either side of the limit are walked one at a time. |
-| 88 | `ForeignCrewsCheck.MOST_MONTHS` | `24` | The most months the export city is played for the queue at home to fall under one month of the sites, and again for a month that sells. |
-| 91 | `ForeignCrewsCheck.SHARES` | `{ 0.05, 0.10 }` | The first shares section 2 sets the rate for: both under the cap, so the cap does not bind. |
-| 94 | `ForeignCrewsCheck.INFLATION_SHARE` | `0.10` | The share section 4 sets the rate for before the city's level doubles: under the cap, so r can fall. |
-| 97 | `ForeignCrewsCheck.LONG_MONTHS` | `240, HALF_MONTHS_QUEUED = 120` | The queue, in months of the sites, of the long backlog (twenty years) and of the half of it. |
-| 100 | `ForeignCrewsCheck.FAR_OVER` | `5` | How many sites' months the contractor's first month must be over, for a backlog of twenty years: far over. |
-| 103 | `ForeignCrewsCheck.PLAYED` | `6` | The months played in the long backlog, to read the pace each one. |
-| 110 | `ForeignCrewsCheck.QUOTED` | `new java.util.HashMap<>()` | What each backlog fixture's order was quoted, struck just before it was placed (REV-FC2's P1): the foreign crews' share for its work past the threshold without the order (what FC2 quoted until the ... |
-| 113 | `ForeignCrewsCheck.SCHOOL` | `"Middle School", PLANT = "Coal Power Plant"` | Section 7's buildings: one quoted at home, and one far bigger than the threshold's months of the sites, which it splits. |
-| 116 | `ForeignCrewsCheck.HOUSES` | `200` | ...and the Houses ordered after the plant, abroad whole: work of another site's on his book beside it (at the least; housesToOutlast()). |
-| 119 | `ForeignCrewsCheck.HOUSE_MONTHS` | `3` | ...as many as outlast this many months of everything the city's crews and his could build on their site: the month on, the cancels' month and one more. |
-| 122 | `ForeignCrewsCheck.WORKS` | `"Water Treatment Plant"` | ...and the works ordered on foothill ground at the section's end, split at the threshold with its pad's preparation. |
-| 125 | `ForeignCrewsCheck.MOST_MONTHS_TO_FINISH` | `120` | The months the section plays at most for the Houses' site to finish with the plant's work on his book. |
-| 128 | `ForeignCrewsCheck.REFORM` | `1000` | Section 8's reform: the money divided by a thousand, the reviewer's case. |
-| 131 | `ForeignCrewsCheck.ONE_MONTH` | `1` | The months queued within which, under the threshold, the backlog read at both paces must stay: one month. |
-| 134 | `ForeignCrewsCheck.A_POINT` | `1` | The points within which two figures of one month are the same: the sites take whole points of a month struck in whole ones. |
+| 87 | `ForeignCrewsCheck.MOST_ROADS` | `100` | The most single roads a walk adds after its jump: the jump stops JUMP_SHORT roads under the limit, so a handful reach it. |
+| 90 | `ForeignCrewsCheck.JUMP_SHORT` | `3` | How many roads under the model's own figure a walk's jump stops, so the roads either side of the limit are walked one at a time. |
+| 93 | `ForeignCrewsCheck.MOST_MONTHS` | `24` | The most months the export city is played for the queue at home to fall under one month of the sites, and again for a month that sells. |
+| 96 | `ForeignCrewsCheck.SHARES` | `{ 0.05, 0.10 }` | The first shares section 2 sets the rate for: both under the cap, so the cap does not bind. |
+| 99 | `ForeignCrewsCheck.INFLATION_SHARE` | `0.10` | The share section 4 sets the rate for before the city's level doubles: under the cap, so r can fall. |
+| 102 | `ForeignCrewsCheck.LONG_MONTHS` | `240, HALF_MONTHS_QUEUED = 120` | The queue, in months of the sites, of the long backlog (twenty years) and of the half of it. |
+| 105 | `ForeignCrewsCheck.FAR_OVER` | `5` | How many sites' months the contractor's first month must be over, for a backlog of twenty years: far over. |
+| 108 | `ForeignCrewsCheck.PLAYED` | `6` | The months played in the long backlog, to read the pace each one. |
+| 115 | `ForeignCrewsCheck.QUOTED` | `new java.util.HashMap<>()` | What each backlog fixture's order was quoted, struck just before it was placed (REV-FC2's P1): the foreign crews' share for its work past the threshold without the order (what FC2 quoted until the ... |
+| 118 | `ForeignCrewsCheck.SCHOOL` | `"Middle School", PLANT = "Coal Power Plant"` | Section 7's buildings: one quoted at home, and one far bigger than the threshold's months of the sites, which it splits. |
+| 121 | `ForeignCrewsCheck.HOUSES` | `200` | ...and the Houses ordered after the plant, abroad whole: work of another site's on his book beside it (at the least; housesToOutlast()). |
+| 124 | `ForeignCrewsCheck.HOUSE_MONTHS` | `3` | ...as many as outlast this many months of everything the city's crews and his could build on their site: the month on, the cancels' month and one more. |
+| 127 | `ForeignCrewsCheck.WORKS` | `"Water Treatment Plant"` | ...and the works ordered on foothill ground at the section's end, split at the threshold with its pad's preparation. |
+| 130 | `ForeignCrewsCheck.MOST_MONTHS_TO_FINISH` | `120` | The months the section plays at most for the Houses' site to finish with the plant's work on his book. |
+| 133 | `ForeignCrewsCheck.REFORM` | `1000` | Section 8's reform: the money divided by a thousand, the reviewer's case. |
+| 136 | `ForeignCrewsCheck.ONE_MONTH` | `1` | The months queued within which, under the threshold, the backlog read at both paces must stay: one month. |
+| 139 | `ForeignCrewsCheck.A_POINT` | `1` | The points within which two figures of one month are the same: the sites take whole points of a month struck in whole ones. |
+| 877 | `ForeignCrewsCheck.DEARER` | `2` | How many times the rate a point the sites earn section 9 prices his book at: twice. |
 
 ### ForeignDebtCheck.java ([map](map/ForeignDebtCheck.md))
 
