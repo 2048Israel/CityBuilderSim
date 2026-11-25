@@ -49,19 +49,65 @@ All paid-build, positive held-debt, physical closure, native save and ordinary
 twin/audit guards pass. Full Kept/Chart, affected follow-ups, bank and default
 measurements remain pending; the earlier dated evidence below stays labelled.
 
-KeptCheck hits Java heap space in section 63, before the new medicine
-fixture. Its interrupted runs supply no full verdict or medicine pass.
-Ownership remains unresolved. On November 25 the orchestrator stopped the
-heap-dump campaign and directed a live comparison on the PC instead.
+### KeptCheck's section-63 heap: found and mended (RES3c, 2026-11-25)
 
-★ Compare main 304506de2 and RES3 ce504d07b at the same section-63 fixture
-and month, taking a live class histogram after full GC. Diff the top 30
-classes by bytes, identify the growing structure, and mend its lifecycle or
-bound. Add a fixture showing it stays bounded across months. The original
-2 GiB heap, parked-scope bound, fixture and all laws remain unchanged. Full
-GC is diagnostic only; the final ordinary KeptCheck gets no shortcut.
-The fresh RES3-keptgap helper prepares this comparison. Foreign KeptCheck
-and ensemble JVMs are active on the PC; no new JVM starts alongside them.
+The Codex builder's session failed at 11:13 (OpenAI's filter); RES3c
+(Claude) continues the batch from 3ce757db6 and dropped its uncommitted
+four-line note edit, superseded by what follows.
+
+What held the heap. The helper RES3-keptgap's live histograms (main
+304506de2 m2219, RES3 ce504d07b m2221, same fixture) put the branch +730 MB
+and +95,132 Labels over main, but LabeledText (skinned labels) only +2,557:
+the extra Labels were never styled, so made and dropped off a scene. The
+class deltas fit FundScreen's Found rows exactly (Found 4,614 to 18,438,
+Kept rows about three a row, Labels about seven). Its pool walk reached
+17,841 of 153,159 Labels; main and branch both hold 3 Games, 3 UIs and one
+KeptBench there, so the two towns left alive after section 96 are main's,
+not RES3's. RES3c's probe (a per-choice live histogram and each bench
+scene's dirty-node list read by reflection, sections 55-63, temporary and
+reverted; target/res3-probe.patch, its output target/res3-probe-before-fix.txt)
+found the whole spike in one choice, 63's "Search's final partial page":
+Labels 24,622 to 47,318, Found 80 to 3,320, live heap 893 to 1,417 MB, and
+the main scene's dirty-node array grown to 496,693 slots. Every other choice
+from 55 to 63 stays at 24,000-28,600 Labels and 836-919 MB.
+
+The mechanism. A typed search also names the lots the fund closed on the
+issuer's matured bonds (FundView.search), and those grow with the months:
+RES3's Real Estate, the longest issuer, has 1,107 matches at m2222 and
+1,108 a month later (the choice's 3,320 Found rows are three lists of it),
+so the choice presses Show more 27 times.
+Each press refilled the whole list outside a draw (FundScreen.fillResults),
+every row on show made new, so reaching the last page made rows in the
+square of its pages; with no pulse on the bench's windowless scene they all
+waited in its dirty-node list until the next release snapshot. On the box's
+software renderer that ran past 2 GiB. RES3's bigger city (52,269 people
+against main's 34,194) is what lengthens the issuer's list; the churn is
+main's code, latent until a list is long.
+
+★ The mend, FundScreen's Show more redraws kept (f77063213): a click, not a
+key, so the rows on show are handed back and only the next SEARCH_ROWS are
+made; typing still refills in place, the one exception the screen documents
+(a redraw would lose the next key). FP1's design, which Jerus's brief fixed
+("Show more adding as many again ... the rows are what they were, in the
+order they were"), is kept: true paging or aggregating the closed lots would
+change what the page shows, his call, and is not needed. The heap, the
+parked-scope bound, the fixture and every law are unchanged.
+
+The fixture, KeptCheck section 63's new part (searchShowMoreBounded): the
+longest issuer's search past (SHOW_MORE_PRESSES + 1) x SEARCH_ROWS; each of
+two presses hands back every row on show as the same nodes and adds only
+SEARCH_ROWS; then SHOW_MORE_MONTHS months each show the presses' 120 rows,
+the same nodes, while the search grows (1,107 to 1,108), equal to a page
+built new. On the old code its identity law cannot pass (not run there):
+each press refilled outside a draw, where Kept makes every node new.
+Laptop KeptCheck on f77063213, no other heavy JVM: ALL OK, no
+FAIL line, live heap after release 1,288.9 MiB of 2,048 (law: under
+three quarters). The merge of main 0.9.204 (WG3, BX1, 00a5dcc72) needed
+only the generated docs regenerated; the fast check is green on it.
+The named harnesses on 00a5dcc72, laptop, one at a time: SaveFileCheck,
+ReadPathCheck, MonetaryCheck, LabourCheck, ExchangeRateCheck,
+HousingMarketCheck and ReloadCheck green; DenominationCheck and
+InvestCheck known red only (their HT1-H rows, unchanged).
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains

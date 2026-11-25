@@ -10,6 +10,7 @@ Emergency shelter keeps funded demand for separate doors; paid and hosted placem
 clear together. Feasible orders use the affordable backlog and actual operating returns.
 Rent CPI follows comparable class bills; completed consumer purchases supply reference
 weights, including saved new-car and petrol observations and separate home fuels.
+The fund's Search keeps the rows on show at each Show more and makes only the next forty.
 Contract funding, class flows, wage indices and CPI observations use save format/floor 67.
 ## known-reds
 CurrencyRegimeCheck | fixture: the gap is past BREAK_GAP (0.064) | HT1-H | 2026-11-23 | The played reprice leaves gap 0.0641459260050 below BREAK_GAP 0.10. Its before-month fifth-under-shadow target does not cause the asserted after-month gap. Keep hazard and all FX laws; cause the gap at the tested phase. FS10 shipped. See RES3-notes.
