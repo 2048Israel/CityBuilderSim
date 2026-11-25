@@ -110,7 +110,15 @@ Jerus, 2026-11-24 09:12: "Policy, that also lets farms crops as well be cheaper"
 - `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed), so a dry run follows. Its
   review line reads "not needed - no money, saves or threading in the diff".
 
-## The default run
+## The default run, and the ensemble
 
-No code path takes the reserve unless `setFarmlandReserve(true)` is called. The policy
-autopilot and the ensemble never call it, so the default run should not move.
+No code path takes the reserve unless `setFarmlandReserve(true)` is called, and the policy
+autopilot and the ensemble never call it.
+
+The ensemble ran on 9b5b1680e (the review's mend), on the gate box, against
+`docs/ensemble/0.9.204.md` (WG3's, the newest), with no JAVA_OPTS beyond the box's data files.
+It is recorded as `docs/ensemble/RG1.md`.
+- **Batch verdict PASS:** hard criteria 10/10, criteria 25/26 (one retired, not counted), no
+  verdict changed. M1 is 0 and F1 0/16 under every policy.
+- **The trace is unchanged:** all 28 figures with a baseline value equal the baseline's.
+- R1g's dry run took the box partway through. The ensemble waited for it, then resumed.
