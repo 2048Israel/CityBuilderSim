@@ -1,4 +1,4 @@
-# MaterialsCheck.java - 2,196 lines · 44 methods · 30 constants · harnesses
+# MaterialsCheck.java - 2,204 lines · 44 methods · 30 constants · harnesses
 
 `ham/citybuildersim/MaterialsCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      estimate.
 > ... (88 more lines in the source)
 
-**Uses:** [Good](Good.md) (218), [SpreadPlanner](SpreadPlanner.md) (180), [Game](Game.md) (55), [BuildingsTemplate](BuildingsTemplate.md) (54), [OldMetal](OldMetal.md) (45), [Sectors](Sectors.md) (40), [BuildingManager](BuildingManager.md) (33), [Sector](Sector.md) (33), [HeavyIndustry](HeavyIndustry.md) (32), [ProcessingSector](ProcessingSector.md) (31), [BusinessInvestment](BusinessInvestment.md) (25), [Mining](Mining.md) (22), [Resource](Resource.md) (20), [GameFiles](GameFiles.md) (19), [CopperRefining](CopperRefining.md) (18), [Deposit](Deposit.md) (12), [Trade](Trade.md) (11), [GameVersion](GameVersion.md) (11), [Markets](Markets.md) (8), [GoodsMarket](GoodsMarket.md) (8), [UtilitiesHandler](UtilitiesHandler.md) (8), [PriceLevel](PriceLevel.md) (8), [JobType](JobType.md) (8), [MoneyAudit](MoneyAudit.md) (7), [BuildingType](BuildingType.md) (7), [PriceLevelCheck](PriceLevelCheck.md) (7), [CopperRefiningCheck](CopperRefiningCheck.md) (7), [LandManager](LandManager.md) (5), [Statement](Statement.md) (4), [PayTier](PayTier.md) (4)... and 12 more
+**Uses:** [Good](Good.md) (218), [SpreadPlanner](SpreadPlanner.md) (180), [Game](Game.md) (55), [BuildingsTemplate](BuildingsTemplate.md) (55), [OldMetal](OldMetal.md) (45), [Sectors](Sectors.md) (40), [BuildingManager](BuildingManager.md) (33), [Sector](Sector.md) (33), [HeavyIndustry](HeavyIndustry.md) (32), [ProcessingSector](ProcessingSector.md) (31), [BusinessInvestment](BusinessInvestment.md) (25), [Mining](Mining.md) (22), [Resource](Resource.md) (20), [GameFiles](GameFiles.md) (19), [CopperRefining](CopperRefining.md) (18), [Deposit](Deposit.md) (12), [Trade](Trade.md) (11), [GameVersion](GameVersion.md) (11), [BuildingType](BuildingType.md) (8), [Markets](Markets.md) (8), [GoodsMarket](GoodsMarket.md) (8), [UtilitiesHandler](UtilitiesHandler.md) (8), [PriceLevel](PriceLevel.md) (8), [JobType](JobType.md) (8), [MoneyAudit](MoneyAudit.md) (7), [PriceLevelCheck](PriceLevelCheck.md) (7), [CopperRefiningCheck](CopperRefiningCheck.md) (7), [LandManager](LandManager.md) (5), [Statement](Statement.md) (4), [PayTier](PayTier.md) (4)... and 13 more
 
 **Used by (30):** [BuildCardCheck](BuildCardCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [EquipmentCheck](EquipmentCheck.md), [FittingCheck](FittingCheck.md), [ForestryCheck](ForestryCheck.md), [Forms1900Check](Forms1900Check.md), [GoldMiningCheck](GoldMiningCheck.md), [GroundInputCheck](GroundInputCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [KeptCheck](KeptCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MedicineCheck](MedicineCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [NewUnitCheck](NewUnitCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PrizeCheck](PrizeCheck.md), [QuarryingCheck](QuarryingCheck.md), [ResearchCheck](ResearchCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [StaffingDrawCheck](StaffingDrawCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md)
 
@@ -76,25 +76,25 @@
 | 332 | 2. the whole-cost gate and the four cases |
 | 397 | 3. captive use |
 | 466 | 4. the works' own power |
-| 545 | 5. consumables |
-| 583 | 6. a processing sector's plan |
-| 636 | 7. idle, then shed |
-| 698 | 8. Mining on the extraction base |
-| 736 | 9. the iron rows against the study |
-| 815 | 10. a save from before the split |
-| 872 | 11. the integrated route's rows against the study |
-| 977 | 12. old steel, and the 70% rule |
-| 1167 | 13. captive coke and pig iron |
-| 1226 | 14. the works' own power sold |
-| 1264 | 15. Iron Mining's rows against the study |
-| 1362 | 16. a mine fits its field |
-| 1443 | 17. the dig and the retirement by type |
-| 1565 | 18. a kind's year (CY1) |
-| 1773 | the copper town the next sections play |
-| 1812 | 19. a one-month spike orders no works (CY1) |
-| 1892 | 20. a three-month cycle whose year does not pay builds nothing at its peaks (CY1) |
-| 1952 | 21. a feed-short works orders no mill (CY1) |
-| 2031 | 22. an idle works is shed over its year (CY1) |
+| 553 | 5. consumables |
+| 591 | 6. a processing sector's plan |
+| 644 | 7. idle, then shed |
+| 706 | 8. Mining on the extraction base |
+| 744 | 9. the iron rows against the study |
+| 823 | 10. a save from before the split |
+| 880 | 11. the integrated route's rows against the study |
+| 985 | 12. old steel, and the 70% rule |
+| 1175 | 13. captive coke and pig iron |
+| 1234 | 14. the works' own power sold |
+| 1272 | 15. Iron Mining's rows against the study |
+| 1370 | 16. a mine fits its field |
+| 1451 | 17. the dig and the retirement by type |
+| 1573 | 18. a kind's year (CY1) |
+| 1781 | the copper town the next sections play |
+| 1820 | 19. a one-month spike orders no works (CY1) |
+| 1900 | 20. a three-month cycle whose year does not pay builds nothing at its peaks (CY1) |
+| 1960 | 21. a feed-short works orders no mill (CY1) |
+| 2039 | 22. an idle works is shed over its year (CY1) |
 
 ## Constants
 
@@ -102,34 +102,34 @@
 |---:|---|---|---|
 | 174 | `MaterialsCheck.out` | `System.out` | Where the harness prints: the console, kept while a fixture town's prose is sent to `quiet`. |
 | 176 | `MaterialsCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` | A stream that drops what is written to it: the game's prose while a fixture town is founded and played. |
-| 739 | `MaterialsCheck.IRON_ROWS` | `{ Mining.IRON_MINE, HeavyIndustry.ARC_FURNACE, HeavyIndustry.MINI_MILL }` | The iron rows of batch I3 (0.7.120), by their permanent ids: the Iron Mine, the Electric Arc Furnace, the Steel Mini-Mill. |
-| 742 | `MaterialsCheck.STUDY_CASES` | `{ { 2.7, 2.7, 4.1, 4.1 }, { - 0.5, - 0.1, 0.7, 0.2 }, { - 0.5, 0.1, 1.0, 0.4 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
-| 745 | `MaterialsCheck.STUDY_YEARS` | `{ 2.2, 4.4, 3.5 }` | ...their cost over a year of what each would sell abroad, its last column. |
-| 748 | `MaterialsCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(469, 187, 708)` | ...and their running cost a month, D$ thousands, the study's 2.4 "Runs" (the mine's with its diesel in it). |
-| 751 | `MaterialsCheck.STUDY_DIESEL` | `.0006 * PriceLevel.FACTOR` | The study's price of a litre of diesel in its runs, D$ thousands: the oil mockups' D$0.60 (its 1.5). |
-| 754 | `MaterialsCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its cases to a tenth of a point, its years to a tenth. |
-| 875 | `MaterialsCheck.ROUTE_ROWS` | `{ HeavyIndustry.SCRAP_YARD, HeavyIndustry.PELLETISING_PLANT, HeavyIndustry.CO...` | The integrated route's rows of batch I4 (0.7.123), by their permanent ids, in the study's 2.4 order. |
-| 879 | `MaterialsCheck.ROUTE_CASES` | `{ { 1.5, 1.5, 4.7, 4.7 }, { 0.1, 1.8, 3.7, 2.0 }, { - 0.2, 0.7, 2.2, 1.3 }, {...` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
-| 883 | `MaterialsCheck.ROUTE_YEARS` | `{ 1.0, 1.2, 1.7, 0.8, 1.1, 1.1, 1.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
-| 886 | `MaterialsCheck.ROUTE_RUNS` | `PriceLevelCheck.atFounding(255, 1000, 1250, 868, 11700, 25600, 5100)` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs" (only the power each buys from the grid in it, the study's 1.6). |
-| 889 | `MaterialsCheck.ROUTE_COSTS` | `PriceLevelCheck.atFounding(35_000, 270_000, 264_000, 54_000, 1_350_000, 1_800...` | ...their all-in cost, D$ thousands (the study's 2.4). |
-| 892 | `MaterialsCheck.ROUTE_POSTS` | `{ 40, 150, 200, 150, 1200, 1800, 400 }` | ...their posts (the study's 2.4). |
-| 895 | `MaterialsCheck.ROUTE_KW` | `{ 550, 5750, 2200, 2050, 51400, 51600, 77000 }` | ...their draw, kW (the study's 2.4 and 1.6). |
-| 898 | `MaterialsCheck.ROUTE_GEN` | `{ 0, 0, 8000, 0, 60000, 25000, 0 }` | ...and what they make, kW: the Coke Ovens', the Blast Furnace's and the Oxygen Steel Shop's power from their gas (the study's 2.4 and 1.6). |
-| 901 | `MaterialsCheck.ROUTE_HECTARES` | `{ 1.9, 15, 9, 3.7, 60, 84, 46 }` | ...and their ground, hectares (the study's 2.4). |
-| 1267 | `MaterialsCheck.MINE_ROWS` | `{ Mining.LARGE_OPEN_PIT, Mining.MAGNETITE_MINE, Mining.LARGE_MAGNETITE }` | Iron Mining's rows of batch I5 (0.7.124), by their permanent ids, in the study's 2.4 order: the Large Open-Pit Mine, the Magnetite Mine & Concentrator, the Large Magnetite Complex. |
-| 1270 | `MaterialsCheck.MINE_CASES` | `{ { 3.7, 3.7, 5.2, 5.2 }, { 1.2, 1.2, 2.2, 2.2 }, { 2.2, 2.2, 3.3, 3.3 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
-| 1273 | `MaterialsCheck.MINE_YEARS` | `{ 2.0, 2.9, 2.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
-| 1276 | `MaterialsCheck.MINE_RUNS` | `PriceLevelCheck.atFounding(5_420, 951, 9_580)` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs". |
-| 1279 | `MaterialsCheck.MINE_COSTS` | `PriceLevelCheck.atFounding(1_000_000, 60_000, 1_100_000)` | ...their all-in cost, D$ thousands (the study's 2.4). |
-| 1282 | `MaterialsCheck.MINE_POSTS` | `{ 400, 120, 500 }` | ...their posts (the study's 2.4). |
-| 1285 | `MaterialsCheck.MINE_KW` | `{ 3_000, 3_000, 52_000 }, MINE_WATER = { 300, 400, 7_900 }` | ...their draw, kW, and water, units a month (the study's 2.4). |
-| 1288 | `MaterialsCheck.MINE_MAKES` | `{ 500_000, 20_000, 400_000 }, MINE_ROCK = { 500_000, 60_000, 1_200_000 }` | ...what each makes a month, t of ore or concentrate, and the t of rock it digs for it (the study's 2.4: 60,000 t for the small magnetite works' 20,000, 1.2 Mt for the large one's 400,000; the hematite pit ships its or... |
-| 1291 | `MaterialsCheck.MINE_TYPES` | `{ Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE, Deposit.FieldType....` | ...the type of field each stands on, and the sites it takes (the study's 1.3, 2.4: twenty sites for a large mine, one for a small). |
-| 1293 | `MaterialsCheck.MINE_SITES` | `{ 20, 1, 20 }` | ...and the sites each takes. |
-| 1568 | `MaterialsCheck.FC2_CYCLE` | `{ 54, - 83, - 33 }` | What FC2's seed 1 appraised one more Rod Mill at, a month at a time (D$k): +54k, -83k and -33k, over and over, against a hurdle of 45k. |
-| 2040 | `MaterialsCheck.TROUGH_SCALE` | `.5` | Rod's prices in the trough of the cycle of section 22: half the literal, so the last Rod Mill loses money on every tonne of its feed. |
-| 2043 | `MaterialsCheck.PEAK_SCALE` | `1.3` | ...and in its peak: 1.3 times the literal, which pays the last Rod Mill a little. |
+| 747 | `MaterialsCheck.IRON_ROWS` | `{ Mining.IRON_MINE, HeavyIndustry.ARC_FURNACE, HeavyIndustry.MINI_MILL }` | The iron rows of batch I3 (0.7.120), by their permanent ids: the Iron Mine, the Electric Arc Furnace, the Steel Mini-Mill. |
+| 750 | `MaterialsCheck.STUDY_CASES` | `{ { 2.7, 2.7, 4.1, 4.1 }, { - 0.5, - 0.1, 0.7, 0.2 }, { - 0.5, 0.1, 1.0, 0.4 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
+| 753 | `MaterialsCheck.STUDY_YEARS` | `{ 2.2, 4.4, 3.5 }` | ...their cost over a year of what each would sell abroad, its last column. |
+| 756 | `MaterialsCheck.STUDY_RUNS` | `PriceLevelCheck.atFounding(469, 187, 708)` | ...and their running cost a month, D$ thousands, the study's 2.4 "Runs" (the mine's with its diesel in it). |
+| 759 | `MaterialsCheck.STUDY_DIESEL` | `.0006 * PriceLevel.FACTOR` | The study's price of a litre of diesel in its runs, D$ thousands: the oil mockups' D$0.60 (its 1.5). |
+| 762 | `MaterialsCheck.STUDY_ROUNDING` | `.05` | The study's rounding: its cases to a tenth of a point, its years to a tenth. |
+| 883 | `MaterialsCheck.ROUTE_ROWS` | `{ HeavyIndustry.SCRAP_YARD, HeavyIndustry.PELLETISING_PLANT, HeavyIndustry.CO...` | The integrated route's rows of batch I4 (0.7.123), by their permanent ids, in the study's 2.4 order. |
+| 887 | `MaterialsCheck.ROUTE_CASES` | `{ { 1.5, 1.5, 4.7, 4.7 }, { 0.1, 1.8, 3.7, 2.0 }, { - 0.2, 0.7, 2.2, 1.3 }, {...` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
+| 891 | `MaterialsCheck.ROUTE_YEARS` | `{ 1.0, 1.2, 1.7, 0.8, 1.1, 1.1, 1.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
+| 894 | `MaterialsCheck.ROUTE_RUNS` | `PriceLevelCheck.atFounding(255, 1000, 1250, 868, 11700, 25600, 5100)` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs" (only the power each buys from the grid in it, the study's 1.6). |
+| 897 | `MaterialsCheck.ROUTE_COSTS` | `PriceLevelCheck.atFounding(35_000, 270_000, 264_000, 54_000, 1_350_000, 1_800...` | ...their all-in cost, D$ thousands (the study's 2.4). |
+| 900 | `MaterialsCheck.ROUTE_POSTS` | `{ 40, 150, 200, 150, 1200, 1800, 400 }` | ...their posts (the study's 2.4). |
+| 903 | `MaterialsCheck.ROUTE_KW` | `{ 550, 5750, 2200, 2050, 51400, 51600, 77000 }` | ...their draw, kW (the study's 2.4 and 1.6). |
+| 906 | `MaterialsCheck.ROUTE_GEN` | `{ 0, 0, 8000, 0, 60000, 25000, 0 }` | ...and what they make, kW: the Coke Ovens', the Blast Furnace's and the Oxygen Steel Shop's power from their gas (the study's 2.4 and 1.6). |
+| 909 | `MaterialsCheck.ROUTE_HECTARES` | `{ 1.9, 15, 9, 3.7, 60, 84, 46 }` | ...and their ground, hectares (the study's 2.4). |
+| 1275 | `MaterialsCheck.MINE_ROWS` | `{ Mining.LARGE_OPEN_PIT, Mining.MAGNETITE_MINE, Mining.LARGE_MAGNETITE }` | Iron Mining's rows of batch I5 (0.7.124), by their permanent ids, in the study's 2.4 order: the Large Open-Pit Mine, the Magnetite Mine & Concentrator, the Large Magnetite Complex. |
+| 1278 | `MaterialsCheck.MINE_CASES` | `{ { 3.7, 3.7, 5.2, 5.2 }, { 1.2, 1.2, 2.2, 2.2 }, { 2.2, 2.2, 3.3, 3.3 } }` | The study's four cases for them, A to D, in % of the cost a month at parity (materials-chains-research.md 2.5). |
+| 1281 | `MaterialsCheck.MINE_YEARS` | `{ 2.0, 2.9, 2.7 }` | ...their cost over a year of what each would sell abroad, its last column. |
+| 1284 | `MaterialsCheck.MINE_RUNS` | `PriceLevelCheck.atFounding(5_420, 951, 9_580)` | ...their running cost a month, D$ thousands, the study's 2.4 "Runs". |
+| 1287 | `MaterialsCheck.MINE_COSTS` | `PriceLevelCheck.atFounding(1_000_000, 60_000, 1_100_000)` | ...their all-in cost, D$ thousands (the study's 2.4). |
+| 1290 | `MaterialsCheck.MINE_POSTS` | `{ 400, 120, 500 }` | ...their posts (the study's 2.4). |
+| 1293 | `MaterialsCheck.MINE_KW` | `{ 3_000, 3_000, 52_000 }, MINE_WATER = { 300, 400, 7_900 }` | ...their draw, kW, and water, units a month (the study's 2.4). |
+| 1296 | `MaterialsCheck.MINE_MAKES` | `{ 500_000, 20_000, 400_000 }, MINE_ROCK = { 500_000, 60_000, 1_200_000 }` | ...what each makes a month, t of ore or concentrate, and the t of rock it digs for it (the study's 2.4: 60,000 t for the small magnetite works' 20,000, 1.2 Mt for the large one's 400,000; the hematite pit ships its or... |
+| 1299 | `MaterialsCheck.MINE_TYPES` | `{ Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE, Deposit.FieldType....` | ...the type of field each stands on, and the sites it takes (the study's 1.3, 2.4: twenty sites for a large mine, one for a small). |
+| 1301 | `MaterialsCheck.MINE_SITES` | `{ 20, 1, 20 }` | ...and the sites each takes. |
+| 1576 | `MaterialsCheck.FC2_CYCLE` | `{ 54, - 83, - 33 }` | What FC2's seed 1 appraised one more Rod Mill at, a month at a time (D$k): +54k, -83k and -33k, over and over, against a hurdle of 45k. |
+| 2048 | `MaterialsCheck.TROUGH_SCALE` | `.5` | Rod's prices in the trough of the cycle of section 22: half the literal, so the last Rod Mill loses money on every tonne of its feed. |
+| 2051 | `MaterialsCheck.PEAK_SCALE` | `1.3` | ...and in its peak: 1.3 times the literal, which pays the last Rod Mill a little. |
 
 ## Fields (state)
 
@@ -142,7 +142,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 170 | 2027 | **type** `public class MaterialsCheck` | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and iron's sections as its batches came (I3 to I5) - coal, stone and co... |
+| 170 | 2035 | **type** `public class MaterialsCheck` | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and iron's sections as its batches came (I3 to I5) - coal, stone and co... |
 | 178 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 183 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 188 | 5 | `static void quietly(Runnable r)` |  |
@@ -174,133 +174,133 @@
 |---:|---:|---|---|
 | 399 | 66 | `static void captive()` |  |
 
-### 4. the works' own power (lines 466-544)
+### 4. the works' own power (lines 466-552)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 472 | 19 | `static Game powerTown(GameFiles files, int months)` | The power town: section 4's and 5's, bakeries handed power of their own and consumables, run `months`. |
-| 492 | 52 | `static void power() throws Exception` |  |
+| 492 | 60 | `static void power() throws Exception` |  |
 
-### 5. consumables (lines 545-582)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 547 | 35 | `static void consumables()` |  |
-
-### 6. a processing sector's plan (lines 583-635)
+### 5. consumables (lines 553-590)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 585 | 50 | `static void plan()` |  |
+| 555 | 35 | `static void consumables()` |  |
 
-### 7. idle, then shed (lines 636-697)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 638 | 59 | `static void idleThenShed()` |  |
-
-### 8. Mining on the extraction base (lines 698-735)
+### 6. a processing sector's plan (lines 591-643)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 700 | 35 | `static void mining()` |  |
+| 593 | 50 | `static void plan()` |  |
 
-### 9. the iron rows against the study (lines 736-814)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 756 | 58 | `static void ironRows()` |  |
-
-### 10. a save from before the split (lines 815-871)
+### 7. idle, then shed (lines 644-705)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 817 | 54 | `static void olderSave() throws Exception` |  |
+| 646 | 59 | `static void idleThenShed()` |  |
 
-### 11. the integrated route's rows against the study (lines 872-976)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 903 | 73 | `static void routeRows()` |  |
-
-### 12. old steel, and the 70% rule (lines 977-1166)
+### 8. Mining on the extraction base (lines 706-743)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 979 | 187 | `static void oldSteel() throws Exception` |  |
+| 708 | 35 | `static void mining()` |  |
 
-### 13. captive coke and pig iron (lines 1167-1225)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1169 | 56 | `static void captiveRoute()` |  |
-
-### 14. the works' own power sold (lines 1226-1263)
+### 9. the iron rows against the study (lines 744-822)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1228 | 35 | `static void routePower()` |  |
+| 764 | 58 | `static void ironRows()` |  |
 
-### 15. Iron Mining's rows against the study (lines 1264-1361)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1295 | 66 | `static void mineRows()` |  |
-
-### 16. a mine fits its field (lines 1362-1442)
+### 10. a save from before the split (lines 823-879)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1364 | 56 | `static void mineFits()` |  |
-| 1429 | 6 | `static void handWorkers(Game g)` | A fixture city made ready to plan before its next month is played: workers handed to it as InvestCheck hands a shop's - twenty thousand, with diplomas, college and university among them - and the investors told the gr... |
-| 1437 | 5 | `static Game.BuildResult quietlyBuild(Game g, BuildingsTemplate t)` | buildStack() quietly, as the Build tab places one. |
+| 825 | 54 | `static void olderSave() throws Exception` |  |
 
-### 17. the dig and the retirement by type (lines 1443-1564)
+### 11. the integrated route's rows against the study (lines 880-984)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1445 | 119 | `static void mineTypes()` |  |
+| 911 | 73 | `static void routeRows()` |  |
 
-### 18. a kind's year (CY1) (lines 1565-1772)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1570 | 202 | `static void trailingYear()` |  |
-
-### the copper town the next sections play (lines 1773-1811)
+### 12. old steel, and the 70% rule (lines 985-1174)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1776 | 3 | `static Game rodTown(String label, int mills)` | A copper town on the literals with one Electrolytic Refinery standing (the cathode a Rod Mill runs on) and `mills` Rod Mills, the hands hired, two months settled. |
-| 1781 | 6 | `static void rodMonth(Game g, boolean pays)` | One real month with rod's world prices paying a mill or not (CopperRefiningCheck.rodPays(), rodUnpaid()), the hands hired first so the staffing gate refuses no one. |
-| 1789 | 4 | `static void monthAlone(Game g, boolean pays)` | ...with the planner's year emptied first, so that month's plan weighs the month alone: the town on main's rule (to CY1). |
-| 1795 | 5 | `static long rodMills(Game g)` | Rod Mills standing and under construction. |
-| 1802 | 3 | `static double refiningDebt(Game g)` | What Copper Refining owes, loans and bonds. |
-| 1807 | 4 | `static SpreadPlanner.Candidate candidate(List<SpreadPlanner.Candidate> all, BuildingsTemplate t)` | The candidate for one template in an appraisal; null for none. |
+| 987 | 187 | `static void oldSteel() throws Exception` |  |
 
-### 19. a one-month spike orders no works (CY1) (lines 1812-1891)
+### 13. captive coke and pig iron (lines 1175-1233)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1814 | 77 | `static void spikeMonth()` |  |
+| 1177 | 56 | `static void captiveRoute()` |  |
 
-### 20. a three-month cycle whose year does not pay builds nothing at its peaks (CY1) (lines 1892-1951)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1894 | 57 | `static void threeMonthCycle()` |  |
-
-### 21. a feed-short works orders no mill (CY1) (lines 1952-2030)
+### 14. the works' own power sold (lines 1234-1271)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1954 | 76 | `static void feedShortWorks()` |  |
+| 1236 | 35 | `static void routePower()` |  |
 
-### 22. an idle works is shed over its year (CY1) (lines 2031-2196)
+### 15. Iron Mining's rows against the study (lines 1272-1369)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2034 | 4 | `static void rodAt(Game g, double scale)` | Rod's world prices, import and export, at `scale` times the literal: a month that pays the last Rod Mill something or loses it more. |
-| 2045 | 82 | `static void idleOverYear()` |  |
-| 2134 | 62 | `static void idleLagsItsYear(int idleMonths)` | REV-CY1: the month a kind's last works PAID while its year's mean still lagged below nothing. |
+| 1303 | 66 | `static void mineRows()` |  |
+
+### 16. a mine fits its field (lines 1370-1450)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1372 | 56 | `static void mineFits()` |  |
+| 1437 | 6 | `static void handWorkers(Game g)` | A fixture city made ready to plan before its next month is played: workers handed to it as InvestCheck hands a shop's - twenty thousand, with diplomas, college and university among them - and the investors told the gr... |
+| 1445 | 5 | `static Game.BuildResult quietlyBuild(Game g, BuildingsTemplate t)` | buildStack() quietly, as the Build tab places one. |
+
+### 17. the dig and the retirement by type (lines 1451-1572)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1453 | 119 | `static void mineTypes()` |  |
+
+### 18. a kind's year (CY1) (lines 1573-1780)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1578 | 202 | `static void trailingYear()` |  |
+
+### the copper town the next sections play (lines 1781-1819)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1784 | 3 | `static Game rodTown(String label, int mills)` | A copper town on the literals with one Electrolytic Refinery standing (the cathode a Rod Mill runs on) and `mills` Rod Mills, the hands hired, two months settled. |
+| 1789 | 6 | `static void rodMonth(Game g, boolean pays)` | One real month with rod's world prices paying a mill or not (CopperRefiningCheck.rodPays(), rodUnpaid()), the hands hired first so the staffing gate refuses no one. |
+| 1797 | 4 | `static void monthAlone(Game g, boolean pays)` | ...with the planner's year emptied first, so that month's plan weighs the month alone: the town on main's rule (to CY1). |
+| 1803 | 5 | `static long rodMills(Game g)` | Rod Mills standing and under construction. |
+| 1810 | 3 | `static double refiningDebt(Game g)` | What Copper Refining owes, loans and bonds. |
+| 1815 | 4 | `static SpreadPlanner.Candidate candidate(List<SpreadPlanner.Candidate> all, BuildingsTemplate t)` | The candidate for one template in an appraisal; null for none. |
+
+### 19. a one-month spike orders no works (CY1) (lines 1820-1899)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1822 | 77 | `static void spikeMonth()` |  |
+
+### 20. a three-month cycle whose year does not pay builds nothing at its peaks (CY1) (lines 1900-1959)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1902 | 57 | `static void threeMonthCycle()` |  |
+
+### 21. a feed-short works orders no mill (CY1) (lines 1960-2038)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1962 | 76 | `static void feedShortWorks()` |  |
+
+### 22. an idle works is shed over its year (CY1) (lines 2039-2204)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2042 | 4 | `static void rodAt(Game g, double scale)` | Rod's world prices, import and export, at `scale` times the literal: a month that pays the last Rod Mill something or loses it more. |
+| 2053 | 82 | `static void idleOverYear()` |  |
+| 2142 | 62 | `static void idleLagsItsYear(int idleMonths)` | REV-CY1: the month a kind's last works PAID while its year's mean still lagged below nothing. |
 

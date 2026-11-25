@@ -1,4 +1,4 @@
-# NewUnitCheck.java - 1,203 lines · 35 methods · 3 constants · harnesses
+# NewUnitCheck.java - 1,206 lines · 35 methods · 3 constants · harnesses
 
 `ham/citybuildersim/NewUnitCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -76,7 +76,7 @@
 | 697 | · 13 |
 | 945 | · 10 |
 | 999 | · 11 |
-| 1062 | · 12 |
+| 1065 | · 12 |
 
 ## Constants
 
@@ -107,7 +107,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 83 | 1121 | **type** `public final class NewUnitCheck` | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. |
+| 83 | 1124 | **type** `public final class NewUnitCheck` | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. |
 | 90 | 6 | `static void check(String label, boolean ok, String detail)` |  |
 | 97 | 1 | `static void section(String title)` |  |
 | 99 | 1 | `static boolean near(double a, double b)` |  |
@@ -199,16 +199,16 @@
 | 947 | 44 | `static void crewDemand() throws Exception` |  |
 | 993 | 5 | `static double college(Ran r)` | A building's posts in the college band (COLLEGE_HEALTH, _BUSINESS, _ENGINEERING), the band a college teaches. |
 
-### 11 (lines 999-1061)
+### 11 (lines 999-1064)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1001 | 60 | `static void powerAhead() throws Exception` |  |
+| 1001 | 63 | `static void powerAhead() throws Exception` |  |
 
-### 12 (lines 1062-1203)
+### 12 (lines 1065-1206)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1064 | 108 | `static void cardGoods() throws Exception` |  |
-| 1173 | 30 | `public static void main(String[] args) throws Exception` |  |
+| 1067 | 108 | `static void cardGoods() throws Exception` |  |
+| 1176 | 30 | `public static void main(String[] args) throws Exception` |  |
 

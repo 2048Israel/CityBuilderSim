@@ -1528,6 +1528,29 @@ public class LandMarket {
     }
 
     /**
+     * A copy of this office on a copy of its land, to buy offers on one after another with nothing of the city's moved (PW3, REV-PW3 #1, #2): the
+     * offers standing (as DataSave carries them, getOffersState() and its two companions), the next id, the prices struck, the month, the sellers and the
+     * landmasses as they are. LandManager.rehearse() buys on it as buyParcel() buys, and what it lists is what the same purchases list on the city's own
+     * office: listing draws on no random stream (GridOffers.list() reads the grid and the standing rectangles, measure() the world's ground and the
+     * prices struck), so the same purchases in the same order list the same offers under the same ids at the same prices. Null on a bare office and where
+     * the land cannot be copied.
+     */
+    LandMarket rehearsal() {
+        if (land == null) return null;
+        CityLand copy = land.copy();
+        if (copy == null) return null;
+        LandMarket r = new LandMarket();
+        r.land = copy;
+        r.sellers = sellers;
+        r.landmasses = landmasses;
+        r.month = month;
+        r.basePricePerSqFt = basePricePerSqFt;
+        r.restorePriceState(getPriceState());
+        r.restoreOffers(getOffersState(), getOffersReliefState(), getOffersSellersState(), nextId);
+        return r;
+    }
+
+    /**
      * The office as it stood when quoter() was called, for quoting blocks on any thread: its answer is the office's quote() of that moment, to the
      * bit (the same code, on a copy of the land). It never changes after it is made - a purchase made since is not seen by it, so a screen that
      * keeps one asks for another when the city's ground moves.

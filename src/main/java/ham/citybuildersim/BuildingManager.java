@@ -5310,13 +5310,30 @@ public class BuildingManager {
     /** The city's live knowledge (R2b); a standalone catalogue keeps every template available. */
     private java.util.function.Predicate<BuildingsTemplate> templateKnown = t -> true;
 
-    /** Supplied by Game once, reading the current month and local discoveries on every query. */
+    /**
+     * ...and whether the city will know a template a number of months from now, by the calendar as it stands (PW3, THE NEED DATE in
+     * BuildAdvice: a plant the menu brings in time is one a planner can weigh). Until Game supplies it, the menu as it is now.
+     */
+    private java.util.function.BiPredicate<BuildingsTemplate, Integer> templateKnownIn = (t, months) -> templateKnown.test(t);
+
+    /** Supplied by Game once, reading the current month and local discoveries on every query; a menu fixed here stays fixed ahead. */
     public void setTemplateKnown(java.util.function.Predicate<BuildingsTemplate> known) {
         templateKnown = java.util.Objects.requireNonNull(known);
+        templateKnownIn = (t, months) -> known.test(t);
+    }
+
+    /** The calendar ahead, supplied by Game after setTemplateKnown(): whether `t` is known `months` from now. */
+    public void setTemplateKnownIn(java.util.function.BiPredicate<BuildingsTemplate, Integer> knownIn) {
+        templateKnownIn = java.util.Objects.requireNonNull(knownIn);
     }
 
     /** One rule for candidate lists and orders; the complete catalogue remains available for saves and accounting. */
     public boolean isTemplateKnown(BuildingsTemplate t) { return templateKnown.test(t); }
+
+    /** Whether `t` will be known `months` from now (now itself for 0 or less). */
+    public boolean isTemplateKnownIn(BuildingsTemplate t, int months) {
+        return months <= 0 ? isTemplateKnown(t) : templateKnownIn.test(t, months);
+    }
 
     /** Every building the city knows how to build now, in catalogue order (R2b). */
     public List<BuildingsTemplate> getKnownTemplates() {
