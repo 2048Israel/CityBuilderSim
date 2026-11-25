@@ -148,3 +148,16 @@ fuel map, the dispatch record and the grid costs by their JSON. Green.
   season (1.193) and at April's (0.880): a planner's water price is the same to the bit (0.00998178220 in both), the
   economy's and the recipes'; the bills' power part moves by the seasons' ratio and every sector's water bill with it. Red
   under the reviewed code (the planners' price carried the season). WaterPowerCheck: all ok (44).
+
+## 6. The ensemble
+
+On 4d2e358a6 (the final model, REV-PW1-R's note mended), 80 of 80 runs on the gate box (it waited for the box's other
+ensemble and yielded to R1g's dry run), scored here against `docs/ensemble/0.9.202.md`; committed as
+`docs/ensemble/PW1-R.md`. **PASS**: hard criteria 10 of 10, M1 0 months and F1 0 runs in every policy; 25 of 26
+criteria (one retired); no verdict changed. The trace moves, as items 1 and 2 should (the bills follow the season, the
+works' own power is valued at its two prices), and modestly, medians against 0.9.202's:
+- A1 inflation from m240 2.75% [2.24 to 3.03] against 2.65% [2.25 to 2.95], 15 of 16 seeds in band against 16.
+- A2 the longest spell above 10% from m240 14 months [4 to 37] against 13 [4 to 29]: FAIL in both, soft (not M1 or F1).
+- S1 2.63% against 2.47% (16 of 16 within); K1 15.39% against 15.58%, its widest seed 33.06% against 16.99%;
+  R3 -2.73% against -3.25% (1 seed above +1 point, against 0); A3 no deflation spell, the final population 99.09%.
+- T1 16 of 16 seeds to 40,000 people, m320 against m325; T2 9,023,330 against 9,174,482.
