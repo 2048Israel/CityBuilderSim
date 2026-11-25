@@ -736,6 +736,12 @@ on main's 0.9.200), was scored against `docs/ensemble/0.9.199.md` (main keeps no
 
 **HIGH's median** (REV-PW3f's P2): 694,440 against 0.9.199's 734,788, 5.5% under; the sixth run's 623,344 was 15%
 under.
+- Paired by seed (REV-PW3g's item 2): 0.9.199's sixteen HIGH towns were rerun on the box at 41d77afb0, since its
+  CSVs were not kept, and the rerun is the baseline's (median 734,788, range 177,889 to 1,160,038). Each of the
+  seventh run's towns over its own seed's in 0.9.199 gives a median ratio of 0.956 (a geometric mean of 0.969), with
+  9 of 16 below and 7 above. Three are under 0.75 (seed 2 at 0.561, 3 at 0.643 and 9 at 0.614), and five over 1.25
+  (0, 6, 8, 11 and 13, up to seed 6's 1.819). The seventh run is PW3 on main's 0.9.200, so these ratios carry
+  0.9.200's change as well as PW3's.
 - Seed 2, the lowest (99,878), is the sixth run's town row for row over all 720 months. Its power is served at 1.0
   at every sample, and its orders to m260 are two Diesel Stations (m154, $1.9M; m251, $2.5M). Its fork from the
   fifth run's town follows the first of them (REV-PW3g): the two are the same town row for row to m153, and at m154

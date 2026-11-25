@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 29,061 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 29,063 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -27545,7 +27545,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L406 a redenomination scales the book's prices and the fuel paid
   - L410 seedConstants re-strikes the wires: the dial over the unit
 
-## PowerPlanCheck.java - 64 labelled assertions
+## PowerPlanCheck.java - 66 labelled assertions
 
 > The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities.
 > 
@@ -27619,32 +27619,35 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L688 fixture: the reserve test asks for coal (
   - L691 fixture: ground can be had for one coal plant, past what the town owns spare
   - L694 fixture: the builders refuse the plant for no ground and no money (
-- **L767 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant**
-  - L791 the peak-hour gap under the share, the seasonal peak covered: the power suggestion orders nothing (
-  - L802 a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (
-  - L814 a gap past the share with the seasonal peak short at the plant's opening orders (
-  - L835 a seasonal gap under the share that only the opening's slack projects: the power suggestion orders nothing (
-  - L853 a gap under the share with the seasonal peak short in the month and at the plant's completion orders it (
-  - L880 the seasonal peak short at the plant's own completion, the month covered: a gap under the share orders it (
-  - L894 a seasonal gap under the share that only the horizon past the completion projects: the power suggestion orders nothing (
-- **L912 8a (v, vi). two firm rows of different leads: a need date the fast row can still meet orders nothing; at the fast row's own completion, t...**
-  - L942 short at the slow row's completion and covered at the fast row's: the need is the fast row's to meet, later, and nothing orders (
-  - L953 short at the fast row's own completion: the fast row orders, not the slow (
-  - L983 the slow row the cheaper but past its last on-time month, the fast row still able to be on line by the need date: nothing orders (
-- **L986 8a (viii, ix). a faster firm row the calendar brings onto the menu in time is weighed by its arrival and its lead**
-  - L1010 a faster row the calendar brings in time can still meet the need date: the slow row known now waits, and nothing orders (
-- **L1049 8b. the month lacks power when its peak month's peak block goes unserved, shown by the dispatch**
-  - L1072 a city drawing nothing lacks no power
-  - L1084 fixture: every essential service but Power has its operating capacity
-- **L1119 8b (b). the holds read the month's short, through a pass: another essential order waits to preserve Power's quoted first completion only ...**
-  - L1149 the peak block served, Power is not lacked and the roads are ordered, nothing waiting to preserve its completion (
-  - L1152 the peak block unserved, the roads wait to preserve Power's quoted first completion (
-  - L1164 fixture: every essential service but General care has its operating capacity
-- **L1187 8b (b). the holds' guard reads the month's short, through a pass: Power's order waits to preserve a lacked service's completion only when...**
-  - L1214 the peak block served, Power is not lacked and its order waits to preserve
-  - L1217 the peak block unserved, Power is lacked and its order is placed whatever it does to
-- **L1239 9. how often each fires**
-  - L1242 the reserve test and the spread each fired here
+- **L770 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant**
+  - L794 the peak-hour gap under the share, the seasonal peak covered: the power suggestion orders nothing (
+  - L805 a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (
+  - L817 a gap past the share with the seasonal peak short at the plant's opening orders (
+  - L838 a seasonal gap under the share that only the opening's slack projects: the power suggestion orders nothing (
+  - L856 a gap under the share with the seasonal peak short in the month and at the plant's completion orders it (
+  - L883 the seasonal peak short at the plant's own completion, the month covered: a gap under the share orders it (
+  - L897 a seasonal gap under the share that only the horizon past the completion projects: the power suggestion orders nothing (
+- **L916 8a (v, vi). two firm rows of different leads: a need date the fast row can still meet orders nothing; at the fast row's own completion, t...**
+  - L946 short at the slow row's completion and covered at the fast row's: the need is the fast row's to meet, later, and nothing orders (
+  - L957 short at the fast row's own completion: the fast row orders, not the slow (
+  - L987 the slow row the cheaper but past its last on-time month, the fast row still able to be on line by the need date: nothing orders (
+- **L990 8a (v', v''). the slow row on its last on-time month: a faster row meeting the gap at its opening for less waits it; the slow row the che...**
+  - L1013 the slow row on its last on-time month, a faster row closing the gap at its opening for less: the faster row meets the date later, and nothing orders (
+  - L1033 the slow row on its last on-time month and the cheaper: it orders (
+- **L1036 8a (viii, ix). a faster firm row the calendar brings onto the menu in time is weighed by its arrival and its lead**
+  - L1060 a faster row the calendar brings in time can still meet the need date: the slow row known now waits, and nothing orders (
+- **L1099 8b. the month lacks power when its peak month's peak block goes unserved, shown by the dispatch**
+  - L1122 a city drawing nothing lacks no power
+  - L1134 fixture: every essential service but Power has its operating capacity
+- **L1169 8b (b). the holds read the month's short, through a pass: another essential order waits to preserve Power's quoted first completion only ...**
+  - L1199 the peak block served, Power is not lacked and the roads are ordered, nothing waiting to preserve its completion (
+  - L1202 the peak block unserved, the roads wait to preserve Power's quoted first completion (
+  - L1214 fixture: every essential service but General care has its operating capacity
+- **L1237 8b (b). the holds' guard reads the month's short, through a pass: Power's order waits to preserve a lacked service's completion only when...**
+  - L1264 the peak block served, Power is not lacked and its order waits to preserve
+  - L1267 the peak block unserved, Power is lacked and its order is placed whatever it does to
+- **L1289 9. how often each fires**
+  - L1292 the reserve test and the spread each fired here
 
 ## PowerPlantsCheck.java - 59 labelled assertions
 
