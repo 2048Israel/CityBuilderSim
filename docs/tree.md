@@ -748,7 +748,12 @@ adds its line here, not in `CLAUDE.md`.
                                    works out what each zone holds, clears the forest built on and sells,
                                    assesses and buys back zoned ground at the zone's price; the zone's
                                    taxes are the sector's own offsets (Game.setZoneTax()); ZoningCheck
-                                   holds it (docs/studies/spec-zoning.md and spec-materials.md 2.15)
+                                   holds it (docs/studies/spec-zoning.md and spec-materials.md 2.15).
+                                   The farmland reserve (RG1): the fields' zone, by policy, holds its
+                                   ground for every farm (the fields, Wind and Solar Farms) at the
+                                   farmland price, LandMarket.getFarmlandPricePerSqFt() off the nation's
+                                   farm land a hectare, outside the crowding premium (Game.
+                                   setFarmlandReserve()); FarmlandReserveCheck holds it
         ZoningView.java            Policy › Zoning as figures (0.7.109, batch Z2): the hub's four (zoned,
                                    held, the price given up, the forest kept), the dry ground as one bar
                                    cut so its parts add up to it, a zone's row, a sector's page and the
