@@ -1513,8 +1513,9 @@ public final class BuildAdvice {
         // PW3: what each power candidate was read with (the plants open at its own opening, and its lead), for placeFarms() below.
         Map<BuildingsTemplate, Map<BuildingsTemplate, Long>> opened = new LinkedHashMap<>();
         Map<BuildingsTemplate, Double> leads = new LinkedHashMap<>();
-        // ...and every firm row the city could order, the faster ones each due row is weighed against (THE NEED DATE, below).
-        List<BuildingsTemplate> firmRows = new ArrayList<>();
+        // ...and every firm row the city could order, the faster ones each due row is weighed against (THE NEED DATE, below), each with
+        // the months until the menu brings it (0 for a row known now).
+        Map<BuildingsTemplate, Integer> firmRows = new LinkedHashMap<>();
         // ...and the rows due by the waiver alone whose need date is already past their last on-time month (late, below).
         java.util.Set<BuildingsTemplate> late = new java.util.HashSet<>();
         for (BuildingsTemplate t : game.getBuildingManager().getKnownTemplates()) {
@@ -1531,7 +1532,7 @@ public final class BuildAdvice {
             // A building the city cannot staff at all, or one that does not
             // move the figure, serves nothing.
             if (!(unit > 0)) continue;
-            if (power && !isFarm(t)) firmRows.add(t);
+            if (power && !isFarm(t)) firmRows.put(t, 0);
             // Counted twice: at today's demand with the slack, for the order's
             // own wait; then at the demand it opens to after that wait.
             long most = power ? reserveMost(game, t, site) : MOST;
@@ -1610,6 +1611,21 @@ public final class BuildAdvice {
         // that passed: the Oil-Fired Plant's 102.8-month lead saw the seasonal gap of m205 that the 30-month Diesel Station could still
         // meet, and LongPlaytest borrowed $13.7M at m102; before that, an 86,181 kW plant for towns drawing 3,000 kW (REV-PW3d) and, with the
         // share held until the month was short, every diesel a whole lead late (REV-PW3e).
+        // A firm row the calendar brings onto the menu within a due row's lead is weighed too, by its arrival and its own lead: a 1908
+        // town short in 1917 does not commit to the 1900 Oil-Fired Plant while the 1910 Diesel Station can still meet the date.
+        if (power && !weighed.isEmpty()) {
+            double longest = 0;
+            for (Weighed w : weighed) longest = Math.max(longest, w.lead());
+            for (BuildingsTemplate t : game.getBuildingManager().getTemplates()) {
+                if (!m.serves(t) || isFarm(t) || skip.contains(t) || firmRows.containsKey(t) || game.getBuildingManager().isTemplateKnown(t))
+                    continue;
+                for (int k = 1; k < longest; k++)
+                    if (game.getBuildingManager().isTemplateKnownIn(t, k)) {
+                        if (unit(game, m, t) > 0) firmRows.put(t, k);
+                        break;
+                    }
+            }
+        }
         if (power) {
             List<Weighed> due = new ArrayList<>(weighed);
             weighed.clear();
@@ -1846,17 +1862,19 @@ public final class BuildAdvice {
      *   (placeFarms()'s comparison).
      * That row orders at its own last on-time month instead, when it is due itself. In a month already short every row is late and none
      * covered at its completion, and the cheapest orders at once. `site` and `promised` read a faster row's completion as the loop does.
+     * `firm` maps each firm row to the months until the menu brings it, which its completion counts from (0 for a row known now).
      */
     private static boolean timely(Game game, Measure m, Weighed d, Map<BuildingsTemplate, Long> at, boolean late,
-                                  Map<BuildingsTemplate, Long> site, double promised, List<BuildingsTemplate> firm,
+                                  Map<BuildingsTemplate, Long> site, double promised, Map<BuildingsTemplate, Integer> firm,
                                   boolean maintain, double landLeft) {
-        for (BuildingsTemplate u : firm) {
-            double one = game.quoteBuild(u, 1).months;
+        for (Map.Entry<BuildingsTemplate, Integer> row : firm.entrySet()) {
+            BuildingsTemplate u = row.getKey();
+            double one = row.getValue() + game.quoteBuild(u, 1).months;
             if (u == d.t() || !(one < d.lead())) continue;
             if (late && !seasonalShort(game, m, one > promised ? site : WorksValue.openBy(game, site, one), one)) return false;
             long[] c = count(game, m, at, plus(new LinkedHashMap<>(), u, 1), d.ahead(), reserveMost(game, u, at), maintain);
             if (c[0] <= 0 || c[1] != 1) continue;
-            double soon = game.quoteBuild(u, c[0]).months;
+            double soon = row.getValue() + game.quoteBuild(u, c[0]).months;
             if (!(soon < d.lead())) continue;
             if (!d.closes()) return false;
             double cost = isFarm(d.t()) ? reserveRank(game, u, c[0], true, soon, at, d.ahead(), landLeft)

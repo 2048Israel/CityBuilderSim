@@ -2,7 +2,7 @@
 
 Generated 2026-11-24 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**252 harness files, 29,000 labelled assertions.** AllChecks runs 252 of them.
+**252 harness files, 29,004 labelled assertions.** AllChecks runs 252 of them.
 
 ## Which harnesses read which class
 
@@ -150,7 +150,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [GlobePicture](map/GlobePicture.md) | EarthTerrainCheck, GlobeCheck, MapCheck |
 | [GoldMining](map/GoldMining.md) | BuildingDataCheck, GoldMiningCheck, GroundInputCheck |
 | [GoldPrice](map/GoldPrice.md) | GoldMiningCheck, GoldPriceCheck, GoldStandardCheck, PegAnchorCheck, TradeCostCheck, VaultMoneysCheck |
-| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CarCheck, CardCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
+| [Good](map/Good.md) | AgricultureCheck, BankCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, CarCheck, CardCheck, CementConcreteCheck, CoalMiningCheck, ConstructionControlCheck, ConsumptionCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, DenominationCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HistoryCheck, HomeRailCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, LandCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, PartnerCallsCheck, PartnersCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RealDollarCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ReloadCheck, ResearchCheck, RestaurantsCheck, RoadCheck, SaveFileCheck, SectorFlowCheck, SectorStatementCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TruckRouteCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck, WorldMarketCheck, WorldMoneysCheck, ZoningCheck |
 | [GoodsMarket](map/GoodsMarket.md) | AgricultureCheck, BuildingStackCheck, BusinessServicesCheck, CarCheck, CementConcreteCheck, CopperBufferCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, FoodProcessingCheck, ForeignCheck, Forms1900Check, GapOrderCheck, GdpCheck, GoldMiningCheck, HydrogenSteelCheck, InfrastructureCheck, InvestCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, OilCheck, OilViewCheck, OrderDoorCheck, PartnersCheck, PortCheck, PriceLevelCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ReloadCheck, RoadCheck, SaveFileCheck, TradeBandCheck, UndemandedFeedCheck, VanCheck, WellCheck, WoodProductsCheck |
 | [GovernmentPlayer](map/GovernmentPlayer.md) | GovernmentPlayerCheck, LongPlaytest |
 | [GovernmentScreen](map/GovernmentScreen.md) | **none** |
@@ -27487,7 +27487,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L406 a redenomination scales the book's prices and the fuel paid
   - L410 seedConstants re-strikes the wires: the dial over the unit
 
-## PowerPlanCheck.java - 60 labelled assertions
+## PowerPlanCheck.java - 64 labelled assertions
 
 > The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities.
 > 
@@ -27561,26 +27561,32 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L688 fixture: the reserve test asks for coal (
   - L691 fixture: ground can be had for one coal plant, past what the town owns spare
   - L694 fixture: the builders refuse the plant for no ground and no money (
-- **L736 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant**
-  - L760 the peak-hour gap under the share, the seasonal peak covered: the power suggestion orders nothing (
-  - L771 a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (
-  - L781 with the seasonal peak short at the plant's opening it orders (
-  - L802 a seasonal gap under the share that only the opening's slack projects: the power suggestion orders nothing (
-  - L820 a gap under the share with the seasonal peak short in the month and at the plant's completion orders it (
-  - L851 the seasonal peak short at the plant's own completion, the month covered: a gap under the share orders it (
-  - L865 a seasonal gap under the share that only the horizon past the completion projects: the power suggestion orders nothing (
-- **L897 8b. the month lacks power when its peak month's peak block goes unserved, shown by the dispatch**
-  - L920 a city drawing nothing lacks no power
-  - L932 fixture: every essential service but Power has its operating capacity
-- **L967 8b (b). the holds read the month's short, through a pass: another essential order waits to preserve Power's quoted first completion only ...**
-  - L997 the peak block served, Power is not lacked and the roads are ordered, nothing waiting to preserve its completion (
-  - L1000 the peak block unserved, the roads wait to preserve Power's quoted first completion (
-  - L1012 fixture: every essential service but General care has its operating capacity
-- **L1035 8b (b). the holds' guard reads the month's short, through a pass: Power's order waits to preserve a lacked service's completion only when...**
-  - L1062 the peak block served, Power is not lacked and its order waits to preserve
-  - L1065 the peak block unserved, Power is lacked and its order is placed whatever it does to
-- **L1087 9. how often each fires**
-  - L1090 the reserve test and the spread each fired here
+- **L767 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant**
+  - L791 the peak-hour gap under the share, the seasonal peak covered: the power suggestion orders nothing (
+  - L802 a reserve gap that fills FIRST_WORK_SHARE of the plant orders it (
+  - L814 a gap past the share with the seasonal peak short at the plant's opening orders (
+  - L835 a seasonal gap under the share that only the opening's slack projects: the power suggestion orders nothing (
+  - L853 a gap under the share with the seasonal peak short in the month and at the plant's completion orders it (
+  - L880 the seasonal peak short at the plant's own completion, the month covered: a gap under the share orders it (
+  - L894 a seasonal gap under the share that only the horizon past the completion projects: the power suggestion orders nothing (
+- **L912 8a (v, vi). two firm rows of different leads: a need date the fast row can still meet orders nothing; at the fast row's own completion, t...**
+  - L942 short at the slow row's completion and covered at the fast row's: the need is the fast row's to meet, later, and nothing orders (
+  - L953 short at the fast row's own completion: the fast row orders, not the slow (
+  - L983 the slow row the cheaper but past its last on-time month, the fast row still able to be on line by the need date: nothing orders (
+- **L986 8a (viii, ix). a faster firm row the calendar brings onto the menu in time is weighed by its arrival and its lead**
+  - L1010 a faster row the calendar brings in time can still meet the need date: the slow row known now waits, and nothing orders (
+- **L1049 8b. the month lacks power when its peak month's peak block goes unserved, shown by the dispatch**
+  - L1072 a city drawing nothing lacks no power
+  - L1084 fixture: every essential service but Power has its operating capacity
+- **L1119 8b (b). the holds read the month's short, through a pass: another essential order waits to preserve Power's quoted first completion only ...**
+  - L1149 the peak block served, Power is not lacked and the roads are ordered, nothing waiting to preserve its completion (
+  - L1152 the peak block unserved, the roads wait to preserve Power's quoted first completion (
+  - L1164 fixture: every essential service but General care has its operating capacity
+- **L1187 8b (b). the holds' guard reads the month's short, through a pass: Power's order waits to preserve a lacked service's completion only when...**
+  - L1214 the peak block served, Power is not lacked and its order waits to preserve
+  - L1217 the peak block unserved, Power is lacked and its order is placed whatever it does to
+- **L1239 9. how often each fires**
+  - L1242 the reserve test and the spread each fired here
 
 ## PowerPlantsCheck.java - 59 labelled assertions
 

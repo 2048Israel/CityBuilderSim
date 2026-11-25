@@ -1,4 +1,4 @@
-# PowerPlanCheck.java - 1,094 lines · 45 methods · 10 constants · harnesses
+# PowerPlanCheck.java - 1,246 lines · 47 methods · 11 constants · harnesses
 
 `ham/citybuildersim/PowerPlanCheck.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
 
@@ -42,7 +42,7 @@
 >   9. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
 >      the default run's counts are LongPlaytest's line, "the power planner (PW3)".
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (230), [PowerDispatch](PowerDispatch.md) (107), [Game](Game.md) (44), [BuildingsTemplate](BuildingsTemplate.md) (34), [AutoBuilder](AutoBuilder.md) (33), [UtilitiesHandler](UtilitiesHandler.md) (13), [WorksFinanceCheck](WorksFinanceCheck.md) (6), [WorksValue](WorksValue.md) (6), [EssentialWorksCheck](EssentialWorksCheck.md) (6), [SubstationCheck](SubstationCheck.md) (5), [LandManager](LandManager.md) (4), [LandParcel](LandParcel.md) (4), [BuildingManager](BuildingManager.md) (4), [LandMarket](LandMarket.md) (3), [BuildingsStacks](BuildingsStacks.md) (2), [World](World.md) (2), [Landmasses](Landmasses.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [Traffic](Traffic.md) (2), [BuildingType](BuildingType.md) (1), [Substations](Substations.md) (1), [BuildersFirstCheck](BuildersFirstCheck.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [CareType](CareType.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (280), [PowerDispatch](PowerDispatch.md) (107), [Game](Game.md) (46), [BuildingsTemplate](BuildingsTemplate.md) (36), [AutoBuilder](AutoBuilder.md) (33), [UtilitiesHandler](UtilitiesHandler.md) (14), [WorksValue](WorksValue.md) (9), [WorksFinanceCheck](WorksFinanceCheck.md) (6), [EssentialWorksCheck](EssentialWorksCheck.md) (6), [SubstationCheck](SubstationCheck.md) (5), [BuildingManager](BuildingManager.md) (5), [LandManager](LandManager.md) (4), [LandParcel](LandParcel.md) (4), [BuildingType](BuildingType.md) (3), [Substations](Substations.md) (3), [LandMarket](LandMarket.md) (3), [BuildingsStacks](BuildingsStacks.md) (2), [World](World.md) (2), [Landmasses](Landmasses.md) (2), [Good](Good.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [Traffic](Traffic.md) (2), [BuildersFirstCheck](BuildersFirstCheck.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [CareType](CareType.md) (1), [TempDirs](TempDirs.md) (1)
 
 ## Sections
 
@@ -74,6 +74,7 @@
 | 711 | `PowerPlanCheck.SEASONAL` | `PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR` | The year's highest month's peak block over the peak hour's draw: the firm supply the month's dispatch needs at its worst over the supply the plan does (PowerDispatch.PLAN_PEAK_SEASON over PLAN_PEAK_HOUR). |
 | 719 | `PowerPlanCheck.NOW_OVER` | `1.02, NOW_UNDER =.99` | The month's firm supply over the seasonal peak's draw, just over it (the month does not lack) and just under it (it does), in 8a's last two fixtures. |
 | 722 | `PowerPlanCheck.GROWTH_AT_LEAD` | `.30` | The town's growth over the coal plant's lead in 8a's growing town (BusinessInvestment.growthFactor() at the lead, less one), to a hundredth (the history is whole people). |
+| 901 | `PowerPlanCheck.ARRIVES` | `12` | (viii)'s months until the calendar brings the Diesel Station: as 1910's to a town of 1908, well inside coal's lead with the diesel's. |
 
 ## Fields (state)
 
@@ -85,7 +86,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 1046 | **type** `public final class PowerPlanCheck` | The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities. |
+| 49 | 1198 | **type** `public final class PowerPlanCheck` | The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities. |
 | 53 | 4 | `static void check(String label, boolean ok)` |  |
 | 58 | 3 | `static boolean close(double a, double b, double tol)` |  |
 | 72 | 7 | `static Game town(Path root, String name, String...menu)` | WorksFinanceCheck.town()'s founded 1900 town (its one coal plant, people at three-quarters of its homes, a flat history, the builder's debt limit 0 and cash anyway) knowing only `menu` of the power plants, with the ca... |
@@ -171,20 +172,22 @@
 |---:|---:|---|---|
 | 682 | 25 | `static void refused(Path root)` |  |
 
-### 8. a gap in the reserve alone is not a plant; the month lacks power when its peak month's peak block goes unserved (lines 708-1094)
+### 8. a gap in the reserve alone is not a plant; the month lacks power when its peak month's peak block goes unserved (lines 708-1246)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 714 | 3 | `static void drawRatio(Game g, BuildAdvice.Ahead p, double ratio)` | The city's draw set so the peak hour's demand at `p` is `ratio` of its firm supply (the gap that makes it so is drawGap()'s). |
 | 725 | 3 | `static BuildAdvice.Ahead completion(Game g, double lead)` | A plant's own completion: its lead and the town's growth over it, no horizon past it and no slack (BuildAdvice.suggestFor()'s share rule). |
 | 730 | 4 | `static double supplyOverDraw(Game g, BuildAdvice.Ahead p)` | The firm supply over the city's draw at `p`: the plan's peak hour is PLAN_PEAK_HOUR of the draw, the month's peak block PLAN_PEAK, in the year's highest month PLAN_PEAK_SEASON. |
-| 735 | 134 | `static void calmPeak(Path root)` |  |
-| 871 | 5 | `static int peakCalendarMonth(UtilitiesHandler u)` | The calendar month of the year's highest load at this city's latitude, as its dispatch reads it (PowerDispatch.season(month, latitude)). |
-| 881 | 14 | `static double[] peakBlock(Game g, double have)` | The town's month dispatched by the city's own update (UtilitiesHandler.updateEnergyRatio()) in its peak month, the draw set so its firm supply is `have` of it and the wires carry whatever the dispatch asks: the peak b... |
-| 896 | 26 | `static void lacksNow(Path root)` |  |
-| 928 | 31 | `static Game holdTown(Path root, String name, double level)` | 8b (b): WorksFinanceCheck.reserveTown()'s founded town, every other essential service given its operating capacity, with a second Coal Power Plant going up, nearly built (Power's saved completion, AutoBuilder's pendin... |
-| 966 | 38 | `static void holds(Path root)` | 8b (b): the holds read the same "short now" as the month does, through a real pass (AutoBuilder.crewLimit() and pendingDelay()). |
-| 1009 | 19 | `static Game careTown(Path root, String name, double level, BuildAdvice.Measure care)` | 8b (b), the other way round: reserveTown()'s founded town with General care lacking now, its Community Health Centres going up and their first completion saved (pendingUntil, as rememberPending() quotes it), and no pl... |
-| 1034 | 35 | `static void holdsPower(Path root)` | 8b (b), the guard: the order of a measure the month lacks is never held (AutoBuilder.crewLimit()). |
-| 1070 | 24 | `public static void main(String[] args) throws Exception` |  |
+| 736 | 8 | `static void grow(Game g, double lead)` | The town's history set so it grows GROWTH_AT_LEAD over `lead` months (BusinessInvestment.growthFactor(), the businesses' trend), from half its reachable people. |
+| 766 | 133 | `static void calmPeak(Path root)` | 8a's table (REV-PW3f, 2026-11-24): every case the last four reviews found, the fixture that causes it, and the form of the rule it is red under (each shown red, docs/queue/PW3-notes.md section 2, the need date). |
+| 911 | 110 | `static void needDate(Path root)` | 8a (v) to (ix), REV-PW3f's P1 (2026-11-24): the need date. |
+| 1023 | 5 | `static int peakCalendarMonth(UtilitiesHandler u)` | The calendar month of the year's highest load at this city's latitude, as its dispatch reads it (PowerDispatch.season(month, latitude)). |
+| 1033 | 14 | `static double[] peakBlock(Game g, double have)` | The town's month dispatched by the city's own update (UtilitiesHandler.updateEnergyRatio()) in its peak month, the draw set so its firm supply is `have` of it and the wires carry whatever the dispatch asks: the peak b... |
+| 1048 | 26 | `static void lacksNow(Path root)` |  |
+| 1080 | 31 | `static Game holdTown(Path root, String name, double level)` | 8b (b): WorksFinanceCheck.reserveTown()'s founded town, every other essential service given its operating capacity, with a second Coal Power Plant going up, nearly built (Power's saved completion, AutoBuilder's pendin... |
+| 1118 | 38 | `static void holds(Path root)` | 8b (b): the holds read the same "short now" as the month does, through a real pass (AutoBuilder.crewLimit() and pendingDelay()). |
+| 1161 | 19 | `static Game careTown(Path root, String name, double level, BuildAdvice.Measure care)` | 8b (b), the other way round: reserveTown()'s founded town with General care lacking now, its Community Health Centres going up and their first completion saved (pendingUntil, as rememberPending() quotes it), and no pl... |
+| 1186 | 35 | `static void holdsPower(Path root)` | 8b (b), the guard: the order of a measure the month lacks is never held (AutoBuilder.crewLimit()). |
+| 1222 | 24 | `public static void main(String[] args) throws Exception` |  |
 

@@ -309,6 +309,9 @@ public class Game {
         // research will change this"): a 1900 city builds coal and hydro, as 1900 did.
         buildingManager.setTemplateKnown(t -> foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY ? knows(t)
                 : !ResearchCatalog.nearFuture(t.getSinceText()));
+        // ...and the same calendar ahead, for the power planner's need date (PW3: a plant the menu brings in time is one it can weigh).
+        buildingManager.setTemplateKnownIn((t, months) -> foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY
+                ? t.knownAt(month + months, research) : !ResearchCatalog.nearFuture(t.getSinceText()));
         economyManager = new EconomyManager(buildingManager);
         householdBalance.setInvestmentTaxes(economyManager.getTaxPolicy(), c -> getExchange().price(c), this::receiveInvestmentTax);
         householdBalance.attachInvestmentRegister(equity, c -> getExchange().shortShares(c));

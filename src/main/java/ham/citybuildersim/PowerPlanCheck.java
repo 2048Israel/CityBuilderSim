@@ -759,6 +759,9 @@ public final class PowerPlanCheck {
      *                                                    no candidate, nothing                                (timely()'s first clause)
      *                                                    (vi) short at the diesel's own completion: the       every due row held (a control: green
      *                                                    diesel, its last on-time month                       without the need date)
+     *   a faster row the calendar brings (REV-PW3f,      (viii) (v) with the diesel off the menu, brought     only the rows known now weighed
+     *   LongPlaytest's 1908 Oil-Fired Plant)             12 months on, inside coal's lead: nothing            (BuildingManager.isTemplateKnownIn())
+     *                                                    (ix) brought past coal's lead: coal (a control)
      */
     static void calmPeak(Path root) {
         out.println("--- 8a. a reserve gap with the seasonal peak covered at the plant's opening orders it only when it fills FIRST_WORK_SHARE of the plant ---");
@@ -894,12 +897,16 @@ public final class PowerPlanCheck {
         needDate(root);
     }
 
+    /** (viii)'s months until the calendar brings the Diesel Station: as 1910's to a town of 1908, well inside coal's lead with the diesel's. */
+    static final int ARRIVES = 12;
+
     /**
-     * 8a (v) and (vi), REV-PW3f's P1 (2026-11-24): the need date. A town knowing two firm rows, coal (the slow) and the Diesel Station
+     * 8a (v) to (ix), REV-PW3f's P1 (2026-11-24): the need date. A town knowing two firm rows, coal (the slow) and the Diesel Station
      * (the fast), growing GROWTH_AT_LEAD over coal's lead, the slack 0. Tested each at its own lead, the slowest and biggest row was the
      * one that passed: LongPlaytest's Oil-Fired Plant, 102.8 months, ordered at m102 ($13.7M borrowed) for the seasonal gap of m205 that
      * the 30-month diesel could still meet. One need date and the rows that can be on line by it: short at coal's completion and covered
      * at the diesel's, the gap is the diesel's to meet, later, so nothing orders; short at the diesel's own completion, the diesel orders.
+     * The rows that can be on line by it include one the calendar brings in time ((viii), (ix)): at m102 the diesel was not yet known.
      */
     static void needDate(Path root) {
         out.println("--- 8a (v, vi). two firm rows of different leads: a need date the fast row can still meet orders nothing; at the fast row's own completion, the fast row ---");
@@ -975,6 +982,40 @@ public final class PowerPlanCheck {
         s = suggest(g);
         check("the slow row the cheaper but past its last on-time month, the fast row still able to be on line by the need date: nothing orders (" + named(s) + ")",
                 s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
+
+        out.println("--- 8a (viii, ix). a faster firm row the calendar brings onto the menu in time is weighed by its arrival and its lead ---");
+        // (viii) (v)'s draw at the world's fuel prices, the menu coal alone now and the diesel from ARRIVES months on (as the 1910 Diesel
+        // Station for a 1908 town): its arrival and its lead fall inside coal's, so it can still be on line by the need date, and nothing orders.
+        u.setFuelPrice(Good::worldImportPrice);
+        drawRatio(g, pFast, 1 / NOW_OVER);
+        BuildingManager bm = g.getBuildingManager();
+        know(g, COAL);
+        bm.setTemplateKnownIn((t, months) -> t.getCategory() != BuildingType.ELECTRICITY || Substations.isSubstation(t) || t == coal
+                || t == diesel && months >= ARRIVES);
+        n = BuildAdvice.count(g, POWER, site, Map.of(diesel, 1L), pSlow, BuildAdvice.MOST, true)[0];
+        cheap = BuildAdvice.screening(g, diesel, Math.max(1, n), site, pSlow, land);
+        dear = BuildAdvice.screening(g, coal, 1, site, pSlow, land);
+        nLead = g.quoteBuild(diesel, Math.max(1, n)).months;
+        sdSlow = BuildAdvice.supplyDemand(g, POWER, Map.of(), pSlow);
+        boolean arrivedCovered = !BuildAdvice.seasonalShort(g, POWER, WorksValue.openBy(g, site, ARRIVES + fast), ARRIVES + fast);
+        check(String.format("fixture: the diesel off the menu now and on it %d months on (%b, %b); %d diesels close the gap at coal's opening (%.0f%% of one coal plant's, "
+                                + "under FIRST_WORK_SHARE's) for less (%.4g a kW against %.4g), on line %.1f months on, inside coal's %.1f; the seasonal peak covered at "
+                                + "one diesel's (%b)", ARRIVES, bm.isTemplateKnown(diesel), bm.isTemplateKnownIn(diesel, ARRIVES), n, 100 * (sdSlow[1] - sdSlow[0]) / unit,
+                        cheap, dear, ARRIVES + nLead, slow, arrivedCovered),
+                !bm.isTemplateKnown(diesel) && bm.isTemplateKnownIn(diesel, ARRIVES) && !bm.isTemplateKnownIn(diesel, ARRIVES - 1) && n >= 1
+                        && sdSlow[1] - sdSlow[0] < share * unit && cheap < dear && ARRIVES + nLead < slow && arrivedCovered);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s0 = BuildAdvice.SPREAD_ORDERS.get();
+        s = suggest(g);
+        check("a faster row the calendar brings in time can still meet the need date: the slow row known now waits, and nothing orders (" + named(s) + ")",
+                s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
+
+        // (ix) the diesel brought only after coal's lead: no faster row can be on line by the need date, and coal, the one candidate, orders.
+        int after = (int) Math.ceil(slow) + 1;
+        bm.setTemplateKnownIn((t, months) -> t.getCategory() != BuildingType.ELECTRICITY || Substations.isSubstation(t) || t == coal
+                || t == diesel && months >= after);
+        s = suggest(g);
+        check(String.format("the diesel brought %d months on, past coal's lead: coal orders (%s)", after, named(s)), s != null && s.template() == coal);
         g.getAutoBuilder().setSlack(slack, null);
     }
 
