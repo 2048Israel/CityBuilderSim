@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.207 — FB11, held towns: why no works pays, and the advisor's land funding — 2026-11-25, ready, see docs/queue/FB11-notes.md
+The playtest's player buys the ground a sector waits on with a bond, where its cash share could not. While the city's landlords or a works wait for
+ground, the player pays what the share allows from the cash and raises the rest, an overdraft with it, on the funding page's bond (the land office's
+own route). It does so only when its own test for borrowing carries it: the interest on the whole debt, the new bond in it, at the bond's quoted
+rate, at most a quarter of the tax (main's rule, no principal in it). Never when the land is paid from the vault; never for ground nobody asked for.
+LandMarket's whole offers, prices and sellers are untouched; `-Dplaytest.groundFunding=off` plays the old player. In Rotterdam's 1900 city, held
+283 of 401 months for ground on 0.9.206 with up to 394,000 in its treasury, the landlords waited 4 months and it held 443,756 people at month
+1,302 (42,503 on main). Measured again on 0.9.206, the held towns of seeds 3, 11 and 13 (RE3-J) and seed 14's housing finding (FB11H) are gone
+on both foundings, so those two rows left the batch.
+
 ### 0.9.206 — R1g, the 1900 city grows — 2026-11-24, ready, see docs/queue/R1g-notes.md
 A city founded the 1900 way grows now, and the founding screen and the playtest (the gate's audit) found it by default: today's city under
 `-Dplaytest.founded=today`. It had stalled at a few hundred people, because 1901's wages paid for today's homes (rent 0.61 of take-home at
