@@ -759,6 +759,9 @@ public final class PowerPlanCheck {
      *                                                    no candidate, nothing                                (timely()'s first clause)
      *                                                    (vi) short at the diesel's own completion: the       every due row held (a control: green
      *                                                    diesel, its last on-time month                       without the need date)
+     *                                                    (v') short at coal's completion, covered a month     the late clause alone (timely()'s cost
+     *                                                    before: coal on time, the diesel the cheaper:        clause gone)
+     *                                                    nothing; (v'') coal the cheaper: coal (a control)
      *   a faster row the calendar brings (REV-PW3f,      (viii) (v) with the diesel off the menu, brought     only the rows known now weighed
      *   LongPlaytest's 1908 Oil-Fired Plant)             12 months on, inside coal's lead: nothing            (BuildingManager.isTemplateKnownIn())
      *                                                    (ix) brought past coal's lead: coal (a control)
@@ -901,12 +904,13 @@ public final class PowerPlanCheck {
     static final int ARRIVES = 12;
 
     /**
-     * 8a (v) to (ix), REV-PW3f's P1 (2026-11-24): the need date. A town knowing two firm rows, coal (the slow) and the Diesel Station
+     * 8a (v) to (ix), REV-PW3f's P1 (2026-11-24), and (v') and (v''), REV-PW3g's P1: the need date. A town knowing two firm rows, coal (the slow) and the Diesel Station
      * (the fast), growing GROWTH_AT_LEAD over coal's lead, the slack 0. Tested each at its own lead, the slowest and biggest row was the
      * one that passed: LongPlaytest's Oil-Fired Plant, 102.8 months, ordered at m102 ($13.7M borrowed) for the seasonal gap of m205 that
      * the 30-month diesel could still meet. One need date and the rows that can be on line by it: short at coal's completion and covered
      * at the diesel's, the gap is the diesel's to meet, later, so nothing orders; short at the diesel's own completion, the diesel orders.
      * The rows that can be on line by it include one the calendar brings in time ((viii), (ix)): at m102 the diesel was not yet known.
+     * Coal on its last on-time month, not late ((v'), (v'')), is weighed against the diesels on its cost alone, the screening curve.
      */
     static void needDate(Path root) {
         out.println("--- 8a (v, vi). two firm rows of different leads: a need date the fast row can still meet orders nothing; at the fast row's own completion, the fast row ---");
@@ -982,6 +986,52 @@ public final class PowerPlanCheck {
         s = suggest(g);
         check("the slow row the cheaper but past its last on-time month, the fast row still able to be on line by the need date: nothing orders (" + named(s) + ")",
                 s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
+
+        out.println("--- 8a (v', v''). the slow row on its last on-time month: a faster row meeting the gap at its opening for less waits it; the slow row the cheaper orders ---");
+        // (v') the seasonal peak at its line half a month before coal's completion, at the world's fuel prices: short at the completion
+        // and covered a month before it, so coal is on time, not late (REV-PW3g's P1: (v) and (vii) are late, and (viii) is (v)'s draw).
+        // The diesels close coal's gap at its opening for less by the screening curve, the rule's (c): they order at their own last
+        // on-time month instead, and nothing orders now.
+        u.setFuelPrice(Good::worldImportPrice);
+        drawRatio(g, completion(g, slow - .5), 1 / SEASONAL);
+        boolean shortAtSlow = BuildAdvice.seasonalShort(g, POWER, site, slow);
+        late = BuildAdvice.seasonalShort(g, POWER, WorksValue.openBy(g, site, slow - 1), slow - 1);
+        fastCovered = !BuildAdvice.seasonalShort(g, POWER, WorksValue.openBy(g, site, fast), fast);
+        n = BuildAdvice.count(g, POWER, site, Map.of(diesel, 1L), pSlow, BuildAdvice.MOST, true)[0];
+        nLead = g.quoteBuild(diesel, Math.max(1, n)).months;
+        cheap = BuildAdvice.screening(g, diesel, Math.max(1, n), site, pSlow, land);
+        dear = BuildAdvice.screening(g, coal, 1, site, pSlow, land);
+        sdSlow = BuildAdvice.supplyDemand(g, POWER, Map.of(), pSlow);
+        check(String.format("fixture: the seasonal peak short at coal's completion (%b), covered a month before it (%b) and at the diesel's (%b); the gap at coal's "
+                                + "opening %.0f kW, %.0f%% of one coal plant's, under FIRST_WORK_SHARE's; %d diesels close it, built in %.1f months, inside coal's lead, "
+                                + "for less (%.4g a kW against coal's %.4g)", shortAtSlow, !late, fastCovered, sdSlow[1] - sdSlow[0], 100 * (sdSlow[1] - sdSlow[0]) / unit,
+                        n, nLead, cheap, dear),
+                shortAtSlow && !late && fastCovered && sdSlow[1] > sdSlow[0] && sdSlow[1] - sdSlow[0] < share * unit && n >= 1 && nLead < slow && cheap < dear);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s0 = BuildAdvice.SPREAD_ORDERS.get();
+        s = suggest(g);
+        check("the slow row on its last on-time month, a faster row closing the gap at its opening for less: the faster row meets the date later, and nothing orders ("
+                        + named(s) + ")",
+                s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
+
+        // (v'') its twin: the same draw, the diesel's fuel doubled from the world's price until coal is the cheaper at its own opening, so
+        // coal is the least-cost row that meets the date, on its last on-time month, and it orders.
+        dearer = 1;
+        while (dearer < 4096) {
+            dearer *= 2;
+            double k = dearer;
+            u.setFuelPrice(good -> (good == oil ? k : 1) * good.worldImportPrice());
+            n = BuildAdvice.count(g, POWER, site, Map.of(diesel, 1L), pSlow, BuildAdvice.MOST, true)[0];
+            if (BuildAdvice.screening(g, diesel, Math.max(1, n), site, pSlow, land) > BuildAdvice.screening(g, coal, 1, site, pSlow, land)) break;
+        }
+        cheap = BuildAdvice.screening(g, coal, 1, site, pSlow, land);
+        dear = BuildAdvice.screening(g, diesel, Math.max(1, n), site, pSlow, land);
+        check(String.format("fixture: the diesel's fuel %.0f times the world's price, and coal the cheaper at its own opening (%.4g a kW against %d diesels' %.4g)",
+                        dearer, cheap, n, dear), cheap < dear);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s = suggest(g);
+        check("the slow row on its last on-time month and the cheaper: it orders (" + named(s) + ")",
+                s != null && s.template() == coal && s.count() == 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
 
         out.println("--- 8a (viii, ix). a faster firm row the calendar brings onto the menu in time is weighed by its arrival and its lead ---");
         // (viii) (v)'s draw at the world's fuel prices, the menu coal alone now and the diesel from ARRIVES months on (as the 1910 Diesel
