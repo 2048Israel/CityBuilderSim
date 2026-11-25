@@ -754,6 +754,8 @@ public class LandManager {
         land();
         market.update(ownedSqFt, allocatedSqFt, population, usPrices(), month());
         pricePerSqFt = market.getSalePricePerSqFt();
+        // ...and the farmland reserve's price against it (RG1), struck with it.
+        strikeFarmland();
     }
 
     /**
@@ -2604,6 +2606,15 @@ public class LandManager {
        at it (EconomyManager.assessedLandValueOf(), Z4); bought back at it
        too (buybackPriceFor()).
 
+       THE FARMLAND RESERVE (RG1; Zoning's WHY). The fields' zone at the
+       farmland price: its share is the sellers' farmland price over the going
+       price (LandMarket's FARMLAND), struck with the going price
+       (strikeFarmland()), so every reader of a zone's share above sells and
+       assesses it at the farmland price. It holds ground for the city's Wind
+       and Solar Farms too: their ground is taken, priced and given back under
+       the reserve's key (reserveKeyOf(), groundKeyOf()), as a sector's in its
+       zone. No reserve, no change: the key is the building's own sector's.
+
        CLEARING (Z7). Built ground lies on bare ground first - less the bare
        ground the zones hold for others - and past it on open forest, which
        it clears: cut-over ground first (E moves to C, the cleared wood,
@@ -2829,6 +2840,25 @@ public class LandManager {
         // ...a building's, never more than the free ground less the steep ground nothing of its kind may stand on (ET2).
         double idle = use == Use.WORKS ? 0 : idleSlopeSqFt();
         return idle > 0 ? Math.min(free, Math.max(0, freeSqFt(z) - idle)) : free;
+    }
+
+    /** The sellers' farmland price a square foot (RG1, LandMarket's FARMLAND): what the farmland reserve's ground sells at, as far as the going price. */
+    public double getFarmlandPricePerSqFt() { return market.getFarmlandPricePerSqFt(); }
+
+    /** Strikes the reserve's price against the going price (RG1): the farmland price over it, which Zoning.Zone.priceShare() reads - where the going price is struck (updateMarket()) and where the player sets a reserve (Game.setFarmlandReserve()). */
+    public void strikeFarmland() {
+        zoning.strikeFarmland(pricePerSqFt > 0 ? market.getFarmlandPricePerSqFt() / pricePerSqFt : Double.NaN);
+    }
+
+    /** The zone a building's ground is taken from that is not its sector's (RG1): the farmland reserve's for a Wind or Solar Farm while one stands; null otherwise. */
+    public String reserveKeyOf(BuildingsTemplate t) {
+        return t != null && (t.isWind() || t.isSolar()) && zoning.reserve() != null ? Zoning.RESERVE_SECTOR : null;
+    }
+
+    /** ...and the key its ground is taken, priced and given back under: the reserve's for a farm while one stands, else its own sector's (t.getSector(), "" for the city's own). */
+    public String groundKeyOf(BuildingsTemplate t) {
+        String r = reserveKeyOf(t);
+        return r != null || t == null ? r : t.getSector();
     }
 
     /** What a square foot of a sector's zone is sold and assessed at: its price share of the going business price (Z3, Z4); the going price with no zone. That is flat ground's price; groundPriceFor(sector, relief) is a class's. */
