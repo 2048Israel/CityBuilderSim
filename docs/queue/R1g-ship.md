@@ -6,7 +6,9 @@ A city founded the 1900 way grows now, and the founding screen and the playtest 
 month 60) and today's diploma posts met 1901's workers. Its homes are built to 1900's standard, and their cost moves with the households' pay,
 on its last twelve months' mean, capped at today's home (Jerus: "its cost moves with WAGES"; `-Dr1g.walk=off` holds it at 0.29 of today's).
 With no school, the young learn the year's trade at work as apprentices. On 0.9.174 the playtest's 1900 city held 1,852,269 people at month
-2,400, its rent .307 of take-home on average. The walk's months are saved, with no format bump. Village1900Check proves the stall, each fix
+2,400, its rent .307 of take-home on average. The default city now starts in 1900, so the 80-run ensemble plays it too: its final
+populations are 68% of today's city's under AUTO2, 59% under ZERO_SLACK, 25% under ZERO_HOT, 24% under SHOCK and 15% under HIGH, and the
+five T2 rows read FAIL against 0.9.202's baseline (docs/ensemble/R1g.md; M1 and F1 pass in all five). The walk's months are saved, with no format bump. Village1900Check proves the stall, each fix
 and the walk. The city's repairs to its own buildings are government consumption now, paid or owed: their imported material came off GDP
 with nothing against it, so a 1900 city whose building stopped read GDP below zero (GdpCheck). The foreign contractor's points are earned at
 his price the month he builds them, their material on top, out of the contracts whose payers paid it, never more: the 1900 village, whose own crews are a handful,
