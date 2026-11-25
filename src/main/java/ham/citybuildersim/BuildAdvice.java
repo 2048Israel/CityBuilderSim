@@ -1514,9 +1514,18 @@ public final class BuildAdvice {
         return suggestFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, true);
     }
 
-    /** The shared Build-card and automatic full-service target, with the player's reserve setting (HW1). */
+    /**
+     * The shared Build-card and automatic full-service target, with the player's reserve setting (HW1). The reading changes nothing in
+     * the city, so the new units of the buildings under way are fitted once in it and held to its end (R1g; NewUnit.heldWhile()).
+     */
     public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                         double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving, boolean maintain) {
+        return NewUnit.heldWhile(game, () -> suggestionFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, maintain));
+    }
+
+    /** suggestFor()'s reading itself. */
+    private static Suggestion suggestionFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
+                                            double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving, boolean maintain) {
         if (AutoBuilder.essential(m) && !warranted(game, m)) return null;
         // A berth (FR3): the terminal that pays back, if any (A BERTH THAT PAYS BACK, below) - not ranked like a service.
         if (m.kind() == Kind.PORT) return portSuggestion(game, m, cashLeft, landLeft, skip);

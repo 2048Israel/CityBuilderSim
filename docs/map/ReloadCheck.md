@@ -1,4 +1,4 @@
-# ReloadCheck.java - 1,052 lines · 50 methods · 24 constants · harnesses
+# ReloadCheck.java - 1,074 lines · 51 methods · 24 constants · harnesses
 
 `ham/citybuildersim/ReloadCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > Blast Furnace on an empty one), so a harness with the first two alone would
 > ... (27 more lines in the source)
 
-**Uses:** [Game](Game.md) (24), [Good](Good.md) (17), [Trade](Trade.md) (17), [GameFiles](GameFiles.md) (11), [Health](Health.md) (10), [GoodsMarket](GoodsMarket.md) (9), [Sector](Sector.md) (7), [EarthData](EarthData.md) (6), [SectorBooks](SectorBooks.md) (5), [LongPlaytest](LongPlaytest.md) (4), [RealEstate](RealEstate.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [SectorStatements](SectorStatements.md) (2), [TimeSkipReport](TimeSkipReport.md) (2), [PriceIndex](PriceIndex.md) (2), [EarthSite](EarthSite.md) (2), [CapitalFlows](CapitalFlows.md) (1), [Construction](Construction.md) (1), [SaveWriter](SaveWriter.md) (1), [SaveHeader](SaveHeader.md) (1)
+**Uses:** [Game](Game.md) (25), [Good](Good.md) (17), [Trade](Trade.md) (17), [GameFiles](GameFiles.md) (11), [Health](Health.md) (10), [GoodsMarket](GoodsMarket.md) (9), [LongPlaytest](LongPlaytest.md) (8), [Sector](Sector.md) (7), [EarthData](EarthData.md) (6), [SectorBooks](SectorBooks.md) (5), [RealEstate](RealEstate.md) (3), [SectorStatements](SectorStatements.md) (2), [TimeSkipReport](TimeSkipReport.md) (2), [PriceIndex](PriceIndex.md) (2), [EarthSite](EarthSite.md) (2), [Founding](Founding.md) (1), [CapitalFlows](CapitalFlows.md) (1), [Construction](Construction.md) (1), [SaveWriter](SaveWriter.md) (1), [SaveHeader](SaveHeader.md) (1)
 
 **Used by (2):** [BridgeCheck](BridgeCheck.md), [LandmassCheck](LandmassCheck.md)
 
@@ -76,11 +76,11 @@
 | 271 | · the numbers |
 | 282 | · the two files |
 | 340 | · the caused point |
-| 403 | · one checkpoint |
-| 703 | · the report |
-| 896 | · the autosave (FB3, REV-FB3-1) |
-| 975 | · the Earth |
-| 997 | · the run |
+| 425 | · one checkpoint |
+| 725 | · the report |
+| 918 | · the autosave (FB3, REV-FB3-1) |
+| 997 | · the Earth |
+| 1019 | · the run |
 
 ## Constants
 
@@ -95,7 +95,7 @@
 | 138 | `ReloadCheck.CAUSED_CARRY` | `100` | The tonnes of limestone the harness places as a carry on the caused point (FB3, FW6-C; every time since FS17, not only when no checkpoint's city had one). |
 | 141 | `ReloadCheck.CAUSED_TALLY` | `{ 120, 80, 300, 700, 650, 40 }` | The month's tally the harness puts on one market of the caused point (FS17): the goods imported, exported, filled at home, offered, bid for and drawn since the strike, each above zero and none the same. |
 | 144 | `ReloadCheck.CAUSED_PRICE_MOVE` | `1.25` | How far the harness moves the price of the good its hand order draws, between the month's close and the next (FS17): so the makers' stock of it is revalued by a figure that is not zero. |
-| 147 | `ReloadCheck.CAUSED_ORDER` | `5` | The Houses the harness orders on the caused point (FS17): the crews draw materials for them in the month on. |
+| 147 | `ReloadCheck.CAUSED_ORDER` | `5` | The Houses worked before the caused point (FS17, R1g): their materials are reported at the next month's strike. |
 | 150 | `ReloadCheck.CAUSED_CLOSED` | `.05` | The share of Real Estate's count of the places it owns that the harness takes off by hand on the caused point (RN2): a share of its debt then a closed home's, and the month on's count, the portfolio's, moves the count... |
 | 153 | `ReloadCheck.CAUSED_CITY` | `"Danzik, caused"` | The name of the caused point's city, which the by-hand fixtures look it up by (FS17). |
 | 156 | `ReloadCheck.CLOSED_CITY` | `"Danzik, every home closed"` | The name of the last point, reloaded after the autosave with Real Estate counting no place while it owns some (REV-FB16). |
@@ -130,19 +130,19 @@
 | 259 | `int skips, skipsWithOutbreak, skipsSick` |  |
 | 261 | `double countAtLoad` | Real Estate's count of the places it owns in the live city right after the load (RN2), which a month on is read against. |
 | 263 | `HandOrder order` | The hand order the harness made on the live city before this point (FB3, FW6-C), or null: a point with one is the caused point. |
-| 901 | `String problem` | Why it could not be compared (a load that failed), or null. |
-| 903 | `int month, savedMonth` | The month the live city stood at once its autosave was written, and the slot's header: its name and month. |
-| 904 | `String name` |  |
-| 906 | `boolean fired` | Whether the month's end wrote it: the counter started again. |
-| 908 | `int drawsClosed` | The draws the autosaved month closed at its end (Markets.drawsClosedLastMonth()): what its autosave would have carried before FB3 closed them first. |
-| 910 | `final Cause draws` | Every market's draws since the month closed, right after the load (as cause 3i compares them). |
-| 911 | `Compared history, save` |  |
+| 923 | `String problem` | Why it could not be compared (a load that failed), or null. |
+| 925 | `int month, savedMonth` | The month the live city stood at once its autosave was written, and the slot's header: its name and month. |
+| 926 | `String name` |  |
+| 928 | `boolean fired` | Whether the month's end wrote it: the counter started again. |
+| 930 | `int drawsClosed` | The draws the autosaved month closed at its end (Markets.drawsClosedLastMonth()): what its autosave would have carried before FB3 closed them first. |
+| 932 | `final Cause draws` | Every market's draws since the month closed, right after the load (as cause 3i compares them). |
+| 933 | `Compared history, save` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 115 | 938 | **type** `public class ReloadCheck` | Plays a city, saves it, loads the save into a second game, runs both a month and compares what each would save: a reloaded city has to play its next month as the city that kept running. |
+| 115 | 960 | **type** `public class ReloadCheck` | Plays a city, saves it, loads the save into a second game, runs both a month and compares what each would save: a reloaded city has to play its next month as the city that kept running. |
 
 ### the findings (lines 195-270)
 
@@ -178,70 +178,71 @@
 | 309 | 7 | `static Compared compare(Path live, Path reloaded)` | The live city's file against the reloaded city's, key by key and leaf by leaf; null (a file not there) is itself a difference. |
 | 317 | 22 | `static void walk(String path, JsonElement a, JsonElement b, Compared c)` |  |
 
-### the caused point (lines 340-402)
+### the caused point (lines 340-424)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 350 | 52 | `static HandOrder causeTheConditions(Game g, boolean placeACarry)` | FB3 (FW6-C): three restores that no checkpoint's save causes the case of, caused on the live city as it stands (between the presses, a month just closed): a sudden stop begun (the words are a String no array carries);... |
+| 350 | 58 | `static HandOrder causeTheConditions(Game g, boolean placeACarry)` | FB3 (FW6-C): three restores that no checkpoint's save causes the case of, caused on the live city as it stands (between the presses, a month just closed): a sudden stop begun (the words are a String no array carries);... |
+| 410 | 14 | `private static void causeBuildingDraw(Game g)` | Work the order before the checkpoint: the next strike reports the materials drawn in this month, not the one it starts. |
 
-### one checkpoint (lines 403-702)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 411 | 1 | `static Point reload(GameFiles files, Game g, String city)` | The city {@code g} saved where it stands and loaded into a second game, observed right after the load (the markets' tally, the shares, the price index's weights), then both run a month (the sector books, Construction,... |
-| 414 | 32 | `static Point reload(GameFiles files, Game g, String city, HandOrder order)` | ...with the hand order the harness made on the live city before it, if any (FB3, FW6-C), so a month on can read the seller rows it put back. |
-| 448 | 6 | `private static Compared[] saveAndCompare(GameFiles files, Game g, Game back, String when)` | Both cities saved (the live one to slot 2, the reloaded to slot 3) and their files compared: {the history's, the save's}. |
-| 463 | 60 | `private static void observeTheLoad(Point p, Game g, Game back)` | Right after the load, before any month: (c) every market's tally of the month just closed - the goods imported, exported, filled at home, offered and bid for, and the units drawn since (FB3, FW6-C); the trades list ha... |
-| 525 | 12 | `private static void compareDraws(Cause c, String good, List<Trade> live, List<Trade> re)` | (i) One market's draws since the month closed, the live city's against the reloaded city's: how many, and each one's seller, buyer, units and price. |
-| 539 | 3 | `private static SectorBooks.Shares shareRecord(double[] a)` | FS17: a record of the books' shares as SectorBooks.sharesToSave() lays it out in its slots. |
-| 543 | 14 | `private static void compareShares(Cause c, String what, SectorBooks.Shares live, SectorBooks.Shares re)` |  |
-| 563 | 43 | `private static void observeAMonthOn(Point p, Game g, Game back)` | A month on: (a) each sector book's stock revaluation and whether it was counted, (b) Construction's materials drawn at home and imported in the month last struck, (k) Real Estate's count and share (RN2), and (c) the i... |
-| 607 | 4 | `private static double soldAtHome(Sector s, Good good)` |  |
-| 616 | 11 | `private static Map<Good, Set<Trade>> sellerPricedTrades(Point p, Game g)` | (j) Every seller-priced market's trades as the live city has them a month on (FB3, FW6-C), kept by object: Trade is a record, so a set that asked equals() would call this month's sale the last one's. |
-| 633 | 11 | `private static void placeATradeByHand(Point p, Game g, Game back, Map<Good, Set<Trade>> firstMonth)` | FS17: on the caused point, after the first month on's saves are compared and before the second month, a trade placed by hand on every seller-priced market's list, on both twins (GoodsMarket.record, the model's own fil... |
-| 646 | 1 | `static String handTradeSaw(Good good)` | FS17: what a seller-priced market's fixture counts of the trade the harness placed on its list. |
-| 649 | 8 | `private static void tradesOfTheFirstMonthGone(Point p, Game g, Map<Good, Set<Trade>> firstMonth)` | ...and a month later none of those trades is on its market's list: a seller-priced good's month begins as a traded good's does (Markets.startSellerPricedMonth()). |
-| 664 | 23 | `private static void skips(Point p, Game g, Game back)` | (f) Two skips run on each city from the same month, and the second report's health figures compared. |
-| 688 | 1 | `private static int outbreakMonths(TimeSkipReport report)` |  |
-| 695 | 7 | `private static void startOutbreak(Game game)` | FS17: an outbreak put in force by Health's own restore, in the order getState() lays it out: the severity (CAUSED_OUTBREAK), the month it began (this one) and a sick rate with the outbreak on top of what the city had ... |
-
-### the report (lines 703-895)
+### one checkpoint (lines 425-724)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 706 | 5 | `static void check(String label, boolean ok, String detail, List<String> more)` | One labelled assertion, printed either way; a failing one lists, under its line, what differs. |
-| 712 | 1 | `static void check(String label, boolean ok, String detail)` |  |
-| 715 | 6 | `static void nothingDiffers(String label, Findings f, String what)` | An assertion that nothing differs: the first difference on its line, the others (to SHOWN) under it, the rest counted. |
-| 722 | 5 | `static String seen(Map<String, Integer> saw)` |  |
-| 728 | 5 | `static Map<String, Integer> sawTogether(List<Point> points, Function<Point, Cause> cause)` |  |
-| 734 | 3 | `static boolean allAbove0(Map<String, Integer> saw)` |  |
-| 738 | 1 | `static String when(Point p, int monthsOn)` |  |
-| 741 | 16 | `static void history(List<Point> points)` | Sections 1 and 4's history lines: the fixture line first, then each checkpoint a month on and two months on. |
-| 759 | 12 | `static void whole(List<Point> points)` | Sections 2 and 4's whole-save lines. |
-| 772 | 74 | `static void section3(List<Point> points)` |  |
-| 848 | 1 | `static Point causedPoint(List<Point> points)` | The caused point (FS17): the city after its last checkpoint, with the causes set by hand, or null. |
-| 851 | 4 | `static Point pointOf(List<Point> points, String city)` | The point of the city named, compared without a problem, or null (REV-FB16: the caused point's and the last one's). |
-| 860 | 10 | `static void onCausedPoint(Point caused, String id, Function<Point, Cause> which, String...keys)` | FS17: the fixture of a cause the harness sets by hand: the caused point's OWN city showed each of the named figures above zero, whatever the checkpoints showed (a figure the checkpoints alone could supply would be fou... |
-| 872 | 12 | `static void causedCause(List<Point> points, Function<Point, Cause> which, String id, String when, String label)` | A cause whose fixture the caused point supplies (FB3, FW6-C): the line says what the checkpoints alone showed. |
-| 886 | 9 | `static void cause(List<Point> points, Function<Point, Cause> which, String id, String when, String label)` | One cause: the fixture line (the live city showed it at work, in every way named), then its parity at each checkpoint. |
+| 433 | 1 | `static Point reload(GameFiles files, Game g, String city)` | The city {@code g} saved where it stands and loaded into a second game, observed right after the load (the markets' tally, the shares, the price index's weights), then both run a month (the sector books, Construction,... |
+| 436 | 32 | `static Point reload(GameFiles files, Game g, String city, HandOrder order)` | ...with the hand order the harness made on the live city before it, if any (FB3, FW6-C), so a month on can read the seller rows it put back. |
+| 470 | 6 | `private static Compared[] saveAndCompare(GameFiles files, Game g, Game back, String when)` | Both cities saved (the live one to slot 2, the reloaded to slot 3) and their files compared: {the history's, the save's}. |
+| 485 | 60 | `private static void observeTheLoad(Point p, Game g, Game back)` | Right after the load, before any month: (c) every market's tally of the month just closed - the goods imported, exported, filled at home, offered and bid for, and the units drawn since (FB3, FW6-C); the trades list ha... |
+| 547 | 12 | `private static void compareDraws(Cause c, String good, List<Trade> live, List<Trade> re)` | (i) One market's draws since the month closed, the live city's against the reloaded city's: how many, and each one's seller, buyer, units and price. |
+| 561 | 3 | `private static SectorBooks.Shares shareRecord(double[] a)` | FS17: a record of the books' shares as SectorBooks.sharesToSave() lays it out in its slots. |
+| 565 | 14 | `private static void compareShares(Cause c, String what, SectorBooks.Shares live, SectorBooks.Shares re)` |  |
+| 585 | 43 | `private static void observeAMonthOn(Point p, Game g, Game back)` | A month on: (a) each sector book's stock revaluation and whether it was counted, (b) Construction's materials drawn at home and imported in the month last struck, (k) Real Estate's count and share (RN2), and (c) the i... |
+| 629 | 4 | `private static double soldAtHome(Sector s, Good good)` |  |
+| 638 | 11 | `private static Map<Good, Set<Trade>> sellerPricedTrades(Point p, Game g)` | (j) Every seller-priced market's trades as the live city has them a month on (FB3, FW6-C), kept by object: Trade is a record, so a set that asked equals() would call this month's sale the last one's. |
+| 655 | 11 | `private static void placeATradeByHand(Point p, Game g, Game back, Map<Good, Set<Trade>> firstMonth)` | FS17: on the caused point, after the first month on's saves are compared and before the second month, a trade placed by hand on every seller-priced market's list, on both twins (GoodsMarket.record, the model's own fil... |
+| 668 | 1 | `static String handTradeSaw(Good good)` | FS17: what a seller-priced market's fixture counts of the trade the harness placed on its list. |
+| 671 | 8 | `private static void tradesOfTheFirstMonthGone(Point p, Game g, Map<Good, Set<Trade>> firstMonth)` | ...and a month later none of those trades is on its market's list: a seller-priced good's month begins as a traded good's does (Markets.startSellerPricedMonth()). |
+| 686 | 23 | `private static void skips(Point p, Game g, Game back)` | (f) Two skips run on each city from the same month, and the second report's health figures compared. |
+| 710 | 1 | `private static int outbreakMonths(TimeSkipReport report)` |  |
+| 717 | 7 | `private static void startOutbreak(Game game)` | FS17: an outbreak put in force by Health's own restore, in the order getState() lays it out: the severity (CAUSED_OUTBREAK), the month it began (this one) and a sick rate with the outbreak on top of what the city had ... |
 
-### the autosave (FB3, REV-FB3-1) (lines 896-974)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 899 | 14 | **type** `static final class Autosaved` | What section 5 found: the city the month-end autosave holds, loaded from that slot, against the city that wrote it. |
-| 920 | 34 | `static Autosaved autosaveAndReload(GameFiles files, Game g)` | The live city played on, a month at a time, to the month its autosave falls due in, under a save clock past the floor at every look (SaveSlotCheck's), so the game writes the autosave where it writes it: at that month'... |
-| 956 | 18 | `static void section5(Autosaved a)` | Section 5's lines: the two fixtures (the game wrote the autosave at its month's end, in a month that drew), then the draws, the history and the save. |
-
-### the Earth (lines 975-996)
+### the report (lines 725-917)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 978 | 18 | `static boolean earthHere()` | Whether section 4 can run: earth-2.bin named (-Dcbs.earth, or at data/earth-2.bin) and the game reading it; says so in one line where not. |
+| 728 | 5 | `static void check(String label, boolean ok, String detail, List<String> more)` | One labelled assertion, printed either way; a failing one lists, under its line, what differs. |
+| 734 | 1 | `static void check(String label, boolean ok, String detail)` |  |
+| 737 | 6 | `static void nothingDiffers(String label, Findings f, String what)` | An assertion that nothing differs: the first difference on its line, the others (to SHOWN) under it, the rest counted. |
+| 744 | 5 | `static String seen(Map<String, Integer> saw)` |  |
+| 750 | 5 | `static Map<String, Integer> sawTogether(List<Point> points, Function<Point, Cause> cause)` |  |
+| 756 | 3 | `static boolean allAbove0(Map<String, Integer> saw)` |  |
+| 760 | 1 | `static String when(Point p, int monthsOn)` |  |
+| 763 | 16 | `static void history(List<Point> points)` | Sections 1 and 4's history lines: the fixture line first, then each checkpoint a month on and two months on. |
+| 781 | 12 | `static void whole(List<Point> points)` | Sections 2 and 4's whole-save lines. |
+| 794 | 74 | `static void section3(List<Point> points)` |  |
+| 870 | 1 | `static Point causedPoint(List<Point> points)` | The caused point (FS17): the city after its last checkpoint, with the causes set by hand, or null. |
+| 873 | 4 | `static Point pointOf(List<Point> points, String city)` | The point of the city named, compared without a problem, or null (REV-FB16: the caused point's and the last one's). |
+| 882 | 10 | `static void onCausedPoint(Point caused, String id, Function<Point, Cause> which, String...keys)` | FS17: the fixture of a cause the harness sets by hand: the caused point's OWN city showed each of the named figures above zero, whatever the checkpoints showed (a figure the checkpoints alone could supply would be fou... |
+| 894 | 12 | `static void causedCause(List<Point> points, Function<Point, Cause> which, String id, String when, String label)` | A cause whose fixture the caused point supplies (FB3, FW6-C): the line says what the checkpoints alone showed. |
+| 908 | 9 | `static void cause(List<Point> points, Function<Point, Cause> which, String id, String when, String label)` | One cause: the fixture line (the live city showed it at work, in every way named), then its parity at each checkpoint. |
 
-### the run (lines 997-1052)
+### the autosave (FB3, REV-FB3-1) (lines 918-996)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 999 | 53 | `public static void main(String[] args)` |  |
+| 921 | 14 | **type** `static final class Autosaved` | What section 5 found: the city the month-end autosave holds, loaded from that slot, against the city that wrote it. |
+| 942 | 34 | `static Autosaved autosaveAndReload(GameFiles files, Game g)` | The live city played on, a month at a time, to the month its autosave falls due in, under a save clock past the floor at every look (SaveSlotCheck's), so the game writes the autosave where it writes it: at that month'... |
+| 978 | 18 | `static void section5(Autosaved a)` | Section 5's lines: the two fixtures (the game wrote the autosave at its month's end, in a month that drew), then the draws, the history and the save. |
+
+### the Earth (lines 997-1018)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1000 | 18 | `static boolean earthHere()` | Whether section 4 can run: earth-2.bin named (-Dcbs.earth, or at data/earth-2.bin) and the game reading it; says so in one line where not. |
+
+### the run (lines 1019-1074)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1021 | 53 | `public static void main(String[] args)` |  |
 

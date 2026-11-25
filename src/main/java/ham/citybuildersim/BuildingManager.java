@@ -5819,6 +5819,15 @@ public class BuildingManager {
      * its share alone (plan()).
      */
     public java.util.List<Completion> advanceConstruction(int constructionOutput, int foreignPoints) {
+        return advanceConstruction(constructionOutput, foreignPoints, 0);
+    }
+
+    /**
+     * ...and his book's price a point, {@code foreignPrice} (R1g; SimulationEngine passes his offer's): the sites earn his
+     * points at it - THE CONTRACTOR'S POINTS EARNED AT HIS PRICE, below. No price, or no points of his, and the month is
+     * the one it was.
+     */
+    public java.util.List<Completion> advanceConstruction(int constructionOutput, int foreignPoints, double foreignPrice) {
 
         java.util.List<Completion> finished = new java.util.ArrayList<>();
         materialsDue = 0;
@@ -5826,6 +5835,10 @@ public class BuildingManager {
         pointsBuilt = 0;
         abroadPointsBuilt = 0;
         abroadBill = 0;
+        foreignEarned = 0;
+        homeEarned = 0;
+        homeAllowance = 0;
+        foreignMaterial = 0;
         contractsDue.clear();
         controlEvents = new ConstructionControl.Events();
 
@@ -5877,6 +5890,8 @@ public class BuildingManager {
                 }
                 materialsDue += stack.getMaterialsDue();
                 revenueDue += stack.getRevenueDue();
+                homeEarned += stack.getLastHomeEarned();
+                homeAllowance += stack.getLastHomeAllowance();
                 contractsDue.addAll(stack.getDues());
                 if (stack.getLastFinished() > 0) {
                     // ...with what each order's buildings come without, as their lots froze it (R1e), and those no order fitted out.
@@ -5901,6 +5916,7 @@ public class BuildingManager {
                 controlEvents.overtime.addAll(plan.overtime);
                 controlEvents.overtimePoints = plan.overtimePoints;
             }
+            if (HIS_PRICE && foreignPoints > 0 && foreignPrice > 0) earnAtHisPrice(constructionOutput - foreignPoints, foreignPoints, foreignPrice);
         }
         if (engaged) {
             java.util.Set<String> worked = new java.util.HashSet<>();
@@ -5949,6 +5965,94 @@ public class BuildingManager {
 
     /** What the builders owe the foreign crews for it, in the city's money (FC2b): the points built at each site's price. */
     public double getAbroadBill() { return abroadBill; }
+
+    /*
+     * ===== THE CONTRACTOR'S POINTS EARNED AT HIS PRICE (R1g, 2026-11-25; docs/queue/R1g-notes.md, the second negative GDP) =====
+     *
+     * The pooled contractor (FC1, FC2) bills the builders his book's price for every point he builds (Game.settleForeignCrews()),
+     * and the payers whose orders claimed his book paid that price in their quotes (REV-FC2; BuildingsStacks.getAbroadClaim()).
+     * His crews spread over the sites as the month is (plan()), and every site earns its points at its own rate, the value
+     * of its contracts by the points it owes: the home price on all but the part claimed. So a month he built most of
+     * earned his points at the sites' blended rate and billed them at his: the 1900 village, whose own crews are a handful,
+     * imported his 400 points at 168 and earned less for them at m15 of seeds 4-7, and its GDP went negative. A builder
+     * passing a subcontract through recognises its revenue by the costs put in place (the input method of percentage of
+     * completion): the month the subcontractor's dear work goes in is the month its price is earned.
+     *
+     * So, after the sites and the demolitions have earned their own: his points built (Game.settleForeignCrews()'s, the
+     * points past the city's own month and its overtime, never more than he offered), billed at his price; less what his
+     * share of the month's points earned at the sites' rates (his crews on every site alike), their material apart - the
+     * allowance for it priced into the contracts, which pays for the material as Game.settleSiteContracts()'s escalation
+     * settles the rest, and not for his work (the orchestrator, 2026-11-25: a point of his reads value added near nothing,
+     * its output his bill and its material, the material intermediate and his bill the import); the rest - the premium his
+     * payers paid - is earned now out of the home contracts of the sites that claimed his book, by claim, and those
+     * contracts owe it less after (BuildingsStacks.earnAhead()): earned sooner, never more. No claim on any site, and it
+     * is earned by the points the month built on each. A site's contracts are the ceiling: what none has left is not
+     * earned, and the bill stands. A month that earned more than his bill gives nothing back.
+     */
+
+    /** R1g's switch (on unless -Dr1g.hisprice=off; ForeignCrewsCheck section 9 plays a twin with it off): the sites earn the contractor's points at his price. */
+    public static boolean HIS_PRICE = !"off".equalsIgnoreCase(System.getProperty("r1g.hisprice", "on").trim());
+
+    /** What the month's points earned of the sites' contracts at their own rates, the parts handed abroad (FC2b) apart: the stacks' home parts and the demolitions. */
+    private double homeEarned;
+
+    /** ...and of it the material allowance the home contracts priced in (BuildingsStacks.getLastHomeAllowance(); a demolition draws none). */
+    private double homeAllowance;
+
+    /** ...and what the sites earned for the contractor's points this month, their material apart (R1g): his bill, but where the claiming sites' contracts ran out first. */
+    private double foreignEarned;
+
+    /** ...and the material allowance his share of the month's points earned with it, on top. */
+    private double foreignMaterial;
+
+    public double getForeignEarned() { return foreignEarned; }
+
+    public double getForeignMaterial() { return foreignMaterial; }
+
+    /** The premium, his bill less what his share of the month earned at the sites' rates, its material apart, earned ahead from the claiming sites. See the banner above. */
+    private void earnAtHisPrice(int siteOutput, int foreignPoints, double foreignPrice) {
+        double ownMonth = siteOutput + controlEvents.overtimePoints;
+        double built = Math.max(0, Math.min(pointsBuilt - Math.max(0, ownMonth), foreignPoints));
+        if (!(built > 0) || !(pointsBuilt > 0)) return;
+        double bill = built * foreignPrice, share = built / pointsBuilt;
+        foreignMaterial = Math.max(0, homeAllowance * share);
+        double onSites = Math.max(0, homeEarned - homeAllowance) * share;
+        foreignEarned = Math.min(onSites, bill);
+        double premium = bill - onSites;
+        if (!(premium > 0)) return;
+        double[] weight = new double[stacks.size()];
+        double claims = 0;
+        for (int k = 0; k < stacks.size(); k++) {
+            BuildingsStacks s = stacks.get(k);
+            // ...the sites with points owed, as liveClaims() reads them: a finished site's claim is stale, and a load reads none for it.
+            weight[k] = s.owedPoints() > 0 && s.getHomeContractValue() > 0 ? s.getAbroadClaim() : 0;
+            claims += weight[k];
+        }
+        if (!(claims > 0)) {
+            for (int k = 0; k < stacks.size(); k++) {
+                BuildingsStacks s = stacks.get(k);
+                weight[k] = s.getHomeContractValue() > 0 ? Math.max(0, s.getLastApplied() - s.getLastAbroadApplied()) : 0;
+            }
+        }
+        // ...by weight, and what a site's contracts could not take goes round the others still holding some.
+        for (int round = 0; round < stacks.size() && premium > 1e-9; round++) {
+            double total = 0;
+            for (int k = 0; k < stacks.size(); k++) if (weight[k] > 0 && stacks.get(k).getHomeContractValue() > 0) total += weight[k];
+            if (!(total > 0)) break;
+            double left = premium;
+            for (int k = 0; k < stacks.size(); k++) {
+                BuildingsStacks s = stacks.get(k);
+                if (!(weight[k] > 0) || !(s.getHomeContractValue() > 0)) continue;
+                int before = s.getDues().size();
+                double taken = s.earnAhead(left * weight[k] / total);
+                if (!(taken > 0)) continue;
+                premium -= taken;
+                revenueDue += taken;
+                foreignEarned += taken;
+                contractsDue.addAll(s.getDues().subList(before, s.getDues().size()));
+            }
+        }
+    }
 
     /* =====================================================================
        THE PLAYER'S HAND ON THE QUEUE (0.7.22)
@@ -6613,6 +6717,28 @@ public class BuildingManager {
     }
 
     /**
+     * ...and the claims themselves, in their own unit, for the save (R1g): the sites the points above carry. The points
+     * are the claims rescaled to his book, the same shares but not the same bits, and the premium his payers paid is
+     * shared by the claims (earnAtHisPrice()), so a city loaded from the points alone parted from its twin in the last
+     * bit of the month's work two months on (WorldMoneysCheck). Written always, an empty map when none.
+     */
+    public java.util.Map<Integer, Double> getAbroadClaimById() {
+        java.util.Map<Integer, Double> out = new java.util.TreeMap<>();
+        double claims = liveClaims();
+        for (BuildingsStacks s : stacks) if (claimedPoints(s, claims) > 0) out.put(s.getBuilding().getId(), s.getAbroadClaim());
+        return out;
+    }
+
+    /** ...restored over the points where the save carries them (R1g); a save from before the key (null) keeps the points as the claims. */
+    public void restoreAbroadClaims(java.util.Map<Integer, Double> byId) {
+        if (byId == null) return;
+        for (BuildingsStacks s : stacks) {
+            Double v = byId.get(s.getBuilding().getId());
+            if (v != null) s.setAbroadClaim(v);
+        }
+    }
+
+    /**
      * ...and restored from it, the points the claims. A save written before REV-FC2's second review has no key (null):
      * every site with points owed claims his book in proportion to them, as FC1b's cancel cut a site's points left.
      */
@@ -7093,6 +7219,7 @@ public class BuildingManager {
             site.value = Math.max(0, site.value - earned);
             pointsBuilt += applied;
             revenueDue += earned;
+            homeEarned += earned;
             if (done) {
                 control.removeDemolition(site);
                 controlEvents.completed.add(new ConstructionControl.Completed(site));

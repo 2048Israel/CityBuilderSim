@@ -95,11 +95,11 @@ public class GroundSkipCheck {
     static GameFiles townFiles;
     static final int TOWN_SLOT = 1;
 
-    /** The playtest's own town (LongPlaytest.probeCity(), then probePlay(): its founding and its rhythm of skips, looks and moves) to TOWN_MONTHS, saved. */
+    /** The playtest's own town, today's (LongPlaytest.probeTodayCity(), R1g: its moment is today's played path's; then probePlay(): its rhythm of skips, looks and moves) to TOWN_MONTHS, saved. */
     static void playTheTown() {
         Game[] made = new Game[1];
         quietly(() -> {
-            made[0] = LongPlaytest.probeCity(GameFiles.scratch("groundskip-town"), null);
+            made[0] = LongPlaytest.probeTodayCity(GameFiles.scratch("groundskip-town"), null);
             LongPlaytest.probePlay(made[0], TOWN_MONTHS);
         });
         Game t = made[0];

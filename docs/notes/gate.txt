@@ -1,11 +1,14 @@
-# gate of Merge batch/RG1: farm ground at a farm price, by policy (after PW3; REV-PW3b's item 4, Jerus 2026-11-24: "Policy, that also lets farms crops as well be cheaper"): a Wind or Solar Farm's ground is 87-96% of its capital at the city's price, so a grown city builds none; a player's policy (from `Zoning`, as real farmland reserves do) prices ground for every farm, crops and power, at the sellers' farmland price outside the crowding premium, the city giving that ground up to farms; without it, today's prices, 0.9.205
+# gate of Merge batch/R1g: the 1900 city grows; final ensemble against 0.9.180 is complete, but F1 is hard red in AUTO2 and ZERO_SLACK seed 1: monthly GDP -360.892347 at month 1135, annual GDP negative at 1145; all money audits pass. Back from Pending 2026-11-24 (contract section 6, the orchestrator's): the batch merges main, has a helper trace the negative GDP from a saved city's components to a bounded cause, then mends, re-runs the ensemble and dry runs; no waiver, 0.9.206
 # date: 2026-11-25
 # earth-2.bin: named
 # nightly: 2026-11-25 03:03 0.9.202 d657b3a83 4,000 months: RED, exit 1 in 971 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-25-d657b3a83-xbsFLHkH
-# suite: 244 harnesses run in 915s: 227 passed, 17 failed
+# suite: 251 harnesses run in 1159s: 233 passed, 18 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
+HousingDoorCheck | exit 1
+HousingDoorCheck | FAIL fixture: the window holds an order the door would have refused for the bank's capital, put to the owners (MC1)
+HousingDoorCheck | HousingDoorCheck: 1 FAILED
 OrderDoorCheck | exit 1
 OrderDoorCheck | FAIL fixture: there the landlord stands at HN1-A's edge, with ground for three blocks, and the shopkeeper is ready
 OrderDoorCheck | OrderDoorCheck: 1 FAILED
@@ -13,47 +16,62 @@ RoadCheck | exit 1
 RoadCheck | the move follows the card's paving or new-build action and records the actual count              FAIL
 RoadCheck | the test player orders exactly the count on its whole-plan card                                  FAIL
 RoadCheck | 2 FAILED
+AutoBuildCheck | exit 1
+AutoBuildCheck | fixture: the saved city turned people away from general care for its fee                                       FAIL
+AutoBuildCheck | 1 FAILED
 CurrencyCheck | exit 1
 CurrencyCheck | fixture: the city reads a year of 45% inflation                    FAIL  0.000000000 != 0.450000000
 CurrencyCheck | the autopilot sets the rule's rate                                 FAIL  0.030000000 != 0.000000000
 CurrencyCheck | ...past the old stop of the dial                                   FAIL
 CurrencyCheck | 3 FAILED
-PassThroughCheck | exit 1
-PassThroughCheck | fixture: before the step, the shelf holds what the places hand over in both twins, within STOCKING_MONTHS (12) FAIL
-PassThroughCheck | fixture: the shops hand over at least the households' need in both twins in each of the 12 months, the shelf too (0 of 12) FAIL
-PassThroughCheck | the groceries component's pass-through is positive at 12 months: a weaker D$ raised the shelf's price (-3.1% of the step) FAIL
-PassThroughCheck | 3 FAILED
 ForeignDebtCheck | exit 1
 ForeignDebtCheck | fixture: a three-year serial's schedule, a payment a month FAIL
 ForeignDebtCheck | 1 FAILED
-HoldersCheck | exit 3
+HoldersCheck | exit 4
 HoldersCheck | fixture: in those months no household left and none sold the bank's desk any paper FAIL
+HoldersCheck | ...until it has none: the dial past the bank's holding took all of it    FAIL
 HoldersCheck | fixture: ...and the step came from the households                        FAIL
 HoldersCheck | fixture: in the middle - the households still hold some                  FAIL
-HoldersCheck | 3 FAILED
+HoldersCheck | 4 FAILED
 DenominationCheck | exit 1
-DenominationCheck | the same currency                                              FAIL  0.0082783905 != 0.0082783905  (3.23e-09 apart)
-DenominationCheck | the same shops' till                                           FAIL  5.4177337215 != 5.4177317499  (3.64e-07 apart)
-DenominationCheck | the same bank                                                  FAIL  314.4818520835 != 314.4818501195  (6.25e-09 apart)
-DenominationCheck | 3 FAILED
+DenominationCheck | the same output                                                FAIL  11.2713381113 != 11.2725482488  (0.000107 apart)
+DenominationCheck | ...and the same year of it                                     FAIL  151.3402300140 != 151.3441898048  (2.62e-05 apart)
+DenominationCheck | the same rent                                                  FAIL  0.0001622919 != 0.0001622919  (1.68e-07 apart)
+DenominationCheck | the same price level                                           FAIL  1.8595519413 != 1.8595835158  (1.70e-05 apart)
+DenominationCheck | the same currency                                              FAIL  0.0246239940 != 0.0246241754  (7.36e-06 apart)
+DenominationCheck | the same treasury                                              FAIL  287.4837420145 != 287.4805180292  (1.12e-05 apart)
+DenominationCheck | the same shops' till                                           FAIL  0.0292114174 != 0.0292228099  (0.000390 apart)
+DenominationCheck | the same bank                                                  FAIL  218.8481848882 != 218.8489521071  (3.51e-06 apart)
+DenominationCheck | the same people live there, to the person                      FAIL
+DenominationCheck | the same output                                                FAIL  7.1386481924 != 7.3842552738  (0.0333 apart)
+DenominationCheck | ...and the same year of it                                     FAIL  102.6346809218 != 105.6252023894  (0.0283 apart)
+DenominationCheck | the same rent                                                  FAIL  0.0001036349 != 0.0001072213  (0.0334 apart)
+DenominationCheck | the same price level                                           FAIL  1.2692234145 != 1.2836732112  (0.0113 apart)
+DenominationCheck | the same currency                                              FAIL  0.0066931713 != 0.0064143015  (0.0435 apart)
+DenominationCheck | the same treasury                                              FAIL  438.8664185865 != 468.6265364621  (0.0635 apart)
+DenominationCheck | the same shops' till                                           FAIL  1.0942653466 != 5.4389482390  (0.799 apart)
+DenominationCheck | the same bank                                                  FAIL  269.5403007336 != 289.8559013078  (0.0701 apart)
+DenominationCheck | 17 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
 PopulationCheck | 1 FAILED
-SaveFileCheck | exit 1
-SaveFileCheck | REV-HC1 P5: the populated format-62 city continues its card stocks, services, loan book and capital FAIL
-SaveFileCheck | 1 FAILED
-ReloadCheck | exit 1
-ReloadCheck | fixture 3b, by hand: the caused point's own city exercised it                                                    FAIL  0 crews that drew materials
-ReloadCheck | 1 FAILED
+MapCheck | exit 1
+MapCheck | ...no two + junctions of drawn street nearer than JUNCTION_APART plots, either way: about eight houses' length apart FAIL
+MapCheck | 2 FAILED
 RailDrawCheck | exit 1
 RailDrawCheck | ...and where the line runs on through that plot (a T) its plots and the two beside are not replaced and are track in the picture: 3 of 4 FAIL
 RailDrawCheck | 1 FAILED
 PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
-PlanCheck | 1 FAILED
-KeptCheck | exit 1
-KeptCheck | a note with lines this month opened on it adds to the page (396 lines, then 393) FAIL
-KeptCheck | 1 FAILED
+PlanCheck | every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface FAIL
+PlanCheck | 2 FAILED
+KeptCheck | exit 5
+KeptCheck | nonrepeating content blocks still hand back at least three in four of the nodes drawn again (1 readings, least 74.8%) FAIL
+KeptCheck | fixture: the fund holds a bond, null, that runs 0 months, past the 2 months its pages are watched FAIL
+KeptCheck | every row that folds opened on Portfolio: the redraw and the next equal a page built new FAIL
+KeptCheck | every row that folds opened on Portfolio adds to the page (750 lines, then 0) FAIL
+KeptCheck | the full kept check's objects leave a quarter of AllChecks.HEAP_MB free (the live heap, less the render targets a software renderer keeps on it) FAIL
+KeptCheck | 5 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
@@ -63,9 +81,9 @@ CarCheck | the fixture: one household's money buys a car at the price the draw i
 CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  62 cars, 1 step(s) of the import price; paid 56.232508772885570, the ship's product 55.440508772885565; 6.0 cars on the makers' shelves
 CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 55.440508772885570, paid 56.232508772885570
 CarCheck | 3 FAILED
+RefineryCheck | exit 1
+RefineryCheck | fixture: an Oil Refinery standing on its wells' crude in a town of 600 houses (0.7.105; on imported crude until then), the refiners not held, the cost of any unit in their till (0.7.103) and their planner on the rule to 0.7.111 (ON_ITS_BORROWING; on the whole cost no unit here pays, 11b) and the other sectors' orders held (GW1), orders within two years FAIL  m18: a Small Cracking Unit earns $0.0k a month on $793k at the city's prices, 0.00% a month
+RefineryCheck | 1 FAILED
 GroundSkipCheck | exit 1
 GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 30 month(s) FAIL
 GroundSkipCheck | 1 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED

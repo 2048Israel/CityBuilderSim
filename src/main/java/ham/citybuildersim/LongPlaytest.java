@@ -2575,15 +2575,16 @@ public class LongPlaytest {
                 .withPath(PATH, PATH_SEED);
     }
 
-    /** Whether the run founds its city the 1900 way, under -Dplaytest.founded=1900 (R1d): today's city when unset. */
-    static final boolean FOUNDED_1900 = "1900".equals(System.getProperty("playtest.founded", "today").trim());
+    /** Whether the run founds its city the 1900 way (R1d): the default since R1g, today's city under -Dplaytest.founded=today. */
+    static final boolean FOUNDED_1900 = "1900".equals(System.getProperty("playtest.founded", "1900").trim());
 
     /**
      * The city the playtest itself plays - main(), probeCity() and the ensemble: founding(), or earthFounding() round {@code earthSpot} when
      * it is not null, founded the 1900 way under FOUNDED_1900 (research known as of 1900, its equipment unfitted, 1901's wages). WHY A FLAG
      * (R1d call 1): the 1900 city stalls - R1d's run had 472 people at month 60 and 159 at month 900, against today's city's 1,674 and
-     * 23,180 - so the gate keeps auditing today's grown city until R1g makes the 1900 one grow; the harnesses that borrow founding() keep
-     * today's city either way.
+     * 23,180 - so the gate kept auditing today's grown city until R1g made the 1900 one grow (docs/queue/R1g-notes.md: its home and its
+     * apprentices), and it plays the 1900 city since; the harnesses that borrow founding() keep today's city either way, and so
+     * do those that ask probeTodayCity().
      */
     static Founding played(String earthSpot) {
         Founding city = earthSpot == null ? founding() : earthFounding(earthSpot);
@@ -8859,13 +8860,26 @@ public class LongPlaytest {
      * narration is discarded.
      */
     public static Game probeCity(GameFiles files, String earthSpot) {
+        return probeFounded(files, played(earthSpot));
+    }
+
+    /**
+     * ...today's city, whatever -Dplaytest.founded says (R1g): for the harnesses whose subject is today's city, every
+     * discovery known at the founding and its equipment fitted, or a moment written on today's played path (KeptCheck,
+     * GroundSkipCheck). Since R1g, probeCity() founds the 1900 city as the gate's playtest does.
+     */
+    public static Game probeTodayCity(GameFiles files, String earthSpot) {
+        return probeFounded(files, earthSpot == null ? founding() : earthFounding(earthSpot));
+    }
+
+    private static Game probeFounded(GameFiles files, Founding city) {
         PrintStream realOut = System.out;
         PrintStream savedReport = out;
         out = PROBE_QUIET;
         System.setOut(PROBE_QUIET);
         try {
             resetTheFloat();
-            Game g = new Game(files, played(earthSpot));
+            Game g = new Game(files, city);
             g.run();
             childcareWhenNeeded(g);
             g.getDebtManager().setAutopilot(AUTOPILOT);
