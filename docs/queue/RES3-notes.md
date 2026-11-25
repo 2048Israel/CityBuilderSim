@@ -138,6 +138,51 @@ ff4fa713e231e44c6554d536a09c1abdb3d69a3511db04512cb0a6c7d4be7964.
 The partial second dump stays immutable. Full dump completion, end marker,
 owner/hash provenance and process cleanup are prerequisites to analysis.
 
+The third capture obtains the complete3437955294-byte dump, SHA256
+116dd85469d1b5a8949c5629981138281cedf6be0035896eabce452987e205e0.
+Exactly one file, actual heavy-child ownership, HotSpot's completion message,
+HPROF magic and end marker all verify. Source/class guards pass, all owned
+groups end and all three archive-copy hashes verify. Checks archive is
+3b40fb49c51522e33210c62a7c9d75d3b72baea971340857b7cd5b50ce7c17e2.
+The repeated section63 error is real; cancellation still supplies no full
+native/canonical verdict and never reaches medicine. The immutable dump stays
+on the box. The reviewed streaming inventory can now run under the shared
+lock with its256MiB/900-second bounds; class counts alone will not name a fix.
+
+The first inventory exits1 at its symbol-table guard before producing a
+histogram. The original guard does not log which of its three limits fired,
+so no particular count, length or cause is invented. The complete dump's
+checksum still verifies after failure and all analysis processes end. A
+selective two-pass reader is proposed: collect referenced class-name IDs,
+then retain complete required labels while skipping unneeded symbol text.
+All file-completeness, class-width, memory and output bounds remain required;
+no inventory or ownership conclusion is claimed from the failed attempt.
+
+Parent review catches the proposed reader writing metadata before creating
+its required fresh output directory. Fix that ordering before execution.
+A 9308-byte format-valid synthetic parser fixture then exits0: its unused
+9001-byte symbol triggers the old guard, its complete12-byte class label is
+retained, and class/int-array payloads, two roots, end/layout and hashes all
+verify. This is parser verification, not a genuine city or model check.
+Authorize actual inventory reader SHA256
+0cc0c522cf4f2a6132f05b152abed93c5ed1aa4c7dbdfc48242ee5f9159609ab
+on the complete immutable dump with the same resource and ownership bounds.
+
+The corrected actual inventory exits0 in56.622 seconds, peak RSS35316KiB;
+complete schema/end/class-width and before/after checksum checks pass, with
+all processes ended. It counts46209714 objects,12336 classes and2499 roots.
+The old guard hit a11486-byte symbol after8514 keys and246704 raw bytes;
+that symbol is not a required class label. Complete stored class labels use
+578421 bytes. The selected-label change preserves the actual class names.
+
+Actual counts include153159 Labels,92 Kept pools,7365 scopes,62317 Kept rows,
+42211 columns, one Bench, three Games and24 Scenes. There are224605 each
+CssStyleHelper and CacheContainer objects. Serialized payload and reference
+slot counts are not aligned heap sizes, retained sizes or proof of ownership.
+The213037617 reference-slot upper bound makes a blind2GiB SQLite graph an
+unsuitable next step. Prepare a bounded targeted scan for direct pool/scope
+fields and strong paths to roots before proposing a lifecycle fix.
+
 Fresh merged8bb03c69f results: SaveFileCheck native/canonical0 in123 seconds,
 ReadPathCheck native/canonical0 in105 seconds, and MonetaryCheck
 native/canonical0. Its pooled16-31 TOTAL reduction is3.635685 percentage
