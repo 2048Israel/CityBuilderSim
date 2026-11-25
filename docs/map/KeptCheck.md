@@ -1,4 +1,4 @@
-# KeptCheck.java - 9,963 lines · 252 methods · 34 constants · harnesses
+# KeptCheck.java - 9,965 lines · 252 methods · 34 constants · harnesses
 
 `ham/citybuildersim/KeptCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -169,7 +169,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 96 | 9868 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 96 | 9870 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 100 | 5 | `static void check(String label, boolean ok)` |  |
 | 107 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure (R3b, sections 99 to 101). |
 | 121 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
@@ -538,7 +538,7 @@
 | 8901 | 24 | `static void kp2bRowsPicture(Game g, KeptBench bench) throws Exception` | Section 93: the Rankings table's picture (KP2b), the one node on the page that paints its rows. |
 | 8931 | 53 | `static void kp2bRankings(Game g, KeptBench bench) throws Exception` | Section 92 on the Rankings tab (KP7, taken into KP2b): the page as it opens, each board, money, prices and conversion, some measures (every tenth, the last and the first no real place is ranked on), each filter, Aroun... |
 
-### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 8985-9963)
+### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 8985-9965)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -553,6 +553,6 @@
 | 9595 | 60 | `private static void rendererCacheControls(KeptBench bench) throws Exception` | Return this diagnostic frame before the final GC, so its roots cannot inflate the heap reading. |
 | 9657 | 93 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
 | 9751 | 12 | `public static void main(String[] args) throws Exception` |  |
-| 9771 | 12 | `static Game playedCity(GameFiles files) throws Exception` | KeptCheck's city, Danzik: LongPlaytest's probe city, its minimum wage pinned at the going rate, played CITY_MONTHS by the advisor. |
-| 9785 | 178 | `static void mainSections(Game g, KeptBench bench) throws Exception` | Every section, in order, on the played city. |
+| 9773 | 12 | `static Game playedCity(GameFiles files) throws Exception` | KeptCheck's city, Danzik: LongPlaytest's probe city, today's (probeTodayCity(); R1g: the playtest founds the 1900 city since, and this one's sections assert what a city founded the default way has, every discovery kno... |
+| 9787 | 178 | `static void mainSections(Game g, KeptBench bench) throws Exception` | Every section, in order, on the played city. |
 

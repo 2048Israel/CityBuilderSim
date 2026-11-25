@@ -4,7 +4,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 639 files, 694,822 lines, 30,356 methods, 6,787 constants. `GameVersion.VERSION` is "0.9.202", `SAVE_FORMAT` 66.
+**The tree:** 639 files, 694,850 lines, 30,358 methods, 6,788 constants. `GameVersion.VERSION` is "0.9.202", `SAVE_FORMAT` 66.
 
 ## model (280 files)
 
@@ -521,7 +521,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [IslandNetCheck.java](IslandNetCheck.md) | 834 | 32 | A highway net never stops while the city has ground, and a net is laid on every piece of ground the water parts (CL5). | 3 |
 | [IslandRailCheck.java](IslandRailCheck.md) | 1,017 | 47 | The railway has a piece of its own on each piece of the city's ground the water parts, its track dealt by built weight and its yards on the islands... | 1 |
 | [JunctionCheck.java](JunctionCheck.md) | 2,549 | 98 | Proves that the junctions and interchanges of spec-freight 4.6 are drawn by rule from what crosses what, not as buildings (0.8.1, batch FR0; D19). | 5 |
-| [KeptCheck.java](KeptCheck.md) | 9,963 | 252 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 8 |
+| [KeptCheck.java](KeptCheck.md) | 9,965 | 252 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 8 |
 | [KeptTimingCheck.java](KeptTimingCheck.md) | 682 | 20 | What the kept pages cost: KeptCheck's timed sections, each kept month on a page against the same month built new, within its budget through Timing. | 0 |
 | [KnownRedsCheck.java](KnownRedsCheck.md) | 351 | 12 | The harness for AllChecks' known reds, time limit and resource admission. | 0 |
 | [LabourCheck.java](LabourCheck.md) | 1,833 | 19 | Verifies the labour market: who can hold a job, and what it costs. | 2 |
@@ -531,7 +531,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandlordPortCheck.java](LandlordPortCheck.md) | 822 | 33 | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. | 1 |
 | [LandmassCheck.java](LandmassCheck.md) | 3,487 | 101 | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, ... | 7 |
 | [LicenceFeesCheck.java](LicenceFeesCheck.md) | 546 | 15 | Licence fees leave a running firm's money and enter this month's current account. | 4 |
-| [LongPlaytest.java](LongPlaytest.md) | 10,053 | 190 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 80 |
+| [LongPlaytest.java](LongPlaytest.md) | 10,067 | 192 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 80 |
 | [LuxuryRetailCheck.java](LuxuryRetailCheck.md) | 249 | 10 | What a luxury shop's post sells: its payroll over its margin at BEA's mark (LX1, 2026-11-17). | 0 |
 | [MainLineCheck.java](MainLineCheck.md) | 2,032 | 67 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 2 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 643 | 8 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
@@ -606,7 +606,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ScaleCheck.java](ScaleCheck.md) | 2,310 | 68 | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them a... | 2 |
 | [SectorFlowCheck.java](SectorFlowCheck.md) | 308 | 11 | The flow (0.7.30): SectorFlow's figures - what went into each business, what its plant made of it and what held it back, and what came out - held t... | 0 |
 | [SectorStatementCheck.java](SectorStatementCheck.md) | 1,367 | 30 | The sector statements (0.7.74, batch S1): SectorStatements' formal statements held to the model's own figures, every sector and the bank, every mon... | 3 |
-| [ShortSellingCheck.java](ShortSellingCheck.md) | 1,490 | 53 | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, ... | 4 |
+| [ShortSellingCheck.java](ShortSellingCheck.md) | 1,502 | 53 | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, ... | 4 |
 | [SicknessCheck.java](SicknessCheck.md) | 426 | 7 | The long sick: who stays sick, and who it kills. | 0 |
 | [SkipReportCheck.java](SkipReportCheck.md) | 323 | 5 | Verifies the fast-forward summary. | 0 |
 | [SlopeCheck.java](SlopeCheck.md) | 990 | 34 | Buildable by slope, checked (ET2, slice D; docs/studies/spec-earth2-terrain.md 3.2, 3.4, 4.1, 4.2, 4.4): a building stands on flat and foothill gro... | 1 |

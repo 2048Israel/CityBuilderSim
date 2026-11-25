@@ -1,4 +1,4 @@
-# ShortSellingCheck.java - 1,490 lines · 53 methods · 7 constants · harnesses
+# ShortSellingCheck.java - 1,502 lines · 53 methods · 8 constants · harnesses
 
 `ham/citybuildersim/ShortSellingCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -74,6 +74,7 @@
 | 353 | `ShortSellingCheck.BUBBLE_MONTHS` | `24` |  |
 | 1085 | `ShortSellingCheck.RUN_START` | `60, RUN_MONTHS = 1000` |  |
 | 1093 | `ShortSellingCheck.TRADE_ABROAD_MONTH` | `RUN_START + 1` | SX2 (FS14): the month of the run in which the cells' trades with the world are caused, as section 9 causes them, the run's first: the ordinary cell holding the most of the company the cells hold most of by value (the ... |
+| 1375 | `ShortSellingCheck.OVER_THE_MONTH` | `5` | ★ How many times the month before's financial inflow and outflow section 9's sale and purchase are, at least: so a line the audit left out would show past the town's own flows. |
 
 ## Fields (state)
 
@@ -113,7 +114,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 1432 | **type** `public class ShortSellingCheck` | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, not on a city that happens to show it. |
+| 59 | 1444 | **type** `public class ShortSellingCheck` | Verifies a share's price as its quote, and the short selling that brings a bubble down (EM2, 2026-10-30) - each claim on a fixture that causes it, not on a city that happens to show it. |
 | 66 | 5 | `static void assertTrue(String label, boolean ok)` |  |
 | 72 | 10 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 85 | 4 | `static void section(String title)` |  |
@@ -180,10 +181,10 @@
 | 1152 | 68 | `static Run play(boolean shorts, boolean tradeAbroad, String label)` | ...and with SX2's trades with the world caused in TRADE_ABROAD_MONTH when `tradeAbroad`. |
 | 1227 | 130 | `static void theBooks() throws Exception` | Section 8 (LF1): the lending fee on the lenders' books - the fund's counters and its ledger's row - and the four edges the stranger's review found at EM2's gate, each caused by a fixture first: the fee charged on shar... |
 
-### THE CELLS' SHARES ABROAD (LF1b), SECTION 9 (lines 1358-1490)
+### THE CELLS' SHARES ABROAD (LF1b), SECTION 9 (lines 1358-1502)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1370 | 85 | `static void theCellsAbroad()` | Section 9 (LF1b): a cell selling a share to the world and a cell buying one from it, made by the fixture inside the real month (Game.settleProbeForTest: after the exchange's month has opened, before its step and the a... |
-| 1456 | 34 | `static void howOften()` |  |
+| 1377 | 90 | `static void theCellsAbroad()` |  |
+| 1468 | 34 | `static void howOften()` |  |
 
