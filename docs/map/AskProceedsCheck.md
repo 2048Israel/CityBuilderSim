@@ -1,4 +1,4 @@
-# AskProceedsCheck.java - 452 lines · 26 methods · 13 constants · harnesses
+# AskProceedsCheck.java - 460 lines · 26 methods · 13 constants · harnesses
 
 `ham/citybuildersim/AskProceedsCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -54,7 +54,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 31 | 422 | **type** `public final class AskProceedsCheck` | The bond proceeds an open ask has raised pay its works: the treasury holds them outside the operating reserve, the order is placed on them, and what the month's bills drew is offered again under the debt limit (AutoBu... |
+| 31 | 430 | **type** `public final class AskProceedsCheck` | The bond proceeds an open ask has raised pay its works: the treasury holds them outside the operating reserve, the order is placed on them, and what the month's bills drew is offered again under the debt limit (AutoBu... |
 | 35 | 4 | `static void check(String words, boolean condition)` |  |
 | 40 | 3 | `static boolean near(double a, double b)` |  |
 | 75 | 4 | `static MoneyAudit.Result play(Game g)` | A month, played with the narration off, and its money audit (AuctionCheck.play() puts back AuctionCheck.out, which only its own main sets: null here). |
@@ -73,13 +73,13 @@
 | 169 | 4 | `static void figures(Game g, AutoBuilder.OpenAsk a, AutoBuilder auto)` |  |
 | 175 | 9 | `static void stands(Finding f, AutoBuilder.OpenAsk a)` | The conditions every water section stands on, said first. |
 | 186 | 5 | `static void limitOpen(Finding f)` | The debt limit open, said first where a section needs the sale: the town is within it with room to spare. |
-| 192 | 31 | `static void theFinding(Path root)` |  |
-| 225 | 7 | `static Finding drawn(Path root, String name, Auction.Cap cap, double room)` | Case 1's city with the bills drawn: the treasury at half the cost. |
-| 233 | 34 | `static void billsDrew(Path root)` |  |
-| 268 | 36 | `static void marketShort(Path root)` |  |
-| 306 | 4 | `static double limitUnder(Game g, DebtQuote quote)` | The highest debt limit, on its slider's steps, that a sale of `quote` takes the debt past: it is at or over the ratio now, or the fixture says no step lies between. |
-| 311 | 31 | `static void limitReleases(Path root)` |  |
-| 343 | 34 | `static void withinMonths(Path root)` |  |
-| 378 | 61 | `static void withoutTheLack(Path root)` |  |
-| 440 | 12 | `public static void main(String[] args) throws Exception` |  |
+| 192 | 39 | `static void theFinding(Path root)` |  |
+| 233 | 7 | `static Finding drawn(Path root, String name, Auction.Cap cap, double room)` | Case 1's city with the bills drawn: the treasury at half the cost. |
+| 241 | 34 | `static void billsDrew(Path root)` |  |
+| 276 | 36 | `static void marketShort(Path root)` |  |
+| 314 | 4 | `static double limitUnder(Game g, DebtQuote quote)` | The highest debt limit, on its slider's steps, that a sale of `quote` takes the debt past: it is at or over the ratio now, or the fixture says no step lies between. |
+| 319 | 31 | `static void limitReleases(Path root)` |  |
+| 351 | 34 | `static void withinMonths(Path root)` |  |
+| 386 | 61 | `static void withoutTheLack(Path root)` |  |
+| 448 | 12 | `public static void main(String[] args) throws Exception` |  |
 

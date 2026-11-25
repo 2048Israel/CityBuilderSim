@@ -214,11 +214,19 @@ public final class AskProceedsCheck {
         AutoBuilder.Step step = EssentialWorksCheck.step(g, WATER);
         check("the water works is ordered on the proceeds", e != null && step != null && step.ordered() > 0);
         check("...and its ask is closed", auto.askFor(WATER) == null && auto.asks().isEmpty());
-        check("...no bond was sold: the builder's bonds, its borrowing and the city's principal stand as they were",
-                auto.getBonds() == bonds && auto.getBorrowed() == borrowed && g.getDebtManager().getAllPrincipal() == principal);
-        out.printf("      the order cost %.3f, the cash fell %.3f%n", paid(e), cash - g.getCash());
-        check("...and the cash fell by exactly what the order cost, ground with it: the proceeds paid the works",
-                e != null && near(cash - g.getCash(), paid(e)));
+        // The pass may go on to order more of the works on paper of its own (the merged 0.9.206 town's ratio leaves a second plant's bond
+        // within the limit): the ask's order is read from its own entry, and the money over the whole pass.
+        double paidAll = 0;
+        for (int i = logged; i < auto.log().size(); i++) paidAll += paid(auto.log().get(i));
+        double newPaper = auto.getBorrowed() - borrowed;
+        check("...and its order sold no paper of its own: its entry's borrowing is what the ask had raised, and no more",
+                e != null && near(e.borrowed(), ask.raised()) && e.cost() + e.landCost() <= ask.raised() + 1e-6 * ask.raised());
+        out.printf("      the ask's order cost %.3f; the pass's orders %.3f, its new paper %.3f (%d bond(s)); the cash fell %.3f%n", paid(e),
+                paidAll, newPaper, auto.getBonds() - bonds, cash - g.getCash());
+        check("...and no dollar was made or lost: the cash fell by exactly what the pass's orders cost, ground with them, less what"
+                        + " its own new paper raised, and the principal rose by that paper's face alone - the proceeds paid the ask's works",
+                e != null && near(cash - g.getCash(), paidAll - newPaper) && (auto.getBonds() > bonds || near(cash - g.getCash(), paid(e)))
+                        && near(g.getDebtManager().getAllPrincipal() - principal, soldFace(g)));
     }
 
     /** Case 1's city with the bills drawn: the treasury at half the cost. */

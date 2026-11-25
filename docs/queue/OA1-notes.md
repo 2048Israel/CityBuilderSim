@@ -82,14 +82,21 @@ limit, and the limit, not a wait, ends the ask.
 
 - **AskProceedsCheck (new, 42 checks): green.** Sections from its header: 1, the finding caused (a town short of water,
   supply 49,383 against 149,637; cost 3,972.4, raised 3,972.4, cash 4,037.6, reserve 130.4): ordered from the proceeds,
-  no bond, the cash fell by the order's cost exactly; 2, the bills drew half: one sale of the gap (raised 1,991.8 for a
+  its order selling no paper of its own (its entry's borrowing the 3,972.4 raised), the pass's money conserved; 2, the bills drew half: one sale of the gap (raised 1,991.8 for a
   1,986.2 gap, within a lot), the order placed that pass, the cash conserved; 2b, the market short: offered again,
   short, the order waits, and the words; 3, the limit between the ratio (2.005) and a sale's (2.469): withdrawn, nothing
   sold, the raised money stays; 4, played: ordered in month 1, within the six-month test, every month's money audit
   closed; 5, without the lack: no ask, spendable() is the cash over the reserve (an overdraft in full); two asks with
   proceeds and reserve whole hold what they held before; water served in full opens no ask.
-- **Against main's AutoBuilder** (origin/main's file swapped in, run, put back): 17 red, all in sections 1 to 4 (never
-  ordered, never offered again, never withdrawn, nothing in six months); section 5 green. The harness is the finding.
+- **Against main's AutoBuilder** (origin/main's file swapped in, run, put back; on the merged 0.9.206 code): 18 red, all in
+  sections 1 to 4 (never ordered, never offered again, never withdrawn, nothing in six months); section 5 green. The
+  harness is the finding.
+- **After merging R1g (0.9.206, the 1900 city):** section 1's pass now goes on, after the ask's plant, to order a second
+  Water Treatment Plant on its own bond (4,649.1, borrowing 4,692.6): the town's ratio, 2.018 against the fixture's limit
+  of 3.0, leaves that bond within it, where before it did not. Its two assertions read the cash and bonds over the whole
+  pass ("no bond was sold", "the cash fell by the order's cost"); restated to the claim itself: the ask's order sold no
+  paper of its own (its entry's borrowing is what the ask raised), and over the pass the cash fell by the orders' cost
+  less the new paper's proceeds (8,621.5 less 4,692.6 = 3,929.0), the principal by its face alone. Green again.
 - **AuctionCheck section 10, "the month's bills draw the money": restated (check reality).** Its four assertions stated
   the old law (the paper not sold twice, the orders waiting on the cash) and went red; the wait they asserted is the
   finding. Replaced by four: each ask is offered again for its gap and its order placed that month, every ask closed;
@@ -103,3 +110,9 @@ limit, and the limit, not a wait, ends the ask.
   now says that, and that the cash over the reserve beside the earmark is short of the cost and a loan of that shortfall
   would sell; its three assertions (ordered, the lower earmark released, no additional paper) stand unchanged and green.
   Its title: "a fully raised ask whose proceeds the treasury holds borrows nothing again".
+- **The named harnesses, one at a time, on the merged code (62a4e1551 and the section-1 restatement):** `--fast`
+  green; AskProceedsCheck, AuctionCheck, WorksFinanceCheck and EssentialWorksCheck green; AutoBuildCheck exit 3, main's
+  known red only. Before the merge also IslandLinkCheck and BuildCardCheck green. The pick: ALL (AllChecks lists the new
+  harness), so a dry run is owed; its review line says "not needed - no money, saves or threading in the diff", but the
+  batch moves the city's bond money and its works orders, so the brief has the orchestrator order a stranger's money
+  review at "mends at".

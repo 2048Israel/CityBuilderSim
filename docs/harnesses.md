@@ -562,39 +562,39 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L207 fixture: the card the advice gives now is still the ask's building, and the treasury holds what covers it (held at least the cost)
   - L215 the water works is ordered on the proceeds
   - L216 ...and its ask is closed
-  - L217 ...no bond was sold: the builder's bonds, its borrowing and the city's principal stand as they were
-  - L220 ...and the cash fell by exactly what the order cost, ground with it: the proceeds paid the works
-- **L234 2. the bills drew the proceeds: the ask is offered again for what they drew, and the order is placed**
-  - L244 fixture: the ask raised the whole cost but the bills left half of it (cash under the cost), the cap is Fill with room,
-  - L258 the ask was offered again: a sale by automatic building, one more bond
-  - L259 ...for the order's gap, sold in full and no more: it raised the gap, and at most one funding lot beyond
-  - L261 ...the principal rose only by the new sale's face
-  - L262 the order was placed that pass, and the ask is closed
-  - L264 conservation: the cash after is the cash before, what the sale raised, less what the order cost
-- **L269 2b. drawn, and the market short: the bond is offered again, sells short, and the order waits for the money**
-  - L282 fixture: the bills drew half the proceeds, the bank's room is used up (deposit rate
-  - L294 the bond was offered again, by automatic building, and came up short
-  - L297 the order is not placed - no money that is not there: no order in the log, the cash only rose by what sold
-  - L299 the ask stays open, its to-raise the cost less what the treasury holds for it, and over nothing
-  - L301 the builder says the month's bills have drawn the rest and that it is offered again
-- **L312 3. the debt limit releases it: the sale of the gap would cross the limit, so the ask is withdrawn, not held**
-  - L325 fixture: the town is within its limit, and a sale of the gap would take the debt past it (ratio
-  - L333 the ask is withdrawn, and the inbox's line says the debt limit closed on it
-  - L335 ...nothing was sold: the builder's bonds and the city's principal stand, and no sale is in the month's report
-  - L337 ...no order was placed, the cash is as it was, and what the ask raised (
-- **L344 4. within months, in the played month: case 1's city, played, has the works on order and every month's money audit closes**
-  - L369 fixture: the treasury as the first pass found it is case 1's - the cash set before the month, the proceeds whole and the
-  - L372 the water works is on order by the end of the first month
-  - L373 ...and at the latest within
-  - L375 ...and every played month's money audit closed within its tolerance
-- **L379 5. without the lack, nothing changes**
-  - L388 (a) with no ask open, spendable() is the cash over the reserve, nothing under it, and an overdraft in full
-  - L397 fixture: the advice gives a water card and a power card for two asks
-  - L410 fixture: two asks open, each short of its cost, the cash whole over both and the reserve
-  - L412 (b) each ask holds the cash over the reserve less the other's raised money, as before
-  - L414 ...and the builder's own orders have the cash over the reserve less both asks' raised money
-  - L429 (c) water served in full (supply
-  - L434 ...and no ask is open or raised anything: the paper sold (
+  - L222 ...and its order sold no paper of its own: its entry's borrowing is what the ask had raised, and no more
+  - L226 ...and no dollar was made or lost: the cash fell by exactly what the pass's orders cost, ground with them, less what
+- **L242 2. the bills drew the proceeds: the ask is offered again for what they drew, and the order is placed**
+  - L252 fixture: the ask raised the whole cost but the bills left half of it (cash under the cost), the cap is Fill with room,
+  - L266 the ask was offered again: a sale by automatic building, one more bond
+  - L267 ...for the order's gap, sold in full and no more: it raised the gap, and at most one funding lot beyond
+  - L269 ...the principal rose only by the new sale's face
+  - L270 the order was placed that pass, and the ask is closed
+  - L272 conservation: the cash after is the cash before, what the sale raised, less what the order cost
+- **L277 2b. drawn, and the market short: the bond is offered again, sells short, and the order waits for the money**
+  - L290 fixture: the bills drew half the proceeds, the bank's room is used up (deposit rate
+  - L302 the bond was offered again, by automatic building, and came up short
+  - L305 the order is not placed - no money that is not there: no order in the log, the cash only rose by what sold
+  - L307 the ask stays open, its to-raise the cost less what the treasury holds for it, and over nothing
+  - L309 the builder says the month's bills have drawn the rest and that it is offered again
+- **L320 3. the debt limit releases it: the sale of the gap would cross the limit, so the ask is withdrawn, not held**
+  - L333 fixture: the town is within its limit, and a sale of the gap would take the debt past it (ratio
+  - L341 the ask is withdrawn, and the inbox's line says the debt limit closed on it
+  - L343 ...nothing was sold: the builder's bonds and the city's principal stand, and no sale is in the month's report
+  - L345 ...no order was placed, the cash is as it was, and what the ask raised (
+- **L352 4. within months, in the played month: case 1's city, played, has the works on order and every month's money audit closes**
+  - L377 fixture: the treasury as the first pass found it is case 1's - the cash set before the month, the proceeds whole and the
+  - L380 the water works is on order by the end of the first month
+  - L381 ...and at the latest within
+  - L383 ...and every played month's money audit closed within its tolerance
+- **L387 5. without the lack, nothing changes**
+  - L396 (a) with no ask open, spendable() is the cash over the reserve, nothing under it, and an overdraft in full
+  - L405 fixture: the advice gives a water card and a power card for two asks
+  - L418 fixture: two asks open, each short of its cost, the cash whole over both and the reserve
+  - L420 (b) each ask holds the cash over the reserve less the other's raised money, as before
+  - L422 ...and the builder's own orders have the cash over the reserve less both asks' raised money
+  - L437 (c) water served in full (supply
+  - L442 ...and no ask is open or raised anything: the paper sold (
 
 ## AuctionCheck.java - 308 labelled assertions
 
