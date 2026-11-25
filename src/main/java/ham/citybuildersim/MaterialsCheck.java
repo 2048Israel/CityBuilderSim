@@ -519,9 +519,17 @@ public class MaterialsCheck {
         assertTrue("...and in its operating income, every cost taken off the revenue it is in",
                 st.operatingIncome == st.revenue - st.inputs - st.payroll - st.electricity - st.water - st.maintenance);
         double allNet = b.getTotalDouble(BuildingsTemplate::powerBought), allSold = b.getTotalDouble(BuildingsTemplate::powerSold);
-        assertTrue("the grid's consumption is every building's net draw, and the works' surplus is added to what it generates, whatever"
+        // PW3 (PW1-P's fifth gap): what the grid generates is the founding grid at the pooled utility fill (whole at none) and each plant
+        // standing at its own posts' fill (a hydro station at its water), as updateEnergyRatio() offers them; the works' surplus on top.
+        double fill = u.getAverageUtilityFill(), generated = u.getFoundingGridKw() * (fill == 0 ? 1 : fill);
+        for (BuildingsTemplate p : b.getTemplates()) {
+            long n = p.getCategory() != BuildingType.ELECTRICITY || Substations.isSubstation(p) ? 0 : b.getQuantity(p.getId());
+            if (n > 0) generated += p.getProduction1() * n * (p.isHydro() ? (u.plantFill(p) > 0 ? 1 : 0) : u.plantFill(p));
+        }
+        report("the grid's consumption is every building's net draw, and the works' surplus is added to what it generates, whatever"
                 + " the utility's staffing", u.getConsumption() == allNet && u.getWorksPower() == allSold && allSold == surplus
-                && u.getProduction() == (u.getAverageUtilityFill() == 0 ? 10000 : u.getBaseProduction() * u.getAverageUtilityFill()) + allSold);
+                && Math.abs(u.getProduction() - (generated + allSold)) <= 1e-9 * (generated + allSold),
+                String.format("production %,.4f against %,.4f generated and %,.4f sold", u.getProduction(), generated, allSold));
         // PW1-W: the water's books pay the power's for the water works' draw, a line of the electricity income (UtilitiesHandler, THE WATER'S POWER).
         report("fixture: the town's water works drew power the water's books paid for", u.getWaterPowerPaid() > 0, String.format("%,.6f", u.getWaterPowerPaid()));
         assertTrue("the utility pays the works what their statements booked, out of its electricity income, which gains what the water's books"

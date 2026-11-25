@@ -122,6 +122,15 @@ Gold's price a year 1971-2025, the sources' figures as printed (55 lines); `Gold
 | Cox and Singer, USGS Bulletin 1693, Mineral Deposit Models (1986), USGS-authored gold setting descriptions | public domain, a US government work | https://pubs.usgs.gov/bul/1693/report.pdf | yes | none required, credited as above |
 | BEA NIPA Handbook, chapter 8, treatment of gold in the SNA and US accounts | public domain, a US government work | https://www.bea.gov/system/files/2019-12/Chapter-8.pdf | yes | BEA credited in GD4 notes, methods only, no figures copied |
 
+### Wind, solar and hydro by month and place: `PowerDispatch` (in the code; PW3, 2026-11-23)
+
+Each fleet's month as an index on the twelve's mean, and a solar farm's yield by 10-degree latitude band (fixed rack and single-axis tracker) over the US fleet's places; `docs/studies/electricity/pvgis.py` and `out/pvgis.txt`. Read on 2026-11-23.
+
+| source | licence | read at | commercial | attribution it asks |
+|---|---|---|---|---|
+| US EIA, Electric Power Monthly, table 6.07.B (2025: wind, solar PV and conventional hydro by month) | public domain | https://www.eia.gov/about/copyrights_reuse.php | yes | Source: U.S. Energy Information Administration, with the publication date |
+| PVGIS 5.3 (European Commission, JRC), PVcalc on ERA5: a 1 kWp system's months, fixed and tracked, at the bands' places | CC BY 4.0, by the Commission's legal notice the PVGIS pages link ("reuse is allowed, provided appropriate credit is given and changes are indicated") | https://commission.europa.eu/legal-notice_en | yes | "PVGIS (c) European Communities, 2001-2025", and the change (the bands averaged and normalised): in `tools/world/ATTRIBUTION.txt` |
+
 ### Not data, but shipped
 
 | what | licence | commercial | what it asks |

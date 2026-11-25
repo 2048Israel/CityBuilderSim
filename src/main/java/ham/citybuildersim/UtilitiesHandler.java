@@ -652,6 +652,36 @@ public class UtilitiesHandler {
     /** The calendar month, 1 to 12, for the season; null: no season. */
     public void setCalendarMonth(IntSupplier month) { this.calendarMonth = month; }
 
+    /** Where the city stands and what its solar farms stand on (PW3): its latitude (NaN for a generated world, the US fleet's) and whether the tracker (research E25) is known; null: NaN, and tracked (today's figures). */
+    private DoubleSupplier latitudeSource;
+    private java.util.function.BooleanSupplier trackerSource;
+
+    /** The city's latitude and whether its solar farms track the sun (PW3): the wind's, the sun's and the river's months are read there. */
+    public void setPlace(DoubleSupplier latitude, java.util.function.BooleanSupplier trackers) {
+        this.latitudeSource = latitude;
+        this.trackerSource = trackers;
+    }
+
+    /** The city's latitude, NaN for a generated world or a bare fixture. */
+    public double latitude() {
+        double lat = latitudeSource == null ? Double.NaN : latitudeSource.getAsDouble();
+        return Double.isFinite(lat) ? lat : Double.NaN;
+    }
+
+    /** Whether the city's solar farms track the sun (research E25 known); a bare fixture's do, today's figure. */
+    public boolean trackers() { return trackerSource == null || trackerSource.getAsBoolean(); }
+
+    /** The calendar month dispatched, 1 to 12; 0 for a fixture with no calendar (no season, no weather by month). */
+    private int monthOfYear() { return calendarMonth == null ? 0 : calendarMonth.getAsInt(); }
+
+    /** A plant's own staffing (PW3, PW1-P's fifth gap): its posts' fill at the city's fill rate by job; the pooled fill for a handler never given the rates. */
+    private double ownFill(BuildingsTemplate t, double pooled) {
+        return fillRate == null || !fillRatesGiven ? pooled : BuildAdvice.staffing(t, fillRate);
+    }
+
+    /** The fill a plant of this kind runs at in the merit order (PW3): its own posts' at the city's fill rate by job, the pooled utility fill for a handler never given the rates. */
+    public double plantFill(BuildingsTemplate t) { return ownFill(t, averageUtilityFill); }
+
     private double fuelPrice(Good g) {
         return fuelPriceSource != null ? fuelPriceSource.applyAsDouble(g) : g.worldImportPrice();
     }
@@ -986,7 +1016,10 @@ public class UtilitiesHandler {
      */
     public void updateEnergyRatio() {
         double fill = averageUtilityFill;
-        production = baseProduction * fill;
+        int month = monthOfYear();
+        // A bare fixture's plants at the pooled fill, as they were; a city's founding grid at the pooled fill and each plant at its own
+        // posts' fill (PW3, PW1-P's fifth gap: one farm's posts no longer lower every other plant's output), a station at its water.
+        production = plants == null ? baseProduction * fill : baseGrid() * fill;
         if(fill == 0) production = baseGrid();
         // ...and what the works sell the grid, whatever the utility's staffing (0.7.112, THE POWER THE WORKS MAKE).
         if (worksPower > 0) production += worksPower;
@@ -1004,13 +1037,14 @@ public class UtilitiesHandler {
                 BuildingsTemplate t = e.getKey();
                 long n = e.getValue() == null ? 0 : e.getValue();
                 if (n <= 0) continue;
-                rows.add(rowFor(t, n, 0, fill));
+                double own = ownFill(t, fill);
+                rows.add(rowFor(t, n, 0, own, month));
                 // A station's month is its water, its production1 over the month, whatever its staffing's share of its nameplate.
-                if (t.isHydro()) production += t.getProduction1() * n * (fill > 0 ? 1 : 0) - t.getProduction1() * n * fill;
+                production += t.getProduction1() * n * (t.isHydro() ? (own > 0 ? 1 : 0) : own);
             }
         }
         latestGridCosts = gridCostSource == null ? null : gridCostSource.get();
-        latest = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(calendarMonth == null ? 0 : calendarMonth.getAsInt()), voll,
+        latest = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(month, latitude()), voll,
                 latestGridCosts == null ? Double.POSITIVE_INFINITY : latestGridCosts.carryKw());
         latestRows = rows;
         energyRatio = latest.ratio;
@@ -1041,20 +1075,32 @@ public class UtilitiesHandler {
      * world price is struck; the exchange rate (the world's price level in it) then makes it the month's city money, as it does the fuel's.
      * PW1: read as today's dollars it was 38.6 times too dear, nine-tenths of a coal plant's marginal.
      */
-    private PowerDispatch.Row rowFor(BuildingsTemplate t, long n, double extraKw, double fill) {
+    private PowerDispatch.Row rowFor(BuildingsTemplate t, long n, double extraKw, double fill, int month) {
         double plate = t.getProduction1() * n + extraKw;
         double kw = plate * fill, upkeep = t.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR, perKwh = t.fuelPerKwh();
+        double lat = latitude();
         if (t.isHydro()) {
-            // A station's month is its water (its production1 over the month), levelled under its nameplate and its staffing; a move moves both by the station's own proportion.
-            double average = plate * (fill > 0 ? 1 : 0);
+            // A station's month is its water (its production1 over the month, times the river's month: PW3), levelled under its nameplate and its staffing; a move moves both by the station's own proportion.
+            double average = plate * (fill > 0 ? 1 : 0) * PowerDispatch.hydroMonth(month, lat);
             double extraCap = extraKw != 0 && t.getProduction1() > 0 ? extraKw * t.getNameplate() / t.getProduction1() : 0;
             return PowerDispatch.Row.hydro(t.getName(), (t.getNameplate() * n + extraCap) * fill, average * PowerDispatch.MONTH_HOURS, upkeep);
         }
-        if (t.isWind()) return PowerDispatch.Row.wind(t.getName(), kw);
-        if (t.isSolar()) return PowerDispatch.Row.solar(t.getName(), kw);
-        if (perKwh > 0) return PowerDispatch.Row.fuelled(t.getName(), kw, fuelPrice(t.getFuel()) * perKwh + upkeep * exchangeRate(),
-                t.getFuel(), perKwh, upkeep);
+        // PW3: the wind's month, and the sun's month at the city's latitude on the rack it stands on.
+        if (t.isWind()) return PowerDispatch.Row.wind(t.getName(), kw * PowerDispatch.windMonth(month, lat));
+        if (t.isSolar()) return PowerDispatch.Row.solar(t.getName(), kw * PowerDispatch.solarMonth(month, lat, trackers()));
+        if (perKwh > 0) return PowerDispatch.Row.fuelled(t.getName(), kw, marginalOf(t), t.getFuel(), perKwh, upkeep);
         return PowerDispatch.Row.fuelled(t.getName(), kw, 0, null, 0, 0);
+    }
+
+    /** What a kWh a plant runs costs this month, city money: a fuelled row's marginalOf(), a station's variable upkeep at the exchange rate (its water is free), a wind or solar farm's nothing. */
+    public double runningPerKwh(BuildingsTemplate t) {
+        return t.isHydro() ? t.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR * exchangeRate() : marginalOf(t);
+    }
+
+    /** What a kWh of a fuelled plant costs to run this month, city money: its fuel at the city's price and its variable upkeep at the exchange rate; 0 for a row that burns nothing. */
+    public double marginalOf(BuildingsTemplate t) {
+        double perKwh = t.fuelPerKwh(), upkeep = t.getVariableUpkeep() / 1e6 * PriceLevel.FACTOR;
+        return perKwh > 0 ? fuelPrice(t.getFuel()) * perKwh + upkeep * exchangeRate() : 0;
     }
 
     /**
@@ -1074,7 +1120,7 @@ public class UtilitiesHandler {
                 for (Map.Entry<BuildingsTemplate, Long> e : plants.entrySet())
                     if (e.getKey().getId() == t.getId() && e.getValue() != null) n = e.getValue();
                 // The row's own price and fuel, at the output moved.
-                PowerDispatch.Row own = rowFor(t, n, moveKw, fill);
+                PowerDispatch.Row own = rowFor(t, n, moveKw, ownFill(t, fill), monthOfYear());
                 rows.add(r.offering(own.kw, own.waterKwh));
                 moved = true;
             } else if (t != null && plants == null && !moved && "plants".equals(r.name)) {
@@ -1086,10 +1132,44 @@ public class UtilitiesHandler {
             }
         }
         if (!moved && moveKw > 0 && t != null)
-            rows.add(plants == null ? PowerDispatch.Row.fuelled("plants", moveKw * fill, 0, null, 0, 0) : rowFor(t, 0, moveKw, fill));
-        PowerDispatch.Month m = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(calendarMonth == null ? 0 : calendarMonth.getAsInt()), voll,
+            rows.add(plants == null ? PowerDispatch.Row.fuelled("plants", moveKw * fill, 0, null, 0, 0) : rowFor(t, 0, moveKw, ownFill(t, fill), monthOfYear()));
+        PowerDispatch.Month m = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(monthOfYear(), latitude()), voll,
                 latestGridCosts == null ? Double.POSITIVE_INFINITY : latestGridCosts.carryKw());
         return consumption * m.ratio;
+    }
+
+    /**
+     * What the city's power costs to run for a year at today's draw with these plants added (PW3, the planner's spread): the twelve
+     * calendar months dispatched on the plants standing plus `added`, each month's load, wind, sun and water at the city's place, and the
+     * twelve summed - a fuelled row's kWh at its marginal cost, a station's at its variable upkeep, and every kWh left unserved at the
+     * cap price (voll). City money a year. Nothing struck moves: the rows are made fresh and dispatched aside.
+     */
+    public double yearRunning(Map<BuildingsTemplate, Long> added) {
+        double fill = averageUtilityFill, carry = latestGridCosts == null ? Double.POSITIVE_INFINITY : latestGridCosts.carryKw();
+        Map<BuildingsTemplate, Long> fleet = new LinkedHashMap<>();
+        if (plants != null) fleet.putAll(plants);
+        if (added != null) for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) if (e.getValue() != null) fleet.merge(e.getKey(), e.getValue(), Long::sum);
+        double cost = 0;
+        for (int month = 1; month <= 12; month++) {
+            List<PowerDispatch.Row> rows = new ArrayList<>();
+            if (worksPower > 0) rows.add(PowerDispatch.Row.mustRun(WORKS_ROW, worksPower));
+            rows.add(PowerDispatch.Row.fuelled(GRID_ROW, baseGrid() * (fill > 0 ? fill : 1), 0, null, 0, 0));
+            if (plants == null) {
+                double watts = (baseProduction - baseGrid()) * fill;
+                if (watts > 0) rows.add(PowerDispatch.Row.fuelled("plants", watts, 0, null, 0, 0));
+            }
+            for (Map.Entry<BuildingsTemplate, Long> e : fleet.entrySet()) {
+                long n = e.getValue() == null ? 0 : e.getValue();
+                if (n > 0) rows.add(rowFor(e.getKey(), n, 0, ownFill(e.getKey(), fill), month));
+            }
+            PowerDispatch.Month m = PowerDispatch.dispatch(rows, consumption, PowerDispatch.season(month, latitude()), voll, carry);
+            for (PowerDispatch.Row r : rows) {
+                cost += r.kwh * r.marginal;
+                if (r.kind == PowerDispatch.Kind.HYDRO) cost += r.kwh * r.upkeepPerKwh * exchangeRate();
+            }
+            for (int s = 0; s < PowerDispatch.HALVES; s++) cost += m.unserved[s] * PowerDispatch.halfHours(s) * voll;
+        }
+        return cost;
     }
 
     public void updateWaterRatio() {
@@ -1199,7 +1279,11 @@ public class UtilitiesHandler {
     public void updateJobFillRate(double[] fillRate) {
 
         System.arraycopy(fillRate, 0, this.fillRate, 0, fillRate.length);
+        fillRatesGiven = true;
     }
+
+    /** Whether the city's fill rates by job have been handed in (updateJobFillRate()): until they are, every plant runs at the pooled fill. */
+    private boolean fillRatesGiven;
 
     //printers
     public void printUtilitiesInfo() {

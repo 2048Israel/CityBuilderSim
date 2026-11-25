@@ -2414,6 +2414,8 @@ public class LongPlaytest {
     static final Map<String, Double> worksMin = new LinkedHashMap<>();
     static final Map<String, Integer> worksReasons = new LinkedHashMap<>();
     static final Map<String, Long> worksPowerOrders = new LinkedHashMap<>();
+    /** ...and by the decade of the calendar they were ordered in (PW3: spec-electricity 6's third measure, against 2.9's table). */
+    static final Map<Integer, Map<String, Long>> worksPowerByDecade = new java.util.TreeMap<>();
     static final Map<String, Integer> worksLowLater = new LinkedHashMap<>();
     /** Jerus's HW1 bar: near full service, with the length and cause of every dip visible. */
     static final double WORKS_NEAR = .90;
@@ -2448,8 +2450,11 @@ public class LongPlaytest {
         if (!on) worksOffMonths++;
         if (on && over && g.getAutoBuilder().getOrders() == ordersBefore) worksDebtIdleMonths++;
         for (AutoBuilder.Step s : g.getAutoBuilder().steps()) {
-            if (s.measure().kind() == BuildAdvice.Kind.POWER && s.ordered() > 0)
+            if (s.measure().kind() == BuildAdvice.Kind.POWER && s.ordered() > 0) {
                 worksPowerOrders.merge(s.building(), s.ordered(), Long::sum);
+                worksPowerByDecade.computeIfAbsent(CityCalendar.yearOf(g.getMonth()) / 10 * 10, k -> new LinkedHashMap<>())
+                        .merge(s.building(), s.ordered(), Long::sum);
+            }
             if (s.measure().kind() == BuildAdvice.Kind.HIGHWAYS || s.measure().kind() == BuildAdvice.Kind.ROADS
                     || s.measure().kind() == BuildAdvice.Kind.POLICE) {
                 worksReasons.merge(s.measure().label() + " " + s.outcome() + "/" + s.cut(), 1, Integer::sum);
@@ -3758,7 +3763,7 @@ public class LongPlaytest {
              * of its own, nothing when what is on site keeps power ahead. The value is
              * the output at risk: the month's ratio short, or the share of the calm
              * peak's draw the firm supply leaves uncovered at the advice's own yellow
-             * line (1 - BuildAdvice.served() x CityNeeds.NETWORK_YELLOW), whichever
+             * line (1 - BuildAdvice.served() x CityNeeds.POWER_YELLOW, PW3), whichever
              * is larger - so it orders when the advice does, a coal plant's build
              * ahead of the shortage. Valued at the shortage alone (1 - served), it
              * ordered only once a block was short: 66 of 240 sampled months short,
@@ -3766,7 +3771,7 @@ public class LongPlaytest {
              */
             BuildAdvice.Measure powerM = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
             double powerGain = gdp * Math.max(1 - g.getEnergyRatio(),
-                    1 - BuildAdvice.served(g, powerM, java.util.Map.of()) * CityNeeds.NETWORK_YELLOW);
+                    1 - BuildAdvice.served(g, powerM, java.util.Map.of()) * CityNeeds.POWER_YELLOW);
             for (BuildAdvice.Suggestion s : powerByNeed(g, powerM, g.getLandManager().getAvailableSqFt())) {
                 String name = s.template().getName();
                 long n = s.count();
@@ -8333,6 +8338,9 @@ public class LongPlaytest {
         out.printf("  ...first work's quoted lead near the start of that spell: %s%n", worksLongestLead);
         out.printf("  ...under 90%% by pass outcome/cut: %s%n", worksShortReasons);
         out.printf("  ...automatic power buildings ordered: %s%n", worksPowerOrders);
+        out.printf("  ...automatic power buildings ordered by decade: %s%n", worksPowerByDecade);
+        out.printf("  ...the power planner (PW3): reserve-test suggestions %d, spread suggestions %d, offers assembled past the listing %d%n",
+                BuildAdvice.RESERVE_ORDERS.get(), BuildAdvice.SPREAD_ORDERS.get(), g.getAutoBuilder().getAssembledOffers());
         BuildAdvice.Measure powerMeasure = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         for (BuildingsTemplate plant : g.getBuildingManager().getTemplates()) if (powerMeasure.serves(plant)) {
             out.printf("  ...power comparison at m%d, one %s: %s%n", g.getMonth(), plant.getName(),

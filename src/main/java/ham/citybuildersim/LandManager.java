@@ -802,6 +802,46 @@ public class LandManager {
         return cost;
     }
 
+    /**
+     * Offers bought one after another on a copy of the city's office and land, with nothing of the city's moved (PW3, REV-PW3 #1, #2): what an order's
+     * ground is planned on before a dollar is spent or a bond sold for it. hold() does to the copy what buyParcel() does to the market - the offer
+     * off the shelf, its rectangle's ground the copy's land, the ground owned, the shelf priced and filled again against the bigger city
+     * (updateMarket()) - and pays and books nothing, so what the copy lists next, under which ids and at what prices, is what the same purchases list on
+     * the city's own office. A hold that did not simply take the offer off the shelf could not do this: the place's next offer is listed against the
+     * land, and an offer taken and its ground not claimed would list that same ground again.
+     */
+    public final class Rehearsal {
+        private final LandMarket copy;
+        private final long population;
+        private double owned = ownedSqFt;
+
+        private Rehearsal(LandMarket copy, long population) {
+            this.copy = copy;
+            this.population = population;
+        }
+
+        /** The copy of the office, for choosing the next offer by the rule a purchase is chosen by (AutoBuilder.shortcutOffer()). */
+        public LandMarket market() { return copy; }
+
+        /** Buys the offer on the copy, as buyParcel() buys it at today's rate: the offer, or null when it is not on the copy's shelf. */
+        public LandParcel hold(int parcelId) {
+            LandParcel parcel = copy.find(parcelId);
+            if (parcel == null || parcelId < 0) return null;
+            double cost = parcel.localPrice(rate());
+            copy.take(parcelId);
+            copy.getLand().extend(parcel, month(), cost);
+            owned += parcel.getSizeSqFt();
+            copy.update(owned, allocatedSqFt, population, usPrices(), month());
+            return parcel;
+        }
+    }
+
+    /** A rehearsal of buying offers (Rehearsal) at the population given; null on a bare office and where the land cannot be copied. */
+    public Rehearsal rehearse(long population) {
+        LandMarket copy = market.rehearsal();
+        return copy == null ? null : new Rehearsal(copy, population);
+    }
+
     /* ------------------------------ ore ------------------------------ */
 
     /** The iron sites the city owns, centre and purchases: how many Iron Mines can stand. */

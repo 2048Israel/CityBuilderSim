@@ -271,7 +271,8 @@ public class WaterPowerCheck {
             UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
             PowerDispatch.Month m = u.getLatestMonth();
             BuildingsTemplate coal = g.getBuildingManager().getTemplateByName("Coal Power Plant");
-            double base = u.deliveredWith(coal, 0), moved = u.deliveredWith(coal, MOVE_KW), fill = u.getAverageUtilityFill();
+            // PW3 (PW1-P's fifth gap): the moved kW run at the coal plant's own posts' fill, as the merit order runs every plant.
+            double base = u.deliveredWith(coal, 0), moved = u.deliveredWith(coal, MOVE_KW), fill = u.plantFill(coal);
             boolean surplus = true, shortBy = true;
             for (int s = 0; s < PowerDispatch.HALVES; s++) {
                 surplus &= m.unserved[s] == 0;

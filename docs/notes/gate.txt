@@ -1,8 +1,8 @@
-# gate of Merge batch/R6e-rest: research: the seven 1996-2024 engineering rows R6e held at their old figures for want of a source: E22 with E33 (seawater reverse osmosis and its pressure exchanger), E23 GPS autosteer, E24 the large-rotor wind farm (after PW3), E26 driverless haul trucks, E27 endless strip, E30 calcined-clay cement and E32 the electric long-haul truck. Find for each the evidence R6e's notes say is missing and adopt a row only when it is found, the rest held at the old figure as R6e did, 0.9.201
+# gate of Merge batch/PW3: wind and solar by place and season, and the power planner (after PW2): capacity factors by month, block and latitude, credits falling with their share; the reserve test and the re-dispatched spread in the advice and the auto-builder; its speculative rows are in research-speculative §7 (R6-T-P, 2026-11-16); for R6-G-P and R6b-P (2026-11-20): E25 and E31 if PW2 shipped without them; the storage batch it queues (R6-G ★4) takes E29 the four-hour battery, and FE5 follows that batch; takes PW1-P, the planner's gaps PW1 measured: the works' own power is not counted as supply, a plant still being built counts as on site, the advice ranks plants by their price a firm kW and not their fuel, the cities south of the equator read the northern season, and a wind farm's posts lower the pooled firm supply by more than its firm third adds (PW1's notes §0, §2, §6) Takes PW2's ground finding: AutoBuilder.groundFor() plans from the standing listing alone, so in a young city it never assembles a 200-acre coal plant's ground over several offers, and the planner must choose its plant knowing what ground it can buy (REV-PW2, 2026-11-23), 0.9.202
 # date: 2026-11-25
 # earth-2.bin: named
 # nightly: 2026-11-24 03:09 0.9.196 94ba28823 4,000 months: RED, exit 1 in 712 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 0 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-24-94ba28823-AVsIJOCL
-# suite: 246 harnesses run in 1261s: 231 passed, 15 failed
+# suite: 249 harnesses run in 1177s: 231 passed, 18 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -41,12 +41,21 @@ DenominationCheck | 7 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
 PopulationCheck | 1 FAILED
+ReloadCheck | exit 1
+ReloadCheck | fixture 3k: the live city exercised it                                                                           FAIL  3 landlords with a closed homes' share, 1 ...with a count under the places they own, 0 landlords counting no place while they own some, their share whole, 2 landlords whose count moved in the month on, their share with it
+ReloadCheck | fixture 3k, every home closed, by hand: the caused point's own city exercised it                                 FAIL  0 landlords counting no place while they own some, their share whole, 0 landlords whose count moved in the month on, their share with it
+ReloadCheck | 2 FAILED
 RailDrawCheck | exit 1
 RailDrawCheck | ...and where the line runs on through that plot (a T) its plots and the two beside are not replaced and are track in the picture: 3 of 4 FAIL
 RailDrawCheck | 1 FAILED
 PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
 PlanCheck | 1 FAILED
+KeptCheck | exit 3
+KeptCheck | fixture: the fund holds a bond, B:2418, that runs 1 months, past the 2 months its pages are watched FAIL
+KeptCheck | fixture: the fund's rule held still through 63's choices, no lot it did not hold before (17 lots, then 15; new [S:Bank:rescue]) FAIL
+KeptCheck | fixture: the books hold one piece of every kind of paper PAPER names, sold through the model (1 of 6) FAIL
+KeptCheck | 3 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
@@ -58,7 +67,10 @@ CarCheck | ...and the imports declared are what the households paid, not the shi
 CarCheck | 3 FAILED
 CopperRefiningCheck | exit 1
 CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
+CopperRefiningCheck | the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line            FAIL  exit 1, 5.0 minutes; its output: /tmp/citybuildersim-tmp/2742377/copperrefiningcheck-rodmills10864177280645619554/seed1.log
+CopperRefiningCheck | 2 FAILED
+LongPlaytest | exit 1
+LongPlaytest | FAIL a building on the map moved                        2 time(s), months 1808-1809
 GroundSkipCheck | exit 1
 GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 30 month(s) FAIL
 GroundSkipCheck | 1 FAILED

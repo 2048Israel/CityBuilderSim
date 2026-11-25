@@ -71,6 +71,9 @@ public final class PowerDispatch {
     /** The draw a firm kW must cover in the peak block, losses in [D: BLOCK_LOAD at the peak over (1 - GRID_LOSSES)]: what the build advice plans power against. */
     public static final double PLAN_PEAK = BLOCK_LOAD[PEAK] / (1 - GRID_LOSSES);
 
+    /** The draw a firm kW must cover in the peak block of the year's highest month, losses in [D: PLAN_PEAK times SEASON's highest, July's 1.193 on the north's calendar, so 1.263 x 1.193 = 1.507 of the mean draw; the south's calendar is six months on and season(peakMonth()) is SEASON's maximum either way]: what the month's dispatch serves at its worst, the draw below which some month leaves its peak block short (PW3 R). */
+    public static final double PLAN_PEAK_SEASON = PLAN_PEAK * season(peakMonth());
+
     /** What a wind farm's average delivers in its calmest half-block [D: the least of WIND_BLOCK x (1 - WIND_SWING) over the blocks: 0.806 x 0.41 = 0.330]. */
     public static final double WIND_FIRM = windFirm();
 
@@ -91,8 +94,154 @@ public final class PowerDispatch {
     /** How far the sun swings inside a block, over the block's average, the first half sunny and the second dark (the wind's halves) [M: EIA-930 2025, the coefficient of variation of hourly solar output inside each load block, median of 12 regions: 1.32 / 1.06 / 0.66 base to peak, a swing past 1 held at 1; the prototype, line 102]. */
     public static final double[] SOLAR_SWING = {1.0, 1.0, 0.66};
 
-    /** What a solar farm's average delivers in its darkest half-block [D: the least of SOLAR_BLOCK x (1 - SOLAR_SWING) over the blocks: the base's and the shoulder's dark halves, 0]: the advice counts no firm power from the sun until PW3 credits it by the peak hours. */
+    /** What a solar farm's average delivers in its darkest half-block [D: the least of SOLAR_BLOCK x (1 - SOLAR_SWING) over the blocks: the base's and the shoulder's dark halves, 0]; the reserve test credits the sun by the peak hours instead (PW3, solarCredit()). */
     public static final double SOLAR_FIRM = firm(SOLAR_BLOCK, SOLAR_SWING);
+
+    /* ===== THE YEAR, THE PLACE AND THE CREDIT (PW3, 2026-11-23) =====
+       A month's wind, sun and river are the US fleet's in that calendar month (EIA, 2025), each month's index its
+       capacity factor over the twelve's mean; south of the equator a city reads the month six on (its own season,
+       the load's with them). The sun also has a place: the farm's yield at the city's latitude over the US fleet's,
+       and its own months there (PVGIS), on a fixed rack until the tracker (research E25) is known. A variable row's
+       credit is its output in the year's highest-load hours, falling with the variable rows' share of the energy. */
+
+    /** Wind's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: a month's index is its figure over the twelve's mean. */
+    public static final double[] WIND_MONTH_CF = {37.4, 37.2, 43.1, 40.7, 32.1, 32.2, 27.5, 23.8, 23.1, 33.8, 35.4, 39.2};
+
+    /** Solar photovoltaic's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: the US fleet's months, a generated world's. */
+    public static final double[] SOLAR_MONTH_CF = {16.2, 18.7, 23.6, 27.5, 29.3, 31.9, 31.9, 29.7, 26.7, 22.4, 16.9, 13.1};
+
+    /** Conventional hydro's capacity factor in each calendar month, January first, percent [S: EIA, Electric Power Monthly, table 6.07.B, 2025; spec 2.4]: a station's month of water is its average times the month's index. */
+    public static final double[] HYDRO_MONTH_CF = {34.7, 35.1, 38.2, 40.8, 42.8, 39.8, 34.2, 32.3, 26.1, 24.9, 28.5, 36.1};
+
+    /** The year's peak hour over its mean [D: EIA-930 2025, the lower 48, 760,649 / 491,034 MW; spec 2.2]. */
+    public static final double PEAK_HOUR = 760_649.0 / 491_034.0;
+
+    /** The draw the firm supply must cover, losses in [D: PEAK_HOUR over (1 - GRID_LOSSES)]: what the reserve test plans power against (PLAN_PEAK, the peak block's, stays the substations'). */
+    public static final double PLAN_PEAK_HOUR = PEAK_HOUR / (1 - GRID_LOSSES);
+
+    /** The firm supply's margin over the peak hour the reserve test asks [E: NERC's reference margin level, cited as evidence; spec 2.8, 6]: power's NEEDS YOU line is 1 / (1 + RESERVE). */
+    public static final double RESERVE = 0.15;
+
+    /** Wind's output in the year's 100 highest-load hours over its average [M: the study's dispatch of EIA-930 2025, 0.247 of nameplate over 33.8%; spec 2.4]: its credit alone. */
+    public static final double WIND_PEAK_CREDIT = 0.730;
+
+    /** Solar's output in the year's 100 highest-load hours over its average [M: the study's dispatch of EIA-930 2025, 0.629 of nameplate over 24.0%; spec 2.4]: its credit alone, at the US fleet's place. */
+    public static final double SOLAR_PEAK_CREDIT = 2.621;
+
+    /** What a variable row's credit falls to, over its credit alone, once the variable rows make CREDIT_HALF of the city's energy [E: the study's straight line, spec 2.4; NREL's and ERCOT's direction as evidence only]. */
+    public static final double CREDIT_FLOOR = 0.1;
+
+    /** The variable rows' share of the city's energy at which their credit has fallen to CREDIT_FLOOR [E: spec 2.4]. */
+    public static final double CREDIT_HALF = 0.5;
+
+    /** The latitude bands' centres the sun's tables are read at, degrees from the equator either way [D: PVGIS's places averaged in 10-degree bands, docs/studies/electricity/pvgis.py]. */
+    public static final double SOLAR_BAND_DEGREES = 10;
+
+    /** A fixed rack's yield a kWp in each band, 0 to 70 degrees, over the tracked US fleet's [S: PVGIS 5.3 (c) European Communities, CC BY 4.0, ERA5, 14% losses; the US reference seven places at 32.8-35.5 N, 2,073.6 kWh a kWp tracked; out/pvgis.txt]. */
+    public static final double[] SOLAR_PLACE_FIXED = new double[] {0.6537, 0.7379, 0.7714, 0.7921, 0.7396, 0.6128, 0.5027, 0.3959};
+
+    /** A single-axis tracker's yield a kWp in each band, 0 to 70 degrees, over the tracked US fleet's [S: PVGIS 5.3 (c) European Communities, CC BY 4.0; out/pvgis.txt]. */
+    public static final double[] SOLAR_PLACE_TRACKED = new double[] {0.8359, 0.9611, 0.9930, 1.0011, 0.8909, 0.7125, 0.5910, 0.4825};
+
+    /** A fixed rack's yield at the US fleet's places over a tracker's there [S: PVGIS 5.3, out/pvgis.txt]: a generated world's farm before the tracker. */
+    public static final double SOLAR_US_FIXED = 0.7940;
+
+    /** A fixed rack's months in each band, on the north's calendar, each over the twelve's mean [S: PVGIS 5.3, out/pvgis.txt; the south's places turned six months]. */
+    public static final double[][] SOLAR_SHAPE_FIXED = new double[][] {
+            {1.030, 1.037, 1.080, 1.035, 0.957, 0.936, 0.992, 0.982, 1.049, 0.994, 0.949, 0.959},
+            {1.087, 1.072, 1.130, 1.072, 0.979, 0.900, 0.895, 0.884, 0.956, 0.995, 1.007, 1.023},
+            {1.009, 1.037, 1.104, 1.090, 1.006, 0.929, 0.926, 0.921, 0.978, 1.017, 1.006, 0.977},
+            {0.895, 0.951, 1.066, 1.104, 1.089, 1.063, 1.060, 1.015, 1.031, 0.989, 0.896, 0.843},
+            {0.837, 0.908, 1.095, 1.134, 1.141, 1.109, 1.133, 1.103, 1.054, 0.949, 0.790, 0.747},
+            {0.615, 0.840, 1.150, 1.297, 1.326, 1.261, 1.283, 1.206, 1.082, 0.852, 0.596, 0.493},
+            {0.294, 0.670, 1.302, 1.571, 1.670, 1.528, 1.469, 1.307, 1.029, 0.697, 0.305, 0.156},
+            {0.024, 0.439, 1.427, 1.916, 2.037, 1.813, 1.690, 1.273, 0.882, 0.442, 0.056, 0.000}};
+
+    /** A tracker's months in each band, on the north's calendar, each over the twelve's mean [S: PVGIS 5.3, out/pvgis.txt]. */
+    public static final double[][] SOLAR_SHAPE_TRACKED = new double[][] {
+            {1.035, 1.044, 1.090, 1.039, 0.957, 0.936, 1.006, 0.996, 1.049, 0.971, 0.923, 0.954},
+            {1.028, 1.048, 1.153, 1.132, 1.048, 0.952, 0.933, 0.898, 0.940, 0.961, 0.954, 0.953},
+            {0.873, 0.953, 1.110, 1.180, 1.143, 1.058, 1.030, 0.984, 0.991, 0.961, 0.888, 0.830},
+            {0.691, 0.805, 1.032, 1.195, 1.290, 1.313, 1.279, 1.130, 1.043, 0.881, 0.711, 0.629},
+            {0.592, 0.739, 1.044, 1.232, 1.363, 1.393, 1.412, 1.267, 1.063, 0.817, 0.579, 0.500},
+            {0.363, 0.618, 1.046, 1.401, 1.606, 1.605, 1.610, 1.379, 1.054, 0.678, 0.375, 0.266},
+            {0.120, 0.400, 1.066, 1.627, 2.000, 1.946, 1.821, 1.435, 0.923, 0.468, 0.140, 0.054},
+            {0.005, 0.192, 1.019, 1.840, 2.300, 2.258, 2.056, 1.344, 0.725, 0.244, 0.017, 0.000}};
+
+    /** The calendar month on the north's calendar for a city at this latitude: six months on south of the equator [spec 2.2]; the north's at the equator and in a generated world (NaN); a month outside 1..12 as given. */
+    public static int northern(int monthOfYear, double lat) {
+        if (monthOfYear < 1 || monthOfYear > 12 || !(lat < 0)) return monthOfYear;
+        return (monthOfYear + 5) % 12 + 1;
+    }
+
+    /** The calendar month's load over the year's mean for a city at this latitude: its own season. */
+    public static double season(int monthOfYear, double lat) { return season(northern(monthOfYear, lat)); }
+
+    /** A month's capacity factor over the twelve's mean, for 1..12 on the north's calendar; 1 for anything else. */
+    private static double index(double[] cf, int northMonth) {
+        if (northMonth < 1 || northMonth > 12) return 1;
+        double sum = 0;
+        for (double x : cf) sum += x;
+        return cf[northMonth - 1] / (sum / cf.length);
+    }
+
+    /** Wind's output in the calendar month over its average, for a city at this latitude. */
+    public static double windMonth(int monthOfYear, double lat) { return index(WIND_MONTH_CF, northern(monthOfYear, lat)); }
+
+    /** A hydro station's water in the calendar month over its average, for a city at this latitude. */
+    public static double hydroMonth(int monthOfYear, double lat) { return index(HYDRO_MONTH_CF, northern(monthOfYear, lat)); }
+
+    /** A table read at |lat| between its bands' centres, held at its ends. */
+    private static double band(double[] table, double lat) {
+        double x = Math.min(table.length - 1, Math.abs(lat) / SOLAR_BAND_DEGREES);
+        int i = (int) Math.floor(x);
+        if (i >= table.length - 1) return table[table.length - 1];
+        return table[i] + (x - i) * (table[i + 1] - table[i]);
+    }
+
+    /** A solar farm's year at this latitude over its production1 (the tracked US fleet's 24.0%): on a fixed rack or tracked; a generated world's (NaN) the US fleet's. */
+    public static double solarYear(double lat, boolean tracked) {
+        if (Double.isNaN(lat)) return tracked ? 1 : SOLAR_US_FIXED;
+        return band(tracked ? SOLAR_PLACE_TRACKED : SOLAR_PLACE_FIXED, lat);
+    }
+
+    /** ...its month on the north's calendar over its own year there: the band's shape, or a generated world's the US fleet's (EIA). */
+    private static double solarShape(int northMonth, double lat, boolean tracked) {
+        if (northMonth < 1 || northMonth > 12) return 1;
+        if (Double.isNaN(lat)) return index(SOLAR_MONTH_CF, northMonth);
+        double[][] shape = tracked ? SOLAR_SHAPE_TRACKED : SOLAR_SHAPE_FIXED;
+        double[] month = new double[shape.length];
+        for (int b = 0; b < shape.length; b++) month[b] = shape[b][northMonth - 1];
+        return band(month, lat);
+    }
+
+    /** A solar farm's output in the calendar month over its production1, for a city at this latitude: its place's year times its month there. */
+    public static double solarMonth(int monthOfYear, double lat, boolean tracked) {
+        return solarYear(lat, tracked) * solarShape(northern(monthOfYear, lat), lat, tracked);
+    }
+
+    /** The month of the year's highest load, on the north's calendar: SEASON's highest. */
+    public static int peakMonth() {
+        int best = 0;
+        for (int i = 1; i < SEASON.length; i++) if (SEASON[i] > SEASON[best]) best = i;
+        return best + 1;
+    }
+
+    /** What a variable row's credit alone keeps at this share of the city's energy from the variable rows: 1 at none, falling in a straight line to CREDIT_FLOOR at CREDIT_HALF, and held there. */
+    public static double creditFall(double share) {
+        double s = Double.isFinite(share) ? Math.max(0, share) : 0;
+        return Math.max(CREDIT_FLOOR, 1 - s / CREDIT_HALF * (1 - CREDIT_FLOOR));
+    }
+
+    /** A wind farm's firm kW over its production1 at this share: its peak hours' output, falling with the share. */
+    public static double windCredit(double share) { return WIND_PEAK_CREDIT * creditFall(share); }
+
+    /** A solar farm's firm kW over its production1 at this latitude and share: its peak hours' output at the US fleet's place, scaled by its output in the peak month here over the US fleet's then, falling with the share. */
+    public static double solarCredit(double lat, boolean tracked, double share) {
+        int peak = peakMonth();
+        double here = solarYear(lat, tracked) * solarShape(peak, lat, tracked);
+        return SOLAR_PEAK_CREDIT * here / index(SOLAR_MONTH_CF, peak) * creditFall(share);
+    }
 
     /** Megajoules in a litre of fuel oil [D: 40 CFR 98 subpart C table C-1, residual fuel oil No. 6, 0.150 MMBtu a gallon: 150,000 x 1,055.056 J over 3.785412 L = 41.81 MJ; spec 2.5]. */
     public static final double FUEL_OIL_MJ_PER_LITRE = 0.150e6 * MJ_PER_BTU / 3.785412;
