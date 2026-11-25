@@ -426,6 +426,8 @@ public final class LicenceFees {
      * with it less that delivered without it, at the planners' tariff. pieceId null is the building entry (the state's buildings gone, less
      * their running cost, `running` a building); a piece is every building of the state lacking it. The grid's nameplate is moved from the
      * city as it stands to this state (STANDING: the stack's own state moves it nothing; NEW: the new buildings are added to it).
+     * A piece's gain adds the power its buildings would draw more without it, at the commerce price (EconomyManager.getPowerPriceFor(), a water works not being high voltage):
+     * E22's pressure exchanger serves no more water, it saves the Desalination Plant's electricity (R6e-rest).
      */
     private static double entryGain(Game game, BuildingsTemplate t, Fitting f, String pieceId, double running) {
         long per = f.standing() ? f.n() : 1;
@@ -439,7 +441,9 @@ public final class LicenceFees {
         if (pieceId == null) return served(game, t, move, plate * f.n()) - f.n() * running;
         Map<String, Long> less = new TreeMap<>(f.counts());
         less.put(pieceId, per);
-        return served(game, t, move, (plate - RecipeChanges.productionAt(game, t, less, per, f.ids())) * f.n());
+        double saved = (RecipeChanges.electricityAt(game, t, less, per, f.ids()) - RecipeChanges.electricityAt(game, t, f.counts(), per, f.ids()))
+                * f.n() * game.getEconomyManager().getPowerPriceFor(t);
+        return served(game, t, move, (plate - RecipeChanges.productionAt(game, t, less, per, f.ids())) * f.n()) + saved;
     }
 
     /** The share of a life's weight (BuildAdvice.LIFE_MONTHS' annuity at the monthly rate i) that a patent's term left at atMonth covers (R2c-P, REV-R2c-P-1): 0 once it has ended, 1 while a whole life fits inside it. */

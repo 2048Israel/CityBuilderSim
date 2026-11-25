@@ -311,6 +311,19 @@ public final class RecipeChanges {
         return production;
     }
 
+    /**
+     * The draw of a building with these unfitted counts and these running recipes, in kW, by compose()'s own sum (R6e-rest; package-private for
+     * LicenceFees.entryGain(), whose public gain of a piece that saves power, E22's pressure exchanger, is the power it saves).
+     * A template with no process improvements keeps its one figure.
+     */
+    static double electricityAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity, String[] ids) {
+        if (t.getRecipeChanges().isEmpty()) return t.getElectricityConsumption();
+        String[] chosen = ids == null ? new String[] {t.defaultRecipe().getId(), t.defaultRecipe().getId()} : ids;
+        Map<String, Double> absent = absencesAt(game, t, counts, quantity, chosen);
+        long unfitted = t.recipePieceId() == null ? 0 : Math.min(quantity, counts.getOrDefault(t.recipePieceId(), 0L));
+        return compose(t, base(t, chosen[0]), quantity - unfitted, base(t, chosen[1]), unfitted, absent, chosen[0]).getElectricity();
+    }
+
     private static double valueAt(Game game, BuildingsTemplate t, Map<String, Long> counts, long quantity,
                                   String[] ids, Recipes.Prices prices, boolean proposed) {
         Map<String, Double> absent = absencesAt(game, t, counts, quantity, ids);

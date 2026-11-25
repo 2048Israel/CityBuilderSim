@@ -14,14 +14,18 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * R6f's three research rows, each undone in a city founded the 1900 way until it is known: robot-assisted
- * surgery's share of general care's stays (M12), the Contact Centre's agents' 14% (B10) and Basel
- * III's conservation buffer (L8), on both sides of their months, in a default city and across a save.
+ * R6f's three research rows and R6e-rest's one, each undone in a city founded the 1900 way until it is known:
+ * robot-assisted surgery's share of general care's stays (M12), the Contact Centre's agents' 14% (B10), Basel
+ * III's conservation buffer (L8) and the Desalination Plant's electricity before the pressure exchanger (E22),
+ * on both sides of their months, in a default city and across a save.
  * <p>
  * WHY (R6f): a row in research.json alone changes nothing a city does. Each of these three needed a figure
  * the model reads by the city's own knowledge (a stays factor, a recipe change, a bank's floor), and B10's
  * undo is a recipe choice whose id is saved: a format-63 save lacked the flag, so a held city would have
  * loaded modern. A city founded the default way knows every row from its first month and must be unchanged.
+ * WHY (R6e-rest): E22 is the same kind of undo on a figure the water's books read, and a recipe change that
+ * moved a template's electricity without moving the sea works' draw would charge a held city for power the
+ * plant no longer draws (or not charge it for what it does); the draw is read through the model's own getters.
  * <p>
  * What this proves:
  * 1. M12: the stays factor is Sickness.STAYS_BEFORE_M12 alone the month before July 2000 and 1 from it, in
@@ -42,6 +46,19 @@ import java.util.Set;
  *    each month, a load) and a default city always the buffer; a city whose Law School's faculty complete L8
  *    in a played month ahead of history hears it in that same month, not the next, and a reload of that
  *    month hears the same (REV-R6f P1).
+ * 4. E22: the catalogue's row (1997, June placeholder, equipment, needs E6, fee, the rule's work) and buildings.json's
+ *    one undo, carried by the Desalination Plant's pressure exchanger, on its electricity alone and the sourced
+ *    arithmetic's kW (Stover 2010's 3.49 to 2.68 kWh a m3 over the DOE's 2.70 kWh a m3 RO step); a 1900 city's plant
+ *    that finishes before June 1997 is recorded as lacking the exchanger (the stack's unfitted count) and runs
+ *    Math.round(10,880 + undo) = 13,454 kW with every other figure today's, and still does in June 1997 (knowing a
+ *    piece fits none, by a recipe call and by a real month); a plant that finishes after it, where the exchanger pays,
+ *    comes fitted at 10,880; the sea works' draw the water's books pay is the plants' count times the template's
+ *    powerBought() after a real month, more than today's while a plant lacks the exchanger; no sector fits a city
+ *    work's piece, and the player's Fit (Game.fitForCity()) does, after which the plant and the draw are today's; the
+ *    imported exchanger's public gain inside its term is the power it saves at the commerce price, and the plant's licence
+ *    bill SHARE of it (it serves no more water; LicenceFees.entryGain() adds the saving); a
+ *    default city runs 10,880 across the month; a held city's save loads the unfitted count and the draw at once and
+ *    the next month keeps them; a plant with no record of the count (a format-65 save's) is read as fitted from June 1997.
  * <p>
  * Every city is the existing fixtures': the licence factory's (three months played) or the recipe
  * checks' on GameFiles.scratch, and every save and load is slot 10 of the fixture's own scratch folder.
@@ -539,11 +556,312 @@ public final class ModernRowsCheck {
         near("...and its capitalTarget() is the live city's", heard.capitalTarget(), hearing.capitalTarget(), 1e-12);
     }
 
+    /* ----- 4. E22 ----- */
+
+    /** Stover (Desalination and Water Treatment 13, 2010, pp38-39): Las Palmas III's SWRO process drew 3.49 kWh a m3 with its Pelton turbines, before the pressure-exchanger retrofit. */
+    static final double PELTON_KWH = 3.49;
+    /** Stover (2010, pp38-39): the same SWRO process drew 2.68 kWh a m3 after the pressure exchangers replaced the turbines. */
+    static final double PX_KWH = 2.68;
+    /** The US DOE's Seawater Desalination Bandwidth Study (2017, pp16 and 24): the RO step with energy recovery (Carlsbad) draws 2.70 kWh a m3, the part of the plant's draw the exchanger changes. */
+    static final double RO_STEP_KWH = 2.70;
+    /** The game's unit of water in litres: 10,000 US gallons of 3.785411784 litres each, the gallon's exact definition (UtilitiesHandler's units; SulphideLeachCheck's 37,854 is this rounded). */
+    static final double LITRES_A_WATER_UNIT = 37_854.11784;
+
+    /** One building's definition in buildings.json, read as the file has it. */
+    static JsonObject building(String name) throws Exception {
+        JsonObject data = JsonParser.parseString(Files.readString(Path.of("src/main/resources/buildings.json"), StandardCharsets.UTF_8)).getAsJsonObject();
+        for (JsonElement b : data.getAsJsonArray("buildings"))
+            if (b.getAsJsonObject().get("name").getAsString().equals(name)) return b.getAsJsonObject();
+        throw new IllegalStateException("no " + name + " in buildings.json");
+    }
+
+    /** The kW the exchanger's step adds to a works of this many water units a month: the RO step's kWh a m3 over the plant's m3 a month, over the kWh a kW-month, times the step's rise from PX_KWH back to PELTON_KWH. */
+    static double undoKw(double unitsAMonth) {
+        return RO_STEP_KWH * (unitsAMonth * LITRES_A_WATER_UNIT / 1000) / HydroSites.KWH_PER_UNIT * (PELTON_KWH / PX_KWH - 1);
+    }
+
+    /** The id of the pressure exchanger in buildings.json, the piece E22's change on the Desalination Plant is carried by (a piece's change is a count of the stack's unfitted, not a recipe flag). */
+    static final String EXCHANGER = "pressure-exchanger";
+
+    /** How many of the stack's plants lack the pressure exchanger (BuildingsStacks.getUnfitted()). */
+    static long unfitted(Game g, BuildingsTemplate t) {
+        BuildingsStacks stack = g.getBuildingManager().getStack(t);
+        return stack == null ? 0 : stack.getUnfitted(EXCHANGER);
+    }
+
+    /**
+     * A Desalination Plant that finishes in the city at the month: placed as the fixtures place a village (fitted), then the model's own finish rule said
+     * over it (Game.fitWhatFinished(): a piece not known, or not paying, at the finish is left off a city founded the 1900 way), its choice struck and
+     * applied. E22 the only discovery unknown when `heldBack`.
+     */
+    static BuildingsTemplate plantAt(Game g, int month, boolean heldBack) throws Exception {
+        if (heldBack) HistoricalRecipeCheck.allExcept(g, "E22");
+        HistoricalRecipeCheck.at(g, month);
+        BuildingsTemplate t = HistoricalLicenceCheck.stand(g, "Desalination Plant", 1);
+        HistoricalRecipeCheck.silent(() -> g.fitWhatFinished(List.of(new BuildingManager.Completion(t.getName(), 1))));
+        HistoricalRecipeCheck.run(g);
+        return t;
+    }
+
+    /** Every figure of the plant but its electricity, the one the exchanger changes. */
+    static Map<String, Double> plantRest(BuildingsTemplate t) {
+        Map<String, Double> figures = HistoricalRecipeCheck.figures(t);
+        figures.remove("electricity");
+        return figures;
+    }
+
+    /** The share of the plant's sector the grid does not draw for (ServicesManager.gridDraw()'s steam share): 0 for a plant in no sector. */
+    static double steamShare(Game g, BuildingsTemplate t) {
+        Sector s = g.getSectors().byKey(t.getSector());
+        return s == null ? 0 : s.getSteamShare();
+    }
+
+    /** The sea works' draw the water's books pay at the last update (UtilitiesHandler.getLatestWaterDraw()), NaN before any update. */
+    static double seaKw(Game g) {
+        UtilitiesHandler.WaterDraw draw = g.getServicesManager().getUtilitiesHandler().getLatestWaterDraw();
+        return draw == null ? Double.NaN : draw.seaKw();
+    }
+
+    /** How many plants of this template stand in the city. */
+    static double standing(Game g, BuildingsTemplate t) {
+        BuildingsStacks stack = g.getBuildingManager().getStack(t);
+        return stack == null ? 0 : stack.getQuantity();
+    }
+
+    static void exchanger() throws Exception {
+        OUT.println("--- 4. E22: the Desalination Plant draws more power until the pressure exchanger is known ---");
+        int w = ResearchCatalog.knownFrom("E22");
+        check("E22 is known from June 1997 (PolicyDates.monthOf(1997, 6))", w == PolicyDates.monthOf(1997, 6), w);
+        ResearchCatalog.Entry entry = ResearchCatalog.get().entry("E22");
+        check("the catalogue's E22 is dated June 1997, the month a placeholder (monthKnown false)",
+                entry != null && entry.year() == 1997 && entry.monthOfYear() == 6 && !entry.monthKnown() && entry.worldMonth() == w, entry);
+        check("...equipment of engineering, needing E6, with a fee, and its work the rule's for equipment in 1997, rounded",
+                entry != null && entry.kinds().equals(List.of("equipment")) && entry.size() == ResearchCatalog.Size.EQUIPMENT
+                        && entry.field() == ResearchCatalog.Field.ENGINEERING && entry.needs().equals(List.of("E6")) && entry.fee()
+                        && entry.work() == Math.round(ResearchCatalog.workByRule(ResearchCatalog.Size.EQUIPMENT, ResearchCatalog.Field.ENGINEERING, 1997)), entry);
+
+        JsonObject plant = building("Desalination Plant");
+        JsonObject change = null;
+        for (JsonElement c : plant.getAsJsonArray("recipeChanges"))
+            if (c.getAsJsonObject().get("entry").getAsString().equals("E22")) change = c.getAsJsonObject();
+        check("buildings.json's Desalination Plant (id 73) carries an E22 change", plant.get("id").getAsInt() == 73 && change != null, plant.get("id"));
+        JsonObject without = change.getAsJsonObject("without");
+        double base = plant.get("electricity").getAsDouble();
+        double units = plant.get("production1").getAsDouble();
+        double undo = without.get("electricity").getAsDouble();
+        check("buildings.json's E22 undo changes the plant's electricity and nothing else", without.keySet().equals(Set.of("electricity")), without);
+        near("...and is the RO step's PELTON_KWH/PX_KWH rise over the plant's m3 a month, in kW (RO_STEP_KWH, LITRES_A_WATER_UNIT, 720 kWh a kW-month)", undo, undoKw(units), 1e-9);
+        boolean listed = false;
+        for (JsonElement p : plant.getAsJsonArray("equipment"))
+            listed |= p.getAsJsonObject().get("id").getAsString().equals(EXCHANGER) && p.getAsJsonObject().get("since").getAsString().equals("E22");
+        check("...carried by the plant's own piece: the plant lists a pressure exchanger since E22 and the change names it",
+                listed && change.get("equipment").getAsString().equals(EXCHANGER), change);
+
+        // Today's anchor, from a default city's own template at the month before E22.
+        Game today = HistoricalLicenceCheck.town("R6e-e22-default", false);
+        int carriers = 0;
+        BuildingsTemplate carrier = null;
+        RecipeChange modelChange = null;
+        for (BuildingsTemplate t : today.getBuildingManager().getTemplates())
+            for (RecipeChange c : t.getRecipeChanges()) if (c.code().equals("E22")) { carriers++; carrier = t; modelChange = c; }
+        check("exactly one template carries a recipe change coded E22, and it is the Desalination Plant (id 73)",
+                carriers == 1 && carrier.getId() == 73 && carrier.getName().equals("Desalination Plant"), carriers);
+        check("...its change is the pressure exchanger's, follows no other, and its only non-zero field is electricity",
+                EXCHANGER.equals(modelChange.piece()) && modelChange.after() == null && modelChange.makes().isEmpty() && modelChange.uses().isEmpty()
+                        && modelChange.jobs().isEmpty() && modelChange.gen() == 0 && modelChange.water() == 0 && modelChange.consumables() == 0
+                        && modelChange.production() == 0 && modelChange.land() == 0 && modelChange.steamRail() == 0
+                        && modelChange.crackerPetrol() == 0 && modelChange.dig() == 0 && modelChange.electricity() != 0, modelChange);
+        near("...and its electricity is the sourced arithmetic's", modelChange.electricity(), undoKw(units), 1e-9);
+        Equipment exchanger = carrier.getEquipment(EXCHANGER);
+        check("the piece is the plant's only one, known from E22, bought in Machinery alone and worked for",
+                exchanger != null && carrier.getEquipment().size() == 1 && exchanger.getSince().equals("E22")
+                        && exchanger.getBuys().keySet().equals(Set.of(Good.MACHINERY)) && exchanger.getWork() > 0, exchanger);
+
+        BuildingsTemplate modern = plantAt(today, w - 1, false);
+        int anchor = modern.getElectricityConsumption();
+        check("a default city's plant stands, and its electricity is buildings.json's own at the month before E22",
+                standing(today, modern) == 1 && anchor == base, anchor + " vs " + base);
+        check("...with no plant lacking the exchanger", unfitted(today, modern) == 0, unfitted(today, modern));
+        long before = Math.round(base + undo);
+        check("fixture: the plant before E22 runs Math.round(electricity + undo), 13,454 kW (the row's text), more than the anchor",
+                before == Math.round(anchor + undoKw(units)) && before == 13_454 && before > anchor, before + " vs " + anchor + " + " + undo);
+        Map<String, Double> today1 = plantRest(modern);
+
+        // The month before E22, in a 1900 city: the plant that finishes then is recorded as lacking the exchanger.
+        Game old = HistoricalLicenceCheck.town("R6e-e22-1900", true);
+        check("fixture: a city founded the 1900 way", old.foundedUnfitted(), "");
+        BuildingsTemplate t = plantAt(old, w - 1, true);
+        check("fixture: one Desalination Plant stands in it, every discovery but E22 known",
+                standing(old, t) == 1 && !old.getResearch().known("E22", w - 1) && old.getResearch().known("E6", w - 1), standing(old, t));
+        check("a plant that finishes before E22 is recorded as lacking the exchanger: the stack's unfitted count is its quantity",
+                unfitted(old, t) == standing(old, t), unfitted(old, t) + " of " + standing(old, t));
+        check("a 1900 plant the month before E22 runs Math.round(electricity + undo) kW",
+                t.getElectricityConsumption() == before, t.getElectricityConsumption() + " vs " + before);
+        check("...with production1, water and jobs today's",
+                t.getProduction1() == modern.getProduction1() && t.getWaterConsumption() == modern.getWaterConsumption()
+                        && java.util.Arrays.stream(JobType.values()).allMatch(j -> t.getJobs(j) == modern.getJobs(j)),
+                t.getProduction1() + " " + t.getWaterConsumption());
+        check("...every other figure of it is the default city's", plantRest(t).equals(today1), plantRest(t) + " vs " + today1);
+
+        // From E22's month, by the recipe call: knowing the piece fits none, so the plant built before it still runs the undo.
+        HistoricalRecipeCheck.at(old, w);
+        HistoricalRecipeCheck.run(old);
+        check("in E22's month the plant built before it still lacks the exchanger and runs the undo, knowledge alone fitting nothing",
+                unfitted(old, t) == 1 && t.getElectricityConsumption() == before, unfitted(old, t) + " " + t.getElectricityConsumption());
+        check("...every other figure still the default city's", plantRest(t).equals(today1), plantRest(t) + " vs " + today1);
+
+        // ...and by a real month.
+        Game stepped = HistoricalLicenceCheck.town("R6e-e22-month", true);
+        BuildingsTemplate s = plantAt(stepped, w - 1, true);
+        check("fixture: the month before E22 the stepped city's plant lacks the exchanger and runs the undo",
+                unfitted(stepped, s) == 1 && s.getElectricityConsumption() == before, unfitted(stepped, s) + " " + s.getElectricityConsumption());
+        step(stepped, "the 1900 city across E22's month");
+        check("...and the real month into E22's month fits none: the count and the undo stay, every other figure today's",
+                stepped.getMonth() == w && unfitted(stepped, s) == 1 && s.getElectricityConsumption() == before && plantRest(s).equals(today1),
+                stepped.getMonth() + " " + unfitted(stepped, s) + " " + s.getElectricityConsumption());
+
+        // A plant that finishes after E22 comes fitted, when the exchanger pays for a new one at the city's prices.
+        Game fresh = HistoricalLicenceCheck.town("R6e-e22-new", true);
+        HistoricalRecipeCheck.allExcept(fresh, "E22");
+        HistoricalRecipeCheck.at(fresh, w);
+        BuildingsTemplate newPlant = HistoricalLicenceCheck.stand(fresh, "Desalination Plant", 1);
+        HistoricalRecipeCheck.silent(() -> fresh.simulateMonths(2));
+        EquipmentFit.Verdict forNew = EquipmentFit.verdictForNew(fresh, newPlant, newPlant.getEquipment(EXCHANGER));
+        check("fixture: two months after E22 with a plant standing, at the power price the played months struck, the exchanger PAYS on a new plant",
+                fresh.getMonth() > w && fresh.getResearch().known("E22", fresh.getMonth()) && forNew.kind() == EquipmentFit.Kind.PAYS, forNew);
+        HistoricalLicenceCheck.stand(fresh, "Desalination Plant", 2);
+        HistoricalRecipeCheck.silent(() -> fresh.fitWhatFinished(List.of(new BuildingManager.Completion(newPlant.getName(), 1))));
+        HistoricalRecipeCheck.run(fresh);
+        check("a plant that finishes then comes fitted: two stand, no plant lacks the exchanger, and the plants run today's electricity, the anchor",
+                standing(fresh, newPlant) == 2 && unfitted(fresh, newPlant) == 0 && newPlant.getElectricityConsumption() == anchor && plantRest(newPlant).equals(today1),
+                standing(fresh, newPlant) + " " + unfitted(fresh, newPlant) + " " + newPlant.getElectricityConsumption());
+
+        // The reader: the sea works' draw the water's books pay, after a real month in a held city.
+        Game drawn = HistoricalLicenceCheck.town("R6e-e22-draw", true);
+        BuildingsTemplate p = plantAt(drawn, w - 2, true);
+        check("fixture: the held city's plant lacks the exchanger and runs the undo", unfitted(drawn, p) == 1 && p.getElectricityConsumption() == before, unfitted(drawn, p));
+        step(drawn, "the held city before E22's month");
+        double count = standing(drawn, p);
+        check("fixture: the plant stands, the month is still before E22's, and the water's books have made an update",
+                count == 1 && drawn.getMonth() == w - 1 && p.getElectricityConsumption() == before && !Double.isNaN(seaKw(drawn)), drawn.getMonth() + " " + seaKw(drawn));
+        double steam = steamShare(drawn, p);
+        check("fixture: the plant's sector holds no steam share, so the grid's draw is the template's powerBought() whole", steam == 0, steam);
+        near("the sea works' draw the water's books pay is the plants' count times the template's powerBought()", seaKw(drawn), count * p.powerBought(), 1e-9);
+        check("...and is more than the same count times today's electricity, buildings.json's own", seaKw(drawn) > count * base, seaKw(drawn) + " vs " + count * base);
+        step(drawn, "the held city into E22's month");
+        near("...and in E22's month, the plant still lacking the exchanger, the draw is still the count times powerBought()", seaKw(drawn), count * p.powerBought(), 1e-9);
+        check("...which is the undo's, more than the count times buildings.json's own electricity", p.getElectricityConsumption() == before && seaKw(drawn) > count * base,
+                p.getElectricityConsumption() + " " + seaKw(drawn));
+
+        // The fitting: who fits a city work's piece. Four depots and the months they settle in give the builders the output a fitting is worked with
+        // (FittingCheck.fitTown()'s), and the played months the prices; the verdict on the standing plant is the model's own.
+        HistoricalLicenceCheck.stand(drawn, "Construction Depot", 4);
+        HistoricalRecipeCheck.silent(() -> drawn.simulateMonths(Forms1900Check.SETTLE));
+        check("fixture: the builders have output to work a fitting with",
+                drawn.getBuildingOutput() > 0, drawn.getBuildingOutput() + " vs " + exchanger.getWork());
+        BuildingsStacks drawnStack = drawn.getBuildingManager().getStack(p);
+        EquipmentFit.Verdict verdict = EquipmentFit.verdict(drawn, drawnStack, p.getEquipment(EXCHANGER));
+        check("fixture: in E22's month the plant lacks the exchanger, and its gain pays for the fitting (the verdict is PAYS, the gain a month earning back more than the cost)",
+                unfitted(drawn, p) == 1 && verdict.kind() == EquipmentFit.Kind.PAYS && verdict.gain() > 0 && verdict.earnsBack() > verdict.cost(), verdict);
+        int ordered = 0;
+        for (int i = 0; i < 12; i++) {
+            RecipeCheck.step(drawn, 1);
+            ordered = Math.max(ordered, drawn.getFittings().onSite(p.getId(), EXCHANGER));
+        }
+        OUT.println("  NOTE twelve months after E22, the exchanger paying (gain " + verdict.gain() + " a month against a cost of " + verdict.cost() + "), no one ordered it:"
+                + " fittings on site at the most " + ordered + ", plants still lacking it " + unfitted(drawn, p)
+                + " (EquipmentFit.rank() and choose() read a sector's stacks, and a city work has no sector; only the player's Fit, Game.fitForCity(), orders a city work's piece)");
+        String[] refused = new String[1];
+        HistoricalRecipeCheck.silent(() -> refused[0] = drawn.fitForCity(p, EXCHANGER));
+        check("the player's Fit orders the exchanger on the plant: fitForCity() accepts, and a fitting stands on site", refused[0] == null && drawn.getFittings().onSite(p.getId(), EXCHANGER) == 1, refused[0]);
+        int months = 0;
+        while (unfitted(drawn, p) > 0 && months < 36) {
+            RecipeCheck.step(drawn, 1);
+            months++;
+        }
+        RecipeCheck.step(drawn, 1);
+        check("...the builders' crews finish it (" + months + " months): no plant lacks the exchanger and it runs today's electricity, the anchor, every other figure today's",
+                unfitted(drawn, p) == 0 && p.getElectricityConsumption() == anchor && plantRest(p).equals(today1),
+                unfitted(drawn, p) + " " + p.getElectricityConsumption() + " after " + months + " months");
+        near("...and the sea works' draw the water's books pay falls to the count times powerBought()", seaKw(drawn), count * p.powerBought(), 1e-9);
+        check("...which is the count times buildings.json's own electricity, today's draw", seaKw(drawn) == count * base, seaKw(drawn) + " vs " + count * base);
+
+        // The imported patent on the fitted plant, through the getters PublicLicenceCheck reads rapid sand's capture by.
+        double gain = LicenceFees.publicGain(drawn, drawnStack, EXCHANGER);
+        double bill = LicenceFees.publicBillOf(drawn, drawnStack);
+        check("fixture: E22 is abroad inside its term (June 1997 to June 2017) and the plant is fitted with it",
+                LicenceFees.payable("E22", drawn.getMonth(), drawn.getResearch()) && drawn.getMonth() - w < LicenceFees.TERM_MONTHS && drawnStack.getUnfitted(EXCHANGER) == 0,
+                drawn.getMonth());
+        double price = drawn.getEconomyManager().getPowerPriceFor(p);
+        double savedKw = count * (before - anchor);
+        check("fixture: the plant's own row, E6, is no longer abroad under patent, so the stack's bill is E22's alone; and the works' power has a price",
+                !LicenceFees.payable("E6", drawn.getMonth(), drawn.getResearch()) && price > 0, price);
+        check("the imported exchanger's public gain is the power it saves, the plants' undone draw at the commerce price"
+                + " (it serves no more water, so the gain is not service: LicenceFees.entryGain() adds the saving)",
+                gain > 0 && Math.abs(gain - savedKw * price) <= 1e-9 * Math.max(1, gain), gain + " vs " + savedKw + " kW at " + price);
+        check("...and the plant's licence bill is SHARE of that gain while the patent runs", Math.abs(bill - LicenceFees.SHARE * gain) <= 1e-9 * Math.max(1, bill),
+                bill + " vs " + LicenceFees.SHARE * gain);
+
+        // A default city's plant is the anchor across E22's month.
+        HistoricalRecipeCheck.at(today, w - 1);
+        step(today, "the default city across E22's month");
+        check("a default city's plant keeps the anchor and lacks no exchanger through E22's month",
+                modern.getElectricityConsumption() == anchor && unfitted(today, modern) == 0 && plantRest(modern).equals(today1),
+                modern.getElectricityConsumption() + " " + unfitted(today, modern));
+        near("...and its sea works' draw is the count times the anchor, before and after", seaKw(today), standing(today, modern) * base, 1e-9);
+
+        // A city held before E22, saved and loaded.
+        Game held = HistoricalLicenceCheck.town("R6e-e22-held", true);
+        BuildingsTemplate h = plantAt(held, w - 2, true);
+        check("fixture: the held city's plant lacks the exchanger and runs the undo", unfitted(held, h) == 1 && h.getElectricityConsumption() == before, unfitted(held, h));
+        GameFiles.Result saved = RecipeCheck.save10(held, "R6e E22 held");
+        check("the held city's save writes wholly", saved.whole(), saved.message());
+        Game loaded = RecipeCheck.load10(held);
+        check("the held city loads", loaded.getLoadFailure() == null && loaded.getMonth() == w - 2, loaded.getLoadFailure());
+        BuildingsTemplate l = loaded.getBuildingManager().getTemplateByName("Desalination Plant");
+        check("the loaded city's stack keeps the unfitted count, and its plant runs the undo at once, before any month",
+                unfitted(loaded, l) == 1 && l.getElectricityConsumption() == before && l.powerBought() == h.powerBought(),
+                unfitted(loaded, l) + " " + l.getElectricityConsumption() + " vs " + before);
+        check("...every other figure the default city's", plantRest(l).equals(today1), plantRest(l) + " vs " + today1);
+        step(loaded, "the loaded city");
+        check("...and the next month, still before E22, keeps the count and the electricity",
+                loaded.getMonth() == w - 1 && unfitted(loaded, l) == 1 && l.getElectricityConsumption() == before,
+                loaded.getMonth() + " " + unfitted(loaded, l) + " " + l.getElectricityConsumption());
+        near("...and the sea works' draw it pays is the count times powerBought()", seaKw(loaded), standing(loaded, l) * l.powerBought(), 1e-9);
+        step(loaded, "the loaded city into E22's month");
+        check("...and E22's month fits none: the count and the undo stay, the draw is still the undo's",
+                loaded.getMonth() == w && unfitted(loaded, l) == 1 && l.getElectricityConsumption() == before && seaKw(loaded) > standing(loaded, l) * base,
+                loaded.getMonth() + " " + unfitted(loaded, l) + " " + l.getElectricityConsumption());
+
+        // A save from before the piece (format 65) holds no unfitted count for the exchanger: a plant with no record, which a placed plant is.
+        Game legacy = HistoricalLicenceCheck.town("R6e-e22-legacy", true);
+        HistoricalRecipeCheck.allExcept(legacy, "E22");
+        HistoricalRecipeCheck.at(legacy, w - 2);
+        BuildingsTemplate g65 = HistoricalLicenceCheck.stand(legacy, "Desalination Plant", 1);
+        HistoricalRecipeCheck.run(legacy);
+        check("fixture: a held city's plant with no record of the exchanger lacking (what a save from before the piece holds), before E22",
+                unfitted(legacy, g65) == 0 && g65.getElectricityConsumption() == before, unfitted(legacy, g65) + " " + g65.getElectricityConsumption());
+        GameFiles.Result savedOld = RecipeCheck.save10(legacy, "R6e E22 legacy");
+        check("the legacy city's save writes wholly", savedOld.whole(), savedOld.message());
+        Game loadedOld = RecipeCheck.load10(legacy);
+        BuildingsTemplate lo = loadedOld.getBuildingManager().getTemplateByName("Desalination Plant");
+        check("the loaded legacy plant runs the undo before E22, with no count", loadedOld.getLoadFailure() == null && unfitted(loadedOld, lo) == 0
+                && lo.getElectricityConsumption() == before, loadedOld.getLoadFailure());
+        HistoricalRecipeCheck.at(loadedOld, w);
+        HistoricalRecipeCheck.run(loadedOld);
+        OUT.println("  NOTE the legacy plant (no unfitted record) in E22's month: " + lo.getElectricityConsumption() + " kW, unfitted " + unfitted(loadedOld, lo)
+                + " (RecipeChanges.apply() reads the piece's share as unfitted over quantity once the entry is known, and an absent count is 0: the plant is read as fitted)");
+        check("from E22's month the legacy plant, with no record of the exchanger lacking, runs today's electricity with no fitting ordered",
+                lo.getElectricityConsumption() == anchor && unfitted(loadedOld, lo) == 0 && loadedOld.getFittings().onSite(lo.getId(), EXCHANGER) == 0,
+                lo.getElectricityConsumption() + " vs " + anchor);
+    }
+
     public static void main(String[] args) throws Exception {
         quietHelpers();
         robotSurgery();
         agents();
         basel3();
+        exchanger();
         OUT.println("ModernRowsCheck: " + (fails == 0 ? "all " + checks + " ok" : fails + " FAILED of " + checks));
         System.exit(fails == 0 ? 0 : 1);
     }

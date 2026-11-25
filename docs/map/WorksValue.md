@@ -1,6 +1,6 @@
 # WorksValue.java - 575 lines · 35 methods · 2 constants · model
 
-`ham/citybuildersim/WorksValue.java` - generated 2026-11-24 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorksValue.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > A work's discounted cost and the output its service prevents losing (HW1).
 > WHY. A plant's cheap used kW hid its land and a shortage's lost work. These
