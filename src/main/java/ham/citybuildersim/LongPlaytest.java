@@ -6165,10 +6165,14 @@ public class LongPlaytest {
     /** Harness-only first-district census, enabled with -Dcbs.pw5.firstDistrict=true. */
     private static boolean pw5DistrictReported;
 
+    /** Optional harness-only passive reader; default null, no model seam. */
+    static java.util.function.BiConsumer<Game,Boolean> passiveObserver;
+
     private static void run(Game g, int months, boolean playGovernmentPolicy) {
         for (int i = 0; i < months; i++) {
 
             int before = g.getMonth();
+            if (passiveObserver != null) passiveObserver.accept(g, true);
             AutoBuilder works = g.getAutoBuilder();
             boolean worksOn = works.isOn(), worksOver = !works.within(g);
             int worksOrders = works.getOrders();
@@ -6307,6 +6311,7 @@ public class LongPlaytest {
             countTheCurve(g);
             audit(g);
             countWorks(g, worksOn, worksOver, worksOrders);
+            if (passiveObserver != null) passiveObserver.accept(g, false);
             traceMonth(g);
             traceGroundMonth(g);
         }
@@ -7131,6 +7136,7 @@ public class LongPlaytest {
             if (WAGES) log.add(wageEra(g));
 
         } catch (Throwable t) {
+            if (passiveObserver != null) throw new IllegalStateException("passive observation stopped", t);
             System.setOut(out);
             out.println("\n!!! THREW at month " + g.getMonth() + ": " + t);
             for (StackTraceElement s : t.getStackTrace()) {

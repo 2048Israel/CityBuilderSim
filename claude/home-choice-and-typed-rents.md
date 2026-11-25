@@ -40,6 +40,14 @@ stock cannot reconstruct. Old incompatible saves are refused under the project's
 old-saves rule, without conversion code. Owner-family seekers and title/loan
 cohorts remain the explicit BO1-H and HO1 seams.
 
+The rent price index compares the same dwelling classes across months, so a
+move between differently priced homes does not itself become inflation.
+The consumer basket also records actual new-car, petrol, lamp-oil and home-coal
+purchases separately. Reference spending includes those bills and the full
+luxury bill; the existing ten-year reference cadence and parity rule remain.
+The monthly observations and held financial state survive a save, reload and
+currency reform, with exact following-month comparisons in the save checks.
+
 HousingChoiceCheck causes the allocation cases. HousingMarketCheck exercises
 actual funded construction and money settlement in historical and present-day
 scratch cities, checks native reload and the following month, and emits the

@@ -5000,3 +5000,72 @@ HC1/PW5 native pair, file/history comparison and running-manager/city
 identity guard. Strengthen provenance with absence of the new car,
 population-wage, held-bank and raw-claim fields. Current integrated67
 native checks remain pending; producer success is not a refusal pass.
+
+The fresh RES3-integrated67 sub-session compiles pushed f0b960367 on
+the laptop with pinned Oracle21.0.4, Maven3.9.16, the same absolute
+Earth/world files and fresh MG1 before each native start (fa40/3dcf).
+Its first canonical current-model SaveFileCheck is green: native/batch0,
+1,274 labelled checks, 104.2 seconds (8247). Genuine shipped62-66
+refusals preserve both files and the already running city; the HC1/PW5
+pairs remain covered. The two format66 gzip hashes match the committed
+resources exactly. This is the first integrated67 save verdict; earlier
+7ba/00946 results remain explicitly pre-merge. Generated maps are kept
+for the final transfer rather than discarded to make the tree clean.
+
+Integrated67 ReadPathCheck also passes, canonical/native0 with 92 labelled
+checks in 115.9 seconds (4ac9), including repeated-read and native older-pair
+guards. Monetary starts only after that runner ends and a new MG1 reading
+passes (7.558 GiB available RAM, 10.318 GiB free commit, 19.807 percent
+sampled CPU). The static pick is ALL253, with the combined Bank/DebtStatistics
+money and DataSave/HistorySave/format/floor review required. The provisional
+ship file parses, but that parser does not validate its old red attributions;
+the remaining named checks must settle those on the current integrated tree.
+
+The integrated67 canonical MonetaryCheck passes on f0b960367: native/batch0,
+722 labelled checks, 453.3 seconds under pinned Oracle21.0.4 (8745). The
+original-town highest-rate effect and all fixed16-31 town guards pass; pooled
+TOTAL low-minus-high inflation is 3.635685 percentage points and non-shelter
+is 3.102148 points. The total-effect floor remains at least one point, with
+all rates, towns, windows and supply assertions retained. Nested CPI coverage
+and its purity guards pass; diagnostic raw snapshots are retained under the
+helper's target/cpi-native-snapshots. This is the current R6e-rest-integrated
+format67 result, matching the prior separately labelled policy figures.
+
+Integrated67 LabourCheck passes native/batch0 with 248 labelled checks in
+43.1 seconds (8055). ExchangeRateCheck has completed its native assertions
+when that report arrives, but its wrapper result is not yet claimed.
+
+★ Use a committed external RentObservationProbe with null-default harness
+callbacks around each ordinary LongPlaytest month, rather than an ensemble
+driver whose policies differ from the default city. The observer invokes
+the complete existing DEFAULT script with random world48213/variation0,
+600 months, native Standard/today founding and the occasional player;
+automatic works, hand/advisor rates and the existing yearly player remain.
+No policy, fixture, model equation, threshold or assertion changes. It stops
+its own diagnostic JVM after the month600 observation, before unrelated final
+harness probes, retaining the normal TempDirs shutdown cleanup.
+
+Review of the first source-prep patch catches a period-mapping risk: the
+household rent strike precedes the late new housing clearing. Freeze actual
+opening immutable leases, never reconstruct their bill from closing homes.
+The revised patch fe9f976d is accepted after tracing the payer lineage:
+HouseholdBalance.advanceMonth passes the same fresh census to splitIncome,
+followThePeople and settlement. Closing HouseholdBalance counts/keys/rows/
+earning weights are still those held settlement inputs; the closing family
+census and new leases instead describe the next period. Do not call the
+private takeCensus as a reader: it writes dependants. The observer keeps
+all opening and closing cells, including exact-zero cells, row books,
+every positive settled cell, frozen contracts, unmatched billed keys and
+lease-minus-account-rent reconciliation. Existing saved index and household
+arrays bracket the closing observation to detect unintended mutation.
+
+The output retains raw current-thousands monthly totals and per-household
+amounts, actual consumption and fee conventions, nine component weights and
+reference links, payer/full/half/sponsored sharing quantities, and population/
+doors/unplaced/pipeline. Income is an explicitly labelled monthly cell proxy
+with raw source inputs, rather than a Census gross-income estimate; utilities
+are not silently added to rent. Zero/negative-income and unmatched groups
+remain visible, with no epsilon denominator, national fitted cap or .5-count
+filter. Detailed income and burden claims await the approved native run.
+The helper holds after its active stage until the observer is pushed and
+receives a new exact-commit GO; no unpublished probe JVM is run.
