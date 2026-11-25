@@ -176,8 +176,9 @@ and PW2's ground finding (REV-PW2).
     times the whole nameplate; the net draw and the surplus held exactly as before.
 
 - ★R **A gap under Jerus's HW1 share of a plant orders it only when the seasonal peak is short at the plant's own
-  completion, and the month's "short" is the peak block of the year's highest month.** Found by tracing the second
-  ensemble, with REV-PW3c's two P1s, REV-PW3d's P1 4 and REV-PW3e's P1, 2026-11-24.
+  completion, and then only as the least-cost way to meet the need date; the month's "short" is the peak block of
+  the year's highest month.** Found by tracing the second ensemble, with REV-PW3c's two P1s, REV-PW3d's P1 4,
+  REV-PW3e's P1 and REV-PW3f's P1, 2026-11-24.
   - **The two lines.** The reserve test plans at the year's peak hour (★D, 1.631 of the mean draw).
     `PowerDispatch.dispatch()` serves draw × season × the block's load, losses in. Its worst block is July's peak
     block, `PLAN_PEAK_SEASON` = `PLAN_PEAK` × SEASON's highest = 1.263 × 1.193 = 1.507 of the draw. On the south's
@@ -221,6 +222,33 @@ and PW2's ground finding (REV-PW2).
     m157, m131 to m161), short even of the year's mean block. A utility orders for the peak projected at the unit's
     in-service date, not after the shortage. So the share is waived when the seasonal peak is short at the plant's
     completion; the 48-month Oil-Fired Plant of m72 to m81, with July covered to about m200, still orders nothing.
+  - **The need date** (REV-PW3f's P1). Tested each at its own lead, the slowest and biggest row was the one that
+    passed. LongPlaytest's Oil-Fired Plant had a lead of 102.8 months (its 24,988 points at the town's crews' share,
+    not its 48 build months), and at that completion it saw the seasonal gap of m205. The 30-month Diesel Station,
+    covered at its own completion, dropped out before the screening curve weighed the two, and the run borrowed $13.7M
+    at m102. Seven of the 16 ZERO_HOT towns ran the fourth run's 402 months to the person (§6). The fault was choosing
+    by lead, not the projection. Reality's rule, written once (`BuildAdvice.timely()`):
+    - one need date a month, the first month the forecast's seasonal peak falls short;
+    - the candidates are the firm rows that can be on line by then;
+    - among them the least-cost by the screening curve, with a long-lead unit committed early only as the least-cost
+      way to meet the date;
+    - a few-MW gap is a diesel, ordered at the last month it can still be on time;
+    - a month already short orders at once.
+
+    Each row's own test reads the date at its own completion, and a row that passes is due, so the rows that can
+    still be on line by the date are the faster ones. A due row orders only when no faster firm row closes the gap at
+    its opening for less (the screening curve, or against a farm its total net cost). A row due by the waiver alone
+    and short a month before its completion too is late: while a faster row is covered at its own completion, it is
+    no candidate, whatever it costs. In a month already short every row is late and none is covered, and the
+    cheapest orders at once, as before.
+
+    The rows that can be on line by the date include those the calendar brings onto the menu in time, each weighed
+    from its arrival with its own lead (`BuildingManager.isTemplateKnownIn()`, the same calendar `Game` keeps the
+    menu by, read ahead). With the need date alone, LongPlaytest still ordered the Oil-Fired Plant at m102: the
+    Diesel Station stands only from 1910 (m120), so the plant was the one firm row on the menu, and the rule ordered
+    it at its own last month on time. The calendar is fixed, each plant from its year, so a planner in 1908 waits for
+    the diesel 18 months off, which can still be on line long before 1917. The run's first order is now 2 Diesel
+    Stations at m122 ($4.3M), open about m150 (§5).
   - **Main's rank** would have picked the same Oil-Fired Plant had it seen a gap (WorksValue's net, $10.8M against
     coal's $76.5M). It saw none: at main's line the opening had 7,769 kW against 10,000. At the seasonal line it is
     9,269 kW against 10,000, so still a reserve gap alone, under the share.
@@ -232,22 +260,27 @@ and PW2's ground finding (REV-PW2).
     | 10 | 33,196 | 45,390 | 37,504 | 12,467 |
     | 8 | 23,103 | 28,261 | 27,798 | 17,557 |
     | 14 | 22,137 | 24,670 | 25,310 | 21,585 |
-  - **PowerPlanCheck 8a**, coal the only firm row:
-    - a 32,599 kW gap (15% of one plant) with the seasonal peak covered orders nothing; it was red without the rule,
-      ordering 1 Coal Power Plant;
-    - a 68,459 kW gap (31%) orders one;
-    - covered now and at the plant's completion, short at the opening by the slack alone (supply 224,523 kW against
-      253,139 at the opening, a gap 23% of one plant), it orders nothing; red under ★R's second form (the share
-      waived for any seasonal gap at the opening), ordering 1 Coal Power Plant;
-    - short in the month and at the completion (224,523 kW against 226,791, over the year's mean block's 190,101), a
-      gap 27% of one plant orders one; red with the completion's line at `PLAN_PEAK`, ordering nothing;
-    - a growing town (`GROWTH_AT_LEAD`: 1.305 over the coal plant's 355-month lead, 1.316 to the opening, the slack
-      0), covered now (224,523 kW against 194,801) and short at the completion (against 254,245): a gap 24% of one
-      plant orders one; red under REV-PW3d's mend (the share waived only in a month that lacks), ordering nothing,
-      and with the line at `PLAN_PEAK`;
-    - the same town covered at the completion (224,523 kW against 223,639) and short only at the horizon past it
-      (225,407): a gap 9% of one plant orders nothing; red under ★R's second form, ordering 1 Coal Power Plant;
-    - with the peak short by more, it orders 3.
+  - **PowerPlanCheck 8a's table**: every case the last four reviews found, each fixture red under the form it
+    guards. A helper ran F0 to F5 on f907d8327 (`target/h/PPC-red-F*.txt`); F6 was run on 9766940e4 and F7 on the
+    calendar's mend. The town is one coal plant (214,523 kW of firm supply) on the 10,000 kW founding grid. Fixtures
+    (1) to (iv) know coal alone, (v) to (vii) coal (355 months) and the Diesel Station (30), and (viii) and (ix) coal,
+    with the diesel brought by the calendar.
+
+    | the case | its fixture | red under |
+    |---|---|---|
+    | a reserve gap under the share (★R) | (1) a 32,599 kW gap, 15% of one plant, the seasonal peak covered: nothing | F0, no share (any reserve gap orders): 1 Coal Power Plant, with (i), (iv) and 6a |
+    | the 86 MW plant for a 3 MW town (REV-PW3d's P1 4) | (i) covered now and at the completion, short at the opening by the slack alone (224,523 kW against 253,139), 23% of a plant: nothing; (iv) a growing town covered at the completion (against 223,639) and short only at the horizon past it (225,407), 9%: nothing | F1, the share waived for a seasonal gap at the opening: 1 Coal Power Plant each |
+    | the seasonal peak (REV-PW3c's P1) | (ii) short in the month and at the completion (224,523 kW against 226,791, over the mean block's 190,101), 27%: one | F3, both lines at `PLAN_PEAK`: nothing, with (iii), 8b(a)'s third level and 8b(b)'s holds |
+    | the shortage waited out for a lead (REV-PW3e's P1) | (iii) the town growing 1.305 over coal's lead, the slack 0, covered now (against 194,801) and short at the completion (against 254,245), 24%: one | F2, the share waived only in a month that lacks: nothing |
+    | two firm rows of different leads (REV-PW3f's P1) | (v) short at coal's completion (against 256,253) and covered at the diesel's (201,402), the gap at coal's opening 25%, 4 diesels meeting it for less (0.01272 a kW against 0.07225): nothing | F4, each row at its own lead alone (no need date): 1 Coal Power Plant |
+    | | (vii) the same, the diesel's fuel 16 times the world's price, so coal is the cheaper (0.07245 against 0.08180), short a month before coal's completion: nothing | F6, the late row weighed on its cost alone: 1 Coal Power Plant, (vii) alone |
+    | | (vi) short at the diesel's own completion (224,523 kW against 226,791): 2 Diesel Stations | a control: green under F4; red under F5 (every due row held), with 19 others |
+    | a faster row the calendar brings (LongPlaytest's m102 Oil-Fired Plant) | (viii) (v)'s draw at the world's fuel prices, the diesel off the menu now and on it 12 months on (`ARRIVES`): 4 diesels close the gap at coal's opening for less (0.01310 a kW against 0.07245), on line 62.8 months on, inside coal's 355: nothing | F7, only the rows on the menu now weighed: 1 Coal Power Plant, (viii) alone |
+    | | (ix) the diesel brought 357 months on, past coal's lead: 1 Coal Power Plant | a control |
+
+    The controls: (2) a 68,459 kW gap (31%) orders one; (3) a gap past the share, with the seasonal peak short at
+    the opening, orders 3. (3)'s comment said "whatever the share", but its gap fills the share, so it never tested
+    the waiver; it is restated (REV-PW3f's P3), and (ii) and (iii) test the waiver.
   - **PowerPlanCheck 8b (a)** dispatches the town in July (season 1.193) at four firm levels, reading
     `getLatestMonth()`'s peak half-blocks:
 
@@ -338,54 +371,77 @@ Run here, one at a time (`./batch-check.sh <name>`), the earth and world data se
   ★R); **BuildAdviceCheck, EssentialWorksCheck, WorksFinanceCheck, BuildCardCheck, NewUnitCheck, HydroCheck,
   WaterPowerCheck, MaterialsCheck** green; **AutoBuildCheck** with only its known FS12 red; **LongPlaytest** (the
   default run, 2,400 months): green, every month audited and every reload matched (§5).
+- After REV-PW3f's mend (the need date, its late rows and the calendar), on main's 0.9.200 merged, one at a time:
+  **PowerPlanCheck** green, 109 lines, 8a's table each red under the form it guards (§2, F0 to F7); **BuildAdviceCheck,
+  EssentialWorksCheck, WorksFinanceCheck, BuildCardCheck, NewUnitCheck, HydroCheck, WaterPowerCheck,
+  MaterialsCheck** green; **AutoBuildCheck** with only its known FS12 red. **LongPlaytest** (2,400 months): every
+  month audited and every reload matched, red on one line, the layout watch's "a building on the map moved": once,
+  m2396 to m2397, district (3,-5), 2 of its 384 boxes, both Assembly Plants (drawn 49 to 48, counted 43 both
+  months). It is DM1's class, the district plan moving a standing box, which main's 4,000-month nightly found on
+  0.9.174 and queued as DM5. PW3 changes no map code; its power orders move the order in which the city's works
+  arrive. The run on the need date before the calendar found the same in the same district, at m1801 to m1802 (1
+  of 84 boxes, the 48th Assembly Plant). It passes by name under the ship file's `## known-reds` (contract 5.3).
 
 ## 5. What the default run builds, decade by decade (spec §6, "Measure first" 3)
 
 LongPlaytest's default city (founded 1900, today's buildings but every power plant from its year, PW2), the
 automatic path's power orders by the decade they were placed in:
 
-| decade | after REV-PW3e's mend | after REV-PW3d's mend | the seasonal line (REV-PW3c) |
-|---|---|---|---|
-| 1900s | 1 Oil-Fired Plant | nothing (the founding grid carries the town) | 1 Oil-Fired Plant |
-| 1910s | nothing | 2 diesel | nothing |
-| 1920s | nothing | nothing | nothing |
-| 1930s | nothing | 1 diesel | nothing |
-| 1940s | 9 diesel, 1 Oil-Fired Plant | 4 diesel | 9 diesel, 1 Oil-Fired Plant |
-| 1950s | 1 coal | 2 diesel, 1 Oil-Fired Plant | 1 coal |
-| 1960s | 1 turbine | 2 diesel, 1 turbine, 1 coal | 23 diesel, 6 turbines, 2 Oil-Fired Plants, 1 coal |
-| 1970s | 16 diesel, 4 turbines, 1 coal, **1 Biomass** | 6 diesel, 3 turbines, 1 Oil-Fired Plant | nothing |
-| 1980s | 8 diesel, 7 turbines, 1 Oil-Fired Plant, 1 coal, **3 Wind Farms, 1 Biomass** | 17 diesel, 6 turbines, 2 Oil-Fired Plants, 1 coal, **13 Wind Farms** | 7 turbines, 1 Oil-Fired Plant, **2 Wind Farms** |
-| 1990s | nothing | 10 diesel, 12 turbines, 1 Oil-Fired Plant, 1 coal, **3 Wind Farms, 1 Solar Farm, 1 Biomass** | nothing |
-| 2000s | **1 Wind Farm** | nothing | 15 diesel, 7 turbines |
-| 2010s | nothing | 8 diesel, 5 turbines, 1 Oil-Fired Plant, 1 coal, **2 Wind Farms** | 3 diesel, 2 turbines, 3 Oil-Fired Plants, **1 Solar Farm** |
-| 2020s | 2 diesel, 3 turbines, 1 Oil-Fired Plant, **6 Wind Farms, 4 Biomass** | 3 diesel, 1 turbine, **1 Wind Farm** | 4 diesel, 3 turbines, 4 Oil-Fired Plants, **11 Wind Farms, 1 Biomass** |
-| 2030s | 15 diesel, 7 turbines, 4 Oil-Fired Plants, 1 coal | 11 diesel, 3 turbines, 2 coal | 5 diesel, 11 turbines, 2 coal |
-| 2040s | 5 diesel, 4 turbines | 6 diesel, 10 turbines, 2 coal, **9 Solar Farms** | 1 diesel, 4 turbines, 5 coal |
-| 2050s | 8 diesel, 2 turbines, 1 coal, **1 Wind Farm** | 6 diesel, 2 turbines, 2 coal, **1 Solar Farm** | nothing |
-| 2060s | 7 diesel, 7 turbines | 11 diesel, 5 turbines | nothing |
-| 2070s | nothing | nothing | 2 diesel, 2 coal |
-| 2080s | nothing | 1 coal | nothing |
-| 2090s-2100 | nothing | nothing | 2100 (m2400) 5 turbines |
+| decade | after REV-PW3f's mend | after REV-PW3e's mend | after REV-PW3d's mend | the seasonal line (REV-PW3c) |
+|---|---|---|---|---|
+| 1900s | nothing | 1 Oil-Fired Plant | nothing (the founding grid carries the town) | 1 Oil-Fired Plant |
+| 1910s | 2 diesel | nothing | 2 diesel | nothing |
+| 1920s | nothing | nothing | nothing | nothing |
+| 1930s | 5 diesel | nothing | 1 diesel | nothing |
+| 1940s | 8 diesel, 1 turbine, 1 Oil-Fired Plant | 9 diesel, 1 Oil-Fired Plant | 4 diesel | 9 diesel, 1 Oil-Fired Plant |
+| 1950s | 8 diesel, 1 turbine, 1 coal | 1 coal | 2 diesel, 1 Oil-Fired Plant | 1 coal |
+| 1960s | 31 diesel, 9 turbines, 2 coal | 1 turbine | 2 diesel, 1 turbine, 1 coal | 23 diesel, 6 turbines, 2 Oil-Fired Plants, 1 coal |
+| 1970s | 4 diesel, 2 turbines | 16 diesel, 4 turbines, 1 coal, **1 Biomass** | 6 diesel, 3 turbines, 1 Oil-Fired Plant | nothing |
+| 1980s | 5 diesel, 6 turbines | 8 diesel, 7 turbines, 1 Oil-Fired Plant, 1 coal, **3 Wind Farms, 1 Biomass** | 17 diesel, 6 turbines, 2 Oil-Fired Plants, 1 coal, **13 Wind Farms** | 7 turbines, 1 Oil-Fired Plant, **2 Wind Farms** |
+| 1990s | 1 diesel, 16 turbines, 1 coal | nothing | 10 diesel, 12 turbines, 1 Oil-Fired Plant, 1 coal, **3 Wind Farms, 1 Solar Farm, 1 Biomass** | nothing |
+| 2000s | nothing | **1 Wind Farm** | nothing | 15 diesel, 7 turbines |
+| 2010s | 7 diesel, 9 turbines | nothing | 8 diesel, 5 turbines, 1 Oil-Fired Plant, 1 coal, **2 Wind Farms** | 3 diesel, 2 turbines, 3 Oil-Fired Plants, **1 Solar Farm** |
+| 2020s | 3 turbines, 2 coal | 2 diesel, 3 turbines, 1 Oil-Fired Plant, **6 Wind Farms, 4 Biomass** | 3 diesel, 1 turbine, **1 Wind Farm** | 4 diesel, 3 turbines, 4 Oil-Fired Plants, **11 Wind Farms, 1 Biomass** |
+| 2030s | 3 diesel, 3 turbines, 1 coal | 15 diesel, 7 turbines, 4 Oil-Fired Plants, 1 coal | 11 diesel, 3 turbines, 2 coal | 5 diesel, 11 turbines, 2 coal |
+| 2040s | 3 diesel, 52 turbines, 7 coal | 5 diesel, 4 turbines | 6 diesel, 10 turbines, 2 coal, **9 Solar Farms** | 1 diesel, 4 turbines, 5 coal |
+| 2050s | 11 coal | 8 diesel, 2 turbines, 1 coal, **1 Wind Farm** | 6 diesel, 2 turbines, 2 coal, **1 Solar Farm** | nothing |
+| 2060s | nothing | 7 diesel, 7 turbines | 11 diesel, 5 turbines | nothing |
+| 2070s | nothing | nothing | nothing | 2 diesel, 2 coal |
+| 2080s | nothing | nothing | 1 coal | nothing |
+| 2090s-2100 | nothing | nothing | nothing | 2100 (m2400) 5 turbines |
 
-**The totals**, after REV-PW3e's mend, REV-PW3d's, the seasonal line, ★R's first form and REV-PW3's mends:
+**The totals**, after REV-PW3f's mend (the need date with the calendar, and before the calendar), REV-PW3e's mend,
+REV-PW3d's, the seasonal line, ★R's first form and REV-PW3's mends:
 
-| | REV-PW3e's mend | REV-PW3d's mend | seasonal line | ★R's first form | REV-PW3's mends |
-|---|---|---|---|---|---|
-| Diesel Stations | 70 | 89 | 62 | 66 | 86 |
-| Oil-Fired Turbines | 35 | 48 | 45 | 38 | 57 |
-| coal plants | 5 | 11 | 11 | 7 | 9 |
-| Oil-Fired Plants | 8 | 6 | 12 | 10 | 7 |
-| Wind Farms | 11 | 19 | 13 | 15 | 5 |
-| Solar Farms | 0 | 11 | 1 | 19 | 2 |
-| Biomass Plants | 6 | 1 | 1 | 2 | 2 |
-| reserve suggestions | 112 | 139 | 119 | 390 | 447 |
-| spread suggestions | 6 | 12 | 13 | 9 | 8 |
-| offers assembled past the listing | 0 | 0 | 0 | 0 | 1 |
-| Wire & Cable Works (no other copper works) | 2 | 2 | 4 | 5 | 3 |
+| | REV-PW3f's mend | the need date, before the calendar | REV-PW3e's mend | REV-PW3d's mend | seasonal line | ★R's first form | REV-PW3's mends |
+|---|---|---|---|---|---|---|---|
+| Diesel Stations | 77 | 71 | 70 | 89 | 62 | 66 | 86 |
+| Oil-Fired Turbines | 102 | 70 | 35 | 48 | 45 | 38 | 57 |
+| coal plants | 25 | 18 | 5 | 11 | 11 | 7 | 9 |
+| Oil-Fired Plants | 1 | 1 | 8 | 6 | 12 | 10 | 7 |
+| Wind Farms | 0 | 0 | 11 | 19 | 13 | 15 | 5 |
+| Solar Farms | 0 | 4 | 0 | 11 | 1 | 19 | 2 |
+| Biomass Plants | 0 | 0 | 6 | 1 | 1 | 2 | 2 |
+| reserve suggestions | 98 | 130 | 112 | 139 | 119 | 390 | 447 |
+| spread suggestions | 43 | 65 | 6 | 12 | 13 | 9 | 8 |
+| offers assembled past the listing | 0 | 2 | 0 | 0 | 0 | 0 | 1 |
+| Wire & Cable Works (no other copper works) | 6 | 5 | 2 | 2 | 4 | 5 | 3 |
 
-LongPlaytest samples the share of power served every 120 months (its works line). After REV-PW3e's mend none of
-the 20 samples is under `lacksNow()`'s line (0.924); after REV-PW3d's, m120 was at 0.569; on the seasonal line,
-m600 was at 0.907. The month-by-month count is the ensemble's (§6).
+LongPlaytest samples the share of power served every 120 months (its works line). After REV-PW3f's mend two of the
+20 samples are under 1: m120 at 0.572, under `lacksNow()`'s line (0.924), and m1800 at 0.970. After REV-PW3e's mend
+none was under the line; after REV-PW3d's, m120 was at 0.569; on the seasonal line, m600 was at 0.907. The
+month-by-month count is the ensemble's (§6).
+
+**m120, traced** (a month-by-month trace of the first 135 months, with and without the calendar). The town runs
+on the 10,000 kW founding grid. A Steel Mini-Mill opens at m116 and raises the peak hour's draw from 10,265 kW to
+16,298 in the month; power is served at 0.61 to 0.57 until the diesels ordered at m122 open, about m150. The need
+date's forecast is the town's trend (`growthFactor()`), which carries no works under construction, so no row saw
+the mill coming. Without the calendar the run had ordered the Oil-Fired Plant at m102, which opens about m175 (its
+first completion 55 months on at m120), and there the same mill opened at m121 (served 0.589). Its m120 sample of
+1.0 was read in the month before the mill opened, not because of the plant. Reality: a utility plans a large new
+load from its connection request, years ahead. A forecast that reads the draw of works under construction is a
+finding for after PW3, not mended here: REV-PW3f has the projection as it stands ("growthFactor is fine as the
+projection").
 
 Before REV-PW3's mends the run built 73 diesels, 51 turbines, 9 coal plants, 7 Oil-Fired Plants and no farms, with
 292 reserve and 11 spread suggestions.
@@ -399,9 +455,11 @@ of, a small one or a farm, and the farms are 30 again (19 wind, 11 solar), the O
 traced one by one). With REV-PW3e's mend, 11 Wind Farms, no Solar Farm and 6 Biomass Plants (not traced one by
 one).
 
-With REV-PW3e's mend the 1900s Oil-Fired Plant is back, the seasonal line's order to the month: m102, $13.7M, a
-lead of 102.8 months, physical relief 11,850 a month. It opens at m205, and the rule orders it because the seasonal
-peak is short at that completion (a reading of the rule, not traced); the diesel stands only from 1910. REV-PW3d's
+With REV-PW3e's mend the 1900s Oil-Fired Plant came back, the seasonal line's order to the month: m102, $13.7M, a
+lead of 102.8 months, physical relief 11,850 a month. It was to open at m205, and the rule ordered it because the
+seasonal peak was short at that completion; the diesel stands only from 1910. The need date alone kept it (the
+plant the one firm row on the menu at m102); with the calendar it is gone, and the first order is 2 Diesel
+Stations at m122 (§2, the need date). REV-PW3d's
 mend had ordered 2 Diesel Stations at m122 ($4.4M, open 63.1 months on), with m120's power served at 0.569, and
 ★R's first form the Oil-Fired Plant at m107. **Against main:** FC2's gate run on 0.9.195 (2026-11-23, the same default run) ordered 170 Oil-Fired
 Turbines, 8 Diesel Stations and 1 Oil-Fired Plant, no coal and no farms.
@@ -426,8 +484,10 @@ prices rural ground apart from the city's (a helper's reading of the tree: the c
 `LandFactors` is a nation's multiplier; agriculture buys at the city's price, with a property-tax relief at use
 value; no building rents its ground; a farm's ground use is a coal plant's). Rural ground for the power farms is
 RG1's (Queued on main after FS6, 77c77ab8c: a policy, Jerus 2026-11-24, "that also lets farms crops as well be cheaper"), not PW3's, so PW3 ships with the city's price and the mix follows
-it. The planner chooses a farm where its numbers say so (PowerPlanCheck 6 and 6a; this run's 1980s, 2000s, 2020s
-and 2050s).
+it. The planner chooses a farm where its numbers say so (PowerPlanCheck 6 and 6a; REV-PW3e's run in the 1980s,
+2000s, 2020s and 2050s). After REV-PW3f's mend the run builds none: each due row now weighs the faster firm rows
+that can meet the need date, a diesel or a turbine, before any farm, and at the city's price of ground no farm is
+the cheaper (not traced one by one).
 
 **Against §2.9's table:** 1900's city burned coal in plants of half a megawatt and took a third of its power from
 rivers; this one has no hydro site ordered, and today's sizes (a 280 MW coal unit, an 86 MW Oil-Fired Plant, a 19
@@ -598,7 +658,9 @@ The CSV's `served_power` is the planner's reading, firm supply over its demand l
 (firm supply under `PLAN_PEAK_SEASON`, 1.507 of the draw) is PW3's 0.924 and is past main's cap; the line both heads
 read is the mean peak block, PW3's 0.774 and main's 1. Main's "59" under 0.924 counts firm supply under 1.167 of the
 draw, a different line. HIGH and AUTO2 count alike (the policies part after these months); CY1 keeps ZERO_HOT's
-CSVs alone.
+CSVs alone. Under the mean block, 29 against CY1's 169 measures reserve, not timeliness (REV-PW3f's P3). Main plans
+to the year's mean peak block and PW3 to a line 29% above it (1.631 against 1.263 of the draw), so the same firm
+supply reads lower on main; the count says nothing about how soon either orders.
 
 | run | under `lacksNow()`'s line: ZERO_HOT; HIGH; AUTO2 | under the mean peak block: ZERO_HOT; HIGH; AUTO2 |
 |---|---|---|
@@ -609,8 +671,11 @@ CSVs alone.
 
 The sixth run's two longest spells under `lacksNow()`'s line are the fourth run's to the month and the person:
 ZERO_HOT seed 13 from m92, 36 months at 0.81 to 0.91 (above the mean block; CY1, the same town, reads 1.000), while
-the Oil-Fired Plant ordered at m81 is built (the fourth run's order and CY1's; the sixth run's town matches the
-fourth's month by month to m132, open by m128); and HIGH seed 3 from m129, 29 months at
-0.81 to 0.95 (its order not traced).
+the Oil-Fired Plant ordered at m81 is built (the fourth run's order and CY1's); and HIGH seed 3 from m129, 29 months
+at 0.81 to 0.95 (its order not traced). Both towns are the fourth run's whole (REV-PW3f). Seven of the 16 ZERO_HOT
+towns (seeds 2, 3, 8, 11, 12, 13 and 15) match the fourth run's CSV row for row over all 402 months. Six of HIGH's
+(seeds 0, 3, 4, 5, 9 and 15) match over all 720. The others part from it after 71 to 78 months (ZERO_HOT) and 106
+to 317 (HIGH). REV-PW3e's mend had put the seasonal line's orders back where they were (§2, the need date), and
+HIGH's median, 623,344, is the fourth run's 622,866 again.
 
 `docs/ensemble/PW3.md` is this run's snapshot.
