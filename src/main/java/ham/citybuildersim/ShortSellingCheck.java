@@ -1360,6 +1360,13 @@ public class ShortSellingCheck {
        ======================================================================= */
 
     /**
+     * ★ How many times the month before's financial inflow and outflow section 9's sale and purchase are, at least: so a line the audit
+     * left out would show past the town's own flows. Ten until R1g, whose 48-month town paid out $9.43 the month before (main's $0.87)
+     * against the purchase's $59.33.
+     */
+    static final int OVER_THE_MONTH = 5;
+
+    /**
      * Section 9 (LF1b): a cell selling a share to the world and a cell buying one from it, made by the fixture inside the real month
      * (Game.settleProbeForTest: after the exchange's month has opened, before its step and the audit) at a price inside the spread, so that
      * no other order on the book fills. The cells and the world are both outside the pools, so neither trade moves a pool and the month
@@ -1394,8 +1401,9 @@ public class ShortSellingCheck {
         if (seller == null) { sectionEnd(); return; }
         final Household cell = seller;
         // [0, 1] the month's two figures before the fixture's trades; [2, 3] the shares each filled; [4, 5] the figures' rise; [6, 7] the cell's
-        // savings' change at the sale and at the purchase; [8] the world's holding's; [9] the price; [10, 11] the quantities asked.
-        double[] seen = new double[12];
+        // savings' change at the sale and at the purchase; [8] the world's holding's; [9] the price; [10, 11] the quantities asked; [12] the
+        // capital-gains tax the sale paid (HouseholdBalance.sellShares(): the gain over the basis, taxed as it is realised).
+        double[] seen = new double[13];
         city.settleProbeForTest = after -> {
             if (after) return;
             seen[0] = ex.getHouseholdsSoldAbroad();
@@ -1407,8 +1415,10 @@ public class ShortSellingCheck {
             double q1 = .5 * cell.shares[f] * cell.households(), q2 = .5 * q1;
             double savings = cell.savings, abroad = reg.getForeignShares(f);
             ex.tradeForCheck(f, Exchange.WORLD, OrderBook.Side.BUY, p, q1);
+            double taxed = hb.getCapitalGainsTax();
             seen[2] = filled(ex.tradeForCheck(f, Exchange.CELL + cell.key(), OrderBook.Side.SELL, p, q1));
             seen[6] = (cell.savings - savings) * cell.households();
+            seen[12] = hb.getCapitalGainsTax() - taxed;
             savings = cell.savings;
             ex.tradeForCheck(f, Exchange.WORLD, OrderBook.Side.SELL, p, q2);
             seen[3] = filled(ex.tradeForCheck(f, Exchange.CELL + cell.key(), OrderBook.Side.BUY, p, q2));
@@ -1428,7 +1438,9 @@ public class ShortSellingCheck {
         assertTrue("fixture: no cell had traded a share with the world that month before the fixture's two trades", seen[0] == 0 && seen[1] == 0);
         close("fixture: a cell sold the world half its " + Equity.COMPANIES[f] + " at $" + String.format("%.4f", p) + ", inside the spread", seen[2], q1, 1e-9 * q1);
         close("...and the exchange's sale abroad rose by it, at that price", seen[4], q1 * p, 1e-9 * q1 * p);
-        close("...the money in its savings", seen[6], q1 * p, 1e-9 * q1 * p);
+        out.printf("   the sale's capital-gains tax $%,.4f%n", seen[12]);
+        close("...the money in its savings, less the capital-gains tax on its gain (R1g: the town moved, and the cell sells at a gain)",
+                seen[6], q1 * p - seen[12], 1e-9 * q1 * p);
         close("fixture: the same cell bought half of that back from the world, at the same price", seen[3], q2, 1e-9 * q2);
         close("...and the exchange's purchase abroad rose by it", seen[5], q2 * p, 1e-9 * q2 * p);
         close("...the money out of its savings", seen[7], -q2 * p, 1e-9 * q2 * p);
@@ -1444,8 +1456,8 @@ public class ShortSellingCheck {
         close("...with its half into their savings, the same size", a.figures.getOrDefault("- shares HouseholdsSoldAbroad (into their savings)", 0.0), sold, tol);
         close("the audit's line for the cells' purchase abroad is the exchange's figure", a.figures.getOrDefault("- shares HouseholdsBoughtAbroad", 0.0), bought, tol);
         close("...with its half out of their savings, the same size", a.figures.getOrDefault("+ shares HouseholdsBoughtAbroad (from their savings)", 0.0), bought, tol);
-        assertTrue("fixture: the sale is over ten times the town's whole financial inflow the month before, the purchase ten times its outflow",
-                seen[4] > 10 * monthBefore.financialIn && seen[5] > 10 * monthBefore.financialOut);
+        assertTrue("fixture: the sale is over " + OVER_THE_MONTH + " times the town's whole financial inflow the month before, the purchase "
+                + OVER_THE_MONTH + " times its outflow", seen[4] > OVER_THE_MONTH * monthBefore.financialIn && seen[5] > OVER_THE_MONTH * monthBefore.financialOut);
         assertTrue("the balance of payments' financial inflow holds the sale: $" + String.format("%,.4f", a.financialIn), a.financialIn >= sold - MoneyAudit.CENT);
         assertTrue("...and its financial outflow the purchase: $" + String.format("%,.4f", a.financialOut), a.financialOut >= bought - MoneyAudit.CENT);
         ForeignAccounts fx = city.getForeignAccounts();

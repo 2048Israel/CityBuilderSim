@@ -3198,7 +3198,7 @@ public abstract class Sector {
         if (captive(g)) {
             o.captive = Math.max(0, Math.min(o.produced, inputToMake(g) * getOperatingRate()));
             o.produced -= o.captive;
-        }
+        } else o.captive = 0;   // ...and none once it is not (A GOOD THAT STOPS BEING CAPTIVE KEEPS NO FIGURE)
     }
 
     /**
@@ -3238,6 +3238,19 @@ public abstract class Sector {
        cost the line is judged on counts only what it buys
        (inputCostAtRate()). Output.captive records it, for SectorFlow and
        the pictograms.
+
+       A GOOD THAT STOPS BEING CAPTIVE KEEPS NO FIGURE (R1g, 2026-11-21).
+       produceFlow() and produceStock() write Output.captive only while
+       captive() holds, and produceStock() takes it off what the order
+       covers (THE ORDER) whatever captive() says. A 1900 farm's crop is
+       captive while any farm runs on horses (Agriculture.captive()): when
+       its horse share fell to 0 the row kept the feed of the last horse
+       month, 4.4 t at the 1900 Danzik's month 363, and every month after
+       made that much less, while the same city loaded from its save built
+       a fresh row and did not (ReloadCheck: 4.128 t of CROPS apart a month
+       after every reload). Both now set it to 0 when the good is not
+       captive, as a fresh row reads; a good captive every month is as it
+       was, to the bit.
 
        A sector says which goods are captive (captive()); none does here.
        sectors.ProcessingSector makes every good it both makes and uses
@@ -3743,7 +3756,7 @@ public abstract class Sector {
         if (captive(g)) {
             o.captive = captiveUnits(g);
             nameplate = Math.max(0, nameplate - o.captive);
-        }
+        } else o.captive = 0;   // ...and none once it is not, or the order below takes the last one off (A GOOD THAT STOPS BEING CAPTIVE KEEPS NO FIGURE)
         double planned = getPlannedOutput(g);
         double direct = getExportBoundOutput(g);
         // ...and no more than its inputs were ordered for (THE ORDER): the home plan and the ship's line as they stand, held to it, and what

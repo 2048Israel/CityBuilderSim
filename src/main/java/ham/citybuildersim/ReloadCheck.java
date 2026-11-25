@@ -143,7 +143,7 @@ public class ReloadCheck {
     /** How far the harness moves the price of the good its hand order draws, between the month's close and the next (FS17): so the makers' stock of it is revalued by a figure that is not zero. */
     static final double CAUSED_PRICE_MOVE = 1.25;
 
-    /** The Houses the harness orders on the caused point (FS17): the crews draw materials for them in the month on. */
+    /** The Houses worked before the caused point (FS17, R1g): their materials are reported at the next month's strike. */
     static final int CAUSED_ORDER = 5;
 
     /** The share of Real Estate's count of the places it owns that the harness takes off by hand on the caused point (RN2): a share of its debt then a closed home's, and the month on's count, the portfolio's, moves the count back up by it. */
@@ -348,6 +348,7 @@ public class ReloadCheck {
      * lowered by CAUSED_CLOSED. Returns the hand order (null if no maker holds any stock of a traded good the builders do not make).
      */
     static HandOrder causeTheConditions(Game g, boolean placeACarry) {
+        causeBuildingDraw(g);
         g.getCapitalFlows().startStopForTest(CAUSED_STOP);
         if (placeACarry) g.getSectors().quarrying().setCarriedForTest(CAUSED_CARRY);
         Sector builders = g.getSectors().construction();
@@ -365,6 +366,18 @@ public class ReloadCheck {
          * markets showed imports, exports and units drawn only where the city's month happened to leave them), the price of the good the
          * order draws moved (the makers' stock of it is then revalued by a figure that is not zero), and a build order placed (the crews
          * draw materials for it in the month on).
+         *
+         * R1g (2026-11-21): THE ORDER IS PLACED AS THE SCREENS PLACE ONE (LongPlaytest.build(): the ground bought first when the city has too
+         * little), ON BUILDERS WHO HOLD NOTHING TO BUILD IT WITH. Since R1g the probe city is founded the 1900 way: at its caused point on
+         * 0.9.176 it had no ground for five Houses (buildStack() answered NO_LAND and no site stood), and where it has the ground its builders
+         * hold the public works yard's months (7,445 units at month 1211 on 0.9.177; Game.drawMaterials() draws it first) and the salvage of
+         * its scrapped plant (1,253.5 t, drawn next): the order took its materials from the yard as it was placed, its Houses opened within
+         * the month, and the month on bought none (fixture 3b red). Today's city's builders, building every month, hold neither at the
+         * caused point, so an order's materials fall due on the sites as they work. Taken here through the model's own
+         * calls (BuildingManager.takeFromYard(), Construction.takeSalvage(), which books the salvage's cost as it would on a site), the
+         * caused city's builders stand as those do, whichever way the city was founded. The order is worked one month before the save:
+         * Construction.beforeBank() reports the month just closed, so an order placed immediately before saving has no draw on the next
+         * strike even where that new month works its sites. causeBuildingDraw() runs first, before the other between-press conditions.
          */
         if (most != null) {
             GoodsMarket priced = g.getMarkets().get(most);
@@ -374,13 +387,6 @@ public class ReloadCheck {
             if (!m.good().traded() || m.good() == most) continue;
             m.restoreTally(CAUSED_TALLY[0], CAUSED_TALLY[1], CAUSED_TALLY[2], CAUSED_TALLY[3], CAUSED_TALLY[4], CAUSED_TALLY[5]);
             break;
-        }
-        BuildingsTemplate house = null;
-        for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t.getName().equals("House")) house = t;
-        if (house != null) {
-            PrintStream real = System.out;
-            System.setOut(QUIET);
-            try { g.buildStack(house, CAUSED_ORDER, false); } finally { System.setOut(real); }
         }
         // FS17: ...and one sector's shares, this month's and last month's, put on the books by the model's own restore (SectorBooks.restoreShares,
         // the load's path), the others as they stand: the shares of a played month are found in the checkpoints only where a company happened to be listed.
@@ -398,6 +404,22 @@ public class ReloadCheck {
         int before = market.monthsDraws().size();
         g.getMarkets().draw(most, builders, null, mostHeld * HAND_ORDER_SHARE, g.getSectors());
         return new HandOrder(most, new ArrayList<>(market.monthsDraws().subList(before, market.monthsDraws().size())));
+    }
+
+    /** Work the order before the checkpoint: the next strike reports the materials drawn in this month, not the one it starts. */
+    private static void causeBuildingDraw(Game g) {
+        PrintStream real = System.out, report = LongPlaytest.out;
+        System.setOut(QUIET);
+        LongPlaytest.out = QUIET;
+        try {
+            g.getBuildingManager().takeFromYard(g.getBuildingManager().getConstructionMaterials());
+            g.getSectors().construction().takeSalvage(g.getSectors().construction().getSalvage());
+            // The played treasury may be insolvent; its advisor then refuses even to borrow. This fixture needs a placed order,
+            // so give it the model's wealthy founding cash before the normal ground purchase and order, as the tally is caused above.
+            g.setCashForTest(Math.max(g.getCash(), Founding.WEALTHY_CASH));
+            if (!LongPlaytest.build(g, "House", CAUSED_ORDER)) throw new IllegalStateException("the caused House order was refused");
+            g.simulateMonths(1);
+        } finally { LongPlaytest.out = report; System.setOut(real); }
     }
 
     /* ------------------------------ one checkpoint ------------------------------ */

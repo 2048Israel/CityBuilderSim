@@ -193,11 +193,30 @@ public final class ResearchCatalog {
     /**
      * The game month a "since" is known from: a whole number is a year, known from its January (PolicyDates.monthOf(year, 1)); a code is known
      * from its entry's worldMonth(); a blank "since" or a code not in the catalogue is never known (Integer.MAX_VALUE). The one reading that
-     * Recipe, Equipment and BuildingsTemplate will share.
+     * Recipe, Equipment and BuildingsTemplate will share. Each "since" is read once (KNOWN_FROM): the catalogue is the packaged file's, read
+     * once and never changed, so the month a given "since" is known from never changes either.
      */
     public static int knownFrom(String since) {
         if (since == null || since.isBlank()) return Integer.MAX_VALUE;
-        String s = since.trim();
+        Integer known = KNOWN_FROM.get(since);
+        if (known == null) {
+            known = readKnownFrom(since.trim());
+            KNOWN_FROM.putIfAbsent(since, known);
+        }
+        return known;
+    }
+
+    /**
+     * knownFrom()'s answer by the "since" it was given (R1g, 2026-11-19). WHY: a code that is not a year was read through a thrown
+     * NumberFormatException, and the exception's stack, some forty frames under the auto-builder's advice (BuildAdvice.count, WorksValue
+     * .pendingLoads, NewUnit.of, EquipmentFit.fittedForNew, RecipeChanges.absencesAt), was most of a month in a city founded the 1900 way once it
+     * grew: four thread dumps of R1g's 2,400-month 1900 playtest at month 1679 stood in fillInStackTrace in every one. The "since" codes are
+     * the data files' few dozen, so the map stays that small.
+     */
+    private static final java.util.concurrent.ConcurrentHashMap<String, Integer> KNOWN_FROM = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The reading itself, of a trimmed, non-blank "since": a whole number is a year, anything else a code. */
+    private static int readKnownFrom(String s) {
         try {
             return PolicyDates.monthOf(Integer.parseInt(s), 1);
         } catch (NumberFormatException notAYear) {

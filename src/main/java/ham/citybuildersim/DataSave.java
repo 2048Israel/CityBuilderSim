@@ -1206,6 +1206,20 @@ public class DataSave implements Cloneable {
     public java.util.Map<Integer, Double> getAbroadOwedById() { return abroadOwedById; }
 
     /**
+     * ...and the same sites' claims in their own unit (R1g; BuildingManager.getAbroadClaimById()): the shares the premium his
+     * payers paid is earned by, to the bit, where the points are the claims rescaled to his book. Written always, an empty
+     * map when none; a save without the key reads the points as the claims, the same shares. No format bump.
+     */
+    private java.util.Map<Integer, Double> abroadClaimById;
+
+    public void setAbroadClaimById(java.util.Map<Integer, Double> byId) {
+        this.abroadClaimById = byId == null ? new java.util.TreeMap<>() : byId;
+    }
+
+    /** The claims by template id, empty for a save with none abroad, null for a save from before the key. */
+    public java.util.Map<Integer, Double> getAbroadClaimById() { return abroadClaimById; }
+
+    /**
      * The buildings still WITHOUT a piece of equipment, by template id and then by the piece's id (R1; BuildingsStacks' unfitted counts), written
      * only for the stacks that have any: null, or empty, is every building fitted. A save from before R1 has no key, which Gson leaves alone, and
      * so reads as every building fitted, as it ran: no format bump.
@@ -1279,6 +1293,26 @@ public class DataSave implements Cloneable {
         return recipeChoices == null ? java.util.Map.of() : recipeChoices;
     }
 
+    /**
+     * The 1900 home's walk (R1g; Recipes, THE HOME'S COST MOVES WITH WAGES): the last Recipes.PAY_MONTHS months' pay index, oldest first, and the
+     * game month of the newest, written only for a city founded the 1900 way with the walk on. A save without them, every save from before R1g
+     * and every city founded the default way, starts the walk afresh at the loaded month, its window that month's pay index alone, filled over
+     * the next eleven: Gson leaves a missing key alone, so no format bump (a 1900 city saved before R1g had no dated homes to read wrongly).
+     */
+    private double[] homePayIndices;
+    private Integer homePayMonth;
+
+    /** Stores the walk's months and the month of the newest; null (no key in the file) with none. */
+    public void setHomePay(double[] months, int month) {
+        homePayIndices = months == null || months.length == 0 ? null : months.clone();
+        homePayMonth = homePayIndices == null ? null : month;
+    }
+
+    /** The walk's saved months, oldest first, or null for a save with none. */
+    public double[] getHomePayIndices() { return homePayIndices == null ? null : homePayIndices.clone(); }
+
+    /** The game month of the newest of getHomePayIndices(), 0 for a save with none. */
+    public int getHomePayMonth() { return homePayMonth == null ? 0 : homePayMonth; }
     /**
      * The fittings on site (R1b; Fittings), in the order placed, each with the template, the piece, who ordered it and the points still owed: written
      * only while there is a job, so a city with none writes no key and a save without one reads as none on site. No format bump: Gson leaves a

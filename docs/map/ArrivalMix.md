@@ -1,4 +1,4 @@
-# ArrivalMix.java - 169 lines · 8 methods · 3 constants · model
+# ArrivalMix.java - 189 lines · 9 methods · 3 constants · model
 
 `ham/citybuildersim/ArrivalMix.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -39,7 +39,7 @@
 
 **Uses:** [WageBand](WageBand.md) (11), [CityCalendar](CityCalendar.md) (1)
 
-**Used by (7):** [ArrivalMixCheck](ArrivalMixCheck.md), [BasketYearCheck](BasketYearCheck.md), [Consumption](Consumption.md), [Game](Game.md), [Migration](Migration.md), [Sector](Sector.md), [StaffingDrawCheck](StaffingDrawCheck.md)
+**Used by (9):** [ArrivalMixCheck](ArrivalMixCheck.md), [BasketYearCheck](BasketYearCheck.md), [Consumption](Consumption.md), [Game](Game.md), [Migration](Migration.md), [Recipes](Recipes.md), [Sector](Sector.md), [StaffingDrawCheck](StaffingDrawCheck.md), [Village1900Check](Village1900Check.md)
 
 ## Sections
 
@@ -61,7 +61,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 129 | **type** `public final class ArrivalMix` | What the world's movers hold by year: the skill mix a month's arrivals are drawn from, in a city founded the 1900 way. |
+| 41 | 149 | **type** `public final class ArrivalMix` | What the world's movers hold by year: the skill mix a month's arrivals are drawn from, in a city founded the 1900 way. |
 | 43 | 1 | `private ArrivalMix()` |  |
 | 49 | 1 | **type** `public record Knot(int year, double none, double diploma, double college, double university, String source,...` | One year's mix of the working arrivals, at January of that year: each skill's share of them (none, diploma, college, university), summing to one, with the key of where it was read, whether it is an estimate, and a not... |
 | 55 | 16 | **type** `public record Point(double ordinaryNone, double college, double university)` | The three figures composeArrivals() reads, relative to the diploma band's 1: the no-diploma arrivals who come at the going rate per diploma arrival, and the college and university bands' ceilings, bought on the premium. |
@@ -76,7 +76,7 @@
 |---:|---:|---|---|
 | 106 | 8 | `static { ... }` |  |
 
-### THE LOOK-UP (lines 115-169)
+### THE LOOK-UP (lines 115-189)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -84,5 +84,6 @@
 | 130 | 4 | `public static Point derive(double none, double diploma, double college, double university)` | The three figures a year's shares give, relative to the diploma band's 1. |
 | 136 | 3 | `public static Point of(Knot knot)` | The point a knot's own shares give. |
 | 145 | 19 | `public static Point at(int month)` | The mix of a game month's arrivals. |
-| 166 | 3 | `private static double lerp(double a, double b, double t)` | a at t = 0, b at t = 1, a straight line between. |
+| 170 | 14 | `public static double tradeShareAt(int month)` | The share of a game month's working arrivals who hold a trade (the diploma band; the 1913 knot's mechanics, clerks and traders), by the same look-up as at(): the first knot's before its January, the knots' shares inte... |
+| 186 | 3 | `private static double lerp(double a, double b, double t)` | a at t = 0, b at t = 1, a straight line between. |
 

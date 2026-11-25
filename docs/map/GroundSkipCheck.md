@@ -72,7 +72,7 @@
 | 73 | 7 | `static void play(Game g)` | A month of runPlayer() on `g`, the audit's M0 its own: LongPlaytest.lastM0 is one static for the JVM, and this harness plays several towns, so a month of another town than the last is first given its own M0 - else its... |
 | 82 | 3 | `static boolean landlordsHeld(Game g)` | Whether the landlords' order held for ground this month (Game.getLandBlockedSectors(): BusinessInvestment's noLand()). |
 | 87 | 3 | `static double homesOnSite(Game g)` | The homes the landlords have on site. |
-| 99 | 13 | `static void playTheTown()` | The playtest's own town (LongPlaytest.probeCity(), then probePlay(): its founding and its rhythm of skips, looks and moves) to TOWN_MONTHS, saved. |
+| 99 | 13 | `static void playTheTown()` | The playtest's own town, today's (LongPlaytest.probeTodayCity(), R1g: its moment is today's played path's; then probePlay(): its rhythm of skips, looks and moves) to TOWN_MONTHS, saved. |
 | 118 | 14 | `static Game town()` | A copy of the town, loaded from its save, at its look: the look made (keepGroundAhead()), then its dry ground built on up to UNDER_THE_LINE below the player's line (LandManager.allocate(), as LandCheck 22 builds a cit... |
 | 134 | 1 | **type** `record Seen(int month, double cash, double used, double line, int sinceLook, boolean held, double onSite, S...` | What a month of a skip saw. |
 | 136 | 6 | `static Seen seen(Game g)` |  |

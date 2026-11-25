@@ -15351,7 +15351,13 @@ public class Game {
                         + economyManager.getResearchBill()
                         + economyManager.getTransitBill()
                         // ...and the licence the utilities bought abroad (R2c-P), valued at cost like the services it bought into; it is in the imports too, so GDP is unchanged.
-                        + publicIpPaid,
+                        + publicIpPaid
+                        // ...and the repairs to the city's own buildings, the roads, plants, schools, clinics, stations and terminals
+                        // (EconomyManager.CITY_MAINTAINED), at the bill chargeBuildingMaintenance() struck above, paid or owed: the city buys
+                        // the service, so it is government consumption, as a real government's road repairs are. WHY (R1g, 2026-11-24): the
+                        // builders' material imports for these repairs were in the imports while the repairs were in no final term, so a
+                        // grown city with its building stopped read GDP below zero (the 1900 city, seed 1, -360.89 at month 1135).
+                        + economyManager.getCityMaintenanceBill(),
                 // The full interest bill, foreign coupons included - the
                 // government's books should show what it paid, not only the
                 // part its own bank collected. See payForeignInterest().
@@ -16553,6 +16559,9 @@ public class Game {
         }
 
         populationManager.applyBandFlow(education.getGraduates());
+        // ...and in a city founded the 1900 way the young who came of age learn the year's trade at work (R1g; PopulationManager, THE APPRENTICES).
+        // Gross school completions cover the quota; degree graduates leaving the diploma band do not reopen it (REV-R1gc2-1).
+        if (foundedUnfitted()) populationManager.apprentice(cohorts.getPromoted(AgeBand.TEEN), ArrivalMix.tradeShareAt(getMonth()), education.getNewDiplomas());
         populationManager.addLicences(education.getLicences());
         // And whoever is in a lecture theatre is out of the labour supply
         // until they come out of it - see PopulationManager.workforceByBand().
@@ -18067,11 +18076,15 @@ public class Game {
         dataSave.setUnfittedById(buildingManager.getUnfittedById());
         // ...and each site's work on the foreign crews' book (REV-FC2, the second review), what a cancel takes off it.
         dataSave.setAbroadOwedById(buildingManager.getAbroadOwedById());
+        // ...and the claims themselves (R1g), which the premium his payers paid is shared by: the points rescale them.
+        dataSave.setAbroadClaimById(buildingManager.getAbroadClaimById());
         // ...and the equipment each site's orders froze, only where a site has a lot (R1e; none in a city founded the default way).
         dataSave.setLotsById(buildingManager.getLotsById());
         dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
+        // ...and the 1900 home's walk, its months of the households' pay (R1g; none in a city founded the default way).
+        dataSave.setHomePay(recipes.payIndicesForSave(), recipes.payIndexMonth());
         dataSave.setLicenceFees(licenceFeesForSave());
         // ...and the licence the city's own patented works accrued and last paid (R2c-P).
         dataSave.setPublicIpPending(publicIpPending);
@@ -22285,6 +22298,7 @@ public class Game {
             // ...and each site's work on the foreign crews' book (REV-FC2, the second review), once the sites owe their points:
             // a save from before the key shares his book among the sites by their points owed, as FC1b's cancel cut them.
             buildingManager.restoreAbroadOwed(loaded.getAbroadOwedById());
+            buildingManager.restoreAbroadClaims(loaded.getAbroadClaimById());
             buildingManager.getHousingInventory().restore(loaded.getHousingInventory());
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());
@@ -22311,6 +22325,8 @@ public class Game {
             // ...and the recipes the parts of a stack run (R1c): the SAVED choices, put back and applied, never struck again from the loaded prices
             // (the next month's top does that), and before the forms, which weigh each building by the electricity its recipe leaves it.
             recipes.restore(loaded.getRecipeChoices());
+            // ...and the 1900 home's walk, its saved months (R1g), before the apply() below dates the fresh templates at the scale they were saved at.
+            recipes.restorePayIndices(loaded.getHomePayIndices(), loaded.getHomePayMonth());
             restoreLicenceFees(loaded.getLicenceFees());
             restorePublicLicences(loaded.getPublicIpPending(), loaded.getPublicIpPaid());
             recipes.apply(this);

@@ -81,13 +81,55 @@ public final class NewUnit {
      * One new building of `t` in this city now, evaluated afresh from this call's inputs: the template as it stands in a
      * city founded the default way, for a building with one way to run, for no game, and inside another pricing (a
      * licence's or a proposal's own: they price the states they are given); otherwise the pieces fittedForNew() keeps on
-     * the process newChoices() gives, by RecipeChanges.apply()'s own sum for a stack of one (RecipeChanges.newUnit()).
+     * the process newChoices() gives, by RecipeChanges.apply()'s own sum for a stack of one (RecipeChanges.newUnit()). While one
+     * piece of advice reads the city (heldWhile()), a template's fitted unit is the one this gave it first in that reading.
      */
     public static NewUnit of(Game game, BuildingsTemplate t) {
         if (t == null) return null;
         if (game == null || !game.foundedUnfitted() || !t.hasRecipeChoice() || RESOLVING.get() || LicenceFees.pricing())
             return standing(t);
+        Held held = HELD.get();
+        if (held == null || held.game() != game) return fitted(game, t);
+        NewUnit unit = held.units().get(t);
+        if (unit == null) {
+            unit = fitted(game, t);
+            held.units().put(t, unit);
+        }
+        return unit;
+    }
+
+    /** The fit itself: the pieces fittedForNew() keeps, on newChoices()' process, summed by RecipeChanges.newUnit(). */
+    private static NewUnit fitted(Game game, BuildingsTemplate t) {
         return standingWhile(() -> RecipeChanges.newUnit(game, t, EquipmentFit.fittedForNew(game, t)));
+    }
+
+    /* ----- held while one piece of advice reads the city (R1g) ----- */
+
+    /** One reading's fitted units, by template, for the one game it reads. */
+    private record Held(Game game, Map<BuildingsTemplate, NewUnit> units) { }
+
+    /**
+     * The new units of() has fitted in the reading under way on this thread (heldWhile()); null outside one. WHY (R1g, 2026-11-20): the
+     * auto-builder's advice (BuildAdvice.suggestFor(), pure: it reads the city and quotes) asks of() for every building under construction
+     * at every count it tries (WorksValue.pendingLoads() and pendingPowerLoad(), through BuildAdvice.count()'s doubling and halving), each a
+     * whole fit (EquipmentFit.fittedForNew()) of a city that does not change while it is read; once a city founded the 1900 way grew, that
+     * was most of its month (thread dumps of R1g's 1900 playtest at month 1757, five in six inside EquipmentFit.priced()). A unit is a value
+     * (final fields, unmodifiable maps), so the one fitted first is the one every later ask in the reading would have built.
+     */
+    private static final ThreadLocal<Held> HELD = new ThreadLocal<>();
+
+    /**
+     * Runs a reading of the city that changes nothing in it (BuildAdvice.suggestFor()) with each template's fitted unit held after of()
+     * first builds it, and lets them go at its end. A reading inside another holds into the outer one; outside any, of() is fresh each call.
+     */
+    static <T> T heldWhile(Game game, java.util.function.Supplier<T> reading) {
+        if (game == null || HELD.get() != null) return reading.get();
+        HELD.set(new Held(game, new java.util.IdentityHashMap<>()));
+        try {
+            return reading.get();
+        } finally {
+            HELD.remove();
+        }
     }
 
     /**

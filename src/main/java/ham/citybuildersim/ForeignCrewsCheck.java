@@ -72,7 +72,14 @@ import static ham.citybuildersim.ConstructionTrapCheck.template;
  *      pad's preparation in its building's share, and the queue counts the preparation owed on its site.
  *   8. A CURRENCY REFORM: a reform dividing the money by 1,000 divides his book's price a point by 1,000, and the offer's,
  *      and his next bill is his points at it - not a thousandfold abroad at the old unit's price.
- *   9. THE AUDIT: every month played here balanced to the cent and left nothing moving after it.
+ *   9. HIS WORK EARNED AT HIS PRICE (R1g): an order quoted dear on his book (section 7's plant past the threshold, the
+ *      city's cheap work at home under it), more of his points than the plant can take in a month, so his crews go to
+ *      the cheaper sites too, as R1g's 1900 village met it (0.42 against 0.29, GDP -51 at month 15): with
+ *      -Dr1g.hisprice=off the builders recognise less work than they pay him for; on, the sites earn his points at his
+ *      price, what they earn for them, their material apart, is his bill, the month's work is at least it and their
+ *      material (his points' value added nil, not minus their material), his bill and the points owed are the twin's, and what the sites earned past the twin's their contracts hold less, the plant's alone: earned sooner out
+ *      of what its payer paid, never more.
+ *  10. THE AUDIT: every month played here balanced to the cent and left nothing moving after it.
  *
  * Every fixture causes its condition.
  */
@@ -171,7 +178,8 @@ public class ForeignCrewsCheck {
         theSplit(root);
         theReform(reformed);
         reformed = null;
-        out.println("\n--- 9. the audit ---");
+        hisPrice(root);
+        out.println("\n--- 10. the audit ---");
         audited("in every month here");
 
         out.printf("%n%d assertions made here%n", checked);
@@ -859,6 +867,118 @@ public class ForeignCrewsCheck {
         double t = 0;
         for (double v : m.values()) t += v;
         return t;
+    }
+
+    /* ============================ 9. HIS WORK EARNED AT HIS PRICE (R1g) ============================ */
+
+    /**
+     * Section 9's cheap work, the city's, ordered at home up to the threshold before the plant (section 7's PLANT) goes
+     * past it onto his book: the cheapest a point the city builds, so his points the plant cannot take are earned at
+     * little. R1g's 1900 village met it so (seed 4, month 14 of the 0.9.201 ensemble): his book dear, his crews on its
+     * cheaper sites.
+     */
+    static final String CHEAP = "Home Care Service";
+
+    /** The sites' contract value a point still owed, over every site on the city. */
+    static double sitesRate(BuildingManager bm) {
+        double value = 0, owed = 0;
+        for (BuildingsStacks s : bm.getStacksUnderConstruction()) {
+            value += s.getContractValue();
+            owed += Math.max(0, s.owedPoints());
+        }
+        return owed > 0 ? value / owed : Double.NaN;
+    }
+
+    /**
+     * A calm city played on until its landlords' Houses have finished, with the city's CHEAP ordered
+     * at home, as many as go under the threshold, then one PLANT, its points past the threshold handed him as it is billed
+     * at what its quote charged for them: an order quoted dear, its price paid by its payer. QUOTED keeps his book before
+     * the plant, the plant's points quoted abroad, their price a point, the CHEAP ordered and the queue at home before them.
+     */
+    static Game dearOrder(Path root, String name) {
+        Game g = calm(root, name);
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsStacks houses = bm.getStack(template(g, HOUSE));
+        for (int k = 0; k < MOST_MONTHS_TO_FINISH && houses != null && houses.getUnderConstruction() > 0; k++) month(g);
+        if (houses != null && houses.getUnderConstruction() > 0) throw new IllegalStateException("the landlords' Houses did not finish");
+        double queued = bm.queueAtHome();
+        BuildingsTemplate cheap = template(g, CHEAP), plant = template(g, PLANT);
+        long n = (long) Math.floor((bm.thresholdMonths() * g.getBuildingOutputAtEveryPost() - bm.queueAtHome()) / cheap.getConstructionPoints());
+        if (n < 1 || !cityOrders(g, cheap, n)) throw new IllegalStateException("the city's " + n + " " + CHEAP + " could not be ordered");
+        double bookBefore = g.getSectors().construction().getForeignBook();
+        Game.BuildQuote q = g.quoteBuild(plant, 1);
+        QUOTED.put(name, new double[] { bookBefore, q.abroadPoints, q.abroadPricePerPoint, n, queued });
+        if (!cityOrders(g, plant, 1)) throw new IllegalStateException("the city's " + PLANT + " could not be ordered");
+        return g;
+    }
+
+    /** What the sites' contracts still hold, over every site on the city: what their payers paid for work not yet earned. */
+    static double held(BuildingManager bm) {
+        double v = 0;
+        for (BuildingsStacks s : bm.getStacksUnderConstruction()) v += s.getContractValue();
+        return v;
+    }
+
+    /** What one template's site's contracts still hold; 0 with none on site. */
+    static double heldOn(Game g, String name) {
+        BuildingsStacks s = g.getBuildingManager().getStack(template(g, name));
+        return s == null ? 0 : s.getContractValue();
+    }
+
+    static void hisPrice(Path root) {
+        out.println("\n--- 9. his work earned at his price: an order quoted dear on his book, his crews on cheaper sites; the sites earn his points at what he bills for them, out of the contracts that paid it (R1g) ---");
+        Game on = dearOrder(root, "his-price-on"), off = dearOrder(root, "his-price-off");
+        Construction cOn = on.getSectors().construction(), cOff = off.getSectors().construction();
+        BuildingManager bmOn = on.getBuildingManager(), bmOff = off.getBuildingManager();
+        double[] q = QUOTED.get("his-price-on");
+        double rate = sitesRate(bmOn), price = cOn.getForeignBookPrice(), offered = on.foreignCrewsOffer().points();
+        double cap = BuildingManager.monthCap(template(on, PLANT), template(on, PLANT).getConstructionPoints());
+        out.printf(Locale.ROOT, "  the queue at home %,.0f points once the landlords' Houses had finished; %,.0f %s at home; the %s's %,.0f points quoted abroad at %,.4f a point; his book %,.0f at %,.4f against the sites' %,.4f;"
+                + " he offers %,.0f points, the plant takes %,.0f a month at most%n",
+                q[4], q[3], CHEAP, PLANT, q[1], q[2], cOn.getForeignBook(), price, rate, offered, cap);
+        exact("fixture: the city's cheap order went at home whole: his book was empty before the plant", q[0], 0);
+        exact("fixture: the plant's quote handed him its points past the threshold as it was billed", cOn.getForeignBook(), q[1]);
+        near("fixture: ...at the price a point its quote charged for them, paid by its payer", price, q[2], 1e-12);
+        ok("fixture: ...more than the plant can take in a month (its build time, PW2): his crews go to the cheaper sites too", offered > cap);
+        ok("fixture: the twins are the same city", cOff.getForeignBook() == cOn.getForeignBook() && bmOff.queueAtHome() == bmOn.queueAtHome()
+                && held(bmOff) == held(bmOn));
+        double heldOn = held(bmOn), heldOff = held(bmOff), cheapOn = heldOn(on, CHEAP), cheapOff = heldOn(off, CHEAP);
+        month(on);
+        BuildingManager.HIS_PRICE = false;
+        try {
+            month(off);
+        } finally {
+            BuildingManager.HIS_PRICE = true;
+        }
+        double built = cOn.getForeignPointsThisMonth(), bill = cOn.getForeignBillThisMonth(), work = cOn.getRecognisedThisMonth();
+        double earned = bmOn.getForeignEarned(), material = bmOn.getForeignMaterial();
+        double workOff = cOff.getRecognisedThisMonth(), billOff = cOff.getForeignBillThisMonth();
+        double own = on.getBuildingOutputAtEveryPost();
+        double fellOn = heldOn - held(bmOn), fellOff = heldOff - held(bmOff);
+        double cheapFellOn = cheapOn - heldOn(on, CHEAP), cheapFellOff = cheapOff - heldOn(off, CHEAP);
+        out.printf(Locale.ROOT, "  he built %,.0f points beside the sites' own month of %,.0f; billed %,.4f; the sites earned %,.4f for his points, their material apart,"
+                + " and %,.4f for the material they drew; %,.4f in all (off: %,.4f in all, billed %,.4f)%n", built, own, bill, earned, material, work, workOff, billOff);
+        out.printf(Locale.ROOT, "  the sites' contracts fell %,.4f over the month, the twin's %,.4f; the %s's %,.4f, the twin's %,.4f; points still owed %,.4f, the twin's %,.4f%n",
+                fellOn, fellOff, CHEAP, cheapFellOn, cheapFellOff, bmOn.getRemainingConstructionPoints(), bmOff.getRemainingConstructionPoints());
+        ok("fixture: his points are most of the month, in the city and its twin", built > own && cOff.getForeignPointsThisMonth() == built);
+        ok("with -Dr1g.hisprice=off the sites earn his points at their own rates: the builders recognise less work than they pay him for"
+                + " (GDP's investment under the import, R1g's month 15)", workOff < billOff);
+        ok("fixture: his points drew material, priced into the contracts", material > 0);
+        near("on, the sites earn his points at his price: what they earned for them, their material apart, is his bill", earned, bill, 1e-9 * bill);
+        ok("...so the month's work the builders recognise is at least his bill and his points' material: their value added is his margin, nil,"
+                + " not minus their material", work >= bill + material);
+        // REV-R1g3 (P2): ...and at most that, the city's own share of the twin's work and the month's escalation: the material counted once.
+        double share = built / bmOn.getPointsBuilt(), escOn = cOn.getEscalationThisMonth(), escOff = cOff.getEscalationThisMonth();
+        double cityOwn = (1 - share) * (workOff - escOff);
+        out.printf(Locale.ROOT, "  past his bill and material %,.4f; the city's own share (%,.4f of the points) of the twin's work %,.4f, the escalation %,.4f (the twin's %,.4f)%n",
+                work - bill - material, 1 - share, cityOwn, escOn, escOff);
+        ok("...and at most that and the city's own share of the twin's work and the month's escalation: their material counted once",
+                work - bill - material <= cityOwn + escOn + 1e-9 * work);
+        exact("...his bill is the twin's: the switch moves what the sites earn, not what he is paid", bill, billOff);
+        exact("...and the twins owe the same points: nor what is built", bmOn.getRemainingConstructionPoints(), bmOff.getRemainingConstructionPoints());
+        near("what the sites earned past the twin's, their contracts hold less: earned sooner out of what the payers paid, never more",
+                fellOn - fellOff, work - workOff, 1e-9 * Math.max(1, work));
+        exact("...and out of the plant's, the contract that paid his price: the cheap sites' contracts fell alike in the twins", cheapFellOn, cheapFellOff);
     }
 
     /* ============================ 8. A CURRENCY REFORM ============================ */

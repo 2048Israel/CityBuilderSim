@@ -615,9 +615,13 @@ public class GdpCheck {
         assertTrue("fixture: the town's school and its buses both cost something", schools > 0 && transitBill > 0);
         System.setOut(quiet);
         try { served.simulateMonths(1); } finally { System.setOut(out); }
-        check("G counts the schools' and transit's cost",
+        // ...and the repairs to the city's own buildings (R1g): its plants, roads and school, at the bill the month struck before the
+        // accounts, so the month's own (EconomyManager.getCityMaintenanceBill()), not the month before's.
+        double cityRepairs = served.getEconomyManager().getCityMaintenanceBill();
+        assertTrue("fixture: the month's repairs to the city's own buildings cost something", cityRepairs > 0);
+        check("G counts the schools' and transit's cost, and the city's repairs (R1g)",
                 served.getEconomyManager().getNationalAccounts().getGovernment(),
-                others + schools + transitBill);
+                others + schools + transitBill + cityRepairs);
         /*
          * EVERY GOOD A SECTOR HOLDS IS IN A TERM (0.7.58). The rule the
          * luxury note in NationalAccounts states - any good a sector can hold
@@ -857,6 +861,7 @@ public class GdpCheck {
 
         sheds(quiet, out);
         bankUpkeep();
+        cityRepairs(quiet, out);
 
         try (var walk = java.nio.file.Files.walk(railFiles.getDirectory())) {
             walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
@@ -1216,5 +1221,77 @@ public class GdpCheck {
                 Math.abs(na.getGdp() - withoutLine - bankLine) <= MoneyAudit.CENT);
         check("...and the identity holds in it", na.getGdp(),
                 na.getConsumption() + na.getInvestment() + na.getGovernment() + na.getNetExports());
+    }
+
+    /*
+     * THE CITY'S REPAIRS ARE GOVERNMENT CONSUMPTION, NOT NEGATIVE OUTPUT (R1g, 2026-11-24). The repair bill on the city's own buildings
+     * (EconomyManager.CITY_MAINTAINED: roads, plants, schools, clinics, stations, terminals) is a service the city buys from the builders,
+     * which a real government's accounts count in its consumption, as they count a council's road repairs. Before R1g it was in no final
+     * term, while the material the builders bought abroad for it was in the imports, so a grown city whose building had stopped read GDP
+     * below zero: the 1900 city, seed 1, -360.89 at month 1135, with 3,475 of material imports and no construction. The fixture is that
+     * month with nothing else in it: a city of nothing but Paved Roads, as many as make one road's repair a month, its material more than
+     * the yard's own BuildingManager.BASE_MATERIALS, with an empty yard, so the builders buy the rest abroad; once with the money to pay
+     * (WEALTHY_CASH) and once with none and no advances, so the bill is owed. Paid or owed, G is the bill, and the month reads what the
+     * builders added: the bill less the material bought abroad. Without R1g's term G read 0 and GDP the imports with a minus sign.
+     */
+    static void cityRepairs(java.io.PrintStream quiet, java.io.PrintStream out) {
+        System.out.println("\n--- the city's repairs to its own roads are government consumption, not negative output (R1g) ---");
+        repairMonth("paid", Founding.WEALTHY_CASH, quiet, out);
+        repairMonth("owed", 0, quiet, out);
+    }
+
+    /** One month of a city of Paved Roads whose treasury starts with `cash`: its repairs, its imports and its accounts. */
+    private static void repairMonth(String label, double cash, java.io.PrintStream quiet, java.io.PrintStream out) {
+        GameFiles files = GameFiles.scratch("gdpcheck-repairs-" + label);
+        Game c = new Game(files);
+        double others, bill, materialsNeeded, builderImports, paid;
+        System.setOut(quiet);
+        try {
+            c.newGame();
+            BuildingManager b = c.getBuildingManager();
+            BuildingsTemplate road = b.getTemplateByName("Paved Road");
+            long n = (long) Math.ceil(12.0 / road.repairsPerYear());
+            b.clearStacks();
+            b.addStack(road, n, true);
+            b.setConstructionMaterials(0);
+            for (Sector s : c.getSectors().all()) c.getBusinessInvestment().holdSector(s.key());
+            c.getBusinessInvestment().holdBranches();
+            c.getAutoBuilder().setOn(false, c.getDecisions());
+            c.getCentralBank().setAdvancesCeilingMonths(0);
+            c.setCashForTest(cash);
+            // The services' costs the top of the month reads, struck before it: none in a city of roads.
+            others = c.getServicesManager().getUtilitiesHandler().getUtilityPayroll() + c.getHealthcare().getGrossCost()
+                    + c.getCrime().getGrossCost() + c.getEducation().getGrossCost()
+                    + c.getEconomyManager().getResearchBill() + c.getEconomyManager().getTransitBill();
+            c.simulateMonths(1);
+            bill = c.getEconomyManager().getCityMaintenanceBill();
+            materialsNeeded = c.getEconomyManager().getMaintenanceMaterialsTotal();
+            builderImports = c.getSectors().construction().statement().imports;
+            paid = c.getCityMaintenancePaid();
+        } finally { System.setOut(out); }
+        NationalAccounts na = c.getEconomyManager().getNationalAccounts();
+        System.out.printf("   %s: Paved Roads %d; repairs billed %,.2f, paid %,.2f; materials needed %,.1f; the builders' imports %,.2f;"
+                        + " C %,.2f, I %,.2f, G %,.2f, NX %,.2f, GDP %,.2f%n",
+                label, c.getBuildingManager().countByName("Paved Road"), bill, paid, materialsNeeded, builderImports,
+                na.getConsumption(), na.getInvestment(), na.getGovernment(), na.getNetExports(), na.getGdp());
+        assertTrue("fixture (" + label + "): the roads' repairs were billed, needed more material than the yard makes, and the builders bought it abroad",
+                bill > 0 && materialsNeeded > BuildingManager.BASE_MATERIALS && builderImports > 0);
+        assertTrue("fixture (" + label + "): no service of the city cost anything, so G has no other term",
+                Math.abs(others) <= MoneyAudit.CENT);
+        if (cash > 0) assertTrue("fixture (paid): the treasury paid the whole bill", Math.abs(paid - bill) <= MoneyAudit.CENT && !c.hasArrears());
+        else assertTrue("fixture (owed): the treasury paid none of it, and the city owes it", paid <= MoneyAudit.CENT && c.hasArrears());
+        assertTrue("(" + label + ") G is the city's repair bill, paid or owed, to the cent", Math.abs(na.getGovernment() - bill) <= MoneyAudit.CENT);
+        assertTrue("(" + label + ") ...the material bought abroad for it is the accounts' imports, to the cent",
+                Math.abs(na.getTotalImports() - builderImports) <= MoneyAudit.CENT);
+        assertTrue("(" + label + ") ...so the month reads what the builders added, the bill less what they bought abroad, to the cent",
+                Math.abs(na.getGdp() - (bill - builderImports)) <= MoneyAudit.CENT);
+        assertTrue("(" + label + ") ...which is not negative", na.getGdp() >= 0);
+        check("(" + label + ") ...and the identity holds in it", na.getGdp(),
+                na.getConsumption() + na.getInvestment() + na.getGovernment() + na.getNetExports());
+        try (var walk = java.nio.file.Files.walk(files.getDirectory())) {
+            walk.sorted(java.util.Comparator.reverseOrder()).forEach(p -> {
+                try { java.nio.file.Files.deleteIfExists(p); } catch (java.io.IOException ignored) { }
+            });
+        } catch (java.io.IOException ignored) { }
     }
 }

@@ -79,6 +79,31 @@ that the real effect is there, and cite the evidence in the notes; never hide
 it with a fixture change or call it noise; (3) if it does not, it is a defect:
 mend it; (4) only what reality cannot settle goes to Jerus.
 
+**The laptop's restart: the drain** (MemWatch SPEC 16, 2026-11-25, from the
+MW-restart session). MemWatch restarts the laptop itself when Windows holds
+back memory. WHY: memory, not CPU, runs short on the PC, and only a restart
+gives back what Windows holds.
+1. MemWatch starts a drain when Windows' own memory is 4 GB over this boot's
+   baseline, or committed stays at 90% for 10 minutes (at most once a day).
+   The orchestrator then gets an URGENT instruction from memwatch: "a restart
+   of the laptop is pending".
+2. While it stands: start no gate, ensemble, dry run, nightly or session from
+   the laptop. Launched sessions get no new turns (their mail waits in
+   `new\`); the orchestrator still gets turns until it says clear.
+3. When nothing of the orchestrator's runs on the laptop (no `gate-box.sh`,
+   no ssh to the box, no check), it replies
+   `cbs-bus send memwatch --kind info --re <the instruction's id> --body clear`.
+4. MemWatch restarts once nothing is mid-turn and Jerus has been away 30
+   minutes, with 10 minutes' notice to him. He can hold it 6 hours from
+   MemWatch's window or the phone.
+5. After the boot comes an urgent "laptop back": carry on and start what was
+   held. A launched turn the restart cut off resumes by itself with "the PC
+   restarted mid-turn; redo what was in flight".
+6. If nothing is clear within 2 hours, "the laptop's restart is off for now"
+   comes: carry on; a new instruction comes before the next try. At 95%
+   committed MemWatch does not wait for the clear, only for the
+   orchestrator's turn to end.
+
 ## Dispatch
 
 - **Read live budget at the start of EVERY turn and immediately before every

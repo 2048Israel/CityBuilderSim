@@ -154,8 +154,8 @@ public final class FoundingScreen {
     private String worldSeed = String.valueOf(Founding.DEFAULT_WORLD_SEED);
     /** The path of the world beyond the city (WN1): Historical or Random. */
     private Nations.Path path = Nations.DEFAULT_PATH;
-    /** The equipment chosen (R1d): the "1900" chip or "All fitted", which the page opens on until the 1900 city grows (R1g; R1d call 2). */
-    private boolean historicalEquipment = false;
+    /** The equipment chosen (R1d): the "1900" chip or "All fitted". The page opens on "1900" since the 1900 city grows (R1g; R1d call 2). */
+    private boolean historicalEquipment = true;
     /** The "start on gold" box beside the money (FB14; GD3-F, spec-gold-money 4.3): off until ticked, kept in the founding (Founding.withGold()). */
     private boolean startOnGold = false;
     /** The path's seed, as typed or rolled: not the ground's (WN1). */
@@ -215,7 +215,7 @@ public final class FoundingScreen {
         worldSeed = String.valueOf(Founding.rollWorldSeed());
         // ...and the path of the world beyond it (WN1): the default (Random since WN3), and a path seed rolled as the ground's is.
         path = Nations.DEFAULT_PATH;
-        historicalEquipment = false;
+        historicalEquipment = true;
         pathSeed = String.valueOf(Founding.rollWorldSeed());
         // The Earth, when its data is here (0.7.121): looked for off the screen's thread, the page redrawn when it is known.
         spotLat = spotLon = Double.NaN;
