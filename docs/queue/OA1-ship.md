@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — OA1, the open ask holds an essential works for years — 2026-11-25, ready, see docs/queue/OA1-notes.md
 Automatic building's open ask (D30) now spends the bond money it raised on the works it raised it for. The reserve
