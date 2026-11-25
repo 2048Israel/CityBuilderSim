@@ -64,8 +64,12 @@ import java.util.Locale;
  *      stood before every month (FS9: HT1's path left them none for 25 months),
  *      its households doubled up to within a few of the valve's ceiling;
  *   3. through the crunch the owners put in what the till lacked, homes are
- *      built, and no month leaves more than one household with no home
- *      (FamilyModel.getStillUnplaced(), LongPlaytest's watch, unmoved), and no
+ *      built, no month leaves more households with no home
+ *      (FamilyModel.getStillUnplaced()) than the crunch's first, each month over
+ *      WATCH is one the bank was short for the landlords' order, and once the
+ *      owners' first homes stand none is over WATCH (LongPlaytest's watch; R1g:
+ *      a crunch that stops building leaves newcomers with no home until it
+ *      resumes, Calgary 1905-1913, section 3's banner), and no
  *      month the door trimmed is left marked as held for the bank's capital;
  *   4. an order of six caused at the crunch's end (REV-FB15), since the
  *      played crunch asks for one block at a time once the door prices it,
@@ -241,7 +245,7 @@ public final class CreditCrunchCheck {
     static final double TARGET = .02;
 
     /** One crunch month as it ended. */
-    record Month(int month, double unplaced, double doubled, double households, long homes, int written,
+    record Month(int month, double unplaced, double seekersUnhoused, double doubled, double households, long homes, int written,
                  boolean refusedForCapital, long asked, boolean shortOfCapital, double raised, boolean rationed,
                  double growth, boolean keepGoing, double ratio, double target, String line) { }
 
@@ -295,6 +299,16 @@ public final class CreditCrunchCheck {
         if (ground(g, block, GROUND_BLOCKS)) groundMonths++;
     }
 
+    /** The seekers' households (FamilyModel.Seeker) past their own ceiling, two to a door up to half the group: no door. */
+    static double seekersUnhoused(FamilyModel fm) {
+        double n = 0;
+        for (FamilyModel.Seeker s : FamilyModel.Seeker.values()) n += fm.getSeekersUnhoused(s);
+        return n;
+    }
+
+    /** The households placed nowhere that LongPlaytest's watch flags past (its audit's "households with no home"): one, the rounding. */
+    static final double WATCH = 1;
+
     /** The households the placement could still take against the homes standing. */
     static double room(Game g) {
         FamilyModel.Room r = g.getFamilies().roomLeft(g.getBuildingManager().homesBySize());
@@ -343,7 +357,7 @@ public final class CreditCrunchCheck {
                 FamilyModel fm = g.getFamilies();
                 Bank bank = g.getBank();
                 if (m > FROM) {
-                    months.add(new Month(m, fm.getStillUnplaced(), fm.getDoubledUpHouseholds(), fm.totalHouseholds(),
+                    months.add(new Month(m, fm.getStillUnplaced(), seekersUnhoused(fm), fm.getDoubledUpHouseholds(), fm.totalHouseholds(),
                             g.getBuildingManager().getTotalHomes(), desk.getMortgagesWrittenThisMonth(),
                             desk.wasMortgageRefusedForCapital(RE), askedThisMonth, shortThisMonth,
                             g.getEconomyManager().getEquityRaised(RE), desk.isInsuredRationed(),
@@ -404,20 +418,45 @@ public final class CreditCrunchCheck {
         check("fixture: the homes cut left the placement room for MARGIN households and less than one house more",
                 cutHomes > 0 && roomAfterCut >= MARGIN && roomAfterCut < MARGIN + 1 && roomAfterCut < roomAtStart);
 
-        out.println("\n--- 3. the owners put in what the till lacked, homes are built, nobody is left with no home ---");
+        /*
+         * ----- the households with no home: bounded by the crunch's first month, and cleared by the owners' homes (R1g, 2026-11-25) -----
+         * Restated from "no month leaves more than one" (LongPlaytest's watch, unmoved since HT1). On the 1900 city R1g plays, the cut
+         * leaves MARGIN households of room as Room.households() counts the arrivals' mix, but the month after it 9.1 households have no
+         * door, the doubling valve at its ceiling (186 of 371 doubled up, FamilyModel's half the households plus one, no seeker among them);
+         * the bank, short of capital, writes no mortgage for twenty months, and they stay until the owners' first block, mortgaged at
+         * m171, stands (m172), then none again to TO. That is the real law: a credit crunch that stops
+         * the building leaves newcomers without a home until building resumes, and adds none past what it began with. Calgary, 1905-1913
+         * (The City of Calgary's First Boom and Bust, Alberta's Real Estate Heritage, Heritage Community Foundation, after J. Peach 1993): the
+         * 1905-1909 housing shortage left some newcomers living in tents, and in the 1913 bust the collapse "caused building permits to
+         * drop to 8.5 million dollars in 1913" from over 20 million in 1912; "This in turn created high unemployment." Today's city (-Dplaytest.founded=today) holds 0.00.
+         */
+        out.println("\n--- 3. the owners put in what the till lacked, homes are built, and the households left with no home clear ---");
         double raised = 0, worst = 0;
-        int worstMonth = -1;
-        long homesFrom = months.isEmpty() ? 0 : months.get(0).homes, homesTo = homesFrom;
+        int worstMonth = -1, firstBuilt = -1, lastUnhoused = -1, unhousedNotShort = 0;
+        Month opened = months.isEmpty() ? null : months.get(0);
+        long homesFrom = opened == null ? 0 : opened.homes, homesTo = homesFrom;
         for (Month r : months) {
             raised += r.raised;
             homesTo = Math.max(homesTo, r.homes);
+            if (firstBuilt < 0 && r.homes > homesFrom) firstBuilt = r.month;
             if (r.unplaced > worst) { worst = r.unplaced; worstMonth = r.month; }
+            if (r.unplaced > WATCH) {
+                lastUnhoused = r.month;
+                if (!(r.shortOfCapital && r.asked > 0)) unhousedNotShort++;
+            }
         }
-        out.printf(Locale.ROOT, "   the owners put in %.0f; homes %,d to %,d; the most households with no home %.2f (m%d)%n",
-                raised, homesFrom, homesTo, worst, worstMonth);
+        out.printf(Locale.ROOT, "   the owners put in %.0f; homes %,d to %,d, the first built standing at m%d; the most households with no home"
+                        + " %.2f (m%d), %.2f in the crunch's first month (m%d, %.2f of them seekers), the last month over the watch m%d%n",
+                raised, homesFrom, homesTo, firstBuilt, worst, worstMonth, opened == null ? Double.NaN : opened.unplaced,
+                opened == null ? -1 : opened.month, opened == null ? Double.NaN : opened.seekersUnhoused, lastUnhoused);
         check("the landlords' owners were asked, and put money in, while the bank was short", raised > 0);
         check("...and homes were built in the crunch", homesTo > homesFrom);
-        check("no month of the crunch leaves more than one household with no home (LongPlaytest's watch)", worst <= 1);
+        check("no month of the crunch leaves more households with no home than its first month, before any home could be built (R1g)",
+                opened != null && worst <= opened.unplaced);
+        check("...every month leaving more than WATCH with no home is one the landlords asked for homes the bank was short of capital for",
+                unhousedNotShort == 0);
+        check("...and they clear: once the owners' first homes stand, no month leaves more than WATCH with no home (LongPlaytest's watch)",
+                firstBuilt > 0 && lastUnhoused < firstBuilt);
 
         // The played crunch's own capital trims (HN1), as it happened to ask: printed, and asserted on the order caused below.
         int capitalTrims = 0, leftMarked = 0;
