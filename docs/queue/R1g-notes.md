@@ -2694,3 +2694,50 @@ go for the fresh ensemble. Two P2s, mended beside it:
     the 18 points of inflation at its 0.15 weight cap. The rule answers
     that, and a grocery shortage, as if they were demand. That is put to
     the orchestrator, not mended here.
+
+### The fresh ensemble on the material form (2026-11-25; a3fc9ab0c)
+
+On the gate box: label R1g, classes of a3fc9ab0c (cc4c5b9d1's model;
+6c6535e25 and a10e8d86d change only harnesses and notes), 80 of 80 runs
+in 29.0 minutes, scored against `docs/ensemble/0.9.202.md`, which is
+main's today-founded city. Its baseline is now `docs/ensemble/R1g.md`
+(the `{next}` token in its heading and introduction).
+
+**The hard criteria pass 10/10.** M1 is 0 months in every policy. F1 is
+0/16 in every policy: the seed-1 negative GDP that failed AUTO2 and
+ZERO_SLACK on the .180 run (section 11) is gone. The probe on seeds 4-7
+(`target/ensemble/R1g-gdp15f`, AUTO2, 60 months) shows no negative month.
+The sites earn exactly his bill in every month he builds, with his
+points' material on top (seed 4: 400 points at m14-18, billed 168.0 then
+88.1, material 16.3 to 26.4; GDP 25.8 to 100.1).
+
+**Against the .180 R1g run (section 11), what moved.** Every final
+population rose: AUTO2 1,466,969 to 6,262,849; ZERO_SLACK 750,928 to
+4,317,140; ZERO_HOT 2,000 to 13,344; SHOCK 10,520 to 367,962; HIGH 4,918
+to 104,940. T1 went from 14/16 at m1,286 to 16/16 at m576. AUTO2 A3,
+SHOCK K2, HIGH R1, R2 and R3 went from FAIL to PASS, and ZERO_HOT H2 from
+VACUOUS to PASS (13/16 below). This is the 1900 city growing, the
+batch's "Done when". Each move is the batch's own mends (sections 13
+on): the negative GDP gone, the households housed, and the contractor's
+work earned at his price, so the builders' cash no longer runs down
+under his bill.
+
+**Against main's today-founded city, why the falls are real.** Every T2
+reads FAIL, because main's baseline is a city founded today and this
+branch founds in 1900 by default (`LongPlaytest.FOUNDED_1900`). The
+finals are 68% of main's (AUTO2), 59% (ZERO_SLACK), 25% (ZERO_HOT), 24%
+(SHOCK) and 15% (HIGH). T1 is reached at m576 against main's m325. A
+village of forty-odd houses with a handful of crews, on the 1900 world's
+prices and population, grows later than a city founded with today's.
+The stress policies hold rates at 0% or 15%, or shock the world, and
+they cost a small young town more than a grown one. That is the gap
+T2's 75% bound reads, and no row says the town is broken.
+
+**A1 (info) moved from PASS to FAIL.** Inflation m240-end is a 2.96%
+median, and 10/16 seeds are in the 1-3% band, against 12/16 on the .180
+run and 16/16 on main (median 2.65%). The six out of band run warm (the
+highest 3.56%). It is not traced across the ensemble. In the one played
+city traced (CreditCrunchCheck's seed 13, REV-R1g3 above), the warm
+months were supply-side: the grocery shelf sat at its cap, and main's
+held luxury index caught up in one step. A2 stays FAIL as on main (13
+months, the same median as main).
