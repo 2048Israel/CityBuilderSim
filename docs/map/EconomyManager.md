@@ -18,7 +18,7 @@
 > Both are inputs to a sector that is not a factory, and they arrive here
 > because this class already talks to everything that produces them.
 
-**Uses:** [Sector](Sector.md) (65), [BuildingsTemplate](BuildingsTemplate.md) (32), [Good](Good.md) (16), [Currency](Currency.md) (16), [BuildingType](BuildingType.md) (13), [NationalAccounts](NationalAccounts.md) (11), [TaxPolicy](TaxPolicy.md) (9), [Markets](Markets.md) (5), [SalesTaxLedger](SalesTaxLedger.md) (5), [BuildingManager](BuildingManager.md) (4), [BusinessDebtManager](BusinessDebtManager.md) (4), [Traffic](Traffic.md) (4), [Zoning](Zoning.md) (4), [SectorState](SectorState.md) (4), [Sectors](Sectors.md) (3), [JobType](JobType.md) (3), [LandManager](LandManager.md) (3), [RealEstate](RealEstate.md) (3), [PriceLevel](PriceLevel.md) (3), [Statement](Statement.md) (3), [OutwardInvestment](OutwardInvestment.md) (3), [Retail](Retail.md) (3), [BondMarket](BondMarket.md) (3), [Equity](Equity.md) (3), [WageBand](WageBand.md) (3), [GoodsMarket](GoodsMarket.md) (2), [FamilyModel](FamilyModel.md) (2), [SupplierCredit](SupplierCredit.md) (2), [GameLog](GameLog.md) (2), [SocialSecurity](SocialSecurity.md) (2)... and 9 more
+**Uses:** [Sector](Sector.md) (65), [BuildingsTemplate](BuildingsTemplate.md) (32), [Good](Good.md) (16), [Currency](Currency.md) (16), [BuildingType](BuildingType.md) (13), [NationalAccounts](NationalAccounts.md) (11), [TaxPolicy](TaxPolicy.md) (9), [Markets](Markets.md) (5), [SalesTaxLedger](SalesTaxLedger.md) (5), [JobType](JobType.md) (5), [BuildingManager](BuildingManager.md) (4), [BusinessDebtManager](BusinessDebtManager.md) (4), [Traffic](Traffic.md) (4), [Zoning](Zoning.md) (4), [SectorState](SectorState.md) (4), [Sectors](Sectors.md) (3), [LandManager](LandManager.md) (3), [RealEstate](RealEstate.md) (3), [PriceLevel](PriceLevel.md) (3), [Statement](Statement.md) (3), [OutwardInvestment](OutwardInvestment.md) (3), [Retail](Retail.md) (3), [BondMarket](BondMarket.md) (3), [Equity](Equity.md) (3), [WageBand](WageBand.md) (3), [GoodsMarket](GoodsMarket.md) (2), [FamilyModel](FamilyModel.md) (2), [SupplierCredit](SupplierCredit.md) (2), [GameLog](GameLog.md) (2), [SocialSecurity](SocialSecurity.md) (2)... and 9 more
 
 **Used by (77):** [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BondCheck](BondCheck.md), [BondMarket](BondMarket.md), [BuildAdvice](BuildAdvice.md), [BuildCardCheck](BuildCardCheck.md), [BusinessInvestment](BusinessInvestment.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CityNeeds](CityNeeds.md), [CopperBufferCheck](CopperBufferCheck.md), [CreditCheck](CreditCheck.md), [CreditCrunchCheck](CreditCrunchCheck.md), [CrimeCheck](CrimeCheck.md), [DebtExchangeCheck](DebtExchangeCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [EducationCheck](EducationCheck.md), [FoodProcessingCheck](FoodProcessingCheck.md), [ForeignChoiceCheck](ForeignChoiceCheck.md), [FundLedgerCheck](FundLedgerCheck.md), [Game](Game.md), [GdpCheck](GdpCheck.md), [GovernmentScreen](GovernmentScreen.md), [GovernmentView](GovernmentView.md), [GovernmentViewCheck](GovernmentViewCheck.md), [GroundInputCheck](GroundInputCheck.md), [HealthCheck](HealthCheck.md), [HistorySave](HistorySave.md), [HoldersCheck](HoldersCheck.md), [HousingCheck](HousingCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [KeptCheck](KeptCheck.md), [LabourCheck](LabourCheck.md), [LandClassCheck](LandClassCheck.md), [LongPlaytest](LongPlaytest.md), [Materials](Materials.md), [MaterialsCheck](MaterialsCheck.md), [MoneyAudit](MoneyAudit.md), [MortgageCheck](MortgageCheck.md), [NewGameCheck](NewGameCheck.md), [Offending](Offending.md), [OilCheck](OilCheck.md), [OrderDoorCheck](OrderDoorCheck.md), [OutsideCheck](OutsideCheck.md), [OutwardInvestment](OutwardInvestment.md), [PassThroughCheck](PassThroughCheck.md), [PeopleScreen](PeopleScreen.md), [PlaytestFixCheck](PlaytestFixCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PopulationCheck](PopulationCheck.md), [PrizeCheck](PrizeCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [Recipes](Recipes.md), [ResearchViewCheck](ResearchViewCheck.md), [RoadCheck](RoadCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [Sector](Sector.md), [SectorBooks](SectorBooks.md), [SectorStatementCheck](SectorStatementCheck.md), [SimulationEngine](SimulationEngine.md), [SummaryScreen](SummaryScreen.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TradeScreen](TradeScreen.md), [TreasuryCheck](TreasuryCheck.md), [UndemandedFeedCheck](UndemandedFeedCheck.md), [WellCheck](WellCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md), [ZoningViewCheck](ZoningViewCheck.md)
 
@@ -29,11 +29,11 @@
 | 31 | THE CITY'S PARTS |
 | 62 | WHAT THE CITY TELLS THE ECONOMY EACH MONTH |
 | 153 | · utilities |
-| 287 | · the world |
-| 306 | THE D$ THE GOODS ARE STRUCK AT (AN1, 2026-10-22) |
-| 369 | · the land |
-| 444 | · the land by class of ground (ET3, 2026-10-25) |
-| 536 | HOUSING - what the landlords need from the family model and the land office |
+| 283 | · the world |
+| 302 | THE D$ THE GOODS ARE STRUCK AT (AN1, 2026-10-22) |
+| 365 | · the land |
+| 440 | · the land by class of ground (ET3, 2026-10-25) |
+| 532 | HOUSING - what the landlords need from the family model and the land office |
 | 657 | CASH BY NAME - the seam almost everything routes through |
 | 671 | THE MONTH, AT THE TOP |
 | 767 | · the statements' splits (0.7.74, R1 and R2) |
@@ -61,7 +61,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 336 | `EconomyManager.PASS_THROUGH` | `1 / 36.0` | How much of the gap, in logs, between the D$ the city's goods were last struck at and today's D$ they close in a month: a thirty-sixth, so half of a move in two years and 29% of it in the first - the dock's 64% in a y... |
+| 332 | `EconomyManager.PASS_THROUGH` | `1 / 36.0` | How much of the gap, in logs, between the D$ the city's goods were last struck at and today's D$ they close in a month: a thirty-sixth, so half of a move in two years and 29% of it in the first - the dock's 64% in a y... |
 | 880 | `EconomyManager.CITY_MAINTAINED` | `{ BuildingType.ELECTRICITY, BuildingType.WATER, BuildingType.INFRASTRUCTURE, ...` | EVERY BUILDING IN THE CITY, BILLED FOR STANDING THERE. |
 | 894 | `EconomyManager.MAINTENANCE_RATE` | `ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12` |  |
 | 1103 | `EconomyManager.PBRH_MIN_UNITS` | `4` | A building with this many dwellings or more is purpose-built rental housing (CRA: "at least 4 residential units each with a private kitchen, a private bathroom, and a private living area"). |
@@ -97,22 +97,22 @@
 | 155 | `private double pricePerWatt` |  |
 | 157 | `private double pricePerWattIndustry, pricePerWattWorks` | The struck book's other two prices (PW1): Heavy Industry and Mining, and what a works' surplus is paid. |
 | 158 | `private double pricePerWaterUnit` |  |
-| 296 | `private double exchangeRate` | Every world price in the game is quoted by the world in ITS money and converted at this rate - times the world's own price level, which is how world inflation rides in. |
-| 339 | `private double struckRate` | The D$ per US$ the goods were last struck at; 0 until the first strike, which strikes at the D$ itself. |
-| 342 | `private double passThroughSpeed` | The speed the goods follow the D$ at: PASS_THROUGH, unless a harness's twin is told otherwise (not saved; a reload strikes at PASS_THROUGH). |
-| 376 | `private double landPricePerSqFt` | What the city currently charges for a square foot, so assessed values track the price the player sets. |
-| 405 | `private Zoning zoning` | The city's zones, and what each holds of the free ground (LandManager.heldBy()); Game wires both, a bare economy has none. |
-| 406 | `private java.util.function.ToDoubleFunction<String> zoneHeld` |  |
-| 457 | `private boolean landFlatOnly` |  |
-| 458 | `private double foothillPricePerSqFt, steepPricePerSqFt` |  |
-| 459 | `private LandManager.ReliefUse landUse` |  |
-| 460 | `private java.util.function.Predicate<BuildingsTemplate> worksTest` |  |
-| 461 | `private java.util.function.Predicate<BuildingsTemplate> runsTest` |  |
-| 462 | `private java.util.function.ToDoubleFunction<BuildingsTemplate> plotPrice` |  |
-| 540 | `private double householdCount` |  |
-| 541 | `private double marginalHousingCost` |  |
-| 542 | `private double occupiedHomes` |  |
-| 543 | `private double studioSeekers, familySeekers, studioSeekerHeads, familySeekerHeads` |  |
+| 292 | `private double exchangeRate` | Every world price in the game is quoted by the world in ITS money and converted at this rate - times the world's own price level, which is how world inflation rides in. |
+| 335 | `private double struckRate` | The D$ per US$ the goods were last struck at; 0 until the first strike, which strikes at the D$ itself. |
+| 338 | `private double passThroughSpeed` | The speed the goods follow the D$ at: PASS_THROUGH, unless a harness's twin is told otherwise (not saved; a reload strikes at PASS_THROUGH). |
+| 372 | `private double landPricePerSqFt` | What the city currently charges for a square foot, so assessed values track the price the player sets. |
+| 401 | `private Zoning zoning` | The city's zones, and what each holds of the free ground (LandManager.heldBy()); Game wires both, a bare economy has none. |
+| 402 | `private java.util.function.ToDoubleFunction<String> zoneHeld` |  |
+| 453 | `private boolean landFlatOnly` |  |
+| 454 | `private double foothillPricePerSqFt, steepPricePerSqFt` |  |
+| 455 | `private LandManager.ReliefUse landUse` |  |
+| 456 | `private java.util.function.Predicate<BuildingsTemplate> worksTest` |  |
+| 457 | `private java.util.function.Predicate<BuildingsTemplate> runsTest` |  |
+| 458 | `private java.util.function.ToDoubleFunction<BuildingsTemplate> plotPrice` |  |
+| 536 | `private double householdCount` |  |
+| 537 | `private double marginalHousingCost` |  |
+| 538 | `private double occupiedHomes` |  |
+| 539 | `private double studioSeekers, familySeekers, studioSeekerHeads, familySeekerHeads` |  |
 | 782 | `private final Map<String, double[]> interestByKind` |  |
 | 783 | `private final Map<String, double[][]> debtByKind` |  |
 | 786 | `private int creditMonth` | The month of the last credit settle, which the bonds' maturities are read against (settleBusinessCredit()). |
@@ -209,7 +209,7 @@
 | 138 | 1 | `public double[] getWageRates()` | A copy, so nothing downstream can quietly rewrite the schedule. |
 | 145 | 7 | `public double getBankPayroll()` | What the bank's own staff cost this month. |
 
-### utilities (lines 153-286)
+### utilities (lines 153-282)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -229,68 +229,68 @@
 | 219 | 11 | `public void setRoadRatio(InfrastructureManager roads, BuildingManager buildings)` | ...and the same thing done properly, once the streams exist: each sector feels the congestion IT generates. |
 | 231 | 1 | `public void setHealthRatio(double ratio)` | What is left of the workforce once this month's illness is taken off. |
 | 234 | 1 | `public double getHealthRatio()` | What the sectors are currently running at, for the harnesses. |
-| 248 | 17 | `public void setElectricityConsumption()` | Every sector's draw, off its own buildings. |
-| 267 | 5 | `public double getSectorPowerSold()` | The month's power the works sold the grid, as the sectors' statements booked it (0.7.112): what the city's utility pays them. |
-| 274 | 5 | `public double getSectorElectricityCharges()` | The month's power bills, as the sectors' statements booked them. |
-| 281 | 5 | `public double getSectorWaterCharges()` | The month's water bills, likewise. |
+| 244 | 17 | `public void setElectricityConsumption()` | Every sector's draw, off its own buildings. |
+| 263 | 5 | `public double getSectorPowerSold()` | The month's power the works sold the grid, as the sectors' statements booked it (0.7.112): what the city's utility pays them. |
+| 270 | 5 | `public double getSectorElectricityCharges()` | The month's power bills, as the sectors' statements booked them. |
+| 277 | 5 | `public double getSectorWaterCharges()` | The month's water bills, likewise. |
 
-### the world (lines 287-305)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 298 | 5 | `public void setExchangeRate(double rate)` |  |
-| 304 | 1 | `public double getExchangeRate()` |  |
-
-### THE D$ THE GOODS ARE STRUCK AT (AN1, 2026-10-22) (lines 306-368)
+### the world (lines 283-301)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 350 | 4 | `public void strikeExchangeRate(double rate, double worldLevel)` | The month's strike: the goods' D$ moves PASS_THROUGH of the way to `rate` in logs (at once on the first strike, or after a save that did not carry it), and every world price is struck at it times the world's own price... |
-| 356 | 3 | `public static double passThrough(double struck, double rate, double speed)` | The rule alone: `struck` moved `speed` of the way to `rate`, in logs. |
-| 361 | 1 | `public double getStruckRate()` | The D$ per US$ the goods were last struck at (0 before the first strike). |
-| 364 | 1 | `public void setStruckRate(double rate)` | The load path's half: the D$ the goods were struck at when the city was saved (0 on a save without it: the next strike is at the D$). |
-| 367 | 1 | `void setPassThroughForTest(double speed)` | For a harness's twin only: the speed its goods follow the D$ at (one is the rule before AN1). |
+| 294 | 5 | `public void setExchangeRate(double rate)` |  |
+| 300 | 1 | `public double getExchangeRate()` |  |
 
-### the land (lines 369-443)
+### THE D$ THE GOODS ARE STRUCK AT (AN1, 2026-10-22) (lines 302-364)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 378 | 1 | `public void setLandPricePerSqFt(double price)` |  |
-| 379 | 1 | `public double getLandPricePerSqFt()` |  |
-| 386 | 4 | `public double landValueOf(Sector s)` | What a sector's land is worth at the city's current price - on its books; the roll reads assessedLandValueOf() since 0.7.107. |
-| 408 | 4 | `public void setZoning(Zoning zoning, java.util.function.ToDoubleFunction<String> held)` |  |
-| 414 | 9 | `public double assessedLandValueOf(Sector s)` | A sector's land as the roll values it, before the share the roll carries: its zone's used ground at the zone's price, the rest at the going price. |
-| 425 | 12 | `public double groundPriceFor(BuildingsTemplate t)` | What a square foot of ground under one more of these costs its owner and is assessed at: its zone's price while the zone holds its plot, the going price past it - never below nothing. |
-| 439 | 4 | `public double landValueOf(BuildingType category)` | What a city-owned category's land is worth (by the ground it stands on in a city with foothill or steep ground, ET3). |
+| 346 | 4 | `public void strikeExchangeRate(double rate, double worldLevel)` | The month's strike: the goods' D$ moves PASS_THROUGH of the way to `rate` in logs (at once on the first strike, or after a save that did not carry it), and every world price is struck at it times the world's own price... |
+| 352 | 3 | `public static double passThrough(double struck, double rate, double speed)` | The rule alone: `struck` moved `speed` of the way to `rate`, in logs. |
+| 357 | 1 | `public double getStruckRate()` | The D$ per US$ the goods were last struck at (0 before the first strike). |
+| 360 | 1 | `public void setStruckRate(double rate)` | The load path's half: the D$ the goods were struck at when the city was saved (0 on a save without it: the next strike is at the D$). |
+| 363 | 1 | `void setPassThroughForTest(double speed)` | For a harness's twin only: the speed its goods follow the D$ at (one is the rule before AN1). |
 
-### the land by class of ground (ET3, 2026-10-25) (lines 444-535)
+### the land (lines 365-439)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 465 | 7 | `public void wireLandByRelief(java.util.function.Predicate<BuildingsTemplate> works, java.util.function.Predicate<BuildingsTempl...` | Wired once by Game: which templates are works (Game.standsAnywhere()) and which are runs (Game.isRun(), ET4), and what a square foot of one more of a template's plot costs where it would fall (LandManager.priceFor() o... |
-| 478 | 5 | `public void setLandByRelief(boolean flatOnly, double foothillPrice, double steepPrice, LandManager.ReliefUse use)` | The land office's classes of ground as the books are to read them: whether the city owns only flat ground, what a square foot of foothill and of steep ground sells at (LandManager.getFoothillPricePerSqFt(), getSteepPr... |
-| 485 | 4 | `public void setLandUse(boolean flatOnly, LandManager.ReliefUse use)` | ...the ground alone, the prices as they were pushed: Game reads it again as the month closes, when the month's orders have put up their buildings. |
-| 491 | 1 | `public boolean valuesByRelief()` | Whether the books value land by class: the city owns foothill or steep ground and its use has been pushed. |
-| 494 | 3 | `public double priceOfClass(int c)` | The price a square foot of one class of ground is valued at: 0 flat (getLandPricePerSqFt()), 1 foothill, 2 steep and very steep. |
-| 499 | 13 | `private double[] landByRelief(double buildings, double works, double runs)` | The class areas {flat, foothill, slope} of `buildings` square feet of buildings' ground, `works` of works' and `runs` of runs' (ET4), pro rata to the city's use of each. |
-| 514 | 7 | `public double[] landByReliefOf(Sector s)` | A sector's land, square feet, by the ground it stands on: {flat, foothill, slope} - its buildings' ground at the city's buildings' mix, its works' at the city's works', its runs' (ET4) at the city's runs' (above). |
-| 523 | 7 | `public double[] landByReliefOf(BuildingType category)` | ...and a city-owned category's, the same way. |
-| 532 | 3 | `private double valueOfAreas(double[] a)` | Areas {flat, foothill, slope} at the three class prices. |
+| 374 | 1 | `public void setLandPricePerSqFt(double price)` |  |
+| 375 | 1 | `public double getLandPricePerSqFt()` |  |
+| 382 | 4 | `public double landValueOf(Sector s)` | What a sector's land is worth at the city's current price - on its books; the roll reads assessedLandValueOf() since 0.7.107. |
+| 404 | 4 | `public void setZoning(Zoning zoning, java.util.function.ToDoubleFunction<String> held)` |  |
+| 410 | 9 | `public double assessedLandValueOf(Sector s)` | A sector's land as the roll values it, before the share the roll carries: its zone's used ground at the zone's price, the rest at the going price. |
+| 421 | 12 | `public double groundPriceFor(BuildingsTemplate t)` | What a square foot of ground under one more of these costs its owner and is assessed at: its zone's price while the zone holds its plot, the going price past it - never below nothing. |
+| 435 | 4 | `public double landValueOf(BuildingType category)` | What a city-owned category's land is worth (by the ground it stands on in a city with foothill or steep ground, ET3). |
 
-### HOUSING - what the landlords need from the family model and the land office (lines 536-656)
+### the land by class of ground (ET3, 2026-10-25) (lines 440-531)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 545 | 1 | `public void setHouseholdCount(double count)` |  |
-| 546 | 1 | `public void setMarginalHousingCost(double perCap)` |  |
-| 547 | 1 | `public double getMarginalHousingCost()` |  |
-| 548 | 1 | `public void setOccupiedHomes(double occupied)` |  |
-| 549 | 6 | `public void setHousingSeekers(double studio, double family, double studioHeads, double familyHeads)` |  |
-| 555 | 1 | `public double getStudioSeekers()` |  |
-| 556 | 1 | `public double getFamilySeekers()` |  |
-| 564 | 21 | `public void updateHousing()` | Hands the landlords and the shops what the month looks like: how many people there are, how many doors, who is chasing them and what a new home costs. |
-| 598 | 3 | `public double housingBuildHurdle(BuildingsTemplate t)` | What one of these has to earn a month before it is worth putting up. |
-| 610 | 18 | `public double housingCarry(BuildingsTemplate t)` | WHAT ONE OF THESE COSTS TO HOLD A MONTH, before any interest: its maintenance, RealEstate.MAINTENANCE_PER_YEAR on the structure, and its property tax, the property rate on the structure and its plot. |
+| 461 | 7 | `public void wireLandByRelief(java.util.function.Predicate<BuildingsTemplate> works, java.util.function.Predicate<BuildingsTempl...` | Wired once by Game: which templates are works (Game.standsAnywhere()) and which are runs (Game.isRun(), ET4), and what a square foot of one more of a template's plot costs where it would fall (LandManager.priceFor() o... |
+| 474 | 5 | `public void setLandByRelief(boolean flatOnly, double foothillPrice, double steepPrice, LandManager.ReliefUse use)` | The land office's classes of ground as the books are to read them: whether the city owns only flat ground, what a square foot of foothill and of steep ground sells at (LandManager.getFoothillPricePerSqFt(), getSteepPr... |
+| 481 | 4 | `public void setLandUse(boolean flatOnly, LandManager.ReliefUse use)` | ...the ground alone, the prices as they were pushed: Game reads it again as the month closes, when the month's orders have put up their buildings. |
+| 487 | 1 | `public boolean valuesByRelief()` | Whether the books value land by class: the city owns foothill or steep ground and its use has been pushed. |
+| 490 | 3 | `public double priceOfClass(int c)` | The price a square foot of one class of ground is valued at: 0 flat (getLandPricePerSqFt()), 1 foothill, 2 steep and very steep. |
+| 495 | 13 | `private double[] landByRelief(double buildings, double works, double runs)` | The class areas {flat, foothill, slope} of `buildings` square feet of buildings' ground, `works` of works' and `runs` of runs' (ET4), pro rata to the city's use of each. |
+| 510 | 7 | `public double[] landByReliefOf(Sector s)` | A sector's land, square feet, by the ground it stands on: {flat, foothill, slope} - its buildings' ground at the city's buildings' mix, its works' at the city's works', its runs' (ET4) at the city's runs' (above). |
+| 519 | 7 | `public double[] landByReliefOf(BuildingType category)` | ...and a city-owned category's, the same way. |
+| 528 | 3 | `private double valueOfAreas(double[] a)` | Areas {flat, foothill, slope} at the three class prices. |
+
+### HOUSING - what the landlords need from the family model and the land office (lines 532-656)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 541 | 1 | `public void setHouseholdCount(double count)` |  |
+| 542 | 1 | `public void setMarginalHousingCost(double perCap)` |  |
+| 543 | 1 | `public double getMarginalHousingCost()` |  |
+| 544 | 1 | `public void setOccupiedHomes(double occupied)` |  |
+| 545 | 6 | `public void setHousingSeekers(double studio, double family, double studioHeads, double familyHeads)` |  |
+| 551 | 1 | `public double getStudioSeekers()` |  |
+| 552 | 1 | `public double getFamilySeekers()` |  |
+| 560 | 21 | `public void updateHousing()` | Hands the landlords and the shops what the month looks like: how many people there are, how many doors, who is chasing them and what a new home costs. |
+| 594 | 3 | `public double housingBuildHurdle(BuildingsTemplate t)` | What one of these has to earn a month before it is worth putting up. |
+| 606 | 22 | `public double housingCarry(BuildingsTemplate t)` | WHAT ONE OF THESE COSTS TO HOLD A MONTH, before any interest: its maintenance, RealEstate.MAINTENANCE_PER_YEAR on the structure, and its property tax, the property rate on the structure and its plot. |
 | 630 | 26 | `public void repriceHousingCosts()` | The cheapest way to house one more person, land included, per segment. |
 
 ### CASH BY NAME - the seam almost everything routes through (lines 657-670)

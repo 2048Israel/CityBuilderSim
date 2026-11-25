@@ -196,6 +196,25 @@ compile or test failure. Retain target/RES3-root-fast-114528489-20261125-062558.
 Request box compile/maps and the source-driven affected checks rather than
 waiting for laptop memory; no local JVM is left active and no guard is waived.
 
+The parent-reviewed box114 --fast then completes0 at
+~/cbs/runs/res3-integrated67-fast-114-gb5 (root payload
+eb2e60fc1f4e125fc3400f502dbd6edfb8900e55c62f2815eb313476a9b594f2).
+Helper0a1f verifies explicit compile0, cached batch compile0, maps regenerated,
+Stale0 firm/206 soft, source guard empty and class manifests identical before
+and after the batch. No game harness ran. Fresh compile gate:27.828 GiB RAM,
+21.912 GiB free commit,0.428-percent CPU; batch gate27.807/21.911/0.0 percent.
+Runtime is box Temurin21.0.13+9/Monocle, not local Oracle21.0.4.
+
+All registered groups/controller end0/empty; all three archives copy and verify.
+Official record a723bc07de05f854d07a85db6ac2df04e60f719c6db51e199c87b640a8f3dab6
+is reproduced from actual114 metadata. A helper's preliminary0296 record used
+an old registry and is obsolete/unexecuted; no native or approval used it.
+Transfer only the12 generated paths into this worktree from verified archive
+7e6eb44d25d752d565609d68476cc5651239fc7d0aee9b1ca83ecaec6477dff6,
+preserving notes/publisher records. The actual copied source/checks/classes and
+full logs remain at helper target/integrated67/helperfast-114/remote. Current
+model money/save/catalogue and default results still await their native runs.
+
 Canonical laptop results below are on exact f0b960367, pinned Oracle21.0.4,
 pinned C:/ Earth/world assets and fresh MG1 per start. Model/resources remain
 byte-identical through dce's later observer and harness-only commits;
