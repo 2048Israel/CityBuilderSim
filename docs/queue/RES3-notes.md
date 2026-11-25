@@ -114,6 +114,65 @@ section 63's new part OK (Real Estate 1,107 matches; 120 of 1,107, 1,108
 and 1,108 over the three months), live heap after release 1,426.3 MiB,
 the objects 1,421.7 MiB under the law's 1,536.
 
+### REV-RES3z and the merge of main 0.9.206 (RES3c, 2026-11-25)
+
+REV-RES3z (on 7209dddb9): SHIP, no P1, three to make, done in 4ae0e7446.
+HouseholdBalance.creditDividend and creditLendingFee skipped cells under
+EMPTY_CELL, which keep their shares since 0894946a7, so Equity booked their
+dividend abroad and Exchange paid them no fee; both now test
+!(households > 0), as 3d2cb76de's coupons do. HousingMarketCheck's
+fractionalDividends pays a .25 cell and one just under half at home, with
+conservation; on the old lines it fails ten parts (run). KeptCheck's
+Show more fixture now asserts the issuer's search grew over its months
+(1,001 to 1,003 on the box). GameVersion's floor history gains 67.
+
+The merge (d0477aa17). RES3 had ported R1g's home pay walk from an early
+batch/R1g and saved the sites' raw abroad claims itself; R1g shipped both on
+main under its own names. Main's are kept (DataSave.setHomePay,
+abroadClaimById, BuildingManager.getAbroadClaimById and its restore) and
+RES3's duplicates dropped; with a saved map both restores leave an unnamed
+site at zero (restoreAbroadOwed), so RES3's late re-application over the
+final rebuild reads main's key unchanged in effect. BuildingsTemplate takes
+main's identical founding-cost members. CreditCrunchCheck keeps RES3's
+one-door cut, built for its catalogue. SaveFileCheck's format-66 fixture
+(0.9.201, before R1g) and its README name main's key.
+
+R1g makes the 1900 city the playtest's and probeCity()'s founding. Measured
+on 4ae0e7446, laptop: HousingMarketCheck's door-census fixture, whose
+subject is today's city (Studio Apartments, a depot), found no arrivals in
+the 1900 city and now founds probeTodayCity(), R1g's own pattern (KeptCheck,
+GroundSkipCheck): green, 17.5 arrivals. WorldMoneysCheck, HouseholdCheck,
+ExchangeCheck, SaveFileCheck and ReadPathCheck green. KeptCheck on the box:
+known red only (main's HT1-H paper row).
+
+★ Found, not yet mended: the 1900 city meets RES3's housing.
+CreditCrunchCheck (its city LongPlaytest.played(), now 1900) has five reds;
+with -Dplaytest.founded=today it has one (the cut fixture, below). Helper
+RES3-noi measured them (driver and output in target/res3-noi):
+- Section 4: the lender reads a 1900 Low-Rise block's rent at -0.088 a
+  month (today +2.077), rent 1.088 less carry 1.176. The class ask is
+  capital x LANDLORD_YIELD 0.058 / 12 with capital the door price, and the
+  door charges only materials beyond the builders' yard (Game.quoteBuild):
+  R1g's dated block, 141-150 materials, sits inside the yard, so the door is
+  141 against a market base near 233. RES3's housingCarry values repairs
+  and property tax on market materials and adds payroll (jobs x wages, not
+  dated) and utilities, so it runs 5.6-5.8% of the door a year in 1900,
+  2.6-2.9% today.
+- Section 3: households with no home climb from 0 at m151 to 126.5 at m235,
+  each month equal to the market's unaffordable count; they are
+  UNEMPLOYED:OFF_EI cells with a zero budget (64 to 188 of 385 households)
+  while 79 of 166 D90 doors stand empty. RES3 shelters a zero budget only
+  with a funded host (free host places); 1900 has too few. Not the lender.
+- In today's city the one red is RES3's own cut fixture: no single door was
+  retired before the room reached MARGIN, so a one-door trim's room is
+  unmeasured (Infinity).
+Village1900Check's sections 2-3 (the stalled village, R1g's switches off)
+lose their premises: rent 0.202 of take-home (main 0.717), pull 1.000,
+jobs and homes support 323 for 306, diploma posts 45 for 41.1 (main 141
+for 34.7); its fixes (5-10) pass, the home village 570 at m60 (main 678).
+Mailed to the orchestrator as a block with the proposed mend for section 4
+(the ask's capital on the carry's own base); section 3 is a design call.
+
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
 240–600 inclusive, with 361 observations. Native findings, audits, purity and
@@ -6107,3 +6166,34 @@ The query is on pushed8bb, fork d657 and combined record
 Only after all local names pass and owned jobs end may it start. The default
 observer is conditional on the complete box query passing, with no unresolved
 new red, then fresh local gates for its external compile and native run.
+
+The orchestrator's calls (2026-11-25) and what they did, on the jobs trace
+(target/res3-jobs: CreditCrunchCheck's played city replayed, seed 13; main
+0.9.206 beside it):
+- Mend 1 (4f690edfc): the ask's capital is the carry's own base, cash plus
+  materials at market plus land (EconomyManager.housingStructureValue and
+  housingLandValue). The lender reads a block's rent at +0.222.
+- Mend 2a (83da694bb, OutsideCheck's fixture 1e56fcb1e): RES3 did raise the
+  unemployment. The typed market bills no rent to a household with no paid
+  door, so main's eviction test (rentDue > 0, "holds a home") never struck;
+  OFF_EI reached 250 at m270 (main 8.9), the rate 27% (main 12.5%). Struck on
+  the unfunded test alone in typed mode: mean rate from m60 15.3% (main
+  19.5%), OFF_EI 11.6, unhoused 41.4.
+- Mend 2b (383c1f74a): lodging, as decided: who funds no half share of a
+  standing home lodges with the housed beyond two to a share, up to the
+  door's people, at no bill (HousingMarket.lodging()); a lodger keeps no
+  prior claim on the doubling's room (retainHosted), which otherwise
+  displaced guests who could pay. The m253 EI cohort's 252 households with
+  no home clear. But the doubling already fills occupied doors past built
+  capacity (H120 6.6 people a door of 6, D90 5.1 of 4), so at capacity 11
+  months still leave 6-29 with no home beside vacant doors.
+- Clearing paid shares before free host places (tried, reverted): one seed
+  moved to a 105.8 peak; the room, not the order, binds.
+- Two persons a room, rooms = bedrooms + 1 (the 1891 census of England and
+  Wales' overcrowding line), traced uncommitted: one month over the watch,
+  m152, 13.4 (EI families with a child priced out of their door the month
+  their budget fell). Real CreditCrunchCheck on it: 3 FAILs (was 6), the
+  lender passes 2 of 6; the cut fixture's House is unknown in 1900 (mended
+  to the city's own single door, uncommitted); the other two read m152.
+  Mailed: the people standard, and tenure (an incumbent not yet evictable
+  keeps its door, main's rule), are the orchestrator's call.
