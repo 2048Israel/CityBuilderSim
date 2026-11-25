@@ -192,3 +192,5 @@ The suite took 1,262 s and exited 3: the 18 reds are all known by `known-reds.tx
 would have committed the merge as 0.9.207 with OA1's block on top and its one Queued row (SW1). After it, FB11 shipped
 (main bb155e205, 0.9.207). OA1 merged it and re-ran `--fast` and AskProceedsCheck (below), and the gate runs the suite
 on the merge itself.
+- On the merge f259a34dd (main bb155e205, conflicts only in the generated maps, main's taken and regenerated):
+  `--fast` green, AskProceedsCheck green.
