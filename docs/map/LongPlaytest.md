@@ -1,4 +1,4 @@
-# LongPlaytest.java - 10,190 lines · 194 methods · 152 constants · harnesses
+# LongPlaytest.java - 10,197 lines · 194 methods · 152 constants · harnesses
 
 `ham/citybuildersim/LongPlaytest.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -46,51 +46,51 @@
 | 1313 | · THE CONSERVATION LAWS, ON EVERY MONTH OF THE RUN (GT1, 2026-11-02) |
 | 1344 | THE HOUSEHOLDS' OWN LINES, OVER THE RUN (HL1, 2026-11-11) |
 | 1662 | · · AND NOTHING MOVED AFTER THE AUDIT STRUCK. |
-| 2335 | THE ADVISOR |
-| 2353 | WHO IS PLAYING (2026-09-17) |
-| 2418 | THE CITY'S ESSENTIAL WORKS (AW1, 2026-11-12) |
-| 2522 | THE RATE, HELD (2026-09-21) - the measurement 7.0 turns green |
-| 2561 | THE FOUNDING, AS A CHOICE (0.7.10) |
-| 2606 | THE WORLD BEYOND THE CITY (WN1; spec-nations 7.3) |
-| 2626 | ON THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 8) |
-| 2715 | THE TRACE, BESIDE THE REPORT (0.7.10) |
-| 3134 | THE CITY'S FUND AND THE BANK'S RESCUE, STATED (0.7.14) |
-| 3175 | WAGES AGAINST THE INDEX (2026-09-21) |
-| 3199 | THE CITY'S OWN PAPER, FOR THE ENSEMBLE (2026-09-21) |
-| 3218 | THE HOLDINGS DIAL, HELD (0.7.1) |
-| 3235 | THE CEILING, SET (0.7.2) |
-| 3250 | THE TARGET, SET (0.7.4) |
-| 3634 | · THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free. |
-| 3689 | · AND EVERYTHING THAT IS A PURCHASE. |
-| 4073 | · AND THE BEST OF THEM WINS. |
-| 4307 | THE PORTS (0.7.86, batch O9; docs/studies/spec-oil.md 5's O9 row) |
-| 4706 | THE GROUND, WATCHED ACROSS A SKIP (LP-G1, 2026-11-23) |
-| 6106 | RUNNING MONTHS |
-| 6422 | SAVE / RELOAD, MID-RUN |
-| 6734 | (untitled) |
-| 6742 | · what the accounts added back (0.7.136, batch FX1) |
-| 6767 | · the city's fund and the bank's rescue (0.7.14) |
-| 6868 | · the fund's cost basis (0.7.39) |
-| 6916 | · an Insane founding (0.7.14) |
-| 7027 | · · founding: a few months at a time, by hand |
-| 7124 | · · then the real rhythm |
-| 7261 | · · the report |
-| 7381 | · · BUSINESS SERVICES - and the point of printing it is the MECHANISM, |
-| 8957 | THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) |
-| 9324 | · 1. a city that prospers |
-| 9365 | · AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16). |
-| 9416 | · AND LAND PAID FOR OUT OF THE VAULT (0.7.6). |
-| 9445 | · 2. a city under stress |
-| 9508 | · AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK. |
-| 9557 | · 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES |
-| 9612 | · OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the |
-| 9688 | · OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9): |
-| 9751 | · THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5; |
-| 9866 | · 12. the services' upkeep is bought of Business Services |
-| 9960 | · 13. the households' books close |
-| 9984 | · 14. a cent that vanishes from a household is seen |
-| 10011 | · 15. a bond's face that no cell holds is named |
-| 10125 | · 16. what comes off the payslips is in transit a press |
+| 2342 | THE ADVISOR |
+| 2360 | WHO IS PLAYING (2026-09-17) |
+| 2425 | THE CITY'S ESSENTIAL WORKS (AW1, 2026-11-12) |
+| 2529 | THE RATE, HELD (2026-09-21) - the measurement 7.0 turns green |
+| 2568 | THE FOUNDING, AS A CHOICE (0.7.10) |
+| 2613 | THE WORLD BEYOND THE CITY (WN1; spec-nations 7.3) |
+| 2633 | ON THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 8) |
+| 2722 | THE TRACE, BESIDE THE REPORT (0.7.10) |
+| 3141 | THE CITY'S FUND AND THE BANK'S RESCUE, STATED (0.7.14) |
+| 3182 | WAGES AGAINST THE INDEX (2026-09-21) |
+| 3206 | THE CITY'S OWN PAPER, FOR THE ENSEMBLE (2026-09-21) |
+| 3225 | THE HOLDINGS DIAL, HELD (0.7.1) |
+| 3242 | THE CEILING, SET (0.7.2) |
+| 3257 | THE TARGET, SET (0.7.4) |
+| 3641 | · THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free. |
+| 3696 | · AND EVERYTHING THAT IS A PURCHASE. |
+| 4080 | · AND THE BEST OF THEM WINS. |
+| 4314 | THE PORTS (0.7.86, batch O9; docs/studies/spec-oil.md 5's O9 row) |
+| 4713 | THE GROUND, WATCHED ACROSS A SKIP (LP-G1, 2026-11-23) |
+| 6113 | RUNNING MONTHS |
+| 6429 | SAVE / RELOAD, MID-RUN |
+| 6741 | (untitled) |
+| 6749 | · what the accounts added back (0.7.136, batch FX1) |
+| 6774 | · the city's fund and the bank's rescue (0.7.14) |
+| 6875 | · the fund's cost basis (0.7.39) |
+| 6923 | · an Insane founding (0.7.14) |
+| 7034 | · · founding: a few months at a time, by hand |
+| 7131 | · · then the real rhythm |
+| 7268 | · · the report |
+| 7388 | · · BUSINESS SERVICES - and the point of printing it is the MECHANISM, |
+| 8964 | THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) |
+| 9331 | · 1. a city that prospers |
+| 9372 | · AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16). |
+| 9423 | · AND LAND PAID FOR OUT OF THE VAULT (0.7.6). |
+| 9452 | · 2. a city under stress |
+| 9515 | · AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK. |
+| 9564 | · 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES |
+| 9619 | · OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the |
+| 9695 | · OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9): |
+| 9758 | · THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5; |
+| 9873 | · 12. the services' upkeep is bought of Business Services |
+| 9967 | · 13. the households' books close |
+| 9991 | · 14. a cent that vanishes from a household is seen |
+| 10018 | · 15. a bond's face that no cell holds is named |
+| 10132 | · 16. what comes off the payslips is in transit a press |
 
 ## Constants
 
@@ -166,88 +166,88 @@
 | 1460 | `LongPlaytest.FOOD_BROKEN` | `"food was not conserved"` |  |
 | 1461 | `LongPlaytest.POWER_BROKEN` | `"the utility's electricity revenue is not what the sectors were charged"` |  |
 | 1462 | `LongPlaytest.WATER_BROKEN` | `"the water utility's revenue is not what the sectors were charged"` |  |
-| 2383 | `LongPlaytest.ATTENTIVE` | `"attentive".equalsIgnoreCase(System.getProperty("playtest.player", "occasiona...` | True when this run is played by somebody paying attention. |
-| 2390 | `LongPlaytest.SCHOOLS` | `Boolean.getBoolean("playtest.schools")` | -Dplaytest.schools=true: the city builds schools, which the advisor never does. |
-| 2393 | `LongPlaytest.CHILDCARE` | `Boolean.getBoolean("playtest.childcare")` | -Dplaytest.childcare=true (0.7.71, batch N2): the city builds childcare by the build advice's own card, which the advisor never does. |
-| 2423 | `LongPlaytest.WORKS_LOW` | `.20` | A service under a fifth served is counted each month, including the founding. |
-| 2425 | `LongPlaytest.worksLow` | `new LinkedHashMap<>()` |  |
-| 2426 | `LongPlaytest.worksMin` | `new LinkedHashMap<>()` |  |
-| 2427 | `LongPlaytest.worksReasons` | `new LinkedHashMap<>()` |  |
-| 2428 | `LongPlaytest.worksPowerOrders` | `new LinkedHashMap<>()` |  |
-| 2430 | `LongPlaytest.worksPowerByDecade` | `new java.util.TreeMap<>()` | ...and by the decade of the calendar they were ordered in (PW3: spec-electricity 6's third measure, against 2.9's table). |
-| 2431 | `LongPlaytest.worksLowLater` | `new LinkedHashMap<>()` |  |
-| 2433 | `LongPlaytest.WORKS_NEAR` | `.90` | Jerus's HW1 bar: near full service, with the length and cause of every dip visible. |
-| 2434 | `LongPlaytest.worksUnder90` | `new LinkedHashMap<>(), worksSpell = new LinkedHashMap<>(), worksLongest = new...` |  |
-| 2436 | `LongPlaytest.worksSpellLead` | `new LinkedHashMap<>(), worksLongestLead = new LinkedHashMap<>()` |  |
-| 2437 | `LongPlaytest.worksSpellReasons` | `new LinkedHashMap<>(), worksLongestReasons = new LinkedHashMap<>()` |  |
-| 2546 | `LongPlaytest.OWNERS` | `System.getProperty("playtest.owners") = = null ? null : "on".equals(System.ge...` | The owner line under -Dplaytest.owners=on\|off (BO1-S), or null for the city's own dial (OwnerHousehold.IN_CITIES); set, the report prints OwnerCheck's probe row at its months (OWNERS m...), so the line is measured on ... |
-| 2550 | `LongPlaytest.POLICY_RATE` | `System.getProperty("playtest.policyRate") = = null ? null : Double.valueOf(Sy...` | The rate the dial is held at under -Dplaytest.policyRate, or null when the advisor sets it. |
-| 2554 | `LongPlaytest.HELD_AFTER` | `24` | The month the held runs start after: the currency's settling months until XR1, kept at 24 so the held runs and the ensemble start where they always did. |
-| 2581 | `LongPlaytest.FOUNDING` | `Founding.Preset.valueOf(System.getProperty("playtest.founding", "standard").t...` | The founding preset under -Dplaytest.founding, standard when unset. |
-| 2591 | `LongPlaytest.FOUNDED_1900` | `"1900".equals(System.getProperty("playtest.founded", "1900").trim())` | Whether the run founds its city the 1900 way (R1d): the default since R1g, today's city under -Dplaytest.founded=today. |
-| 2619 | `LongPlaytest.PATH` | `System.getProperty("playtest.world") = = null ? Nations.DEFAULT_PATH : Nation...` | The path under -Dplaytest.world, Nations.DEFAULT_PATH when unset. |
-| 2623 | `LongPlaytest.PATH_SEED` | `Long.parseLong(System.getProperty("playtest.pathSeed", String.valueOf(Nations...` | The path's seed under -Dplaytest.pathSeed, Nations.DEFAULT_SEED when unset. |
-| 2774 | `LongPlaytest.TRACE` | `System.getProperty("playtest.trace")` | The trace's prefix under -Dplaytest.trace, or null. |
-| 2777 | `LongPlaytest.paperSeen` | `java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>())` | The paper already written to the borrow file, by identity. |
-| 3123 | `LongPlaytest.AUTOPILOT` | `Boolean.getBoolean("playtest.autopilot")` | -Dplaytest.autopilot=true (0.7.0): the rule holds the dial from founding, through the game's own autopilot (DebtManager), and the advisor keeps its hands off it. |
-| 3131 | `LongPlaytest.ROLLOVER` | `Rollover.Mode.valueOf(System.getProperty("playtest.rollover", "SAME_STRUCTURE...` | -Dplaytest.rollover=MANUAL\|SAME_STRUCTURE\|TWELVE_MONTH_BILL (0.7.13): the treasury's rollover for the run (Rollover). |
-| 3158 | `LongPlaytest.RESCUE_AUTO` | `! "BUTTON".equalsIgnoreCase(System.getProperty("playtest.rescue", "AUTO").tri...` | The rescue setting under -Dplaytest.rescue, AUTO when unset. |
-| 3161 | `LongPlaytest.PREFERRED_ACCEPT` | `! "DECLINE".equalsIgnoreCase(System.getProperty("playtest.preferred", "ACCEPT...` | The answer to the bank's offer under -Dplaytest.preferred, ACCEPT when unset. |
-| 3164 | `LongPlaytest.SHORTS` | `! "off".equalsIgnoreCase(System.getProperty("playtest.shorts", "on").trim())` | Whether the world sells short under -Dplaytest.shorts, on when unset; "off" is the counterfactual (EM2): the market without them, to see what they change. |
-| 3167 | `LongPlaytest.FUND_DIAL` | `fundDial(System.getProperty("playtest.fund", "0"))` | The fund's dial under -Dplaytest.fund, 0 when unset. |
-| 3197 | `LongPlaytest.WAGES` | `Boolean.getBoolean("playtest.wages")` | -Dplaytest.wages=true: the wage index, the price index and the lag-implied level at each checkpoint. |
-| 3216 | `LongPlaytest.BORROW_AT_HOME` | `Boolean.getBoolean("playtest.borrowAtHome")` | -Dplaytest.borrowAtHome=true: the advisor's borrowing goes to the city's own term bonds, never abroad. |
-| 3232 | `LongPlaytest.QE_SHARE` | `System.getProperty("playtest.qeShare") = = null ? null : Double.valueOf(Syste...` | The holdings dial under -Dplaytest.qeShare, or null when nobody sets it. |
-| 3247 | `LongPlaytest.ADVANCES_MONTHS` | `System.getProperty("playtest.advancesMonths") = = null ? null : Double.valueO...` | The advances ceiling under -Dplaytest.advancesMonths, in months of revenue, or null for the default. |
-| 3272 | `LongPlaytest.MONEY_GATE` | `System.getProperty("playtest.moneyGate", "").trim()` | THE MONEY GATE, FOR THE COUNTERFACTUAL (0.7.82, batch O5; turned round at 0.7.112): since 0.7.112 the refiners' spread planner tests every order on its whole cost, whoever pays (SpreadPlanner.ON_ITS_WHOLE_COST, Jerus'... |
-| 3275 | `LongPlaytest.REFINERY_TRACE` | `Boolean.getBoolean("playtest.refinery")` | -Dplaytest.refinery=true (0.7.82): the refiners' planner yearly - its outlook and its best candidates under both money gates (refineryLine()). |
-| 3278 | `LongPlaytest.INFLATION_TARGET` | `System.getProperty("playtest.inflationTarget") = = null ? null : Double.value...` | The inflation target under -Dplaytest.inflationTarget, a fraction a year, or null for the default. |
-| 3306 | `LongPlaytest.FLOAT_FROM_MONTH` | `60` | THE D$ OVER THE RUN (XR1, 2026-10-21): how the float behaved in this city, counted a month at a time (countTheFloat()) and printed as one line beside the currency's (docs/studies/spec-exchange-rates.md, 1.1: "volatili... |
-| 3501 | `LongPlaytest.CHILDCARE_SEEN` | `{ 1_000, 2_000, 3_000, 4_000 }` | CHILDCARE ON THE MAP (0.7.139, batch CC1). |
-| 3504 | `LongPlaytest.childcareSeen` | `new java.util.ArrayList<>()` | ...what it said at each, in order. |
-| 3526 | `LongPlaytest.BUDGET_EVERY` | `Integer.getInteger("playtest.budget", 0)` | -Dplaytest.budget=N (0.7.139, batch CC1): every N months the treasury's month, line by line - what came in and what went out, care by kind and childcare's own running (its centres' posts and upkeep) beside it. |
-| 3551 | `LongPlaytest.childcareBuilt` | `new java.util.TreeMap<>()` | ...the buildings, by name. |
-| 3554 | `LongPlaytest.schoolsOrdered` | `new java.util.HashMap<>()` | What the flag has ordered of each school, so one under construction is not ordered twice. |
-| 4211 | `LongPlaytest.OIL_FUEL_IMPORTS_SHARE` | `.01` | The share of a month's GDP the fuel bought abroad has to pass before the test player buys oil (0.7.62): spec-land 3's K entry, 1%. |
-| 4241 | `LongPlaytest.refinedRun` | `new java.util.EnumMap<>(Good.class)` | ...and the refinery's products over the run (0.7.76, batch O1): made, by product, and what of them its tanks could not hold (spec-oil 6's joint-products risk). |
-| 4346 | `LongPlaytest.terminalsOrdered` | `new java.util.TreeMap<>()` | Terminals the test player ordered, by name; the looks that found a berth's worth with no coast; the first terminal's month. |
-| 4355 | `LongPlaytest.PORTS_TRACE` | `Boolean.getBoolean("playtest.ports")` | -Dplaytest.ports=true (0.7.86): the ports yearly - each kind's tonnes across the boundary, its berths, its share at sea and the month's calls (portsLine()). |
-| 4444 | `LongPlaytest.refinersOpened` | `new java.util.TreeMap<>(), refinersSold = new java.util.TreeMap<>()` | THE SPREAD PLANNER'S BUILDINGS OVER THE RUN (0.7.82, batch O5): each of the refiners' buildings opened and sold back, and the crude units and the conversion units standing at most. |
-| 4450 | `LongPlaytest.refinersLast` | `new java.util.HashMap<>()` | Each refiner's count last month, by template id (R1d): the refiners' known templates grow as a 1900 city researches them, so a count kept by the list's index ran past the first month's list (month 157 of the default p... |
-| 4510 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
-| 4517 | `LongPlaytest.GROUND_AHEAD_CASH_SHARE` | `.10` | The share of the treasury's cash one look spends keeping ground ahead (0.7.58, J1d): a tenth, the share the war chest tops the reserves up from and the every-13th-stop purchase is held under. |
-| 4559 | `LongPlaytest.GROUND_FUNDING` | `! "off".equalsIgnoreCase(System.getProperty("playtest.groundFunding", "on").t...` | -Dplaytest.groundFunding=off plays the player as it was until FB11, no ground funded (the run is then the old one to the byte), for a trace to set beside; on when unset. |
-| 4593 | `LongPlaytest.FUNDED_SLACK` | `1e-6` | What a bond may fall short of the gap it was asked for and still fund the offer (FB11): a millionth of the price, the bond auction's rounding, not a part of the cash share. |
-| 4749 | `LongPlaytest.GROUND_WATCH` | `! "off".equalsIgnoreCase(System.getProperty("playtest.groundWatch", "on").tri...` | -Dplaytest.groundWatch=off plays the skip as it was until LP-G1, no look inside it, for a trace to set beside (the run is then the old one to the byte); on when unset. |
-| 4752 | `LongPlaytest.groundLooked` | `java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>())` | The month each city's ground was last looked at (keepGroundAhead()), by the city: weakly held, so a harness's cities are let go. |
-| 4787 | `LongPlaytest.GROUND_TRACE` | `groundTraceWindow(System.getProperty("playtest.groundTrace"))` | -Dplaytest.groundTrace=FROM-TO (LP-G1): the months whose ground looks and landlords are traced, to the error stream; unset, none and the run as it was. |
-| 4926 | `LongPlaytest.mapSidecarMonths` | `new ArrayList<>()` | Actual played-city months whose saved sidecars were accepted directly, including every source journal (DM2). |
-| 4973 | `LongPlaytest.LAYOUT_WINDOW` | `13` | How many months a window of the layout's watch is. |
-| 4975 | `LongPlaytest.LAYOUT_STARTS` | `layoutStarts(TARGET_MONTHS)` | The months each window follows: TARGET_MONTHS / 4, / 2, 3 / 4 and TARGET_MONTHS - LAYOUT_WINDOW, those that fit in the run and clear the window before. |
-| 5008 | `LongPlaytest.layoutSpillByMonth` | `new java.util.TreeMap<>()` | The spill's moves by the month they were found in (the month pair ending there): how many pairs had any, and when. |
-| 5012 | `LongPlaytest.layoutOldBoxes` | `new java.util.HashMap<>()` | ...each district's industry boxes, by its key... |
-| 5014 | `LongPlaytest.layoutOldDims` | `new java.util.HashMap<>()` | ...and each of those boxes' size (LayoutSnap.dims), in the same order. |
-| 5016 | `LongPlaytest.layoutOldCounts` | `new java.util.HashMap<>()` | ...and each district's count of boxes by type. |
-| 5018 | `LongPlaytest.layoutOldModel` | `new java.util.HashMap<>()` | ...and each district's model count of every type (District.count()) then and the lowest it has been in any month since: a finding's detail (an old works that left in a dip of its type's count did not move), not the test. |
-| 5027 | `LongPlaytest.layoutOldSpill` | `new java.util.HashSet<>()` | The districts a spill reached when the oldest works were kept (a carry in), and the old works in a district a spill reached then or at the end, counted apart: a district joining the map's order ahead of them hands the... |
-| 5040 | `LongPlaytest.layoutOldLive` | `new java.util.HashMap<>(), layoutOldSent = new java.util.HashMap<>()` | THE WORKS SENT ON (RN1-H-M, 2026-11-20). |
-| 5364 | `LongPlaytest.layoutBandsAt` | `new ArrayList<>()` | How many boxes each window's first month holds in the homes' band, in industry and in the outer kinds, one phrase a window: what the oldest works are read against. |
-| 6021 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
-| 6027 | `LongPlaytest.ABROAD_SHARE` | `.8` | CC1-S: the share of the city's own quote for a sale that the dollar quote for it must come under for the build to borrow abroad. |
-| 6030 | `LongPlaytest.QUOTED_BORROWING` | `Boolean.parseBoolean(System.getProperty("playtest.quotedBorrowing", "true"))` | The build compares quotes for the sale by default (QB1); -Dplaytest.quotedBorrowing=false keeps the old rates-before-sale counterfactual. |
-| 6086 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
-| 6745 | `LongPlaytest.ADDED_BACK_TERMS` | `{ "food", "materials", "luxuries", "held goods" }` | The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. |
-| 6747 | `LongPlaytest.addedBackMonths` | `new int [ ADDED_BACK_TERMS.length ], addedBackFirst = { - 1, - 1, - 1, - 1 },...` | Months each term added a write-off back, the first, and the largest with its month. |
-| 6749 | `LongPlaytest.addedBackWorst` | `new double [ ADDED_BACK_TERMS.length ]` |  |
-| 6751 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
-| 6804 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
-| 6812 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
-| 6963 | `LongPlaytest.COPPER_WORKS` | `{ "Copper Smelter", "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mi...` | The copper works the summary counts at the end (CU2), by their names in buildings.json; CopperRefiningCheck's played count reads the line. |
-| 8820 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
-| 8969 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } ...` |  |
-| 8975 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
-| 9094 | `LongPlaytest.CLEAN_UP_WALKS` | `3` | The most times cleanUp() walks a scratch tree to have it gone: a file renamed or deleted under one walk is found, or not, by the next (RN1-H-M). |
-| 9154 | `LongPlaytest.MoneyFixtures.OWN_LINES` | `MoneyAudit.OWN_LINES` | The households' own lines (HL1), by the label MoneyAudit.households() notes them under. |
+| 2390 | `LongPlaytest.ATTENTIVE` | `"attentive".equalsIgnoreCase(System.getProperty("playtest.player", "occasiona...` | True when this run is played by somebody paying attention. |
+| 2397 | `LongPlaytest.SCHOOLS` | `Boolean.getBoolean("playtest.schools")` | -Dplaytest.schools=true: the city builds schools, which the advisor never does. |
+| 2400 | `LongPlaytest.CHILDCARE` | `Boolean.getBoolean("playtest.childcare")` | -Dplaytest.childcare=true (0.7.71, batch N2): the city builds childcare by the build advice's own card, which the advisor never does. |
+| 2430 | `LongPlaytest.WORKS_LOW` | `.20` | A service under a fifth served is counted each month, including the founding. |
+| 2432 | `LongPlaytest.worksLow` | `new LinkedHashMap<>()` |  |
+| 2433 | `LongPlaytest.worksMin` | `new LinkedHashMap<>()` |  |
+| 2434 | `LongPlaytest.worksReasons` | `new LinkedHashMap<>()` |  |
+| 2435 | `LongPlaytest.worksPowerOrders` | `new LinkedHashMap<>()` |  |
+| 2437 | `LongPlaytest.worksPowerByDecade` | `new java.util.TreeMap<>()` | ...and by the decade of the calendar they were ordered in (PW3: spec-electricity 6's third measure, against 2.9's table). |
+| 2438 | `LongPlaytest.worksLowLater` | `new LinkedHashMap<>()` |  |
+| 2440 | `LongPlaytest.WORKS_NEAR` | `.90` | Jerus's HW1 bar: near full service, with the length and cause of every dip visible. |
+| 2441 | `LongPlaytest.worksUnder90` | `new LinkedHashMap<>(), worksSpell = new LinkedHashMap<>(), worksLongest = new...` |  |
+| 2443 | `LongPlaytest.worksSpellLead` | `new LinkedHashMap<>(), worksLongestLead = new LinkedHashMap<>()` |  |
+| 2444 | `LongPlaytest.worksSpellReasons` | `new LinkedHashMap<>(), worksLongestReasons = new LinkedHashMap<>()` |  |
+| 2553 | `LongPlaytest.OWNERS` | `System.getProperty("playtest.owners") = = null ? null : "on".equals(System.ge...` | The owner line under -Dplaytest.owners=on\|off (BO1-S), or null for the city's own dial (OwnerHousehold.IN_CITIES); set, the report prints OwnerCheck's probe row at its months (OWNERS m...), so the line is measured on ... |
+| 2557 | `LongPlaytest.POLICY_RATE` | `System.getProperty("playtest.policyRate") = = null ? null : Double.valueOf(Sy...` | The rate the dial is held at under -Dplaytest.policyRate, or null when the advisor sets it. |
+| 2561 | `LongPlaytest.HELD_AFTER` | `24` | The month the held runs start after: the currency's settling months until XR1, kept at 24 so the held runs and the ensemble start where they always did. |
+| 2588 | `LongPlaytest.FOUNDING` | `Founding.Preset.valueOf(System.getProperty("playtest.founding", "standard").t...` | The founding preset under -Dplaytest.founding, standard when unset. |
+| 2598 | `LongPlaytest.FOUNDED_1900` | `"1900".equals(System.getProperty("playtest.founded", "1900").trim())` | Whether the run founds its city the 1900 way (R1d): the default since R1g, today's city under -Dplaytest.founded=today. |
+| 2626 | `LongPlaytest.PATH` | `System.getProperty("playtest.world") = = null ? Nations.DEFAULT_PATH : Nation...` | The path under -Dplaytest.world, Nations.DEFAULT_PATH when unset. |
+| 2630 | `LongPlaytest.PATH_SEED` | `Long.parseLong(System.getProperty("playtest.pathSeed", String.valueOf(Nations...` | The path's seed under -Dplaytest.pathSeed, Nations.DEFAULT_SEED when unset. |
+| 2781 | `LongPlaytest.TRACE` | `System.getProperty("playtest.trace")` | The trace's prefix under -Dplaytest.trace, or null. |
+| 2784 | `LongPlaytest.paperSeen` | `java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>())` | The paper already written to the borrow file, by identity. |
+| 3130 | `LongPlaytest.AUTOPILOT` | `Boolean.getBoolean("playtest.autopilot")` | -Dplaytest.autopilot=true (0.7.0): the rule holds the dial from founding, through the game's own autopilot (DebtManager), and the advisor keeps its hands off it. |
+| 3138 | `LongPlaytest.ROLLOVER` | `Rollover.Mode.valueOf(System.getProperty("playtest.rollover", "SAME_STRUCTURE...` | -Dplaytest.rollover=MANUAL\|SAME_STRUCTURE\|TWELVE_MONTH_BILL (0.7.13): the treasury's rollover for the run (Rollover). |
+| 3165 | `LongPlaytest.RESCUE_AUTO` | `! "BUTTON".equalsIgnoreCase(System.getProperty("playtest.rescue", "AUTO").tri...` | The rescue setting under -Dplaytest.rescue, AUTO when unset. |
+| 3168 | `LongPlaytest.PREFERRED_ACCEPT` | `! "DECLINE".equalsIgnoreCase(System.getProperty("playtest.preferred", "ACCEPT...` | The answer to the bank's offer under -Dplaytest.preferred, ACCEPT when unset. |
+| 3171 | `LongPlaytest.SHORTS` | `! "off".equalsIgnoreCase(System.getProperty("playtest.shorts", "on").trim())` | Whether the world sells short under -Dplaytest.shorts, on when unset; "off" is the counterfactual (EM2): the market without them, to see what they change. |
+| 3174 | `LongPlaytest.FUND_DIAL` | `fundDial(System.getProperty("playtest.fund", "0"))` | The fund's dial under -Dplaytest.fund, 0 when unset. |
+| 3204 | `LongPlaytest.WAGES` | `Boolean.getBoolean("playtest.wages")` | -Dplaytest.wages=true: the wage index, the price index and the lag-implied level at each checkpoint. |
+| 3223 | `LongPlaytest.BORROW_AT_HOME` | `Boolean.getBoolean("playtest.borrowAtHome")` | -Dplaytest.borrowAtHome=true: the advisor's borrowing goes to the city's own term bonds, never abroad. |
+| 3239 | `LongPlaytest.QE_SHARE` | `System.getProperty("playtest.qeShare") = = null ? null : Double.valueOf(Syste...` | The holdings dial under -Dplaytest.qeShare, or null when nobody sets it. |
+| 3254 | `LongPlaytest.ADVANCES_MONTHS` | `System.getProperty("playtest.advancesMonths") = = null ? null : Double.valueO...` | The advances ceiling under -Dplaytest.advancesMonths, in months of revenue, or null for the default. |
+| 3279 | `LongPlaytest.MONEY_GATE` | `System.getProperty("playtest.moneyGate", "").trim()` | THE MONEY GATE, FOR THE COUNTERFACTUAL (0.7.82, batch O5; turned round at 0.7.112): since 0.7.112 the refiners' spread planner tests every order on its whole cost, whoever pays (SpreadPlanner.ON_ITS_WHOLE_COST, Jerus'... |
+| 3282 | `LongPlaytest.REFINERY_TRACE` | `Boolean.getBoolean("playtest.refinery")` | -Dplaytest.refinery=true (0.7.82): the refiners' planner yearly - its outlook and its best candidates under both money gates (refineryLine()). |
+| 3285 | `LongPlaytest.INFLATION_TARGET` | `System.getProperty("playtest.inflationTarget") = = null ? null : Double.value...` | The inflation target under -Dplaytest.inflationTarget, a fraction a year, or null for the default. |
+| 3313 | `LongPlaytest.FLOAT_FROM_MONTH` | `60` | THE D$ OVER THE RUN (XR1, 2026-10-21): how the float behaved in this city, counted a month at a time (countTheFloat()) and printed as one line beside the currency's (docs/studies/spec-exchange-rates.md, 1.1: "volatili... |
+| 3508 | `LongPlaytest.CHILDCARE_SEEN` | `{ 1_000, 2_000, 3_000, 4_000 }` | CHILDCARE ON THE MAP (0.7.139, batch CC1). |
+| 3511 | `LongPlaytest.childcareSeen` | `new java.util.ArrayList<>()` | ...what it said at each, in order. |
+| 3533 | `LongPlaytest.BUDGET_EVERY` | `Integer.getInteger("playtest.budget", 0)` | -Dplaytest.budget=N (0.7.139, batch CC1): every N months the treasury's month, line by line - what came in and what went out, care by kind and childcare's own running (its centres' posts and upkeep) beside it. |
+| 3558 | `LongPlaytest.childcareBuilt` | `new java.util.TreeMap<>()` | ...the buildings, by name. |
+| 3561 | `LongPlaytest.schoolsOrdered` | `new java.util.HashMap<>()` | What the flag has ordered of each school, so one under construction is not ordered twice. |
+| 4218 | `LongPlaytest.OIL_FUEL_IMPORTS_SHARE` | `.01` | The share of a month's GDP the fuel bought abroad has to pass before the test player buys oil (0.7.62): spec-land 3's K entry, 1%. |
+| 4248 | `LongPlaytest.refinedRun` | `new java.util.EnumMap<>(Good.class)` | ...and the refinery's products over the run (0.7.76, batch O1): made, by product, and what of them its tanks could not hold (spec-oil 6's joint-products risk). |
+| 4353 | `LongPlaytest.terminalsOrdered` | `new java.util.TreeMap<>()` | Terminals the test player ordered, by name; the looks that found a berth's worth with no coast; the first terminal's month. |
+| 4362 | `LongPlaytest.PORTS_TRACE` | `Boolean.getBoolean("playtest.ports")` | -Dplaytest.ports=true (0.7.86): the ports yearly - each kind's tonnes across the boundary, its berths, its share at sea and the month's calls (portsLine()). |
+| 4451 | `LongPlaytest.refinersOpened` | `new java.util.TreeMap<>(), refinersSold = new java.util.TreeMap<>()` | THE SPREAD PLANNER'S BUILDINGS OVER THE RUN (0.7.82, batch O5): each of the refiners' buildings opened and sold back, and the crude units and the conversion units standing at most. |
+| 4457 | `LongPlaytest.refinersLast` | `new java.util.HashMap<>()` | Each refiner's count last month, by template id (R1d): the refiners' known templates grow as a 1900 city researches them, so a count kept by the list's index ran past the first month's list (month 157 of the default p... |
+| 4517 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
+| 4524 | `LongPlaytest.GROUND_AHEAD_CASH_SHARE` | `.10` | The share of the treasury's cash one look spends keeping ground ahead (0.7.58, J1d): a tenth, the share the war chest tops the reserves up from and the every-13th-stop purchase is held under. |
+| 4566 | `LongPlaytest.GROUND_FUNDING` | `! "off".equalsIgnoreCase(System.getProperty("playtest.groundFunding", "on").t...` | -Dplaytest.groundFunding=off plays the player as it was until FB11, no ground funded (the run is then the old one to the byte), for a trace to set beside; on when unset. |
+| 4600 | `LongPlaytest.FUNDED_SLACK` | `1e-6` | What a bond may fall short of the gap it was asked for and still fund the offer (FB11): a millionth of the price, the bond auction's rounding, not a part of the cash share. |
+| 4756 | `LongPlaytest.GROUND_WATCH` | `! "off".equalsIgnoreCase(System.getProperty("playtest.groundWatch", "on").tri...` | -Dplaytest.groundWatch=off plays the skip as it was until LP-G1, no look inside it, for a trace to set beside (the run is then the old one to the byte); on when unset. |
+| 4759 | `LongPlaytest.groundLooked` | `java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>())` | The month each city's ground was last looked at (keepGroundAhead()), by the city: weakly held, so a harness's cities are let go. |
+| 4794 | `LongPlaytest.GROUND_TRACE` | `groundTraceWindow(System.getProperty("playtest.groundTrace"))` | -Dplaytest.groundTrace=FROM-TO (LP-G1): the months whose ground looks and landlords are traced, to the error stream; unset, none and the run as it was. |
+| 4933 | `LongPlaytest.mapSidecarMonths` | `new ArrayList<>()` | Actual played-city months whose saved sidecars were accepted directly, including every source journal (DM2). |
+| 4980 | `LongPlaytest.LAYOUT_WINDOW` | `13` | How many months a window of the layout's watch is. |
+| 4982 | `LongPlaytest.LAYOUT_STARTS` | `layoutStarts(TARGET_MONTHS)` | The months each window follows: TARGET_MONTHS / 4, / 2, 3 / 4 and TARGET_MONTHS - LAYOUT_WINDOW, those that fit in the run and clear the window before. |
+| 5015 | `LongPlaytest.layoutSpillByMonth` | `new java.util.TreeMap<>()` | The spill's moves by the month they were found in (the month pair ending there): how many pairs had any, and when. |
+| 5019 | `LongPlaytest.layoutOldBoxes` | `new java.util.HashMap<>()` | ...each district's industry boxes, by its key... |
+| 5021 | `LongPlaytest.layoutOldDims` | `new java.util.HashMap<>()` | ...and each of those boxes' size (LayoutSnap.dims), in the same order. |
+| 5023 | `LongPlaytest.layoutOldCounts` | `new java.util.HashMap<>()` | ...and each district's count of boxes by type. |
+| 5025 | `LongPlaytest.layoutOldModel` | `new java.util.HashMap<>()` | ...and each district's model count of every type (District.count()) then and the lowest it has been in any month since: a finding's detail (an old works that left in a dip of its type's count did not move), not the test. |
+| 5034 | `LongPlaytest.layoutOldSpill` | `new java.util.HashSet<>()` | The districts a spill reached when the oldest works were kept (a carry in), and the old works in a district a spill reached then or at the end, counted apart: a district joining the map's order ahead of them hands the... |
+| 5047 | `LongPlaytest.layoutOldLive` | `new java.util.HashMap<>(), layoutOldSent = new java.util.HashMap<>()` | THE WORKS SENT ON (RN1-H-M, 2026-11-20). |
+| 5371 | `LongPlaytest.layoutBandsAt` | `new ArrayList<>()` | How many boxes each window's first month holds in the homes' band, in industry and in the outer kinds, one phrase a window: what the oldest works are read against. |
+| 6028 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
+| 6034 | `LongPlaytest.ABROAD_SHARE` | `.8` | CC1-S: the share of the city's own quote for a sale that the dollar quote for it must come under for the build to borrow abroad. |
+| 6037 | `LongPlaytest.QUOTED_BORROWING` | `Boolean.parseBoolean(System.getProperty("playtest.quotedBorrowing", "true"))` | The build compares quotes for the sale by default (QB1); -Dplaytest.quotedBorrowing=false keeps the old rates-before-sale counterfactual. |
+| 6093 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
+| 6752 | `LongPlaytest.ADDED_BACK_TERMS` | `{ "food", "materials", "luxuries", "held goods" }` | The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. |
+| 6754 | `LongPlaytest.addedBackMonths` | `new int [ ADDED_BACK_TERMS.length ], addedBackFirst = { - 1, - 1, - 1, - 1 },...` | Months each term added a write-off back, the first, and the largest with its month. |
+| 6756 | `LongPlaytest.addedBackWorst` | `new double [ ADDED_BACK_TERMS.length ]` |  |
+| 6758 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
+| 6811 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
+| 6819 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
+| 6970 | `LongPlaytest.COPPER_WORKS` | `{ "Copper Smelter", "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mi...` | The copper works the summary counts at the end (CU2), by their names in buildings.json; CopperRefiningCheck's played count reads the line. |
+| 8827 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
+| 8976 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } ...` |  |
+| 8982 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
+| 9101 | `LongPlaytest.CLEAN_UP_WALKS` | `3` | The most times cleanUp() walks a scratch tree to have it gone: a file renamed or deleted under one walk is found, or not, by the next (RN1-H-M). |
+| 9161 | `LongPlaytest.MoneyFixtures.OWN_LINES` | `MoneyAudit.OWN_LINES` | The households' own lines (HL1), by the label MoneyAudit.households() notes them under. |
 
 ## Fields (state)
 
@@ -385,143 +385,143 @@
 | 1402 | `static MoneyAudit.Households ownLast` | The audit last summed, so a month audit() reads twice is summed once. |
 | 1532 | `static int landLedgerMonths, landLedgerDiffMonths, landLedgerWorstMonth` | AW2: actual played months whose land ledger differs from the catalogue footprint, counted without changing play. |
 | 1533 | `static double landLedgerWorstSqFt` |  |
-| 2407 | `static boolean AUTOBUILD` | -Dplaytest.autobuild=true (0.7.73, batch N4): the player turns automatic building on at the founding (AutoBuilder, at its defaults) and leaves it the city's works - the advisor's power, water, road and transit, health... |
-| 2424 | `static int worksMonths, worksOffMonths, worksDebtIdleMonths, worksLowMonths` |  |
-| 2520 | `static boolean educationSet` | Whether any education dial or the schools flag was set, so the summary says what they did. |
-| 2640 | `static String EARTH` | The spot under --earth or -Dplaytest.earth: a place's name or "lat,lon"; null for the default world. |
-| 2663 | `static String earthPlace` | The place --earth named, for the report; null for a spot given as figures. |
-| 2775 | `static java.io.PrintWriter traceMonths, traceBorrow, traceHouse, tracePop, traceBank, traceBonds, traceBuil...` |  |
-| 3288 | `static int monthsDefended, peakDefenceMonth` | THE DEFENCE OVER THE RUN (0.7.2): the dollars the central bank sold defending the currency, in total and in its biggest month, and how many months it sold anything. |
-| 3289 | `static double defendedUsdRun, peakDefenceUsd` |  |
-| 3307 | `static int floatMonths, floatRun, floatRunLongest, floatSign, floatFarFromParity, floatDealt, floatMarketOver2` |  |
-| 3308 | `static double floatSum, floatSum2, floatBiggest` |  |
-| 3310 | `static double floatDealtBefore` | What the treasury had dealt since the last reprice when the month began: run() reads it before the month runs. |
-| 3366 | `static int monthsLandBought` | THE LAND OFFICE OVER THE RUN (0.7.6): months the city bought land abroad and what it cost in local money at the day's rates - against the dollars ForeignAccounts counts, which is what the same land would have cost at ... |
-| 3367 | `static double landLocalRun` |  |
-| 3369 | `static int vaultLowMonth, halfGoneMonth, emptyMonth` | The vault's life: its lowest reading and when, and the first month the founders' dollars were half gone and all but gone - the question the defence's dials are asked. |
-| 3370 | `static double vaultLow` |  |
-| 3373 | `static double lagImplied` | The lag-implied wage index, walked month by month beside the game's own; NaN until the first month. |
-| 3489 | `static int autoBuildGroundBought` | Offers bought for automatic building's ground (the autobuild flag). |
-| 3549 | `static int childcareOrders` | What the childcare flag has ordered: orders, and buildings by name. |
-| 4194 | `static int ironFieldsBought, ironFieldsOnBond, firstIronNeedMonth, firstIronMonth, ironCouldNotPay, ironNon...` | Over the run (0.7.64): iron offers bought, how many on the funding page's bond, the first look that needed iron, the first purchase's month and words, and the looks that needed iron and could not pay for the cheapest ... |
-| 4195 | `static String firstIron` |  |
-| 4198 | `static int ironDoesNotPay` | Over the run (0.7.67, M3b): the looks that needed iron whose cheapest field would not pay itself back (fieldEarnings() under fieldPayment()). |
-| 4214 | `static int oilBought` | Offers with oil the test player bought over the run (0.7.62). |
-| 4233 | `static double fuelBillRun, fuelAbroadRun` | Over the run (0.7.62): the drivers' and the railway's fuel, what of it was bought abroad, the first well and refinery, and the most refineries standing. |
-| 4234 | `static int firstWellMonth, firstRefineryMonth` |  |
-| 4234 | `static long mostRefineries` |  |
-| 4237 | `static double crudeLiftedRun` | ...and the wells' decline over the run (0.7.84, batch O7; spec-oil 2.6): the crude they lifted and the most standing. |
-| 4238 | `static long mostWells` |  |
-| 4242 | `static double refinedWrittenOff` |  |
-| 4253 | `static double vanDieselRun, vanDieselLitresRun, payrollRun, pumpBillRun, pumpWholesaleRun, pumpLitresRun, q...` | THE PHASE-1 BUYERS OVER THE RUN (0.7.83, batch O6; spec-oil 2.5 and 6's measure-first 4 and 5): the vans' diesel against the businesses' payrolls; the drivers' petrol at the pump against what it cost at wholesale, and... |
-| 4254 | `static double lubricantsBoughtRun, lubricantsImportedRun, crudeRefinedLitresRun` |  |
-| 4255 | `static int mostStations, firstStationMonth` |  |
-| 4347 | `static int portsNoCoast, firstTerminalMonth` |  |
-| 4350 | `static long callsRun` | The boats over the run: calls, the most in a month and when; the tonnes by sea and across the boundary; months crude was held back for room. |
-| 4351 | `static int mostCalls, mostCallsMonth, lastCalls, heldBackMonths` |  |
-| 4352 | `static double seaTonnesRun, boundaryTonnesRun` |  |
-| 4451 | `static long mostCrudeUnits, mostConversionUnits` |  |
-| 4451 | `static int firstRefinerMonth` |  |
-| 4520 | `static int groundAheadBought, groundAheadShort` | Over the run: offers bought to keep ground ahead, their dry square feet and US dollars (thousands), and the looks the cash share stopped short. |
-| 4521 | `static double groundAheadSqFt, groundAheadUsd` |  |
-| 4524 | `static int groundAheadFunded, roomMovesFunded` | Over the run (FB11): the offers of those bought on the funding page's bond (fundGround()), and the local money the bonds raised. |
-| 4525 | `static double groundAheadBorrowed` |  |
-| 4528 | `static int groundBondsUnspent` | ...and the bonds fundGround() sold that bought no ground (an auction short of the gap, or the office refusing the offer), with what they raised: the money stays in the treasury, as buyWhole() leaves it (REV-FB11). |
-| 4529 | `static double groundBondsUnspentRaised` |  |
-| 4640 | `static int roomMovesBought` | Over the run (0.7.67, M3b): offers the room-to-grow move bought. |
-| 4756 | `static int groundLooksInSkips, longestGroundGap` | Over the run (LP-G1): the ground looks made inside a skip, and the most months a skip let the ground go without one. |
-| 4811 | `static int islandBridges, islandPorts, islandLinksHeld` | Over the run (AL1): the bridges and the sea terminals the test player ordered to link an island, and the links it could not order (none can be made, or an order was refused). |
-| 4914 | `static int freshBought, coastsBought, waterLandOffered` | Over the run: offers bought for their lakes and river past the fresh water limit, offers bought for a coast, and the moves that offered either (0.7.59). |
-| 4924 | `static int mapMonths, mapMismatches, mapReloads, mapReloadsSame` | THE CITY MAP, WATCHED (0.7.60, batch J3): the run asks for its city's map at the founding, so every month keeps it up (Game.reconcileMap()) and every save writes its sidecar - nothing in the model reads it, so the tra... |
-| 4971 | `static boolean layoutOn` | ===== THE LAYOUT, WATCHED (batch CL3, 2026-10-21) ===== |
-| 4991 | `long[] boxes` |  |
-| 4992 | `int[] dims` |  |
-| 4993 | `int[] byType` |  |
-| 4994 | `int[] carryIn` |  |
-| 4995 | `int[] carryLog` |  |
-| 4996 | `int[] counted` |  |
-| 5000 | `static Map<Long, LayoutSnap> layoutPrev` | The month before's snapshot of every district, by layoutKey(), and its month (the window's first month has none). |
-| 5001 | `static int layoutPrevMonth` |  |
-| 5003 | `static int layoutMonths, layoutPairs` | Over the run: months planned, month pairs compared, boxes compared, boxes that moved outside the spill's districts and inside them, and the nanoseconds the windows took. |
-| 5004 | `static long layoutBoxes, layoutMoved, layoutMovedInSpill, layoutNanos` |  |
-| 5006 | `static long layoutMovedOffRun` | ...and the boxes that left a district in a month pair because a run laid in that month lies across them or beside them (MF1): moved off it, counted apart and not flagged. |
-| 5010 | `static int layoutOldMonth` | The first window's first month: its month, each district's industry boxes (sorted keys) and its count of boxes by type. |
-| 5020 | `static double[] layoutRing` | The ring at the last window's last month and its month: {homes km, homes boxes, industry km, industry boxes, outer km, outer boxes}; null until then. |
-| 5021 | `static int layoutRingMonth` |  |
-| 5023 | `static long layoutOldN, layoutOldStand, layoutOldHeldN, layoutOldHeldStand` | The old works at the last window's last month: how many there were, how many stand where they stood, and the same for the types whose count held. |
-| 5025 | `static long layoutOldMovedOff` | ...and how many of them are not where they stood because a run laid after the oldest works were kept lies across them or beside them: moved off it (MF1), counted apart and not flagged. |
-| 5028 | `static long layoutOldSpillN, layoutOldSpillStand` |  |
-| 5042 | `static long layoutOldSentOn` | ...and how many of the old works the counts kept were instances sent on, over the districts the watch judged (not those a spill reached): the term at work, counted. |
-| 5044 | `static boolean layoutCountsSentOn` | Whether the watch counts the works sent on (true in play): a harness sets it false to judge a city by the law as it stood before RN1-H-M. |
-| 5779 | `static int pavings` | Over the run (0.7.70): the pavings ordered and the gravel roads in them. |
-| 5779 | `static long roadsPaved` |  |
-| 6039 | `static int bondsAtHome, bondsAbroad` | CC1-S: the build's bonds over the run, taken at home and abroad, and the dearest rate (marketRate) it took abroad. |
-| 6040 | `static double dearestAbroad` |  |
-| 6116 | `static int refusedSkips` |  |
-| 6131 | `static int monthsOwing, monthsOwingAtHome, worstStrainMonth, peakCityDebtMonth` | THE CITY'S PAPER AND THE BANK THAT HOLDS IT, over the run (2026-09-21). |
-| 6132 | `static int strainMonths, monthsWithoutCapacity` |  |
-| 6133 | `static double strainSum, worstStrain, peakCityDebt, paperSettledRun` |  |
-| 6141 | `static int monthsAtCeiling, monthsOnAdvances, peakAdvancesMonth, peakArrearsMonth, firstAdvanceMonth` | THE CENTRAL BANK OVER THE RUN (0.7.0): the most the treasury owed it, how long the ceiling bound, and the most the arrears rule left unpaid. |
-| 6142 | `static double peakAdvances, peakArrears` |  |
-| 6151 | `static int monthsHouseholdsBought, monthsDeskBought, monthsCentralBankTraded` | WHO HELD THE CITY'S PAPER OVER THE RUN (0.7.1): what the households paid at the settles and in how many months, what the bank's desk bought back from them and in how many, and what the central bank bought and sold - c... |
-| 6158 | `static int monthsStudioLiftWaived, monthsFamilyLiftWaived` | THE LANDLORDS' GLUT (RN1, 2026-11-09): the months a leg of the rent was under GLUT_PRESSURE while a carry lift was waiting, so its rent was left at its own cost times its scarcity. |
-| 6159 | `static double householdsBoughtRun, deskBoughtRun, couponsToHouseholdsRun` |  |
-| 6161 | `static int monthsFirmsBought` | ...and the businesses' (CD2, slice 4). |
-| 6162 | `static double couponsToFirmsRun` |  |
-| 6164 | `static int monthsWorldBought, monthsWorldSold` | ...and the world's (CD2, slice 5): the months it bought, the months its paper went home through the desk, and what it was paid. |
-| 6165 | `static double couponsToWorldRun, principalToWorldRun, peakWorldPaper` |  |
-| 6174 | `static int peakCompressionMonth` | The most the central bank's holdings took off the long end, and when: the twenty-year paper a borrowing seed sells matures inside the run, so by month 4,002 the central bank usually holds none of it and the endpoint's... |
-| 6175 | `static double peakCompression, longRateAtPeak, heldShareAtPeak` |  |
-| 6216 | `static int monthsCurveInverted, monthsCurveSteep` | THE CURVE, COUNTED (CD1, 2026-10-20). |
-| 6217 | `static double widestExpectedMove` |  |
-| 6267 | `private static boolean pw5DistrictReported` | Harness-only first-district census, enabled with -Dcbs.pw5.firstDistrict=true. |
-| 6270 | `static java.util.function.BiConsumer<Game, Boolean> passiveObserver` | Optional harness-only passive reader; default null, no model seam. |
-| 6736 | `static double lifetimeWriteOffs` |  |
-| 6738 | `static double lowestPaidIn` | The bank's paid-in capital at its lowest, the month, and the most its two parts were ever off its equity (0.7.13, round 2). |
-| 6739 | `static int lowestPaidInMonth` |  |
-| 6740 | `static double lifetimeHouseholdWriteOffs` |  |
-| 6770 | `static int buttonPresses` | Presses of the Bank tab's button that resolved the bank (-Dplaytest.rescue=BUTTON). |
-| 6772 | `static int offersFunded` | Offers accepted after borrowing for them on the funding page's bond, and what that bond raised. |
-| 6773 | `static double offerFundingRaised` |  |
-| 6799 | `int month` |  |
-| 6800 | `double at` |  |
-| 6801 | `int under50` |  |
-| 6802 | `double lowest` |  |
-| 6805 | `static int resolutionsSeen` |  |
-| 6807 | `static double fundPeak, fundCashShareSum` | The fund's value, its cash and the most of any company its market book held, over the run. |
-| 6808 | `static int fundMonths` |  |
-| 6810 | `static double warrantSharesSeen, warrantValueTaken` | The warrants' shares taken at expiry, at the price the month they were taken (share counts move with the exchange's splits, so the count alone does not add up across a run). |
-| 6811 | `static int warrantExercises` |  |
-| 6814 | `static int overCapCompanyMonths, companyMonthsWithShares, idleTransferMonths` | The fund against its cap (RB1): company-months its market book held over OWNERSHIP_LIMIT, of company-months with shares; the months it paid anything of its transfer from idle cash, and that money. |
-| 6815 | `static double idleTransferPaid` |  |
-| 6879 | `static double[] ledgerBefore` | THE FUND'S LEDGER, MONTH BY MONTH (FundLedger; the project's spec-fund-0739.md, 3.7, rule 3 - count a mechanic in a real run): the identity FundLedgerCheck holds on a fixture - realized + the change in unrealized = th... |
-| 6880 | `static double ledgerWorst` |  |
-| 6881 | `static int ledgerRuleRows, ledgerHandRows, ledgerMatured, ledgerWrittenDown, ledgerRescues` |  |
-| 6919 | `static DebtQuote dayZeroBond, dayZeroNote` | What an Insane city was quoted on day 0 for its village, and what it borrowed in its first year. |
-| 6920 | `static double villageInvoice, firstYearBorrowed` |  |
-| 6921 | `static int insaneBorrowings` |  |
-| 6966 | `static java.util.function.Consumer<Game> primaryCreated, monthObserved` | Optional primary-state observers (QR1): founding baseline, then audited months; null in the normal harness. |
-| 8977 | `private static int probeStop` |  |
-| 9129 | `static int fails` |  |
-| 9150 | `static double worstDrift` | The worst post-audit drift any month of the last play() saw. |
-| 9151 | `static String worstDriftPool` |  |
-| 9158 | `int months` |  |
-| 9160 | `double seized` | What the bankrupt's savings repaid the bank with over the run (HouseholdBalance.getSeizedAtBankruptcy()). |
-| 9161 | `MoneyAudit.Households worst` |  |
-| 9162 | `final java.util.Map<String, Integer> fired` |  |
-| 9164 | `static HouseholdsRun lastRun` |  |
-| 9184 | `private final Game city` |  |
-| 9185 | `private double previous` |  |
-| 9186 | `int months` |  |
-| 9187 | `double worstResidual` |  |
-| 9189 | `double movedMostBy` | The press the amount in transit moved most in: by how much (signed) and the audit struck that month. |
-| 9190 | `MoneyAudit.Households movedMostIn` |  |
+| 2414 | `static boolean AUTOBUILD` | -Dplaytest.autobuild=true (0.7.73, batch N4): the player turns automatic building on at the founding (AutoBuilder, at its defaults) and leaves it the city's works - the advisor's power, water, road and transit, health... |
+| 2431 | `static int worksMonths, worksOffMonths, worksDebtIdleMonths, worksLowMonths` |  |
+| 2527 | `static boolean educationSet` | Whether any education dial or the schools flag was set, so the summary says what they did. |
+| 2647 | `static String EARTH` | The spot under --earth or -Dplaytest.earth: a place's name or "lat,lon"; null for the default world. |
+| 2670 | `static String earthPlace` | The place --earth named, for the report; null for a spot given as figures. |
+| 2782 | `static java.io.PrintWriter traceMonths, traceBorrow, traceHouse, tracePop, traceBank, traceBonds, traceBuil...` |  |
+| 3295 | `static int monthsDefended, peakDefenceMonth` | THE DEFENCE OVER THE RUN (0.7.2): the dollars the central bank sold defending the currency, in total and in its biggest month, and how many months it sold anything. |
+| 3296 | `static double defendedUsdRun, peakDefenceUsd` |  |
+| 3314 | `static int floatMonths, floatRun, floatRunLongest, floatSign, floatFarFromParity, floatDealt, floatMarketOver2` |  |
+| 3315 | `static double floatSum, floatSum2, floatBiggest` |  |
+| 3317 | `static double floatDealtBefore` | What the treasury had dealt since the last reprice when the month began: run() reads it before the month runs. |
+| 3373 | `static int monthsLandBought` | THE LAND OFFICE OVER THE RUN (0.7.6): months the city bought land abroad and what it cost in local money at the day's rates - against the dollars ForeignAccounts counts, which is what the same land would have cost at ... |
+| 3374 | `static double landLocalRun` |  |
+| 3376 | `static int vaultLowMonth, halfGoneMonth, emptyMonth` | The vault's life: its lowest reading and when, and the first month the founders' dollars were half gone and all but gone - the question the defence's dials are asked. |
+| 3377 | `static double vaultLow` |  |
+| 3380 | `static double lagImplied` | The lag-implied wage index, walked month by month beside the game's own; NaN until the first month. |
+| 3496 | `static int autoBuildGroundBought` | Offers bought for automatic building's ground (the autobuild flag). |
+| 3556 | `static int childcareOrders` | What the childcare flag has ordered: orders, and buildings by name. |
+| 4201 | `static int ironFieldsBought, ironFieldsOnBond, firstIronNeedMonth, firstIronMonth, ironCouldNotPay, ironNon...` | Over the run (0.7.64): iron offers bought, how many on the funding page's bond, the first look that needed iron, the first purchase's month and words, and the looks that needed iron and could not pay for the cheapest ... |
+| 4202 | `static String firstIron` |  |
+| 4205 | `static int ironDoesNotPay` | Over the run (0.7.67, M3b): the looks that needed iron whose cheapest field would not pay itself back (fieldEarnings() under fieldPayment()). |
+| 4221 | `static int oilBought` | Offers with oil the test player bought over the run (0.7.62). |
+| 4240 | `static double fuelBillRun, fuelAbroadRun` | Over the run (0.7.62): the drivers' and the railway's fuel, what of it was bought abroad, the first well and refinery, and the most refineries standing. |
+| 4241 | `static int firstWellMonth, firstRefineryMonth` |  |
+| 4241 | `static long mostRefineries` |  |
+| 4244 | `static double crudeLiftedRun` | ...and the wells' decline over the run (0.7.84, batch O7; spec-oil 2.6): the crude they lifted and the most standing. |
+| 4245 | `static long mostWells` |  |
+| 4249 | `static double refinedWrittenOff` |  |
+| 4260 | `static double vanDieselRun, vanDieselLitresRun, payrollRun, pumpBillRun, pumpWholesaleRun, pumpLitresRun, q...` | THE PHASE-1 BUYERS OVER THE RUN (0.7.83, batch O6; spec-oil 2.5 and 6's measure-first 4 and 5): the vans' diesel against the businesses' payrolls; the drivers' petrol at the pump against what it cost at wholesale, and... |
+| 4261 | `static double lubricantsBoughtRun, lubricantsImportedRun, crudeRefinedLitresRun` |  |
+| 4262 | `static int mostStations, firstStationMonth` |  |
+| 4354 | `static int portsNoCoast, firstTerminalMonth` |  |
+| 4357 | `static long callsRun` | The boats over the run: calls, the most in a month and when; the tonnes by sea and across the boundary; months crude was held back for room. |
+| 4358 | `static int mostCalls, mostCallsMonth, lastCalls, heldBackMonths` |  |
+| 4359 | `static double seaTonnesRun, boundaryTonnesRun` |  |
+| 4458 | `static long mostCrudeUnits, mostConversionUnits` |  |
+| 4458 | `static int firstRefinerMonth` |  |
+| 4527 | `static int groundAheadBought, groundAheadShort` | Over the run: offers bought to keep ground ahead, their dry square feet and US dollars (thousands), and the looks the cash share stopped short. |
+| 4528 | `static double groundAheadSqFt, groundAheadUsd` |  |
+| 4531 | `static int groundAheadFunded, roomMovesFunded` | Over the run (FB11): the offers of those bought on the funding page's bond (fundGround()), and the local money the bonds raised. |
+| 4532 | `static double groundAheadBorrowed` |  |
+| 4535 | `static int groundBondsUnspent` | ...and the bonds fundGround() sold that bought no ground (an auction short of the gap, or the office refusing the offer), with what they raised: the money stays in the treasury, as buyWhole() leaves it (REV-FB11). |
+| 4536 | `static double groundBondsUnspentRaised` |  |
+| 4647 | `static int roomMovesBought` | Over the run (0.7.67, M3b): offers the room-to-grow move bought. |
+| 4763 | `static int groundLooksInSkips, longestGroundGap` | Over the run (LP-G1): the ground looks made inside a skip, and the most months a skip let the ground go without one. |
+| 4818 | `static int islandBridges, islandPorts, islandLinksHeld` | Over the run (AL1): the bridges and the sea terminals the test player ordered to link an island, and the links it could not order (none can be made, or an order was refused). |
+| 4921 | `static int freshBought, coastsBought, waterLandOffered` | Over the run: offers bought for their lakes and river past the fresh water limit, offers bought for a coast, and the moves that offered either (0.7.59). |
+| 4931 | `static int mapMonths, mapMismatches, mapReloads, mapReloadsSame` | THE CITY MAP, WATCHED (0.7.60, batch J3): the run asks for its city's map at the founding, so every month keeps it up (Game.reconcileMap()) and every save writes its sidecar - nothing in the model reads it, so the tra... |
+| 4978 | `static boolean layoutOn` | ===== THE LAYOUT, WATCHED (batch CL3, 2026-10-21) ===== |
+| 4998 | `long[] boxes` |  |
+| 4999 | `int[] dims` |  |
+| 5000 | `int[] byType` |  |
+| 5001 | `int[] carryIn` |  |
+| 5002 | `int[] carryLog` |  |
+| 5003 | `int[] counted` |  |
+| 5007 | `static Map<Long, LayoutSnap> layoutPrev` | The month before's snapshot of every district, by layoutKey(), and its month (the window's first month has none). |
+| 5008 | `static int layoutPrevMonth` |  |
+| 5010 | `static int layoutMonths, layoutPairs` | Over the run: months planned, month pairs compared, boxes compared, boxes that moved outside the spill's districts and inside them, and the nanoseconds the windows took. |
+| 5011 | `static long layoutBoxes, layoutMoved, layoutMovedInSpill, layoutNanos` |  |
+| 5013 | `static long layoutMovedOffRun` | ...and the boxes that left a district in a month pair because a run laid in that month lies across them or beside them (MF1): moved off it, counted apart and not flagged. |
+| 5017 | `static int layoutOldMonth` | The first window's first month: its month, each district's industry boxes (sorted keys) and its count of boxes by type. |
+| 5027 | `static double[] layoutRing` | The ring at the last window's last month and its month: {homes km, homes boxes, industry km, industry boxes, outer km, outer boxes}; null until then. |
+| 5028 | `static int layoutRingMonth` |  |
+| 5030 | `static long layoutOldN, layoutOldStand, layoutOldHeldN, layoutOldHeldStand` | The old works at the last window's last month: how many there were, how many stand where they stood, and the same for the types whose count held. |
+| 5032 | `static long layoutOldMovedOff` | ...and how many of them are not where they stood because a run laid after the oldest works were kept lies across them or beside them: moved off it (MF1), counted apart and not flagged. |
+| 5035 | `static long layoutOldSpillN, layoutOldSpillStand` |  |
+| 5049 | `static long layoutOldSentOn` | ...and how many of the old works the counts kept were instances sent on, over the districts the watch judged (not those a spill reached): the term at work, counted. |
+| 5051 | `static boolean layoutCountsSentOn` | Whether the watch counts the works sent on (true in play): a harness sets it false to judge a city by the law as it stood before RN1-H-M. |
+| 5786 | `static int pavings` | Over the run (0.7.70): the pavings ordered and the gravel roads in them. |
+| 5786 | `static long roadsPaved` |  |
+| 6046 | `static int bondsAtHome, bondsAbroad` | CC1-S: the build's bonds over the run, taken at home and abroad, and the dearest rate (marketRate) it took abroad. |
+| 6047 | `static double dearestAbroad` |  |
+| 6123 | `static int refusedSkips` |  |
+| 6138 | `static int monthsOwing, monthsOwingAtHome, worstStrainMonth, peakCityDebtMonth` | THE CITY'S PAPER AND THE BANK THAT HOLDS IT, over the run (2026-09-21). |
+| 6139 | `static int strainMonths, monthsWithoutCapacity` |  |
+| 6140 | `static double strainSum, worstStrain, peakCityDebt, paperSettledRun` |  |
+| 6148 | `static int monthsAtCeiling, monthsOnAdvances, peakAdvancesMonth, peakArrearsMonth, firstAdvanceMonth` | THE CENTRAL BANK OVER THE RUN (0.7.0): the most the treasury owed it, how long the ceiling bound, and the most the arrears rule left unpaid. |
+| 6149 | `static double peakAdvances, peakArrears` |  |
+| 6158 | `static int monthsHouseholdsBought, monthsDeskBought, monthsCentralBankTraded` | WHO HELD THE CITY'S PAPER OVER THE RUN (0.7.1): what the households paid at the settles and in how many months, what the bank's desk bought back from them and in how many, and what the central bank bought and sold - c... |
+| 6165 | `static int monthsStudioLiftWaived, monthsFamilyLiftWaived` | THE LANDLORDS' GLUT (RN1, 2026-11-09): the months a leg of the rent was under GLUT_PRESSURE while a carry lift was waiting, so its rent was left at its own cost times its scarcity. |
+| 6166 | `static double householdsBoughtRun, deskBoughtRun, couponsToHouseholdsRun` |  |
+| 6168 | `static int monthsFirmsBought` | ...and the businesses' (CD2, slice 4). |
+| 6169 | `static double couponsToFirmsRun` |  |
+| 6171 | `static int monthsWorldBought, monthsWorldSold` | ...and the world's (CD2, slice 5): the months it bought, the months its paper went home through the desk, and what it was paid. |
+| 6172 | `static double couponsToWorldRun, principalToWorldRun, peakWorldPaper` |  |
+| 6181 | `static int peakCompressionMonth` | The most the central bank's holdings took off the long end, and when: the twenty-year paper a borrowing seed sells matures inside the run, so by month 4,002 the central bank usually holds none of it and the endpoint's... |
+| 6182 | `static double peakCompression, longRateAtPeak, heldShareAtPeak` |  |
+| 6223 | `static int monthsCurveInverted, monthsCurveSteep` | THE CURVE, COUNTED (CD1, 2026-10-20). |
+| 6224 | `static double widestExpectedMove` |  |
+| 6274 | `private static boolean pw5DistrictReported` | Harness-only first-district census, enabled with -Dcbs.pw5.firstDistrict=true. |
+| 6277 | `static java.util.function.BiConsumer<Game, Boolean> passiveObserver` | Optional harness-only passive reader; default null, no model seam. |
+| 6743 | `static double lifetimeWriteOffs` |  |
+| 6745 | `static double lowestPaidIn` | The bank's paid-in capital at its lowest, the month, and the most its two parts were ever off its equity (0.7.13, round 2). |
+| 6746 | `static int lowestPaidInMonth` |  |
+| 6747 | `static double lifetimeHouseholdWriteOffs` |  |
+| 6777 | `static int buttonPresses` | Presses of the Bank tab's button that resolved the bank (-Dplaytest.rescue=BUTTON). |
+| 6779 | `static int offersFunded` | Offers accepted after borrowing for them on the funding page's bond, and what that bond raised. |
+| 6780 | `static double offerFundingRaised` |  |
+| 6806 | `int month` |  |
+| 6807 | `double at` |  |
+| 6808 | `int under50` |  |
+| 6809 | `double lowest` |  |
+| 6812 | `static int resolutionsSeen` |  |
+| 6814 | `static double fundPeak, fundCashShareSum` | The fund's value, its cash and the most of any company its market book held, over the run. |
+| 6815 | `static int fundMonths` |  |
+| 6817 | `static double warrantSharesSeen, warrantValueTaken` | The warrants' shares taken at expiry, at the price the month they were taken (share counts move with the exchange's splits, so the count alone does not add up across a run). |
+| 6818 | `static int warrantExercises` |  |
+| 6821 | `static int overCapCompanyMonths, companyMonthsWithShares, idleTransferMonths` | The fund against its cap (RB1): company-months its market book held over OWNERSHIP_LIMIT, of company-months with shares; the months it paid anything of its transfer from idle cash, and that money. |
+| 6822 | `static double idleTransferPaid` |  |
+| 6886 | `static double[] ledgerBefore` | THE FUND'S LEDGER, MONTH BY MONTH (FundLedger; the project's spec-fund-0739.md, 3.7, rule 3 - count a mechanic in a real run): the identity FundLedgerCheck holds on a fixture - realized + the change in unrealized = th... |
+| 6887 | `static double ledgerWorst` |  |
+| 6888 | `static int ledgerRuleRows, ledgerHandRows, ledgerMatured, ledgerWrittenDown, ledgerRescues` |  |
+| 6926 | `static DebtQuote dayZeroBond, dayZeroNote` | What an Insane city was quoted on day 0 for its village, and what it borrowed in its first year. |
+| 6927 | `static double villageInvoice, firstYearBorrowed` |  |
+| 6928 | `static int insaneBorrowings` |  |
+| 6973 | `static java.util.function.Consumer<Game> primaryCreated, monthObserved` | Optional primary-state observers (QR1): founding baseline, then audited months; null in the normal harness. |
+| 8984 | `private static int probeStop` |  |
+| 9136 | `static int fails` |  |
+| 9157 | `static double worstDrift` | The worst post-audit drift any month of the last play() saw. |
+| 9158 | `static String worstDriftPool` |  |
+| 9165 | `int months` |  |
+| 9167 | `double seized` | What the bankrupt's savings repaid the bank with over the run (HouseholdBalance.getSeizedAtBankruptcy()). |
+| 9168 | `MoneyAudit.Households worst` |  |
+| 9169 | `final java.util.Map<String, Integer> fired` |  |
+| 9171 | `static HouseholdsRun lastRun` |  |
+| 9191 | `private final Game city` |  |
+| 9192 | `private double previous` |  |
+| 9193 | `int months` |  |
+| 9194 | `double worstResidual` |  |
+| 9196 | `double movedMostBy` | The press the amount in transit moved most in: by how much (signed) and the audit struck that month. |
+| 9197 | `MoneyAudit.Households movedMostIn` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 45 | 10146 | **type** `public class LongPlaytest` | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. |
+| 45 | 10153 | **type** `public class LongPlaytest` | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. |
 
 ### FINDINGS (lines 53-71)
 
@@ -579,281 +579,281 @@
 
 ### THE CONSERVATION LAWS, ON EVERY MONTH OF THE RUN (GT1, 2026-11-02) (lines 1313-1343)
 
-### THE HOUSEHOLDS' OWN LINES, OVER THE RUN (HL1, 2026-11-11) (lines 1344-2334)
+### THE HOUSEHOLDS' OWN LINES, OVER THE RUN (HL1, 2026-11-11) (lines 1344-2341)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1409 | 22 | `static void noteOwnLines(int month, MoneyAudit.Households hh)` | Sums the month's nine own lines into the run's, and checks the nine are all of own: their signed figures add to hh.own to a cent or a part in a thousand million of what moved, else a tenth line was added to households... |
 | 1436 | 23 | `static void ownLinesOverTheRun(PrintStream out, int endMonth)` | The run's table of the households' own lines, one row each, and the finding for every line past its bound. |
 | 1464 | 66 | `static void conservation(Game g, int month)` |  |
-| 1535 | 784 | `static void audit(Game g)` |  |
-| 2320 | 6 | `static void finiteArray(int month, String what, double[] values)` |  |
-| 2327 | 7 | `static void finite(int month, String what, double value)` |  |
+| 1535 | 791 | `static void audit(Game g)` |  |
+| 2327 | 6 | `static void finiteArray(int month, String what, double[] values)` |  |
+| 2334 | 7 | `static void finite(int month, String what, double value)` |  |
 
-### THE ADVISOR (lines 2335-2352)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2351 | 1 | **type** `record Move(String label, double lost, java.util.function.BooleanSupplier act)` | ONE THING THE CITY COULD DO, AND WHAT IT IS WORTH. |
-
-### WHO IS PLAYING (2026-09-17) (lines 2353-2417)
+### THE ADVISOR (lines 2342-2359)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2387 | 1 | `static int longestSkip()` | Months the player will let pass before looking, at most. |
-| 2410 | 7 | `static void startAutomaticWorks(Game g)` | The standalone test city's works, selected once at founding by both normal entry points (AW1). |
+| 2358 | 1 | **type** `record Move(String label, double lost, java.util.function.BooleanSupplier act)` | ONE THING THE CITY COULD DO, AND WHAT IT IS WORTH. |
 
-### THE CITY'S ESSENTIAL WORKS (AW1, 2026-11-12) (lines 2418-2521)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2441 | 17 | `static Map<String, Double> worksShares(Game g)` | Staffed supply over today's demand, capped at full service, with no demand fully served. |
-| 2460 | 58 | `static void countWorks(Game g, boolean on, boolean over, int ordersBefore)` | Counts what the month's pass could do, then reads the service the completed month delivered. |
-
-### THE RATE, HELD (2026-09-21) - the measurement 7.0 turns green (lines 2522-2560)
+### WHO IS PLAYING (2026-09-17) (lines 2360-2424)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2557 | 3 | `static boolean holdsPolicyRate(Game g)` | True once the dial is the flag's rather than the advisor's: the flag is set and the held months have begun. |
+| 2394 | 1 | `static int longestSkip()` | Months the player will let pass before looking, at most. |
+| 2417 | 7 | `static void startAutomaticWorks(Game g)` | The standalone test city's works, selected once at founding by both normal entry points (AW1). |
 
-### THE FOUNDING, AS A CHOICE (0.7.10) (lines 2561-2605)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2585 | 4 | `static Founding founding()` | The city the run founds: Danzik, on the flag's preset, in the default world, on the flag's path (see THE WORLD BEYOND THE CITY). |
-| 2601 | 4 | `static Founding played(String earthSpot)` | The city the playtest itself plays - main(), probeCity() and the ensemble: founding(), or earthFounding() round {@code earthSpot} when it is not null, founded the 1900 way under FOUNDED_1900 (research known as of 1900... |
-
-### THE WORLD BEYOND THE CITY (WN1; spec-nations 7.3) (lines 2606-2625)
-
-### ON THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 8) (lines 2626-2714)
+### THE CITY'S ESSENTIAL WORKS (AW1, 2026-11-12) (lines 2425-2528)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2643 | 18 | `static Founding earthFounding(String spot)` | The founding on the real Earth round a spot (see the banner); throws, saying why, when the data or the spot is not to be had. |
-| 2672 | 42 | `public static Game earthCity(String spot, int months, GameFiles files, PrintStream silent)` | A city founded on the real Earth round a spot and played `months` months as the playtest plays it (ET2: the run SlopeCheck 9 counts, for tools.SlopeRenders, which draws the map of the city this returns): the village's... |
+| 2448 | 17 | `static Map<String, Double> worksShares(Game g)` | Staffed supply over today's demand, capped at full service, with no demand fully served. |
+| 2467 | 58 | `static void countWorks(Game g, boolean on, boolean over, int ordersBefore)` | Counts what the month's pass could do, then reads the service the completed month delivered. |
 
-### THE TRACE, BESIDE THE REPORT (0.7.10) (lines 2715-3133)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2784 | 15 | `static void notePaper(Game g, String purpose)` | Writes every piece of paper not yet written, with what it paid for - called the moment the advisor borrows, so the purpose is its own, and at the end of every month for whatever the game issued by itself. |
-| 2800 | 57 | `static void traceOpen()` |  |
-| 2858 | 57 | `static void traceMonth(Game g)` |  |
-| 2925 | 43 | `static void traceLabour(Game g)` | The labour market's month, one row of <prefix>-labour.csv (0.7.18). |
-| 2976 | 54 | `static void traceBuild(Game g)` | The builders, the doors and the wage bill, one row of <prefix>-build.csv (0.7.17). |
-| 3032 | 7 | `static double cityOrderTax(Game g)` | The builders' tax in the city's orders still on site - paid with the order, not yet billed (revised 0.7.19). |
-| 3041 | 5 | `static double sectorsCash(Game g)` | Every sector's till, summed (HD1): the cash half of the businesses' hoard. |
-| 3048 | 5 | `static double sectorsPreTax(Game g)` | Every sector's month before profit tax, summed - what Luxury's share of the city's profit is read against (0.7.19). |
-| 3060 | 17 | `static void tracePop(Game g)` | The people's month, one row of <prefix>-pop.csv (0.7.11, round 2): who lives here by age, what migration aimed at and did and why, and the two housing markets - the trace that asks why a city with the same jobs holds ... |
-| 3079 | 24 | `static void traceHouse(Game g)` | The landlords' month, one row of <prefix>-house.csv (0.7.11). |
-| 3104 | 11 | `static synchronized void traceClose()` |  |
-
-### THE CITY'S FUND AND THE BANK'S RESCUE, STATED (0.7.14) (lines 3134-3174)
+### THE RATE, HELD (2026-09-21) - the measurement 7.0 turns green (lines 2529-2567)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3169 | 5 | `static double fundDial(String s)` |  |
+| 2564 | 3 | `static boolean holdsPolicyRate(Game g)` | True once the dial is the flag's rather than the advisor's: the flag is set and the held months have begun. |
 
-### WAGES AGAINST THE INDEX (2026-09-21) (lines 3175-3198)
-
-### THE CITY'S OWN PAPER, FOR THE ENSEMBLE (2026-09-21) (lines 3199-3217)
-
-### THE HOLDINGS DIAL, HELD (0.7.1) (lines 3218-3234)
-
-### THE CEILING, SET (0.7.2) (lines 3235-3249)
-
-### THE TARGET, SET (0.7.4) (lines 3250-4306)
+### THE FOUNDING, AS A CHOICE (0.7.10) (lines 2568-2612)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3313 | 4 | `static void resetTheFloat()` | Clears THE D$ OVER THE RUN: a run's counts start from nothing (main() at its start; a harness before it plays a city of its own). |
-| 3319 | 19 | `static void countTheFloat(Game g)` | The D$'s month, for THE D$ OVER THE RUN: called once a month from audit(), after the defence is counted. |
-| 3340 | 5 | `static double floatVolatility()` | The D$'s volatility a year over the run from FLOAT_FROM_MONTH: the standard deviation of the monthly log move times the root of twelve; 0 before it has months. |
-| 3353 | 5 | `public static void seedMarket(Game g, int seed)` | Seeds the D$'s market from the ensemble seed (XR1): Game founds every city's market from its world seed (Game.marketSeedFor()), which is the same for the ensemble's sixteen cities, so each takes a market of its own - ... |
-| 3376 | 5 | `static void walkLag(Game g, double indexHanded)` | One month of the lag, on the index that month was handed. |
-| 3383 | 9 | `static String wageEra(Game g)` | The three figures on one line, for a checkpoint or the end. |
-| 3411 | 9 | `static void ensureSchools(Game g)` | Under the schools flag: the basic ladder, then a college, then a university, each when the city is big enough to carry it, and more of each as it grows - asked at every stop, so the schools arrive with the people rath... |
-| 3443 | 3 | `static void childcareWhenNeeded(Game g)` | Under the childcare flag (0.7.71, batch N2): when NEEDS YOU lists childcare, the build advice's own card for it - the size that fits the need (since 0.7.101 its order over its life for the places it will fill, BuildAd... |
-| 3448 | 12 | `static BuildAdvice.Suggestion orderChildcare(Game g)` | The rule itself, flag or none (ChildcareCheck plays it): the advice's childcare card when NEEDS YOU lists childcare, placed; that suggestion, or null when nothing was ordered. |
-| 3472 | 15 | `static void groundForAutoBuild(Game g)` | Under the autobuild flag (0.7.73, N4): the ground automatic building said it was held back for, bought as the inbox's notice asks ("Buy land at the land office") - each such order's ground less what is free, by the bu... |
-| 3506 | 12 | `static void noteChildcare(Game g, int month)` |  |
-| 3528 | 19 | `static void budgetLine(Game g, int month)` |  |
-| 3556 | 4 | `static void ensure(Game g, String name, int want)` |  |
-| 3562 | 1 | `static int movesPerLook()` | ...and how many things it will fix when it does look. |
-| 3622 | 462 | `static String advise(Game g)` | WHAT THE CITY DOES NEXT, AND WHY THIS IS NOT A LIST OF RULES ANY MORE. |
-| 4142 | 31 | `static void ironWhenNeeded(Game g)` | IRON, A WHOLE FIELD AT A TIME (0.7.64, batch L). |
-| 4181 | 11 | `static String buyWhole(Game g, LandParcel p, String purpose)` | Buys an offer as the land office does (0.7.64): out of the cash when it covers it - "cash" - or, converting and short, the funding page's BUILD_BOND_YEARS bond for the gap when canService() carries it, then the offer ... |
-| 4201 | 3 | `static double[] fieldEarnings(Game g, int sites)` | What a field of `sites` iron sites would earn the city's mines a month (0.7.67, M3b): {mines, their monthly profit} - the build advice's since 0.7.101 (BuildAdvice.fieldEarnings(), moved there whole so Build's no-depo... |
-| 4206 | 3 | `static double fieldPayment(Game g, LandParcel field)` | The month's payment that repays a field's price here over Game.BUILD_BOND_YEARS (0.7.67, M3b) - the build advice's since 0.7.101 (BuildAdvice.fieldPayment()). |
-| 4225 | 6 | `static double fuelBoughtAbroad(Game g)` | The fuel the world sold the city last month (0.7.62): its drivers' (Game.getHouseholdFuelImports()) and its railway's (Freight.getFuelImported()) - their petrol and its diesel since 0.7.76 - and since 0.7.83 (batch O6... |
-| 4257 | 49 | `static void countFuel(Game g)` |  |
+| 2592 | 4 | `static Founding founding()` | The city the run founds: Danzik, on the flag's preset, in the default world, on the flag's path (see THE WORLD BEYOND THE CITY). |
+| 2608 | 4 | `static Founding played(String earthSpot)` | The city the playtest itself plays - main(), probeCity() and the ensemble: founding(), or earthFounding() round {@code earthSpot} when it is not null, founded the 1900 way under FOUNDED_1900 (research known as of 1900... |
 
-### THE PORTS (0.7.86, batch O9; docs/studies/spec-oil.md 5's O9 row) (lines 4307-4705)
+### THE WORLD BEYOND THE CITY (WN1; spec-nations 7.3) (lines 2613-2632)
+
+### ON THE REAL EARTH (0.7.121, batch E4; the project's spec-earth.md 8) (lines 2633-2721)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4357 | 22 | `static void portsWhenNeeded(Game g)` |  |
-| 4381 | 5 | `static long terminalsStanding(Game g)` | The sea terminals standing, all kinds. |
-| 4400 | 3 | `static BuildingsTemplate terminalFor(Game g, Ports.Cargo k, double uncovered, double carriable, double dial)` | The catalogue's terminal to order for a kind of cargo, or null (FR3, docs/queue/FR3.md 5.1; SL1, the size by the kind's whole trade): null with no need - no terminal of the kind that pays back (Ports.berthPaysBack()) ... |
-| 4405 | 14 | `static void countPorts(Game g)` | The month's boats and sea tonnes, counted (the calls without their quays: the map places them, since 0.7.97 on its sea routes). |
-| 4421 | 12 | `static String portsLine(Game g, int calls)` | The ports this month, a line: by kind, tonnes in and out across the boundary, the berths standing, the share in force and the sea tonnes; the calls. |
-| 4453 | 14 | `static void countRefiners(Game g)` |  |
-| 4469 | 31 | `static String refineryLine(Game g)` | The refiners' planner this month, a line: what is short and spare, and the best-earning candidate (and the Oil Refinery's package) with the hurdle each money gate asks of it. |
-| 4562 | 3 | `static boolean groundDemanded(Game g)` | Whether a sector waits on ground (FB11): last month's plans or landlords' orders refused for want of it, as Game.getLandBlockedSectors() keeps them. |
-| 4575 | 16 | `static String fundGround(Game g, LandParcel p, double share, String purpose)` | Buys a whole offer the cash share cannot pay while ground is demanded (FB11, see the banner): at most {@code share} of local money out of the cash, the rest borrowed first on the funding page's BUILD_BOND_YEARS bond w... |
-| 4602 | 3 | `static double groundAheadUtilisation(Game g)` | The most of its dry ground a look leaves built on (0.7.58, J1d): the ground in use grown BuildAdvice.HORIZON months by the businesses' growthFactor(), with BuildAdvice.SLACK past it - the build advice's own sizing (0.... |
-| 4630 | 8 | `static double roomToGrow(Game g)` | ROOM TO GROW, PRICED FROM THE LINE (0.7.67, batch M3b): the output a look's room-to-grow move is weighed at - none while no more of the dry ground is built on than groundAheadUtilisation(), rising to the whole month's... |
-| 4652 | 53 | `static void keepGroundAhead(Game g)` | GROUND KEPT AHEAD (see advise()): buys the best value for room while more of the dry ground is built on than groundAheadUtilisation(), the offers together costing no more than GROUND_AHEAD_CASH_SHARE of the cash at th... |
+| 2650 | 18 | `static Founding earthFounding(String spot)` | The founding on the real Earth round a spot (see the banner); throws, saying why, when the data or the spot is not to be had. |
+| 2679 | 42 | `public static Game earthCity(String spot, int months, GameFiles files, PrintStream silent)` | A city founded on the real Earth round a spot and played `months` months as the playtest plays it (ET2: the run SlopeCheck 9 counts, for tools.SlopeRenders, which draws the map of the city this returns): the village's... |
 
-### THE GROUND, WATCHED ACROSS A SKIP (LP-G1, 2026-11-23) (lines 4706-6105)
+### THE TRACE, BESIDE THE REPORT (0.7.10) (lines 2722-3140)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4759 | 4 | `static boolean groundLookDue(Game g)` | Whether the city's ground is due a look: never looked at, last looked at in a month after this one, or BuildAdvice.HORIZON months or more ago. |
-| 4765 | 4 | `static int monthsSinceGroundLook(Game g)` | The months since the city's ground was last looked at, 0 when it never was (or was in a later month). |
-| 4774 | 11 | `static void skipWatchingGround(Game g, int months, Runnable month)` | The skip, its ground watched (see the banner): `months` months run one at a time through `month` (the caller's own month: runPlayer(), earthCity()'s, the ensemble's), a ground look before any month it falls due. |
-| 4789 | 5 | `static int[] groundTraceWindow(String s)` |  |
-| 4795 | 3 | `static boolean groundTraced(Game g)` |  |
-| 4800 | 9 | `static void traceGroundMonth(Game g)` | The trace's month (run()): the households nowhere, the homes standing and on site, the ground against the line, the months since a look, and the landlords' order. |
-| 4822 | 28 | `static void linkIslands(Game g)` | THE ISLAND LINK (AL1, 2026-11-09): the test player links an island as the AutoBuilder does, by the same rule - BuildAdvice.linkFor() - when its own measure of the ground running low says so (keepGroundAhead()). |
-| 4856 | 3 | `static boolean desalinationHasCoast(Game g)` | Whether the city has a coast for a desalination plant: it owns sea and the model would stand a plant on it (ET5). |
-| 4875 | 37 | `static void addWater(java.util.List<Move> moves, Game g, double lost)` | WATER, AND WHERE IT COMES FROM (0.7.59, batch J2; spec-land 3, J2's playtest rule). |
-| 4977 | 11 | `static int[] layoutStarts(int target)` |  |
-| 4990 | 8 | **type** `static final class LayoutSnap` | One district in one month: its boxes {type << 40 \| x << 20 \| y} sorted and each one's size (dims: w - 1 << 5 \| h - 1, MF1), its count of boxes by type, what was carried in to it by type (null for none) and as the {mon... |
-| 5047 | 12 | `static void layoutOldForget()` | The old works' state forgotten, so a harness can keep and judge a city of its own: what layoutKeepOldWorks() keeps and layoutFinish() counts, and the finding it may have flagged. |
-| 5061 | 15 | `static int[] layoutLiveMonths(CityMap.District d, int t)` | District d's own live instances of type t, by the month each came in (ascending): its log read as CL3 reads it, each departure taking the newest. |
-| 5078 | 15 | `static int[] layoutSentMonths(int[] pairs, int t)` | The months the instances of type t a carry's {month, code} pairs bring came in that have not left again (a pair ~k takes the k-th pair's back), ascending. |
-| 5099 | 14 | `static int layoutSentAmongOldest(int[] live, int[] sent, int low)` | Of the `low` oldest of a district's own live instances of a type (live: the months they came in, ascending), how many its plan had sent on (sent: their months, ascending). |
-| 5115 | 5 | `static boolean layoutCarries(int[] carryIn)` | Whether a carry in, counted by type, holds anything. |
-| 5122 | 6 | `static int layoutWindowOf(int month)` | Which window a month falls in (its index in LAYOUT_STARTS), -1 for none. |
-| 5130 | 3 | `static long layoutKey(CityMap.District d)` | A district's place in a map, the same in every month: its column and row from the founding site's. |
-| 5135 | 26 | `static void layoutMonth(Game g)` | What the playtest's month asks of the watch, after the month ran: nothing outside a window, else the month planned, compared with the month before, and the first and last months' counts. |
-| 5163 | 47 | `static Map<Long, LayoutSnap> layoutSnapshot(CityMap m)` | Every district planned through the map's own chain, then each one's boxes decoded (CL3Probe's way: tile k, x = b & 31, y = (b >> 5) & 31, type = b >>> BOX_TYPE_SHIFT), the packed ones left out. |
-| 5220 | 6 | `static boolean layoutSameCarry(int[] a, int[] b)` | Whether two carries in leave a district the same history (none is an empty list): the same {month, code} pairs in the same order, or the one the other with pairs appended - CL3's promise is that an arrival appended mo... |
-| 5228 | 4 | `static String layoutName(Game g, int type)` | A building type's words for a finding: its name by id, else its id. |
-| 5234 | 61 | `static void layoutCompare(Game g, CityMap m, int month, Map<Long, LayoutSnap> before, Map<Long, LayoutSnap> now)` | Two months' snapshots compared district by district (the districts in both): the moves, as the section above counts them. |
-| 5301 | 21 | `static boolean[] layoutRunMarks(CityMap m, CityMap.District d, int low, int high)` | The plots the runs laid in the months low to high put a run on or, for a highway, beside it (the plots a building moves off, MF1: DistrictPlan's BUILDINGS MOVE OFF A RUN), a flag a plot of district d's frame; null for... |
-| 5324 | 5 | `static boolean layoutBoxHit(boolean[] marks, long key, int dims)` | Whether the box {key, dims} of a LayoutSnap has a plot among the marks (layoutRunMarks()). |
-| 5331 | 26 | `static double[] layoutRingOf(CityMap m)` | The mean distance from the founding site of the boxes of each use (CL3Probe's measure: a box's middle from the founding site, in the district's frame, in km). |
-| 5359 | 3 | `static int layoutBand(BuildingVisual.Type t)` | A use's band: 2 the outer kinds, 1 industry (not outer), 0 the homes band (the rest). |
-| 5366 | 8 | `static String layoutBandsOf(CityMap m, int month, Map<Long, LayoutSnap> now)` |  |
-| 5380 | 46 | `static void layoutKeepOldWorks(CityMap m, int month, Map<Long, LayoutSnap> now)` | The oldest works: every district's industry boxes and its count of boxes by type, kept at the first window's first month that has industry on the map (the playtest's city has none at m1001, a village of 176 boxes: kep... |
-| 5428 | 7 | `static void layoutTrackLow(CityMap m)` | Every month since the oldest works were kept: each district's lowest model count of every type so far. |
-| 5437 | 64 | `static void layoutFinish(Game g, CityMap m, int month, Map<Long, LayoutSnap> now)` | The last window's last month: the ring, and the oldest works found again where they stood. |
-| 5503 | 38 | `static List<String> layoutLines(long runSeconds)` | The report's lines for the watch: the windows, the moves a month, the ring, the oldest works; the run's seconds beside the windows'. |
-| 5553 | 148 | `static void addRoadThrottle(java.util.List<Move> moves, Game g, double lost)` | The road constraint, and every way there is of easing it. |
-| 5712 | 18 | `static java.util.List<BuildAdvice.Suggestion> roadsByNeed(Game g, BuildAdvice.Measure roadM, double free, java.util.Set<String>...` | The roads by need (0.7.103, batch P4): the build advice's card for the road (BuildAdvice.suggestFor(), no NEEDS YOU row, the cash and the free ground as they stand, its own slack) among the road kinds named and the ci... |
-| 5739 | 17 | `static java.util.List<BuildAdvice.Suggestion> powerByNeed(Game g, BuildAdvice.Measure powerM, double free)` | The power by need (PW1, 2026-11-11): the build advice's card for power (BuildAdvice.suggestFor(), no NEEDS YOU row, the cash and the free ground as they stand, its own slack) among the generators, every other building... |
-| 5762 | 15 | `static boolean pave(Game g, long n)` | Paves n gravel roads (0.7.70, N1): out of the cash, or, short of it, with the long bond build() borrows on, sized to what the cash is short of, when the city can service it (canService()). |
-| 5790 | 4 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost)` | Adds one building as a way of relieving a constraint worth `lost` a month. |
-| 5799 | 22 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost, double gap)` | how many of the building to order |
-| 5833 | 16 | `static int linesThatPay(Game g, BuildingsTemplate t, int most)` | The most of these transit lines, up to most, that pay their way this month (0.7.49, D3): the output the road gives back with them standing (the month's GDP times the throughput they add, on the network as it would be ... |
-| 5851 | 9 | `static double runningCost(Game g, BuildingsTemplate t)` | What one of these costs the city a month to run, fully staffed at today's wages. |
-| 5862 | 4 | `static boolean wouldPay(Game g, String name, String sector)` | Whether one of these would clear its own running costs, on the private sector's screen. |
-| 5867 | 4 | `static long qty(Game g, String name)` |  |
-| 5873 | 3 | `static long qtyOf(Game g, int id)` | ...of a building by its permanent id (0.7.71: the childcare ids, renamed). |
-| 5878 | 4 | `static String nameOf(Game g, int id)` | A building's name by its permanent id, null with none (0.7.120, batch I3; spec-materials 4): the player finds the Iron Mine and the Electric Arc Furnace by their ids, so a rename - the Steel Foundry's at I3 - cannot l... |
-| 5884 | 7 | `static long homeBuildings(Game g)` | The city's home buildings standing, every RESIDENTIAL type (0.7.71: what childcare is counted against). |
-| 5893 | 3 | `static boolean villageBuild(Game g, String name, int quantity)` | The founding village's builds: build(), and on an Insane founding the funding page's bond for a stage the treasury is short of (0.7.14). |
-| 5901 | 3 | `static boolean build(Game g, String name, long quantity)` | Orders a building the way the screens do: check land, buy some if short, borrow if the treasury cannot cover it, then place the order. |
-| 5906 | 91 | `static boolean build(Game g, String name, long quantity, boolean buyGround)` | ...without the linked ground bought first (`buyGround` false): an island link's terminal stands on the island's own room, and no ground of the linked pool is wanted for it (AL1). |
-| 6024 | 1 | `static double fxRate(Game g)` | Local per USD, for turning a local-money need into a dollar ask. |
-| 6033 | 4 | `static boolean abroadByTheRatesBefore(Game g)` | The build's rule before QB1: abroad when the world's rate before the sale is under ABROAD_SHARE of the city's own. |
-| 6043 | 3 | `static DebtQuote abroadQuote(Game g, double needed)` | The 20-year dollar term bond for a local-money need, as the build would sell it; books nothing. |
-| 6052 | 6 | `static boolean borrowsAbroad(Game g, double needed)` | Whether the build's borrowing for this sale goes abroad: the window open and the quote for THIS sale, with the sale in it, under ABROAD_SHARE of the city's own quote for it. |
-| 6059 | 18 | `static boolean canService(Game g, double extra)` |  |
-| 6088 | 3 | `static void refusal(String why)` |  |
-| 6092 | 8 | `static BuildingsTemplate template(Game g, String name)` |  |
-| 6102 | 3 | `static String byId(int id)` | A building named by its permanent id in a fixture's list of orders, "#11", which template() reads (0.7.120, batch I3): the lists name the arc furnaces and the Iron Mine so, a name being a label the chains rename. |
+| 2791 | 15 | `static void notePaper(Game g, String purpose)` | Writes every piece of paper not yet written, with what it paid for - called the moment the advisor borrows, so the purpose is its own, and at the end of every month for whatever the game issued by itself. |
+| 2807 | 57 | `static void traceOpen()` |  |
+| 2865 | 57 | `static void traceMonth(Game g)` |  |
+| 2932 | 43 | `static void traceLabour(Game g)` | The labour market's month, one row of <prefix>-labour.csv (0.7.18). |
+| 2983 | 54 | `static void traceBuild(Game g)` | The builders, the doors and the wage bill, one row of <prefix>-build.csv (0.7.17). |
+| 3039 | 7 | `static double cityOrderTax(Game g)` | The builders' tax in the city's orders still on site - paid with the order, not yet billed (revised 0.7.19). |
+| 3048 | 5 | `static double sectorsCash(Game g)` | Every sector's till, summed (HD1): the cash half of the businesses' hoard. |
+| 3055 | 5 | `static double sectorsPreTax(Game g)` | Every sector's month before profit tax, summed - what Luxury's share of the city's profit is read against (0.7.19). |
+| 3067 | 17 | `static void tracePop(Game g)` | The people's month, one row of <prefix>-pop.csv (0.7.11, round 2): who lives here by age, what migration aimed at and did and why, and the two housing markets - the trace that asks why a city with the same jobs holds ... |
+| 3086 | 24 | `static void traceHouse(Game g)` | The landlords' month, one row of <prefix>-house.csv (0.7.11). |
+| 3111 | 11 | `static synchronized void traceClose()` |  |
 
-### RUNNING MONTHS (lines 6106-6421)
+### THE CITY'S FUND AND THE BANK'S RESCUE, STATED (0.7.14) (lines 3141-3181)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6177 | 5 | `static void countTheGlut(Game g)` |  |
-| 6183 | 24 | `static void countTheHolders(Game g)` |  |
-| 6219 | 8 | `static void countTheCurve(Game g)` |  |
-| 6228 | 10 | `static void countTheCentralBank(Game g)` |  |
-| 6239 | 13 | `static void countTheCitysPaper(Game g)` |  |
-| 6253 | 3 | `static void run(Game g, int months)` |  |
-| 6262 | 3 | `static void runPlayer(Game g, int months)` | The automated player's months, with its January wealth decision (GV1). |
-| 6272 | 149 | `private static void run(Game g, int months, boolean playGovernmentPolicy)` |  |
+| 3176 | 5 | `static double fundDial(String s)` |  |
 
-### SAVE / RELOAD, MID-RUN (lines 6422-6733)
+### WAGES AGAINST THE INDEX (2026-09-21) (lines 3182-3205)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 6431 | 296 | `static void roundTrip(Game g, GameFiles files, int slot)` |  |
-| 6728 | 5 | `static void same(int month, String what, double actual, double expected)` |  |
+### THE CITY'S OWN PAPER, FOR THE ENSEMBLE (2026-09-21) (lines 3206-3224)
 
-### (untitled) (lines 6734-6741)
+### THE HOLDINGS DIAL, HELD (0.7.1) (lines 3225-3241)
 
-### what the accounts added back (0.7.136, batch FX1) (lines 6742-6766)
+### THE CEILING, SET (0.7.2) (lines 3242-3256)
+
+### THE TARGET, SET (0.7.4) (lines 3257-4313)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6754 | 12 | `static void countAddedBack(Game g)` | The month's write-offs the accounts added back, counted term by term, and each term's first few printed - nothing printed for a harness that borrows run() with no report to print to. |
+| 3320 | 4 | `static void resetTheFloat()` | Clears THE D$ OVER THE RUN: a run's counts start from nothing (main() at its start; a harness before it plays a city of its own). |
+| 3326 | 19 | `static void countTheFloat(Game g)` | The D$'s month, for THE D$ OVER THE RUN: called once a month from audit(), after the defence is counted. |
+| 3347 | 5 | `static double floatVolatility()` | The D$'s volatility a year over the run from FLOAT_FROM_MONTH: the standard deviation of the monthly log move times the root of twelve; 0 before it has months. |
+| 3360 | 5 | `public static void seedMarket(Game g, int seed)` | Seeds the D$'s market from the ensemble seed (XR1): Game founds every city's market from its world seed (Game.marketSeedFor()), which is the same for the ensemble's sixteen cities, so each takes a market of its own - ... |
+| 3383 | 5 | `static void walkLag(Game g, double indexHanded)` | One month of the lag, on the index that month was handed. |
+| 3390 | 9 | `static String wageEra(Game g)` | The three figures on one line, for a checkpoint or the end. |
+| 3418 | 9 | `static void ensureSchools(Game g)` | Under the schools flag: the basic ladder, then a college, then a university, each when the city is big enough to carry it, and more of each as it grows - asked at every stop, so the schools arrive with the people rath... |
+| 3450 | 3 | `static void childcareWhenNeeded(Game g)` | Under the childcare flag (0.7.71, batch N2): when NEEDS YOU lists childcare, the build advice's own card for it - the size that fits the need (since 0.7.101 its order over its life for the places it will fill, BuildAd... |
+| 3455 | 12 | `static BuildAdvice.Suggestion orderChildcare(Game g)` | The rule itself, flag or none (ChildcareCheck plays it): the advice's childcare card when NEEDS YOU lists childcare, placed; that suggestion, or null when nothing was ordered. |
+| 3479 | 15 | `static void groundForAutoBuild(Game g)` | Under the autobuild flag (0.7.73, N4): the ground automatic building said it was held back for, bought as the inbox's notice asks ("Buy land at the land office") - each such order's ground less what is free, by the bu... |
+| 3513 | 12 | `static void noteChildcare(Game g, int month)` |  |
+| 3535 | 19 | `static void budgetLine(Game g, int month)` |  |
+| 3563 | 4 | `static void ensure(Game g, String name, int want)` |  |
+| 3569 | 1 | `static int movesPerLook()` | ...and how many things it will fix when it does look. |
+| 3629 | 462 | `static String advise(Game g)` | WHAT THE CITY DOES NEXT, AND WHY THIS IS NOT A LIST OF RULES ANY MORE. |
+| 4149 | 31 | `static void ironWhenNeeded(Game g)` | IRON, A WHOLE FIELD AT A TIME (0.7.64, batch L). |
+| 4188 | 11 | `static String buyWhole(Game g, LandParcel p, String purpose)` | Buys an offer as the land office does (0.7.64): out of the cash when it covers it - "cash" - or, converting and short, the funding page's BUILD_BOND_YEARS bond for the gap when canService() carries it, then the offer ... |
+| 4208 | 3 | `static double[] fieldEarnings(Game g, int sites)` | What a field of `sites` iron sites would earn the city's mines a month (0.7.67, M3b): {mines, their monthly profit} - the build advice's since 0.7.101 (BuildAdvice.fieldEarnings(), moved there whole so Build's no-depo... |
+| 4213 | 3 | `static double fieldPayment(Game g, LandParcel field)` | The month's payment that repays a field's price here over Game.BUILD_BOND_YEARS (0.7.67, M3b) - the build advice's since 0.7.101 (BuildAdvice.fieldPayment()). |
+| 4232 | 6 | `static double fuelBoughtAbroad(Game g)` | The fuel the world sold the city last month (0.7.62): its drivers' (Game.getHouseholdFuelImports()) and its railway's (Freight.getFuelImported()) - their petrol and its diesel since 0.7.76 - and since 0.7.83 (batch O6... |
+| 4264 | 49 | `static void countFuel(Game g)` |  |
 
-### the city's fund and the bank's rescue (0.7.14) (lines 6767-6867)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6781 | 10 | `static void acceptTheOffer(Game g)` | ACCEPTS THE BANK'S OFFER, the way the page lets a player: a treasury short of it takes the funding page's first offer - the build screen's twenty-year bond, sized to the gap - and then pays. |
-| 6798 | 6 | **type** `static final class Stake` | THE CITY'S STAKE IN ITS BANK AFTER EACH RESCUE: at the resolution, then five, ten and twenty-five years on, and the first months it is under half and under a tenth - until the next resolution takes it back to everything. |
-| 6817 | 50 | `static void watchTheStake(Game g)` |  |
-
-### the fund's cost basis (0.7.39) (lines 6868-6915)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6883 | 7 | `static double[] ledgerSnap(Game g)` |  |
-| 6891 | 21 | `static void watchTheLedger(Game g)` |  |
-| 6914 | 1 | `static String pct(double v)` | A stake, in words: "84.4%", or "-" before it was read. |
-
-### an Insane founding (0.7.14) (lines 6916-8956)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6930 | 10 | `static void borrowForTheVillage(Game g)` | THE PLAYER OF AN INSANE CITY BORROWS FIRST: the build screen's twenty-year bond, sized to the village's invoice at a new city's prices (Founding.whatItBuys()), before it places a house - the treasury holds nothing and... |
-| 6948 | 13 | `static boolean buildOnTheFundingPage(Game g, String name, int quantity)` | ...AND BUILDS THE REST OF IT THE SAME WAY: a stage the treasury is short of is borrowed for on the funding page's bond, sized to the gap (Game.buildFundingGap()), and placed - the page a player is shown, where the adv... |
-| 6968 | 1743 | `public static void main(String[] args) throws Exception` |  |
-| 8718 | 4 | `static String landmassesLine(LandManager ground)` | The report's line for the city's ground by landmass (ET5), printed after ITS GROUND AT THE END: "  ITS LANDMASSES AT THE END: Home 177.7 km2, Island 2 3.1 km2 (not linked); terminals off home 0" (LandmassView.reportLi... |
-| 8729 | 20 | `static void keepCity(Game g, Path root, Path keep)` | The run's last city saved as slot 10 and copied into keep/data/saves (FR7, 2026-10-18), for FR7's headless renders of a played city's map (FR7's render tool, beside its notes in docs/queue/FR7/). |
-| 8762 | 5 | `static String shortTag(String key)` | A sector's name in three or four characters, for the checkpoint line. |
-| 8769 | 11 | `static String tagAt(String key, int extra)` | shortTag()'s rule with the first word `extra` letters longer: the initials of a name of several words, the first three letters (and `extra` more) of one. |
-| 8789 | 4 | `static String cut(String key, int letters)` | A company's name cut to `letters` characters for a trace line (0.7.136, batch FX1): the whole of a shorter one - "Oil", which the bank trace's substring(0, 4) threw on - and, where two of Equity.COMPANIES (the sectors... |
-| 8799 | 19 | `static Map<String, String> distinctCuts(String[] keys, java.util.function.BiFunction<String, Integer, String> cut)` | Each key's cut, `cut.apply(key, extra)`, its `extra` raised a step at a time for every key whose cut another shares, until no two are alike - or the cuts stop growing, after a key's whole length (0.7.136). |
-| 8830 | 17 | `static String creditEra(Game g)` | The business economy at a checkpoint, on one line: per sector its cash, write-downs and months of ban left, then hunger and the shelf. |
-| 8856 | 33 | `static String bankEra(Game g)` | The bank as a business at a checkpoint, on one line (0.7.7): its price build-up at the dial - funds-transfer price, running costs, expected loss and capital charge, adding to prime - then what it paid savers and what ... |
-| 8891 | 7 | `static double depositBeta()` | The run's deposit rate regressed on the dial: the share of a move in the policy rate savers saw, over every month. |
-| 8899 | 57 | `static String era(Game g, String label)` |  |
-
-### THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) (lines 8957-10190)
+### THE PORTS (0.7.86, batch O9; docs/studies/spec-oil.md 5's O9 row) (lines 4314-4712)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 8985 | 3 | `public static Game probeCity(GameFiles files, String earthSpot)` | For ui.UiProbe: the city main() founds - Danzik on the flag's preset, or the real Earth round {@code earthSpot} when it is not null - with the first builds and six months played, on {@code files}. |
-| 8994 | 3 | `public static Game probeTodayCity(GameFiles files, String earthSpot)` | ...today's city, whatever -Dplaytest.founded says (R1g): for the harnesses whose subject is today's city, every discovery known at the founding and its equipment fitted, or a moment written on today's played path (Kep... |
-| 8998 | 34 | `private static Game probeFounded(GameFiles files, Founding city)` |  |
-| 9038 | 27 | `public static void probePlay(Game g, int toMonth)` | For ui.UiProbe: the playtest's loop (long skips, the advisor's looks and moves) played on {@code g} until it reaches {@code toMonth}; each month is timed for probeMonthMs(). |
-| 9067 | 8 | `public static double probeMonthMs(int from, int to)` | For ui.UiProbe: the mean model month, in milliseconds, over the months from (inclusive) to (exclusive) that probePlay() has timed; NaN when none. |
-| 9076 | 8 | `private static void probeRun(Game g, int months)` |  |
-| 9085 | 7 | `static String money(double v)` |  |
-| 9102 | 9 | `static void cleanUp(Path root)` | Deletes a scratch tree, as far as it can, and never throws. |
-| 9127 | 1063 | **type** `static final class MoneyFixtures` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
-| 9131 | 4 | `static void assertTrue(String label, boolean ok)` _(in LongPlaytest.MoneyFixtures)_ |  |
-| 9136 | 5 | `static void quietly(Runnable work)` _(in LongPlaytest.MoneyFixtures)_ |  |
-| 9142 | 6 | `static BuildingsTemplate t(Game g, String name)` _(in LongPlaytest.MoneyFixtures)_ |  |
-| 9157 | 7 | **type** `static final class HouseholdsRun` _(in LongPlaytest.MoneyFixtures)_ | The households' identity (HL1) over one play(): the months struck, the worst, the ones that did not close, and how often each own line fired. |
-| 9167 | 3 | `static boolean householdsClose(MoneyAudit.Households h)` _(in LongPlaytest.MoneyFixtures)_ | The households' identity closes by the test the pools' does (LongPlaytest.audit()): a cent, or a part in ten million of what moved. |
-| 9172 | 3 | `static boolean closes(double residual, MoneyAudit.Households h)` _(in LongPlaytest.MoneyFixtures)_ | The same test for a residual that is not the households' own: `residual` read against what the month moved, a cent or a part in ten million. |
-| 9183 | 34 | **type** `static final class OldMetalTransit` _(in LongPlaytest.MoneyFixtures)_ | HL1's old-metal fixtures, press by press: what a yard's pending ledger holds of the households' old metal at the press's end (MoneyAudit.oldMetalInTransit(): in their savings, not yet out of the pools) and how the hou... |
-| 9193 | 4 | `OldMetalTransit(Game city)` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | Read once the yard is built and before the first press: the amount in transit then is the first press's opening figure. |
-| 9199 | 12 | `void pressed()` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | Read at the end of every press. |
-| 9213 | 3 | `double residualWithoutCarrier()` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | The residual of the press the amount moved most in, had the carrier not been counted. |
-| 9219 | 32 | `static MoneyAudit.Result play(String label, Game g, int months, boolean verbose)` _(in LongPlaytest.MoneyFixtures)_ | Runs `months` and returns the worst relative residual seen, printing the worst month. |
-| 9253 | 27 | `static Game upkeepCity(GameFiles files, boolean office)` _(in LongPlaytest.MoneyFixtures)_ | HL1's fixture: a played city with care, schools, police, a bus network and three bank branches (the bank's charter is exempt from its operating cost) put up for the last month and held, and Contact Centres if `office`. |
-| 9287 | 26 | `static Game foundingCity(GameFiles files)` _(in LongPlaytest.MoneyFixtures)_ | HL1's bond fixture: section 1's founding city rebuilt (the build list the first play() of this file starts from) and played 120 months, the town whose sectors have issued bonds the households hold, and whose household... |
-| 9315 | 4 | `static double upkeepBills(Game c)` _(in LongPlaytest.MoneyFixtures)_ | The five upkeeps the treasury paid and the bank's operating cost, each off the getter the audit reads (Game.buyUpkeep()). |
-| 9320 | 869 | `static void run(String[] args)` _(in LongPlaytest.MoneyFixtures)_ |  |
+| 4364 | 22 | `static void portsWhenNeeded(Game g)` |  |
+| 4388 | 5 | `static long terminalsStanding(Game g)` | The sea terminals standing, all kinds. |
+| 4407 | 3 | `static BuildingsTemplate terminalFor(Game g, Ports.Cargo k, double uncovered, double carriable, double dial)` | The catalogue's terminal to order for a kind of cargo, or null (FR3, docs/queue/FR3.md 5.1; SL1, the size by the kind's whole trade): null with no need - no terminal of the kind that pays back (Ports.berthPaysBack()) ... |
+| 4412 | 14 | `static void countPorts(Game g)` | The month's boats and sea tonnes, counted (the calls without their quays: the map places them, since 0.7.97 on its sea routes). |
+| 4428 | 12 | `static String portsLine(Game g, int calls)` | The ports this month, a line: by kind, tonnes in and out across the boundary, the berths standing, the share in force and the sea tonnes; the calls. |
+| 4460 | 14 | `static void countRefiners(Game g)` |  |
+| 4476 | 31 | `static String refineryLine(Game g)` | The refiners' planner this month, a line: what is short and spare, and the best-earning candidate (and the Oil Refinery's package) with the hurdle each money gate asks of it. |
+| 4569 | 3 | `static boolean groundDemanded(Game g)` | Whether a sector waits on ground (FB11): last month's plans or landlords' orders refused for want of it, as Game.getLandBlockedSectors() keeps them. |
+| 4582 | 16 | `static String fundGround(Game g, LandParcel p, double share, String purpose)` | Buys a whole offer the cash share cannot pay while ground is demanded (FB11, see the banner): at most {@code share} of local money out of the cash, the rest borrowed first on the funding page's BUILD_BOND_YEARS bond w... |
+| 4609 | 3 | `static double groundAheadUtilisation(Game g)` | The most of its dry ground a look leaves built on (0.7.58, J1d): the ground in use grown BuildAdvice.HORIZON months by the businesses' growthFactor(), with BuildAdvice.SLACK past it - the build advice's own sizing (0.... |
+| 4637 | 8 | `static double roomToGrow(Game g)` | ROOM TO GROW, PRICED FROM THE LINE (0.7.67, batch M3b): the output a look's room-to-grow move is weighed at - none while no more of the dry ground is built on than groundAheadUtilisation(), rising to the whole month's... |
+| 4659 | 53 | `static void keepGroundAhead(Game g)` | GROUND KEPT AHEAD (see advise()): buys the best value for room while more of the dry ground is built on than groundAheadUtilisation(), the offers together costing no more than GROUND_AHEAD_CASH_SHARE of the cash at th... |
+
+### THE GROUND, WATCHED ACROSS A SKIP (LP-G1, 2026-11-23) (lines 4713-6112)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4766 | 4 | `static boolean groundLookDue(Game g)` | Whether the city's ground is due a look: never looked at, last looked at in a month after this one, or BuildAdvice.HORIZON months or more ago. |
+| 4772 | 4 | `static int monthsSinceGroundLook(Game g)` | The months since the city's ground was last looked at, 0 when it never was (or was in a later month). |
+| 4781 | 11 | `static void skipWatchingGround(Game g, int months, Runnable month)` | The skip, its ground watched (see the banner): `months` months run one at a time through `month` (the caller's own month: runPlayer(), earthCity()'s, the ensemble's), a ground look before any month it falls due. |
+| 4796 | 5 | `static int[] groundTraceWindow(String s)` |  |
+| 4802 | 3 | `static boolean groundTraced(Game g)` |  |
+| 4807 | 9 | `static void traceGroundMonth(Game g)` | The trace's month (run()): the households nowhere, the homes standing and on site, the ground against the line, the months since a look, and the landlords' order. |
+| 4829 | 28 | `static void linkIslands(Game g)` | THE ISLAND LINK (AL1, 2026-11-09): the test player links an island as the AutoBuilder does, by the same rule - BuildAdvice.linkFor() - when its own measure of the ground running low says so (keepGroundAhead()). |
+| 4863 | 3 | `static boolean desalinationHasCoast(Game g)` | Whether the city has a coast for a desalination plant: it owns sea and the model would stand a plant on it (ET5). |
+| 4882 | 37 | `static void addWater(java.util.List<Move> moves, Game g, double lost)` | WATER, AND WHERE IT COMES FROM (0.7.59, batch J2; spec-land 3, J2's playtest rule). |
+| 4984 | 11 | `static int[] layoutStarts(int target)` |  |
+| 4997 | 8 | **type** `static final class LayoutSnap` | One district in one month: its boxes {type << 40 \| x << 20 \| y} sorted and each one's size (dims: w - 1 << 5 \| h - 1, MF1), its count of boxes by type, what was carried in to it by type (null for none) and as the {mon... |
+| 5054 | 12 | `static void layoutOldForget()` | The old works' state forgotten, so a harness can keep and judge a city of its own: what layoutKeepOldWorks() keeps and layoutFinish() counts, and the finding it may have flagged. |
+| 5068 | 15 | `static int[] layoutLiveMonths(CityMap.District d, int t)` | District d's own live instances of type t, by the month each came in (ascending): its log read as CL3 reads it, each departure taking the newest. |
+| 5085 | 15 | `static int[] layoutSentMonths(int[] pairs, int t)` | The months the instances of type t a carry's {month, code} pairs bring came in that have not left again (a pair ~k takes the k-th pair's back), ascending. |
+| 5106 | 14 | `static int layoutSentAmongOldest(int[] live, int[] sent, int low)` | Of the `low` oldest of a district's own live instances of a type (live: the months they came in, ascending), how many its plan had sent on (sent: their months, ascending). |
+| 5122 | 5 | `static boolean layoutCarries(int[] carryIn)` | Whether a carry in, counted by type, holds anything. |
+| 5129 | 6 | `static int layoutWindowOf(int month)` | Which window a month falls in (its index in LAYOUT_STARTS), -1 for none. |
+| 5137 | 3 | `static long layoutKey(CityMap.District d)` | A district's place in a map, the same in every month: its column and row from the founding site's. |
+| 5142 | 26 | `static void layoutMonth(Game g)` | What the playtest's month asks of the watch, after the month ran: nothing outside a window, else the month planned, compared with the month before, and the first and last months' counts. |
+| 5170 | 47 | `static Map<Long, LayoutSnap> layoutSnapshot(CityMap m)` | Every district planned through the map's own chain, then each one's boxes decoded (CL3Probe's way: tile k, x = b & 31, y = (b >> 5) & 31, type = b >>> BOX_TYPE_SHIFT), the packed ones left out. |
+| 5227 | 6 | `static boolean layoutSameCarry(int[] a, int[] b)` | Whether two carries in leave a district the same history (none is an empty list): the same {month, code} pairs in the same order, or the one the other with pairs appended - CL3's promise is that an arrival appended mo... |
+| 5235 | 4 | `static String layoutName(Game g, int type)` | A building type's words for a finding: its name by id, else its id. |
+| 5241 | 61 | `static void layoutCompare(Game g, CityMap m, int month, Map<Long, LayoutSnap> before, Map<Long, LayoutSnap> now)` | Two months' snapshots compared district by district (the districts in both): the moves, as the section above counts them. |
+| 5308 | 21 | `static boolean[] layoutRunMarks(CityMap m, CityMap.District d, int low, int high)` | The plots the runs laid in the months low to high put a run on or, for a highway, beside it (the plots a building moves off, MF1: DistrictPlan's BUILDINGS MOVE OFF A RUN), a flag a plot of district d's frame; null for... |
+| 5331 | 5 | `static boolean layoutBoxHit(boolean[] marks, long key, int dims)` | Whether the box {key, dims} of a LayoutSnap has a plot among the marks (layoutRunMarks()). |
+| 5338 | 26 | `static double[] layoutRingOf(CityMap m)` | The mean distance from the founding site of the boxes of each use (CL3Probe's measure: a box's middle from the founding site, in the district's frame, in km). |
+| 5366 | 3 | `static int layoutBand(BuildingVisual.Type t)` | A use's band: 2 the outer kinds, 1 industry (not outer), 0 the homes band (the rest). |
+| 5373 | 8 | `static String layoutBandsOf(CityMap m, int month, Map<Long, LayoutSnap> now)` |  |
+| 5387 | 46 | `static void layoutKeepOldWorks(CityMap m, int month, Map<Long, LayoutSnap> now)` | The oldest works: every district's industry boxes and its count of boxes by type, kept at the first window's first month that has industry on the map (the playtest's city has none at m1001, a village of 176 boxes: kep... |
+| 5435 | 7 | `static void layoutTrackLow(CityMap m)` | Every month since the oldest works were kept: each district's lowest model count of every type so far. |
+| 5444 | 64 | `static void layoutFinish(Game g, CityMap m, int month, Map<Long, LayoutSnap> now)` | The last window's last month: the ring, and the oldest works found again where they stood. |
+| 5510 | 38 | `static List<String> layoutLines(long runSeconds)` | The report's lines for the watch: the windows, the moves a month, the ring, the oldest works; the run's seconds beside the windows'. |
+| 5560 | 148 | `static void addRoadThrottle(java.util.List<Move> moves, Game g, double lost)` | The road constraint, and every way there is of easing it. |
+| 5719 | 18 | `static java.util.List<BuildAdvice.Suggestion> roadsByNeed(Game g, BuildAdvice.Measure roadM, double free, java.util.Set<String>...` | The roads by need (0.7.103, batch P4): the build advice's card for the road (BuildAdvice.suggestFor(), no NEEDS YOU row, the cash and the free ground as they stand, its own slack) among the road kinds named and the ci... |
+| 5746 | 17 | `static java.util.List<BuildAdvice.Suggestion> powerByNeed(Game g, BuildAdvice.Measure powerM, double free)` | The power by need (PW1, 2026-11-11): the build advice's card for power (BuildAdvice.suggestFor(), no NEEDS YOU row, the cash and the free ground as they stand, its own slack) among the generators, every other building... |
+| 5769 | 15 | `static boolean pave(Game g, long n)` | Paves n gravel roads (0.7.70, N1): out of the cash, or, short of it, with the long bond build() borrows on, sized to what the cash is short of, when the city can service it (canService()). |
+| 5797 | 4 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost)` | Adds one building as a way of relieving a constraint worth `lost` a month. |
+| 5806 | 22 | `static void addThrottle(java.util.List<Move> moves, Game g, String name, String label, double lost, double gap)` | how many of the building to order |
+| 5840 | 16 | `static int linesThatPay(Game g, BuildingsTemplate t, int most)` | The most of these transit lines, up to most, that pay their way this month (0.7.49, D3): the output the road gives back with them standing (the month's GDP times the throughput they add, on the network as it would be ... |
+| 5858 | 9 | `static double runningCost(Game g, BuildingsTemplate t)` | What one of these costs the city a month to run, fully staffed at today's wages. |
+| 5869 | 4 | `static boolean wouldPay(Game g, String name, String sector)` | Whether one of these would clear its own running costs, on the private sector's screen. |
+| 5874 | 4 | `static long qty(Game g, String name)` |  |
+| 5880 | 3 | `static long qtyOf(Game g, int id)` | ...of a building by its permanent id (0.7.71: the childcare ids, renamed). |
+| 5885 | 4 | `static String nameOf(Game g, int id)` | A building's name by its permanent id, null with none (0.7.120, batch I3; spec-materials 4): the player finds the Iron Mine and the Electric Arc Furnace by their ids, so a rename - the Steel Foundry's at I3 - cannot l... |
+| 5891 | 7 | `static long homeBuildings(Game g)` | The city's home buildings standing, every RESIDENTIAL type (0.7.71: what childcare is counted against). |
+| 5900 | 3 | `static boolean villageBuild(Game g, String name, int quantity)` | The founding village's builds: build(), and on an Insane founding the funding page's bond for a stage the treasury is short of (0.7.14). |
+| 5908 | 3 | `static boolean build(Game g, String name, long quantity)` | Orders a building the way the screens do: check land, buy some if short, borrow if the treasury cannot cover it, then place the order. |
+| 5913 | 91 | `static boolean build(Game g, String name, long quantity, boolean buyGround)` | ...without the linked ground bought first (`buyGround` false): an island link's terminal stands on the island's own room, and no ground of the linked pool is wanted for it (AL1). |
+| 6031 | 1 | `static double fxRate(Game g)` | Local per USD, for turning a local-money need into a dollar ask. |
+| 6040 | 4 | `static boolean abroadByTheRatesBefore(Game g)` | The build's rule before QB1: abroad when the world's rate before the sale is under ABROAD_SHARE of the city's own. |
+| 6050 | 3 | `static DebtQuote abroadQuote(Game g, double needed)` | The 20-year dollar term bond for a local-money need, as the build would sell it; books nothing. |
+| 6059 | 6 | `static boolean borrowsAbroad(Game g, double needed)` | Whether the build's borrowing for this sale goes abroad: the window open and the quote for THIS sale, with the sale in it, under ABROAD_SHARE of the city's own quote for it. |
+| 6066 | 18 | `static boolean canService(Game g, double extra)` |  |
+| 6095 | 3 | `static void refusal(String why)` |  |
+| 6099 | 8 | `static BuildingsTemplate template(Game g, String name)` |  |
+| 6109 | 3 | `static String byId(int id)` | A building named by its permanent id in a fixture's list of orders, "#11", which template() reads (0.7.120, batch I3): the lists name the arc furnaces and the Iron Mine so, a name being a label the chains rename. |
+
+### RUNNING MONTHS (lines 6113-6428)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6184 | 5 | `static void countTheGlut(Game g)` |  |
+| 6190 | 24 | `static void countTheHolders(Game g)` |  |
+| 6226 | 8 | `static void countTheCurve(Game g)` |  |
+| 6235 | 10 | `static void countTheCentralBank(Game g)` |  |
+| 6246 | 13 | `static void countTheCitysPaper(Game g)` |  |
+| 6260 | 3 | `static void run(Game g, int months)` |  |
+| 6269 | 3 | `static void runPlayer(Game g, int months)` | The automated player's months, with its January wealth decision (GV1). |
+| 6279 | 149 | `private static void run(Game g, int months, boolean playGovernmentPolicy)` |  |
+
+### SAVE / RELOAD, MID-RUN (lines 6429-6740)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6438 | 296 | `static void roundTrip(Game g, GameFiles files, int slot)` |  |
+| 6735 | 5 | `static void same(int month, String what, double actual, double expected)` |  |
+
+### (untitled) (lines 6741-6748)
+
+### what the accounts added back (0.7.136, batch FX1) (lines 6749-6773)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6761 | 12 | `static void countAddedBack(Game g)` | The month's write-offs the accounts added back, counted term by term, and each term's first few printed - nothing printed for a harness that borrows run() with no report to print to. |
+
+### the city's fund and the bank's rescue (0.7.14) (lines 6774-6874)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6788 | 10 | `static void acceptTheOffer(Game g)` | ACCEPTS THE BANK'S OFFER, the way the page lets a player: a treasury short of it takes the funding page's first offer - the build screen's twenty-year bond, sized to the gap - and then pays. |
+| 6805 | 6 | **type** `static final class Stake` | THE CITY'S STAKE IN ITS BANK AFTER EACH RESCUE: at the resolution, then five, ten and twenty-five years on, and the first months it is under half and under a tenth - until the next resolution takes it back to everything. |
+| 6824 | 50 | `static void watchTheStake(Game g)` |  |
+
+### the fund's cost basis (0.7.39) (lines 6875-6922)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6890 | 7 | `static double[] ledgerSnap(Game g)` |  |
+| 6898 | 21 | `static void watchTheLedger(Game g)` |  |
+| 6921 | 1 | `static String pct(double v)` | A stake, in words: "84.4%", or "-" before it was read. |
+
+### an Insane founding (0.7.14) (lines 6923-8963)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6937 | 10 | `static void borrowForTheVillage(Game g)` | THE PLAYER OF AN INSANE CITY BORROWS FIRST: the build screen's twenty-year bond, sized to the village's invoice at a new city's prices (Founding.whatItBuys()), before it places a house - the treasury holds nothing and... |
+| 6955 | 13 | `static boolean buildOnTheFundingPage(Game g, String name, int quantity)` | ...AND BUILDS THE REST OF IT THE SAME WAY: a stage the treasury is short of is borrowed for on the funding page's bond, sized to the gap (Game.buildFundingGap()), and placed - the page a player is shown, where the adv... |
+| 6975 | 1743 | `public static void main(String[] args) throws Exception` |  |
+| 8725 | 4 | `static String landmassesLine(LandManager ground)` | The report's line for the city's ground by landmass (ET5), printed after ITS GROUND AT THE END: "  ITS LANDMASSES AT THE END: Home 177.7 km2, Island 2 3.1 km2 (not linked); terminals off home 0" (LandmassView.reportLi... |
+| 8736 | 20 | `static void keepCity(Game g, Path root, Path keep)` | The run's last city saved as slot 10 and copied into keep/data/saves (FR7, 2026-10-18), for FR7's headless renders of a played city's map (FR7's render tool, beside its notes in docs/queue/FR7/). |
+| 8769 | 5 | `static String shortTag(String key)` | A sector's name in three or four characters, for the checkpoint line. |
+| 8776 | 11 | `static String tagAt(String key, int extra)` | shortTag()'s rule with the first word `extra` letters longer: the initials of a name of several words, the first three letters (and `extra` more) of one. |
+| 8796 | 4 | `static String cut(String key, int letters)` | A company's name cut to `letters` characters for a trace line (0.7.136, batch FX1): the whole of a shorter one - "Oil", which the bank trace's substring(0, 4) threw on - and, where two of Equity.COMPANIES (the sectors... |
+| 8806 | 19 | `static Map<String, String> distinctCuts(String[] keys, java.util.function.BiFunction<String, Integer, String> cut)` | Each key's cut, `cut.apply(key, extra)`, its `extra` raised a step at a time for every key whose cut another shares, until no two are alike - or the cuts stop growing, after a key's whole length (0.7.136). |
+| 8837 | 17 | `static String creditEra(Game g)` | The business economy at a checkpoint, on one line: per sector its cash, write-downs and months of ban left, then hunger and the shelf. |
+| 8863 | 33 | `static String bankEra(Game g)` | The bank as a business at a checkpoint, on one line (0.7.7): its price build-up at the dial - funds-transfer price, running costs, expected loss and capital charge, adding to prime - then what it paid savers and what ... |
+| 8898 | 7 | `static double depositBeta()` | The run's deposit rate regressed on the dial: the share of a move in the policy rate savers saw, over every month. |
+| 8906 | 57 | `static String era(Game g, String label)` |  |
+
+### THE DOOR FOR ui.UiProbe (UP1, 2026-10-23) (lines 8964-10197)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 8992 | 3 | `public static Game probeCity(GameFiles files, String earthSpot)` | For ui.UiProbe: the city main() founds - Danzik on the flag's preset, or the real Earth round {@code earthSpot} when it is not null - with the first builds and six months played, on {@code files}. |
+| 9001 | 3 | `public static Game probeTodayCity(GameFiles files, String earthSpot)` | ...today's city, whatever -Dplaytest.founded says (R1g): for the harnesses whose subject is today's city, every discovery known at the founding and its equipment fitted, or a moment written on today's played path (Kep... |
+| 9005 | 34 | `private static Game probeFounded(GameFiles files, Founding city)` |  |
+| 9045 | 27 | `public static void probePlay(Game g, int toMonth)` | For ui.UiProbe: the playtest's loop (long skips, the advisor's looks and moves) played on {@code g} until it reaches {@code toMonth}; each month is timed for probeMonthMs(). |
+| 9074 | 8 | `public static double probeMonthMs(int from, int to)` | For ui.UiProbe: the mean model month, in milliseconds, over the months from (inclusive) to (exclusive) that probePlay() has timed; NaN when none. |
+| 9083 | 8 | `private static void probeRun(Game g, int months)` |  |
+| 9092 | 7 | `static String money(double v)` |  |
+| 9109 | 9 | `static void cleanUp(Path root)` | Deletes a scratch tree, as far as it can, and never throws. |
+| 9134 | 1063 | **type** `static final class MoneyFixtures` | Money is conserved: every dollar that leaves a pool arrives in another, or crosses the city's boundary in a way the audit can name. |
+| 9138 | 4 | `static void assertTrue(String label, boolean ok)` _(in LongPlaytest.MoneyFixtures)_ |  |
+| 9143 | 5 | `static void quietly(Runnable work)` _(in LongPlaytest.MoneyFixtures)_ |  |
+| 9149 | 6 | `static BuildingsTemplate t(Game g, String name)` _(in LongPlaytest.MoneyFixtures)_ |  |
+| 9164 | 7 | **type** `static final class HouseholdsRun` _(in LongPlaytest.MoneyFixtures)_ | The households' identity (HL1) over one play(): the months struck, the worst, the ones that did not close, and how often each own line fired. |
+| 9174 | 3 | `static boolean householdsClose(MoneyAudit.Households h)` _(in LongPlaytest.MoneyFixtures)_ | The households' identity closes by the test the pools' does (LongPlaytest.audit()): a cent, or a part in ten million of what moved. |
+| 9179 | 3 | `static boolean closes(double residual, MoneyAudit.Households h)` _(in LongPlaytest.MoneyFixtures)_ | The same test for a residual that is not the households' own: `residual` read against what the month moved, a cent or a part in ten million. |
+| 9190 | 34 | **type** `static final class OldMetalTransit` _(in LongPlaytest.MoneyFixtures)_ | HL1's old-metal fixtures, press by press: what a yard's pending ledger holds of the households' old metal at the press's end (MoneyAudit.oldMetalInTransit(): in their savings, not yet out of the pools) and how the hou... |
+| 9200 | 4 | `OldMetalTransit(Game city)` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | Read once the yard is built and before the first press: the amount in transit then is the first press's opening figure. |
+| 9206 | 12 | `void pressed()` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | Read at the end of every press. |
+| 9220 | 3 | `double residualWithoutCarrier()` _(in LongPlaytest.MoneyFixtures.OldMetalTransit)_ | The residual of the press the amount moved most in, had the carrier not been counted. |
+| 9226 | 32 | `static MoneyAudit.Result play(String label, Game g, int months, boolean verbose)` _(in LongPlaytest.MoneyFixtures)_ | Runs `months` and returns the worst relative residual seen, printing the worst month. |
+| 9260 | 27 | `static Game upkeepCity(GameFiles files, boolean office)` _(in LongPlaytest.MoneyFixtures)_ | HL1's fixture: a played city with care, schools, police, a bus network and three bank branches (the bank's charter is exempt from its operating cost) put up for the last month and held, and Contact Centres if `office`. |
+| 9294 | 26 | `static Game foundingCity(GameFiles files)` _(in LongPlaytest.MoneyFixtures)_ | HL1's bond fixture: section 1's founding city rebuilt (the build list the first play() of this file starts from) and played 120 months, the town whose sectors have issued bonds the households hold, and whose household... |
+| 9322 | 4 | `static double upkeepBills(Game c)` _(in LongPlaytest.MoneyFixtures)_ | The five upkeeps the treasury paid and the bank's operating cost, each off the getter the audit reads (Game.buyUpkeep()). |
+| 9327 | 869 | `static void run(String[] args)` _(in LongPlaytest.MoneyFixtures)_ |  |
 
