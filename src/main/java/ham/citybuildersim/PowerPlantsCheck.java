@@ -78,7 +78,7 @@ public class PowerPlantsCheck {
     record Study(String name, double usdPerKw, double nameplateKw, double runs, int months, boolean cooling, Good fuel,
                  double heatRate, double fuelPerMwh, double acres, int posts, int since, String variable) { }
 
-    /** The study's table (spec-electricity 2.3), each figure its own: $/kW, nameplate, availability or capacity factor, build months, cooling, fuel, Btu a kWh, fuel a MWh, acres, posts, year. */
+    /** The modern study's table (spec-electricity 2.3) plus PW9's sourced historical station: $/kW, nameplate, availability or capacity factor, build months, cooling, fuel, Btu a kWh, fuel a MWh, acres, posts, year. */
     static final List<Study> STUDY = List.of(
             new Study("Coal Power Plant", 3271, 325_000, 0.85, 60, true, Good.THERMAL_COAL, 8490, 0.357, 200, 68, 1900, ""),
             new Study("Oil-Fired Plant", 3054, 100_000, 0.85, 48, true, Good.FUEL_OIL, 11227, 283, 30, 20, 1900, ""),
@@ -238,7 +238,7 @@ public class PowerPlantsCheck {
     static BuildingManager catalogue;
 
     static void rows() {
-        section("1. the rows are the study's (spec-electricity 2.3, by HY1's rule)");
+        section("1. the rows are their source tables' (spec-electricity 2.3 and PW9, by HY1's rule)");
         Game g = city("rows", false);
         BuildingManager b = g.getBuildingManager();
         catalogue = b;

@@ -458,6 +458,63 @@ public final class WorksValue {
         return completedAt(g, completionSchedule(g, site), Double.isFinite(months) ? Math.max(0, months) : 0);
     }
 
+    /** Read-only native schedules for one power evaluation: generation and the already ordered loads. */
+    static final class PowerDates {
+        private final Game game;
+        private final Map<BuildingsTemplate, PendingWork> generation, loads;
+        private final java.util.SortedSet<Double> events = new java.util.TreeSet<>();
+        private double through;
+
+        PowerDates(Game game, Map<BuildingsTemplate, Long> site) {
+            this.game = game;
+            generation = completionSchedule(game, site);
+            Loads held = held(game);
+            loads = held == null ? loadSchedule(game) : held.schedule();
+        }
+
+        Map<BuildingsTemplate, Long> openBy(double months) {
+            return completedAt(game, generation, Double.isFinite(months) ? Math.max(0, months) : 0);
+        }
+
+        /** Growth is monotone between events: test the endpoints, every load jump, and immediately before generator credit. */
+        java.util.SortedSet<Double> frontier(double from, double until) {
+            java.util.SortedSet<Double> dates = new java.util.TreeSet<>();
+            dates.add(from);
+            dates.add(until);
+            extend(until);
+            dates.addAll(events.subSet(from, until));
+            return dates;
+        }
+
+        /** Each transition is located once, then reused for every candidate and count in this evaluation. */
+        private void extend(double until) {
+            if (!(until > through)) return;
+            for (Map<BuildingsTemplate, PendingWork> schedule : java.util.List.of(generation, loads)) {
+                for (Map.Entry<BuildingsTemplate, PendingWork> e : schedule.entrySet()) {
+                    PendingWork p = e.getValue();
+                    Map<BuildingsTemplate, PendingWork> one = Map.of(e.getKey(), p);
+                    long start = completedAt(game, one, through).getOrDefault(e.getKey(), 0L);
+                    long end = completedAt(game, one, until).getOrDefault(e.getKey(), 0L);
+                    for (long n = Math.max(1, start + 1); n <= end; n++) {
+                        // Locate the actual completedAt() transition, including rounding at a regular interval. Rushed quotes
+                        // use that same native reader too; no second completion predictor or scan of calendar months.
+                        double lo = through, hi = until;
+                        while (Math.nextUp(lo) < hi) {
+                            double mid = lo + (hi - lo) / 2;
+                            if (mid == lo || mid == hi) break;
+                            long ready = completedAt(game, one, mid).getOrDefault(e.getKey(), 0L);
+                            if (ready >= n) hi = mid; else lo = mid;
+                        }
+                        events.add(hi);
+                        if (schedule == generation) events.add(Math.nextDown(hi));
+                        n = Math.max(n, completedAt(game, one, hi).getOrDefault(e.getKey(), 0L));
+                    }
+                }
+            }
+            through = until;
+        }
+    }
+
     /** Quote-completed units at this date. Priority delay precedes the first unit in full. */
     private static Map<BuildingsTemplate, Long> completedAt(Game g,
             Map<BuildingsTemplate, PendingWork> schedule, double months) {
