@@ -234,6 +234,12 @@ reviewed both mends' diffs as a stranger's:
   - `drawnOneForOne` was extracted from `networkOn`, and both draw checks
     call it.
 
+## 9. Untagged
+
+The orchestrator, 2026-11-25 (bus 20261125-220413-297): FS6 ships untagged, harnesses only,
+like PF1; the ship file's heading has no `{next}`. It widens PX2's row on main for Map 1 and Plan 17.
+A stranger's review (REV-FS6, Codex) judges the re-caused fixtures.
+
 ## The Codex builder's record, 2026-11-21 (at 968e7db94), kept as it was
 
 What it was held on, S4 and the mine raster, is settled in sections 3 and 4
