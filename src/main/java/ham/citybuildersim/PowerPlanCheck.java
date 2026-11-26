@@ -1393,7 +1393,7 @@ public final class PowerPlanCheck {
                 {"House", "900"}, {"Construction Depot", "5"}, {"Water Treatment Plant", "1"}, {"Commercial Bank", "1"}});
         quietly(() -> g.simulateMonths(ResearchCatalog.knownFrom("1906") - g.getMonth()));
         WorksFinanceCheck.place(g, 3_000);
-        g.getBusinessInvestment().restorePopulationHistory(java.util.List.of(3_000.0, 3_000.0));
+        g.getBusinessInvestment().restorePopulationHistory(java.util.List.of(3_000L, 3_000L));
         g.getHistorySave().getPopulation().clear();
         g.getHistorySave().getMonth().clear();
         g.setCashForTest(1e12);

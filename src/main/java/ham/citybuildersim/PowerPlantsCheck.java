@@ -89,7 +89,7 @@ public class PowerPlantsCheck {
             new Study("Solar Farm", 1484, 50_000, 0.24, 24, false, null, 0, 0, 333, 4, 1982, "solar"),
             // PW9: Engineering News's 1900 $100/kW, at the catalogue's 2025 dollar level; EPA's historical heat rate.
             new Study("Small Steam Station", 100 / PriceLevel.HISTORICAL_FACTOR, 850, .85, 15, true, Good.THERMAL_COAL,
-                    75000, 75000 * PowerDispatch.MJ_PER_BTU / PowerDispatch.heatContentMJ(Good.THERMAL_COAL) * 1000, 1, 5, 1900, ""));
+                    75000, 3.15, 1, 5, 1900, ""));
 
     /** The new fuelled rows, the good each burns and the sector at home that makes it. */
     static final String[][] FUELLED = {
