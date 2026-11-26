@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-QR1-38QLRYih -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — QR1, the distress rule sells plant that pays its running costs — 2026-11-26, ready, see docs/queue/QR1-notes.md

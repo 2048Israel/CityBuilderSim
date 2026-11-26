@@ -715,3 +715,57 @@ A fresh fetch immediately after this ensemble still gives main
 and the refreshed ensemble artifact are being committed before the
 standing authorized dry run. No further code review is required by the
 reviewer's instruction, and no model or fixture changed after the merge.
+
+### Final ALL dry run and readiness (2026-11-26)
+
+The standing 06:21 go authorized the pushed head. The command started at
+07:12, waited for the box's `RES3-board-20261126` hold, then acquired its
+retained run at about 07:21. The hold was mailed once as a resource block;
+it cleared without a laptop fallback or another QR1 JVM. The explicit
+terminal line is **[2026-11-26 11:42:23] gate exit 0**; caller and retained
+exit are **0**, the check suite **3 (known reds only)**.
+
+The run's actual manifest names these two commits:
+
+- branch `d2374dd936672cd6d9e8feda732246d766c0eeac`;
+- main `e3e390acf6f3f763383a4957660f4a245b6dce02`.
+
+Kept box run **/home/jerus/cbs/runs/cbs-gate-QR1-38QLRYih**, copied home to
+**C:/Users/Jerus/AppData/Local/Temp/cbs-gate-QR1-38QLRYih**. Its `ship.log`,
+`checks/suite.txt`, `checks/reds.txt` and manifest are retained unchanged;
+`unnamed.txt` and `checks/new-reds.txt` are empty. The ship file names the
+box run on its first line. Nothing was executed inside or written to the
+kept run by QR1 or its helper.
+
+**ALL 257 picked**, **250 actually run** under the unchanged normal
+`AllChecks.selected()` nightly exclusions: **233 passed**, **17 known-red
+harnesses / 36 failed assertions**, **zero NEW**. The seven excluded nightly
+harnesses are GlobeCheck, EducationCheck, MainLineCheck, BridgeMapCheck,
+GatewayCheck, TruckRouteCheck and PrizeCheck; eight directly picked nightly
+harnesses did run. Compile **9s**, maps **1.7s**, stale **0 firm / 209 soft**;
+suite **1295s**, full check stage **1313s**. All nine required Monocle display
+harnesses started. Two SOFT timing assertions and two OBSERVED path
+assertions retain their normal status; no check or bound was changed.
+
+Whole **BankCheck PASS**: section 15 really retires one shop at m5, sells
+four material units for $1.8k, passes both the sale-month and later-use
+cent audits, and executes the broke-builders zero-receipt case. There is
+no early-return audit darkness. **ReadPathCheck**, **SaveFileCheck** and
+**LongPlaytest PASS**; the primary reaches m2405 in 380s, every played month
+audited, every reload matched, findings `Nothing`, and all post-run money
+fixtures pass. BankFailureCheck, CentralBankCheck and YoungBankCheck also
+pass; no unexplained-money or reload finding is present.
+
+All 36 red lines match the run's retained main known-red list. Owners:
+HT1-H (Invest, OrderDoor, Currency, ForeignDebt, Holders, Car), FS11
+(HousingDoor), FS12 (AutoBuild/Road), FS8 (CopperRefining), LP-G2
+(GroundSkip), DK1 (Denomination), MR1 (Population), PX2 (Map/Plan surface
+and junction floor), PW2-B (Plan rim band), PW2-T (RailDraw), OX2
+(DeathRecord). They remain named reds, not passes. **No QR1 known-red row
+was added**, no conservation/save assertion weakened, and no new red
+needed an own-code or latent-class diagnosis.
+
+QR1-dry-proof completed its read-only audit and ended. After the dry run,
+only these notes and the ship file change. The gate-run syntax check is
+green; the provisional marker is removed last, in its own commit, and its
+absence checked on origin before the readiness mail.
