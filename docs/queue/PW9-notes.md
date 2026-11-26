@@ -1049,3 +1049,21 @@ ensemble/full validation and a newly allocated dry run continue after
 `laptop back`. The failed AG6VUQWA dry run is never reused. The readiness
 marker stays; the four focused names and fast are green, but the batch
 is not ready to publish while this final validation remains incomplete.
+
+## Orchestrator's post-restart continuation
+
+Instruction `20261126-041627-233` settles the laptop timeout disposition:
+the 1,740-second run under laptop load is GB6's class (FB11 had the same),
+and the box's full dry run must run LongPlaytest whole and judge it. Do
+not chase another full PC run or pre-guard PC control. This adds no
+known-red exemption and weakens no assertion. The orchestrator requires
+no further review: the funding guard mends PW9's own dry-run reds and
+leaves the measured figures unchanged.
+
+Wait for the explicit `laptop back` signal, merge origin/main before
+the final ensemble, commit/push, and run that ensemble against
+`0.9.208.md`. Then ask `PW9 dry run?` and wait for the allocated slot.
+Keep the provisional marker until the final checks and records are done;
+the failed AG6VUQWA run supplies no reuse approval. This pre-restart
+turn only records the instruction, commits/pushes, and ends before04:30;
+it starts no helper, JVM or global job.
