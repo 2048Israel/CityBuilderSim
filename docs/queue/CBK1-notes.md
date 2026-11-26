@@ -50,7 +50,25 @@ CBK3 (the window against collateral) build on it and are not here.
 
 The default playtest with `-Dplaytest.trace`, one JVM each:
 
-MD5_TABLES
+main's classes are the branch's with main's `CentralBank.java` and `DebtManager.java` compiled in, the only
+two model files the branch changes (`CentralBankStatements` is new and read by nothing in the month).
+Twice: on the branch's base, main a21ccb679 (0.9.211), against the branch at df7c1adf8 (its model final,
+every later commit `ui/` and harnesses); and after MR1 shipped, main e02e09bc0 (0.9.212) against the
+merged branch 2fa69e41b. All eight the same, both times (MR1 does not move the default playtest):
+
+| file | md5, main and CBK1 (both pairs) |
+|---|---|
+| t-bank.csv | aa2af5f1316c33dde8ba9366884ce152 |
+| t-bonds.csv | fa135be296fe76e98685d040a2d05a33 |
+| t-borrow.csv | 36b47896b1f126a8b75ef1102132319d |
+| t-build.csv | d2e6afe778756cef8b4c8186b0c316df |
+| t-house.csv | 96cf152bb7b38f96e2198749252b88b2 |
+| t-labour.csv | e9cf9e0947a832addd388e041eaeccaf |
+| t-month.csv | 9989337eb618a85564fa3d65307aeabe |
+| t-pop.csv | c6f5e3bacc4ae22a60a9be9775855794 |
+
+AP6 (0.9.213, BondMarket, BuildingManager, WorksValue) merged after the second pair; it touches nothing
+the branch touches. So no ensemble.
 
 ## The checks
 
@@ -68,8 +86,20 @@ MD5_TABLES
 - `KeptCheck` 104-106 (new): the choice and the nine central pages kept across months, equal to pages
   built new in signature and pixels, and what reshapes the tab's two sides (163 assertions, 0 FAIL;
   the block takes about 100 s). 55-57, the commercial bank's, unchanged and green.
-  KEPT_WHOLE
-- `--fast` green. NAMED_HARNESSES
+  The whole of KeptCheck, run straight (without AllChecks' 1,740 s limit, which on this PC it passes at
+  about section 74): exit 0, 4,485 OK, no FAIL, Policy's 75-80 (whose rule, holdings and ceiling cards
+  now take their redraw) included.
+- On the tree merged with MR1 and AP6 (2fa69e41b, then origin/main b2f50a9ef): `--fast` green;
+  `CentralBankStatementCheck`, `SectorStatementCheck` and `BankCheck` exit 0; `SaveFileCheck` exit 0
+  once restated (below); `CentralBankCheck` exit 0 run straight (through `batch-check.sh` it ran past
+  the PC's 1,740 s limit in section 21, its many foundings, with eight other JVMs on the PC: DQ1's
+  notes record the same, and alone it passes).
+- **SaveFileCheck, restated (check reality):** its FB14 section read the gold's two figures as the
+  last two slots of the central bank's array. CBK1 appends its statements' block after them, so the
+  section now reads them where FB14 put them, the two slots before
+  `CentralBankStatementCheck.BEFORE_CBK1` (13, the revenue ring and main's fourteen - main's array
+  length), and an array from before FB14 is still that one cut two slots shorter. The three
+  assertions are the same; only where they look moved.
 
 ## The calls taken (★, each the recommended way; Jerus may overturn any)
 
