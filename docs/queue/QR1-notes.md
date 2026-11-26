@@ -198,8 +198,8 @@ two-space line breaks (the new link line is flagged by `git diff --check`).
 
 There is no after-fix city run at this stage: the first affected real call
 and the new guard establish path divergence. The final-model ensemble and
-dry run follow review, using `docs/ensemble/0.9.206.md` or a newer 1900
-baseline if main ships one.
+dry run follow review, using `docs/ensemble/0.9.208.md`, as the orchestrator
+directed after REV-QR1.
 
 ## Publication order
 
@@ -219,3 +219,127 @@ model's ensemble on the gate box against the newest 1900 baseline. Then ask
 the orchestrator for the ALL dry-run slot. The provisional marker stays until
 those steps are complete and is removed last in its own commit. No local full
 pick or dry run is started before that go.
+
+## REV-QR1 — the mends, 2026-11-26
+
+The stranger accepted the debt path, money, three repaired fixtures and
+reality case, but found P1 in BankCheck 15: its net-only `restoreStreak()`
+left the new operating gate closed. The null-sale return then skipped the
+distress-sale cent-level money audit, salvage-use audit and broke-builders
+case. This was missed by the first four named checks. It is QR1's fixture
+defect, never a known red.
+
+`restoreDistressStreaks()` now restores both histories for RET while keeping
+other sectors' histories. That alone is insufficient: the played month is
+currently operating-profitable and resets the clock. The next attempt adds a
+real repair bill for the owned shop, sized from its already-booked revenue
+using `EconomyManager.maintenanceBillFor()`. Its temporary repair rate makes
+the bill exceed revenue with headroom, then is restored in `finally` after
+each audited month. Materials are consumed and builders paid through the
+existing model, rather than injecting an income-statement loss. The played
+month must actually lose on running costs and keep the full streak. The
+lone-shop/no-spare-capacity, stock/cost/cash and broke-builders assertions,
+return guards and original audit tolerances remain.
+
+The first `batch-check.sh BankCheck` call exposed another wrapper fact:
+substring selection also starts CentralBankCheck and YoungBankCheck. Bank's
+first attempted mend fails its two new fixture assertions; YoungBank passes.
+CentralBank continues independently, so it is stopped by its verified owned
+PID 46116, not by image name; that incomplete extra is not a green check or
+a known-red waiver. No selector/machinery is changed. Subsequent local named
+runs use `-Dcbs.parallel=1`, and BankCheck's exact existing main is invoked
+directly after `--fast`, with AllChecks' own 2 GB/64 MB, soft-timing,
+observation and UTF-8 flags. The ALL dry run still runs the full registry.
+
+On source **97c748cf6**, final `--fast` **0**, exact **BankCheck whole 0**,
+**EnsembleCheck 0**. The read-only helper verifies **37 executed section-15
+assertions, all OK**, not merely an empty early return: the first retirement
+at month 5 sells one Convenience Store, four material units for $1.8k; its
+cent-level audit executes, the material is subsequently used and expensed at
+its original cost and that cent-level audit executes too. The second actual
+retirement occurs with the builders overdrawn; they buy/pay nothing and the
+seller receives zero. Both played operating-loss premises and new receipt
+observations pass. Logs: `target/QR1-BankCheck-whole-final.log`, its `.exit`,
+`QR1-review-fast-final.txt`, `QR1-review-EnsembleCheck.txt` and
+`QR1-review-final-checks.txt`. This closes P1. The bank episode comment now
+allows paying plant to continue operating instead of asserting every banned
+sector is selling plant monthly.
+
+P2 is taken. Forgiveness already has a saved sector cumulative in
+EconomyManager; `LongPlaytest.forgivenTotal()` sums it. The playtest's
+`backstopInBanSum` is a **subset**, not an amount to add to forgiveness.
+Existing Salvage records omit plot cash and retirements with no saleable
+material, so a new optional, transient `Game.watchRetirements()` observer
+receives actual completed retirement events: sector, actual buildings,
+distress flag, plot cash and material cash, gross before debt repayment,
+and the running result captured before disposal changes the sector.
+It reads the amounts already paid in `retire()` and moves no money, changes
+no decision and adds no saved field. The two BankCheck fixtures also verify
+its actual sale/material cash and zero-material-payment case.
+
+The ensemble exports cumulative forgiveness, in-ban backstop, all immediate
+retirement receipts, distress building count and distress plot/material/gross
+receipts, plus the in-ban sector-month count. Per-retirement TSV sidecars
+retain sector, time, cash, running income and both streaks, so the 13/109
+paying-plant events can be identified directly. New cumulative fields retain
+17 significant digits; existing
+columns keep their original format. Money is nominal local-currency
+thousands. Immediate receipts mean plot buybacks plus the builders' payment
+for material, before financing settlement; later old-steel inventory trades
+are separate. Compare each matched run at the same endpoint. P2 uses the
+four default-city measurements approved below, rather than historical policy
+ensembles. Report both all-retirement and distress-only receipts. Extra
+forgiveness above avoided receipts is to be mailed before the dry-run request.
+
+P2's historical-data limitation is real: both retained OA1 sets (80 raw CSVs
+locally at `C:/Users/Jerus/AppData/Local/Temp/cbs-kept-OA1/target/ensemble/OA1`
+and on the box) lack all three flow families; their summary and progress logs
+cannot recover them. The exact OA1 model is dc7f9cc7d (snapshot calls itself
+0.9.206, published baseline is 0.9.208). Prepared observation-only probe
+`probe/QR1-OA1-money` **c99f2e56b** on that commit, changing only Game's observer
+and the identical ensemble exports: its `--fast` **0**, `EnsembleCheck` **0**.
+No 80-run historical replay was started. The orchestrator declined that
+proposal and authorized four paired default runs instead: main **3bf83d20e**
+and QR1, each founded the 1900 way and under `-Dplaytest.founded=today`, the
+same seed and months. Prepared `probe/QR1-main-money` **5c05e7290** on that
+exact main with the identical observer/exports; its `--fast` **0** and
+`EnsembleCheck` **0**. The unused OA1 probe will not run. QR1's formal 80-run
+ensemble remains separate, against `docs/ensemble/0.9.208.md`, with M1/F1
+judged on its own. Paired work uses the box's heavy lock, or the laptop only
+if the box is busy, and never overlaps another heavy job of this builder.
+The cash comparison and any required excess-forgiveness mail precede the
+dry-run request.
+
+The paired runs use `-Densemble.defaultPlaytest=true`: the driver invokes
+`LongPlaytest.main()` itself, leaving its policy actions, save/reload,
+overshoot and final checks intact. Optional primary-created and completed-month
+callbacks are null in ordinary harnesses and the formal policy ensemble.
+They capture only the primary Game's contiguous months 1–2400, reinstall the
+transient retirement observer after round trips, then detach it before later
+fixture cities. Each pair has its own label; an AUTO2 policy run is not a
+substitute for the default player. The exporter also sums actual monthly
+forgiveness independently of the saved cumulative and records forgiveness
+in sector-months with an actual in-ban backstop. Its DONE marker certifies
+complete, error-free exports only: the full playtest's assertions remain in
+the log and retain their own verdict. No extra historical 80-run replay runs.
+
+The final event/sector export refinement on **3f87c257c** repeats `--fast`,
+exact BankCheck whole and EnsembleCheck: **all 0**. Its new event running
+result is also checked negative in both BankCheck sale fixtures. No decision
+rule, audit tolerance or cash movement changes with the observations.
+
+The default-player capture refinement **9f360541f** repeats `--fast`, exact
+whole BankCheck and EnsembleCheck: **all 0**, finished after 01:11 local on
+2026-11-26. The formal ensemble will run this final model plus these records;
+the matching main probe adds the same optional observations, never the QR1
+gate. Both source snapshots are pushed before the box compiles them.
+
+P3 considered and not taken, as instructed: shorten or deny a fresh full
+operating-loss runway after a long interest-only net-loss spell.
+[11 USC 1112(b)(4)(A)](https://uscode.house.gov/us/usc/119-120/t11/s1112/)
+identifies substantial/continuing estate loss together with lack of a
+reasonable rehabilitation prospect as cause for conversion/dismissal. It
+does not prescribe this model's twenty-four-month timer or make operating
+profit a guarantee of viability. QR1 retains the separate saved operating
+runway and existing debt resolution; no new viability rule or queue row is
+added. The P2 measurements make the resulting support visible.
