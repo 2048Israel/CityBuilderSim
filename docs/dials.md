@@ -2,9 +2,9 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,837 constants in 645 files.**
+**6,855 constants in 647 files.**
 
-## model (3075 constants)
+## model (3085 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -565,6 +565,20 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 124 | `CentralBank.FULL_COMPRESSION_SHARE` | `.5` | The holding at which the term premium is wholly compressed: half the term paper, where it has been since 0.7.1 - MAX_QE_SHARE's value until the dial went past it (DebtManager.compression()). |
 | 127 | `CentralBank.QE_SPEED` | `.25` | The most it moves its book in a month: this share of the larger of the dial and the setting before it, of the term paper outstanding - a quarter, so a move from one setting to another, buying towar... |
 | 130 | `CentralBank.QE_COMPRESSION` | `1.0` | How much of the term premium a holding of FULL_COMPRESSION_SHARE takes away: all of it, at 1. |
+| 980 | `CentralBank.LINES` | `Line.values()` |  |
+| 981 | `CentralBank.SHEETS` | `Sheet.values()` |  |
+| 984 | `CentralBank.SHEET_MONTHS` | `12` | How many months of its sheet it keeps, for the balance sheet's year-ago column: a year, the commercial bank's. |
+
+### CentralBankStatements.java ([map](map/CentralBankStatements.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 29 | `CentralBankStatements.CENT` | `1e-5` | A cent, in the model's thousands: what a statement's NOT ACCOUNTED FOR is held under (CentralBankStatementCheck). |
+| 34 | `CentralBankStatements.I_INCOME_HEAD` | `"cb.incomeHead", I_WINDOW = "cb.window", I_ADVANCES = "cb.advances", I_COUPONS = "cb.co...` | The income statement's row ids, which the screen and CentralBankStatementCheck look a row up by. |
+| 94 | `CentralBankStatements.S_ASSETS_HEAD` | `"cbs.assetsHead", S_WINDOW = "cbs.window", S_TREASURY = "cbs.treasury", S_PAPER = "cbs....` | The balance sheet's row ids. |
+| 162 | `CentralBankStatements.M_MADE_HEAD` | `"cbm.madeHead", M_MADE_REST = "cbm.madeRest", M_MADE = "cbm.made", M_DESTROYED_HEAD = "...` | The money statement's row ids. |
+| 167 | `CentralBankStatements.MADE` | `{ { "Lent to the commercial bank at the window", CentralBank.Line.ADVANCED_TO_BANK }, {...` | The money made, by flow: {label, line}, in the order the statement prints them. |
+| 180 | `CentralBankStatements.DESTROYED` | `{ { "Repaid by the commercial bank at the window", CentralBank.Line.REPAID_BY_BANK }, {...` | ...and destroyed. |
 
 ### ChartModel.java ([map](map/ChartModel.md))
 
@@ -1010,8 +1024,9 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2760 | `DebtManager.CURVE_TENORS` | `{ 3, 6, 12, 24, 60, 120, 240, 360, 480, 600 }` | The maturities, in months, the curve is drawn and kept at: three months to fifty years. |
 | 2763 | `DebtManager.CURVE_KEPT` | `25` | The months of the curve kept: today, a year ago and two years ago. |
 | 2766 | `DebtManager.CURVE_ROW` | `2 + 2 * CURVE_TENORS.length` | A curve-book row: the month, the dial, the city's zero rate at each of CURVE_TENORS, the world's at each. |
-| 3407 | `DebtManager.FAIR_COUPON_STEPS` | `100` | The halvings of the bisection above: far past what a double keeps of a bracket of one unit of yield. |
-| 3521 | `DebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 2925 | `DebtManager.CENTRAL_BANK_LADDER` | `{ 12, 24, 60, 120 }` | The ladder's rungs, in months left: a piece falls on the first rung it is no longer than, and past the last on one more. |
+| 3464 | `DebtManager.FAIR_COUPON_STEPS` | `100` | The halvings of the bisection above: far past what a double keeps of a bracket of one unit of yield. |
+| 3578 | `DebtManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### DebtQuote.java ([map](map/DebtQuote.md))
 
@@ -6033,7 +6048,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2258 constants)
+## harnesses (2266 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6356,6 +6371,19 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2073 | `CentralBankCheck.PROBE_MONTHS` | `4` | ...and the months it plays before them, seed 7's four. |
 | 2081 | `CentralBankCheck.STRICT_SHAPES` | `{ { 40, 3, 20 }, { 41, 3, 20 }, { 42, 3, 20 }, { 43, 3, 20 }, { 40, 4, 20 }, { 41, 4, 2...` | The founding shapes very strict is measured against Standard in: the playtest's seeds 0 to 23, with 40 + seed % 4 houses, 3 + (seed / 4) % 3 months before the next 20 + (seed / 12) % 3 houses. |
 | 2094 | `CentralBankCheck.STRICT_SHARE` | `.75` | The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard: three in four, retained after CB2 measured all 24 shapes at month 600 for 240 months on RT2 main (0.9.1... |
+
+### CentralBankStatementCheck.java ([map](map/CentralBankStatementCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 54 | `CentralBankStatementCheck.CENT` | `CentralBankStatements.CENT` |  |
+| 92 | `CentralBankStatementCheck.tallies` | `new LinkedHashMap<>()` | The tallies of the run, by identity, each under its section's number. |
+| 97 | `CentralBankStatementCheck.caused` | `new LinkedHashMap<>()` | What the cities caused: months with each condition, by name. |
+| 130 | `CentralBankStatementCheck.QE_FROM` | `100, QE_BACK = 220, MONTHS = 300` | The month the holdings dial goes up in the test player's city, the month it comes down, and the settings. |
+| 131 | `CentralBankStatementCheck.QE_UP` | `.30, QE_DOWN =.05` |  |
+| 133 | `CentralBankStatementCheck.DRY_AT` | `60, REFILLED_AT = 84` | ...and the months its treasury is emptied, and filled again. |
+| 431 | `CentralBankStatementCheck.PLAIN_MONTHS` | `120` |  |
+| 511 | `CentralBankStatementCheck.BEFORE_CBK1` | `13 + CentralBank.REVENUE_MONTHS + 14` | The slots of the central bank's array before CBK1's: 13, the revenue ring, and the fourteen 0.7.1 to FB14 appended. |
 
 ### ChartFitCheck.java ([map](map/ChartFitCheck.md))
 
