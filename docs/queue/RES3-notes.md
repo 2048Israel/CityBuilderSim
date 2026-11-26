@@ -805,6 +805,36 @@ reviewer's line.
   billed and credited at the next settlement in 5 of 5, at most 613.41 a
   month, 613.41 owed back through the m901 save and load);
   DenominationCheck known red only (six of main's seven lines, 1e-9 apart).
+- REV-RES3b on 046058c7b: SHIP. Merged origin/main once at be56c3c9d (AP5
+  0.9.211, MR1 0.9.212; only the generated docs conflicted, regenerated;
+  SAVE_FORMAT 67, VERSION main's).
+- AP5's cache against RES3's paths: no new path, so no warmed-cache line.
+  The people: PopulationManager.vacancyInputs() stamps every field the fill
+  reads as raw bits (posts, licences, skilled heads, the bands' bases, the
+  workforce, the prisoners, the owners, the students), so a write by any
+  path, the boarding's, the trim's or migration's, moves it; RES3 adds no
+  input to the fill (its one PopulationManager change, the load's
+  restoreTotalWagePerType, writes the wage bill, of which the fill reads
+  only the length). HousingMarket.prepareMigration's preview is a
+  FamilyModel copy that reads the posts and fill and writes nothing, and
+  heldFor() matches the city's PopulationManager by identity. The posts:
+  RES3 writes no stack's quantity, the list or a template's posts or sector
+  but through the raising methods. HousingForms.installFallback (in
+  BuildingManager.initializeBuiltInTemplates, before any stack or scope)
+  calls setJobs and setSector, both raising since AP5;
+  RealEstate.limitSpareRetirement only limits a retirement
+  BusinessInvestment carries out through removeQuantity, which raises;
+  HousingInventory.matchClasses writes occupancy, which no held figure
+  reads. In the pass, the auto-builder's HousingMarket.forecast() (a
+  candidate home's income) reads getPostsWithheld() and getTotalJobs() and
+  writes none.
+- On the merge: LabourCheck green; AutoBuildCheck green, FS12's known red
+  not red on this branch ("the pass ordered 21 buildings in 2 orders; 23688
+  held labour figures compared with the bare ones, 0 differed; the posts
+  were built 3 times and the vacancies filled 1"); HousingMarketCheck,
+  SaveFileCheck, ScaleCheck, Village1900Check, MonetaryCheck and BankCheck
+  green; HousingDoorCheck known red only (MC1); DenominationCheck known red
+  only (six of main's seven lines, 1e-9 apart).
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
