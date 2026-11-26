@@ -397,6 +397,17 @@ reviewer's line.
   city against 1,437 in month 1, the bank in resolution). All three are
   mended in the scaler (fa8a16692); ScaleCheck is green, the two
   known-reds lines included.
+- OrderSearchCheck 2, the 1000x copy deciding no orders: a fourth scaler
+  gap. RES3's month-500 city has one paving under way, and the scaler left
+  constructionControl.paving's roads and ahead at 1 while the Paved Roads on
+  site were K times over, so the footprint took one road's 250,000 sq ft
+  off where it had K: the copy's buildings stood on 41,660,350 sq ft a city
+  against the 41,540,083 it owned, and every sector held on "no land".
+  Mended (dd98bfcec): the copy judges 19 orders on their interest and 7 on
+  a mortgage, its twin 17 and 6; OrderSearchCheck green. The bank's payroll
+  parting (3.98 against 21.08 a city) is the whole-branch scale-dependence
+  SK1 and ST3 already note, not this. Left: constructionControl.abroad's
+  amounts stay at 1x; no check reads it.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
