@@ -8187,7 +8187,8 @@ public class BuildingManager {
        each sector's posts of each type, and each sector's stacks in the list's order. It is keyed on POSTS_EDITS, read
        before it is built and raised after every change to what it is read from: a stack's buildings (BuildingsStacks:
        addQuantity, increaseQuantity, removeQuantity, a building finished), a building's posts (BuildingsTemplate: setJobs,
-       runRecipes), the list (addStack, so every order, orderStacks, clearStacks) and the instances (addInstance). The
+       runRecipes), the sector a building is grouped under (setSector), the list (addStack, so every order, orderStacks,
+       clearStacks) and the instances (addInstance). A stack's template is set once, at its making. The
        shares offered and the posts past the buildings are read live; the sums are longs and totalBySector() adds the same
        terms in the same order, so every figure is the bare one to the bit. ----- */
 

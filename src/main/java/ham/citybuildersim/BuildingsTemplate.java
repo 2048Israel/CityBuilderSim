@@ -181,6 +181,7 @@ public class BuildingsTemplate {
 
     public BuildingsTemplate setSector(String sector) {
         this.sector = sector == null ? "" : sector;
+        BuildingManager.postsMoved();   // the posts held for a pass are grouped by the owning sector: read afresh (AP5)
         return this;
     }
 
