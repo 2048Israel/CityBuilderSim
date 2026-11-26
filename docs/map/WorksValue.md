@@ -1,4 +1,4 @@
-# WorksValue.java - 638 lines · 40 methods · 2 constants · model
+# WorksValue.java - 613 lines · 40 methods · 2 constants · model
 
 `ham/citybuildersim/WorksValue.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -6,7 +6,7 @@
 > WHY. A plant's cheap used kW hid its land and a shortage's lost work. These
 > are comparisons at today's prices, never entries in the city's money books.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (63), [BuildingsTemplate](BuildingsTemplate.md) (60), [Game](Game.md) (34), [Sector](Sector.md) (10), [DecisionLog](DecisionLog.md) (9), [LandManager](LandManager.md) (9), [NewUnit](NewUnit.md) (7), [CityLand](CityLand.md) (5), [Health](Health.md) (5), [Crime](Crime.md) (4), [AutoBuilder](AutoBuilder.md) (3), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [ConstructionControl](ConstructionControl.md) (2), [Zoning](Zoning.md) (2), [Statement](Statement.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [DebtQuote](DebtQuote.md) (1), [LandParcel](LandParcel.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [BuildingType](BuildingType.md) (1), [LicenceFees](LicenceFees.md) (1), [BuildingManager](BuildingManager.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [CareType](CareType.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (63), [BuildingsTemplate](BuildingsTemplate.md) (57), [Game](Game.md) (34), [Sector](Sector.md) (10), [DecisionLog](DecisionLog.md) (9), [LandManager](LandManager.md) (9), [NewUnit](NewUnit.md) (7), [CityLand](CityLand.md) (5), [Health](Health.md) (5), [Crime](Crime.md) (4), [AutoBuilder](AutoBuilder.md) (3), [Traffic](Traffic.md) (3), [JobType](JobType.md) (2), [ConstructionControl](ConstructionControl.md) (2), [Zoning](Zoning.md) (2), [Statement](Statement.md) (2), [PowerDispatch](PowerDispatch.md) (2), [CityCalendar](CityCalendar.md) (2), [PopulationManager](PopulationManager.md) (1), [WageBand](WageBand.md) (1), [DebtQuote](DebtQuote.md) (1), [LandParcel](LandParcel.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [BuildingType](BuildingType.md) (1), [LicenceFees](LicenceFees.md) (1), [BuildingManager](BuildingManager.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [CareType](CareType.md) (1)
 
 **Used by (9):** [AutoBuilder](AutoBuilder.md), [BuildAdvice](BuildAdvice.md), [BuildCard](BuildCard.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [NewUnitCheck](NewUnitCheck.md), [PowerPlanCheck](PowerPlanCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
@@ -38,15 +38,13 @@
 | 372 | `private Loads loads` |  |
 | 374 | `long built` | Schedules built while it was open (NewUnitCheck 13: one with no change on site). |
 | 463 | `private final Game game` |  |
-| 464 | `private final Map<BuildingsTemplate, PendingWork> generation, loads` |  |
-| 465 | `private final java.util.SortedSet<Double> events` |  |
-| 466 | `private double through` |  |
+| 464 | `private final Map<BuildingsTemplate, PendingWork> generation` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 628 | **type** `public final class WorksValue` | A work's discounted cost and the output its service prevents losing (HW1). |
+| 11 | 603 | **type** `public final class WorksValue` | A work's discounted cost and the output its service prevents losing (HW1). |
 | 12 | 1 | `private WorksValue()` |  |
 | 15 | 19 | **type** `public record Value(double capital, double land, double futureCapital, long futureUnits, double financing, ...` | Present values in local thousands; jobs and payroll are shown separately from their tax return. |
 | 18 | 1 | `public double cost()` _(in WorksValue.Value)_ |  |
@@ -75,7 +73,7 @@
 | 332 | 13 | `private static Map<BuildingsTemplate, Long> pendingLoads(Game g, Map<BuildingsTemplate, Double> draws)` | ...each one's new unit's draw put in `draws` as it is read, when given (the held scope's, AP1). |
 | 347 | 8 | `private static double pendingPowerLoad(Game g, Map<BuildingsTemplate, PendingWork> schedule, Map<BuildingsTemplate, Double> dra...` | The draw ahead on a schedule: each template's new unit's draw from `draws` when held (AP1), else read afresh. |
 
-### HELD FOR ONE PASS (AP1, 2026-11-20) (lines 356-638)
+### HELD FOR ONE PASS (AP1, 2026-11-20) (lines 356-613)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -90,15 +88,15 @@
 | 437 | 1 | **type** `private record PendingWork(long units, double first, double interval, boolean rushed)` |  |
 | 440 | 14 | `private static Map<BuildingsTemplate, PendingWork> completionSchedule(Game g, Map<BuildingsTemplate, Long> site)` | The same queue-aware unit quotes the automatic completion deadline reads. |
 | 456 | 4 | `public static Map<BuildingsTemplate, Long> openBy(Game g, Map<BuildingsTemplate, Long> site, double months)` | The units of a site its queue opens by `months` from now (PW3, PW1-P's second gap: the power planner's reserve test counts a plant from its opening, not from its order). |
-| 462 | 55 | **type** `static final class PowerDates` | Read-only native schedules for one power evaluation: generation and the already ordered loads. |
-| 468 | 6 | `PowerDates(Game game, Map<BuildingsTemplate, Long> site)` _(in WorksValue.PowerDates)_ |  |
-| 475 | 3 | `Map<BuildingsTemplate, Long> openBy(double months)` _(in WorksValue.PowerDates)_ |  |
-| 480 | 8 | `java.util.SortedSet<Double> frontier(double from, double until)` _(in WorksValue.PowerDates)_ | Growth is monotone between events: test the endpoints, every load jump, and immediately before generator credit. |
-| 490 | 26 | `private void extend(double until)` _(in WorksValue.PowerDates)_ | Each transition is located once, then reused for every candidate and count in this evaluation. |
-| 519 | 27 | `private static Map<BuildingsTemplate, Long> completedAt(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months)` | Quote-completed units at this date. |
-| 547 | 3 | `static double cover(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added, BuildAdvice.Ahead at)` |  |
-| 551 | 3 | `private static double cover(double[] sd)` |  |
-| 555 | 10 | `private static Map<Sector, double[]> traffic(Game g, BuildAdvice.Measure m)` |  |
-| 567 | 11 | `static double shortageLoss(Game g, BuildAdvice.Measure m)` | The current monthly output loss that a fully serving available work could relieve. |
-| 580 | 58 | `static double outputRestored(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> before, Map<BuildingsTemplate, Long> a...` | Only effects that the simulation actually charges: utility rationing, traffic and absence. |
+| 462 | 30 | **type** `static final class PowerDates` | Read-only generation schedule and native monthly planning dates; pending loads retain their existing held reader. |
+| 465 | 4 | `PowerDates(Game game, Map<BuildingsTemplate, Long> site)` _(in WorksValue.PowerDates)_ |  |
+| 470 | 3 | `Map<BuildingsTemplate, Long> openBy(double months)` _(in WorksValue.PowerDates)_ |  |
+| 475 | 8 | `int nextPeak(double from)` _(in WorksValue.PowerDates)_ | The next native highest-load calendar month at or after this monthly commissioning. |
+| 485 | 6 | `java.util.SortedSet<Double> frontier(double from)` _(in WorksValue.PowerDates)_ | Construction runs before dispatch: both generation and new load use the same completed whole month. |
+| 494 | 27 | `private static Map<BuildingsTemplate, Long> completedAt(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months)` | Quote-completed units at this date. |
+| 522 | 3 | `static double cover(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added, BuildAdvice.Ahead at)` |  |
+| 526 | 3 | `private static double cover(double[] sd)` |  |
+| 530 | 10 | `private static Map<Sector, double[]> traffic(Game g, BuildAdvice.Measure m)` |  |
+| 542 | 11 | `static double shortageLoss(Game g, BuildAdvice.Measure m)` | The current monthly output loss that a fully serving available work could relieve. |
+| 555 | 58 | `static double outputRestored(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> before, Map<BuildingsTemplate, Long> a...` | Only effects that the simulation actually charges: utility rationing, traffic and absence. |
 

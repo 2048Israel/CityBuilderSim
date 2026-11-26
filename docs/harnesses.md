@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**257 harness files, 29,335 labelled assertions.** AllChecks runs 257 of them.
+**257 harness files, 29,343 labelled assertions.** AllChecks runs 257 of them.
 
 ## Which harnesses read which class
 
@@ -11,7 +11,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | class | harnesses that mention it |
 |---|---|
 | [AdultStage](map/AdultStage.md) | BuildAdviceCheck, CapitalGainsCheck, CardCheck, DebtStatisticsCheck, EducationCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, MoneyWordsCheck, SchoolingLadderCheck, SchoolingPageCheck |
-| [AdviceValueOracle](map/AdviceValueOracle.md) | BuildAdviceCheck, WorksFinanceCheck |
+| [AdviceValueOracle](map/AdviceValueOracle.md) | BuildAdviceCheck, PowerPlanCheck, WorksFinanceCheck |
 | [AgeBand](map/AgeBand.md) | ArrivalMixCheck, CardCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, EducationCheck, EssentialWorksCheck, HealthCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, LabourCheck, LongPlaytest, MedicineCheck, OutsideCheck, OwnerCheck, PopulationCheck, RankingsCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck, Village1900Check, WorksFinanceCheck |
 | [Agriculture](map/Agriculture.md) | AgricultureCheck, EquipmentCheck, FieldOperatorsCheck, FittingCheck, FoodIndustryCheck, Forms1900Check, LongPlaytest, ScaleCheck, ZoningCheck |
 | [ArrivalMix](map/ArrivalMix.md) | ArrivalMixCheck, BasketYearCheck, StaffingDrawCheck, Village1900Check |
@@ -261,7 +261,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PayTier](map/PayTier.md) | AgricultureCheck, ArrivalMixCheck, BankCheck, BondCheck, BusinessServicesCheck, CapitalGainsCheck, CarCheck, CardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, DeathRecordCheck, DebtStatisticsCheck, DiscoveryCheck, EducationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, GovernmentViewCheck, GroceryCheck, HealthCheck, HoldersCheck, HouseholdCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MarketCheck, MaterialsCheck, MiningCheck, MoneyWordsCheck, OutsideCheck, OwnerCheck, PopulationCheck, PriceLevelCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, StaffingDrawCheck, TradeCostCheck, WageLadderCheck, WoodProductsCheck |
 | [PeopleScreen](map/PeopleScreen.md) | **none** |
 | [Pieces](map/Pieces.md) | IslandNetCheck, IslandRailCheck, KeptCheck, ResearchViewCheck |
-| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, ElectrolyserCheck, EquipmentCheck, ExchangeRateCheck, FB13Check, GoldStandardCheck, GovernmentPlayerCheck, HistoricalRecipeCheck, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, MoneyDatesCheck, NewUnitCheck, PolicyOpenCheck, PostwarRecipeCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
+| [PolicyDates](map/PolicyDates.md) | DiscoveryCheck, ElectrolyserCheck, EquipmentCheck, ExchangeRateCheck, FB13Check, GoldStandardCheck, GovernmentPlayerCheck, HistoricalRecipeCheck, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, MoneyDatesCheck, NewUnitCheck, PolicyOpenCheck, PostwarRecipeCheck, PowerPlantsCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [PolicyPreview](map/PolicyPreview.md) | CentralBankCheck, DiscoveryCheck, FundCheck, GovernmentViewCheck, GroceryCheck, KeptCheck, PolicyPreviewCheck, ReadPathCheck, ZoningViewCheck |
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
@@ -3125,86 +3125,86 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L68 same number of buildings (
   - L70 PW5 appends Substation, a city utility carrying the study's peak MW, without generation
   - L76 PW9 appends the period's 850 kW Small Steam Station, coal-fired from 1900 with a 15-month lead
-- **L82 every field of every building**
-- **L256 care types line up with the category**
-- **L263 care types**
-  - L274 healthcare declares a care type, nothing else does
-  - L288 education declares what it teaches, nothing else does
-  - L305 safety declares police or prison, nothing else does
-  - L307 two police buildings and two prisons
-- **L309 the sea is drawn by water works, and one of them (0.7.59)**
-- **L316 water sources**
-  - L327 only a water works draws the sea
-  - L328 one water plant on fresh water and one on the sea (
-  - L333 id 73 is the Desalination Plant
-- **L336 fuel (0.7.62, batch K; spec-land 2.7)**
-- **L349 fuel**
-  - L355 id 74 is the Oil Well: MINING, the Oil sector's, 415 t of crude a month and nothing else
-  - L359 id 75 is the Oil Refinery: HEAVY_INDUSTRY, Refining's, a crude unit taking 8,300 t of crude and making
-  - L367 ...holding more than the months of its run a maker keeps (STOCK_MONTHS) in its tanks
-- **L370 the refinery's units (0.7.80, batch O4; spec-oil 2.3)**
-- **L379 the refinery's units**
-  - L382 id 76 is the Crude Unit: HEAVY_INDUSTRY, Refining's, a crude unit of 50 Oil Refineries' crude, road load and tanks
-  - L415 ids 77 to 90 are the conversion units, a small and a large of each kind in RefineryFlow.Kind's order:
-  - L417 ...each pair named for its kind, the small taking less feed for less money and more money a litre
-- **L419 the phase-1 buyers and the forecourt (0.7.83, batch O6)**
-- **L430 the phase-1 buyers and the forecourt**
-  - L447 lubricants on every car, van, truck, machinery and fabrication plant at the spec's rate a unit made, and on
-  - L451 id 91 is the Filling Station: COMMERCIAL, Retail's, 350,000 L a month at the pump, buying and making
-  - L457 ...US$0.5M all in at founding prices (cash and 18 a unit of material), three posts, an acre's 4,000 m2
-  - L462 ...the only building with a pump
-  - L466 the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated
-- **L471 the oil storage (0.7.85, batch O8; spec-oil 2.8)**
-- **L477 the oil storage**
-  - L483 id 92 is the Tank Farm, the refiners': 500,000 m3 of tanks, refining nothing, buying nothing
-  - L488 ...D$190M of capital (US$60 a barrel of room, star), material a sixtieth of it and points a half; ten
-  - L495 id 93 is the Strategic Reserve, the city's: the farm's tanks, ground and price, and no posts (star O8-2)
-- **L504 the ports (0.7.86, batch O9; spec-oil 2.9)**
-- **L509 the ports**
-  - L522 ids 94-97 are the Tanker, Bulk, Container and General Cargo Terminals: the city's, PORTS, a berth each of its
-  - L524 ...and the only buildings with a berth, bar FR3's Bulk Berth (id 142, a fifth)
-- **L526 the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11)**
-- **L535 the oil at sea**
-  - L552 ids 98-100 are the oil at sea, the Oil sector's MINING, on no dry ground and with no power or water;
-  - L554 id 98 is the Offshore Platform: a jacket of 12 slots, D$18M, 12 posts 6/4/2, lifting nothing itself
-  - L560 id 99 is the Platform Well: D$14M, 415 t of crude a month, one diploma's post, on oil, and no land well
-  - L565 id 100 is the Crude Pipeline, a kilometre: D$4.5M at sea and D$3M on land, no posts, on no site
-  - L568 ...and the only buildings at sea
-- **L570 the site each stands on (0.7.110, batch I1)**
-- **L600 the site each building stands on (0.7.110; iron's by type and size, 0.7.124; coal's, 0.7.126; stone's, 0.7.131; copper's, 0.7.133)**
-  - L646 every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109) - but the Dimension Stone
-  - L649 ...eighteen stand on sites, including GD4 gold - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three
-  - L653 ...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none
-  - L659 ...iron's on a type, its sites and its dig (0.7.124): the Iron Mine one hematite site and the open pit twenty, ore as
-  - L665 ...coal's on a type, its sites and its dig (0.7.126): the surface mines one and four thermal sites at 1/.95 t of
-  - L672 ...stone's, its sites and its dig (0.7.131): the Quarry one site and the Large Quarry three, on ANY, a tonne a tonne;
-  - L687 ...copper's, its sites and its dig (0.7.133): the Copper Mine & Mill one sulphide site and the Large Copper Mine
-- **L691 a works' own power and its consumables (0.7.112, batch I2)**
-- **L705 a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.120; the gen, 0.7.123)**
-  - L717 four works make power, the study's 1.6: the Coke Ovens 8,000 kW, the Blast Furnace 60,000, the Oxygen Steel Shop
-  - L721 ...so the ovens sell the grid 5,800 kW and the furnace 8,600, buying none, and the shop buys 26,600 and sells none
-  - L726 ...and the pulp mill draws nothing from the grid - its boiler meets its own draw - and sells it all 13,500 kW (0.7.140)
-  - L728 ...and every other building buys its whole draw and sells the grid none, to the bit
-  - L742 forty-four buy consumables, including GD4 gold and R6b's Sulphide Leach & SX-EW Plant (153) and Hydrogen Steel Works (154), the materials chains' rows: the E...
-- **L750 the old steel a yard takes, and the year each row first existed (0.7.123, batch I4)**
-- **L762 the old steel a yard takes, and the year each new row first existed (0.7.123)**
-  - L772 one building takes the city's old steel, the Scrap Yard: 10,500 t a month into 10,000 t of scrap (the study's 2.4):
-  - L776 ...and one its old copper (0.7.133), the Scrap Copper Refinery: 4,400 t a month at nameplate, its whole feed - its
-  - L848 the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the
-- **L873 the raw coal a preparation plant washes (0.7.126, batch I6)**
-- **L880 the raw coal a preparation plant washes (0.7.126)**
-  - L884 one building washes raw coal, the Coal Preparation Plant: 500,000 t a month (the study's 3.3), buying and making no
-- **L890 and every profession has exactly one school**
-  - L907 every gated profession has exactly one school
-- **L909 every list of recipes is one the model can run (R1c)**
-- **L915 recipes**
-  - L940 every list of recipes (
-- **L943 ids are unique, which the saves depend on**
-  - L954 every id is unique
-- **L956 the manager actually uses the file**
-  - L960 initializeTemplates() produced the same count
-  - L962 lookup by id still works
-  - L965 lookup by name still works
+- **L83 every field of every building**
+- **L258 care types line up with the category**
+- **L265 care types**
+  - L276 healthcare declares a care type, nothing else does
+  - L290 education declares what it teaches, nothing else does
+  - L307 safety declares police or prison, nothing else does
+  - L309 two police buildings and two prisons
+- **L311 the sea is drawn by water works, and one of them (0.7.59)**
+- **L318 water sources**
+  - L329 only a water works draws the sea
+  - L330 one water plant on fresh water and one on the sea (
+  - L335 id 73 is the Desalination Plant
+- **L338 fuel (0.7.62, batch K; spec-land 2.7)**
+- **L351 fuel**
+  - L357 id 74 is the Oil Well: MINING, the Oil sector's, 415 t of crude a month and nothing else
+  - L361 id 75 is the Oil Refinery: HEAVY_INDUSTRY, Refining's, a crude unit taking 8,300 t of crude and making
+  - L369 ...holding more than the months of its run a maker keeps (STOCK_MONTHS) in its tanks
+- **L372 the refinery's units (0.7.80, batch O4; spec-oil 2.3)**
+- **L381 the refinery's units**
+  - L384 id 76 is the Crude Unit: HEAVY_INDUSTRY, Refining's, a crude unit of 50 Oil Refineries' crude, road load and tanks
+  - L417 ids 77 to 90 are the conversion units, a small and a large of each kind in RefineryFlow.Kind's order:
+  - L419 ...each pair named for its kind, the small taking less feed for less money and more money a litre
+- **L421 the phase-1 buyers and the forecourt (0.7.83, batch O6)**
+- **L432 the phase-1 buyers and the forecourt**
+  - L449 lubricants on every car, van, truck, machinery and fabrication plant at the spec's rate a unit made, and on
+  - L453 id 91 is the Filling Station: COMMERCIAL, Retail's, 350,000 L a month at the pump, buying and making
+  - L459 ...US$0.5M all in at founding prices (cash and 18 a unit of material), three posts, an acre's 4,000 m2
+  - L464 ...the only building with a pump
+  - L468 the three roads each have their own repairs a year - the Gravel Road 3%, the Paved Road 2%, the Elevated
+- **L473 the oil storage (0.7.85, batch O8; spec-oil 2.8)**
+- **L479 the oil storage**
+  - L485 id 92 is the Tank Farm, the refiners': 500,000 m3 of tanks, refining nothing, buying nothing
+  - L490 ...D$190M of capital (US$60 a barrel of room, star), material a sixtieth of it and points a half; ten
+  - L497 id 93 is the Strategic Reserve, the city's: the farm's tanks, ground and price, and no posts (star O8-2)
+- **L506 the ports (0.7.86, batch O9; spec-oil 2.9)**
+- **L511 the ports**
+  - L524 ids 94-97 are the Tanker, Bulk, Container and General Cargo Terminals: the city's, PORTS, a berth each of its
+  - L526 ...and the only buildings with a berth, bar FR3's Bulk Berth (id 142, a fifth)
+- **L528 the oil at sea (0.7.91, batch O10; spec-oil 2.7, 2.11)**
+- **L537 the oil at sea**
+  - L554 ids 98-100 are the oil at sea, the Oil sector's MINING, on no dry ground and with no power or water;
+  - L556 id 98 is the Offshore Platform: a jacket of 12 slots, D$18M, 12 posts 6/4/2, lifting nothing itself
+  - L562 id 99 is the Platform Well: D$14M, 415 t of crude a month, one diploma's post, on oil, and no land well
+  - L567 id 100 is the Crude Pipeline, a kilometre: D$4.5M at sea and D$3M on land, no posts, on no site
+  - L570 ...and the only buildings at sea
+- **L572 the site each stands on (0.7.110, batch I1)**
+- **L602 the site each building stands on (0.7.110; iron's by type and size, 0.7.124; coal's, 0.7.126; stone's, 0.7.131; copper's, 0.7.133)**
+  - L648 every building's site is the one the good rule gave it (Game.siteOf(), to 0.7.109) - but the Dimension Stone
+  - L651 ...eighteen stand on sites, including GD4 gold - iron's four mines, the Oil Well, the Offshore Platform, the Platform Well, coal's three
+  - L655 ...oil's on ANY, one site and a tonne of field a unit, but the jacket, which takes none
+  - L661 ...iron's on a type, its sites and its dig (0.7.124): the Iron Mine one hematite site and the open pit twenty, ore as
+  - L667 ...coal's on a type, its sites and its dig (0.7.126): the surface mines one and four thermal sites at 1/.95 t of
+  - L674 ...stone's, its sites and its dig (0.7.131): the Quarry one site and the Large Quarry three, on ANY, a tonne a tonne;
+  - L689 ...copper's, its sites and its dig (0.7.133): the Copper Mine & Mill one sulphide site and the Large Copper Mine
+- **L693 a works' own power and its consumables (0.7.112, batch I2)**
+- **L707 a works' own power and its consumables (0.7.112; the iron rows' consumables, 0.7.120; the gen, 0.7.123)**
+  - L719 four works make power, the study's 1.6: the Coke Ovens 8,000 kW, the Blast Furnace 60,000, the Oxygen Steel Shop
+  - L723 ...so the ovens sell the grid 5,800 kW and the furnace 8,600, buying none, and the shop buys 26,600 and sells none
+  - L728 ...and the pulp mill draws nothing from the grid - its boiler meets its own draw - and sells it all 13,500 kW (0.7.140)
+  - L730 ...and every other building buys its whole draw and sells the grid none, to the bit
+  - L744 forty-four buy consumables, including GD4 gold and R6b's Sulphide Leach & SX-EW Plant (153) and Hydrogen Steel Works (154), the materials chains' rows: the E...
+- **L752 the old steel a yard takes, and the year each row first existed (0.7.123, batch I4)**
+- **L764 the old steel a yard takes, and the year each new row first existed (0.7.123)**
+  - L774 one building takes the city's old steel, the Scrap Yard: 10,500 t a month into 10,000 t of scrap (the study's 2.4):
+  - L778 ...and one its old copper (0.7.133), the Scrap Copper Refinery: 4,400 t a month at nameplate, its whole feed - its
+  - L850 the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the
+- **L875 the raw coal a preparation plant washes (0.7.126, batch I6)**
+- **L882 the raw coal a preparation plant washes (0.7.126)**
+  - L886 one building washes raw coal, the Coal Preparation Plant: 500,000 t a month (the study's 3.3), buying and making no
+- **L892 and every profession has exactly one school**
+  - L909 every gated profession has exactly one school
+- **L911 every list of recipes is one the model can run (R1c)**
+- **L917 recipes**
+  - L942 every list of recipes (
+- **L945 ids are unique, which the saves depend on**
+  - L956 every id is unique
+- **L958 the manager actually uses the file**
+  - L962 initializeTemplates() produced the same count
+  - L964 lookup by id still works
+  - L967 lookup by name still works
 
 ## BuildingStackCheck.java - 133 labelled assertions
 
@@ -27767,7 +27767,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L406 a redenomination scales the book's prices and the fuel paid
   - L410 seedConstants re-strikes the wires: the dial over the unit
 
-## PowerPlanCheck.java - 87 labelled assertions
+## PowerPlanCheck.java - 90 labelled assertions
 
 > The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities.
 > 
@@ -27854,49 +27854,52 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L970 short at the fast row's own completion: the fast row orders, not the slow (
   - L1000 the slow row the cheaper but past its last on-time month, the fast row still able to be on line by the need date: nothing orders (
 - **L1003 8a (v', v''). the slow row on its last on-time month: a faster row meeting the gap at its opening for less waits it; the slow row the che...**
-  - L1026 the slow row on its last on-time month, a faster row closing the gap at its opening for less: the faster row meets the date later, and nothing orders (
-  - L1046 the slow row on its last on-time month and the cheaper: it orders (
-- **L1049 8a (viii, ix). a faster firm row the calendar brings onto the menu in time is weighed by its arrival and its lead**
-  - L1073 a faster row the calendar brings in time can still meet the need date: the slow row known now waits, and nothing orders (
-- **L1112 8b. the month lacks power when its peak month's peak block goes unserved, shown by the dispatch**
-  - L1135 a city drawing nothing lacks no power
-  - L1147 fixture: every essential service but Power has its operating capacity
-- **L1182 8b (b). the holds read the month's short, through a pass: another essential order waits to preserve Power's quoted first completion only ...**
-  - L1212 the peak block served, Power is not lacked and the roads are ordered, nothing waiting to preserve its completion (
-  - L1215 the peak block unserved, the roads wait to preserve Power's quoted first completion (
-  - L1227 fixture: every essential service but General care has its operating capacity
-- **L1250 8b (b). the holds' guard reads the month's short, through a pass: Power's order waits to preserve a lacked service's completion only when...**
-  - L1277 the peak block served, Power is not lacked and its order waits to preserve
-  - L1280 the peak block unserved, Power is lacked and its order is placed whatever it does to
-- **L1311 9. a works under construction: its rated draw is in the forecast from the month it is due to open, and the power it needs is ordered to b...**
-- **L1395 9a. a small firm plant for a 1906 town (PW9)**
-  - L1415 fixture: 1906, three thousand people, seasonal power short now, oil known and diesel not yet known
-  - L1421 without the small station the same town orders the 86 MW Oil-Fired Plant (
-  - L1426 the 1906 town orders the Small Steam Station through the normal planner (
-  - L1430 the small order closes the peak-hour gap and is quoted before diesel's year
-  - L1435 the automatic path actually places the small stations, with no Oil-Fired Plant on site
-- **L1442 9b. a small station cannot consume the jobless founding endowment (PW9)**
-  - L1457 fixture: no power/water posts stand; the sourced station has five posts and a positive scarce fill below the old net-loss boundary
-  - L1463 the first small station's preview preserves the endowment and adds its resolved staffed power
-  - L1473 the actual first station's staffed generation agrees with the preview, with the row and jobs intact
-  - L1478 water and substation posts added to the planner cannot derate the founding grid or the existing plant
-  - L1497 native
-  - L1505 water-only posts, fill
-- **L1531 9c. pending generation and load are compared at the same dates, preserving interim reserve and seasonal needs**
-  - L1570 9c fixture:
-  - L1581 9c A premise (
-  - L1584 9c A (
-  - L1600 9c B (
-  - L1603 9c B (
-  - L1619 9c C premise (
-  - L1622 9c C (
-  - L1632 9c D premise (
-  - L1636 9c D (
-  - L1646 9c A: the covered power order path spends nothing and adds no units
-- **L1671 10. how often each fires**
-  - L1674 the reserve test and the spread each fired here
+  - L1030 the slow row on its last on-time month, a faster row closing the gap at its opening for less: the faster row meets the date later, and nothing orders (
+  - L1050 the slow row on its last on-time month and the cheaper: it orders (
+  - L1059 fixture: original slow-.5 crossing is already short in the whole month before coal, while faster completion is covered and coal stays cheaper
+  - L1065 original fractional crossing: the slower cheaper row is monthly late and waits for the faster row (
+- **L1068 8a (viii, ix). a faster firm row the calendar brings onto the menu in time is weighed by its arrival and its lead**
+  - L1092 a faster row the calendar brings in time can still meet the need date: the slow row known now waits, and nothing orders (
+- **L1131 8b. the month lacks power when its peak month's peak block goes unserved, shown by the dispatch**
+  - L1154 a city drawing nothing lacks no power
+  - L1166 fixture: every essential service but Power has its operating capacity
+- **L1201 8b (b). the holds read the month's short, through a pass: another essential order waits to preserve Power's quoted first completion only ...**
+  - L1231 the peak block served, Power is not lacked and the roads are ordered, nothing waiting to preserve its completion (
+  - L1234 the peak block unserved, the roads wait to preserve Power's quoted first completion (
+  - L1246 fixture: every essential service but General care has its operating capacity
+- **L1269 8b (b). the holds' guard reads the month's short, through a pass: Power's order waits to preserve a lacked service's completion only when...**
+  - L1296 the peak block served, Power is not lacked and its order waits to preserve
+  - L1299 the peak block unserved, Power is lacked and its order is placed whatever it does to
+- **L1330 9. a works under construction: its rated draw is in the forecast from the month it is due to open, and the power it needs is ordered to b...**
+- **L1414 9a. a small firm plant for a 1906 town (PW9)**
+  - L1434 fixture: 1906, three thousand people, seasonal power short now, oil known and diesel not yet known
+  - L1440 without the small station the same town orders the 86 MW Oil-Fired Plant (
+  - L1445 the 1906 town orders the Small Steam Station through the normal planner (
+  - L1449 the small order closes the peak-hour gap and is quoted before diesel's year
+  - L1454 the automatic path actually places the small stations, with no Oil-Fired Plant on site
+- **L1461 9b. a small station cannot consume the jobless founding endowment (PW9)**
+  - L1476 fixture: no power/water posts stand; the sourced station has nine posts and a positive scarce fill below the old net-loss boundary
+  - L1482 the first small station's preview preserves the endowment and adds its resolved staffed power
+  - L1486 the independent power oracle agrees with the scarce first-station supply and demand
+  - L1493 a physical-month Ahead keeps native growth and firm supply while the independent oracle scales the same demand
+  - L1505 the actual first station's staffed generation agrees with the preview, with the row and jobs intact
+  - L1510 water and substation posts added to the planner cannot derate the founding grid or the existing plant
+  - L1529 native
+  - L1537 water-only posts, fill
+- **L1571 9c. whole monthly generation/load states and the next native seasonal reserve peak**
+  - L1617 9c fixture:
+  - L1626 9c A premise (
+  - L1630 9c A (
+  - L1638 9c B premise (
+  - L1643 9c B (
+  - L1663 9c C premise (
+  - L1666 9c C (
+  - L1671 9c C (
+  - L1688 9c A: sub-month non-need spends nothing and adds no units
+- **L1713 10. how often each fires**
+  - L1716 the reserve test and the spread each fired here
 
-## PowerPlantsCheck.java - 59 labelled assertions
+## PowerPlantsCheck.java - 64 labelled assertions
 
 > The power plants and their fuels (PW2, 2026-11-23; spec-electricity 2.3 and 2.5): the Oil-Fired Plant, the Diesel Station, the
 > Oil-Fired Turbine, the Biomass Plant and the Solar Farm, and the Coal Power Plant and the Wind Farm refigured, each burning its fuel
@@ -27967,11 +27970,16 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L614 fixture: the city played to the month before 1910 (month
   - L620 ...in January 1910 it is known and in the build menu
   - L621 ...and its order passes the year: it is not refused NOT_KNOWN
-  - L630 7. the sun in a save (the old-saves rule)
-  - L637 a book's solar energy is written and read back to the bit
-  - L640 a book saved before PW2 has no solarKwh and reads none: an old city had no sun, so no format bump is owed
-  - L641 a book's copy keeps its sun (the month's book and the struck one)
-  - L642 the row kinds keep their order, SOLAR appended: a saved kind is read by its name
+  - L624 PW9's last new-order year is inclusive: December 1914 offered, January 1915 closed, including research-aware reads
+  - L630 fixture: December 1914 offers small steam now, and its one-month-ahead menu already closes
+  - L635 the final offered month accepts both a standing fixture order and an ordinary pending order
+  - L638 January 1915 removes the row from new-order menus and refuses a funded direct order
+  - L642 ending new orders preserves the catalogue id, the standing station, its dispatch row and the previously ordered site
+  - L656 7. the sun in a save (the old-saves rule)
+  - L663 a book's solar energy is written and read back to the bit
+  - L666 a book saved before PW2 has no solarKwh and reads none: an old city had no sun, so no format bump is owed
+  - L667 a book's copy keeps its sun (the month's book and the struck one)
+  - L668 the row kinds keep their order, SOLAR appended: a saved kind is read by its name
 
 ## PowerPriceCheck.java - 76 labelled assertions
 

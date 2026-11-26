@@ -1,4 +1,4 @@
-# PowerPlantsCheck.java - 646 lines · 23 methods · 16 constants · harnesses
+# PowerPlantsCheck.java - 672 lines · 23 methods · 16 constants · harnesses
 
 `ham/citybuildersim/PowerPlantsCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -33,7 +33,7 @@
 > fiat, a seller is stocked with half the month's burn, a dry city is founded where its rings hold no water, and a site's crews are
 > handed more than it can use. Every city is a scratch game (GameFiles.scratch); none is saved.
 
-**Uses:** [PowerDispatch](PowerDispatch.md) (51), [Game](Game.md) (27), [UtilitiesHandler](UtilitiesHandler.md) (20), [BuildAdvice](BuildAdvice.md) (17), [BuildingsTemplate](BuildingsTemplate.md) (14), [Good](Good.md) (13), [World](World.md) (11), [Sectors](Sectors.md) (9), [BuildingManager](BuildingManager.md) (8), [BuildingType](BuildingType.md) (6), [BuildCard](BuildCard.md) (6), [MoneyAudit](MoneyAudit.md) (4), [LandManager](LandManager.md) (3), [PriceLevel](PriceLevel.md) (2), [Founding](Founding.md) (2), [CityLand](CityLand.md) (2), [Substations](Substations.md) (2), [AutoBuilder](AutoBuilder.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [GameFiles](GameFiles.md) (1), [Sector](Sector.md) (1), [PowerPriceCheck](PowerPriceCheck.md) (1), [SubstationCheck](SubstationCheck.md) (1)
+**Uses:** [PowerDispatch](PowerDispatch.md) (51), [Game](Game.md) (32), [UtilitiesHandler](UtilitiesHandler.md) (20), [BuildAdvice](BuildAdvice.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (15), [Good](Good.md) (13), [World](World.md) (11), [Sectors](Sectors.md) (9), [BuildingManager](BuildingManager.md) (8), [BuildingType](BuildingType.md) (7), [BuildCard](BuildCard.md) (6), [MoneyAudit](MoneyAudit.md) (4), [LandManager](LandManager.md) (3), [Founding](Founding.md) (3), [PriceLevel](PriceLevel.md) (2), [CityLand](CityLand.md) (2), [Substations](Substations.md) (2), [AutoBuilder](AutoBuilder.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [GameFiles](GameFiles.md) (1), [Sector](Sector.md) (1), [PowerPriceCheck](PowerPriceCheck.md) (1), [SubstationCheck](SubstationCheck.md) (1), [PolicyDates](PolicyDates.md) (1)
 
 ## Sections
 
@@ -46,7 +46,7 @@
 | 426 | 4. THE COOLING GATE |
 | 509 | 5. THE BUILD-TIME FLOOR |
 | 584 | 6. EACH ROW FROM ITS YEAR |
-| 625 | 7. THE SUN IN A SAVE |
+| 651 | 7. THE SUN IN A SAVE |
 
 ## Constants
 
@@ -80,7 +80,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 44 | 603 | **type** `public class PowerPlantsCheck` | The power plants and their fuels (PW2, 2026-11-23; spec-electricity 2.3 and 2.5): the Oil-Fired Plant, the Diesel Station, the Oil-Fired Turbine, the Biomass Plant and the Solar Farm, and the Coal Power Plant and the ... |
+| 44 | 629 | **type** `public class PowerPlantsCheck` | The power plants and their fuels (PW2, 2026-11-23; spec-electricity 2.3 and 2.5): the Oil-Fired Plant, the Diesel Station, the Oil-Fired Turbine, the Biomass Plant and the Solar Farm, and the Coal Power Plant and the ... |
 | 78 | 2 | **type** `record Study(String name, double usdPerKw, double nameplateKw, double runs, int months, boolean cooling, Go...` | One row of spec-electricity 2.3, as the study prints it. |
 | 102 | 5 | `static void check(String label, boolean ok, String detail)` |  |
 | 108 | 1 | `static void check(String label, boolean ok)` |  |
@@ -134,15 +134,15 @@
 |---:|---:|---|---|
 | 513 | 70 | `static void floor()` |  |
 
-### 6. EACH ROW FROM ITS YEAR (lines 584-624)
+### 6. EACH ROW FROM ITS YEAR (lines 584-650)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 588 | 36 | `static void years()` |  |
+| 588 | 62 | `static void years()` |  |
 
-### 7. THE SUN IN A SAVE (lines 625-646)
+### 7. THE SUN IN A SAVE (lines 651-672)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 629 | 17 | `static void save()` |  |
+| 655 | 17 | `static void save()` |  |
 
