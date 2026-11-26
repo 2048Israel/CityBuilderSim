@@ -1,4 +1,4 @@
-# KeptCheck.java - 10,146 lines · 258 methods · 35 constants · harnesses
+# KeptCheck.java - 10,150 lines · 258 methods · 35 constants · harnesses
 
 `ham/citybuildersim/KeptCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >  94-96. Research equipment and grants: kept pages, signatures, pictures, folds and choices.
 > ... (10 more lines in the source)
 
-**Uses:** [KeptBench](KeptBench.md) (716), [Game](Game.md) (166), [ResearchView](ResearchView.md) (132), [Money](Money.md) (62), [Sectors](Sectors.md) (51), [FundView](FundView.md) (42), [Debt](Debt.md) (36), [ResearchViewCheck](ResearchViewCheck.md) (26), [DecisionLog](DecisionLog.md) (22), [FundLedger](FundLedger.md) (20), [BuildAdvice](BuildAdvice.md) (19), [Where](Where.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (18), [ForeignAccounts](ForeignAccounts.md) (18), [ResearchCatalog](ResearchCatalog.md) (17), [Notice](Notice.md) (16), [Auction](Auction.md) (14), [CityCalendar](CityCalendar.md) (13), [TreasuryFund](TreasuryFund.md) (13), [ChartModel](ChartModel.md) (10), [LandmassCheck](LandmassCheck.md) (10), [CorporateBond](CorporateBond.md) (10), [Equity](Equity.md) (9), [BondMarket](BondMarket.md) (8), [Research](Research.md) (7), [LandmassView](LandmassView.md) (6), [Sector](Sector.md) (6), [TaxPolicy](TaxPolicy.md) (6), [WellCheck](WellCheck.md) (6), [OilCheck](OilCheck.md) (6)... and 55 more
+**Uses:** [KeptBench](KeptBench.md) (716), [Game](Game.md) (166), [ResearchView](ResearchView.md) (132), [Money](Money.md) (62), [Sectors](Sectors.md) (51), [FundView](FundView.md) (43), [Debt](Debt.md) (36), [ResearchViewCheck](ResearchViewCheck.md) (26), [DecisionLog](DecisionLog.md) (22), [FundLedger](FundLedger.md) (20), [BuildAdvice](BuildAdvice.md) (19), [Where](Where.md) (19), [BuildingsTemplate](BuildingsTemplate.md) (18), [ForeignAccounts](ForeignAccounts.md) (18), [ResearchCatalog](ResearchCatalog.md) (17), [Notice](Notice.md) (16), [Auction](Auction.md) (14), [CityCalendar](CityCalendar.md) (13), [TreasuryFund](TreasuryFund.md) (13), [ChartModel](ChartModel.md) (10), [LandmassCheck](LandmassCheck.md) (10), [CorporateBond](CorporateBond.md) (10), [Equity](Equity.md) (9), [BondMarket](BondMarket.md) (8), [Research](Research.md) (7), [LandmassView](LandmassView.md) (6), [Sector](Sector.md) (6), [TaxPolicy](TaxPolicy.md) (6), [WellCheck](WellCheck.md) (6), [OilCheck](OilCheck.md) (6)... and 55 more
 
 **Used by (8):** [ChartFitCheck](ChartFitCheck.md), [KeptTimingCheck](KeptTimingCheck.md), [MapCheck](MapCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [NewUnitCheck](NewUnitCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [StepsCheck](StepsCheck.md), [ToastCheck](ToastCheck.md)
 
@@ -80,22 +80,22 @@
 | 3809 | THE MONEY SCREENS (KP5), sections 55 to 68: the Bank tab, the Finances tab and the city's fund, each page drawn kept ... |
 | 4027 | · Finances |
 | 4346 | · the city's fund |
-| 5161 | · the pictures (64) |
-| 5419 | · the count-up (65) |
-| 5645 | · the boxes (66) |
-| 5806 | · the hover (67) and the cost (68) |
-| 5866 | GOVERNMENT, TRADE & THE WORLD AND POLICY (KP6), sections 69 to 81: the three screens KP6 keeps, each page drawn kept ... |
-| 6140 | · Trade |
-| 6454 | · Policy |
-| 6705 | · the controls (78) |
-| 7035 | · the count-up (79) |
-| 7315 | · the hover (80) and the cost (81) |
-| 7456 | POLICY > RESEARCH'S OVERVIEW AND FUNDING (R3b, slice B), sections 99 to 101: the two pages, the hub's Research card, ... |
-| 8074 | THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of ... |
-| 8380 | HOUSEHOLD MONEY AND THE RANKINGS TAB (KP7), sections 82 to 90: the last two screens on the rail kept - each page draw... |
-| 8695 | · a slider greyed while held (91) |
-| 8809 | THE KEPT SCREENS' COST SWEEP (KP2b), section 92: a style, a text, a graphic, a padding or a width set again on a node... |
-| 9166 | THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 |
+| 5165 | · the pictures (64) |
+| 5423 | · the count-up (65) |
+| 5649 | · the boxes (66) |
+| 5810 | · the hover (67) and the cost (68) |
+| 5870 | GOVERNMENT, TRADE & THE WORLD AND POLICY (KP6), sections 69 to 81: the three screens KP6 keeps, each page drawn kept ... |
+| 6144 | · Trade |
+| 6458 | · Policy |
+| 6709 | · the controls (78) |
+| 7039 | · the count-up (79) |
+| 7319 | · the hover (80) and the cost (81) |
+| 7460 | POLICY > RESEARCH'S OVERVIEW AND FUNDING (R3b, slice B), sections 99 to 101: the two pages, the hub's Research card, ... |
+| 8078 | THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of ... |
+| 8384 | HOUSEHOLD MONEY AND THE RANKINGS TAB (KP7), sections 82 to 90: the last two screens on the rail kept - each page draw... |
+| 8699 | · a slider greyed while held (91) |
+| 8813 | THE KEPT SCREENS' COST SWEEP (KP2b), section 92: a style, a text, a graphic, a padding or a width set again on a node... |
+| 9170 | THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 |
 
 ## Constants
 
@@ -128,14 +128,14 @@
 | 4383 | `KeptCheck.FUND_PAY_IN_ISSUES` | `200` | What 61 pays into a fund that holds nothing, in the city's smallest bond issues: a fund with something to buy whatever the treasury holds (FS5). |
 | 4386 | `KeptCheck.FUND_HELD_DUES` | `3` | How many months of the fund's transfer its cash is kept over while 63's choices are watched: the transfer is paid from cash, and nothing is sold for it (KF63). |
 | 4918 | `KeptCheck.SHOW_MORE_PRESSES` | `2, SHOW_MORE_MONTHS = 3` | The Show more presses and then the months section 63 watches the longest issuer's expanded search over (RES3). |
-| 5179 | `KeptCheck.MOST_TO_PAY` | `{ "98.5", "101.5" }` | The most to pay typed on Close it now in the odd months of the watch, by turns (Spot's month hand). |
-| 5189 | `KeptCheck.PAPER_LASTS` | `60` | The months a piece of paper 66's boxes and 67's book row are drawn on must still run: 66 lands a dozen months, 67 fewer. |
-| 5305 | `KeptCheck.DESK_KINDS` | `java.util.Set.of("CurveChart", "DeskCurve", "DeskBars", "PathChart", "Buyback...` | The kinds of picture the bond desk draws, from the curve and the book (WG1-R). |
-| 5883 | `KeptCheck.TRADE_FOLDS_THAT_ADD` | `java.util.Set.of("month:ledger", "reserves:eight")` | The folds the Trade sections open that have to add to their page in any city that trades: the month's ledger and the eight moneys over the years. |
-| 8293 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
-| 9059 | `KeptCheck.RANKINGS_READ_GUARD_MS` | `600_000` | How long a read of the saved cities is waited on before it is called hung (KRW1, FS5, the study's FS1-C): ten minutes, ten times the minute it had to land in. |
-| 9171 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
-| 9773 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck's objects leave at least a quarter of its suite heap for the next pages (KP2c): the live heap after release, less the render targets the software renderer keeps on it (FS5, GB5's star 5: the box's Mon... |
+| 5183 | `KeptCheck.MOST_TO_PAY` | `{ "98.5", "101.5" }` | The most to pay typed on Close it now in the odd months of the watch, by turns (Spot's month hand). |
+| 5193 | `KeptCheck.PAPER_LASTS` | `60` | The months a piece of paper 66's boxes and 67's book row are drawn on must still run: 66 lands a dozen months, 67 fewer. |
+| 5309 | `KeptCheck.DESK_KINDS` | `java.util.Set.of("CurveChart", "DeskCurve", "DeskBars", "PathChart", "Buyback...` | The kinds of picture the bond desk draws, from the curve and the book (WG1-R). |
+| 5887 | `KeptCheck.TRADE_FOLDS_THAT_ADD` | `java.util.Set.of("month:ledger", "reserves:eight")` | The folds the Trade sections open that have to add to their page in any city that trades: the month's ledger and the eight moneys over the years. |
+| 8297 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
+| 9063 | `KeptCheck.RANKINGS_READ_GUARD_MS` | `600_000` | How long a read of the saved cities is waited on before it is called hung (KRW1, FS5, the study's FS1-C): ten minutes, ten times the minute it had to land in. |
+| 9175 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
+| 9777 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck's objects leave at least a quarter of its suite heap for the next pages (KP2c): the live heap after release, less the render targets the software renderer keeps on it (FS5, GB5's star 5: the box's Mon... |
 
 ## Fields (state)
 
@@ -156,21 +156,21 @@
 | 1446 | `static int blocks, blocksRepeated, blockReadings, sectionBlocks` | The redraws that made a block (more than a tenth of what they drew again), how many of them made a node again drawn unchanged, held still (KBP1), and how many a choice's month made that did not: the month's content, r... |
 | 2150 | `private static int siteTurn` |  |
 | 4389 | `static int fundShortMonths` | The months, since fundHeld() began, that the fund's cash stood under FUND_HELD_DUES months' transfer after its top-up (WG1-R: none may). |
-| 5873 | `static int checks` | The assertions made so far, for the count a stretch of the KP6 sections reports. |
-| 6767 | `String none, reading0, dragged, kept, differs, dropped, firstHeard` |  |
-| 6768 | `boolean sameReading, sameBar, heldPressed, heldStill, heldAfter, same, tray, trayGone, stagedMid, saysDragg...` |  |
-| 6769 | `int heardText, heardStyle, control, arrowsBefore, arrowsDragged, arrowsMid` |  |
-| 6770 | `double shown, valueNow, thumb, cityAt, cityMid, cityAfter, cityBack, step, min` |  |
-| 6771 | `Double stagedAt` |  |
-| 8699 | `String none, differs, dropped, reading` |  |
-| 8700 | `boolean heldPressed, heldGreyed, changingGreyed, sameBar, heldAfter` |  |
-| 8701 | `double value, want, back, city` |  |
+| 5877 | `static int checks` | The assertions made so far, for the count a stretch of the KP6 sections reports. |
+| 6771 | `String none, reading0, dragged, kept, differs, dropped, firstHeard` |  |
+| 6772 | `boolean sameReading, sameBar, heldPressed, heldStill, heldAfter, same, tray, trayGone, stagedMid, saysDragg...` |  |
+| 6773 | `int heardText, heardStyle, control, arrowsBefore, arrowsDragged, arrowsMid` |  |
+| 6774 | `double shown, valueNow, thumb, cityAt, cityMid, cityAfter, cityBack, step, min` |  |
+| 6775 | `Double stagedAt` |  |
+| 8703 | `String none, differs, dropped, reading` |  |
+| 8704 | `boolean heldPressed, heldGreyed, changingGreyed, sameBar, heldAfter` |  |
+| 8705 | `double value, want, back, city` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 96 | 10051 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 96 | 10055 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 100 | 5 | `static void check(String label, boolean ok)` |  |
 | 107 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure (R3b, sections 99 to 101). |
 | 121 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
@@ -329,7 +329,7 @@
 | 4254 | 61 | `static List<Choice> borrowChoices(Game g, KeptBench bench) throws Exception` | Borrow's choices on the finite-bid fixture. |
 | 4317 | 28 | `static void financesMenus(Game g, KeptBench bench) throws Exception` | Sections 60's last part: the foreign default menu and the debt result menu, each an arrival and a month later. |
 
-### the city's fund (lines 4346-5160)
+### the city's fund (lines 4346-5164)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -351,215 +351,215 @@
 | 4824 | 43 | `static void fundYearNet(Game g) throws Exception` | FP1's real sale, income and contribution in one older year cause the summary's different money columns. |
 | 4875 | 24 | `static int searchPagesLong(Game g, int rows) throws Exception` | FB6 (LX1's two Search lines): the fund's Search list made longer than two of its pages. |
 | 4906 | 11 | `static int olderYears(Game g) throws Exception` | FB6 (LX1's Activity line): the fund's record given lines in two older years. |
-| 4926 | 57 | `static void searchShowMoreBounded(Game g, KeptBench bench, KeptBench.Page tab, int rows) throws Exception` | Section 63 (RES3): Show more on the longest issuer's search hands back every row on show and makes only the next SEARCH_ROWS, and over SHOW_MORE_MONTHS months the expanded rows stay the same nodes, as many as the pres... |
-| 4985 | 139 | `static void fundLists(Game g, KeptBench bench, KeptBench.Page tab) throws Exception` | Section 63 opens and shuts the paging controls and each older year, kept against a page built new. |
-| 5126 | 34 | `static void fundWarrantRow() throws Exception` | A loaded preferred block's warrants give a reused Search row an empty move after a wrapped value. |
+| 4926 | 61 | `static void searchShowMoreBounded(Game g, KeptBench bench, KeptBench.Page tab, int rows) throws Exception` | Section 63 (RES3): Show more on the longest issuer's search hands back every row on show and makes only the next SEARCH_ROWS, and over SHOW_MORE_MONTHS months the expanded rows stay the same nodes, as many as the pres... |
+| 4989 | 139 | `static void fundLists(Game g, KeptBench bench, KeptBench.Page tab) throws Exception` | Section 63 opens and shuts the paging controls and each older year, kept against a page built new. |
+| 5130 | 34 | `static void fundWarrantRow() throws Exception` | A loaded preferred block's warrants give a reused Search row an empty move after a wrapped value. |
 
-### the pictures (64) (lines 5161-5418)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5167 | 5 | **type** `record Spot(String label, KeptBench.Page page, Hand setup, MonthHand month)` | A place a picture is seen: its label, the page, the hand that sets the page for it after the page's home, and what the player does on the page in each month it is watched, after the month and before the draw (null: no... |
-| 5168 | 3 | `Spot(String label, KeptBench.Page page, Hand setup)` _(in KeptCheck.Spot)_ |  |
-| 5174 | 3 | **type** `interface MonthHand` | What the player does on a page in a month of the watch (the first month is 1). |
-| 5175 | 1 | `void on(KeptBench bench, int month) throws Exception` _(in KeptCheck.MonthHand)_ |  |
-| 5182 | 5 | `static Debt longestPiece(KeptBench bench) throws Exception` | The piece of paper on the books that falls due last: the one a line's page and Close it now are drawn on (null when the city has none). |
-| 5197 | 16 | `static Debt paperLasting(Game g, KeptBench bench, String what) throws Exception` | KS2: the piece of paper sections 66 and 67 draw on, caused. |
-| 5215 | 45 | `static List<Spot> pictureSpots(Game g, KeptBench bench, Debt piece) throws Exception` | The places the money screens' pictures are: one page of each tab that holds some, and the pages behind them. |
-| 5262 | 41 | `static void moneyPictures(Game g, KeptBench bench) throws Exception` | Section 64: census money pictures on their first two pages retain nodes/nine-in-ten parts, repaint only changed figures, never repaint an unchanged draw, and equal fresh. |
-| 5308 | 6 | `static double[] deskFigures(Game g)` | What those pictures read of the model, to the bit (WG1-R): the curve at 12 and 120 months and what the book is worth today. |
-| 5316 | 102 | `static void pictureKept(Game g, KeptBench bench, Spot spot, String kind) throws Exception` | One kind of picture on one page, watched for PICTURE_MONTHS months. |
-
-### the count-up (65) (lines 5419-5644)
+### the pictures (64) (lines 5165-5422)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5422 | 10 | `static int[] started(KeptBench bench, java.util.Set<Animation> before)` | The animations a draw has started since `before` that are running now: {pops, counts and growths, others}. |
-| 5434 | 5 | `static java.util.Set<Animation> animationsNow(KeptBench bench)` | The animations on the page now, as a set by identity. |
-| 5441 | 5 | `static int running(KeptBench bench, Class<? extends Animation> kind)` | How many animations of a kind run on the page now. |
-| 5448 | 7 | `static String stillOrNot(KeptBench bench)` | What is wrong with a page on which nothing may animate: a running animation, a figure not at rest. |
-| 5461 | 29 | `static String bankRung(Game g, KeptBench bench, String page, int at, boolean paused, boolean expect) throws Exception` | One clock speed of section 65 on the Bank tab (the Overview when `page` is null): the page is shown, a month lands (one that moved the capital ratio, on the Overview) and it is shown again; the PROFIT figure pops and ... |
-| 5492 | 4 | `static void steerGauge(Game g)` | The Bank's risk-weighted ratio made the one that binds (see bankRung()): the book weighed for risk set to twenty times what the bank holds. |
-| 5498 | 15 | `private static String bankRungChecks(Game g, KeptBench bench, String page, int at, boolean paused, boolean expect, java.util.Se...` | ...what the month that landed started, once shown (the weighted book still steered on the Overview, so that the page built new beside it is drawn on the same bank). |
-| 5518 | 10 | `static void fundPaymentMonth(Game g)` | A holding and a payment settled into the model fields the Portfolio reads, after the real month has landed. |
-| 5530 | 29 | `static String fundRung(Game g, KeptBench bench, int at, boolean paused, boolean expect) throws Exception` | ...and the fund's Portfolio, through the tab's real show method: the worth counts on and a payment pops. |
-| 5561 | 83 | `static void moneyCountUp(Game g, KeptBench bench) throws Exception` | Section 65: Bank profit/capital and Fund worth/payment animations obey paused/COUNT_UP_TOP at every rung, stop above it and show current figures. |
+| 5171 | 5 | **type** `record Spot(String label, KeptBench.Page page, Hand setup, MonthHand month)` | A place a picture is seen: its label, the page, the hand that sets the page for it after the page's home, and what the player does on the page in each month it is watched, after the month and before the draw (null: no... |
+| 5172 | 3 | `Spot(String label, KeptBench.Page page, Hand setup)` _(in KeptCheck.Spot)_ |  |
+| 5178 | 3 | **type** `interface MonthHand` | What the player does on a page in a month of the watch (the first month is 1). |
+| 5179 | 1 | `void on(KeptBench bench, int month) throws Exception` _(in KeptCheck.MonthHand)_ |  |
+| 5186 | 5 | `static Debt longestPiece(KeptBench bench) throws Exception` | The piece of paper on the books that falls due last: the one a line's page and Close it now are drawn on (null when the city has none). |
+| 5201 | 16 | `static Debt paperLasting(Game g, KeptBench bench, String what) throws Exception` | KS2: the piece of paper sections 66 and 67 draw on, caused. |
+| 5219 | 45 | `static List<Spot> pictureSpots(Game g, KeptBench bench, Debt piece) throws Exception` | The places the money screens' pictures are: one page of each tab that holds some, and the pages behind them. |
+| 5266 | 41 | `static void moneyPictures(Game g, KeptBench bench) throws Exception` | Section 64: census money pictures on their first two pages retain nodes/nine-in-ten parts, repaint only changed figures, never repaint an unchanged draw, and equal fresh. |
+| 5312 | 6 | `static double[] deskFigures(Game g)` | What those pictures read of the model, to the bit (WG1-R): the curve at 12 and 120 months and what the book is worth today. |
+| 5320 | 102 | `static void pictureKept(Game g, KeptBench bench, Spot spot, String kind) throws Exception` | One kind of picture on one page, watched for PICTURE_MONTHS months. |
 
-### the boxes (66) (lines 5645-5805)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5652 | 63 | `static void boxHeld(Game g, KeptBench bench, String name, KeptBench.Page page, Hand setup, Runnable show, java.util.function.Su...` | One box on a page, given the focus and typed into (a node's `setFocused` when this scene has no window to give the focus: the line says which): a month landed through the real show method twice - the same node, its te... |
-| 5717 | 52 | `static void boxEnter(Game g, KeptBench bench, String name, KeptBench.Page page, Hand setup, Runnable show, java.util.function.S...` | Section 66 Enter (KP2b/KP5): focused yield "4.5" commits and redraws as "4.500" on the same node/caret/focus; putBack restores the cap around the test. |
-| 5771 | 34 | `static void moneyControls(Game g, KeptBench bench) throws Exception` | Section 66: the boxes keep the player's hand - Close it now's two, the ask's, the yield boxes of Borrow's and the rollover's chips (typed into, a chip pressed, and Enter), the fund's search box. |
-
-### the hover (67) and the cost (68) (lines 5806-5865)
+### the count-up (65) (lines 5423-5648)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5809 | 30 | `static void moneyHover(Game g, KeptBench bench) throws Exception` | Section 67: the hover. |
-| 5841 | 17 | `static void money(Game g, KeptBench bench) throws Exception` | Sections 55 to 67: the money screens kept (68, their cost, is KeptTimingCheck's since FS4). |
-| 5860 | 5 | `private static long took(String what, long since)` | What a stretch of the money sections took, in a line; the clock's reading for the next. |
+| 5426 | 10 | `static int[] started(KeptBench bench, java.util.Set<Animation> before)` | The animations a draw has started since `before` that are running now: {pops, counts and growths, others}. |
+| 5438 | 5 | `static java.util.Set<Animation> animationsNow(KeptBench bench)` | The animations on the page now, as a set by identity. |
+| 5445 | 5 | `static int running(KeptBench bench, Class<? extends Animation> kind)` | How many animations of a kind run on the page now. |
+| 5452 | 7 | `static String stillOrNot(KeptBench bench)` | What is wrong with a page on which nothing may animate: a running animation, a figure not at rest. |
+| 5465 | 29 | `static String bankRung(Game g, KeptBench bench, String page, int at, boolean paused, boolean expect) throws Exception` | One clock speed of section 65 on the Bank tab (the Overview when `page` is null): the page is shown, a month lands (one that moved the capital ratio, on the Overview) and it is shown again; the PROFIT figure pops and ... |
+| 5496 | 4 | `static void steerGauge(Game g)` | The Bank's risk-weighted ratio made the one that binds (see bankRung()): the book weighed for risk set to twenty times what the bank holds. |
+| 5502 | 15 | `private static String bankRungChecks(Game g, KeptBench bench, String page, int at, boolean paused, boolean expect, java.util.Se...` | ...what the month that landed started, once shown (the weighted book still steered on the Overview, so that the page built new beside it is drawn on the same bank). |
+| 5522 | 10 | `static void fundPaymentMonth(Game g)` | A holding and a payment settled into the model fields the Portfolio reads, after the real month has landed. |
+| 5534 | 29 | `static String fundRung(Game g, KeptBench bench, int at, boolean paused, boolean expect) throws Exception` | ...and the fund's Portfolio, through the tab's real show method: the worth counts on and a payment pops. |
+| 5565 | 83 | `static void moneyCountUp(Game g, KeptBench bench) throws Exception` | Section 65: Bank profit/capital and Fund worth/payment animations obey paused/COUNT_UP_TOP at every rung, stop above it and show current figures. |
 
-### GOVERNMENT, TRADE & THE WORLD AND POLICY (KP6), sections 69 to 81: the three screens KP6 keeps, each page drawn kept ... (lines 5866-6139)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5876 | 5 | `private static long tookWith(String what, long since, int checksSince)` | What a stretch of the KP6 sections took and how many assertions it made, in a line; the clock's reading for the next. |
-| 5890 | 21 | `static double[] makeDeficit(Game g) throws Exception` | The taxes cut to nothing, the central bank printing for the treasury and two lines of arrears owed; what the dials were. |
-| 5913 | 10 | `static void endDeficit(Game g, double[] was)` | The dials put back where makeDeficit() found them. |
-| 5925 | 5 | `static int linesSaying(KeptBench bench, String marker)` | How many lines of the page's signature hold a marker (a card the page draws only in some states). |
-| 5932 | 5 | `static List<Choice> asActing(List<Choice> choices)` | Acting choices (Choice.acts): model ranking/budget changes may replace cards; print their share without asserting retention, but still require every redraw equal fresh. |
-| 5939 | 28 | `static List<Choice> governmentChoices(boolean debt)` | The Government tab's pages, folds and lines as choices (the folds that must add to their page only where the city has what they fold). |
-| 5969 | 21 | `static int[] linesThatAdd(KeptBench bench, KeptBench.Page tab, String page) throws Exception` | How many of a Government page's lines add to it when opened into who pays: {added, tried}. |
-| 5992 | 3 | `static void governmentComparisonsReleased(KeptBench bench) throws Exception` | FS5: drain callbacks from the non-FX driver, then judge the fresh graph's lifetime without another draw. |
-| 5996 | 27 | `private static void comparisonsReleased(KeptBench bench, boolean bank) throws Exception` |  |
-| 6025 | 3 | `private static boolean comparisonFreshReleased(KeptBench.ReleasedComparison r)` | The identical lifetime law for the ordinary restore and its real leaked-page negative control. |
-| 6030 | 109 | `static void kp6Government(Game g, KeptBench bench) throws Exception` | Sections 69 to 71: the Government tab kept. |
-
-### Trade (lines 6140-6453)
+### the boxes (66) (lines 5649-5809)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6143 | 6 | `static Hand tradeOn(String page)` | The hand that puts the Trade tab on a page. |
-| 6151 | 6 | `static Hand tradeNationOn(int nation)` | The hand that puts the Trade tab on a nation's page behind Partners (0 is the table). |
-| 6159 | 6 | `static Hand tradeFold(String key, boolean open)` | A fold or a line of the Trade tab opened or closed. |
-| 6167 | 3 | **type** `interface Verify` | What a scenario of 74b checks of the warning's three texts (title, line, what is behind its (i)), null under the bound. |
-| 6168 | 1 | `void on(String[] words)` _(in KeptCheck.Verify)_ |  |
-| 6178 | 20 | `static void boundRun(Game g, KeptBench bench, KeptBench.Page tab, double annual, String name, ForeignAccounts.Regime regime, bo...` | One scenario of 74b (XI2): the regime is entered (a peg struck, a band centred, at the rate of the day), the treasury has dealt the pieces (shares of a year's output; the vault only, no month's cash), and the exchange... |
-| 6205 | 73 | `static void kp6TradeBound(Game g, KeptBench bench, KeptBench.Page tab, String reservesName) throws Exception` | Section 74b (XI2): Trade's warning past the bound reads the month's dealing and not the deal in hand, and says what the regime does with it. |
-| 6280 | 173 | `static void kp6Trade(Game g, KeptBench bench) throws Exception` | Sections 72 to 74: Trade & the World kept. |
+| 5656 | 63 | `static void boxHeld(Game g, KeptBench bench, String name, KeptBench.Page page, Hand setup, Runnable show, java.util.function.Su...` | One box on a page, given the focus and typed into (a node's `setFocused` when this scene has no window to give the focus: the line says which): a month landed through the real show method twice - the same node, its te... |
+| 5721 | 52 | `static void boxEnter(Game g, KeptBench bench, String name, KeptBench.Page page, Hand setup, Runnable show, java.util.function.S...` | Section 66 Enter (KP2b/KP5): focused yield "4.5" commits and redraws as "4.500" on the same node/caret/focus; putBack restores the cap around the test. |
+| 5775 | 34 | `static void moneyControls(Game g, KeptBench bench) throws Exception` | Section 66: the boxes keep the player's hand - Close it now's two, the ask's, the yield boxes of Borrow's and the rollover's chips (typed into, a chip pressed, and Enter), the fund's search box. |
 
-### Policy (lines 6454-6704)
+### the hover (67) and the cost (68) (lines 5810-5869)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6457 | 6 | `static Hand policyOn(String area, String page)` | The hand that puts Policy on an area and a page (the hub when `area` is null). |
-| 6465 | 3 | `static Choice policyPage(String area, String page)` | A choice that opens a page of Policy. |
-| 6470 | 3 | `static Choice stage(String name, String key, double value)` | A choice that stages a change under a lever's key. |
-| 6475 | 3 | `static Choice drop(String name)` | A choice that drops everything staged. |
-| 6480 | 3 | `static Choice policyFold(String name, String key, boolean open, boolean adds)` | A fold or a line of Policy, opened or closed, as a choice (`opens` for a fold that has to add to its page). |
-| 6485 | 6 | `static Choice policyAllClosed(String name)` | Every fold and line of Policy closed. |
-| 6493 | 174 | `static void kp6Policy(Game g, KeptBench bench) throws Exception` | Sections 75 to 77: Policy and zoning kept. |
-| 6673 | 31 | `static void peopleShort(Game g, KeptBench bench, String[] hunger) throws Exception` | People's WHO GOES SHORT list and card (sections 1 to 5 draw the page): with people short of food the card says so and draws its bar, the People page kept for a stretch of months equals a page built new, and Policy's F... |
+| 5813 | 30 | `static void moneyHover(Game g, KeptBench bench) throws Exception` | Section 67: the hover. |
+| 5845 | 17 | `static void money(Game g, KeptBench bench) throws Exception` | Sections 55 to 67: the money screens kept (68, their cost, is KeptTimingCheck's since FS4). |
+| 5864 | 5 | `private static long took(String what, long since)` | What a stretch of the money sections took, in a line; the clock's reading for the next. |
 
-### the controls (78) (lines 6705-7034)
+### GOVERNMENT, TRADE & THE WORLD AND POLICY (KP6), sections 69 to 81: the three screens KP6 keeps, each page drawn kept ... (lines 5870-6143)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6711 | 1 | **type** `record AtOnce(java.util.function.Supplier<Double> now, Runnable putBack)` | A dial that applies at once and stages nothing (the policy rate page's target and HOW STRICT): what the model reads at the dial now, and how it is put back (KP2b: the held dials were all staged ones). |
-| 6714 | 4 | `static java.util.function.Function<List<javafx.scene.control.Slider>, javafx.scene.control.Slider> sliderAt(int index, double m...` | The slider at a place in a page's sliders, when it has these ends - else null (the page is not the page this expects). |
-| 6720 | 7 | `static java.util.function.Function<List<javafx.scene.control.Slider>, javafx.scene.control.Slider> offsetDial(int index)` | The slider at a place among a page's sliders that run under nothing (a tax offset's dial, which reaches below zero), else null. |
-| 6729 | 12 | `static String whoSet()` | The few frames of the code that made a change just heard by a listener (skipping this harness and the listener's own plumbing): who set it. |
-| 6746 | 18 | `static String taxDialMoving(KeptBench bench, int index) throws Exception` | The first sector whose zone page has a tax dial (the `index`th that runs under nothing) that moves what the ITS TAXES card says it would do when it is dragged two steps, the dial put back after - or null. |
-| 6766 | 7 | **type** `static final class Held` | What one held dial did, for holdDial to judge. |
-| 6775 | 131 | `static void holdDial(Game g, KeptBench bench, String what, String area, String page, java.util.function.Function<List<javafx.sc...` | Section 78: Policy dials write unchanged readings once, retain held identity/thumb/reading/effects through months, then stage/apply/drop and equal fresh (KP2b). |
-| 6908 | 3 | `static void policyDial(Game g, KeptBench bench, String what, String area, String page, String key, boolean trayShows) throws Ex...` | Section 78's dial, held, the first slider of a page: see holdDial. |
-| 6913 | 65 | `static void heldWithCardInFront(Game g, KeptBench bench, String what, KeptBench.Page p, Hand setup, Hand front) throws Exception` | Section 78: setup then front inserts a keyed card before a held dial; the original node/thumb/reading/ladder stay with their payer/course, not list position. |
-| 6980 | 25 | `static void policyDialsKeep(Game g, KeptBench bench) throws Exception` | Section 78's last part: a card in front of a held dial, on the Schools page (a course's own price in front of the loan's) and on a tax page (a payer's own move in front of another's). |
-| 7007 | 27 | `static void kp6Controls(Game g, KeptBench bench) throws Exception` | Section 78: the controls on Policy - a tax page's rate dial, the policy rate's, a zone's ground dial, and a card coming in front of a held dial. |
+| 5880 | 5 | `private static long tookWith(String what, long since, int checksSince)` | What a stretch of the KP6 sections took and how many assertions it made, in a line; the clock's reading for the next. |
+| 5894 | 21 | `static double[] makeDeficit(Game g) throws Exception` | The taxes cut to nothing, the central bank printing for the treasury and two lines of arrears owed; what the dials were. |
+| 5917 | 10 | `static void endDeficit(Game g, double[] was)` | The dials put back where makeDeficit() found them. |
+| 5929 | 5 | `static int linesSaying(KeptBench bench, String marker)` | How many lines of the page's signature hold a marker (a card the page draws only in some states). |
+| 5936 | 5 | `static List<Choice> asActing(List<Choice> choices)` | Acting choices (Choice.acts): model ranking/budget changes may replace cards; print their share without asserting retention, but still require every redraw equal fresh. |
+| 5943 | 28 | `static List<Choice> governmentChoices(boolean debt)` | The Government tab's pages, folds and lines as choices (the folds that must add to their page only where the city has what they fold). |
+| 5973 | 21 | `static int[] linesThatAdd(KeptBench bench, KeptBench.Page tab, String page) throws Exception` | How many of a Government page's lines add to it when opened into who pays: {added, tried}. |
+| 5996 | 3 | `static void governmentComparisonsReleased(KeptBench bench) throws Exception` | FS5: drain callbacks from the non-FX driver, then judge the fresh graph's lifetime without another draw. |
+| 6000 | 27 | `private static void comparisonsReleased(KeptBench bench, boolean bank) throws Exception` |  |
+| 6029 | 3 | `private static boolean comparisonFreshReleased(KeptBench.ReleasedComparison r)` | The identical lifetime law for the ordinary restore and its real leaked-page negative control. |
+| 6034 | 109 | `static void kp6Government(Game g, KeptBench bench) throws Exception` | Sections 69 to 71: the Government tab kept. |
 
-### the count-up (79) (lines 7035-7314)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 7038 | 3 | `private static boolean moved(String[] words)` | Whether a counted figure's words moved between last month and this. |
-| 7043 | 5 | **type** `record TradeCountHistory(List<List<Number>> series, int[] at, Number[] before) implements AutoCloseable` | The exact prior saved-month entries used by TradeScreen.countFrom, restored before another model month. |
-| 7044 | 3 | `public void close()` _(in KeptCheck.TradeCountHistory)_ |  |
-| 7056 | 33 | `static TradeCountHistory tradeCountHistory(Game g, KeptBench bench, boolean changed)` | KP6-N/FS5: stagnant real trade is valid. |
-| 7091 | 4 | `static boolean tradeCountMatches(javafx.scene.control.Label figure, Animation before, boolean wanted)` | The actual started-animation predicate, shared by positive counts and the no-move controls. |
-| 7102 | 61 | `static String tradeRung(Game g, KeptBench bench, String page, boolean bars, int at, boolean paused, boolean expect, boolean cha...` | One clock speed of section 79 on a Trade page: one real month lands, with both prior saved-month words caused by tradeCountHistory. |
-| 7168 | 21 | `static String quietRung(Game g, KeptBench bench, KeptBench.Page page, Runnable open, Runnable show, int at, boolean paused, boo...` | One clock speed on a page that has no animation to run (a Government or Policy page): a month lands and the page is shown through its real show method; nothing starts at any rung, nothing is running or off its rest, a... |
-| 7191 | 123 | `static void kp6CountUp(Game g, KeptBench bench) throws Exception` | Section 79: Trade SOLD/BOUGHT counts and Overview/What-we-trade bars obey paused/COUNT_UP_TOP, stop past it and show current words; Government/Policy never animate. |
-
-### the hover (80) and the cost (81) (lines 7315-7455)
+### Trade (lines 6144-6457)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 7318 | 14 | `private static void hoverKP6(Game g, KeptBench bench, java.util.Map<String, Boolean> found, String where, KeptBench.Page page, ...` | The pointer put over a node of each kind on a page (its `setup` made first), hoverLine() saying what came of it; `found` notes where a node was found. |
-| 7334 | 34 | `static void kp6Hover(Game g, KeptBench bench) throws Exception` | Section 80: Government/Trade/Policy doors, cells and rows retain node and mouse-entered look under a still pointer; mouse-exited restores their rest look. |
-| 7370 | 55 | `static void kp6Tips(Game g, KeptBench bench) throws Exception` | Section 80: surviving nodes on all three screens (including Trade river) keep the same Tooltip across a month; Kept.tip updates its words/delay. |
-| 7427 | 28 | `static void screensKP6(Game g, KeptBench bench) throws Exception` | Sections 69 to 80: Government, Trade & the World and Policy kept (81, their cost, is KeptTimingCheck's since FS4). |
+| 6147 | 6 | `static Hand tradeOn(String page)` | The hand that puts the Trade tab on a page. |
+| 6155 | 6 | `static Hand tradeNationOn(int nation)` | The hand that puts the Trade tab on a nation's page behind Partners (0 is the table). |
+| 6163 | 6 | `static Hand tradeFold(String key, boolean open)` | A fold or a line of the Trade tab opened or closed. |
+| 6171 | 3 | **type** `interface Verify` | What a scenario of 74b checks of the warning's three texts (title, line, what is behind its (i)), null under the bound. |
+| 6172 | 1 | `void on(String[] words)` _(in KeptCheck.Verify)_ |  |
+| 6182 | 20 | `static void boundRun(Game g, KeptBench bench, KeptBench.Page tab, double annual, String name, ForeignAccounts.Regime regime, bo...` | One scenario of 74b (XI2): the regime is entered (a peg struck, a band centred, at the rate of the day), the treasury has dealt the pieces (shares of a year's output; the vault only, no month's cash), and the exchange... |
+| 6209 | 73 | `static void kp6TradeBound(Game g, KeptBench bench, KeptBench.Page tab, String reservesName) throws Exception` | Section 74b (XI2): Trade's warning past the bound reads the month's dealing and not the deal in hand, and says what the regime does with it. |
+| 6284 | 173 | `static void kp6Trade(Game g, KeptBench bench) throws Exception` | Sections 72 to 74: Trade & the World kept. |
 
-### POLICY > RESEARCH'S OVERVIEW AND FUNDING (R3b, slice B), sections 99 to 101: the two pages, the hub's Research card, ... (lines 7456-8073)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 7466 | 6 | `static Game researchFundingTown() throws Exception` | The city of sections 99 to 101: ResearchViewCheck.fundedTown() - a 1900 city with two Universities, an Institute of technology and a Medical school, and grants in engineering, medicine and business that bought posts -... |
-| 7474 | 12 | `static Game researchDefaultTown() throws Exception` | A city founded the default way with a University and a grant in engineering that bought posts (ResearchViewCheck's section 15 city), played three months. |
-| 7489 | 8 | `static ResearchView.Card syntheticCard(boolean researching, int room, int inReach, double idle, double total, boolean grantMove...` | A Funding card made by hand: the read that ResearchScreen.sayWords() chooses a sentence from. |
-| 7503 | 19 | `static void sayCases() throws Exception` | The sentence under a Funding card for every case the model's reads can make, in the order the screen chooses among them: a city founded the default way; no school; nothing in reach; a prize that brings labs; one under... |
-| 7523 | 4 | `static String fieldWord(ResearchCatalog.Field f)` | A field as the screens read it: "Engineering". |
-| 7529 | 3 | `static String researchersWord(double n)` | "412 researchers", "1 researcher". |
-| 7534 | 10 | `static List<String> shownWith(KeptBench bench, KeptBench.Page page, Hand hand) throws Exception` | The page home, a hand on it, drawn and laid out: its signature. |
-| 7549 | 25 | `static void monthsAgainstNew(Game town, KeptBench bench, KeptBench.Page page, String what, int months, Hand hand) throws Exception` | A page, after a hand on it, kept over last month's nodes for `months` months: the signature equal to a page built new at each, and nine in ten of its nodes handed back on average (the share section 96 holds a page to). |
-| 7576 | 55 | `static void researchFundingNoReach() throws Exception` | A real founding before the catalogue opens business in month 18 and medicine in month 66. |
-| 7633 | 25 | `static void researchFunding(Game g, KeptBench defaultBench) throws Exception` | Sections 99-101 (R3b): Research Overview/Funding in default and funded 1900 cities equal fresh; model reads, staged/held/applied dials are checked. |
-| 7660 | 99 | `static void researchDefaultWay(Game g, KeptBench defaultBench) throws Exception` | Section 99, the first part: in a city founded the default way. |
-| 7761 | 81 | `static void researchOverview(Game town, KeptBench bench) throws Exception` | Section 99, the second part: the Overview and the hub's Research card in the 1900 town. |
-| 7844 | 157 | `static void researchFundingPage(Game town, KeptBench bench) throws Exception` | Section 100: the Funding page in the 1900 town. |
-| 8003 | 70 | `static void researchSchoolsAndBooks(Game town, KeptBench bench) throws Exception` | Section 101: the schools' research posts on Services, the research line on Government's Spending list, and the wage floor's payroll. |
-
-### THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of ... (lines 8074-8379)
+### Policy (lines 6458-6708)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 8079 | 8 | `static boolean has(List<String> signature, String...words)` | Whether some line of a signature has all of these words in it. |
-| 8089 | 3 | `static String label(String text)` | A label's line in a signature: `Label "text"`. |
-| 8094 | 194 | `static void researchFound(Game g, KeptBench defaultBench) throws Exception` | Section 95 (R5): default quiet Found card versus researchTown finds/recipe/equipment/template/charts, kept and reshaped; pure timeline stacking/ticks/flags/colours/decisions. |
-| 8290 | 1 | **type** `private record RailScreen(String label, String name, java.util.function.Consumer<KeptBench> show)` | A rail screen the clock is held to in section 88: how it is called here, the name its show method gives the window, and the call that shows it. |
-| 8296 | 83 | `static void kp7Clock(Game g, KeptBench bench) throws Exception` | Section 88: prove rebuiltInPlace counts old redraws but not arrivals; all real rail screens retain tops, screen name and handed-back nodes through CLOCK_MONTHS. |
+| 6461 | 6 | `static Hand policyOn(String area, String page)` | The hand that puts Policy on an area and a page (the hub when `area` is null). |
+| 6469 | 3 | `static Choice policyPage(String area, String page)` | A choice that opens a page of Policy. |
+| 6474 | 3 | `static Choice stage(String name, String key, double value)` | A choice that stages a change under a lever's key. |
+| 6479 | 3 | `static Choice drop(String name)` | A choice that drops everything staged. |
+| 6484 | 3 | `static Choice policyFold(String name, String key, boolean open, boolean adds)` | A fold or a line of Policy, opened or closed, as a choice (`opens` for a fold that has to add to its page). |
+| 6489 | 6 | `static Choice policyAllClosed(String name)` | Every fold and line of Policy closed. |
+| 6497 | 174 | `static void kp6Policy(Game g, KeptBench bench) throws Exception` | Sections 75 to 77: Policy and zoning kept. |
+| 6677 | 31 | `static void peopleShort(Game g, KeptBench bench, String[] hunger) throws Exception` | People's WHO GOES SHORT list and card (sections 1 to 5 draw the page): with people short of food the card says so and draws its bar, the People page kept for a stretch of months equals a page built new, and Policy's F... |
 
-### HOUSEHOLD MONEY AND THE RANKINGS TAB (KP7), sections 82 to 90: the last two screens on the rail kept - each page draw... (lines 8380-8694)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 8387 | 57 | `static void kp7Household(Game g, KeptBench bench) throws Exception` | Sections 82 to 84: Household money kept, shown as a page built new shows it, and kept right through what reshapes it. |
-| 8446 | 97 | `static void kp7Rankings(Game g, KeptBench bench) throws Exception` | Sections 85 to 87: the Rankings tab kept, shown as a page built new shows it, and kept right through what reshapes it - to the pixel, since its table is painted. |
-| 8549 | 57 | `static int[] tipsAcrossMonth(Game g, KeptBench bench, KeptBench.Page page) throws Exception` | KHT1/FS5: hold FamilyModel and ledger cell counts across one month so grid cells stay open. |
-| 8608 | 25 | `static void kp7Hover(Game g, KeptBench bench) throws Exception` | Section 89: Household doors/cells and Rankings rows retain identity/hover while still and clear on exit; surviving tooltips keep identity across open cells/drawers/measures. |
-| 8635 | 40 | `static void kp7Tips(Game g, KeptBench bench) throws Exception` | Section 89's last part: the tooltips are kept on Household money and the Rankings tab. |
-| 8677 | 17 | `static void screensKP7(Game g, KeptBench bench) throws Exception` | Sections 82 to 89: Household money and the Rankings tab kept, and the clock never rebuilding a rail screen (88); 90, their cost, is KeptTimingCheck's since FS4. |
-
-### a slider greyed while held (91) (lines 8695-8808)
+### the controls (78) (lines 6709-7038)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 8698 | 5 | **type** `static final class Greyed` | What one greying of a held slider did, for greyedWhileHeld to judge. |
-| 8705 | 61 | `static void greyedWhileHeld(Game g, KeptBench bench) throws Exception` | Section 91 (KP2b/KP2c): disabled policy-rate dial releases at scene (pressed/dragged), clears held/valueChanging, follows a new staged value and returns when dropped. |
-| 8768 | 33 | `static void doorsStyledOnce(Game g, KeptBench bench) throws Exception` | Section 91 (KP2b): Policy hub/tax door cards set whole hand style once per draw; unchanged redraw fires no style changes, manual mutation proves the counter. |
-| 8803 | 5 | `private static Notice add(Game g, String key, String title)` | A notice raised now, unread, in the inbox. |
+| 6715 | 1 | **type** `record AtOnce(java.util.function.Supplier<Double> now, Runnable putBack)` | A dial that applies at once and stages nothing (the policy rate page's target and HOW STRICT): what the model reads at the dial now, and how it is put back (KP2b: the held dials were all staged ones). |
+| 6718 | 4 | `static java.util.function.Function<List<javafx.scene.control.Slider>, javafx.scene.control.Slider> sliderAt(int index, double m...` | The slider at a place in a page's sliders, when it has these ends - else null (the page is not the page this expects). |
+| 6724 | 7 | `static java.util.function.Function<List<javafx.scene.control.Slider>, javafx.scene.control.Slider> offsetDial(int index)` | The slider at a place among a page's sliders that run under nothing (a tax offset's dial, which reaches below zero), else null. |
+| 6733 | 12 | `static String whoSet()` | The few frames of the code that made a change just heard by a listener (skipping this harness and the listener's own plumbing): who set it. |
+| 6750 | 18 | `static String taxDialMoving(KeptBench bench, int index) throws Exception` | The first sector whose zone page has a tax dial (the `index`th that runs under nothing) that moves what the ITS TAXES card says it would do when it is dragged two steps, the dial put back after - or null. |
+| 6770 | 7 | **type** `static final class Held` | What one held dial did, for holdDial to judge. |
+| 6779 | 131 | `static void holdDial(Game g, KeptBench bench, String what, String area, String page, java.util.function.Function<List<javafx.sc...` | Section 78: Policy dials write unchanged readings once, retain held identity/thumb/reading/effects through months, then stage/apply/drop and equal fresh (KP2b). |
+| 6912 | 3 | `static void policyDial(Game g, KeptBench bench, String what, String area, String page, String key, boolean trayShows) throws Ex...` | Section 78's dial, held, the first slider of a page: see holdDial. |
+| 6917 | 65 | `static void heldWithCardInFront(Game g, KeptBench bench, String what, KeptBench.Page p, Hand setup, Hand front) throws Exception` | Section 78: setup then front inserts a keyed card before a held dial; the original node/thumb/reading/ladder stay with their payer/course, not list position. |
+| 6984 | 25 | `static void policyDialsKeep(Game g, KeptBench bench) throws Exception` | Section 78's last part: a card in front of a held dial, on the Schools page (a course's own price in front of the loan's) and on a tax page (a payer's own move in front of another's). |
+| 7011 | 27 | `static void kp6Controls(Game g, KeptBench bench) throws Exception` | Section 78: the controls on Policy - a tax page's rate dial, the policy rate's, a zone's ground dial, and a card coming in front of a held dial. |
 
-### THE KEPT SCREENS' COST SWEEP (KP2b), section 92: a style, a text, a graphic, a padding or a width set again on a node... (lines 8809-9165)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 8819 | 20 | `static void nothingSet(KeptBench bench, KeptBench.Page page, String name, Hand hand) throws Exception` | A page home, a hand on it, drawn and laid out, drawn once more with a listener on every style, text, graphic, padding and width on it (KeptBench.redrawSets), no month between: how many of them the second draw wrote, a... |
-| 8840 | 3 | `static void nothingSet(KeptBench bench, KeptBench.Page page, String name) throws Exception` |  |
-| 8845 | 15 | `static List<Debt> piecesOnTheBooks(Game g, KeptBench bench) throws Exception` | The pieces on the books, or a real sale settled through the model; a refusal leaves the nonempty premise hard red. |
-| 8865 | 7 | `static void letGo(KeptBench bench, java.util.function.Consumer<KeptBench> forget) throws Exception` | Section 92 lets one tab's pages go before it opens the next (KP2b): the tab forgotten, as another city opened leaves it, and the pages built new released (KeptBench.release). |
-| 8874 | 127 | `static void kp2bSets(Game g, KeptBench bench) throws Exception` | Section 92: the pages the sweep mended, each redrawn with nothing new in the city. |
-| 9003 | 34 | `static void kp2bHouseholdMoney(Game g, KeptBench bench) throws Exception` | Section 92 on Household money (KP7, taken into KP2b): the page as it opens, each view, every cell of the grid opened, the statement and the books stacked under the grid. |
-| 9042 | 11 | `static int rankingsSavedCities(KeptBench bench) throws Exception` | The city saved into slot 10 of the harness's own folder and read back, so that the Rankings tab has a saved city on its board: section 87 does it, and does nothing here where it has run. |
-| 9066 | 9 | `static boolean rankingsReadAwaited(KeptBench bench) throws Exception` | The Rankings tab's read of the saved cities waited on to its own end: the screen's worker hands its answer to the FX thread, which clears its reading flag and keeps the snapshot (rankingsReadLanded), asked between sle... |
-| 9082 | 24 | `static void kp2bRowsPicture(Game g, KeptBench bench) throws Exception` | Section 93: the Rankings table's picture (KP2b), the one node on the page that paints its rows. |
-| 9112 | 53 | `static void kp2bRankings(Game g, KeptBench bench) throws Exception` | Section 92 on the Rankings tab (KP7, taken into KP2b): the page as it opens, each board, money, prices and conversion, some measures (every tenth, the last and the first no real place is ranked on), each filter, Aroun... |
-
-### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 9166-10146)
+### the count-up (79) (lines 7039-7318)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9178 | 4 | `static void putSitesOn(BuildingManager buildings, int n)` | Puts the played city's building stacks in a state with this many sites on (the stacks' own setter, the one a loaded save uses): the first n stacks under construction, the rest not, so the tab's count and its tooltip a... |
-| 9184 | 4 | `static boolean cityIsScratch(Game g)` | Whether the scratch city's folder is under this JVM's TempDirs folder: then a click that saves the prefs writes nothing of the player's. |
-| 9190 | 220 | `static void up7Frame(Game g, KeptBench bench) throws Exception` | Section 94 (UP7): real drawer bar/construction tab kept and fresh across pin/fold/screen/site states, with spoil/redraw/hover/tooltips/clicks. |
-| 9412 | 17 | `static ClockPace paceFor(double rung, boolean short_)` | A pace on a clock moved by hand, run past a full window: at pace, or short of the rung (a rung of 50 by months of 120 ms as ClockCheck's falls, the rest by a city that runs at two fifths of it). |
-| 9431 | 4 | `static void drawHeader(KeptBench bench) throws Exception` | The header drawn kept and laid out, as the clock's redraw leaves it. |
-| 9437 | 183 | `static void up7Speed(Game g, KeptBench bench) throws Exception` | Section 98 (UP7): real header pace at/short of every rung uses speed-only amber or rung colour, fixed unclipped width, stationary neighbours and one changed write. |
-| 9622 | 9 | `static boolean onceEach(KeptBench.Sets s)` | Whether a draw wrote the reading's words once and its style once, and nothing else. |
-| 9633 | 134 | `static void fb2Repairs(Game g, KeptBench bench) throws Exception` | Section 103 (FB2): cause KL1 quote, KS1-UI header/bar, BF1-K Partners/Search and KS1-Gov recurring-line regressions independently of the played city path. |
-| 9776 | 60 | `private static void rendererCacheControls(KeptBench bench) throws Exception` | Return this diagnostic frame before the final GC, so its roots cannot inflate the heap reading. |
-| 9838 | 93 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
-| 9932 | 12 | `public static void main(String[] args) throws Exception` |  |
-| 9954 | 12 | `static Game playedCity(GameFiles files) throws Exception` | KeptCheck's city, Danzik: LongPlaytest's probe city, today's (probeTodayCity(); R1g: the playtest founds the 1900 city since, and this one's sections assert what a city founded the default way has, every discovery kno... |
-| 9968 | 178 | `static void mainSections(Game g, KeptBench bench) throws Exception` | Every section, in order, on the played city. |
+| 7042 | 3 | `private static boolean moved(String[] words)` | Whether a counted figure's words moved between last month and this. |
+| 7047 | 5 | **type** `record TradeCountHistory(List<List<Number>> series, int[] at, Number[] before) implements AutoCloseable` | The exact prior saved-month entries used by TradeScreen.countFrom, restored before another model month. |
+| 7048 | 3 | `public void close()` _(in KeptCheck.TradeCountHistory)_ |  |
+| 7060 | 33 | `static TradeCountHistory tradeCountHistory(Game g, KeptBench bench, boolean changed)` | KP6-N/FS5: stagnant real trade is valid. |
+| 7095 | 4 | `static boolean tradeCountMatches(javafx.scene.control.Label figure, Animation before, boolean wanted)` | The actual started-animation predicate, shared by positive counts and the no-move controls. |
+| 7106 | 61 | `static String tradeRung(Game g, KeptBench bench, String page, boolean bars, int at, boolean paused, boolean expect, boolean cha...` | One clock speed of section 79 on a Trade page: one real month lands, with both prior saved-month words caused by tradeCountHistory. |
+| 7172 | 21 | `static String quietRung(Game g, KeptBench bench, KeptBench.Page page, Runnable open, Runnable show, int at, boolean paused, boo...` | One clock speed on a page that has no animation to run (a Government or Policy page): a month lands and the page is shown through its real show method; nothing starts at any rung, nothing is running or off its rest, a... |
+| 7195 | 123 | `static void kp6CountUp(Game g, KeptBench bench) throws Exception` | Section 79: Trade SOLD/BOUGHT counts and Overview/What-we-trade bars obey paused/COUNT_UP_TOP, stop past it and show current words; Government/Policy never animate. |
+
+### the hover (80) and the cost (81) (lines 7319-7459)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 7322 | 14 | `private static void hoverKP6(Game g, KeptBench bench, java.util.Map<String, Boolean> found, String where, KeptBench.Page page, ...` | The pointer put over a node of each kind on a page (its `setup` made first), hoverLine() saying what came of it; `found` notes where a node was found. |
+| 7338 | 34 | `static void kp6Hover(Game g, KeptBench bench) throws Exception` | Section 80: Government/Trade/Policy doors, cells and rows retain node and mouse-entered look under a still pointer; mouse-exited restores their rest look. |
+| 7374 | 55 | `static void kp6Tips(Game g, KeptBench bench) throws Exception` | Section 80: surviving nodes on all three screens (including Trade river) keep the same Tooltip across a month; Kept.tip updates its words/delay. |
+| 7431 | 28 | `static void screensKP6(Game g, KeptBench bench) throws Exception` | Sections 69 to 80: Government, Trade & the World and Policy kept (81, their cost, is KeptTimingCheck's since FS4). |
+
+### POLICY > RESEARCH'S OVERVIEW AND FUNDING (R3b, slice B), sections 99 to 101: the two pages, the hub's Research card, ... (lines 7460-8077)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 7470 | 6 | `static Game researchFundingTown() throws Exception` | The city of sections 99 to 101: ResearchViewCheck.fundedTown() - a 1900 city with two Universities, an Institute of technology and a Medical school, and grants in engineering, medicine and business that bought posts -... |
+| 7478 | 12 | `static Game researchDefaultTown() throws Exception` | A city founded the default way with a University and a grant in engineering that bought posts (ResearchViewCheck's section 15 city), played three months. |
+| 7493 | 8 | `static ResearchView.Card syntheticCard(boolean researching, int room, int inReach, double idle, double total, boolean grantMove...` | A Funding card made by hand: the read that ResearchScreen.sayWords() chooses a sentence from. |
+| 7507 | 19 | `static void sayCases() throws Exception` | The sentence under a Funding card for every case the model's reads can make, in the order the screen chooses among them: a city founded the default way; no school; nothing in reach; a prize that brings labs; one under... |
+| 7527 | 4 | `static String fieldWord(ResearchCatalog.Field f)` | A field as the screens read it: "Engineering". |
+| 7533 | 3 | `static String researchersWord(double n)` | "412 researchers", "1 researcher". |
+| 7538 | 10 | `static List<String> shownWith(KeptBench bench, KeptBench.Page page, Hand hand) throws Exception` | The page home, a hand on it, drawn and laid out: its signature. |
+| 7553 | 25 | `static void monthsAgainstNew(Game town, KeptBench bench, KeptBench.Page page, String what, int months, Hand hand) throws Exception` | A page, after a hand on it, kept over last month's nodes for `months` months: the signature equal to a page built new at each, and nine in ten of its nodes handed back on average (the share section 96 holds a page to). |
+| 7580 | 55 | `static void researchFundingNoReach() throws Exception` | A real founding before the catalogue opens business in month 18 and medicine in month 66. |
+| 7637 | 25 | `static void researchFunding(Game g, KeptBench defaultBench) throws Exception` | Sections 99-101 (R3b): Research Overview/Funding in default and funded 1900 cities equal fresh; model reads, staged/held/applied dials are checked. |
+| 7664 | 99 | `static void researchDefaultWay(Game g, KeptBench defaultBench) throws Exception` | Section 99, the first part: in a city founded the default way. |
+| 7765 | 81 | `static void researchOverview(Game town, KeptBench bench) throws Exception` | Section 99, the second part: the Overview and the hub's Research card in the 1900 town. |
+| 7848 | 157 | `static void researchFundingPage(Game town, KeptBench bench) throws Exception` | Section 100: the Funding page in the 1900 town. |
+| 8007 | 70 | `static void researchSchoolsAndBooks(Game town, KeptBench bench) throws Exception` | Section 101: the schools' research posts on Services, the research line on Government's Spending list, and the wage floor's payroll. |
+
+### THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of ... (lines 8078-8383)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 8083 | 8 | `static boolean has(List<String> signature, String...words)` | Whether some line of a signature has all of these words in it. |
+| 8093 | 3 | `static String label(String text)` | A label's line in a signature: `Label "text"`. |
+| 8098 | 194 | `static void researchFound(Game g, KeptBench defaultBench) throws Exception` | Section 95 (R5): default quiet Found card versus researchTown finds/recipe/equipment/template/charts, kept and reshaped; pure timeline stacking/ticks/flags/colours/decisions. |
+| 8294 | 1 | **type** `private record RailScreen(String label, String name, java.util.function.Consumer<KeptBench> show)` | A rail screen the clock is held to in section 88: how it is called here, the name its show method gives the window, and the call that shows it. |
+| 8300 | 83 | `static void kp7Clock(Game g, KeptBench bench) throws Exception` | Section 88: prove rebuiltInPlace counts old redraws but not arrivals; all real rail screens retain tops, screen name and handed-back nodes through CLOCK_MONTHS. |
+
+### HOUSEHOLD MONEY AND THE RANKINGS TAB (KP7), sections 82 to 90: the last two screens on the rail kept - each page draw... (lines 8384-8698)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 8391 | 57 | `static void kp7Household(Game g, KeptBench bench) throws Exception` | Sections 82 to 84: Household money kept, shown as a page built new shows it, and kept right through what reshapes it. |
+| 8450 | 97 | `static void kp7Rankings(Game g, KeptBench bench) throws Exception` | Sections 85 to 87: the Rankings tab kept, shown as a page built new shows it, and kept right through what reshapes it - to the pixel, since its table is painted. |
+| 8553 | 57 | `static int[] tipsAcrossMonth(Game g, KeptBench bench, KeptBench.Page page) throws Exception` | KHT1/FS5: hold FamilyModel and ledger cell counts across one month so grid cells stay open. |
+| 8612 | 25 | `static void kp7Hover(Game g, KeptBench bench) throws Exception` | Section 89: Household doors/cells and Rankings rows retain identity/hover while still and clear on exit; surviving tooltips keep identity across open cells/drawers/measures. |
+| 8639 | 40 | `static void kp7Tips(Game g, KeptBench bench) throws Exception` | Section 89's last part: the tooltips are kept on Household money and the Rankings tab. |
+| 8681 | 17 | `static void screensKP7(Game g, KeptBench bench) throws Exception` | Sections 82 to 89: Household money and the Rankings tab kept, and the clock never rebuilding a rail screen (88); 90, their cost, is KeptTimingCheck's since FS4. |
+
+### a slider greyed while held (91) (lines 8699-8812)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 8702 | 5 | **type** `static final class Greyed` | What one greying of a held slider did, for greyedWhileHeld to judge. |
+| 8709 | 61 | `static void greyedWhileHeld(Game g, KeptBench bench) throws Exception` | Section 91 (KP2b/KP2c): disabled policy-rate dial releases at scene (pressed/dragged), clears held/valueChanging, follows a new staged value and returns when dropped. |
+| 8772 | 33 | `static void doorsStyledOnce(Game g, KeptBench bench) throws Exception` | Section 91 (KP2b): Policy hub/tax door cards set whole hand style once per draw; unchanged redraw fires no style changes, manual mutation proves the counter. |
+| 8807 | 5 | `private static Notice add(Game g, String key, String title)` | A notice raised now, unread, in the inbox. |
+
+### THE KEPT SCREENS' COST SWEEP (KP2b), section 92: a style, a text, a graphic, a padding or a width set again on a node... (lines 8813-9169)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 8823 | 20 | `static void nothingSet(KeptBench bench, KeptBench.Page page, String name, Hand hand) throws Exception` | A page home, a hand on it, drawn and laid out, drawn once more with a listener on every style, text, graphic, padding and width on it (KeptBench.redrawSets), no month between: how many of them the second draw wrote, a... |
+| 8844 | 3 | `static void nothingSet(KeptBench bench, KeptBench.Page page, String name) throws Exception` |  |
+| 8849 | 15 | `static List<Debt> piecesOnTheBooks(Game g, KeptBench bench) throws Exception` | The pieces on the books, or a real sale settled through the model; a refusal leaves the nonempty premise hard red. |
+| 8869 | 7 | `static void letGo(KeptBench bench, java.util.function.Consumer<KeptBench> forget) throws Exception` | Section 92 lets one tab's pages go before it opens the next (KP2b): the tab forgotten, as another city opened leaves it, and the pages built new released (KeptBench.release). |
+| 8878 | 127 | `static void kp2bSets(Game g, KeptBench bench) throws Exception` | Section 92: the pages the sweep mended, each redrawn with nothing new in the city. |
+| 9007 | 34 | `static void kp2bHouseholdMoney(Game g, KeptBench bench) throws Exception` | Section 92 on Household money (KP7, taken into KP2b): the page as it opens, each view, every cell of the grid opened, the statement and the books stacked under the grid. |
+| 9046 | 11 | `static int rankingsSavedCities(KeptBench bench) throws Exception` | The city saved into slot 10 of the harness's own folder and read back, so that the Rankings tab has a saved city on its board: section 87 does it, and does nothing here where it has run. |
+| 9070 | 9 | `static boolean rankingsReadAwaited(KeptBench bench) throws Exception` | The Rankings tab's read of the saved cities waited on to its own end: the screen's worker hands its answer to the FX thread, which clears its reading flag and keeps the snapshot (rankingsReadLanded), asked between sle... |
+| 9086 | 24 | `static void kp2bRowsPicture(Game g, KeptBench bench) throws Exception` | Section 93: the Rankings table's picture (KP2b), the one node on the page that paints its rows. |
+| 9116 | 53 | `static void kp2bRankings(Game g, KeptBench bench) throws Exception` | Section 92 on the Rankings tab (KP7, taken into KP2b): the page as it opens, each board, money, prices and conversion, some measures (every tenth, the last and the first no real place is ranked on), each filter, Aroun... |
+
+### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 9170-10150)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 9182 | 4 | `static void putSitesOn(BuildingManager buildings, int n)` | Puts the played city's building stacks in a state with this many sites on (the stacks' own setter, the one a loaded save uses): the first n stacks under construction, the rest not, so the tab's count and its tooltip a... |
+| 9188 | 4 | `static boolean cityIsScratch(Game g)` | Whether the scratch city's folder is under this JVM's TempDirs folder: then a click that saves the prefs writes nothing of the player's. |
+| 9194 | 220 | `static void up7Frame(Game g, KeptBench bench) throws Exception` | Section 94 (UP7): real drawer bar/construction tab kept and fresh across pin/fold/screen/site states, with spoil/redraw/hover/tooltips/clicks. |
+| 9416 | 17 | `static ClockPace paceFor(double rung, boolean short_)` | A pace on a clock moved by hand, run past a full window: at pace, or short of the rung (a rung of 50 by months of 120 ms as ClockCheck's falls, the rest by a city that runs at two fifths of it). |
+| 9435 | 4 | `static void drawHeader(KeptBench bench) throws Exception` | The header drawn kept and laid out, as the clock's redraw leaves it. |
+| 9441 | 183 | `static void up7Speed(Game g, KeptBench bench) throws Exception` | Section 98 (UP7): real header pace at/short of every rung uses speed-only amber or rung colour, fixed unclipped width, stationary neighbours and one changed write. |
+| 9626 | 9 | `static boolean onceEach(KeptBench.Sets s)` | Whether a draw wrote the reading's words once and its style once, and nothing else. |
+| 9637 | 134 | `static void fb2Repairs(Game g, KeptBench bench) throws Exception` | Section 103 (FB2): cause KL1 quote, KS1-UI header/bar, BF1-K Partners/Search and KS1-Gov recurring-line regressions independently of the played city path. |
+| 9780 | 60 | `private static void rendererCacheControls(KeptBench bench) throws Exception` | Return this diagnostic frame before the final GC, so its roots cannot inflate the heap reading. |
+| 9842 | 93 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
+| 9936 | 12 | `public static void main(String[] args) throws Exception` |  |
+| 9958 | 12 | `static Game playedCity(GameFiles files) throws Exception` | KeptCheck's city, Danzik: LongPlaytest's probe city, today's (probeTodayCity(); R1g: the playtest founds the 1900 city since, and this one's sections assert what a city founded the default way has, every discovery kno... |
+| 9972 | 178 | `static void mainSections(Game g, KeptBench bench) throws Exception` | Every section, in order, on the played city. |
 

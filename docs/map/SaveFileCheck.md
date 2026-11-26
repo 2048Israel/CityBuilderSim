@@ -1,4 +1,4 @@
-# SaveFileCheck.java - 5,254 lines · 46 methods · 2 constants · harnesses
+# SaveFileCheck.java - 5,265 lines · 46 methods · 2 constants · harnesses
 
 `ham/citybuildersim/SaveFileCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
@@ -16,7 +16,7 @@
 > tested on the machine it is running on - which is precisely the machine where
 > a mistake in the other two branches would never show up.
 
-**Uses:** [Game](Game.md) (204), [GameFiles](GameFiles.md) (83), [Founding](Founding.md) (41), [ForeignAccounts](ForeignAccounts.md) (41), [CityLand](CityLand.md) (40), [GameVersion](GameVersion.md) (38), [DataSave](DataSave.md) (34), [Sectors](Sectors.md) (30), [LandParcel](LandParcel.md) (26), [OrderBook](OrderBook.md) (23), [Migration](Migration.md) (22), [BuildingsTemplate](BuildingsTemplate.md) (19), [Household](Household.md) (19), [Nations](Nations.md) (18), [Exchange](Exchange.md) (18), [Equity](Equity.md) (16), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (14), [LandManager](LandManager.md) (14), [World](World.md) (14), [Good](Good.md) (13), [Bank](Bank.md) (13), [BuildingManager](BuildingManager.md) (12), [OldMetal](OldMetal.md) (12), [CareType](CareType.md) (12), [PriceLevel](PriceLevel.md) (11), [Ports](Ports.md) (11), [FundLedger](FundLedger.md) (11), [TreasuryFund](TreasuryFund.md) (11), [Oil](Oil.md) (10), [EarthSite](EarthSite.md) (10)... and 89 more
+**Uses:** [Game](Game.md) (205), [GameFiles](GameFiles.md) (83), [Founding](Founding.md) (41), [ForeignAccounts](ForeignAccounts.md) (41), [CityLand](CityLand.md) (40), [GameVersion](GameVersion.md) (38), [DataSave](DataSave.md) (34), [Sectors](Sectors.md) (30), [LandParcel](LandParcel.md) (26), [OrderBook](OrderBook.md) (23), [Migration](Migration.md) (22), [BuildingsTemplate](BuildingsTemplate.md) (20), [Household](Household.md) (19), [Nations](Nations.md) (18), [Exchange](Exchange.md) (18), [Equity](Equity.md) (16), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (14), [LandManager](LandManager.md) (14), [World](World.md) (14), [Good](Good.md) (13), [Bank](Bank.md) (13), [BuildingManager](BuildingManager.md) (12), [OldMetal](OldMetal.md) (12), [CareType](CareType.md) (12), [PriceLevel](PriceLevel.md) (11), [Ports](Ports.md) (11), [FundLedger](FundLedger.md) (11), [TreasuryFund](TreasuryFund.md) (11), [Oil](Oil.md) (10), [EarthSite](EarthSite.md) (10)... and 89 more
 
 **Used by (13):** [BridgeCheck](BridgeCheck.md), [CardCheck](CardCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [LandCheck](LandCheck.md), [LandmassCheck](LandmassCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [OilCheck](OilCheck.md), [ReadPathCheck](ReadPathCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [SubstationCheck](SubstationCheck.md), [WaterCheck](WaterCheck.md), [WellCheck](WellCheck.md)
 
@@ -45,30 +45,30 @@
 | 2922 | · a recording's switch and id cross a save (TR1, 2026-10-31) |
 | 2960 | · the city's fund, its rescue setting and the bank's preferred (0.7.14) |
 | 3318 | · the oldest format this build loads (0.7.108) |
-| 5077 | · 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT |
-| 5146 | · 5. WHAT A RELOAD MUST NOT FORGET |
+| 5088 | · 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT |
+| 5157 | · 5. WHAT A RELOAD MUST NOT FORGET |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 33 | `SaveFileCheck.OTHER_PATH` | `Nations.DEFAULT_PATH = = Nations.Path.RANDOM ? Nations.Path.HISTORICAL : Nati...` | The path a fixture founds on to be off the default, whichever Nations.DEFAULT_PATH is (WN3: the default became Random, Jerus 2026-10-29). |
-| 4482 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 4493 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
 | 30 | `static int fails` |  |
-| 5008 | `static int fails` |  |
-| 5009 | `static PrintStream out` |  |
-| 5010 | `static PrintStream quiet` |  |
+| 5019 | `static int fails` |  |
+| 5020 | `static PrintStream out` |  |
+| 5021 | `static PrintStream quiet` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 5227 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
+| 28 | 5238 | **type** `public class SaveFileCheck` | Verifies where saves go and how they are written. |
 | 35 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 40 | 10 | `static void assertEquals(String label, Object actual, Object expected)` |  |
 | 52 | 9 | `static void same(String label, double actual, double expected)` | Two readings of one month, which must not differ at all. |
@@ -94,26 +94,26 @@
 | 3757 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
 | 3765 | 59 | `static void allocatedLandCrossesASave() throws IOException` | AW2: the ordinary loader keeps the live ledger even when raw fixture stacks exceed its ground. |
 | 3826 | 31 | `static void landPlotsCrossASave()` | AW2: catalogue edits change the occupied ground, while the fixture's unallocated gap stays the same. |
-| 3859 | 79 | `static void constructionContinuesAfterALoad(Path root)` | AW2: cause automatic land buying and private orders, then play live and ordinary-loaded twins together. |
-| 3939 | 4 | `private static long standingAndOnSite(Game game, BuildingsTemplate template)` |  |
-| 3954 | 41 | `static void everyIdCrossesASave(Path root)` | EVERY ID CROSSES A SAVE, THE HIGHEST PAST A GAP TOO (FR3, 2026-10-19). |
-| 4023 | 387 | `static void onEarth(Path root) throws IOException` | A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6). |
-| 4422 | 46 | `static void refusedIntoARunningCity(GameFiles files, Game running, String olderBuild, com.google.gson.JsonObject newerSave) thr...` | A REFUSED LOAD LEAVES THE CITY IN PLAY ALONE (FW1, 0.8.37). |
-| 4470 | 10 | `static java.util.List<String> jsonDiff(com.google.gson.JsonObject a, com.google.gson.JsonObject b, java.util.Set<String> except)` | The keys two saves differ on, by name and value, but those left out. |
-| 4485 | 8 | `static boolean restoredWithoutSellers(LandMarket from)` | Whether a market's offers, restored with no sellers (a save from before WN5, or without its key), come back as many offers all the host's whole. |
-| 4495 | 4 | `static void quietly(Runnable r)` | Runs a piece of the city with the game's narration off. |
-| 4500 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
-| 4520 | 10 | `static boolean refusedAtTheFloor(GameFiles files, int slot, Game loaded, byte[] before)` | Whether a load of `slot` from `files` into `loaded` was refused at the floor (0.7.120, batch I3): the save's format below GameVersion.OLDEST_LOADABLE_FORMAT, the game told in P7's words naming the build that saved it ... |
-| 4532 | 9 | `static java.util.Map<String, byte[]> folderBytes(Path dir) throws IOException` | Every file under a folder and its bytes, by its path within it - to say nothing in it moved. |
-| 4549 | 343 | `static void worldMarketCrossesASave(Path root) throws IOException` | THE WORLD MARKET CROSSES A SAVE (WN3, format 48; Game, THE WORLD MARKET). |
-| 4894 | 6 | `static String printedMonths(Game city, int months)` | The narration of some months of a city, as text. |
-| 4902 | 7 | `static void cleanUp(Path root)` | Temp directory only - nothing here ever points at a real save folder. |
-| 4911 | 46 | `static void landLoadFallbacks() throws Exception` | HA1: current-format land is repaired, or refused before a live city is rebuilt. |
-| 5006 | 248 | **type** `static final class LoadConservation` | Nothing is created and nothing is destroyed. |
-| 5015 | 6 | `static void check(String label, double actual, double expected, double tol)` _(in SaveFileCheck.LoadConservation)_ |  |
-| 5022 | 4 | `static void assertTrue(String label, boolean ok)` _(in SaveFileCheck.LoadConservation)_ |  |
-| 5028 | 43 | `static Game city(Path root, String name, int months) throws Exception` _(in SaveFileCheck.LoadConservation)_ | A city with something of everything in it, so every law has something to test. |
-| 5072 | 160 | `static void run(String[] args) throws Exception` _(in SaveFileCheck.LoadConservation)_ |  |
-| 5234 | 11 | `static double[] snapshot(Game g)` _(in SaveFileCheck.LoadConservation)_ | The figures a load must not move. |
-| 5246 | 7 | `static void cleanUp(Path root)` _(in SaveFileCheck.LoadConservation)_ |  |
+| 3859 | 90 | `static void constructionContinuesAfterALoad(Path root)` | AW2: cause automatic land buying and private orders, then play live and ordinary-loaded twins together. |
+| 3950 | 4 | `private static long standingAndOnSite(Game game, BuildingsTemplate template)` |  |
+| 3965 | 41 | `static void everyIdCrossesASave(Path root)` | EVERY ID CROSSES A SAVE, THE HIGHEST PAST A GAP TOO (FR3, 2026-10-19). |
+| 4034 | 387 | `static void onEarth(Path root) throws IOException` | A CITY ON THE REAL EARTH (0.7.121, batch E4; spec-earth 6). |
+| 4433 | 46 | `static void refusedIntoARunningCity(GameFiles files, Game running, String olderBuild, com.google.gson.JsonObject newerSave) thr...` | A REFUSED LOAD LEAVES THE CITY IN PLAY ALONE (FW1, 0.8.37). |
+| 4481 | 10 | `static java.util.List<String> jsonDiff(com.google.gson.JsonObject a, com.google.gson.JsonObject b, java.util.Set<String> except)` | The keys two saves differ on, by name and value, but those left out. |
+| 4496 | 8 | `static boolean restoredWithoutSellers(LandMarket from)` | Whether a market's offers, restored with no sellers (a save from before WN5, or without its key), come back as many offers all the host's whole. |
+| 4506 | 4 | `static void quietly(Runnable r)` | Runs a piece of the city with the game's narration off. |
+| 4511 | 6 | `static<T> T quietlyGet(java.util.function.Supplier<T> s)` |  |
+| 4531 | 10 | `static boolean refusedAtTheFloor(GameFiles files, int slot, Game loaded, byte[] before)` | Whether a load of `slot` from `files` into `loaded` was refused at the floor (0.7.120, batch I3): the save's format below GameVersion.OLDEST_LOADABLE_FORMAT, the game told in P7's words naming the build that saved it ... |
+| 4543 | 9 | `static java.util.Map<String, byte[]> folderBytes(Path dir) throws IOException` | Every file under a folder and its bytes, by its path within it - to say nothing in it moved. |
+| 4560 | 343 | `static void worldMarketCrossesASave(Path root) throws IOException` | THE WORLD MARKET CROSSES A SAVE (WN3, format 48; Game, THE WORLD MARKET). |
+| 4905 | 6 | `static String printedMonths(Game city, int months)` | The narration of some months of a city, as text. |
+| 4913 | 7 | `static void cleanUp(Path root)` | Temp directory only - nothing here ever points at a real save folder. |
+| 4922 | 46 | `static void landLoadFallbacks() throws Exception` | HA1: current-format land is repaired, or refused before a live city is rebuilt. |
+| 5017 | 248 | **type** `static final class LoadConservation` | Nothing is created and nothing is destroyed. |
+| 5026 | 6 | `static void check(String label, double actual, double expected, double tol)` _(in SaveFileCheck.LoadConservation)_ |  |
+| 5033 | 4 | `static void assertTrue(String label, boolean ok)` _(in SaveFileCheck.LoadConservation)_ |  |
+| 5039 | 43 | `static Game city(Path root, String name, int months) throws Exception` _(in SaveFileCheck.LoadConservation)_ | A city with something of everything in it, so every law has something to test. |
+| 5083 | 160 | `static void run(String[] args) throws Exception` _(in SaveFileCheck.LoadConservation)_ |  |
+| 5245 | 11 | `static double[] snapshot(Game g)` _(in SaveFileCheck.LoadConservation)_ | The figures a load must not move. |
+| 5257 | 7 | `static void cleanUp(Path root)` _(in SaveFileCheck.LoadConservation)_ |  |
 

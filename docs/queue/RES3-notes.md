@@ -218,6 +218,121 @@ no-home watch and CreditCrunchCheck green, the ensemble against 0.9.206.md,
 'RES3 dry run?'; no further review unless the ensemble moves a money or
 saves figure. Village trace: target/res3-village (helper's probes).
 
+What the calls did (RES3c, 2026-11-25; probes in target/res3-c):
+- (b) HousingChoice.PERSONS_PER_ROOM 2, line(bedrooms) = 2(bedrooms + 1).
+  An offer carries its people: a whole door its line, a host place the line
+  less its host (host places keyed by the host's size), a paid half the line
+  over two. No occupied door passes it: alone, two to a share, a guest, a
+  lodger (lodgers spread evenly over the class's room). HousingMarketCheck's
+  fixtures caused again on the line (four to a household on the H120, an H55
+  couple and its guest couple, the family reservation on two H120 and two
+  H55), each result asserted within the line.
+- (c) Tenure. A cell not yet evictable (HousingMarket.sitting()) keeps its
+  full and half shares whatever its budget, the bill due and booked unfunded
+  (the landlord's arrears), within the census line rather than the built
+  capacity. And the doors follow the people: a lease is a cell's, so a
+  household that changed cell (a child born, a job lost, a pension drawn)
+  left its door behind. CreditCrunchCheck's no-home months were working
+  LARGE_FAMILY:UNSKILLED households at a zero budget (6-8 of 19 at m152).
+  HouseholdBalance.housingRoute() routes the month's cell changes as the
+  money goes (the flows' moves, then the census's net change by
+  SecurityRoute's rule, stock group first); HousingMarket.carry() moves each
+  mover's share of its old cell's leases before the clearing. The crunch
+  now leaves no household with no home in any month (was 12.57 at m155).
+- (d) Migration reads HousingMarket.askedBurden(): each household's cheapest
+  suitable standing class's ask over take-home, read from the saved classes
+  (a load keeps no offers; the first try read the clearing's and a reloaded
+  twin diverged). Village1900Check sections 2 and 5 read it ("ask").
+- Found by CreditCrunchCheck, mended: (1) the cut fixture reads one house's
+  room on the single door it stands; tenure left the m150 cut short of one
+  (room 13.22, MARGIN 12). (2) The lender reads each size the halving tries
+  at its own rent roll (Mortgage.decide's noiOf, Game.lenderReads()). The
+  typed rent of an order past its demand falls a unit: the m270 order of 6,
+  demand for 4.6 blocks, read at its average 0.822 a block passed only the
+  till's one where 3 let at 1.073 each. Main's flat rent decides the same
+  (MortgageCheck 4). A lending path: the ensemble reads it.
+- Found by MonetaryCheck's home-fuel rows (the helper's bisection: 83da694bb
+  green, 383c1f74a red), mended in 3b8b387be: completePaidExcess counted the
+  households left after paired halves as households - n, which with every
+  half paired is the doors exactly and in floating point came out one step
+  under them. The 1900 town's month 26 threw an Invalid lease, the month
+  stopped before HomeFuel.strike, and Game.simulateMonths swallowed it. The
+  households are now the new funding's, never under the doors;
+  HousingChoiceCheck causes the edge with that lease's figures (red on the
+  old line). HousingDoorCheck's cash identity, open in 4 of 899 months
+  before (worst 2.4%), closes in all of them on it.
+- InvestCheck's two fixtures, caused again on mend 1 (9fe3eb834; bisected:
+  4ae0e7446 green, 4f690edfc red, the four switches each still red). The
+  housed town's best home is now a Duplex, one kind of door, whose need is
+  its income's knee (641 at 0.0776 a month against a hurdle of 0.0486), so
+  the hurdle never cuts inside its need. The need-cut best homes are priced
+  out of first place as section 2 prices out the House, until the best is a
+  form of several kinds (Mixed walk-up), and the bracket claim reads it. A
+  month's output is whole points, so 95% of the Duplex's 86 left a year's
+  room a step high: the crews are thinned on until it is under (74).
+
+The orchestrator's calls, 2026-11-25 19:24 (mine, from reality; tell-at-ship):
+(1) the lender: keep the slice mend; a lender underwrites each phase on its
+own rent roll. (2) Village1900Check 2, 4, 5: a helper shows what lets the
+stalled twin's landlords build; if real (shares and lodgers make a door
+pay, as 1900's tenements were built to), restate each premise to that law,
+keep what holds, assert the real effect and cite it; if an artefact, mend
+it. (3) A household that fits two to a share weighs the cheaper of a door's
+ask and a paid half share's (half the ask); only guests pay nothing.
+(4) SaveFileCheck AW2: after (3), if its shop still cannot be staffed,
+cause its spare workers again (more closures), never by relaxing it. Then
+the named harnesses and the ensemble against the newest baseline in
+docs/ensemble/ (FB11.md, or 0.9.207.md once it ships).
+
+What they did (RES3c, 2026-11-25):
+- (3) HousingMarket.askedBurden(): a household that halves a standing door
+  (HousingChoice.halves(), two to a share within the census line) weighs half
+  its ask; HousingMarketCheck's doubled doors assert the half share's ask.
+  The door census's press month drew more seekers the month before (829 where
+  772), they took the finished doors, and the press month met the room cap
+  (11.17 of 11.17) before the crowding ramp held it: the fixture migrates 450,
+  not 500 (room 41, arrivals 12.8), the scarcity and floor premises caused.
+- (4) SaveFileCheck AW2, still 0% staffed after (3): RES3's town keeps its
+  unskilled hands busy, the shop's two unskilled posts finding -270 spare
+  after the schools close. The fixture also closes the town's bakeries
+  (180 unskilled posts: -14 spare, 60%) and home care service (44 more: +55,
+  the shop staffed in full). The staffing gate and its 80% stand.
+- (2) Village1900Check, an artefact, mended (808421280). The slice lender
+  passed 67 units in the stalled twin from m9 to m53 where the flat one
+  would have passed 25 (m40-43: a House slice read 0.054 a unit against the
+  whole order's 0.036, carry 0.027), and all of the rent it read was whole
+  doors let at the class ask to the forecast's "#incoming" cohorts. None was
+  half shares or lodgers. The forecast sized those arrivals on posts over
+  workers (m40: 552 posts, 203 withheld, for 231 workers, so 1.39 times its
+  working households, about 479 heads). Neither the affordability pull nor
+  Migration's target bounded it (577 for 533 at m60), and the twin grew 112
+  from m40 to m60. Its 28 new Houses let 4.1 doors; half shares moved -0.03.
+  The tenants a landlord and its lender count on are the ones the town draws:
+  HousingMarket.forecast() bounds the new heads by Migration's last target
+  over the people here (once a month's draw is read). The twin, 533 people
+  at 6b326cb22, is 453 on it; s4 and s5 are green.
+  Helper's table at m60 (people, asked burden, bare draw over people):
+  flat lender, full ask 330, 0.552, 2.004; slice, full ask 396, 0.506,
+  1.831; flat, half ask 431, 0.452, 1.555; slice, half ask 533, 0.391,
+  1.401. The mend: 453, 0.436, 1.50.
+  The two section-2 reds left on it are real, restated (d3ee0f2a8): the
+  half-share ask (call 3) takes the whole DEAR_RENT red, and with the slice
+  lender (call 1) the bare draw falls under 2.0 even at the full ask (1.972).
+  The village doubles up as 1900's households did: 24.3 of its 190.7
+  households pay half shares (today's twin 0.4 of 481.3), 22.5 of them on
+  doors its landlords built (the Duplex's 10.5 of 38 doors at 0.0200 a share
+  against half its ask, 0.0205). 95% of the movers weigh a half share. The
+  1901 census of England and Wales counted 7.04 million families or separate
+  occupiers in 6.26 million inhabited houses. Restated: a household alone
+  is asked over DEAR_RENT times the target (HousingMarket.aloneBurden():
+  0.827; today's twin 0.359, under). The village's households pay half
+  shares in a larger share than today's twin's, and a mover there weighs a
+  half share's ask, under a household alone's (0.436). The rent binds as the
+  pull strikes more off the bare draw than the room it leaves the village
+  (197 struck, 29 left; was "the bare draw over UNPULLED, 2, times its
+  people", now 1.50). Kept as they were: the pull cuts the draw, the room
+  under today's twin's, s4's draw share, s5's home.
+
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
 240–600 inclusive, with 361 observations. Native findings, audits, purity and
