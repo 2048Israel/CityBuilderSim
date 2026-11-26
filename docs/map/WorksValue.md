@@ -1,4 +1,4 @@
-# WorksValue.java - 690 lines · 46 methods · 3 constants · model
+# WorksValue.java - 696 lines · 47 methods · 4 constants · model
 
 `ham/citybuildersim/WorksValue.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -15,15 +15,16 @@
 | line | section |
 |---:|---|
 | 356 | · HELD FOR ONE PASS (AP1, 2026-11-20) |
-| 415 | · THE LABOUR FIGURES HELD FOR ONE PASS (AP5, 2026-11-26) |
+| 419 | · THE LABOUR FIGURES HELD FOR ONE PASS (AP5, 2026-11-26) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 392 | `WorksValue.HELD` | `new ThreadLocal<>()` |  |
-| 395 | `WorksValue.SCHEDULES` | `new java.util.concurrent.atomic.AtomicLong()` | Every schedule of the works on site built, held or bare: NewUnitCheck 13's count, never a time. |
-| 444 | `WorksValue.LABOUR_COMPARED` | `new java.util.concurrent.atomic.AtomicLong(), LABOUR_DIFFERED = new java.util...` | Held labour figures read and compared while labourChecked was set, and those that differed from the bare figure. |
+| 393 | `WorksValue.BARE` | `new ThreadLocal<>()` |  |
+| 399 | `WorksValue.SCHEDULES` | `new java.util.concurrent.atomic.AtomicLong()` | Every schedule of the works on site built, held or bare: NewUnitCheck 13's count, never a time. |
+| 448 | `WorksValue.LABOUR_COMPARED` | `new java.util.concurrent.atomic.AtomicLong(), LABOUR_DIFFERED = new java.util...` | Held labour figures read and compared while labourChecked was set, and those that differed from the bare figure. |
 
 ## Fields (state)
 
@@ -42,15 +43,15 @@
 | 376 | `long[] vacancy, vacancyAt` | The labour figures held while it is open (AP5): the vacancies with every input they were read from, and the stacks' posts. |
 | 377 | `BuildingManager.HeldPosts posts` |  |
 | 379 | `long vacanciesRead, postsRead` | Vacancies and posts read afresh while it was open (LabourCheck's and AutoBuildCheck's counts, never a time). |
-| 442 | `static boolean labourChecked` | Set by a harness (AP5): every held labour figure is also read afresh and compared to the bit, and LABOUR_DIFFERED counts those that were not the same. |
-| 540 | `private final Game game` |  |
-| 541 | `private final Map<BuildingsTemplate, PendingWork> generation` |  |
+| 446 | `static boolean labourChecked` | Set by a harness (AP5): every held labour figure is also read afresh and compared to the bit, and LABOUR_DIFFERED counts those that were not the same. |
+| 546 | `private final Game game` |  |
+| 547 | `private final Map<BuildingsTemplate, PendingWork> generation` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 11 | 680 | **type** `public final class WorksValue` | A work's discounted cost and the output its service prevents losing (HW1). |
+| 11 | 686 | **type** `public final class WorksValue` | A work's discounted cost and the output its service prevents losing (HW1). |
 | 12 | 1 | `private WorksValue()` |  |
 | 15 | 19 | **type** `public record Value(double capital, double land, double futureCapital, long futureUnits, double financing, ...` | Present values in local thousands; jobs and payroll are shown separately from their tax return. |
 | 18 | 1 | `public double cost()` _(in WorksValue.Value)_ |  |
@@ -79,7 +80,7 @@
 | 332 | 13 | `private static Map<BuildingsTemplate, Long> pendingLoads(Game g, Map<BuildingsTemplate, Double> draws)` | ...each one's new unit's draw put in `draws` as it is read, when given (the held scope's, AP1). |
 | 347 | 8 | `private static double pendingPowerLoad(Game g, Map<BuildingsTemplate, PendingWork> schedule, Map<BuildingsTemplate, Double> dra...` | The draw ahead on a schedule: each template's new unit's draw from `draws` when held (AP1), else read afresh. |
 
-### HELD FOR ONE PASS (AP1, 2026-11-20) (lines 356-414)
+### HELD FOR ONE PASS (AP1, 2026-11-20) (lines 356-418)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -87,33 +88,34 @@
 | 381 | 1 | `private Scope(Game game)` _(in WorksValue.Scope)_ |  |
 | 384 | 3 | `public void close()` _(in WorksValue.Scope)_ | Closes it at its outermost close: nothing is held after. |
 | 390 | 1 | **type** `private record Loads(Map<BuildingsTemplate, PendingWork> schedule, Map<BuildingsTemplate, Double> draws)` | The schedule of the non-power works on site and each one's new unit's draw, built together. |
-| 401 | 10 | `public static Scope hold(Game g)` | Opens a scope for this city on this thread, closed by try-with-resources. |
-| 413 | 1 | `static Scope open()` | The open scope on this thread, for tests; null when none is. |
+| 396 | 1 | `static boolean bareReading()` | A harness's bare reading also bypasses sector groupings held outside a pass (AP6). |
+| 405 | 10 | `public static Scope hold(Game g)` | Opens a scope for this city on this thread, closed by try-with-resources. |
+| 417 | 1 | `static Scope open()` | The open scope on this thread, for tests; null when none is. |
 
-### THE LABOUR FIGURES HELD FOR ONE PASS (AP5, 2026-11-26) (lines 415-690)
+### THE LABOUR FIGURES HELD FOR ONE PASS (AP5, 2026-11-26) (lines 419-696)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 427 | 4 | `static Scope heldFor(PopulationManager people)` | The scope open on this thread for the city these people are, or null (AP5). |
-| 433 | 4 | `static Scope heldFor(BuildingManager buildings)` | The scope open on this thread for the city these buildings are, or null (AP5). |
-| 448 | 7 | `static long[] compared(long[] held, java.util.function.Supplier<long[]> bare)` | A held figure against the bare one, when a harness has asked (labourChecked); returns the held one. |
-| 457 | 7 | `static long compared(long held, java.util.function.LongSupplier bare)` | ...one long. |
-| 466 | 8 | `static double compared(double held, java.util.function.DoubleSupplier bare)` | ...one double, to the bit. |
-| 476 | 10 | `static<T> T bareWhile(java.util.function.Supplier<T> reading)` | A reading taken as no scope were open on this thread (AP5: the bare figure a held one is compared with); the scope is open again after. |
-| 491 | 16 | `private static Loads held(Game g)` | The held loads for this city, rebuilt when the site's stamp has moved; null when no scope for it is open, or inside a pricing that reads every template as it stands (NewUnit.of() reads the template there, not the new ... |
-| 509 | 4 | `private static Map<BuildingsTemplate, PendingWork> loadSchedule(Game g)` | The schedule of the non-power works on site, as it stands: built afresh, outside a scope. |
-| 514 | 1 | **type** `private record PendingWork(long units, double first, double interval, boolean rushed)` |  |
-| 517 | 14 | `private static Map<BuildingsTemplate, PendingWork> completionSchedule(Game g, Map<BuildingsTemplate, Long> site)` | The same queue-aware unit quotes the automatic completion deadline reads. |
-| 533 | 4 | `public static Map<BuildingsTemplate, Long> openBy(Game g, Map<BuildingsTemplate, Long> site, double months)` | The units of a site its queue opens by `months` from now (PW3, PW1-P's second gap: the power planner's reserve test counts a plant from its opening, not from its order). |
-| 539 | 30 | **type** `static final class PowerDates` | Read-only generation schedule and native monthly planning dates; pending loads retain their existing held reader. |
-| 542 | 4 | `PowerDates(Game game, Map<BuildingsTemplate, Long> site)` _(in WorksValue.PowerDates)_ |  |
-| 547 | 3 | `Map<BuildingsTemplate, Long> openBy(double months)` _(in WorksValue.PowerDates)_ |  |
-| 552 | 8 | `int nextPeak(double from)` _(in WorksValue.PowerDates)_ | The next native highest-load calendar month at or after this monthly commissioning. |
-| 562 | 6 | `java.util.SortedSet<Double> frontier(double from)` _(in WorksValue.PowerDates)_ | Construction runs before dispatch: both generation and new load use the same completed whole month. |
-| 571 | 27 | `private static Map<BuildingsTemplate, Long> completedAt(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months)` | Quote-completed units at this date. |
-| 599 | 3 | `static double cover(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added, BuildAdvice.Ahead at)` |  |
-| 603 | 3 | `private static double cover(double[] sd)` |  |
-| 607 | 10 | `private static Map<Sector, double[]> traffic(Game g, BuildAdvice.Measure m)` |  |
-| 619 | 11 | `static double shortageLoss(Game g, BuildAdvice.Measure m)` | The current monthly output loss that a fully serving available work could relieve. |
-| 632 | 58 | `static double outputRestored(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> before, Map<BuildingsTemplate, Long> a...` | Only effects that the simulation actually charges: utility rationing, traffic and absence. |
+| 431 | 4 | `static Scope heldFor(PopulationManager people)` | The scope open on this thread for the city these people are, or null (AP5). |
+| 437 | 4 | `static Scope heldFor(BuildingManager buildings)` | The scope open on this thread for the city these buildings are, or null (AP5). |
+| 452 | 7 | `static long[] compared(long[] held, java.util.function.Supplier<long[]> bare)` | A held figure against the bare one, when a harness has asked (labourChecked); returns the held one. |
+| 461 | 7 | `static long compared(long held, java.util.function.LongSupplier bare)` | ...one long. |
+| 470 | 8 | `static double compared(double held, java.util.function.DoubleSupplier bare)` | ...one double, to the bit. |
+| 480 | 12 | `static<T> T bareWhile(java.util.function.Supplier<T> reading)` | A reading taken as no scope were open on this thread (AP5: the bare figure a held one is compared with); the scope is open again after. |
+| 497 | 16 | `private static Loads held(Game g)` | The held loads for this city, rebuilt when the site's stamp has moved; null when no scope for it is open, or inside a pricing that reads every template as it stands (NewUnit.of() reads the template there, not the new ... |
+| 515 | 4 | `private static Map<BuildingsTemplate, PendingWork> loadSchedule(Game g)` | The schedule of the non-power works on site, as it stands: built afresh, outside a scope. |
+| 520 | 1 | **type** `private record PendingWork(long units, double first, double interval, boolean rushed)` |  |
+| 523 | 14 | `private static Map<BuildingsTemplate, PendingWork> completionSchedule(Game g, Map<BuildingsTemplate, Long> site)` | The same queue-aware unit quotes the automatic completion deadline reads. |
+| 539 | 4 | `public static Map<BuildingsTemplate, Long> openBy(Game g, Map<BuildingsTemplate, Long> site, double months)` | The units of a site its queue opens by `months` from now (PW3, PW1-P's second gap: the power planner's reserve test counts a plant from its opening, not from its order). |
+| 545 | 30 | **type** `static final class PowerDates` | Read-only generation schedule and native monthly planning dates; pending loads retain their existing held reader. |
+| 548 | 4 | `PowerDates(Game game, Map<BuildingsTemplate, Long> site)` _(in WorksValue.PowerDates)_ |  |
+| 553 | 3 | `Map<BuildingsTemplate, Long> openBy(double months)` _(in WorksValue.PowerDates)_ |  |
+| 558 | 8 | `int nextPeak(double from)` _(in WorksValue.PowerDates)_ | The next native highest-load calendar month at or after this monthly commissioning. |
+| 568 | 6 | `java.util.SortedSet<Double> frontier(double from)` _(in WorksValue.PowerDates)_ | Construction runs before dispatch: both generation and new load use the same completed whole month. |
+| 577 | 27 | `private static Map<BuildingsTemplate, Long> completedAt(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months)` | Quote-completed units at this date. |
+| 605 | 3 | `static double cover(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> added, BuildAdvice.Ahead at)` |  |
+| 609 | 3 | `private static double cover(double[] sd)` |  |
+| 613 | 10 | `private static Map<Sector, double[]> traffic(Game g, BuildAdvice.Measure m)` |  |
+| 625 | 11 | `static double shortageLoss(Game g, BuildAdvice.Measure m)` | The current monthly output loss that a fully serving available work could relieve. |
+| 638 | 58 | `static double outputRestored(Game g, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> before, Map<BuildingsTemplate, Long> a...` | Only effects that the simulation actually charges: utility rationing, traffic and absence. |
 

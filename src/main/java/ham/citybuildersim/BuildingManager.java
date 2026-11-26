@@ -7983,12 +7983,15 @@ public class BuildingManager {
         // NOTE: this used to loop over `stacks` directly and never counted
         // `instances`, while getTotalJobs(JobType) below does include instances.
         // That meant this array and a per-type lookup could silently disagree.
-        // Delegating to getTotalJobs(JobType) fixes the inconsistency and
-        // removes the duplicate loop.
+        // Include instances as the per-type lookup does. The posts past the
+        // buildings read the farms' horses: one live reading for this call,
+        // not a complete sector walk for every job type (AP6).
         JobType[] jobTypes = JobType.values();
+        long[] past = postsPast == null ? null : postsPast.get();
         long[] total = new long[jobTypes.length];
         for (int i = 0; i < jobTypes.length; i++) {
-            total[i] = getTotalJobs(jobTypes[i]);
+            total[i] = getTotalJobsAtEveryPost(jobTypes[i]) - getPostsWithheld(jobTypes[i])
+                    + (past == null || i >= past.length ? 0 : past[i]);
         }
         return total;
     }
@@ -8462,6 +8465,7 @@ public class BuildingManager {
 
     /** Finished buildings only: quantity times the getter, over the sector's stacks. */
     public double totalBySector(String sector, ToDoubleFunction<BuildingsTemplate> getter) {
+        if (WorksValue.bareReading()) return totalBySectorDrawn(sector, getter);
         // A sector's stacks held for the auto-builder's pass (AP5, THE POSTS HELD FOR ONE PASS): the same stacks in the same order, read live.
         HeldPosts held = heldPosts();
         if (held != null) {
@@ -8471,12 +8475,57 @@ public class BuildingManager {
             return WorksValue.compared(total, () -> totalBySector(sector, getter));
         }
         double total = 0;
+        for (BuildingsStacks stack : getSectorStacks(sector))
+            total += stack.getQuantity() * getter.applyAsDouble(stack.getBuilding());
+        return WorksValue.compared(total, () -> totalBySectorDrawn(sector, getter));
+    }
+
+    /** The ungrouped sum, in the original list order (AP6): the bare figure held readings are checked against. */
+    double totalBySectorDrawn(String sector, ToDoubleFunction<BuildingsTemplate> getter) {
+        double total = 0;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
             if (!t.getSector().equals(sector)) continue;
             total += stack.getQuantity() * getter.applyAsDouble(t);
         }
         return total;
+    }
+
+    /* ----- THE MONTH'S SECTOR WALKS (AP6, 2026-11-26)
+       Outside a valuation pass, each capacity/freight/machine reading walked every stack again. Hold only the
+       grouping, on the reading thread, keyed on AP5's edits. Quantities and template figures remain live, and
+       the same terms are added in the original order. A group can survive a month boundary when nothing it
+       depends on moved; a list edit or sector reassignment rebuilds it before the next reading. ----- */
+
+    private final ThreadLocal<SectorStacks> sectorStacks = new ThreadLocal<>();
+
+    private static final class SectorStacks {
+        final long at;
+        final java.util.Map<String, List<BuildingsStacks>> bySector = new java.util.HashMap<>();
+
+        SectorStacks(long at, List<BuildingsStacks> stacks) {
+            this.at = at;
+            for (BuildingsStacks stack : stacks)
+                bySector.computeIfAbsent(stack.getBuilding().getSector(), k -> new ArrayList<>()).add(stack);
+            bySector.replaceAll((key, own) -> List.copyOf(own));
+        }
+    }
+
+    /** A sector's own stacks, in the city's list order; immutable grouping, live stacks (AP6). */
+    public List<BuildingsStacks> getSectorStacks(String sector) {
+        if (WorksValue.bareReading()) {
+            List<BuildingsStacks> own = new ArrayList<>();
+            for (BuildingsStacks stack : stacks)
+                if (stack.getBuilding().getSector().equals(sector)) own.add(stack);
+            return List.copyOf(own);
+        }
+        long at = POSTS_EDITS.get();
+        SectorStacks held = sectorStacks.get();
+        if (held == null || held.at != at) {
+            held = new SectorStacks(at, stacks);
+            sectorStacks.set(held);
+        }
+        return held.bySector.getOrDefault(sector, List.of());
     }
 
     /**
