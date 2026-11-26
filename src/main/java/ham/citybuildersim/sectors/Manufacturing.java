@@ -76,6 +76,9 @@ import java.util.List;
  */
 public final class Manufacturing extends Sector {
 
+    /** Months covering its own running costs after an operating loss before Manufacturing orders more plant: a full year's evidence of recovery (MR1). */
+    public static final int EXPANSION_RECOVERY_MONTHS = 12;
+
     /*
      * THE OIL ON THE LINE (0.7.83, batch O6; docs/studies/spec-oil.md 2.5,
      * est., to confirm). A machine shop's cutting fluids, hydraulic and gear
