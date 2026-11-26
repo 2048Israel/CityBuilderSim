@@ -487,6 +487,38 @@ Committed score/provenance/summary: `docs/ensemble/QR1.md`. Full kept run:
 80 CSVs, 80 retirement sidecars, 80 logs and timing files); transport log
 `target/QR1-box-ensemble.log`, exit file `target/QR1-box-ensemble.exit`.
 
+### Today measurements and scheduled restart
+
+The orchestrator announced a 05:00 restart, new turns held from 04:30,
+work pushed by 04:30 and no heavy work that cannot end by 04:50.
+After the formal ensemble, `QR1-main-today-v2` requested the box at 03:36,
+but RES3-lodge-20261126 had acquired the ensemble lock. A helper verified
+that it was another full 80-run matrix, seven complete at 03:45, with an
+uncertain 20–40 minute queue remaining. Our default run had not started.
+Waiting plus a full default playtest endangered the restart window.
+
+★ Use the explicitly authorized PC-if-busy path, with one heavy job only.
+First stop our queued request. Source review confirmed the TERM trap is on
+`--ensemble-here`, not on `--serve`. At 03:48 the builder verified exact
+command and owner of its own child PID **1233915**, then sent TERM to that
+PID only. The wrapper returned **143**. Separate verification found its
+serve **1233851**, child **1233915**, tail **1233916** and sed **1233917**
+gone, no own-label processes or model JVM. RES3's same eight JVMs continued.
+No model, snapshot or money export ran in this cancelled attempt, and no
+totals from it are claimed. Evidence copied to
+`target/qr1-main-today-v2-cancellation-proof.json`.
+
+Fresh `QR1-main-today-v3` starts at 03:50 on the PC, unchanged main plus
+observation source **4f0492990**, seed 0/Standard/today, the same native data
+and `cbs.parallel=1`, one JVM. Its raw files are under
+`C:/Users/Jerus/AppData/Local/Temp/QR1-main-money-20261126/target/ensemble/QR1-main-today-v3`;
+parent log/exit are `target/QR1-main-today-v3-local.log` and `.exit`.
+The counterpart must use the same settings/platform. The full 2400-calendar
+window and post-primary assertions remain required; the old truncated
+109-paying-event trace is context only. No dry-run request or ready-marker
+removal before the paired table is complete. Remaining work resumes after
+boot if it cannot fit safely.
+
 P3 considered and not taken, as instructed: shorten or deny a fresh full
 operating-loss runway after a long interest-only net-loss spell.
 [11 USC 1112(b)(4)(A)](https://uscode.house.gov/us/usc/119-120/t11/s1112/)
