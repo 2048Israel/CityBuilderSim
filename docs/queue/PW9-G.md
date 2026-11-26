@@ -25,11 +25,19 @@ path meet those laws. No one-order-removal counterfactual assigns every
 delayed point to steam construction. FC2-C's specific foreign/capped-site
 question is not an established owner for this case.
 
-## The batch
+## The law and the batch
+
+**A utility builds no more generation than its wires can carry, ordering
+the Substation and lines with it.** The final modern-equipment city's
+31 stations behind the 10 MW wire are the red to cause. This row is queued
+for a builder; it does not wait for Jerus's review.
 
 - Cause a town with adequate offered generation, a funded wire need, and
   an existing protected school deadline. Prove actual monthly delivery
   before and after, with native commissioning and crew accounting.
+- Make the 31-station/10 MW condition fail the law on current main. Require
+  matching wire capacity to be ordered and commissioned with generation,
+  or hold the excess generation order; assert the real delivery effect.
 - Trace GRID's need date, order sequence, debt holds and site allocation
   alongside generation. Its forecast currently reads the present month's
   season in `BuildAdvice.supplyDemand(GRID)` even for a future `Ahead`;
@@ -47,5 +55,6 @@ question is not an established owner for this case.
 
 Evidence: [PW9 notes](PW9-notes.md), sections “P1-b” and the final combined
 comparison; kept native artifacts in `codex-PW9-r2/target/PW9-r2` and
-`codex-PW9-r2-measure/target/PW9-measure`. Queued from PW9's ship file;
+`codex-PW9-r2-measure/target/PW9-measure`. Queued from PW9's ship file
+on the orchestrator's instruction `20261126-005746-437`;
 no conservation or fixture-red waiver is attached.

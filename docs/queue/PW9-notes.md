@@ -717,7 +717,18 @@ ReloadCheck overlapped; timings are not an isolated-machine comparison.
 
 ## Remaining gate work
 
-The review mends and focused names are green, with the remaining inherited
-delivery coordination queued as above. The final-model ensemble is against
-`0.9.208.md` as instructed, then the pick is ALL so the orchestrator must
-allocate the dry run. No ensemble or dry run has started yet.
+The orchestrator accepted the mends in `20261126-005746-437`: P1s met,
+including $10.507M/three diesels and the 1900–1914 window. The final modern
+city's eight low-energy months versus five ships because the delivery
+cause is inherited. PW9-G is **queued**, not pending Jerus: its law is that
+a utility builds no more generation than its wires can carry, ordering
+the Substation and lines with it; the 31-station/10 MW condition is the
+red to cause. The ship file and brief reflect that instruction.
+
+The authorized final 80-run ensemble started on gatebox at source snapshot
+`8c0bb1f98`, against `0.9.208.md`, eight runs at once. Local fallback is
+stopped before compilation until its reason can be reported. The launch
+has a 7,200-second timeout and is judged by its own output files. Source
+and model remain unchanged by these queue-only records. The pick is ALL,
+so the orchestrator must allocate the dry run after the ensemble. No dry
+run has started.
