@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — MR1, Manufacturing's re-order after a bleed sale — 2026-11-26, ready, see docs/queue/MR1-notes.md
 Manufacturing arms recovery at the distress rule's operating-loss runway while
