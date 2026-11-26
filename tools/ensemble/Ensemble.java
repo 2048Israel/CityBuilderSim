@@ -102,6 +102,7 @@ public class Ensemble {
     static boolean shocked;
     static long distressRetired;
     static double retirementPaid, distressPlotPaid, distressMaterialPaid;
+    static PrintWriter retirementCsv;
 
     /** Sets the dial for the month about to run - the Policy screen's own setters. */
     static void applyPolicy(Game g) {
@@ -191,6 +192,7 @@ public class Ensemble {
         // QR1: in-ban backstops are a subset of forgiveness; retirement receipts are gross cash, before debt repayment.
         c.put("overdraft_forgiven_cum", LongPlaytest.forgivenTotal(g.getEconomyManager()));
         c.put("backstop_in_ban_cum", LongPlaytest.backstopInBanSum);
+        c.put("backstop_in_ban_months_cum", (double) LongPlaytest.backstopInBanMonths);
         c.put("retirement_paid_cum", retirementPaid);
         c.put("distress_retired_buildings_cum", (double) distressRetired);
         c.put("distress_plot_paid_cum", distressPlotPaid);
@@ -307,12 +309,19 @@ public class Ensemble {
                 distressPlotPaid += r.plotPaid();
                 distressMaterialPaid += r.materialPaid();
             }
+            retirementCsv.printf(Locale.ROOT, "%d\t%s\t%b\t%d\t%.17g\t%.17g\t%.17g\t%d\t%d%n",
+                    g.getMonth(), r.sector(), r.distress(), r.buildings(), r.plotPaid(), r.materialPaid(), r.runningIncome(),
+                    g.getBusinessInvestment().getLossMonths(r.sector()), g.getBusinessInvestment().getOperatingLossMonths(r.sector()));
         });
         String threw = null;
-        try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(outCsv))) {
+        try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(outCsv));
+             PrintWriter events = new PrintWriter(Files.newBufferedWriter(outCsv.resolveSibling(outCsv.getFileName() + ".retirements.tsv")))) {
             csv = w;
+            retirementCsv = events;
+            events.println("month\tsector\tdistress\tbuildings\tplot_paid\tmaterial_paid\trunning_income\tnet_loss_months\toperating_loss_months");
             try {
                 foundAndPlay(g, files);
+                if (events.checkError()) throw new java.io.IOException("retirement event export failed");
             } catch (Throwable t) {
                 threw = t.toString();
                 System.setOut(real);

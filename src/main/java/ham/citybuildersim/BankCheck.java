@@ -2834,7 +2834,7 @@ public class BankCheck {
         if (sale == null) return;
         Game.Retirement observed = retirements.stream().filter(r -> r.distress() && r.sector().equals(RET)).findFirst().orElse(null);
         assertTrue("the receipt observer records the actual distress sale, with plot cash and the builders' material payment",
-                observed != null && observed.buildings() == sale.buildings() && observed.plotPaid() >= 0
+                observed != null && observed.buildings() == sale.buildings() && observed.plotPaid() >= 0 && observed.runningIncome() < 0
                         && observed.materialPaid() == sale.paid());
         /*
          * ...IN A MONTH THAT NO OTHER SECTOR SOLD PLANT IN (LD1). The builders' stock and cash below move by every sale of
@@ -2970,7 +2970,8 @@ public class BankCheck {
         if (broke == null) return;
         Game.Retirement observedBroke = retirements.stream().filter(r -> r.distress() && r.sector().equals(RET)).findFirst().orElse(null);
         assertTrue("the receipt observer also records the broke-builders sale with zero material cash",
-                observedBroke != null && observedBroke.buildings() == broke.buildings() && observedBroke.materialPaid() == 0);
+                observedBroke != null && observedBroke.buildings() == broke.buildings() && observedBroke.materialPaid() == 0
+                        && observedBroke.runningIncome() < 0);
         assertTrue("builders who cannot pay buy nothing, and pay nothing",
                 broke.unitsBought() == 0 && broke.paid() == 0 && broke.units() > 0);
         close("...so the seller is paid nothing for it", city.getSalvageThisMonth(RET), 0, 0);
