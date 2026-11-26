@@ -9,8 +9,9 @@ Commits historical and present-day quote, budget, availability and paid-build re
 Emergency shelter keeps funded demand for separate doors; paid and hosted placements
 clear together. Past the census line, more than two a room, a family lives overcrowded
 as the 1901 census counted it, never doorless, and a family that could pay and finds no
-door standing boards with a housed one, as a fifth to a third of town households took
-boarders about 1900; movers weigh the half share they would take,
+door standing boards with a housed one, paying its hosts board, as a fifth to a third of
+town households took boarders about 1900; a household beside another family is overcrowded
+only past two persons a room; movers weigh the half share they would take,
 and the incoming forecast is bounded by migration's own draw.
 Feasible orders use the affordable backlog and actual operating returns.
 Rent CPI follows comparable class bills; completed consumer purchases supply reference

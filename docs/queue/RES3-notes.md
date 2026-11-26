@@ -554,6 +554,100 @@ reviewer's line.
   533,324) and HIGH (71,644 against 182,116), as on the merge and the
   lodging mend before boarding (SHOCK the same 222,388): RES3's housing
   model on the short-run towns, not the boarders.
+- The merge of main 0.9.210 (87f6e0597: PW9, QR1), the generated docs
+  regenerated. Two named harnesses red on the merge alone, before any
+  mend, both below.
+- REV-RES3b on 819a0fe58 (the money and saves review): NOT SHIP, four P1s,
+  each checked against the code and real; mended in 577af7438 (the model)
+  and 955d2b3c2 (the harnesses):
+  1. The boarder's rent was never paid: no debit, no credit, no allocation,
+     so the aggregate audit passed while both households held the wrong
+     wealth. boardHosts() books it in the clearing's month, out of the
+     boarder's cell and into its hosts' cells, every cent.
+  2. boarders() read zero after a load. The format-67 State saves the
+     boarding by cell, those within the line and the board paid and
+     received; validate() holds received to paid within
+     MoneyAudit.tolerance().
+  3. The trim could throw after the month's live mutations, and the
+     month's catch (Game.java's) rolls nothing back. overcrowding() decides
+     before it mutates, and the trim is holdToStock(): the doors held to
+     the standing stock, never thrown; past the packing resolution it is
+     LongPlaytest's finding "housing placed past the standing stock"
+     (pastTheStock()).
+  4. Every boarder was labelled overcrowded, four persons in an H120 too.
+     A household beside another family is overcrowded only past the
+     census's line on its door, more than two persons a room (rooms =
+     bedrooms + 1, HousingChoice.line()); within it, withinTheLine(),
+     boarding, still wanting a home of its own
+     (Game.getHouseholdsWantingAHome() counts both).
+- ★ The board: half the door's asking rent and recurring cost a household,
+  up to its budget, paid from the boarder's savings so far as they meet it
+  (one share for every boarder of a cell, decided before any is paid), and
+  received by the door's hosts by their doors. It supersedes the ★ above,
+  "the boarder is billed nothing ... nets to zero in the households'
+  aggregate only": no class is billed still, but the board moves cell to
+  cell. Other ways: the door's whole ask split by persons; the boarder's
+  budget whole.
+- ★ The census count on a door: the door's average households' persons
+  (every lease's households at their sizes over its doors), the lodgers'
+  layer, and the household's own size, against the line.
+- Observed, not changed: emergencyDoubling()'s guests still pay nothing
+  beyond the door their host funds (hosted(), "no extra rent or credit is
+  invented"), as before REV-RES3b.
+- Caused (955d2b3c2). HousingMarketCheck: boardBookedBothSides() boards a
+  payer with a housed family within the line (host 2 and a funded guest 1
+  in a House, line 8, the boarder its third household, 4 persons: within)
+  and past it (host 8 and the boarder: overcrowded), the board 0.02799 out
+  of one cell's savings and into the other's; trimHeldToStock() causes the
+  trim, an ulp past ten doors (held to the stock, every household kept,
+  the cut lodged on its door) and a whole door past (held to ten, its
+  eleven households kept, the last bill trimmed, past 1).
+  retainedFundedGuest adds: its four persons in an H120 are "within its
+  census line: boarding, not overcrowding" (overcrowded 0, within 1).
+  HousingDoorCheck's coda: 2,139.629 boarders at m901, every one counted
+  by the line, the board paid and received (at most 565.82 a month), the
+  month's own audit exact in 6 of 6, a save and load at m901 bringing back
+  every boarder, the overcrowded, those within the line and the board, and
+  the fire's displaced overcrowded past the line (3,487.972) and none
+  doorless (a new line).
+- HousingDoorCheck's window on the merge. At 87f6e0597 alone the window's
+  overcrowding was 0 in every month of m431-m900, and its three window
+  lines red (the call-A line and the two "overcrowding rises" lines); at
+  ca10c6aae it peaked at 52.100. A diagnostic on the mends: the town still
+  outgrows its homes, 5,434 households in 3,224 doors at m900, but all
+  2,210 beside another family are the earlier passes' guests within the
+  line (hosted 2,210), so overcrowding() places none. Restated to the
+  census's own count, the families more than the houses (7.04 million in
+  6.26 million): every lease's households past its doors, a share's
+  second family, a guest, a boarder, a lodger. Old lines: "households live
+  overcrowded in the window, counted past the census line, none of them
+  doorless (call A)"; "overcrowding rises over the months the town's
+  households outgrow its homes" and "...by more a month than over the
+  months the homes catch up". New: "households share a door in the
+  window, beside another family or past the census line" (951.195 a month
+  behind, at most 2,524.063 at m892; 410.772 keeping up); "sharing rises
+  ..." (4,507.333 over the 351 months the households outgrew the homes,
+  12.8414 a month) "...by more a month than ..." (-2,504.244 over the 118
+  the homes caught up, -21.2224 a month). Past the line in the window: 0,
+  printed; the coda holds it. HousingDoorCheck known red only (MC1).
+- ScaleCheck on the merge (87f6e0597 alone, and on the mends): "its rents
+  pull migrants as the city's do, every month (the affordability pull
+  within 0.01; worst 0.010)" red. Traced: the 5 billion copy's own pull
+  fell to 0.989798 in its sixth month (0.0102 off), its asking rents a
+  person within 1% of the city's (198.3 a K against 196.55) and its
+  take-home a person 0.9631 of the city's: the town's builders staffed to
+  the full for whole plants from its third month (520 posts a K against
+  the copy's 310-323; Construction.java:169), the grain WHAT IT STILL
+  LOSES names ("the town builds a house or a cemetery in a month, the copy
+  their mean"). A city of five billion builds the mean, so the copy is
+  right and the check read incomes as rents. Restated (55a280f16): the
+  copy's asking rents on the city's take-home pull as the city's within
+  AFFORDABILITY_WITHIN (worst 0.0 in both copies), and in any month its
+  own pull parts by more, its take-home a person is under the city's (the
+  own pull's 0.0102 printed). Exit 0.
+- Green on the mends: HousingMarketCheck, SaveFileCheck, Village1900Check,
+  CreditCrunchCheck, HousingChoiceCheck, ScaleCheck (restated);
+  HousingDoorCheck known red only (MC1).
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
