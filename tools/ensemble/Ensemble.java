@@ -100,6 +100,8 @@ public class Ensemble {
 
     static Policy policy;
     static boolean shocked;
+    static long distressRetired;
+    static double retirementPaid, distressPlotPaid, distressMaterialPaid;
 
     /** Sets the dial for the month about to run - the Policy screen's own setters. */
     static void applyPolicy(Game g) {
@@ -186,6 +188,14 @@ public class Ensemble {
         }
         c.put("cb_advances", Adapter.num(g, "getCentralBank.getAdvancesToTreasury"));
         c.put("bank_capital_ratio", Adapter.num(g, "getBank.capitalRatio"));
+        // QR1: in-ban backstops are a subset of forgiveness; retirement receipts are gross cash, before debt repayment.
+        c.put("overdraft_forgiven_cum", LongPlaytest.forgivenTotal(g.getEconomyManager()));
+        c.put("backstop_in_ban_cum", LongPlaytest.backstopInBanSum);
+        c.put("retirement_paid_cum", retirementPaid);
+        c.put("distress_retired_buildings_cum", (double) distressRetired);
+        c.put("distress_plot_paid_cum", distressPlotPaid);
+        c.put("distress_material_paid_cum", distressMaterialPaid);
+        c.put("distress_paid_cum", distressPlotPaid + distressMaterialPaid);
         // the checks
         double residual = Adapter.auditResidual(g);
         c.put("audit_ok", Double.isNaN(residual) ? Double.NaN : residual == 0 ? 1.0 : 0.0);
@@ -253,11 +263,12 @@ public class Ensemble {
             header = true;
         }
         StringBuilder b = new StringBuilder();
-        for (Object v : row.values()) {
+        for (Map.Entry<String, Object> entry : row.entrySet()) {
+            Object v = entry.getValue();
             if (b.length() > 0) b.append(',');
             if (v instanceof Double d) {
                 if (!Double.isNaN(d)) b.append(Double.isInfinite(d) ? (d > 0 ? "inf" : "-inf")
-                        : String.format(Locale.ROOT, "%.9g", d));
+                        : String.format(Locale.ROOT, entry.getKey().endsWith("_cum") ? "%.17g" : "%.9g", d));
             } else if (v != null) {
                 b.append('"').append(v.toString().replace('"', '\'')).append('"');
             }
@@ -289,6 +300,14 @@ public class Ensemble {
         } finally {
             System.setOut(real);
         }
+        g.watchRetirements(r -> {
+            retirementPaid += r.plotPaid() + r.materialPaid();
+            if (r.distress()) {
+                distressRetired += r.buildings();
+                distressPlotPaid += r.plotPaid();
+                distressMaterialPaid += r.materialPaid();
+            }
+        });
         String threw = null;
         try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(outCsv))) {
             csv = w;
