@@ -454,6 +454,20 @@ reviewer's line.
   households outgrow the homes, by more a month than over the months the
   homes catch up. HousingDoorCheck known red only (MC1); OrderSearchCheck
   and SaveFileCheck green on the merge.
+- The ensemble on the merge (RES3-m208-20261126, ca10c6aae, against
+  0.9.208.md): M1 and F1 FAIL in AUTO2 (45 audit months, 11 of 16 runs
+  with findings), ZERO_SLACK (44), SHOCK (14) and HIGH (2); ZERO_HOT green;
+  inflation (A1 2.69%, 14/16 in band) and the final population (8.39
+  million against 6.24 million) inside the baseline's. Every failing run had
+  one month where food, both utilities' revenue and the central bank
+  disagreed at once and the audit failed the month after: a month that
+  threw partway. The throw was call A's own: overcrowding()'s trim to the
+  standing stock kept a lease's households and cut its funding, so at AUTO2
+  seed 6's m568 a lease of 2.73e-12 households of D90 was short 9.1e-13 of
+  its funding and threw "Invalid lease". Mended (c7adb1caf): who the trim
+  takes off a door lodges on it, sponsored, no bill, counted hosted and
+  crowded. AUTO2-0's finding "households with no home" from m1950 reads
+  getStillUnplaced() > 1, the doorless only: traced with the rerun.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
