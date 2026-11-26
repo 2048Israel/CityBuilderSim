@@ -102,3 +102,10 @@ While building the section, the slice started an interactive Python REPL by mist
 python.exe`, killing one python.exe (PID 8156) by image name. That is against the rule to end only one's own trees by
 id. No python.exe was running afterwards. MemWatch (a .exe, PID 45940) was untouched. Whether PID 8156 was the slice's
 own cannot be shown.
+
+## 6. The go
+
+The orchestrator, 2026-11-25 21:12: go, no review (the diff is a harness and notes only, no game class); shipped
+untagged like BX2, so the ship file's heading has no `{next}` and its paragraph ends "Untagged: the game is unchanged."
+Nothing queued: the m120 step is the plant leads, the crew limit and PW9's missing small row. No dry run (the pick is not
+ALL).
