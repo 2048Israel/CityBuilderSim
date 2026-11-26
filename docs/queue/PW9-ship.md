@@ -1,4 +1,5 @@
 <!-- readiness: provisional -->
+<!-- ensemble: docs/ensemble/PW9.md; snapshot 8c0bb1f98 against 0.9.208; PASS 10/10 hard, 23/26 overall -->
 ## changelog
 ### {next} — PW9, a small firm plant for the early towns — 2026-11-26, ready, see docs/queue/PW9-notes.md
 An 850 kW Small Steam Station gives 1900–1914 towns a firm coal-fired choice
