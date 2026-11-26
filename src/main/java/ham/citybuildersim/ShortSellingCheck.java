@@ -558,6 +558,11 @@ public class ShortSellingCheck {
         double fairCity = cityEx.fair(f);
         cityEx.bookOf(f).withdrawAll();
         city.getFund().receive(10 * cityReg.getShares(f) * fairCity);
+        // The fixture trades between months, as no play does (the fund's own orders go into a month): the
+        // month clears these trades' lines as it opens, and the gains tax they assess goes in a window of its
+        // own, which the month's opening clears too. Filed as pending, it was paid now and lined next month.
+        HouseholdBalance taxBook = city.getHouseholdBalance();
+        taxBook.beginTaxMonth();
         // The fund comes to hold 4% of the company, bought from the cell that holds the most of it...
         double fundBuys = .04 * cityReg.getShares(f);
         String lenderName = Exchange.CELL + lender.key();
@@ -571,6 +576,7 @@ public class ShortSellingCheck {
         cityEx.tradeForCheck(f, Exchange.WORLD_SHORT, OrderBook.Side.SELL, at, want);
         double sold = filled(cityEx.tradeForCheck(f, Exchange.DESK, OrderBook.Side.BUY, at, want));
         cityEx.bookOf(f).withdrawAll();
+        taxBook.closeTaxMonth();
         assertTrue("fixture: the fund holds some of " + Equity.COMPANIES[f] + " and the world is short of it, to a desk with the means to buy",
                 fundGot > 0 && sold > 0 && cityEx.shortShares(f) == sold);
         out.printf("   %s: %,.0f shares in issue, the fund holds %,.0f, short %,.0f (%.2f%% of the shares outstanding)%n", Equity.COMPANIES[f],
