@@ -1,4 +1,4 @@
-# FoundingYardCheck.java - 630 lines · 27 methods · 5 constants · harnesses
+# FoundingYardCheck.java - 635 lines · 27 methods · 5 constants · harnesses
 
 `ham/citybuildersim/FoundingYardCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -75,9 +75,9 @@
 | 274 | 3. MONTH 1, AND MONTH 2 ON |
 | 354 | 4. A FOUNDING TOWN BUILDS |
 | 455 | 5. THE LAST BUILDING THAT BUILDS IS NEVER SOLD |
-| 495 | 6. HANDS FOR ITS SHOPS, A DEPOT'S TOO SINCE IC1 |
-| 566 | 7. THE LAST BUILDER IS NOT BOUGHT OUT IN ONE WINDOW |
-| 620 | 8. MONEY IS CONSERVED |
+| 500 | 6. HANDS FOR ITS SHOPS, A DEPOT'S TOO SINCE IC1 |
+| 571 | 7. THE LAST BUILDER IS NOT BOUGHT OUT IN ONE WINDOW |
+| 625 | 8. MONEY IS CONSERVED |
 
 ## Constants
 
@@ -103,7 +103,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 556 | **type** `public class FoundingYardCheck` | The founding yard (PT1-M4, 2026-10-12): the works department's free 400 points a month are retired and every city founds with one Builders' Yard standing, staffed and paid like any other, so the builders earn only for... |
+| 75 | 561 | **type** `public class FoundingYardCheck` | The founding yard (PT1-M4, 2026-10-12): the works department's free 400 points a month are retired and every city founds with one Builders' Yard standing, staffed and paid like any other, so the builders earn only for... |
 | 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 86 | 5 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 92 | 5 | `static void check(String label, long actual, long expected)` |  |
@@ -145,32 +145,32 @@
 | 434 | 6 | `static boolean villageStands(BuildingManager bm)` | Whether every building of the founding village stands (the depot line is the village's own, beside the founding yard). |
 | 448 | 6 | `static boolean villageBuilt(BuildingManager bm, java.util.Map<String, Long> sold)` | Whether every building of the founding village has been built: those standing and those the retirement rules (either, any seller; the city's own demolitions are not theirs) have sold since reach each line's count. |
 
-### 5. THE LAST BUILDING THAT BUILDS IS NEVER SOLD (lines 455-494)
+### 5. THE LAST BUILDING THAT BUILDS IS NEVER SOLD (lines 455-499)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 457 | 37 | `static void lastYard(Path root)` |  |
+| 457 | 42 | `static void lastYard(Path root)` |  |
 
-### 6. HANDS FOR ITS SHOPS, A DEPOT'S TOO SINCE IC1 (lines 495-565)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 498 | 3 | `static long shops(BuildingManager bm)` | How many of the village's two small food shops stand. |
-| 503 | 3 | **type** `record Village(Game game, int firstShop, int idleMonths, long withheldInIdle, long mostWithheld, long people)` | One hands-off village, played FIRST_SHOP_MONTHS months: when its first shop stood, and what its builders held back while idle. |
-| 504 | 1 | `double meanWithheld()` _(in FoundingYardCheck.Village)_ |  |
-| 513 | 31 | `static Village playHandsOff(Path root, String name, boolean depotInstead)` | A hands-off founded city (run(), no orders, Founding.defaults()), its yard retired and a Construction Depot placed in its stead before month 1 when depotInstead, played FIRST_SHOP_MONTHS months. |
-| 545 | 20 | `static void handsForShops(Path root)` |  |
-
-### 7. THE LAST BUILDER IS NOT BOUGHT OUT IN ONE WINDOW (lines 566-619)
+### 6. HANDS FOR ITS SHOPS, A DEPOT'S TOO SINCE IC1 (lines 500-570)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 574 | 5 | `static void lastBuilderWindow(Path root)` | A yard or depot the city has bought out to demolish stands until the next month starts (Game.closeDemolished()), so a count that took it for standing left the city a window in which it could buy out the depot and then... |
-| 581 | 38 | `static void buyOutWindow(Path root, String name, boolean depotFirst)` | One order: the first building is bought out, then the other, the builders' last, is tried in the same window. |
+| 503 | 3 | `static long shops(BuildingManager bm)` | How many of the village's two small food shops stand. |
+| 508 | 3 | **type** `record Village(Game game, int firstShop, int idleMonths, long withheldInIdle, long mostWithheld, long people)` | One hands-off village, played FIRST_SHOP_MONTHS months: when its first shop stood, and what its builders held back while idle. |
+| 509 | 1 | `double meanWithheld()` _(in FoundingYardCheck.Village)_ |  |
+| 518 | 31 | `static Village playHandsOff(Path root, String name, boolean depotInstead)` | A hands-off founded city (run(), no orders, Founding.defaults()), its yard retired and a Construction Depot placed in its stead before month 1 when depotInstead, played FIRST_SHOP_MONTHS months. |
+| 550 | 20 | `static void handsForShops(Path root)` |  |
 
-### 8. MONEY IS CONSERVED (lines 620-630)
+### 7. THE LAST BUILDER IS NOT BOUGHT OUT IN ONE WINDOW (lines 571-624)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 622 | 8 | `static void conserved()` |  |
+| 579 | 5 | `static void lastBuilderWindow(Path root)` | A yard or depot the city has bought out to demolish stands until the next month starts (Game.closeDemolished()), so a count that took it for standing left the city a window in which it could buy out the depot and then... |
+| 586 | 38 | `static void buyOutWindow(Path root, String name, boolean depotFirst)` | One order: the first building is bought out, then the other, the builders' last, is tried in the same window. |
+
+### 8. MONEY IS CONSERVED (lines 625-635)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 627 | 8 | `static void conserved()` |  |
 

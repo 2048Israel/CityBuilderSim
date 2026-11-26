@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.210 — QR1, the distress rule sells plant that pays its running costs — 2026-11-26, ready, see docs/queue/QR1-notes.md
+The distress rule now requires the operating-loss runway as well as net losses before selling plant. Interest alone cannot make an overdrawn sector liquidate plant that pays its running costs; its unpaid debt remains with the existing bank restructuring. Sustained operating losses still sell at the existing quarter rate. Statement-driven fixtures prove the interest-only hold, both sides of the operating-loss threshold, recovery and the surviving restructuring path. The bank's sale fixtures still exercise their money audits to the cent.
+
 ### 0.9.209 — PW9, a small firm plant for the early towns — 2026-11-26, ready, see docs/queue/PW9-notes.md
 An 850 kW Small Steam Station gives 1900–1914 towns a firm coal-fired choice
 with period capital, fuel efficiency and a 15-month construction setting.
