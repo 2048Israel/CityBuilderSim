@@ -564,28 +564,28 @@ public class DistressBleedCheck {
         /* ============ 8. a sector living on its own cash is not lent ============ */
         out.println("\n--- a sector living on its own cash is not lent ---");
 
-        // Town c again, which section 6 left with nothing owed to the desk: the sector's cash set at or above zero, both streaks past the dial,
+        // A fresh town with nothing owed to the desk: the sector's cash set at or above zero, both streaks past the dial,
         // its centres held. Asked at every count from the dial to the dial plus BLEED_MONTHS, then the desk lends it and it is asked again.
-        c.cash(c.key, CASH);
-        c.holdAt(CENTRES);
-        boolean ownCash = c.desk.getPrincipal(c.key) == 0 && c.bs.getCash() >= 0 && c.held() == CENTRES;
+        Town own = town("dbleed-own");
+        own.cash(own.key, CASH);
+        boolean ownCash = own.desk.getPrincipal(own.key) == 0 && own.bs.getCash() >= 0 && own.held() == CENTRES;
         int askedOwn = 0;
         long soldOwn = 0;
         for (int k = 0; k <= BLEED; k++) {
-            c.streaks(c.key, DISTRESS + k, DISTRESS + k);
-            soldOwn += sold(c.ask(c.bs));
+            own.streaks(own.key, DISTRESS + k, DISTRESS + k);
+            soldOwn += sold(own.ask(own.bs));
             askedOwn++;
         }
-        c.lend(c.key);
-        c.streaks(c.key, DISTRESS, DISTRESS);
-        BusinessInvestment.Decision lentOwn = c.ask(c.bs);
+        own.lend(own.key);
+        own.streaks(own.key, DISTRESS, DISTRESS);
+        BusinessInvestment.Decision lentOwn = own.ask(own.bs);
         out.printf("   no principal, cash $%,.0fk, both streaks at %d to %d: %d asks, %d sold; lent $%,.0fk, both streaks at %d: %d sold (%s)%n",
-                CASH, DISTRESS, DISTRESS + BLEED, askedOwn, soldOwn, c.desk.getPrincipal(c.key), DISTRESS, sold(lentOwn), lentOwn.reason);
+                CASH, DISTRESS, DISTRESS + BLEED, askedOwn, soldOwn, own.desk.getPrincipal(own.key), DISTRESS, sold(lentOwn), lentOwn.reason);
         assertTrue("fixture: a sector living on its own cash owes the desk nothing, holds cash at or above zero and its centres, with both streaks past the dial",
-                ownCash && askedOwn > 0 && c.plans.getLossMonths(c.key) >= DISTRESS);
+                ownCash && askedOwn > 0 && own.plans.getLossMonths(own.key) >= DISTRESS);
         assertTrue("a sector living on its own cash is not lent: nothing is sold at any count from the dial to the dial plus BLEED_MONTHS", soldOwn == 0);
         assertTrue("...and the same sector, its streaks and cash as they were, sells a centre once the desk lends it",
-                c.desk.getPrincipal(c.key) > 0 && lentOwn.build && lentOwn.template != null && lentOwn.template.getId() == c.contact.getId());
+                own.desk.getPrincipal(own.key) > 0 && lentOwn.build && lentOwn.template != null && lentOwn.template.getId() == own.contact.getId());
 
         if (fails == 0) {
             out.println("The distress rule bleeds a lent price taker over the dial, holds a loss that is only interest and a sector living on its own cash,"
