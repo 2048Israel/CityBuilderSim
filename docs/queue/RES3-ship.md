@@ -7,7 +7,10 @@ and crowding, class rents and actual occupied receipts. The existing builder and
 funding path receive the actual mix, costs and work; the synthetic pipeline is retired.
 Commits historical and present-day quote, budget, availability and paid-build reports.
 Emergency shelter keeps funded demand for separate doors; paid and hosted placements
-clear together. Feasible orders use the affordable backlog and actual operating returns.
+clear together. Past the census line, more than two a room, a family lives overcrowded
+as the 1901 census counted it, never doorless; movers weigh the half share they would take,
+and the incoming forecast is bounded by migration's own draw.
+Feasible orders use the affordable backlog and actual operating returns.
 Rent CPI follows comparable class bills; completed consumer purchases supply reference
 weights, including saved new-car and petrol observations and separate home fuels.
 The fund's Search keeps the rows on show at each Show more and makes only the next forty.

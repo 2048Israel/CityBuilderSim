@@ -408,6 +408,39 @@ reviewer's line.
   parting (3.98 against 21.08 a city) is the whole-branch scale-dependence
   SK1 and ST3 already note, not this. Left: constructionControl.abroad's
   amounts stay at 1x; no check reads it.
+- (A), fda75569e. HousingMarket.overcrowding(), the clearing's last pass:
+  who the census line leaves with no door takes the nearest door still
+  standing at its ask, then half of one at half of it, past the line, by
+  the placement's own score; who funds neither lodges beside an occupied
+  door, no bill and no new money. It is counted overcrowded by cell, saved
+  with the market's state (an older save has none; ScaleCheck's scaler
+  multiplies it, 6ff01223b), still seeks a door of its own in the room the
+  forecast reads, and still presses the rent. Game.getHouseholdsWantingAHome()
+  (no door plus overcrowded) is what LongPlaytest's player, CityNeeds' HOMES
+  and the fields' guard now read. HousingDoorCheck: no household doorless
+  in the window, and the real effect asserted from the model's readings:
+  376 months building behind the households (the landlords' order trimmed
+  or held, at the door or for land) average 10.688 households overcrowded,
+  the most 77.426 (m893); the 94 months it keeps up average 3.454; the 222
+  held for land 11.236. The m831 boom has 36.993 overcrowded (222 people)
+  with 389 Houses trimmed to 14 for the down payment. For the orchestrator:
+  overcrowding goes with building falling behind, not with the ground
+  running out as such; the land-held months are about every behind month's
+  figure, so the assertion is "in the months building falls behind, more
+  than when it keeps up". A first cut tripped the households' cash identity
+  at m838 (a vacancy taken whole summed D90 to 1,988.0000000000002 of
+  1,988 and the inventory refused it mid-month); the pass now holds each
+  home's doors to the standing stock, and all 899 months close.
+  HousingMarketCheck :693 and :1077-1080 restated to the law (placed past
+  the line, counted, a lodger billed nothing; priority and the fractional
+  shortage kept). CreditCrunchCheck's three reds, caused again: the House
+  refused for no land at m150 (279.6 sq ft free) now has its plots bought
+  first, which also gives the cut's MARGIN room (2.0); and the crunch's
+  hold adds the bank's profit tax, drawn at the month's top before the
+  lending rule is set (37.76 at m267 where the hold left 33.49), at
+  Bank.taxAt's own rate. Green: HousingMarketCheck, HousingChoiceCheck,
+  CreditCrunchCheck, Village1900Check, SaveFileCheck, ReloadCheck,
+  ScaleCheck; HousingDoorCheck known red only (MC1's capital fixture).
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
