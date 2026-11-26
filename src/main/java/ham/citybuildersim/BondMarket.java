@@ -1,9 +1,12 @@
 package ham.citybuildersim;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The corporate bond market: every bond the city's businesses have issued,
@@ -1507,42 +1510,59 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             target[j] = share * b.face;
             floor[j] = d + loss;
         }
-        double[] q = new double[nb], p = new double[nb];
-        for (int i = 0; i < cells.length; i++) {
-            double w = weight[i] / all;
-            if (!(w > 0)) continue;
-            Household c = cells[i];
-            String who = CELL + c.key();
-            double spare = households.bondSpare(c);
-            double spend = 0;
-            java.util.Arrays.fill(q, 0);
-            for (int j = 0; j < nb; j++) {
-                if (!(per[j] > 0)) continue;
-                CorporateBond b = bonds.get(j);
-                double perC = per[j] * w;
-                double mine = c.bondFace(b.id) * c.households();
-                double tgt = target[j] * w;
-                if (tgt > mine && spare > 0) {
-                    q[j] = OutwardInvestment.OUT_SPEED * (tgt - mine);
-                    double after = (mine + q[j]) / perC;
-                    p[j] = b.priceAt(floor[j] + after, month);
-                    spend += q[j] * p[j];
-                } else if (mine > tgt) {
-                    double sell = OutwardInvestment.HOME_SPEED * (mine - tgt);
-                    double after = Math.max(0, mine - sell) / perC;
-                    submit(b, who, OrderBook.Side.SELL, b.priceAt(floor[j] + after, month), sell, month);
+        // Weights and targets above read the aggregate. From here to the end of
+        // posting, only savings/budgets and live per-id face are read (including
+        // Settle.capacity and bondSpare). Recount each touched cell once with
+        // Household's original id-ordered fold, before postFund or the caller.
+        Set<Household> touched = eagerBondRecounts ? null : Collections.newSetFromMap(new IdentityHashMap<>());
+        deferredBondRecounts = touched;
+        try {
+            double[] q = new double[nb], p = new double[nb];
+            for (int i = 0; i < cells.length; i++) {
+                double w = weight[i] / all;
+                if (!(w > 0)) continue;
+                Household c = cells[i];
+                String who = CELL + c.key();
+                double spare = households.bondSpare(c);
+                double spend = 0;
+                java.util.Arrays.fill(q, 0);
+                for (int j = 0; j < nb; j++) {
+                    if (!(per[j] > 0)) continue;
+                    CorporateBond b = bonds.get(j);
+                    double perC = per[j] * w;
+                    double mine = c.bondFace(b.id) * c.households();
+                    double tgt = target[j] * w;
+                    if (tgt > mine && spare > 0) {
+                        q[j] = OutwardInvestment.OUT_SPEED * (tgt - mine);
+                        double after = (mine + q[j]) / perC;
+                        p[j] = b.priceAt(floor[j] + after, month);
+                        spend += q[j] * p[j];
+                    } else if (mine > tgt) {
+                        double sell = OutwardInvestment.HOME_SPEED * (mine - tgt);
+                        double after = Math.max(0, mine - sell) / perC;
+                        submit(b, who, OrderBook.Side.SELL, b.priceAt(floor[j] + after, month), sell, month);
+                    }
+                }
+                double scale = spend > spare ? Math.max(0, spare) / spend : 1;
+                if (!(scale > 0)) continue;
+                posting = c;
+                postingBudget = spare;
+                try {
+                    for (int j = 0; j < nb; j++) {
+                        if (q[j] > 0) submit(bonds.get(j), who, OrderBook.Side.BUY, p[j], q[j] * scale, month);
+                    }
+                } finally {
+                    posting = null;
                 }
             }
-            double scale = spend > spare ? Math.max(0, spare) / spend : 1;
-            if (!(scale > 0)) continue;
-            posting = c;
-            postingBudget = spare;
+        } finally {
             try {
-                for (int j = 0; j < nb; j++) {
-                    if (q[j] > 0) submit(bonds.get(j), who, OrderBook.Side.BUY, p[j], q[j] * scale, month);
+                if (touched != null) for (Household c : touched) {
+                    c.recountBonds();
+                    settledBondRecounts++;
                 }
             } finally {
-                posting = null;
+                deferredBondRecounts = null;
             }
         }
     }
@@ -1550,6 +1570,27 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
     /** The cell posting its bids at the step right now, and what it may still spend this month. */
     private Household posting;
     private double postingBudget;
+
+    /** Only postHouseholds defers Settle's folds; every other settlement stays eager. */
+    private transient Set<Household> deferredBondRecounts;
+    private transient boolean eagerBondRecounts;
+    private transient long settledBondWrites, settledBondRecounts;
+
+    /** BondCheck's per-market twin and work counts; neither changes settlement arithmetic. */
+    void eagerBondRecountsForCheck(boolean eager) { eagerBondRecounts = eager; }
+    long bondWritesForCheck() { return settledBondWrites; }
+    long bondRecountsForCheck() { return settledBondRecounts; }
+
+    private void settleBondFace(Household c, int id, double face) {
+        c.putBondFace(id, face);
+        settledBondWrites++;
+        if (deferredBondRecounts == null) {
+            c.recountBonds();
+            settledBondRecounts++;
+        } else {
+            deferredBondRecounts.add(c);
+        }
+    }
 
     /* ------------------------------ the city's fund (0.7.14) ------------------------------ */
 
@@ -1794,7 +1835,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             if (hhSells) {
                 Household c = cellOf(seller);
                 b.households -= q;
-                c.setBondFace(b.id, Math.max(0, c.bondFace(b.id) - q / c.households()));
+                settleBondFace(c, b.id, Math.max(0, c.bondFace(b.id) - q / c.households()));
                 if (c == selling) {
                     raised += cash;
                     c.bondsSold += cash / c.households();
@@ -1826,7 +1867,7 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             if (hhBuys) {
                 Household c = cellOf(buyer);
                 b.households += q;
-                c.setBondFace(b.id, c.bondFace(b.id) + q / c.households());
+                settleBondFace(c, b.id, c.bondFace(b.id) + q / c.households());
                 c.savings -= cash / c.households();
                 if (c == posting) postingBudget -= cash;
             } else if (worldBuys) {

@@ -7983,12 +7983,15 @@ public class BuildingManager {
         // NOTE: this used to loop over `stacks` directly and never counted
         // `instances`, while getTotalJobs(JobType) below does include instances.
         // That meant this array and a per-type lookup could silently disagree.
-        // Delegating to getTotalJobs(JobType) fixes the inconsistency and
-        // removes the duplicate loop.
+        // Include instances as the per-type lookup does. The posts past the
+        // buildings read the farms' horses: one live reading for this call,
+        // not a complete sector walk for every job type (AP6).
         JobType[] jobTypes = JobType.values();
+        long[] past = postsPast == null ? null : postsPast.get();
         long[] total = new long[jobTypes.length];
         for (int i = 0; i < jobTypes.length; i++) {
-            total[i] = getTotalJobs(jobTypes[i]);
+            total[i] = getTotalJobsAtEveryPost(jobTypes[i]) - getPostsWithheld(jobTypes[i])
+                    + (past == null || i >= past.length ? 0 : past[i]);
         }
         return total;
     }
@@ -8198,7 +8201,7 @@ public class BuildingManager {
     /** A stack's buildings, a building's posts or the list of stacks has changed: posts held for a pass are read afresh (AP5). */
     static void postsMoved() { POSTS_EDITS.incrementAndGet(); }
 
-    /** The stacks' posts as one pass read them (AP5), with the count of edits they were read at. */
+    /** The stacks' posts and ordered sector groups (AP5/AP6), with the count of edits they were read at. */
     static final class HeldPosts {
         final long at;
         /** Each job type's posts over the stacks, by ordinal. */
@@ -8206,7 +8209,7 @@ public class BuildingManager {
         /** Each owning sector's posts of each job type, by ordinal. */
         final java.util.Map<String, long[]> bySector = new java.util.LinkedHashMap<>();
         /** Each owning sector's stacks, in the list's order. */
-        final java.util.Map<String, BuildingsStacks[]> stacksOf = new java.util.HashMap<>();
+        final java.util.Map<String, List<BuildingsStacks>> stacksOf = new java.util.HashMap<>();
 
         HeldPosts(long at, List<BuildingsStacks> stacks) {
             this.at = at;
@@ -8224,15 +8227,32 @@ public class BuildingManager {
                 own.computeIfAbsent(sector, k -> new ArrayList<>()).add(stack);
             }
             for (java.util.Map.Entry<String, List<BuildingsStacks>> e : own.entrySet())
-                stacksOf.put(e.getKey(), e.getValue().toArray(new BuildingsStacks[0]));
+                stacksOf.put(e.getKey(), List.copyOf(e.getValue()));
         }
     }
 
-    /** The posts held for the scope open on this thread for this city, built afresh when the stacks have changed; null with none open. */
+    /* ----- THE MONTH'S SECTOR WALKS (AP6, 2026-11-26)
+       Private investment repeats the same raw-post maps outside a valuation pass. Keep AP5's raw sums and ordered
+       groups between calls too, keyed on every stack/template/list edit. Offered shares, posts past the
+       buildings, instances, quantities and template getters in sector totals remain live. No figure is regrouped
+       or rounded differently. A grouping can survive a month boundary when none of its inputs moved. ----- */
+    // Owned by the manager (not a thread's map, which could retain a discarded city through stack callbacks).
+    // The raw sums/groups are never written after construction; publish the complete value to other readers.
+    private transient volatile HeldPosts monthPosts;
+
+    /** The pass's posts, or the month's outside it, rebuilt after an edit; null only for an explicit bare reading. */
     private HeldPosts heldPosts() {
+        if (WorksValue.bareReading()) return null;
         WorksValue.Scope s = WorksValue.heldFor(this);
-        if (s == null) return null;
         long at = POSTS_EDITS.get();
+        if (s == null) {
+            HeldPosts held = monthPosts;
+            if (held == null || held.at != at) {
+                held = new HeldPosts(at, stacks);
+                monthPosts = held;
+            }
+            return held;
+        }
         if (s.posts == null || s.posts.at != at) {
             s.posts = new HeldPosts(at, stacks);
             s.postsRead++;
@@ -8462,14 +8482,15 @@ public class BuildingManager {
 
     /** Finished buildings only: quantity times the getter, over the sector's stacks. */
     public double totalBySector(String sector, ToDoubleFunction<BuildingsTemplate> getter) {
-        // A sector's stacks held for the auto-builder's pass (AP5, THE POSTS HELD FOR ONE PASS): the same stacks in the same order, read live.
-        HeldPosts held = heldPosts();
-        if (held != null) {
-            double total = 0;
-            BuildingsStacks[] own = held.stacksOf.get(sector);
-            if (own != null) for (BuildingsStacks stack : own) total += stack.getQuantity() * getter.applyAsDouble(stack.getBuilding());
-            return WorksValue.compared(total, () -> totalBySector(sector, getter));
-        }
+        if (WorksValue.bareReading()) return totalBySectorDrawn(sector, getter);
+        double total = 0;
+        for (BuildingsStacks stack : getSectorStacks(sector))
+            total += stack.getQuantity() * getter.applyAsDouble(stack.getBuilding());
+        return WorksValue.compared(total, () -> totalBySectorDrawn(sector, getter));
+    }
+
+    /** The ungrouped sum, in the original list order (AP6): the bare figure held readings are checked against. */
+    double totalBySectorDrawn(String sector, ToDoubleFunction<BuildingsTemplate> getter) {
         double total = 0;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
@@ -8477,6 +8498,20 @@ public class BuildingManager {
             total += stack.getQuantity() * getter.applyAsDouble(t);
         }
         return total;
+    }
+
+    /**
+     * A sector's own stacks, in the city's list order; immutable grouping, live stacks (AP6).
+     * Membership is a snapshot at this reading: call again after an edit to obtain the new grouping.
+     */
+    public List<BuildingsStacks> getSectorStacks(String sector) {
+        if (WorksValue.bareReading()) {
+            List<BuildingsStacks> own = new ArrayList<>();
+            for (BuildingsStacks stack : stacks)
+                if (stack.getBuilding().getSector().equals(sector)) own.add(stack);
+            return List.copyOf(own);
+        }
+        return heldPosts().stacksOf.getOrDefault(sector, List.of());
     }
 
     /**

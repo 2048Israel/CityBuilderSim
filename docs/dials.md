@@ -2,9 +2,9 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,870 constants in 648 files.**
+**6,871 constants in 649 files.**
 
-## model (3085 constants)
+## model (3086 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -159,22 +159,22 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 123 | `BondMarket.BANK` | `"bank"` | The bank's desk, on the book. |
-| 125 | `BondMarket.WORLD` | `"world"` | The world, on the book. |
-| 127 | `BondMarket.CELL` | `"household:"` | One household cell on the book - bidding, asking, or selling in the waterfall: this, then its key. |
-| 129 | `BondMarket.FUND` | `"city"` | The city's fund, by its rule (0.7.14; TreasuryFund). |
-| 131 | `BondMarket.FUND_HAND` | `"city:hand"` | ...and by the player's hand. |
-| 146 | `BondMarket.DEFAULT_RATE_FLOOR` | `Bank.BASE_LOSS_RATE / BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT` | THE LEAST A DEFAULT RATE IS READ AT: the through-the-cycle default rate a sound loan is priced for, Bank.BASE_LOSS_RATE over a loan's loss given default, BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT... |
-| 149 | `BondMarket.TERM_YEARS` | `CorporateBond.TERM_MONTHS / 12.0` | The term in years, for spreading an issue's costs over its life. |
-| 152 | `BondMarket.CHEAPER_BY` | `1e-11` | The arithmetic a bond's all-in cost may sit over the loan's and still be "no dearer": a billionth of a point a year - the bisection's own resolution, not a margin (plan()). |
-| 155 | `BondMarket.ISSUE_ROUNDING` | `1e-14` | The relative shortfall at the issue-size fixed point, below the nominal twins' 1e-9 tolerance even after repeated refinancing (BS1). |
-| 158 | `BondMarket.PRICE_TICK` | `1e-12` | The price step per unit of bond face, so mathematically equal bids retain arrival priority across currency units (OB1, BS1). |
-| 163 | `BondMarket.BILL_LOT` | `1_000` | A bill's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
-| 165 | `BondMarket.BOND_LOT` | `100_000` | A fixed-rate bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
-| 167 | `BondMarket.AMORTIZING_LOT` | `10_000` | An amortizing bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
-| 169 | `BondMarket.FLOATING_LOT` | `100_000` | A floating-rate note's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
-| 171 | `BondMarket.LINKED_LOT` | `100_000` | An inflation-linked bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
-| 436 | `BondMarket.FACE_DUST` | `PriceLevel.atFounding(OrderBook.DUST)` | OrderBook.DUST of face is money, seeded at founding prices (BF1). |
+| 126 | `BondMarket.BANK` | `"bank"` | The bank's desk, on the book. |
+| 128 | `BondMarket.WORLD` | `"world"` | The world, on the book. |
+| 130 | `BondMarket.CELL` | `"household:"` | One household cell on the book - bidding, asking, or selling in the waterfall: this, then its key. |
+| 132 | `BondMarket.FUND` | `"city"` | The city's fund, by its rule (0.7.14; TreasuryFund). |
+| 134 | `BondMarket.FUND_HAND` | `"city:hand"` | ...and by the player's hand. |
+| 149 | `BondMarket.DEFAULT_RATE_FLOOR` | `Bank.BASE_LOSS_RATE / BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT` | THE LEAST A DEFAULT RATE IS READ AT: the through-the-cycle default rate a sound loan is priced for, Bank.BASE_LOSS_RATE over a loan's loss given default, BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT... |
+| 152 | `BondMarket.TERM_YEARS` | `CorporateBond.TERM_MONTHS / 12.0` | The term in years, for spreading an issue's costs over its life. |
+| 155 | `BondMarket.CHEAPER_BY` | `1e-11` | The arithmetic a bond's all-in cost may sit over the loan's and still be "no dearer": a billionth of a point a year - the bisection's own resolution, not a margin (plan()). |
+| 158 | `BondMarket.ISSUE_ROUNDING` | `1e-14` | The relative shortfall at the issue-size fixed point, below the nominal twins' 1e-9 tolerance even after repeated refinancing (BS1). |
+| 161 | `BondMarket.PRICE_TICK` | `1e-12` | The price step per unit of bond face, so mathematically equal bids retain arrival priority across currency units (OB1, BS1). |
+| 166 | `BondMarket.BILL_LOT` | `1_000` | A bill's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
+| 168 | `BondMarket.BOND_LOT` | `100_000` | A fixed-rate bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
+| 170 | `BondMarket.AMORTIZING_LOT` | `10_000` | An amortizing bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
+| 172 | `BondMarket.FLOATING_LOT` | `100_000` | A floating-rate note's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
+| 174 | `BondMarket.LINKED_LOT` | `100_000` | An inflation-linked bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
+| 439 | `BondMarket.FACE_DUST` | `PriceLevel.atFounding(OrderBook.DUST)` | OrderBook.DUST of face is money, seeded at founding prices (BF1). |
 
 ### BridgeSurvey.java ([map](map/BridgeSurvey.md))
 
@@ -292,9 +292,9 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5489 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
 | 6403 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
 | 6585 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
-| 8196 | `BuildingManager.POSTS_EDITS` | `new java.util.concurrent.atomic.AtomicLong()` | Raised after every change to the stacks' posts or the list of stacks, in any city (AP5): transient, never saved. |
-| 8403 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 9735 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 8199 | `BuildingManager.POSTS_EDITS` | `new java.util.concurrent.atomic.AtomicLong()` | Raised after every change to the stacks' posts or the list of stacks, in any city (AP5): transient, never saved. |
+| 8423 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
+| 9770 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BuildingVisual.java ([map](map/BuildingVisual.md))
 
@@ -1766,7 +1766,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.212"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.213"` | Bump on release. |
 | 8392 | `GameVersion.SAVE_FORMAT` | `66` | R6e-rest: THE DESALINATION PLANT BEFORE THE PRESSURE EXCHANGER (format 66). |
 | 8460 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `66` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8468 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -3932,8 +3932,9 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 392 | `WorksValue.HELD` | `new ThreadLocal<>()` |  |
-| 395 | `WorksValue.SCHEDULES` | `new java.util.concurrent.atomic.AtomicLong()` | Every schedule of the works on site built, held or bare: NewUnitCheck 13's count, never a time. |
-| 444 | `WorksValue.LABOUR_COMPARED` | `new java.util.concurrent.atomic.AtomicLong(), LABOUR_DIFFERED = new java.util.concurren...` | Held labour figures read and compared while labourChecked was set, and those that differed from the bare figure. |
+| 393 | `WorksValue.BARE` | `new ThreadLocal<>()` |  |
+| 399 | `WorksValue.SCHEDULES` | `new java.util.concurrent.atomic.AtomicLong()` | Every schedule of the works on site built, held or bare: NewUnitCheck 13's count, never a time. |
+| 448 | `WorksValue.LABOUR_COMPARED` | `new java.util.concurrent.atomic.AtomicLong(), LABOUR_DIFFERED = new java.util.concurren...` | Held labour figures read and compared while labourChecked was set, and those that differed from the bare figure. |
 
 ### World.java ([map](map/World.md))
 
@@ -7688,39 +7689,39 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 61 | `LabourCheck.OUT` | `System.out` |  |
 | 62 | `LabourCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
-| 1287 | `LabourCheck.CRAWL` | `.005` | How fast the fixture's currency is walked weaker: half a percent a month. |
-| 1290 | `LabourCheck.BASING_GRACE_MONTHS` | `120` | The most months the wage-chase town is stepped on past its settling for the basket to be based, before that is a fixture failure. |
-| 1293 | `LabourCheck.INFLATION_MONTHS` | `240` | Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. |
-| 1532 | `LabourCheck.PAYROLL_GRADUATE_FILL` | `.5` | The share of its posts each graduate band holds in heads in the payroll town (FS16), so a band is part filled and the job types fill unevenly. |
-| 1535 | `LabourCheck.PAYROLL_TOWN_MONTHS` | `120` | The months the payroll town plays before its fills are put by hand (FS16): ten years, so the identity reads the sectors and posts a lived city has, not a founding's (a KEEP: the played town is its ... |
-| 1538 | `LabourCheck.LAYOFF_TOWN_PEOPLE` | `1_000` | The people put into the builders' town of the payroll section (FS16), so the sector's households have workers to be paid. |
-| 1743 | `LabourCheck.HELD_FILL` | `.5` | The share of its posts each graduate band holds in heads, and the unskilled posts in workers, in the held-figures town (AP5): every band has posts open for a move to fill. |
-| 1746 | `LabourCheck.HELD_TOWN_PEOPLE` | `1_000` | The people put into the held-figures town (AP5), so it has a workforce for the month's labour market to be struck on. |
-| 1749 | `LabourCheck.HELD_INSTANT` | `5` | The buildings put up at once, in the held-figures section (AP5). |
-| 1752 | `LabourCheck.HELD_ON_SITE` | `3` | The buildings ordered on site, in the held-figures section (AP5). |
-| 1755 | `LabourCheck.HELD_SCRAPPED` | `2` | The buildings scrapped, in the held-figures section (AP5). |
-| 1758 | `LabourCheck.HELD_IMPRISONED` | `.1` | The share of the unskilled workers put in prison, in the held-figures section (AP5). |
-| 1761 | `LabourCheck.HELD_HEADS_ADDED` | `.25` | The share of a band's posts written onto its heads through the array getSkilledHeads() hands out, in the held-figures section (AP5). |
-| 1764 | `LabourCheck.HELD_LICENSED` | `.25` | The share of the university heads who take a doctor's licence, in the held-figures section (AP5). |
-| 1767 | `LabourCheck.HELD_CREWS_OUTPUT` | `1e15` | The construction points put into the shops on site at once, in the held-figures section (AP5): more than any order owes, so every one finishes. |
-| 1770 | `LabourCheck.HELD_RECIPE_HANDS` | `4` | The unskilled posts a shop's second recipe adds, in the held-figures section (AP5): a fourth of them is one post, the blend's step. |
-| 1773 | `LabourCheck.HELD_BLEND_ON` | `1` | The shops on the second recipe in the held-figures section's blend (AP5): one in four, so the blend's posts are one more than the first recipe's. |
-| 1776 | `LabourCheck.HELD_BLEND_OFF` | `3` | ...and on the first. |
-| 1779 | `LabourCheck.HELD_ORDER_BIG` | `0x1p53` | The house's weight in the held-figures section's ordered sum (AP5): 2^53, so the house's buildings are a number whose last place is wider than one. |
-| 1782 | `LabourCheck.HELD_ORDER_PART` | `.375` | Each apartment stack's part of the house's last place in that sum (AP5): under a half, so either alone is lost after the house, both together over it. |
-| 1785 | `LabourCheck.HELD_WORKERS_ADDED` | `.25` | The share of the unskilled workers added to the workforce, in the held-figures section (AP5). |
-| 1788 | `LabourCheck.HELD_OWNERS` | `.1` | The share of the workforce whose families own their businesses, in the held-figures section (AP5). |
-| 1791 | `LabourCheck.HELD_STUDYING` | `.25` | The share of the widest graduate band's heads at their studies, in the held-figures section (AP5). |
-| 1794 | `LabourCheck.HELD_JOINED_POSTS` | `100` | The graduate posts in the held-figures section's shared market (AP5), where the wage ladder splits the workers between two bands. |
-| 1797 | `LabourCheck.HELD_JOINED_HEADS_PER_POST` | `3` | ...the graduate heads to each of them, so the band has workers to spare for the unskilled posts... |
-| 1800 | `LabourCheck.HELD_JOINED_UNSKILLED_POSTS` | `4_000` | ...the unskilled posts, far more than the workers for them, so the bottom band pays more than the graduate one and the two are one market... |
-| 1803 | `LabourCheck.HELD_JOINED_UNSKILLED` | `10` | ...and the unskilled workers. |
-| 2289 | `LabourCheck.RENT_TOWN_PEOPLE` | `4_000` | People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). |
-| 2311 | `LabourCheck.ARRIVALS_OVER_DEPARTURES` | `10` | How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). |
-| 2314 | `LabourCheck.PRICED_MONTHS` | `60` | Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. |
-| 2326 | `LabourCheck.ROOM_TOWN` | `4000` | The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). |
-| 2344 | `LabourCheck.TIE_AVERAGE_OVER_GOING_RATE` | `1.3` | The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. |
-| 2346 | `LabourCheck.TIE_NEXT_AVERAGE_OVER_LAST` | `1.1` | The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. |
+| 1288 | `LabourCheck.CRAWL` | `.005` | How fast the fixture's currency is walked weaker: half a percent a month. |
+| 1291 | `LabourCheck.BASING_GRACE_MONTHS` | `120` | The most months the wage-chase town is stepped on past its settling for the basket to be based, before that is a fixture failure. |
+| 1294 | `LabourCheck.INFLATION_MONTHS` | `240` | Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. |
+| 1533 | `LabourCheck.PAYROLL_GRADUATE_FILL` | `.5` | The share of its posts each graduate band holds in heads in the payroll town (FS16), so a band is part filled and the job types fill unevenly. |
+| 1536 | `LabourCheck.PAYROLL_TOWN_MONTHS` | `120` | The months the payroll town plays before its fills are put by hand (FS16): ten years, so the identity reads the sectors and posts a lived city has, not a founding's (a KEEP: the played town is its ... |
+| 1539 | `LabourCheck.LAYOFF_TOWN_PEOPLE` | `1_000` | The people put into the builders' town of the payroll section (FS16), so the sector's households have workers to be paid. |
+| 1744 | `LabourCheck.HELD_FILL` | `.5` | The share of its posts each graduate band holds in heads, and the unskilled posts in workers, in the held-figures town (AP5): every band has posts open for a move to fill. |
+| 1747 | `LabourCheck.HELD_TOWN_PEOPLE` | `1_000` | The people put into the held-figures town (AP5), so it has a workforce for the month's labour market to be struck on. |
+| 1750 | `LabourCheck.HELD_INSTANT` | `5` | The buildings put up at once, in the held-figures section (AP5). |
+| 1753 | `LabourCheck.HELD_ON_SITE` | `3` | The buildings ordered on site, in the held-figures section (AP5). |
+| 1756 | `LabourCheck.HELD_SCRAPPED` | `2` | The buildings scrapped, in the held-figures section (AP5). |
+| 1759 | `LabourCheck.HELD_IMPRISONED` | `.1` | The share of the unskilled workers put in prison, in the held-figures section (AP5). |
+| 1762 | `LabourCheck.HELD_HEADS_ADDED` | `.25` | The share of a band's posts written onto its heads through the array getSkilledHeads() hands out, in the held-figures section (AP5). |
+| 1765 | `LabourCheck.HELD_LICENSED` | `.25` | The share of the university heads who take a doctor's licence, in the held-figures section (AP5). |
+| 1768 | `LabourCheck.HELD_CREWS_OUTPUT` | `1e15` | The construction points put into the shops on site at once, in the held-figures section (AP5): more than any order owes, so every one finishes. |
+| 1771 | `LabourCheck.HELD_RECIPE_HANDS` | `4` | The unskilled posts a shop's second recipe adds, in the held-figures section (AP5): a fourth of them is one post, the blend's step. |
+| 1774 | `LabourCheck.HELD_BLEND_ON` | `1` | The shops on the second recipe in the held-figures section's blend (AP5): one in four, so the blend's posts are one more than the first recipe's. |
+| 1777 | `LabourCheck.HELD_BLEND_OFF` | `3` | ...and on the first. |
+| 1780 | `LabourCheck.HELD_ORDER_BIG` | `0x1p53` | The house's weight in the held-figures section's ordered sum (AP5): 2^53, so the house's buildings are a number whose last place is wider than one. |
+| 1783 | `LabourCheck.HELD_ORDER_PART` | `.375` | Each apartment stack's part of the house's last place in that sum (AP5): under a half, so either alone is lost after the house, both together over it. |
+| 1786 | `LabourCheck.HELD_WORKERS_ADDED` | `.25` | The share of the unskilled workers added to the workforce, in the held-figures section (AP5). |
+| 1789 | `LabourCheck.HELD_OWNERS` | `.1` | The share of the workforce whose families own their businesses, in the held-figures section (AP5). |
+| 1792 | `LabourCheck.HELD_STUDYING` | `.25` | The share of the widest graduate band's heads at their studies, in the held-figures section (AP5). |
+| 1795 | `LabourCheck.HELD_JOINED_POSTS` | `100` | The graduate posts in the held-figures section's shared market (AP5), where the wage ladder splits the workers between two bands. |
+| 1798 | `LabourCheck.HELD_JOINED_HEADS_PER_POST` | `3` | ...the graduate heads to each of them, so the band has workers to spare for the unskilled posts... |
+| 1801 | `LabourCheck.HELD_JOINED_UNSKILLED_POSTS` | `4_000` | ...the unskilled posts, far more than the workers for them, so the bottom band pays more than the graduate one and the two are one market... |
+| 1804 | `LabourCheck.HELD_JOINED_UNSKILLED` | `10` | ...and the unskilled workers. |
+| 2501 | `LabourCheck.RENT_TOWN_PEOPLE` | `4_000` | People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). |
+| 2523 | `LabourCheck.ARRIVALS_OVER_DEPARTURES` | `10` | How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). |
+| 2526 | `LabourCheck.PRICED_MONTHS` | `60` | Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. |
+| 2538 | `LabourCheck.ROOM_TOWN` | `4000` | The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). |
+| 2556 | `LabourCheck.TIE_AVERAGE_OVER_GOING_RATE` | `1.3` | The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. |
+| 2558 | `LabourCheck.TIE_NEXT_AVERAGE_OVER_LAST` | `1.1` | The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. |
 
 ### LandCheck.java ([map](map/LandCheck.md))
 

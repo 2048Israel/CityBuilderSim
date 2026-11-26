@@ -1246,6 +1246,7 @@ public class LabourCheck {
         wagesAgainstTheIndex();
         payrollByJobType();
         labourHeldForAPass();
+        sectorWalksAndPostsPast();
 
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -1909,6 +1910,217 @@ public class LabourCheck {
         assertTrue(change + ", on posts held: every reading after it is the bare one", java.util.Arrays.equals(after, bare));
         assertTrue("...read afresh, once", s.postsRead == builds + 1);
         assertTrue("fixture: " + change + " moved a reading, so one held over it would be stale", !java.util.Arrays.equals(bare, before));
+    }
+
+    /** The month's grouped readings, including an order-sensitive sum, as raw bits (AP6). */
+    static long[] sectorReadings(BuildingManager bm, java.util.Collection<String> sectors,
+                                 java.util.function.ToDoubleFunction<BuildingsTemplate> weight) {
+        java.util.List<Long> out = new java.util.ArrayList<>();
+        for (long n : postsReading(bm, sectors, weight)) out.add(n);
+        for (String sector : sectors) {
+            java.util.List<BuildingsStacks> own = bm.getSectorStacks(sector);
+            java.util.List<BuildingsStacks> drawn = WorksValue.bareWhile(() -> bm.getSectorStacks(sector));
+            out.add(own.equals(drawn) ? 0L : 1L);
+        }
+        long[] bits = new long[out.size()];
+        for (int i = 0; i < bits.length; i++) bits[i] = out.get(i);
+        return bits;
+    }
+
+    /** Warm first, change through the real writer, then compare the next held reading with the original walk (AP6). */
+    static void sectorMoved(String change, BuildingManager bm, java.util.Collection<String> sectors,
+                            java.util.function.ToDoubleFunction<BuildingsTemplate> weight, Runnable move) {
+        long[] before = sectorReadings(bm, sectors, weight);
+        String present = bm.getStacksView().isEmpty() ? null : bm.getStacksView().get(0).getBuilding().getSector();
+        java.util.List<BuildingsStacks> held = bm.getSectorStacks(present);
+        assertTrue("before " + change + ", repeated readings reuse the same grouping",
+                held == bm.getSectorStacks(present) && java.util.Arrays.equals(before, sectorReadings(bm, sectors, weight)));
+        move.run();
+        long[] after = sectorReadings(bm, sectors, weight);
+        long[] bare = WorksValue.bareWhile(() -> sectorReadings(bm, sectors, weight));
+        assertTrue(change + ": every next sector total is the bare walk to the bit", java.util.Arrays.equals(after, bare));
+        assertTrue(change + ": the grouping was rebuilt after the writer", held.isEmpty() || held != bm.getSectorStacks(present));
+        assertTrue("fixture: " + change + " changed a sector total", !java.util.Arrays.equals(before, bare));
+    }
+
+    static void sectorWalksAndPostsPast() {
+        System.out.println("\n--- the month's sector walks and one live posts-past reading per jobs call (AP6) ---");
+        boolean nestedBare = WorksValue.bareWhile(() -> WorksValue.bareReading()
+                && WorksValue.bareWhile(WorksValue::bareReading) && WorksValue.bareReading());
+        assertTrue("nested bare readings bypass groupings and restore the outer mode", nestedBare && !WorksValue.bareReading());
+        try { WorksValue.bareWhile(() -> { throw new IllegalStateException("AP6 fixture"); }); }
+        catch (IllegalStateException expected) { /* a failed comparison also restores the mode */ }
+        assertTrue("a failed bare reading restores the grouped mode", !WorksValue.bareReading());
+        Game g = heldTown();
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate shop = t(g, "Small Grocery Store"), house = t(g, "House"), farm = t(g, "Mixed Farm");
+        bm.addStack(farm, HELD_INSTANT, true);
+        ham.citybuildersim.sectors.Agriculture farms = g.getSectors().agriculture();
+        int[] calls = {0};
+        bm.setPostsPast(() -> { calls[0]++; return g.getSectors().postsPastBuildings(); });
+        long[] previous = null;
+        try (WorksValue.Scope ignored = WorksValue.hold(g)) {
+            for (int form = 0; form < 3; form++) {
+                farms.setHorseShare(form == 1 ? 1 : 0);
+                farms.setOperatedShare(form == 2 ? 0 : 1);
+                calls[0] = 0;
+                long[] jobs = bm.getTotalJobs();
+                assertTrue("form " + form + ": getTotalJobs reads the farms' posts past once", calls[0] == 1);
+                boolean same = true;
+                for (JobType type : JobType.values()) if (jobs[type.ordinal()] != bm.getTotalJobs(type)) same = false;
+                assertTrue("...every entry is the original per-type reading", same);
+                if (previous != null) assertTrue("fixture: changing the farms' horses or operators moves the next jobs reading",
+                        !java.util.Arrays.equals(jobs, previous));
+                previous = jobs;
+            }
+        }
+        bm.setPostsPast(() -> null);
+        long[] noPast = bm.getTotalJobs();
+        bm.setPostsPast(null);
+        assertTrue("a missing posts-past array reads as the missing hook", java.util.Arrays.equals(noPast, bm.getTotalJobs()));
+        bm.setPostsPast(() -> new long[]{1});
+        long[] shortPast = bm.getTotalJobs();
+        boolean shortSame = true;
+        for (JobType type : JobType.values()) if (shortPast[type.ordinal()] != bm.getTotalJobs(type)) shortSame = false;
+        assertTrue("a short posts-past array keeps each per-type reading", shortSame);
+        bm.setPostsPast(() -> g.getSectors().postsPastBuildings());
+
+        BuildingsTemplate studio = t(g, "Studio Apartments"), lowRise = t(g, "Low-Rise Apartments");
+        bm.addStack(studio, HELD_INSTANT, true);
+        bm.addStack(lowRise, HELD_INSTANT, true);
+        double part = Math.ulp(HELD_ORDER_BIG * bm.getStack(house).getQuantity()) * HELD_ORDER_PART;
+        java.util.Map<BuildingsTemplate, Double> weights = new java.util.IdentityHashMap<>();
+        weights.put(house, HELD_ORDER_BIG);
+        weights.put(studio, part / bm.getStack(studio).getQuantity());
+        weights.put(lowRise, part / bm.getStack(lowRise).getQuantity());
+        java.util.function.ToDoubleFunction<BuildingsTemplate> weight = b -> weights.getOrDefault(b, 0.0);
+        java.util.Set<String> sectors = new java.util.LinkedHashSet<>();
+        for (BuildingsTemplate t : bm.getTemplates()) sectors.add(t.getSector());
+        sectors.add("AP6 absent sector");
+        double[] share = {1};
+        bm.setOfferedShareByType((sector, type) -> sector.equals(shop.getSector()) ? share[0] : 1);
+        long[] allOffered = bm.getTotalJobs();
+        share[0] = HELD_FILL;
+        long[] fewerOffered = bm.getTotalJobs();
+        assertTrue("the monthly raw-post cache keeps a sector's changing offered share live",
+                !java.util.Arrays.equals(allOffered, fewerOffered)
+                    && java.util.Arrays.equals(fewerOffered, WorksValue.bareWhile(bm::getTotalJobs)));
+        share[0] = 1;
+        BuildingsStacks shops = bm.getStack(shop);
+        sectorMoved("an order adds a new stack", bm, sectors, weight, () -> bm.addStack(t(g, "Police Station"), HELD_INSTANT, true));
+
+        // A NEW site changes the held grouping without addQuantity's independent raise.
+        // Keep the instant-stack case above: its premise is not replaced by this one.
+        BuildingsTemplate site = bm.getTemplates().stream()
+                .filter(b -> bm.getStack(b) == null && allPosts(b) > 0 && b.getConstructionMaterials() > 0)
+                .findFirst().orElseThrow();
+        assertTrue("fixture: the on-site order's template has no stack yet", bm.getStack(site) == null);
+        sectorReadings(bm, sectors, weight);
+        long[] bareBeforeSite = WorksValue.bareWhile(() -> sectorReadings(bm, sectors, weight));
+        int groupSize = WorksValue.bareWhile(() -> bm.getSectorStacks(site.getSector())).size();
+        bm.addStack(site, HELD_INSTANT, false);
+        java.util.List<BuildingsStacks> siteGroup = bm.getSectorStacks(site.getSector());
+        long[] afterSite = sectorReadings(bm, sectors, weight);
+        long[] bareAfterSite = WorksValue.bareWhile(() -> sectorReadings(bm, sectors, weight));
+        assertTrue("fixture: the new buildings are on site, with no finished total moved",
+                bm.getStack(site).getQuantity() == 0 && bm.getStack(site).getUnderConstruction() == HELD_INSTANT
+                    && java.util.Arrays.equals(bareBeforeSite, bareAfterSite));
+        assertTrue("a new on-site stack refreshes the warmed group's identities and order",
+                siteGroup.equals(WorksValue.bareWhile(() -> bm.getSectorStacks(site.getSector())))
+                    && siteGroup.size() == groupSize + 1 && siteGroup.contains(bm.getStack(site)));
+        assertTrue("...and every next held reading has the bare bits", java.util.Arrays.equals(afterSite, bareAfterSite));
+        assertTrue("...and the new group is reused on another reading", siteGroup == bm.getSectorStacks(site.getSector()));
+
+        sectorMoved("addQuantity finishes buildings", bm, sectors, weight, () -> shops.addQuantity(HELD_INSTANT));
+        sectorMoved("increaseQuantity adds buildings", bm, sectors, weight, () -> shops.increaseQuantity(HELD_INSTANT));
+        sectorMoved("a plant sale retires buildings", bm, sectors, weight, () -> bm.retire(shop, HELD_SCRAPPED));
+        bm.addStack(shop, HELD_INSTANT, false);
+        sectorMoved("a building on site finishes", bm, sectors, weight, () -> quietly(() -> shops.advanceConstruction(HELD_CREWS_OUTPUT)));
+        JobType moved = JobType.NO_DIPLOMA;
+        int was = shop.getJobs(moved);
+        sectorMoved("setJobs changes a standing template", bm, sectors, weight, () -> shop.setJobs(moved, was + HELD_RECIPE_HANDS));
+        shop.setJobs(moved, was);
+        java.util.concurrent.CountDownLatch warmed = new java.util.concurrent.CountDownLatch(1), changed = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicBoolean threadExact = new java.util.concurrent.atomic.AtomicBoolean();
+        java.util.concurrent.atomic.AtomicReference<Throwable> threadFailure = new java.util.concurrent.atomic.AtomicReference<>();
+        Thread reader = new Thread(() -> {
+            try {
+                long[] before = sectorReadings(bm, sectors, weight);
+                warmed.countDown();
+                if (!changed.await(10, java.util.concurrent.TimeUnit.SECONDS)) throw new AssertionError("writer did not return");
+                long[] after = sectorReadings(bm, sectors, weight);
+                threadExact.set(!java.util.Arrays.equals(before, after)
+                        && java.util.Arrays.equals(after, WorksValue.bareWhile(() -> sectorReadings(bm, sectors, weight))));
+            } catch (Throwable ex) {
+                threadFailure.set(ex);
+                warmed.countDown();
+            }
+        }, "AP6 warmed reader");
+        reader.setDaemon(true);
+        reader.start();
+        try {
+            assertTrue("fixture: the second reading thread warmed the raw-post cache", warmed.await(10, java.util.concurrent.TimeUnit.SECONDS));
+            shop.setJobs(moved, was + HELD_RECIPE_HANDS);
+            changed.countDown();
+            reader.join(10_000);
+            assertTrue("an edit on another thread refreshes the next raw-bit reading", !reader.isAlive() && threadFailure.get() == null && threadExact.get());
+            assertTrue("...and this thread's held raw posts refresh too",
+                    java.util.Arrays.equals(bm.getTotalJobs(), WorksValue.bareWhile(bm::getTotalJobs)));
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError(ex);
+        } finally {
+            changed.countDown();
+            shop.setJobs(moved, was);
+        }
+        Recipe base = Recipe.topLevelOf(shop);
+        int[] busier = new int[JobType.values().length];
+        for (JobType type : JobType.values()) busier[type.ordinal()] = base.getJobs(type);
+        busier[moved.ordinal()] += HELD_RECIPE_HANDS;
+        Recipe more = new Recipe("ap6-more-hands", "more hands", Recipe.DEFAULT_SINCE, null, false,
+                base.makes(), base.uses(), busier, base.getElectricity(), base.getGen(), base.getWater(), base.getConsumables());
+        try {
+            sectorMoved("one recipe changes the figures", bm, sectors, weight, () -> shop.runRecipes(more, shops.getQuantity(), null, 0));
+            sectorMoved("a blended recipe changes the figures", bm, sectors, weight, () -> shop.runRecipes(more, HELD_BLEND_ON, base, HELD_BLEND_OFF));
+        } finally {
+            shop.runRecipes(base, 1, null, 0);
+        }
+        String retail = shop.getSector();
+        try {
+            sectorMoved("setSector reassigns a standing template", bm, sectors, weight, () -> shop.setSector(g.getSectors().construction().key()));
+        } finally {
+            shop.setSector(retail);
+        }
+        java.util.List<BuildingsStacks> view = bm.getStacksView();
+        int[] reverse = new int[view.size()];
+        for (int i = 0; i < reverse.length; i++) reverse[i] = view.get(reverse.length - 1 - i).getBuilding().getId();
+        sectorMoved("orderStacks reverses the rounding-sensitive sum", bm, sectors, weight, () -> bm.orderStacks(reverse));
+        quietly(() -> g.saveGame(10));
+        sectorMoved("clearStacks removes the warmed groups", bm, sectors, weight, bm::clearStacks);
+        sectorMoved("an initialized load restores the stacks", bm, sectors, weight, () -> quietly(() -> g.loadGame(10)));
+        assertTrue("fixture: the saved scratch city loaded into the same manager", g.getLoadFailure() == null && bm == g.getBuildingManager());
+        long[] beforeInstance = bm.getTotalJobs();
+        BuildingsTemplate instance = t(g, "Small Grocery Store");
+        bm.addInstance(instance);
+        long[] afterInstance = bm.getTotalJobs();
+        boolean instanceLive = true;
+        for (JobType type : JobType.values())
+            if (afterInstance[type.ordinal()] - beforeInstance[type.ordinal()] != instance.getJobs(type)) instanceLive = false;
+        assertTrue("an instance added after warming is read live in every jobs entry", instanceLive
+                && java.util.Arrays.equals(afterInstance, WorksValue.bareWhile(bm::getTotalJobs)));
+        boolean immutable = false;
+        try { bm.getSectorStacks(house.getSector()).clear(); } catch (UnsupportedOperationException expected) { immutable = true; }
+        assertTrue("the returned grouping cannot be edited by a caller", immutable);
+        for (boolean load : new boolean[]{true, false}) {
+            BuildingManager old = g.getBuildingManager();
+            sectorReadings(old, sectors, LabourCheck::allPosts);
+            quietly(() -> { if (load) g.loadGameSave(10); else g.newGame(); });
+            BuildingManager fresh = g.getBuildingManager();
+            long[] readings = sectorReadings(fresh, sectors, LabourCheck::allPosts);
+            assertTrue((load ? "loadGameSave" : "newGame") + " replaces the warmed manager and reads the new city's bare figures",
+                    fresh != old && (load ? g.getLoadFailure() == null : true)
+                        && java.util.Arrays.equals(readings, WorksValue.bareWhile(() -> sectorReadings(fresh, sectors, LabourCheck::allPosts))));
+        }
     }
 
     static void labourHeldForAPass() {
