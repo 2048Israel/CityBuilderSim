@@ -280,8 +280,105 @@ public class Ensemble {
 
     static int seed;
 
+    /** QR1's paired cash observation: run the unchanged default player, including its saves and final checks. */
+    static void defaultPlaytest(String[] args) throws Exception {
+        policy = Policy.valueOf(args[0].toUpperCase(Locale.ROOT));
+        if (policy != Policy.AUTO2) throw new IllegalArgumentException("default player has no ensemble policy");
+        seed = Integer.parseInt(args[1]);
+        endMonth = Integer.getInteger("ensemble.months", AUTO2_MONTHS);
+        System.setProperty("playtest.seed", Integer.toString(seed));
+        System.setProperty("playtest.months", Integer.toString(endMonth));
+        Adapter.parseExtra(System.getProperty("ensemble.extra"));
+        Path out = Paths.get(args[2]);
+        csv = new PrintWriter(Files.newBufferedWriter(out), true);
+        retirementCsv = new PrintWriter(Files.newBufferedWriter(out.resolveSibling(out.getFileName() + ".retirements.tsv")), true);
+        retirementCsv.println("month\tsector\tdistress\tbuildings\tplot_paid\tmaterial_paid\trunning_income\tnet_loss_months\toperating_loss_months");
+        started = System.currentTimeMillis();
+        DefaultCapture capture = new DefaultCapture();
+        Runtime.getRuntime().addShutdownHook(new Thread(capture::finish, "default-playtest-export"));
+        LongPlaytest.primaryCreated = capture::attach;
+        LongPlaytest.monthCompleted = capture::month;
+        // main owns its assertions and System.exit. DONE certifies the export, not those assertions.
+        LongPlaytest.main(new String[0]);
+    }
+
+    static final class DefaultCapture {
+        Game primary;
+        int last, flags;
+        double forgivenObserved, forgivenInBan, backstop;
+        long banMonths;
+        boolean closed, bad;
+        List<String> names = new ArrayList<>();
+
+        void attach(Game g) {
+            if (closed) return;
+            if (primary != null && primary != g) throw new IllegalStateException("primary city changed");
+            primary = g;
+            g.watchRetirements(r -> recordRetirement(g, r));
+        }
+
+        void month(Game g) {
+            if (closed || g != primary) return;
+            if (g.getMonth() != last + 1) throw new IllegalStateException("non-contiguous primary months");
+            last = g.getMonth();
+            EconomyManager em = g.getEconomyManager();
+            BusinessDebtManager debt = em.getBusinessDebtManager();
+            for (String sector : Sectors.KEYS) {
+                double f = em.getOverdraftForgivenThisMonth(sector);
+                double b = debt.getBackstopInBanThisMonth(sector);
+                forgivenObserved += f;
+                if (b > 0) { forgivenInBan += f; backstop += b; banMonths++; }
+            }
+            StringBuilder fresh = new StringBuilder();
+            for (String name : Adapter.findingNames()) {
+                if (!names.contains(name)) fresh.append(fresh.length() == 0 ? "" : " | ").append(name);
+            }
+            int now = Adapter.findingCount();
+            LinkedHashMap<String, Object> row = columns(g, "default", now - flags, fresh.toString());
+            row.put("backstop_in_ban_cum", backstop);
+            row.put("backstop_in_ban_months_cum", (double) banMonths);
+            row.put("overdraft_forgiven_observed_cum", forgivenObserved);
+            row.put("overdraft_forgiven_in_ban_cum", forgivenInBan);
+            write(row);
+            flags = now;
+            names = new ArrayList<>(Adapter.findingNames());
+            if (last == endMonth) close(); // exclude the default player's overshoot and later fixture cities
+        }
+
+        synchronized void close() {
+            if (closed) return;
+            bad = csv.checkError() || retirementCsv.checkError();
+            csv.close();
+            retirementCsv.close();
+            bad |= csv.checkError() || retirementCsv.checkError();
+            closed = true;
+            if (primary != null) primary.watchRetirements(null);
+        }
+
+        synchronized void finish() {
+            close();
+            if (last == endMonth && !bad) {
+                real.printf("DONE AUTO2 seed %d months %d of %d in %.1fs (default-player export only)%n",
+                        seed, last, endMonth, (System.currentTimeMillis() - started) / 1000.0);
+            } else real.printf("INCOMPLETE default-player export: month %d of %d, IO error %b%n", last, endMonth, bad);
+        }
+    }
+
+    static void recordRetirement(Game g, Game.Retirement r) {
+        retirementPaid += r.plotPaid() + r.materialPaid();
+        if (r.distress()) {
+            distressRetired += r.buildings();
+            distressPlotPaid += r.plotPaid();
+            distressMaterialPaid += r.materialPaid();
+        }
+        retirementCsv.printf(Locale.ROOT, "%d\t%s\t%b\t%d\t%.17g\t%.17g\t%.17g\t%d\t%d%n",
+                g.getMonth(), r.sector(), r.distress(), r.buildings(), r.plotPaid(), r.materialPaid(), r.runningIncome(),
+                g.getBusinessInvestment().getLossMonths(r.sector()), g.getBusinessInvestment().getOperatingLossMonths(r.sector()));
+    }
+
     public static void main(String[] args) throws Exception {
         Locale.setDefault(Locale.ROOT);
+        if (Boolean.getBoolean("ensemble.defaultPlaytest")) { defaultPlaytest(args); return; }
         policy = Policy.valueOf(args[0].toUpperCase(Locale.ROOT));
         seed = Integer.parseInt(args[1]);
         Path outCsv = Paths.get(args[2]);
@@ -302,17 +399,7 @@ public class Ensemble {
         } finally {
             System.setOut(real);
         }
-        g.watchRetirements(r -> {
-            retirementPaid += r.plotPaid() + r.materialPaid();
-            if (r.distress()) {
-                distressRetired += r.buildings();
-                distressPlotPaid += r.plotPaid();
-                distressMaterialPaid += r.materialPaid();
-            }
-            retirementCsv.printf(Locale.ROOT, "%d\t%s\t%b\t%d\t%.17g\t%.17g\t%.17g\t%d\t%d%n",
-                    g.getMonth(), r.sector(), r.distress(), r.buildings(), r.plotPaid(), r.materialPaid(), r.runningIncome(),
-                    g.getBusinessInvestment().getLossMonths(r.sector()), g.getBusinessInvestment().getOperatingLossMonths(r.sector()));
-        });
+        g.watchRetirements(r -> recordRetirement(g, r));
         String threw = null;
         try (PrintWriter w = new PrintWriter(Files.newBufferedWriter(outCsv));
              PrintWriter events = new PrintWriter(Files.newBufferedWriter(outCsv.resolveSibling(outCsv.getFileName() + ".retirements.tsv")))) {
