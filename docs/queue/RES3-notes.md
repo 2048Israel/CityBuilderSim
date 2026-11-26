@@ -468,6 +468,22 @@ reviewer's line.
   takes off a door lodges on it, sponsored, no bill, counted hosted and
   crowded. AUTO2-0's finding "households with no home" from m1950 reads
   getStillUnplaced() > 1, the doorless only: traced with the rerun.
+  The throw is HousingChoice.Lease's own check (HousingChoice.java:80), from
+  the trim (HousingMarket.java:531), swallowed by Game.simulateMonths; the
+  trim's guard passed it because its tolerance is the class's 5,160 doors'.
+  Unmended seed 0 threw the same at m1222 (2.91e-11 households, f 0.5).
+  Mended, replayed on the PC with every month's audit passing, no money
+  finding and no swallowed exception: AUTO2-6 to m1300 (95 trims fired;
+  the ensemble's bad months 574, 918, 927, 947, 961), AUTO2-10 to m1300 (20;
+  631-1077), AUTO2-2 to m1220 (7; 1213), SHOCK-10 to m730. HousingDoorCheck
+  known red only (MC1), HousingMarketCheck green. Getting a home: no reader
+  counts the overcrowded as having no home; getHouseholdsWantingAHome()
+  feeds only the playtest's house-building priority (LongPlaytest.java:3941).
+  AUTO2-0's m1950 finding did not come back on the PC replay (unmended, to
+  m1951); the likeliest doorless, read from the code and not measured, are
+  cells that can fund a share and wait for the building (overcrowding()
+  skips paysAShare, R1g's rule). The ensemble on c7adb1caf
+  (RES3-lodge-20261126) is the measure.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
