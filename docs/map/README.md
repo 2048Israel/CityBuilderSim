@@ -4,7 +4,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 645 files, 698,050 lines, 30,505 methods, 6,816 constants. `GameVersion.VERSION` is "0.9.208", `SAVE_FORMAT` 66.
+**The tree:** 645 files, 698,105 lines, 30,506 methods, 6,816 constants. `GameVersion.VERSION` is "0.9.208", `SAVE_FORMAT` 66.
 
 ## model (281 files)
 
@@ -27,7 +27,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BridgeView.java](BridgeView.md) | 98 | 11 | What the build card says of a long bridge's crossing: the refusal of a survey in its own words, and the pieces of the line a surveyed crossing gets. | 10 |
 | [BridgeWorks.java](BridgeWorks.md) | 126 | 7 | What a long bridge's span costs, in US dollars a metre by kind and by the depth of the water it crosses, and the construction points those dollars ... | 14 |
 | [Bridges.java](Bridges.md) | 321 | 31 | The city's long bridges, built and building: for each, the template it was ordered as, its kind, the two landings and the landmass at each end, its... | 11 |
-| [BuildAdvice.java](BuildAdvice.md) | 3,292 | 175 | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure befor... | 60 |
+| [BuildAdvice.java](BuildAdvice.md) | 3,277 | 175 | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure befor... | 60 |
 | [BuildCard.java](BuildCard.md) | 1,969 | 100 | One build card's figures, for every one of the buildings in buildings.json (0.7.25; 143 of them since FR3, the Bulk Berth): what it gives the city ... | 43 |
 | [BuildLog.java](BuildLog.md) | 162 | 10 | What the city has gained, and when. | 5 |
 | [BuildersShort.java](BuildersShort.md) | 371 | 20 | The builders short (FC1): what an order pays a point of work as the builders run out of points for the sites - a premium that rises with the months... | 13 |
@@ -147,7 +147,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [InterchangeGround.java](InterchangeGround.md) | 169 | 9 | The ground a highway interchange keeps: a 19 x 19 plot reserve centred on each highway x highway crossing (a cloverleaf), an 11 x 11 one beside eac... | 5 |
 | [InterimLoan.java](InterimLoan.md) | 35 | 1 | Interim financing: the bank's loan to a sector in the month it defaulted, for what the month's bills left unpaid after its debt was written down, r... | 5 |
 | [Investor.java](Investor.md) | 44 | 6 | Whoever is paying for a building. | 10 |
-| [JobType.java](JobType.md) | 20 | 0 |  | 120 |
+| [JobType.java](JobType.md) | 20 | 0 |  | 121 |
 | [KnownReds.java](KnownReds.md) | 130 | 8 | The common red-line judge for the suite, batch checks and publisher. | 2 |
 | [LabourMarket.java](LabourMarket.md) | 1,113 | 65 | What labour costs, and why it costs that. | 30 |
 | [LandClassView.java](LandClassView.md) | 188 | 16 | What the land office and the sector statements say about the CLASSES of ground (ET3, spec-earth2-terrain 5.3), in words, worked out without a node:... | 4 |
@@ -273,9 +273,9 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [TruckShapes.java](TruckShapes.md) | 95 | 4 | How the map draws a truck: its body as points in plots about where it is and the way it heads, and its colour by what it carries - what ui/MapView ... | 1 |
 | [UnemployedHousehold.java](UnemployedHousehold.md) | 88 | 14 | Adults who are out of work, as one ledger per situation. | 8 |
 | [Unemployment.java](Unemployment.md) | 614 | 41 | The people out of work: how many, who they were, what Employment Insurance pays them, and who has lost their home. | 14 |
-| [UtilitiesHandler.java](UtilitiesHandler.md) | 1,445 | 133 | sections: WATER SUPPLY, THE FRESH WATER LIMIT (0.7.59, batch J2; spec-land 2.3 and star 7)... | 50 |
+| [UtilitiesHandler.java](UtilitiesHandler.md) | 1,444 | 133 | sections: WATER SUPPLY, THE FRESH WATER LIMIT (0.7.59, batch J2; spec-land 2.3 and star 7)... | 50 |
 | [VaultView.java](VaultView.md) | 66 | 2 | The vault in eight, and gold (WN6, GD2; docs/studies/spec-nations.md 8, the Trade screen's The reserves with the eight moneys in a table): what the... | 2 |
-| [WageBand.java](WageBand.md) | 170 | 7 | The four education bands the wage tax is set by. | 53 |
+| [WageBand.java](WageBand.md) | 170 | 7 | The four education bands the wage tax is set by. | 54 |
 | [WageLadder.java](WageLadder.md) | 147 | 10 | The wage ladder a city is founded on: today's (PayTier's) or 1901's (the census's). | 10 |
 | [WantedPosts.java](WantedPosts.md) | 231 | 22 | The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of them the labour market prices as i... | 4 |
 | [WorkingHousehold.java](WorkingHousehold.md) | 83 | 13 | A household with an earner in it, at one pay tier. | 12 |
@@ -553,7 +553,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [MortgageCheck.java](MortgageCheck.md) | 1,320 | 30 | The landlords' insured mortgages (0.7.11): the instrument, the lender's tests, the city's insurance and the bank's book. | 1 |
 | [NationsCheck.java](NationsCheck.md) | 680 | 23 | The nations beyond the city and the path they are on (batch WN1; the project's spec-nations.md 7): Nations' year - output, people, prices and the r... | 0 |
 | [NewGameCheck.java](NewGameCheck.md) | 1,477 | 18 | Does "Start New Game" actually start a new game? | 4 |
-| [NewUnitCheck.java](NewUnitCheck.md) | 1,206 | 35 | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. | 0 |
+| [NewUnitCheck.java](NewUnitCheck.md) | 1,203 | 35 | A new building is read as it would run, not as the fleet standing runs: NewUnit beside the template, read by every future-building figure. | 0 |
 | [ObservationCheck.java](ObservationCheck.md) | 126 | 4 | Holds the path-observation contract with a premise deliberately held off. | 0 |
 | [OilCheck.java](OilCheck.md) | 2,421 | 48 | Fuel, from the oil in the ground to the drivers' tanks (0.7.62, batch K; the project's spec-land.md 2.7 and section 3's K entry). | 2 |
 | [OilViewCheck.java](OilViewCheck.md) | 706 | 20 | The oil industry screen (0.7.96, batch O12; docs/studies/spec-oil.md 2.13): OilView's figures, words, chart and levers, held to the model's own rea... | 1 |
@@ -576,7 +576,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PortCheck.java](PortCheck.md) | 2,416 | 73 | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). | 6 |
 | [PostwarRecipeCheck.java](PostwarRecipeCheck.md) | 934 | 21 | The postwar engineering and business discoveries run their sourced earlier figures, compose in either order, retain saved decisions and leave defau... | 0 |
 | [PowerDispatchCheck.java](PowerDispatchCheck.md) | 413 | 24 | The month's merit order (PW1, 2026-11-11; PowerDispatch, UtilitiesHandler's struck book): the load cut in six half-blocks, the works first, the win... | 0 |
-| [PowerPlanCheck.java](PowerPlanCheck.md) | 1,462 | 49 | The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities. | 1 |
+| [PowerPlanCheck.java](PowerPlanCheck.md) | 1,536 | 50 | The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities. | 1 |
 | [PowerPlantsCheck.java](PowerPlantsCheck.md) | 646 | 23 | The power plants and their fuels (PW2, 2026-11-23; spec-electricity 2.3 and 2.5): the Oil-Fired Plant, the Diesel Station, the Oil-Fired Turbine, t... | 0 |
 | [PowerPriceCheck.java](PowerPriceCheck.md) | 747 | 31 | The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck book's prices, what... | 6 |
 | [PowerViewCheck.java](PowerViewCheck.md) | 372 | 14 | Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves. | 1 |
