@@ -975,3 +975,77 @@ no new turns after 04:30, and commit/push/end at a stopping point by
 provisional marker. Final same-platform default-trace and native power
 measurements now run in a fresh bounded slice; global jobs require their
 allocation and enough pre-restart time, otherwise resume after boot.
+
+## Final guard measurements and pre-restart stopping point
+
+PW9-finalmeasure verified all 689 production-source hashes against model
+`54d4b6cc6` before adding its observers. Both runs used laptop JDK
+21.0.4, UTC, seed 0, `-Dcbs.parallel=1`, the named main earth/world files
+and unique private GameFiles. All 2,568 compiled/resource hashes matched
+between the current historical and modern runs. The older 333 artifacts
+and an additional 250-file snapshot were preserved unchanged. Other
+RES3/QR1 JVMs ran; timing is not an isolated-machine comparison.
+
+The default current model's months/events are byte-identical to the
+pre-guard final native artifacts through **m440**. The modern profile's
+months/events are byte-identical through **m180**; its pass text differs
+only by one LandParcel runtime identity at pre107. All requested crew
+passes are exact. This is bounded trace equality, not private-state or
+full-2,400-month equality.
+
+| Final guard native result | 1900 default, through m440 | Modern equipment, calendar 1900, through m180 |
+|---|---|---|
+| Generator orders | Three Diesel in two events; no Steam/Oil | 31 Steam in seven events |
+| Actual generator cash | 10,507,089.591961; land 0 | 4,212,507.000610; land 33,219.072332 |
+| First order | Pre417/visible418, pop5,446, quote30 months | Steam9 pre101/visible102, pop3,995, quote22.1 months |
+| First commission | m435; second Diesel2 ordered pre429/visible430, quote26 | m103; all31 standing by m171 |
+| Minimum firm power ratio | 0.915599882 at m434 | 1.087359861 at m123 |
+| Minimum delivered-service ratio | 0.992632506 at dispatch439 | 0.727358256 at dispatch127 |
+| Dispatch months below95% energy | Zero | Eight:124–129,151,163; main five |
+| Substation | Pre409, open440 | Pre119, open175; main116/162 |
+
+Each retained PowerView D/asked/generated/delivered/unserved reading
+names its **previous dispatch month** separately from closing utility E:
+historical closing m439's minimum is retained at observation440; modern
+dispatch127 is retained at observation128. Historical population, energy
+and fleet still equal main through440; only six firm/P rows differ,
+first at435. No new service improvement is claimed from the budget guard.
+Actual Substation cash is 45,227,447.200645 historical and
+27,038,110.096276 modern, land0. Generator plus grid totals including
+land are 55,734,536.792607 and 31,283,836.169219 respectively; do not
+compare these combined figures to the generator-only $10.5M baseline.
+
+The modern crew story also remains exact: m89/m90 wants Steam3, orders0,
+Cut.BUILDERS protecting Elementary; m90 GRID also waits for Elementary.
+Pre115–118 GRID protects College, and119 orders Substation. Actual
+Steam orders at116x2,119x1 and120x2 remain in the pass CSVs. PW9-G's
+31-station/10MW finding and its queued law remain unchanged.
+
+The extra canonical default **LongPlaytest did not pass**: compile55s,
+then child exit1 at its unchanged 1,740-second AllChecks limit, wrapper
+exit4, with last native event pre2051. It never reached2400. The exact
+NEW red is `LongPlaytest | FAIL: timed out after 1740s`; no exception or
+completed model-assertion verdict establishes a cause, and **no exemption
+or queued-red attribution is invented**. The full same-platform
+pre-guard control was not started because it could not safely finish
+within the pre-restart window. Equality beyond440 and final full
+validation remain pending. This extra partial run does not replace the
+four green focused checks or the required final global checks.
+
+The second, separate native modern measurement reached180, exit0 in
+29.0s, saved0; it is measurement only, not full LongPlaytest validation.
+Both complete wrappers/maps had Stale0firm/209soft. The helper restored
+all tracked observers/control/maps and all689 source hashes, verified
+its owned temporary processes gone, and ended with no JVM/wrapper/job.
+Detailed proof is `target/PW9-finalmeasure-report.txt`; full raw partial
+trace, CSV windows/events/passes/flows/costs/crews, commands/statuses,
+source/class/data/JDK manifests and restoration proof are in
+`codex-PW9-finalmeasure/target/PW9-finalmeasure`.
+
+★ Keep the first80-run result as provenance of **pre-budget-mend source
+8c0bb1f98** only. It is not a claim that final guard54 has passed a new
+ensemble. The 03:45 ensemble-start cutoff has passed, so final-source
+ensemble/full validation and a newly allocated dry run continue after
+`laptop back`. The failed AG6VUQWA dry run is never reused. The readiness
+marker stays; the four focused names and fast are green, but the batch
+is not ready to publish while this final validation remains incomplete.
