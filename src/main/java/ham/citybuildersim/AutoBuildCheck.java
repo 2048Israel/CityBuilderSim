@@ -114,6 +114,11 @@ import java.util.Map;
  *   9. CASH WORKS OVER THE LIMIT (AW1): debt beyond the limit, cash,
  *      no free ground and under-served power and streets cause both works
  *      to be ordered with their required land bought from cash.
+ *  11. THE LABOUR FIGURES A PASS HOLDS ARE THE BARE ONES (AP5): the pass
+ *      reads the vacancies, the posts and a sector's buildings held in a
+ *      scope, read afresh after every order it places, and each one it reads
+ *      held is the bare figure to the bit (LabourCheck 14 holds them to every
+ *      path that moves them).
  *
  * Every fixture causes its condition.
  */
@@ -161,6 +166,7 @@ public class AutoBuildCheck {
         careOfEveryKind(root);
         cashWorksOverLimit(root);
         historicalBuilding();
+        labourHeldThroughAPass();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -186,6 +192,55 @@ public class AutoBuildCheck {
                 && step.outcome() == AutoBuilder.Outcome.ORDERED);
         assertTrue("the works is essential under the model's rule", AutoBuilder.essential(power)
                 && step != null && step.payback() == null);
+    }
+
+    /* ---------------------------------------------------------------- 11 */
+
+    /**
+     * AP5: the pass opens a scope and holds the vacancies, the posts and a sector's buildings in it; every one it reads held is compared with the bare
+     * figure to the bit (WorksValue.labourChecked), the pass's own orders included, so a figure held over an order would be counted. The 1900 city's
+     * power shortage is the fixture of section 10: the pass orders a works, and reads the posts again after it.
+     */
+    static void labourHeldThroughAPass() {
+        out.println("\n--- 11. the pass reads the labour figures held, the bare ones to the bit, after its own builds too (AP5) ---");
+        Game g = new Game(GameFiles.scratch("autobuildcheck-labour"), LongPlaytest.founding().withUnfitted(true));
+        quietly(() -> { g.run(); g.simulateMonths(12); });
+        g.setCashForTest(1_000_000_000 * PriceLevel.FACTOR);
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        u.setWattsConsumption(10 * u.getBaseProduction());
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        AutoBuilder ab = g.getAutoBuilder();
+        ab.setOn(true, null);
+        double[] sd = BuildAdvice.supplyDemand(g, power, Map.of());
+        assertTrue("fixture: 1900 power demand is above its founding supply, so the pass has a works to order", sd[1] > sd[0] && sd[0] > 0);
+        assertTrue("fixture: no scope is open to begin with", WorksValue.open() == null);
+
+        long[] read = new long[2];
+        WorksValue.LABOUR_COMPARED.set(0);
+        WorksValue.LABOUR_DIFFERED.set(0);
+        WorksValue.labourChecked = true;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            quietly(() -> ab.pass(g));
+            read[0] = s.postsRead;
+            read[1] = s.vacanciesRead;
+        } finally {
+            WorksValue.labourChecked = false;
+        }
+        long orders = 0, buildings = 0;
+        for (AutoBuilder.Step step : ab.steps()) {
+            if (step.outcome() != AutoBuilder.Outcome.ORDERED) continue;
+            orders++;
+            buildings += step.ordered();
+        }
+        long compared = WorksValue.LABOUR_COMPARED.get(), differed = WorksValue.LABOUR_DIFFERED.get();
+        out.printf("   the pass ordered %d buildings in %d orders; %d held labour figures compared with the bare ones, %d differed; the posts were built %d times and the vacancies filled %d%n",
+                buildings, orders, compared, differed, read[0], read[1]);
+        assertTrue("the pass ordered a building, so the posts it holds were moved by its own order", orders >= 1 && buildings >= 1);
+        assertTrue("the pass read labour figures held, and every one was compared with the bare figure", compared > 0);
+        assertTrue("...and not one of them differed from it, to the bit, after the pass's own orders too", differed == 0);
+        assertTrue("the posts were built afresh after an order in the pass, not held over it", read[0] >= 2);
+        assertTrue("...and held reads outnumber the fills and builds they were read from, so the hold is worth having", compared > read[0] + read[1]);
+        assertTrue("the pass's own scope was the harness's, one deeper, and nothing is held once both are closed", WorksValue.open() == null);
     }
 
     /* ---------------------------------------------------------------- 9 */

@@ -49,6 +49,11 @@ import java.nio.file.Path;
  * the payroll by job type) cause the rest the same way: the tie's floor is struck on an average fed by hand (TIE_AVERAGE_OVER_GOING_RATE),
  * the wage chase's basket is stepped to its base and its crawl is the lever whose inflation is asserted as a fixture, and the payroll's
  * town has its heads put by hand (PAYROLL_GRADUATE_FILL) on the posts it lived to and its builders struck once with nothing on site.
+ *
+ * AND THE FIGURES A PASS HOLDS ARE THE BARE ONES (AP5, 2026-11-26). While a WorksValue scope is open the vacancies, the posts and a sector's buildings are
+ * held, not recomputed: on a town with people, posts in several sectors, the builders' crews laid off and a gated post, each held figure is the bare one
+ * to the bit, read afresh once what it was read from has moved (a build, an order, a scrapping, a building's posts, the people by every path) and not
+ * before, and a closed scope holds nothing (section 14).
  */
 public class LabourCheck {
 
@@ -1240,6 +1245,7 @@ public class LabourCheck {
 
         wagesAgainstTheIndex();
         payrollByJobType();
+        labourHeldForAPass();
 
         cleanUp(root);
         System.out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -1707,6 +1713,316 @@ public class LabourCheck {
         for (Sector s : econ.getSectors().all()) busyEmployers += s.getPayroll();
         close("(a) ...and the households are paid what the employers paid, that month too",
                 busyEmployers / people.getTotalWage(), 1, 1e-9);
+    }
+
+    /* ============ 14. THE LABOUR FIGURES HELD FOR A PASS ARE THE BARE ONES (AP5, 2026-11-26) ============
+
+       Jerus's slot 9 (21.9 million people, 112 stacks) ran 3.8-6.2 months a second at 50x against 10, and the auto-builder's
+       pass was 47% of the FX thread: each candidate it valued asked again for the vacancies (a fill of the bands), the posts
+       (a map of the sectors' posts a job type) and a sector's buildings (a walk of the stacks). While a WorksValue scope is open
+       for a city (the pass opens one) PopulationManager.getJobVacancy() is held against every number its fill reads, and
+       BuildingManager's posts and a sector's stacks against the count of edits to the stacks. Held, a figure is the bare one to
+       the bit, and read afresh once what it was read from has moved, by whatever path. On a town with people, posts in several
+       sectors, the builders' crews laid off and a gated post:
+         (a) the vacancies read twice are one fill, and the fill rate is the bare one;
+         (b) the city's posts, the posts withheld and a sector's buildings are the bare ones, built from the stacks once;
+         (c) a build at once adds its posts to the next reading and an order on site adds none, and each is read afresh;
+         (d) a stack of a template not yet built moves its sector's buildings;
+         (e) buildings added to a stack directly, buildings scrapped and a building's posts moved are read afresh;
+         (f) the people moved by each path a pass could (the posts they are told, the prisoners, the heads written through the
+             array getSkilledHeads() hands out, the licences) are read afresh, and a read with nothing moved is not;
+         (g) a scope opened inside it is the same one, and closed, nothing is held.
+       ======================================================================================= */
+
+    /** The share of its posts each graduate band holds in heads, and the unskilled posts in workers, in the held-figures town (AP5): every band has posts open for a move to fill. */
+    static final double HELD_FILL = .5;
+
+    /** The people put into the held-figures town (AP5), so it has a workforce for the month's labour market to be struck on. */
+    static final double HELD_TOWN_PEOPLE = 1_000;
+
+    /** The buildings put up at once, in the held-figures section (AP5). */
+    static final long HELD_INSTANT = 5;
+
+    /** The buildings ordered on site, in the held-figures section (AP5). */
+    static final long HELD_ON_SITE = 3;
+
+    /** The buildings scrapped, in the held-figures section (AP5). */
+    static final long HELD_SCRAPPED = 2;
+
+    /** The share of the unskilled workers put in prison, in the held-figures section (AP5). */
+    static final double HELD_IMPRISONED = .1;
+
+    /** The share of a band's posts written onto its heads through the array getSkilledHeads() hands out, in the held-figures section (AP5). */
+    static final double HELD_HEADS_ADDED = .25;
+
+    /** The share of the university heads who take a doctor's licence, in the held-figures section (AP5). */
+    static final double HELD_LICENSED = .25;
+
+    /** Every post of a template, over the job types: the getter a sector's buildings are read through in the held-figures section (AP5). */
+    static double allPosts(BuildingsTemplate b) {
+        double n = 0;
+        for (JobType type : JobType.values()) n += b.getJobs(type);
+        return n;
+    }
+
+    /** A held figure is the bare one to the bit, never within a tolerance (AP5). */
+    static boolean sameBits(double a, double b) {
+        return Double.doubleToRawLongBits(a) == Double.doubleToRawLongBits(b);
+    }
+
+    /** ...each of two arrays. */
+    static boolean sameBits(double[] a, double[] b) {
+        if (a.length != b.length) return false;
+        for (int i = 0; i < a.length; i++) if (!sameBits(a[i], b[i])) return false;
+        return true;
+    }
+
+    /** The town the held-figures section is read on (AP5): flats, shops, a hospital and the builders' depots, stood up free and a month old, so the depots lay crews off. */
+    static Game heldTown() {
+        Game g = new Game(GameFiles.scratch("labourcheck-held"));
+        quietly(() -> {
+            g.newGame();
+            g.getGovernmentInvestor().spend(-50_000_000 * PriceLevel.FACTOR);
+            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 400_000_000);
+            g.buildStack(t(g, "House"), 80, true);
+            g.buildStack(t(g, "Small Grocery Store"), 8, true);
+            g.buildStack(t(g, "General Hospital"), 2, true);
+            g.buildStack(t(g, "Construction Depot"), 4, true);
+            g.getCohorts().migrate(HELD_TOWN_PEOPLE);
+            g.simulateMonths(1);
+        });
+        return g;
+    }
+
+    /**
+     * The vacancies held for a scope after the people were moved (AP5): the figure is the bare fill, it was read afresh once, a second read
+     * with nothing moved is not another fill, and the move did change the fill (else a figure held over it would pass for the bare one).
+     */
+    static long[] heldAfter(String move, WorksValue.Scope s, PopulationManager pm, long[] stood) {
+        long fills = s.vacanciesRead;
+        long[] held = pm.getJobVacancy();
+        assertTrue("(f) " + move + ": the vacancies are the bare fill", java.util.Arrays.equals(held, pm.getJobVacancyDrawn()));
+        assertTrue("...read afresh, once", s.vacanciesRead == fills + 1);
+        pm.getJobVacancy();
+        assertTrue("...and a read with nothing moved is not another fill", s.vacanciesRead == fills + 1);
+        assertTrue("fixture: the move changed the vacancies, so a figure held over it would be stale", !java.util.Arrays.equals(held, stood));
+        return held;
+    }
+
+    /**
+     * One change to a stack's buildings inside the scope (AP5): the city's posts at the next reading have moved by this many of the template's
+     * posts of each job type, are the bare reading, and were built afresh once.
+     */
+    static void postsMovedBy(String change, BuildingManager bm, WorksValue.Scope s, BuildingsTemplate of, long by, Runnable move) {
+        long[] was = bm.getTotalJobs();
+        long builds = s.postsRead;
+        move.run();
+        long[] now = bm.getTotalJobs();
+        boolean byTheirPosts = true;
+        for (JobType type : JobType.values()) {
+            if (now[type.ordinal()] - was[type.ordinal()] != by * of.getJobs(type)) byTheirPosts = false;
+        }
+        assertTrue("(e) " + change + " move the next reading by the template's posts, each job type", byTheirPosts);
+        assertTrue("...which is the bare reading", java.util.Arrays.equals(now, WorksValue.bareWhile(() -> bm.getTotalJobs())));
+        assertTrue("...read afresh, once", s.postsRead == builds + 1);
+    }
+
+    static void labourHeldForAPass() {
+        System.out.println("\n--- the labour figures held for a pass are the bare ones, read afresh when they move (AP5) ---");
+
+        Game g = heldTown();
+        PopulationManager pm = g.getPopulationManager();
+        BuildingManager bm = g.getBuildingManager();
+        String builders = g.getEconomyManager().getSectors().construction().key();
+        BuildingsTemplate shop = t(g, "Small Grocery Store"), station = t(g, "Police Station");
+        JobType doctor = JobType.UNIV_DOCTOR;
+
+        /*
+         * THE PEOPLE ARE SET BY HAND, as in the payroll's town: told the posts the buildings have, the unskilled workers half the unskilled
+         * posts and each graduate band half its posts in heads, so every band has posts open for a move to fill.
+         */
+        pm.updateJobs(g.getJobs());
+        double[] postsInBand = pm.postsByBand();
+        int unskilled = WageBand.NONE.ordinal(), university = WageBand.UNIVERSITY.ordinal();
+        double[] heads = new double[postsInBand.length];
+        double graduateHeads = 0;
+        int widest = -1;
+        for (int band = 0; band < heads.length; band++) {
+            if (band == unskilled) continue;
+            heads[band] = Math.floor(postsInBand[band] * HELD_FILL);
+            graduateHeads += heads[band];
+            if (band != university && (widest < 0 || postsInBand[band] > postsInBand[widest])) widest = band;
+        }
+        pm.restoreSkilledHeads(heads);
+        pm.restoreWorkforce((long) Math.ceil(postsInBand[unskilled] * HELD_FILL + graduateHeads));
+        long unskilledWorkers = pm.getWorkforce() - (long) graduateHeads;
+        java.util.Set<String> sectors = new java.util.LinkedHashSet<>();
+        for (BuildingsStacks stack : bm.getStacksView()) sectors.add(stack.getBuilding().getSector());
+        sectors.add(builders);
+        sectors.add(station.getSector());
+        double licences = Math.floor(heads[university] * HELD_LICENSED);
+        System.out.printf("   %,d workers, %,d posts in %d sectors; the builders withhold %,d of theirs; %,.0f heads in the widest graduate band, %,.0f at university%n",
+                pm.getWorkforce(), bm.getTotalJobs(JobType.NO_DIPLOMA), sectors.size(), bm.getPostsWithheld(),
+                heads[widest], heads[university]);
+        assertTrue("fixture: the town has people, and posts in several sectors", pm.getWorkforce() > 0 && sectors.size() >= 3);
+        assertTrue("fixture: the builders lay crews off, so the posts they offer are a share of theirs", bm.getPostsWithheld(builders, JobType.NO_DIPLOMA) > 0);
+        assertTrue("fixture: the doctors' posts are gated, the hospitals have them, and there are heads at university to hold a licence",
+                PopulationManager.isGated(doctor) && bm.getTotalJobs(doctor) > 0 && licences >= 1);
+        assertTrue("fixture: the shops have posts, and the police station is a building the town has none of",
+                allPosts(shop) > 0 && allPosts(station) > 0 && bm.getStack(station) == null && bm.getStack(shop) != null);
+        assertTrue("fixture: the unskilled and the widest graduate band have posts open and workers to place", unskilledWorkers > 0 && heads[widest] >= 1
+                && pm.getJobVacancyDrawn()[JobType.NO_DIPLOMA.ordinal()] > 0);
+        assertTrue("fixture: no scope is open to begin with", WorksValue.open() == null);
+
+        WorksValue.Scope scope;
+        try (WorksValue.Scope s = WorksValue.hold(g)) {
+            scope = s;
+
+            // (a) the vacancies
+            long[] first = pm.getJobVacancy(), second = pm.getJobVacancy();
+            long[] drawn = pm.getJobVacancyDrawn();
+            assertTrue("(a) the vacancies read in a pass are the bare fill", java.util.Arrays.equals(first, drawn));
+            assertTrue("...and read again are the same figure", java.util.Arrays.equals(second, drawn));
+            assertTrue("...from one fill, not two", s.vacanciesRead == 1);
+            first[0] += 7;
+            assertTrue("...and a caller who writes to the figure it was handed does not move the held one", java.util.Arrays.equals(pm.getJobVacancy(), drawn));
+            assertTrue("...and the fill rate is the bare one, to the bit",
+                    sameBits(pm.getJobFillRate(), WorksValue.bareWhile(() -> pm.getJobFillRate())));
+
+            // (b) the posts, built once
+            assertTrue("(b) the city's posts are the bare ones", java.util.Arrays.equals(bm.getTotalJobs(), WorksValue.bareWhile(() -> bm.getTotalJobs())));
+            assertTrue("...and the jobs the game offers, the research posts with them", java.util.Arrays.equals(g.getJobs(), WorksValue.bareWhile(() -> g.getJobs())));
+            boolean everyPost = true, withheld = true, buildersWithheld = true;
+            for (JobType type : JobType.values()) {
+                if (bm.getTotalJobsAtEveryPost(type) != WorksValue.bareWhile(() -> bm.getTotalJobsAtEveryPost(type))) everyPost = false;
+                if (bm.getPostsWithheld(type) != WorksValue.bareWhile(() -> bm.getPostsWithheld(type))) withheld = false;
+                if (bm.getPostsWithheld(builders, type) != WorksValue.bareWhile(() -> bm.getPostsWithheld(builders, type))) buildersWithheld = false;
+            }
+            assertTrue("...every job type's posts at every post", everyPost);
+            assertTrue("...the posts the sectors withhold of each job type", withheld);
+            assertTrue("...and the builders' own", buildersWithheld);
+            assertTrue("...and the posts withheld over every job type", bm.getPostsWithheld() == WorksValue.bareWhile(() -> bm.getPostsWithheld()));
+            boolean byCapacity = true, byPosts = true;
+            double capacity = 0;
+            for (String sector : sectors) {
+                double held = bm.totalBySector(sector, BuildingsTemplate::getCapacity);
+                capacity += held;
+                if (!sameBits(held, WorksValue.bareWhile(() -> bm.totalBySector(sector, BuildingsTemplate::getCapacity)))) byCapacity = false;
+                if (!sameBits(bm.totalBySector(sector, LabourCheck::allPosts),
+                        WorksValue.bareWhile(() -> bm.totalBySector(sector, LabourCheck::allPosts)))) byPosts = false;
+            }
+            assertTrue("fixture: some sector has housing capacity and so a reading to compare", capacity > 0);
+            assertTrue("...a sector's buildings by their capacity are the bare ones, in every sector", byCapacity);
+            assertTrue("...and by their posts", byPosts);
+            assertTrue("...all of them from one build of the posts, not one each", s.postsRead == 1);
+
+            // (c) a build at once, and an order on site
+            long[] standing = bm.getTotalJobs();
+            long builds = s.postsRead;
+            bm.addStack(shop, HELD_INSTANT, true);
+            long[] built = bm.getTotalJobs();
+            boolean byTheirPosts = true;
+            for (JobType type : JobType.values()) {
+                if (built[type.ordinal()] - standing[type.ordinal()] != HELD_INSTANT * shop.getJobs(type)) byTheirPosts = false;
+            }
+            assertTrue("(c) buildings put up at once add their posts to the next reading, each job type by the template's own", byTheirPosts);
+            assertTrue("...which is the bare reading", java.util.Arrays.equals(built, WorksValue.bareWhile(() -> bm.getTotalJobs())));
+            assertTrue("...read afresh, once", s.postsRead == builds + 1);
+            bm.addStack(shop, HELD_ON_SITE, false);
+            long[] ordered = bm.getTotalJobs();
+            assertTrue("fixture: the order went on site, none of it standing", bm.getStack(shop).getUnderConstruction() >= HELD_ON_SITE);
+            assertTrue("(c) an order on site adds no posts: the reading is the one before", java.util.Arrays.equals(ordered, built));
+            assertTrue("...and the bare one", java.util.Arrays.equals(ordered, WorksValue.bareWhile(() -> bm.getTotalJobs())));
+            assertTrue("...read afresh after the order, whether or not it moved a post", s.postsRead == builds + 2);
+            bm.getTotalJobs();
+            assertTrue("...and not again with nothing moved since", s.postsRead == builds + 2);
+
+            // (d) a template not yet built
+            String sector = station.getSector();
+            double before = bm.totalBySector(sector, LabourCheck::allPosts);
+            builds = s.postsRead;
+            bm.addStack(station, HELD_INSTANT, true);
+            double after = bm.totalBySector(sector, LabourCheck::allPosts);
+            assertTrue("(d) a stack of a template not yet built moves its sector's buildings by its posts", after == before + HELD_INSTANT * allPosts(station));
+            assertTrue("...to the bare reading", sameBits(after, WorksValue.bareWhile(() -> bm.totalBySector(sector, LabourCheck::allPosts))));
+            assertTrue("...read afresh, once", s.postsRead == builds + 1);
+
+            // (e) buildings added to a stack and scrapped from it, and a building's posts moved
+            BuildingsStacks shops = bm.getStack(shop);
+            postsMovedBy("buildings added to a stack with addQuantity()", bm, s, shop, HELD_INSTANT, () -> shops.addQuantity(HELD_INSTANT));
+            postsMovedBy("buildings added with increaseQuantity()", bm, s, shop, HELD_SCRAPPED, () -> shops.increaseQuantity(HELD_SCRAPPED));
+            long[] beforeScrap = bm.getTotalJobs();
+            builds = s.postsRead;
+            shops.removeQuantity(HELD_SCRAPPED);
+            long[] scrapped = bm.getTotalJobs();
+            boolean takenAway = true;
+            for (JobType type : JobType.values()) {
+                if (beforeScrap[type.ordinal()] - scrapped[type.ordinal()] != HELD_SCRAPPED * shop.getJobs(type)) takenAway = false;
+            }
+            assertTrue("(e) buildings scrapped take their posts from the next reading", takenAway);
+            assertTrue("...which is the bare reading", java.util.Arrays.equals(scrapped, WorksValue.bareWhile(() -> bm.getTotalJobs())));
+            assertTrue("...read afresh, once", s.postsRead == builds + 1);
+            JobType moved = JobType.NO_DIPLOMA;
+            int was = shop.getJobs(moved);
+            builds = s.postsRead;
+            try {
+                shop.setJobs(moved, was + 1);
+                long[] raised = bm.getTotalJobs();
+                assertTrue("(e) a building given one more post adds one to the next reading for each of them standing",
+                        raised[moved.ordinal()] == scrapped[moved.ordinal()] + shops.getQuantity());
+                assertTrue("...which is the bare reading", java.util.Arrays.equals(raised, WorksValue.bareWhile(() -> bm.getTotalJobs())));
+                assertTrue("...read afresh, once", s.postsRead == builds + 1);
+            } finally {
+                shop.setJobs(moved, was);
+            }
+            assertTrue("...and put back, the reading is the one before it",
+                    java.util.Arrays.equals(bm.getTotalJobs(), scrapped) && s.postsRead == builds + 2);
+
+            // (f) the people, moved by each path a pass could
+            assertTrue("(f) the buildings moved and the people were not told: the vacancies were not read again", s.vacanciesRead == 1);
+            long[] stood = pm.getJobVacancy();
+            assertTrue("...and a read with nothing moved is not a fill", s.vacanciesRead == 1);
+            assertTrue("fixture: the posts built since the people were told them are not the ones they hold", !java.util.Arrays.equals(pm.getJobs(), g.getJobs()));
+            pm.updateJobs(g.getJobs());
+            stood = heldAfter("the people told the posts the buildings now have", s, pm, stood);
+
+            double jailed = pm.getImprisoned();
+            pm.setImprisoned(Math.max(1, Math.floor(unskilledWorkers * HELD_IMPRISONED)));
+            stood = heldAfter("some of the workers put in prison", s, pm, stood);
+            pm.setImprisoned(jailed);
+            stood = heldAfter("...and let out", s, pm, stood);
+
+            double[] own = pm.getSkilledHeads();
+            double had = own[widest];
+            own[widest] = had + Math.max(1, Math.floor(postsInBand[widest] * HELD_HEADS_ADDED));
+            stood = heldAfter("heads written through the array getSkilledHeads() hands out", s, pm, stood);
+            own[widest] = had;
+            stood = heldAfter("...and written back", s, pm, stood);
+
+            double[] licensed = pm.getLicensedHeads();
+            double held = licensed[doctor.ordinal()];
+            double[] newly = new double[licensed.length];
+            newly[doctor.ordinal()] = licences;
+            pm.addLicences(newly);
+            stood = heldAfter("doctors' licences granted", s, pm, stood);
+            licensed[doctor.ordinal()] = held;
+            heldAfter("...and written back through the array getLicensedHeads() hands out", s, pm, stood);
+            System.out.printf("   in the scope the vacancies were filled %d times and the posts built %d times%n", s.vacanciesRead, s.postsRead);
+
+            // (g) a scope inside it
+            try (WorksValue.Scope inner = WorksValue.hold(g)) {
+                assertTrue("(g) a scope opened inside it is the same one, one deeper", inner == s);
+            }
+            assertTrue("...and the outer one is still open when the inner one closes", WorksValue.open() == s);
+        }
+        assertTrue("(g) closed, no scope is open on this thread", WorksValue.open() == null);
+        // ...and what moves now is read bare: nothing held over from the scope, and the scope counts none of it.
+        long fills = scope.vacanciesRead, builds = scope.postsRead;
+        pm.setImprisoned(pm.getImprisoned() + 1);
+        bm.addStack(shop, 1, true);
+        assertTrue("...so the vacancies are the bare fill after the people moved", java.util.Arrays.equals(pm.getJobVacancy(), pm.getJobVacancyDrawn()));
+        assertTrue("...and the posts the bare ones after a build", java.util.Arrays.equals(bm.getTotalJobs(), WorksValue.bareWhile(() -> bm.getTotalJobs())));
+        assertTrue("...with no fill and no build of the posts counted by the scope that closed", scope.vacanciesRead == fills && scope.postsRead == builds);
     }
 
     /** Every payroll that is not a sector's: the bank, the utilities, and the four services the city staffs. */
