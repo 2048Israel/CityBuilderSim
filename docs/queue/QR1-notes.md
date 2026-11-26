@@ -373,6 +373,17 @@ The runner does not separately retain the child JVM exit status. The policy
 scorer's separate exit is not this standalone playtest's verdict; the formal
 80-run M1/F1 comparison is still required.
 
+Auxiliary policy scorer result is retained as observed: wrapper **exit 4**,
+AUTO2 **M1 FAIL, 0 failed audits (1 unread)**. The sole unread row is the
+unsimulated founding baseline, calendar 1; all played rows 2–2400 have
+`audit_ok=1`, residual 0. `score.py` counts every blank, including this new
+founding row, as unread. F1 is “info, 0/1 findings”, no baseline, and this
+single default/AUTO2 carrier has no other policy runs. ★ Keep the founding
+audit blank and this auxiliary scorer failure visible: no fabricated audit,
+scorer change, waiver or known-red entry. These four default cash
+measurements are separate from the required formal policy ensemble, whose
+ordinary rows are played months and whose **M1/F1 must pass independently**.
+
 Exactly 2400 contiguous calendar rows, one founding baseline and 2399 played
 rows; overshoot and fixture cities excluded. Full precision saved forgiveness
 equals the independent monthly sum at the endpoint. The maximum interim
