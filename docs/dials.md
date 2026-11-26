@@ -2,9 +2,9 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,844 constants in 653 files.**
+**6,868 constants in 653 files.**
 
-## model (3094 constants)
+## model (3096 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -289,11 +289,12 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 75 | `BuildingManager.MATERIALS_WORLD_PRICE` | `Good.MATERIALS.worldImportPrice()` | What a unit of construction material costs, in the city's money. |
-| 5479 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
-| 6393 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
-| 6575 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
-| 8309 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 9632 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 5490 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
+| 6404 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
+| 6586 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
+| 8197 | `BuildingManager.POSTS_EDITS` | `new java.util.concurrent.atomic.AtomicLong()` | Raised after every change to the stacks' posts or the list of stacks, in any city (AP5): transient, never saved. |
+| 8404 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
+| 9736 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BuildingVisual.java ([map](map/BuildingVisual.md))
 
@@ -365,8 +366,8 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1510 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
-| 1513 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
+| 1514 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
+| 1517 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
 
 ### BusinessDebtManager.java ([map](map/BusinessDebtManager.md))
 
@@ -1763,7 +1764,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.210"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.212"` | Bump on release. |
 | 8398 | `GameVersion.SAVE_FORMAT` | `67` | RES3: typed leases, comparable rent/CPI observations and held monetary inputs cannot be reconstructed from a format-66 city. |
 | 8469 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `67` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8477 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -2969,7 +2970,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1334 | `PopulationManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 1371 | `PopulationManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### Ports.java ([map](map/Ports.md))
 
@@ -3961,8 +3962,9 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 387 | `WorksValue.HELD` | `new ThreadLocal<>()` |  |
-| 390 | `WorksValue.SCHEDULES` | `new java.util.concurrent.atomic.AtomicLong()` | Every schedule of the works on site built, held or bare: NewUnitCheck 13's count, never a time. |
+| 392 | `WorksValue.HELD` | `new ThreadLocal<>()` |  |
+| 395 | `WorksValue.SCHEDULES` | `new java.util.concurrent.atomic.AtomicLong()` | Every schedule of the works on site built, held or bare: NewUnitCheck 13's count, never a time. |
+| 444 | `WorksValue.LABOUR_COMPARED` | `new java.util.concurrent.atomic.AtomicLong(), LABOUR_DIFFERED = new java.util.concurren...` | Held labour figures read and compared while labourChecked was set, and those that differed from the bare figure. |
 
 ### World.java ([map](map/World.md))
 
@@ -4255,7 +4257,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 43 | `ZoningView.SHORT_SHARE` | `1e-6` | A zone holds less than it wants by more than this share of its want: SHORT (Z10's "holds 12.4 of 40 km²"), not a rounding. |
 
-## sectors (222 constants)
+## sectors (223 constants)
 
 ### Agriculture.java ([map](map/Agriculture.md))
 
@@ -4446,9 +4448,10 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 89 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY` | `10` | Lubricants a tonne of machinery made takes: ten litres (spec-oil 2.5, est.). |
-| 92 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED` | `2` | ...and a tonne of fabricated steel: two litres (spec-oil 2.5, est.). |
-| 109 | `Manufacturing.WIRE_CABLE_WORKS` | `128` | The Wire & Cable Works' permanent id in buildings.json (0.7.133): 2,000 t of wire and cable a month from 2,000 t of rod. |
+| 82 | `Manufacturing.EXPANSION_RECOVERY_MONTHS` | `12` | Months covering its running costs after the lent DISTRESS_LOSS_MONTHS operating-loss runway before Manufacturing orders more plant: a full year's recovery (MR1). |
+| 142 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY` | `10` | Lubricants a tonne of machinery made takes: ten litres (spec-oil 2.5, est.). |
+| 145 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED` | `2` | ...and a tonne of fabricated steel: two litres (spec-oil 2.5, est.). |
+| 162 | `Manufacturing.WIRE_CABLE_WORKS` | `128` | The Wire & Cable Works' permanent id in buildings.json (0.7.133): 2,000 t of wire and cable a month from 2,000 t of rod. |
 
 ### Materials.java ([map](map/Materials.md))
 
@@ -6077,7 +6080,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2246 constants)
+## harnesses (2267 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6161,16 +6164,16 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 366 | `AutoBuildCheck.heldBy` | `new LinkedHashMap<>()` | The passes that held a kept service short of its target with nothing on site, by the cut that held it. |
-| 368 | `AutoBuildCheck.builtBy` | `new LinkedHashMap<>()` | The buildings it ordered over the run, by measure. |
-| 1178 | `AutoBuildCheck.YOUNG_MONTH` | `60` | The month the young city is played to before the refusal: the 0.7.89 city that stalled was refused at month 60. |
-| 1181 | `AutoBuildCheck.SHORT` | `280 * PriceLevel.FACTOR` | What the refused order is short of, in thousands, the game's money: $0.28M, the 0.7.89 city's ($24.11M of treasury against $24.39M of order). |
-| 1184 | `AutoBuildCheck.AFTER_MONTHS` | `24` | The months the city plays on after the refusal, its debt limit left where the fixture pinned it. |
-| 1187 | `AutoBuildCheck.LOOK_MONTHS` | `6` | The months between the test player's looks, as section 3's loop plays: it plays on, then moves. |
-| 1190 | `AutoBuildCheck.YOUNG_PEOPLE` | `100_000` | A young city has fewer people than this at the refusal: a town, not the city it grows into. |
-| 1520 | `AutoBuildCheck.ROOM` | `50_000 * PriceLevel.FACTOR` | A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). |
-| 1637 | `AutoBuildCheck.OVER_SQ_FT` | `1_000_000` | The over-full fixture's deficit, in square feet: a million, a sixth of Jerus's 5.66M at month 416 (runs/fixN5-notes.md) - any deficit makes the point. |
-| 1678 | `AutoBuildCheck.ORE_TONNES` | `1` | A tonne of iron under each offer of the ore fixture: any ore makes an offer not bare ground (LandMarket.bareGround()). |
+| 421 | `AutoBuildCheck.heldBy` | `new LinkedHashMap<>()` | The passes that held a kept service short of its target with nothing on site, by the cut that held it. |
+| 423 | `AutoBuildCheck.builtBy` | `new LinkedHashMap<>()` | The buildings it ordered over the run, by measure. |
+| 1233 | `AutoBuildCheck.YOUNG_MONTH` | `60` | The month the young city is played to before the refusal: the 0.7.89 city that stalled was refused at month 60. |
+| 1236 | `AutoBuildCheck.SHORT` | `280 * PriceLevel.FACTOR` | What the refused order is short of, in thousands, the game's money: $0.28M, the 0.7.89 city's ($24.11M of treasury against $24.39M of order). |
+| 1239 | `AutoBuildCheck.AFTER_MONTHS` | `24` | The months the city plays on after the refusal, its debt limit left where the fixture pinned it. |
+| 1242 | `AutoBuildCheck.LOOK_MONTHS` | `6` | The months between the test player's looks, as section 3's loop plays: it plays on, then moves. |
+| 1245 | `AutoBuildCheck.YOUNG_PEOPLE` | `100_000` | A young city has fewer people than this at the refusal: a town, not the city it grows into. |
+| 1575 | `AutoBuildCheck.ROOM` | `50_000 * PriceLevel.FACTOR` | A month's property tax withRoom() adds, in thousands: $50M, far past what any pass in the town orders runs to (0.7.101; the payback's since 0.7.104). |
+| 1692 | `AutoBuildCheck.OVER_SQ_FT` | `1_000_000` | The over-full fixture's deficit, in square feet: a million, a sixth of Jerus's 5.66M at month 416 (runs/fixN5-notes.md) - any deficit makes the point. |
+| 1733 | `AutoBuildCheck.ORE_TONNES` | `1` | A tonne of iron under each offer of the ore fixture: any ore makes an offer not bare ground (LandMarket.bareGround()). |
 
 ### BankCheck.java ([map](map/BankCheck.md))
 
@@ -7693,20 +7696,41 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 56 | `LabourCheck.OUT` | `System.out` |  |
-| 57 | `LabourCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
-| 1281 | `LabourCheck.CRAWL` | `.005` | How fast the fixture's currency is walked weaker: half a percent a month. |
-| 1284 | `LabourCheck.BASING_GRACE_MONTHS` | `120` | The most months the wage-chase town is stepped on past its settling for the basket to be based, before that is a fixture failure. |
-| 1287 | `LabourCheck.INFLATION_MONTHS` | `240` | Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. |
-| 1526 | `LabourCheck.PAYROLL_GRADUATE_FILL` | `.5` | The share of its posts each graduate band holds in heads in the payroll town (FS16), so a band is part filled and the job types fill unevenly. |
-| 1529 | `LabourCheck.PAYROLL_TOWN_MONTHS` | `120` | The months the payroll town plays before its fills are put by hand (FS16): ten years, so the identity reads the sectors and posts a lived city has, not a founding's (a KEEP: the played town is its ... |
-| 1532 | `LabourCheck.LAYOFF_TOWN_PEOPLE` | `1_000` | The people put into the builders' town of the payroll section (FS16), so the sector's households have workers to be paid. |
-| 1761 | `LabourCheck.RENT_TOWN_PEOPLE` | `4_000` | People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). |
-| 1783 | `LabourCheck.ARRIVALS_OVER_DEPARTURES` | `10` | How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). |
-| 1786 | `LabourCheck.PRICED_MONTHS` | `60` | Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. |
-| 1798 | `LabourCheck.ROOM_TOWN` | `4000` | The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). |
-| 1816 | `LabourCheck.TIE_AVERAGE_OVER_GOING_RATE` | `1.3` | The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. |
-| 1818 | `LabourCheck.TIE_NEXT_AVERAGE_OVER_LAST` | `1.1` | The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. |
+| 61 | `LabourCheck.OUT` | `System.out` |  |
+| 62 | `LabourCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } })` |  |
+| 1287 | `LabourCheck.CRAWL` | `.005` | How fast the fixture's currency is walked weaker: half a percent a month. |
+| 1290 | `LabourCheck.BASING_GRACE_MONTHS` | `120` | The most months the wage-chase town is stepped on past its settling for the basket to be based, before that is a fixture failure. |
+| 1293 | `LabourCheck.INFLATION_MONTHS` | `240` | Months of steady inflation, which is the twenty years the 2026-09-15 city had lived. |
+| 1532 | `LabourCheck.PAYROLL_GRADUATE_FILL` | `.5` | The share of its posts each graduate band holds in heads in the payroll town (FS16), so a band is part filled and the job types fill unevenly. |
+| 1535 | `LabourCheck.PAYROLL_TOWN_MONTHS` | `120` | The months the payroll town plays before its fills are put by hand (FS16): ten years, so the identity reads the sectors and posts a lived city has, not a founding's (a KEEP: the played town is its ... |
+| 1538 | `LabourCheck.LAYOFF_TOWN_PEOPLE` | `1_000` | The people put into the builders' town of the payroll section (FS16), so the sector's households have workers to be paid. |
+| 1743 | `LabourCheck.HELD_FILL` | `.5` | The share of its posts each graduate band holds in heads, and the unskilled posts in workers, in the held-figures town (AP5): every band has posts open for a move to fill. |
+| 1746 | `LabourCheck.HELD_TOWN_PEOPLE` | `1_000` | The people put into the held-figures town (AP5), so it has a workforce for the month's labour market to be struck on. |
+| 1749 | `LabourCheck.HELD_INSTANT` | `5` | The buildings put up at once, in the held-figures section (AP5). |
+| 1752 | `LabourCheck.HELD_ON_SITE` | `3` | The buildings ordered on site, in the held-figures section (AP5). |
+| 1755 | `LabourCheck.HELD_SCRAPPED` | `2` | The buildings scrapped, in the held-figures section (AP5). |
+| 1758 | `LabourCheck.HELD_IMPRISONED` | `.1` | The share of the unskilled workers put in prison, in the held-figures section (AP5). |
+| 1761 | `LabourCheck.HELD_HEADS_ADDED` | `.25` | The share of a band's posts written onto its heads through the array getSkilledHeads() hands out, in the held-figures section (AP5). |
+| 1764 | `LabourCheck.HELD_LICENSED` | `.25` | The share of the university heads who take a doctor's licence, in the held-figures section (AP5). |
+| 1767 | `LabourCheck.HELD_CREWS_OUTPUT` | `1e15` | The construction points put into the shops on site at once, in the held-figures section (AP5): more than any order owes, so every one finishes. |
+| 1770 | `LabourCheck.HELD_RECIPE_HANDS` | `4` | The unskilled posts a shop's second recipe adds, in the held-figures section (AP5): a fourth of them is one post, the blend's step. |
+| 1773 | `LabourCheck.HELD_BLEND_ON` | `1` | The shops on the second recipe in the held-figures section's blend (AP5): one in four, so the blend's posts are one more than the first recipe's. |
+| 1776 | `LabourCheck.HELD_BLEND_OFF` | `3` | ...and on the first. |
+| 1779 | `LabourCheck.HELD_ORDER_BIG` | `0x1p53` | The house's weight in the held-figures section's ordered sum (AP5): 2^53, so the house's buildings are a number whose last place is wider than one. |
+| 1782 | `LabourCheck.HELD_ORDER_PART` | `.375` | Each apartment stack's part of the house's last place in that sum (AP5): under a half, so either alone is lost after the house, both together over it. |
+| 1785 | `LabourCheck.HELD_WORKERS_ADDED` | `.25` | The share of the unskilled workers added to the workforce, in the held-figures section (AP5). |
+| 1788 | `LabourCheck.HELD_OWNERS` | `.1` | The share of the workforce whose families own their businesses, in the held-figures section (AP5). |
+| 1791 | `LabourCheck.HELD_STUDYING` | `.25` | The share of the widest graduate band's heads at their studies, in the held-figures section (AP5). |
+| 1794 | `LabourCheck.HELD_JOINED_POSTS` | `100` | The graduate posts in the held-figures section's shared market (AP5), where the wage ladder splits the workers between two bands. |
+| 1797 | `LabourCheck.HELD_JOINED_HEADS_PER_POST` | `3` | ...the graduate heads to each of them, so the band has workers to spare for the unskilled posts... |
+| 1800 | `LabourCheck.HELD_JOINED_UNSKILLED_POSTS` | `4_000` | ...the unskilled posts, far more than the workers for them, so the bottom band pays more than the graduate one and the two are one market... |
+| 1803 | `LabourCheck.HELD_JOINED_UNSKILLED` | `10` | ...and the unskilled workers. |
+| 2289 | `LabourCheck.RENT_TOWN_PEOPLE` | `4_000` | People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). |
+| 2311 | `LabourCheck.ARRIVALS_OVER_DEPARTURES` | `10` | How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). |
+| 2314 | `LabourCheck.PRICED_MONTHS` | `60` | Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. |
+| 2326 | `LabourCheck.ROOM_TOWN` | `4000` | The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). |
+| 2344 | `LabourCheck.TIE_AVERAGE_OVER_GOING_RATE` | `1.3` | The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. |
+| 2346 | `LabourCheck.TIE_NEXT_AVERAGE_OVER_LAST` | `1.1` | The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. |
 
 ### LandCheck.java ([map](map/LandCheck.md))
 
@@ -7953,11 +7977,11 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 68 | `ManufacturingCheck.SHOP` | `"Fabrication Shop"` |  |
-| 69 | `ManufacturingCheck.WORKS` | `"Fabrication Works"` |  |
-| 70 | `ManufacturingCheck.MACH` | `"Machine Works"` |  |
-| 79 | `ManufacturingCheck.STEEL_WAS` | `1.284 * PriceLevel.FACTOR, FABRICATED_WAS = 2.21 * PriceLevel.FACTOR, MACHINERY_WAS = 9...` | The prices the three plants were costed on, written down (2026-09-13 to 0.7.119): steel landed at the US band, and the two goods made of it. |
-| 82 | `ManufacturingCheck.STEEL_FALL` | `STEEL_WAS -.650 * PriceLevel.FACTOR` | Steel's fall a tonne at the import price on 0.7.120, the figure Q6b moved each good by: 1.284 to .650. |
+| 70 | `ManufacturingCheck.SHOP` | `"Fabrication Shop"` |  |
+| 71 | `ManufacturingCheck.WORKS` | `"Fabrication Works"` |  |
+| 72 | `ManufacturingCheck.MACH` | `"Machine Works"` |  |
+| 81 | `ManufacturingCheck.STEEL_WAS` | `1.284 * PriceLevel.FACTOR, FABRICATED_WAS = 2.21 * PriceLevel.FACTOR, MACHINERY_WAS = 9...` | The prices the three plants were costed on, written down (2026-09-13 to 0.7.119): steel landed at the US band, and the two goods made of it. |
+| 84 | `ManufacturingCheck.STEEL_FALL` | `STEEL_WAS -.650 * PriceLevel.FACTOR` | Steel's fall a tonne at the import price on 0.7.120, the figure Q6b moved each good by: 1.284 to .650. |
 
 ### MapCheck.java ([map](map/MapCheck.md))
 

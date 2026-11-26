@@ -1,4 +1,4 @@
-# PopulationCheck.java - 1,672 lines · 13 methods · 1 constants · harnesses
+# PopulationCheck.java - 1,685 lines · 13 methods · 1 constants · harnesses
 
 `ham/citybuildersim/PopulationCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -37,11 +37,11 @@
 | 562 | · · a door a family cannot enter is not room |
 | 654 | · · limited, not switched off (0.7.17) |
 | 784 | · · DECLINING IN WHAT IT BUYS, NOT IN WHAT IT SAYS (2026-09-08) |
-| 1254 | · 5. and it survives a save |
-| 1382 | THE PYRAMID IS SAVED BY NAME, NOT BY POSITION |
-| 1517 | THE FAMILIES AND THE RING OF THE LONG SICK, SAME PROPERTY |
-| 1550 | · · families |
-| 1601 | · · the ring |
+| 1261 | · 5. and it survives a save |
+| 1395 | THE PYRAMID IS SAVED BY NAME, NOT BY POSITION |
+| 1530 | THE FAMILIES AND THE RING OF THE LONG SICK, SAME PROPERTY |
+| 1563 | · · families |
+| 1614 | · · the ring |
 
 ## Constants
 
@@ -61,28 +61,28 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 1644 | **type** `public class PopulationCheck` | The demographics: do they hold together, and do they move the city the way they were told to? |
+| 29 | 1657 | **type** `public class PopulationCheck` | The demographics: do they hold together, and do they move the city the way they were told to? |
 | 49 | 6 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 61 | 8 | `static double arrivalsFrom(Migration mig, PopulationCohorts people, FamilyModel households, int totalJobs, long[] census)` | One month's arrivals into a city of these people and households against this door census, with this many posts pulling - the census handed to migration the way Game hands it (Migration.setDoors()). |
 | 74 | 9 | `static PopulationManager cityOutOfWork(long adults, double share)` | A population manager whose labour force is this many adults and whose posts are all unskilled ones, as many as leave this share of them out of work (to a person): so its getUnemploymentRate() is the share asked for, a... |
 | 88 | 7 | `static Migration oldMigration()` | A Migration that has recorded Migration.BRAKE_FROM_MONTH months of the same steady wage (one tier pays, the rest pay nothing, as the pushes section has it), so no tier is declining and no one leaves for it: an old cit... |
 | 96 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 101 | 1230 | `public static void main(String[] args) throws Exception` |  |
-| 1333 | 48 | `static double[] play(Path root, String name, int months) throws Exception` | Plays a standard city for a given number of months and reports it. |
+| 101 | 1237 | `public static void main(String[] args) throws Exception` |  |
+| 1340 | 54 | `static double[] play(Path root, String name, int months) throws Exception` | Plays a standard city for a given number of months and reports it. |
 
-### THE PYRAMID IS SAVED BY NAME, NOT BY POSITION (lines 1382-1516)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1399 | 117 | `static void theBandsAreSavedByName()` |  |
-
-### THE FAMILIES AND THE RING OF THE LONG SICK, SAME PROPERTY (lines 1517-1672)
+### THE PYRAMID IS SAVED BY NAME, NOT BY POSITION (lines 1395-1529)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1540 | 93 | `static void theOtherTwoBandArraysSurviveItToo()` |  |
-| 1635 | 4 | `static int orphanBlockEnd(int bands, int shapes)` | Where FamilyModel's orphan block ends, counting from the front of its array. |
-| 1641 | 7 | `static double[] spliceOneSlot(double[] source, int at, double value)` | The same array with one extra slot pushed in at `at`, everything behind it moved along. |
-| 1649 | 15 | `static void sameArray(String label, double[] got, double[] wanted)` |  |
-| 1665 | 7 | `static void cleanUp(Path root)` |  |
+| 1412 | 117 | `static void theBandsAreSavedByName()` |  |
+
+### THE FAMILIES AND THE RING OF THE LONG SICK, SAME PROPERTY (lines 1530-1685)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1553 | 93 | `static void theOtherTwoBandArraysSurviveItToo()` |  |
+| 1648 | 4 | `static int orphanBlockEnd(int bands, int shapes)` | Where FamilyModel's orphan block ends, counting from the front of its array. |
+| 1654 | 7 | `static double[] spliceOneSlot(double[] source, int at, double value)` | The same array with one extra slot pushed in at `at`, everything behind it moved along. |
+| 1662 | 15 | `static void sameArray(String label, double[] got, double[] wanted)` |  |
+| 1678 | 7 | `static void cleanUp(Path root)` |  |
 

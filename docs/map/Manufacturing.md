@@ -1,4 +1,4 @@
-# Manufacturing.java - 382 lines · 16 methods · 3 constants · sectors
+# Manufacturing.java - 440 lines · 22 methods · 4 constants · sectors
 
 `ham/citybuildersim/sectors/Manufacturing.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > 
 > ... (1 more lines in the source)
 
-**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (4), [NewUnit](NewUnit.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (3), [SpreadPlanner](SpreadPlanner.md) (3), [Sector](Sector.md) (2), [ProcessingSector](ProcessingSector.md) (2), [BuildingType](BuildingType.md) (1)
+**Uses:** [Good](Good.md) (12), [BusinessInvestment](BusinessInvestment.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (4), [NewUnit](NewUnit.md) (4), [Game](Game.md) (3), [Formats](Formats.md) (3), [SpreadPlanner](SpreadPlanner.md) (3), [Sector](Sector.md) (2), [ProcessingSector](ProcessingSector.md) (2), [OldMetal](OldMetal.md) (1), [BuildingType](BuildingType.md) (1)
 
 **Used by (7):** [BuildingDataCheck](BuildingDataCheck.md), [BuildingManager](BuildingManager.md), [CopperRefiningCheck](CopperRefiningCheck.md), [GdpCheck](GdpCheck.md), [ManufacturingCheck](ManufacturingCheck.md), [MaterialsCheck](MaterialsCheck.md), [Sectors](Sectors.md)
 
@@ -72,52 +72,65 @@
 
 | line | section |
 |---:|---|
-| 134 | · reading |
-| 185 | · plan |
-| 330 | · the screen |
+| 187 | · reading |
+| 238 | · plan |
+| 388 | · the screen |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 89 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY` | `10` | Lubricants a tonne of machinery made takes: ten litres (spec-oil 2.5, est.). |
-| 92 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED` | `2` | ...and a tonne of fabricated steel: two litres (spec-oil 2.5, est.). |
-| 109 | `Manufacturing.WIRE_CABLE_WORKS` | `128` | The Wire & Cable Works' permanent id in buildings.json (0.7.133): 2,000 t of wire and cable a month from 2,000 t of rod. |
+| 82 | `Manufacturing.EXPANSION_RECOVERY_MONTHS` | `12` | Months covering its running costs after the lent DISTRESS_LOSS_MONTHS operating-loss runway before Manufacturing orders more plant: a full year's recovery (MR1). |
+| 142 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY` | `10` | Lubricants a tonne of machinery made takes: ten litres (spec-oil 2.5, est.). |
+| 145 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED` | `2` | ...and a tonne of fabricated steel: two litres (spec-oil 2.5, est.). |
+| 162 | `Manufacturing.WIRE_CABLE_WORKS` | `128` | The Wire & Cable Works' permanent id in buildings.json (0.7.133): 2,000 t of wire and cable a month from 2,000 t of rod. |
+
+## Fields (state)
+
+| line | field | says |
+|---:|---|---|
+| 85 | `private int expansionRecoveryMonths` | The dial means no recovery hold is active; first entry and ordinary short losses are allowed. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 77 | 306 | **type** `public final class Manufacturing extends Sector` | What the city makes out of its own steel, and ships. |
-| 111 | 15 | `public Manufacturing()` |  |
-| 129 | 4 | `public void produceFlow(Good g)` | What it makes of a flow good, and since 0.7.123 (batch I4) the offcuts of its fabricated steel to the city's old steel, its own to sell (OldMetal). |
+| 79 | 362 | **type** `public final class Manufacturing extends Sector` | What the city makes out of its own steel, and ships. |
+| 88 | 1 | `public int getExpansionRecoveryMonths()` | Paying months in an armed recovery, or the expansion dial when no recovery hold is active (MR1). |
+| 102 | 7 | `protected void afterBank()` | THE MARKET'S OWN RECORD (MR1). |
+| 111 | 5 | `private boolean lentLossRunway()` | bank() closes before recordOperatingResult(): the saved streak here is through the previous close. |
+| 118 | 3 | `protected void saveExtras(Map<String, Double> extras)` |  |
+| 123 | 5 | `protected void restoreExtras(Map<String, Double> extras)` |  |
+| 130 | 1 | `protected void resetExtras()` |  |
+| 164 | 15 | `public Manufacturing()` |  |
+| 182 | 4 | `public void produceFlow(Good g)` | What it makes of a flow good, and since 0.7.123 (batch I4) the offcuts of its fabricated steel to the city's old steel, its own to sell (OldMetal). |
 
-### reading (lines 134-184)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 137 | 6 | `public double getPosts()` | Every post the sector holds, staffed or not - the sector in one number. |
-| 145 | 3 | `public double getSteelDemand()` | Tonnes of steel the plants want this month, at the rate they are running. |
-| 150 | 3 | `public double getSteelPrice()` | What a tonne of steel is costing the plants here - the number the shops live or die on. |
-| 159 | 3 | `public double getSteelPosition()` | Where the steel price sits between the mills' export floor and the world's delivered ceiling: 0 is a mill with nobody else to sell to, 1 is a city with no mill at all. |
-| 171 | 4 | `public double steelShare()` | The steel bill as a share of what the sector sold. |
-| 177 | 4 | `public double payrollShare()` | ...and the wage bill, the same way. |
-| 183 | 1 | `public double costShare()` | Both together, which is what has to stay under one. |
-
-### plan (lines 185-329)
+### reading (lines 187-237)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 225 | 48 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
-| 295 | 9 | `public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans)` | What one more of its buildings would clear a month (0.7.133, batch I8): the maker's estimate (Sector's) - and for the Wire & Cable Works, the materials chains' row, less what it buys abroad that is not a good, its ins... |
-| 306 | 3 | `double fleetCapital(BuildingsTemplate t)` | The vans one of `t` must buy, at what a van costs here (ProcessingSector.fleetCapital()); none with no markets. |
-| 311 | 3 | `double fleetCapital(NewUnit t)` | ...for one new building already resolved (QN1): the vans of its own recipe. |
-| 324 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
-| 328 | 1 | `public boolean bleedsWhileLent()` | With no demand reading it shrinks on its losses alone, so it sells plant while still lent (AQ1: GW1's seed 2 lent it 96 months of them). |
+| 190 | 6 | `public double getPosts()` | Every post the sector holds, staffed or not - the sector in one number. |
+| 198 | 3 | `public double getSteelDemand()` | Tonnes of steel the plants want this month, at the rate they are running. |
+| 203 | 3 | `public double getSteelPrice()` | What a tonne of steel is costing the plants here - the number the shops live or die on. |
+| 212 | 3 | `public double getSteelPosition()` | Where the steel price sits between the mills' export floor and the world's delivered ceiling: 0 is a mill with nobody else to sell to, 1 is a city with no mill at all. |
+| 224 | 4 | `public double steelShare()` | The steel bill as a share of what the sector sold. |
+| 230 | 4 | `public double payrollShare()` | ...and the wage bill, the same way. |
+| 236 | 1 | `public double costShare()` | Both together, which is what has to stay under one. |
 
-### the screen (lines 330-382)
+### plan (lines 238-387)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 333 | 49 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 278 | 53 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | Overridden for the reason Business Services and Heavy Industry override it: the generic planner forecasts from LOCAL demand, and BusinessInvestment says so in its own header - "the world is not demand". |
+| 353 | 9 | `public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans)` | What one more of its buildings would clear a month (0.7.133, batch I8): the maker's estimate (Sector's) - and for the Wire & Cable Works, the materials chains' row, less what it buys abroad that is not a good, its ins... |
+| 364 | 3 | `double fleetCapital(BuildingsTemplate t)` | The vans one of `t` must buy, at what a van costs here (ProcessingSector.fleetCapital()); none with no markets. |
+| 369 | 3 | `double fleetCapital(NewUnit t)` | ...for one new building already resolved (QN1): the vans of its own recipe. |
+| 382 | 1 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with no stock: it shrinks on distress, not on a demand reading. |
+| 386 | 1 | `public boolean bleedsWhileLent()` | With no demand reading it shrinks on its losses alone, so it sells plant while still lent (AQ1: GW1's seed 2 lent it 96 months of them). |
+
+### the screen (lines 388-440)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 391 | 49 | `public List<Sector.Line> ownLines(Game game)` |  |
 

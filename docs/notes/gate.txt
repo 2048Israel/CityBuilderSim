@@ -1,8 +1,8 @@
-# gate of Merge batch/QR1: the distress rule's quarter sells plant that pays its running costs when the only loss is interest: its gate (`BusinessInvestment.planDistressRetirement`, overdrawn with no lender) reads the NET-loss streak, so a sector whose operating income is positive sells `MAX_RETIREMENT_FRACTION` of its biggest holding a month once interest has kept it in loss `DISTRESS_LOSS_MONTHS` running. Default playtest, merged with 0.9.134: Heavy Industry m2151-2155, 7 Steel Mini-Mills (910 posts) on operating income +$571M to +$201M a month, $283B owed, operating-loss streak 0; on AQ1's e17ee67f9: Manufacturing m1818-1820, 19 Machine Works (about 3,300 posts, out of work to 29.7%) on +$20M to +$125M a month, $9.1B owed. ★ The gate also reads AQ1's operating-loss streak: an overdrawn sector whose plant has paid its running costs (streak under the dial) sells no plant to the distress rule, its overdraft left to the bank's restructuring, which QR1 reads first; other ways: the quarter at `BLEED_MONTHS`'s pace instead; sell only plant that loses on its running costs; keep main's, 0.9.210
+# gate of Merge batch/MR1: manufacturing's re-order after a bleed sale (the recommended way of AQ1's call, ★; Jerus may overturn it): on PopulationCheck's played city AQ1's bleed sells one of two Fabrication Shops at m73 (24 months of operating losses its lender covered, principal 1,000); the lone shop pays from m86 and `Manufacturing.plan()` orders a 276-post Fabrication Works on credit (principal 538 to 3,341), which stands by m105 and loses again from m110 (operating income -19 a month and principal 4,126 at m121, against 1,489 in main's town). The target jumps 225 in the last 24 months and the city stands at 1,141 of 1,524 (75%, the line asks 80%). A gate on the bleed's own predicate in `Game.consider()` only delays the order a month (measured): the planner weighs one works' estimated profit, not a market whose plant lost money for 24 months. Done: PopulationCheck's "...but it does fill, given a decade" green on AQ1's path and on main's, 0.9.212
 # date: 2026-11-26
 # earth-2.bin: named
 # nightly: 2026-11-26 02:59 0.9.208 3bf83d20e 4,000 months: RED, exit 1 in 796 s: FAIL a building on the map moved 3 time(s), months 3005-3011; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-26-3bf83d20e-Z21yRgkj
-# suite: 250 harnesses run in 1295s: 233 passed, 17 failed
+# suite: 243 harnesses run in 1243s: 227 passed, 16 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -42,9 +42,6 @@ DenominationCheck | the same currency                                           
 DenominationCheck | the same treasury                                              FAIL  405.3186196818 != 405.3188635672  (6.02e-07 apart)
 DenominationCheck | the same bank                                                  FAIL  291.5866929739 != 291.6348114746  (0.000165 apart)
 DenominationCheck | 7 FAILED
-PopulationCheck | exit 1
-PopulationCheck | ...but it does fill, given a decade                        FAIL
-PopulationCheck | 1 FAILED
 MapCheck | exit 1
 MapCheck | ...no two + junctions of drawn street nearer than JUNCTION_APART plots, either way: about eight houses' length apart FAIL
 MapCheck | 1 FAILED

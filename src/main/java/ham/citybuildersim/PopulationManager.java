@@ -401,6 +401,43 @@ public class PopulationManager {
      * staffs its lawyers before its doctors.
      */
     public long[] getJobVacancy() {
+        // Held for the auto-builder's pass (AP5, WorksValue's LABOUR FIGURES HELD FOR ONE PASS): read afresh once any input has moved.
+        WorksValue.Scope s = WorksValue.heldFor(this);
+        if (s == null) return getJobVacancyDrawn();
+        long[] at = vacancyInputs();
+        if (s.vacancy == null || !java.util.Arrays.equals(at, s.vacancyAt)) {
+            s.vacancy = getJobVacancyDrawn();
+            s.vacancyAt = at;
+            s.vacanciesRead++;
+        }
+        return WorksValue.compared(s.vacancy, this::getJobVacancyDrawn).clone();
+    }
+
+    /**
+     * Every number getJobVacancy()'s fill reads (AP5), as raw bits: the posts and the licences by job type, the skilled heads,
+     * the workforce, the prisoners, the owner families, the students (their count first, -1 for none) and the bands' bases.
+     * The same numbers give the same vacancies to the bit, so a held figure is read afresh when any of them moves, by
+     * whatever path (getSkilledHeads() and getLicensedHeads() hand out the live arrays, and setStudying() keeps the caller's).
+     */
+    long[] vacancyInputs() {
+        int n = studying == null ? 0 : studying.length;
+        long[] at = new long[jobs.length + licensed.length + skilledHeads.length + bandBase.length + n + 5];
+        int k = 0;
+        for (long v : jobs) at[k++] = v;
+        for (double v : licensed) at[k++] = Double.doubleToRawLongBits(v);
+        for (double v : skilledHeads) at[k++] = Double.doubleToRawLongBits(v);
+        for (double v : bandBase) at[k++] = Double.doubleToRawLongBits(v);
+        at[k++] = workforce;
+        at[k++] = Double.doubleToRawLongBits(imprisoned);
+        at[k++] = Double.doubleToRawLongBits(owners);
+        at[k++] = studying == null ? -1 : n;
+        for (int i = 0; i < n; i++) at[k++] = Double.doubleToRawLongBits(studying[i]);
+        at[k] = totalWagePerType.length;
+        return at;
+    }
+
+    /** The vacancies by job type as the bands stand, filled afresh: getJobVacancy() outside a pass, and the figure a held one is compared with (AP5). */
+    long[] getJobVacancyDrawn() {
 
         long[] vacancy = new long[totalWagePerType.length];
         BandFill fill = fillByBand(staffablePostsByBand());

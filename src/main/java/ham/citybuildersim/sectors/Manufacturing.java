@@ -7,9 +7,11 @@ import ham.citybuildersim.Formats;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.Good;
 import ham.citybuildersim.NewUnit;
+import ham.citybuildersim.OldMetal;
 import ham.citybuildersim.Sector;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * What the city makes out of its own steel, and ships.
@@ -75,6 +77,57 @@ import java.util.List;
  * See claude/manufacturing.md.
  */
 public final class Manufacturing extends Sector {
+
+    /** Months covering its running costs after the lent DISTRESS_LOSS_MONTHS operating-loss runway before Manufacturing orders more plant: a full year's recovery (MR1). */
+    public static final int EXPANSION_RECOVERY_MONTHS = 12;
+
+    // The dial means no recovery hold is active; first entry and ordinary short losses are allowed.
+    private int expansionRecoveryMonths = EXPANSION_RECOVERY_MONTHS;
+
+    /** Paying months in an armed recovery, or the expansion dial when no recovery hold is active (MR1). */
+    public int getExpansionRecoveryMonths() { return expansionRecoveryMonths; }
+
+    /*
+     * THE MARKET'S OWN RECORD (MR1). A new works' estimate does not show that
+     * the plant already here has recovered from the losses that made it sell
+     * capacity. Irreversible investment has an option value of waiting for
+     * evidence (Pindyck 1990; docs/queue/MR1-notes.md, WHY). Observe the closed
+     * trading result, as AQ1's bleed does, excluding the old metal sold when
+     * plant is retired. Arm only at AQ1's operating-loss runway while lent,
+     * not on a short loss spell funded from its own cash (REV-MR1). Once
+     * armed, another loss restarts the twelve paying months; completing them
+     * releases the hold. Interest-only losses do not restart recovery.
+     */
+    @Override
+    protected void afterBank() {
+        double running = statement().operatingIncome - statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0);
+        if (running < 0 && (expansionRecoveryMonths < EXPANSION_RECOVERY_MONTHS || lentLossRunway())) {
+            expansionRecoveryMonths = 0;
+        }
+        else if (expansionRecoveryMonths < EXPANSION_RECOVERY_MONTHS) expansionRecoveryMonths++;
+    }
+
+    /** bank() closes before recordOperatingResult(): the saved streak here is through the previous close. */
+    private boolean lentLossRunway() {
+        return game != null
+                && game.getBusinessInvestment().getOperatingLossMonths(key()) >= BusinessInvestment.DISTRESS_LOSS_MONTHS - 1
+                && game.getEconomyManager().getBusinessDebtManager().getPrincipal(key()) > 0;
+    }
+
+    @Override
+    protected void saveExtras(Map<String, Double> extras) {
+        extras.put("expansionRecoveryMonths", (double) expansionRecoveryMonths);
+    }
+
+    @Override
+    protected void restoreExtras(Map<String, Double> extras) {
+        // An older save has no record of this flow; begin observing it at its next close.
+        expansionRecoveryMonths = Math.max(0, Math.min(EXPANSION_RECOVERY_MONTHS,
+                extras.getOrDefault("expansionRecoveryMonths", (double) EXPANSION_RECOVERY_MONTHS).intValue()));
+    }
+
+    @Override
+    protected void resetExtras() { expansionRecoveryMonths = EXPANSION_RECOVERY_MONTHS; }
 
     /*
      * THE OIL ON THE LINE (0.7.83, batch O6; docs/studies/spec-oil.md 2.5,
@@ -225,6 +278,11 @@ public final class Manufacturing extends Sector {
     public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game) {
 
         String sector = key();
+        if (expansionRecoveryMonths < EXPANSION_RECOVERY_MONTHS) {
+            return BusinessInvestment.Decision.no(sector, String.format(
+                    "operating recovery: %d of %d months covering its own running costs after sustained lent losses",
+                    expansionRecoveryMonths, EXPANSION_RECOVERY_MONTHS));
+        }
 
         BuildingsTemplate best = null;
         double bestScore = 0;

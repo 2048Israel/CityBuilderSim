@@ -181,6 +181,7 @@ public class BuildingsTemplate {
 
     public BuildingsTemplate setSector(String sector) {
         this.sector = sector == null ? "" : sector;
+        BuildingManager.postsMoved();   // the posts held for a pass are grouped by the owning sector: read afresh (AP5)
         return this;
     }
 
@@ -752,6 +753,7 @@ public class BuildingsTemplate {
         for (JobType type : JobType.values()) {
             jobsByEducation[type.ordinal()] = (int) Math.round((na * a.getJobs(type) + nb * b.getJobs(type)) / all);
         }
+        BuildingManager.postsMoved();   // the posts held for a pass are read afresh (AP5)
         this.electricityConsumption = (int) Math.round((na * a.getElectricity() + nb * b.getElectricity()) / all);
         this.gen = (na * a.getGen() + nb * b.getGen()) / all;
         this.waterConsumption = (na * a.getWater() + nb * b.getWater()) / all;
@@ -766,6 +768,7 @@ public class BuildingsTemplate {
         this.makes = made;
         this.uses = used;
         for (JobType type : JobType.values()) jobsByEducation[type.ordinal()] = r.getJobs(type);
+        BuildingManager.postsMoved();   // the posts held for a pass are read afresh (AP5)
         this.electricityConsumption = r.getElectricity();
         this.gen = r.getGen();
         this.waterConsumption = r.getWater();
@@ -939,6 +942,7 @@ public class BuildingsTemplate {
 
     public BuildingsTemplate setJobs(JobType type, int number) {
         jobsByEducation[type.ordinal()] = number;
+        BuildingManager.postsMoved();   // the posts held for a pass are read afresh (AP5)
         return this;
     }
 

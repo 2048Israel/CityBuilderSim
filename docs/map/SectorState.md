@@ -19,7 +19,7 @@
 
 **Uses:** [Sector](Sector.md) (16), [Good](Good.md) (13), [Statement](Statement.md) (4)
 
-**Used by (18):** [BooksCheck](BooksCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FreightViewCheck](FreightViewCheck.md), [FuelSplit](FuelSplit.md), [GoldMiningCheck](GoldMiningCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HomeRailCheck](HomeRailCheck.md), [HousingCheck](HousingCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [TradeBandCheck](TradeBandCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [VanCheck](VanCheck.md)
+**Used by (19):** [BooksCheck](BooksCheck.md), [DataSave](DataSave.md), [EconomyManager](EconomyManager.md), [FreightViewCheck](FreightViewCheck.md), [FuelSplit](FuelSplit.md), [GoldMiningCheck](GoldMiningCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HomeRailCheck](HomeRailCheck.md), [HousingCheck](HousingCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [ManufacturingCheck](ManufacturingCheck.md), [PortCheck](PortCheck.md), [RailCheck](RailCheck.md), [Sector](Sector.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [TradeBandCheck](TradeBandCheck.md), [TruckRouteCheck](TruckRouteCheck.md), [VanCheck](VanCheck.md)
 
 ## Fields (state)
 
