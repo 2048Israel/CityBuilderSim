@@ -373,3 +373,11 @@ harnesses and generated maps remain the reviewed dry-run snapshot. All helper
 and owned run/wait sessions have ended. The stopped gate asked for a renewed
 `AP6 mends at` handoff after naming its new red; keep the provisional marker
 for that handoff, with the kept ALL run and its now-known-only verdict.
+
+The orchestrator accepted the renewed handoff on 2026-11-26
+(`20261126-162209-873-orchestrator-a1fc`): the Term 10 signature is main's,
+its HT1-H row is accepted, and REV-AP6's SHIP stands because only these notes
+and the ship file moved. Its explicit ready go authorizes dropping the
+provisional marker and mailing ready. Record this go before the marker's
+separate final commit; no code, harness, map or kept-run changes, and no
+additional model runs.
