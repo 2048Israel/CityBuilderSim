@@ -664,6 +664,13 @@ public final class HousingMarket {
         double pipelineHeads=bm.getHousingInventory().stock().stream().mapToDouble(r->r.pipeline()*r.dwelling().capacity()).sum();
         double wanted=game.getSectors().realEstate().latentHeadShortfall()+game.getHouseholdCapacity()+pipelineHeads;
         double newHeads=Math.max(0,wanted-game.getCohorts().total());
+        // The tenants a landlord and its lender count on are the ones the town draws: never more than Migration's own
+        // target over the people here, which a dear or unsafe town cuts. Posts alone projected the 1900 stalled twin
+        // 479 heads to come at m40 (552 posts, 203 of them withheld, for 231 workers), its target 577 for 533 at m60,
+        // and the slice lender passed 67 units from m9 to m53 on rent rolls those never-coming tenants filled
+        // (RES3c, 2026-11-25).
+        var drawn=game.getMigration();
+        if(drawn.hasDrawn())newHeads=Math.min(newHeads,Math.max(0,drawn.getLastTarget()-game.getCohorts().total()));
         double jobs=game.getPopulationManager().getTotalJobs()+bm.getPostsWithheld()+bm.getJobsUnderConstruction();
         double scale=heads>0&&workers>0?Math.min(newHeads/heads,Math.max(0,jobs-workers)/workers):0;
         for(Household c:game.getHouseholdBalance().cells())if(c instanceof WorkingHousehold w){

@@ -587,6 +587,8 @@ public class Migration {
     /* ------------------------------- reading ------------------------------- */
 
     public double getLastTarget()         { return lastTarget; }
+    /** Whether a month's draw has been read: before the town's first month getLastTarget() is no reading but its 0. */
+    public boolean hasDrawn()             { return monthsRecorded > 0; }
     /** What senior care multiplied the homes' draw by (since WG2 the jobs' draw is not lifted by it). 1 when there is none. */
     public double getLastSeniorPull()     { return lastSeniorPull; }
     public double getLastArrivals()       { return lastArrivals; }
