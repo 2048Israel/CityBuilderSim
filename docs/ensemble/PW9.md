@@ -1,6 +1,6 @@
 # Ensemble baseline: {next}
 
-The ensemble on the model of **{next}**: classes snapshot of commit 8c0bb1f98 (2026-11-26T04:57Z), label PW9, 80 of 80 runs.
+The ensemble on the model of **{next}**: classes snapshot of commit 58d830238 (2026-11-26T09:15Z), label PW9-final, 80 of 80 runs.
 Data files named for this snapshot — `-Dcbs.earth=/home/jerus/cbs/main/data/earth-2.bin -Dcbs.world=/home/jerus/cbs/main/data/world-1.bin`.
 Run on gatebox, openjdk version "21.0.13" 2026-10-20 LTS.
 Scored against `docs/ensemble/0.9.208.md` for T1, T2 and F1. 
@@ -60,7 +60,7 @@ criteria passed: 23/26 (vacuous, not counted: 0; retired, not counted: 1); missi
 batch verdict PASS (hard criteria passed 10/10)
 changed verdict ZERO_HOT H2 (info) FAIL -> PASS
 changed verdict HIGH T2 (info) PASS -> FAIL
-time per run (median s): AUTO2 412.9, ZERO_SLACK 375.3, ZERO_HOT 18.4, SHOCK 83.0, HIGH 44.0; total 241.1 min
+time per run (median s): AUTO2 413.7, ZERO_SLACK 375.1, ZERO_HOT 18.3, SHOCK 85.3, HIGH 44.5; total 241.7 min
 
 ## summary.json
 

@@ -1067,3 +1067,67 @@ Keep the provisional marker until the final checks and records are done;
 the failed AG6VUQWA run supplies no reuse approval. This pre-restart
 turn only records the instruction, commits/pushes, and ends before04:30;
 it starts no helper, JVM or global job.
+
+## Final-source ensemble after laptop back
+
+The explicit `laptop back` instruction `20261126-050549-726` resumed PW9.
+Origin/main remained `2560ada85`, already merged; no source moved. Pushed
+snapshot `58d83023860520b523582099bccecabed59b0cf0` contains model
+`54d4b6cc6`. The final ensemble, label `PW9-final`, ran on gatebox against
+**0.9.208.md**. It waited behind RES3's existing ensemble, then ran eight
+jobs at once. Its Bash background launcher had timeout7,200s, exited0,
+and its complete tool process ended. No fallback or local JVM was used.
+
+The box's exact HEAD and clean src/pom/tools were verified. Executable
+`/home/jerus/cbs/jdk-21.0.13+9/bin/java` used the real box main-data files,
+earth2 281,761,695 bytes and world1 8,712,947 bytes, with no month override.
+The baseline's Linux data-path flags were removed before submission;
+the snapshot records its actual box paths. No fresh content-hash claim
+is made beyond the GB3 data-copy guarantee.
+
+All **80/80** unique policy/seed CSV, DONE and time keys are complete,
+16 seeds per policy, contiguous months2 through endpoints AUTO2=2400,
+ZERO_SLACK=2040, ZERO_HOT=402, SHOCK=840 and HIGH=720. None are missing or
+short. The independent helper found no abnormal logs, unread/nonzero
+money residual or finding flags: **M1/F1 zero in every policy, hard10/10
+PASS**. Pairing is64/64. Box batch wall time was30.5minutes; 241.7minutes
+is the sum of parallel per-run elapsed times, not measured CPU time.
+
+| Final-source criterion | 0.9.208 baseline | Final PW9 |
+|---|---|---|
+| Overall / hard score | 23/26; 10/10 PASS | 23/26; 10/10 PASS |
+| AUTO2 takeoff | 16/16, median524 [447–687] | 16/16, median511.5, displayed512 [447–917] |
+| AUTO2 final population | 6,240,014 | 4,992,121, −20.00%, T2 PASS |
+| ZERO_SLACK final population | 4,187,796 | 3,797,989.5, −9.31%, PASS |
+| ZERO_HOT final population | 15,883 | 20,795.5, +30.93%, PASS |
+| SHOCK final population | 533,324 | 484,592, −9.14%, PASS |
+| HIGH final population | 182,116 | 116,844.5, −35.84%, T2 FAIL (informational) |
+| ZERO_HOT H2 | FAIL, +0.67pp, 11/16 below | PASS, −0.37pp, 14/16 below |
+
+Only H2 FAIL→PASS and HIGH T2 PASS→FAIL change verdict against208. HIGH
+R1/R2/R3 remain PASS; the retired H1 stays excluded. Keep every reading
+and verdict, including HIGH's below75%-baseline population. The earlier
+FB11/published-baseline attribution caveat still applies; no threshold,
+seed, policy or finding was adjusted and no hard exemption is needed.
+
+The additional comparison verifies **all80 final CSVs byte-identical**
+to the kept pre-budget `8c0bb1f98` run, with no differing model month in
+those observed series. This confirms the tested ensemble figures stay
+unchanged by the guard; it is not private-state identity. The prior
+`target/ensemble/PW9` remains preserved. The final scored artifact now
+replaces `docs/ensemble/PW9.md`, changing only its heading/introduction
+version to `{next}`; its provenance and embedded JSON are otherwise exact.
+
+Kept final data are `target/ensemble/PW9-final/{baseline.md,score.md,
+summary.json,snapshot.txt,progress.txt,times.txt}`, 80 CSVs and `logs/`,
+`times/`. Remote source/classes remain at
+`/home/jerus/cbs/tools/58d83023860520b523582099bccecabed59b0cf0/target/ensemble/PW9-final`.
+Launcher proof is `target/PW9-final-ensemble.log` and
+`target/PW9-final-ensemble-exit.txt`; independent coverage/audit/80-hash
+proof is `target/PW9-finalensemble-report.txt`. The helper closed its
+readers and ended with no owned jobs. Root collected its launcher exit0.
+
+The next required step is the allocated whole boxed dry run. The
+orchestrator's GB6 instruction leaves the old PC timeout to that full
+judge, with no PC rerun or additional review. The provisional marker
+stays until the dry-run verdict and final records; AG6VUQWA is not reused.
