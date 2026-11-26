@@ -1031,7 +1031,11 @@ public final class HousingMarket {
             // Allocation can round down by an ULP at a full door. Classify
             // economic vacancy with the same quantity bound as the match.
             if(c.demand>=balanced-FamilyModel.packingRounding(balanced)&&c.occupied>0)c.target=Math.max(c.target,c.carry*c.homes/c.occupied);
-            c.ask=c.target>0?Retail.stickyPrice(c.ask,c.target,expectedMonthly,1.0/RealEstate.LEASE_MONTHS)
+            // An unbuilt class has no sitting tenant for its ask to keep faith with: it quotes its target outright, as a builder
+            // quotes a new block on the day's costs (RES3c). Walked at a lease's speed, a quote struck on a rising carry trailed it -
+            // 2.7% under in HousingCheck's staffing town after 24 months of wages - and a block let in full never met its hurdle.
+            if(c.homes==0&&c.target>0)c.ask=c.target;
+            else c.ask=c.target>0?Retail.stickyPrice(c.ask,c.target,expectedMonthly,1.0/RealEstate.LEASE_MONTHS)
                     :Math.max(0,c.ask*(1-1.0/RealEstate.LEASE_MONTHS));
         }
     }

@@ -142,8 +142,10 @@ public final class HousingMarketCheck {
             for(var c:market.classes())if(c.recipe==t.getId()){
                 var d=t.getHousingRecipe().mix().stream().filter(home->home.id().equals(c.dwelling)).findFirst().orElseThrow();
                 double anchor=c.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
-                near("unbuilt "+form.code()+"/"+d.id()+" quotes gross yield or actual operating cost",c.ask,Math.max(anchor,c.carry));
-                expected+=Math.max(anchor,c.carry)*d.count();carried+=c.carry*d.count();
+                // RES3's unbuilt quote: the gross yield, or the actual operating cost and the build margin a landlord would build it for.
+                double quote=Math.max(anchor,c.carry*(1+ham.citybuildersim.sectors.RealEstate.BUILD_MARGIN));
+                near("unbuilt "+form.code()+"/"+d.id()+" quotes gross yield or actual operating cost and build margin",c.ask,quote);
+                expected+=quote*d.count();carried+=c.carry*d.count();
             }
             near("unbuilt "+form.code()+" rent reconciles its comparable class quotes",rent,expected);
             near("unbuilt "+form.code()+" actual carry is allocated exactly once",carried,g.getEconomyManager().housingCarry(t));
@@ -189,33 +191,43 @@ public final class HousingMarketCheck {
         check("both alternatives have a real positive invoice",compactCost>0&&houseCost>0);
         near("compact planner cost is the actual door invoice",compactCost,g.doorPriceOf(compact,1));
         near("House planner cost is the actual door invoice",houseCost,g.doorPriceOf(house,1));
-        // Open at an electricity bill equal to the compact form's gross capital
-        // return, then lower that tariff (below). Existing asks retain their opening quote;
-        // no rent, yield, template cost or preference is fitted to the ranking.
+        // The carry is linear in the tariff: read at two tariffs (none, and an electricity bill equal to the compact
+        // form's gross capital return) it gives each form's carry at any tariff.
         double openingPower=compactCost*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12/compact.getElectricityConsumption();
+        em.setPricePerWatt(0);double compactAt0=em.housingCarry(compact),houseAt0=em.housingCarry(house);
+        em.setPricePerWatt(openingPower);
+        double compactPer=(em.housingCarry(compact)-compactAt0)/openingPower,housePer=(em.housingCarry(house)-houseAt0)/openingPower;
+        // RES3's unbuilt quote: the cost and the build margin a landlord would build a class for, or its gross reference
+        // (the ask's capital is the home's market value, the carry's own base, 4f690edfc), whichever is more. Open at a tariff
+        // where the compact's cost and margin bind and the House's stay under its gross reference, then lower that tariff
+        // (below). Existing asks retain their opening quote; no rent, yield, template cost or preference is fitted to the ranking.
+        double margin=1+ham.citybuildersim.sectors.RealEstate.BUILD_MARGIN;
+        double compactGross=(em.housingStructureValue(compact)+em.housingLandValue(compact))*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
+        double houseGross=(em.housingStructureValue(house)+em.housingLandValue(house))*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
+        double compactBinds=(compactGross/margin-compactAt0)/compactPer,houseHolds=(houseGross/margin-houseAt0)/housePer;
+        out.printf(Locale.ROOT,"   the compact's cost and margin bind above %.6g of the probe tariff; the House's hold its gross reference to %.6g%n",
+                compactBinds/openingPower,houseHolds/openingPower);
+        check("fixture: a tariff binds the compact's cost and margin while the House keeps its gross reference",compactBinds<houseHolds);
+        double opened=(Math.max(0,compactBinds)+houseHolds)/2;
         double households=compact.getDwellings()+house.getDwellings();
-        em.setPricePerWatt(openingPower);market.reset();
+        em.setPricePerWatt(opened);market.reset();
         var demand=List.of(new HousingChoice.Demand("choice-retired-couples",households,2,0,true,0,false,houseCost));
         market.clear(g,demand);
         var compactKey=new HousingInventory.Key(compact.getId(),compact.getHousingRecipe().mix().getFirst().id());
         var houseKey=new HousingInventory.Key(house.getId(),house.getHousingRecipe().mix().getFirst().id());
-        near("compact opening quote is its actual operating floor",market.price(compactKey),em.housingCarry(compact));
+        // RES3's unbuilt quote: the compact's floor is its actual operating cost and the build margin.
+        near("compact opening quote is its actual operating floor and build margin",market.price(compactKey),em.housingCarry(compact)*margin);
         // The ask's capital is the home's market value, the carry's own base (RES3c, 4f690edfc), not the door's invoice.
-        near("House opening quote keeps the unchanged gross reference",market.price(houseKey),
-                (em.housingStructureValue(house)+em.housingLandValue(house))*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12);
+        near("House opening quote keeps the unchanged gross reference",market.price(houseKey),houseGross);
         // ...then move the tariff to where the gross and net winners part (RES3c). Since the ask's capital is the home's market
         // value (4f690edfc), the House's gross per project dollar fell, and at half the tariff the compact form won both ways.
-        // The carry is linear in the tariff: read at two tariffs, it gives the tariff where the two forms' net per project
-        // dollar are equal and where the first build hurdle would bind, and the fixture stands halfway between.
+        // The two tariff readings give the tariff where the two forms' net per project dollar are equal and where the first
+        // build hurdle would bind, and the fixture stands halfway between.
         var opening=market.forecast(g);
         double openIncomeC=opening.income(compact,1),openIncomeH=opening.income(house,1);
-        em.setPricePerWatt(0);double compactAt0=em.housingCarry(compact),houseAt0=em.housingCarry(house);
-        em.setPricePerWatt(openingPower);
-        double compactPer=(em.housingCarry(compact)-compactAt0)/openingPower,housePer=(em.housingCarry(house)-houseAt0)/openingPower;
         double parity=((openIncomeH-houseAt0)/houseCost-(openIncomeC-compactAt0)/compactCost)/(housePer/houseCost-compactPer/compactCost);
-        double margin=1+ham.citybuildersim.sectors.RealEstate.BUILD_MARGIN;
         double hurdle=Math.min((openIncomeC/margin-compactAt0)/compactPer,(openIncomeH/margin-houseAt0)/housePer);
-        out.printf(Locale.ROOT,"   the tariff parts the winners from %.6g of the opening; the first hurdle binds at %.6g%n",
+        out.printf(Locale.ROOT,"   the tariff parts the winners from %.6g of the probe tariff; the first hurdle binds at %.6g%n",
                 parity/openingPower,hurdle/openingPower);
         check("fixture: a tariff parts the gross and net winners inside both build hurdles",parity>0&&parity<hurdle);
         em.setPricePerWatt((parity+hurdle)/2);
@@ -337,13 +349,15 @@ public final class HousingMarketCheck {
             var c=market.classes().stream().filter(row->row.key().equals(key)).findFirst().orElseThrow();
             double anchor=c.capital*ham.citybuildersim.sectors.RealEstate.LANDLORD_YIELD/12;
             double cost=em.housingCarry(t)*dwelling.costWeight()/recipe.costWeight();
+            // RES3's unbuilt quote: the floor is what a landlord would build the class for, its cost and the build margin.
+            double floor=cost*(1+ham.citybuildersim.sectors.RealEstate.BUILD_MARGIN);
             check("fixture has an available unbuilt quote",c.available&&c.homes==0&&anchor>0&&cost>0);
-            check("actual property-tax input causes costs "+(high?"above":"below")+" gross yield",high?cost>anchor:cost<anchor);
+            check("actual property-tax input causes costs and their build margin "+(high?"above":"below")+" gross yield",high?floor>anchor:floor<anchor);
             near("unbuilt carry comes from the actual operating-cost getter",c.carry,cost);
-            near("opening quote uses "+(high?"actual cost floor":"gross market yield"),c.ask,high?cost:anchor);
+            near("opening quote uses "+(high?"actual cost and build margin floor":"gross market yield"),c.ask,high?floor:anchor);
             market.reprice(0);
             c=market.classes().stream().filter(row->row.key().equals(key)).findFirst().orElseThrow();
-            near("later unbuilt target uses "+(high?"actual cost floor":"gross market yield"),c.target,high?cost:anchor);
+            near("later unbuilt target uses "+(high?"actual cost and build margin floor":"gross market yield"),c.target,high?floor:anchor);
             near("an already correct unbuilt quote stays at its target",c.ask,c.target);
             near("unbuilt vacancy earns no rent",market.receipts(),0);
             market.sold();c=market.classes().stream().filter(row->row.key().equals(key)).findFirst().orElseThrow();
