@@ -359,6 +359,54 @@ the empty initial audit sentinel cannot masquerade as an executed audit.
 The matching main probe adds the same optional observations, never the QR1
 gate. Both source snapshots are pushed before any corrected measurement.
 
+### P2 paired cash measurements (calendar 1–2400)
+
+The first completed pair member is main/1900, label `QR1-main-1900-v2`,
+observation-only snapshot **4f049299028a7cf1061015a0aab2fefcf99ba9ac** on
+main **3bf83d20e**. It ran on Jerusalem with Oracle JDK 21.0.4+8-LTS-274,
+the configured earth-2/world-1 data paths above, seed 0 and the unchanged
+Standard 1900 default player (generated city, no Earth-site flag).
+LongPlaytest **PASS**: primary ends at m2405 in 1725 s, findings “Nothing”,
+every monthly audit and reload passed; all **79** HA1 post-primary fixture
+assertions pass. Its final export DONE follows those fixtures, 1779.7 s.
+The runner does not separately retain the child JVM exit status. The policy
+scorer's separate exit is not this standalone playtest's verdict; the formal
+80-run M1/F1 comparison is still required.
+
+Exactly 2400 contiguous calendar rows, one founding baseline and 2399 played
+rows; overshoot and fixture cities excluded. Full precision saved forgiveness
+equals the independent monthly sum at the endpoint. The maximum interim
+difference is 1.4551915228366852e-11, from addition order. All retirement cash
+and count cumulatives reconcile to the event sidecar at every row; no invalid
+numeric value, missing played-month audit or unexplained-money finding.
+
+All amounts below are nominal local-currency **thousands**, gross retirement
+receipts before debt repayment. In-ban forgiveness/backstop are a **subset**
+of total forgiveness, never added to it.
+
+| City/model | Forgiven F | In-ban forgiven Fban | Actual in-ban backstop B | Distress receipts D | All retirement receipts R |
+|---|---:|---:|---:|---:|---:|
+| 1900/main | 1003070.5468181840 | 230623.13222283978 | 230623.13222283978 | 159142294.59705200 | 2525125039.9677700 |
+
+Main/1900 has **853** in-ban sector-months. Distress receipts comprise plot
+**130786384.42549273**, material **28355910.171559263**. All retirement:
+**757** events/**17586** buildings. Distress: **16** events/**518** buildings;
+operating-positive distress: **13**/**280**, gross **85325583.69961971**.
+This independently reproduces the initial complete 1900 measurement.
+
+| Main/1900 sector | Distress events/buildings | Operating-positive events/buildings | Distress months |
+|---|---:|---:|---|
+| Copper Refining | 4/14 | 4/14 | 1777–1778, 1874–1875 |
+| Cement & Concrete | 9/501 | 7/264 | 1830–1831, 1833–1839 |
+| Refining | 3/3 | 2/2 | 1853, 2091, 2307 |
+
+The sixteen sales' net-loss streaks are 24–33; operating-loss streaks 0–18,
+all below the dial. Raw CSV/sidecar/log/snapshot:
+`C:/Users/Jerus/AppData/Local/Temp/QR1-main-money-20261126/target/ensemble/QR1-main-1900-v2`.
+Full-precision helper evidence copied to `target/qr1-main1900-report.json`
+and `target/qr1-main1900-final-report.txt`. QR1/1900 is running on the same
+PC and settings; the two today runs and formal ensemble remain pending.
+
 P3 considered and not taken, as instructed: shorten or deny a fresh full
 operating-loss runway after a long interest-only net-loss spell.
 [11 USC 1112(b)(4)(A)](https://uscode.house.gov/us/usc/119-120/t11/s1112/)
