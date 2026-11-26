@@ -61,7 +61,10 @@ import java.util.Locale;
  *      of crowding, and the comparison by order turned over with main 0.9.208
  *      (behind 10.688 a month against 3.454 kept up on RES3's own town; 0.192
  *      against 2.065 on the merge, its peak, 52.100 at m830, the month before
- *      the order trimmed at m831; RES3c, 2026-11-26);
+ *      the order trimmed at m831; RES3c, 2026-11-26); and a household that
+ *      could pay and found no door boards with a housed family, counted
+ *      overcrowded, billed nothing, every audit exact in its months (call A
+ *      over R1g's waiting, the orchestrator's call of 2026-11-26);
  *   5. every played month's households' cash identity closes beside the accepted and refused mortgage orders (HL1).
  */
 public final class HousingDoorCheck {
@@ -78,6 +81,10 @@ public final class HousingDoorCheck {
     static final String RE = Sectors.REAL_ESTATE;
     /** Call A's first town's boom (a6b4e2369): 36.993 households overcrowded, the landlords' 389 Houses trimmed to 14 for the down payment. */
     static final int BOOM = 831;
+    /** The months played past the window once the fire has taken its homes, for the payers that find no door to board (call A over R1g). */
+    static final int CODA = 6;
+    /** The fire at the window's end leaves one structure in this many of every housing class standing, the rest taken occupied as they stand (call A over R1g's coda). */
+    static final int FIRE = 4;
 
     /** Months of one kind and the households overcrowded in them (call A). */
     static final class Tally {
@@ -144,6 +151,13 @@ public final class HousingDoorCheck {
         // caught up; the rise of overcrowding over each, and last month's overcrowded, households seeking and homes standing.
         int[] grew = { 0, 0 };
         double[] rose = { 0, 0 }, last = { -1, 0, 0 };
+        // ...and the payers boarding (call A over R1g): [0] months with boarders, [1] of them every boarder counted
+        // overcrowded, [2] of them the money audit and the households' cash identity exact; the most and its month.
+        int[] board = { 0, 0, 0 };
+        double[] boardMost = { 0, -1 };
+        // The coda past the window: [0] the month its vacant homes were retired, [1] the structures, [2] the months played.
+        long[] coda = { -1, 0, 0 };
+        double[] codaMost = { 0, 0 };   // the coda's most households overcrowded, and with no door
         double[] boom = { -1, -1 };
         String[] boomLine = { "" };
         try {
@@ -183,6 +197,7 @@ public final class HousingDoorCheck {
                     rose[k] += crowded - last[0];
                 }
                 last[0] = crowded; last[1] = seeking; last[2] = standing;
+                boarders(g, households, board, boardMost);
                 // The model's own readings of building falling behind: the month's order at the door trimmed or held (its
                 // down payment, the lender's test, the bank's capital), or the landlords held for land.
                 boolean land = g.getLandBlockedSectors().contains(RE);
@@ -200,6 +215,32 @@ public final class HousingDoorCheck {
                     pending = null;
                 }
             });
+            // The payers who find no door standing (call A over R1g, the orchestrator's call of 2026-11-26). The cause: at the
+            // window's end a fire leaves one structure in FIRE of every housing class standing, households in the rest, and
+            // their ground is released (the occupied retirement HousingMarketCheck's retiredRoom() proves); at m900 the town
+            // has no whole structure vacant, so the households it puts out, and those that form or arrive after, find no
+            // door standing (RES3c), as San Francisco's fire of 1906 left more than half its people with no home. 78 Houses
+            // alone (a quarter) left every one a door past the line in another class, and a quarter of every class (415
+            // structures) 53.347 households overcrowded, every payer a door or a share; three in four (1,249) left 2,049.786
+            // payers boarding at m901.
+            var bm = g.getBuildingManager();
+            coda[0] = g.getMonth();
+            for (BuildingsTemplate t : bm.getTemplates()) {
+                if (t.getHousingRecipe() == null || bm.getQuantity(t.getId()) < FIRE) continue;
+                long gone = bm.retire(t, bm.getQuantity(t.getId()) * (FIRE - 1) / FIRE);
+                g.getLandManager().release(gone * t.getLandSqFt(), t.getSector(), Game.groundUse(t));
+                coda[1] += gone;
+            }
+            for (int i = 0; i < CODA && !stuck; i++) {
+                int before = g.getMonth();
+                LongPlaytest.runPlayer(g, 1);
+                if (g.getMonth() == before) break;
+                coda[2]++;
+                boarders(g, g.getLastHouseholdsAudit(), board, boardMost);
+                var after = g.getSectors().realEstate().housingMarket();
+                codaMost[0] = Math.max(codaMost[0], after.overcrowded());
+                codaMost[1] = Math.max(codaMost[1], g.getFamilies().getStillUnplaced());
+            }
         } finally {
             LongPlaytest.out = was;
             System.setOut(out);
@@ -317,6 +358,13 @@ public final class HousingDoorCheck {
                 Math.max(behind.most, keptUp.most) > 0);
         check("fixture: the households outgrew the homes in some months of the window and the homes caught up in others",
                 grew[0] > 0 && grew[1] > 0);
+        out.printf(Locale.ROOT, "   the coda: a fire takes %d structures of the housing at m%d, %d months played after; at most %.3f households overcrowded, %.3f with no door%n",
+                coda[1], coda[0], coda[2], codaMost[0], codaMost[1]);
+        out.printf(Locale.ROOT, "   payers boarding with a housed family (no door standing): %d months, at most %.3f households (m%.0f); counted overcrowded in %d, every audit exact in %d%n",
+                board[0], boardMost[0], boardMost[1], board[1], board[2]);
+        check("fixture: households that could pay found no door standing and boarded with a housed family (call A over R1g)", coda[1] > 0 && board[0] > 0);
+        check("...every boarder counted overcrowded", board[0] > 0 && board[1] == board[0]);
+        check("...billed nothing, and the money audit and the households' cash identity exact in every month of them", board[0] > 0 && board[2] == board[0]);
         check("overcrowding rises over the months the town's households outgrow its homes", rose[0] > 0);
         check("...by more a month than over the months the homes catch up",
                 grew[0] > 0 && grew[1] > 0 && rose[0] / grew[0] > rose[1] / grew[1]);
@@ -392,6 +440,22 @@ public final class HousingDoorCheck {
 
     static boolean stuck;
 
+    /**
+     * A month's payers boarding with the housed (call A over R1g): [0] the months with any, [1] of them every boarder
+     * counted overcrowded, [2] of them the money audit and the households' cash identity exact - the boarder billed
+     * nothing, its rent to its host a transfer between households that nets to zero in their aggregate only.
+     */
+    static void boarders(Game g, MoneyAudit.Households households, int[] board, double[] boardMost) {
+        var market = g.getSectors().realEstate().housingMarket();
+        double boarding = market.boarders(), crowded = market.overcrowded();
+        if (!(boarding > 0)) return;
+        board[0]++;
+        if (crowded + FamilyModel.packingRounding(crowded) >= boarding) board[1]++;
+        MoneyAudit.Result audit = g.getLastMoneyAudit();
+        boolean exact = !(Math.abs(audit.residual) > .01 && audit.relative() > 1e-7) && !(Math.abs(g.getPostAuditDrift()) > .01);
+        if (exact && LongPlaytest.MoneyFixtures.householdsClose(households)) board[2]++;
+        if (boarding > boardMost[0]) { boardMost[0] = boarding; boardMost[1] = g.getMonth(); }
+    }
     static void run(Game g, int months, Runnable after) {
         for (int i = 0; i < months && !stuck && g.getMonth() < TO; i++) {
             int before = g.getMonth();

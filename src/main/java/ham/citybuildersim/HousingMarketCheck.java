@@ -1260,11 +1260,15 @@ public final class HousingMarketCheck {
                 new HousingChoice.Demand("old-guest",1,1,0,true,0,false,0),
                 new HousingChoice.Demand("new-rich",1,1,0,true,5,false,1e6)));
         near("the existing guest keeps its zero-bill funded arrangement",next.leases().stream().filter(l->l.cell().equals("old-guest")).mapToDouble(HousingChoice.Lease::households).sum(),1);
-        near("a rich new guest cannot displace that incumbent",next.leases().stream().filter(l->l.cell().equals("new-rich")).mapToDouble(HousingChoice.Lease::households).sum(),0);
+        // Call A over R1g's "waits for the building" (the orchestrator's call, 2026-11-26): a newcomer who can pay and finds no
+        // door standing boards beside the housed, billed nothing and counted, where it waited with no door before (RES3c).
+        near("a rich new guest boards beside that incumbent, never doorless (call A over R1g)",next.leases().stream().filter(l->l.cell().equals("new-rich")).mapToDouble(HousingChoice.Lease::households).sum(),1);
+        near("...billed nothing, as a boarder",next.leases().stream().filter(l->l.cell().equals("new-rich")).mapToDouble(HousingChoice.Lease::bill).sum(),0);
+        near("...and counted a boarder",market.boarders(),1);
         near("incumbency creates no additional door",market.occupied(),1);
         near("retained rent follows the current class quote once",market.receipts(),current);
         near("the retained guest owes no invented rent",market.rentFor("old-guest",1),0);
-        check("all retained arrangements respect two households per door",next.leases().stream().allMatch(l->l.households()<=2*l.count()+FamilyModel.packingRounding(l.households())));
+        check("all retained arrangements respect two households per door (the boarder past them counted above)",next.leases().stream().filter(l->!l.cell().equals("new-rich")).allMatch(l->l.households()<=2*l.count()+FamilyModel.packingRounding(l.households())));
         market.restore(previous);
         next=market.clear(g,List.of(new HousingChoice.Demand("old-guest",1,1,0,true,0,false,0)));
         near("a prior zero charge cannot create an unfunded empty-door right",next.unplaced(),1);
@@ -1462,13 +1466,19 @@ public final class HousingMarketCheck {
             double richHH=actual.leases().stream().filter(l->l.cell().equals(rich.key())).mapToDouble(HousingChoice.Lease::households).sum();
             near("actual paid halves retain both old households at budget "+budget,oldHH,2);
             double richPlaced=hasRich&&stock>1?1:0;
+            // Call A over R1g's "waits for the building" (the orchestrator's call, 2026-11-26): a newcomer who can pay and finds no
+            // door standing boards with the housed, billed nothing and counted overcrowded, where it waited with no door (RES3c).
+            double boarded=(hasRich?1:0)-richPlaced;
             double completed=budget>=20?Math.min(1,Math.max(0,stock-1-richPlaced)):0;
-            near("actual newcomer uses only a genuinely vacant door at budget "+budget,richHH,richPlaced);
+            double richBill=actual.leases().stream().filter(l->l.cell().equals(rich.key())).mapToDouble(HousingChoice.Lease::bill).sum();
+            near("actual newcomer pays for a door only where one is genuinely vacant at budget "+budget,richBill,20*richPlaced);
+            near("...and otherwise boards with the housed, never doorless, at budget "+budget,richHH,hasRich?1:0);
             near("actual occupied footprint uses current paid doors at budget "+budget,market.occupied(),1+richPlaced+completed);
-            near("actual newcomer shortage matches spare stock at budget "+budget,actual.unplaced(),(hasRich?1:0)-richPlaced);
+            near("actual newcomer leaves no household with no door at budget "+budget,actual.unplaced(),0);
+            near("...who found no door standing counted a boarder at budget "+budget,market.boarders(),boarded);
             near("actual total household source closes at budget "+budget,oldHH+richHH+actual.unplaced(),hasRich?3:2);
             near("actual rent follows occupied asks at budget "+budget,market.receipts(),20*(1+richPlaced+completed));
-            near("only affordable paid crowding is completed after movers",actual.crowded(),1-completed);
+            near("only affordable paid crowding is completed after movers, a boarder crowded beside it",actual.crowded(),1-completed+boarded);
             near("paid incumbent bills follow the completed physical footprint",actual.leases().stream().filter(l->l.cell().startsWith("old-")).mapToDouble(HousingChoice.Lease::bill).sum(),20*(1+completed));
             near("fixture retains ask twenty at budget "+budget,market.price(key),20);
             String before=JSON.toJson(market.forSave());var forecast=market.forecast(g);

@@ -1,4 +1,4 @@
-# HousingMarket.java - 968 lines · 67 methods · 1 constants · model
+# HousingMarket.java - 988 lines · 68 methods · 1 constants · model
 
 `ham/citybuildersim/HousingMarket.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -14,7 +14,7 @@
 
 | line | section |
 |---:|---|
-| 355 | · host places within the census line (RES3c, 2026-11-25) |
+| 359 | · host places within the census line (RES3c, 2026-11-25) |
 
 ## Constants
 
@@ -55,15 +55,16 @@
 | 56 | `private boolean arrivalProjection, arrivalsNeedFamily` | Derived pre-migration workspace, discarded by clearing and rebuilt after load. |
 | 57 | `private double formingFamilies, formingAdults` |  |
 | 59 | `private Map<String, Double> overcrowded` | The households housed past the census line this clearing, by cell (overcrowding()), saved with the state. |
-| 823 | `private final Game city` |  |
-| 824 | `private final List<HousingChoice.Demand> remaining` |  |
-| 825 | `private final Map<HousingInventory.Key, Double> asks` |  |
+| 69 | `private double boarders` |  |
+| 843 | `private final Game city` |  |
+| 844 | `private final List<HousingChoice.Demand> remaining` |  |
+| 845 | `private final Map<HousingInventory.Key, Double> asks` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 957 | **type** `public final class HousingMarket` | One monthly residential quote and clearing, with saved class prices and actual leases. |
+| 12 | 977 | **type** `public final class HousingMarket` | One monthly residential quote and clearing, with saved class prices and actual leases. |
 | 16 | 2 | **type** `public record Sharing(String source, String target, double groups, double sourceCount, double targetCount, ...` | A monthly transfer between existing cells, not a permanent preference or financial axis. |
 | 18 | 12 | **type** `public static final class ClassState` |  |
 | 25 | 1 | `HousingInventory.Key key()` _(in HousingMarket.ClassState)_ |  |
@@ -72,76 +73,77 @@
 | 61 | 1 | `public double hosted()` | Emergency guests whose host already funds the door; no extra rent or credit is invented. |
 | 63 | 1 | `public double overcrowded()` | Households living past the census line, overcrowded as the censuses counted them, never without a door (overcrowding()). |
 | 65 | 1 | `public double overcrowdedPeople()` | Their people, at their cells' sizes. |
-| 66 | 1 | `public double sharingGroups()` |  |
-| 67 | 1 | `public List<HousingChoice.Demand> demands()` |  |
-| 69 | 1 | `public List<HousingChoice.Offer> offers()` | The last clearing's doors as offered (not saved: a load has none until its next clearing). |
-| 70 | 1 | `public boolean active()` |  |
-| 71 | 1 | `public int clearedMonth()` |  |
-| 72 | 1 | `public List<HousingChoice.Lease> leases()` |  |
-| 73 | 1 | `public List<ClassState> classes()` |  |
-| 74 | 1 | `public HousingChoice.Result result()` |  |
-| 75 | 1 | `public double rentFor(String cell, double count)` |  |
-| 76 | 1 | `public double receipts()` |  |
-| 89 | 1 | `public double askedBurden(Game game, double disposable)` | THE ASKED BURDEN (RES3c, 2026-11-25): what a mover weighs, every household's cheapest suitable class's ask, the rent its next vacant door asks, over the city's take-home pay; NaN off the typed market. |
-| 91 | 1 | `public double aloneBurden(Game game, double disposable)` | The same with every household asked a whole door's rent: what a household alone weighs, before a half share is open to it. |
-| 92 | 8 | `private double asked(Game game, double disposable, boolean shares)` |  |
-| 100 | 1 | `public double rentPriceIndex()` |  |
-| 101 | 1 | `public double occupied()` |  |
-| 103 | 23 | `public void prepareMigration(Game game)` | Reserve this press's domestic formation before admitting people who start work next press. |
-| 127 | 37 | `public FamilyModel.Room roomLeft(Game game, FamilyModel.Room legacy)` | Read-only migration bound: actual remaining door/guest capacity, with the raw incoming household mix. |
-| 164 | 1 | `public double price(HousingInventory.Key key)` |  |
-| 166 | 2 | `public void setAsk(HousingInventory.Key key, double ask)` | A posted class ask can change without inventing a lease or a trade. |
-| 168 | 5 | `public double meanPerCapacity(BuildingsTemplate t)` |  |
-| 174 | 6 | `public double paidPerCapacity(boolean family)` | Descriptive pooled compatibility getter; it is never an independently traded quote. |
-| 181 | 53 | `private void quote(Game game)` | Strikes each class's capital at the home's market value and its carry; no second construction timer. |
-| 234 | 3 | `public HousingChoice.Result clear(Game game, List<HousingChoice.Demand> cells)` |  |
-| 238 | 28 | `public HousingChoice.Result clear(Game game, List<HousingChoice.Demand> cells, HouseholdBalance.HousingRoute route)` | The month's clearing, the households that changed cell taking their doors along the route (carry()). |
-| 267 | 1 | `void strikePriceDemand(List<HousingChoice.Offer> pricedOffers)` | Current physical occupancy and funded whole-door pressure, from the clearing's actual budget profiles. |
-| 269 | 34 | `private void strikePriceDemand(List<HousingChoice.Offer> pricedOffers, List<HousingChoice.Lease> housed)` | housed: the census line's placements. |
-| 303 | 1 | **type** `private record LeaseKey(String cell, HousingInventory.Key home)` |  |
-| 312 | 12 | `static List<HousingChoice.Lease> carry(List<HousingChoice.Lease> leases, HouseholdBalance.HousingRoute route)` | TENURE FOLLOWS THE PEOPLE (RES3c, 2026-11-25). |
-| 325 | 1 | `public static double shares(HousingChoice.Lease l)` | A lease's households that hold a share of its doors, two to a door; the rest are its lodgers. |
-| 327 | 13 | `private List<HousingChoice.Offer> supply(Game game)` | Every known class's standing doors at its ask, as the clearing offers them. |
-| 349 | 5 | `static Set<String> sitting(Game game)` | TENURE (RES3c, 2026-11-25). |
+| 68 | 1 | `public double boarders()` | Of them, the households whose budget funds a share that found no door standing and board with a housed family (overcrowding()), counted overcrowded and billed nothing; not saved, so a load reads none until its next cl... |
+| 70 | 1 | `public double sharingGroups()` |  |
+| 71 | 1 | `public List<HousingChoice.Demand> demands()` |  |
+| 73 | 1 | `public List<HousingChoice.Offer> offers()` | The last clearing's doors as offered (not saved: a load has none until its next clearing). |
+| 74 | 1 | `public boolean active()` |  |
+| 75 | 1 | `public int clearedMonth()` |  |
+| 76 | 1 | `public List<HousingChoice.Lease> leases()` |  |
+| 77 | 1 | `public List<ClassState> classes()` |  |
+| 78 | 1 | `public HousingChoice.Result result()` |  |
+| 79 | 1 | `public double rentFor(String cell, double count)` |  |
+| 80 | 1 | `public double receipts()` |  |
+| 93 | 1 | `public double askedBurden(Game game, double disposable)` | THE ASKED BURDEN (RES3c, 2026-11-25): what a mover weighs, every household's cheapest suitable class's ask, the rent its next vacant door asks, over the city's take-home pay; NaN off the typed market. |
+| 95 | 1 | `public double aloneBurden(Game game, double disposable)` | The same with every household asked a whole door's rent: what a household alone weighs, before a half share is open to it. |
+| 96 | 8 | `private double asked(Game game, double disposable, boolean shares)` |  |
+| 104 | 1 | `public double rentPriceIndex()` |  |
+| 105 | 1 | `public double occupied()` |  |
+| 107 | 23 | `public void prepareMigration(Game game)` | Reserve this press's domestic formation before admitting people who start work next press. |
+| 131 | 37 | `public FamilyModel.Room roomLeft(Game game, FamilyModel.Room legacy)` | Read-only migration bound: actual remaining door/guest capacity, with the raw incoming household mix. |
+| 168 | 1 | `public double price(HousingInventory.Key key)` |  |
+| 170 | 2 | `public void setAsk(HousingInventory.Key key, double ask)` | A posted class ask can change without inventing a lease or a trade. |
+| 172 | 5 | `public double meanPerCapacity(BuildingsTemplate t)` |  |
+| 178 | 6 | `public double paidPerCapacity(boolean family)` | Descriptive pooled compatibility getter; it is never an independently traded quote. |
+| 185 | 53 | `private void quote(Game game)` | Strikes each class's capital at the home's market value and its carry; no second construction timer. |
+| 238 | 3 | `public HousingChoice.Result clear(Game game, List<HousingChoice.Demand> cells)` |  |
+| 242 | 28 | `public HousingChoice.Result clear(Game game, List<HousingChoice.Demand> cells, HouseholdBalance.HousingRoute route)` | The month's clearing, the households that changed cell taking their doors along the route (carry()). |
+| 271 | 1 | `void strikePriceDemand(List<HousingChoice.Offer> pricedOffers)` | Current physical occupancy and funded whole-door pressure, from the clearing's actual budget profiles. |
+| 273 | 34 | `private void strikePriceDemand(List<HousingChoice.Offer> pricedOffers, List<HousingChoice.Lease> housed)` | housed: the census line's placements. |
+| 307 | 1 | **type** `private record LeaseKey(String cell, HousingInventory.Key home)` |  |
+| 316 | 12 | `static List<HousingChoice.Lease> carry(List<HousingChoice.Lease> leases, HouseholdBalance.HousingRoute route)` | TENURE FOLLOWS THE PEOPLE (RES3c, 2026-11-25). |
+| 329 | 1 | `public static double shares(HousingChoice.Lease l)` | A lease's households that hold a share of its doors, two to a door; the rest are its lodgers. |
+| 331 | 13 | `private List<HousingChoice.Offer> supply(Game game)` | Every known class's standing doors at its ask, as the clearing offers them. |
+| 353 | 5 | `static Set<String> sitting(Game game)` | TENURE (RES3c, 2026-11-25). |
 
-### host places within the census line (RES3c, 2026-11-25) (lines 355-968)
+### host places within the census line (RES3c, 2026-11-25) (lines 359-988)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 357 | 1 | **type** `private record HostKey(HousingInventory.Key home, int size)` | The places beside lone host households of one size on one class of home. |
-| 363 | 6 | `private static Map<HostKey, Double> hostPlaces(List<HousingChoice.Lease> all, Map<String, Integer> sizes)` | A lone household on its door leaves the one place beside it, two to a door; a guest takes it only if the pair stays within the door's census line (HousingChoice.PERSONS_PER_ROOM), so the places are kept by the host's ... |
-| 370 | 5 | `private static void giveUp(List<HousingChoice.Lease> all, Map<String, Integer> sizes, Map<HostKey, Double> places, Map<HostKey,...` | Hosts give up the places their guests took: half a door a place, from the leases that gave it pro rata. |
-| 376 | 3 | `private static HousingChoice.Offer hostRoom(HousingInventory.Key key, HousingChoice.Offer o, int host, double n)` | A host place as an offer: the home as built, free, open to one the census line still fits beside its host. |
-| 379 | 1 | `private Map<String, Integer> sizes()` |  |
-| 380 | 1 | `private Map<HousingInventory.Key, HousingChoice.Offer> homes()` |  |
-| 383 | 35 | `private void retainHosted()` | Prior guests keep priority only in the real room funded by this clearing's paying hosts, beside a host the line fits. |
-| 433 | 29 | `private void lodging()` | LODGING (RES3c, 2026-11-25). |
-| 463 | 4 | `private boolean paysAShare(HousingChoice.Demand d)` | Whether a cell's budget funds half a share it fits of a home that stands: who does is not a lodger. |
-| 485 | 57 | `private void overcrowding(int now)` | OVERCROWDED (RES3c, 2026-11-25). |
-| 543 | 4 | `private static HousingChoice.Offer pastTheLine(HousingChoice.Offer o, double n, int share)` | A class's doors offered past the census line, at its ask over share (0: a lodger's, no bill), every other test kept. |
-| 548 | 6 | `private static List<HousingChoice.Demand> remaining(List<HousingChoice.Demand> left, List<HousingChoice.Lease> taken)` | What a pass left of its households. |
-| 556 | 1 | **type** `private record EmergencyRoom(HousingChoice.Offer home, HostKey host)` | A doubling node: a home's places beside one host size, or (host null) its vacant doors' paid halves. |
-| 558 | 40 | `private void emergencyDoubling(Game game)` | Guests and hosts retain separate household counts while sharing one actual door and rent bill. |
-| 599 | 41 | `private boolean completeNormalFootprints()` | Same-class normal space follows all movers; only actual paid-half contracts can expand. |
-| 642 | 1 | **type** `private record Pool(Household source, HousingChoice.Demand original, HousingChoice.Demand target)` |  |
-| 644 | 9 | `private boolean completePaidExcess(int currentMonth)` | New normal contracts follow every mover and same-class completion, without releasing old claims. |
-| 653 | 3 | `private static HousingChoice.Demand with(HousingChoice.Demand d, double count, double budget)` |  |
-| 657 | 77 | `private void emergencySharing(Game game)` | Normal placements and their valid incumbents are settled before this emergency phase. |
-| 735 | 12 | `private List<HousingChoice.Lease> bounded(List<HousingChoice.Lease> input)` | Keeps exact physical upper bounds while tolerating only the existing packing-rounding scale. |
-| 748 | 1 | `public double candidateIncome(Game game, BuildingsTemplate t, long quantity)` | Forecast only: one disjoint source per current household and per incoming worker cohort. |
-| 750 | 72 | `public Forecast forecast(Game game)` | One planner read reserves standing homes and funded sites once for every alternative. |
-| 822 | 28 | **type** `public final class Forecast` |  |
-| 826 | 2 | `private Forecast(Game city, List<HousingChoice.Demand> remaining)` _(in HousingMarket.Forecast)_ |  |
-| 828 | 3 | `public double income(BuildingsTemplate t, long quantity)` _(in HousingMarket.Forecast)_ |  |
-| 832 | 10 | `public int quantityNeeded(BuildingsTemplate t)` _(in HousingMarket.Forecast)_ | Enough actual recipe units for the remaining compatible, affordable demand; no fictitious head-capacity demand. |
-| 842 | 7 | `private HousingChoice.Result match(BuildingsTemplate t, long quantity)` _(in HousingMarket.Forecast)_ |  |
-| 850 | 21 | `public void sold()` |  |
-| 872 | 15 | `public void reprice(double expectedMonthly)` | Existing lease-length log adjustment and expected-inflation drift, class by class. |
-| 887 | 3 | `public State forSave()` |  |
-| 890 | 1 | `private static void nonnegative(double n)` |  |
-| 891 | 54 | `private static void validate(State s)` |  |
-| 945 | 3 | `public void restore(State s)` |  |
-| 949 | 11 | `public void restore(State s, BuildingManager buildings)` | The native load additionally checks the complete physical catalogue, including unavailable quotes. |
-| 960 | 1 | `public void reset()` |  |
-| 961 | 7 | `public void redenominate(double scale)` |  |
+| 361 | 1 | **type** `private record HostKey(HousingInventory.Key home, int size)` | The places beside lone host households of one size on one class of home. |
+| 367 | 6 | `private static Map<HostKey, Double> hostPlaces(List<HousingChoice.Lease> all, Map<String, Integer> sizes)` | A lone household on its door leaves the one place beside it, two to a door; a guest takes it only if the pair stays within the door's census line (HousingChoice.PERSONS_PER_ROOM), so the places are kept by the host's ... |
+| 374 | 5 | `private static void giveUp(List<HousingChoice.Lease> all, Map<String, Integer> sizes, Map<HostKey, Double> places, Map<HostKey,...` | Hosts give up the places their guests took: half a door a place, from the leases that gave it pro rata. |
+| 380 | 3 | `private static HousingChoice.Offer hostRoom(HousingInventory.Key key, HousingChoice.Offer o, int host, double n)` | A host place as an offer: the home as built, free, open to one the census line still fits beside its host. |
+| 383 | 1 | `private Map<String, Integer> sizes()` |  |
+| 384 | 1 | `private Map<HousingInventory.Key, HousingChoice.Offer> homes()` |  |
+| 387 | 35 | `private void retainHosted()` | Prior guests keep priority only in the real room funded by this clearing's paying hosts, beside a host the line fits. |
+| 438 | 29 | `private void lodging()` | LODGING (RES3c, 2026-11-25). |
+| 469 | 4 | `private boolean paysAShare(HousingChoice.Demand d)` | Whether a cell's budget funds half a share it fits of a home that stands: who does is not lodged by lodging(); it takes a door or share past the line at its ask, and boards only where none stands (overcrowding()). |
+| 502 | 60 | `private void overcrowding(int now)` | OVERCROWDED (RES3c, 2026-11-25). |
+| 563 | 4 | `private static HousingChoice.Offer pastTheLine(HousingChoice.Offer o, double n, int share)` | A class's doors offered past the census line, at its ask over share (0: a lodger's, no bill), every other test kept. |
+| 568 | 6 | `private static List<HousingChoice.Demand> remaining(List<HousingChoice.Demand> left, List<HousingChoice.Lease> taken)` | What a pass left of its households. |
+| 576 | 1 | **type** `private record EmergencyRoom(HousingChoice.Offer home, HostKey host)` | A doubling node: a home's places beside one host size, or (host null) its vacant doors' paid halves. |
+| 578 | 40 | `private void emergencyDoubling(Game game)` | Guests and hosts retain separate household counts while sharing one actual door and rent bill. |
+| 619 | 41 | `private boolean completeNormalFootprints()` | Same-class normal space follows all movers; only actual paid-half contracts can expand. |
+| 662 | 1 | **type** `private record Pool(Household source, HousingChoice.Demand original, HousingChoice.Demand target)` |  |
+| 664 | 9 | `private boolean completePaidExcess(int currentMonth)` | New normal contracts follow every mover and same-class completion, without releasing old claims. |
+| 673 | 3 | `private static HousingChoice.Demand with(HousingChoice.Demand d, double count, double budget)` |  |
+| 677 | 77 | `private void emergencySharing(Game game)` | Normal placements and their valid incumbents are settled before this emergency phase. |
+| 755 | 12 | `private List<HousingChoice.Lease> bounded(List<HousingChoice.Lease> input)` | Keeps exact physical upper bounds while tolerating only the existing packing-rounding scale. |
+| 768 | 1 | `public double candidateIncome(Game game, BuildingsTemplate t, long quantity)` | Forecast only: one disjoint source per current household and per incoming worker cohort. |
+| 770 | 72 | `public Forecast forecast(Game game)` | One planner read reserves standing homes and funded sites once for every alternative. |
+| 842 | 28 | **type** `public final class Forecast` |  |
+| 846 | 2 | `private Forecast(Game city, List<HousingChoice.Demand> remaining)` _(in HousingMarket.Forecast)_ |  |
+| 848 | 3 | `public double income(BuildingsTemplate t, long quantity)` _(in HousingMarket.Forecast)_ |  |
+| 852 | 10 | `public int quantityNeeded(BuildingsTemplate t)` _(in HousingMarket.Forecast)_ | Enough actual recipe units for the remaining compatible, affordable demand; no fictitious head-capacity demand. |
+| 862 | 7 | `private HousingChoice.Result match(BuildingsTemplate t, long quantity)` _(in HousingMarket.Forecast)_ |  |
+| 870 | 21 | `public void sold()` |  |
+| 892 | 15 | `public void reprice(double expectedMonthly)` | Existing lease-length log adjustment and expected-inflation drift, class by class. |
+| 907 | 3 | `public State forSave()` |  |
+| 910 | 1 | `private static void nonnegative(double n)` |  |
+| 911 | 54 | `private static void validate(State s)` |  |
+| 965 | 3 | `public void restore(State s)` |  |
+| 969 | 11 | `public void restore(State s, BuildingManager buildings)` | The native load additionally checks the complete physical catalogue, including unavailable quotes. |
+| 980 | 1 | `public void reset()` |  |
+| 981 | 7 | `public void redenominate(double scale)` |  |
 
