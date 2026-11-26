@@ -8201,7 +8201,7 @@ public class BuildingManager {
     /** A stack's buildings, a building's posts or the list of stacks has changed: posts held for a pass are read afresh (AP5). */
     static void postsMoved() { POSTS_EDITS.incrementAndGet(); }
 
-    /** The stacks' posts as one pass read them (AP5), with the count of edits they were read at. */
+    /** The stacks' posts and ordered sector groups (AP5/AP6), with the count of edits they were read at. */
     static final class HeldPosts {
         final long at;
         /** Each job type's posts over the stacks, by ordinal. */
@@ -8209,7 +8209,7 @@ public class BuildingManager {
         /** Each owning sector's posts of each job type, by ordinal. */
         final java.util.Map<String, long[]> bySector = new java.util.LinkedHashMap<>();
         /** Each owning sector's stacks, in the list's order. */
-        final java.util.Map<String, BuildingsStacks[]> stacksOf = new java.util.HashMap<>();
+        final java.util.Map<String, List<BuildingsStacks>> stacksOf = new java.util.HashMap<>();
 
         HeldPosts(long at, List<BuildingsStacks> stacks) {
             this.at = at;
@@ -8227,15 +8227,30 @@ public class BuildingManager {
                 own.computeIfAbsent(sector, k -> new ArrayList<>()).add(stack);
             }
             for (java.util.Map.Entry<String, List<BuildingsStacks>> e : own.entrySet())
-                stacksOf.put(e.getKey(), e.getValue().toArray(new BuildingsStacks[0]));
+                stacksOf.put(e.getKey(), List.copyOf(e.getValue()));
         }
     }
 
-    /** The posts held for the scope open on this thread for this city, built afresh when the stacks have changed; null with none open. */
+    /* ----- THE MONTH'S SECTOR WALKS (AP6, 2026-11-26)
+       Private investment repeats the same raw-post maps outside a valuation pass. Keep AP5's raw sums and ordered
+       groups on the reading thread too, keyed on every stack/template/list edit. Offered shares, posts past the
+       buildings, instances, quantities and template getters in sector totals remain live. No figure is regrouped
+       or rounded differently. A grouping can survive a month boundary when none of its inputs moved. ----- */
+    private final ThreadLocal<HeldPosts> postsByThread = new ThreadLocal<>();
+
+    /** The pass's posts, or this thread's outside it, rebuilt after an edit; null only for an explicit bare reading. */
     private HeldPosts heldPosts() {
+        if (WorksValue.bareReading()) return null;
         WorksValue.Scope s = WorksValue.heldFor(this);
-        if (s == null) return null;
         long at = POSTS_EDITS.get();
+        if (s == null) {
+            HeldPosts held = postsByThread.get();
+            if (held == null || held.at != at) {
+                held = new HeldPosts(at, stacks);
+                postsByThread.set(held);
+            }
+            return held;
+        }
         if (s.posts == null || s.posts.at != at) {
             s.posts = new HeldPosts(at, stacks);
             s.postsRead++;
@@ -8470,14 +8485,11 @@ public class BuildingManager {
         HeldPosts held = heldPosts();
         if (held != null) {
             double total = 0;
-            BuildingsStacks[] own = held.stacksOf.get(sector);
+            List<BuildingsStacks> own = held.stacksOf.get(sector);
             if (own != null) for (BuildingsStacks stack : own) total += stack.getQuantity() * getter.applyAsDouble(stack.getBuilding());
             return WorksValue.compared(total, () -> totalBySector(sector, getter));
         }
-        double total = 0;
-        for (BuildingsStacks stack : getSectorStacks(sector))
-            total += stack.getQuantity() * getter.applyAsDouble(stack.getBuilding());
-        return WorksValue.compared(total, () -> totalBySectorDrawn(sector, getter));
+        return totalBySectorDrawn(sector, getter);
     }
 
     /** The ungrouped sum, in the original list order (AP6): the bare figure held readings are checked against. */
@@ -8491,26 +8503,6 @@ public class BuildingManager {
         return total;
     }
 
-    /* ----- THE MONTH'S SECTOR WALKS (AP6, 2026-11-26)
-       Outside a valuation pass, each capacity/freight/machine reading walked every stack again. Hold only the
-       grouping, on the reading thread, keyed on AP5's edits. Quantities and template figures remain live, and
-       the same terms are added in the original order. A group can survive a month boundary when nothing it
-       depends on moved; a list edit or sector reassignment rebuilds it before the next reading. ----- */
-
-    private final ThreadLocal<SectorStacks> sectorStacks = new ThreadLocal<>();
-
-    private static final class SectorStacks {
-        final long at;
-        final java.util.Map<String, List<BuildingsStacks>> bySector = new java.util.HashMap<>();
-
-        SectorStacks(long at, List<BuildingsStacks> stacks) {
-            this.at = at;
-            for (BuildingsStacks stack : stacks)
-                bySector.computeIfAbsent(stack.getBuilding().getSector(), k -> new ArrayList<>()).add(stack);
-            bySector.replaceAll((key, own) -> List.copyOf(own));
-        }
-    }
-
     /** A sector's own stacks, in the city's list order; immutable grouping, live stacks (AP6). */
     public List<BuildingsStacks> getSectorStacks(String sector) {
         if (WorksValue.bareReading()) {
@@ -8519,13 +8511,7 @@ public class BuildingManager {
                 if (stack.getBuilding().getSector().equals(sector)) own.add(stack);
             return List.copyOf(own);
         }
-        long at = POSTS_EDITS.get();
-        SectorStacks held = sectorStacks.get();
-        if (held == null || held.at != at) {
-            held = new SectorStacks(at, stacks);
-            sectorStacks.set(held);
-        }
-        return held.bySector.getOrDefault(sector, List.of());
+        return heldPosts().stacksOf.getOrDefault(sector, List.of());
     }
 
     /**

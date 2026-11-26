@@ -1,4 +1,4 @@
-# LabourCheck.java - 2,491 lines · 31 methods · 35 constants · harnesses
+# LabourCheck.java - 2,531 lines · 31 methods · 35 constants · harnesses
 
 `ham/citybuildersim/LabourCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -49,7 +49,7 @@
 > to the bit, read afresh once what it was read from has moved (a build, an order, a scrapping, a building's posts, the people by every path) and not
 > before, and a closed scope holds nothing (section 14).
 
-**Uses:** [LabourMarket](LabourMarket.md) (157), [JobType](JobType.md) (140), [WageBand](WageBand.md) (79), [WorksValue](WorksValue.md) (40), [Game](Game.md) (29), [BuildingsTemplate](BuildingsTemplate.md) (21), [PopulationManager](PopulationManager.md) (18), [Migration](Migration.md) (13), [BuildingManager](BuildingManager.md) (10), [Recipe](Recipe.md) (10), [GameFiles](GameFiles.md) (9), [WageLadder](WageLadder.md) (8), [BuildingsStacks](BuildingsStacks.md) (8), [PriceLevel](PriceLevel.md) (7), [Sector](Sector.md) (6), [BuildingType](BuildingType.md) (6), [PayTier](PayTier.md) (5), [RealEstate](RealEstate.md) (3), [Construction](Construction.md) (3), [PopulationCohorts](PopulationCohorts.md) (3), [DecisionLog](DecisionLog.md) (2), [AgeBand](AgeBand.md) (2), [WorldMeasures](WorldMeasures.md) (2), [FamilyModel](FamilyModel.md) (2), [TempDirs](TempDirs.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [Sectors](Sectors.md) (1), [PriceIndex](PriceIndex.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [EconomyManager](EconomyManager.md) (1)... and 1 more
+**Uses:** [LabourMarket](LabourMarket.md) (157), [JobType](JobType.md) (140), [WageBand](WageBand.md) (79), [WorksValue](WorksValue.md) (43), [Game](Game.md) (29), [BuildingsTemplate](BuildingsTemplate.md) (20), [PopulationManager](PopulationManager.md) (18), [Migration](Migration.md) (13), [BuildingManager](BuildingManager.md) (10), [Recipe](Recipe.md) (10), [GameFiles](GameFiles.md) (9), [WageLadder](WageLadder.md) (8), [BuildingsStacks](BuildingsStacks.md) (8), [PriceLevel](PriceLevel.md) (7), [Sector](Sector.md) (6), [BuildingType](BuildingType.md) (6), [PayTier](PayTier.md) (5), [RealEstate](RealEstate.md) (3), [Construction](Construction.md) (3), [PopulationCohorts](PopulationCohorts.md) (3), [DecisionLog](DecisionLog.md) (2), [AgeBand](AgeBand.md) (2), [WorldMeasures](WorldMeasures.md) (2), [FamilyModel](FamilyModel.md) (2), [TempDirs](TempDirs.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [Sectors](Sectors.md) (1), [PriceIndex](PriceIndex.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [EconomyManager](EconomyManager.md) (1)... and 1 more
 
 **Used by (4):** [EducationCheck](EducationCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [SchoolingLadderCheck](SchoolingLadderCheck.md), [SchoolingPageCheck](SchoolingPageCheck.md)
 
@@ -109,12 +109,12 @@
 | 1798 | `LabourCheck.HELD_JOINED_HEADS_PER_POST` | `3` | ...the graduate heads to each of them, so the band has workers to spare for the unskilled posts... |
 | 1801 | `LabourCheck.HELD_JOINED_UNSKILLED_POSTS` | `4_000` | ...the unskilled posts, far more than the workers for them, so the bottom band pays more than the graduate one and the two are one market... |
 | 1804 | `LabourCheck.HELD_JOINED_UNSKILLED` | `10` | ...and the unskilled workers. |
-| 2419 | `LabourCheck.RENT_TOWN_PEOPLE` | `4_000` | People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). |
-| 2441 | `LabourCheck.ARRIVALS_OVER_DEPARTURES` | `10` | How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). |
-| 2444 | `LabourCheck.PRICED_MONTHS` | `60` | Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. |
-| 2456 | `LabourCheck.ROOM_TOWN` | `4000` | The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). |
-| 2474 | `LabourCheck.TIE_AVERAGE_OVER_GOING_RATE` | `1.3` | The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. |
-| 2476 | `LabourCheck.TIE_NEXT_AVERAGE_OVER_LAST` | `1.1` | The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. |
+| 2459 | `LabourCheck.RENT_TOWN_PEOPLE` | `4_000` | People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). |
+| 2481 | `LabourCheck.ARRIVALS_OVER_DEPARTURES` | `10` | How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). |
+| 2484 | `LabourCheck.PRICED_MONTHS` | `60` | Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. |
+| 2496 | `LabourCheck.ROOM_TOWN` | `4000` | The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). |
+| 2514 | `LabourCheck.TIE_AVERAGE_OVER_GOING_RATE` | `1.3` | The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. |
+| 2516 | `LabourCheck.TIE_NEXT_AVERAGE_OVER_LAST` | `1.1` | The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. |
 
 ## Fields (state)
 
@@ -129,7 +129,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 2434 | **type** `public class LabourCheck` | Verifies the labour market: who can hold a job, and what it costs. |
+| 58 | 2474 | **type** `public class LabourCheck` | Verifies the labour market: who can hold a job, and what it costs. |
 | 66 | 4 | `static void quietly(Runnable work)` |  |
 | 71 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 76 | 6 | `static void close(String label, double a, double b, double tol)` |  |
@@ -151,7 +151,7 @@
 |---:|---:|---|---|
 | 1541 | 177 | `static void payrollByJobType()` |  |
 
-### 14. THE LABOUR FIGURES HELD FOR A PASS ARE THE BARE ONES (AP5, 2026-11-26) (lines 1719-2491)
+### 14. THE LABOUR FIGURES HELD FOR A PASS ARE THE BARE ONES (AP5, 2026-11-26) (lines 1719-2531)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -163,18 +163,18 @@
 | 1861 | 13 | `static void postsMovedBy(String change, BuildingManager bm, WorksValue.Scope s, BuildingsTemplate of, long by, Runnable move)` | One change to a stack's buildings inside the scope (AP5): the city's posts at the next reading have moved by this many of the template's posts of each job type, are the bare reading, and were built afresh once. |
 | 1879 | 17 | `static long[] postsReading(BuildingManager bm, java.util.Collection<String> sectors, java.util.function.ToDoubleFunction<Buildi...` | Every posts figure a pass reads, as raw bits (AP5): each job type's posts, at every post and withheld, each sector's posts withheld, and each sector's buildings by their posts, their capacity and a weight. |
 | 1901 | 13 | `static void heldThen(String change, BuildingManager bm, WorksValue.Scope s, java.util.Collection<String> sectors, java.util.fun...` | One change to the stacks on posts held (AP5): the posts read and held first, a second read building nothing; then the change, after which every reading is the bare one, built afresh once; and the change moved a readin... |
-| 1916 | 15 | `static long[] sectorReadings(BuildingManager bm, java.util.Collection<String> sectors, java.util.function.ToDoubleFunction<Buil...` | The month's grouped readings, including an order-sensitive sum, as raw bits (AP6). |
-| 1933 | 14 | `static void sectorMoved(String change, BuildingManager bm, java.util.Collection<String> sectors, java.util.function.ToDoubleFun...` | Warm first, change through the real writer, then compare the next held reading with the original walk (AP6). |
-| 1948 | 95 | `static void sectorWalksAndPostsPast()` |  |
-| 2044 | 325 | `static void labourHeldForAPass()` |  |
-| 2371 | 12 | `static double everyOtherEmployer(Game g)` | Every payroll that is not a sector's: the bank, the utilities, and the four services the city staffs. |
-| 2384 | 5 | `static double sum(double[] a)` |  |
-| 2390 | 3 | `static double pct(double[] mix, WageBand band, double total)` |  |
-| 2394 | 8 | `static double staffed(long[] jobs, long[] vacancy, WageBand band)` |  |
-| 2408 | 9 | `static PopulationManager handFed(long workforce, double[] skilledHeads, long[] posts, double[] licensed)` | A population manager fed by hand (FS16): this workforce, these skilled heads by band (the unskilled are what is left), these posts by job type and these licence holders by job type. |
-| 2422 | 17 | `static Game rentTownBuilt()` | The town "rent is a market" is read on (FS16): flats, a hospital, shops, power, water and roads and RENT_TOWN_PEOPLE in them, one month old, so the landlords have struck a rent and priced a home. |
-| 2447 | 7 | `static LabourMarket pricedOn(PopulationManager pm)` | A labour market priced on a hand-fed population manager the way Game.repriceLabour() prices a city's: staffable posts, supply, posts by job and licence holders. |
-| 2462 | 10 | `static Migration arrivalsOnce(LabourMarket market, PopulationManager pm)` | One month's draw by a fresh Migration into a town of ROOM_TOWN people with room, jobs and homes for more, priced by this market and placed against these people (so each band's chance of work is the people's own, not o... |
-| 2479 | 4 | `static double lastAverageOf(LabourMarket m)` | The average wage a market's tie last read: the last value of its state array (WS1; there is no getter for it). |
-| 2484 | 7 | `static void cleanUp(Path root)` |  |
+| 1916 | 13 | `static long[] sectorReadings(BuildingManager bm, java.util.Collection<String> sectors, java.util.function.ToDoubleFunction<Buil...` | The month's grouped readings, including an order-sensitive sum, as raw bits (AP6). |
+| 1931 | 14 | `static void sectorMoved(String change, BuildingManager bm, java.util.Collection<String> sectors, java.util.function.ToDoubleFun...` | Warm first, change through the real writer, then compare the next held reading with the original walk (AP6). |
+| 1946 | 137 | `static void sectorWalksAndPostsPast()` |  |
+| 2084 | 325 | `static void labourHeldForAPass()` |  |
+| 2411 | 12 | `static double everyOtherEmployer(Game g)` | Every payroll that is not a sector's: the bank, the utilities, and the four services the city staffs. |
+| 2424 | 5 | `static double sum(double[] a)` |  |
+| 2430 | 3 | `static double pct(double[] mix, WageBand band, double total)` |  |
+| 2434 | 8 | `static double staffed(long[] jobs, long[] vacancy, WageBand band)` |  |
+| 2448 | 9 | `static PopulationManager handFed(long workforce, double[] skilledHeads, long[] posts, double[] licensed)` | A population manager fed by hand (FS16): this workforce, these skilled heads by band (the unskilled are what is left), these posts by job type and these licence holders by job type. |
+| 2462 | 17 | `static Game rentTownBuilt()` | The town "rent is a market" is read on (FS16): flats, a hospital, shops, power, water and roads and RENT_TOWN_PEOPLE in them, one month old, so the landlords have struck a rent and priced a home. |
+| 2487 | 7 | `static LabourMarket pricedOn(PopulationManager pm)` | A labour market priced on a hand-fed population manager the way Game.repriceLabour() prices a city's: staffable posts, supply, posts by job and licence holders. |
+| 2502 | 10 | `static Migration arrivalsOnce(LabourMarket market, PopulationManager pm)` | One month's draw by a fresh Migration into a town of ROOM_TOWN people with room, jobs and homes for more, priced by this market and placed against these people (so each band's chance of work is the people's own, not o... |
+| 2519 | 4 | `static double lastAverageOf(LabourMarket m)` | The average wage a market's tie last read: the last value of its state array (WS1; there is no getter for it). |
+| 2524 | 7 | `static void cleanUp(Path root)` |  |
 

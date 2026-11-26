@@ -23,12 +23,15 @@ not AP5's earlier absolute figures. Full figures and after measurements follow b
 - ★ The posts past are read once per `getTotalJobs()` call, never held between calls.
   They depend on farms' horses and autonomous machines, independently of `POSTS_EDITS`.
   Each new call reads them live; every type retains the original integer arithmetic.
-- ★ Hold the ordered sector grouping, not its totals. Outside `WorksValue`'s pass,
-  `BuildingManager.getSectorStacks` holds immutable lists of live stack references on
-  the reading thread, keyed on AP5's atomic `POSTS_EDITS`. A group survives a month
-  boundary when its inputs have not moved. Each quantity and template getter stays live.
-  `totalBySector` adds the same terms in the same order. The pass keeps AP5's own cache.
-  `WorksValue.bareWhile` also bypasses this grouping, including nested bare readings.
+- ★ Reuse AP5's raw integer post sums and ordered sector grouping across the month.
+  `BuildingManager` holds one `HeldPosts` per reading thread outside `WorksValue`'s
+  pass, keyed on AP5's atomic `POSTS_EDITS`; the pass keeps its own cache and counters.
+  `getSectorStacks` exposes immutable lists of live stack references. A group survives
+  a month boundary when its inputs have not moved. Each quantity and template getter
+  in `totalBySector` stays live: the same terms, added in the same order. Offered
+  shares, posts past and instances also remain live; no new floating sum is retained.
+  `WorksValue.bareWhile` bypasses every held raw-post/group reading, including nested
+  bare readings. The harness warms both reading threads before a writer hands off.
 - The bond mechanism was diagnosed by a MemWatch helper (read-only, 15-line report).
   It found one sorted holdings-map fold per settlement, and recommended a narrow
   posting scope rather than a persistent money cache. A second helper implements that
@@ -47,6 +50,15 @@ not AP5's earlier absolute figures. Full figures and after measurements follow b
   cache for any of those paths to invalidate. The two changed settlement writers
   are exercised on warmed native monthly twins, with partial fills on three ids,
   manual and waterfall trades, and an exception after the seller has changed.
+- The private-investment trace was delegated, with one offline reader of the kept
+  baseline JFR. It has 475/4,177 FX samples (**11.37%**). `getPostsWithheld` has 80
+  inclusive (**1.92% FX**, 16.84% of that subtree; 79 first-app), `totalBySector`
+  57 (**1.36% FX**, 12.00%; 55 self). Both are the same raw-post/sector walks:
+  the monthly `HeldPosts` reuse fixes them. `EquipmentFit.choose` is only 13 samples
+  (0.31% FX), `rank` 6 (0.14%), and `refreshLand` zero: no profile case to expand
+  those paths. Dynamic new-unit pricing revisits fees and recipes, not a fixed
+  figure that can be lifted over investment orders. The full offline report/source
+  is kept under `codex-AP6-bonds/target/AP6-investment/` and copied into the evidence.
 
 ## 3. Checks, mutations, and trace
 

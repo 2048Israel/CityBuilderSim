@@ -1916,10 +1916,8 @@ public class LabourCheck {
     static long[] sectorReadings(BuildingManager bm, java.util.Collection<String> sectors,
                                  java.util.function.ToDoubleFunction<BuildingsTemplate> weight) {
         java.util.List<Long> out = new java.util.ArrayList<>();
+        for (long n : postsReading(bm, sectors, weight)) out.add(n);
         for (String sector : sectors) {
-            out.add(Double.doubleToRawLongBits(bm.totalBySector(sector, LabourCheck::allPosts)));
-            out.add(Double.doubleToRawLongBits(bm.totalBySector(sector, BuildingsTemplate::getCapacity)));
-            out.add(Double.doubleToRawLongBits(bm.totalBySector(sector, weight)));
             java.util.List<BuildingsStacks> own = bm.getSectorStacks(sector);
             java.util.List<BuildingsStacks> drawn = WorksValue.bareWhile(() -> bm.getSectorStacks(sector));
             out.add(own.equals(drawn) ? 0L : 1L);
@@ -1962,19 +1960,19 @@ public class LabourCheck {
         bm.setPostsPast(() -> { calls[0]++; return g.getSectors().postsPastBuildings(); });
         long[] previous = null;
         try (WorksValue.Scope ignored = WorksValue.hold(g)) {
-          for (int form = 0; form < 3; form++) {
-            farms.setHorseShare(form == 1 ? 1 : 0);
-            farms.setOperatedShare(form == 2 ? 0 : 1);
-            calls[0] = 0;
-            long[] jobs = bm.getTotalJobs();
-            assertTrue("form " + form + ": getTotalJobs reads the farms' posts past once", calls[0] == 1);
-            boolean same = true;
-            for (JobType type : JobType.values()) if (jobs[type.ordinal()] != bm.getTotalJobs(type)) same = false;
-            assertTrue("...every entry is the original per-type reading", same);
-            if (previous != null) assertTrue("fixture: changing the farms' horses or operators moves the next jobs reading",
-                    !java.util.Arrays.equals(jobs, previous));
-            previous = jobs;
-          }
+            for (int form = 0; form < 3; form++) {
+                farms.setHorseShare(form == 1 ? 1 : 0);
+                farms.setOperatedShare(form == 2 ? 0 : 1);
+                calls[0] = 0;
+                long[] jobs = bm.getTotalJobs();
+                assertTrue("form " + form + ": getTotalJobs reads the farms' posts past once", calls[0] == 1);
+                boolean same = true;
+                for (JobType type : JobType.values()) if (jobs[type.ordinal()] != bm.getTotalJobs(type)) same = false;
+                assertTrue("...every entry is the original per-type reading", same);
+                if (previous != null) assertTrue("fixture: changing the farms' horses or operators moves the next jobs reading",
+                        !java.util.Arrays.equals(jobs, previous));
+                previous = jobs;
+            }
         }
         bm.setPostsPast(() -> null);
         long[] noPast = bm.getTotalJobs();
@@ -1999,6 +1997,15 @@ public class LabourCheck {
         java.util.Set<String> sectors = new java.util.LinkedHashSet<>();
         for (BuildingsTemplate t : bm.getTemplates()) sectors.add(t.getSector());
         sectors.add("AP6 absent sector");
+        double[] share = {1};
+        bm.setOfferedShareByType((sector, type) -> sector.equals(shop.getSector()) ? share[0] : 1);
+        long[] allOffered = bm.getTotalJobs();
+        share[0] = HELD_FILL;
+        long[] fewerOffered = bm.getTotalJobs();
+        assertTrue("the monthly raw-post cache keeps a sector's changing offered share live",
+                !java.util.Arrays.equals(allOffered, fewerOffered)
+                    && java.util.Arrays.equals(fewerOffered, WorksValue.bareWhile(bm::getTotalJobs)));
+        share[0] = 1;
         BuildingsStacks shops = bm.getStack(shop);
         sectorMoved("an order adds a new stack", bm, sectors, weight, () -> bm.addStack(t(g, "Police Station"), HELD_INSTANT, true));
         sectorMoved("addQuantity finishes buildings", bm, sectors, weight, () -> shops.addQuantity(HELD_INSTANT));
@@ -2010,6 +2017,39 @@ public class LabourCheck {
         int was = shop.getJobs(moved);
         sectorMoved("setJobs changes a standing template", bm, sectors, weight, () -> shop.setJobs(moved, was + HELD_RECIPE_HANDS));
         shop.setJobs(moved, was);
+        java.util.concurrent.CountDownLatch warmed = new java.util.concurrent.CountDownLatch(1), changed = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.atomic.AtomicBoolean threadExact = new java.util.concurrent.atomic.AtomicBoolean();
+        java.util.concurrent.atomic.AtomicReference<Throwable> threadFailure = new java.util.concurrent.atomic.AtomicReference<>();
+        Thread reader = new Thread(() -> {
+            try {
+                long[] before = sectorReadings(bm, sectors, weight);
+                warmed.countDown();
+                if (!changed.await(10, java.util.concurrent.TimeUnit.SECONDS)) throw new AssertionError("writer did not return");
+                long[] after = sectorReadings(bm, sectors, weight);
+                threadExact.set(!java.util.Arrays.equals(before, after)
+                        && java.util.Arrays.equals(after, WorksValue.bareWhile(() -> sectorReadings(bm, sectors, weight))));
+            } catch (Throwable ex) {
+                threadFailure.set(ex);
+                warmed.countDown();
+            }
+        }, "AP6 warmed reader");
+        reader.setDaemon(true);
+        reader.start();
+        try {
+            assertTrue("fixture: the second reading thread warmed its own raw-post cache", warmed.await(10, java.util.concurrent.TimeUnit.SECONDS));
+            shop.setJobs(moved, was + HELD_RECIPE_HANDS);
+            changed.countDown();
+            reader.join(10_000);
+            assertTrue("an edit on another thread refreshes the next raw-bit reading", !reader.isAlive() && threadFailure.get() == null && threadExact.get());
+            assertTrue("...and this thread's held raw posts refresh too",
+                    java.util.Arrays.equals(bm.getTotalJobs(), WorksValue.bareWhile(bm::getTotalJobs)));
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new AssertionError(ex);
+        } finally {
+            changed.countDown();
+            shop.setJobs(moved, was);
+        }
         Recipe base = Recipe.topLevelOf(shop);
         int[] busier = new int[JobType.values().length];
         for (JobType type : JobType.values()) busier[type.ordinal()] = base.getJobs(type);
