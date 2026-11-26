@@ -882,6 +882,67 @@ reviewer's line.
     Migration's target, no unhoused demand); BuildersFirst, EssentialWorks,
     PostwarRecipe, Materials, Road (fewer people and crews); PriceLevel
     (h.capitalTaxWrittenOff a claim written off in one twin alone).
+- The mends since (RES3c, 2026-11-26), each harness green on the tip:
+  - ShortSellingCheck (aecceb47b): the fixture's sale between months is
+    taxed in a tax window of its own. HealthCheck (9a737fd59): a sitter
+    whose door's ask has passed its budget moves down to a door it can pay
+    that stands, whole or half (HousingChoice.moveDown), for REV-RES3b.
+    SaveSlotCheck (3b33b2119): DebtStatistics' groups an ordered immutable
+    map; the walk sees into a record.
+  - LongPlaytest's m2389 heap (884612c7d): the layout watch reads each
+    district as soon as its plan is current and keeps the carry log's own
+    array; 2,400 months to the end at the gate's 2 GB on the box.
+  - The utilities billed to Real Estate are the brief's gross rent, not a
+    mis-billing. The forecast's cap at Migration's target (808421280) is
+    real: the target is not bounded by the homes (705 for 172 beds).
+  - An unbuilt home class quotes the gross anchor or its carry with
+    BUILD_MARGIN, whichever is more, outright (6e08d5426, ebe0fdafb): on
+    the carry-alone floor, walked at a lease's speed, a new form could
+    never be built where the gross yield fell under its carry and margin
+    (HousingCheck's staffing town, 647 heads drawn: the Studio let in full
+    earned 1.815 against 2.035). For REV-RES3b. HousingMarketCheck restated.
+  - Fixtures caused again: BondCheck 5c's sectors stand in plant (the
+    landlord holds no bond; a plantless Manufacturing was written off
+    whole); CurveCheck's bank funds its book from capital (its loans
+    outgrew its cash and it borrowed at the window); LongPlaytest's bond is
+    an issuer's with cash (Industry's empty till was written to nothing at
+    m123, before its m127 maturity). LongPlaytest's UnsettledIncome (0 of
+    240 months): since 0894946a7 every cell with a household settles, so the
+    line arises only for a row paid with nobody in it; the industrial city
+    grants TUITION_SHARE, struck on the college's first intake after the
+    census rebuilt the families (Game L16482 against L16562), the students'
+    row paid with no student counted (m137, 0.48, the books closed). The
+    grant has no students > 0 guard where SURPLUS_SHARE has one
+    (TaxPolicy.java L736-737): main's, a mismatch the line exists to show.
+  - The new towns' people: BuildersFirst stands 80 founding Houses,
+    PostwarRecipe's village 250 more, EssentialWorks' professional town
+    2,000 a copy (ChildcareCheck.town's overload; 900 the default).
+  - main's Equity.fairValue fallback (Equity.java:1117): past 12 months a
+    share with no spare and trailing income at or under zero stands at its
+    last offering price, and a dollar of income values it at income over
+    the required return, about 1% of book. RES3's young landlord sits on
+    it: YoungBankCheck's control month (the desk marked -220k) and
+    ForeignDebtCheck's ladder bank (in resolution by m60). The orchestrator
+    handed the cliff to CBK3; the fixtures cause their premise (a quiet
+    control month; the bank resolved first, as play does).
+  - One household to a door: BuildersFirst's, EssentialWorks',
+    PostwarRecipe's and Materials' towns hold fewer people (900 Houses about
+    3,300 against main's 4,600), every door let and none idle: the real
+    world, their fixtures given the homes they need (in hand).
+  - PriceLevelCheck's h.capitalTaxWrittenOff (red at 046058c7b, green at
+    94fbac3a5, no threshold in the model): the factor's twin wrote off
+    0.0108 of a Mining claim at m57 (its emigrants' 197.7 tagged shares sold
+    under the claim), today's twin paid its own at m53 in full; the twins
+    had parted at m16, which the check allows, but Twin.history reads a
+    series' kind over the whole run (PriceLevelCheck.java:1475-1490) and
+    Child.prefix keeps it when it cuts to the compared months (:1059, :702),
+    so two all-zero windows compared as N against R. A harness premise; it
+    returns when a rare money event first falls after the parting in one
+    twin alone. Read from the compared window if it does.
+  - For Jerus, a design note, not a red: RES3's new classes take 43 to 46
+    construction points a door against a House's 10 and cost less cash a
+    door; RealEstate.plan ranks on cash, so a town short of builders orders
+    Terraces (BuildersFirst's: 277 points for 6 doors).
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains

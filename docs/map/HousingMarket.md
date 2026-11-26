@@ -1,4 +1,4 @@
-# HousingMarket.java - 1,138 lines · 88 methods · 1 constants · model
+# HousingMarket.java - 1,153 lines · 89 methods · 1 constants · model
 
 `ham/citybuildersim/HousingMarket.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -6,7 +6,7 @@
 > WHY (RES3): pooled rents attributed a cheap flat's demand to a vacant premium
 > home. Quotes are asks; only occupied assignments create rental receipts.
 
-**Uses:** [HousingChoice](HousingChoice.md) (197), [HousingInventory](HousingInventory.md) (43), [FamilyModel](FamilyModel.md) (43), [Game](Game.md) (16), [HouseholdBalance](HouseholdBalance.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [Household](Household.md) (7), [WorkingHousehold](WorkingHousehold.md) (6), [HousingForms](HousingForms.md) (6), [RealEstate](RealEstate.md) (6), [PayTier](PayTier.md) (5), [HousingRecipe](HousingRecipe.md) (5), [JobType](JobType.md) (4), [FamilyStructure](FamilyStructure.md) (4), [AgeBand](AgeBand.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Sectors](Sectors.md) (1), [StudentHousehold](StudentHousehold.md) (1), [UnemployedHousehold](UnemployedHousehold.md) (1), [WageBand](WageBand.md) (1), [AdultStage](AdultStage.md) (1), [Retail](Retail.md) (1), [BuildingManager](BuildingManager.md) (1)
+**Uses:** [HousingChoice](HousingChoice.md) (197), [HousingInventory](HousingInventory.md) (43), [FamilyModel](FamilyModel.md) (43), [Game](Game.md) (16), [HouseholdBalance](HouseholdBalance.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [Household](Household.md) (7), [RealEstate](RealEstate.md) (7), [WorkingHousehold](WorkingHousehold.md) (6), [HousingForms](HousingForms.md) (6), [PayTier](PayTier.md) (5), [HousingRecipe](HousingRecipe.md) (5), [JobType](JobType.md) (4), [FamilyStructure](FamilyStructure.md) (4), [AgeBand](AgeBand.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Sectors](Sectors.md) (1), [StudentHousehold](StudentHousehold.md) (1), [UnemployedHousehold](UnemployedHousehold.md) (1), [WageBand](WageBand.md) (1), [AdultStage](AdultStage.md) (1), [Retail](Retail.md) (1), [BuildingManager](BuildingManager.md) (1)
 
 **Used by (8):** [DataSave](DataSave.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HousingChoiceCheck](HousingChoiceCheck.md), [HousingMarketCheck](HousingMarketCheck.md), [MonetaryCheck](MonetaryCheck.md), [RealEstate](RealEstate.md), [Village1900Check](Village1900Check.md)
 
@@ -71,7 +71,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 12 | 1127 | **type** `public final class HousingMarket` | One monthly residential quote and clearing, with saved class prices and actual leases. |
+| 12 | 1142 | **type** `public final class HousingMarket` | One monthly residential quote and clearing, with saved class prices and actual leases. |
 | 16 | 2 | **type** `public record Sharing(String source, String target, double groups, double sourceCount, double targetCount, ...` | A monthly transfer between existing cells, not a permanent preference or financial axis. |
 | 18 | 12 | **type** `public static final class ClassState` |  |
 | 25 | 1 | `HousingInventory.Key key()` _(in HousingMarket.ClassState)_ |  |
@@ -129,7 +129,7 @@
 | 381 | 13 | `private List<HousingChoice.Offer> supply(Game game)` | Every known class's standing doors at its ask, as the clearing offers them. |
 | 403 | 5 | `static Set<String> sitting(Game game)` | TENURE (RES3c, 2026-11-25). |
 
-### host places within the census line (RES3c, 2026-11-25) (lines 409-1138)
+### host places within the census line (RES3c, 2026-11-25) (lines 409-1153)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -165,14 +165,15 @@
 | 972 | 10 | `public int quantityNeeded(BuildingsTemplate t)` _(in HousingMarket.Forecast)_ | Enough actual recipe units for the remaining compatible, affordable demand; no fictitious head-capacity demand. |
 | 982 | 7 | `private HousingChoice.Result match(BuildingsTemplate t, long quantity)` _(in HousingMarket.Forecast)_ |  |
 | 990 | 21 | `public void sold()` |  |
-| 1012 | 15 | `public void reprice(double expectedMonthly)` | Existing lease-length log adjustment and expected-inflation drift, class by class. |
-| 1027 | 4 | `public State forSave()` |  |
-| 1031 | 1 | `private static void nonnegative(double n)` |  |
-| 1032 | 75 | `private static void validate(State s)` |  |
-| 1107 | 1 | `private static Map<String, Double> scaled(Map<String, Double> m, double scale)` |  |
-| 1108 | 1 | `private static Map<String, Double> kept(Map<String, Double> m)` |  |
-| 1109 | 4 | `public void restore(State s)` |  |
-| 1114 | 11 | `public void restore(State s, BuildingManager buildings)` | The native load additionally checks the complete physical catalogue, including unavailable quotes. |
-| 1125 | 1 | `public void reset()` |  |
-| 1126 | 12 | `public void redenominate(double scale)` |  |
+| 1021 | 1 | `private static double unbuiltQuote(ClassState c, double anchor)` | THE QUOTE OF A CLASS NOT YET BUILT (RES3c, 2026-11-26): the gross comparator, or what a landlord would build the class for, its actual operating carry and the margin every build is held to (EconomyManager.housingBuild... |
+| 1023 | 19 | `public void reprice(double expectedMonthly)` | Existing lease-length log adjustment and expected-inflation drift, class by class. |
+| 1042 | 4 | `public State forSave()` |  |
+| 1046 | 1 | `private static void nonnegative(double n)` |  |
+| 1047 | 75 | `private static void validate(State s)` |  |
+| 1122 | 1 | `private static Map<String, Double> scaled(Map<String, Double> m, double scale)` |  |
+| 1123 | 1 | `private static Map<String, Double> kept(Map<String, Double> m)` |  |
+| 1124 | 4 | `public void restore(State s)` |  |
+| 1129 | 11 | `public void restore(State s, BuildingManager buildings)` | The native load additionally checks the complete physical catalogue, including unavailable quotes. |
+| 1140 | 1 | `public void reset()` |  |
+| 1141 | 12 | `public void redenominate(double scale)` |  |
 

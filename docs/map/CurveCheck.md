@@ -1,4 +1,4 @@
-# CurveCheck.java - 897 lines · 42 methods · 18 constants · harnesses
+# CurveCheck.java - 901 lines · 42 methods · 18 constants · harnesses
 
 `ham/citybuildersim/CurveCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -77,11 +77,11 @@
 | 432 | 5. the autopilot's gap is nothing |
 | 508 | 6. every payment on its month |
 | 563 | 7. the issue at the curve |
-| 683 | 8. no money pump |
-| 760 | 9. BondMarket reads it |
-| 774 | 10. the strike holds through the month and a save |
-| 824 | 11. the parts add up |
-| 840 | 12. how often it fires in a real run |
+| 687 | 8. no money pump |
+| 764 | 9. BondMarket reads it |
+| 778 | 10. the strike holds through the month and a save |
+| 828 | 11. the parts add up |
+| 844 | 12. how often it fires in a real run |
 
 ## Constants
 
@@ -103,8 +103,8 @@
 | 569 | `CurveCheck.STEEP_GAP` | `.02` | How far under the dial the market expects to settle at the steep city's dial is held. |
 | 572 | `CurveCheck.STEEP_10Y` | `.02` | How far over the 1-month the 10-year of the steep city's curve must stand, as a fraction a year (section 7 asks two points). |
 | 575 | `CurveCheck.STEEP_CASH` | `10 * ASK` | What the steep city holds in cash, and what it can pay a buyback of any one piece it borrows out of: ten asks, over the three the fixture wants (FS13: set, as the played city's cash was a path's). |
-| 686 | `CurveCheck.USD_ASK` | `1_000 * PriceLevel.FACTOR` | What the dollar legs borrow, in dollars. |
-| 843 | `CurveCheck.SHOCKED_AT` | `60` | The press of the run (counting from its first, 0) before which the smoothed inflation is set over the target: halfway through its 120 months. |
+| 690 | `CurveCheck.USD_ASK` | `1_000 * PriceLevel.FACTOR` | What the dollar legs borrow, in dollars. |
+| 847 | `CurveCheck.SHOCKED_AT` | `60` | The press of the run (counting from its first, 0) before which the smoothed inflation is set over the target: halfway through its 120 months. |
 
 ## Fields (state)
 
@@ -120,7 +120,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 823 | **type** `public class CurveCheck` | Proves the curve from the dial the market expects (CD1, spec-city-debt.md section 3): the expected dial's path, the zero rates it compounds to, the price of every payment at its own month's factor, and every issue and... |
+| 75 | 827 | **type** `public class CurveCheck` | Proves the curve from the dial the market expects (CD1, spec-city-debt.md section 3): the expected dial's path, the zero rates it compounds to, the price of every payment at its own month's factor, and every issue and... |
 | 81 | 4 | `static void check(String label, boolean ok)` |  |
 | 86 | 10 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 98 | 10 | `static void closeRel(String label, double actual, double expected, double relTol)` | ...for a figure in money, where the tolerance is a share of it. |
@@ -189,44 +189,44 @@
 | 509 | 6 | `static double handSum(Debt piece, IntToDoubleFunction factor)` |  |
 | 516 | 46 | `static void pieces()` |  |
 
-### 7. the issue at the curve (lines 563-682)
+### 7. the issue at the curve (lines 563-686)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 584 | 3 | `static double expectedToSettleAt(DebtManager dm)` | The dial the market expects, far out: the rule at the inflation it expects, where its path comes to rest (YieldCurve.expectedPath()). |
-| 613 | 17 | `static Game steepCity(Path root, String label)` | A founded city with the rule's hand on the dial to month 38, then the dial held STEEP_GAP under the dial the market expects to settle at, by hand, and one press on: the market expects the dial to rise to where it sett... |
-| 631 | 51 | `static void issueAtTheCurve(Game g)` |  |
+| 613 | 21 | `static Game steepCity(Path root, String label)` | A founded city with the rule's hand on the dial to month 38, then the dial held STEEP_GAP under the dial the market expects to settle at, by hand, and one press on: the market expects the dial to rise to where it sett... |
+| 635 | 51 | `static void issueAtTheCurve(Game g)` |  |
 
-### 8. no money pump (lines 683-759)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 688 | 14 | `static void noMoneyPump(Path root, Game steep) throws Exception` | today's figure, priced at the founding's level (EP1) |
-| 703 | 9 | `static Game tradingCity(Path root) throws Exception` |  |
-| 714 | 21 | `static void roundTrips(String city, Game g)` | Issues each kind and buys it straight back: the city ends no richer, the piece is off the books. |
-| 736 | 23 | `static void roundTrip(String city, Game g, String kind, Runnable issue)` |  |
-
-### 9. BondMarket reads it (lines 760-773)
+### 8. no money pump (lines 687-763)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 761 | 12 | `static void bondMarket(Game g) throws Exception` |  |
+| 692 | 14 | `static void noMoneyPump(Path root, Game steep) throws Exception` | today's figure, priced at the founding's level (EP1) |
+| 707 | 9 | `static Game tradingCity(Path root) throws Exception` |  |
+| 718 | 21 | `static void roundTrips(String city, Game g)` | Issues each kind and buys it straight back: the city ends no richer, the piece is off the books. |
+| 740 | 23 | `static void roundTrip(String city, Game g, String kind, Runnable issue)` |  |
 
-### 10. the strike holds through the month and a save (lines 774-823)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 775 | 48 | `static void theStrike(Path root, Game g) throws Exception` |  |
-
-### 11. the parts add up (lines 824-839)
+### 9. BondMarket reads it (lines 764-777)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 825 | 14 | `static void theParts()` |  |
+| 765 | 12 | `static void bondMarket(Game g) throws Exception` |  |
 
-### 12. how often it fires in a real run (lines 840-897)
+### 10. the strike holds through the month and a save (lines 778-827)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 845 | 52 | `static void howOften(Path root)` |  |
+| 779 | 48 | `static void theStrike(Path root, Game g) throws Exception` |  |
+
+### 11. the parts add up (lines 828-843)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 829 | 14 | `static void theParts()` |  |
+
+### 12. how often it fires in a real run (lines 844-901)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 849 | 52 | `static void howOften(Path root)` |  |
 

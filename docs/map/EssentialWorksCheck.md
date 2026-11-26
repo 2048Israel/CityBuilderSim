@@ -1,4 +1,4 @@
-# EssentialWorksCheck.java - 1,433 lines · 38 methods · 4 constants · harnesses
+# EssentialWorksCheck.java - 1,441 lines · 38 methods · 5 constants · harnesses
 
 `ham/citybuildersim/EssentialWorksCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -25,7 +25,8 @@
 | 24 | `EssentialWorksCheck.out` | `System.out` |  |
 | 25 | `EssentialWorksCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 | 26 | `EssentialWorksCheck.HIGHWAYS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS)` |  |
-| 567 | `EssentialWorksCheck.SERVED_STREETS` | `.5` | The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). |
+| 359 | `EssentialWorksCheck.PROFESSIONAL_TOWN_HOUSES` | `2_000` | The Houses each copy of the professional-demand town stands with (RES3): a door holds one household, so the 900 of a copy hold 2,900 people and 1,100 workers for about 3,000 posts, and the builders' fill falls from 0.... |
+| 575 | `EssentialWorksCheck.SERVED_STREETS` | `.5` | The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). |
 
 ## Fields (state)
 
@@ -37,7 +38,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 1412 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
+| 22 | 1420 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
 | 28 | 4 | `static void check(String label, boolean ok)` |  |
 | 33 | 5 | `static void quietly(Runnable run)` |  |
 | 39 | 12 | `static Game town(Path root, String name)` |  |
@@ -54,26 +55,26 @@
 | 259 | 35 | `static void lostOutput(Path root)` |  |
 | 295 | 13 | `static void serveStreets(Game g)` |  |
 | 309 | 43 | `static void scarceCash(Path root)` |  |
-| 353 | 40 | `static void professionalDemand(Path root)` |  |
-| 394 | 43 | `static void pendingIndustrialLoad(Path root)` |  |
-| 438 | 39 | `static void interimCare(Path root)` |  |
-| 478 | 33 | `static void stagedCosts(Path root)` |  |
-| 512 | 42 | `static void completeRunning(Path root)` |  |
-| 555 | 10 | `static double existingWear(Game g, Map<BuildingsTemplate, Long> order)` |  |
-| 569 | 39 | `static void currentLossPriority(Path root)` |  |
-| 611 | 13 | `static void scalePeople(Game g, double f)` | Every band of the town's people, and its two adult stages, times `f`, its workforce held (FS15): a demand moved without moving the staffing of the works that serve it. |
-| 625 | 101 | `static void fundingPriority(Path root, boolean spareCare) throws Exception` |  |
-| 727 | 29 | `static void filledPostCosts(Path root)` |  |
-| 757 | 44 | `static void cappedCare(Path root)` |  |
-| 802 | 49 | `static void adviceParity(Path root)` |  |
-| 853 | 26 | `static double nativeUnserved(Game g, Map<BuildingsTemplate, Long> added, int months)` | Native unserved kWh at a forecast calendar month, then restore the town's current dispatch. |
-| 880 | 90 | `static void interimPower(Path root)` |  |
-| 971 | 77 | `static void earlyWind(Path root)` |  |
-| 1049 | 35 | `static void waterAtCap(Path root)` |  |
-| 1085 | 38 | `static void queuedPower(Path root)` |  |
-| 1124 | 37 | `static void shortPowerBenefit(Path root)` |  |
-| 1162 | 40 | `static void pavingLead(Path root)` |  |
-| 1203 | 139 | `static void overduePending(Path root) throws Exception` |  |
-| 1343 | 60 | `static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first, int oldCheckpoint, boolean postNeed...` |  |
-| 1404 | 29 | `public static void main(String[] args) throws Exception` |  |
+| 361 | 40 | `static void professionalDemand(Path root)` |  |
+| 402 | 43 | `static void pendingIndustrialLoad(Path root)` |  |
+| 446 | 39 | `static void interimCare(Path root)` |  |
+| 486 | 33 | `static void stagedCosts(Path root)` |  |
+| 520 | 42 | `static void completeRunning(Path root)` |  |
+| 563 | 10 | `static double existingWear(Game g, Map<BuildingsTemplate, Long> order)` |  |
+| 577 | 39 | `static void currentLossPriority(Path root)` |  |
+| 619 | 13 | `static void scalePeople(Game g, double f)` | Every band of the town's people, and its two adult stages, times `f`, its workforce held (FS15): a demand moved without moving the staffing of the works that serve it. |
+| 633 | 101 | `static void fundingPriority(Path root, boolean spareCare) throws Exception` |  |
+| 735 | 29 | `static void filledPostCosts(Path root)` |  |
+| 765 | 44 | `static void cappedCare(Path root)` |  |
+| 810 | 49 | `static void adviceParity(Path root)` |  |
+| 861 | 26 | `static double nativeUnserved(Game g, Map<BuildingsTemplate, Long> added, int months)` | Native unserved kWh at a forecast calendar month, then restore the town's current dispatch. |
+| 888 | 90 | `static void interimPower(Path root)` |  |
+| 979 | 77 | `static void earlyWind(Path root)` |  |
+| 1057 | 35 | `static void waterAtCap(Path root)` |  |
+| 1093 | 38 | `static void queuedPower(Path root)` |  |
+| 1132 | 37 | `static void shortPowerBenefit(Path root)` |  |
+| 1170 | 40 | `static void pavingLead(Path root)` |  |
+| 1211 | 139 | `static void overduePending(Path root) throws Exception` |  |
+| 1351 | 60 | `static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first, int oldCheckpoint, boolean postNeed...` |  |
+| 1412 | 29 | `public static void main(String[] args) throws Exception` |  |
 

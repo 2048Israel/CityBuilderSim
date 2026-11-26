@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**260 harness files, 30,319 labelled assertions.** AllChecks runs 260 of them.
+**260 harness files, 30,321 labelled assertions.** AllChecks runs 260 of them.
 
 ## Which harnesses read which class
 
@@ -2100,169 +2100,169 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L717 ...raising what it was short, and banking what the higher bids paid past it
   - L718 ...the rest in its savings
   - L737 ...each at a price a bid was resting at, not its own ask
-  - L841 fixture: the played city has a sector over the shortfall ceiling
-  - L845 fixture: the month the bank books the claims closes
-  - L875 fixture: the played city has a healthy loss-making shortfall borrower
-  - L884 fixture:
-  - L886 fixture:
-  - L889 fixture:
-  - L892 fixture: the bank is between its minimum and its target, and rations growth
-  - L894 fixture:
-  - L903 fixture: the month ran on the bank's capital rule, rationing
-  - L905 a rationing bank covers a healthy sector's short month: a working-capital line
-  - L907 ...past what the capital rule would have let its debt grow
-  - L908 ...and refuses it a building its room does not cover: growth
-  - L910 a short sector sells what it holds first: its bonds, into the bids resting
-  - L912 ...then asks the lender, who will not lend past the line
-  - L914 ...and what it still could not pay defaults that month
-  - L915 ...its loans losing (1 - LOAN_RECOVERY) of what of them defaulted
-  - L917 ...its bonds (1 - BOND_RECOVERY) of theirs
-  - L919 fixture: after the write-down the lender reads it under the line, and lends
-  - L920 ...the unpaid rest lent as an interim loan, ranked first, its fee on top
-  - L922 ...its till ends the month at or above nothing
-  - L923 a sector over the ceiling is refused all but its interest reserve, and defaults on its own credit
-  - L925 ...lent the unpaid rest in the interim: the ceiling is not the interim lender's
-  - L927 nothing is forgiven on either: the audit's OverdraftForgiven is the backstop's alone
-  - L929 ...and it is the month's forgiven overdraft, as the backstop's always was
-  - L931 ...and the month closes
-  - L975 fixture: the city's second branch has opened and closed, and one stands
-  - L992 fixture: the shops owe under the shortfall desk's ceiling
-  - L994 the month closes
-  - L998 fixture: it ordered stock, and could pay for all of it
-  - L1000 a sector under its ceiling buys as before: every order placed whole
-  - L1002 ...and filled whole
-  - L1008 fixture: the month the bank books the claim closes
-  - L1032 fixture: the shops owe past the shortfall desk's ceiling and under the line on their quarter
-  - L1035 the month closes
-  - L1041 fixture: it could pay for some of its order and not all of it
-  - L1042 a sector over its ceiling and short buys only what its cash and the credit it can get cover
-  - L1044 ...and does not order the rest
-  - L1061 ...so it does not default on the stock it did not buy
-  - L1062 the month closes
-  - L1074 fixture: under the line on its quarter, still
-  - L1075 the month closes
-  - L1089 a sector whose unavoidable bills outrun its cash and its lender's credit can pay for no stock
-  - L1092 ...and buys only that, all of it on their credit
-  - L1103 the same sector still defaults on a bill it cannot avoid: principal that fell due
-  - L1134 ...on no more than the principal and what it owed its suppliers for stock it has sold:
-  - L1139 the month closes
-- **L1166 5. recoveries by instrument: a slice takes a loan's loss off the loans and a bond's off the bonds**
-  - L1183 fixture: $900k of loans and $600k of bonds, 1.5 times its assets
-  - L1190 the loans lose h x (1 - LOAN_RECOVERY) of theirs
-  - L1192 ...the bonds h x (1 - BOND_RECOVERY) of theirs
-  - L1194 ...so the loans recover LOAN_RECOVERY of what defaulted
-  - L1196 ...and the bonds BOND_RECOVERY
-  - L1197 what defaulted is on the lender's record by class
-  - L1216 at
-  - L1218 ...and the bonds h x (1 - BOND_RECOVERY)
-  - L1224 both inside the sources' ranges
-  - L1244 the backstop on a sector with nothing left writes its loans off whole
-  - L1245 ...and its bonds
-  - L1246 ...leaving it owing nothing on either
-- **L1250 5b. a slice in play: the bondholders' loss reaches every class, and the world's crosses the border**
-  - L1262 fixture:
-  - L1265 the loans lost (1 - LOAN_RECOVERY) of what of them defaulted
-  - L1267 ...and the bonds (1 - BOND_RECOVERY) of theirs
-  - L1271 ...the loans recovering more than the bonds
-  - L1277 the bondholders lost it between them: households, the bank, the companies and the world
-  - L1279 fixture: every class held some of what defaulted
-  - L1281 the world's loss is declared across the border, a valuation with no cash in it
-  - L1282 ...on the valuation line the foreign position reads
-  - L1283 ...and the month closes
-  - L1286 a bondholder's expected loss is the default rate times (1 - BOND_RECOVERY)
-  - L1298 fixture: the bank read the sector at its provision
-  - L1299 ...what it owes the bank as it stands at the month's end
-  - L1300 ...the bank's allowance on the sector its loans at (1 - LOAN_RECOVERY) and its bonds at (1 - BOND_RECOVERY)
-  - L1304 ...and a loan's own risk in its price the curve at (1 - LOAN_RECOVERY)
-  - L1316 written down by a tenth, every holder of the bond loses a tenth: households, the bank at its cost, the world, the companies
-  - L1321 ...the households' claims falling by exactly their loss
-  - L1322 ...the world's on the border's line
-  - L1323 ...and it was a tenth of the sector's bonds
-- **L1330 6. concentration: Basel's capital, a charge that rises with a sector's share and falls as the book spreads**
-  - L1339 the IRB capital gives Basel's own table of corporate risk weights, to its two decimals
-  - L1340 the correlation at the soundest firms is 24%
-  - L1341 ...and a book in one industry R x SECTOR_CORRELATION_MULTIPLIER
-  - L1360 a dollar lent to an industry carries more capital the more of the book it already is
-  - L1361 ...and a small one's carries less than none: it diversifies the book
-  - L1375 ...and falls as the book spreads over more industries, its Herfindahl index with it
-  - L1383 by the Euler rule the sectors' shares add back up to the book's add-on
-  - L1384 ...which is weight on the book at the minimum ratio
-  - L1397 fixture: the played bank's book has a largest industry
-  - L1399 a loan's capital per dollar is the target on its weight plus the sector's add-on, carried at the target
-  - L1402 ...and its charge is that capital at the owners' return over the money - the one formula
-  - L1410 pushed to the lender, it is the part of the sector's rate over prime, its own risk and its record
-  - L1418 the add-on is in the bank's requirement: its own row of the weight table
-  - L1419 ...and the table still foots to the weighted book the requirement reads (BankCheck 13)
-  - L1420 ...its minimum the ratio on all of it
-- **L1437 8. save and load: the bonds, who holds them and the resting orders; and a save from before them**
-  - L1449 it loads
-  - L1451 fixture: the city has bonds outstanding and orders resting
-  - L1452 the same bonds come back
-  - L1456 fixture: an interim loan is outstanding (5c)
-  - L1457 the interim loans come back, by their own type: what a sector owes on them
-  - L1459 ...as many of them, ranked first, over every sector
-  - L1461 ...with the same orders resting on their books, in the same order
-  - L1462 ...the households' bonds on them
-  - L1471 fixture:
-  - L1472 ...and each comes back by the cell's name, bond by bond, to the bit
-  - L1477 ...kept in the save under the cells' names
-  - L1478 ...their value a unit of face
-  - L1479 ...the bank's bonds on its book
-  - L1480 ...and its concentration add-on
-  - L1481 ...the lender's bond write-offs on the record
-  - L1484 ...and last month's book for the screens
-  - L1494 a month on, both the city and its reload play and close
-  - L1508 a round-1 save, its households' bonds one pool, loads
-  - L1527 ...each cell holding the share of every bond its claim was of the pool, its total its claim
-  - L1528 ...every bond's households' face the pool it was, and the cells' sum
-  - L1531 ...and it plays, the audit closing
-  - L1542 fixture: the save's cells are today's width
-  - L1553 a save from before the bonds loads
-  - L1554 ...with no bonds, no books and nobody holding any
-  - L1556 ...the households' paper where it was
-  - L1559 ...and it plays, the audit closing every month
-- **L1657 9a. equal bond bids keep arrival priority at the price tick**
-  - L1667 both bids rest at one tick, in their arrival order
-  - L1670 the first arrival bought the face
-  - L1671 the second bid still waits
-  - L1673 a positive bid below half a tick is refused before settlement
-- **L1679 9. each household type trades: a rich cell bids, a cell over its money asks, and they meet**
-  - L1681 fixture: the bond's households' face is the cells' own, summed
-  - L1690 the rich cell bid and the cell over its money asked, and they traded with each other
-  - L1692 ...the face the one gave up is the face the other took
-  - L1693 ...the cash the one paid is the cash the other was paid, the transfer counted
-  - L1695 ...and the same the other way up
-  - L1696 ...so the bond's households' face did not move
-  - L1697 ...and is still the cells' own, summed
-  - L1698 no pool line saw it: nothing bought from or sold to the pools
-  - L1708 fixture: the rich cell's bid rests after the step, and nothing traded
-  - L1713 a cell short of money sells into it, raising what it was short
-  - L1714 ...cell to cell, the rich cell taking the face
-  - L1716 ...the face the one gave up the other took
-  - L1717 ...and no pool line
-- **L1923 9b. native household posting folds touched identities once, with eager raw-bit twins**
-  - L1925 fixture: at least three nonconsecutive bond ids trade
-  - L1931 warm month
-  - L1946 month
-  - L1955 month
-  - L1958 month
-  - L1961 month
-  - L1967 month
-  - L1968 after month
-  - L1972 warm thrown settlement
-  - L1978 fixture: settlement threw after a seller write and before the buyer write
-  - L1981 the thrown settlement still recounts its touched seller
-  - L1983 thrown settlement finally
-  - L1984 after thrown settlement
-- **L1996 1c. at maturity the issuer pays every holder its face, and the bond and its book go**
-  - L2010 fixture: short of $5M,
-  - L2013 fixture: a bond outstanding
-  - L2020 it falls due and is gone
-  - L2021 the issuer repaid its face
-  - L2022 ...to its holders, every class together
-  - L2024 the world's principal leaves on the audit, in the financial account
-  - L2025 ...the households' arrives in their savings
-  - L2026 ...and the month closes
+  - L852 fixture: the played city has a sector over the shortfall ceiling
+  - L856 fixture: the month the bank books the claims closes
+  - L889 fixture: the played city has a healthy loss-making shortfall borrower
+  - L898 fixture:
+  - L900 fixture:
+  - L903 fixture:
+  - L906 fixture: the bank is between its minimum and its target, and rations growth
+  - L908 fixture:
+  - L917 fixture: the month ran on the bank's capital rule, rationing
+  - L919 a rationing bank covers a healthy sector's short month: a working-capital line
+  - L921 ...past what the capital rule would have let its debt grow
+  - L922 ...and refuses it a building its room does not cover: growth
+  - L924 a short sector sells what it holds first: its bonds, into the bids resting
+  - L926 ...then asks the lender, who will not lend past the line
+  - L928 ...and what it still could not pay defaults that month
+  - L929 ...its loans losing (1 - LOAN_RECOVERY) of what of them defaulted
+  - L931 ...its bonds (1 - BOND_RECOVERY) of theirs
+  - L933 fixture: after the write-down the lender reads it under the line, and lends
+  - L934 ...the unpaid rest lent as an interim loan, ranked first, its fee on top
+  - L936 ...its till ends the month at or above nothing
+  - L937 a sector over the ceiling is refused all but its interest reserve, and defaults on its own credit
+  - L939 ...lent the unpaid rest in the interim: the ceiling is not the interim lender's
+  - L941 nothing is forgiven on either: the audit's OverdraftForgiven is the backstop's alone
+  - L943 ...and it is the month's forgiven overdraft, as the backstop's always was
+  - L945 ...and the month closes
+  - L989 fixture: the city's second branch has opened and closed, and one stands
+  - L1006 fixture: the shops owe under the shortfall desk's ceiling
+  - L1008 the month closes
+  - L1012 fixture: it ordered stock, and could pay for all of it
+  - L1014 a sector under its ceiling buys as before: every order placed whole
+  - L1016 ...and filled whole
+  - L1022 fixture: the month the bank books the claim closes
+  - L1046 fixture: the shops owe past the shortfall desk's ceiling and under the line on their quarter
+  - L1049 the month closes
+  - L1055 fixture: it could pay for some of its order and not all of it
+  - L1056 a sector over its ceiling and short buys only what its cash and the credit it can get cover
+  - L1058 ...and does not order the rest
+  - L1075 ...so it does not default on the stock it did not buy
+  - L1076 the month closes
+  - L1088 fixture: under the line on its quarter, still
+  - L1089 the month closes
+  - L1103 a sector whose unavoidable bills outrun its cash and its lender's credit can pay for no stock
+  - L1106 ...and buys only that, all of it on their credit
+  - L1117 the same sector still defaults on a bill it cannot avoid: principal that fell due
+  - L1148 ...on no more than the principal and what it owed its suppliers for stock it has sold:
+  - L1153 the month closes
+- **L1180 5. recoveries by instrument: a slice takes a loan's loss off the loans and a bond's off the bonds**
+  - L1197 fixture: $900k of loans and $600k of bonds, 1.5 times its assets
+  - L1204 the loans lose h x (1 - LOAN_RECOVERY) of theirs
+  - L1206 ...the bonds h x (1 - BOND_RECOVERY) of theirs
+  - L1208 ...so the loans recover LOAN_RECOVERY of what defaulted
+  - L1210 ...and the bonds BOND_RECOVERY
+  - L1211 what defaulted is on the lender's record by class
+  - L1230 at
+  - L1232 ...and the bonds h x (1 - BOND_RECOVERY)
+  - L1238 both inside the sources' ranges
+  - L1258 the backstop on a sector with nothing left writes its loans off whole
+  - L1259 ...and its bonds
+  - L1260 ...leaving it owing nothing on either
+- **L1264 5b. a slice in play: the bondholders' loss reaches every class, and the world's crosses the border**
+  - L1276 fixture:
+  - L1279 the loans lost (1 - LOAN_RECOVERY) of what of them defaulted
+  - L1281 ...and the bonds (1 - BOND_RECOVERY) of theirs
+  - L1285 ...the loans recovering more than the bonds
+  - L1291 the bondholders lost it between them: households, the bank, the companies and the world
+  - L1293 fixture: every class held some of what defaulted
+  - L1295 the world's loss is declared across the border, a valuation with no cash in it
+  - L1296 ...on the valuation line the foreign position reads
+  - L1297 ...and the month closes
+  - L1300 a bondholder's expected loss is the default rate times (1 - BOND_RECOVERY)
+  - L1312 fixture: the bank read the sector at its provision
+  - L1313 ...what it owes the bank as it stands at the month's end
+  - L1314 ...the bank's allowance on the sector its loans at (1 - LOAN_RECOVERY) and its bonds at (1 - BOND_RECOVERY)
+  - L1318 ...and a loan's own risk in its price the curve at (1 - LOAN_RECOVERY)
+  - L1330 written down by a tenth, every holder of the bond loses a tenth: households, the bank at its cost, the world, the companies
+  - L1335 ...the households' claims falling by exactly their loss
+  - L1336 ...the world's on the border's line
+  - L1337 ...and it was a tenth of the sector's bonds
+- **L1344 6. concentration: Basel's capital, a charge that rises with a sector's share and falls as the book spreads**
+  - L1353 the IRB capital gives Basel's own table of corporate risk weights, to its two decimals
+  - L1354 the correlation at the soundest firms is 24%
+  - L1355 ...and a book in one industry R x SECTOR_CORRELATION_MULTIPLIER
+  - L1374 a dollar lent to an industry carries more capital the more of the book it already is
+  - L1375 ...and a small one's carries less than none: it diversifies the book
+  - L1389 ...and falls as the book spreads over more industries, its Herfindahl index with it
+  - L1397 by the Euler rule the sectors' shares add back up to the book's add-on
+  - L1398 ...which is weight on the book at the minimum ratio
+  - L1411 fixture: the played bank's book has a largest industry
+  - L1413 a loan's capital per dollar is the target on its weight plus the sector's add-on, carried at the target
+  - L1416 ...and its charge is that capital at the owners' return over the money - the one formula
+  - L1424 pushed to the lender, it is the part of the sector's rate over prime, its own risk and its record
+  - L1432 the add-on is in the bank's requirement: its own row of the weight table
+  - L1433 ...and the table still foots to the weighted book the requirement reads (BankCheck 13)
+  - L1434 ...its minimum the ratio on all of it
+- **L1451 8. save and load: the bonds, who holds them and the resting orders; and a save from before them**
+  - L1463 it loads
+  - L1465 fixture: the city has bonds outstanding and orders resting
+  - L1466 the same bonds come back
+  - L1470 fixture: an interim loan is outstanding (5c)
+  - L1471 the interim loans come back, by their own type: what a sector owes on them
+  - L1473 ...as many of them, ranked first, over every sector
+  - L1475 ...with the same orders resting on their books, in the same order
+  - L1476 ...the households' bonds on them
+  - L1485 fixture:
+  - L1486 ...and each comes back by the cell's name, bond by bond, to the bit
+  - L1491 ...kept in the save under the cells' names
+  - L1492 ...their value a unit of face
+  - L1493 ...the bank's bonds on its book
+  - L1494 ...and its concentration add-on
+  - L1495 ...the lender's bond write-offs on the record
+  - L1498 ...and last month's book for the screens
+  - L1508 a month on, both the city and its reload play and close
+  - L1522 a round-1 save, its households' bonds one pool, loads
+  - L1541 ...each cell holding the share of every bond its claim was of the pool, its total its claim
+  - L1542 ...every bond's households' face the pool it was, and the cells' sum
+  - L1545 ...and it plays, the audit closing
+  - L1556 fixture: the save's cells are today's width
+  - L1567 a save from before the bonds loads
+  - L1568 ...with no bonds, no books and nobody holding any
+  - L1570 ...the households' paper where it was
+  - L1573 ...and it plays, the audit closing every month
+- **L1671 9a. equal bond bids keep arrival priority at the price tick**
+  - L1681 both bids rest at one tick, in their arrival order
+  - L1684 the first arrival bought the face
+  - L1685 the second bid still waits
+  - L1687 a positive bid below half a tick is refused before settlement
+- **L1693 9. each household type trades: a rich cell bids, a cell over its money asks, and they meet**
+  - L1695 fixture: the bond's households' face is the cells' own, summed
+  - L1704 the rich cell bid and the cell over its money asked, and they traded with each other
+  - L1706 ...the face the one gave up is the face the other took
+  - L1707 ...the cash the one paid is the cash the other was paid, the transfer counted
+  - L1709 ...and the same the other way up
+  - L1710 ...so the bond's households' face did not move
+  - L1711 ...and is still the cells' own, summed
+  - L1712 no pool line saw it: nothing bought from or sold to the pools
+  - L1722 fixture: the rich cell's bid rests after the step, and nothing traded
+  - L1727 a cell short of money sells into it, raising what it was short
+  - L1728 ...cell to cell, the rich cell taking the face
+  - L1730 ...the face the one gave up the other took
+  - L1731 ...and no pool line
+- **L1937 9b. native household posting folds touched identities once, with eager raw-bit twins**
+  - L1939 fixture: at least three nonconsecutive bond ids trade
+  - L1945 warm month
+  - L1960 month
+  - L1969 month
+  - L1972 month
+  - L1975 month
+  - L1981 month
+  - L1982 after month
+  - L1986 warm thrown settlement
+  - L1992 fixture: settlement threw after a seller write and before the buyer write
+  - L1995 the thrown settlement still recounts its touched seller
+  - L1997 thrown settlement finally
+  - L1998 after thrown settlement
+- **L2010 1c. at maturity the issuer pays every holder its face, and the bond and its book go**
+  - L2024 fixture: short of $5M,
+  - L2027 fixture: a bond outstanding
+  - L2034 it falls due and is gone
+  - L2035 the issuer repaid its face
+  - L2036 ...to its holders, every class together
+  - L2038 the world's principal leaves on the audit, in the financial account
+  - L2039 ...the households' arrives in their savings
+  - L2040 ...and the month closes
 
 ## BooksCheck.java - 57 labelled assertions
 
@@ -3107,43 +3107,43 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L436 every month a depot opens the builders offer every post: none of its crews laid off
   - L438 ...and their loss clock is under the RETIREMENT_LOSS_MONTHS the spare-capacity rule waits for
   - L440 no depot is retired in any month of the run
-- **L473 6. only a depot the city could staff: a new town's founding depots, crewed by the rule**
-  - L490 fixture: depots on site in a new town
-  - L491 fixture: by the builders' own test it could not staff them
-  - L492 the depots are not served first
-  - L498 ...the plan is the crews' rule's, every slot to the bit
-  - L500 fixture:
-  - L514 fixture: the town has its people and the builders a fill, in both twins
-  - L517 fixture: still a new town, with depots on site that by the builders' own test it could not staff
-  - L542 fixture: the funded private top-up, including its ground, is placed
-  - L546 fixture: the landlords' Houses on site in both twins, alike
-  - L567 in the town with the test its depots never went first
-  - L568 ...where the twin told it could staff them built them first
-  - L575 without the test a depot opens early
-  - L595 with the test the sites get work every month
-  - L596 ...and the town builds its homes
-- **L602 7. one priority with the death care: the depot and the cemetery share the first group's month**
-  - L613 fixture: the dead lie unburied
-  - L614 fixture: the builders' depot and the city's cemetery both on site
-  - L618 the first group is the depot and the cemetery
-  - L620 ...and the plan serves both: the builders' and the death care
-  - L630 the depot takes its crews' share of the group's month
-  - L631 ...and the cemetery its
-  - L632 together what they owe, or the whole month if less
-  - L634 neither is starved: each more than its crews' share among everyone
-  - L636 ...and neither leads: each less than what it owes while the other still owes
-  - L638 the city's order has the cemetery at its top
-  - L639 the plan's line names both
-  - L643 the one wait: the cemetery by the crews' rule among the group
-  - L645 ...and the depot
-  - L657 with the player's order set the group still takes what it owes, or the month
-  - L670 ...the landlords' Houses the rule's share of what is left
-  - L674 ...then
-  - L678 the city's order keeps the cemetery at its top, the rest in the player's order
-- **L686 8. money is conserved**
-  - L689 every month played here was audited
-  - L690 the money audit's worst month is within 0.01% of what moved
-  - L691 ...and nothing moved a pool after it
+- **L483 6. only a depot the city could staff: a new town's founding depots, crewed by the rule**
+  - L502 fixture: depots on site in a new town
+  - L503 fixture: by the builders' own test it could not staff them
+  - L504 the depots are not served first
+  - L510 ...the plan is the crews' rule's, every slot to the bit
+  - L512 fixture:
+  - L526 fixture: the town has its people and the builders a fill, in both twins
+  - L529 fixture: still a new town, with depots on site that by the builders' own test it could not staff
+  - L554 fixture: the funded private top-up, including its ground, is placed
+  - L558 fixture: the landlords' Houses on site in both twins, alike
+  - L579 in the town with the test its depots never went first
+  - L580 ...where the twin told it could staff them built them first
+  - L587 without the test a depot opens early
+  - L607 with the test the sites get work every month
+  - L608 ...and the town builds its homes
+- **L614 7. one priority with the death care: the depot and the cemetery share the first group's month**
+  - L625 fixture: the dead lie unburied
+  - L626 fixture: the builders' depot and the city's cemetery both on site
+  - L630 the first group is the depot and the cemetery
+  - L632 ...and the plan serves both: the builders' and the death care
+  - L642 the depot takes its crews' share of the group's month
+  - L643 ...and the cemetery its
+  - L644 together what they owe, or the whole month if less
+  - L646 neither is starved: each more than its crews' share among everyone
+  - L648 ...and neither leads: each less than what it owes while the other still owes
+  - L650 the city's order has the cemetery at its top
+  - L651 the plan's line names both
+  - L655 the one wait: the cemetery by the crews' rule among the group
+  - L657 ...and the depot
+  - L669 with the player's order set the group still takes what it owes, or the month
+  - L682 ...the landlords' Houses the rule's share of what is left
+  - L686 ...then
+  - L690 the city's order keeps the cemetery at its top, the rest in the player's order
+- **L698 8. money is conserved**
+  - L701 every month played here was audited
+  - L702 the money audit's worst month is within 0.01% of what moved
+  - L703 ...and nothing moved a pool after it
 
 ## BuildingDataCheck.java - 54 labelled assertions
 
@@ -5566,46 +5566,46 @@ _(this harness does not label its checks through a helper - it prints its findin
 > (runs/fixN2-notes.md). Since 0.7.71 ids 15, 16 and 17 are centres of 80,
 > ...
 
-- **L322 1. three centres, a place cheaper the bigger**
-  - L334 ids 15, 16 and 17 are childcare (
-  - L335 ...named centres, and no building in the catalogue is a daycare any more (
-  - L364 every centre keeps between Ontario's infant (3:10) and preschool (1:8) ratios: children an adult
-- **L371 2. the size that fits the need**
-  - L383 fixture: the founding short of thousands lacks more places than five Large Childcare Centres hold
-  - L387 ...and short of thousands it is not the Small Childcare Centre (
-  - L403 fixture: the founding short of hundreds lacks more places than one Large Childcare Centre holds, and its
-  - L421 ...where the advice still orders
-  - L437 Build's childcare page shows the three centres
-  - L460 fixture: each of the three centres alone has a card (
-  - L461 the centre's whole plan has the least net present value, including running, land and physical losses (
-  - L465 ...its figure is that, recomputed here, to the bit
-- **L471 3. a city's buildings keep their type**
-  - L485 a save holds the city's buildings by id: index 15 holds
-  - L490 ...and loads as that many of id 15, the Small Childcare Centre
-  - L492 ...with its places: the founding's and
-  - L501 ...its posts:
-  - L511 overbuilt so, the advice says nothing for childcare
-  - L515 ...nor does the overview, and NEEDS YOU does not list childcare
-- **L522 4. the test player's rule (-Dplaytest.childcare)**
-  - L527 fixture: NEEDS YOU lists the town's childcare
-  - L538 it orders the advice's card
-  - L543 ...and that is what went on site:
-  - L558 overbuilt, it orders nothing
-- **L564 5. the map draws a centre as care**
-  - L572 id 15 is drawn as care, not as a home
-  - L575 ...and home care (22) still as a home
-- **L581 6. the places a city wants at real demand (0.7.139)**
-  - L583 a baby wants the share of under-6s in centre-based care of a place
-  - L585 ...a child the share of 6-to-12s in a before- or after-school programme
-  - L591 ...and nobody else any
-  - L594 childcare counts places, as senior care does, and general care heads
-  - L602 fixture: the pyramid holds its 4,000 babies and 5,000 children
-  - L605 a city of 4,000 babies and 5,000 children wants their places at those weights
-  - L611 the founding's nursery is twelve hundred people's babies and children at those weights
-  - L620 fixture: the catalogue has the Large Childcare Centre
-  - L638 fixture: NEEDS YOU has a childcare row for the city
-  - L639 NEEDS YOU's childcare row wants those places
-  - L644 ...and the month's coverage is its places over them, times the share who can pay
+- **L333 1. three centres, a place cheaper the bigger**
+  - L345 ids 15, 16 and 17 are childcare (
+  - L346 ...named centres, and no building in the catalogue is a daycare any more (
+  - L375 every centre keeps between Ontario's infant (3:10) and preschool (1:8) ratios: children an adult
+- **L382 2. the size that fits the need**
+  - L394 fixture: the founding short of thousands lacks more places than five Large Childcare Centres hold
+  - L398 ...and short of thousands it is not the Small Childcare Centre (
+  - L414 fixture: the founding short of hundreds lacks more places than one Large Childcare Centre holds, and its
+  - L432 ...where the advice still orders
+  - L448 Build's childcare page shows the three centres
+  - L471 fixture: each of the three centres alone has a card (
+  - L472 the centre's whole plan has the least net present value, including running, land and physical losses (
+  - L476 ...its figure is that, recomputed here, to the bit
+- **L482 3. a city's buildings keep their type**
+  - L496 a save holds the city's buildings by id: index 15 holds
+  - L501 ...and loads as that many of id 15, the Small Childcare Centre
+  - L503 ...with its places: the founding's and
+  - L512 ...its posts:
+  - L522 overbuilt so, the advice says nothing for childcare
+  - L526 ...nor does the overview, and NEEDS YOU does not list childcare
+- **L533 4. the test player's rule (-Dplaytest.childcare)**
+  - L538 fixture: NEEDS YOU lists the town's childcare
+  - L549 it orders the advice's card
+  - L554 ...and that is what went on site:
+  - L569 overbuilt, it orders nothing
+- **L575 5. the map draws a centre as care**
+  - L583 id 15 is drawn as care, not as a home
+  - L586 ...and home care (22) still as a home
+- **L592 6. the places a city wants at real demand (0.7.139)**
+  - L594 a baby wants the share of under-6s in centre-based care of a place
+  - L596 ...a child the share of 6-to-12s in a before- or after-school programme
+  - L602 ...and nobody else any
+  - L605 childcare counts places, as senior care does, and general care heads
+  - L613 fixture: the pyramid holds its 4,000 babies and 5,000 children
+  - L616 a city of 4,000 babies and 5,000 children wants their places at those weights
+  - L622 the founding's nursery is twelve hundred people's babies and children at those weights
+  - L631 fixture: the catalogue has the Large Childcare Centre
+  - L649 fixture: NEEDS YOU has a childcare row for the city
+  - L650 NEEDS YOU's childcare row wants those places
+  - L655 ...and the month's coverage is its places over them, times the share who can pay
 
 ## ClockCheck.java - 35 labelled assertions
 
@@ -7818,50 +7818,50 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L546 the
   - L557 two 20-year term loans with coupons a point apart yield differently on a steep curve
   - L559 ...and neither yield is the curve's rate at 240 months: the yield is a result, not the rate it was priced at
-- **L632 7. the issue at the curve**
-  - L639 fixture: the city read the target and expected the target when the dial was held, so its path is flat but for the hold
-  - L640 fixture: the dial is held by hand, two points under the dial the market expects it to settle at (the rule at the inflation it expects)
-  - L642 fixture: its curve is steep - not flat, the 1-year over the 1-month and the 10-year over the 1-month by points
-  - L646 fixture: the city can pay for buying back any one piece it borrows (a buyback costs about what the piece raised): its cash is set, STEEP_CASH
-  - L652 fixture: the serial was booked
-  - L656 the serial's booked coupon prices its schedule at par on the curve: its market value is its face, to a cent per million
-  - L662 fixture: the term loan was booked on the quote it was shown
-  - L669 the term loan is worth its quoted gross (what it raised and the fees) the moment it is booked, to a cent per million
-  - L675 fixture: the note was booked on the quote it was shown
-  - L680 the note's market value is at or above what it raised
-- **L689 8. no money pump**
-  - L698 fixture: the trading city earns abroad, so its dollar window is open
-  - L744 fixture: the
-  - L749 the
-  - L754 the
-- **L762 9. BondMarket reads the city's curve**
-  - L764 fixture: the bond market is attached to the city's readings
-  - L766 fixture: the curve being read is the steep one, not a flat one
-  - L768 the bond market's benchmark at
-  - L770 ...and the curve it reads is not the parallel one: its 10-year is not the short rate plus the premium
-- **L776 10. the strike holds through the month and a save**
-  - L781 fixture: the city, with its pieces on the books, saved to slot 10 of its scratch root
-  - L786 fixture: the loaded city has the same pieces
-  - L787 the loaded city is struck
-  - L788 the struck inflation comes back to the bit
-  - L789 the struck expectation comes back to the bit
-  - L791 the
-  - L795 piece
-  - L806 fixture: the basket is based, so the month's end reads the city's prices and moves what it expects
-  - L813 fixture: the end of the month moved the expectation
-  - L814 after the month the struck expectation is what Expectations read before the press
-  - L816 ...and it is not what the month's end has since made of it
-  - L817 after the month the struck inflation is what the month's top read
-  - L820 the next press strikes the new expectation
-  - L821 ...and the new inflation
-- **L826 11. the parts add up**
-  - L830 the
-  - L836 fixture: the QE city's compression is something, so the sum has a part to lose
-- **L846 12. how often it fires in a real run**
-  - L864 fixture: the basket is based when the smoothed inflation is set (
-  - L890 fixture: every month of the run was struck
-  - L891 the struck pair moved in at least one month of the run (
-  - L893 ...and in the month after the smoothed inflation was set over the target (
+- **L636 7. the issue at the curve**
+  - L643 fixture: the city read the target and expected the target when the dial was held, so its path is flat but for the hold
+  - L644 fixture: the dial is held by hand, two points under the dial the market expects it to settle at (the rule at the inflation it expects)
+  - L646 fixture: its curve is steep - not flat, the 1-year over the 1-month and the 10-year over the 1-month by points
+  - L650 fixture: the city can pay for buying back any one piece it borrows (a buyback costs about what the piece raised): its cash is set, STEEP_CASH
+  - L656 fixture: the serial was booked
+  - L660 the serial's booked coupon prices its schedule at par on the curve: its market value is its face, to a cent per million
+  - L666 fixture: the term loan was booked on the quote it was shown
+  - L673 the term loan is worth its quoted gross (what it raised and the fees) the moment it is booked, to a cent per million
+  - L679 fixture: the note was booked on the quote it was shown
+  - L684 the note's market value is at or above what it raised
+- **L693 8. no money pump**
+  - L702 fixture: the trading city earns abroad, so its dollar window is open
+  - L748 fixture: the
+  - L753 the
+  - L758 the
+- **L766 9. BondMarket reads the city's curve**
+  - L768 fixture: the bond market is attached to the city's readings
+  - L770 fixture: the curve being read is the steep one, not a flat one
+  - L772 the bond market's benchmark at
+  - L774 ...and the curve it reads is not the parallel one: its 10-year is not the short rate plus the premium
+- **L780 10. the strike holds through the month and a save**
+  - L785 fixture: the city, with its pieces on the books, saved to slot 10 of its scratch root
+  - L790 fixture: the loaded city has the same pieces
+  - L791 the loaded city is struck
+  - L792 the struck inflation comes back to the bit
+  - L793 the struck expectation comes back to the bit
+  - L795 the
+  - L799 piece
+  - L810 fixture: the basket is based, so the month's end reads the city's prices and moves what it expects
+  - L817 fixture: the end of the month moved the expectation
+  - L818 after the month the struck expectation is what Expectations read before the press
+  - L820 ...and it is not what the month's end has since made of it
+  - L821 after the month the struck inflation is what the month's top read
+  - L824 the next press strikes the new expectation
+  - L825 ...and the new inflation
+- **L830 11. the parts add up**
+  - L834 the
+  - L840 fixture: the QE city's compression is something, so the sum has a part to lose
+- **L850 12. how often it fires in a real run**
+  - L868 fixture: the basket is based when the smoothed inflation is set (
+  - L894 fixture: every month of the run was struck
+  - L895 the struck pair moved in at least one month of the run (
+  - L897 ...and in the month after the smoothed inflation was set over the target (
 
 ## DeathCareFirstCheck.java - 68 labelled assertions
 
@@ -10402,99 +10402,99 @@ _(this harness does not label its checks through a helper - it prints its findin
 - **L310 an unaffordable full power order takes the cash-funded step that can raise service**
   - L326 fixture has a plant that can raise power service
   - L348 the affordable step orders one
-- **L354 professional eligibility on both sides of the useful-demand threshold**
-  - L376 fixture: eligible graduates will study and the city's doctor vacancies exceed one school's threshold
-  - L381 below thirty percent the professional school is unwarranted and omitted
-  - L388 above thirty percent, with no school, the professional service is warranted and not maintained
-- **L395 a known industrial opening needs its power ahead**
-  - L400 fixture: unrelated essential services already have their operating capacity
-  - L416 fixture: a paid mill opens within the planning horizon while current power has its reserve
-  - L424 the forecast adds the mill's physical electrical draw only once it opens
-  - L429 the power card anticipates the ordered industrial load before it is operating
-  - L434 the automatic path orders power before that industrial completion
-- **L439 a slow hospital cannot hold faster care**
-  - L463 fixture: operating care is short, the slow hospital covers it, and a clinic can open earlier
-  - L469 the care card offers an earlier useful order while the hospital is pending
-  - L474 the automatic path places that service's interim order
-- **L479 maintained service prices later works and their borrowing**
-  - L498 fixture: the funded service has a positive growth trend, paid posts and positive borrowing terms
-  - L500 the comparison includes the future service additions and their capital
-  - L502 the comparison includes the new debt's issue and coupon costs
-  - L507 cash that covers the complete sequence has no new financing charge
-  - L508 valuation places no order and moves no cash or debt
-- **L513 complete fleets charge their actual traffic wear and shared fares**
-  - L520 fixture: two lines share the same riders and the fare is positive
-  - L525 two lines collect the full network's fares once
-  - L532 the whole two-road order pays wear at its own relieved traffic
-  - L547 fixture: existing gravel roads cost less to repair with the new paved road
-  - L551 the new work includes the changed repair bill of the existing gravel stock
-- **L570 the higher monetary service loss gets the scarce cash first**
-  - L595 fixture: streets lose more output although power has the greater missing share
-  - L599 the monetary loss puts streets before power in the actual remit
-  - L604 the higher-loss street work uses the cash first and power waits for funding
-  - L682 fixture: the school is useful and entirely unserved, and the care plan is cheaper
-  - L685 fixture: current care is on the intended side of full service
-  - L688 fixture: the available cash funds care, with the intended school funding gap
-  - L695 the school remains a hard cash or debt hold and the spare-care order preserves its funds
-  - L699 the same care card labels the automatic funding hold
-  - L707 a real scratch save and load keeps the same funding reason on the care card
-  - L713 switching automatic building off clears the funding hold on both cards
-  - L717 switching it back on before a new pass restores no stale funding hold
-  - L722 the fully unserved school is ordered before the partly served capped-care work
-- **L728 staff-short works pay only the posts filled in the utility books**
-  - L740 fixture: the plant has paid staff and unfilled posts
-  - L742 the card's running bill charges upkeep and filled-post payroll
-  - L752 the plan's running cost and payroll use the same filled-post basis
-- **L758 care prevents only the sickness the model can reduce**
-  - L772 fixture: only founding care remains short of the city, and the order restores full coverage
-  - L779 fixture: sickness is capped before and after the care improvement
-  - L782 care that leaves sickness capped claims zero prevented output
-  - L786 fixture: uncapped care comparison has the same other causes and no outbreak
-  - L798 uncapped care's credit equals the model's sickness reduction, including its unhoused cause
-- **L803 the Build advice and automatic order use the same plan**
-  - L816 overview cards require the NEEDS YOU row their screen reads
-  - L821 fixture: the power card leads the automatic remit and its full order is fundable
-  - L843 the card uses the player's automatic reserve and full-service target
-  - L845 the automatic path orders the card's exact building and count
-  - L847 the automatic path records the exact whole-plan valuation displayed by the card
-- **L881 pending coal does not hide an earlier forecast power loss**
-  - L909 fixture: unrelated essential services already have their operating capacity
-  - L921 fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind
-  - L926 wind prevents positive physical output loss before the pending coal opens
-  - L936 fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner
-  - L958 the original seasonal reserve gap orders ordinary Steam which closes, ahead of the nonclosing wind (
-  - L967 the faster Steam brings the saved first-completion deadline forward from the coal quote
-- **L972 native wind bridges a physical month before coal, with its next seasonal peak covered**
-  - L981 new control reaches the native offered year after Steam retires; all ordinary eligible plants remain on the menu
-  - L989 new wind control has unrelated essential services in operation
-  - L1041 the automatic path orders the closing wind before the forecast shortage becomes physical (
-  - L1045 the earlier wind's native opening advances the saved pending deadline ahead of coal
-- **L1050 pending fresh water at its cap cannot be called a closing plan**
-  - L1070 fixture: pending fresh plants exhaust the cap, water remains short, and one more cannot reduce its shortage
-  - L1077 the fresh-only path offers no zero-help order
-  - L1080 the normal water card chooses desalination and its count closes the demand
-- **L1086 priority work waits in front of the first pending plant**
-  - L1114 fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal
-  - L1117 the first coal quote retains the entire earlier priority delay
-  - L1120 coal that cannot open inside the horizon erases none of the earlier wind's physical benefit
-- **L1125 power delivered for fewer than six months still prevents lost work**
-  - L1151 fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier
-  - L1158 the sub-six-month service window has positive relief and avoided output loss
-- **L1163 paving is sized to the final order's own opening**
-  - L1194 fixture: paving is worth offering and the growing city needs more than its unprojected paving count
-  - L1198 the paving quote and projection both use the final count's complete opening
-- **L1204 pending capacity keeps its deadline through a real mid-construction save and load**
-  - L1239 fixture: operating power is short, pending diesel covers it (
-  - L1248 pending capacity covers the shortage before its quoted deadline (
-  - L1278 the original city reaches its unchanged mid-construction save month
-  - L1280 the native additional Oil order precedes the original checkpoint (
-  - L1316 the mid-construction scratch save loaded through DataSave with its original pending date
-  - L1326 both scratch timelines advance every compared month
-  - L1329 fixture: later priority work kept operating power short throughout the original deadline
-  - L1330 fixture: the later priority work finished nothing, so the repairs left the builders a site output at the last pass
-  - L1333 the persistent post-checkpoint industrial load causes a further real power order (
-  - L1335 ...and the plant it orders is the one that opens before the diesels (
-  - L1338 the real loaded city and its unbroken twin place the same later automatic orders, one by one (
+- **L362 professional eligibility on both sides of the useful-demand threshold**
+  - L384 fixture: eligible graduates will study and the city's doctor vacancies exceed one school's threshold
+  - L389 below thirty percent the professional school is unwarranted and omitted
+  - L396 above thirty percent, with no school, the professional service is warranted and not maintained
+- **L403 a known industrial opening needs its power ahead**
+  - L408 fixture: unrelated essential services already have their operating capacity
+  - L424 fixture: a paid mill opens within the planning horizon while current power has its reserve
+  - L432 the forecast adds the mill's physical electrical draw only once it opens
+  - L437 the power card anticipates the ordered industrial load before it is operating
+  - L442 the automatic path orders power before that industrial completion
+- **L447 a slow hospital cannot hold faster care**
+  - L471 fixture: operating care is short, the slow hospital covers it, and a clinic can open earlier
+  - L477 the care card offers an earlier useful order while the hospital is pending
+  - L482 the automatic path places that service's interim order
+- **L487 maintained service prices later works and their borrowing**
+  - L506 fixture: the funded service has a positive growth trend, paid posts and positive borrowing terms
+  - L508 the comparison includes the future service additions and their capital
+  - L510 the comparison includes the new debt's issue and coupon costs
+  - L515 cash that covers the complete sequence has no new financing charge
+  - L516 valuation places no order and moves no cash or debt
+- **L521 complete fleets charge their actual traffic wear and shared fares**
+  - L528 fixture: two lines share the same riders and the fare is positive
+  - L533 two lines collect the full network's fares once
+  - L540 the whole two-road order pays wear at its own relieved traffic
+  - L555 fixture: existing gravel roads cost less to repair with the new paved road
+  - L559 the new work includes the changed repair bill of the existing gravel stock
+- **L578 the higher monetary service loss gets the scarce cash first**
+  - L603 fixture: streets lose more output although power has the greater missing share
+  - L607 the monetary loss puts streets before power in the actual remit
+  - L612 the higher-loss street work uses the cash first and power waits for funding
+  - L690 fixture: the school is useful and entirely unserved, and the care plan is cheaper
+  - L693 fixture: current care is on the intended side of full service
+  - L696 fixture: the available cash funds care, with the intended school funding gap
+  - L703 the school remains a hard cash or debt hold and the spare-care order preserves its funds
+  - L707 the same care card labels the automatic funding hold
+  - L715 a real scratch save and load keeps the same funding reason on the care card
+  - L721 switching automatic building off clears the funding hold on both cards
+  - L725 switching it back on before a new pass restores no stale funding hold
+  - L730 the fully unserved school is ordered before the partly served capped-care work
+- **L736 staff-short works pay only the posts filled in the utility books**
+  - L748 fixture: the plant has paid staff and unfilled posts
+  - L750 the card's running bill charges upkeep and filled-post payroll
+  - L760 the plan's running cost and payroll use the same filled-post basis
+- **L766 care prevents only the sickness the model can reduce**
+  - L780 fixture: only founding care remains short of the city, and the order restores full coverage
+  - L787 fixture: sickness is capped before and after the care improvement
+  - L790 care that leaves sickness capped claims zero prevented output
+  - L794 fixture: uncapped care comparison has the same other causes and no outbreak
+  - L806 uncapped care's credit equals the model's sickness reduction, including its unhoused cause
+- **L811 the Build advice and automatic order use the same plan**
+  - L824 overview cards require the NEEDS YOU row their screen reads
+  - L829 fixture: the power card leads the automatic remit and its full order is fundable
+  - L851 the card uses the player's automatic reserve and full-service target
+  - L853 the automatic path orders the card's exact building and count
+  - L855 the automatic path records the exact whole-plan valuation displayed by the card
+- **L889 pending coal does not hide an earlier forecast power loss**
+  - L917 fixture: unrelated essential services already have their operating capacity
+  - L929 fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind
+  - L934 wind prevents positive physical output loss before the pending coal opens
+  - L944 fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner
+  - L966 the original seasonal reserve gap orders ordinary Steam which closes, ahead of the nonclosing wind (
+  - L975 the faster Steam brings the saved first-completion deadline forward from the coal quote
+- **L980 native wind bridges a physical month before coal, with its next seasonal peak covered**
+  - L989 new control reaches the native offered year after Steam retires; all ordinary eligible plants remain on the menu
+  - L997 new wind control has unrelated essential services in operation
+  - L1049 the automatic path orders the closing wind before the forecast shortage becomes physical (
+  - L1053 the earlier wind's native opening advances the saved pending deadline ahead of coal
+- **L1058 pending fresh water at its cap cannot be called a closing plan**
+  - L1078 fixture: pending fresh plants exhaust the cap, water remains short, and one more cannot reduce its shortage
+  - L1085 the fresh-only path offers no zero-help order
+  - L1088 the normal water card chooses desalination and its count closes the demand
+- **L1094 priority work waits in front of the first pending plant**
+  - L1122 fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal
+  - L1125 the first coal quote retains the entire earlier priority delay
+  - L1128 coal that cannot open inside the horizon erases none of the earlier wind's physical benefit
+- **L1133 power delivered for fewer than six months still prevents lost work**
+  - L1159 fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier
+  - L1166 the sub-six-month service window has positive relief and avoided output loss
+- **L1171 paving is sized to the final order's own opening**
+  - L1202 fixture: paving is worth offering and the growing city needs more than its unprojected paving count
+  - L1206 the paving quote and projection both use the final count's complete opening
+- **L1212 pending capacity keeps its deadline through a real mid-construction save and load**
+  - L1247 fixture: operating power is short, pending diesel covers it (
+  - L1256 pending capacity covers the shortage before its quoted deadline (
+  - L1286 the original city reaches its unchanged mid-construction save month
+  - L1288 the native additional Oil order precedes the original checkpoint (
+  - L1324 the mid-construction scratch save loaded through DataSave with its original pending date
+  - L1334 both scratch timelines advance every compared month
+  - L1337 fixture: later priority work kept operating power short throughout the original deadline
+  - L1338 fixture: the later priority work finished nothing, so the repairs left the builders a site output at the last pass
+  - L1341 the persistent post-checkpoint industrial load causes a further real power order (
+  - L1343 ...and the plant it orders is the one that opens before the diesels (
+  - L1346 the real loaded city and its unbroken twin place the same later automatic orders, one by one (
 
 ## ExchangeCheck.java - 266 labelled assertions
 
@@ -12896,45 +12896,45 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L793 ...and the world charging the city less moves it: up
   - L795 ...and back again when the city's standing is
 - **L813 and the ladder falls due by the calendar year it is paid in**
-  - L848 fixture: a note, a serial and a term loan on the books
-  - L849 fixture: ...and a piece owed in dollars
-  - L867 every piece's last payment falls in the month it matures
-  - L881 fixture: something falls after the ladder's twelve years
-  - L884 twelve calendar years, the first the year next month is in
-  - L886 ...each rung's months inside its own year
-  - L887 ...and \"later\" starts the year after the twelfth
-  - L890 the ladder carries every payment still owed, coupons and principal
-  - L891 ...and its total says so
-  - L892 ...of it in dollars, exactly what the dollar paper asks
-  - L901 a piece's maturity stands in the year it falls due, not the one before
-  - L906 fixture: \"later\" carries more than any single year
-  - L907 the heaviest year is one of the twelve and the largest of them, never \"later\"
-  - L910 the next twelve months are the first twelve payments of every piece
-  - L912 the coupon is every piece's monthly interest
-  - L913 each kind's principal adds to what is owed
-  - L915 ...the notes' among them, getNotePrincipal()'s
-  - L920 a piece is valued at the rate the tab quotes its yield at, dollar paper on the world's curve
-  - L927 fixture: a three-year serial's schedule, a payment a month
-  - L939 a proposed issue adds its whole schedule as its own
-  - L940 ...every payment of it in a year
-  - L941 ...each in the year it is paid, and what is owed stays as it was
-  - L969 fixture: the note falls due next month
-  - L970 netted, the central bank's own, the issues and the cash are what falls due, in every mode
-  - L977 the chart's borrowing flags carry the borrowing decisions and nothing else
-- **L1002 10. the test player takes the cheaper money by the quote for the sale (CC1-S)**
-  - L1030 fixture: the harness runs with -Dplaytest.borrowAtHome unset, so the choice is the quotes' alone
-  - L1032 fixture: a city with no foreign debt and the window open
-  - L1034 fixture: before any sale the world's rate is under the share of the city's own - the old rule would borrow abroad
-  - L1036 fixture: the city has tax to size a sale by
-  - L1043 fixture: the big sale's quote abroad is at or above the share of its quote at home
-  - L1045 a sale of two years' tax is not borrowed abroad, though the world's rate before it is the lower
-  - L1047 quoting both sales booked nothing: cash, debts and both rates are as they were
-  - L1055 fixture: the city still owes nothing abroad and the window is open, with its own paper dear
-  - L1061 fixture: the small sale's quote abroad is under the share of its quote at home
-  - L1063 a month's tax, quoted cheaper abroad than the share of home, is borrowed abroad
-  - L1065 fixture: the big sale is still quoted at or above the share of home, though home is dear
-  - L1067 ...and still goes home: the dollar quote for two years' tax is dearer than the city's own
-  - L1069 quoting again booked nothing
+  - L856 fixture: a note, a serial and a term loan on the books
+  - L857 fixture: ...and a piece owed in dollars
+  - L875 every piece's last payment falls in the month it matures
+  - L889 fixture: something falls after the ladder's twelve years
+  - L892 twelve calendar years, the first the year next month is in
+  - L894 ...each rung's months inside its own year
+  - L895 ...and \"later\" starts the year after the twelfth
+  - L898 the ladder carries every payment still owed, coupons and principal
+  - L899 ...and its total says so
+  - L900 ...of it in dollars, exactly what the dollar paper asks
+  - L909 a piece's maturity stands in the year it falls due, not the one before
+  - L914 fixture: \"later\" carries more than any single year
+  - L915 the heaviest year is one of the twelve and the largest of them, never \"later\"
+  - L918 the next twelve months are the first twelve payments of every piece
+  - L920 the coupon is every piece's monthly interest
+  - L921 each kind's principal adds to what is owed
+  - L923 ...the notes' among them, getNotePrincipal()'s
+  - L928 a piece is valued at the rate the tab quotes its yield at, dollar paper on the world's curve
+  - L935 fixture: a three-year serial's schedule, a payment a month
+  - L947 a proposed issue adds its whole schedule as its own
+  - L948 ...every payment of it in a year
+  - L949 ...each in the year it is paid, and what is owed stays as it was
+  - L977 fixture: the note falls due next month
+  - L978 netted, the central bank's own, the issues and the cash are what falls due, in every mode
+  - L985 the chart's borrowing flags carry the borrowing decisions and nothing else
+- **L1010 10. the test player takes the cheaper money by the quote for the sale (CC1-S)**
+  - L1038 fixture: the harness runs with -Dplaytest.borrowAtHome unset, so the choice is the quotes' alone
+  - L1040 fixture: a city with no foreign debt and the window open
+  - L1042 fixture: before any sale the world's rate is under the share of the city's own - the old rule would borrow abroad
+  - L1044 fixture: the city has tax to size a sale by
+  - L1051 fixture: the big sale's quote abroad is at or above the share of its quote at home
+  - L1053 a sale of two years' tax is not borrowed abroad, though the world's rate before it is the lower
+  - L1055 quoting both sales booked nothing: cash, debts and both rates are as they were
+  - L1063 fixture: the city still owes nothing abroad and the window is open, with its own paper dear
+  - L1069 fixture: the small sale's quote abroad is under the share of its quote at home
+  - L1071 a month's tax, quoted cheaper abroad than the share of home, is borrowed abroad
+  - L1073 fixture: the big sale is still quoted at or above the share of home, though home is dear
+  - L1075 ...and still goes home: the dollar quote for two years' tax is dearer than the city's own
+  - L1077 quoting again booked nothing
 
 ## ForestryCheck.java - 59 labelled assertions
 
@@ -17806,7 +17806,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L281 first month retains the conveyed title
   - L283 a new city clears both physical and assignment cohorts
 
-## HousingMarketCheck.java - 604 labelled assertions
+## HousingMarketCheck.java - 605 labelled assertions
 
 > Integrated quotes, funded sites, rental receipts, budgets and reload evidence.
 > WHY (RES3): a synthetic catalogue quote does not prove an actual funded project
@@ -17846,614 +17846,615 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L131 a class with no new paid observation holds its previous price
   - L132 a vacant class contributes no receipt while its price is carried
 - **L135 actual operating quotes, feasible plots and the full typed backlog**
-  - L145 unbuilt
-  - L148 unbuilt
-  - L149 unbuilt
-  - L151 unbuilt supply quotes earn no actual rent
-  - L157 a profitable compact alternative uses the available plot
-  - L159 the fixture selects the six-door terrace
-  - L160 the order covers the actual typed backlog rather than one project's income
-  - L162 the typed backlog needs the smallest whole recipe covering eighty households
-  - L163 the smaller head-based gap does not inflate the typed order
-  - L166 a child family is not offered an unsuitable compact fallback
-  - L169 an unfunded backlog does not promise a profitable project
-- **L172 actual project choice ranks net operating income before financing**
-  - L182 the choice fixture starts with no endowed material stock
-  - L186 both physical alternatives are actually known
-  - L187 only the two house forms fit the available land
-  - L189 both alternatives have a real positive invoice
-  - L190 compact planner cost is the actual door invoice
-  - L191 House planner cost is the actual door invoice
-  - L202 compact opening quote is its actual operating floor
-  - L204 House opening quote keeps the unchanged gross reference
-  - L220 fixture: a tariff parts the gross and net winners inside both build hurdles
-  - L225 the actual match fills the compact alternative
-  - L226 the actual match fills the House alternative
-  - L227 both alternatives clear the unchanged operating hurdle
-  - L228 the compact form wins on gross receipts per actual project dollar
-  - L229 the gross winner has higher operating carry per project dollar
-  - L232 House dominates on actual net operating income per project dollar
-  - L234 the actual planner chooses the net operating winner
-  - L237 choice fixture saves only in scratch slot10
-  - L242 repeat compact quote keeps the actual invoice
-  - L243 repeat forecast keeps actual expected rent
-  - L245 repeat plan preserves the chosen project and quantity
-  - L247 quotes and plans spend no cash or raise capital in any pool
-  - L248 quotes and plans change no lease or saved market field
-  - L249 quotes and plans change no owned or funded physical stock
-  - L250 repeated quote fixture saves only in scratch slot10
-  - L256 both native writes contain root savedAt write metadata
-  - L259 quotes and plans preserve complete native saved text with only root savedAt normalized
-  - L262 with no power bill the gross winner is also the net winner
-  - L264 the actual planner retains a gross winner that also wins on net
-  - L267 one actual alternative earns exactly zero net operating income
-  - L268 the unchanged hurdle rejects zero net operating income
-  - L270 actual utility bills cause negative net income for both
-  - L271 the unchanged hurdle rejects negative net operating income
-  - L273 the unchanged land gate rejects every otherwise profitable project
-  - L276 an unfunded actual match promises no compact rent
-  - L277 an unfunded actual match promises no House rent
-  - L278 the unchanged funded-demand gate rejects zero receipts
-- **L281 class-local debt carry, actual trades and zero-demand glut**
-  - L285 zero demand in standing stock has zero target despite debt
-  - L286 zero-demand glut walks down at the existing lease speed
-  - L287 a glut class's debt does not change another class's ask
-  - L288 the tight class covers only its own carry
-  - L294 one ULP of fully placed stock is not an economic glut
-  - L300 a genuine fractional vacancy still waives the carry lift
-  - L306 an unbuilt class has an opening quote, without a fictitious scarce market
-  - L308 repricing itself records no actual rent trade
-  - L309 repricing preserves last observed class trade
-  - L310 actual occupied proceeds remain the accepted lease bill
-  - L312 vacant class records no rent receipt
-  - L313 vacant class's last trade is retained
-  - L314 vacant class trade becomes stale
-  - L315 actual class quantity counts occupied homes only
-  - L316 actual class price is actual value over quantity
-  - L319 corrupt class prices are refused atomically
-  - L322 saved demand below actual occupied quantity is refused atomically
-  - L323 a monetary reform scales actual receipts
-  - L324 a monetary reform scales saved household budgets
-  - L325 a monetary reform scales committed pipeline asks
-  - L326 a monetary reform scales committed pipeline recurring costs
-- **L329 unbuilt gross rent covers actual costs without adding them to gross yield**
-  - L340 fixture has an available unbuilt quote
-  - L341 actual property-tax input causes costs
-  - L342 unbuilt carry comes from the actual operating-cost getter
-  - L343 opening quote uses
-  - L346 later unbuilt target uses
-  - L347 an already correct unbuilt quote stays at its target
-  - L348 unbuilt vacancy earns no rent
-  - L350 unbuilt quote records no actual rental trade
-  - L352 reading the unbuilt quote changes no saved market field
-  - L357 the existing lender still refuses an unviable vacant project
-- **L363 actual fractional households receive income and pay their supplied bills**
-  - L390 actual fractional count is retained:
-  - L391 no allocated income is left unsettled:
-  - L392 no supplied fee, shopping or rent is left unsettled:
-  - L393 the funded fixture invents no cash for unpaid bills:
-  - L395 actual household rent equals its landlord recipient:
-  - L399 sender and all actual recipients conserve cash:
-  - L400 card principal and fee claims conserve:
-  - L401 student loan claims conserve:
-  - L402 secured tax claims are not cleared or transferred:
-  - L403 the existing share holdings are conserved:
-  - L405 fractional recipient receives its own earning-weighted income:
-  - L406 fractional recipient pays its actual account bill:
-  - L407 fractional recipient buys actual supplied groceries:
-  - L408 fractional recipient services its own card and student loan:
-  - L409 fractional card claim follows only its own settled flows:
-  - L410 fractional cash follows only its own bills:
-  - L414 exact zero receives no income, groceries, account bill or stock
-  - L416 the cell save restores its existing schema
-  - L420 load/restrike spends no cash and preserves fractional ownership:
-  - L421 live restrike spends no cash:
-  - L422 load preserves the actual card claims:
-  - L423 load preserves the student claims:
-  - L424 load preserves the secured tax claims:
-  - L425 load reproduces the positive fractional spending plan:
-  - L426 load retains the fractional recipient own cash:
-  - L431 the booked deposit-interest debit reaches actual account holders:
-  - L432 credited deposit-income flows reconcile the actual source debit:
-  - L434 a positive fractional deposit receives its own interest:
-  - L435 existing deposit balances receive the same actual return:
-  - L437 the fractional owner retains its interest payment:
-  - L439 exact zero receives no deposit interest
-- **L444 positive fractional owners receive existing paper and bond claims**
-  - L456 paper coupon debit reaches all actual owners:
-  - L457 paper coupon preserves its source face:
-  - L459 the fractional paper owner receives its coupon:
-  - L460 fractional and whole paper claims receive the same coupon per face:
-  - L464 paper principal debit reaches every actual owner:
-  - L465 paper principal reduces exactly the redeemed face:
-  - L466 fractional principal is actually redeemed:
-  - L469 paper buyback pays its actual source cash:
-  - L470 paper buyback reduces its actual source face:
-  - L471 fractional buyback reduces its own paper:
-  - L474 record-date bond coupons reach their actual owners:
-  - L475 bond coupon source debit equals aggregate account credit:
-  - L476 the fractional owner's own recorded coupon stays with it:
-  - L478 paper and bond owner cell save restores
-  - L481 claim reload/replan conserves every owner's cash:
-  - L482 claim reload retains the actual paper face:
-  - L483 claim reload retains the actual bond face:
-  - L484 claim payments preserve existing security basis:
-  - L485 claim reload preserves existing security basis:
-  - L486 claim reload reproduces the same spending plan:
-  - L488 maturing bond principal pays all actual face:
-  - L489 maturing bond source debit reaches accounts:
-  - L490 maturity extinguishes exactly that bond claim:
-  - L491 exact zero has no paper, bond or payment
-  - L493 a genuine orphan coupon retains the existing eligible-recipient fallback:
-  - L494 the genuine orphan fallback conserves its actual source debit:
-  - L497 no eligible recipient creates no orphan-coupon cash
-  - L498 no eligible recipient leaves aggregate cash unchanged
-- **L503 positive fractional owners receive their dividend and lending fee at home**
-  - L514 the dividend paid at home is every actual owner's, none left for Equity to book abroad:
-  - L515 the dividend conserves: the owners' cash and the tax on it are what was paid:
-  - L517 the fractional owner receives its own dividend:
-  - L518 fractional and whole owners receive the same dividend per share:
-  - L523 the lending fee reaches every actual lender at home, all of the cells' share:
-  - L524 the lending fee conserves: the lenders' cash and any claim it settles are what was paid:
-  - L526 the fractional lender receives its own fee:
-  - L527 exact zero holds nothing and is paid nothing
-- **L531 a founding worker's current wage funds the first actual home**
-  - L536 founding month
-  - L537 founding rent receipts are actual accepted bills
-  - L539 the founding premise really admits people and lets occupied homes
-- **L542 fully placed fractional demand creates no phantom blueprint scarcity**
-  - L548 fractional sources all find a real affordable door
-  - L549 no unbuilt class receives floating-point leftover demand
-  - L552 an unbuilt class keeps its gross quote or actual cost floor
-- **L556 affordable singles before emergency sharing; one quote and conserved existing cells**
-  - L567 fixture has an actual existing single-adult cell
-  - L584 sharing preserves the actual family members
-  - L585 all suitable affordable singles placed first
-  - L585 affordable singles are not forced to share
-  - L589 a five-to-one housing move preserves HC1's
-  - L590 five budgets fund a real remaining home
-  - L591 only actually placed sharing groups change the census
-  - L592 the actual sharing rent is one bill per occupied door
-  - L593 emergency sharing retains explicit affordability or hosted-guest reasons
-  - L595 saved sharing transfers and budgets round-trip exactly
-- **L600 actual doubled doors and divided rent, including a vacant affordable pair**
-  - L613 full rent is unaffordable, two actual households fund one door
-  - L614 doubled households occupy half as many real doors
-  - L615 each doubled door earns one rent, not two
-  - L617 fixture: two of these households fit one door within its census line
-  - L619 the asked rent a mover weighs is a half share's, half the door's ask
-  - L620 a half-bill budget creates no unfunded full-rent pressure in that class
-  - L622 actual doubled placements leave no fictional unplaced residual
-  - L624 the existing crowding reader sees actual guest equivalents
-  - L625 the existing unplaced reader sees the actual allocation
-  - L627 a multi-structure retirement cannot cut into typed occupied doors
-  - L629 doubled door and household quantities round-trip
-- **L632 emergency shelter retains funded demand for a door of one's own**
-  - L645 two funded households find emergency shelter in one actual home
-  - L646 emergency shelter consumes one physical door
-  - L647 each sheltered household counts once in class demand for its own door
-  - L648 shelter does not erase scarcity in the occupied class
-  - L651 additional demand creates no additional rent receipt
-  - L652 the one actual door earns at most its one ask
-  - L662 student housing counts only the existing open treasury facility
-  - L664 the student's finite planning allowance follows a currency reform
-  - L665 quoting a funded student budget itself borrows nothing
-- **L668 scarce free host space goes to households that cannot fund a vacant share**
-  - L677 fixture: a host and one guest fill the door to its census line
-  - L682 all three households have feasible emergency shelter
-  - L683 the poor household uses the already funded host
-  - L684 the other guest funds its actual vacant half door
-  - L685 the original host still funds its whole actual bill
-  - L686 one hosted guest is counted explicitly
-  - L687 occupied shares earn only their actual rent
-  - L688 actual occupied door equivalents are bounded
-  - L689 no temporary matching node reaches a saved lease
-  - L695 without a funded vacant share no household is left with no door
-  - L696 ...the one the census line has no room for is counted overcrowded
-  - L697 ...placed past the census line
-  - L698 ...and the zero-budget household is billed nothing
-  - L699 unfunded vacancy creates no extra receipts
-  - L700 unfunded vacancy creates no extra occupied home
-  - L710 a zero-resource emergency guest has an actual funded host
-  - L711 a hosted guest creates no extra occupied door
-  - L712 a hosted guest creates no extra landlord proceeds
-  - L713 the host retains its actual funded bill
-  - L714 the guest owes no invented rent or credit
-  - L715 emergency hosting has an explicit reason count
-  - L717 a doubled home offers migration no fictional extra guest slot
-  - L718 reading actual migration room does not quote or clear
-  - L726 an emergency sharing group can join a funded host without a vacant door
-  - L727 hosting a sharing group still earns just the one funded rent
-  - L729 a sharing group consumes the host slot before further guests
-  - L731 ...and whoever boards beyond it keeps the door within its census line (HousingChoice.line)
-  - L733 migration room sees a real completion and first reserves current unplaced demand
-  - L735 a completion projection leaves the one monthly quote untouched
-  - L738 current domestic household formation reserves the last rooms before arrivals
-  - L740 the formation preview leaves actual families and the monthly market unchanged
-  - L744 real additional doors still admit arrivals after the formation reserve
-  - L745 arrivals who start work next press cannot use the working family's density
-  - L759 retirement fixture starts with two actually placed families
-  - L761 retirement removes the actual occupied form
-  - L763 migration room reserves doors for families displaced by retirement
-  - L765 the retirement room read does not strike a second quote or clearing
-  - L784 door-census fixture pays for active construction jobs
-  - L786 door-census fixture builds actual compact homes
-  - L794 door-census control preserves the exact family matrix
-  - L797 fixture has more family seekers than twice its family doors
-  - L799 family-door scarcity actually raises the migration floor
-  - L800 door-census fixture funds actual replacement homes before the next press
-  - L802 scarce-door fixture saves natively
-  - L809 running load starts with a different actual family-door census
-  - L814 fresh native load rebuilds the scarce family-door floor
-  - L815 running native load replaces the previous city's door census
-  - L817 fresh and running reloads preserve the crowding-floor reader
-  - L825 completed funded homes cause actual positive first-month arrivals
-  - L826 the migration crowding ramp is active before the physical-room cap
-  - L829 first native month after both loads preserves actual arrivals
-  - L831 first native month after both loads preserves the migration crowding factor
-  - L833 scarce-door native continuations keep the actual class market
-- **L839 caused positive closed-home debt, native save and continuation**
-  - L850 closed-debt fixture builds its known standing family stock
-  - L851 closed-debt fixture builds its known standing compact stock
-  - L852 closed-debt fixture funds an actual Bank branch
-  - L853 closed-debt fixture funds actual crews
-  - L882 opening native census preserves the age/stage pyramid and family shape/tier matrix
-  - L885 opening native census preserves every existing financial position
-  - L890 opening wealth has actual positive households and population
-  - L895 opening native House invoice is a positive finite wealth floor
-  - L910 every positive opening cell and household receives the declared wealth floor
-  - L912 opening wealth preserves all non-savings financial positions
-  - L913 opening weighted savings increase equals declared Bank cash backing
-  - L914 opening Bank receives exactly the declared weighted cash backing
-  - L918 opening native Bank deposit book equals actual weighted savings
-  - L919 opening native Bank book refresh transfers no cash
-  - L923 closed-debt fixture starts without stranded debt
-  - L925 closed-debt fixture has no earlier family sites
-  - L943 closed-debt actual quote requires a mortgage with sufficient native down payment
-  - L954 closed-debt fixture funds the actual residential order
-  - L955 closed-debt fixture created actual Bank mortgage principal
-  - L956 closed-debt order is on the actual paid work queue
-  - L957 closed-debt order wrote one actual mortgage
-  - L960 new actual mortgage principal is on the native lending flow
-  - L961 new actual mortgage fee is on the native fee flow
-  - L962 new actual mortgage premium is on the native premium flow
-  - L965 closed-debt paid order executed in exactly one native settlement window
-  - L968 the real Bank holds the borrower's funded claim
-  - L972 normal retirement eligibility permits this vacant form
-  - L973 every class's actual vacant RE titles permit the whole closure
-  - L980 the caused vacancy really closes all requested structures
-  - L982 physical closure preserves every actual loan claim
-  - L983 physical closure creates or loses no money
-  - L986 the normal capacity writer observes a real owned-capacity reduction
-  - L987 the actual capacity writer CAUSED a positive stranded share
-  - L988 positive closed-home share still carries actual Bank debt
-  - L993 positive closed-home debt saves through the actual native writer
-  - L1000 native reload preserves the exact held positive stranded share
-  - L1001 native reload preserves the exact capacity writer's base
-  - L1002 native reload preserves the exact live borrower principal
-  - L1003 native reload preserves every actual loan claim
-  - L1004 native reload preserves the actual Bank's held claim
-  - L1005 native reload preserves all physical owner/title cohorts
-  - L1007 next native twins keep the exact positive debt share
-  - L1008 next native twins keep the exact capacity base
-  - L1009 next native twins keep all actual borrower claims
-  - L1010 next native twins keep the actual Bank claim
-  - L1011 next native twins keep every physical owner/title cohort
-- **L1015 the real saving return reaches funded demand at the ask**
-  - L1026 saving scales only the bid above the committed rent
-  - L1027 a higher saving return reduces the funded bid
-  - L1028 the current funded lease is protected
-  - L1030 a spending stimulus cannot promise more cash than the cell can fund
-  - L1038 the ask admits only the funded bids at budget
-  - L1041 the reduced bid lowers the class price target through demand
-  - L1042 striking bids moves no household savings
-- **L1045 the housing budget reserves HC1's fixed card minimum**
-  - L1056 principal in the contractual card minimum is reserved before rent
-  - L1059 the quoted minimum at the current price matches actual card settlement
-  - L1060 a housing quote does not overwrite the saved settled minimum or interest
-  - L1061 quoting a home moves no card position
-- **L1064 the final shortage uses the existing whole-match packing resolution**
-  - L1068 fixture: a couple and its guest couple fill the door to its census line
-  - L1078 an ULP of the whole source is exactly zero final shortage
-  - L1079 an ULP cannot activate the farm's housing-priority guard
-  - L1080 a rounded complete match records no phantom affordability or suitability reason
-  - L1084 a genuine fractional shortage is still explicit, overcrowded past the census line
-  - L1085 ...none of it left with no door
-  - L1086 ...placed past the census line
-  - L1087 ...and billed nothing on its zero budget
-  - L1088 a genuine shortage still activates housing priority
-  - L1091 rounding the counter creates no door or extra guest slot
-  - L1092 ...and who is housed beyond the guest slots is the overcrowded count
-- **L1097 emergency adult groups leave compatible host space for child families**
-  - L1109 fixture: the three-bedroom door's line is eight, the one-bedroom's four
-  - L1123 host allocation preserves all actual family members
-  - L1124 four funded hosts occupy exactly four real doors
-  - L1125 actual single adults really form emergency sharing groups
-  - L1126 compatible family host space is not consumed by adult soft preferences
-  - L1127 the child guest obtains its whole compatible host slot
-  - L1128 all emergency guests fit the actual two-household door limit
-  - L1129 and every door within its census line
-  - L1130 emergency hosts collect only the four funded lease bills
-  - L1200 staged fixture completed real housing before catalogue-wide orders
-  - L1204 catalogue order follows actual availability
-  - L1205 modern form unavailable in 1900
-  - L1213 fixture caused funded residential starts
-  - L1214 fixture has actual household demand
-  - L1215 fixture has actual occupied rental homes
-  - L1217 funded form completes through actual builder work
-  - L1220 native fixed-floor twin funds an actual bank branch
-  - L1227 the paid native-twin branch charges its model account fee
-  - L1231 native twin has positive disposable income and an actual non-rent fixed-bill floor
-  - L1235 native reload preserves asks, assignments, actual trades and staleness
-  - L1237 next native month preserves the class market and housing budgets after positive fixed bills
-  - L1240 larger population adds no permanent household cells
-  - L1241 larger city's class count stays bounded
-  - L1242 larger city's assignments stay bounded by H times T
-- **L1249 prior guests retain only currently funded host capacity**
-  - L1255 fixture has a genuine already funded guest
-  - L1262 the existing guest keeps its zero-bill funded arrangement
-  - L1265 a rich new guest boards beside that incumbent, never doorless (call A over R1g)
-  - L1266 ...billed nothing, as a boarder
-  - L1267 ...and counted a boarder
-  - L1270 ...four persons in the door, within its census line: boarding, not overcrowding (REV-RES3b P1-4)
-  - L1271 ...counted within the line, still wanting a home of its own
-  - L1272 incumbency creates no additional door
-  - L1273 retained rent follows the current class quote once
-  - L1274 the retained guest owes no invented rent
-  - L1275 all retained arrangements respect two households per door (the boarder past them counted above)
-  - L1278 a prior zero charge cannot create an unfunded empty-door right
-  - L1279 without a funded host no rent is invented
-  - L1280 without a funded host no door is occupied
-- **L1301 a boarder owes its hosts board at the clearing, no landlord billed, and the census line says if it is overcrowded**
-  - L1305 fixture: two household cells with households (
-  - L1311 fixture: the one door stands
-  - L1322 fixture: the host family of
-  - L1329 a boarder of one boards with the host,
-  - L1330 ...owing board, half the door's ask (
-  - L1331 ...owed at the clearing
-  - L1334 ...and moves no money at the clearing: billed with the rents, at the next month's settlement
-  - L1336 ...billed to no landlord
-  - L1338 ...within the census line: boarding, not overcrowding
-  - L1339 ...counted within the line
-  - L1341 ...past the census line, more than two persons a room: overcrowded
-  - L1342 ...and not counted within it
-- **L1387 the board goes the rents' way through the game's months: billed in the boarders' rent lines, credited to their hosts in full, through a save**
-  - L1392 fixture: a month on the one House boards its payers with the family housed in it, owing board (
-  - L1403 fixture: the census moves households out of the boarders' cells before the settlement: a partner's death from
-  - L1408 a save and load brings the owed board back, cell by cell
-  - L1413 fixture: a working boarder's cell (
-  - L1418 the next month's settlement bills each boarder's cell its whole board in its rent line, cell by cell
-  - L1419 ...credits it in full to their hosts
-  - L1420 ...none of it past a departed boarder or owed a lost host
-  - L1424 fixture: host cells credited (
-  - L1425 ...each host's month's income a household up by its board a household, every cent, beside the twin without it
-  - L1429 ...and the boarders fund it as a rent is funded: no boarder's cell leaves a cent more of its month's bills unfunded than the twin without it
-  - L1430 ...the hosts' board income funding their own: the month's bills unfunded no more than the twin's (
-  - L1432 ...the month's own audits exact, the pools' and the households', in the original and both twins
-  - L1433 the loaded twin's settlement is the original's, billed cell by cell
-  - L1434 ...and credited
-  - L1436 a boarder with wages and no savings is billed its whole board (
-  - L1438 ...and pays it out of the month's wages: its income clears its rent line, the board in it, and none of it is unfunded (
-  - L1442 fixture: households die and retire before the settlement (
-  - L1444 a boarder whose partner dies or who retires before the settlement carries its savings and none of its board: every flow's savings the twin's without it
-  - L1445 ...the widowed household's new cell billed its own board and none of
-  - L1446 ...the cell it left billed its whole board on the households it keeps
-  - L1447 ...and the retiring's,
-  - L1453 fixture: the month saved billed board (
-  - L1454 a save and load re-plans on the settled board: every household's income, rent line and plan the live city's, cell by cell
-  - L1464 fixture: a boarder whose next housing budget main's arithmetic holds down (
-  - L1466 the next clearing's budget takes the board back with the rent, up by no more than the board (
-  - L1471 fixture: the one House of a town stands vacant to that boarder
-  - L1477 at the door's ask (
-  - L1478 ...the board added back buys it
-- **L1488 a currency reform scales the board owed, billed and credited, and the loaded city's next month bills the reformed board**
-  - L1493 fixture: board owed before the reform (
-  - L1496 fixture: a reform of 1,000 to 1
-  - L1497 the reform scales the board owed
-  - L1498 ...as it scales the households' savings
-  - L1500 a save and load after the reform brings back the reformed board owed, cell by cell
-  - L1504 the loaded city's next month bills its boarders the reformed board in full, cell by cell
-  - L1506 fixture: the unreformed twin's month bills board too (
-  - L1507 ...a thousandth of the unreformed twin's, cell by cell
-  - L1508 ...credited to its hosts in full
-  - L1509 ...its month's own audits exact, the pools' and the households'
-  - L1512 fixture: a second reform of 1,000 to 1, with board billed and credited (
-  - L1513 the reform scales the board billed
-  - L1514 ...and credited
-  - L1516 ...and a save and load brings them back, cell by cell
-- **L1526 the trim holds the doors to the homes standing and cannot throw (REV-RES3b P1-3)**
-  - L1530 fixture: the doors summed in the market's order pass the stock by an ulp (
-  - L1535 an ulp past the stock is trimmed, not thrown: the doors held to the homes standing
-  - L1536 ...every household kept
-  - L1537 ...the cut lodged on its door, sponsored
-  - L1538 ...within the packing resolution: nothing past the stock to report
-  - L1541 a pass a door past the stock is held to it all the same, never thrown
-  - L1542 ...every household kept, the one cut lodged
-  - L1543 ...its bill trimmed with its doors
-  - L1544 ...and reported past the stock for LongPlaytest's finding
-- **L1547 RES3 staged housing stocks follow the same funded census**
-  - L1561 a newly unemployed household carries actual source cash
-  - L1562 its existing card balance follows it
-  - L1563 HC1 current borrower share follows
-  - L1564 HC1 late balance follows
-  - L1565 HC1 late borrower share follows
-  - L1566 HC1 shut-out share follows
-  - L1567 security units follow the same stock route
-  - L1568 security basis follows the same stock route
-  - L1569 tagged security units follow
-  - L1570 tagged security claim follows
-  - L1571 student principal follows
-  - L1572 paper follows
-  - L1572 foreign cash follows
-  - L1573 individual bond face follows
-  - L1574 projection leaves every saved live field unchanged
-  - L1575 projection leaves all live bond holdings unchanged
-  - L1577 real inherited cash can fund a finite housing buffer
-  - L1578 quoting also leaves every saved live field unchanged
-  - L1580 equal new cells share cash pro rata
-  - L1581 extra people bring no invented opening cash
-  - L1582 extra people bring no invented card balance
-  - L1584 a different city's complete stock state restores into the warmed ledger
-  - L1586 a warmed quote cannot retain the old city's cash
-  - L1588 an invalid restore is refused
-  - L1589 a refused restore preserves the live ledger
-  - L1590 a refused restore cannot revive stale quoted resources
-  - L1594 no source stocks or received income gives no funded bid
-  - L1597 empty unfunded doors create no tenancy
-  - L1598 the no-funding household stays explicitly unplaced
-- **L1611 housing quotes keep opening paid income and recurring fee source weights**
-  - L1638 a billed fee without source heads still reserves the existing fresh split
-  - L1641 detached stocks preserve the live fixed-bill floor and its live rent denominator
-  - L1642 quoting changes no live disposable income
-  - L1643 quoting changes no live income after fixed bills
-- **L1646 carried student principal reserves current contractual service**
-  - L1660 the new working cell really carries principal from the old unemployed source
-  - L1663 a quote reserves the carried loan's contractual term and current-rate interest
-  - L1665 the quote's reservation agrees with the actual model strike
-  - L1668 a current rate change is reserved without waiting for settled flow fields
-  - L1669 student service quotes and a detached comparison strike change no live saved field
-  - L1671 a working cell carrying no student principal reserves no student service
-  - L1673 unemployed principal remains in contractual forbearance
-  - L1677 an enrolled student's existing principal is not serviced during study
-- **L1681 rent commitment uses surviving recipients; live fixed-bill floor stays separate**
-  - L1689 the unchanged live non-rent fixed floor leaves seven resources
-  - L1694 actual retention scales ten old households to the two current recipients
-  - L1695 the surviving actual rent bill is four, not the stale twenty
-  - L1697 actual current rent commitment is two per household
-  - L1699 contraction protects only the surviving actual commitment from saving
-  - L1701 expansion spreads the original bill over twenty recipients
-  - L1702 both quotes preserve all live saved stocks and flows
-  - L1703 both quotes preserve live household recipients
-  - L1704 both quotes preserve live disposable
-  - L1705 both quotes preserve live fixed-bill balance
-  - L1708 no live source recipients inherit stale bill protection
-- **L1713 current paid occupancy and funded independent-door pressure both survive forecasting**
-  - L1724 fixture one actual recipe door at budget
-  - L1725 fixture actual RE inventory stock at budget
-  - L1726 fixture has no endogenous source households at budget
-  - L1735 actual paid halves retain both old households at budget
-  - L1742 actual newcomer pays for a door only where one is genuinely vacant at budget
-  - L1743 ...and otherwise boards with the housed, never doorless, at budget
-  - L1744 actual occupied footprint uses current paid doors at budget
-  - L1745 actual newcomer leaves no household with no door at budget
-  - L1746 ...who found no door standing counted a boarder at budget
-  - L1747 actual total household source closes at budget
-  - L1748 actual rent follows occupied asks at budget
-  - L1749 only affordable paid crowding is completed after movers, a boarder crowded beside it
-  - L1750 paid incumbent bills follow the completed physical footprint
-  - L1751 fixture retains ask twenty at budget
-  - L1755 forecast preserves funded newcomer and independent-door backlog at budget
-  - L1756 forecast new projects collect only supported full-door income at budget
-  - L1757 forecast moves no actual housing state at budget
-- **L1762 unfinished committed homes and incompatible spare stock**
-  - L1770 committed fixture has one finished family door
-  - L1771 committed fixture excludes endogenous arrivals
-  - L1773 supported stack input is still actually under construction
-  - L1774 unfinished registry contains the one committed door
-  - L1776 spare studio is known and every dwelling excludes children
-  - L1777 incompatible spare is actual finished RE stock
-  - L1787 committed forecast keeps both paid actual families
-  - L1788 neither pending nor incompatible stock creates current occupied doors
-  - L1789 neither pending nor incompatible stock creates current rent
-  - L1790 both actual families remain sheltered
-  - L1793 only suitable affordable committed doors cover independent pressure, pipeline=
-  - L1794 covered pipeline cannot promise a duplicate new funded order, pipeline=
-  - L1795 child families promise no studio project income
-  - L1795 child families require no incompatible studio project
-  - L1796 forecast leaves actual housing and construction inventory unchanged
-  - L1797 forecast never advances the committed work
-- **L1824 late paid footprint completion preserves movers, host funding and equivalent shares**
-  - L1829 equivalent incumbent receives pro-rata physical completion
-  - L1829 equivalent incumbent pays the identical physical delta
-  - L1829 equivalent household source unchanged
-  - L1830 rationed completion occupies all three current doors
-  - L1830 rationed completion leaves one crowded equivalent
-  - L1832 equivalent completion does not confer input-order priority
-  - L1835 full-funded host keeps its one bill rather than paying twice
-  - L1835 hosted zero-bill guest stays free
-  - L1836 full-funded host and guest retain one actual door
-  - L1836 full-funded hosted provenance unchanged
-  - L1836 full-funded guest is not evicted
-  - L1840 mixed host completes only its funded deficit
-  - L1841 mixed host bill funds exactly two households
-  - L1841 mixed paid household count unchanged
-  - L1842 mixed hosted guest physical share unchanged
-  - L1842 mixed guest bill stays zero
-  - L1843 mixed hosted counter unchanged
-  - L1843 mixed paid crowding becomes only the hosted guest
-  - L1843 mixed footprint never expands past funding
-  - L1849 native normal control proves four households can be housed
-  - L1849 native normal control has no unplaced free guests
-  - L1851 late completion does not strand guests feasible in the normal control
-  - L1852 new host placement preserves exact payer households and bill
-  - L1853 new zero-budget guests are assigned exactly once
-  - L1854 newly funded host provenance counts the two new guests
-  - L1854 newly funded host crowding counts only the two guests
-  - L1858 old/new guest follow-up preserves exact payer households and bill
-  - L1859 already hosted zero guest is not assigned a second time
-  - L1860 new zero guests receive exactly the remaining source quantity
-  - L1861 old and new zero guests preserve all six household units
-  - L1862 old/new zero guests leave no feasible source unplaced
-  - L1862 old/new zero guests use three funded physical doors
-  - L1862 old/new zero guest total bills stay three asks
-  - L1863 hosted provenance contains one old plus two new guests
-  - L1863 crowding provenance contains only those three guests
-- **L1897 financial claims and physical guest donations do not create a second funded bid**
-  - L1908 paid pair keeps its two funded normal bids
-  - L1909 paid pair can fund another full door
-  - L1912 cheap alternative has no finished current stock
-  - L1913 cheap alternative is quoted at ten
-  - L1916 new alternative income fits resources remaining after retained claims
-  - L1917 implied remaining incumbents can still pay the retained bill
-  - L1918 alternative quote preserves actual leases and stock
-- **L1922 actual sponsored groups survive coalescence with newly funded sharing groups**
-  - L1941 coalesced
-  - L1942 coalesced
-  - L1943 coalesced
-  - L1944 coalesced
-  - L1945 coalesced
-  - L1946 coalesced
-  - L1947 coalesced
-- **L1951 forecast current contracts and prospective worker cohorts close separate sources**
-  - L1967 press
-  - L1968 press
-  - L1969 press
-  - L1970 press
-  - L1971 press
-  - L1972 press
-  - L1973 press
-  - L1974 press
-  - L1975 press
-  - L1978 press
-  - L1979 press
-  - L1980 press
-  - L1984 no funded future job cohort requests another free candidate
-  - L1986 prospective worker cause is actual jobs under construction
-  - L1987 actual future jobs create a positive separately projected worker cohort
-  - L1988 projected arriving workers do not inflate the current household source
-  - L1991 incoming projection is repeatable without consuming current contracts
-- **L1994 late normal vacancies receive only privately funded paid-half excess**
-  - L2006 cross excess keeps the old funded footprint exact
-  - L2006 cross excess keeps the old bill exact
-  - L2007 cross excess moves exactly the eligible source household
-  - L2008 cross excess updates the remaining full/half modes
-  - L2009 normal newcomer has priority over excess upgrades
-  - L2010 cross excess uses the actual alternative only when funded
-  - L2011 cross excess preserves source households
-  - L2012 cross excess cannot consume unavailable native stock
-- **L2016 all three coalesced contract modes survive native fresh and running loads**
-  - L2025 nonzero full/half/sponsored contract round-trips exactly
-  - L2026 denomination preserves every contract quantity
-  - L2026 denomination scales only the actual bill
-  - L2029 load rejects funded components inconsistent with actual occupied stock
-  - L2032 load rejects lost sponsored provenance
-  - L2033 all-mode fixture saves natively in scratch slot10
-  - L2041 native load preserves coalesced contract bytes
-  - L2044 next clearing cannot retain an unaffordable full-price component
-  - L2045 without a funded host every actual assignment is now a paid half
-  - L2046 previous sponsorship has priority only in actually funded host room
-  - L2047 next clearing keeps the three actual households
-- **L2061 small scratch-city integrated profile**
+  - L147 unbuilt
+  - L150 unbuilt
+  - L151 unbuilt
+  - L153 unbuilt supply quotes earn no actual rent
+  - L159 a profitable compact alternative uses the available plot
+  - L161 the fixture selects the six-door terrace
+  - L162 the order covers the actual typed backlog rather than one project's income
+  - L164 the typed backlog needs the smallest whole recipe covering eighty households
+  - L165 the smaller head-based gap does not inflate the typed order
+  - L168 a child family is not offered an unsuitable compact fallback
+  - L171 an unfunded backlog does not promise a profitable project
+- **L174 actual project choice ranks net operating income before financing**
+  - L184 the choice fixture starts with no endowed material stock
+  - L188 both physical alternatives are actually known
+  - L189 only the two house forms fit the available land
+  - L191 both alternatives have a real positive invoice
+  - L192 compact planner cost is the actual door invoice
+  - L193 House planner cost is the actual door invoice
+  - L210 fixture: a tariff binds the compact's cost and margin while the House keeps its gross reference
+  - L219 compact opening quote is its actual operating floor and build margin
+  - L221 House opening quote keeps the unchanged gross reference
+  - L232 fixture: a tariff parts the gross and net winners inside both build hurdles
+  - L237 the actual match fills the compact alternative
+  - L238 the actual match fills the House alternative
+  - L239 both alternatives clear the unchanged operating hurdle
+  - L240 the compact form wins on gross receipts per actual project dollar
+  - L241 the gross winner has higher operating carry per project dollar
+  - L244 House dominates on actual net operating income per project dollar
+  - L246 the actual planner chooses the net operating winner
+  - L249 choice fixture saves only in scratch slot10
+  - L254 repeat compact quote keeps the actual invoice
+  - L255 repeat forecast keeps actual expected rent
+  - L257 repeat plan preserves the chosen project and quantity
+  - L259 quotes and plans spend no cash or raise capital in any pool
+  - L260 quotes and plans change no lease or saved market field
+  - L261 quotes and plans change no owned or funded physical stock
+  - L262 repeated quote fixture saves only in scratch slot10
+  - L268 both native writes contain root savedAt write metadata
+  - L271 quotes and plans preserve complete native saved text with only root savedAt normalized
+  - L274 with no power bill the gross winner is also the net winner
+  - L276 the actual planner retains a gross winner that also wins on net
+  - L279 one actual alternative earns exactly zero net operating income
+  - L280 the unchanged hurdle rejects zero net operating income
+  - L282 actual utility bills cause negative net income for both
+  - L283 the unchanged hurdle rejects negative net operating income
+  - L285 the unchanged land gate rejects every otherwise profitable project
+  - L288 an unfunded actual match promises no compact rent
+  - L289 an unfunded actual match promises no House rent
+  - L290 the unchanged funded-demand gate rejects zero receipts
+- **L293 class-local debt carry, actual trades and zero-demand glut**
+  - L297 zero demand in standing stock has zero target despite debt
+  - L298 zero-demand glut walks down at the existing lease speed
+  - L299 a glut class's debt does not change another class's ask
+  - L300 the tight class covers only its own carry
+  - L306 one ULP of fully placed stock is not an economic glut
+  - L312 a genuine fractional vacancy still waives the carry lift
+  - L318 an unbuilt class has an opening quote, without a fictitious scarce market
+  - L320 repricing itself records no actual rent trade
+  - L321 repricing preserves last observed class trade
+  - L322 actual occupied proceeds remain the accepted lease bill
+  - L324 vacant class records no rent receipt
+  - L325 vacant class's last trade is retained
+  - L326 vacant class trade becomes stale
+  - L327 actual class quantity counts occupied homes only
+  - L328 actual class price is actual value over quantity
+  - L331 corrupt class prices are refused atomically
+  - L334 saved demand below actual occupied quantity is refused atomically
+  - L335 a monetary reform scales actual receipts
+  - L336 a monetary reform scales saved household budgets
+  - L337 a monetary reform scales committed pipeline asks
+  - L338 a monetary reform scales committed pipeline recurring costs
+- **L341 unbuilt gross rent covers actual costs without adding them to gross yield**
+  - L354 fixture has an available unbuilt quote
+  - L355 actual property-tax input causes costs and their build margin
+  - L356 unbuilt carry comes from the actual operating-cost getter
+  - L357 opening quote uses
+  - L360 later unbuilt target uses
+  - L361 an already correct unbuilt quote stays at its target
+  - L362 unbuilt vacancy earns no rent
+  - L364 unbuilt quote records no actual rental trade
+  - L366 reading the unbuilt quote changes no saved market field
+  - L371 the existing lender still refuses an unviable vacant project
+- **L377 actual fractional households receive income and pay their supplied bills**
+  - L404 actual fractional count is retained:
+  - L405 no allocated income is left unsettled:
+  - L406 no supplied fee, shopping or rent is left unsettled:
+  - L407 the funded fixture invents no cash for unpaid bills:
+  - L409 actual household rent equals its landlord recipient:
+  - L413 sender and all actual recipients conserve cash:
+  - L414 card principal and fee claims conserve:
+  - L415 student loan claims conserve:
+  - L416 secured tax claims are not cleared or transferred:
+  - L417 the existing share holdings are conserved:
+  - L419 fractional recipient receives its own earning-weighted income:
+  - L420 fractional recipient pays its actual account bill:
+  - L421 fractional recipient buys actual supplied groceries:
+  - L422 fractional recipient services its own card and student loan:
+  - L423 fractional card claim follows only its own settled flows:
+  - L424 fractional cash follows only its own bills:
+  - L428 exact zero receives no income, groceries, account bill or stock
+  - L430 the cell save restores its existing schema
+  - L434 load/restrike spends no cash and preserves fractional ownership:
+  - L435 live restrike spends no cash:
+  - L436 load preserves the actual card claims:
+  - L437 load preserves the student claims:
+  - L438 load preserves the secured tax claims:
+  - L439 load reproduces the positive fractional spending plan:
+  - L440 load retains the fractional recipient own cash:
+  - L445 the booked deposit-interest debit reaches actual account holders:
+  - L446 credited deposit-income flows reconcile the actual source debit:
+  - L448 a positive fractional deposit receives its own interest:
+  - L449 existing deposit balances receive the same actual return:
+  - L451 the fractional owner retains its interest payment:
+  - L453 exact zero receives no deposit interest
+- **L458 positive fractional owners receive existing paper and bond claims**
+  - L470 paper coupon debit reaches all actual owners:
+  - L471 paper coupon preserves its source face:
+  - L473 the fractional paper owner receives its coupon:
+  - L474 fractional and whole paper claims receive the same coupon per face:
+  - L478 paper principal debit reaches every actual owner:
+  - L479 paper principal reduces exactly the redeemed face:
+  - L480 fractional principal is actually redeemed:
+  - L483 paper buyback pays its actual source cash:
+  - L484 paper buyback reduces its actual source face:
+  - L485 fractional buyback reduces its own paper:
+  - L488 record-date bond coupons reach their actual owners:
+  - L489 bond coupon source debit equals aggregate account credit:
+  - L490 the fractional owner's own recorded coupon stays with it:
+  - L492 paper and bond owner cell save restores
+  - L495 claim reload/replan conserves every owner's cash:
+  - L496 claim reload retains the actual paper face:
+  - L497 claim reload retains the actual bond face:
+  - L498 claim payments preserve existing security basis:
+  - L499 claim reload preserves existing security basis:
+  - L500 claim reload reproduces the same spending plan:
+  - L502 maturing bond principal pays all actual face:
+  - L503 maturing bond source debit reaches accounts:
+  - L504 maturity extinguishes exactly that bond claim:
+  - L505 exact zero has no paper, bond or payment
+  - L507 a genuine orphan coupon retains the existing eligible-recipient fallback:
+  - L508 the genuine orphan fallback conserves its actual source debit:
+  - L511 no eligible recipient creates no orphan-coupon cash
+  - L512 no eligible recipient leaves aggregate cash unchanged
+- **L517 positive fractional owners receive their dividend and lending fee at home**
+  - L528 the dividend paid at home is every actual owner's, none left for Equity to book abroad:
+  - L529 the dividend conserves: the owners' cash and the tax on it are what was paid:
+  - L531 the fractional owner receives its own dividend:
+  - L532 fractional and whole owners receive the same dividend per share:
+  - L537 the lending fee reaches every actual lender at home, all of the cells' share:
+  - L538 the lending fee conserves: the lenders' cash and any claim it settles are what was paid:
+  - L540 the fractional lender receives its own fee:
+  - L541 exact zero holds nothing and is paid nothing
+- **L545 a founding worker's current wage funds the first actual home**
+  - L550 founding month
+  - L551 founding rent receipts are actual accepted bills
+  - L553 the founding premise really admits people and lets occupied homes
+- **L556 fully placed fractional demand creates no phantom blueprint scarcity**
+  - L562 fractional sources all find a real affordable door
+  - L563 no unbuilt class receives floating-point leftover demand
+  - L566 an unbuilt class keeps its gross quote or actual cost floor
+- **L570 affordable singles before emergency sharing; one quote and conserved existing cells**
+  - L581 fixture has an actual existing single-adult cell
+  - L598 sharing preserves the actual family members
+  - L599 all suitable affordable singles placed first
+  - L599 affordable singles are not forced to share
+  - L603 a five-to-one housing move preserves HC1's
+  - L604 five budgets fund a real remaining home
+  - L605 only actually placed sharing groups change the census
+  - L606 the actual sharing rent is one bill per occupied door
+  - L607 emergency sharing retains explicit affordability or hosted-guest reasons
+  - L609 saved sharing transfers and budgets round-trip exactly
+- **L614 actual doubled doors and divided rent, including a vacant affordable pair**
+  - L627 full rent is unaffordable, two actual households fund one door
+  - L628 doubled households occupy half as many real doors
+  - L629 each doubled door earns one rent, not two
+  - L631 fixture: two of these households fit one door within its census line
+  - L633 the asked rent a mover weighs is a half share's, half the door's ask
+  - L634 a half-bill budget creates no unfunded full-rent pressure in that class
+  - L636 actual doubled placements leave no fictional unplaced residual
+  - L638 the existing crowding reader sees actual guest equivalents
+  - L639 the existing unplaced reader sees the actual allocation
+  - L641 a multi-structure retirement cannot cut into typed occupied doors
+  - L643 doubled door and household quantities round-trip
+- **L646 emergency shelter retains funded demand for a door of one's own**
+  - L659 two funded households find emergency shelter in one actual home
+  - L660 emergency shelter consumes one physical door
+  - L661 each sheltered household counts once in class demand for its own door
+  - L662 shelter does not erase scarcity in the occupied class
+  - L665 additional demand creates no additional rent receipt
+  - L666 the one actual door earns at most its one ask
+  - L676 student housing counts only the existing open treasury facility
+  - L678 the student's finite planning allowance follows a currency reform
+  - L679 quoting a funded student budget itself borrows nothing
+- **L682 scarce free host space goes to households that cannot fund a vacant share**
+  - L691 fixture: a host and one guest fill the door to its census line
+  - L696 all three households have feasible emergency shelter
+  - L697 the poor household uses the already funded host
+  - L698 the other guest funds its actual vacant half door
+  - L699 the original host still funds its whole actual bill
+  - L700 one hosted guest is counted explicitly
+  - L701 occupied shares earn only their actual rent
+  - L702 actual occupied door equivalents are bounded
+  - L703 no temporary matching node reaches a saved lease
+  - L709 without a funded vacant share no household is left with no door
+  - L710 ...the one the census line has no room for is counted overcrowded
+  - L711 ...placed past the census line
+  - L712 ...and the zero-budget household is billed nothing
+  - L713 unfunded vacancy creates no extra receipts
+  - L714 unfunded vacancy creates no extra occupied home
+  - L724 a zero-resource emergency guest has an actual funded host
+  - L725 a hosted guest creates no extra occupied door
+  - L726 a hosted guest creates no extra landlord proceeds
+  - L727 the host retains its actual funded bill
+  - L728 the guest owes no invented rent or credit
+  - L729 emergency hosting has an explicit reason count
+  - L731 a doubled home offers migration no fictional extra guest slot
+  - L732 reading actual migration room does not quote or clear
+  - L740 an emergency sharing group can join a funded host without a vacant door
+  - L741 hosting a sharing group still earns just the one funded rent
+  - L743 a sharing group consumes the host slot before further guests
+  - L745 ...and whoever boards beyond it keeps the door within its census line (HousingChoice.line)
+  - L747 migration room sees a real completion and first reserves current unplaced demand
+  - L749 a completion projection leaves the one monthly quote untouched
+  - L752 current domestic household formation reserves the last rooms before arrivals
+  - L754 the formation preview leaves actual families and the monthly market unchanged
+  - L758 real additional doors still admit arrivals after the formation reserve
+  - L759 arrivals who start work next press cannot use the working family's density
+  - L773 retirement fixture starts with two actually placed families
+  - L775 retirement removes the actual occupied form
+  - L777 migration room reserves doors for families displaced by retirement
+  - L779 the retirement room read does not strike a second quote or clearing
+  - L798 door-census fixture pays for active construction jobs
+  - L800 door-census fixture builds actual compact homes
+  - L808 door-census control preserves the exact family matrix
+  - L811 fixture has more family seekers than twice its family doors
+  - L813 family-door scarcity actually raises the migration floor
+  - L814 door-census fixture funds actual replacement homes before the next press
+  - L816 scarce-door fixture saves natively
+  - L823 running load starts with a different actual family-door census
+  - L828 fresh native load rebuilds the scarce family-door floor
+  - L829 running native load replaces the previous city's door census
+  - L831 fresh and running reloads preserve the crowding-floor reader
+  - L839 completed funded homes cause actual positive first-month arrivals
+  - L840 the migration crowding ramp is active before the physical-room cap
+  - L843 first native month after both loads preserves actual arrivals
+  - L845 first native month after both loads preserves the migration crowding factor
+  - L847 scarce-door native continuations keep the actual class market
+- **L853 caused positive closed-home debt, native save and continuation**
+  - L864 closed-debt fixture builds its known standing family stock
+  - L865 closed-debt fixture builds its known standing compact stock
+  - L866 closed-debt fixture funds an actual Bank branch
+  - L867 closed-debt fixture funds actual crews
+  - L896 opening native census preserves the age/stage pyramid and family shape/tier matrix
+  - L899 opening native census preserves every existing financial position
+  - L904 opening wealth has actual positive households and population
+  - L909 opening native House invoice is a positive finite wealth floor
+  - L924 every positive opening cell and household receives the declared wealth floor
+  - L926 opening wealth preserves all non-savings financial positions
+  - L927 opening weighted savings increase equals declared Bank cash backing
+  - L928 opening Bank receives exactly the declared weighted cash backing
+  - L932 opening native Bank deposit book equals actual weighted savings
+  - L933 opening native Bank book refresh transfers no cash
+  - L937 closed-debt fixture starts without stranded debt
+  - L939 closed-debt fixture has no earlier family sites
+  - L957 closed-debt actual quote requires a mortgage with sufficient native down payment
+  - L968 closed-debt fixture funds the actual residential order
+  - L969 closed-debt fixture created actual Bank mortgage principal
+  - L970 closed-debt order is on the actual paid work queue
+  - L971 closed-debt order wrote one actual mortgage
+  - L974 new actual mortgage principal is on the native lending flow
+  - L975 new actual mortgage fee is on the native fee flow
+  - L976 new actual mortgage premium is on the native premium flow
+  - L979 closed-debt paid order executed in exactly one native settlement window
+  - L982 the real Bank holds the borrower's funded claim
+  - L986 normal retirement eligibility permits this vacant form
+  - L987 every class's actual vacant RE titles permit the whole closure
+  - L994 the caused vacancy really closes all requested structures
+  - L996 physical closure preserves every actual loan claim
+  - L997 physical closure creates or loses no money
+  - L1000 the normal capacity writer observes a real owned-capacity reduction
+  - L1001 the actual capacity writer CAUSED a positive stranded share
+  - L1002 positive closed-home share still carries actual Bank debt
+  - L1007 positive closed-home debt saves through the actual native writer
+  - L1014 native reload preserves the exact held positive stranded share
+  - L1015 native reload preserves the exact capacity writer's base
+  - L1016 native reload preserves the exact live borrower principal
+  - L1017 native reload preserves every actual loan claim
+  - L1018 native reload preserves the actual Bank's held claim
+  - L1019 native reload preserves all physical owner/title cohorts
+  - L1021 next native twins keep the exact positive debt share
+  - L1022 next native twins keep the exact capacity base
+  - L1023 next native twins keep all actual borrower claims
+  - L1024 next native twins keep the actual Bank claim
+  - L1025 next native twins keep every physical owner/title cohort
+- **L1029 the real saving return reaches funded demand at the ask**
+  - L1040 saving scales only the bid above the committed rent
+  - L1041 a higher saving return reduces the funded bid
+  - L1042 the current funded lease is protected
+  - L1044 a spending stimulus cannot promise more cash than the cell can fund
+  - L1052 the ask admits only the funded bids at budget
+  - L1055 the reduced bid lowers the class price target through demand
+  - L1056 striking bids moves no household savings
+- **L1059 the housing budget reserves HC1's fixed card minimum**
+  - L1070 principal in the contractual card minimum is reserved before rent
+  - L1073 the quoted minimum at the current price matches actual card settlement
+  - L1074 a housing quote does not overwrite the saved settled minimum or interest
+  - L1075 quoting a home moves no card position
+- **L1078 the final shortage uses the existing whole-match packing resolution**
+  - L1082 fixture: a couple and its guest couple fill the door to its census line
+  - L1092 an ULP of the whole source is exactly zero final shortage
+  - L1093 an ULP cannot activate the farm's housing-priority guard
+  - L1094 a rounded complete match records no phantom affordability or suitability reason
+  - L1098 a genuine fractional shortage is still explicit, overcrowded past the census line
+  - L1099 ...none of it left with no door
+  - L1100 ...placed past the census line
+  - L1101 ...and billed nothing on its zero budget
+  - L1102 a genuine shortage still activates housing priority
+  - L1105 rounding the counter creates no door or extra guest slot
+  - L1106 ...and who is housed beyond the guest slots is the overcrowded count
+- **L1111 emergency adult groups leave compatible host space for child families**
+  - L1123 fixture: the three-bedroom door's line is eight, the one-bedroom's four
+  - L1137 host allocation preserves all actual family members
+  - L1138 four funded hosts occupy exactly four real doors
+  - L1139 actual single adults really form emergency sharing groups
+  - L1140 compatible family host space is not consumed by adult soft preferences
+  - L1141 the child guest obtains its whole compatible host slot
+  - L1142 all emergency guests fit the actual two-household door limit
+  - L1143 and every door within its census line
+  - L1144 emergency hosts collect only the four funded lease bills
+  - L1214 staged fixture completed real housing before catalogue-wide orders
+  - L1218 catalogue order follows actual availability
+  - L1219 modern form unavailable in 1900
+  - L1227 fixture caused funded residential starts
+  - L1228 fixture has actual household demand
+  - L1229 fixture has actual occupied rental homes
+  - L1231 funded form completes through actual builder work
+  - L1234 native fixed-floor twin funds an actual bank branch
+  - L1241 the paid native-twin branch charges its model account fee
+  - L1245 native twin has positive disposable income and an actual non-rent fixed-bill floor
+  - L1249 native reload preserves asks, assignments, actual trades and staleness
+  - L1251 next native month preserves the class market and housing budgets after positive fixed bills
+  - L1254 larger population adds no permanent household cells
+  - L1255 larger city's class count stays bounded
+  - L1256 larger city's assignments stay bounded by H times T
+- **L1263 prior guests retain only currently funded host capacity**
+  - L1269 fixture has a genuine already funded guest
+  - L1276 the existing guest keeps its zero-bill funded arrangement
+  - L1279 a rich new guest boards beside that incumbent, never doorless (call A over R1g)
+  - L1280 ...billed nothing, as a boarder
+  - L1281 ...and counted a boarder
+  - L1284 ...four persons in the door, within its census line: boarding, not overcrowding (REV-RES3b P1-4)
+  - L1285 ...counted within the line, still wanting a home of its own
+  - L1286 incumbency creates no additional door
+  - L1287 retained rent follows the current class quote once
+  - L1288 the retained guest owes no invented rent
+  - L1289 all retained arrangements respect two households per door (the boarder past them counted above)
+  - L1292 a prior zero charge cannot create an unfunded empty-door right
+  - L1293 without a funded host no rent is invented
+  - L1294 without a funded host no door is occupied
+- **L1315 a boarder owes its hosts board at the clearing, no landlord billed, and the census line says if it is overcrowded**
+  - L1319 fixture: two household cells with households (
+  - L1325 fixture: the one door stands
+  - L1336 fixture: the host family of
+  - L1343 a boarder of one boards with the host,
+  - L1344 ...owing board, half the door's ask (
+  - L1345 ...owed at the clearing
+  - L1348 ...and moves no money at the clearing: billed with the rents, at the next month's settlement
+  - L1350 ...billed to no landlord
+  - L1352 ...within the census line: boarding, not overcrowding
+  - L1353 ...counted within the line
+  - L1355 ...past the census line, more than two persons a room: overcrowded
+  - L1356 ...and not counted within it
+- **L1401 the board goes the rents' way through the game's months: billed in the boarders' rent lines, credited to their hosts in full, through a save**
+  - L1406 fixture: a month on the one House boards its payers with the family housed in it, owing board (
+  - L1417 fixture: the census moves households out of the boarders' cells before the settlement: a partner's death from
+  - L1422 a save and load brings the owed board back, cell by cell
+  - L1427 fixture: a working boarder's cell (
+  - L1432 the next month's settlement bills each boarder's cell its whole board in its rent line, cell by cell
+  - L1433 ...credits it in full to their hosts
+  - L1434 ...none of it past a departed boarder or owed a lost host
+  - L1438 fixture: host cells credited (
+  - L1439 ...each host's month's income a household up by its board a household, every cent, beside the twin without it
+  - L1443 ...and the boarders fund it as a rent is funded: no boarder's cell leaves a cent more of its month's bills unfunded than the twin without it
+  - L1444 ...the hosts' board income funding their own: the month's bills unfunded no more than the twin's (
+  - L1446 ...the month's own audits exact, the pools' and the households', in the original and both twins
+  - L1447 the loaded twin's settlement is the original's, billed cell by cell
+  - L1448 ...and credited
+  - L1450 a boarder with wages and no savings is billed its whole board (
+  - L1452 ...and pays it out of the month's wages: its income clears its rent line, the board in it, and none of it is unfunded (
+  - L1456 fixture: households die and retire before the settlement (
+  - L1458 a boarder whose partner dies or who retires before the settlement carries its savings and none of its board: every flow's savings the twin's without it
+  - L1459 ...the widowed household's new cell billed its own board and none of
+  - L1460 ...the cell it left billed its whole board on the households it keeps
+  - L1461 ...and the retiring's,
+  - L1467 fixture: the month saved billed board (
+  - L1468 a save and load re-plans on the settled board: every household's income, rent line and plan the live city's, cell by cell
+  - L1478 fixture: a boarder whose next housing budget main's arithmetic holds down (
+  - L1480 the next clearing's budget takes the board back with the rent, up by no more than the board (
+  - L1485 fixture: the one House of a town stands vacant to that boarder
+  - L1491 at the door's ask (
+  - L1492 ...the board added back buys it
+- **L1502 a currency reform scales the board owed, billed and credited, and the loaded city's next month bills the reformed board**
+  - L1507 fixture: board owed before the reform (
+  - L1510 fixture: a reform of 1,000 to 1
+  - L1511 the reform scales the board owed
+  - L1512 ...as it scales the households' savings
+  - L1514 a save and load after the reform brings back the reformed board owed, cell by cell
+  - L1518 the loaded city's next month bills its boarders the reformed board in full, cell by cell
+  - L1520 fixture: the unreformed twin's month bills board too (
+  - L1521 ...a thousandth of the unreformed twin's, cell by cell
+  - L1522 ...credited to its hosts in full
+  - L1523 ...its month's own audits exact, the pools' and the households'
+  - L1526 fixture: a second reform of 1,000 to 1, with board billed and credited (
+  - L1527 the reform scales the board billed
+  - L1528 ...and credited
+  - L1530 ...and a save and load brings them back, cell by cell
+- **L1540 the trim holds the doors to the homes standing and cannot throw (REV-RES3b P1-3)**
+  - L1544 fixture: the doors summed in the market's order pass the stock by an ulp (
+  - L1549 an ulp past the stock is trimmed, not thrown: the doors held to the homes standing
+  - L1550 ...every household kept
+  - L1551 ...the cut lodged on its door, sponsored
+  - L1552 ...within the packing resolution: nothing past the stock to report
+  - L1555 a pass a door past the stock is held to it all the same, never thrown
+  - L1556 ...every household kept, the one cut lodged
+  - L1557 ...its bill trimmed with its doors
+  - L1558 ...and reported past the stock for LongPlaytest's finding
+- **L1561 RES3 staged housing stocks follow the same funded census**
+  - L1575 a newly unemployed household carries actual source cash
+  - L1576 its existing card balance follows it
+  - L1577 HC1 current borrower share follows
+  - L1578 HC1 late balance follows
+  - L1579 HC1 late borrower share follows
+  - L1580 HC1 shut-out share follows
+  - L1581 security units follow the same stock route
+  - L1582 security basis follows the same stock route
+  - L1583 tagged security units follow
+  - L1584 tagged security claim follows
+  - L1585 student principal follows
+  - L1586 paper follows
+  - L1586 foreign cash follows
+  - L1587 individual bond face follows
+  - L1588 projection leaves every saved live field unchanged
+  - L1589 projection leaves all live bond holdings unchanged
+  - L1591 real inherited cash can fund a finite housing buffer
+  - L1592 quoting also leaves every saved live field unchanged
+  - L1594 equal new cells share cash pro rata
+  - L1595 extra people bring no invented opening cash
+  - L1596 extra people bring no invented card balance
+  - L1598 a different city's complete stock state restores into the warmed ledger
+  - L1600 a warmed quote cannot retain the old city's cash
+  - L1602 an invalid restore is refused
+  - L1603 a refused restore preserves the live ledger
+  - L1604 a refused restore cannot revive stale quoted resources
+  - L1608 no source stocks or received income gives no funded bid
+  - L1611 empty unfunded doors create no tenancy
+  - L1612 the no-funding household stays explicitly unplaced
+- **L1625 housing quotes keep opening paid income and recurring fee source weights**
+  - L1652 a billed fee without source heads still reserves the existing fresh split
+  - L1655 detached stocks preserve the live fixed-bill floor and its live rent denominator
+  - L1656 quoting changes no live disposable income
+  - L1657 quoting changes no live income after fixed bills
+- **L1660 carried student principal reserves current contractual service**
+  - L1674 the new working cell really carries principal from the old unemployed source
+  - L1677 a quote reserves the carried loan's contractual term and current-rate interest
+  - L1679 the quote's reservation agrees with the actual model strike
+  - L1682 a current rate change is reserved without waiting for settled flow fields
+  - L1683 student service quotes and a detached comparison strike change no live saved field
+  - L1685 a working cell carrying no student principal reserves no student service
+  - L1687 unemployed principal remains in contractual forbearance
+  - L1691 an enrolled student's existing principal is not serviced during study
+- **L1695 rent commitment uses surviving recipients; live fixed-bill floor stays separate**
+  - L1703 the unchanged live non-rent fixed floor leaves seven resources
+  - L1708 actual retention scales ten old households to the two current recipients
+  - L1709 the surviving actual rent bill is four, not the stale twenty
+  - L1711 actual current rent commitment is two per household
+  - L1713 contraction protects only the surviving actual commitment from saving
+  - L1715 expansion spreads the original bill over twenty recipients
+  - L1716 both quotes preserve all live saved stocks and flows
+  - L1717 both quotes preserve live household recipients
+  - L1718 both quotes preserve live disposable
+  - L1719 both quotes preserve live fixed-bill balance
+  - L1722 no live source recipients inherit stale bill protection
+- **L1727 current paid occupancy and funded independent-door pressure both survive forecasting**
+  - L1738 fixture one actual recipe door at budget
+  - L1739 fixture actual RE inventory stock at budget
+  - L1740 fixture has no endogenous source households at budget
+  - L1749 actual paid halves retain both old households at budget
+  - L1756 actual newcomer pays for a door only where one is genuinely vacant at budget
+  - L1757 ...and otherwise boards with the housed, never doorless, at budget
+  - L1758 actual occupied footprint uses current paid doors at budget
+  - L1759 actual newcomer leaves no household with no door at budget
+  - L1760 ...who found no door standing counted a boarder at budget
+  - L1761 actual total household source closes at budget
+  - L1762 actual rent follows occupied asks at budget
+  - L1763 only affordable paid crowding is completed after movers, a boarder crowded beside it
+  - L1764 paid incumbent bills follow the completed physical footprint
+  - L1765 fixture retains ask twenty at budget
+  - L1769 forecast preserves funded newcomer and independent-door backlog at budget
+  - L1770 forecast new projects collect only supported full-door income at budget
+  - L1771 forecast moves no actual housing state at budget
+- **L1776 unfinished committed homes and incompatible spare stock**
+  - L1784 committed fixture has one finished family door
+  - L1785 committed fixture excludes endogenous arrivals
+  - L1787 supported stack input is still actually under construction
+  - L1788 unfinished registry contains the one committed door
+  - L1790 spare studio is known and every dwelling excludes children
+  - L1791 incompatible spare is actual finished RE stock
+  - L1801 committed forecast keeps both paid actual families
+  - L1802 neither pending nor incompatible stock creates current occupied doors
+  - L1803 neither pending nor incompatible stock creates current rent
+  - L1804 both actual families remain sheltered
+  - L1807 only suitable affordable committed doors cover independent pressure, pipeline=
+  - L1808 covered pipeline cannot promise a duplicate new funded order, pipeline=
+  - L1809 child families promise no studio project income
+  - L1809 child families require no incompatible studio project
+  - L1810 forecast leaves actual housing and construction inventory unchanged
+  - L1811 forecast never advances the committed work
+- **L1838 late paid footprint completion preserves movers, host funding and equivalent shares**
+  - L1843 equivalent incumbent receives pro-rata physical completion
+  - L1843 equivalent incumbent pays the identical physical delta
+  - L1843 equivalent household source unchanged
+  - L1844 rationed completion occupies all three current doors
+  - L1844 rationed completion leaves one crowded equivalent
+  - L1846 equivalent completion does not confer input-order priority
+  - L1849 full-funded host keeps its one bill rather than paying twice
+  - L1849 hosted zero-bill guest stays free
+  - L1850 full-funded host and guest retain one actual door
+  - L1850 full-funded hosted provenance unchanged
+  - L1850 full-funded guest is not evicted
+  - L1854 mixed host completes only its funded deficit
+  - L1855 mixed host bill funds exactly two households
+  - L1855 mixed paid household count unchanged
+  - L1856 mixed hosted guest physical share unchanged
+  - L1856 mixed guest bill stays zero
+  - L1857 mixed hosted counter unchanged
+  - L1857 mixed paid crowding becomes only the hosted guest
+  - L1857 mixed footprint never expands past funding
+  - L1863 native normal control proves four households can be housed
+  - L1863 native normal control has no unplaced free guests
+  - L1865 late completion does not strand guests feasible in the normal control
+  - L1866 new host placement preserves exact payer households and bill
+  - L1867 new zero-budget guests are assigned exactly once
+  - L1868 newly funded host provenance counts the two new guests
+  - L1868 newly funded host crowding counts only the two guests
+  - L1872 old/new guest follow-up preserves exact payer households and bill
+  - L1873 already hosted zero guest is not assigned a second time
+  - L1874 new zero guests receive exactly the remaining source quantity
+  - L1875 old and new zero guests preserve all six household units
+  - L1876 old/new zero guests leave no feasible source unplaced
+  - L1876 old/new zero guests use three funded physical doors
+  - L1876 old/new zero guest total bills stay three asks
+  - L1877 hosted provenance contains one old plus two new guests
+  - L1877 crowding provenance contains only those three guests
+- **L1911 financial claims and physical guest donations do not create a second funded bid**
+  - L1922 paid pair keeps its two funded normal bids
+  - L1923 paid pair can fund another full door
+  - L1926 cheap alternative has no finished current stock
+  - L1927 cheap alternative is quoted at ten
+  - L1930 new alternative income fits resources remaining after retained claims
+  - L1931 implied remaining incumbents can still pay the retained bill
+  - L1932 alternative quote preserves actual leases and stock
+- **L1936 actual sponsored groups survive coalescence with newly funded sharing groups**
+  - L1955 coalesced
+  - L1956 coalesced
+  - L1957 coalesced
+  - L1958 coalesced
+  - L1959 coalesced
+  - L1960 coalesced
+  - L1961 coalesced
+- **L1965 forecast current contracts and prospective worker cohorts close separate sources**
+  - L1981 press
+  - L1982 press
+  - L1983 press
+  - L1984 press
+  - L1985 press
+  - L1986 press
+  - L1987 press
+  - L1988 press
+  - L1989 press
+  - L1992 press
+  - L1993 press
+  - L1994 press
+  - L1998 no funded future job cohort requests another free candidate
+  - L2000 prospective worker cause is actual jobs under construction
+  - L2001 actual future jobs create a positive separately projected worker cohort
+  - L2002 projected arriving workers do not inflate the current household source
+  - L2005 incoming projection is repeatable without consuming current contracts
+- **L2008 late normal vacancies receive only privately funded paid-half excess**
+  - L2020 cross excess keeps the old funded footprint exact
+  - L2020 cross excess keeps the old bill exact
+  - L2021 cross excess moves exactly the eligible source household
+  - L2022 cross excess updates the remaining full/half modes
+  - L2023 normal newcomer has priority over excess upgrades
+  - L2024 cross excess uses the actual alternative only when funded
+  - L2025 cross excess preserves source households
+  - L2026 cross excess cannot consume unavailable native stock
+- **L2030 all three coalesced contract modes survive native fresh and running loads**
+  - L2039 nonzero full/half/sponsored contract round-trips exactly
+  - L2040 denomination preserves every contract quantity
+  - L2040 denomination scales only the actual bill
+  - L2043 load rejects funded components inconsistent with actual occupied stock
+  - L2046 load rejects lost sponsored provenance
+  - L2047 all-mode fixture saves natively in scratch slot10
+  - L2055 native load preserves coalesced contract bytes
+  - L2058 next clearing cannot retain an unaffordable full-price component
+  - L2059 without a funded host every actual assignment is now a paid half
+  - L2060 previous sponsorship has priority only in actually funded host room
+  - L2061 next clearing keeps the three actual households
+- **L2075 small scratch-city integrated profile**
 
 ## HydroCheck.java - 102 labelled assertions
 
@@ -22896,117 +22897,117 @@ _(this harness does not label its checks through a helper - it prints its findin
 > 
 > ...
 
-- **L1662 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
-- **L3641 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
-- **L3696 AND EVERYTHING THAT IS A PURCHASE.**
-- **L4080 AND THE BEST OF THEM WINS.**
-- **L7062 founding: a few months at a time, by hand**
-- **L7159 then the real rhythm**
-- **L7296 the report**
-- **L7319 ==**
-- **L7416 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
-- **L8716 what the advisor tried, and what happened**
-- **L8722 findings**
-- **L8742 HA1 money audit fixtures**
-- **L9359 1. a city that prospers**
-  - L9381 a founding city conserves money to within 0.01% of what moved
-- **L9400 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
-  - L9423 an industrial city conserves money to within 0.01% of what moved
-  - L9425 ...and it really did carry passengers, so the fare was really charged
-  - L9442 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
-- **L9451 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
-- **L9461 land bought out of the vault: nothing moves the audit cannot see**
-  - L9471 fixture: the vault paid for a parcel and the treasury's cash did not move
-  - L9475 a city that paid for land out of the vault conserves money
-  - L9477 ...and nothing moved a pool after any month's audit
-- **L9480 2. a city under stress**
-  - L9507 a stressed city conserves money to within 0.01% of what moved
-  - L9538 fixture: retail went under whole, and was restructured
-  - L9540 a restructure moves no cash the audit cannot see
-- **L9543 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
-- **L9561 a city paying over the world: the money that arrives is audited**
-  - L9582 fixture: the rate actually brought money in
-  - L9584 ...and the audit saw it cross the border
-  - L9587 a city conserves money with hot money flowing
-  - L9590 ...and nothing moved after the audit struck
-- **L9592 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
-- **L9606 a works making its own power and buying consumables abroad: still nothing leaks**
-  - L9636 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
-  - L9639 ...and bought consumables abroad, inside their imports
-  - L9641 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
-  - L9643 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
-- **L9647 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
-- **L9659 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
-  - L9697 fixture: the yard bought old steel from the households and from a sector
-  - L9699 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
-  - L9701 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9705 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
-  - L9716 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
-  - L9718 the households' books close in every one of the yard's months (worst residual
-  - L9720 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
-- **L9723 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
-- **L9734 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
-  - L9765 fixture: the refinery bought old copper from the households and from a sector
-  - L9767 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
-  - L9769 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
-  - L9779 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
-  - L9781 the households' books close in every one of the refinery's months (worst residual
-  - L9783 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
-- **L9786 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
-- **L9815 the city's paper on its books: the amortisation is no money, and the audit closes**
-  - L9841 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
-  - L9887 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
-  - L9888 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
-  - L9890 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
-  - L9892 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
-  - L9894 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
-  - L9896 ...and nothing moved a pool after any month's audit struck
-  - L9897 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
-  - L9899 ...and it is the cash coupons the budget calls its cash interest
-- **L9901 12. the services' upkeep is bought of Business Services**
-  - L9922 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
-  - L9925 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
-  - L9927 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
-  - L9938 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
-  - L9950 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
-  - L9952 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
-  - L9955 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
-  - L9958 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
-  - L9963 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-  - L9966 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
-  - L9971 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
-  - L9984 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
-  - L9988 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
-  - L9993 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
-- **L9995 13. the households' books close**
-  - L10004 fixture: the longest city this file plays gave at least 24 months to read
-  - L10006 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
-  - L10015 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
-- **L10019 14. a cent that vanishes from a household is seen**
-  - L10031 fixture: the city holds savings enough that 1% of them is a hundred cents or more
-  - L10036 the theft took what it was meant to: the savings fell by X, to the cent
-  - L10042 the game's own strike, whose opening figure was read after the theft, closes
-  - L10043 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
-- **L10046 15. a bond's face that no cell holds is named**
-  - L10079 fixture: the bond town's households hold a corporate bond whose coupon on half its record clears twice the visible line
-  - L10088 fixture: the bond town has real wires for its billed and closing peaks
-  - L10106 fixture: the bond's record now exceeds the cells' own by D, over a cent
-  - L10107 fixture: ...and the coupon on D is over what the identity can tell from rounding
-  - L10115 the press that paid the coupon on D declares it orphaned:
-  - L10118 ...and the own line fired with that figure
-  - L10119 ...the households' books close
-  - L10122 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
-  - L10150 the bond matured within its term (m
-  - L10152 ...every month on the way closed its households' books
-  - L10153 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
-  - L10156 ...and the households' books close that month, the principal paid on a face no cell held
-- **L10160 16. what comes off the payslips is in transit a press**
-  - L10180 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
-  - L10202 fixture: the treasury banked all three that press
-  - L10205 ...by the lines the pools' identity reads
-  - L10216 fixture: what comes off the payslips moved by over a cent in at least three presses
-  - L10217 the households' books close in every one of the
-  - L10218 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
+- **L1665 AND NOTHING MOVED AFTER THE AUDIT STRUCK.**
+- **L3644 THE TWO THINGS THAT ARE NOT PURCHASES, done first and for free.**
+- **L3699 AND EVERYTHING THAT IS A PURCHASE.**
+- **L4083 AND THE BEST OF THEM WINS.**
+- **L7065 founding: a few months at a time, by hand**
+- **L7162 then the real rhythm**
+- **L7299 the report**
+- **L7322 ==**
+- **L7419 BUSINESS SERVICES - and the point of printing it is the MECHANISM,**
+- **L8719 what the advisor tried, and what happened**
+- **L8725 findings**
+- **L8745 HA1 money audit fixtures**
+- **L9362 1. a city that prospers**
+  - L9384 a founding city conserves money to within 0.01% of what moved
+- **L9403 AND A BUS, WHICH IS THE WHOLE REASON THIS LINE EXISTS (2026-09-16).**
+  - L9435 an industrial city conserves money to within 0.01% of what moved
+  - L9437 ...and it really did carry passengers, so the fare was really charged
+  - L9454 the bus town's audit closes with the bill paid and the fuel abroad, bought at the pump
+- **L9463 AND LAND PAID FOR OUT OF THE VAULT (0.7.6).**
+- **L9473 land bought out of the vault: nothing moves the audit cannot see**
+  - L9483 fixture: the vault paid for a parcel and the treasury's cash did not move
+  - L9487 a city that paid for land out of the vault conserves money
+  - L9489 ...and nothing moved a pool after any month's audit
+- **L9492 2. a city under stress**
+  - L9519 a stressed city conserves money to within 0.01% of what moved
+  - L9550 fixture: retail went under whole, and was restructured
+  - L9552 a restructure moves no cash the audit cannot see
+- **L9555 AND NOTHING MOVES AFTER THE AUDIT HAS STRUCK.**
+- **L9573 a city paying over the world: the money that arrives is audited**
+  - L9594 fixture: the rate actually brought money in
+  - L9596 ...and the audit saw it cross the border
+  - L9599 a city conserves money with hot money flowing
+  - L9602 ...and nothing moved after the audit struck
+- **L9604 4. AND A WORKS THAT MAKES ITS OWN POWER AND BUYS ITS CONSUMABLES**
+- **L9618 a works making its own power and buying consumables abroad: still nothing leaks**
+  - L9648 fixture: the bakers sold the grid power and the utility paid them the same, each off its own book
+  - L9651 ...and bought consumables abroad, inside their imports
+  - L9653 a city whose works make power and buy consumables conserves money to within 0.01% of what moved
+  - L9655 ...and its audit names both: the power as a pair noted beside the utility's bills, the consumables in Industry's
+- **L9659 OLD STEEL (0.7.123, batch I4; OldMetal): a Scrap Yard buys the**
+- **L9671 a Scrap Yard buying the city's old steel from the households and a sector: still nothing leaks**
+  - L9709 fixture: the yard bought old steel from the households and from a sector
+  - L9711 a city whose Scrap Yard buys its old steel conserves money to within 0.01% of what moved, every month
+  - L9713 ...what the yard bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9717 ...and its audit names them: \"- sectors OldMetalToHouseholds\" declared, and the three noted beside it
+  - L9728 fixture: the yard held the households' old steel in transit at a press's end, and the amount moved between two presses
+  - L9730 the households' books close in every one of the yard's months (worst residual
+  - L9732 ...and the carrier is what closes them: without the old steel in transit, the month it moved most does not close
+- **L9735 OLD COPPER (0.7.133, batch I8; OldMetal.copper(), the spec's 2.9):**
+- **L9746 a Scrap Copper Refinery buying the city's old copper from the households and a sector: still nothing leaks**
+  - L9777 fixture: the refinery bought old copper from the households and from a sector
+  - L9779 a city whose Scrap Copper Refinery buys its old copper conserves money to within 0.01% of what moved, every month
+  - L9781 ...what it bought is the households' part and the sectors' together, to the cent: the households' declared as it
+  - L9791 fixture: the refinery held the households' old copper in transit at a press's end, and the amount moved between two presses
+  - L9793 the households' books close in every one of the refinery's months (worst residual
+  - L9795 ...and the carrier is what closes them: without the old copper in transit, the month it moved most does not close
+- **L9798 THE CITY'S PAPER ON ITS BOOKS (CD3, spec-city-debt.md section 5;**
+- **L9827 the city's paper on its books: the amortisation is no money, and the audit closes**
+  - L9853 fixture: a bill, an amortizing bond and a ten-year line, each sold under par
+  - L9899 fixture: the ten-year line was reopened over par, as one piece, and raised more than the face it added
+  - L9900 fixture: the books amortised something in most months, a discount wearing off in some pieces and a premium below nothing in another
+  - L9902 fixture: the amortizing bond was bought back between two presses, at a gain or loss against its carrying value
+  - L9904 the buyback's gain reached the month's books as the gain on debt retired, the carrying value less the price: a loss here, the line having been sold dear
+  - L9906 a city whose paper is sold under and over par, reopened and bought back conserves money to within 0.01% of what moved, every month
+  - L9908 ...and nothing moved a pool after any month's audit struck
+  - L9909 the books' interest less the amortisation is the coupons the month paid in cash, holder by holder, every month: the amortisation moved no pool
+  - L9911 ...and it is the cash coupons the budget calls its cash interest
+- **L9913 12. the services' upkeep is bought of Business Services**
+  - L9934 fixture: a played city with a clinic, a school, a police station, a bus network, three bank branches and an office (seats > 0) paid upkeep on every line but ...
+  - L9937 the press the bills are paid, Business Services holds them in transit: its pending upkeepSold is the five upkeeps and the bank's operating cost
+  - L9939 ...and that month's audit closes, with no DOMESTIC care, schools, safety, bank or transit-bill line, each noted as a \"chk\" line instead
+  - L9950 ...and that month's households' books close too, the bank's operating cost in it (a cent, or a part in ten million of what moved)
+  - L9962 the next press, Business Services' statement names the upkeep it sold (Sector.UPKEEP_SOLD in its other revenue), to the cent
+  - L9964 ...and imported the share a sector of its kind imports (BusinessServices.UPKEEP_IMPORTED) of the five services' part of it, as an input line of its own
+  - L9967 ...and the same share of the bank's operating cost on a line of its own (BANK_UPKEEP_SUPPLIES), that the national accounts keep out of their imports
+  - L9970 ...and that month's audit closes too, the imported shares in its \"- Business Services Imports\" line, both lines together at least
+  - L9975 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+  - L9978 saved between the two presses and reloaded, the money in transit survives the save: the city holds the same upkeep sold
+  - L9983 ...and the reloaded city's next audit closes, its statement naming the upkeep that was in transit
+  - L9996 a city whose Business Services has no seats imports all of the upkeep it sold: its two input lines are the whole sum
+  - L10000 ...the bank's line the whole of the bank's operating cost the press before (> 0), the services' line the rest
+  - L10005 ...and that month's households' books close too (a cent, or a part in ten million of what moved)
+- **L10007 13. the households' books close**
+  - L10016 fixture: the longest city this file plays gave at least 24 months to read
+  - L10018 every month's households' identity closes by the pools' own test (a cent, or a part in ten million of what moved)
+  - L10027 the books closed WITH their own lines, not for want of them: bills went unfunded and income went unsettled in this run
+- **L10031 14. a cent that vanishes from a household is seen**
+  - L10043 fixture: the city holds savings enough that 1% of them is a hundred cents or more
+  - L10048 the theft took what it was meant to: the savings fell by X, to the cent
+  - L10054 the game's own strike, whose opening figure was read after the theft, closes
+  - L10055 ...and a strike from the figure read BEFORE the theft shows -X, to the cent
+- **L10058 15. a bond's face that no cell holds is named**
+  - L10096 fixture: the bond town's households hold a corporate bond whose coupon on half its record clears twice the visible line
+  - L10105 fixture: the bond town has real wires for its billed and closing peaks
+  - L10123 fixture: the bond's record now exceeds the cells' own by D, over a cent
+  - L10124 fixture: ...and the coupon on D is over what the identity can tell from rounding
+  - L10132 the press that paid the coupon on D declares it orphaned:
+  - L10135 ...and the own line fired with that figure
+  - L10136 ...the households' books close
+  - L10139 ...and would not without the line: the residual less the orphaned is over a cent and over a part in ten million of what moved
+  - L10167 the bond matured within its term (m
+  - L10169 ...every month on the way closed its households' books
+  - L10170 ...the month it matured the line is at least the principal part of the drift, half of what it was the press before
+  - L10173 ...and the households' books close that month, the principal paid on a face no cell held
+- **L10177 16. what comes off the payslips is in transit a press**
+  - L10197 fixture: with the three promises at zero nothing comes off the payslips but the wage tax
+  - L10219 fixture: the treasury banked all three that press
+  - L10222 ...by the lines the pools' identity reads
+  - L10233 fixture: what comes off the payslips moved by over a cent in at least three presses
+  - L10234 the households' books close in every one of the
+  - L10235 ...and the carrier is what closes them: the month it moved most, the residual without it is over a cent and over a part
 
 ## LuxuryRetailCheck.java - 8 labelled assertions
 
@@ -28618,7 +28619,7 @@ _(no printed sections or labelled assertions found)_
   - L2397 ...and never falls as the tonnes rise nor leaves 0 to 1; with step() the kind at its berths' month shows full
   - L2413 painting the large box's picture (a full container yard, RAIL \| OPEN_LOW \| TRAIN) takes no more than HarbourYard.PICTURE_MS (0.5 ms)
 
-## PostwarRecipeCheck.java - 63 labelled assertions
+## PostwarRecipeCheck.java - 64 labelled assertions
 
 > The postwar engineering and business discoveries run their sourced earlier
 > figures, compose in either order, retain saved decisions and leave default
@@ -28696,18 +28697,19 @@ _(no printed sections or labelled assertions found)_
   - L814 fixture: the Large Cement Plant and its kiln share imported PE4, with local E2 fitted and positive real production
   - L820 the shared PE4 code loses one entry fee in both fitting increments
   - L830 the positive real bill charges the shared PE4 code once
-- **L836 13. a Cement Plant standing before PE4 refits the long kiln on its works' order and earns PE4's royalty**
-  - L856 fixture: the month before PE4 the plant runs its rotary kiln at the study's 30%, the long kiln not yet known
-  - L863 in PE4's month the plant's long kiln is a paying refit on a positive coal saving
-  - L868 the works' month, with a plan that builds nothing, is to fit the long kiln to its Cement Plant
-  - L873 ...the order is taken, and one long kiln is on site for the plant
-  - L878 the crews fit it, and the plant falls from the 30% to the exact 7106.06 wet form
-  - L884 its positive production in PE4's patent pays a royalty, E2 still unknown
-  - L898 ...the plant's bill is PE4's share of the long kiln's real coal saving at the works' rate
-- **L915 2. two entries compose in either fitting or discovery order**
-  - L916 Vehicle Works
-  - L917 Steel Mini-Mill
-  - L918 Commercial Bank
+- **L843 13. a Cement Plant standing before PE4 refits the long kiln on its works' order and earns PE4's royalty**
+  - L855 fixture: the village's more Houses stand, so the crews that fit the kiln have people
+  - L866 fixture: the month before PE4 the plant runs its rotary kiln at the study's 30%, the long kiln not yet known
+  - L873 in PE4's month the plant's long kiln is a paying refit on a positive coal saving
+  - L878 the works' month, with a plan that builds nothing, is to fit the long kiln to its Cement Plant
+  - L883 ...the order is taken, and one long kiln is on site for the plant
+  - L888 the crews fit it, and the plant falls from the 30% to the exact 7106.06 wet form
+  - L894 its positive production in PE4's patent pays a royalty, E2 still unknown
+  - L908 ...the plant's bill is PE4's share of the long kiln's real coal saving at the works' rate
+- **L925 2. two entries compose in either fitting or discovery order**
+  - L926 Vehicle Works
+  - L927 Steel Mini-Mill
+  - L928 Commercial Bank
 
 ## PowerDispatchCheck.java - 69 labelled assertions
 
