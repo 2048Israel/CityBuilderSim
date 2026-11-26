@@ -999,7 +999,7 @@ public class InvestCheck {
          * unit. Heavy Industry and Mining had no retirement call at all and
          * ended every long run at -$8bn and -$13bn of cash, paying wages for
          * 1,400 months after the ore ran out. The distress rule is the other
-         * half: overdrawn after the credit desk's turn, two years of losses,
+         * half: overdrawn after the credit desk's turn, two years of operating and net losses,
          * and the biggest holding goes at the gradual rate whatever is spare.
          */
         BuildingManager dbm = new BuildingManager();
@@ -1014,15 +1014,22 @@ public class InvestCheck {
         dbm.addStack(shop, 4, true);
         Sector mining = dem.getSectors().mining();
         Sector retail = dem.getSectors().retail();
+        // Cause the running losses this fixture describes; interest-only losses keep paying plant (QR1).
+        mining.statement().operatingIncome = -1;
+        retail.statement().operatingIncome = -1;
 
         assertTrue("a solvent sector is left alone however long it has lost",
                 !distressed.planDistressRetirement(mining, 1_000, 0).build);
         for (int i = 0; i < BusinessInvestment.DISTRESS_LOSS_MONTHS - 1; i++) {
             distressed.recordSectorResult(mining.key(), -1);
+            distressed.recordOperatingResult(mining);
         }
         assertTrue("...and an overdrawn one gets its two years first",
                 !distressed.planDistressRetirement(mining, -1_000, 0).build);
         distressed.recordSectorResult(mining.key(), -1);
+        distressed.recordOperatingResult(mining);
+        assertTrue("fixture: the mine has lost on its running costs for the distress runway",
+                distressed.getOperatingLossMonths(mining.key()) == BusinessInvestment.DISTRESS_LOSS_MONTHS);
         BusinessInvestment.Decision dd = distressed.planDistressRetirement(mining, -1_000, 0);
         assertTrue("after two years overdrawn it sheds, with nothing spare at all", dd.build);
         assertTrue("...its biggest holding", dd.build && dd.template == mine);
@@ -1036,6 +1043,7 @@ public class InvestCheck {
         // twenty branches, being the biggest holding in the category.
         for (int i = 0; i < BusinessInvestment.DISTRESS_LOSS_MONTHS; i++) {
             distressed.recordSectorResult(retail.key(), -1);
+            distressed.recordOperatingResult(retail);
         }
         BusinessInvestment.Decision r = distressed.planDistressRetirement(retail, -1_000, 0);
         assertTrue("a distressed retailer sells shops", r.build && r.template == shop);

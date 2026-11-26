@@ -651,7 +651,7 @@ public class BuildAdviceCheck {
     }
 
     /**
-     * The model's firm supply (PW3): the handler's production - the founding grid at the pooled fill, the works' power, each plant at
+     * The model's firm supply (PW3, PW9): the handler's production - the fixed jobless founding grid, the works' power, each plant at
      * its own posts' fill and a station at its water - less each wind and solar farm's average beyond its credit at the city's share.
      */
     static double modelFirm(Game twin) {

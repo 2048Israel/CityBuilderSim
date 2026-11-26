@@ -330,6 +330,17 @@ public final class EssentialWorksCheck {
                         AutoBuilder.spendable(g), plant.getName(), one, second),
                 BuildAdvice.warranted(g, power) && !g.getAutoBuilder().atTarget(g, power)
                         && g.quoteBuild(plant, 2).total > AutoBuilder.spendable(g) && !g.getAutoBuilder().within(g));
+        BuildingsTemplate diesel = g.getBuildingManager().getTemplateByName("Diesel Station");
+        AutoBuilder.Ground ground = AutoBuilder.groundFor(g, diesel, 1);
+        double futurePrice = g.quoteBuild(diesel, 1).total;
+        int futureIn = 12 * (diesel.getSince() - CityCalendar.yearOf(g.getMonth()));
+        double currentOpening = g.quoteBuild(plant, 1).months, futureOpening = futureIn + g.quoteBuild(diesel, 1).months;
+        check(String.format("fixture: future Diesel's first quote %.2f plus ground %.2f fails the same legal budget (cash %.2f); current first unit +%.1f precedes future +%.1f",
+                        futurePrice, ground == null ? Double.NaN : ground.cash(), AutoBuilder.spendable(g), currentOpening, futureOpening),
+                !g.getBuildingManager().isTemplateKnown(diesel)
+                        && g.getBuildingManager().isTemplateKnownIn(diesel, futureIn) && currentOpening < futureOpening
+                        && ground != null && futurePrice + ground.cash() > AutoBuilder.spendable(g)
+                        && !g.getAutoBuilder().pays(g, futurePrice + ground.cash(), false));
         double debt = AutoBuilder.debt(g);
         g.getAutoBuilder().setOn(true, null);
         quietly(() -> g.getAutoBuilder().pass(g));
@@ -812,9 +823,19 @@ public final class EssentialWorksCheck {
                         && g.quoteBuild(card.template(), card.count()).total < AutoBuilder.spendable(g)
                         && card.landSqFt() < g.getLandManager().getAvailableSqFt());
         if (card == null) return;
-        check("the power plan is sized to its whole order's actual opening and planning horizon",
-                Math.abs(card.ahead().months() - g.quoteBuild(card.template(), card.count()).months
-                        - BusinessInvestment.horizonFor(g.quoteBuild(card.template(), card.count()).months)) < 1e-9);
+        double quoted = g.quoteBuild(card.template(), card.count()).months;
+        WorksValue.PowerDates dates = new WorksValue.PowerDates(g, BuildAdvice.onSite(g, power));
+        boolean closes = card.closes();
+        for (double month : dates.frontier(quoted)) {
+            boolean peak = month == dates.nextPeak(quoted);
+            if (peak) {
+                BuildAdvice.Ahead at = new BuildAdvice.Ahead(month, g.getBusinessInvestment().growthFactor(month), ab.getSlack());
+                closes &= BuildAdvice.maintained(g, power, BuildAdvice.plus(dates.openBy(month), card.template(), card.count()), at);
+            } else closes &= nativeUnserved(g, BuildAdvice.plus(dates.openBy(month), card.template(), card.count()), (int) month) == 0;
+        }
+        check(String.format("the actual %d-unit quote %.3f closes every native monthly frontier through peak %.0f; binding date %.0f belongs to it",
+                        card.count(), quoted, (double) dates.nextPeak(quoted), card.ahead().months()),
+                Double.compare(card.lead(), quoted) == 0 && dates.frontier(quoted).contains(card.ahead().months()) && closes);
         String cardValue = card.value().words();
         ab.setOn(true, null);
         quietly(() -> ab.pass(g));
@@ -826,6 +847,34 @@ public final class EssentialWorksCheck {
         check("the automatic path records the exact whole-plan valuation displayed by the card",
                 ab.powerValues().size() == 1
                         && ab.powerValues().get(0).equals(card.count() + " " + card.template().getName() + ": " + cardValue));
+    }
+
+    /** Native unserved kWh at a forecast calendar month, then restore the town's current dispatch. */
+    static double nativeUnserved(Game g, Map<BuildingsTemplate, Long> added, int months) {
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        Map<BuildingsTemplate, Long> standing = new java.util.LinkedHashMap<>();
+        for (BuildingsStacks stack : g.getBuildingManager().getStacksView())
+            if (stack.getBuilding().getCategory() == BuildingType.ELECTRICITY && stack.getQuantity() > 0)
+                standing.put(stack.getBuilding(), stack.getQuantity());
+        double draw = u.getConsumption();
+        BuildAdvice.Ahead at = new BuildAdvice.Ahead(months, g.getBusinessInvestment().growthFactor(months), 0);
+        double forecast = BuildAdvice.supplyDemand(g, power, added, at)[1] / PowerDispatch.PLAN_PEAK_HOUR;
+        try {
+            u.setPlants(BuildAdvice.plus(standing, added));
+            u.setCalendarMonth(() -> CityCalendar.monthOfYear(g.getMonth() + months));
+            u.setWattsConsumption(forecast);
+            u.updateEnergyRatio();
+            double unservedKwh = 0;
+            for (int half = 0; half < PowerDispatch.HALVES; half++)
+                unservedKwh += u.getLatestMonth().unserved[half] * PowerDispatch.halfHours(half);
+            return unservedKwh;
+        } finally {
+            u.setPlants(standing);
+            u.setCalendarMonth(() -> CityCalendar.monthOfYear(g.getMonth()));
+            u.setWattsConsumption(draw);
+            u.updateEnergyRatio();
+        }
     }
 
     static void interimPower(Path root) {
@@ -890,19 +939,111 @@ public final class EssentialWorksCheck {
                         && BuildAdvice.maintained(g, power, site, BuildAdvice.NOW)
                         && Double.isFinite(first) && first < BuildAdvice.LIFE_MONTHS && windLead < first);
 
+        WorksValue.PowerDates schedule = new WorksValue.PowerDates(g, site);
+        int windPeak = schedule.nextPeak(windLead), firstShort = -1;
+        for (int month = 0; month <= BuildAdvice.LIFE_MONTHS; month++)
+            if (nativeUnserved(g, schedule.openBy(month), month) > 0) { firstShort = month; break; }
+        BuildAdvice.Ahead peak = new BuildAdvice.Ahead(windPeak, g.getBusinessInvestment().growthFactor(windPeak), ab.getSlack());
+        Map<BuildingsTemplate, Long> opened = schedule.openBy(windPeak);
+        long[] windCount = BuildAdvice.count(g, power, opened, Map.of(wind, 1L), peak, BuildAdvice.reserveMost(g, wind, opened), true);
+        double[] sd = BuildAdvice.supplyDemand(g, power, opened, peak);
+        check(String.format("original control: no native physical shortage through %.0f months; next wind peak %d is reserve-only (supply %.0f, reserve %.0f), wind %d cannot close",
+                        (double) BuildAdvice.LIFE_MONTHS, windPeak, sd[0], sd[1], windCount[0]),
+                firstShort == -1 && sd[0] < sd[1] && windCount[1] == 0);
+
         ab.setOn(true, null);
         quietly(() -> ab.pass(g));
         AutoBuilder.Step order = step(g, power);
-        check("the automatic path orders earlier wind before the forecast shortage becomes physical",
-                order != null && order.ordered() > 0 && order.building().equals(wind.getName()));
-        BuildingsStacks pendingWind = g.getBuildingManager().getStack(wind);
-        if (pendingWind == null || pendingWind.getUnderConstruction() <= 0) return;
-        double windFirst = Math.ceil(g.getBuildingManager().siteUnitMonths(wind, 1, g.getBuildingOutputAtEveryPost()));
+        BuildingsTemplate steam = g.getBuildingManager().getTemplateByName("Small Steam Station");
+        check("the original seasonal reserve gap orders ordinary Steam which closes, ahead of the nonclosing wind (" + order + ")",
+                order != null && order.ordered() > 0 && order.building().equals(steam.getName())
+                        && BuildAdvice.maintained(g, power, BuildAdvice.plus(opened, steam, order.wanted()), peak));
+        BuildingsStacks pendingSteam = g.getBuildingManager().getStack(steam);
+        if (pendingSteam == null || pendingSteam.getUnderConstruction() <= 0) return;
+        double steamFirst = Math.ceil(g.getBuildingManager().siteUnitMonths(steam, 1, g.getBuildingOutputAtEveryPost()));
         var state = new com.google.gson.Gson().toJsonTree(ab.toState()).getAsJsonObject();
         var dates = state.has("pendingUntil") ? state.getAsJsonObject("pendingUntil") : null;
         double due = dates != null && dates.has(power.label()) ? dates.get(power.label()).getAsDouble() : Double.POSITIVE_INFINITY;
-        check("the faster wind brings the saved first-completion deadline forward from the coal quote",
-                due <= g.getMonth() + windFirst && due < g.getMonth() + first);
+        check("the faster Steam brings the saved first-completion deadline forward from the coal quote",
+                due <= g.getMonth() + steamFirst && due < g.getMonth() + first);
+    }
+
+    static void earlyWind(Path root) {
+        out.println("--- native wind bridges a physical month before coal, with its next seasonal peak covered ---");
+        Game g = town(root, "early-wind-native");
+        g.setCashForTest(1e14);
+        int retireYear = g.getBuildingManager().getTemplateByName("Small Steam Station").getUntil() + 1;
+        int months = 12 * (retireYear - CityCalendar.yearOf(g.getMonth()));
+        quietly(() -> g.simulateMonths(months));
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate steam = bm.getTemplateByName("Small Steam Station"), wind = bm.getTemplateByName("Wind Farm");
+        BuildingsTemplate diesel = bm.getTemplateByName("Diesel Station"), coal = bm.getTemplateByName("Coal Power Plant");
+        check("new control reaches the native offered year after Steam retires; all ordinary eligible plants remain on the menu",
+                CityCalendar.yearOf(g.getMonth()) == retireYear && !bm.isTemplateKnown(steam)
+                        && bm.isTemplateKnown(wind) && bm.isTemplateKnown(diesel) && bm.isTemplateKnown(coal));
+        g.setCashForTest(1e14);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
+        // Real standing diesel, as in PowerPlanCheck's dear-running control: wind can save fuel as well as close the bridge.
+        quietly(() -> { g.buildStack(bm.getTemplateByName("Construction Depot"), 8, true); g.buildStack(diesel, 10, true); });
+        BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
+        check("new wind control has unrelated essential services in operation", serveOtherEssentials(g, power));
+        AutoBuilder ab = g.getAutoBuilder();
+        ab.setSlack(0, null);
+        long pop = g.getPopulationManager().getPopulation();
+        var people = g.getHistorySave().getPopulation();
+        var historyMonths = g.getHistorySave().getMonth();
+        people.clear(); historyMonths.clear();
+        for (int i = 0; i <= 12; i++) {
+            people.add(Math.round(pop * (.8 + .2 * i / 12)));
+            historyMonths.add(g.getMonth() - 12 + i);
+        }
+        g.getBusinessInvestment().restorePopulationHistory(people);
+        UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
+        double hi = 4 * u.getProduction(), lo = 0;
+        u.setWattsConsumption(hi);
+        serveGrid(g);
+        double lead = g.quoteBuild(wind, 1).months;
+        int opening = (int) Math.ceil(lead);
+        double loss = .05 * wind.getProduction1() * PowerDispatch.MONTH_HOURS * PowerDispatch.BLOCK_HOURS[PowerDispatch.PEAK];
+        // Cause a small genuine dispatch shortage at wind's native opening, independently of the planner's production arithmetic.
+        for (int i = 0; i < 48; i++) {
+            double mid = (lo + hi) / 2;
+            u.setWattsConsumption(mid);
+            if (nativeUnserved(g, Map.of(), opening) < loss) lo = mid; else hi = mid;
+        }
+        u.setWattsConsumption(hi);
+        quietly(() -> g.buildStack(coal, 1, false));
+        int peak = new WorksValue.PowerDates(g, BuildAdvice.onSite(g, power)).nextPeak(lead);
+        // A real intermediate monthly gap, then coal before the next peak: the original reserve-only control stays above.
+        PowerPlanCheck.dueIn(g, coal, (opening + peak) / 2.0);
+        Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, power);
+        WorksValue.PowerDates dates = new WorksValue.PowerDates(g, site);
+        double coalFirst = bm.siteUnitMonths(coal, 1, g.getBuildingOutputAtEveryPost());
+        int firstShort = -1;
+        for (int month = 0; month <= peak; month++)
+            if (nativeUnserved(g, dates.openBy(month), month) > 0) { firstShort = month; break; }
+        check(String.format("new physical premise at absolute month %d: first native shortage +%d, wind +%d has %.0f unserved kWh; coal +%.3f opens before next peak +%d",
+                        g.getMonth(), firstShort, opening, nativeUnserved(g, dates.openBy(opening), opening), coalFirst, peak),
+                nativeUnserved(g, Map.of(), 0) == 0 && firstShort > 0 && opening < coalFirst && coalFirst <= peak
+                        && nativeUnserved(g, dates.openBy(opening), opening) > 0 && dates.openBy(peak).getOrDefault(coal, 0L) == 1);
+        BuildAdvice.Suggestion card = BuildAdvice.suggestFor(g, null, power, g.getCash(), g.getLandManager().getAvailableSqFt(), ab.getSlack());
+        double withWind = card == null ? Double.NaN
+                : nativeUnserved(g, BuildAdvice.plus(dates.openBy(opening), wind, card.count()), opening);
+        check(String.format("ordinary native wind plan closes before coal: %s %d at +%.1f; native unserved %.9f, planner fill %.4f/native %.4f",
+                        card == null ? "none" : card.template().getName(), card == null ? 0 : card.count(), card == null ? Double.NaN : card.lead(),
+                        withWind, BuildAdvice.staffing(wind, g.getPopulationManager().getJobFillRate()), u.plantFill(wind)),
+                card != null && card.template() == wind && card.closes() && card.lead() < coalFirst
+                        && withWind == 0
+                        && card.value().used() > 0 && card.value().avoided() > 0);
+        ab.setOn(true, null);
+        quietly(() -> ab.pass(g));
+        AutoBuilder.Step order = step(g, power);
+        check("the automatic path orders the closing wind before the forecast shortage becomes physical (" + order + ")",
+                card != null && order != null && order.ordered() == card.count() && wind.getName().equals(order.building()));
+        Double due = ab.toState().pendingUntil.get(power.label());
+        double firstWind = bm.siteUnitMonths(wind, 1, g.getBuildingOutputAtEveryPost());
+        check("the earlier wind's native opening advances the saved pending deadline ahead of coal",
+                due != null && due <= g.getMonth() + Math.ceil(firstWind) && due < g.getMonth() + Math.ceil(coalFirst));
     }
 
     static void waterAtCap(Path root) {
@@ -1128,10 +1269,16 @@ public final class EssentialWorksCheck {
                         ahead.getName(), aheadLead, firstDiesel),
                 aheadLead < firstDiesel && !BuildAdvice.maintained(g, power,
                         WorksValue.openBy(g, BuildAdvice.onSite(g, power), aheadLead), BuildAdvice.opening(g, aheadLead, ab.getSlack())));
-        int reloadAt = began + Math.max(1, (int) first / 2);
+        int oldCheckpoint = began + Math.max(1, (int) first / 2), reloadAt = oldCheckpoint;
+        var earlyOrders = new java.util.ArrayList<String>();
+        boolean[] early = {false}, late = {false};
+        installPendingProbe(g, power, began, first, oldCheckpoint, false, earlyOrders, early, late, new boolean[] {true});
         quietly(() -> g.simulateMonths(reloadAt - g.getMonth()));
-        check("the unbroken city reaches the mid-construction save month", g.getMonth() == reloadAt);
+        g.autoBuildProbeForTest = null;
+        check("the original city reaches its unchanged mid-construction save month", g.getMonth() == reloadAt);
         if (g.getMonth() != reloadAt) return;
+        check("the native additional Oil order precedes the original checkpoint (" + earlyOrders + ")",
+                early[0] && earlyOrders.stream().anyMatch(o -> o.split("\\|")[1].equals(power.label())));
         boolean[] saved = {false};
         quietly(() -> saved[0] = g.saveGame(10, "HW1 pending deadline twin").ok);
         GameFiles copied = new GameFiles(root.resolve("overdue-loaded"), root.resolve("overdue-loaded-no-legacy"));
@@ -1145,8 +1292,8 @@ public final class EssentialWorksCheck {
         Double savedDeadline = ab.toState().pendingUntil.get(power.label());
         var originalOrders = new java.util.ArrayList<String>();
         var loadedOrders = new java.util.ArrayList<String>();
-        boolean[] early = {false}, late = {false}, stayedShort = {true};
-        installPendingProbe(g, power, began, first, originalOrders, early, late, stayedShort);
+        boolean[] stayedShort = {true};
+        installPendingProbe(g, power, began, first, oldCheckpoint, true, originalOrders, new boolean[1], late, stayedShort);
         boolean advanced = true;
         int remaining = began + (int) first + 2 - g.getMonth();
         for (int i = 0; i < remaining; i++) {
@@ -1170,7 +1317,7 @@ public final class EssentialWorksCheck {
                 saved[0] && loaded.getLoadFailure() == null && loaded.getMonth() == reloadAt
                         && savedDeadline != null
                         && savedDeadline.equals(loaded.getAutoBuilder().toState().pendingUntil.get(power.label())));
-        installPendingProbe(loaded, power, began, first, loadedOrders, new boolean[1], new boolean[1], new boolean[] {true});
+        installPendingProbe(loaded, power, began, first, oldCheckpoint, true, loadedOrders, new boolean[1], new boolean[1], new boolean[] {true});
         for (int i = 0; i < remaining; i++) {
             int month = loaded.getMonth();
             quietly(() -> loaded.simulateMonths(1));
@@ -1183,32 +1330,71 @@ public final class EssentialWorksCheck {
         check("fixture: the later priority work finished nothing, so the repairs left the builders a site output at the last pass",
                 bm.getStack(later).getQuantity() == 0 && bm.getStack(later).getUnderConstruction() == 1
                         && g.getBuildingOutputAtEveryPost() > 0);
-        check("monthly passes respect the original pending deadline before it expires (began " + began + ", first " + first
-                + ", orders " + originalOrders + ")", !early[0]);
-        check("past that deadline the automatic path orders more power despite the pending diesel", late[0]);
+        check("the persistent post-checkpoint industrial load causes a further real power order (" + originalOrders + ")",
+                originalOrders.stream().anyMatch(o -> o.split("\\|")[1].equals(power.label())));
         check("...and the plant it orders is the one that opens before the diesels (" + ahead.getName() + ": " + originalOrders + ")",
-                late[0] && originalOrders.stream().map(o -> o.split("\\|"))
+                !originalOrders.isEmpty() && originalOrders.stream().map(o -> o.split("\\|"))
                         .filter(o -> o[1].equals(power.label())).allMatch(o -> o[2].equals(ahead.getName())));
         check("the real loaded city and its unbroken twin place the same later automatic orders, one by one ("
                         + originalOrders + " against " + loadedOrders + ")",
                 !originalOrders.isEmpty() && originalOrders.equals(loadedOrders));
     }
 
-    static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first,
+    static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first, int oldCheckpoint, boolean postNeed,
             java.util.List<String> orders, boolean[] early, boolean[] late, boolean[] stayedShort) {
         g.autoBuildProbeForTest = after -> {
             if (!after) {
+                if (g.getMonth() < oldCheckpoint) return;
+                if (postNeed && g.getMonth() == oldCheckpoint + 1) {
+                    BuildingManager bm = g.getBuildingManager();
+                    BuildingsTemplate mill = bm.getTemplate(ham.citybuildersim.sectors.HeavyIndustry.LARGE_MINI_MILL);
+                    quietly(() -> g.buildStack(mill, 1, false));
+                    bm.getControl().setOrder(java.util.List.of(ConstructionControl.keyOf(mill),
+                            ConstructionControl.keyOf(bm.getTemplateByName("Oil-Fired Plant")),
+                            ConstructionControl.keyOf(bm.getTemplateByName("Container Terminal")),
+                            ConstructionControl.keyOf(bm.getTemplateByName("Diesel Station"))));
+                    PowerPlanCheck.dueIn(g, mill, first + 2);
+                    double loadAt = Math.ceil(bm.siteUnitMonths(mill, 1, g.getBuildingOutputAtEveryPost()));
+                    check(String.format("new persistent native industrial need at m%d: mill opens +%.0f, adds %.0f kW; no load the month before",
+                                    g.getMonth(), loadAt, WorksValue.pendingPowerLoad(g, loadAt)),
+                            loadAt > 0 && WorksValue.pendingPowerLoad(g, loadAt) > 0 && WorksValue.pendingPowerLoad(g, loadAt - 1) == 0);
+                }
                 UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
                 u.setWattsConsumption(u.getProduction() * 1.2);
                 long people = g.getPopulationManager().getPopulation();
                 g.getBusinessInvestment().restorePopulationHistory(java.util.List.of(people, people));
                 return;
             }
-            stayedShort[0] &= !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW);
+            if (g.getMonth() >= oldCheckpoint)
+                stayedShort[0] &= !BuildAdvice.maintained(g, power, Map.of(), BuildAdvice.NOW);
+            if (g.getMonth() == oldCheckpoint) {
+                BuildingsTemplate oil = g.getBuildingManager().getTemplateByName("Oil-Fired Plant");
+                BuildingsTemplate diesel = g.getBuildingManager().getTemplateByName("Diesel Station");
+                Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, power);
+                WorksValue.PowerDates dates = new WorksValue.PowerDates(g, site);
+                int peak = dates.nextPeak(g.quoteBuild(oil, 1).months);
+                Map<BuildingsTemplate, Long> opened = dates.openBy(peak);
+                BuildAdvice.Ahead at = new BuildAdvice.Ahead(peak, g.getBusinessInvestment().growthFactor(peak), g.getAutoBuilder().getSlack());
+                double[] sd = BuildAdvice.supplyDemand(g, power, opened, at);
+                AutoBuilder.Step order = step(g, power);
+                check(String.format("original checkpoint m%d: Oil %d/Diesel %d pending; peak +%d counts Oil %d/Diesel %d, supply %.0f >= reserve %.0f, no extra order",
+                                g.getMonth(), site.getOrDefault(oil, 0L), site.getOrDefault(diesel, 0L), peak,
+                                opened.getOrDefault(oil, 0L), opened.getOrDefault(diesel, 0L), sd[0], sd[1]),
+                        site.getOrDefault(oil, 0L) > 1 && opened.getOrDefault(oil, 0L).equals(site.get(oil))
+                                && opened.getOrDefault(diesel, 0L) == 0 && sd[0] >= sd[1]
+                                && (order == null || order.ordered() == 0));
+            }
             for (AutoBuilder.Step order : g.getAutoBuilder().steps()) if (order.ordered() > 0) {
                 orders.add(g.getMonth() + "|" + order.measure().label() + "|" + order.building() + "|" + order.wanted()
                         + "|" + order.ordered() + "|" + order.cut());
                 if (!order.measure().equals(power)) continue;
+                BuildingsTemplate t = g.getBuildingManager().getTemplateByName(order.building());
+                double own = g.getBuildingManager().siteUnitMonths(t,
+                        g.getBuildingManager().getStack(t).getUnderConstruction(), g.getBuildingOutputAtEveryPost());
+                BuildingsTemplate diesel = g.getBuildingManager().getTemplateByName("Diesel Station");
+                double pending = g.getBuildingManager().siteUnitMonths(diesel, 1, g.getBuildingOutputAtEveryPost());
+                check(String.format("native added power at m%d: %d %s; last Oil opens +%.3f, first pending Diesel +%.3f",
+                                g.getMonth(), order.ordered(), order.building(), own, pending), own < pending);
                 if (g.getMonth() <= began + first) early[0] = true;
                 else late[0] = true;
             }
@@ -1236,6 +1422,7 @@ public final class EssentialWorksCheck {
         adviceParity(root);
         overduePending(root);
         interimPower(root);
+        earlyWind(root);
         waterAtCap(root);
         queuedPower(root);
         shortPowerBenefit(root);

@@ -6415,6 +6415,7 @@ public class LongPlaytest {
             if (passiveObserver != null) passiveObserver.accept(g, false);
             traceMonth(g);
             traceGroundMonth(g);
+            if (monthObserved != null) monthObserved.accept(g);
         }
     }
 
@@ -6961,6 +6962,9 @@ public class LongPlaytest {
     /** The copper works the summary counts at the end (CU2), by their names in buildings.json; CopperRefiningCheck's played count reads the line. */
     static final String[] COPPER_WORKS = {"Copper Smelter", "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mill", "Wire & Cable Works"};
 
+    /** Optional primary-state observers (QR1): founding baseline, then audited months; null in the normal harness. */
+    static java.util.function.Consumer<Game> primaryCreated, monthObserved;
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -6980,6 +6984,7 @@ public class LongPlaytest {
         // On the flag's preset (0.7.10): Standard when unset. See THE FOUNDING, AS A CHOICE.
         // ...and on the real Earth under --earth (0.7.121): ON THE REAL EARTH.
         Game g = new Game(files, played(EARTH));
+        if (primaryCreated != null) primaryCreated.accept(g);
         if (OWNERS != null) g.getHouseholdBalance().setOwnerLine(OWNERS);
         retirementWatch = new RetirementWatch();
         landLedgerMonths = landLedgerDiffMonths = landLedgerWorstMonth = 0;
@@ -6991,6 +6996,7 @@ public class LongPlaytest {
         System.setOut(quiet);
         try {
             g.run();
+            if (monthObserved != null) monthObserved.accept(g);
             /*
              * THE DIAL'S HAND AND THE ROLLOVER, STATED (0.7.13). A new game
              * founds on the autopilot and rolls what falls due in the same
@@ -7221,6 +7227,7 @@ public class LongPlaytest {
                 // run happens to be in.
                 if (stop % 7 == 0) {
                     roundTrip(g, files, slot);
+                    if (primaryCreated != null) primaryCreated.accept(g);
                     slot = (slot % 9) + 1;
                 }
 

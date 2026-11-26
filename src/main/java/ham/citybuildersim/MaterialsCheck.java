@@ -521,9 +521,9 @@ public class MaterialsCheck {
         assertTrue("...and in its operating income, every cost taken off the revenue it is in",
                 st.operatingIncome == st.revenue - st.inputs - st.payroll - st.electricity - st.water - st.maintenance);
         double allNet = b.getTotalDouble(BuildingsTemplate::powerBought), allSold = b.getTotalDouble(BuildingsTemplate::powerSold);
-        // PW3 (PW1-P's fifth gap): what the grid generates is the founding grid at the pooled utility fill (whole at none) and each plant
+        // PW9: what the grid generates is its jobless founding endowment and each plant
         // standing at its own posts' fill (a hydro station at its water), as updateEnergyRatio() offers them; the works' surplus on top.
-        double fill = u.getAverageUtilityFill(), generated = u.getFoundingGridKw() * (fill == 0 ? 1 : fill);
+        double generated = u.getFoundingGridKw();
         for (BuildingsTemplate p : b.getTemplates()) {
             long n = p.getCategory() != BuildingType.ELECTRICITY || Substations.isSubstation(p) ? 0 : b.getQuantity(p.getId());
             if (n > 0) generated += p.getProduction1() * n * (p.isHydro() ? (u.plantFill(p) > 0 ? 1 : 0) : u.plantFill(p));

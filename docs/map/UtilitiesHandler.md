@@ -1,4 +1,4 @@
-# UtilitiesHandler.java - 1,449 lines · 133 methods · 9 constants · model
+# UtilitiesHandler.java - 1,448 lines · 133 methods · 9 constants · model
 
 `ham/citybuildersim/UtilitiesHandler.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -19,9 +19,9 @@
 | 343 | THE POWER THE WORKS MAKE (0.7.112, batch I2; |
 | 479 | THE MERIT ORDER (PW1, 2026-11-11; spec-electricity 2.2, 2.6; Jerus's Q1: "Market price") |
 | 544 | · THE WATER'S POWER (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price") |
-| 1316 | · · ELECTRIC POWER |
-| 1347 | · · WATER |
-| 1388 | · · CONSOLIDATED |
+| 1315 | · · ELECTRIC POWER |
+| 1346 | · · WATER |
+| 1387 | · · CONSOLIDATED |
 
 ## Constants
 
@@ -35,7 +35,7 @@
 | 513 | `UtilitiesHandler.WORKS_ROW` | `"works", GRID_ROW = "grid"` |  |
 | 571 | `UtilitiesHandler.SEA_MARGIN_SHARE` | `.5` | The share of the sea works' output at the fill the sea must deliver to be the water's margin alone: at it or past it the sea's water pays their power, under it their power is spread over the water served, over no more... |
 | 622 | `UtilitiesHandler.WORKS_ID` | `- 1, GRID_ID = - 2, FIXTURE_ID = - 3` | Reserved aggregate row ids; catalogue rows keep their permanent nonnegative ids. |
-| 1415 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
+| 1414 | `UtilitiesHandler.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` | miscelanous |
 
 ## Fields (state)
 
@@ -119,13 +119,13 @@
 | 908 | `public double waterTariff` | The held tariff in local money per water unit, excluding the struck power charge. |
 | 909 | `public WaterDraw pendingWater` |  |
 | 926 | `private boolean seedOnLoad` | True from a load whose save carried no struck book until seedLoadedRatio() has given the founding book the ratio the load computed. |
-| 1309 | `private boolean fillRatesGiven` | Whether the city's fill rates by job have been handed in (updateJobFillRate()): until they are, every plant runs at the pooled fill. |
+| 1308 | `private boolean fillRatesGiven` | Whether the city's fill rates by job have been handed in (updateJobFillRate()): until they are, every plant runs at the pooled fill. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 23 | 1427 | **type** `public class UtilitiesHandler` |  |
+| 23 | 1426 | **type** `public class UtilitiesHandler` |  |
 
 ### WATER SUPPLY (lines 38-101)
 
@@ -215,7 +215,7 @@
 |---:|---:|---|---|
 | 542 | 1 | `public void setGridCostSource(Supplier<Substations.Costs> source)` | Real city grid costs; a bare dispatch fixture without a city keeps its unconstrained wires. |
 
-### THE WATER'S POWER (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price") (lines 544-1449)
+### THE WATER'S POWER (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price") (lines 544-1448)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -289,17 +289,17 @@
 | 1017 | 3 | `public void setBilledWaterDraw(double water)` | The commercial + industrial slice, i.e. the part with a paying customer. |
 | 1026 | 3 | `public void setPopulation(long population)` | The people. |
 | 1030 | 3 | `public void setPricePerWaterUnit(double price)` |  |
-| 1040 | 54 | `public void updateEnergyRatio()` | The month dispatched (PW1, THE MERIT ORDER): the rows the city's plants make, run against the grid's draw by PowerDispatch; energyRatio is the energy served over the energy asked, and production the power offered, as ... |
-| 1101 | 16 | `private PowerDispatch.Row rowFor(BuildingsTemplate t, long n, double extraKw, double fill, int month)` | The row n of a template make at this staffing, their output at nameplate moved by extraKw (0: the row the month runs, to the bit). |
-| 1119 | 3 | `public double runningPerKwh(BuildingsTemplate t)` | What a kWh a plant runs costs this month, city money: a fuelled row's marginalOf(), a station's variable upkeep at the exchange rate (its water is free), a wind or solar farm's nothing. |
-| 1124 | 4 | `public double marginalOf(BuildingsTemplate t)` | What a kWh of a fuelled plant costs to run this month, city money: its fuel at the city's price and its variable upkeep at the exchange rate; 0 for a row that burns nothing. |
-| 1136 | 27 | `public double deliveredWith(BuildingsTemplate t, double moveKw)` | The kW the grid delivers its customers with one template's output at nameplate moved by moveKw (PW1-L): the month's dispatch run again on the rows it ran, at the same draw, season, cap price and wires, that template's... |
-| 1170 | 27 | `public double yearRunning(Map<BuildingsTemplate, Long> added)` | What the city's power costs to run for a year at today's draw with these plants added (PW3, the planner's spread): the twelve calendar months dispatched on the plants standing plus `added`, each month's load, wind, su... |
-| 1198 | 35 | `public void updateWaterRatio()` |  |
-| 1238 | 3 | `public double getUtilityIncome()` | Both utilities consolidated. |
-| 1249 | 52 | `public void updateUtilitiyWages(double[] wages, long[] electricityJobs, long[] waterJobs)` | NOTE: this now takes the electricity and water job arrays separately rather than one combined array. |
-| 1302 | 5 | `public void updateJobFillRate(double[] fillRate)` |  |
-| 1312 | 101 | `public void printUtilitiesInfo()` | printers |
-| 1417 | 4 | `static { ... }` |  |
-| 1424 | 24 | `public void redenominate(double scale)` | The utilities' prices and this month's bills, in the new unit. |
+| 1040 | 53 | `public void updateEnergyRatio()` | The month dispatched (PW1, THE MERIT ORDER): the rows the city's plants make, run against the grid's draw by PowerDispatch; energyRatio is the energy served over the energy asked, and production the power offered, as ... |
+| 1100 | 16 | `private PowerDispatch.Row rowFor(BuildingsTemplate t, long n, double extraKw, double fill, int month)` | The row n of a template make at this staffing, their output at nameplate moved by extraKw (0: the row the month runs, to the bit). |
+| 1118 | 3 | `public double runningPerKwh(BuildingsTemplate t)` | What a kWh a plant runs costs this month, city money: a fuelled row's marginalOf(), a station's variable upkeep at the exchange rate (its water is free), a wind or solar farm's nothing. |
+| 1123 | 4 | `public double marginalOf(BuildingsTemplate t)` | What a kWh of a fuelled plant costs to run this month, city money: its fuel at the city's price and its variable upkeep at the exchange rate; 0 for a row that burns nothing. |
+| 1135 | 27 | `public double deliveredWith(BuildingsTemplate t, double moveKw)` | The kW the grid delivers its customers with one template's output at nameplate moved by moveKw (PW1-L): the month's dispatch run again on the rows it ran, at the same draw, season, cap price and wires, that template's... |
+| 1169 | 27 | `public double yearRunning(Map<BuildingsTemplate, Long> added)` | What the city's power costs to run for a year at today's draw with these plants added (PW3, the planner's spread): the twelve calendar months dispatched on the plants standing plus `added`, each month's load, wind, su... |
+| 1197 | 35 | `public void updateWaterRatio()` |  |
+| 1237 | 3 | `public double getUtilityIncome()` | Both utilities consolidated. |
+| 1248 | 52 | `public void updateUtilitiyWages(double[] wages, long[] electricityJobs, long[] waterJobs)` | NOTE: this now takes the electricity and water job arrays separately rather than one combined array. |
+| 1301 | 5 | `public void updateJobFillRate(double[] fillRate)` |  |
+| 1311 | 101 | `public void printUtilitiesInfo()` | printers |
+| 1416 | 4 | `static { ... }` |  |
+| 1423 | 24 | `public void redenominate(double scale)` | The utilities' prices and this month's bills, in the new unit. |
 

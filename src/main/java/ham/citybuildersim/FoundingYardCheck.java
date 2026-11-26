@@ -464,9 +464,14 @@ public class FoundingYardCheck {
         double nameplate = bm.getTotalConstructionCapacity();
         BusinessInvestment bi = new BusinessInvestment(bm, g.getEconomyManager());
         int months = Math.max(BusinessInvestment.RETIREMENT_LOSS_MONTHS, BusinessInvestment.DISTRESS_LOSS_MONTHS);
-        for (int i = 0; i < months; i++) bi.recordSectorResult(builders.key(), -1);
-        assertTrue("fixture: the builders have lost money for " + months + " months and stand one yard, no depot",
-                bi.getLossMonths(builders.key()) >= months && bm.countByName(YARD) == 1 && bm.countByName(DEPOT) == 0);
+        builders.statement().operatingIncome = -1;
+        for (int i = 0; i < months; i++) {
+            bi.recordSectorResult(builders.key(), -1);
+            bi.recordOperatingResult(builders);
+        }
+        assertTrue("fixture: the builders have lost on operations and in net for " + months + " months and stand one yard, no depot",
+                bi.getLossMonths(builders.key()) >= months && bi.getOperatingLossMonths(builders.key()) >= months
+                        && bm.countByName(YARD) == 1 && bm.countByName(DEPOT) == 0);
 
         BusinessInvestment.Decision spare = bi.planRetirement(builders, 0, nameplate, 0);
         assertTrue("the spare-capacity rule does not sell the yard, though nothing uses it", !spare.build);

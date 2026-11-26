@@ -806,6 +806,16 @@ public class BuildingsTemplate {
        chooses none; R2b gates a 1900 city's orders by knownAt(). */
     private int since;
     private String sinceText = "";
+    // PW9, REV-PW9 P1-b: an obsolete station remains in service, but the catalogue stops taking new orders.
+    private int until;
+
+    /** Last calendar year for new orders, inclusive; zero means no end. Standing and pending units keep operating. */
+    public BuildingsTemplate setUntil(int year) { until = Math.max(0, year); return this; }
+
+    public int getUntil() { return until; }
+
+    /** Whether new orders remain available at this date, independent of when the technology was discovered. */
+    public boolean offeredAt(int gameMonth) { return until == 0 || CityCalendar.yearOf(gameMonth) <= until; }
 
     /** Dates this building by a year: the year it first existed, the start year (1900) for one that stood before it; 0 or less is undated. */
     public BuildingsTemplate setSince(int year) {
@@ -836,17 +846,18 @@ public class BuildingsTemplate {
     /** What the row says, as written: "" undated, "1902" a year, "PE4" a catalogue code. */
     public String getSinceText() { return sinceText; }
 
-    /** Whether it is known at a game month (month 1 = January 1900): an undated row always; a dated one from the month its year or its code's entry gives (ResearchCatalog.knownFrom()). */
+    /** Whether the catalogue offers it at a game month (month 1 = January 1900): from its year/code's month through its last order year, if any. */
     public boolean knownAt(int gameMonth) {
-        return sinceText.isEmpty() || gameMonth >= ResearchCatalog.knownFrom(sinceText);
+        return offeredAt(gameMonth) && (sinceText.isEmpty() || gameMonth >= ResearchCatalog.knownFrom(sinceText));
     }
 
     /**
      * Whether it is known at a game month in a city whose research may have found its code first (R3): knownAt(int), or from the month the city
-     * found the code (Research.knownFrom()). No research reads history's; an undated row is always known and a year is never found.
+     * found the code (Research.knownFrom()), while it remains offered. No research reads history's; a year is never found.
      */
     public boolean knownAt(int gameMonth, Research found) {
-        return found == null ? knownAt(gameMonth) : sinceText.isEmpty() || gameMonth >= found.knownFrom(sinceText);
+        return offeredAt(gameMonth) && (found == null ? knownAt(gameMonth)
+                : sinceText.isEmpty() || gameMonth >= found.knownFrom(sinceText));
     }
 
     /* ----- THE RAW COAL A PREPARATION PLANT WASHES (0.7.126, batch I6; docs/studies/spec-materials.md 2.5, 2.10) -----

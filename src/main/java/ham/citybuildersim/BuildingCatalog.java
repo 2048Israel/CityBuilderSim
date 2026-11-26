@@ -236,6 +236,8 @@ public class BuildingCatalog {
                 .setConsumables(number(o, "consumables"))
                 // ...and when it first existed (0.7.123; R2): a year or a research.json code, absent undated.
                 .setSince(sinceText(o))
+                // PW9: last year for a new order, inclusive; absence leaves the row available indefinitely.
+                .setUntil((int) number(o, "until"))
                 // ...and the raw coal a preparation plant washes, t a month (0.7.126): absent, none.
                 .setWash(number(o, "wash"))
                 // ...and a power row's figures for the merit order (PW1; spec-electricity 2.3, 2.5): absent, none.

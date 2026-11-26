@@ -1043,19 +1043,16 @@ public final class NewUnitCheck {
             posts += actual.jobs[j.ordinal()];
             filled += actual.jobs[j.ordinal()] * fill[j.ordinal()];
         }
-        double fill1 = (fill0 * jobs0 + filled) / (jobs0 + posts);
         // PW1, 2026-11-20: power is planned for the peak, the draw x the peak's factor over the FIRM supply; PW3: the year's peak hour
-        // (PowerDispatch.PLAN_PEAK_HOUR), and the firm supply the founding grid at the pooled fill with each plant at its own posts'
-        // fill (BuildAdvice.firmFill()). So the advice's own supply and demand today (BuildAdvice.supplyDemand()) give the firm supply and
-        // the peak hour's draw; the added plant's posts move the grid's pool from fill0 to fill1, it adds its generation at its own posts'
-        // fill (a Coal Power Plant: credit 1, its generation all firm), and its draw counts at the peak hour as the city's does.
+        // (PowerDispatch.PLAN_PEAK_HOUR), each plant at its own posts' fill (BuildAdvice.firmFill()). PW9 keeps the jobless founding
+        // endowment fixed. A new plant adds its resolved generation at its own fill (coal's credit 1), and its draw counts at the peak.
         double[] today = BuildAdvice.supplyDemand(g, power, Map.of());
         double demand0 = today[1], own = posts > 0 ? filled / posts : 1;
-        double firm = today[0] + u.getFoundingGridKw() * (fill1 - fill0);
+        double firm = today[0];
         double expected = (demand0 + PowerDispatch.PLAN_PEAK_HOUR * actual.electricity) / (firm + actual.production1 * own);
         double fleetReading = (demand0 + PowerDispatch.PLAN_PEAK_HOUR * fleet.electricity) / (firm + fleet.production1 * own);
         check("fixture: the utilities have posts and a fill, and a base to supply from",
-                jobs0 > 0 && fill0 > 0 && base > 0 && f0 > 0 && posts > 0, "jobs " + jobs0 + ", fill " + fill0 + " -> " + fill1 + ", base " + base + ", figure " + f0);
+                jobs0 > 0 && fill0 > 0 && base > 0 && f0 > 0 && posts > 0, "jobs " + jobs0 + ", fill " + fill0 + ", new plant " + own + ", base " + base + ", figure " + f0);
         check("premise: the fleet's generation would read a different figure than the actual new plant's",
                 apart(expected, fleetReading), "expected " + expected + ", fleet " + fleetReading);
         check("the power measure reads the actual new plant's generation (and its draw)",

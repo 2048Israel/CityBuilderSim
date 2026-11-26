@@ -458,6 +458,38 @@ public final class WorksValue {
         return completedAt(g, completionSchedule(g, site), Double.isFinite(months) ? Math.max(0, months) : 0);
     }
 
+    /** Read-only generation schedule and native monthly planning dates; pending loads retain their existing held reader. */
+    static final class PowerDates {
+        private final Game game;
+        private final Map<BuildingsTemplate, PendingWork> generation;
+        PowerDates(Game game, Map<BuildingsTemplate, Long> site) {
+            this.game = game;
+            generation = completionSchedule(game, site);
+        }
+
+        Map<BuildingsTemplate, Long> openBy(double months) {
+            return completedAt(game, generation, Double.isFinite(months) ? Math.max(0, months) : 0);
+        }
+
+        /** The next native highest-load calendar month at or after this monthly commissioning. */
+        int nextPeak(double from) {
+            int first = (int) Math.ceil(from), best = first;
+            double latitude = game.getServicesManager().getUtilitiesHandler().latitude();
+            for (int month = first + 1; month < first + 12; month++)
+                if (PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth() + month), latitude)
+                        > PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth() + best), latitude)) best = month;
+            return best;
+        }
+
+        /** Construction runs before dispatch: both generation and new load use the same completed whole month. */
+        java.util.SortedSet<Double> frontier(double from) {
+            java.util.SortedSet<Double> dates = new java.util.TreeSet<>();
+            int first = (int) Math.ceil(from), peak = nextPeak(from);
+            for (int month = first; month <= peak; month++) dates.add((double) month);
+            return dates;
+        }
+    }
+
     /** Quote-completed units at this date. Priority delay precedes the first unit in full. */
     private static Map<BuildingsTemplate, Long> completedAt(Game g,
             Map<BuildingsTemplate, PendingWork> schedule, double months) {

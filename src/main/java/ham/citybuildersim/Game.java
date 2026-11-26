@@ -307,11 +307,11 @@ public class Game {
         // ...a city founded the default way knows every building but the near future's (R6b's call 1: ResearchCatalog.NEAR_FUTURE), and since
         // PW2 every power plant from the year it was first built, in every city (spec-electricity 2.9, Jerus's Q2, 2026-11-02: "the rec, later
         // research will change this"): a 1900 city builds coal and hydro, as 1900 did.
-        buildingManager.setTemplateKnown(t -> foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY ? knows(t)
-                : !ResearchCatalog.nearFuture(t.getSinceText()));
+        buildingManager.setTemplateKnown(t -> t.offeredAt(month) && (foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY ? knows(t)
+                : !ResearchCatalog.nearFuture(t.getSinceText())));
         // ...and the same calendar ahead, for the power planner's need date (PW3: a plant the menu brings in time is one it can weigh).
-        buildingManager.setTemplateKnownIn((t, months) -> foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY
-                ? t.knownAt(month + months, research) : !ResearchCatalog.nearFuture(t.getSinceText()));
+        buildingManager.setTemplateKnownIn((t, months) -> t.offeredAt(month + months) && (foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY
+                ? t.knownAt(month + months, research) : !ResearchCatalog.nearFuture(t.getSinceText())));
         economyManager = new EconomyManager(buildingManager);
         householdBalance.setInvestmentTaxes(economyManager.getTaxPolicy(), c -> getExchange().price(c), this::receiveInvestmentTax);
         householdBalance.attachInvestmentRegister(equity, c -> getExchange().shortShares(c));
@@ -6907,6 +6907,8 @@ public class Game {
             return 0;
         }
         Sector closing = getSectors().byKey(decision.sector);
+        double runningIncome = closing == null ? Double.NaN : closing.statement().operatingIncome
+                - closing.statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0);
         if (closing != null) closing.writeOffUnhousedStock();
         // ...its steel to the city's old steel, its owner's to sell (0.7.123; OldMetal).
         oldMetal.demolished(decision.template, scrapped, decision.sector);
@@ -6936,6 +6938,8 @@ public class Game {
         double repaid = credit.settleRetirement(decision.sector, available, empty,
                 closing == null ? 0 : closing.retirementRecovery());
         economyManager.setSectorCash(decision.sector, seller.getCash() - repaid);
+        if (retirementWatch != null) retirementWatch.accept(new Retirement(decision.sector, scrapped,
+                distress, proceeds, material, runningIncome));
 
         lastInvestment.put(decision.sector,
                 String.format("Scrapped %,d %s - %s%s%s",
@@ -8287,6 +8291,12 @@ public class Game {
      */
     public record Salvage(String seller, String building, long buildings, double units,
                           double price, double paid, double unitsBought, boolean distress) { }
+
+    /** Actual retirement receipts before debt repayment, including plant with no saleable material (QR1); observed as paid, not reconstructed from closing cash. */
+    public record Retirement(String sector, long buildings, boolean distress, double plotPaid, double materialPaid, double runningIncome) { }
+    private transient java.util.function.Consumer<Retirement> retirementWatch;
+    /** A run's observer, not saved state: receives each completed retirement once, including zero receipts (QR1). */
+    public void watchRetirements(java.util.function.Consumer<Retirement> watch) { retirementWatch = watch; }
 
     private final java.util.List<Salvage> salvageThisMonth = new java.util.ArrayList<>();
     private final java.util.Map<String, Double> salvageBySector = new java.util.LinkedHashMap<>();
