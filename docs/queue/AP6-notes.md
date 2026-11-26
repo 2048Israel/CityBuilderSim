@@ -24,7 +24,7 @@ not AP5's earlier absolute figures. Full figures and after measurements follow b
   They depend on farms' horses and autonomous machines, independently of `POSTS_EDITS`.
   Each new call reads them live; every type retains the original integer arithmetic.
 - ★ Reuse AP5's raw integer post sums and ordered sector grouping across the month.
-  `BuildingManager` holds one `HeldPosts` per reading thread outside `WorksValue`'s
+  `BuildingManager` owns one transient, volatile `HeldPosts` outside `WorksValue`'s
   pass, keyed on AP5's atomic `POSTS_EDITS`; the pass keeps its own cache and counters.
   `getSectorStacks` exposes immutable lists of live stack references. A group survives
   a month boundary when its inputs have not moved. Each quantity and template getter
@@ -32,6 +32,12 @@ not AP5's earlier absolute figures. Full figures and after measurements follow b
   shares, posts past and instances also remain live; no new floating sum is retained.
   `WorksValue.bareWhile` bypasses every held raw-post/group reading, including nested
   bare readings. The harness warms both reading threads before a writer hands off.
+- ★ Publish the completed, unmodified raw-post/group value through `volatile`,
+  owned by the building manager. A per-manager `ThreadLocal` could retain a
+  discarded city through its stack callbacks and the thread's value map. Owning
+  the value in the manager avoids that retention; no raw getter depends on a
+  reading thread's NewUnit/LicenceFees context (audited below). This is a threading
+  change for the orchestrator's stranger review, alongside the bond money change.
 - The bond mechanism was diagnosed by a MemWatch helper (read-only, 15-line report).
   It found one sorted holdings-map fold per settlement, and recommended a narrow
   posting scope rather than a persistent money cache. A second helper implements that
@@ -59,6 +65,12 @@ not AP5's earlier absolute figures. Full figures and after measurements follow b
   those paths. Dynamic new-unit pricing revisits fees and recipes, not a fixed
   figure that can be lifted over investment orders. The full offline report/source
   is kept under `codex-AP6-bonds/target/AP6-investment/` and copied into the evidence.
+- A read-only helper audited the longer cache lifetime against every writer and
+  getter context; no missing invalidator was found. It caught the new load fixture
+  reading an old manager: `loadGameSave` replaces it. The warmed same-manager case
+  now uses initialized `loadGame`; separate `loadGameSave` and `newGame` cases read
+  the replacement manager's held figures against its own bare ones. This causes
+  both real load paths instead of assuming they share a manager.
 
 ## 3. Checks, mutations, and trace
 

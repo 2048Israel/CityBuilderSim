@@ -380,7 +380,7 @@ public final class WorksValue {
 
         private Scope(Game game) { this.game = game; }
 
-        /** Closes it at its outermost close: nothing is held after. */
+        /** Closes the outermost valuation scope: its loads and labour readings are no longer used. */
         @Override public void close() {
             if (--depth == 0 && HELD.get() == this) HELD.remove();
         }
@@ -476,7 +476,7 @@ public final class WorksValue {
         return held;
     }
 
-    /** A reading taken as no scope were open on this thread (AP5: the bare figure a held one is compared with); the scope is open again after. */
+    /** An original walk without held figures or groups (AP5/AP6); restores the scope and bare mode even on failure. */
     static <T> T bareWhile(java.util.function.Supplier<T> reading) {
         Scope open = HELD.get();
         boolean wasBare = bareReading();

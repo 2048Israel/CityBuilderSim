@@ -86,7 +86,7 @@
 |---:|---:|---|---|
 | 368 | 20 | **type** `public static final class Scope implements AutoCloseable` | One open scope: the city it is for, how deep it is opened, the stamp its loads were built at, and the loads. |
 | 381 | 1 | `private Scope(Game game)` _(in WorksValue.Scope)_ |  |
-| 384 | 3 | `public void close()` _(in WorksValue.Scope)_ | Closes it at its outermost close: nothing is held after. |
+| 384 | 3 | `public void close()` _(in WorksValue.Scope)_ | Closes the outermost valuation scope: its loads and labour readings are no longer used. |
 | 390 | 1 | **type** `private record Loads(Map<BuildingsTemplate, PendingWork> schedule, Map<BuildingsTemplate, Double> draws)` | The schedule of the non-power works on site and each one's new unit's draw, built together. |
 | 396 | 1 | `static boolean bareReading()` | A harness's bare reading also bypasses sector groupings held outside a pass (AP6). |
 | 405 | 10 | `public static Scope hold(Game g)` | Opens a scope for this city on this thread, closed by try-with-resources. |
@@ -101,7 +101,7 @@
 | 452 | 7 | `static long[] compared(long[] held, java.util.function.Supplier<long[]> bare)` | A held figure against the bare one, when a harness has asked (labourChecked); returns the held one. |
 | 461 | 7 | `static long compared(long held, java.util.function.LongSupplier bare)` | ...one long. |
 | 470 | 8 | `static double compared(double held, java.util.function.DoubleSupplier bare)` | ...one double, to the bit. |
-| 480 | 12 | `static<T> T bareWhile(java.util.function.Supplier<T> reading)` | A reading taken as no scope were open on this thread (AP5: the bare figure a held one is compared with); the scope is open again after. |
+| 480 | 12 | `static<T> T bareWhile(java.util.function.Supplier<T> reading)` | An original walk without held figures or groups (AP5/AP6); restores the scope and bare mode even on failure. |
 | 497 | 16 | `private static Loads held(Game g)` | The held loads for this city, rebuilt when the site's stamp has moved; null when no scope for it is open, or inside a pricing that reads every template as it stands (NewUnit.of() reads the template there, not the new ... |
 | 515 | 4 | `private static Map<BuildingsTemplate, PendingWork> loadSchedule(Game g)` | The schedule of the non-power works on site, as it stands: built afresh, outside a scope. |
 | 520 | 1 | **type** `private record PendingWork(long units, double first, double interval, boolean rushed)` |  |

@@ -8233,21 +8233,23 @@ public class BuildingManager {
 
     /* ----- THE MONTH'S SECTOR WALKS (AP6, 2026-11-26)
        Private investment repeats the same raw-post maps outside a valuation pass. Keep AP5's raw sums and ordered
-       groups on the reading thread too, keyed on every stack/template/list edit. Offered shares, posts past the
+       groups between calls too, keyed on every stack/template/list edit. Offered shares, posts past the
        buildings, instances, quantities and template getters in sector totals remain live. No figure is regrouped
        or rounded differently. A grouping can survive a month boundary when none of its inputs moved. ----- */
-    private final ThreadLocal<HeldPosts> postsByThread = new ThreadLocal<>();
+    // Owned by the manager (not a thread's map, which could retain a discarded city through stack callbacks).
+    // The raw sums/groups are never written after construction; publish the complete value to other readers.
+    private transient volatile HeldPosts monthPosts;
 
-    /** The pass's posts, or this thread's outside it, rebuilt after an edit; null only for an explicit bare reading. */
+    /** The pass's posts, or the month's outside it, rebuilt after an edit; null only for an explicit bare reading. */
     private HeldPosts heldPosts() {
         if (WorksValue.bareReading()) return null;
         WorksValue.Scope s = WorksValue.heldFor(this);
         long at = POSTS_EDITS.get();
         if (s == null) {
-            HeldPosts held = postsByThread.get();
+            HeldPosts held = monthPosts;
             if (held == null || held.at != at) {
                 held = new HeldPosts(at, stacks);
-                postsByThread.set(held);
+                monthPosts = held;
             }
             return held;
         }
@@ -8481,15 +8483,10 @@ public class BuildingManager {
     /** Finished buildings only: quantity times the getter, over the sector's stacks. */
     public double totalBySector(String sector, ToDoubleFunction<BuildingsTemplate> getter) {
         if (WorksValue.bareReading()) return totalBySectorDrawn(sector, getter);
-        // A sector's stacks held for the auto-builder's pass (AP5, THE POSTS HELD FOR ONE PASS): the same stacks in the same order, read live.
-        HeldPosts held = heldPosts();
-        if (held != null) {
-            double total = 0;
-            List<BuildingsStacks> own = held.stacksOf.get(sector);
-            if (own != null) for (BuildingsStacks stack : own) total += stack.getQuantity() * getter.applyAsDouble(stack.getBuilding());
-            return WorksValue.compared(total, () -> totalBySector(sector, getter));
-        }
-        return totalBySectorDrawn(sector, getter);
+        double total = 0;
+        for (BuildingsStacks stack : getSectorStacks(sector))
+            total += stack.getQuantity() * getter.applyAsDouble(stack.getBuilding());
+        return WorksValue.compared(total, () -> totalBySectorDrawn(sector, getter));
     }
 
     /** The ungrouped sum, in the original list order (AP6): the bare figure held readings are checked against. */

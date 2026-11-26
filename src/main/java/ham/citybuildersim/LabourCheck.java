@@ -2036,7 +2036,7 @@ public class LabourCheck {
         reader.setDaemon(true);
         reader.start();
         try {
-            assertTrue("fixture: the second reading thread warmed its own raw-post cache", warmed.await(10, java.util.concurrent.TimeUnit.SECONDS));
+            assertTrue("fixture: the second reading thread warmed the raw-post cache", warmed.await(10, java.util.concurrent.TimeUnit.SECONDS));
             shop.setJobs(moved, was + HELD_RECIPE_HANDS);
             changed.countDown();
             reader.join(10_000);
@@ -2074,11 +2074,30 @@ public class LabourCheck {
         sectorMoved("orderStacks reverses the rounding-sensitive sum", bm, sectors, weight, () -> bm.orderStacks(reverse));
         quietly(() -> g.saveGame(10));
         sectorMoved("clearStacks removes the warmed groups", bm, sectors, weight, bm::clearStacks);
-        sectorMoved("a load restores the stacks", bm, sectors, weight, () -> quietly(() -> g.loadGameSave(10)));
+        sectorMoved("an initialized load restores the stacks", bm, sectors, weight, () -> quietly(() -> g.loadGame(10)));
         assertTrue("fixture: the saved scratch city loaded into the same manager", g.getLoadFailure() == null && bm == g.getBuildingManager());
+        long[] beforeInstance = bm.getTotalJobs();
+        BuildingsTemplate instance = t(g, "Small Grocery Store");
+        bm.addInstance(instance);
+        long[] afterInstance = bm.getTotalJobs();
+        boolean instanceLive = true;
+        for (JobType type : JobType.values())
+            if (afterInstance[type.ordinal()] - beforeInstance[type.ordinal()] != instance.getJobs(type)) instanceLive = false;
+        assertTrue("an instance added after warming is read live in every jobs entry", instanceLive
+                && java.util.Arrays.equals(afterInstance, WorksValue.bareWhile(bm::getTotalJobs)));
         boolean immutable = false;
         try { bm.getSectorStacks(house.getSector()).clear(); } catch (UnsupportedOperationException expected) { immutable = true; }
         assertTrue("the returned grouping cannot be edited by a caller", immutable);
+        for (boolean load : new boolean[]{true, false}) {
+            BuildingManager old = g.getBuildingManager();
+            sectorReadings(old, sectors, LabourCheck::allPosts);
+            quietly(() -> { if (load) g.loadGameSave(10); else g.newGame(); });
+            BuildingManager fresh = g.getBuildingManager();
+            long[] readings = sectorReadings(fresh, sectors, LabourCheck::allPosts);
+            assertTrue((load ? "loadGameSave" : "newGame") + " replaces the warmed manager and reads the new city's bare figures",
+                    fresh != old && (load ? g.getLoadFailure() == null : true)
+                        && java.util.Arrays.equals(readings, WorksValue.bareWhile(() -> sectorReadings(fresh, sectors, LabourCheck::allPosts))));
+        }
     }
 
     static void labourHeldForAPass() {
