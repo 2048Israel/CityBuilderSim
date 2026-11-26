@@ -725,10 +725,36 @@ a utility builds no more generation than its wires can carry, ordering
 the Substation and lines with it; the 31-station/10 MW condition is the
 red to cause. The ship file and brief reflect that instruction.
 
-The authorized final 80-run ensemble started on gatebox at source snapshot
-`8c0bb1f98`, against `0.9.208.md`, eight runs at once. Local fallback is
-stopped before compilation until its reason can be reported. The launch
-has a 7,200-second timeout and is judged by its own output files. Source
-and model remain unchanged by these queue-only records. The pick is ALL,
-so the orchestrator must allocate the dry run after the ensemble. No dry
-run has started.
+The authorized final 80-run ensemble completed on gatebox at source
+snapshot `8c0bb1f9805b4d1c36f75759cabec6ccdd15e0d7`, against
+`0.9.208.md`, eight runs at once. The Bash background launch had a
+7,200-second timeout; its own exit file is **0**, the launcher has ended,
+and all 80 completed CSVs, score and provenance were copied home. There
+are no missing or short runs. Local fallback was guarded before any JVM
+could start and was never used. The box used OpenJDK 21.0.13 and its
+md5-equal earth/world data, with the baseline's data-path flags removed
+from the submitted `JAVA_OPTS` as instructed.
+
+| Criterion | 0.9.208 baseline | PW9 final |
+|---|---|---|
+| Hard M1/F1 | 10/10 PASS | 10/10 PASS; zero failed/unread money-audit months and zero findings in every policy |
+| Overall criteria | 23/26 | 23/26; one retired criterion remains excluded |
+| AUTO2 takeoff T1 | 16/16, median m524 [447–687] | 16/16, median m512 [447–917] |
+| AUTO2 final population T2 | 6,240,014 median | 4,992,121 median, PASS; about 20% lower |
+| ZERO_HOT H2 | FAIL, 0.67 percentage points over twin | PASS, −0.37 points, 14/16 below the second-half excess |
+| HIGH final population T2 | PASS, 182,116 median | FAIL, 116,844 median; below 75% of baseline |
+
+★ Keep both changed informational verdicts and the lower population
+figures in the baseline. EN1/EI1 makes M1/F1 the shipping criteria; no
+threshold, seed, policy or finding was altered to improve this score.
+The complete scored artifact, with only its heading and introductory
+version changed to the publication token, is [PW9 ensemble](../ensemble/PW9.md).
+Evidence is `target/ensemble/PW9/{score.md,baseline.md,summary.json,
+snapshot.txt,progress.txt,times.txt}` and the 80 CSVs/logs; launcher output
+is `target/PW9-ensemble.log` and `target/PW9-ensemble-exit.txt`. The remote
+run is `/home/jerus/cbs/tools/8c0bb1f9805b4d1c36f75759cabec6ccdd15e0d7/target/ensemble/PW9`.
+Only queue/record files differ from this source snapshot. Origin/main is
+still `3bf83d20e`, already merged, at the post-run fetch.
+
+The pick is ALL, so the orchestrator must allocate the dry run after this
+ensemble verdict. No dry run has started.
