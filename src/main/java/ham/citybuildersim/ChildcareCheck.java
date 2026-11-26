@@ -165,6 +165,17 @@ public class ChildcareCheck {
      * (calibrated: scratch-cc1/probe2). At k 1 the town to the bit.
      */
     static Game town(Path root, String name, int k) {
+        return town(root, name, k, TOWN_HOUSES);
+    }
+
+    /** The Houses a copy of the town stands with (a door holds one household since RES3, so a town of more posts than people has more of them: see the overload below). */
+    static final int TOWN_HOUSES = 900;
+
+    /**
+     * ...with `houses` Houses in each copy: the town's other buildings are the same, so a caller whose staffed site output
+     * needs more people for the same posts (EssentialWorksCheck.professionalDemand, at four copies) asks for more doors.
+     */
+    static Game town(Path root, String name, int k, int houses) {
         GameFiles files = new GameFiles(root.resolve(name), root.resolve(name + "-no-legacy"));
         Game g = new Game(files);
         quietly(() -> {
@@ -183,7 +194,7 @@ public class ChildcareCheck {
                 if (copy > 0) g.setCashForTest(Founding.WEALTHY_CASH);
                 for (String[] w : new String[][] {
                         { "Industrial Bakery", "4" }, { "Coal Power Plant", "1" }, { "Water Treatment Plant", "1" },
-                        { "Commercial Bank", "1" }, { "Convenience Store", "10" }, { "House", "900" },
+                        { "Commercial Bank", "1" }, { "Convenience Store", "10" }, { "House", Integer.toString(houses) },
                         { "Elementary School", "1" }, { "Middle School", "1" }, { "High School", "1" },
                         { "Community College", "1" }, { "University", "1" }, { "Medical School", "4" },
                         { "Construction Depot", "5" }, { "Paved Road", "1" }, { "Police Station", "2" },

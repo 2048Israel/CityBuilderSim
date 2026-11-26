@@ -350,9 +350,17 @@ public final class EssentialWorksCheck {
                         && s.cost() <= one * 1.01 && AutoBuilder.debt(g) == debt && s.borrowed() == 0);
     }
 
+    /**
+     * The Houses each copy of the professional-demand town stands with (RES3): a door holds one household, so the 900 of a copy
+     * hold 2,900 people and 1,100 workers for about 3,000 posts, and the builders' fill falls from 0.47 to 0.36 as the fixture
+     * adds depots, the site output staying under the repairs; about 2,400 Houses would give each post a worker, 2,000 give the
+     * fixture's loop the staffed site output it asks for (the town that played with 2,000 was the one that passed).
+     */
+    static final int PROFESSIONAL_TOWN_HOUSES = 2_000;
+
     static void professionalDemand(Path root) {
         out.println("--- professional eligibility on both sides of the useful-demand threshold ---");
-        Game g = ChildcareCheck.town(root, "professional-threshold", 4);
+        Game g = ChildcareCheck.town(root, "professional-threshold", 4, PROFESSIONAL_TOWN_HOUSES);
         EducationType type = EducationType.MEDICAL;
         BuildAdvice.Measure m = BuildAdvice.Measure.school(type);
         BuildingManager bm = g.getBuildingManager();
