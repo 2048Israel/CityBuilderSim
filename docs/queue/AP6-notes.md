@@ -259,3 +259,13 @@ No local `--pick`/ALL run, dry run or ensemble was started. The marker stays
 provisional until the review/go and the approved gate-box dry run. There is
 no gate-run comment yet. Main was fetched again after the trace: e02e09bc0,
 still only the queue update, already merged.
+
+REV-AP6 cleared `c98f7dd66` for shipment (2026-11-26): no P1. The review found
+no aggregate-bonds reader during the deferral window, confirmed the fold on a
+throw, every held-post writer's notification after its write, no new race/CME,
+and the mutation table matched. Its one non-blocking note is addressed: the
+public `getSectorStacks` javadoc now explicitly describes snapshot membership
+and says to re-query after an edit. Documentation only; arithmetic unchanged.
+The orchestrator approved the ALL dry run and reserved the box for AP6.
+The documentation clarification passes `--fast` (compile, maps, Stale 0 firm).
+Origin/main was fetched before starting it: unchanged e02e09bc0.

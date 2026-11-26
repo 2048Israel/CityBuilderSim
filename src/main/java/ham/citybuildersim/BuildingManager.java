@@ -8500,7 +8500,10 @@ public class BuildingManager {
         return total;
     }
 
-    /** A sector's own stacks, in the city's list order; immutable grouping, live stacks (AP6). */
+    /**
+     * A sector's own stacks, in the city's list order; immutable grouping, live stacks (AP6).
+     * Membership is a snapshot at this reading: call again after an edit to obtain the new grouping.
+     */
     public List<BuildingsStacks> getSectorStacks(String sector) {
         if (WorksValue.bareReading()) {
             List<BuildingsStacks> own = new ArrayList<>();
