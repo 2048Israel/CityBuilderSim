@@ -9,5 +9,5 @@ checked. The town keeps its jobless founding power when new utilities hire;
 built plants still depend on their workers. Queued generation and loads
 are compared by whole dispatch months and the next seasonal peak, preserving interim
 needs. Existing plant ids and the save format stay intact.
-## pending
-| PW9-G | Wires ready with the power ({next}) | Coordinate the inherited GRID forecast, protected completions and queue; final modern-equipment city still has eight low-energy months versus main's five | [PW9-G](PW9-G.md) |
+## queued
+| PW9-G | Wires ready with the power ({next}) | A utility builds no more generation than its wires can carry, ordering the Substation and lines with it; cause the 31 stations behind 10 MW as the red | [PW9-G](PW9-G.md) |
