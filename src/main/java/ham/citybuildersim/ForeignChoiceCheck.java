@@ -96,6 +96,15 @@ public class ForeignChoiceCheck {
     /** The landlords hold this many times the cost of their Houses on site in cash, so the extra is never borrowed: the saving is then judged at the loan rate of nothing borrowed. */
     static final double PAYER_CASH_TIMES = 100;
 
+    /**
+     * The crowd the town takes in before the landlords' Houses are ordered (RES3): this many Convenience Stores stand, their posts open, and this many people arrive. The landlords
+     * count what one more House earns as the rent of the households left unplaced that can pay the ask, after every door standing and every House on site
+     * (HousingMarket.candidateIncome()); the calm town's 238 Houses on site take every household that can pay, and the ones left cannot, so a House earned nothing, its months
+     * saved were worth nothing and no queue told the strong rate's extra from the city's own. With the posts and the people, households that can pay wait for doors beyond them.
+     */
+    static final int CROWD_STORES = 200;
+    static final double CROWD_PEOPLE = 2500;
+
     /** Section 3's months worked on a site before it is handed: some of its buildings finished, one part built. */
     static final int HALF_BUILT_MONTHS = 3;
 
@@ -338,6 +347,13 @@ public class ForeignChoiceCheck {
         double strong = ForeignCrewsCheck.rateFor(bm, STRONG_SHARE_OF_CAP * BuildersShort.capShare());
         double cash = PAYER_CASH_TIMES * g.getBusinessInvestment().getCostOf(house, Math.max(1, bm.getStack(house).getUnderConstruction()));
         em.setSectorCash(RE, em.getSectorCash(RE) + cash);
+        // ...the crowd first, and a month for the clearing to see it (the households that wait for doors are the last clearing's).
+        quietly(() -> {
+            g.buildStack(template(g, "Convenience Store"), CROWD_STORES, true);
+            g.getCohorts().migrate(CROWD_PEOPLE);
+            g.getPopulationManager().setPopulation(Math.round(g.getCohorts().total()));
+        });
+        month(g);
         if (cityHouses > 0 && !ForeignCrewsCheck.cityOrders(g, house, cityHouses)) throw new IllegalStateException("the city's Houses could not be ordered");
         for (int k = 0; k < played; k++) month(g);
         double months = Math.max(SEARCH_FROM, Math.ceil(bm.monthsQueued()));
@@ -382,6 +398,8 @@ public class ForeignChoiceCheck {
                 bmM.monthsQueued(), bmM.scarcityPremium(), sm.getUnderConstruction(), sm.owedPoints());
         printVerdict("mover", vm);
         printVerdict("stayer", vs);
+        check("fixture: a new House earns in both towns (the households that can pay the ask wait for doors past those standing and on site), so the months saved are worth something",
+                vm.perMonth() > 0 && vs.perMonth() > 0, String.format("D$%,.4fk a month on the %,.0f Houses on site", vm.perMonth(), vm.terms().buildings()));
         check("fixture: the landlords hold the cash for the extra in both, so neither borrows",
                 mover.getSectorInvestor(RE).getCash() > vm.gross() && stayer.getSectorInvestor(RE).getCash() > vs.gross());
         check("in both the foreign crews would finish it sooner than the home crews (monthsAbroad under monthsHome)", soonerAbroad(vm) && soonerAbroad(vs),
