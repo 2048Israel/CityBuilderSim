@@ -83,13 +83,24 @@ import static ham.citybuildersim.ui.Levers.*;
  * scroll position (UserInterface.scrolled()) and what the player has opened -
  * a borrower's line, a fold, the waterfall's year (openLines, profitYear) -
  * all survive a redraw.
+ *
+ * SINCE CBK1 (2026-11-26) the tab opens on a choice of the two banks (`side`,
+ * choicePage()), and everything above is the commercial bank's, behind "Bank
+ * › Commercial bank"; the central bank's pages are CentralBankScreen's, behind
+ * "Bank › Central bank".
  */
 final class BankScreen {
 
     /** The window this screen draws into: its game, its root, its clearMenu(). */
     private final UserInterface ui;
 
-    BankScreen(UserInterface ui) { this.ui = ui; }
+    BankScreen(UserInterface ui) {
+        this.ui = ui;
+        this.central = new CentralBankScreen(ui, this);
+    }
+
+    /** The central bank's pages, drawn inside this screen's frame and pool when `side` is CENTRAL (CBK1). */
+    final CentralBankScreen central;
 
     /** The nodes this screen made at its last draw, handed back to it at the next (KP5; study UP4, docs/studies/spec-screens-in-place.md). */
     final Kept.Pool pool = new Kept.Pool();
@@ -118,9 +129,28 @@ final class BankScreen {
        as cards, with the other states a player must act on or know of first
        (no bank, under the minimum, money from abroad on Funding, a sheet
        that does not foot).
+
+       THE TAB OPENS ON A CHOICE (CBK1, 2026-11-26). Jerus: "when you click
+       bank you have two options, the commercial bank, and the central bank
+       ... give both the banks proper statements, aka ability to not only view
+       summary but also the statements same way the other sectors, but make
+       sure to really include alot of stuff into the central bank area". The
+       tab opens on the two banks side by side (choicePage()), each card a
+       door. The commercial bank's pages are as they were, behind "Bank ›
+       Commercial bank" - its head's "Bank" is the way back to the choice,
+       "Commercial bank" the way back to its Overview from a page. The
+       central bank's are behind "Bank › Central bank" and are
+       CentralBankScreen's, drawn in this frame and this pool. `side` says
+       which of the three the tab is on.
        ===================================================================== */
 
-    String bankArea = null;                  // null is the Overview; BANK_PAGES, the pages behind it
+    /** The commercial bank's side of the tab, and the central bank's: what `side` is set to when one of them is open (CBK1). */
+    static final String COMMERCIAL = "Commercial bank", CENTRAL = "Central bank";
+
+    /** Which bank the tab is on: COMMERCIAL, CENTRAL, or null for the choice of the two that the tab opens on (CBK1). */
+    String side = null;
+
+    String bankArea = null;                 // null is the Overview; BANK_PAGES, the pages behind it
     static final String BANK_PAGES = "The bank's pages";
     /** The page behind the Overview that is lit until the player picks another; the rail's bank icon resets to it. */
     static final String BANK_HOME  = "Profit";
@@ -208,9 +238,10 @@ final class BankScreen {
     /* ------------------------------ the frame ------------------------------ */
 
     /**
-     * The tab's entry point: the Overview, or the page behind it the player
-     * was on. Named for the shell, which calls it from the rail, the inbox
-     * and the summary panel.
+     * The tab's entry point: the choice of the two banks (CBK1), or the
+     * commercial bank's Overview or the page behind it the player was on, or
+     * a page of the central bank. Named for the shell, which calls it from
+     * the rail, the inbox and the summary panel.
      */
     void showBankMenu() {
         // Kept (KP5): the page is drawn over last time's nodes when the same screen is redrawn; the rail's own tab arrives afresh.
@@ -231,10 +262,11 @@ final class BankScreen {
 
     /**
      * The page itself, put in the window through setPage(): what keepMenu runs as a kept draw from the pool, and
-     * what KeptBench runs kept and built new for KeptCheck - the Overview, or the page `bankPage` names, in the view
-     * `ui.sectorScreen.statementView` names on Profit and Balance sheet. What the show method did before the draw
-     * (the page known, the door targets cleared, the month's first draw told) is done here, in the draw, so the
-     * bench's draw has it too.
+     * what KeptBench runs kept and built new for KeptCheck - the choice of the two banks when `side` is null, the page of
+     * the central bank `central.page` names when it is CENTRAL (CBK1), else the commercial bank's Overview, or the page
+     * `bankPage` names, in the view `ui.sectorScreen.statementView` names on Profit and Balance sheet. What the show
+     * method did before the draw (the page known, the door targets cleared, the month's first draw told) is done here,
+     * in the draw, so the bench's draw has it too.
      */
     void drawPage() {
         boolean known = false;
@@ -246,6 +278,36 @@ final class BankScreen {
         // a figure can follow (UserInterface.countsUp(), KP1's rule): at 50x a month lands every 100 ms.
         boolean fresh = ui.game.getMonth() != drawnMonth && ui.countsUp();
         drawnMonth = ui.game.getMonth();
+
+        // CBK1: the choice of the two banks, built as the page below is - a scope of its own, a page, a head, then the frame.
+        if (side == null) {
+            Kept.scope("choice", () -> {
+                VBox page = Kept.scope("page", () -> {
+                    VBox p = widePage();
+                    p.getChildren().addAll(actionCards());
+                    choicePage(p);
+                    return p;
+                });
+                VBox frame = Kept.column(Palette.GAP, Kept.scope("head", this::head));
+                frameOver(frame, page);
+            });
+            return;
+        }
+        // ...and the central bank's page, keyed by the page so another page shares no node with the last.
+        if (CENTRAL.equals(side)) {
+            Kept.scope("central/" + central.page, () -> {
+                VBox page = Kept.scope("page", () -> {
+                    VBox p = widePage();
+                    p.getChildren().addAll(actionCards());
+                    central.page(p);
+                    return p;
+                });
+                HBox strip = Kept.scope("strip", central::strip);
+                VBox frame = Kept.column(Palette.GAP, Kept.scope("head", central::head), strip);
+                frameOver(frame, page);
+            });
+            return;
+        }
 
         // The pages, and on Profit and Balance sheet the Summary | Statement switch the sector pages share (0.7.74, D9).
         boolean switched = bankArea != null && ("Profit".equals(bankPage) || "Balance sheet".equals(bankPage));
@@ -420,6 +482,7 @@ final class BankScreen {
 
     /** ...scrolled to a card on it (0.7.33: the doors land where the line is decided). */
     void open(String page, String target) {
+        side = COMMERCIAL;
         bankArea = BANK_PAGES;
         bankPage = page;
         scrollTarget = target;
@@ -428,9 +491,27 @@ final class BankScreen {
         showBankMenu();
     }
 
-    /** The Overview, at its top. */
+    /** The commercial bank's Overview, at its top. */
     void openOverview() {
+        side = COMMERCIAL;
         bankArea = null;
+        ui.innerScrollAt.remove("showBankMenu:body");
+        toTop();
+        showBankMenu();
+    }
+
+    /** The choice of the two banks, at its top (CBK1): the rail's bank icon, and "Bank" in either bank's head. */
+    void openChoice() {
+        side = null;
+        ui.innerScrollAt.remove("showBankMenu:body");
+        toTop();
+        showBankMenu();
+    }
+
+    /** One page of the central bank, at its top (CBK1): a chip, a door on the choice or on its Overview. */
+    void openCentral(String page) {
+        side = CENTRAL;
+        central.page = page;
         ui.innerScrollAt.remove("showBankMenu:body");
         toTop();
         showBankMenu();
@@ -516,18 +597,28 @@ final class BankScreen {
         return LEAD_INFO;
     }
 
+    /** The choice's (i) (CBK1): what the two banks are, and that a card opens one. */
+    static final String CHOICE_INFO = "The city has two banks. The commercial bank takes the city's deposits and lends "
+            + "them out, at rates built on the policy rate. The central bank makes the city's money - the reserves the "
+            + "commercial bank keeps with it and the currency in circulation - lends it at the window, advances it to "
+            + "the treasury and holds the city's paper. A card opens a bank's pages.";
+
     /**
-     * The head: "Bank" with the money blue's swatch, or the breadcrumb "Bank ›
-     * Profit", the first word a way back to the Overview; at its right the two
-     * doors - the policy rate (Policy › Money › The policy rate) and the
-     * treasury's setting for a failed bank (Finances, WHEN THE BANK FAILS).
+     * The head: "Bank" with the money blue's swatch on the choice of the two
+     * banks; on the commercial bank (CBK1) "Bank › Commercial bank", the first
+     * word a way back to the choice and, on a page behind its Overview, the
+     * second a way back to the Overview; at its right the two doors - the
+     * policy rate (Policy › Money › The policy rate) and the treasury's
+     * setting for a failed bank (Finances, WHEN THE BANK FAILS).
      */
     HBox head() {
         Label policy = door("The policy rate", Palette.ACCENT, () -> openPolicy("Money", "The policy rate"));
         Label fails = door("When it fails", Palette.ACCENT,
                 () -> ui.financesScreen.open(null, null, FinancesScreen.RESCUE));
-        if (bankArea == null) return pageHead("Bank", Palette.MONEY, null, null, LEAD_INFO, policy, fails);
-        return pageHead("Bank", Palette.MONEY, this::openOverview, bankPage, pageInfo(bankPage), policy, fails);
+        if (side == null) return pageHead("Bank", Palette.MONEY, null, null, CHOICE_INFO, policy, fails);
+        return pageHeadTo("Bank", Palette.MONEY, this::openChoice, COMMERCIAL,
+                bankArea == null ? null : this::openOverview, bankArea == null ? LEAD_INFO : pageInfo(bankPage),
+                policy, fails);
     }
 
     /** Policy, on one of its areas and pages, at its top (FinancesScreen.openPolicy()'s). */
@@ -543,6 +634,67 @@ final class BankScreen {
     void openSector(String key, String page) {
         Sector s = ui.game.getSectors().byKey(key);
         if (s != null) ui.sectorScreen.openSectorBooks(s, page);
+    }
+
+    /* =====================================================================
+       THE CHOICE (CBK1, 2026-11-26)
+
+       Which bank? The tab opens on the two side by side, a card each, the
+       whole card a door and a pill at its foot: the commercial bank in a
+       sentence and the four figures its Overview's scorecard leads with;
+       the central bank as what it has made and the six figures that say
+       how it stands - M0, the rate it sets, its month, what it owes the
+       treasury, how much of the city's term paper it holds, and inflation
+       against its target. Every figure is the getter its own pages read.
+       ===================================================================== */
+
+    /** The choice: the two banks in equal columns, as tall as each other, the pill of each at its card's foot. */
+    void choicePage(VBox page) {
+        GridPane pair = equalColumns(2, TILE_GAP);
+        VBox commercial = Kept.scope("commercial", this::commercialChoice);
+        VBox centralBank = Kept.scope("central", this::centralChoice);
+        GridPane.setFillHeight(commercial, true);
+        GridPane.setFillHeight(centralBank, true);
+        commercial.setMaxHeight(Double.MAX_VALUE);
+        centralBank.setMaxHeight(Double.MAX_VALUE);
+        pair.add(commercial, 0, 0);
+        pair.add(centralBank, 1, 0);
+        page.getChildren().add(pair);
+    }
+
+    /** The commercial bank's card: its state as the Overview's banner says it, and four figures of the scorecard's; a click opens its Overview. */
+    VBox commercialChoice() {
+        Bank bank = ui.game.getBank();
+        HBox head = cardHead(Icons.BANK, Palette.MONEY, "THE COMMERCIAL BANK", null, chip(stanceNow(bank), stanceTone(bank)));
+        String capital = bank.isInsolvent() ? "failed" : capitalFigure(bank) + " against " + share1(bank.bindingTarget());
+        Region foot = Kept.region();
+        VBox.setVgrow(foot, Priority.ALWAYS);
+        return doorCard(this::openOverview, head, line(statusNow(bank)),
+                cardLine("Capital, against its target", capital, stanceTone(bank)),
+                cardLine("Its profit this month", m(bank.getNetIncome()), bank.getNetIncome() < 0 ? Palette.BAD : Palette.GOOD),
+                cardLine("What it has lent", m(bank.getBook()), null),
+                cardLine("What is banked with it", m(bank.getDeposits()), null),
+                foot, doorPill("Open the commercial bank", Icons.BANK, Palette.MONEY, this::openOverview));
+    }
+
+    /** The central bank's card: what it has made, and six figures of how it stands; a click opens its Overview. */
+    VBox centralChoice() {
+        CentralBank cb = ui.game.getCentralBank();
+        DebtManager ledger = ui.game.getDebtManager();
+        PriceIndex prices = ui.game.getPriceIndex();
+        HBox head = cardHead(Icons.BANKNOTE, Palette.MONEY, "THE CENTRAL BANK", null, null);
+        String inflation = (prices.hasRate() ? ratePct(prices.inflation()) : "—") + " against " + ratePct(ledger.getInflationTarget());
+        Region foot = Kept.region();
+        VBox.setVgrow(foot, Priority.ALWAYS);
+        return doorCard(() -> openCentral(CentralBankScreen.OVERVIEW), head,
+                line("It has made " + m(cb.m0()) + " and not taken it back."),
+                cardLine("M0: its reserves and the currency out", m(cb.m0()), null),
+                cardLine("The policy rate", ratePerYear(ledger.getPolicyRate()), null),
+                cardLine("Its profit this month", m(cb.getStruckProfit()), cb.getStruckProfit() < 0 ? Palette.BAD : null),
+                cardLine("What it owes the treasury", m(cb.getRemittanceDue()), null),
+                cardLine("Its share of the city's term paper", share1(ledger.centralBankShareOfTerm()), null),
+                cardLine("Inflation, against its target", inflation, null),
+                foot, doorPill("Open the central bank", Icons.BANKNOTE, Palette.MONEY, () -> openCentral(CentralBankScreen.OVERVIEW)));
     }
 
     /* ------------------------------ the stance ------------------------------ */
