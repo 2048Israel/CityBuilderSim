@@ -1986,6 +1986,12 @@ public class ScaleCheck {
         // The construction queue's runs: how many of a stack have opened and what its orders cost, K times as the stack is. Its
         // order, rushes, shells, demolitions and expropriations are the player's events and stay.
         if (d.has("constructionControl")) named(d.getAsJsonObject("constructionControl").get("runs"), k, "built", "billed");
+        // ...and its pavings (RES3c, 2026-11-25): the gravel roads a paving paves and the Paved Roads on the site ahead of it are
+        // buildings on site, K times over as the stacks are. Left at 1x, OrderSearchCheck 2's copy of its month-500 city (one paving,
+        // one road) took one Paved Road's 250,000 sq ft off its footprint where it had K of them on site: its buildings stood on
+        // 41,660,350 sq ft a city against the 41,540,083 it owned (the city 41,410,600), no ground was free, and every sector held
+        // on "no land - 0 m² free" - no order judged in 24 months, where its city judged 7 on their interest and 6 on a mortgage.
+        if (d.has("constructionControl")) named(d.getAsJsonObject("constructionControl").get("paving"), k, "roads", "ahead");
 
         bank(d, k);
         registerOfShares(d, k);
