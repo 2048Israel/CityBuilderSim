@@ -1368,7 +1368,7 @@ public final class BuildAdvice {
         }
     }
 
-    /** Asks of a Warrant, and the readings it made (AutoBuildCheck's counts, never a time). */
+    /** Asks of a Warrant, and the readings it made (BuildAdviceCheck 16's counts, never a time). */
     static final java.util.concurrent.atomic.AtomicLong WARRANT_ASKED = new java.util.concurrent.atomic.AtomicLong(),
             WARRANT_READ = new java.util.concurrent.atomic.AtomicLong();
     /** Held answers read afresh and compared while warrantChecked was set, and those that differed. */
