@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### PF1 — the power forecast reads works under construction — 2026-11-25, ready, see docs/queue/PF1-notes.md
 REV-PW3g read LongPlaytest's m116-m150 power served at 0.57-0.61 as a power forecast blind to a mill under construction.
