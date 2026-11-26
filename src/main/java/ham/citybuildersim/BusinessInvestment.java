@@ -151,7 +151,7 @@ public class BusinessInvestment {
     /** Consecutive months each sector has lost money. Resets on a profitable one. */
     private final java.util.Map<String, Integer> lossMonths = new java.util.HashMap<>();
 
-    /** Consecutive months each sector's plant has run at an operating loss, the old metal it sold left out (AQ1): the streak the bleed reads, apart from lossMonths, which interest alone can keep climbing. */
+    /** Consecutive months each sector's plant has run at an operating loss, the old metal it sold left out (AQ1): the streak both distress rules read (QR1), apart from lossMonths, which interest alone can keep climbing. */
     private final java.util.Map<String, Integer> operatingLossMonths = new java.util.HashMap<>();
 
     /* What the city has left to sell, and what it is charging for it. */
@@ -707,7 +707,7 @@ public class BusinessInvestment {
     public static final double MAX_RETIREMENT_FRACTION = .25;
 
     /**
-     * Months of losses before a sector that is overdrawn and refused credit
+     * Months of operating and net losses before a sector that is overdrawn and refused credit
      * starts liquidating plant it is actually using. Two years: the runway a
      * firm burns before it is wound up, and the time a founding plant needs
      * for the city to grow into it. From 0.7.11 to 0.7.18 it was also the
@@ -722,7 +722,7 @@ public class BusinessInvestment {
      * Below twenty-four buildings that is one building on each count of those operating-loss months that is a multiple of ceil(BLEED_MONTHS / held)
      * past DISTRESS_LOSS_MONTHS, the step read off the holding that month (no saved state: a reload keeps it), so eight held go at
      * counts 24, 28, 32, 34, 36, 40, 48 and 72. Sector.bleedsWhileLent() says which sectors; a sector living on its own cash is not lent and does not bleed;
-     * overdrawn with no lender, any sector sells MAX_RETIREMENT_FRACTION a month as before.
+     * overdrawn with no lender, any sector past the same operating-loss runway sells MAX_RETIREMENT_FRACTION a month (QR1).
      */
     public static final int BLEED_MONTHS = DISTRESS_LOSS_MONTHS;
 
@@ -928,7 +928,10 @@ public class BusinessInvestment {
      * has run at an operating loss DISTRESS_LOSS_MONTHS running (its own saved
      * streak, the old metal it sold left out) sells too while the shortfall
      * desk still lends it, principal above zero, a BLEED_MONTHS-th of its
-     * holding a month; its own cash is not a lender.
+     * holding a month; its own cash is not a lender. Since QR1 the overdrawn
+     * rule also requires that operating-loss streak: interest alone does not
+     * liquidate paying plant; the existing bank restructuring handles debt
+     * the business cannot service (docs/queue/QR1-notes.md, WHY).
      *
      * @param cash the sector's balance after this month's credit settled
      */
@@ -942,6 +945,9 @@ public class BusinessInvestment {
             return Decision.no(key, losses == 0 ? "profitable" : losses + " months of losses");
         }
         int opLosses = getOperatingLossMonths(key);
+        if (opLosses < DISTRESS_LOSS_MONTHS) {
+            return Decision.no(key, opLosses == 0 ? "plant covers its running costs" : opLosses + " months of operating losses");
+        }
 
         /*
          * A PRICE TAKER BLEEDS WHILE IT IS LENT (AQ1, 2026-11-17). Waiting for
@@ -955,11 +961,11 @@ public class BusinessInvestment {
          * alone keeps climbing) while the shortfall desk lent it (its principal
          * above zero; a sector's own cash is not a lender), it sells its
          * biggest holding over BLEED_MONTHS instead; overdrawn with no lender,
-         * the quarter below as before.
+         * the quarter below after the same operating-loss runway (QR1).
          */
         boolean bleed = cash >= 0;
         boolean lent = economyManager.getBusinessDebtManager().getPrincipal(key) > 0;
-        if (bleed && !(sector.bleedsWhileLent() && lent && opLosses >= DISTRESS_LOSS_MONTHS)) {
+        if (bleed && !(sector.bleedsWhileLent() && lent)) {
             return Decision.no(key, "losing money, but still solvent");
         }
 
