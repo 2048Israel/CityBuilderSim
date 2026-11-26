@@ -767,5 +767,39 @@ run is `/home/jerus/cbs/tools/8c0bb1f9805b4d1c36f75759cabec6ccdd15e0d7/target/en
 Only queue/record files differ from this source snapshot. Origin/main is
 still `3bf83d20e`, already merged, at the post-run fetch.
 
-The pick is ALL, so the orchestrator must allocate the dry run after this
-ensemble verdict. No dry run has started.
+The pick remains ALL257. The orchestrator allocated the dry run in
+`20261126-013333-274` on pushed `f52c6b9ce1f826b10be801bb1e0ba3b1cab0750a`.
+Main was fetched again and remained
+`3bf83d20e1f76d278cc27f8e8e785756b972f3fd`, already merged. The Bash
+background launcher used timeout 7,200 seconds. It waited behind RES3's
+ensemble, acquired the box, compiled, and completed the whole suite.
+
+## First full dry run: EssentialWorks findings to mend
+
+Run `/home/jerus/cbs/runs/cbs-gate-PW9-AG6VUQWA` tested the two commits
+above; `gate exit 1` followed suite exit 4 at 2026-11-26 05:57:10 UTC.
+The run was copied home as `/tmp/cbs-gate-PW9-AG6VUQWA`; root launcher
+`target/PW9-dryrun.log`, exit file `target/PW9-dryrun-exit.txt` and its
+tool process all ended with exit 1. This failed run is evidence, not a
+reuse approval, and no gate-run comment was attached to the ship file.
+
+All eight unnamed lines are EssentialWorksCheck's six failing assertions
+plus its exit/count lines: affordable one-station cash order, whole-order
+opening/horizon, power ordered past the pending diesel's deadline, the
+earlier Oil-Fired choice, loaded/unbroken later orders, and earlier wind.
+They have no known-red exemption. The unchanged harness's scarce-cash
+premise holds: available 103.95, one Small Steam Station 102.92, next
+plant 1,075.84; the planner nevertheless returns a held nine-coal order.
+The full-plan candidate filter is being traced before a mend. The old
+lead-plus-horizon pin and pending/wind fixtures also need the new dated
+law checked against native monthly need; no fixture has been moved.
+
+LongPlaytest including conservation, SaveFile/SaveSlot/ReadPath/Replay,
+Reload/Determinism, Materials and PowerPlants' 159 assertions passed.
+Inspected Map/Plan/AutoBuild reds match existing PX2, PW2-B and FS12 rows.
+The read-only helper owns the diagnosis and one authorized named
+EssentialWorksCheck with temporary diagnostics in its own worktree,
+after the gate has ended. Root runs no JVM alongside it. One accidental
+SSH grep reader was closed by its verified own PID, with gate and other
+jobs untouched. The new EssentialWorks findings stop readiness and are
+being mended, as mailed in `20261126-015902-267`; the marker stays.
