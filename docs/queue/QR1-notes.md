@@ -399,7 +399,7 @@ of total forgiveness, never added to it.
 |---|---:|---:|---:|---:|---:|
 | 1900/main | 1003070.5468181840 | 230623.13222283978 | 230623.13222283978 | 159142294.59705200 | 2525125039.9677700 |
 | 1900/QR1 | 232136.36881434554 | 230623.13222283978 | 230623.13222283978 | 52130432.027748300 | 2495023485.2011690 |
-| today/main | 2040115.7308789315 | 1917098.4283502998 | 1917098.4283502998 | 63450490.99591165 | 1292420315.3396397 |
+| today/main | 2040115.7308789315 | 1917098.4283502998 | 1917098.4283502998 | 63450490.995911660 | 1292420315.3396397 |
 
 Main/1900 has **853** in-ban sector-months. Distress receipts comprise plot
 **130786384.42549273**, material **28355910.171559263**. All retirement:
@@ -526,9 +526,10 @@ residual maximum 0, no findings/gaps/nonfinite values. This is the first
 complete 0.9.208 today reference; the previous 2370/2387 trace was partial.
 Its **117** distress sales/**1017** buildings and **109** operating-positive
 sales/**837** buildings independently reproduce that earlier evidence.
-Full LongPlaytest/post-primary verdict is pending the final helper proof
-at this checkpoint; the wrapper has ended at exit **4**, with the auxiliary
-founding-row scorer limitation described above.
+Full LongPlaytest **PASS**, primary m2405 in **2056 s**, findings clean;
+post-primary HA1 money fixtures **79/79 PASS**, full wall **2107.2 s**.
+The wrapper ends at exit **4** solely with the auxiliary founding-row scorer
+limitation described above; all **2399/2399** actual played audits pass.
 
 Saved F **2040115.7308789315**, independently summed monthly F
 **2040115.7308789531**; maximum row difference **3.3527612686157227e-08**
@@ -555,6 +556,13 @@ Frozen measurements/provenance copied to
 `target/qr1-main-today-v3-frozen-report.txt`. The QR1/today counterpart and
 matched excess-forgiveness test remain required, on the same PC/settings.
 They and the ALL dry run resume after boot; the provisional marker stays.
+Final proof copied to `target/qr1-main-today-v3-final-proof.json` and
+`target/qr1-main-today-v3-final-report.txt`. Canonical exported D is
+**63450490.995911660** (plot plus material cumulatives); direct event-order
+gross sum **63450490.99591165**, difference **7.450580596923828e-09** from
+addition order. Both actual cash components and every monthly cumulative
+reconcile, with no tolerance or check changed. No Manufacturing sale/MR1
+condition occurred in this reference.
 
 P3 considered and not taken, as instructed: shorten or deny a fresh full
 operating-loss runway after a long interest-only net-loss spell.
