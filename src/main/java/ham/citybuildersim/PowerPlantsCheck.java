@@ -484,8 +484,8 @@ public class PowerPlantsCheck {
             if (t.getCategory() != BuildingType.ELECTRICITY) continue;
             (dry.hasCoolingFor(t) ? open : cooled).add(t.getName());
         }
-        check("in the dry city exactly the steam plants want water: the coal, the oil-fired and the biomass plants; the rest stand without it",
-                cooled.equals(List.of("Coal Power Plant", "Oil-Fired Plant", "Biomass Plant")) && open.contains("Diesel Station")
+        check("in the dry city exactly the steam plants want water: coal, oil, biomass and small steam; the rest stand without it",
+                cooled.equals(List.of("Coal Power Plant", "Oil-Fired Plant", "Biomass Plant", "Small Steam Station")) && open.contains("Diesel Station")
                         && open.contains("Oil-Fired Turbine") && open.contains("Solar Farm") && open.contains("Wind Farm"), cooled + "");
         check("...and the card's verdict for a diesel station there is not NO_WATER", BuildCard.verdict(dry, dry.getBuildingManager().getTemplateByName("Diesel Station"), 1).kind()
                 != BuildCard.VerdictKind.NO_WATER);
