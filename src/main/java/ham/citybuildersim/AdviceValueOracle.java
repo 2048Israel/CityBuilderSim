@@ -148,35 +148,53 @@ final class AdviceValueOracle {
         return count;
     }
 
-    /** Independent utility pooling and pending electrical draw, including the demand used by sizing. */
-    private static double[] powerService(Game g, Map<BuildingsTemplate, Long> stock,
+    /** Independent firm supply and pending draw: the founding grid has no posts; each plant has its own (REV-PW9). */
+    static double[] powerService(Game g, Map<BuildingsTemplate, Long> stock,
                                          BuildAdvice.Ahead at, Map<BuildingsTemplate, Long> loads) {
         UtilitiesHandler utility = g.getServicesManager().getUtilitiesHandler();
-        long[] powerJobs = g.getBuildingManager().getJobArrayPerCategory(BuildingType.ELECTRICITY);
-        long[] waterJobs = g.getBuildingManager().getJobArrayPerCategory(BuildingType.WATER);
-        double posts = 0;
-        for (int i = 0; i < powerJobs.length; i++) posts += powerJobs[i] + waterJobs[i];
-        double filled = utility.getAverageUtilityFill() * posts;
-        double nameplate = utility.getBaseProduction();
+        BuildingManager bm = g.getBuildingManager();
         double demand = utility.getConsumption() * at.scale();
         if (at.months() > 0) for (Map.Entry<BuildingsTemplate, Long> e : ready(g, loads, at.months()).entrySet())
-            demand += e.getValue() * (double) e.getKey().getElectricityConsumption();
+            demand += e.getValue() * (double) NewUnit.of(g, e.getKey()).getElectricityConsumption();
+        double variable = 0, sun = PowerDispatch.solarYear(utility.latitude(), utility.trackers());
+        for (BuildingsStacks stack : bm.getStacksView()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.isWind() || t.isSolar()) variable += stack.getQuantity() * t.getProduction1() * (t.isSolar() ? sun : 1);
+        }
+        for (Map.Entry<BuildingsTemplate, Long> e : stock.entrySet()) {
+            BuildingsTemplate t = e.getKey();
+            if (t.isWind() || t.isSolar()) variable += e.getValue() * NewUnit.of(g, t).getProduction1() * (t.isSolar() ? sun : 1);
+        }
+        double share = utility.getConsumption() > 0 ? Math.max(0, variable) / utility.getConsumption() : 0;
+        double supply = Math.max(0, utility.getWorksPower());
         double[] fill = g.getPopulationManager().getJobFillRate();
+        for (BuildingsStacks stack : bm.getStacksView()) {
+            BuildingsTemplate t = stack.getBuilding();
+            if (t.getCategory() == BuildingType.ELECTRICITY && stack.getQuantity() > 0)
+                supply += firm(utility, t, NewUnit.standing(t), stack.getQuantity(), fill, share);
+        }
         for (Map.Entry<BuildingsTemplate, Long> e : stock.entrySet()) {
             BuildingsTemplate t = e.getKey();
             long count = e.getValue();
-            if (t.getCategory() == BuildingType.ELECTRICITY) nameplate += count * t.getProduction1();
-            demand += count * t.getElectricityConsumption();
-            if (t.getCategory() == BuildingType.ELECTRICITY || t.getCategory() == BuildingType.WATER)
-                for (JobType job : JobType.values()) if (t.getJobs(job) != 0) {
-                    posts += (double) count * t.getJobs(job);
-                    filled += (double) count * t.getJobs(job) * (job.ordinal() < fill.length ? fill[job.ordinal()] : 1);
-                }
+            NewUnit unit = count > 0 ? NewUnit.of(g, t) : NewUnit.standing(t);
+            demand += count * unit.getElectricityConsumption();
+            if (t.getCategory() == BuildingType.ELECTRICITY) supply += firm(utility, t, unit, count, fill, share);
         }
-        double average = posts > 0 ? filled / posts : 1;
-        double supply = average == 0 ? 10000 : nameplate * average;
-        double ratio = supply > 0 ? demand / supply : Double.POSITIVE_INFINITY;
-        return new double[] {ratio > 0 ? demand / ratio : 0, demand};
+        supply += utility.getFoundingGridKw();
+        return new double[] {Math.max(0, supply), demand * PowerDispatch.PLAN_PEAK_HOUR * at.powerFactor()};
+    }
+
+    private static double firm(UtilitiesHandler utility, BuildingsTemplate t, NewUnit unit, long count, double[] fill, double share) {
+        double posts = 0, filled = 0;
+        for (JobType job : JobType.values()) {
+            posts += unit.getJobs(job);
+            filled += unit.getJobs(job) * fill[job.ordinal()];
+        }
+        double staffed = posts > 0 ? filled / posts : 1;
+        if (t.isHydro()) staffed = staffed > 0 ? 1 : 0;
+        double credit = t.isWind() ? PowerDispatch.windCredit(share)
+                : t.isSolar() ? PowerDispatch.solarCredit(utility.latitude(), utility.trackers(), share) : 1;
+        return count * unit.getProduction1() * credit * staffed;
     }
 
     /** Present cost and cash actually raised, including the quoted granule's excess. */

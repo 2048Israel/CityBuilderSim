@@ -307,11 +307,11 @@ public class Game {
         // ...a city founded the default way knows every building but the near future's (R6b's call 1: ResearchCatalog.NEAR_FUTURE), and since
         // PW2 every power plant from the year it was first built, in every city (spec-electricity 2.9, Jerus's Q2, 2026-11-02: "the rec, later
         // research will change this"): a 1900 city builds coal and hydro, as 1900 did.
-        buildingManager.setTemplateKnown(t -> foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY ? knows(t)
-                : !ResearchCatalog.nearFuture(t.getSinceText()));
+        buildingManager.setTemplateKnown(t -> t.offeredAt(month) && (foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY ? knows(t)
+                : !ResearchCatalog.nearFuture(t.getSinceText())));
         // ...and the same calendar ahead, for the power planner's need date (PW3: a plant the menu brings in time is one it can weigh).
-        buildingManager.setTemplateKnownIn((t, months) -> foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY
-                ? t.knownAt(month + months, research) : !ResearchCatalog.nearFuture(t.getSinceText()));
+        buildingManager.setTemplateKnownIn((t, months) -> t.offeredAt(month + months) && (foundedUnfitted() || t.getCategory() == BuildingType.ELECTRICITY
+                ? t.knownAt(month + months, research) : !ResearchCatalog.nearFuture(t.getSinceText())));
         economyManager = new EconomyManager(buildingManager);
         householdBalance.setInvestmentTaxes(economyManager.getTaxPolicy(), c -> getExchange().price(c), this::receiveInvestmentTax);
         householdBalance.attachInvestmentRegister(equity, c -> getExchange().shortShares(c));

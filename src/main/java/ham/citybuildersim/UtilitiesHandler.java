@@ -1036,17 +1036,16 @@ public class UtilitiesHandler {
     public void updateEnergyRatio() {
         double fill = averageUtilityFill;
         int month = monthOfYear();
-        // A bare fixture's plants at the pooled fill, as they were; a city's founding grid at the pooled fill and each plant at its own
-        // posts' fill (PW3, PW1-P's fifth gap: one farm's posts no longer lower every other plant's output), a station at its water.
-        production = plants == null ? baseProduction * fill : baseGrid() * fill;
-        if(fill == 0) production = baseGrid();
+        // PW9: the founding endowment has no posts. Pooling it with the first small station's staff fabricated a loss larger
+        // than that station adds. Keep it fixed; synthetic fixture output uses the pool, real plants their own posts' fill.
+        production = baseGrid() + (plants == null ? (baseProduction - baseGrid()) * fill : 0);
         // ...and what the works sell the grid, whatever the utility's staffing (0.7.112, THE POWER THE WORKS MAKE).
         if (worksPower > 0) production += worksPower;
 
         List<PowerDispatch.Row> rows = new ArrayList<>();
         if (worksPower > 0) rows.add(PowerDispatch.Row.mustRun(WORKS_ROW, worksPower));
         // ...the grid the city was founded with: free, as it has always been, and at the founding's size whatever the staffing.
-        rows.add(PowerDispatch.Row.fuelled(GRID_ROW, baseGrid() * (fill > 0 ? fill : 1), 0, null, 0, 0));
+        rows.add(PowerDispatch.Row.fuelled(GRID_ROW, baseGrid(), 0, null, 0, 0));
         if (plants == null) {
             // A handler nobody has told of its plants (a bare fixture): what setWattsProduction() was given, free to run, as it was.
             double watts = (baseProduction - baseGrid()) * fill;
@@ -1172,7 +1171,7 @@ public class UtilitiesHandler {
         for (int month = 1; month <= 12; month++) {
             List<PowerDispatch.Row> rows = new ArrayList<>();
             if (worksPower > 0) rows.add(PowerDispatch.Row.mustRun(WORKS_ROW, worksPower));
-            rows.add(PowerDispatch.Row.fuelled(GRID_ROW, baseGrid() * (fill > 0 ? fill : 1), 0, null, 0, 0));
+            rows.add(PowerDispatch.Row.fuelled(GRID_ROW, baseGrid(), 0, null, 0, 0));
             if (plants == null) {
                 double watts = (baseProduction - baseGrid()) * fill;
                 if (watts > 0) rows.add(PowerDispatch.Row.fuelled("plants", watts, 0, null, 0, 0));

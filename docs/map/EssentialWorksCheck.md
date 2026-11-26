@@ -1,4 +1,4 @@
-# EssentialWorksCheck.java - 1,246 lines · 36 methods · 4 constants · harnesses
+# EssentialWorksCheck.java - 1,433 lines · 38 methods · 4 constants · harnesses
 
 `ham/citybuildersim/EssentialWorksCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -14,7 +14,7 @@
 > share set (SERVED_STREETS), spare care by the people scaled to it (scalePeople()),
 > and the staff-short plant by the workforce set to half the posts.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (260), [AutoBuilder](AutoBuilder.md) (53), [BuildingsTemplate](BuildingsTemplate.md) (48), [Game](Game.md) (41), [WorksValue](WorksValue.md) (24), [LandManager](LandManager.md) (16), [CityNeeds](CityNeeds.md) (15), [UtilitiesHandler](UtilitiesHandler.md) (13), [BuildingManager](BuildingManager.md) (12), [Traffic](Traffic.md) (11), [CareType](CareType.md) (8), [Health](Health.md) (8), [InfrastructureManager](InfrastructureManager.md) (7), [ConstructionControl](ConstructionControl.md) (6), [Sector](Sector.md) (5), [EducationType](EducationType.md) (4), [BuildingsStacks](BuildingsStacks.md) (4), [ChildcareCheck](ChildcareCheck.md) (3), [PopulationManager](PopulationManager.md) (3), [JobType](JobType.md) (3), [BuildCard](BuildCard.md) (2), [WageBand](WageBand.md) (2), [PowerDispatch](PowerDispatch.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [GameFiles](GameFiles.md) (2), [SubstationCheck](SubstationCheck.md) (1), [SafetyType](SafetyType.md) (1), [Crime](Crime.md) (1), [Education](Education.md) (1), [AgeBand](AgeBand.md) (1)... and 5 more
+**Uses:** [BuildAdvice](BuildAdvice.md) (295), [BuildingsTemplate](BuildingsTemplate.md) (63), [AutoBuilder](AutoBuilder.md) (60), [Game](Game.md) (43), [WorksValue](WorksValue.md) (36), [LandManager](LandManager.md) (17), [UtilitiesHandler](UtilitiesHandler.md) (15), [CityNeeds](CityNeeds.md) (15), [BuildingManager](BuildingManager.md) (14), [Traffic](Traffic.md) (11), [ConstructionControl](ConstructionControl.md) (10), [PowerDispatch](PowerDispatch.md) (8), [CareType](CareType.md) (8), [Health](Health.md) (8), [InfrastructureManager](InfrastructureManager.md) (7), [CityCalendar](CityCalendar.md) (6), [Sector](Sector.md) (5), [BuildingsStacks](BuildingsStacks.md) (5), [EducationType](EducationType.md) (4), [ChildcareCheck](ChildcareCheck.md) (3), [PopulationManager](PopulationManager.md) (3), [JobType](JobType.md) (3), [BuildCard](BuildCard.md) (2), [WageBand](WageBand.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [PowerPlanCheck](PowerPlanCheck.md) (2), [GameFiles](GameFiles.md) (2), [SubstationCheck](SubstationCheck.md) (1), [SafetyType](SafetyType.md) (1), [Crime](Crime.md) (1)... and 7 more
 
 **Used by (7):** [AskProceedsCheck](AskProceedsCheck.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [FarmlandReserveCheck](FarmlandReserveCheck.md), [GapOrderCheck](GapOrderCheck.md), [PowerPlanCheck](PowerPlanCheck.md), [ScaleCheck](ScaleCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
@@ -25,7 +25,7 @@
 | 24 | `EssentialWorksCheck.out` | `System.out` |  |
 | 25 | `EssentialWorksCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
 | 26 | `EssentialWorksCheck.HIGHWAYS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS)` |  |
-| 556 | `EssentialWorksCheck.SERVED_STREETS` | `.5` | The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). |
+| 567 | `EssentialWorksCheck.SERVED_STREETS` | `.5` | The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). |
 
 ## Fields (state)
 
@@ -37,7 +37,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 1225 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
+| 22 | 1412 | **type** `public final class EssentialWorksCheck` | Essential works ordered for their unmet service, including their ground (HW1). |
 | 28 | 4 | `static void check(String label, boolean ok)` |  |
 | 33 | 5 | `static void quietly(Runnable run)` |  |
 | 39 | 12 | `static Game town(Path root, String name)` |  |
@@ -53,25 +53,27 @@
 | 225 | 33 | `static void schoolsAndPolice(Path root)` |  |
 | 259 | 35 | `static void lostOutput(Path root)` |  |
 | 295 | 13 | `static void serveStreets(Game g)` |  |
-| 309 | 32 | `static void scarceCash(Path root)` |  |
-| 342 | 40 | `static void professionalDemand(Path root)` |  |
-| 383 | 43 | `static void pendingIndustrialLoad(Path root)` |  |
-| 427 | 39 | `static void interimCare(Path root)` |  |
-| 467 | 33 | `static void stagedCosts(Path root)` |  |
-| 501 | 42 | `static void completeRunning(Path root)` |  |
-| 544 | 10 | `static double existingWear(Game g, Map<BuildingsTemplate, Long> order)` |  |
-| 558 | 39 | `static void currentLossPriority(Path root)` |  |
-| 600 | 13 | `static void scalePeople(Game g, double f)` | Every band of the town's people, and its two adult stages, times `f`, its workforce held (FS15): a demand moved without moving the staffing of the works that serve it. |
-| 614 | 101 | `static void fundingPriority(Path root, boolean spareCare) throws Exception` |  |
-| 716 | 29 | `static void filledPostCosts(Path root)` |  |
-| 746 | 44 | `static void cappedCare(Path root)` |  |
-| 791 | 39 | `static void adviceParity(Path root)` |  |
-| 831 | 76 | `static void interimPower(Path root)` |  |
-| 908 | 35 | `static void waterAtCap(Path root)` |  |
-| 944 | 38 | `static void queuedPower(Path root)` |  |
-| 983 | 37 | `static void shortPowerBenefit(Path root)` |  |
-| 1021 | 40 | `static void pavingLead(Path root)` |  |
-| 1062 | 134 | `static void overduePending(Path root) throws Exception` |  |
-| 1197 | 20 | `static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first, java.util.List<String> orders, bool...` |  |
-| 1218 | 28 | `public static void main(String[] args) throws Exception` |  |
+| 309 | 43 | `static void scarceCash(Path root)` |  |
+| 353 | 40 | `static void professionalDemand(Path root)` |  |
+| 394 | 43 | `static void pendingIndustrialLoad(Path root)` |  |
+| 438 | 39 | `static void interimCare(Path root)` |  |
+| 478 | 33 | `static void stagedCosts(Path root)` |  |
+| 512 | 42 | `static void completeRunning(Path root)` |  |
+| 555 | 10 | `static double existingWear(Game g, Map<BuildingsTemplate, Long> order)` |  |
+| 569 | 39 | `static void currentLossPriority(Path root)` |  |
+| 611 | 13 | `static void scalePeople(Game g, double f)` | Every band of the town's people, and its two adult stages, times `f`, its workforce held (FS15): a demand moved without moving the staffing of the works that serve it. |
+| 625 | 101 | `static void fundingPriority(Path root, boolean spareCare) throws Exception` |  |
+| 727 | 29 | `static void filledPostCosts(Path root)` |  |
+| 757 | 44 | `static void cappedCare(Path root)` |  |
+| 802 | 49 | `static void adviceParity(Path root)` |  |
+| 853 | 26 | `static double nativeUnserved(Game g, Map<BuildingsTemplate, Long> added, int months)` | Native unserved kWh at a forecast calendar month, then restore the town's current dispatch. |
+| 880 | 90 | `static void interimPower(Path root)` |  |
+| 971 | 77 | `static void earlyWind(Path root)` |  |
+| 1049 | 35 | `static void waterAtCap(Path root)` |  |
+| 1085 | 38 | `static void queuedPower(Path root)` |  |
+| 1124 | 37 | `static void shortPowerBenefit(Path root)` |  |
+| 1162 | 40 | `static void pavingLead(Path root)` |  |
+| 1203 | 139 | `static void overduePending(Path root) throws Exception` |  |
+| 1343 | 60 | `static void installPendingProbe(Game g, BuildAdvice.Measure power, int began, double first, int oldCheckpoint, boolean postNeed...` |  |
+| 1404 | 29 | `public static void main(String[] args) throws Exception` |  |
 

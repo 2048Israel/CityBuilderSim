@@ -78,7 +78,7 @@ public class PowerPlantsCheck {
     record Study(String name, double usdPerKw, double nameplateKw, double runs, int months, boolean cooling, Good fuel,
                  double heatRate, double fuelPerMwh, double acres, int posts, int since, String variable) { }
 
-    /** The study's table (spec-electricity 2.3), each figure its own: $/kW, nameplate, availability or capacity factor, build months, cooling, fuel, Btu a kWh, fuel a MWh, acres, posts, year. */
+    /** The modern study's table (spec-electricity 2.3) plus PW9's sourced historical station: $/kW, nameplate, availability or capacity factor, build months, cooling, fuel, Btu a kWh, fuel a MWh, acres, posts, year. */
     static final List<Study> STUDY = List.of(
             new Study("Coal Power Plant", 3271, 325_000, 0.85, 60, true, Good.THERMAL_COAL, 8490, 0.357, 200, 68, 1900, ""),
             new Study("Oil-Fired Plant", 3054, 100_000, 0.85, 48, true, Good.FUEL_OIL, 11227, 283, 30, 20, 1900, ""),
@@ -86,14 +86,18 @@ public class PowerPlantsCheck {
             new Study("Oil-Fired Turbine", 2275, 100_000, 0.90, 24, false, Good.DIESEL, 9447, 260, 10, 6, 1949, ""),
             new Study("Biomass Plant", 4843, 50_000, 0.85, 60, true, Good.WOOD_PELLETS, 13300, 0.750, 100, 25, 1970, ""),
             new Study("Wind Farm", 1712, 20_000, 0.338, 36, false, null, 0, 0, 40, 2, 1980, "wind"),
-            new Study("Solar Farm", 1484, 50_000, 0.24, 24, false, null, 0, 0, 333, 4, 1982, "solar"));
+            new Study("Solar Farm", 1484, 50_000, 0.24, 24, false, null, 0, 0, 333, 4, 1982, "solar"),
+            // PW9: Engineering News's 1900 $100/kW, at the catalogue's 2025 dollar level; EPA's historical heat rate.
+            new Study("Small Steam Station", 100 / PriceLevel.HISTORICAL_FACTOR, 850, .85, 15, true, Good.THERMAL_COAL,
+                    75000, 3.15, 1, 9, 1900, ""));
 
     /** The new fuelled rows, the good each burns and the sector at home that makes it. */
     static final String[][] FUELLED = {
             {"Oil-Fired Plant", "FUEL_OIL", Sectors.REFINING},
             {"Diesel Station", "DIESEL", Sectors.REFINING},
             {"Oil-Fired Turbine", "DIESEL", Sectors.REFINING},
-            {"Biomass Plant", "WOOD_PELLETS", Sectors.WOOD_PRODUCTS}};
+            {"Biomass Plant", "WOOD_PELLETS", Sectors.WOOD_PRODUCTS},
+            {"Small Steam Station", "THERMAL_COAL", Sectors.COAL_MINING}};
 
     static void check(String label, boolean ok, String detail) {
         System.out.println((ok ? "  ok   " : "  FAIL ") + label + (detail == null || detail.isEmpty() ? "" : " - " + detail));
@@ -234,7 +238,7 @@ public class PowerPlantsCheck {
     static BuildingManager catalogue;
 
     static void rows() {
-        section("1. the rows are the study's (spec-electricity 2.3, by HY1's rule)");
+        section("1. the rows are their source tables' (spec-electricity 2.3 and PW9, by HY1's rule)");
         Game g = city("rows", false);
         BuildingManager b = g.getBuildingManager();
         catalogue = b;
@@ -480,8 +484,8 @@ public class PowerPlantsCheck {
             if (t.getCategory() != BuildingType.ELECTRICITY) continue;
             (dry.hasCoolingFor(t) ? open : cooled).add(t.getName());
         }
-        check("in the dry city exactly the steam plants want water: the coal, the oil-fired and the biomass plants; the rest stand without it",
-                cooled.equals(List.of("Coal Power Plant", "Oil-Fired Plant", "Biomass Plant")) && open.contains("Diesel Station")
+        check("in the dry city exactly the steam plants want water: coal, oil, biomass and small steam; the rest stand without it",
+                cooled.equals(List.of("Coal Power Plant", "Oil-Fired Plant", "Biomass Plant", "Small Steam Station")) && open.contains("Diesel Station")
                         && open.contains("Oil-Fired Turbine") && open.contains("Solar Farm") && open.contains("Wind Farm"), cooled + "");
         check("...and the card's verdict for a diesel station there is not NO_WATER", BuildCard.verdict(dry, dry.getBuildingManager().getTemplateByName("Diesel Station"), 1).kind()
                 != BuildCard.VerdictKind.NO_WATER);
@@ -597,8 +601,8 @@ public class PowerPlantsCheck {
         List<String> known = new ArrayList<>(), menu = new ArrayList<>();
         for (BuildingsTemplate t : b.getKnownTemplates()) if (t.getCategory() == BuildingType.ELECTRICITY) known.add(t.getName());
         for (BuildingsTemplate t : b.getTemplatesByCategory(EnumSet.of(BuildingType.ELECTRICITY))) menu.add(t.getName());
-        check("a 1900 city (month " + g.getMonth() + ") knows the coal and the oil-fired plants, the hydro station and the substation, and no other",
-                known.equals(List.of("Coal Power Plant", "Hydro Station", "Substation", "Oil-Fired Plant")), known + "");
+        check("a 1900 city (month " + g.getMonth() + ") knows coal, oil, hydro, the substation and PW9's small steam station, and no later row",
+                known.equals(List.of("Coal Power Plant", "Hydro Station", "Substation", "Oil-Fired Plant", "Small Steam Station")), known + "");
         check("...its build menu's power is the same list, and an order for a diesel station is refused NOT_KNOWN", menu.equals(known)
                 && hushed(() -> g.buildStack(b.getTemplateByName("Diesel Station"), 1, true)) == Game.BuildResult.NOT_KNOWN, menu + "");
         int edge = ResearchCatalog.knownFrom("1910");
@@ -615,6 +619,32 @@ public class PowerPlantsCheck {
                 && later.getBuildingManager().getTemplatesByCategory(EnumSet.of(BuildingType.ELECTRICITY)).contains(diesel);
         check("...in January 1910 it is known and in the build menu", after && later.getMonth() == edge);
         check("...and its order passes the year: it is not refused NOT_KNOWN", hushed(() -> later.buildStack(diesel, 1, true)) == Game.BuildResult.SUCCESS);
+        BuildingsTemplate steam = later.getBuildingManager().getTemplateByName("Small Steam Station");
+        int closes = PolicyDates.monthOf(1915, 1); // ASME's transition date, independent of a missing/wrong catalogue boundary.
+        check("PW9's last new-order year is inclusive: December 1914 offered, January 1915 closed, including research-aware reads",
+                steam.getUntil() == 1914 && steam.knownAt(closes - 1) && !steam.knownAt(closes)
+                        && steam.knownAt(closes - 1, later.getResearch()) && !steam.knownAt(closes, later.getResearch())
+                        && diesel.getUntil() == 0 && diesel.knownAt(closes));
+        quietly(() -> later.simulateMonths(closes - 1 - later.getMonth()));
+        later.setCashForTest(Founding.WEALTHY_CASH);
+        check("fixture: December 1914 offers small steam now, and its one-month-ahead menu already closes",
+                later.getMonth() == closes - 1 && later.getBuildingManager().isTemplateKnown(steam)
+                        && !later.getBuildingManager().isTemplateKnownIn(steam, 1));
+        Game.BuildResult standing = hushed(() -> later.buildStack(steam, 1, true));
+        Game.BuildResult pending = hushed(() -> later.buildStack(steam, 1, false));
+        check("the final offered month accepts both a standing fixture order and an ordinary pending order",
+                standing == Game.BuildResult.SUCCESS && pending == Game.BuildResult.SUCCESS);
+        quietly(() -> later.simulateMonths(1));
+        check("January 1915 removes the row from new-order menus and refuses a funded direct order",
+                later.getMonth() == closes && !later.getBuildingManager().getKnownTemplates().contains(steam)
+                        && !later.getBuildingManager().getTemplatesByCategory(EnumSet.of(BuildingType.ELECTRICITY)).contains(steam)
+                        && hushed(() -> later.buildStack(steam, 1, false)) == Game.BuildResult.NOT_KNOWN);
+        check("ending new orders preserves the catalogue id, the standing station, its dispatch row and the previously ordered site",
+                later.getBuildingManager().getTemplates().contains(steam)
+                        && later.getBuildingManager().getQuantity(steam.getId()) == 1
+                        && later.getBuildingManager().getStack(steam).getUnderConstruction() == 1
+                        && later.getAutoBuilder().pendingCapacity(later, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)).getOrDefault(steam, 0L) == 1
+                        && rowOf(later.getServicesManager().getUtilitiesHandler(), steam.getName()) != null);
         sectionEnd();
     }
 

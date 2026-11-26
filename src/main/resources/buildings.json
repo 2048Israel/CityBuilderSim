@@ -6071,6 +6071,31 @@
    "land": 14505480,
    "roadLoad": 5,
    "since": 1982
+  },
+  {
+   "id": 172,
+   "name": "Small Steam Station",
+   "category": "ELECTRICITY",
+   "cashCost": 2400,
+   "constructionPoints": 269,
+   "constructionMaterials": 44,
+   "production1": 733,
+   "nameplate": 850,
+   "fuel": "THERMAL_COAL",
+   "heatRate": 75000,
+   "variableUpkeep": 9.37,
+   "cooling": true,
+   "buildMonths": 15,
+   "electricity": 1,
+   "water": 0,
+   "jobs": {
+    "NO_DIPLOMA": 6,
+    "DIPLOMA": 3
+   },
+   "land": 43560,
+   "roadLoad": 1,
+   "since": 1900,
+   "until": 1914
   }
  ]
 }
