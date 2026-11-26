@@ -730,10 +730,14 @@ snapshot `8c0bb1f9805b4d1c36f75759cabec6ccdd15e0d7`, against
 `0.9.208.md`, eight runs at once. The Bash background launch had a
 7,200-second timeout; its own exit file is **0**, the launcher has ended,
 and all 80 completed CSVs, score and provenance were copied home. There
-are no missing or short runs. Local fallback was guarded before any JVM
-could start and was never used. The box used OpenJDK 21.0.13 and its
-md5-equal earth/world data, with the baseline's data-path flags removed
-from the submitted `JAVA_OPTS` as instructed.
+are no missing or short runs. The read-only helper independently checked
+all 102,352 monthly rows, expected endpoints and CSV/log/time records;
+the embedded baseline JSON equals `summary.json`. Local fallback was
+guarded before any JVM could start and was never used. The box used
+OpenJDK 21.0.13 and its earth/world data, with the baseline's data-path
+flags removed from the submitted `JAVA_OPTS` as instructed. Data-copy
+equality is the GB3 handoff guarantee; this run recorded paths and sizes,
+not fresh content hashes.
 
 | Criterion | 0.9.208 baseline | PW9 final |
 |---|---|---|
@@ -747,6 +751,13 @@ from the submitted `JAVA_OPTS` as instructed.
 ★ Keep both changed informational verdicts and the lower population
 figures in the baseline. EN1/EI1 makes M1/F1 the shipping criteria; no
 threshold, seed, policy or finding was altered to improve this score.
+The published baseline is OA1's `dc7f9cc7d`, before inherited FB11 ground
+funding changes in LongPlaytest on current main. PW9 does not edit that
+player or the ensemble driver. These are the required published-baseline
+deltas, not a controlled PW9-only attribution; the HIGH decline has no
+proved isolated cause or invented queued-red owner. The native main/PW9
+procurement comparison above is separate evidence. The helper's complete
+evidence report is `target/PW9-ensemble-report.txt`.
 The complete scored artifact, with only its heading and introductory
 version changed to the publication token, is [PW9 ensemble](../ensemble/PW9.md).
 Evidence is `target/ensemble/PW9/{score.md,baseline.md,summary.json,
