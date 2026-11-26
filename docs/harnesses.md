@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**257 harness files, 29,469 labelled assertions.** AllChecks runs 257 of them.
+**258 harness files, 29,503 labelled assertions.** AllChecks runs 258 of them.
 
 ## Which harnesses read which class
 
@@ -13,7 +13,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [AdultStage](map/AdultStage.md) | BuildAdviceCheck, CapitalGainsCheck, CardCheck, DebtStatisticsCheck, EducationCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, MoneyWordsCheck, SchoolingLadderCheck, SchoolingPageCheck |
 | [AdviceValueOracle](map/AdviceValueOracle.md) | BuildAdviceCheck, PowerPlanCheck, WorksFinanceCheck |
 | [AgeBand](map/AgeBand.md) | ArrivalMixCheck, CardCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, EducationCheck, EssentialWorksCheck, HealthCheck, HouseholdFlowCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, LabourCheck, LongPlaytest, MedicineCheck, OutsideCheck, OwnerCheck, PopulationCheck, RankingsCheck, ReadPathCheck, SaveFileCheck, ScaleCheck, SicknessCheck, Village1900Check, WorksFinanceCheck |
-| [Agriculture](map/Agriculture.md) | AgricultureCheck, EquipmentCheck, FieldOperatorsCheck, FittingCheck, FoodIndustryCheck, Forms1900Check, LongPlaytest, ScaleCheck, ZoningCheck |
+| [Agriculture](map/Agriculture.md) | AgricultureCheck, EquipmentCheck, FieldOperatorsCheck, FittingCheck, FoodIndustryCheck, Forms1900Check, LabourCheck, LongPlaytest, ScaleCheck, ZoningCheck |
 | [ArrivalMix](map/ArrivalMix.md) | ArrivalMixCheck, BasketYearCheck, StaffingDrawCheck, Village1900Check |
 | [Auction](map/Auction.md) | AskProceedsCheck, AuctionCheck, BuybackCheck, CallCheck, CapitalGainsCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, HoldersCheck, KeptCheck, NewGameCheck, SaveFileCheck, StepsCheck, WorksFinanceCheck |
 | [AuctionTally](map/AuctionTally.md) | AuctionCheck, LongPlaytest, SaveFileCheck |
@@ -1982,7 +1982,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L803 ...and the shops stock today's basket, to the bit
   - L805 fixture: the same city's first month had a year, and its shelf then was not today's
 
-## BondCheck.java - 227 labelled assertions
+## BondCheck.java - 240 labelled assertions
 
 > Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it
 > over the bank, who loses what in a default, what the bank charges for
@@ -1999,247 +1999,261 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 > ...
 
   - L216 fixture: the played city issued a corporate bond
-  - L232 every month this harness played closed the audit (
-- **L240 1. the bond's arithmetic: par at its own coupon, and a price that falls as the yield rises**
-  - L247 priced at its own coupon a bond is worth exactly its face, whatever is left of it
-  - L250 a point more on the yield and it is worth less
-  - L251 ...a point less and it is worth more
-  - L259 ...and it falls all the way, the yield from 0% to 30%
-  - L261 the coupons and the face, each discounted a month at a time
-  - L263 the yield a price implies is the one that gives it
-  - L265 with nothing left it is worth its face
-  - L267 a month's coupon is a twelfth of the coupon on the face
-  - L271 written down to a quarter, three quarters of it is gone
-  - L272 ...off every holder by the same share, the bank's cost with its face
-  - L274 ...so the holders still add up to the face
-- **L280 2. bookbuilding: the coupon is the lowest yield that fills the issue, and the rest is a bank loan**
-  - L307 fixture: at the bank's own price the book takes a bond of it
-  - L309 the bids at its coupon fill it
-  - L310 ...and a hundredth of a point under it they do not: its coupon is the lowest yield that does
-  - L312 ...no dearer than the loan, its costs spread over its ten years
-  - L314 fixture: the bank would take it only at its loan-equivalent yield, over the loan's price
-  - L316 fixture: so the book does not take all of it at a price no dearer than the loan
-  - L318 the partial issue reaches its size fixed point within ISSUE_ROUNDING
-  - L320 ...and the rest is a bank loan
-  - L321 ...the two raising it all
-  - L322 ...at the leverage the whole deal leaves, which every bid read
-  - L325 at a loan rate under every bid the book fills nothing: all of it is a bank loan
-  - L327 ...and the plan says what the book would have cleared the whole at
-  - L331 where the bank would lend nothing, no bond either: \"within the bank's limit\"
-  - L333 ...and where it would lend a quarter, the bond and the loan raise no more than that quarter
-- **L340 3. the choice: a small amount goes to the bank, a large one to a bond, and where they cross**
-  - L358 borrowing $10k it takes the bank: the fixed cost of an issue would be more than a tenth of it
-  - L360 borrowing $20M it takes a bond
-  - L369 ...and nothing smaller than that took a bond
-  - L373 the crossover is the face at which the coupon and its costs cost what the loan does
-  - L376 ...fixed / (TERM_YEARS x (loan all-in - coupon - spread / TERM_YEARS)), from nothing else
-  - L379 ...half that size and the bond would be dearer than the bank
-  - L380 ...twice it, cheaper
-  - L381 a bank loan's all-in is its rate and its fee over its term
-- **L388 7a. a sector short of cash borrows in the month: the shortfall desk asks the book, and the world's purchase crosses the border**
-  - L403 fixture: short of $5M,
-  - L410 its holders add up to its face
-  - L411 the issuer was handed its face less its costs
-  - L412 ...which the bank, its underwriter, was paid
-  - L414 fixture: the world bought part of it
-  - L415 the world's purchase is on the month's audit as money arriving from abroad
-  - L416 ...in the financial account
-  - L417 ...which is what the currency read for the month
-  - L418 ...and the month closes
-- **L447 1b. the coupons: a twelfth of each coupon on what each holder had at the month's top, every class**
-  - L459 the issuer's month's interest is its loans' and its bonds' coupons
-  - L462 the households were paid theirs
-  - L463 ...the bank its
-  - L464 ...which it took as interest
-  - L465 ...the companies theirs
-  - L466 ...and the world its, abroad
-  - L467 fixture: every class held some of the city's bonds at the month's top
-  - L468 the world's coupons leave on the audit, as income paid abroad
-  - L469 ...in the income account the currency reads
-  - L470 the households' coupons are on it too
-- **L476 4. the order book in play: no book crossed after the step, the sellers who waited counted, the audit closed**
-  - L499 fixture: participants posted orders on the books
-  - L500 after every step every book is uncrossed: what could meet already traded
-  - L501 ...and no sector bids for its own bonds
-  - L502 the sellers who waited are counted, and are no more than the sellers
-  - L503 the market's life volume is the sum of its books'
-- **L509 7. each participant by its own rule**
-  - L534 households bid nothing where a bond's expected return is no more than the deposit rate
-  - L536 ...a point over it, the paper's rule: HOUSEHOLD_PAPER_APPETITE a unit of spread of the issue
-  - L539 ...and never more than MAX_HOUSEHOLD_PAPER_SHARE of it
-  - L543 fixture: the bank is over its capital target, so it buys
-  - L548 its yield is an equal loan's four parts at the bond's term, the concentration charge, the loss at (1 - BOND_RECOVERY) and the record
-  - L553 under it the bank bids nothing
-  - L554 ...at it, the issue up to what its spare capital carries
-  - L560 its bonds are in its weighted book at a loan's weight, for the months they have left
-  - L566 the world bids a month of closing the gap to hot money's target: ARRIVAL_SPEED of it
-- **L581 7c. a company with idle cash bids for other sectors' bonds, never its own, and only while it owes nothing**
-  - L600 fixture:
-  - L602 fixture:
-  - L613 ...a point over the world's rate, a positive bid
-  - L614 ...and for its own bond nothing, at any yield
-  - L619 ...and no company that owes anything bids at all
-  - L636 fixture: a bank between its minimum and its target
-  - L639 under its target the bank bids for no bond at any yield
-  - L646 ...and asks to sell what takes it back there, at a loan's weight on its target - or all it holds
-  - L655 while hot money is running the world bids for nothing, at any yield
-  - L679 fixture: a household cell holds a claim on the bonds
-  - L696 fixture: bids rest on the books of the bonds it has a claim on, after the market's step
-  - L702 a household whose credit is cheaper than every bid's yield sells nothing
-  - L708 ...its asks wait on the books, over the bids
-  - L715 a household whose credit costs more than the bids' yield sells into them
-  - L716 ...raising what it was short, and banking what the higher bids paid past it
-  - L717 ...the rest in its savings
-  - L736 ...each at a price a bid was resting at, not its own ask
-  - L840 fixture: the played city has a sector over the shortfall ceiling
-  - L844 fixture: the month the bank books the claims closes
-  - L874 fixture: the played city has a healthy loss-making shortfall borrower
-  - L883 fixture:
-  - L885 fixture:
-  - L888 fixture:
-  - L891 fixture: the bank is between its minimum and its target, and rations growth
-  - L893 fixture:
-  - L902 fixture: the month ran on the bank's capital rule, rationing
-  - L904 a rationing bank covers a healthy sector's short month: a working-capital line
-  - L906 ...past what the capital rule would have let its debt grow
-  - L907 ...and refuses it a building its room does not cover: growth
-  - L909 a short sector sells what it holds first: its bonds, into the bids resting
-  - L911 ...then asks the lender, who will not lend past the line
-  - L913 ...and what it still could not pay defaults that month
-  - L914 ...its loans losing (1 - LOAN_RECOVERY) of what of them defaulted
-  - L916 ...its bonds (1 - BOND_RECOVERY) of theirs
-  - L918 fixture: after the write-down the lender reads it under the line, and lends
-  - L919 ...the unpaid rest lent as an interim loan, ranked first, its fee on top
-  - L921 ...its till ends the month at or above nothing
-  - L922 a sector over the ceiling is refused all but its interest reserve, and defaults on its own credit
-  - L924 ...lent the unpaid rest in the interim: the ceiling is not the interim lender's
-  - L926 nothing is forgiven on either: the audit's OverdraftForgiven is the backstop's alone
-  - L928 ...and it is the month's forgiven overdraft, as the backstop's always was
-  - L930 ...and the month closes
-  - L974 fixture: the city's second branch has opened and closed, and one stands
-  - L991 fixture: the shops owe under the shortfall desk's ceiling
-  - L993 the month closes
-  - L997 fixture: it ordered stock, and could pay for all of it
-  - L999 a sector under its ceiling buys as before: every order placed whole
-  - L1001 ...and filled whole
-  - L1007 fixture: the month the bank books the claim closes
-  - L1031 fixture: the shops owe past the shortfall desk's ceiling and under the line on their quarter
-  - L1034 the month closes
-  - L1040 fixture: it could pay for some of its order and not all of it
-  - L1041 a sector over its ceiling and short buys only what its cash and the credit it can get cover
-  - L1043 ...and does not order the rest
-  - L1060 ...so it does not default on the stock it did not buy
-  - L1061 the month closes
-  - L1073 fixture: under the line on its quarter, still
-  - L1074 the month closes
-  - L1088 a sector whose unavoidable bills outrun its cash and its lender's credit can pay for no stock
-  - L1091 ...and buys only that, all of it on their credit
-  - L1102 the same sector still defaults on a bill it cannot avoid: principal that fell due
-  - L1133 ...on no more than the principal and what it owed its suppliers for stock it has sold:
-  - L1138 the month closes
-- **L1165 5. recoveries by instrument: a slice takes a loan's loss off the loans and a bond's off the bonds**
-  - L1182 fixture: $900k of loans and $600k of bonds, 1.5 times its assets
-  - L1189 the loans lose h x (1 - LOAN_RECOVERY) of theirs
-  - L1191 ...the bonds h x (1 - BOND_RECOVERY) of theirs
-  - L1193 ...so the loans recover LOAN_RECOVERY of what defaulted
-  - L1195 ...and the bonds BOND_RECOVERY
-  - L1196 what defaulted is on the lender's record by class
-  - L1215 at
-  - L1217 ...and the bonds h x (1 - BOND_RECOVERY)
-  - L1223 both inside the sources' ranges
-  - L1243 the backstop on a sector with nothing left writes its loans off whole
-  - L1244 ...and its bonds
-  - L1245 ...leaving it owing nothing on either
-- **L1249 5b. a slice in play: the bondholders' loss reaches every class, and the world's crosses the border**
-  - L1261 fixture:
-  - L1264 the loans lost (1 - LOAN_RECOVERY) of what of them defaulted
-  - L1266 ...and the bonds (1 - BOND_RECOVERY) of theirs
-  - L1270 ...the loans recovering more than the bonds
-  - L1276 the bondholders lost it between them: households, the bank, the companies and the world
-  - L1278 fixture: every class held some of what defaulted
-  - L1280 the world's loss is declared across the border, a valuation with no cash in it
-  - L1281 ...on the valuation line the foreign position reads
-  - L1282 ...and the month closes
-  - L1285 a bondholder's expected loss is the default rate times (1 - BOND_RECOVERY)
-  - L1297 fixture: the bank read the sector at its provision
-  - L1298 ...what it owes the bank as it stands at the month's end
-  - L1299 ...the bank's allowance on the sector its loans at (1 - LOAN_RECOVERY) and its bonds at (1 - BOND_RECOVERY)
-  - L1303 ...and a loan's own risk in its price the curve at (1 - LOAN_RECOVERY)
-  - L1315 written down by a tenth, every holder of the bond loses a tenth: households, the bank at its cost, the world, the companies
-  - L1320 ...the households' claims falling by exactly their loss
-  - L1321 ...the world's on the border's line
-  - L1322 ...and it was a tenth of the sector's bonds
-- **L1329 6. concentration: Basel's capital, a charge that rises with a sector's share and falls as the book spreads**
-  - L1338 the IRB capital gives Basel's own table of corporate risk weights, to its two decimals
-  - L1339 the correlation at the soundest firms is 24%
-  - L1340 ...and a book in one industry R x SECTOR_CORRELATION_MULTIPLIER
-  - L1359 a dollar lent to an industry carries more capital the more of the book it already is
-  - L1360 ...and a small one's carries less than none: it diversifies the book
-  - L1374 ...and falls as the book spreads over more industries, its Herfindahl index with it
-  - L1382 by the Euler rule the sectors' shares add back up to the book's add-on
-  - L1383 ...which is weight on the book at the minimum ratio
-  - L1396 fixture: the played bank's book has a largest industry
-  - L1398 a loan's capital per dollar is the target on its weight plus the sector's add-on, carried at the target
-  - L1401 ...and its charge is that capital at the owners' return over the money - the one formula
-  - L1409 pushed to the lender, it is the part of the sector's rate over prime, its own risk and its record
-  - L1417 the add-on is in the bank's requirement: its own row of the weight table
-  - L1418 ...and the table still foots to the weighted book the requirement reads (BankCheck 13)
-  - L1419 ...its minimum the ratio on all of it
-- **L1436 8. save and load: the bonds, who holds them and the resting orders; and a save from before them**
-  - L1448 it loads
-  - L1450 fixture: the city has bonds outstanding and orders resting
-  - L1451 the same bonds come back
-  - L1455 fixture: an interim loan is outstanding (5c)
-  - L1456 the interim loans come back, by their own type: what a sector owes on them
-  - L1458 ...as many of them, ranked first, over every sector
-  - L1460 ...with the same orders resting on their books, in the same order
-  - L1461 ...the households' bonds on them
-  - L1470 fixture:
-  - L1471 ...and each comes back by the cell's name, bond by bond, to the bit
-  - L1476 ...kept in the save under the cells' names
-  - L1477 ...their value a unit of face
-  - L1478 ...the bank's bonds on its book
-  - L1479 ...and its concentration add-on
-  - L1480 ...the lender's bond write-offs on the record
-  - L1483 ...and last month's book for the screens
-  - L1493 a month on, both the city and its reload play and close
-  - L1507 a round-1 save, its households' bonds one pool, loads
-  - L1526 ...each cell holding the share of every bond its claim was of the pool, its total its claim
-  - L1527 ...every bond's households' face the pool it was, and the cells' sum
-  - L1530 ...and it plays, the audit closing
-  - L1541 fixture: the save's cells are today's width
-  - L1552 a save from before the bonds loads
-  - L1553 ...with no bonds, no books and nobody holding any
-  - L1555 ...the households' paper where it was
-  - L1558 ...and it plays, the audit closing every month
-- **L1656 9a. equal bond bids keep arrival priority at the price tick**
-  - L1666 both bids rest at one tick, in their arrival order
-  - L1669 the first arrival bought the face
-  - L1670 the second bid still waits
-  - L1672 a positive bid below half a tick is refused before settlement
-- **L1678 9. each household type trades: a rich cell bids, a cell over its money asks, and they meet**
-  - L1680 fixture: the bond's households' face is the cells' own, summed
-  - L1689 the rich cell bid and the cell over its money asked, and they traded with each other
-  - L1691 ...the face the one gave up is the face the other took
-  - L1692 ...the cash the one paid is the cash the other was paid, the transfer counted
-  - L1694 ...and the same the other way up
-  - L1695 ...so the bond's households' face did not move
-  - L1696 ...and is still the cells' own, summed
-  - L1697 no pool line saw it: nothing bought from or sold to the pools
-  - L1707 fixture: the rich cell's bid rests after the step, and nothing traded
-  - L1712 a cell short of money sells into it, raising what it was short
-  - L1713 ...cell to cell, the rich cell taking the face
-  - L1715 ...the face the one gave up the other took
-  - L1716 ...and no pool line
-- **L1728 1c. at maturity the issuer pays every holder its face, and the bond and its book go**
-  - L1742 fixture: short of $5M,
-  - L1745 fixture: a bond outstanding
-  - L1752 it falls due and is gone
-  - L1753 the issuer repaid its face
-  - L1754 ...to its holders, every class together
-  - L1756 the world's principal leaves on the audit, in the financial account
-  - L1757 ...the households' arrives in their savings
-  - L1758 ...and the month closes
+  - L233 every month this harness played closed the audit (
+- **L241 1. the bond's arithmetic: par at its own coupon, and a price that falls as the yield rises**
+  - L248 priced at its own coupon a bond is worth exactly its face, whatever is left of it
+  - L251 a point more on the yield and it is worth less
+  - L252 ...a point less and it is worth more
+  - L260 ...and it falls all the way, the yield from 0% to 30%
+  - L262 the coupons and the face, each discounted a month at a time
+  - L264 the yield a price implies is the one that gives it
+  - L266 with nothing left it is worth its face
+  - L268 a month's coupon is a twelfth of the coupon on the face
+  - L272 written down to a quarter, three quarters of it is gone
+  - L273 ...off every holder by the same share, the bank's cost with its face
+  - L275 ...so the holders still add up to the face
+- **L281 2. bookbuilding: the coupon is the lowest yield that fills the issue, and the rest is a bank loan**
+  - L308 fixture: at the bank's own price the book takes a bond of it
+  - L310 the bids at its coupon fill it
+  - L311 ...and a hundredth of a point under it they do not: its coupon is the lowest yield that does
+  - L313 ...no dearer than the loan, its costs spread over its ten years
+  - L315 fixture: the bank would take it only at its loan-equivalent yield, over the loan's price
+  - L317 fixture: so the book does not take all of it at a price no dearer than the loan
+  - L319 the partial issue reaches its size fixed point within ISSUE_ROUNDING
+  - L321 ...and the rest is a bank loan
+  - L322 ...the two raising it all
+  - L323 ...at the leverage the whole deal leaves, which every bid read
+  - L326 at a loan rate under every bid the book fills nothing: all of it is a bank loan
+  - L328 ...and the plan says what the book would have cleared the whole at
+  - L332 where the bank would lend nothing, no bond either: \"within the bank's limit\"
+  - L334 ...and where it would lend a quarter, the bond and the loan raise no more than that quarter
+- **L341 3. the choice: a small amount goes to the bank, a large one to a bond, and where they cross**
+  - L359 borrowing $10k it takes the bank: the fixed cost of an issue would be more than a tenth of it
+  - L361 borrowing $20M it takes a bond
+  - L370 ...and nothing smaller than that took a bond
+  - L374 the crossover is the face at which the coupon and its costs cost what the loan does
+  - L377 ...fixed / (TERM_YEARS x (loan all-in - coupon - spread / TERM_YEARS)), from nothing else
+  - L380 ...half that size and the bond would be dearer than the bank
+  - L381 ...twice it, cheaper
+  - L382 a bank loan's all-in is its rate and its fee over its term
+- **L389 7a. a sector short of cash borrows in the month: the shortfall desk asks the book, and the world's purchase crosses the border**
+  - L404 fixture: short of $5M,
+  - L411 its holders add up to its face
+  - L412 the issuer was handed its face less its costs
+  - L413 ...which the bank, its underwriter, was paid
+  - L415 fixture: the world bought part of it
+  - L416 the world's purchase is on the month's audit as money arriving from abroad
+  - L417 ...in the financial account
+  - L418 ...which is what the currency read for the month
+  - L419 ...and the month closes
+- **L448 1b. the coupons: a twelfth of each coupon on what each holder had at the month's top, every class**
+  - L460 the issuer's month's interest is its loans' and its bonds' coupons
+  - L463 the households were paid theirs
+  - L464 ...the bank its
+  - L465 ...which it took as interest
+  - L466 ...the companies theirs
+  - L467 ...and the world its, abroad
+  - L468 fixture: every class held some of the city's bonds at the month's top
+  - L469 the world's coupons leave on the audit, as income paid abroad
+  - L470 ...in the income account the currency reads
+  - L471 the households' coupons are on it too
+- **L477 4. the order book in play: no book crossed after the step, the sellers who waited counted, the audit closed**
+  - L500 fixture: participants posted orders on the books
+  - L501 after every step every book is uncrossed: what could meet already traded
+  - L502 ...and no sector bids for its own bonds
+  - L503 the sellers who waited are counted, and are no more than the sellers
+  - L504 the market's life volume is the sum of its books'
+- **L510 7. each participant by its own rule**
+  - L535 households bid nothing where a bond's expected return is no more than the deposit rate
+  - L537 ...a point over it, the paper's rule: HOUSEHOLD_PAPER_APPETITE a unit of spread of the issue
+  - L540 ...and never more than MAX_HOUSEHOLD_PAPER_SHARE of it
+  - L544 fixture: the bank is over its capital target, so it buys
+  - L549 its yield is an equal loan's four parts at the bond's term, the concentration charge, the loss at (1 - BOND_RECOVERY) and the record
+  - L554 under it the bank bids nothing
+  - L555 ...at it, the issue up to what its spare capital carries
+  - L561 its bonds are in its weighted book at a loan's weight, for the months they have left
+  - L567 the world bids a month of closing the gap to hot money's target: ARRIVAL_SPEED of it
+- **L582 7c. a company with idle cash bids for other sectors' bonds, never its own, and only while it owes nothing**
+  - L601 fixture:
+  - L603 fixture:
+  - L614 ...a point over the world's rate, a positive bid
+  - L615 ...and for its own bond nothing, at any yield
+  - L620 ...and no company that owes anything bids at all
+  - L637 fixture: a bank between its minimum and its target
+  - L640 under its target the bank bids for no bond at any yield
+  - L647 ...and asks to sell what takes it back there, at a loan's weight on its target - or all it holds
+  - L656 while hot money is running the world bids for nothing, at any yield
+  - L680 fixture: a household cell holds a claim on the bonds
+  - L697 fixture: bids rest on the books of the bonds it has a claim on, after the market's step
+  - L703 a household whose credit is cheaper than every bid's yield sells nothing
+  - L709 ...its asks wait on the books, over the bids
+  - L716 a household whose credit costs more than the bids' yield sells into them
+  - L717 ...raising what it was short, and banking what the higher bids paid past it
+  - L718 ...the rest in its savings
+  - L737 ...each at a price a bid was resting at, not its own ask
+  - L841 fixture: the played city has a sector over the shortfall ceiling
+  - L845 fixture: the month the bank books the claims closes
+  - L875 fixture: the played city has a healthy loss-making shortfall borrower
+  - L884 fixture:
+  - L886 fixture:
+  - L889 fixture:
+  - L892 fixture: the bank is between its minimum and its target, and rations growth
+  - L894 fixture:
+  - L903 fixture: the month ran on the bank's capital rule, rationing
+  - L905 a rationing bank covers a healthy sector's short month: a working-capital line
+  - L907 ...past what the capital rule would have let its debt grow
+  - L908 ...and refuses it a building its room does not cover: growth
+  - L910 a short sector sells what it holds first: its bonds, into the bids resting
+  - L912 ...then asks the lender, who will not lend past the line
+  - L914 ...and what it still could not pay defaults that month
+  - L915 ...its loans losing (1 - LOAN_RECOVERY) of what of them defaulted
+  - L917 ...its bonds (1 - BOND_RECOVERY) of theirs
+  - L919 fixture: after the write-down the lender reads it under the line, and lends
+  - L920 ...the unpaid rest lent as an interim loan, ranked first, its fee on top
+  - L922 ...its till ends the month at or above nothing
+  - L923 a sector over the ceiling is refused all but its interest reserve, and defaults on its own credit
+  - L925 ...lent the unpaid rest in the interim: the ceiling is not the interim lender's
+  - L927 nothing is forgiven on either: the audit's OverdraftForgiven is the backstop's alone
+  - L929 ...and it is the month's forgiven overdraft, as the backstop's always was
+  - L931 ...and the month closes
+  - L975 fixture: the city's second branch has opened and closed, and one stands
+  - L992 fixture: the shops owe under the shortfall desk's ceiling
+  - L994 the month closes
+  - L998 fixture: it ordered stock, and could pay for all of it
+  - L1000 a sector under its ceiling buys as before: every order placed whole
+  - L1002 ...and filled whole
+  - L1008 fixture: the month the bank books the claim closes
+  - L1032 fixture: the shops owe past the shortfall desk's ceiling and under the line on their quarter
+  - L1035 the month closes
+  - L1041 fixture: it could pay for some of its order and not all of it
+  - L1042 a sector over its ceiling and short buys only what its cash and the credit it can get cover
+  - L1044 ...and does not order the rest
+  - L1061 ...so it does not default on the stock it did not buy
+  - L1062 the month closes
+  - L1074 fixture: under the line on its quarter, still
+  - L1075 the month closes
+  - L1089 a sector whose unavoidable bills outrun its cash and its lender's credit can pay for no stock
+  - L1092 ...and buys only that, all of it on their credit
+  - L1103 the same sector still defaults on a bill it cannot avoid: principal that fell due
+  - L1134 ...on no more than the principal and what it owed its suppliers for stock it has sold:
+  - L1139 the month closes
+- **L1166 5. recoveries by instrument: a slice takes a loan's loss off the loans and a bond's off the bonds**
+  - L1183 fixture: $900k of loans and $600k of bonds, 1.5 times its assets
+  - L1190 the loans lose h x (1 - LOAN_RECOVERY) of theirs
+  - L1192 ...the bonds h x (1 - BOND_RECOVERY) of theirs
+  - L1194 ...so the loans recover LOAN_RECOVERY of what defaulted
+  - L1196 ...and the bonds BOND_RECOVERY
+  - L1197 what defaulted is on the lender's record by class
+  - L1216 at
+  - L1218 ...and the bonds h x (1 - BOND_RECOVERY)
+  - L1224 both inside the sources' ranges
+  - L1244 the backstop on a sector with nothing left writes its loans off whole
+  - L1245 ...and its bonds
+  - L1246 ...leaving it owing nothing on either
+- **L1250 5b. a slice in play: the bondholders' loss reaches every class, and the world's crosses the border**
+  - L1262 fixture:
+  - L1265 the loans lost (1 - LOAN_RECOVERY) of what of them defaulted
+  - L1267 ...and the bonds (1 - BOND_RECOVERY) of theirs
+  - L1271 ...the loans recovering more than the bonds
+  - L1277 the bondholders lost it between them: households, the bank, the companies and the world
+  - L1279 fixture: every class held some of what defaulted
+  - L1281 the world's loss is declared across the border, a valuation with no cash in it
+  - L1282 ...on the valuation line the foreign position reads
+  - L1283 ...and the month closes
+  - L1286 a bondholder's expected loss is the default rate times (1 - BOND_RECOVERY)
+  - L1298 fixture: the bank read the sector at its provision
+  - L1299 ...what it owes the bank as it stands at the month's end
+  - L1300 ...the bank's allowance on the sector its loans at (1 - LOAN_RECOVERY) and its bonds at (1 - BOND_RECOVERY)
+  - L1304 ...and a loan's own risk in its price the curve at (1 - LOAN_RECOVERY)
+  - L1316 written down by a tenth, every holder of the bond loses a tenth: households, the bank at its cost, the world, the companies
+  - L1321 ...the households' claims falling by exactly their loss
+  - L1322 ...the world's on the border's line
+  - L1323 ...and it was a tenth of the sector's bonds
+- **L1330 6. concentration: Basel's capital, a charge that rises with a sector's share and falls as the book spreads**
+  - L1339 the IRB capital gives Basel's own table of corporate risk weights, to its two decimals
+  - L1340 the correlation at the soundest firms is 24%
+  - L1341 ...and a book in one industry R x SECTOR_CORRELATION_MULTIPLIER
+  - L1360 a dollar lent to an industry carries more capital the more of the book it already is
+  - L1361 ...and a small one's carries less than none: it diversifies the book
+  - L1375 ...and falls as the book spreads over more industries, its Herfindahl index with it
+  - L1383 by the Euler rule the sectors' shares add back up to the book's add-on
+  - L1384 ...which is weight on the book at the minimum ratio
+  - L1397 fixture: the played bank's book has a largest industry
+  - L1399 a loan's capital per dollar is the target on its weight plus the sector's add-on, carried at the target
+  - L1402 ...and its charge is that capital at the owners' return over the money - the one formula
+  - L1410 pushed to the lender, it is the part of the sector's rate over prime, its own risk and its record
+  - L1418 the add-on is in the bank's requirement: its own row of the weight table
+  - L1419 ...and the table still foots to the weighted book the requirement reads (BankCheck 13)
+  - L1420 ...its minimum the ratio on all of it
+- **L1437 8. save and load: the bonds, who holds them and the resting orders; and a save from before them**
+  - L1449 it loads
+  - L1451 fixture: the city has bonds outstanding and orders resting
+  - L1452 the same bonds come back
+  - L1456 fixture: an interim loan is outstanding (5c)
+  - L1457 the interim loans come back, by their own type: what a sector owes on them
+  - L1459 ...as many of them, ranked first, over every sector
+  - L1461 ...with the same orders resting on their books, in the same order
+  - L1462 ...the households' bonds on them
+  - L1471 fixture:
+  - L1472 ...and each comes back by the cell's name, bond by bond, to the bit
+  - L1477 ...kept in the save under the cells' names
+  - L1478 ...their value a unit of face
+  - L1479 ...the bank's bonds on its book
+  - L1480 ...and its concentration add-on
+  - L1481 ...the lender's bond write-offs on the record
+  - L1484 ...and last month's book for the screens
+  - L1494 a month on, both the city and its reload play and close
+  - L1508 a round-1 save, its households' bonds one pool, loads
+  - L1527 ...each cell holding the share of every bond its claim was of the pool, its total its claim
+  - L1528 ...every bond's households' face the pool it was, and the cells' sum
+  - L1531 ...and it plays, the audit closing
+  - L1542 fixture: the save's cells are today's width
+  - L1553 a save from before the bonds loads
+  - L1554 ...with no bonds, no books and nobody holding any
+  - L1556 ...the households' paper where it was
+  - L1559 ...and it plays, the audit closing every month
+- **L1657 9a. equal bond bids keep arrival priority at the price tick**
+  - L1667 both bids rest at one tick, in their arrival order
+  - L1670 the first arrival bought the face
+  - L1671 the second bid still waits
+  - L1673 a positive bid below half a tick is refused before settlement
+- **L1679 9. each household type trades: a rich cell bids, a cell over its money asks, and they meet**
+  - L1681 fixture: the bond's households' face is the cells' own, summed
+  - L1690 the rich cell bid and the cell over its money asked, and they traded with each other
+  - L1692 ...the face the one gave up is the face the other took
+  - L1693 ...the cash the one paid is the cash the other was paid, the transfer counted
+  - L1695 ...and the same the other way up
+  - L1696 ...so the bond's households' face did not move
+  - L1697 ...and is still the cells' own, summed
+  - L1698 no pool line saw it: nothing bought from or sold to the pools
+  - L1708 fixture: the rich cell's bid rests after the step, and nothing traded
+  - L1713 a cell short of money sells into it, raising what it was short
+  - L1714 ...cell to cell, the rich cell taking the face
+  - L1716 ...the face the one gave up the other took
+  - L1717 ...and no pool line
+- **L1923 9b. native household posting folds touched identities once, with eager raw-bit twins**
+  - L1925 fixture: at least three nonconsecutive bond ids trade
+  - L1931 warm month
+  - L1946 month
+  - L1955 month
+  - L1958 month
+  - L1961 month
+  - L1967 month
+  - L1968 after month
+  - L1972 warm thrown settlement
+  - L1978 fixture: settlement threw after a seller write and before the buyer write
+  - L1981 the thrown settlement still recounts its touched seller
+  - L1983 thrown settlement finally
+  - L1984 after thrown settlement
+- **L1996 1c. at maturity the issuer pays every holder its face, and the bond and its book go**
+  - L2010 fixture: short of $5M,
+  - L2013 fixture: a bond outstanding
+  - L2020 it falls due and is gone
+  - L2021 the issuer repaid its face
+  - L2022 ...to its holders, every class together
+  - L2024 the world's principal leaves on the audit, in the financial account
+  - L2025 ...the households' arrives in their savings
+  - L2026 ...and the month closes
 
 ## BooksCheck.java - 57 labelled assertions
 
@@ -20130,7 +20144,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L277 kept: an untagged log of the tally is known red only
   - L283 kept: a run the unmended runner tagged NEW is rejudged known red only
 
-## LabourCheck.java - 267 labelled assertions
+## LabourCheck.java - 288 labelled assertions
 
 > Verifies the labour market: who can hold a job, and what it costs. Not part
 > of the game.
@@ -20337,115 +20351,137 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1241 the floor stayed under the mean wage of the posts it does not hold, every month
   - L1242 the floor never reached the top of the dial
   - L1243 the university band's lowest wage stayed above the floor, every month
-- **L1344 wages against the index they chase**
-  - L1422 fixture: the basket is based, so there is an index to chase
-  - L1449 fixture: the crawl really did inflate the basket, steadily
-  - L1451 every month wages chased the index the city published
-  - L1453 ...and moved by the expected month to EXPECTED_SHARE and the chase to the rest - one indexation, not two
-  - L1455 so the wage index sits inside the lag's window, every month
-  - L1457 ...which under a rising index is BELOW it, not a third above
-  - L1465 fixture: the currency was reformed
-  - L1466 a reform leaves the wage index where it was
-  - L1467 ...and the level it is walking toward
-  - L1468 ...and the price index it walks toward
-  - L1476 ...and two years on, wages still chase the index the city published
-  - L1478 ...the expected month and the chase at a time
-  - L1479 ...inside the lag's window
-  - L1484 fixture: the reformed city saved
-  - L1487 the wage index reloads
-  - L1489 ...and the level it is walking toward
-  - L1491 ...and the price index it is handed
-  - L1505 and a reloaded city's wages chase the index it publishes
-  - L1507 ...the expected month and the chase at a time
-  - L1508 ...inside the lag's window
-- **L1541 every employer pays each job type's wage for the posts filled, the sick included**
-  - L1595 fixture: the city's job types fill unevenly
-  - L1606 (a) every employer's payroll is what the households are paid
-  - L1607 (c) ...and the average-fill figure is not the sectors' payroll on this city
-  - L1619 (a) ...and each sector's payroll is its filled posts at the households' wage
-  - L1636 fixture: some sector is working, so there is an output for the sickness to slow
-  - L1637 (b) half the city off sick, fill held: no sector's payroll moves
-  - L1638 ...while every working sector's output falls with it
-  - L1639 ...and the households are paid what they were
-  - L1668 fixture: nothing is on site, so the builders' work is the repairs of the standing city
-  - L1670 fixture: the repairs need less of the depots than the core crew
-  - L1677 fixture: the builders have less work than crews, and lay some off
-  - L1681 ...offering the share of their posts the work needs over their fill, never fewer than the core crew
-  - L1688 ...each job type's posts at that share, rounded once
-  - L1694 the posts not offered are not in the city's count
-  - L1697 (a) ...and the households are paid what the employers paid, the laid-off posts in nobody's pay
-  - L1710 a month with the work for them hires every crew back
-  - L1714 (a) ...and the households are paid what the employers paid, that month too
-  - L1848 (f)
-  - L1849 ...read afresh, once
-  - L1851 ...and a read with nothing moved is not another fill
-  - L1852 fixture: the move changed the vacancies, so a figure held over it would be stale
-  - L1869 (e)
-  - L1870 ...which is the bare reading
-  - L1871 ...read afresh, once
-  - L1904 fixture: before
-  - L1910 ...read afresh, once
-  - L1911 fixture:
-- **L1915 the labour figures held for a pass are the bare ones, read afresh when they move (AP5)**
-  - L1951 fixture: the town has people, and posts in several sectors
-  - L1952 fixture: the builders lay crews off, so the posts they offer are a share of theirs
-  - L1953 fixture: the doctors' posts are gated, the hospitals have them, and there are heads at university to hold a licence
-  - L1955 fixture: the shops have posts, and the police station is a building the town has none of
-  - L1957 fixture: the unskilled and the widest graduate band have posts open and workers to place
-  - L1959 fixture: no scope is open to begin with
-  - L1968 (a) the vacancies read in a pass are the bare fill
-  - L1969 ...and read again are the same figure
-  - L1970 ...from one fill, not two
-  - L1972 ...and a caller who writes to the figure it was handed does not move the held one
-  - L1973 ...and the fill rate is the bare one, to the bit
-  - L1977 (b) the city's posts are the bare ones
-  - L1978 ...and the jobs the game offers, the research posts with them
-  - L1985 ...every job type's posts at every post
-  - L1986 ...the posts the sectors withhold of each job type
-  - L1987 ...and the builders' own
-  - L1988 ...and the posts withheld over every job type
-  - L1998 fixture: some sector has housing capacity and so a reading to compare
-  - L1999 ...a sector's buildings by their capacity are the bare ones, in every sector
-  - L2000 ...and by their posts
-  - L2001 ...all of them from one build of the posts, not one each
-  - L2012 (c) buildings put up at once add their posts to the next reading, each job type by the template's own
-  - L2013 ...which is the bare reading
-  - L2014 ...read afresh, once
-  - L2017 fixture: the order went on site, none of it standing
-  - L2018 (c) an order on site adds no posts: the reading is the one before
-  - L2019 ...and the bare one
-  - L2020 ...read afresh after the order, whether or not it moved a post
-  - L2022 ...and not again with nothing moved since
-  - L2030 (d) a stack of a template not yet built moves its sector's buildings by its posts
-  - L2031 ...to the bare reading
-  - L2032 ...read afresh, once
-  - L2046 (e) buildings scrapped take their posts from the next reading
-  - L2047 ...which is the bare reading
-  - L2048 ...read afresh, once
-  - L2055 (e) a building given one more post adds one to the next reading for each of them standing
-  - L2057 ...which is the bare reading
-  - L2058 ...read afresh, once
-  - L2062 ...and put back, the reading is the one before it
-  - L2077 fixture: the town's homes are three stacks of one sector, the house's first in the list
-  - L2091 fixture: ...every one of them, and they stand
-  - L2103 fixture: ...the shop has the recipe's posts
-  - L2106 fixture: ...the shop's posts are between the two recipes'
-  - L2110 fixture: ...and back on its own figures, the shop has its posts again
-  - L2116 ...and the builders now withhold a share of the shops' posts as well
-  - L2120 ...and put back, the builders withhold what they did
-  - L2126 fixture: ...the house's stack now after the apartments'
-  - L2130 (f) the buildings moved and the people were not told: the vacancies were not read again
-  - L2132 ...and a read with nothing moved is not a fill
-  - L2133 fixture: the posts built since the people were told them are not the ones they hold
-  - L2196 fixture: on the other ladder a graduate band's base is another multiple of the unskilled
-  - L2211 fixture: the graduate band and the unskilled are one market, so the bands' bases split the workers between them
-  - L2222 fixture: ...the city has no stacks
-  - L2226 (h) a scope opened inside it is the same one, one deeper
-  - L2228 ...and the outer one is still open when the inner one closes
-  - L2230 (h) closed, no scope is open on this thread
-  - L2235 ...so the vacancies are the bare fill after the people moved
-  - L2236 ...and the posts the bare ones after a build
-  - L2237 ...with no fill and no build of the posts counted by the scope that closed
+- **L1345 wages against the index they chase**
+  - L1423 fixture: the basket is based, so there is an index to chase
+  - L1450 fixture: the crawl really did inflate the basket, steadily
+  - L1452 every month wages chased the index the city published
+  - L1454 ...and moved by the expected month to EXPECTED_SHARE and the chase to the rest - one indexation, not two
+  - L1456 so the wage index sits inside the lag's window, every month
+  - L1458 ...which under a rising index is BELOW it, not a third above
+  - L1466 fixture: the currency was reformed
+  - L1467 a reform leaves the wage index where it was
+  - L1468 ...and the level it is walking toward
+  - L1469 ...and the price index it walks toward
+  - L1477 ...and two years on, wages still chase the index the city published
+  - L1479 ...the expected month and the chase at a time
+  - L1480 ...inside the lag's window
+  - L1485 fixture: the reformed city saved
+  - L1488 the wage index reloads
+  - L1490 ...and the level it is walking toward
+  - L1492 ...and the price index it is handed
+  - L1506 and a reloaded city's wages chase the index it publishes
+  - L1508 ...the expected month and the chase at a time
+  - L1509 ...inside the lag's window
+- **L1542 every employer pays each job type's wage for the posts filled, the sick included**
+  - L1596 fixture: the city's job types fill unevenly
+  - L1607 (a) every employer's payroll is what the households are paid
+  - L1608 (c) ...and the average-fill figure is not the sectors' payroll on this city
+  - L1620 (a) ...and each sector's payroll is its filled posts at the households' wage
+  - L1637 fixture: some sector is working, so there is an output for the sickness to slow
+  - L1638 (b) half the city off sick, fill held: no sector's payroll moves
+  - L1639 ...while every working sector's output falls with it
+  - L1640 ...and the households are paid what they were
+  - L1669 fixture: nothing is on site, so the builders' work is the repairs of the standing city
+  - L1671 fixture: the repairs need less of the depots than the core crew
+  - L1678 fixture: the builders have less work than crews, and lay some off
+  - L1682 ...offering the share of their posts the work needs over their fill, never fewer than the core crew
+  - L1689 ...each job type's posts at that share, rounded once
+  - L1695 the posts not offered are not in the city's count
+  - L1698 (a) ...and the households are paid what the employers paid, the laid-off posts in nobody's pay
+  - L1711 a month with the work for them hires every crew back
+  - L1715 (a) ...and the households are paid what the employers paid, that month too
+  - L1849 (f)
+  - L1850 ...read afresh, once
+  - L1852 ...and a read with nothing moved is not another fill
+  - L1853 fixture: the move changed the vacancies, so a figure held over it would be stale
+  - L1870 (e)
+  - L1871 ...which is the bare reading
+  - L1872 ...read afresh, once
+  - L1905 fixture: before
+  - L1911 ...read afresh, once
+  - L1912 fixture:
+  - L1936 before
+  - L1943 fixture:
+- **L1947 the month's sector walks and one live posts-past reading per jobs call (AP6)**
+  - L1950 nested bare readings bypass groupings and restore the outer mode
+  - L1953 a failed bare reading restores the grouped mode
+  - L1968 form
+  - L1971 ...every entry is the original per-type reading
+  - L1972 fixture: changing the farms' horses or operators moves the next jobs reading
+  - L1980 a missing posts-past array reads as the missing hook
+  - L1985 a short posts-past array keeps each per-type reading
+  - L2005 the monthly raw-post cache keeps a sector's changing offered share live
+  - L2017 fixture: the on-site order's template has no stack yet
+  - L2025 fixture: the new buildings are on site, with no finished total moved
+  - L2028 a new on-site stack refreshes the warmed group's identities and order
+  - L2031 ...and every next held reading has the bare bits
+  - L2032 ...and the new group is reused on another reading
+  - L2062 fixture: the second reading thread warmed the raw-post cache
+  - L2066 an edit on another thread refreshes the next raw-bit reading
+  - L2067 ...and this thread's held raw posts refresh too
+  - L2101 fixture: the saved scratch city loaded into the same manager
+  - L2109 an instance added after warming is read live in every jobs entry
+  - L2113 the returned grouping cannot be edited by a caller
+- **L2127 the labour figures held for a pass are the bare ones, read afresh when they move (AP5)**
+  - L2163 fixture: the town has people, and posts in several sectors
+  - L2164 fixture: the builders lay crews off, so the posts they offer are a share of theirs
+  - L2165 fixture: the doctors' posts are gated, the hospitals have them, and there are heads at university to hold a licence
+  - L2167 fixture: the shops have posts, and the police station is a building the town has none of
+  - L2169 fixture: the unskilled and the widest graduate band have posts open and workers to place
+  - L2171 fixture: no scope is open to begin with
+  - L2180 (a) the vacancies read in a pass are the bare fill
+  - L2181 ...and read again are the same figure
+  - L2182 ...from one fill, not two
+  - L2184 ...and a caller who writes to the figure it was handed does not move the held one
+  - L2185 ...and the fill rate is the bare one, to the bit
+  - L2189 (b) the city's posts are the bare ones
+  - L2190 ...and the jobs the game offers, the research posts with them
+  - L2197 ...every job type's posts at every post
+  - L2198 ...the posts the sectors withhold of each job type
+  - L2199 ...and the builders' own
+  - L2200 ...and the posts withheld over every job type
+  - L2210 fixture: some sector has housing capacity and so a reading to compare
+  - L2211 ...a sector's buildings by their capacity are the bare ones, in every sector
+  - L2212 ...and by their posts
+  - L2213 ...all of them from one build of the posts, not one each
+  - L2224 (c) buildings put up at once add their posts to the next reading, each job type by the template's own
+  - L2225 ...which is the bare reading
+  - L2226 ...read afresh, once
+  - L2229 fixture: the order went on site, none of it standing
+  - L2230 (c) an order on site adds no posts: the reading is the one before
+  - L2231 ...and the bare one
+  - L2232 ...read afresh after the order, whether or not it moved a post
+  - L2234 ...and not again with nothing moved since
+  - L2242 (d) a stack of a template not yet built moves its sector's buildings by its posts
+  - L2243 ...to the bare reading
+  - L2244 ...read afresh, once
+  - L2258 (e) buildings scrapped take their posts from the next reading
+  - L2259 ...which is the bare reading
+  - L2260 ...read afresh, once
+  - L2267 (e) a building given one more post adds one to the next reading for each of them standing
+  - L2269 ...which is the bare reading
+  - L2270 ...read afresh, once
+  - L2274 ...and put back, the reading is the one before it
+  - L2289 fixture: the town's homes are three stacks of one sector, the house's first in the list
+  - L2303 fixture: ...every one of them, and they stand
+  - L2315 fixture: ...the shop has the recipe's posts
+  - L2318 fixture: ...the shop's posts are between the two recipes'
+  - L2322 fixture: ...and back on its own figures, the shop has its posts again
+  - L2328 ...and the builders now withhold a share of the shops' posts as well
+  - L2332 ...and put back, the builders withhold what they did
+  - L2338 fixture: ...the house's stack now after the apartments'
+  - L2342 (f) the buildings moved and the people were not told: the vacancies were not read again
+  - L2344 ...and a read with nothing moved is not a fill
+  - L2345 fixture: the posts built since the people were told them are not the ones they hold
+  - L2408 fixture: on the other ladder a graduate band's base is another multiple of the unskilled
+  - L2423 fixture: the graduate band and the unskilled are one market, so the bands' bases split the workers between them
+  - L2434 fixture: ...the city has no stacks
+  - L2438 (h) a scope opened inside it is the same one, one deeper
+  - L2440 ...and the outer one is still open when the inner one closes
+  - L2442 (h) closed, no scope is open on this thread
+  - L2447 ...so the vacancies are the bare fill after the people moved
+  - L2448 ...and the posts the bare ones after a build
+  - L2449 ...with no fill and no build of the posts counted by the scope that closed
 
 ## LandCheck.java - 606 labelled assertions
 
@@ -24476,6 +24512,18 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L523 the real redraw keeps the same scroller and its position
   - L524 the redraw updates the estate line to the new month's model
   - L526 the redraw retains the month's disclosure nodes
+
+## MonthPostsCheck.java - 0 labelled assertions
+
+> Proves the labour figures held for a pass and across a month survive every
+> writer, with the original walks compared as raw bits (AP5/AP6).
+> 
+> WHY. LabourCheck's census and wage replay need not be repeated for each
+> invalidation mutation. This entry point runs its two controlled held-figure
+> sections, including the people's inputs, in a normal named harness. The
+> full LabourCheck retains both sections too; no assertion is removed.
+
+_(no printed sections or labelled assertions found)_
 
 ## MortgageCheck.java - 187 labelled assertions
 
