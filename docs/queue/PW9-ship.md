@@ -1,5 +1,6 @@
 <!-- readiness: provisional -->
-<!-- ensemble: docs/ensemble/PW9.md; snapshot 8c0bb1f98 against 0.9.208; PASS 10/10 hard, 23/26 overall -->
+<!-- ensemble: docs/ensemble/PW9.md; pre-budget-mend snapshot 8c0bb1f98 against 0.9.208; PASS 10/10 hard, 23/26 overall; final-source revalidation pending -->
+<!-- checkpoint: guard 54d4b6cc6; fast and four focused names green; extra LongPlaytest timed out at 1740s, unexempted; no green reusable dry run -->
 ## changelog
 ### {next} — PW9, a small firm plant for the early towns — 2026-11-26, ready, see docs/queue/PW9-notes.md
 An 850 kW Small Steam Station gives 1900–1914 towns a firm coal-fired choice
@@ -10,5 +11,7 @@ checked. The town keeps its jobless founding power when new utilities hire;
 built plants still depend on their workers. Queued generation and loads
 are compared by whole dispatch months and the next seasonal peak, preserving interim
 needs. Existing plant ids and the save format stay intact.
+Future power offers pass the ordinary first-unit funding screen before
+vetoing an affordable present step.
 ## queued
 | PW9-G | Wires ready with the power ({next}) | A utility builds no more generation than its wires can carry, ordering the Substation and lines with it; cause the 31 stations behind 10 MW as the red | [PW9-G](PW9-G.md) |
