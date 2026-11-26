@@ -1,6 +1,7 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-PW9-8zOS00nm -->
 <!-- readiness: provisional -->
 <!-- ensemble: docs/ensemble/PW9.md; final-source snapshot 58d830238 against 0.9.208; 80/80 complete, PASS 10/10 hard, 23/26 overall -->
-<!-- checkpoint: guard 54d4b6cc6; fast and four focused names green; laptop LongPlaytest timeout is GB6 class per orchestrator, boxed dry run judges whole; no green reusable dry run -->
+<!-- checkpoint: guard 54d4b6cc6; final ensemble PASS10/10 hard; whole boxed dry exit0/suite3, no NEW reds, LongPlaytest passed -->
 ## changelog
 ### {next} — PW9, a small firm plant for the early towns — 2026-11-26, ready, see docs/queue/PW9-notes.md
 An 850 kW Small Steam Station gives 1900–1914 towns a firm coal-fired choice
