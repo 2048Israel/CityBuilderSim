@@ -778,7 +778,9 @@ ensemble, acquired the box, compiled, and completed the whole suite.
 
 Run `/home/jerus/cbs/runs/cbs-gate-PW9-AG6VUQWA` tested the two commits
 above; `gate exit 1` followed suite exit 4 at 2026-11-26 05:57:10 UTC.
-The run was copied home as `/tmp/cbs-gate-PW9-AG6VUQWA`; root launcher
+The run was copied home to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-PW9-AG6VUQWA` (the wrapper's
+`/tmp/cbs-gate-PW9-AG6VUQWA`); root launcher
 `target/PW9-dryrun.log`, exit file `target/PW9-dryrun-exit.txt` and its
 tool process all ended with exit 1. This failed run is evidence, not a
 reuse approval, and no gate-run comment was attached to the ship file.
@@ -790,7 +792,8 @@ earlier Oil-Fired choice, loaded/unbroken later orders, and earlier wind.
 They have no known-red exemption. The unchanged harness's scarce-cash
 premise holds: available 103.95, one Small Steam Station 102.92, next
 plant 1,075.84; the planner nevertheless returns a held nine-coal order.
-The full-plan candidate filter is being traced before a mend. The old
+The initial full-plan candidate-filter hypothesis was traced and
+disproved by the corrected diagnostic below. The old
 lead-plus-horizon pin and pending/wind fixtures also need the new dated
 law checked against native monthly need; no fixture has been moved.
 
@@ -803,3 +806,53 @@ after the gate has ended. Root runs no JVM alongside it. One accidental
 SSH grep reader was closed by its verified own PID, with gate and other
 jobs untouched. The new EssentialWorks findings stop readiness and are
 being mended, as mailed in `20261126-015902-267`; the marker stays.
+
+## EssentialWorks diagnosis after the first dry run
+
+The helper's final accounting is ALL257 picked, 254 run: 236 passed and
+18 red harnesses. Seventeen reds are already named on main; only
+EssentialWorks is NEW. Globe, ShortSelling and OrderSearch are the three
+unselected nightly checks, not failed launches; all nine display starts
+ran. Three observations and three soft timings do not change the six
+unexempted EssentialWorks assertions. Exact evidence is
+`target/PW9-dryrun-report.txt` and the kept run's manifests,
+`checks.complete`, suite/reds/unnamed and per-harness logs.
+
+Two individually authorized, serial named EssentialWorks diagnostics in
+the helper worktree reproduced the same six assertions (wrapper status
+4); both fully ended. The first diagnostic's display-name filter missed
+the fixtures and emitted no trace. The corrected run used unconditional
+identity tags and read-only candidate/date prints. At each start commit
+charge was 72%, about 15 GiB free and 7.5 GiB RAM available, meeting MG1.
+All diagnostic prints and regenerated-map side effects were restored;
+the helper ended with a clean tracked tree and no child JVM. Evidence:
+`codex-PW9-dryrun/target/PW9-essential-diagnostic-{one,two}.log`.
+
+The decisive cash trace finds a feasible 3,015-unit Small Steam full plan
+with a 733.97-month quote. It is **not** rejected as infeasible. Instead
+`timely()` vetoes it for the slightly cheaper future Diesel full plan
+(cost/value 0.0872665 versus 0.087811), although that future row's first
+unit fails the budget that let one 102.92 steam unit survive. The current
+15-month steam increment is fundable from 103.95 cash; the veto turns that
+legal incremental step into an all-held result.
+
+★ Apply the same current legal budget screen to a future POWER row before
+it can veto a fundable present step. Reuse the existing quote/screen;
+do not forecast future revenue or duplicate the payment/debt rules.
+Keep valid cheaper-future waiting, the lifecycle comparison and all dated
+monthly/seasonal closure laws. A fresh coding helper is implementing this
+bounded guard and causative harness mends; root keeps review and commit.
+
+The pending fixture already ordered five Oil-Fired Plants at m37, before
+its old probe/checkpoint m39. Six oil units on site then cover its next
+candidate peak, so an empty later order list is the correct covered
+control. Preserve that observation and the real DataSave/nonempty
+one-by-one parity law by adding a continuation before the real order.
+The wind fixture has no forecast physical gap through m240: at the next
+dated peak m42, physical demand 203,244 is below supply 229,402, while
+reserve need 252,908 is above it. Steam 39/15 months closes the reserve;
+Wind 2/36 months does not. Keep this scenario as its actual seasonal
+control and cause a separate real early-wind need. The old exact
+lead-plus-horizon pin must become the actual-count native frontier law.
+No original fixture has been hidden, conservation/save law weakened, or
+new known-red row proposed.
