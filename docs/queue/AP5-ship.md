@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-AP5-XKcPbjfP -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — AP5, the auto-builder's pass holds the labour figures — 2026-11-26, ready, see docs/queue/AP5-notes.md
 Slot 9 was slow again at 50x (Jerus, 2026-11-25: "ok once again, slow down, slot 9"). The auto-builder's pass, half the
