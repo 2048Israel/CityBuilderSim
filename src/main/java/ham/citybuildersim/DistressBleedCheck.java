@@ -35,7 +35,7 @@ import java.util.Map;
  *      operating streak under the dial (back at 0, a loss that is only interest, or begun again), nothing is sold where the first
  *      form of the rule (e17ee67f9's: the net count alone, the plant losing money this month) would have sold; and the centres
  *      go when the operating streak reaches the dial
- *   6. overdrawn with no lender, the quarter as before
+ *   6. overdrawn with no lender, interest-only losses keep paying plant; the quarter starts only at the operating-loss dial
  *   7. only a sector the spare-capacity rule cannot reach bleeds (the three overrides), and, as behaviour, a sector that
  *      does not bleed, lent, not overdrawn, sells nothing to the rule however long it has lost money, where Business
  *      Services in the same state sells
@@ -434,18 +434,45 @@ public class DistressBleedCheck {
                 interestOnly >= 1 && soldInterestOnly == 0);
         assertTrue("...and the rule is not dead: the centres go when the operating streak reaches the dial", atDialAsked > 0 && notSold == 0 && centresGo);
 
-        /* ============ 6. overdrawn with no lender, the quarter as before ============ */
-        out.println("\n--- overdrawn with no lender, a quarter ---");
+        /* ============ 6. overdrawn with no lender: running costs before liquidation (QR1) ============ */
+        out.println("\n--- overdrawn with no lender: interest-only losses hold, operating losses sell ---");
 
-        // A second town, which the desk has lent nothing: the sector overdrawn, its net count at the dial. The quarter reads the net count and the
-        // cash, not the operating streak, which is set at 0 so that no bleed could be what sells.
+        // Cause the condition: the plant earns its running costs every month, interest makes every month a net loss,
+        // and the shortfall desk has lent nothing. Both clocks read the statements rather than a restored count.
         Town c = town("dbleed-c");
         c.cash(c.key, OVERDRAWN);
-        c.streaks(c.key, DISTRESS, 0);
+        long interestSales = 0;
+        for (int i = 0; i < DISTRESS + BLEED; i++) {
+            statement(c, PROFIT, 0, INTEREST);
+            c.plans.recordSectorResult(c.key, c.bs.getNetIncome());
+            c.plans.recordOperatingResult(c.bs);
+            interestSales += sold(c.ask(c.bs));
+        }
+        assertTrue("fixture: paying plant is overdrawn, has no lender and has net losses past the dial solely from interest",
+                c.bs.getCash() < 0 && c.desk.getPrincipal(c.key) == 0 && c.held() == CENTRES
+                        && c.bs.statement().operatingIncome > 0 && c.bs.getNetIncome() < 0
+                        && c.plans.getLossMonths(c.key) == DISTRESS + BLEED && c.plans.getOperatingLossMonths(c.key) == 0);
+        assertTrue("interest-only losses sell no paying plant even overdrawn with no lender", interestSales == 0);
+
+        // A fresh operating-loss run gets the entire runway even though interest has already run out the net clock.
+        long earlySales = 0;
+        for (int i = 0; i < DISTRESS - 1; i++) {
+            statement(c, LOSS, 0, INTEREST);
+            c.plans.recordSectorResult(c.key, c.bs.getNetIncome());
+            c.plans.recordOperatingResult(c.bs);
+            earlySales += sold(c.ask(c.bs));
+        }
+        assertTrue("fixture: the operating-loss streak is one month short, the net streak already past the dial",
+                c.plans.getOperatingLossMonths(c.key) == DISTRESS - 1 && c.plans.getLossMonths(c.key) > DISTRESS);
+        assertTrue("the quarter waits for the full operating-loss runway", earlySales == 0);
+        statement(c, LOSS, 0, INTEREST);
+        c.plans.recordSectorResult(c.key, c.bs.getNetIncome());
+        c.plans.recordOperatingResult(c.bs);
         long quarterHeld = c.held();
         BusinessInvestment.Decision quarter = c.ask(c.bs);
         assertTrue("fixture: the rule was asked of a sector past the dial that still held centres",
-                c.plans.getLossMonths(c.key) >= DISTRESS && quarterHeld == CENTRES && c.bs.getCash() < 0 && c.desk.getPrincipal(c.key) == 0);
+                c.plans.getLossMonths(c.key) >= DISTRESS && c.plans.getOperatingLossMonths(c.key) == DISTRESS
+                        && quarterHeld == CENTRES && c.bs.getCash() < 0 && c.desk.getPrincipal(c.key) == 0);
         long want = Math.min(quarterHeld, Math.max(1, (long) Math.ceil(quarterHeld * BusinessInvestment.MAX_RETIREMENT_FRACTION)));
         long bleedStep = Math.max(1, quarterHeld / BLEED);
         out.printf("   %d centres held at a net count of %d, cash $%,.0fk, nothing owed to the desk: %d sold; a lent sector would sell %d%n",
@@ -454,6 +481,15 @@ public class DistressBleedCheck {
         assertTrue("...from the biggest holding", quarter.template != null && quarter.template.getId() == c.contact.getId());
         assertTrue("...MAX_RETIREMENT_FRACTION of it, rounded up and at most all of it", quarter.quantity == want);
         assertTrue("...which is more than the one a lent sector sells, so the two rules are two rules", quarter.quantity > bleedStep);
+
+        // Recovery resets the operating clock even with the net clock still climbing; breaking even also pays running costs.
+        for (double running : new double[] { PROFIT, 0 }) {
+            statement(c, running, 0, INTEREST);
+            c.plans.recordSectorResult(c.key, c.bs.getNetIncome());
+            c.plans.recordOperatingResult(c.bs);
+            assertTrue("running result " + running + " resets the distress clock while interest keeps net income below zero",
+                    c.plans.getOperatingLossMonths(c.key) == 0 && c.bs.getNetIncome() < 0 && !c.ask(c.bs).build);
+        }
 
         /* ============ 7. only a sector the spare-capacity rule cannot reach bleeds ============ */
         out.println("\n--- only a sector with no demand reading bleeds ---");
