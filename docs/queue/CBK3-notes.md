@@ -1,6 +1,7 @@
 # CBK3 - the window against collateral and the bank's rules as dials
 
 Work in progress; not a ship record. Base b2f50a9ef, 0.9.213, format66.
+CBK1 main482dbfab2 (0.9.214, still format66) is merged for integration checks.
 The builder keeps decisions and review; CBK3-trace's bounded diagnostic
 reports and scorer slice are described below. All runs name main's Earth2
 and World1 files. No player save directory or slot was accessed.
@@ -144,197 +145,190 @@ premise before Basel25%, exempting sovereigns. LE1 was checked free and its
 brief is docs/queue/LE1.md; it will be queued through this batch's ship file.
 No ticket cap or invented firm count is used.
 
-## Check record so far
+## Equity valuation and the floor repair
 
-- Initial --fast: green; later added UI file required CLAUDE count54, now mended.
-- BankRulesCheck: current model and120-month copied-city run green, including
-  direct-advance cap, no equity collateral, shared fill budget/no hot-money
-  budget, tighter controls, defaults, actual saves and missing-key defaults.
-- CentralBankCheck initial pre-final-quote run: two stale assertions equated
-  the wholesale blend/bill with the window alone, plus1740s timeout in its fixed
- 24-city strictness measurement. No shapes, horizon, shock, cent or save bound
-  changed. The stale laws now test both bills and the CB's actual portion at
-  original tolerances. The current final-model run is in progress.
-- BankCheck: five stale funding expectations diagnosed by the helper: omitted
-  foreign term price/share, wholesale blend mistaken for window rate/cost,
-  and insolvency mistaken for100% overnight funding. All fixtures and original
-  tolerances remain. Actual tranche/reconciliation assertions replace those
-  identities; the deposit-funded failed bank still freezes new credit.
-  These are not the known HT1-H played-loss premises; those passed in this run.
-- AllChecks name matching is substring based: the call BankCheck also selected
-  CentralBankCheck and YoungBankCheck. Young passed; Central's current run
-  continues. Further narrow runs use serial settings, with exact named JVMs
-  where needed to avoid rerunning an unrelated long harness.
+The orchestrator relayed RES3's lead in mail20261126-174636-318. The helper
+confirmed mature Equity.fairValue resurrected its offering quote at zero
+income/spare value, while capitalising even tiny positive income. Desk marks,
+trading income, equity and purchasing capacity inherited that discontinuity.
+Its contribution to the original desk stock cannot be isolated from source.
 
-## Ensemble observations and explicit exception
+* ★ Design choice: remove only the mature listing's historical-price fallback.
+  Keep the existing spare-cash plus capitalised-income model continuous down
+  to its monetary floor. The under-12-month prospects rule, income, ownership,
+  cash and mark-loss accounting remain. This is not a new book-value promise.
 
-The published0.9.212/MR1 baseline is snapshot84234b69c. Its raw CSV/header/logs
-on gatebox confirm no remittance/revenue/failure counters; F1=0 measures
-findings, not ordinary rescued bank failures. No omitted flow was inferred
-from cash, M0 or ending capital.
+[IFRS 13](https://www.ifrs.org/issued-standards/list-of-standards/ifrs-13-fair-value-measurement/)
+defines fair value by a current exit price, supporting rejection of a stale
+issue-price guarantee. The continuous zero limit is a model inference, not a
+claim that every real loss-making company is worthless.
 
-The orchestrator approved the one supplemental replay exception in
-20261126-173158-709: retained baseline classes, identical80 policies/seeds,
-getter observations only, proving all eight default trace md5s equal with and
-without observers. The job started by mail174132-646 and is running at
-/home/jerus/cbs/observations/CBK3-before-20261126. Its copied class manifest must
-match retained MR1. Original archive is untouched. The runner uses the box's
-ensemble/box locks and yields to gates/nightly.
+* ★ Design choice: keep the absolute concentration capital add-on unchanged
+  when the regulatory minimum moves. Its equivalent risk weight is computed
+  from the current minimum immediately, rather than cached until refresh.
+  Risk staging keeps its calibrated90% reference: tightening new-credit LTA
+  does not itself make an existing borrower riskier. The fixture changes the
+  rule against nonzero concentration without refreshing its book.
 
-Ensemble.fundingColumns adds only cb_remitted, budget_revenue, their share,
-cumulative bank_failures including rescued episodes, and cb_remitted_cum.
-ObserverTrace attaches that exact getter-only function to the supported
-LongPlaytest observer, keeping results outside Game. The scorer slice adds
-optional informational observations and baseline metadata, leaving every
-existing criterion/threshold/verdict and M1/F1 unchanged. Weighted flow sums,
-not average monthly ratios, define the revenue share. Results follow when done.
+The first uncommitted edit hit the identical return in young priceOf instead
+of mature fairValue. Seven new regression assertions caught it; priceOf was
+restored and only fairValue changed. No expected result or tolerance moved.
+The wrong-site city1.7981594% and5/24 failure observations are invalid for the
+final model (target/CBK3-evidence-wrong-return.log and
+CBK3-bankfailure-wrong-return.log). Other intermediate city measurements,
+including4.2055303% on mature-only a32abc1a1, are superseded.
 
-## Remaining before mends
+That mature-only version exposed a real numerical defect in BankFailureCheck:
+seeds6/13/20 at m76,10 at m113,22 at m75 became non-finite, with3162 splits.
+Equity's presentation floor follows expected prices; Exchange's nominal
+floor was lower. A never-traded company at Equity's floor bypassed the
+existing worthless-consolidation skip, repeatedly shrinking its share count.
+The first overflowing company/operator was not captured, so is not claimed.
 
-Finish required named checks, merge CBK1 once shipped and wire the SAME
-BankRulesPane onto its central policy page, merge main/RES3 as required,
-review final diff, refresh maps/fast/pick, and write the provisional ship file.
-The final CBK3 ensemble still follows stranger SHIP; this baseline exception
-is not approval to skip that review. The manual uses its artifact publication
-route; generated docs/manual files are unchanged. Gameplay write-up:
-claude/the-window-against-collateral.md. Eye check: both rule pages retain nodes,
-thumb and scroll across month redraws and show the same saved values.
+* ★ Design choice: Exchange.valuationFloor uses max(nominal floor,
+  Equity.noValue) consistently for fair strikes, atFloor and the existing
+  no-worthless-consolidation law. No amount is clipped, no capital invented,
+  and no saved cache added. Legitimate recovery, splits, ownership and cash
+  remain. Six240-step regressions cover zero/negative/tiny earnings, two
+  denominations and expected prices2, then cause a real positive recovery.
+  BankFailureCheck now explicitly rejects a non-finite equity movement/scale;
+  its former abs(NaN)>bound test could falsely pass. Its tolerance is unchanged.
 
-Build verification update: all six existing ensemble self-tests pass under Git
-Bash (target/CBK3-score-tests.txt), along with the seven bank-observer cases.
-The earlier PowerShell invocation could not locate bash for four runner cases;
-rerunning through the required shell resolved that environment error.
-The baseline proof passed all eight byte comparisons and retained-class
-manifests. Its first ensemble start rejected an equivalent explicit-path
-settings string; resuming with main-data autodiscovery retained the original
-snapshot settings and started all 80 runs. No archive or guard was changed.
+## Check record and integration
 
-## Equity valuation lead, included in this fix
+Pre-CBK1 physical model6ff36d2d8:
 
-The orchestrator relayed RES3's lead in mail 20261126-174636-318. The helper
-confirmed Equity.fairValue returned the last offering quote at zero mature
-income/spare value, but capitalised even tiny positive income. Exchange's
-fair mark and Bank.markSecurities carry that discontinuity into inventory,
-trading income, equity and desk capacity. This is a separate amplifier of the
-funding defect; source alone does not establish its share of the observed
-city's desk stock.
+- BankRulesCheck: nine directional controls/defaults, haircuts/market government
+  collateral, direct advance cap, no equity collateral, shared fill cash/no
+  hot funding, actual save writer/loader and missing keys all green. The120
+  copied-city months pass all collateral, desk and cent assertions.
+- BankFailureCheck: full24 seeds/120 months,2880 monthly audits and explicitly
+  finite equity movements green;5/24 ordinary failures and317 splits versus
+  the failed model's3162. The final ensemble still determines the paired
+  no-new-failure finding against the retained baseline.
+- BankCheck exact, MonetaryCheck, EquityCheck, ExchangeCheck exact and
+  MarketCheck exact green. EquityCheck includes109 lines for mature valuation
+  and96 for the shared floor/recovery regression; original young rules stay.
+- SaveFileCheck: exit3, only registered REV-HC1 P5 populated format62 city.
+  New CBK3 save checks pass. Rejudging the saved suite confirmed native3;
+  PowerShell otherwise normalised a nonzero child exit to1. Subsequent calls
+  explicitly propagate LASTEXITCODE. target/CBK3-save-suite.txt and
+  target/CBK3-save-judge.txt retain that evidence.
+- CentralBankCheck: NOT green. Three1740s cutoffs, latest6ff run20/24 fixed
+  strictness rows complete, with no preceding assertion red. Four rows and
+  later rules, saves and section22 par conservation are unexecuted. This is
+  incomplete, not the registered HT1-H assertion pair and not yet classified
+  as an outside runtime red. Log target/CBK3-central-6ff-timeout.log.
 
-* ★ Design choice: remove the mature listing's zero-only historical-price
-  fallback. Its existing spare-cash plus capitalised-income valuation now
-  reaches the existing monetary floor continuously. Keep the under-12-month
-  prospects rule, actual income, cash, holdings and mark-loss accounting.
-  A stale issue quote is not a guarantee of recoverable value. This preserves
-  the existing no-growth forecasting premise rather than inventing a book or
-  option-value floor.
+The initial Bank/Central tests contained laws equating all wholesale borrowing
+with the window alone, excluding foreign price/share and actual billing.
+They now reconcile both actual tranches and the central bank's own portion.
+The insolvent deposit-funded bank still freezes new credit. Fixtures, shapes,
+24-case/horizon counts, conservation, cent and save bounds are unchanged.
+AllChecks uses substring selection: BankCheck also selects CentralBankCheck
+and YoungBankCheck, ExchangeCheck selects DebtExchangeCheck, MarketCheck
+selects WorldMarketCheck. Exact JVMs avoided unintended repeats, retaining
+normal data, soft timing, memory and1740s timeout settings. YoungBank passed.
 
-[IFRS 13's current-market exit-price definition](https://www.ifrs.org/issued-standards/list-of-standards/ifrs-13-fair-value-measurement/)
-supports rejecting a historical issue-price guarantee. Choosing the existing
-income model's continuous zero limit is a model inference, not a claim that
-all real loss-making companies are worthless. The copied-city measurement
-above was rerun on commit 6ff36d2d8 with the shared-floor correction: 1.4128160%, three failures, cent audit
-and both funding bounds green. The preceding 1.7921789% run is preserved in
-target/CBK3-evidence-before-equity.log and is superseded.
+CBK1 merged without a source conflict. The only conflicts were generated
+indexes/maps, regenerated from the merged source. Its central Policy page
+now calls the identical BankRulesPane as Policy, with its own redraw callback;
+there is one BankRules model. No CBK2 pace/direct-purchase control is built.
+CLAUDE's interface count is55. Post-merge --fast: compile green, zero firm
+Stale findings,209 informational soft. Post-merge model checks are underway.
 
-* ★ Design choice: concentration's absolute economic capital add-on remains
-  unchanged when the regulatory minimum moves; its equivalent book weight is
-  derived from the current minimum immediately, not cached until next month.
-  Risk staging retains its calibrated 90% reference: lowering a regulatory
-  new-credit ceiling does not itself make an existing borrower riskier.
-  The new harness causes a nonzero concentration and changes the dial without
-  refreshing the book; required equity rises and the add-on remains exact.
+The helper's immutable6ff source review found owned repeated collateral work:
+each bank-held bond's marketValue called curve(), whose key scanned the whole
+debt book even on a cache hit. The forecast and curve were already cached;
+it was not rebuilding the forecast per paper. Now each collateral operation
+lazily reads one domestic curve and passes it into the same price routine,
+keeping order, flows, callable treatment, holder fractions and clamps. Nothing
+survives the call. strikePrices also reads its unmutated window target once.
+The harness compares the aggregate to separate public prices to the bit for
+three rates with partial holdings, bills, callable/ordinary and foreign paper.
+No AP6 held figure or AP7 engine optimisation is added. The independent
+wholesale quote still uses its original YieldCurve formula. No timeout bound
+or strictness fixture was shortened to conceal the cost. A measured rerun,
+not this source diagnosis, must settle whether the cutoff is mended.
 
-The new EquityCheck regression caught an implementation error before any
-valuation commit: identical return text existed in priceOf and fairValue.
-The first edit changed the young-company method, leaving the mature fallback
-in place. Seven new assertions failed, including the unchanged young-company
-law. The helper proved the wrong site from source and the fixture outputs;
-the parent restored priceOf and changed only mature fairValue. No expected
-value or tolerance was changed. The earlier 1.7981594% replay and 5/24 bank
-failure observation used that wrong-site edit and are provisional, preserved
-as target/CBK3-evidence-wrong-return.log and target/CBK3-bankfailure-wrong-return.log.
-Both are rerun on the corrected source before review.
+* ★ Design choice: saved statements preserve actual historical advances,
+  never substitute today's new collateral target on load. The pre-CBK3
+  residual is therefore captioned net funding outside settled wholesale,
+  with a tooltip distinguishing the current deposit projection. The supplied
+  city's domestic books4798.148 plus hot549.655 are not the same measure as
+  its5223.615 allocation; late trades/hot movements and FW2 saved pre-trade
+  books prevent reconstructing a missing flow from its ending state. No
+  foreign creditor, money issue or retrospective deposit stock is invented.
 
-Corrected mature-only run (commit a32abc1a1): BankRulesCheck and all 120 monthly
-collateral/desk/cent assertions pass. Its 4.2055303% remittance share remains
-above the cited Fed 2021 comparison; it is measured, not forced to that target.
-Five additional failures are one fewer than the same original continuation.
-The mature valuation correction books real mark losses; the earlier three-
-failure interim funding-only figure is not the final model result.
+## Ensemble observations and the approved baseline exception
 
-Broader validation on a32abc1a1 found a real defect: BankFailureCheck seed 10
-produced non-finite audit pools and bank equity, and its cent assertion failed.
-The copied-city result above is not sufficient to ship this model. The helper
-is tracing the first non-finite value, including the mature-floor/split unit
-interaction. No assertion, tolerance or fixture is relaxed. Full failed log:
-target/CBK3-bankfailure-nan.log. Further model checks wait for the mend.
+The original0.9.212/MR1 CSV has no remittance/revenue/failure counters. F1=0
+means findings, not rescued ordinary bank failures. No flow was inferred from
+ending cash, M0 or equity. Orchestrator173158-709 approved one supplemental
+replay of retained84234b69c classes, exact80 policies/seeds, getter-only
+observations and eight byte-identical default trace proofs. Its start was
+mailed174132-646 and PASS verdict185017-677. The original archive is untouched.
+Kept root on box: /home/jerus/cbs/observations/CBK3-before-20261126; copied data:
+target/ensemble/CBK3-before; proof: target/CBK3-baseline-capture/observer-proof.
 
-Central timeout diagnosis (helper report 20261126-182123-744): the preserved
-run completed 20/24 fixed strictness rows before 1740s, with no earlier
-assertion failure. The 26,400 nominal city-month table/helpers are unchanged
-from main. Four rows and subsequent rule/save/section22 par-conservation
-assertions were not executed. This is TIMED OUT/INCOMPLETE, not green; main's
-latest gate has no Central timeout, and its registered HT1-H assertion pair
-is a different red. No budget, shapes, horizon or bounds are changed. A final
-named run remains due, and any repeated cutoff needs honest classification.
+The manifest matches2567 retained entries/2510 classes, SHA256
+b88b7440a03e7c9d8fbd6e1618130c9faf8ce5f2dcd07475c4183225554967a5.
+ObserverTrace calls the exact Ensemble.fundingColumns through LongPlaytest's
+supported observer, stores nothing in Game, and proved all eight trace files
+byte/MD5 equal. The first launch rejected an equivalent explicit-path settings
+string before any80-run job started; main-data autodiscovery resumed using
+the original snapshot settings. Original files, locks and guards remained.
 
-* ★ Design choice: repair the existing no-worthless-consolidation law with
-  one threshold. Equity's presentation floor is anchored to expected prices;
-  Exchange's nominal floor was not. Exchange now uses the greater threshold
-  consistently to strike fair value, classify atFloor and skip consolidation.
-  A presentation epsilon is not positive business value. There is no new saved
-  state and no change to cash, income, ownership or legitimate split factors.
-  This mends the causal mismatch rather than clipping non-finite balances.
+Ensemble now records remitted/revenue flows, optional monthly ratio,
+cumulative failures including rescues and lifetime remittance. The scorer
+reports pooled sum(remitted)/sum(revenue), never averaged monthly ratios.
+All6 existing scorer self-tests and7 new observation tests pass under Git
+Bash. An initial PowerShell test invocation could not locate bash for four
+runner cases; the required-shell rerun resolved it. Existing criteria,
+thresholds, verdicts and hard M1/F1 are unchanged.
 
-The completed bad run first failed seed 6 at m76, then seed 10 at m113,
-13/20 at m76 and22 at m75. It recorded3162 split/consolidation events. The old
-log does not identify the first overflowing company/operator, so that is not
-claimed. The helper found the source amplification and is building a direct
-never-traded floor/recovery regression. It also found an equity-check blind
-spot: abs(NaN)>bound is false; explicit finiteness strengthens that assertion
-without changing its existing tolerance. MonetaryCheck passes on the shared-
-floor repair; SaveFileCheck is running. Full24-seed audit replay remains due.
+Supplement docs/ensemble/CBK3-before.md records all80 runs,102352 observed
+rows and all28 old criterion values/verdicts identical to0.9.212:24/26overall,
+M1/F1hard10/10, A1/A2 informational fail as before, H1 retired. The replay's
+snapshot calls itself0.9.210 because it precedes the MR1 publisher's label;
+it is the exact published0.9.212 code snapshot, not another city/model.
+No auto currency reform occurs; raw flow units remain a stable denomination.
 
-Final shared-floor replay on6ff36d2d8: BankFailureCheck passes all24seeds,
-2880 monthly money audits and explicitly finite equity movements, with5/24
-ordinary failures and317 splits/consolidations (the failed run had3162).
-BankRulesCheck's120-month copiedcity also passes:1.4128160%,3additional
-failuresvs6original. Its full values above are current; the4.2055303% pre-
-shared-floor measurement is kept in target/CBK3-evidence-before-shared-floor.log
-and is superseded. Monetary/Equity/Exchange aregreen; SaveFile is known-red-
-only (registered REV-HC1P5). Rejudging saved suite gives native exit3;
-PowerShell otherwise normalizes a nonzero child exit to1, so later calls
-explicitly propagate LASTEXITCODE. Bounds/fixtures areunchanged.
+| Policy | Pooled remittance/revenue | Failures | Runs affected |
+|---|---:|---:|---:|
+| AUTO2 |0.061122288%|80|16/16|
+| ZERO_SLACK |0.194778204%|67|16/16|
+| ZERO_HOT |4.668742325%|45|14/16|
+| SHOCK |5.877349694%|50|16/16|
+| HIGH |2.432930655%|47|16/16|
 
-The approved baseline replay has finished80/80. All28 stored criterion
-values/verdicts and old policy summaries match0.9.212 exactly:24/26 overall,
-M1/F1hard10/10, A1/A2 informational FAIL asbefore, H1retired. All102352
-recorded rows have complete flow/failure observations;114 monthly ratio
-cells with nonpositive monthly revenue remain unavailable and are not
-averaged. The new observations count289 cumulative bank failures in78/80
-runs (max8), despiteF1=0. Recorded windows are AUTO2m2-2400, ZERO_SLACK2-2040,
-ZERO_HOT2-402, SHOCK2-840, HIGH2-720. Candidate comparison must match them.
-The new baseline is docs/ensemble/CBK3-before.md. Verdict mailed185017-677;
-there is no CBK3 heavy job left on the box. Final candidate ensemble is not
-run or certified until strangerSHIP.
+Overall0.111123032%,289 failure episodes in78/80 (maximum8). Recorded windows
+are AUTO2m2-2400, ZERO_SLACK2-2040, ZERO_HOT2-402, SHOCK2-840, HIGH2-720.
+114 monthly ratio cells have nonpositive revenue and remain unavailable;
+all underlying flow/failure observations are present. Candidate comparison
+must pair each policy/seed/window; shared prefixes and different horizons
+make an unqualified pooled comparison insufficient. The final CBK3 ensemble
+has not run; stranger SHIP is its go, then main is merged first. M1 and F1
+stop a ship. This baseline exception is not approval to skip that review.
 
-Final pre-CBK1 named Central run on6ff36d2d8 also stopped at1740s:20/24
-informational rows completed, no earlier assertion red, remaining four rows
-and subsequent rule/save/par-conservation assertions unexecuted. Native
-wrapper exit4, target/CBK3-central-6ff-timeout.log. It remains INCOMPLETE.
-The parent has commissioned a source-only check of new collateral/wholesale
-curve work before attributing the cutoff to a fixture/runtime class.
+## Publication and remaining work
 
-CBK1 shipped at482dbfab2 (0.9.214, stillformat66); orchestrator message
-20261126-190438-166 says merge and put the SAME banking rules on its Policy
-page. The merge follows this finished run to avoid changing an active check's
-source beneath it. RES3 has not yet been merged.
+Gameplay write-up: claude/the-window-against-collateral.md. Eye check: the two
+rule pages retain thumb/scroll/nodes through month redraws and set the same
+saved values. No separate pending eye-check row is needed.
 
-Manual route inspection: the browser connector host was unavailable. Native
-Edge reached the owned CityBuilderSim artifact, pinned version6, whose page
-still says build0.8.11/format40. No artifact content was changed. The native
-input tool then stopped because it could not verify the current Windows
-browser URL, so no further UI input is allowed this turn. The minimization
-attempt's outcome is not verified; the task tab may remain. Generated manual
-files are untouched, and the release copy remains a draft until the required
-artifact publication route can be completed. Computer-use SKILL.md and its
-guidance were read; its interrupted-turn instruction is to stop app input.
+The required manual publication route is unfinished. Browser connector host
+was unavailable; native Edge reached the owned CityBuilderSim artifact,
+pinned version6, showing build0.8.11/format40. No artifact content was edited,
+exported or published. Native input then stopped because its policy guard
+could not verify the current Windows browser URL. Its SKILL/guidance requires
+stopping app input for that turn; no further input was attempted. The prior
+minimisation attempt is unverified and the task tab may remain. Generated
+docs/manual files are untouched. Resume publication only through a permitted
+artifact edit/publish/pull and ManualToMarkdown route.
+
+Finish final named/integration checks and lawful Central timeout resolution;
+review the diff, main/RES3 movement and pick, then push provisional ship/LE1
+queue row and mail mends at with the review line. The stranger's money/save
+review precedes the final80-run ensemble; an ALL pick needs the orchestrator's
+separate dry-run go. No final readiness or gate reuse is claimed here.

@@ -228,6 +228,25 @@ public final class BankRulesCheck {
         check("foreign local-money term funding cannot use a cheap USD short rate",
                 localQuote >= quotes.getPolicyRate() && localQuote > quotes.foreignRate());
 
+        DebtManager collateralBook = new DebtManager();
+        collateralBook.getDebt().add(new ShortTermTBill(100, 3, 0));
+        collateralBook.getDebt().add(new LongTermBond(200, 48, 0, .06));
+        collateralBook.getDebt().add(LongTermBond.callable(300, 60, 0, .07, 24));
+        collateralBook.getDebt().add(new LongTermBond(400, 24, 0, .04, true));
+        collateralBook.getDebt().get(1).householdPrincipal = 80;
+        for (double rate : new double[]{.01, .05, .15}) {
+            collateralBook.setPolicyRate(rate);
+            double separate = 0;
+            for (Debt paper : collateralBook.getDebt()) {
+                double face = paper.getOustandingPrincipal(), held = paper.bankPrincipal();
+                if (face > 0 && held > 0)
+                    separate += Math.max(0, collateralBook.marketValue(paper)) * Math.min(1, held / face);
+            }
+            check("one-read collateral curve keeps each paper's price to the bit at " + rate,
+                    separate > 0 && Double.doubleToLongBits(separate)
+                            == Double.doubleToLongBits(collateralBook.bankCollateralValue()));
+        }
+
         out.println("--- 4. every default is the pre-dial Part 1 rule ---");
         BankRules defaults = new BankRules();
         // The values used by the measured Part 1 city, before exposing the controls.

@@ -2434,10 +2434,16 @@ public class DebtManager {
     /** Current market value of the commercial bank's government collateral, excluding every other holder. */
     public double bankCollateralValue() {
         double value = 0;
+        YieldCurve domestic = null;
         for (Debt paper : getDebt()) {
             double face = paper.getOustandingPrincipal();
             double held = paper.bankPrincipal();
-            if (face > 0 && held > 0) value += Math.max(0, marketValue(paper)) * Math.min(1, held / face);
+            if (face > 0 && held > 0) {
+                // One read, one domestic curve: rebuilding its key scans the whole book.
+                // Nothing is held across trades, policy changes or settlement phases.
+                if (!paper.isForeign() && paper.getRemainingMonths() > 0 && domestic == null) domestic = curve();
+                value += Math.max(0, marketValue(paper, domestic)) * Math.min(1, held / face);
+            }
         }
         return value;
     }
@@ -2453,13 +2459,18 @@ public class DebtManager {
      * Nothing left to pay (no months) costs what is owed, as Debt does.
      */
     public double marketValue(Debt paper) {
+        return marketValue(paper, null);
+    }
+
+    /** The same price with a domestic curve already read for this operation. */
+    private double marketValue(Debt paper, YieldCurve domestic) {
         if (paper == null) return 0;
         if (paper.getRemainingMonths() <= 0) return paper.getOustandingPrincipal();
         // Its own schedule - except a floater's and a linker's, which the market prices on the dial and
         // the index it expects (CD5, pricingFlows()).
         double[] flows = pricingFlows(paper);
         if (paper.isForeign()) return worldCurveAt(paper.getMoney(), foreignRate(paper.getMoney())).pv(flows);
-        YieldCurve curve = curve();
+        YieldCurve curve = domestic == null ? curve() : domestic;
         if (paper instanceof LongTermBond bond && bond.isCallable()) return callableValue(bond, curve, flows);
         return curve.pv(flows);
     }
@@ -2936,6 +2947,63 @@ public class DebtManager {
         double total = 0;
         for (Debt d : debts) total += d.centralBankPrincipal();
         return total;
+    }
+
+    /* ---------------------- the central bank's book, for its page (CBK1) ----------------------
+       Its holdings page (Bank > Central bank > Holdings): what it holds by how long each piece has left, at face and at what
+       the market would pay for its share today, and the gain or loss between - a central bank's book is carried at face (the
+       model's, CentralBank's THE HOLDINGS DIAL) and its mark is a memorandum, as the Federal Reserve's is (the System Open Market
+       Account is carried at amortized cost, its fair value disclosed in the notes). Pure reads of marketValue(); nothing in
+       the month calls them. */
+
+    /** The ladder's rungs, in months left: a piece falls on the first rung it is no longer than, and past the last on one more. */
+    public static final int[] CENTRAL_BANK_LADDER = { 12, 24, 60, 120 };
+
+    /** The rung of the ladder a piece with this many months left falls on, 0 to CENTRAL_BANK_LADDER.length. */
+    public static int ladderRung(int monthsLeft) {
+        for (int k = 0; k < CENTRAL_BANK_LADDER.length; k++) if (monthsLeft <= CENTRAL_BANK_LADDER[k]) return k;
+        return CENTRAL_BANK_LADDER.length;
+    }
+
+    /** What the central bank's share of a piece would fetch today: marketValue() pro rata to its share of what is owed. */
+    public double centralBankValueOf(Debt paper) {
+        double held = paper == null ? 0 : paper.centralBankPrincipal();
+        double owed = paper == null ? 0 : paper.getOustandingPrincipal();
+        return held > 0 && owed > 0 ? marketValue(paper) * held / owed : 0;
+    }
+
+    /** Its holdings by rung of the ladder (ladderRung()), at face or at market: CENTRAL_BANK_LADDER.length + 1 figures, adding to centralBankPrincipal() at face. */
+    public double[] centralBankLadder(boolean atMarket) {
+        double[] out = new double[CENTRAL_BANK_LADDER.length + 1];
+        for (Debt d : debts) {
+            if (!(d.centralBankPrincipal() > 0)) continue;
+            out[ladderRung(d.getRemainingMonths())] += atMarket ? centralBankValueOf(d) : d.centralBankPrincipal();
+        }
+        return out;
+    }
+
+    /** Its whole book at market: what the market would pay for every share it holds today. */
+    public double centralBankMarketValue() {
+        double total = 0;
+        for (Debt d : debts) total += centralBankValueOf(d);
+        return total;
+    }
+
+    /** ...and the gain (a loss negative) the market shows on it against face, unbooked: centralBankMarketValue() less centralBankPrincipal(). */
+    public double centralBankMarkGain() {
+        return centralBankMarketValue() - centralBankPrincipal();
+    }
+
+    /** Its holdings' average months left, weighted by face; 0 holding nothing. */
+    public double centralBankMonthsLeft() {
+        double face = 0, weighted = 0;
+        for (Debt d : debts) {
+            double held = d.centralBankPrincipal();
+            if (!(held > 0)) continue;
+            face += held;
+            weighted += held * Math.max(0, d.getRemainingMonths());
+        }
+        return face > 0 ? weighted / face : 0;
     }
 
     /** ...the businesses, at face (CD2, slice 4). OutwardInvestment.totalPaper() is the same figure from the other side; HoldersCheck asserts it. */

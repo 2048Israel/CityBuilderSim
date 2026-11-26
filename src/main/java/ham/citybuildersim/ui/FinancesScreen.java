@@ -6623,6 +6623,9 @@ final class FinancesScreen {
         card.getChildren().add(cardLine("Equity", d(equity), equity < 0 ? Palette.BAD : null));
         if (cb.vaultSpent() > 0) card.getChildren().add(Kept.scope("spent", () -> muted("spent defending the currency since founding "
                 + d(-cb.vaultSpent()))));
+        // CBK1 (2026-11-26): the central bank has pages of its own in the Bank tab; this card is the way to them.
+        card.getChildren().add(Kept.scope("central pages", () -> doorPill("The central bank's own pages · Bank › Central bank", Icons.BANK,
+                Palette.MONEY, () -> ui.bankScreen.openCentral(CentralBankScreen.OVERVIEW))));
         return card;
     }
 
@@ -6682,14 +6685,19 @@ final class FinancesScreen {
 
     /** History's money series as a small chart without the controls, on the last ten years (ChartModel.DEFAULT_RANGE) or the whole history while it is younger - TimeChart, as Government's Output draws it. */
     VBox smallChart(String title, HistorySave h, String[] keys, String[] names, String[] colours) {
+        return smallChart(title, h, keys, names, colours, "money");
+    }
+
+    /** ...in another of History's units ("percent" for a rate or a trust; CBK1's central bank History page): its figures and its axis in that unit's own words. */
+    VBox smallChart(String title, HistorySave h, String[] keys, String[] names, String[] colours, String unit) {
         List<TimeChart.Line> lines = new ArrayList<>();
         for (int i = 0; i < keys.length; i++) {
             lines.add(new TimeChart.Line(keys[i], names[i], colours[i], 0, h.aligned(keys[i]),
-                    v -> HistoryScreen.plotScale("money", v), v -> ui.historyScreen.fmtUnit("money", v), ""));
+                    v -> HistoryScreen.plotScale(unit, v), v -> ui.historyScreen.fmtUnit(unit, v), ""));
         }
         // Kept (KP5), as the Bank's charts are: made once in its scope, told its data and its size at every draw.
         TimeChart chart = Kept.of(TimeChart.class, () -> new TimeChart(new ChartModel(), java.util.Set.of(), false));
-        chart.setData(h.getMonth(), lines, HistoryScreen.axisFor("money"), null, false, false, null,
+        chart.setData(h.getMonth(), lines, HistoryScreen.axisFor(unit), null, false, false, null,
                 List.of(), List.of(), List.of(), "no months recorded yet");
         chart.setSize(560, 140);
         javafx.scene.layout.FlowPane key = keyRow();

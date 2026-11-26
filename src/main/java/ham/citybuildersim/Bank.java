@@ -1277,10 +1277,11 @@ public class Bank {
         lastRunningCost = carried > 0 ? costs / costFilled * 12 / carried : 0;
 
         double owed = borrowings();
+        double window = branches > 0 && owed > 0 ? windowFunding() : 0;
         lastWindowShare = branches <= 0 ? 1
-                : owed > 0 ? Math.min(1, windowFunding() / owed) : 0;
+                : owed > 0 ? Math.min(1, window / owed) : 0;
         lastForeignShare = branches > 0 && owed > 0
-                ? Math.min(1 - lastWindowShare, Math.max(0, wholesaleFunding() - windowFunding()) / owed) : 0;
+                ? Math.min(1 - lastWindowShare, Math.max(0, wholesaleFunding() - window) / owed) : 0;
     }
 
     /** The record, for the save: the count, then the two cost rings. */

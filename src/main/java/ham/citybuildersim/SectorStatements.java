@@ -1034,7 +1034,7 @@ public final class SectorStatements {
 
         b.restart();
         b.head(BS_LIABILITIES_HEAD, "LIABILITIES");
-        sheetLine(b, "Lent past its own cash, on its deposits", Bank.Sheet.DEPOSIT_FUNDING, now, then);
+        sheetLine(b, "Net funding outside settled wholesale", Bank.Sheet.DEPOSIT_FUNDING, now, then);
         sheetLine(b, "Borrowed overnight at the window", Bank.Sheet.WINDOW, now, then);
         sheetLine(b, "Wholesale borrowing abroad", Bank.Sheet.WHOLESALE_ABROAD, now, then);
         sheetLine(b, "Deposits from abroad", Bank.Sheet.FOREIGN_DEPOSITS, now, then);

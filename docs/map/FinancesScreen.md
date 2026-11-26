@@ -1,4 +1,4 @@
-# FinancesScreen.java - 7,196 lines · 301 methods · 110 constants · interface
+# FinancesScreen.java - 7,204 lines · 302 methods · 110 constants · interface
 
 `ham/citybuildersim/ui/FinancesScreen.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -35,9 +35,9 @@
 > THE DEBT RESULT - what an issue booked, shown after it - came here from
 > the build cards on 2026-09-18, because it is this tab's.
 
-**Uses:** [Palette](Palette.md) (736), [Kept](Kept.md) (439), [DebtManager](DebtManager.md) (76), [Money](Money.md) (65), [CityCalendar](CityCalendar.md) (47), [Debt](Debt.md) (41), [Auction](Auction.md) (40), [Game](Game.md) (32), [CityNeeds](CityNeeds.md) (26), [Buyback](Buyback.md) (26), [ForeignAccounts](ForeignAccounts.md) (24), [Rollover](Rollover.md) (19), [Icons](Icons.md) (17), [BookDesk](BookDesk.md) (17), [CallTree](CallTree.md) (15), [CorporateBond](CorporateBond.md) (15), [OrderBook](OrderBook.md) (15), [BondMarket](BondMarket.md) (12), [DebtQuote](DebtQuote.md) (11), [LongTermBond](LongTermBond.md) (10), [HistoryScreen](HistoryScreen.md) (10), [TimeChart](TimeChart.md) (10), [Pieces](Pieces.md) (9), [FundScreen](FundScreen.md) (8), [FloatingRateNote](FloatingRateNote.md) (8), [Ladder](Ladder.md) (8), [Bank](Bank.md) (8), [InflationLinkedBond](InflationLinkedBond.md) (7), [CentralBank](CentralBank.md) (7), [TreasuryFund](TreasuryFund.md) (6)... and 21 more
+**Uses:** [Palette](Palette.md) (737), [Kept](Kept.md) (440), [DebtManager](DebtManager.md) (76), [Money](Money.md) (65), [CityCalendar](CityCalendar.md) (47), [Debt](Debt.md) (41), [Auction](Auction.md) (40), [Game](Game.md) (32), [CityNeeds](CityNeeds.md) (26), [Buyback](Buyback.md) (26), [ForeignAccounts](ForeignAccounts.md) (24), [Rollover](Rollover.md) (19), [Icons](Icons.md) (18), [BookDesk](BookDesk.md) (17), [CallTree](CallTree.md) (15), [CorporateBond](CorporateBond.md) (15), [OrderBook](OrderBook.md) (15), [BondMarket](BondMarket.md) (12), [DebtQuote](DebtQuote.md) (11), [LongTermBond](LongTermBond.md) (10), [HistoryScreen](HistoryScreen.md) (10), [TimeChart](TimeChart.md) (10), [Pieces](Pieces.md) (9), [FundScreen](FundScreen.md) (8), [FloatingRateNote](FloatingRateNote.md) (8), [Ladder](Ladder.md) (8), [Bank](Bank.md) (8), [InflationLinkedBond](InflationLinkedBond.md) (7), [CentralBank](CentralBank.md) (7), [TreasuryFund](TreasuryFund.md) (6)... and 22 more
 
-**Used by (8):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CapChips](CapChips.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [KeptBench](KeptBench.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
+**Used by (9):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [CapChips](CapChips.md), [CentralBankScreen](CentralBankScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [KeptBench](KeptBench.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
@@ -70,9 +70,9 @@
 | 5534 | · the ask, typed (0.7.40) |
 | 6099 | · the auction, shown (CD2) |
 | 6527 | MONEY (0.7.0; redrawn 0.7.32) |
-| 6703 | THE BOND MARKET (0.7.12; redrawn 0.7.32) |
-| 7071 | THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) |
-| 7085 | THE DEBT RESULT |
+| 6711 | THE BOND MARKET (0.7.12; redrawn 0.7.32) |
+| 7079 | THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) |
+| 7093 | THE DEBT RESULT |
 
 ## Constants
 
@@ -181,13 +181,13 @@
 | 6284 | `FinancesScreen.AuctionChart.H` | `240, LEFT = 62, RIGHT = 16, TOP = 16, FOOT = 26, FIRST_W = 720, LEAST_W = 420` | Its height and its margins, in pixels; the width it is first drawn at, and the least it is drawn at. |
 | 6286 | `FinancesScreen.AuctionChart.SAMPLES` | `60` | How many yields the bids are read at across the axis. |
 | 6475 | `FinancesScreen.DEFAULT_INFO` | `"Walking away from every dollar the city owes abroad.The gain is immediate an...` | The default page's (i). |
-| 6630 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's...` | M2's (i): the spec's T69. |
-| 6723 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no ...` | No bond outstanding: the spec's T70. |
-| 6728 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has ...` | The prices' (i): the spec's T71. |
-| 6733 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when ...` | The order books' (i): the spec's T74. |
-| 6741 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
-| 6743 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY...` | ...and their colours on it. |
-| 6924 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since ...` | A bond's book's (i): the spec's T75, T77 and T78. |
+| 6633 | `FinancesScreen.M2_INFO` | `"M2 is the bank's deposits - the households', the businesses' and the world's...` | M2's (i): the spec's T69. |
+| 6731 | `FinancesScreen.NO_BONDS` | `"None outstanding.A business sells a bond when the book would take it for no ...` | No bond outstanding: the spec's T70. |
+| 6736 | `FinancesScreen.PRICES_INFO` | `"The price is per 100 of face, at the last trade on its book; * where it has ...` | The prices' (i): the spec's T71. |
+| 6741 | `FinancesScreen.BOOKS_INFO` | `"Everybody posts buy and sell orders at prices, and an order fills only when ...` | The order books' (i): the spec's T74. |
+| 6749 | `FinancesScreen.BOND_HOLDERS` | `{ "households", "the bank", "companies", "the world", "the city's fund" }` | The bonds' holders, in a bar's order: the households, the bank, the companies, the world, the city's fund. |
+| 6751 | `FinancesScreen.BOND_HOLDER_COLOURS` | `{ Palette.PEOPLE, Palette.MONEY, Palette.BUSINESS, Palette.ORE, Palette.MONEY...` | ...and their colours on it. |
+| 6932 | `FinancesScreen.DEPTH_INFO` | `"What rests on the book after the month's step: a bid under every ask, since ...` | A bond's book's (i): the spec's T75, T77 and T78. |
 
 ## Fields (state)
 
@@ -248,14 +248,14 @@
 | 6288 | `private Auction.Result r` |  |
 | 6289 | `private Auction.Bidders bidders` |  |
 | 6290 | `private java.util.function.DoubleFunction<String> money` |  |
-| 6921 | `int bookBondId` | The bond whose book is open, by its number; the largest one when it has gone. |
-| 7083 | `double fundAsk` | What the player's hand is asking to pay into the fund or draw out of it, on Rules & cash (FundScreen.moveCard()). |
+| 6929 | `int bookBondId` | The bond whose book is open, by its number; the largest one when it has gone. |
+| 7091 | `double fundAsk` | What the player's hand is asking to pay into the fund or draw out of it, on Rules & cash (FundScreen.moveCard()). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 58 | 7139 | **type** `final class FinancesScreen` | The Finances tab: what the city owes and when it falls due, what its paper costs and who holds it, why its money costs what it does, every piece and what it would cost to retire, borrowing at home and abroad, the mone... |
+| 58 | 7147 | **type** `final class FinancesScreen` | The Finances tab: what the city owes and when it falls due, what its paper costs and who holds it, why its money costs what it does, every piece and what it would cost to retire, borrowing at home and abroad, the mone... |
 | 63 | 7 | `FinancesScreen(UserInterface ui)` |  |
 | 78 | 3 | `void forget()` | Every node is made new at the next draw - the pictures on the pages with them: another city opened (UserInterface.anotherCity()). |
 
@@ -681,42 +681,43 @@
 | 6485 | 5 | `void showForeignDefaultMenu()` | Asking twice, with the bill written out: "Finances › Default abroad" (0.7.32, the spec's D14), two equal cards in the same type, "Keep paying" first. |
 | 6492 | 34 | `void drawForeignDefault()` | The default page itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs kept and built new. |
 
-### MONEY (0.7.0; redrawn 0.7.32) (lines 6527-6702)
+### MONEY (0.7.0; redrawn 0.7.32) (lines 6527-6710)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 6542 | 16 | `String moneyInfo()` | The page's (i): the old page's two sentences, the spec's T64 to T66. |
 | 6559 | 18 | `void moneyPage(VBox page)` |  |
 | 6579 | 15 | `String centralBookInfo(CentralBank cb)` | The book's (i): the spec's T67 and T68. |
-| 6596 | 32 | `VBox centralBookCard(CentralBank cb)` | THE CENTRAL BANK'S BOOK: what it holds against what it owes, one scale; its equity on the owing side, or a shortfall red on the holding side. |
-| 6635 | 17 | `VBox publicCard(CentralBank cb)` | WHAT THE PUBLIC HOLDS: M2 as a bar of its parts, and M0 beside it. |
-| 6654 | 28 | `VBox thisMonthCard(CentralBank cb)` | THIS MONTH: the money made and the money destroyed, each a bar of its parts on one scale, and what M0 moved by. |
-| 6684 | 18 | `VBox smallChart(String title, HistorySave h, String[] keys, String[] names, String[] colours)` | History's money series as a small chart without the controls, on the last ten years (ChartModel.DEFAULT_RANGE) or the whole history while it is younger - TimeChart, as Government's Output draws it. |
+| 6596 | 35 | `VBox centralBookCard(CentralBank cb)` | THE CENTRAL BANK'S BOOK: what it holds against what it owes, one scale; its equity on the owing side, or a shortfall red on the holding side. |
+| 6638 | 17 | `VBox publicCard(CentralBank cb)` | WHAT THE PUBLIC HOLDS: M2 as a bar of its parts, and M0 beside it. |
+| 6657 | 28 | `VBox thisMonthCard(CentralBank cb)` | THIS MONTH: the money made and the money destroyed, each a bar of its parts on one scale, and what M0 moved by. |
+| 6687 | 3 | `VBox smallChart(String title, HistorySave h, String[] keys, String[] names, String[] colours)` | History's money series as a small chart without the controls, on the last ten years (ChartModel.DEFAULT_RANGE) or the whole history while it is younger - TimeChart, as Government's Output draws it. |
+| 6692 | 18 | `VBox smallChart(String title, HistorySave h, String[] keys, String[] names, String[] colours, String unit)` | ...in another of History's units ("percent" for a rate or a trust; CBK1's central bank History page): its figures and its axis in that unit's own words. |
 
-### THE BOND MARKET (0.7.12; redrawn 0.7.32) (lines 6703-7070)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6718 | 3 | `static String per100(double price)` | A bond's price, per 100 of face. |
-| 6746 | 16 | `Node holdersBar(double[] held, double band, boolean key)` | A holders bar over five amounts, each keyed when `key` is set. |
-| 6763 | 38 | `void bondMarketPage(VBox page)` |  |
-| 6803 | 25 | `VBox issuerCard(BondMarket.Issuer is)` | One issuer as a card: its sector's icon, its face, its bonds and their coupons, its nearest maturity, its holders; a click opens its largest bond's book. |
-| 6830 | 27 | `VBox bondMonthCard(BondMarket market)` | THIS MONTH on the bond market: sold, coupons, repaid, written off, and the last issue. |
-| 6859 | 14 | `VBox orderBooksCard(BondMarket market)` | THE ORDER BOOKS, last month: offered for sale, how much of it sold, and how many sellers waited. |
-| 6875 | 44 | `Node bondGrids(BondMarket market)` | The old page's two tables, in the fold: every bond with its price and yield, and who holds each. |
-| 6929 | 49 | `void bondBookPage(VBox page)` |  |
-| 6980 | 27 | `Node depthChart(OrderBook book, CorporateBond b, int month)` | The book's depth: a row a price level, the asks over the bids, best nearest the middle; bids drawn leftward, asks rightward, face as length. |
-| 7009 | 27 | `Node depthRow(OrderBook.Level l, boolean bid, double most, CorporateBond b, int month)` | One price level of the depth chart. |
-| 7038 | 32 | `Node levelGrids(OrderBook book, CorporateBond b, int month)` | The old page's bid and ask tables, in the fold. |
-
-### THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) (lines 7071-7084)
-
-### THE DEBT RESULT (lines 7085-7196)
+### THE BOND MARKET (0.7.12; redrawn 0.7.32) (lines 6711-7078)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 7104 | 3 | `String executeDebtLogic(String type, double amount, int duration, double rounding, Auction.Cap cap)` | Books the sale the page quoted, at the highest yield it was quoted at (CD2): the handler struck on the same city at the same cap. |
-| 7109 | 11 | `String executeDebtLogic(String type, double amount, int duration, double rounding, Auction.Cap cap, boolean callable)` | ...a bond sold callable if the quote was (CD4): the handler struck on the same city, at the same cap, with the same option. |
-| 7122 | 6 | `void showDebtResultMenu(DebtQuote quote, boolean foreign, String money, String summary)` | Shows the terms the player just agreed to: the quote booked as a receipt, and the ladder with it on the books; or what the booking said when nothing was booked. |
-| 7130 | 66 | `void drawDebtResult(DebtQuote quote, boolean foreign, String money, String summary)` | The receipt itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs kept and built new. |
+| 6726 | 3 | `static String per100(double price)` | A bond's price, per 100 of face. |
+| 6754 | 16 | `Node holdersBar(double[] held, double band, boolean key)` | A holders bar over five amounts, each keyed when `key` is set. |
+| 6771 | 38 | `void bondMarketPage(VBox page)` |  |
+| 6811 | 25 | `VBox issuerCard(BondMarket.Issuer is)` | One issuer as a card: its sector's icon, its face, its bonds and their coupons, its nearest maturity, its holders; a click opens its largest bond's book. |
+| 6838 | 27 | `VBox bondMonthCard(BondMarket market)` | THIS MONTH on the bond market: sold, coupons, repaid, written off, and the last issue. |
+| 6867 | 14 | `VBox orderBooksCard(BondMarket market)` | THE ORDER BOOKS, last month: offered for sale, how much of it sold, and how many sellers waited. |
+| 6883 | 44 | `Node bondGrids(BondMarket market)` | The old page's two tables, in the fold: every bond with its price and yield, and who holds each. |
+| 6937 | 49 | `void bondBookPage(VBox page)` |  |
+| 6988 | 27 | `Node depthChart(OrderBook book, CorporateBond b, int month)` | The book's depth: a row a price level, the asks over the bids, best nearest the middle; bids drawn leftward, asks rightward, face as length. |
+| 7017 | 27 | `Node depthRow(OrderBook.Level l, boolean bid, double most, CorporateBond b, int month)` | One price level of the depth chart. |
+| 7046 | 32 | `Node levelGrids(OrderBook book, CorporateBond b, int month)` | The old page's bid and ask tables, in the fold. |
+
+### THE CITY'S FUND (0.7.14; redrawn 0.7.32; its own class since 0.7.39) (lines 7079-7092)
+
+### THE DEBT RESULT (lines 7093-7204)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 7112 | 3 | `String executeDebtLogic(String type, double amount, int duration, double rounding, Auction.Cap cap)` | Books the sale the page quoted, at the highest yield it was quoted at (CD2): the handler struck on the same city at the same cap. |
+| 7117 | 11 | `String executeDebtLogic(String type, double amount, int duration, double rounding, Auction.Cap cap, boolean callable)` | ...a bond sold callable if the quote was (CD4): the handler struck on the same city, at the same cap, with the same option. |
+| 7130 | 6 | `void showDebtResultMenu(DebtQuote quote, boolean foreign, String money, String summary)` | Shows the terms the player just agreed to: the quote booked as a receipt, and the ladder with it on the books; or what the booking said when nothing was booked. |
+| 7138 | 66 | `void drawDebtResult(DebtQuote quote, boolean foreign, String money, String summary)` | The receipt itself, put in the window through setPage(): what keepMenu runs as a kept draw, and what KeptBench runs kept and built new. |
 

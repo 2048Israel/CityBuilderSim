@@ -46,7 +46,7 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.213"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.214"` | Bump on release. |
 | 8392 | `GameVersion.SAVE_FORMAT` | `66` | R6e-rest: THE DESALINATION PLANT BEFORE THE PRESSURE EXCHANGER (format 66). |
 | 8460 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `66` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
 | 8468 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |

@@ -3284,7 +3284,7 @@ final class PolicyScreen {
         boolean peg = market.isTied();   // a peg, or the gold unless the rule aims at inflation (GD3)
         VBox dial = Kept.scope(peg ? "tiedDial" : "dial", () -> theDialCard(market, px, rate, want));
         VBox rule = Kept.scope("rule", () -> ruleCard(market, px));
-        VBox bank = Kept.column(TILE_GAP, Kept.scope("holdings", () -> holdingsCard(market)), Kept.scope("ceiling", this::ceilingCard));
+        VBox bank = Kept.column(TILE_GAP, Kept.scope("holdings", () -> holdingsCard(market)), Kept.scope("ceiling", () -> ceilingCard()));
         page.getChildren().add(row(dial, rule, bank));
 
         page.getChildren().add(Kept.scope("prices", () -> pricesCard(px)));
@@ -3527,19 +3527,27 @@ final class PolicyScreen {
      * target, a ladder of five steps under the target's (strictPart()).
      */
     VBox ruleCard(DebtManager market, PriceIndex px) {
+        return ruleCard(market, px, this::showPolicyMenu);
+    }
+
+    /**
+     * ...with what a dial's setting does once it has applied (CBK1, 2026-11-26): the central bank's Policy page in the Bank tab draws this
+     * card too, and a dial set there redraws that page and not this one. The card stages nothing - it sets at once - so `again` is all it needs.
+     */
+    VBox ruleCard(DebtManager market, PriceIndex px, Runnable again) {
         double target = market.getInflationTarget();
         double inflation = px.inflation();
         String[] targets = new String[TARGET_STEPS.length];
         for (int i = 0; i < TARGET_STEPS.length; i++) targets[i] = TARGET_STEPS[i] + "%";
         Node chips = chipStrip(targets, DebtManager.targetWords(target), Palette.SIZE_CAPTION, picked -> {
             market.setInflationTarget(Integer.parseInt(picked.replace("%", "")) / 100.0);
-            showPolicyMenu();
+            again.run();
         });
         // Kept (KP6): a dial built outside a dial card is a scope of its own, keyed by its lever, so its slider is its own.
         VBox ladder = Kept.scope("target", () -> Ladder.of(DebtManager.MIN_INFLATION_TARGET, DebtManager.MAX_INFLATION_TARGET, TARGET_STEP,
                         DebtManager::targetWords)
                 .current(target)
-                .appliesAtOnce(v -> { market.setInflationTarget(halfPoint(v)); showPolicyMenu(); })
+                .appliesAtOnce(v -> { market.setInflationTarget(halfPoint(v)); again.run(); })
                 .wide(360).build());
         // Struck from the rule at both targets - DebtManager.ruleRate(inflation, target) - on this month's
         // inflation once there is a year of it, and on 5% as the example until there is.
@@ -3605,7 +3613,7 @@ final class PolicyScreen {
         c.getChildren().add(muted(String.format("at %s it sets %s · at %s %s", DebtManager.targetWords(target),
                 pct2(market.ruleRate(example)), DebtManager.targetWords(otherTarget), pct2(market.ruleRate(example, otherTarget)))
                 + (px.hasRate() ? "" : " (on 5% inflation, as an example)")));
-        c.getChildren().addAll(chips, ladder, strictPart(market));
+        c.getChildren().addAll(chips, ladder, strictPart(market, again));
         return c;
     }
 
@@ -3647,6 +3655,11 @@ final class PolicyScreen {
      * (PolicyPreview.ruleAt()), following it as it is dragged.
      */
     VBox strictPart(DebtManager market) {
+        return strictPart(market, this::showPolicyMenu);
+    }
+
+    /** ...with what the dial does once it has applied (CBK1): ruleCard()'s `again`. */
+    VBox strictPart(DebtManager market, Runnable again) {
         DebtManager.Strictness now = market.getStrictness();
         // The line under the dial says what the step under the thumb would do (KP2b): the thumb the dial shows - the held one when a month lands
         // under the player's hand, as a dial card's effects are drawn at Ladder.shown() - not the city's setting. So the dial is built first and
@@ -3656,7 +3669,7 @@ final class PolicyScreen {
                 .current(now.ordinal())
                 .stepReads(v -> "one setting")
                 .onTrack(v -> says[0].setText(strictWords(PolicyPreview.ruleAt(ui.game, strictAt(v)))))
-                .appliesAtOnce(v -> { market.setStrictness(strictAt(v)); showPolicyMenu(); })
+                .appliesAtOnce(v -> { market.setStrictness(strictAt(v)); again.run(); })
                 .wide(360);
         VBox ladder = Kept.scope("strictness", () -> dial.build());
         says[0] = words(strictWords(PolicyPreview.ruleAt(ui.game, strictAt(dial.shown()))), Palette.SIZE_LABEL + 1, Palette.TEXT_LABEL);
@@ -3690,17 +3703,22 @@ final class PolicyScreen {
 
     /** THE CENTRAL BANK's holdings (R8): the share of the term paper it aims to hold, set at once; the thirty-year rate once the book has moved there (M9). */
     VBox holdingsCard(DebtManager market) {
+        return holdingsCard(market, this::showPolicyMenu);
+    }
+
+    /** ...with what a dial's setting does once it has applied (CBK1): the card sets at once, as ruleCard()'s does, so the Bank tab's central bank page draws it too. */
+    VBox holdingsCard(DebtManager market, Runnable again) {
         CentralBank cb = ui.game.getCentralBank();
         int settings = (int) Math.round(CentralBank.MAX_QE_SHARE * 10) + 1;
         String[] shares = new String[settings];
         for (int i = 0; i < settings; i++) shares[i] = (i * 10) + "%";
         Node chips = chipStrip(shares, Math.round(cb.getTargetShare() * 100) + "%", Palette.SIZE_CAPTION, picked -> {
             cb.setTargetShare(Integer.parseInt(picked.replace("%", "")) / 100.0);
-            showPolicyMenu();
+            again.run();
         });
         Ladder ladder = Ladder.of(0, CentralBank.MAX_QE_SHARE, HOLDINGS_STEP, PolicyScreen::pct0)
                 .current(cb.getTargetShare())
-                .appliesAtOnce(v -> { cb.setTargetShare(Math.round(v * 100) / 100.0); showPolicyMenu(); });
+                .appliesAtOnce(v -> { cb.setTargetShare(Math.round(v * 100) / 100.0); again.run(); });
         DoubleFunction<List<Effect>> effects = holdingsEffects();
         return dialCard(new DialCard(Icons.SAFE, Palette.MONEY, "THE CENTRAL BANK: ITS HOLDINGS", holdingsInfo(),
                 pct0(cb.getTargetShare()) + " of the term paper",
@@ -3728,16 +3746,21 @@ final class PolicyScreen {
 
     /** THE CENTRAL BANK's ceiling (R9): how far it will advance the treasury, set at once; the ceiling in money at another setting (M10); what is owed, red only when it binds (ceilingBound(): a verdict). */
     VBox ceilingCard() {
+        return ceilingCard(this::showPolicyMenu);
+    }
+
+    /** ...with what a dial's setting does once it has applied (CBK1): the card sets at once, as ruleCard()'s does, so the Bank tab's central bank page draws it too. */
+    VBox ceilingCard(Runnable again) {
         CentralBank cb = ui.game.getCentralBank();
         String[] months = new String[CEILING_STEPS.length];
         for (int i = 0; i < CEILING_STEPS.length; i++) months[i] = CEILING_STEPS[i] + " months";
         Node chips = chipStrip(months, Math.round(cb.getAdvancesCeilingMonths()) + " months", Palette.SIZE_CAPTION, picked -> {
             cb.setAdvancesCeilingMonths(Integer.parseInt(picked.replace(" months", "")));
-            showPolicyMenu();
+            again.run();
         });
         Ladder ladder = Ladder.of(0, CentralBank.MAX_ADVANCES_CEILING, CEILING_STEP, PolicyScreen::monthsWords)
                 .current(cb.getAdvancesCeilingMonths())
-                .appliesAtOnce(v -> { cb.setAdvancesCeilingMonths(v); showPolicyMenu(); });
+                .appliesAtOnce(v -> { cb.setAdvancesCeilingMonths(v); again.run(); });
         DoubleFunction<List<Effect>> effects = ceilingEffects();
         HBox owed = cardLine("The treasury owes it", money(cb.getAdvancesToTreasury()),
                 cb.ceilingBound() ? Palette.BAD : Palette.TEXT_HEAD);

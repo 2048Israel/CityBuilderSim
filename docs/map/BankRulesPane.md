@@ -8,7 +8,7 @@
 
 **Uses:** [Palette](Palette.md) (7), [BankRules](BankRules.md) (4), [PolicyScreen](PolicyScreen.md) (4), [Kept](Kept.md) (2), [Ladder](Ladder.md) (2), [Game](Game.md) (1)
 
-**Used by (1):** [PolicyScreen](PolicyScreen.md)
+**Used by (2):** [CentralBankScreen](CentralBankScreen.md), [PolicyScreen](PolicyScreen.md)
 
 ## Methods, in file order
 
