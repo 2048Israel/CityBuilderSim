@@ -1,12 +1,16 @@
 package ham.citybuildersim;
 
+import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Household debt as the statistics offices print it, read from the cells (HC2).
@@ -51,9 +55,52 @@ public final class DebtStatistics {
 
     /** Immutable survey maps retain their recorded order across the native JSON round trip. */
     private static <K, V> Map<K, V> orderedCopy(Map<K, V> values) {
-        Map<K, V> copy = new LinkedHashMap<>();
-        values.forEach((key, value) -> copy.put(Objects.requireNonNull(key), Objects.requireNonNull(value)));
-        return Collections.unmodifiableMap(copy);
+        return new Ordered<>(values);
+    }
+
+    /**
+     * A map nobody can change that keeps the order it was given: a survey's
+     * groups and a snapshot's measures, in the order they were recorded.
+     * WHY: Collections.unmodifiableMap over a private LinkedHashMap kept the
+     * order but is a view, which SaveSlotCheck's walk cannot tell from a view
+     * of a live map, so a survey two history snapshots shared read as a race;
+     * Map.copyOf cannot be told an order. Two List.copyOf lists are immutable
+     * as the walk sees them, so a survey is a value the snapshots may share.
+     * Gson writes it as the Map it is declared as: the JSON is unchanged.
+     */
+    static final class Ordered<K, V> extends AbstractMap<K, V> {
+        private final List<K> keys;
+        private final List<V> values;
+
+        Ordered(Map<K, V> from) {
+            List<K> k = new ArrayList<>(from.size());
+            List<V> v = new ArrayList<>(from.size());
+            from.forEach((key, value) -> { k.add(Objects.requireNonNull(key)); v.add(Objects.requireNonNull(value)); });
+            keys = List.copyOf(k);
+            values = List.copyOf(v);
+        }
+
+        @Override public V get(Object key) { int i = keys.indexOf(key); return i < 0 ? null : values.get(i); }
+        @Override public boolean containsKey(Object key) { return keys.contains(key); }
+        @Override public int size() { return keys.size(); }
+
+        @Override public Set<Map.Entry<K, V>> entrySet() {
+            return new AbstractSet<>() {
+                @Override public int size() { return keys.size(); }
+                @Override public Iterator<Map.Entry<K, V>> iterator() {
+                    return new Iterator<>() {
+                        private int i;
+                        @Override public boolean hasNext() { return i < keys.size(); }
+                        @Override public Map.Entry<K, V> next() {
+                            if (i >= keys.size()) throw new NoSuchElementException();
+                            Map.Entry<K, V> e = Map.entry(keys.get(i), values.get(i));
+                            i++;
+                            return e;
+                        }
+                    };
+                }
+            };
+        }
     }
 
     private static Map<Kind, Measure> scaledMeasures(Map<Kind, Measure> measures, double scale) {

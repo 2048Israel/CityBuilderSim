@@ -1779,7 +1779,8 @@ public class SaveSlotCheck {
      * could change.
      *
      * <p>Gson's view of a ham.citybuildersim object is its declared fields up
-     * the superclass chain, except static, transient and synthetic ones. Not
+     * the superclass chain, except static, transient and synthetic ones (a
+     * record's are its components: java.lang.Record holds nothing). Not
      * recorded, not descended: null, strings, boxed numbers, enums, classes,
      * empty arrays, Gson's JsonPrimitive and JsonNull, and a model object
      * whose every field is final and holds only such things (a record of
@@ -1950,7 +1951,8 @@ public class SaveSlotCheck {
             } else if (isModel(c)) {
                 if (isImmutable(o) || !record(o, path)) return;
                 for (Class<?> k = c.getSuperclass(); k != null && k != Object.class; k = k.getSuperclass()) {
-                    if (!isModel(k)) opaque.add(path + " : " + c.getName() + " extends " + k.getName());
+                    // java.lang.Record declares no instance field: a record is all in its own components.
+                    if (!isModel(k) && k != Record.class) opaque.add(path + " : " + c.getName() + " extends " + k.getName());
                 }
                 for (Field f : fieldsOf(c)) {
                     Object value = get(f, o);
