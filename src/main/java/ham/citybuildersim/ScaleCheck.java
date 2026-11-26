@@ -1799,6 +1799,8 @@ public class ScaleCheck {
             named(market.get("sharing"), k, "groups", "sourceCount", "targetCount");
             for (String key : new String[] { "kept", "suitable", "crowded", "unaffordable", "noSuitable", "unplaced", "hosted" })
                 scalar(market, key, k);
+            // ...and who lives past the census line, by cell (HousingMarket.overcrowding(), call A): households, K times.
+            whole(market, "overcrowded", k);
         }
         // The land's books (0.7.67): each holding's five areas and its forest's timber, K times over, as the
         // square feet are - its blocks, its fields, its iron and its offers the founded city's.
