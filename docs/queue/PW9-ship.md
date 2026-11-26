@@ -1,5 +1,5 @@
 <!-- readiness: provisional -->
-<!-- ensemble: docs/ensemble/PW9.md; pre-budget-mend snapshot 8c0bb1f98 against 0.9.208; PASS 10/10 hard, 23/26 overall; final-source revalidation pending -->
+<!-- ensemble: docs/ensemble/PW9.md; final-source snapshot 58d830238 against 0.9.208; 80/80 complete, PASS 10/10 hard, 23/26 overall -->
 <!-- checkpoint: guard 54d4b6cc6; fast and four focused names green; laptop LongPlaytest timeout is GB6 class per orchestrator, boxed dry run judges whole; no green reusable dry run -->
 ## changelog
 ### {next} — PW9, a small firm plant for the early towns — 2026-11-26, ready, see docs/queue/PW9-notes.md
