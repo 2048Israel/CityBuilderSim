@@ -662,6 +662,10 @@ public class HouseholdBalance {
     /** RES3 actual class bill per household; NaN retains the bare-model pooled-rent API. */
     private ToDoubleFunction<Household> rentBills = c -> Double.NaN;
     public void setRentBills(ToDoubleFunction<Household> bills) { rentBills=bills; }
+    /** RES3 (REV-RES3b on 19fcb37f0): the board the last clearing's boarders owe their hosts, settled once the stock has
+     *  followed the people, on the census the leases were struck on, before every household's month (HousingMarket.settleBoard()). */
+    private java.util.function.Consumer<HouseholdBalance> board = b -> { };
+    public void setBoard(java.util.function.Consumer<HouseholdBalance> board) { this.board=board; }
     /** The student's large finite treasury allowance is money too, and follows the city's unit. */
     public void setMoneyUnitSource(java.util.function.DoubleSupplier source){for(Household c:cells)if(c instanceof StudentHousehold s)s.setMoneyUnitSource(source);}
     private double rentBill(Household c,double pooled) {
@@ -1540,6 +1544,8 @@ public class HouseholdBalance {
 
         /* ---- the stock belongs to the people, not to the cells ---- */
         followThePeople(fresh, buffer, plan);
+        // ...the board, on the census the clearing struck its leases on (RES3, HousingMarket.settleBoard()).
+        board.accept(this);
 
         /* ---- and every household's month ---- */
         plannedSpend = 0;

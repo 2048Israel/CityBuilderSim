@@ -16946,6 +16946,7 @@ public class Game {
         families.setTypedRoom(legacy->getSectors().realEstate().housingMarket().roomLeft(this,legacy));
         householdBalance.setRentBills(c -> getSectors().realEstate().housingMarket().active()
                 ? getSectors().realEstate().housingMarket().rentFor(c.key(),housingCellCount(c)) : Double.NaN);
+        householdBalance.setBoard(b -> getSectors().realEstate().housingMarket().settleBoard(b));
         householdBalance.setHousedShares(this::housedShareOf);
         householdBalance.setCarAssetPrice(() -> motoring.getUsedCarPrice() > 0 ? motoring.getUsedCarPrice()
                 : getMarkets().get(Good.CARS).getLocalPrice() * HouseholdBalance.USED_CAR_FLOOR);
