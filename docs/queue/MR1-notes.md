@@ -376,10 +376,33 @@ is owed. The revised pick remains nine harnesses, so no dry run is owed.
   published record exists. The first batch commit will make the remote tip
   distinct. This is branch setup, not reuse of a shipped batch id.
 
+### AP5 merged while the ensemble was running
+
+AP5 shipped as 0.9.211 while the box was playing MR1. Merge main through
+`a21ccb679` (AP5 plus queue-only records); no model source conflicts. The
+three conflicts were generated `docs/dials.md`, `docs/harnesses.md` and
+`docs/map/README.md`: take main, then regenerate them with `--fast`.
+MR1's three source files remain byte-identical to reviewed `9b20bdc0d`.
+
+★ Retain the ensemble's kept gameplay snapshot `84234b69c` after this
+runtime-only merge. AP5's final notes, lines 131-150, record all eight
+default CSVs md5-identical to `ded8345fc`, including after its final
+review mends `bf889e983`; its held-versus-bare labour readings also agree.
+AP5 changes labour caches, not their formulas or order, and does not touch
+Manufacturing. This is not a claim about the merged model's timing. The
+newest ensemble baseline remains `docs/ensemble/0.9.210.md`. The contract's
+repeat after two trace-moving batches does not apply to this exact cache.
+
+Post-merge serial validation: `--fast` **0** (compile 60 s; Stale 0 firm),
+ManufacturingCheck **0**, PopulationCheck **0**, in
+`target/MR1-post-AP5-{fast,ManufacturingCheck,PopulationCheck}.txt` and
+`target/MR1-post-AP5-verdicts.txt`. The helper read the logs; no helper JVM
+or model edit was used. Generated harness listings retain their generator's
+empty numbered comment lines; the MR1 source diff has no whitespace errors.
+
 ## Outstanding
 
-Send the second mends on the updated provisional ship file to the same
-reviewer. After its SHIP, merge main and run
-the brief's ensemble on the
-final pushed model against the newest baseline (currently
-`docs/ensemble/0.9.210.md`). The pick is not ALL, so no dry run is owed.
+The authorized 80-run ensemble is running on the gate box at the kept
+reviewed gameplay snapshot, against `docs/ensemble/0.9.210.md`. Record its
+verdict and commit its baseline before dropping the provisional marker.
+The pick is not ALL, so no dry run is owed.

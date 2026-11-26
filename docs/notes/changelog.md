@@ -18,6 +18,17 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.211 — AP5, the auto-builder's pass holds the labour figures — 2026-11-26, ready, see docs/queue/AP5-notes.md
+Slot 9 was slow again at 50x (Jerus, 2026-11-25: "ok once again, slow down, slot 9"). The auto-builder's pass, half the
+window's thread, asked again for the vacancies, the posts and a sector's buildings for every works it valued. While the
+pass, or the Build Overview's draw, holds its scope, the vacancies are now held against every number their fill reads.
+The stacks' posts and each sector's stacks are held against a count raised after every change to a stack's buildings, a
+building's posts or sector, or the list, so after every order. It is exact: the playtest trace's eight md5s are main's,
+and so is slot 9's log. On slot 9 a month went from 476 to 359 ms headless, and 50x from 5.6-9.2 to 7.7-10.0 months a
+second. LabourCheck changes each input after a figure is held and compares the next reading with the bare one;
+AutoBuildCheck compares 20,424 held readings in a real pass, none off by a bit. Four screens are still short of 10 a
+second: AP6 is queued with the next causes, measured.
+
 ### 0.9.210 — QR1, the distress rule sells plant that pays its running costs — 2026-11-26, ready, see docs/queue/QR1-notes.md
 The distress rule now requires the operating-loss runway as well as net losses before selling plant. Interest alone cannot make an overdrawn sector liquidate plant that pays its running costs; its unpaid debt remains with the existing bank restructuring. Sustained operating losses still sell at the existing quarter rate. Statement-driven fixtures prove the interest-only hold, both sides of the operating-loss threshold, recovery and the surviving restructuring path. The bank's sale fixtures still exercise their money audits to the cent.
 
