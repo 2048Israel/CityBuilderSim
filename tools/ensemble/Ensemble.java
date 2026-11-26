@@ -297,7 +297,7 @@ public class Ensemble {
         DefaultCapture capture = new DefaultCapture();
         Runtime.getRuntime().addShutdownHook(new Thread(capture::finish, "default-playtest-export"));
         LongPlaytest.primaryCreated = capture::attach;
-        LongPlaytest.monthCompleted = capture::month;
+        LongPlaytest.monthObserved = capture::month;
         // main owns its assertions and System.exit. DONE certifies the export, not those assertions.
         LongPlaytest.main(new String[0]);
     }
@@ -320,10 +320,12 @@ public class Ensemble {
         void month(Game g) {
             if (closed || g != primary) return;
             if (g.getMonth() != last + 1) throw new IllegalStateException("non-contiguous primary months");
+            boolean completed = g.hasMonthRun();
+            if (last == 0 ? completed : !completed) throw new IllegalStateException("expected founding baseline, then played months");
             last = g.getMonth();
             EconomyManager em = g.getEconomyManager();
             BusinessDebtManager debt = em.getBusinessDebtManager();
-            for (String sector : Sectors.KEYS) {
+            for (String sector : completed ? Sectors.KEYS : new String[0]) {
                 double f = em.getOverdraftForgivenThisMonth(sector);
                 double b = debt.getBackstopInBanThisMonth(sector);
                 forgivenObserved += f;
@@ -334,7 +336,8 @@ public class Ensemble {
                 if (!names.contains(name)) fresh.append(fresh.length() == 0 ? "" : " | ").append(name);
             }
             int now = Adapter.findingCount();
-            LinkedHashMap<String, Object> row = columns(g, "default", now - flags, fresh.toString());
+            LinkedHashMap<String, Object> row = columns(g, completed ? "default" : "founding", now - flags, fresh.toString());
+            if (!completed) { row.put("audit_ok", Double.NaN); row.put("audit_residual", Double.NaN); }
             row.put("backstop_in_ban_cum", backstop);
             row.put("backstop_in_ban_months_cum", (double) banMonths);
             row.put("overdraft_forgiven_observed_cum", forgivenObserved);

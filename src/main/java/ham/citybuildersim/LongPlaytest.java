@@ -6392,7 +6392,7 @@ public class LongPlaytest {
             countWorks(g, worksOn, worksOver, worksOrders);
             traceMonth(g);
             traceGroundMonth(g);
-            if (monthCompleted != null) monthCompleted.accept(g);
+            if (monthObserved != null) monthObserved.accept(g);
         }
     }
 
@@ -6939,8 +6939,8 @@ public class LongPlaytest {
     /** The copper works the summary counts at the end (CU2), by their names in buildings.json; CopperRefiningCheck's played count reads the line. */
     static final String[] COPPER_WORKS = {"Copper Smelter", "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mill", "Wire & Cable Works"};
 
-    /** Optional same-month observers for a primary-run cash measurement (QR1); null in the normal harness. */
-    static java.util.function.Consumer<Game> primaryCreated, monthCompleted;
+    /** Optional primary-state observers (QR1): founding baseline, then audited months; null in the normal harness. */
+    static java.util.function.Consumer<Game> primaryCreated, monthObserved;
 
     public static void main(String[] args) throws Exception {
 
@@ -6973,6 +6973,7 @@ public class LongPlaytest {
         System.setOut(quiet);
         try {
             g.run();
+            if (monthObserved != null) monthObserved.accept(g);
             /*
              * THE DIAL'S HAND AND THE ROLLOVER, STATED (0.7.13). A new game
              * founds on the autopilot and rolls what falls due in the same
