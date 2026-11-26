@@ -183,12 +183,15 @@ public class BuildCardCheck {
 
     /**
      * A played town with workers to spare: the founding, then a bank, shops,
-     * two bakeries, six hundred houses, the three basic schools and a college,
+     * two bakeries, eight hundred houses, the three basic schools and a college,
      * builders, roads, a clinic, police, power, water and one rail spur
      * standing - and no Institute of Technology, so nobody holds an
      * engineering licence - with land to spare, played two years with every
      * sector held, so no investor's order takes up the people the houses
-     * bring (Measured: about 2,400 people, 300 of them out of work.) Then
+     * bring (Measured: about 2,400 people, 300 of them out of work. On RES3's
+     * typed rents a House holds fewer, and six hundred held 1,784 people and
+     * none out of work, every card failing its staffing first; eight hundred
+     * hold 2,107 and 71, RES3c 2026-11-25.) Then
      * saved and loaded, which lets every sector go again (a hold is a
      * fixture's, not the city's, and is not saved), and played one month, so
      * each sector has a word for the month - the first month after a load,
@@ -204,7 +207,7 @@ public class BuildCardCheck {
             for (Sector s : built.getSectors().all()) built.getBusinessInvestment().holdSector(s.key());
             for (String[] w : new String[][] {
                     { "Industrial Bakery", "2" }, { "Coal Power Plant", "1" }, { "Water Treatment Plant", "1" },
-                    { "Commercial Bank", "1" }, { "Convenience Store", "6" }, { "House", "600" },
+                    { "Commercial Bank", "1" }, { "Convenience Store", "6" }, { "House", "800" },
                     { "Elementary School", "1" }, { "Middle School", "1" }, { "High School", "1" },
                     { "Community College", "1" }, { "Construction Depot", "3" }, { "Paved Road", "2" },
                     { "Walk-in Clinic", "1" }, { "Police Station", "1" }, { "Rail Spur", "1" } }) {
