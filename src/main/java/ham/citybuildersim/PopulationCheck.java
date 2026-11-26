@@ -944,6 +944,8 @@ public class PopulationCheck {
                     wgDear.getLastAffordabilityPull() < 1 && wgDear.getLastHomeDraw() == 0 && wgDear.getLastJobDraw() > 0);
             check("a dear city's target is the jobs' draw x the affordability pull, senior care adding nothing to it",
                     wgDear.getLastTarget(), wgDear.getLastJobDraw() * Migration.affordabilityPull(wgDearBurden), 1e-9);
+            assertTrue("a dear city's actual target is below its unpulled draw",
+                    wgDear.getLastTarget() < wgDear.getLastDrawBeforePulls());
             assertTrue("...and the jobs' pull never exceeds 1", wgDear.getLastJobsPull() <= 1
                     && wgCaring.getLastJobsPull() <= 1 && wgPlain.getLastJobsPull() <= 1);
             assertTrue("...nor does it at inputs over 1", Migration.jobsPull(1.5, 1.5) == 1 && Migration.jobsPull(1, 2) == 1);
@@ -1112,21 +1114,20 @@ public class PopulationCheck {
                 + Migration.HOME_WEIGHT * settled[5];
 
         /*
-         * ...and asked for, for the assertion, which is a statement about the
-         * MODEL'S OWN target.
+         * ...and asked for, for filling and overshoot, which are statements
+         * about the MODEL'S OWN target (MR1).
          *
          * These two are not the same number and the difference is the point.
-         * The target gets multiplied by the senior-care pull, and the day that
-         * factor arrived this restatement quietly stopped describing what
-         * Migration does - so "a city past its target" was being tested against
-         * a target the city had never used. Exactly the trap InfrastructureCheck
-         * fell into when it restated getConstructionOutput() and was wrong the
-         * day a fourth multiplier appeared.
+         * Senior care, affordability and crime change the actual draw. It is
+         * recorded when migration runs, before the arrivals change the adult
+         * share. Rebuilding the unpulled ratio after the month cannot supply
+         * the target the city filled toward. The controlled dear-city fixture
+         * above causes this difference; the played fixture and its 80% law stay.
          */
         double modelTarget = settled[11];
 
         System.out.printf("   after 1 month: %,.0f people;  after 120: %,.0f"
-                + "  (target %,.0f)%n", oneMonth[0], settled[0], target);
+                + "  (raw draw %,.0f; model target %,.0f)%n", oneMonth[0], settled[0], target, modelTarget);
 
         /*
          * INERTIA, which is the entire point of the switch. The old model
@@ -1136,8 +1137,9 @@ public class PopulationCheck {
          */
         assertTrue("a city does not fill in a single month",
                 oneMonth[0] < settled[0] * .5);
+        assertTrue("the decade city has a positive migration target", modelTarget > 0);
         assertTrue("...but it does fill, given a decade",
-                settled[0] > target * .8);
+                settled[0] > modelTarget * .8);
 
         /*
          * THE OVERSHOOT IS REAL AND IT IS NOT SICKNESS.
@@ -1192,7 +1194,7 @@ public class PopulationCheck {
          */
         assertTrue("...and does not run away entirely", settled[0] < target * 3.5);
         System.out.printf("   the model's own target is %,.0f (the ratio above uses"
-                + " %,.0f, before the senior-care pull)%n", modelTarget, target);
+                + " %,.0f, before the pulls)%n", modelTarget, target);
 
         assertTrue("...because a city past its target stops pulling people in",
                 settled[0] <= modelTarget || settled[9] == 0);

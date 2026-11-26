@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**257 harness files, 29,381 labelled assertions.** AllChecks runs 257 of them.
+**257 harness files, 29,383 labelled assertions.** AllChecks runs 257 of them.
 
 ## Which harnesses read which class
 
@@ -27196,7 +27196,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1397 the twin billed at 2 quotes the preview's handling
   - L1403 the copy's dial clamps as the city's: past the top is the top, below none is none, and the city's own dial stays where it was
 
-## PopulationCheck.java - 185 labelled assertions
+## PopulationCheck.java - 187 labelled assertions
 
 > The demographics: do they hold together, and do they move the city the way
 > they were told to?
@@ -27329,92 +27329,94 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L934 ...and the homes' pull reads the senior care pull
   - L943 fixture: rent is dear enough to cut the pull, and there are no homes to draw
   - L945 a dear city's target is the jobs' draw x the affordability pull, senior care adding nothing to it
-  - L947 ...and the jobs' pull never exceeds 1
-  - L949 ...nor does it at inputs over 1
-  - L954 fixture: crime at twice Canada's cuts the pull
-  - L955 an unsafe city's jobs draw is cut by the crime pull, as a dear one's by the rent
-  - L961 the brake is whole at the healthy rate
-  - L962 ...none at the stop
-  - L963 ...half way between the two it is a half
-  - L964 ...whole under the healthy rate, none past the stop, and a rate nobody can read brakes nothing
-  - L973 fixture: a city one month short of BRAKE_FROM_MONTH is still young
-  - L975 ...and at BRAKE_FROM_MONTH months the brake applies
-  - L976 ...a young city's brake is whole at the stop
-  - L977 ...an old city's is the pure brake at the stop
-  - L978 ...and half way between the dials, a half
-  - L987 fixture: the braked city has recorded BRAKE_FROM_MONTH months, so the brake applies
-  - L996 fixture: the unbraked city draws people (target over its population, room and crowding at 1)
-  - L998 fixture: the rate is
-  - L1001 arrivals
-  - L1003 ...and the brake it kept (what the People screen's word reads) is the brake at the rate it read
-  - L1005 ...and the mix by band is of the braked arrivals
-  - L1011 past the stop nobody arrives, however many jobs are going
-  - L1017 fixture: a city past the stop kept a brake below 1 in the month it read its people
-  - L1020 ...and its next month, with no people read, kept none: a brake of 1
-  - L1029 fixture: the young city is past the stop with no months recorded, and its unbraked twin draws people
-  - L1032 a city younger than BRAKE_FROM_MONTH is not braked past the stop: its arrivals are its unbraked twin's, whole
-  - L1034 ...and its kept brake is 1, whatever share it read
-  - L1043 fixture: the city has recorded BRAKE_FROM_MONTH months, so the jobless over the healthy rate can be sent away
-  - L1056 fixture: no band is pinned and no tier is declining, so only the rate can send anybody
-  - L1058 those over the healthy rate of the labour force leave at the surplus rate, whatever their wage
-  - L1061 ...and they are all the month's departures (no crime, no bankruptcy, no dying trade)
-  - L1063 ...and the departure mix sums to the departures
-  - L1065 a city past the healthy rate loses people for want of work
-  - L1066 ...from the band that is out of work at its own level
-  - L1069 a city at or under the healthy rate loses nobody for want of work
-  - L1089 fixture: the young city is well past the healthy rate, with no months recorded, no band pinned and no tier declining
-  - L1091 a city younger than BRAKE_FROM_MONTH sends nobody away for want of work, however far past the healthy rate
-  - L1093 ...its departures are the twin's, the extra leavers none
-- **L1097 a city, played**
-  - L1137 a city does not fill in a single month
-  - L1139 ...but it does fill, given a decade
-  - L1193 ...and does not run away entirely
-  - L1197 ...because a city past its target stops pulling people in
-  - L1219 the workforce is the city's adults, within a month's growth
-  - L1250 ...and the share is the pyramid's, not a constant
-- **L1254 5. and it survives a save**
-  - L1275 the city has a pyramid
-  - L1281 the pyramid came back
-  - L1282 ...and the households with it
-  - L1285 
-  - L1307 a declining streak survives a save
-  - L1312 ...and a malformed one is refused, not half-read
-  - L1322 a malformed pyramid is refused, not half-read
-- **L1400 the pyramid survives a band being added**
-  - L1408 the names travel beside the pyramid
-  - L1414 restored by name:
-  - L1416 and the births beside it
-  - L1417 and the deaths
-  - L1436 order does not matter:
-  - L1456 an unknown band shifts nothing:
-  - L1458 ...and the births are still the births
-  - L1459 ...and the stranger is not in the pyramid
-  - L1469 the legacy format is five bands, in writing
-  - L1475 a nameless save puts babies in BABY
-  - L1476 ...and seniors in SENIOR
-  - L1477 ...and reads births after the fifth
-  - L1478 ...and deaths after that
-  - L1479 ...and nobody else is in the city
-  - L1494 a save from before the names carries none
-  - L1498 a real old save: its adults are its adults
-  - L1500 ...its seniors are its seniors
-  - L1502 ...last month's births are births, not a band
-  - L1504 ...and the city is the size it was saved at
-  - L1512 a malformed named pyramid is refused too
-- **L1541 the families and the sick ring survive it too**
-- **L1550 families**
-  - L1552 the fixture actually has families to save
-  - L1557 the families round-trip by name
-  - L1567 a today-save read as five bands and thirteen shapes is refused whole
-  - L1594 ...and a band from the future shifts nothing behind it
-  - L1599 a malformed family array is refused whole
-- **L1601 the ring**
-  - L1604 the ring restores by name
-  - L1605 ...and round-trips
-  - L1614 a today-ring read as five bands is refused whole
-  - L1626 a five-band ring from before the names still loads
-  - L1627 ...and it put somebody in the ring
-  - L1630 a ring is refused whole when the width does not match its names
+  - L947 a dear city's actual target is below its unpulled draw
+  - L949 ...and the jobs' pull never exceeds 1
+  - L951 ...nor does it at inputs over 1
+  - L956 fixture: crime at twice Canada's cuts the pull
+  - L957 an unsafe city's jobs draw is cut by the crime pull, as a dear one's by the rent
+  - L963 the brake is whole at the healthy rate
+  - L964 ...none at the stop
+  - L965 ...half way between the two it is a half
+  - L966 ...whole under the healthy rate, none past the stop, and a rate nobody can read brakes nothing
+  - L975 fixture: a city one month short of BRAKE_FROM_MONTH is still young
+  - L977 ...and at BRAKE_FROM_MONTH months the brake applies
+  - L978 ...a young city's brake is whole at the stop
+  - L979 ...an old city's is the pure brake at the stop
+  - L980 ...and half way between the dials, a half
+  - L989 fixture: the braked city has recorded BRAKE_FROM_MONTH months, so the brake applies
+  - L998 fixture: the unbraked city draws people (target over its population, room and crowding at 1)
+  - L1000 fixture: the rate is
+  - L1003 arrivals
+  - L1005 ...and the brake it kept (what the People screen's word reads) is the brake at the rate it read
+  - L1007 ...and the mix by band is of the braked arrivals
+  - L1013 past the stop nobody arrives, however many jobs are going
+  - L1019 fixture: a city past the stop kept a brake below 1 in the month it read its people
+  - L1022 ...and its next month, with no people read, kept none: a brake of 1
+  - L1031 fixture: the young city is past the stop with no months recorded, and its unbraked twin draws people
+  - L1034 a city younger than BRAKE_FROM_MONTH is not braked past the stop: its arrivals are its unbraked twin's, whole
+  - L1036 ...and its kept brake is 1, whatever share it read
+  - L1045 fixture: the city has recorded BRAKE_FROM_MONTH months, so the jobless over the healthy rate can be sent away
+  - L1058 fixture: no band is pinned and no tier is declining, so only the rate can send anybody
+  - L1060 those over the healthy rate of the labour force leave at the surplus rate, whatever their wage
+  - L1063 ...and they are all the month's departures (no crime, no bankruptcy, no dying trade)
+  - L1065 ...and the departure mix sums to the departures
+  - L1067 a city past the healthy rate loses people for want of work
+  - L1068 ...from the band that is out of work at its own level
+  - L1071 a city at or under the healthy rate loses nobody for want of work
+  - L1091 fixture: the young city is well past the healthy rate, with no months recorded, no band pinned and no tier declining
+  - L1093 a city younger than BRAKE_FROM_MONTH sends nobody away for want of work, however far past the healthy rate
+  - L1095 ...its departures are the twin's, the extra leavers none
+- **L1099 a city, played**
+  - L1138 a city does not fill in a single month
+  - L1140 the decade city has a positive migration target
+  - L1141 ...but it does fill, given a decade
+  - L1195 ...and does not run away entirely
+  - L1199 ...because a city past its target stops pulling people in
+  - L1221 the workforce is the city's adults, within a month's growth
+  - L1252 ...and the share is the pyramid's, not a constant
+- **L1256 5. and it survives a save**
+  - L1277 the city has a pyramid
+  - L1283 the pyramid came back
+  - L1284 ...and the households with it
+  - L1287 
+  - L1309 a declining streak survives a save
+  - L1314 ...and a malformed one is refused, not half-read
+  - L1324 a malformed pyramid is refused, not half-read
+- **L1402 the pyramid survives a band being added**
+  - L1410 the names travel beside the pyramid
+  - L1416 restored by name:
+  - L1418 and the births beside it
+  - L1419 and the deaths
+  - L1438 order does not matter:
+  - L1458 an unknown band shifts nothing:
+  - L1460 ...and the births are still the births
+  - L1461 ...and the stranger is not in the pyramid
+  - L1471 the legacy format is five bands, in writing
+  - L1477 a nameless save puts babies in BABY
+  - L1478 ...and seniors in SENIOR
+  - L1479 ...and reads births after the fifth
+  - L1480 ...and deaths after that
+  - L1481 ...and nobody else is in the city
+  - L1496 a save from before the names carries none
+  - L1500 a real old save: its adults are its adults
+  - L1502 ...its seniors are its seniors
+  - L1504 ...last month's births are births, not a band
+  - L1506 ...and the city is the size it was saved at
+  - L1514 a malformed named pyramid is refused too
+- **L1543 the families and the sick ring survive it too**
+- **L1552 families**
+  - L1554 the fixture actually has families to save
+  - L1559 the families round-trip by name
+  - L1569 a today-save read as five bands and thirteen shapes is refused whole
+  - L1596 ...and a band from the future shifts nothing behind it
+  - L1601 a malformed family array is refused whole
+- **L1603 the ring**
+  - L1606 the ring restores by name
+  - L1607 ...and round-trips
+  - L1616 a today-ring read as five bands is refused whole
+  - L1628 a five-band ring from before the names still loads
+  - L1629 ...and it put somebody in the ring
+  - L1632 a ring is refused whole when the width does not match its names
 
 ## PortCheck.java - 171 labelled assertions
 

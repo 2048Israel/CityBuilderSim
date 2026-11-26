@@ -53,6 +53,50 @@ save, rather than reconstructed from closing balances. No saved value's
 meaning changes, no conversion is added and no format bump is owed under
 the old-saves rule. Reset restores first-entry status. The count is not
 money and does not redenominate.
+The source review also checked full liquidation: EconomyManager banks every
+sector each month, with no active-plant filter, and Sector always invokes
+`afterBank()`. The empty Manufacturing in the base population trace closes
+zero operating results from m41 through m122, so the recovery clock can
+advance after its last plant goes.
+
+Other calls: the bleed's current predicate forgets the problem at the first
+paying month (AQ1's measured one-month delay), so it is not a recovery rule.
+A sale-only timer would add a retirement event to shared code and could
+expire while the business still lost money; the observed running record
+covers both recent losses and a bleed, which already requires losses.
+Per-plant profitability or an additional utilization cutoff would require a
+different allocation of the sector's books. This batch keeps the sector as
+the accounting unit and changes Manufacturing alone, as its row asks.
+No conservation, save or population threshold is relaxed.
+
+## PopulationCheck's current finding and law (★)
+
+On this base the old accepted Manufacturing re-order is absent in the modern
+fixture, but the decade line still fails. MR1-trace found that its denominator
+is the reconstructed **unpulled** jobs/homes draw, 556, whereas the target
+migration actually used is 445: 431 residents are 96.9% of that target.
+`play()` already returns `Migration.getLastTarget()` as tuple entry 11 and
+the overshoot assertion already uses it. The raw reconstruction also reads
+the adult share after arrivals, rather than at the actual calculation.
+
+Reality first: households need not fill toward the same nominal employment
+opportunity when housing costs discourage them. Ganong and Shoag,
+[Why Has Regional Income Convergence in the U.S. Declined? (2017)](https://www.nber.org/papers/w23609),
+model and document how rising housing prices deter low-skill migration.
+This supports retaining affordability's effect, not forcing extra arrivals
+to satisfy an unpulled target. It does not calibrate the game's pulls.
+
+★ Keep the exact played fixture, the one-month inertia assertion, the 80%
+decade share, the independent raw ratio and every overshoot/conservation
+check. Apply the decade share to the same actual target already used by the
+overshoot law, with an added positive-target guard. The existing controlled
+dear-city fixture sets rent burden to twice the model's target, keeps jobs
+and no home draw, and proves the actual target is lower than the unpulled
+draw; MR1 adds that effect as an explicit assertion. The fixture is not moved
+and the model's affordability/crime/senior-care effects are not hidden.
+Printed figures distinguish raw draw and actual target. The pending probe
+will identify this particular played city's pulls without guessing from the
+old senior-care comment. PopulationCheck is rerun after this correction.
 
 ## Checks and measurements
 
@@ -65,6 +109,14 @@ money and does not redenominate.
   No Manufacturing plant or site remains through m122. Works proposals from
   m108 are refused by bank capital. The current red must be traced on its
   own cause, not attributed to AQ1's old measurements.
+- Runner correction: MR1-trace launched the original target-only observer
+  directly before my follow-up made the batch-check wrapper explicit. It
+  delegates the real LongPlaytest and is a mechanism probe, not a claimed
+  batch-check pass. It remains the sole diagnostic JVM until completion;
+  subsequent diagnostics and all acceptance checks use one named
+  `./batch-check.sh` invocation at a time. No timeout is extended.
+- Population law correction `--fast`: green, compile 61 s, Stale 0 firm
+  findings, maps regenerated. Full PopulationCheck remains to be rerun.
 - First finding attempt (planner behaviour unchanged): invalid red proof.
   Initial entry and the final order were already held because the new
   fixture set owned land but omitted the planner's monthly land snapshot.
@@ -73,6 +125,13 @@ money and does not redenominate.
   also asserts staffing, estimated earnings and cost so a prerequisite hold
   cannot make the recovery assertions vacuous.
 - Recovery model `--fast`: green, compile 61 s, Stale 0 firm findings.
+- `sh tools/pick.sh origin/main HEAD` at `1c5d2e8c6`: BuildingDataCheck,
+  CopperRefiningCheck, GdpCheck, ManufacturingCheck, MaterialsCheck,
+  TimingCheck (6 of 257). Its automatic review line says no review is needed;
+  the brief requires a stranger's money review and the diff also persists
+  sector history, so MR1 explicitly requests money **and saves** review.
+  With this pick no dry run is owed. The final pick is recomputed before
+  mailing mends.
 - `tools/batch-id.sh MR1` initially flags the remote branch because the
   orchestrator pre-pushed it at exactly origin/main's spine; no MR1 merge or
   published record exists. The first batch commit will make the remote tip
@@ -80,7 +139,8 @@ money and does not redenominate.
 
 ## Outstanding
 
-Base measurements, finding harness, final rule, save/reload verification,
-named checks and stranger's money review. If the default trace moves, the
+Finish the base default trace and Population attribution; prove the finding
+red before the gate; run save/reload verification and named checks, then
+request stranger's money/saves review. If the default trace moves, the
 ensemble is run on the final pushed model after the review's SHIP, against
 the newest baseline (currently `docs/ensemble/0.9.210.md`).
