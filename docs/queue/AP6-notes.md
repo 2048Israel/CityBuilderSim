@@ -75,4 +75,8 @@ not AP5's earlier absolute figures. Full figures and after measurements follow b
 ## 3. Checks, mutations, and trace
 
 Initial `./batch-check.sh --fast`: green, compile 55 s, Stale 0 firm.
+`LabourCheck` on the final model: exit 0 (one named harness).
+★ `MonthPostsCheck` runs LabourCheck's two controlled held-figure sections for
+the mutation trials. The full LabourCheck keeps both sections; no assertion is
+removed. This avoids replaying unrelated census and wages for every removed raise.
 The final results, warmed-cache writer coverage and mutation table will be recorded here.

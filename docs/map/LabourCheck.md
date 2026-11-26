@@ -51,7 +51,7 @@
 
 **Uses:** [LabourMarket](LabourMarket.md) (157), [JobType](JobType.md) (142), [WageBand](WageBand.md) (79), [WorksValue](WorksValue.md) (45), [Game](Game.md) (29), [BuildingsTemplate](BuildingsTemplate.md) (21), [PopulationManager](PopulationManager.md) (18), [Migration](Migration.md) (13), [BuildingManager](BuildingManager.md) (12), [Recipe](Recipe.md) (10), [GameFiles](GameFiles.md) (9), [WageLadder](WageLadder.md) (8), [BuildingsStacks](BuildingsStacks.md) (8), [PriceLevel](PriceLevel.md) (7), [Sector](Sector.md) (6), [BuildingType](BuildingType.md) (6), [PayTier](PayTier.md) (5), [RealEstate](RealEstate.md) (3), [Construction](Construction.md) (3), [PopulationCohorts](PopulationCohorts.md) (3), [DecisionLog](DecisionLog.md) (2), [AgeBand](AgeBand.md) (2), [WorldMeasures](WorldMeasures.md) (2), [FamilyModel](FamilyModel.md) (2), [TempDirs](TempDirs.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [Sectors](Sectors.md) (1), [PriceIndex](PriceIndex.md) (1), [HeavyIndustry](HeavyIndustry.md) (1), [EconomyManager](EconomyManager.md) (1)... and 1 more
 
-**Used by (4):** [EducationCheck](EducationCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [SchoolingLadderCheck](SchoolingLadderCheck.md), [SchoolingPageCheck](SchoolingPageCheck.md)
+**Used by (5):** [EducationCheck](EducationCheck.md), [LandlordPortCheck](LandlordPortCheck.md), [MonthPostsCheck](MonthPostsCheck.md), [SchoolingLadderCheck](SchoolingLadderCheck.md), [SchoolingPageCheck](SchoolingPageCheck.md)
 
 ## Sections
 

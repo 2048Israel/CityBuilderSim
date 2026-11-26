@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**257 harness files, 29,498 labelled assertions.** AllChecks runs 257 of them.
+**258 harness files, 29,498 labelled assertions.** AllChecks runs 258 of them.
 
 ## Which harnesses read which class
 
@@ -24507,6 +24507,18 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L523 the real redraw keeps the same scroller and its position
   - L524 the redraw updates the estate line to the new month's model
   - L526 the redraw retains the month's disclosure nodes
+
+## MonthPostsCheck.java - 0 labelled assertions
+
+> Proves the labour figures held for a pass and across a month survive every
+> writer, with the original walks compared as raw bits (AP5/AP6).
+> 
+> WHY. LabourCheck's census and wage replay need not be repeated for each
+> invalidation mutation. This entry point runs its two controlled held-figure
+> sections, including the people's inputs, in a normal named harness. The
+> full LabourCheck retains both sections too; no assertion is removed.
+
+_(no printed sections or labelled assertions found)_
 
 ## MortgageCheck.java - 187 labelled assertions
 
