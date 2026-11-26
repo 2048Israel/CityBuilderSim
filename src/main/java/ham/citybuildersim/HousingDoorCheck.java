@@ -48,7 +48,17 @@ import java.util.Locale;
  *      owners first, and the door trims for the capital only what their
  *      issue left uncovered (that trim caused in CreditCrunchCheck 3);
  *   4. LongPlaytest's watch holds - no month leaves more than one household
- *      with no door - and the homes that finish are counted by size;
+ *      with no door - and the homes that finish are counted by size; since
+ *      call A (RES3c, 2026-11-25) a household the census line has no door for
+ *      lives past it, overcrowded (HousingMarket.overcrowding(), the 1891 and
+ *      1901 censuses' 7.04 million families in 6.26 million houses), and
+ *      overcrowding rises when building falls behind the town's households:
+ *      in the months the landlords' order is trimmed or held (its down
+ *      payment, the lender's test, the bank's capital, or no land) households
+ *      live overcrowded, more of them a month than in the months building
+ *      keeps up (call A's first town: none at m888 with its ground gone,
+ *      36.993 households at m831's boom, the orders trimmed to a few Houses
+ *      for the down payment);
  *   5. every played month's households' cash identity closes beside the accepted and refused mortgage orders (HL1).
  */
 public final class HousingDoorCheck {
@@ -63,6 +73,20 @@ public final class HousingDoorCheck {
     /** The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). */
     static final double TARGET = .02;
     static final String RE = Sectors.REAL_ESTATE;
+    /** Call A's first town's boom (a6b4e2369): 36.993 households overcrowded, the landlords' 389 Houses trimmed to 14 for the down payment. */
+    static final int BOOM = 831;
+
+    /** Months of one kind and the households overcrowded in them (call A). */
+    static final class Tally {
+        int months, first = -1, last = -1, mostAt = -1;
+        double sum, most;
+        void add(int m, double crowded) {
+            months++; sum += crowded; if (first < 0) first = m; last = m;
+            if (crowded > most) { most = crowded; mostAt = m; }
+        }
+        double mean() { return months > 0 ? sum / months : 0; }
+        String text() { return String.format(Locale.ROOT, "%d months (m%d-m%d): %.3f households overcrowded a month, at most %.3f (m%d)", months, first, last, mean(), most, mostAt); }
+    }
 
     static void check(String label, boolean ok) {
         out.println((ok ? "  ok   " : "  FAIL ") + label);
@@ -111,6 +135,10 @@ public final class HousingDoorCheck {
         // HL1: the same played path must close the households' cash books, including accepted trimmed orders.
         int[] householdMonths = { 0, 0 };
         MoneyAudit.Households[] worstHouseholds = { MoneyAudit.Households.NONE };
+        // Call A: the households living past the census line, by whether building fell behind the town's households.
+        Tally behind = new Tally(), keptUp = new Tally(), forLand = new Tally();
+        double[] boom = { -1, -1 };
+        String[] boomLine = { "" };
         try {
             g = new Game(files, LongPlaytest.played(null));
             g.run();
@@ -137,6 +165,16 @@ public final class HousingDoorCheck {
                 if (m <= FROM) { pending = null; return; }
                 double still = g.getFamilies().getStillUnplaced();
                 if (still > worstUnplaced[0]) { worstUnplaced[0] = still; worstMonth[0] = m; worstHousing[0]=housingSnapshot(g); }
+                var market = g.getSectors().realEstate().housingMarket();
+                double crowded = market.overcrowded();
+                // The model's own readings of building falling behind: the month's order at the door trimmed or held (its
+                // down payment, the lender's test, the bank's capital), or the landlords held for land.
+                boolean land = g.getLandBlockedSectors().contains(RE);
+                boolean door = pending != null && (pending.passed < pending.asked
+                        || g.getEconomyManager().getBusinessDebtManager().wasMortgageRefusedForCapital(RE));
+                (land || door ? behind : keptUp).add(m, crowded);
+                if (land) forLand.add(m, crowded);
+                if (m == BOOM) { boom[0] = crowded; boom[1] = market.overcrowdedPeople(); boomLine[0] = g.getLastInvestment(RE); }
                 if (pending != null) {
                     pending.month = m;
                     pending.line = g.getLastInvestment(RE);
@@ -251,6 +289,14 @@ public final class HousingDoorCheck {
         if(worstUnplaced[0]>1)out.print(worstHousing[0]);
         check("no month of the window leaves more than one household with no door (LongPlaytest's watch)",
                 worstUnplaced[0] <= 1);
+        out.println("   building behind the town's households, the order trimmed or held at the door or for land, " + behind.text());
+        out.println("   building keeping up, " + keptUp.text());
+        out.println("   of them held for land, " + forLand.text());
+        out.printf(Locale.ROOT, "   the boom, m%d: %.3f households overcrowded (%.0f people); %s%n", BOOM, boom[0], boom[1], boomLine[0]);
+        check("fixture: building fell behind in the window and kept up in it: months the landlords' order was trimmed or held, and months it was not",
+                behind.months > 0 && keptUp.months > 0);
+        check("households live overcrowded, counted past the census line, in the months building falls behind (call A)", behind.most > 0);
+        check("...more of them a month than in the months building keeps up", behind.mean() > keptUp.mean());
 
         out.println("\n--- 5. the households' identity through the mortgage door (HL1) ---");
         out.printf("   %d months, %d open; worst %s%n", householdMonths[0], householdMonths[1], worstHouseholds[0]);

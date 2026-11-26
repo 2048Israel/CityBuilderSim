@@ -565,9 +565,11 @@ public final class CityNeeds {
         onTheWay(game, w, out, t -> t.getSafety() == SafetyType.PRISON);
 
         /* ------------------------------- the housing ------------------------------- */
-        double unplaced = families.getStillUnplaced();
-        over(out, "HOMES", unplaced >= .5 ? w.people(unplaced) + " with nowhere to live" : "everybody housed",
-                unplaced, .5, 25, Kind.HOMES, Go.HOMES, CareType.NONE, EducationType.NONE, 0, 0);
+        // Who lives past the census line, overcrowded, wants a home as much as who has none (RES3c, 2026-11-25, call A).
+        double unplaced = families.getStillUnplaced(), wanting = game.getHouseholdsWantingAHome();
+        over(out, "HOMES", unplaced >= .5 ? w.people(unplaced) + " with nowhere to live"
+                        : wanting >= .5 ? w.people(wanting) + " overcrowded" : "everybody housed",
+                wanting, .5, 25, Kind.HOMES, Go.HOMES, CareType.NONE, EducationType.NONE, 0, 0);
         onTheWay(game, w, out, t -> t.getCategory() == BuildingType.RESIDENTIAL);
 
         /* -------------------------------- the ground -------------------------------- */

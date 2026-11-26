@@ -274,13 +274,43 @@ public final class CreditCrunchCheck {
      * the cash alone, which moves the ratio but not the requirement that binds, held it in the wrong band (FS9).
      */
     static void holdInBand(Bank bank) {
+        holdInBand(bank, 0);
+    }
+
+    /** ...with what the bank pays out of its cash before the rule is struck held in it too, so that the rule finds it HOLD of its band up. */
+    static void holdInBand(Bank bank, double dueBeforeTheRule) {
         double ratio = Bank.LEVERAGE_RATIO_MIN + HOLD * (bank.leverageTarget() - Bank.LEVERAGE_RATIO_MIN);
         double owedAtHome = bank.totalLiabilities() - bank.borrowings() - Math.max(0, bank.getForeignDeposits());
         double book = bank.exposure() - bank.cashReserves();
         double wanted = BINDS_BY * Bank.CAPITAL_RATIO * bank.getWeightedBook() / Bank.LEVERAGE_RATIO_MIN;
         double exposure = Math.max(wanted, Math.max(book, owedAtHome / (1 - ratio)));
-        bank.setCash(exposure - book);
+        bank.setCash(exposure - book + dueBeforeTheRule);
         bank.setForeignDeposits(exposure * (1 - ratio) - owedAtHome);
+    }
+
+    /**
+     * The played month's hold: the bank HOLD of its band up as the month's rule reads it, after the profit tax the month's top
+     * charges from its cash first (Bank.chargeTax(), in the audit window, before startOfMonthUpdate() strikes the rule; Bank.taxAt()
+     * is that bill, at the model's own rate). Returns the leverage ratio the rule is struck on.
+     * WHY (RES3c, 2026-11-25): since call A the overcrowded need homes too, and seed 13's town, before the House's ground was stood
+     * (cutToTheValve()), built 285 homes to 717 in the crunch where it had built 268 to 566; its bank's profit tax grew with its book,
+     * and at m267 it took 37.76 of the equity at the month's top (Bank.taxAt() at the hold read the same 37.76) where the half band
+     * the hold left was 33.49 over the minimum: the rule found the bank under it, lending only to keep borrowers going, in the one
+     * month the fixture says it stood in its band. The header's "equity and exposure hardly move between the hold and that strike"
+     * was the old town's. The town with the House's ground pays no profit tax in the crunch, so this hold is the old one there.
+     */
+    static double holdInBand(Game g) {
+        Bank bank = g.getBank();
+        double due;
+        try {
+            java.lang.reflect.Method rate = Game.class.getDeclaredMethod("bankProfitTaxRate");
+            rate.setAccessible(true);
+            due = bank.taxAt((Double) rate.invoke(g));
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+        holdInBand(bank, due);
+        return (bank.equity() - due) / (bank.exposure() - due);
     }
 
     /** ★ The ground stood before each crunch month, in blocks of Low-Rise Apartments: section 4's order, so the landlords never wait on land. */
@@ -331,6 +361,10 @@ public final class CreditCrunchCheck {
                     && (single == null || "House".equals(t.getName()))) single = t;
         check("fixture: the city knows a single-door home (" + (single == null ? "none" : single.getName()) + ")", single != null);
         if (single == null) return;
+        // Its ground, as the player stands it (standGround(): the cheapest plots, Game.buyLandBlock()). WHY (RES3c, 2026-11-25): since
+        // call A the overcrowded need homes too (Game.getHouseholdsWantingAHome()), and seed 13's town had built to its ground by m150
+        // (280 square feet free): the House was refused for no land, and the one house's room went unmeasured.
+        for (int plots = 0; !ground(g, single, 1) && plots < MAX_PLOTS && g.buyLandBlock(); plots++) { }
         g.setCashForTest(Math.max(g.getCash(), g.quoteBuild(single, 1).total));
         double withoutIt = room(g);
         check("fixture: a paid single-door home stands before trimming the capacity buffer",
@@ -396,8 +430,7 @@ public final class CreditCrunchCheck {
                 if (g.getMonth() == FROM) cutToTheValve(g);
                 if (g.getMonth() >= FROM) {
                     standGround(g);
-                    holdInBand(g.getBank());
-                    heldRatio = g.getBank().leverageRatio();
+                    heldRatio = holdInBand(g);
                 }
             });
         } finally {

@@ -3924,10 +3924,16 @@ public class LongPlaytest {
          * and FoodProcessingCheck's fixture city went from month 98 to month
          * 185 with ten times the price level. The failure to react to is the
          * one the run flags: somebody with nowhere at all.
+         *
+         * ...AND THE OVERCROWDED ARE IN IT (RES3c, 2026-11-25). Since call A a
+         * household the census line has no room for lives past it rather than
+         * nowhere (HousingMarket.overcrowding()): that is past both valves, the
+         * failure the 1891 census counted, not a flat shared within the line,
+         * and a player reads it as homes wanting (Game.getHouseholdsWantingAHome()).
          */
         double homesShort = population - b.getTotalHouseCapacity();
         FamilyModel fam = g.getFamilies();
-        double doorsShort = fam.getStillUnplaced();
+        double doorsShort = g.getHouseholdsWantingAHome();
         if (homesShort > -4 || doorsShort > 0) {
             /*
              * Priced on the output the people it houses would produce, less a

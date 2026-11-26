@@ -29,8 +29,9 @@ public final class HousingChoice {
     public static final double YOUNG_AREA = .9;
     /**
      * The census line: the census of England and Wales called a home overcrowded past two persons a room (1891, and so
-     * to 1931), its rooms its bedrooms and a kitchen. No occupied door passes it: a household alone, two to a share, a
-     * guest beside its host and a lodger (RES3, the orchestrator's call of 2026-11-25).
+     * to 1931), its rooms its bedrooms and a kitchen. No placement the line has room for passes it: a household alone,
+     * two to a share, a guest beside its host and a lodger (RES3, the orchestrator's call of 2026-11-25). Who it has no
+     * room for lives past it, overcrowded, never doorless (HousingMarket.overcrowding(), call A, RES3c 2026-11-25).
      */
     public static final double PERSONS_PER_ROOM = 2;
     /** The most people a door of so many bedrooms holds at the census line (H55 4, D90 6, H120 8). */

@@ -690,7 +690,12 @@ public final class HousingMarketCheck {
         market.reset();result=market.clear(g,List.of(new HousingChoice.Demand("host",1,size,0,false,0,false,2*ask),
                 new HousingChoice.Demand("fundable",1,size,0,true,0,false,.25*ask),
                 new HousingChoice.Demand("poor",1,size,0,true,0,false,0)));
-        near("without a funded vacant share one household remains explicitly unplaced",result.unplaced(),1);
+        // Call A (RES3c, 2026-11-25): the household the line has no room for, beside a host and a guest already at it, lives
+        // past the line, overcrowded as the 1891 census counted it, never doorless; it funds no share and is billed nothing.
+        near("without a funded vacant share no household is left with no door",result.unplaced(),0);
+        near("...the one the census line has no room for is counted overcrowded",market.overcrowded(),1);
+        check("...placed past the census line",!withinLine(market,result));
+        near("...and the zero-budget household is billed nothing",market.rentFor("poor",1),0);
         near("unfunded vacancy creates no extra receipts",market.receipts(),ask);
         near("unfunded vacancy creates no extra occupied home",market.occupied(),1);
     }
@@ -1071,13 +1076,21 @@ public final class HousingMarketCheck {
             var result=market.clear(g,cells);g.getFamilies().acceptTypedHousing(market.demands(),result,g.getHouseholdBalance().cells(),bm.getHousingInventory());
             if(missing<FamilyModel.packingRounding(200)){
                 check("an ULP of the whole source is exactly zero final shortage",result.unplaced()==0);
-                check("an ULP cannot activate the farm's housing-priority guard",g.getFamilies().getStillUnplaced()==0);
+                check("an ULP cannot activate the farm's housing-priority guard",g.getHouseholdsWantingAHome()==0);
                 check("a rounded complete match records no phantom affordability or suitability reason",result.unaffordable()==0&&result.noSuitable()==0);
             }else{
-                near("a genuine fractional shortage is still explicit",result.unplaced(),missing);
-                check("a genuine shortage still activates housing priority",g.getFamilies().getStillUnplaced()>0);
+                // Call A (RES3c, 2026-11-25): the genuine residue has no room under the line, so it lives past it, overcrowded and
+                // counted, never doorless, and wants a home of its own as the doorless did.
+                near("a genuine fractional shortage is still explicit, overcrowded past the census line",market.overcrowded(),missing);
+                near("...none of it left with no door",result.unplaced(),0);
+                check("...placed past the census line",!withinLine(market,result));
+                near("...and billed nothing on its zero budget",market.rentFor(residue,missing),0);
+                check("a genuine shortage still activates housing priority",g.getHouseholdsWantingAHome()>0);
             }
-            check("rounding the counter creates no door or extra guest slot",market.occupied()<=100&&market.leases().stream().mapToDouble(HousingChoice.Lease::households).sum()<=200);
+            // A lodger past the line holds no share (HousingMarket.shares()): the guest slots stay two to a door.
+            check("rounding the counter creates no door or extra guest slot",market.occupied()<=100&&market.leases().stream().mapToDouble(HousingMarket::shares).sum()<=200);
+            near("...and who is housed beyond the guest slots is the overcrowded count",
+                    market.leases().stream().mapToDouble(l->l.households()-HousingMarket.shares(l)).sum(),market.overcrowded());
         }
     }
     static void familyHostReservation(){
