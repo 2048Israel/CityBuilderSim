@@ -28,6 +28,8 @@ import java.nio.file.Path;
  *   6. it books like everybody else, the audit holds, and it reloads - and
  *      since 0.7.83 (batch O6) it buys the oil on its line, lubricants at
  *      the spec's rate a tonne made
+ *   7. after a bleed sale, its own plant must cover running costs for the
+ *      recovery dial before a profitable new works is ordered (MR1)
  *
  * Every fixture causes its condition. The steel test moves the steel price
  * rather than waiting for a mill; the wage test moves the floor rather than
@@ -619,6 +621,8 @@ public class ManufacturingCheck {
         check("...and the same steel price, restored rather than recomputed",
                 back.getMarkets().get(Good.STEEL).getLocalPrice(), steelPrice, 1e-9);
 
+        expansionAfterBleed();
+
         out.println();
         if (fails == 0) {
             out.println("Manufacturing works: the world pays by the tonne, the steel price decides"
@@ -627,6 +631,138 @@ public class ManufacturingCheck {
             out.println(fails + " check(s) failed.");
         }
         System.exit(fails);
+    }
+
+    /** The fixture causes a lent bleed; new works remain profitable and staffable throughout the recovery. */
+    static void expansionAfterBleed() throws Exception {
+        out.println("\n--- MR1: the market's own recovery after a bleed sale ---");
+        GameFiles files = GameFiles.scratch("manufacturing-recovery");
+        Game city = new Game(files);
+        city.playOnLiterals();
+        quietly(() -> {
+            city.run();
+            city.getLandManager().setOwnedSqFt(city.getLandManager().getOwnedSqFt() + 400_000_000L);
+            PopulationManager people = city.getPopulationManager();
+            people.setPopulation(40_000);
+            people.restoreWorkforce(20_000);
+            people.restoreSkilledHeads(new double[] { 0, 5_000, 5_000, 5_000 });
+            people.updateJobs(new long[JobType.values().length]);
+        });
+        Manufacturing maker = city.getSectors().manufacturing();
+        BusinessInvestment plans = city.getBusinessInvestment();
+        plans.setLandAvailable(400_000_000, 0);
+        BuildingManager buildings = city.getBuildingManager();
+        String key = maker.key();
+        BusinessInvestment.Decision first = maker.plan(plans, city);
+        report("a sector without a losing record can open its first works", first.build, first.reason);
+        BuildingsTemplate prospect = first.build ? first.template : buildings.getTemplateByName(WORKS);
+        assertTrue("the prospective new works has workers, positive earnings and a positive cost",
+                maker.staffing(prospect).passes() && maker.estimatedMonthlyProfit(plans.newUnit(prospect), plans) > 0
+                        && plans.getCostOf(prospect, 1) > 0);
+        BuildingsTemplate shop = buildings.getTemplateByName(SHOP);
+        quietly(() -> {
+            buildings.addStack(shop, 2, true);
+            city.getEconomyManager().setSectorCash(key, 1_000);
+        });
+        BusinessInvestment.Decision healthy = maker.plan(plans, city);
+        assertTrue("the standing shops have a profitable, staffable expansion case", healthy.build);
+        boolean shortUnlentUnchanged = true;
+        for (int month = 0; month < BusinessInvestment.DISTRESS_LOSS_MONTHS / 2; month++) {
+            runningMonth(maker, plans, -1, 0);
+            shortUnlentUnchanged &= sameOrder(maker.plan(plans, city), healthy);
+        }
+        assertTrue("a short unlent loss spell orders exactly as before the losses",
+                shortUnlentUnchanged && maker.getCash() > 0
+                        && city.getEconomyManager().getBusinessDebtManager().getPrincipal(key) == 0);
+        check("an unlent short spell never arms the recovery hold",
+                maker.getExpansionRecoveryMonths(), Manufacturing.EXPANSION_RECOVERY_MONTHS, 0);
+        runningMonth(maker, plans, 1, 0);
+        quietly(() -> city.getEconomyManager().getBusinessDebtManager().issueLoan(key, 1_000, city.getMonth()));
+        boolean lentBeforeRunwayUnchanged = true;
+        for (int month = 1; month < BusinessInvestment.DISTRESS_LOSS_MONTHS; month++) {
+            runningMonth(maker, plans, -1, 0);
+            lentBeforeRunwayUnchanged &= sameOrder(maker.plan(plans, city), healthy);
+        }
+        assertTrue("even lent losses below the distress runway leave ordering unchanged", lentBeforeRunwayUnchanged);
+        runningMonth(maker, plans, -1, 0);
+        BusinessInvestment.Decision sale = plans.planDistressRetirement(maker, maker.getCash(), 0);
+        assertTrue("its lender covered the losses and the bleed sells one of two shops",
+                sale.build && sale.template == shop && sale.quantity == 1
+                        && sale.reason.contains("lender covered"));
+        if (sale.build) buildings.retire(sale.template, sale.quantity);
+        check("the remaining plant is one shop", buildings.getQuantity(shop.getId()), 1, 0);
+        assertTrue("the loss-making market orders no new works", !maker.plan(plans, city).build);
+        quietly(() -> city.saveGame(10));
+        Game back = new Game(files);
+        quietly(() -> { back.run(); back.loadGameSave(10); });
+        back.getBusinessInvestment().setLandAvailable(400_000_000, 0);
+        check("a disk save preserves zero recovery after the bleed",
+                back.getSectors().manufacturing().getExpansionRecoveryMonths(), 0, 0);
+        BusinessInvestment.Decision zeroLoaded = back.getSectors().manufacturing().plan(back.getBusinessInvestment(), back);
+        assertTrue("loading the just-bled market names operating recovery, with land available",
+                !zeroLoaded.build && zeroLoaded.reason.contains("operating recovery:"));
+
+        runningMonth(maker, plans, 1, 0);
+        assertTrue("one paying month after the bleed is not sustained recovery", !maker.plan(plans, city).build);
+        plans.noteOpened(key);
+        assertTrue("opening a plant does not erase the market's recovery record", !maker.plan(plans, city).build);
+        // Liquidation receipts must not masquerade as recovery of the plant's own trade.
+        runningMonth(maker, plans, -1, 2);
+        assertTrue("a positive statement from scrap sales still holds expansion", !maker.plan(plans, city).build);
+        int recovery = Manufacturing.EXPANSION_RECOVERY_MONTHS;
+        boolean heldThroughout = true;
+        for (int month = 1; month < recovery; month++) {
+            runningMonth(maker, plans, 1, 0);
+            heldThroughout &= !maker.plan(plans, city).build;
+        }
+        assertTrue("every paying month below the recovery dial still holds expansion", heldThroughout);
+        assertTrue("the held order still has workers and a positive estimated profit",
+                maker.staffing(prospect).passes() && maker.estimatedMonthlyProfit(plans.newUnit(prospect), plans) > 0);
+        check("scrap receipts reset recovery before the paying months were counted",
+                maker.getExpansionRecoveryMonths(), recovery - 1, 0);
+        quietly(() -> city.saveGame(10));
+        quietly(() -> back.loadGameSave(10));
+        back.getBusinessInvestment().setLandAvailable(400_000_000, 0);
+        Manufacturing loaded = back.getSectors().manufacturing();
+        check("a disk save carries the exact recovery count", loaded.getExpansionRecoveryMonths(), recovery - 1, 0);
+        BusinessInvestment.Decision belowLoaded = loaded.plan(back.getBusinessInvestment(), back);
+        assertTrue("loading below the dial names operating recovery, with land available",
+                !belowLoaded.build && belowLoaded.reason.contains("operating recovery:"));
+        runningMonth(maker, plans, 0, 0);
+        BusinessInvestment.Decision recovered = maker.plan(plans, city);
+        assertTrue("at the dial, covering running costs permits the profitable order again", recovered.build);
+        assertTrue("interest-only net losses do not prevent operating recovery", maker.statement().netIncome < 0);
+        runningMonth(loaded, back.getBusinessInvestment(), 0, 0);
+        check("the loaded plant reaches the same recovery boundary", loaded.getExpansionRecoveryMonths(), recovery, 0);
+        assertTrue("the loaded plant with land can order once recovery is complete",
+                loaded.plan(back.getBusinessInvestment(), back).build);
+        runningMonth(maker, plans, -1, 0);
+        assertTrue("an isolated loss after completed recovery orders as before", sameOrder(maker.plan(plans, city), recovered));
+
+        SectorState older = maker.toState();
+        older.extras.remove("expansionRecoveryMonths");
+        maker.restore(older);
+        check("an absent older-save field has no invented operating history", maker.getExpansionRecoveryMonths(), recovery, 0);
+        maker.reset();
+        check("a new game starts without a losing record", maker.getExpansionRecoveryMonths(), recovery, 0);
+    }
+
+    /** Compare the real planner's whole positive order, not a copied profitability formula. */
+    static boolean sameOrder(BusinessInvestment.Decision actual, BusinessInvestment.Decision expected) {
+        return actual.build == expected.build && actual.template == expected.template
+                && actual.quantity == expected.quantity && java.util.Objects.equals(actual.reason, expected.reason);
+    }
+
+    /** Close a controlled trading result through the same banking and history doors as the real month. */
+    static void runningMonth(Manufacturing maker, BusinessInvestment plans, double running, double scrap) {
+        Sector.Statement statement = new Sector.Statement();
+        statement.operatingIncome = running + scrap;
+        statement.interest = 10;
+        if (scrap != 0) statement.otherParts.put(OldMetal.SOLD, scrap);
+        maker.restoreStatement(statement);
+        maker.bank(0);
+        plans.recordSectorResult(maker.key(), maker.statement().netIncome);
+        plans.recordOperatingResult(maker);
     }
 
     static double jobsOf(BuildingsTemplate t) {

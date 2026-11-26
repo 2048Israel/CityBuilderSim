@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.212 — MR1, Manufacturing's re-order after a bleed sale — 2026-11-26, ready, see docs/queue/MR1-notes.md
+Manufacturing arms recovery at the distress rule's operating-loss runway while
+lent, then waits for twelve consecutive closed months covering running costs
+before ordering new plant. Short self-funded losses leave ordering unchanged.
+Its saved record excludes plant-sale scrap receipts; interest alone does not
+restart recovery. A caused bleed fixture proves the hold and return to ordering
+across a save. PopulationCheck keeps its city and 80% decade bound, measures the
+actual migration target, and reconciles it from that city's own draws and pulls.
+
 ### 0.9.211 — AP5, the auto-builder's pass holds the labour figures — 2026-11-26, ready, see docs/queue/AP5-notes.md
 Slot 9 was slow again at 50x (Jerus, 2026-11-25: "ok once again, slow down, slot 9"). The auto-builder's pass, half the
 window's thread, asked again for the vacancies, the posts and a sector's buildings for every works it valued. While the
