@@ -2720,11 +2720,14 @@ public class BankCheck {
         if (overdraft > 0) econ.setSectorCash(sector, Math.min(econ.getSectorCash(sector), -overdraft));
     }
 
-    /** Sets a sector's loss streak, the months the distress rule reads, and leaves every other sector's as it stands. */
-    static void restoreStreak(BusinessInvestment plans, String sector, int months) {
+    /** Sets both distress-loss streaks (QR1), leaving every other sector's histories as they stand. */
+    static void restoreDistressStreaks(BusinessInvestment plans, String sector, int months) {
         java.util.Map<String, Integer> streaks = new java.util.LinkedHashMap<>(plans.getLossMonthsState());
         streaks.put(sector, months);
         plans.restoreLossMonths(streaks);
+        java.util.Map<String, Integer> operating = new java.util.LinkedHashMap<>(plans.getOperatingLossMonthsState());
+        operating.put(sector, months);
+        plans.restoreOperatingLossMonths(operating);
     }
 
     static void aFailingSectorsPlantIsSoldToTheBuilders() throws Exception {
@@ -2776,14 +2779,15 @@ public class BankCheck {
         credit.issueLoan(RET, Math.max(0, 1.3 * credit.getAssets(RET) - credit.getPrincipal(RET)), city.getMonth());
 
         // Held in distress, caused: shut out of credit, overdrawn with no lender, the register's twelve losing months
-        // (holdFromOrdering) and the losing streak the rule reads; the builders in funds. Then the one month it sells in.
+        // (holdFromOrdering) and both losing streaks the rule reads; the builders in funds. The played month must also
+        // lose on running costs: a paying month would reset the operating streak and keep the plant (QR1).
         Game.Salvage sale = null;
         MoneyAudit.Result audit = null;
         double stockBefore = 0, shopsBefore = 0, priceBefore = 0, overdrawnBy = 0, costBefore = 0;
         double tillWas = econ.getSectorCash(RET);
         holdFromOrdering(city, RET, 2 * shop.getCashCost());
         overdrawnBy = econ.getSectorCash(RET) - tillWas;
-        restoreStreak(plans, RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
+        restoreDistressStreaks(plans, RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
         double buildersHad = builders.getCash();
         econ.setSectorCash(builders.key(), Math.max(buildersHad, BUILDERS_CASH_FOR_A_SALE));
         double handedToBuilders = builders.getCash() - buildersHad;
@@ -2801,6 +2805,9 @@ public class BankCheck {
             System.setOut(out);
         }
         audit = city.getLastMoneyAudit();
+        assertTrue("fixture: the played sale month lost on retail's running costs and kept the operating-loss runway",
+                retail.statement().operatingIncome - retail.statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0) < 0
+                        && plans.getOperatingLossMonths(RET) >= BusinessInvestment.DISTRESS_LOSS_MONTHS);
         for (Game.Salvage s : city.getSalvageThisMonth()) {
             if (s.seller().equals(RET) && s.distress() && sale == null) sale = s;
         }
@@ -2920,7 +2927,7 @@ public class BankCheck {
         // for nothing, as it always was. Retail is put in distress as above, the builders overdrawn, and the month played.
         Game.Salvage broke = null;
         holdFromOrdering(city, RET, 2 * shop.getCashCost());
-        restoreStreak(plans, RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
+        restoreDistressStreaks(plans, RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
         econ.setSectorCash(builders.key(), -1e12 * PriceLevel.FACTOR);
         System.setOut(quiet);
         try {
@@ -2928,6 +2935,9 @@ public class BankCheck {
         } finally {
             System.setOut(out);
         }
+        assertTrue("fixture: the broke-builders month lost on retail's running costs and kept the operating-loss runway",
+                retail.statement().operatingIncome - retail.statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0) < 0
+                        && plans.getOperatingLossMonths(RET) >= BusinessInvestment.DISTRESS_LOSS_MONTHS);
         for (Game.Salvage s : city.getSalvageThisMonth()) {
             if (s.seller().equals(RET)) broke = s;
         }
