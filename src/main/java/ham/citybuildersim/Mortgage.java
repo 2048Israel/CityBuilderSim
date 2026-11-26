@@ -228,7 +228,7 @@ public class Mortgage extends BusinessDebt {
      */
     public static double ownFundsFor(double cost) {
         if (!(cost > 0)) return 0;
-        return cost - MORTGAGE_MAX_LOAN_TO_COST * cost * (1 - Bank.LOAN_FEE * (1 + premiumRate()));
+        return ownFundsFor(cost, MORTGAGE_MAX_LOAN_TO_COST);
     }
 
     /**
@@ -238,6 +238,11 @@ public class Mortgage extends BusinessDebt {
      * MORTGAGE_AMORTIZATION_MONTHS. The lender asks MORTGAGE_DEBT_COVERAGE of
      * it. Unbounded with nothing to borrow.
      */
+    public static double ownFundsFor(double cost, double maxLoanToCost) {
+        if (!(cost > 0)) return 0;
+        return cost - maxLoanToCost * cost * (1 - Bank.LOAN_FEE * (1 + premiumRate()));
+    }
+
     public static double coverage(double netOperatingIncome, double shortfall, double annualRate) {
         double a = paymentFor(shortfall, annualRate);
         return a > 0 ? netOperatingIncome / a : Double.POSITIVE_INFINITY;
@@ -289,9 +294,16 @@ public class Mortgage extends BusinessDebt {
     public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf,
                                   double cash, double noiPerUnit, double annualRate,
                                   java.util.function.LongToDoubleFunction carryOf) {
+        return decide(asked, costOf, cash, noiPerUnit, annualRate, carryOf, null);
+    }
+
+    /** The same product under this city's saved loan-to-cost and debt-to-income rules. */
+    public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf,
+                                  double cash, double noiPerUnit, double annualRate,
+                                  java.util.function.LongToDoubleFunction carryOf, BankRules rules) {
         if (asked < 1) return new Decision(0, null, false, Double.NaN, Double.NaN);
         // What trimmed it is what failed first on the way down: the whole order.
-        Slice top = Slice.of(asked, costOf, cash, noiPerUnit, annualRate, carryOf);
+        Slice top = Slice.of(asked, costOf, cash, noiPerUnit, annualRate, carryOf, rules);
         String trimmedBy = top.failedOn();
         // The largest that passes, by halving: passing is a run from one up
         // (THE LANDLORD'S ORDER IS A RUN FROM ONE, below).
@@ -299,11 +311,11 @@ public class Mortgage extends BusinessDebt {
         if (top.passes()) pass = asked;
         else while (fail - pass > 1) {
             long mid = ((long) pass + fail) >>> 1;
-            if (Slice.of(mid, costOf, cash, noiPerUnit, annualRate, carryOf).passes()) pass = mid; else fail = mid;
+            if (Slice.of(mid, costOf, cash, noiPerUnit, annualRate, carryOf, rules).passes()) pass = mid; else fail = mid;
         }
         if (pass >= 2) return new Decision(pass, trimmedBy, false, Double.NaN, Double.NaN);
         // ...and the facts for one, which the count read when it got down to one.
-        Slice one = asked == 1 ? top : Slice.of(1, costOf, cash, noiPerUnit, annualRate, carryOf);
+        Slice one = asked == 1 ? top : Slice.of(1, costOf, cash, noiPerUnit, annualRate, carryOf, rules);
         if (pass == 1 && one.outright()) return new Decision(1, trimmedBy, false, Double.NaN, Double.NaN);
         if (pass == 1) return new Decision(1, trimmedBy, false, one.own(), one.coverage());
         return new Decision(0, trimmedBy, one.shortOfDown(), one.own(), one.coverage());
@@ -352,17 +364,22 @@ public class Mortgage extends BusinessDebt {
 
         static Slice of(long n, java.util.function.LongToDoubleFunction costOf,
                         double cash, double noiPerUnit, double annualRate,
-                        java.util.function.LongToDoubleFunction carryOf) {
+                        java.util.function.LongToDoubleFunction carryOf, BankRules rules) {
             double cost = costOf.applyAsDouble(n);
             // Its own funds buy it outright: no lender to ask.
             if (cash >= cost) return new Slice(true, Double.NaN, false, Double.NaN, null);
-            double own = ownFundsFor(cost);
+            double own = ownFundsFor(cost, rules == null ? MORTGAGE_MAX_LOAN_TO_COST
+                    : rules.get(BankRules.Dial.MORTGAGE_LTC));
             // ...within the lender's own rounding (BusinessDebtManager.canFundMortgage(), 1 + 1e-9): a landlord raises equity to
             // the down payment exactly, and without it a ten-trillionth decided the order - one city built, its reformed twin
             // refused (DenominationCheck, FR2's notes).
             if (!(cash > 0) || cash < own * (1 - 1e-9)) return new Slice(false, own, true, Double.NaN, Decision.DOWN_PAYMENT);
             // ...on the shortfall grown over the wait (BA1; 1 where none is read).
             double coverage = Mortgage.coverage(noiPerUnit * n, (cost - cash) * carryOf.applyAsDouble(n), annualRate);
+            double dti = rules == null ? 0 : rules.get(BankRules.Dial.MORTGAGE_DTI);
+            double principal = loanFor((cost - cash) * carryOf.applyAsDouble(n)) * (1 + premiumRate());
+            if (dti > 0 && principal > Math.max(0, noiPerUnit * n * 12) * dti)
+                return new Slice(false, own, false, coverage, Decision.DEBT_TO_INCOME);
             return new Slice(false, own, false, coverage,
                     coverage >= MORTGAGE_DEBT_COVERAGE ? null : Decision.LENDERS_TEST);
         }
@@ -382,9 +399,11 @@ public class Mortgage extends BusinessDebt {
         public static final String DOWN_PAYMENT = "down payment";
         /** ...because its rent would not cover the payment MORTGAGE_DEBT_COVERAGE times. */
         public static final String LENDERS_TEST = "lender's test";
+        public static final String DEBT_TO_INCOME = "debt-to-income limit";
 
         /** The advisor's line when not even one passes: the down payment it needs, or the lender's figure against its own. */
         public String refusal(String building) {
+            if (DEBT_TO_INCOME.equals(trimmedBy)) return "Declined " + building + " ? mortgage exceeds the debt-to-income limit";
             if (shortOfDown) {
                 return String.format("Holding: needs %s of its own for the %.0f%% down payment on a %s",
                         Formats.INSTANCE.cash(ownFundsForOne), (1 - MORTGAGE_MAX_LOAN_TO_COST) * 100, building);
@@ -399,7 +418,7 @@ public class Mortgage extends BusinessDebt {
          * rate, when expected inflation took something off it.
          */
         public String refusal(String building, double testedRate, double insuredRate) {
-            if (shortOfDown) return refusal(building);
+            if (shortOfDown || DEBT_TO_INCOME.equals(trimmedBy)) return refusal(building);
             String rate = testedRate < insuredRate
                     ? String.format("at %.2f%% real (the insured %.2f%% less the inflation expected)",
                             testedRate * 100, insuredRate * 100)

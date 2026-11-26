@@ -65,6 +65,7 @@ public class SaveFileCheck {
     }
 
     public static void main(String[] args) throws Exception {
+        assertTrue("CBK3 banking rules and foreign funding survive both save paths; missing keys read defaults", BankRulesCheck.saveChecks());
         assertTrue("HT1 basis, loss, policy and tax flows cross both loaders", CapitalGainsCheck.saveChecks());
         System.out.println("--- XR7: support already bought under a peg crosses the save ---");
         assertTrue("nonzero hold support crosses DataSave JSON and Game's loader without billing the whole gap again", CurrencyRegimeCheck.savedHoldSupportChecks());

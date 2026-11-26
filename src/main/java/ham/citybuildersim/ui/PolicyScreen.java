@@ -158,7 +158,7 @@ final class PolicyScreen {
     private AdultStage schoolingStage = AdultStage.YOUNG;
     /** Money's middle page (XR2): how the D$ is held - its regime, the peg or the band, who pays at the strong edge, what the dial aims at. */
     static final String CURRENCY_PAGE = "The currency";
-    static final String[] POLICY_MONEY_PAGES   = {"The policy rate", CURRENCY_PAGE, "Currency reform"};
+    static final String[] POLICY_MONEY_PAGES   = {"The policy rate", CURRENCY_PAGE, "Currency reform", "Bank rules"};
     static final String[] POLICY_PROMISE_PAGES = {"Pensions", "Out of work", "Food", "Health", "Schools", "Subsidies"};
 
     /** Each page's icon on its tab, in the pages' order (the crane for the port dues, FR4). */
@@ -166,7 +166,7 @@ final class PolicyScreen {
     /** ...Wages' floor and qualification ladder. */
     static final String[] WAGE_ICONS = {Icons.STAFF, Icons.EDUCATION};
     /** ...Money's: the bank for the policy rate, the two arrows for the currency (XR2), the banknote for the currency reform. */
-    static final String[] MONEY_ICONS = {Icons.BANK, Icons.EXCHANGE, Icons.BANKNOTE};
+    static final String[] MONEY_ICONS = {Icons.BANK, Icons.EXCHANGE, Icons.BANKNOTE, Icons.BANK};
     /** ...and the promises': the cane, the staff, food, health, education and the sector icon for the subsidies. */
     static final String[] PROMISE_ICONS = {Icons.CANE, Icons.STAFF, Icons.FOOD, Icons.HEALTH, Icons.EDUCATION, Icons.SECTOR};
 
@@ -264,6 +264,7 @@ final class PolicyScreen {
                         case MONEY -> {
                             if ("Currency reform".equals(policyPage)) reformPage(p);
                             else if (CURRENCY_PAGE.equals(policyPage)) currencyPage(p);
+                            else if ("Bank rules".equals(policyPage)) p.getChildren().add(BankRulesPane.build(ui.game, this::showPolicyMenu));
                             else                                      ratePage(p);
                         }
                         case ZONING -> zoning.page(p);

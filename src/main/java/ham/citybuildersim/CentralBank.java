@@ -294,7 +294,17 @@ public final class CentralBank {
      * ==================================================================== */
 
     /** Money made and lent to the commercial bank at the window. */
+    private java.util.function.DoubleSupplier windowCapacity = () -> 0;
+
+    /** The borrower's lendable collateral, supplied by the bank; never reconstructed from M0. */
+    public void setWindowCapacity(java.util.function.DoubleSupplier capacity) {
+        windowCapacity = java.util.Objects.requireNonNull(capacity);
+    }
+
+    public double getWindowCapacity() { return Math.max(0, windowCapacity.getAsDouble()); }
+
     public double advanceToBank(double x) {
+        x = Math.min(x, Math.max(0, getWindowCapacity() - advancesToBank));
         if (!(x > 0)) return 0;
         advancesToBank += x;
         advancedToBank += x;
@@ -319,7 +329,7 @@ public final class CentralBank {
      * side has always shed its wholesale tranche before its deposit one.
      */
     public void settleWindow(double owed) {
-        double target = Math.max(0, owed);
+        double target = Math.min(Math.max(0, owed), getWindowCapacity());
         if (target > advancesToBank) advanceToBank(target - advancesToBank);
         else if (target < advancesToBank) repayFromBank(advancesToBank - target);
     }

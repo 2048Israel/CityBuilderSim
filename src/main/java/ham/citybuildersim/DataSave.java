@@ -1711,6 +1711,15 @@ public class DataSave implements Cloneable {
      */
     private double bankCash;
 
+    /** CBK3: foreign wholesale stock and the financing flows the saved month settled. */
+    private double[] bankFunding;
+    /** CBK3 banking dials; a missing key reads every rule at its default. */
+    private double[] bankRules;
+    public void setBankRules(double[] state) { bankRules = state; }
+    public double[] getBankRules() { return bankRules; }
+    public void setBankFunding(double[] state) { bankFunding = state; }
+    public double[] getBankFunding() { return bankFunding; }
+
     /**
      * The desk's inventory as the bank carries it (Bank.getSecurities(), FL1): the mark of its last re-mark, the exchange's step. WHY: the load
      * put it back from the quote now (Exchange.markToMarket()), which is the same figure only while nothing has traded since the step; a share

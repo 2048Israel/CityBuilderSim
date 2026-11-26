@@ -1610,6 +1610,8 @@ final class BankScreen {
         step(steps, nothing, "Paid to savers", -v.applyAsDouble(Bank.Line.SAVERS), Icons.POPULATION, null, null);
         step(steps, nothing, "The window", -v.applyAsDouble(Bank.Line.WINDOW), Icons.BANK, null,
                 "Paid for borrowing overnight from the central bank.");
+        step(steps, nothing, "Wholesale abroad", -v.applyAsDouble(Bank.Line.WHOLESALE_ABROAD), Icons.BANK, null,
+                "Interest paid on the residual foreign wholesale funding.");
         total(steps, "Net interest", v.applyAsDouble(Bank.Line.NET_INTEREST));
 
         List<Slice> kinds = new ArrayList<>();
@@ -2210,6 +2212,7 @@ final class BankScreen {
     static final List<SheetPart> OWES = List.of(
             new SheetPart(Bank.Sheet.DEPOSIT_FUNDING, "Lent past its own cash, on its deposits", Palette.LADDER[1], false),
             new SheetPart(Bank.Sheet.WINDOW, "Borrowed at the central bank's window", Palette.MONEY_DARK, false),
+            new SheetPart(Bank.Sheet.WHOLESALE_ABROAD, "Wholesale borrowing abroad", Palette.MONEY_DARK, false),
             new SheetPart(Bank.Sheet.FOREIGN_DEPOSITS, "Deposits from abroad", Palette.RAMP_REST, false),
             new SheetPart(Bank.Sheet.DESK_SHORT, "Shares the desk has sold short", Palette.RAMP_REST, true),
             new SheetPart(Bank.Sheet.UNEARNED_DISCOUNT, "The discount on the city's paper, not yet earned",
@@ -2444,8 +2447,8 @@ final class BankScreen {
                     + "bought back, they are cancelled.";
             case DEPOSIT_FUNDING -> "What it has lent past its own cash, as far as the deposits its branches gather cover "
                     + "it: the city's savings, lent back out - the cheap tranche of its funding.";
-            case WINDOW -> "The rest of what it has lent past its own cash, borrowed overnight at the policy rate plus the "
-                    + "window's penalty.";
+            case WINDOW -> "Overnight borrowing against eligible loans and government paper after haircuts; no equity inventory.";
+            case WHOLESALE_ABROAD -> "Borrowed abroad at the wholesale rate: funding beyond the window or for equity inventory.";
             case FOREIGN_DEPOSITS -> "Hot money: the world's deposits, which can leave on no notice. The city's own are "
                     + "beside the sheet, below.";
             case DESK_SHORT -> "Shares the desk owes, at their mark.";
@@ -2627,6 +2630,8 @@ final class BankScreen {
                 Bank.Sheet.DEPOSIT_FUNDING, known, said(sheetSaid(bank, Bank.Sheet.DEPOSIT_FUNDING))));
         column.getChildren().add(sheetLine(bank, "Borrowed at the central bank's window", Bank.Sheet.WINDOW, known,
                 said(sheetSaid(bank, Bank.Sheet.WINDOW))));
+        column.getChildren().add(sheetLine(bank, "Wholesale borrowing abroad", Bank.Sheet.WHOLESALE_ABROAD, known,
+                said(sheetSaid(bank, Bank.Sheet.WHOLESALE_ABROAD))));
         column.getChildren().add(sheetLine(bank, "Deposits from abroad", Bank.Sheet.FOREIGN_DEPOSITS, known,
                 said(sheetSaid(bank, Bank.Sheet.FOREIGN_DEPOSITS))));
         column.getChildren().add(sheetLine(bank, "Shares the desk has sold short", Bank.Sheet.DESK_SHORT, known,

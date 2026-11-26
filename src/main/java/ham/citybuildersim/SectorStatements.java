@@ -959,6 +959,8 @@ public final class SectorStatements {
                 -then.applyAsDouble(Bank.Line.SAVERS), 0);
         b.line(bankId(Bank.Line.WINDOW), "Borrowed overnight at the window", -now.applyAsDouble(Bank.Line.WINDOW),
                 -then.applyAsDouble(Bank.Line.WINDOW), 0);
+        b.line(bankId(Bank.Line.WHOLESALE_ABROAD), "Wholesale borrowing abroad", -now.applyAsDouble(Bank.Line.WHOLESALE_ABROAD),
+                -then.applyAsDouble(Bank.Line.WHOLESALE_ABROAD), 0);
         b.groupTotal(B_EXPENSE, "Interest expense");
         b.subtotal(B_NII, "NET INTEREST INCOME");
 
@@ -1034,6 +1036,7 @@ public final class SectorStatements {
         b.head(BS_LIABILITIES_HEAD, "LIABILITIES");
         sheetLine(b, "Lent past its own cash, on its deposits", Bank.Sheet.DEPOSIT_FUNDING, now, then);
         sheetLine(b, "Borrowed overnight at the window", Bank.Sheet.WINDOW, now, then);
+        sheetLine(b, "Wholesale borrowing abroad", Bank.Sheet.WHOLESALE_ABROAD, now, then);
         sheetLine(b, "Deposits from abroad", Bank.Sheet.FOREIGN_DEPOSITS, now, then);
         sheetLine(b, "Shares the desk has sold short", Bank.Sheet.DESK_SHORT, now, then);
         sheetLine(b, "The discount on the city's paper, unearned", Bank.Sheet.UNEARNED_DISCOUNT, now, then);
