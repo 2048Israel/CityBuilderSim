@@ -162,8 +162,8 @@ public final class HousingChoice {
     }
     /**
      * Existing funded door shares precede new movers; their household quantity is not a whole-door quantity. A sitting
-     * cell keeps its door and its bill on the budget it has (tenure: the landlord carries the arrears); only a cell
-     * that can be evicted keeps no more than its budget funds.
+     * cell keeps its door and its bill on the budget it has (tenure: the landlord carries the arrears), until it finds
+     * one it can pay (moveDown()); only a cell that can be evicted keeps no more than its budget funds.
      */
     private static Result retainAndClear(List<Demand> demands,List<Offer> offers,List<Lease> incumbents,int month,boolean emergency,Set<String> sitting){
         Map<String,Demand> cells=new HashMap<>();for(var d:demands)cells.put(d.key(),d);
@@ -198,8 +198,74 @@ public final class HousingChoice {
         List<Demand> rest=new ArrayList<>();for(var d:demands){double n=Math.max(0,d.count()-placed.getOrDefault(d.key(),0.0));
             if(n>FamilyModel.packingRounding(d.count()))rest.add(new Demand(d.key(),n,d.size(),d.children(),d.retired(),d.tier(),d.young(),d.budget()));}
         List<Offer> free=new ArrayList<>();for(var o:offers)free.add(new Offer(o.key(),Math.max(0,o.count()-used.getOrDefault(o.key(),0.0)),o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring()));
-        var next=clear(rest,free,List.of(),month,emergency);kept.addAll(next.leases());
-        return new Result(List.copyOf(kept),doors,next.suitable(),crowded+next.crowded(),next.unaffordable(),next.noSuitable(),next.unplaced());
+        var next=clear(rest,free,List.of(),month,emergency);
+        var down=moveDown(cells,homes,offers,kept,next.leases(),sitting,month);
+        List<Lease> all=new ArrayList<>(down.kept());all.addAll(next.leases());
+        // The flows stay the households placed (HousingMarket.validate()): kept doors and the households past them, crowded.
+        return new Result(List.copyOf(all),doors-down.vacated(),next.suitable()+down.doors(),crowded-down.vacatedExtra()+next.crowded()+down.extra(),
+                next.unaffordable(),next.noSuitable(),next.unplaced());
+    }
+    /**
+     * What moveDown() left: the leases kept, with the movers' new ones; the doors the movers left and the households of
+     * theirs past those doors (two to a share); the doors they took and the households past those.
+     */
+    private record Down(List<Lease> kept,double vacated,double vacatedExtra,double doors,double extra) { }
+    /**
+     * MOVING DOWN (RES3c, 2026-11-26). A sitter whose door's ask has passed its budget moves to a door it can pay that
+     * still stands when every placement is made: a whole door first, then half of one at half its ask, two of the cell
+     * to a share within the census line (as halves()). Tenure keeps a household on its door; it does not hold it there.
+     * Who finds no such door sits on in arrears, as before; the doors the movers leave stand empty until the next
+     * clearing, and nobody is moved into a door another mover is leaving.
+     * WHY: re-priced to the ask each month and never offered another door, HealthCheck's pensioners (ELDER_ALONE:
+     * UNSKILLED, 82 households at m65) sat in family houses and duplexes at 1.5 to 2.2 times their pension while 55
+     * one-bedrooms stood empty, and their care went unpaid. A pensioner whose rent passes her pension takes a smaller
+     * flat or shares one; in the model none could.
+     */
+    private static Down moveDown(Map<String,Demand> cells,Map<HousingInventory.Key,Offer> homes,List<Offer> offers,
+                                 List<Lease> kept,List<Lease> placed,Set<String> sitting,int month){
+        double[] full=new double[kept.size()],half=new double[kept.size()];Map<String,Double> strained=new TreeMap<>();
+        for(int i=0;i<kept.size();i++){var l=kept.get(i);if(!sitting.contains(l.cell())||l.cell().endsWith("#sharing"))continue;
+            var d=cells.get(l.cell());var o=homes.get(l.home());double ask=o.rent()+o.recurring();
+            full[i]=ask>d.budget()?l.funding().full():0;half[i]=ask/2>d.budget()?l.funding().half():0;
+            if(full[i]+half[i]>0)strained.merge(l.cell(),full[i]+half[i],Double::sum);}
+        List<Demand> movers=new ArrayList<>();
+        for(var e:strained.entrySet()){var d=cells.get(e.getKey());
+            if(e.getValue()>FamilyModel.packingRounding(d.count()))movers.add(new Demand(d.key(),e.getValue(),d.size(),d.children(),d.retired(),d.tier(),d.young(),d.budget()));}
+        if(movers.isEmpty())return new Down(kept,0,0,0,0);
+        Map<HousingInventory.Key,Double> used=new HashMap<>();
+        for(var l:kept)used.merge(l.home(),l.count(),Double::sum);for(var l:placed)used.merge(l.home(),l.count(),Double::sum);
+        List<Offer> whole=new ArrayList<>();
+        for(var o:offers){double n=o.count()-used.getOrDefault(o.key(),0.0);
+            if(n>FamilyModel.packingRounding(o.count()))whole.add(new Offer(o.key(),n,o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent(),o.recurring(),o.people()));}
+        if(whole.isEmpty())return new Down(kept,0,0,0,0);
+        List<Lease> moved=new ArrayList<>(clear(movers,whole,List.of(),month,false).leases());
+        Map<HousingInventory.Key,Double> took=new HashMap<>();Map<String,Double> got=new HashMap<>();
+        for(var l:moved){took.merge(l.home(),l.count(),Double::sum);got.merge(l.cell(),l.households(),Double::sum);}
+        List<Demand> left=new ArrayList<>();
+        for(var d:movers){double n=d.count()-got.getOrDefault(d.key(),0.0);
+            if(n>FamilyModel.packingRounding(d.count()))left.add(new Demand(d.key(),n,d.size(),d.children(),d.retired(),d.tier(),d.young(),d.budget()));}
+        List<Offer> shares=new ArrayList<>();
+        for(var o:whole){double n=o.count()-took.getOrDefault(o.key(),0.0);
+            // Half a door at half its ask, to one of two whose persons the door's census line holds (halves()).
+            if(n>FamilyModel.packingRounding(o.count())&&o.people()>=2)shares.add(new Offer(o.key(),2*n,o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent()/2,o.recurring()/2,o.people()/2));}
+        if(!left.isEmpty()&&!shares.isEmpty())for(var l:clear(left,shares,List.of(),month,false).leases()){
+            moved.add(new Lease(l.cell(),l.home(),l.count()/2,l.bill(),l.count(),new Funding(0,l.count(),0)));got.merge(l.cell(),l.count(),Double::sum);}
+        if(moved.isEmpty())return new Down(kept,0,0,0,0);
+        // Each strained lease of a cell gives up the cell's movers pro rata: its strained payers, whole and half, each
+        // kept at (1 - f) of itself, not less what left (a difference near the whole fell under the lease's resolution).
+        List<Lease> out=new ArrayList<>();double vacated=0,vacatedExtra=0,doors=0,extra=0;
+        for(int i=0;i<kept.size();i++){var l=kept.get(i);Double m=got.get(l.cell());
+            if(!(full[i]+half[i]>0)||m==null){out.add(l);continue;}
+            double stay=1-Math.min(1,m/strained.get(l.cell()));
+            var funding=new Funding(full[i]>0?stay*l.funding().full():l.funding().full(),half[i]>0?stay*l.funding().half():l.funding().half(),0);
+            double count=funding.doors();
+            if(!(funding.households()>FamilyModel.packingRounding(l.households()))){vacated+=l.count();vacatedExtra+=l.households()-l.count();continue;}
+            vacated+=l.count()-count;vacatedExtra+=(l.households()-l.count())-(funding.households()-count);
+            out.add(new Lease(l.cell(),l.home(),count,l.bill()*count/l.count(),funding.households(),funding));
+        }
+        for(var l:moved){doors+=l.count();extra+=l.households()-l.count();}
+        out.addAll(moved);
+        return new Down(out,vacated,vacatedExtra,doors,extra);
     }
 
     private record DemandSignature(int size,int children,boolean retired,int tier,boolean young,double budget) { }
