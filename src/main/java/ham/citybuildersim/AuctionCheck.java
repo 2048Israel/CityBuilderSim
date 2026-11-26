@@ -1236,6 +1236,29 @@ public class AuctionCheck {
         bank.setWeightedBook(0, hi, 0);
     }
 
+    /**
+     * The treasury the month's bills leave a city whose asks had raised their money: drawn past what the central bank advances, as
+     * AskProceedsCheck.drawn() draws it, from the live figures. The advance is the room a treasury at nothing is given; the cash is set so
+     * that with the sale the pass makes for what the asks have still to raise, the cash and the advance come to
+     * AskProceedsCheck.PROCEEDS_LEFT of the least ask's cost - short of every order. (The cash at the reserve drew it past the advance
+     * only while a month's tax and the advance together stayed under the cost: RES3's town has a reserve of 112 and an advance of
+     * 698 against a cost of 491, so the order was paid from the proceeds. The overdraft is the treasury's mid-month, the central bank
+     * advancing it at the month's close.)
+     *
+     * @return the cash the bills left
+     */
+    static double drawTheCash(Game g) {
+        g.setCashForTest(0);
+        double advance = g.discretionaryRoom(), toRaise = 0, least = Double.POSITIVE_INFINITY;
+        for (AutoBuilder.OpenAsk k : g.getAutoBuilder().asks()) {
+            toRaise += Math.max(0, k.cost() - k.raised());
+            least = Math.min(least, k.cost());
+        }
+        double cash = AskProceedsCheck.PROCEEDS_LEFT * least - advance - toRaise;
+        g.setCashForTest(cash);
+        return cash;
+    }
+
     /** A city saved to its own scratch folder's slot 10 and loaded into another Game, as a player's reload. */
     static Game reload(Game g) {
         quietly(() -> g.saveGame(10));
@@ -1686,7 +1709,16 @@ public class AuctionCheck {
         long openP = pb.asks().size(), sitesP = siteCount(p);
         p.getBank().setDepositRate(deposit);
         roomTo(p, 1e9);
-        p.setCashForTest(AutoBuilder.reserve(p));
+        drawTheCash(p);
+        double raisedDrawn = pb.askedRaised(), toRaiseDrawn = 0, leastDrawn = Double.POSITIVE_INFINITY;
+        for (AutoBuilder.OpenAsk k : pb.asks()) {
+            toRaiseDrawn += Math.max(0, k.cost() - k.raised());
+            leastDrawn = Math.min(leastDrawn, k.cost());
+        }
+        assertTrue("fixture: the month's bills drew the treasury past what the central bank advances: its cash and the advance are short of"
+                        + " what the asks had raised, and with the sale the pass makes for what they have still to raise they are short of"
+                        + " every ask's cost - the drawn money cannot be paid from the treasury, so the draw binds",
+                openP > 0 && p.discretionaryRoom() < raisedDrawn && p.discretionaryRoom() + toRaiseDrawn < leastDrawn);
         // What the treasury could pay at the end of the month's pass, its sales in: its cash and the central bank's advance (OA1).
         double[] roomP = { Double.NaN };
         p.autoBuildProbeForTest = after -> { if (after && Double.isNaN(roomP[0])) roomP[0] = p.discretionaryRoom(); };
@@ -1698,7 +1730,7 @@ public class AuctionCheck {
             costsP += k.cost();
             raisedAllP &= k.raised() >= k.cost() - 1e-6 * k.cost();
         }
-        assertTrue("treasury at the reserve, the room back: each ask is offered what it still has to raise and sells it in full (the"
+        assertTrue("treasury drawn, the room back: each ask is offered what it still has to raise and sells it in full (the"
                         + " cost less what it had raised), not short",
                 pb.asks().size() == openP && salesBy(p, "Automatic building") == openP
                         && p.getAutoSalesThisMonth().stream().noneMatch(TimeSkipReport.AutoSale::shortSale) && raisedAllP);
@@ -1714,7 +1746,7 @@ public class AuctionCheck {
         double principalP = p.getDebtManager().getAllPrincipal();
         java.util.Map<AutoBuilder.OpenAsk, Double> raisedBefore = new java.util.IdentityHashMap<>();
         for (AutoBuilder.OpenAsk k : pb.asks()) raisedBefore.put(k, k.raised());
-        p.setCashForTest(AutoBuilder.reserve(p));
+        drawTheCash(p);
         double askLot = p.fundingLot("Term");
         printed(() -> p.simulateMonths(1));
         Notice waits = p.getInbox().live("autobuild");
