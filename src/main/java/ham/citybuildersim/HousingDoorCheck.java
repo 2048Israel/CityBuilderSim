@@ -162,8 +162,8 @@ public final class HousingDoorCheck {
         // census's own line, [2] of them the month's own money audit and the households' cash identity exact, [3] of them
         // the board paid out of the boarders' cells all received into their hosts' (REV-RES3b); the most, its month, and
         // the most board paid in a month.
-        int[] board = { 0, 0, 0, 0 };
-        double[] boardMost = { 0, -1, 0 };
+        int[] board = { 0, 0, 0, 0, 0, 0 };
+        double[] boardMost = { 0, -1, 0, 0 };
         // A save and load with boarders standing (REV-RES3b P1-2): [0] the month (-1 none), [1] 1 if every boarding
         // figure came back as saved, [2] 1 if the loaded market's maps equal the running one's.
         int[] trip = { -1, 0, 0 };
@@ -387,12 +387,15 @@ public final class HousingDoorCheck {
                 grew[0] > 0 && grew[1] > 0);
         out.printf(Locale.ROOT, "   the coda: a fire takes %d structures of the housing at m%d, %d months played after; at most %.3f households overcrowded, %.3f with no door%n",
                 coda[1], coda[0], coda[2], codaMost[0], codaMost[1]);
-        out.printf(Locale.ROOT, "   payers boarding with a housed family (no door standing): %d months, at most %.3f households (m%.0f); counted by the census line in %d, board paid and received in %d (at most %.2f a month), the month's own audit exact in %d%n",
-                board[0], boardMost[0], boardMost[1], board[1], board[3], boardMost[2], board[2]);
+        out.printf(Locale.ROOT, "   payers boarding with a housed family (no door standing): %d months, at most %.3f households (m%.0f); counted by the census line in %d, their board owed in %d and paid and received at the next month's settlement in %d of %d (at most %.2f a month), the month's own audit exact in %d%n",
+                board[0], boardMost[0], boardMost[1], board[1], board[5], board[3], board[4], boardMost[2], board[2]);
         out.println("   saved and loaded with boarders standing: " + tripLine[0]);
         check("fixture: households that could pay found no door standing and boarded with a housed family (call A over R1g)", coda[1] > 0 && board[0] > 0);
         check("...every boarder counted by the census's own line, overcrowded past two persons a room and boarding within it (REV-RES3b P1-4)", board[0] > 0 && board[1] == board[0]);
-        check("...paying its hosts board, every cent paid out of the boarders' cells received into their hosts' (REV-RES3b P1-1)", board[0] > 0 && board[3] == board[0]);
+        // Restated (REV-RES3b on 19fcb37f0) from "...paying its hosts board, every cent ..." in every month with boarders:
+        // the board is settled as the rents are, at the next month's household settlement, on the census the leases keep.
+        check("...owing its hosts board, and paying it at the next month's settlement, every cent paid out of the boarders' cells received into their hosts' (REV-RES3b P1-1)",
+                board[0] > 0 && board[5] == board[0] && board[4] > 0 && board[3] == board[4]);
         check("...and the month's own money audit and the households' cash identity exact in every month of them (REV-RES3b P1-3)", board[0] > 0 && board[2] == board[0]);
         check("a save and load with boarders standing brings back every boarder, its count by the line and its board (REV-RES3b P1-2)", trip[0] >= 0 && trip[1] == 1 && trip[2] == 1);
         check("the fire's displaced live past the census line, more than two persons a room, overcrowded and never doorless (call A, REV-RES3b P1-4)",
@@ -477,14 +480,25 @@ public final class HousingDoorCheck {
      * A month's payers boarding with the housed (call A over R1g): [0] the months with any, [1] of them every boarder
      * counted by the census's own line on its door, overcrowded past two persons a room and within the line otherwise
      * (REV-RES3b P1-4), [2] of them the month's own money audit and the households' cash identity exact (P1-3: an audit
-     * of an earlier month is no witness), [3] of them the board paid out of the boarders' cells received into their
-     * hosts' to the audit's tolerance (P1-1) - no landlord billed, the board a transfer between households.
+     * of an earlier month is no witness), [5] of them the board owed for the month's boarders; and [4] the months after a
+     * month with boarders, the settlement month of their board (REV-RES3b on 19fcb37f0: settled as the rents are, at the
+     * next month's household settlement on the leases' census), [3] of them the board paid out of the boarders' cells
+     * received into their hosts' to the audit's tolerance (P1-1) - no landlord billed, the board a transfer between
+     * households. boardMost: [0] the most boarders, [1] its month, [2] the most board paid, [3] last month's boarders.
      */
     static void boarders(Game g, MoneyAudit.Households households, int[] board, double[] boardMost) {
         var market = g.getSectors().realEstate().housingMarket();
         double boarding = market.boarders();
+        double paid = market.boardPaid(), received = market.boardReceived();
+        if (boardMost[3] > 0) {
+            board[4]++;
+            if (paid > 0 && Math.abs(paid - received) <= MoneyAudit.tolerance(paid)) board[3]++;
+        }
+        boardMost[2] = Math.max(boardMost[2], paid);
+        boardMost[3] = boarding;
         if (!(boarding > 0)) return;
         board[0]++;
+        if (market.boardOwed() > 0) board[5]++;
         boolean counted = true;
         for (var e : market.boardingByCell().entrySet()) {
             double both = market.overcrowdedByCell().getOrDefault(e.getKey(), 0.0) + market.withinTheLineByCell().getOrDefault(e.getKey(), 0.0);
@@ -495,15 +509,12 @@ public final class HousingDoorCheck {
         boolean now = audit != null && households != null && audit.month == g.getMonth() && households.month == g.getMonth();
         boolean exact = now && !(Math.abs(audit.residual) > .01 && audit.relative() > 1e-7) && !(Math.abs(g.getPostAuditDrift()) > .01);
         if (exact && LongPlaytest.MoneyFixtures.householdsClose(households)) board[2]++;
-        double paid = market.boardPaid(), received = market.boardReceived();
-        if (paid > 0 && Math.abs(paid - received) <= MoneyAudit.tolerance(paid)) board[3]++;
         if (boarding > boardMost[0]) { boardMost[0] = boarding; boardMost[1] = g.getMonth(); }
-        boardMost[2] = Math.max(boardMost[2], paid);
     }
 
     /**
      * The city saved to its own scratch folder's slot 10 and loaded into another Game, as a player's reload, with boarders
-     * standing (REV-RES3b P1-2): [1] 1 if the boarders, the overcrowded, those within the line and the board paid and
+     * standing (REV-RES3b P1-2): [1] 1 if the boarders, the overcrowded, those within the line and the board owed, paid and
      * received came back as saved, [2] 1 if the loaded market's maps equal the running one's, cell by cell.
      */
     static String roundTrip(Game g, int[] trip) {
@@ -515,15 +526,15 @@ public final class HousingDoorCheck {
         var loaded = back.getSectors().realEstate().housingMarket();
         boolean same = loaded.boarders() == market.boarders() && loaded.overcrowded() == market.overcrowded()
                 && loaded.withinTheLine() == market.withinTheLine() && loaded.boardPaid() == market.boardPaid()
-                && loaded.boardReceived() == market.boardReceived() && back.getMonth() == g.getMonth();
+                && loaded.boardReceived() == market.boardReceived() && loaded.boardOwed() == market.boardOwed() && back.getMonth() == g.getMonth();
         boolean maps = loaded.boardingByCell().equals(market.boardingByCell()) && loaded.overcrowdedByCell().equals(market.overcrowdedByCell())
                 && loaded.withinTheLineByCell().equals(market.withinTheLineByCell()) && loaded.boardPaidByCell().equals(market.boardPaidByCell())
-                && loaded.boardReceivedByCell().equals(market.boardReceivedByCell());
+                && loaded.boardReceivedByCell().equals(market.boardReceivedByCell()) && loaded.boardOwedByCell().equals(market.boardOwedByCell());
         trip[1] = same ? 1 : 0;
         trip[2] = maps ? 1 : 0;
-        return String.format(Locale.ROOT, "m%d, %.3f boarders (loaded %.3f), %.3f overcrowded (%.3f), %.3f within the line (%.3f), board %.2f paid (%.2f) and %.2f received (%.2f)",
+        return String.format(Locale.ROOT, "m%d, %.3f boarders (loaded %.3f), %.3f overcrowded (%.3f), %.3f within the line (%.3f), board %.2f owed (%.2f), %.2f paid (%.2f) and %.2f received (%.2f)",
                 g.getMonth(), market.boarders(), loaded.boarders(), market.overcrowded(), loaded.overcrowded(), market.withinTheLine(), loaded.withinTheLine(),
-                market.boardPaid(), loaded.boardPaid(), market.boardReceived(), loaded.boardReceived());
+                market.boardOwed(), loaded.boardOwed(), market.boardPaid(), loaded.boardPaid(), market.boardReceived(), loaded.boardReceived());
     }
     static void run(Game g, int months, Runnable after) {
         for (int i = 0; i < months && !stuck && g.getMonth() < TO; i++) {

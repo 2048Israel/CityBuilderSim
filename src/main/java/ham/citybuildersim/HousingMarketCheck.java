@@ -1279,6 +1279,32 @@ public final class HousingMarketCheck {
         near("without a funded host no rent is invented",market.receipts(),0);
         near("without a funded host no door is occupied",market.occupied(),0);
     }
+    /** A founded town a year on for its household cells, its homes taken down and one House left: the only door standing. */
+    static Game oneHouseTown(String scratch){
+        PrintStream was=System.out;System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+        Game g=new Game(GameFiles.scratch(scratch),LongPlaytest.founding());
+        try{g.run();g.simulateMonths(12);}finally{System.setOut(was);}
+        var bm=g.getBuildingManager();
+        for(var t:bm.getTemplates())if(t.getHousingRecipe()!=null&&bm.getQuantity(t.getId())>0)bm.retire(t,bm.getQuantity(t.getId()));
+        bm.addStack(bm.getTemplate(0),1,true);
+        return g;
+    }
+    /** A host family of two and its funded guest sitting in the one House since last month, and a boarder of one beside them. */
+    static List<HousingChoice.Demand> boarded(Household host,String boarder){
+        var hostDemand=new HousingChoice.Demand(host.key(),1,2,0,false,0,false,1e6);
+        var guest=new HousingChoice.Demand("old-guest",1,1,0,true,0,false,0);
+        return boarder==null?List.of(hostDemand,guest):List.of(hostDemand,guest,new HousingChoice.Demand(boarder,1,1,0,false,0,false,1e6));
+    }
+    /** The clearing that boards it, the host sitting from the month before; what the boarder's cell owes its host. */
+    static double boardOn(Game g,Household host,String boarder){
+        var market=g.getSectors().realEstate().housingMarket();
+        market.restore(null);
+        market.clear(g,boarded(host,null));
+        var previous=market.forSave();previous.month=g.getMonth()-1;market.restore(previous);
+        market.clear(g,boarded(host,boarder));
+        return market.boardOwedByCell().getOrDefault(boarder,0.0);
+    }
+    static double held(Household c){return c.savings*c.households;}
     /**
      * REV-RES3b P1-1 and P1-4: a boarder pays its host board out of its own cell's savings into the host cell's, every
      * cent, half the door's ask, billed to no landlord; and the census's own line on the door says whether it is
@@ -1289,13 +1315,7 @@ public final class HousingMarketCheck {
      */
     static void boardBookedBothSides(){
         out.println("--- a boarder pays its hosts board on both sides, every cent, and the census line says if it is overcrowded ---");
-        PrintStream was=System.out;System.setOut(new PrintStream(OutputStream.nullOutputStream()));
-        Game g=new Game(GameFiles.scratch("res3-board-both-sides"),LongPlaytest.founding());
-        try{g.run();g.simulateMonths(12);}finally{System.setOut(was);}
-        // A founded town a year on for its household cells, its homes taken down and one House left: the only door standing.
-        var bm=g.getBuildingManager();
-        for(var t:bm.getTemplates())if(t.getHousingRecipe()!=null&&bm.getQuantity(t.getId())>0)bm.retire(t,bm.getQuantity(t.getId()));
-        bm.addStack(bm.getTemplate(0),1,true);
+        Game g=oneHouseTown("res3-board-both-sides");
         var market=g.getSectors().realEstate().housingMarket();
         List<Household> cells=g.getHouseholdBalance().cells().stream().filter(c->c.households>0).toList();
         check("fixture: two household cells with households ("+cells.size()+" of "+g.getHouseholdBalance().cells().size()+", "+g.getPopulationManager().getPopulation()+" people)",cells.size()>=2);
@@ -1323,14 +1343,21 @@ public final class HousingMarketCheck {
             var next=market.clear(g,with);
             var asked=market.offers().stream().filter(o->o.key().equals(door.key())).findFirst().orElse(door);
             double ask=(asked.rent()+asked.recurring())/2;
-            double hostGain=host.savings*host.households-hostBefore,boarderLoss=boarderBefore-boarder.savings*boarder.households;
             near("a boarder of one boards with the host, "+fill,market.boarders(),1);
             check("...owing board, half the door's ask ("+ask+")",ask>0);
+            near("...owed at the clearing",market.boardOwedByCell().getOrDefault(boarder.key(),0.0),ask);
+            // The clearing moves no money (REV-RES3b on 19fcb37f0): the board is settled as the rents are, at the next
+            // month's household settlement on the leases' census (HouseholdBalance.advanceMonth()'s hook), called here.
+            near("...and moves no money at the clearing: settled with the rents, at the next month's settlement",
+                    Math.abs(held(host)-hostBefore)+Math.abs(held(boarder)-boarderBefore),0);
+            market.settleBoard(g.getHouseholdBalance());
+            double hostGain=host.savings*host.households-hostBefore,boarderLoss=boarderBefore-boarder.savings*boarder.households;
             near("...its cell pays it out of the board it owes",market.boardPaidByCell().getOrDefault(boarder.key(),0.0),ask);
             near("...out of its savings, every cent",boarderLoss,ask);
             near("...the host's cell receives it",market.boardReceivedByCell().getOrDefault(host.key(),0.0),ask);
             near("...into its savings, every cent",hostGain,ask);
             near("...billed to no landlord",next.leases().stream().filter(l->l.cell().equals(boarder.key())).mapToDouble(HousingChoice.Lease::bill).sum(),0);
+            near("...and settled once: nothing owed after",market.boardOwed(),0);
             if(past==0){
                 near("...within the census line: boarding, not overcrowding",market.overcrowded(),0);
                 near("...counted within the line",market.withinTheLine(),1);
@@ -1339,6 +1366,91 @@ public final class HousingMarketCheck {
                 near("...and not counted within it",market.withinTheLine(),0);
             }
         }
+        market.restore(null);
+    }
+    /**
+     * REV-RES3b on 19fcb37f0, P1 1: the board is settled on the census the clearing struck its leases on, the next
+     * month's, once the stock has followed the people (HousingMarket.settleBoard(), HouseholdBalance.advanceMonth()):
+     * the clearing reads the projected census (HouseholdBalance.housingCensusCells()), and settled on the live one a cell
+     * the census had just filled was skipped and households it moved took another cell's board. Two moves of the census
+     * between the clearing and the settlement, each the stock following the people: a working cell with no household at
+     * the clearing that the census brings one, with the savings it carries; and a cell it halves, its moved households
+     * carrying their savings to another cell. Both balances asserted.
+     */
+    static void boardOnTheLeasesCensus(){
+        out.println("--- the board is settled on the leases' census: a cell the census fills pays, a household it moves takes none ---");
+        Game g=oneHouseTown("res3-board-census");
+        var market=g.getSectors().realEstate().housingMarket();var balance=g.getHouseholdBalance();
+        // The census moves a whole household out of the donor, so it has two or more; the host and the halved cell any.
+        Household donor=balance.cells().stream().filter(c->c.households>=2).findFirst().orElse(null);
+        List<Household> live=balance.cells().stream().filter(c->c.households>0&&c!=donor).toList();
+        Household empty=balance.cells().stream().filter(c->c instanceof WorkingHousehold&&!(c.households>0)).findFirst().orElse(null);
+        check("fixture: a cell of two households or more, two others with households and a working cell with none ("
+                +(donor==null?"none":donor.key())+", "+live.size()+", "+(empty==null?"none":empty.key())+")",donor!=null&&live.size()>=2&&empty!=null);
+        if(donor==null||live.size()<2||empty==null)return;
+        Household host=live.get(0),halved=live.get(1);
+        // 1. Zero to positive: the board owed by a cell with no household, the clearing's census projecting one.
+        double emptySavings=empty.savings;
+        double owed=boardOn(g,host,empty.key());
+        check("fixture: the boarder's cell had no household at the clearing and owes its host board ("+owed+")",!(empty.households>0)&&owed>0);
+        donor.savings+=1e4/donor.households;   // the household the census moves has savings enough for its board (the fixture's cause)
+        double per=donor.savings;donor.households-=1;empty.households=1;empty.savings=per;
+        double hostBefore=held(host),emptyBefore=held(empty),donorBefore=held(donor);
+        market.settleBoard(balance);
+        near("a cell the census filled since the clearing pays its board out of the savings it inherited",emptyBefore-held(empty),owed);
+        near("...booked to it",market.boardPaidByCell().getOrDefault(empty.key(),0.0),owed);
+        near("...received into the host's savings, every cent",held(host)-hostBefore,owed);
+        near("...and the cell its household left pays none of it",donorBefore-held(donor),0);
+        empty.households=0;empty.savings=emptySavings;donor.households+=1;
+        // 2. A cell the census halves: its moved households carry their savings, none of the board.
+        halved.savings+=1e4/halved.households;
+        double owedHalved=boardOn(g,host,halved.key());
+        check("fixture: the halved cell owes its host board ("+owedHalved+")",owedHalved>0);
+        double moved=halved.households/2,carry=halved.savings,into=held(donor);
+        donor.savings=(into+moved*carry)/(donor.households+moved);donor.households+=moved;halved.households-=moved;
+        hostBefore=held(host);double halvedBefore=held(halved);donorBefore=held(donor);
+        market.settleBoard(balance);
+        near("a cell the census halved since the clearing pays its whole board out of the households it keeps",halvedBefore-held(halved),owedHalved);
+        near("...received into the host's savings, every cent",held(host)-hostBefore,owedHalved);
+        near("...and the households it moved to another cell carry none of it",held(donor)-donorBefore,0);
+        market.restore(null);
+    }
+    /**
+     * REV-RES3b on 19fcb37f0, P1 2: a currency reform scales the board as it scales the savings it moves between and the
+     * lease bills beside it (HousingMarket.redenominate()), the board owed for the next settlement and the month's paid
+     * and received alike, and a save and load after the reform brings back the reformed board.
+     */
+    static void boardThroughAReform(){
+        out.println("--- a currency reform scales the board owed, paid and received with the savings it moves, through a save and load ---");
+        Game g=oneHouseTown("res3-board-reform");
+        var market=g.getSectors().realEstate().housingMarket();var balance=g.getHouseholdBalance();
+        List<Household> live=balance.cells().stream().filter(c->c.households>0).toList();
+        check("fixture: two household cells with households",live.size()>=2);
+        if(live.size()<2)return;
+        Household host=live.get(0),boarder=live.get(1);boarder.savings+=1e4/boarder.households;
+        boardOn(g,host,boarder.key());
+        market.settleBoard(balance);
+        // ...and the next clearing's boarder owing again, the board paid standing beside it.
+        var previous=market.forSave();previous.month=g.getMonth()-1;market.restore(previous);
+        market.clear(g,boarded(host,boarder.key()));
+        double owed=market.boardOwed(),paid=market.boardPaid(),received=market.boardReceived(),bills=market.receipts(),savings=held(boarder);
+        check("fixture: board owed, paid and received before the reform ("+owed+", "+paid+", "+received+")",owed>0&&paid>0&&received>0);
+        check("fixture: a reform of 1,000 to 1",g.reformCurrencyForTest(1000));
+        near("the reform scales the board owed",market.boardOwed(),owed/1000);
+        near("...the board paid",market.boardPaid(),paid/1000);
+        near("...and received",market.boardReceived(),received/1000);
+        near("...as it scales the boarder's savings",held(boarder),savings/1000);
+        near("...and the lease bills",market.receipts(),bills/1000);
+        PrintStream was=System.out;System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+        Game back=new Game(g.getGameFiles());
+        try{g.saveGame(10);back.loadGameSave(10);}finally{System.setOut(was);}
+        var loaded=back.getSectors().realEstate().housingMarket();
+        check("a save and load after the reform brings back the reformed board, owed, paid and received, cell by cell",
+                back.getLoadFailure()==null&&loaded.boardOwedByCell().equals(market.boardOwedByCell())
+                        &&loaded.boardPaidByCell().equals(market.boardPaidByCell())&&loaded.boardReceivedByCell().equals(market.boardReceivedByCell()));
+        double before=held(boarder);
+        market.settleBoard(balance);
+        near("...and the boarder settles the reformed board out of its reformed savings",before-held(boarder),owed/1000);
         market.restore(null);
     }
     /**
@@ -1876,7 +1988,7 @@ public final class HousingMarketCheck {
         out=System.out;fractionalSettlement();fractionalClaims();fractionalDividends();
         out=System.out;unbuiltGrossQuotes();
         out=System.out;coalescedSponsored();sharingForecastSources();crossClassPaidExcess();savedContractModes();
-        out=System.out;fundedPressureAndForecast();rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();boardBookedBothSides();trimHeldToStock();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
+        out=System.out;fundedPressureAndForecast();rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();boardBookedBothSides();boardOnTheLeasesCensus();boardThroughAReform();trimHeldToStock();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
         StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on the executing host, including all other city systems, not isolated solver timings.\n");
         try{System.setOut(silent);classPrices();rentPriceIndex();mergedBudgetPressure();plannerInputs();netOperatingChoice();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();doubledDemand();studentFacility();fundedHost();scarceFreeHost();retiredRoom();loadedDoorCensus();causedStrandedDebtContinuation();familyHostReservation();aggregatePackingRemainder();savingHousingBudget();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
         Path target=Path.of("target/RES3-catalogue-report.md");Files.writeString(target,report);
