@@ -59,7 +59,8 @@ public final class BankRulesCheck {
         Game legacy = new Game(files);
         silently(() -> legacy.loadGameSave(GameFiles.AUTOSAVE_SLOT));
         ok &= java.util.Arrays.equals(new BankRules().toSave(), legacy.getBank().rules().toSave())
-                && legacy.getBank().getForeignWholesale() == 0;
+                && legacy.getBank().getForeignWholesale() == 0
+                && legacy.getBank().getWindowFundingCost() == legacy.getBank().getFundingCost();
         // A new city resets settings; an absent array never inherits the last city's rule.
         loaded.getBank().rules().restore(null);
         ok &= java.util.Arrays.equals(new BankRules().toSave(), loaded.getBank().rules().toSave());
@@ -93,6 +94,12 @@ public final class BankRulesCheck {
             revenue += g.getEconomyManager().getNationalAccounts().getTotalRevenue();
             remitted += cb.getRemitted();
             MoneyAudit.Result audit = g.getLastMoneyAudit();
+            check("evidence window stays within collateral at month " + g.getMonth(),
+                    cb.getAdvancesToBank() <= bank.windowCollateral()
+                            * bank.rules().get(BankRules.Dial.WINDOW_LIMIT) + MoneyAudit.CENT);
+            check("evidence desk stays outside window funding at month " + g.getMonth(),
+                    cb.getAdvancesToBank() <= Math.max(0, bank.wholesaleFunding()
+                            - Math.max(0, bank.getSecurities())) + MoneyAudit.CENT);
             check("evidence money audit at month " + g.getMonth(), audit != null
                     && Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved()));
             if (audit != null) worstAudit = Math.max(worstAudit, Math.abs(audit.residual));
@@ -117,7 +124,12 @@ public final class BankRulesCheck {
         CentralBank cb = new CentralBank();
         cb.setWindowCapacity(b::windowFunding);
         double collateral = b.windowCollateral();
-        check("business loans, households and government paper cause lendable collateral", collateral > 0);
+        check("the published loan and government margins determine lending value",
+                Math.abs(collateral - (1_000 * .70 + 50 * .15 + 200 * .95)) < 1e-12);
+        b.setGovernmentCollateral(() -> 100);
+        check("government collateral follows market value instead of its carried face",
+                Math.abs(b.windowCollateral() - (1_000 * .70 + 50 * .15 + 100 * .95)) < 1e-12);
+        b.setGovernmentCollateral(null);
         cb.advanceToBank(collateral * 10);
         check("even a direct advance cannot exceed the collateral", cb.getAdvancesToBank() <= collateral);
         check("a further advance has no room", cb.advanceToBank(1) == 0);
@@ -151,8 +163,19 @@ public final class BankRulesCheck {
         capital.refresh(1, 100_000, 0, 20_000, 0, 0);
         capital.injectCapital(10_000);
         double capacity = capital.capacity();
+        double insuredTarget = capital.leverageTarget();
         capital.rules().set(BankRules.Dial.CAPITAL_MINIMUM, .16);
         check("a higher capital minimum supports less credit", capital.capacity() < capacity);
+        check("raising risk capital does not relax the insured-loan leverage target", capital.leverageTarget() >= insuredTarget);
+        Bank concentrated = new Bank();
+        concentrated.refresh(1, 100_000, 0, 20_000, 0, 0);
+        concentrated.setConcentration(java.util.Map.of(Sectors.RETAIL, new Bank.Exposure(20_000, .04, .45)));
+        double addOn = concentrated.getConcentrationAddOn(), minimum = concentrated.minimumEquity();
+        concentrated.rules().set(BankRules.Dial.CAPITAL_MINIMUM, .16);
+        check("a capital change reprices concentration weight at once, preserving its absolute add-on",
+                addOn > 0 && Math.abs(concentrated.getConcentrationWeighted() * .16 - addOn) < 1e-10);
+        check("concentration does not let a tighter capital rule reduce required equity",
+                concentrated.minimumEquity() > minimum);
         capital.rules().reset();
         double leverage = capital.leverageHeadroom();
         capital.rules().set(BankRules.Dial.LEVERAGE_MINIMUM, .06);
@@ -166,9 +189,17 @@ public final class BankRulesCheck {
         capital.rules().set(BankRules.Dial.RESERVE_REQUIREMENT, .20);
         check("reserves withhold deposits from lending", capital.fundingLimit() < funding);
         capital.rules().reset();
-        double prime = capital.prime(.05);
-        capital.rules().set(BankRules.Dial.WINDOW_SPREAD, .025);
-        check("a higher window spread raises the cost of new credit", capital.prime(.05) > prime);
+        Bank spread = new Bank();
+        spread.refresh(1, 10_000, 0, 100_000, 0, 0);
+        spread.injectCapital(20_000);
+        spread.setCash(-70_000);
+        spread.setForeignFundingRate(.07);
+        spread.fundToCover(.05);
+        spread.closeMonth();
+        double prime = spread.prime(.05);
+        spread.rules().set(BankRules.Dial.WINDOW_SPREAD, .025);
+        check("a higher window spread raises the cost of genuinely window-funded credit",
+                spread.windowFunding() > 0 && spread.prime(.05) > prime);
         capital.rules().reset();
         capital.setCash(-200_000);
         double window = capital.windowFunding();
@@ -191,10 +222,21 @@ public final class BankRulesCheck {
         check("a tighter debt-to-income rule refuses excess debt against rent",
                 Mortgage.decide(1, n -> n * 100, 20, 2, .05, n -> 1, mortgage).quantity() == 0);
 
+        DebtManager quotes = new DebtManager();
+        quotes.setPolicyRate(.15);
+        double localQuote = quotes.localWholesaleRate(Bank.WHOLESALE_TERM_MONTHS);
+        check("foreign local-money term funding cannot use a cheap USD short rate",
+                localQuote >= quotes.getPolicyRate() && localQuote > quotes.foreignRate());
+
         out.println("--- 4. every default is the pre-dial Part 1 rule ---");
         BankRules defaults = new BankRules();
+        // The values used by the measured Part 1 city, before exposing the controls.
+        // This deliberately fences the numbers as well as checking the owner's declaration.
+        double[] measuredDefaults = {.0025, 1, .08, 0, .03, 0, .85, 0, .90};
+        check("the dial list matches the measured Part 1 rules", BankRules.Dial.values().length == measuredDefaults.length);
         for (BankRules.Dial dial : BankRules.Dial.values())
-            check(dial.label + " starts at its model default", defaults.get(dial) == dial.initial);
+            check(dial.label + " starts at the measured Part 1 value",
+                    defaults.get(dial) == dial.initial && defaults.get(dial) == measuredDefaults[dial.ordinal()]);
         check("the additional mortgage income limit starts off",
                 defaults.get(BankRules.Dial.MORTGAGE_DTI) == 0);
 

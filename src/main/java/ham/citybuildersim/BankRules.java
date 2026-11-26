@@ -30,9 +30,9 @@ public final class BankRules {
         MORTGAGE_LTC("Mortgage loan / cost", Mortgage.MORTGAGE_MAX_LOAN_TO_COST, .50, .95, .01,
                 "Maximum mortgage before its insurance premium as a share of the building's cost."),
         MORTGAGE_DTI("Mortgage debt / annual income", MORTGAGE_DTI_DEFAULT, 0, 20, .5,
-                "Off at zero; otherwise mortgage principal divided by annual net rent. The payment coverage test still applies."),
-        BUSINESS_LTA("Business loan / assets", BusinessDebtManager.MAX_LOAN_TO_ASSETS, .25, .95, .05,
-                "Maximum business debt against the borrower's assets, alongside capital and default tests.");
+                "Off at zero; otherwise new mortgage principal divided by the property's annual net rent. The payment coverage test still applies."),
+        BUSINESS_LTA("Business credit / assets", BusinessDebtManager.MAX_LOAN_TO_ASSETS, .25, .95, .05,
+                "Working-capital ceiling against current assets. Projects also count their new plant; existing debt-service and default safeguards remain.");
 
         public final String label, explanation;
         public final double initial, min, max, step;
@@ -51,8 +51,14 @@ public final class BankRules {
         double before = get(dial);
         values[dial.ordinal()] = bounded(dial, value);
         if (decisions != null && before != get(dial))
-            decisions.record("bankRules", dial.label + " → " + get(dial));
+            decisions.record(DecisionLog.CENTRAL_BANK, dial.label + " to " + reading(dial, get(dial)));
     }
+    public static String reading(Dial dial, double value) {
+        if (dial == Dial.MORTGAGE_DTI && value == 0) return "Off";
+        if (dial == Dial.MORTGAGE_DTI) return String.format(java.util.Locale.ROOT, "%.1f times annual net income", value);
+        return String.format(java.util.Locale.ROOT, "%.2f%%", value * 100);
+    }
+
     private static double bounded(Dial dial, double value) {
         return Double.isFinite(value) ? Math.max(dial.min, Math.min(dial.max, value)) : dial.initial;
     }

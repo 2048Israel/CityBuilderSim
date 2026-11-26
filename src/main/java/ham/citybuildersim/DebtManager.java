@@ -1206,6 +1206,19 @@ public class DebtManager {
     }
 
     /**
+     * Foreign lenders' quote for term funds payable in the city's own money (CBK3).
+     * The independent expected policy path supplies the local nominal benchmark;
+     * existing country credit and term premia supply the rest. Treasury QE and
+     * the bank's own cost-of-funds floor cannot feed this funding quote back into itself.
+     */
+    public double localWholesaleRate(int months) {
+        double premium = countryPremium();
+        return YieldCurve.of(expectedPolicyPath(), premium, premium, DebtManager::termPremium)
+                .parYield(Math.max(1, months));
+    }
+
+
+    /**
      * ...in a money of the eight (CD8): that money's world rate (its central bank's policy rate, worldRate(code)) plus the city's country premium,
      * which stays ONE figure for the city - its local foreign principal and service over every money it owes in. The US$'s is foreignRate(), to the bit.
      */
@@ -2416,6 +2429,17 @@ public class DebtManager {
      */
     public double curveRate(int months) {
         return curve().zero(months);
+    }
+
+    /** Current market value of the commercial bank's government collateral, excluding every other holder. */
+    public double bankCollateralValue() {
+        double value = 0;
+        for (Debt paper : getDebt()) {
+            double face = paper.getOustandingPrincipal();
+            double held = paper.bankPrincipal();
+            if (face > 0 && held > 0) value += Math.max(0, marketValue(paper)) * Math.min(1, held / face);
+        }
+        return value;
     }
 
     /**

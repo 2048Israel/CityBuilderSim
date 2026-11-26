@@ -231,6 +231,12 @@ public class Mortgage extends BusinessDebt {
         return ownFundsFor(cost, MORTGAGE_MAX_LOAN_TO_COST);
     }
 
+    /** The same down payment and fee under the city's saved loan-to-cost limit. */
+    public static double ownFundsFor(double cost, double maxLoanToCost) {
+        if (!(cost > 0)) return 0;
+        return cost - maxLoanToCost * cost * (1 - Bank.LOAN_FEE * (1 + premiumRate()));
+    }
+
     /**
      * THE LENDER'S TEST, as a ratio: this net operating income over the
      * monthly payment on the mortgage that covers this shortfall - its
@@ -238,11 +244,6 @@ public class Mortgage extends BusinessDebt {
      * MORTGAGE_AMORTIZATION_MONTHS. The lender asks MORTGAGE_DEBT_COVERAGE of
      * it. Unbounded with nothing to borrow.
      */
-    public static double ownFundsFor(double cost, double maxLoanToCost) {
-        if (!(cost > 0)) return 0;
-        return cost - maxLoanToCost * cost * (1 - Bank.LOAN_FEE * (1 + premiumRate()));
-    }
-
     public static double coverage(double netOperatingIncome, double shortfall, double annualRate) {
         double a = paymentFor(shortfall, annualRate);
         return a > 0 ? netOperatingIncome / a : Double.POSITIVE_INFINITY;
@@ -375,11 +376,14 @@ public class Mortgage extends BusinessDebt {
             // refused (DenominationCheck, FR2's notes).
             if (!(cash > 0) || cash < own * (1 - 1e-9)) return new Slice(false, own, true, Double.NaN, Decision.DOWN_PAYMENT);
             // ...on the shortfall grown over the wait (BA1; 1 where none is read).
-            double coverage = Mortgage.coverage(noiPerUnit * n, (cost - cash) * carryOf.applyAsDouble(n), annualRate);
+            double shortfallWithCarry = (cost - cash) * carryOf.applyAsDouble(n);
+            double coverage = Mortgage.coverage(noiPerUnit * n, shortfallWithCarry, annualRate);
             double dti = rules == null ? 0 : rules.get(BankRules.Dial.MORTGAGE_DTI);
-            double principal = loanFor((cost - cash) * carryOf.applyAsDouble(n)) * (1 + premiumRate());
-            if (dti > 0 && principal > Math.max(0, noiPerUnit * n * 12) * dti)
-                return new Slice(false, own, false, coverage, Decision.DEBT_TO_INCOME);
+            if (dti > 0) {
+                double principal = loanFor(shortfallWithCarry) * (1 + premiumRate());
+                if (principal > Math.max(0, noiPerUnit * n * 12) * dti)
+                    return new Slice(false, own, false, coverage, Decision.DEBT_TO_INCOME);
+            }
             return new Slice(false, own, false, coverage,
                     coverage >= MORTGAGE_DEBT_COVERAGE ? null : Decision.LENDERS_TEST);
         }
@@ -402,11 +406,13 @@ public class Mortgage extends BusinessDebt {
         public static final String DEBT_TO_INCOME = "debt-to-income limit";
 
         /** The advisor's line when not even one passes: the down payment it needs, or the lender's figure against its own. */
-        public String refusal(String building) {
-            if (DEBT_TO_INCOME.equals(trimmedBy)) return "Declined " + building + " ? mortgage exceeds the debt-to-income limit";
+        public String refusal(String building) { return refusal(building, MORTGAGE_MAX_LOAN_TO_COST); }
+
+        public String refusal(String building, double maxLoanToCost) {
+            if (DEBT_TO_INCOME.equals(trimmedBy)) return "Declined " + building + " - mortgage exceeds the debt-to-income limit";
             if (shortOfDown) {
                 return String.format("Holding: needs %s of its own for the %.0f%% down payment on a %s",
-                        Formats.INSTANCE.cash(ownFundsForOne), (1 - MORTGAGE_MAX_LOAN_TO_COST) * 100, building);
+                        Formats.INSTANCE.cash(ownFundsForOne), (1 - maxLoanToCost) * 100, building);
             }
             return String.format("Declined %s - its rent would cover the mortgage %.2f×; the lender asks %.2f×",
                     building, coverageOfOne, MORTGAGE_DEBT_COVERAGE);
@@ -418,7 +424,11 @@ public class Mortgage extends BusinessDebt {
          * rate, when expected inflation took something off it.
          */
         public String refusal(String building, double testedRate, double insuredRate) {
-            if (shortOfDown || DEBT_TO_INCOME.equals(trimmedBy)) return refusal(building);
+            return refusal(building, testedRate, insuredRate, MORTGAGE_MAX_LOAN_TO_COST);
+        }
+
+        public String refusal(String building, double testedRate, double insuredRate, double maxLoanToCost) {
+            if (shortOfDown || DEBT_TO_INCOME.equals(trimmedBy)) return refusal(building, maxLoanToCost);
             String rate = testedRate < insuredRate
                     ? String.format("at %.2f%% real (the insured %.2f%% less the inflation expected)",
                             testedRate * 100, insuredRate * 100)
@@ -428,11 +438,13 @@ public class Mortgage extends BusinessDebt {
         }
 
         /** ...and the words for an order cut down from what was asked, or nothing when it was not. */
-        public String trimmed(long asked) {
+        public String trimmed(long asked) { return trimmed(asked, MORTGAGE_MAX_LOAN_TO_COST); }
+
+        public String trimmed(long asked, double maxLoanToCost) {
             if (quantity <= 0 || quantity >= asked) return "";
             return DOWN_PAYMENT.equals(trimmedBy)
                     ? String.format(" (trimmed from %,d - its own funds put the %.0f%% down on %,d)",
-                            asked, (1 - MORTGAGE_MAX_LOAN_TO_COST) * 100, quantity)
+                            asked, (1 - maxLoanToCost) * 100, quantity)
                     : String.format(" (trimmed from %,d - the lender's test passes %,d)", asked, quantity);
         }
     }

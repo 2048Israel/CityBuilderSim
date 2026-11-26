@@ -293,7 +293,6 @@ public final class CentralBank {
      * money made; a repayment is money destroyed.
      * ==================================================================== */
 
-    /** Money made and lent to the commercial bank at the window. */
     private java.util.function.DoubleSupplier windowCapacity = () -> 0;
 
     /** The borrower's lendable collateral, supplied by the bank; never reconstructed from M0. */
@@ -303,6 +302,7 @@ public final class CentralBank {
 
     public double getWindowCapacity() { return Math.max(0, windowCapacity.getAsDouble()); }
 
+    /** Money made and lent to the commercial bank, capped by its remaining eligible collateral. */
     public double advanceToBank(double x) {
         x = Math.min(x, Math.max(0, getWindowCapacity() - advancesToBank));
         if (!(x > 0)) return 0;

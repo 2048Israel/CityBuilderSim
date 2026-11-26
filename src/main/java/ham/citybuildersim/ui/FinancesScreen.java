@@ -6228,7 +6228,7 @@ final class FinancesScreen {
      */
     List<Node> bankRoomRows(Auction.Result r) {
         Bank bank = ui.game.getBank();
-        double room = bank.isInsolvent() ? 0 : bank.equity() / Bank.CAPITAL_RATIO;   // D20: its room is its capital (CD2, star 6)
+        double room = bank.isInsolvent() ? 0 : bank.equity() / bank.capitalMinimum();   // D20: its room is its capital (CD2, star 6)
         List<Node> out = new ArrayList<>();
         out.add(caption("THE BANK'S ROOM", null));
         // Kept (KP5): each shape the card's foot takes is a scope of its own, and so is what it says only sometimes.

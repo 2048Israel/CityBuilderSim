@@ -566,6 +566,8 @@ public class Game {
         // the vault where ForeignAccounts keeps it. See getCentralBank().
         centralBank = new CentralBank(foreign::getReserves);
         centralBank.setWindowCapacity(bank::windowFunding);
+        bank.setSettledWindow(centralBank::getAdvancesToBank);
+        bank.setGovernmentCollateral(debtManager::bankCollateralValue);
         // ...and every dial the player sets writes its change to the city's
         // decision log where it is applied (0.7.23): the taxes and promises,
         // the wage floor, the share of tuition, the rate, the rule and the
@@ -8033,12 +8035,12 @@ public class Game {
 
         if (d.quantity() <= 0) {
             (d.shortOfDown() ? heldForDownPayment : refusedByLender).add(decision.sector);
-            lastInvestment.put(slot, d.refusal(t.getName(), tested, insured));
+            lastInvestment.put(slot, d.refusal(t.getName(), tested, insured, bank.mortgageLoanToCost()));
             return;
         }
 
         long quantity = d.quantity();
-        String trimmed = d.trimmed(decision.quantity);
+        String trimmed = d.trimmed(decision.quantity, bank.mortgageLoanToCost());
         double downShare = 1 - bank.rules().get(BankRules.Dial.MORTGAGE_LTC);
 
         String[] refusal = { null };
@@ -12460,7 +12462,7 @@ public class Game {
         double bankRoom;
         if (bank.isInsolvent()) bankRoom = 0;
         else if (bank.equity() <= 0) bankRoom = Math.max(0, face);
-        else bankRoom = Math.max(0, Math.max(0, bank.equity() / Bank.CAPITAL_RATIO - bank.getWeightedBook())
+        else bankRoom = Math.max(0, Math.max(0, bank.equity() / bank.capitalMinimum() - bank.getWeightedBook())
                 / Bank.RISK_CITY - pendingBank);
         double extra = Math.max(0, debtManager.bankFloorRate() - debtManager.floorRate());
         if (extra > 0 && months > 1) {
@@ -14643,7 +14645,7 @@ public class Game {
          * by how it is funded now, and the bid went with the rule - see Bank,
          * WHAT TO PAY SAVERS.
          */
-        bank.setForeignFundingRate(debtManager.foreignRate());
+        bank.setForeignFundingRate(debtManager.localWholesaleRate(Bank.WHOLESALE_TERM_MONTHS));
         bank.fundToCover(debtManager.getPolicyRate());
 
         /*
