@@ -946,7 +946,7 @@ public class BusinessInvestment {
         }
         int opLosses = getOperatingLossMonths(key);
         if (opLosses < DISTRESS_LOSS_MONTHS) {
-            return Decision.no(key, opLosses == 0 ? "plant covers its running costs" : opLosses + " months of operating losses");
+            return Decision.no(key, opLosses + " months of operating losses");
         }
 
         /*
