@@ -441,6 +441,19 @@ reviewer's line.
   Bank.taxAt's own rate. Green: HousingMarketCheck, HousingChoiceCheck,
   CreditCrunchCheck, Village1900Check, SaveFileCheck, ReloadCheck,
   ScaleCheck; HousingDoorCheck known red only (MC1's capital fixture).
+- (A) on the merge of main 0.9.208 (ca10c6aae): the comparison by the
+  month's order turned over. Behind 344 months at 0.192 a month (most
+  35.104, m831), kept up 126 months at 2.065 (most 52.100 at m830, the
+  month before the trimmed order); held for land 0.014. A month's order is
+  not its stock of crowding, so the order and land tallies are printed and
+  the assertion is the cause the censuses read (9f7f0316e): over the 337
+  months the households seeking a home grew by more than the homes
+  standing, overcrowding rose 55.254 households (0.1640 a month); over the
+  132 the homes caught up, it fell 55.254 (-0.4186 a month). Asserted:
+  overcrowding counted and none doorless; it rises over the months the
+  households outgrow the homes, by more a month than over the months the
+  homes catch up. HousingDoorCheck known red only (MC1); OrderSearchCheck
+  and SaveFileCheck green on the merge.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
