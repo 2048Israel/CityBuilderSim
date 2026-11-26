@@ -493,6 +493,48 @@ reviewer's line.
   -Dplaytest.housingTrace=true), whether they are R1g's waiting cells that
   overcrowding() skips (paysAShare) or a residue, and the mend or the
   restatement the reality says; then the ensemble again.
+- The m1950 finding traced (the probe on the gate box, AUTO2 seed 0, the
+  driver's quiet stream opened; the PC parts from the box at m586 in the
+  ninth digit, CR1-J): 20.728 families of six with four children had no
+  door, 3.97 professional, 5.13 senior professional and 11.62 elite
+  households, budgets 5.4 to 44.2, every one able to fund a half share
+  (paysAShare), with every family door in the town full; the town 5.71
+  million people, 92,939 arriving that month. overcrowding() skipped them,
+  R1g's rule. Paid rounds past the line alone left them waiting (no family
+  door stood); boarding them, the same seed ran to m2400 with no finding
+  and every audit exact, 7.95 million people against 8.27 million and
+  inflation 2.59% against 2.58% a year.
+- ★ Call A over R1g for payers (the orchestrator's call, 2026-11-26
+  06:13): a household that could pay and finds no door standing boards
+  with a housed family, overcrowded and counted as such (HousingMarket
+  overcrowding(), boarders()). R1g's rule, beside it: "who can fund a share
+  and finds none waits for the building" (lodging()'s doc, CreditCrunchCheck
+  3). The reason it gives way: waiting left the household with no door at
+  all, which no census of the time records, while boarding was the common
+  answer, a fifth to a third of urban households taking boarders about 1900
+  (Modell and Hareven 1973), and the 1891 and 1901 censuses counted the
+  overcrowded (7.04 million families in 6.26 million houses), never
+  families with no house.
+- ★ The boarder is billed nothing, and no class is: its rent to its host
+  is a transfer between households, which nets to zero in the households'
+  aggregate only, not cell by cell. HousingMarket.boarders() counts them
+  (not saved; a load reads none until its next clearing). Asserted in
+  HousingDoorCheck: every boarder counted overcrowded, and the money audit
+  and the households' cash identity exact in every month with boarders.
+- HousingMarketCheck restated to call A over R1g, the old lines beside.
+  retainedFundedGuest: "a rich new guest cannot displace that incumbent"
+  (its households 0) is now "a rich new guest boards beside that incumbent,
+  never doorless" (1), billed 0 and counted a boarder; "all retained
+  arrangements respect two households per door" leaves the boarder's cell
+  out. independentDoorPressure: "actual newcomer uses only a genuinely
+  vacant door" (households = richPlaced) is now "pays for a door only where
+  one is genuinely vacant" (bill = 20 x richPlaced) "...and otherwise boards
+  with the housed, never doorless" (households = 1); "actual newcomer
+  shortage matches spare stock" (unplaced = 1 - richPlaced) is now "leaves
+  no household with no door" (0), with boarders() = 1 - richPlaced; the
+  crowded expectation 1 - completed is now 1 - completed + boarded. Green
+  on (2): HousingMarketCheck, HousingChoiceCheck, Village1900Check,
+  SaveFileCheck, CreditCrunchCheck.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
