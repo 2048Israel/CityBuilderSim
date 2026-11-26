@@ -1265,6 +1265,10 @@ public final class HousingMarketCheck {
         near("a rich new guest boards beside that incumbent, never doorless (call A over R1g)",next.leases().stream().filter(l->l.cell().equals("new-rich")).mapToDouble(HousingChoice.Lease::households).sum(),1);
         near("...billed nothing, as a boarder",next.leases().stream().filter(l->l.cell().equals("new-rich")).mapToDouble(HousingChoice.Lease::bill).sum(),0);
         near("...and counted a boarder",market.boarders(),1);
+        // REV-RES3b P1-4: four persons in the door (host two, guest one, boarder one) are within its census line, so the
+        // boarder boards and is not overcrowded; boardBookedBothSides() causes the overcrowding past the line.
+        near("...four persons in the door, within its census line: boarding, not overcrowding (REV-RES3b P1-4)",market.overcrowded(),0);
+        near("...counted within the line, still wanting a home of its own",market.withinTheLine(),1);
         near("incumbency creates no additional door",market.occupied(),1);
         near("retained rent follows the current class quote once",market.receipts(),current);
         near("the retained guest owes no invented rent",market.rentFor("old-guest",1),0);
@@ -1274,6 +1278,95 @@ public final class HousingMarketCheck {
         near("a prior zero charge cannot create an unfunded empty-door right",next.unplaced(),1);
         near("without a funded host no rent is invented",market.receipts(),0);
         near("without a funded host no door is occupied",market.occupied(),0);
+    }
+    /**
+     * REV-RES3b P1-1 and P1-4: a boarder pays its host board out of its own cell's savings into the host cell's, every
+     * cent, half the door's ask, billed to no landlord; and the census's own line on the door says whether it is
+     * overcrowded - a host of two with its funded guest of one and a boarder of one, four persons, board within it (the
+     * doubling seats a second household beside a host up to the line, so a boarder is a door's third), a host family at
+     * the line and a boarder of one pass it and are overcrowded. Real household cells of a founded town, so the money
+     * moves where the households' accounts keep it.
+     */
+    static void boardBookedBothSides(){
+        out.println("--- a boarder pays its hosts board on both sides, every cent, and the census line says if it is overcrowded ---");
+        PrintStream was=System.out;System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+        Game g=new Game(GameFiles.scratch("res3-board-both-sides"),LongPlaytest.founding());
+        try{g.run();g.simulateMonths(12);}finally{System.setOut(was);}
+        // A founded town a year on for its household cells, its homes taken down and one House left: the only door standing.
+        var bm=g.getBuildingManager();
+        for(var t:bm.getTemplates())if(t.getHousingRecipe()!=null&&bm.getQuantity(t.getId())>0)bm.retire(t,bm.getQuantity(t.getId()));
+        bm.addStack(bm.getTemplate(0),1,true);
+        var market=g.getSectors().realEstate().housingMarket();
+        List<Household> cells=g.getHouseholdBalance().cells().stream().filter(c->c.households>0).toList();
+        check("fixture: two household cells with households ("+cells.size()+" of "+g.getHouseholdBalance().cells().size()+", "+g.getPopulationManager().getPopulation()+" people)",cells.size()>=2);
+        if(cells.size()<2)return;
+        // The boarder's cell is given savings enough for its board, the fixture's cause; the host's keeps its own.
+        Household boarder=cells.get(0),host=cells.get(1);boarder.savings+=1e4/boarder.households;
+        market.restore(null);
+        market.clear(g,List.of(new HousingChoice.Demand(host.key(),1,1,0,false,0,false,1e6)));
+        var door=market.offers().stream().filter(o->o.count()>0).findFirst().orElse(null);
+        check("fixture: the one door stands",door!=null);
+        if(door==null)return;
+        int line=HousingChoice.line(door.bedrooms());
+        for(int past=0;past<=1;past++){
+            market.restore(null);
+            int hostSize=past==0?2:line;
+            var hostDemand=new HousingChoice.Demand(host.key(),1,hostSize,0,false,0,false,1e6);
+            var guest=new HousingChoice.Demand("old-guest",1,1,0,true,0,false,0);
+            List<HousingChoice.Demand> housed=past==0?List.of(hostDemand,guest):List.of(hostDemand);
+            var first=market.clear(g,housed);
+            String fill=(hostSize+(past==0?2:1))+" persons in a door of "+door.bedrooms()+" bedrooms, its line "+line;
+            near("fixture: the host family of "+hostSize+(past==0?" and its funded guest take":" takes")+" the one door",first.unplaced(),0);
+            var previous=market.forSave();previous.month=g.getMonth()-1;market.restore(previous);
+            double hostBefore=host.savings*host.households,boarderBefore=boarder.savings*boarder.households;
+            List<HousingChoice.Demand> with=new ArrayList<>(housed);with.add(new HousingChoice.Demand(boarder.key(),1,1,0,false,0,false,1e6));
+            var next=market.clear(g,with);
+            var asked=market.offers().stream().filter(o->o.key().equals(door.key())).findFirst().orElse(door);
+            double ask=(asked.rent()+asked.recurring())/2;
+            double hostGain=host.savings*host.households-hostBefore,boarderLoss=boarderBefore-boarder.savings*boarder.households;
+            near("a boarder of one boards with the host, "+fill,market.boarders(),1);
+            check("...owing board, half the door's ask ("+ask+")",ask>0);
+            near("...its cell pays it out of the board it owes",market.boardPaidByCell().getOrDefault(boarder.key(),0.0),ask);
+            near("...out of its savings, every cent",boarderLoss,ask);
+            near("...the host's cell receives it",market.boardReceivedByCell().getOrDefault(host.key(),0.0),ask);
+            near("...into its savings, every cent",hostGain,ask);
+            near("...billed to no landlord",next.leases().stream().filter(l->l.cell().equals(boarder.key())).mapToDouble(HousingChoice.Lease::bill).sum(),0);
+            if(past==0){
+                near("...within the census line: boarding, not overcrowding",market.overcrowded(),0);
+                near("...counted within the line",market.withinTheLine(),1);
+            }else{
+                near("...past the census line, more than two persons a room: overcrowded",market.overcrowded(),1);
+                near("...and not counted within it",market.withinTheLine(),0);
+            }
+        }
+        market.restore(null);
+    }
+    /**
+     * REV-RES3b P1-3: the trim to the standing stock (HousingMarket.holdToStock(), overcrowding()'s) cannot throw. Doors
+     * whose sum in the market's order passes the stock by an ulp, the vacancy read as the stock less a sum taken in another
+     * order (D90's 1,988.0000000000002 of 1,988, AUTO2 seed 6's m568), are held to it, every household kept and the cut
+     * lodged on its door; a pass past the stock by half a door is held to it all the same and reported, never thrown.
+     */
+    static void trimHeldToStock(){
+        out.println("--- the trim holds the doors to the homes standing and cannot throw (REV-RES3b P1-3) ---");
+        var key=new HousingInventory.Key(0,"trim");
+        var stock=new HousingChoice.Offer(key,10,6,2,120,1,0,false,20,0,6);
+        double a=0.39145572564278824,b=0.30345902319031265,c=0.09207629908278687,v=10-((c+b)+a);
+        check("fixture: the doors summed in the market's order pass the stock by an ulp ("+(((a+b)+c)+v)+")",((a+b)+c)+v>10);
+        List<HousingChoice.Lease> doors=List.of(new HousingChoice.Lease("a",key,a,20*a),new HousingChoice.Lease("b",key,b,20*b),
+                new HousingChoice.Lease("c",key,c,20*c),new HousingChoice.Lease("v",key,v,20*v));
+        var held=HousingMarket.holdToStock(doors,List.of(stock));
+        double count=0,households=0;for(var l:held.leases()){count+=l.count();households+=l.households();}
+        check("an ulp past the stock is trimmed, not thrown: the doors held to the homes standing",count<=10);
+        near("...every household kept",households,((a+b)+c)+v);
+        check("...the cut lodged on its door, sponsored",held.trimmed()>0&&held.leases().getLast().funding().sponsored()>0);
+        near("...within the packing resolution: nothing past the stock to report",held.past(),0);
+        var over=HousingMarket.holdToStock(List.of(new HousingChoice.Lease("a",key,6,120),new HousingChoice.Lease("b",key,5,100)),List.of(stock));
+        double overCount=0,overHouseholds=0;for(var l:over.leases()){overCount+=l.count();overHouseholds+=l.households();}
+        near("a pass a door past the stock is held to it all the same, never thrown",overCount,10);
+        near("...every household kept, the one cut lodged",overHouseholds,11);
+        near("...its bill trimmed with its doors",over.leases().getLast().bill(),80);
+        check("...and reported past the stock for LongPlaytest's finding",over.past()>.99&&over.past()<=1);
     }
     static void stagedHousingStocks(){
         out.println("--- RES3 staged housing stocks follow the same funded census ---");
@@ -1783,7 +1876,7 @@ public final class HousingMarketCheck {
         out=System.out;fractionalSettlement();fractionalClaims();fractionalDividends();
         out=System.out;unbuiltGrossQuotes();
         out=System.out;coalescedSponsored();sharingForecastSources();crossClassPaidExcess();savedContractModes();
-        out=System.out;fundedPressureAndForecast();rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
+        out=System.out;fundedPressureAndForecast();rentCommitmentBudgets();independentDoorPressure();committedDoorBoundaries();latePaidFootprints();stagedHousingStocks();stagedHousingFlows();carriedStudentService();retainedFundedGuest();boardBookedBothSides();trimHeldToStock();PrintStream silent=new PrintStream(OutputStream.nullOutputStream());
         StringBuilder report=new StringBuilder("# RES3 actual quote, budget and availability report\n\nGenerated by HousingMarketCheck through scratch cities, model inputs and the paid build path. Starting geometry, capital partitions and reference anchors are RES1 section 12; observed completions and receipts below are actual model outcomes.\n\nThe two catalogue cities begin with two billion present-day dollars of RE equity, four billion of government equity, two billion square feet of owned land, 100 construction depots, 20 coal plants, 20 water plants, 200 gravel roads and 100,000 migrants. These are supporting fixture inputs before the audit opens; every residential order uses the paid builder, materials, work queue, land, funding and settlement path. Ordinary city construction may also finish during the observation window. Historical founding gates use current research/known-template state; modern equipment is not inferred. Timings are individual integrated months on the executing host, including all other city systems, not isolated solver timings.\n");
         try{System.setOut(silent);classPrices();rentPriceIndex();mergedBudgetPressure();plannerInputs();netOperatingChoice();foundingBudgets();fractionalPressure();sharingOrder();doubledDoors();doubledDemand();studentFacility();fundedHost();scarceFreeHost();retiredRoom();loadedDoorCensus();causedStrandedDebtContinuation();familyHostReservation();aggregatePackingRemainder();savingHousingBudget();cardHousingBudget();smallProfile(report);city(report,false);city(report,true);}finally{System.setOut(out);silent.close();}
         Path target=Path.of("target/RES3-catalogue-report.md");Files.writeString(target,report);
