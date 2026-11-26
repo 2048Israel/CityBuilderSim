@@ -1813,12 +1813,21 @@ public class BuildAdviceCheck {
     /* ============================ 16. WARRANTED() READ ONCE IN A SEARCH (AP7) ============================ */
 
     /**
+     * The fixture town of section 16, saved to slot 10 of its scratch folder: the city every writer's own city is loaded from (cityOf()),
+     * with what it stands on - the measure, the schools' and the clinics' names, its clinics and the doctor vacancies they leave.
+     */
+    private record Town(Path root, Game game, BuildAdvice.Measure measure, String schoolName, String clinicName, long clinics, double demand) { }
+
+    /**
      * AP7: BuildAdvice.Warrant reads warranted() at its first ask and holds it for one search or valuation, never between calls. Here the
      * city is a town of four hundred Community Health Centres with no medical school, so the doctors' vacancies are the demand for one,
      * and each writer of the answer moves it across the first-work threshold (BuildAdvice.FIRST_WORK_SHARE of the smallest school): the
      * people, a build, a demolition, a template off the menu, a research step, a load. Before each the three readings (the card, the count,
      * the valuation) are made once held (warm); after it they are made held and made bare (every ask read afresh, the original behaviour),
      * and must be the same to the bit, the held answers having also been read afresh and compared (WARRANT_COMPARED, WARRANT_DIFFERED).
+     * EACH WRITER RUNS ON A CITY OF ITS OWN (cityOf()): the town saved once and loaded into a Game made for the block, its set-up made
+     * before the warm reading, so the warm reading is that city's first held reading of the measure. An answer kept past one search, for a
+     * city's whole life, would be the warm reading's, and no writer's block could flip back to it unseen.
      * The research step is the power measure's, not the school's: in a city founded the default way research gates no building but a power
      * plant's (Game's templateKnown), so no finding can move a school's answer there.
      */
@@ -1840,7 +1849,6 @@ public class BuildAdviceCheck {
         PopulationManager pm = g.getPopulationManager();
         pm.restoreLicensed(new double[JobType.values().length]);
         pm.setStudying(new double[WageBand.values().length]);
-        BuildingsTemplate school = bm.getTemplateByName(schoolName);
         int band = type.requires().ordinal();
         double[] ample = new double[WageBand.values().length];
         ample[band] = pm.getWorkforce() * .9;
@@ -1851,46 +1859,63 @@ public class BuildAdviceCheck {
         double willing = g.getEducation().willingShare(type, g.getLabourMarket()) * Education.ENROLMENT_RATE * type.months();
         assertTrue(String.format("fixture: %,d clinics leave doctor vacancies of %.1f, over the first work %.1f of one %s of %.1f seats, and eligible graduates will study",
                 clinics, demand, first, schoolName, least), willing > 0 && demand > first * 1.1 && demand > 2 * least && BuildAdvice.warranted(g, m));
-        int wasUntil = school.getUntil();
+        boolean[] saved = {false};
+        assertTrue("fixture: the city saves under its scratch folder (" + g.getGameFiles().savesDirectory() + "), never the player's", underScratch(root, g));
+        quietly(() -> saved[0] = g.saveGame(10, "warrant-held").ok);
+        assertTrue("fixture: the town is saved to slot 10 of it, the base of every writer's city", saved[0]);
+        Town town = new Town(root, g, m, schoolName, clinicName, clinics, demand);
+        // The set-ups, from the demand each clinic makes: fewer clinics than the first work needs, and enough more to cross it.
+        double per = demand / clinics;
+        long fewer = (long) Math.floor(first * .8 / per), more = (long) Math.ceil(first * .4 / per);
         try {
             // 1. THE PEOPLE: the doctors the city has, restored from under the first work to over it.
-            double[] heads = new double[WageBand.values().length];
-            heads[band] = first * .9 / willing;
-            pm.restoreSkilledHeads(heads);
-            warrantWriter("the people (skilled heads restored across the threshold)", g, m, schoolName, () -> {
-                double[] more = new double[WageBand.values().length];
-                more[band] = first * 1.1 / willing;
-                g.getPopulationManager().restoreSkilledHeads(more);
-            });
-            pm.restoreSkilledHeads(ample);
-
-            // 2. A BUILD: clinics fewer than the first work's, then enough more finished to cross it (n from the demand per clinic).
-            double per = demand / clinics;
-            long fewer = (long) Math.floor(first * .8 / per), more = (long) Math.ceil(first * .4 / per);
-            quietly(() -> bm.retire(clinic, clinics - fewer));
-            warrantWriter("a build (" + more + " more Community Health Centres finished)", g, m, schoolName,
-                    () -> g.buildStack(clinic, more, true));
-
-            // 3. A DEMOLITION: the same clinics taken back.
-            warrantWriter("a demolition (" + more + " Community Health Centres retired)", g, m, schoolName,
-                    () -> bm.retire(clinic, more));
-
+            {
+                Game h = cityOf(town, "the people");
+                double ready = h.getEducation().willingShare(type, h.getLabourMarket()) * Education.ENROLMENT_RATE * type.months();
+                double[] heads = new double[WageBand.values().length];
+                heads[band] = first * .9 / ready;
+                h.getPopulationManager().restoreSkilledHeads(heads);
+                warrantWriter("the people (skilled heads restored across the threshold)", h, m, schoolName, () -> {
+                    double[] over = new double[WageBand.values().length];
+                    over[band] = first * 1.1 / ready;
+                    h.getPopulationManager().restoreSkilledHeads(over);
+                });
+            }
+            // 2. A BUILD: clinics fewer than the first work needs, then enough more finished to cross it.
+            {
+                Game h = cityOf(town, "a build");
+                BuildingsTemplate c = h.getBuildingManager().getTemplateByName(clinicName);
+                quietly(() -> h.getBuildingManager().retire(c, clinics - fewer));
+                warrantWriter("a build (" + more + " more Community Health Centres finished)", h, m, schoolName,
+                        () -> h.buildStack(c, more, true));
+            }
+            // 3. A DEMOLITION: a city of the clinics that cross it (warranted), and the same clinics taken back.
+            {
+                Game h = cityOf(town, "a demolition");
+                BuildingsTemplate c = h.getBuildingManager().getTemplateByName(clinicName);
+                quietly(() -> h.getBuildingManager().retire(c, clinics - fewer - more));
+                warrantWriter("a demolition (" + more + " Community Health Centres retired)", h, m, schoolName,
+                        () -> h.getBuildingManager().retire(c, more));
+            }
             // 4. A TEMPLATE: the only school taken off the menu by its last year, so no school is left to be the first work's measure.
-            int past = CityCalendar.yearOf(g.getMonth()) - 1;
-            warrantWriter("a template (the " + schoolName + " off the menu from " + (past + 1) + ")", g, m, schoolName,
-                    () -> school.setUntil(past));
-            school.setUntil(wasUntil);
-            assertTrue("...and the template is back on the menu, as the fixture had it", school.getUntil() == wasUntil
-                    && bm.isTemplateKnown(school) && !BuildAdvice.warranted(g, m));
-        } finally {
-            school.setUntil(wasUntil);
-            BuildAdvice.warrantChecked = false;
-            BuildAdvice.warrantBare = false;
-        }
-        try {
-            warrantResearch(g);
-            warrantLoad(root, g, m, schoolName, clinicName);
-            warrantCounts(g, m, schoolName, clinicName, clinics, ample);
+            {
+                Game h = cityOf(town, "a template");
+                BuildingsTemplate c = h.getBuildingManager().getTemplateByName(clinicName);
+                quietly(() -> h.getBuildingManager().retire(c, clinics - fewer));
+                BuildingsTemplate school = h.getBuildingManager().getTemplateByName(schoolName);
+                int wasUntil = school.getUntil(), past = CityCalendar.yearOf(h.getMonth()) - 1;
+                try {
+                    warrantWriter("a template (the " + schoolName + " off the menu from " + (past + 1) + ")", h, m, schoolName,
+                            () -> school.setUntil(past));
+                } finally {
+                    school.setUntil(wasUntil);
+                }
+                assertTrue("...and the template is back on the menu, as the fixture had it", school.getUntil() == wasUntil
+                        && h.getBuildingManager().isTemplateKnown(school) && !BuildAdvice.warranted(h, m));
+            }
+            warrantResearch(town);
+            warrantLoad(town, fewer, more);
+            warrantCounts(town);
         } finally {
             BuildAdvice.warrantChecked = false;
             BuildAdvice.warrantBare = false;
@@ -1898,12 +1923,38 @@ public class BuildAdviceCheck {
     }
 
     /**
-     * 5. A RESEARCH STEP, on the power measure (see warrantHeld()): the Small Steam Station, the least plant, is given a research gate for a
-     * code the catalogue brings after this month, so it is off the menu and the least plant left is the Hydro Station's; the city's draw is set
-     * between the first work of each; the city's own finding of the code brings the plant back (Research.knownFrom takes the earlier month),
-     * the threshold falls under the draw, and power is warranted.
+     * A city for one writer: the fixture town's save (slot 10) loaded into a Game made for it, so that the first held reading of the measure
+     * made in it is the block's warm one. Its set-up, made before that reading, is the block's.
      */
-    static void warrantResearch(Game g) {
+    static Game cityOf(Town town, String what) {
+        Game h = new Game(town.game().getGameFiles());
+        quietly(() -> h.loadGameSave(10));
+        long clinics = h.getBuildingManager().getQuantity(h.getBuildingManager().getTemplateByName(town.clinicName()).getId());
+        double demand = BuildAdvice.supplyDemand(h, town.measure(), Map.of())[1];
+        assertTrue(String.format("fixture: %s has a city of its own, the town's save loaded (%s): %,d clinics, doctor vacancies of %.1f, warranted",
+                what, h.getLoadFailure() == null ? "no failure" : h.getLoadFailure(), clinics, demand),
+                h.getLoadFailure() == null && clinics == town.clinics() && Math.abs(demand - town.demand()) <= 1e-9 * town.demand()
+                        && BuildAdvice.warranted(h, town.measure()));
+        // ...with the town's own licensed and studying, none (a save keeps neither as the fixture set them), and cash to build with.
+        h.getPopulationManager().restoreLicensed(new double[JobType.values().length]);
+        h.getPopulationManager().setStudying(new double[WageBand.values().length]);
+        h.setCashForTest(1e12);
+        return h;
+    }
+
+    /** Whether the city's saves are under the harness's own scratch root (never the player's folder). */
+    static boolean underScratch(Path root, Game g) {
+        return g.getGameFiles().savesDirectory().toAbsolutePath().normalize().startsWith(root.toAbsolutePath().normalize());
+    }
+
+    /**
+     * 5. A RESEARCH STEP, on the power measure (see warrantHeld()), in a city of its own: the Small Steam Station, the least plant, is given
+     * a research gate for a code the catalogue brings after this month, so it is off the menu and the least plant left is the Hydro
+     * Station's; the city's draw is set between the first work of each; the city's own finding of the code brings the plant back
+     * (Research.knownFrom takes the earlier month), the threshold falls under the draw, and power is warranted.
+     */
+    static void warrantResearch(Town town) {
+        Game g = cityOf(town, "a research step");
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         BuildingManager bm = g.getBuildingManager();
         BuildingsTemplate steam = bm.getTemplateByName("Small Steam Station");
@@ -1927,9 +1978,13 @@ public class BuildAdviceCheck {
         try {
             steam.setSince(gate);
             double without = leastServing(g, power), with = Math.min(without, BuildAdvice.built(g, power, steam));
-            double now = BuildAdvice.supplyDemand(g, power, Map.of())[1];
+            // The draw: the plan's demand is linear in the city's watts, so two readings give what a watt makes and what none does.
+            u.setWattsConsumption(0);
+            double idle = BuildAdvice.supplyDemand(g, power, Map.of())[1];
+            u.setWattsConsumption(1);
+            double perWatt = BuildAdvice.supplyDemand(g, power, Map.of())[1] - idle;
             double want = BuildAdvice.FIRST_WORK_SHARE * Math.sqrt(with * without);
-            u.setWattsConsumption(wasWatts * want / now);
+            u.setWattsConsumption(Math.max(0, (want - idle) / perWatt));
             assertTrue(String.format("fixture: the %s gated by %s is off the menu, the least plant left is %.1f and with it %.1f", steam.getName(), gate,
                     without, with), !bm.isTemplateKnown(steam) && with < without && with > 0);
             Map<String, Integer> found = new java.util.HashMap<>(was);
@@ -1946,41 +2001,42 @@ public class BuildAdviceCheck {
                         && u.getConsumption() == wasWatts && bm.isTemplateKnown(steam));
     }
 
-    /** 6. A LOAD: the city saved with fewer clinics, more finished, and the save loaded back (its scratch folder, never the player's). */
-    static void warrantLoad(Path root, Game g, BuildAdvice.Measure m, String schoolName, String clinicName) {
-        Path saves = g.getGameFiles().savesDirectory().toAbsolutePath().normalize();
-        assertTrue("fixture: the city saves under its scratch folder (" + saves + "), never the player's", saves.startsWith(root.toAbsolutePath().normalize()));
-        BuildingManager bm = g.getBuildingManager();
-        BuildingsTemplate clinic = bm.getTemplateByName(clinicName);
-        long standing = bm.getQuantity(clinic.getId());
-        double per = BuildAdvice.supplyDemand(g, m, Map.of())[1] / standing;
-        long more = (long) Math.ceil(BuildAdvice.FIRST_WORK_SHARE * leastServing(g, m) * .4 / per);
-        boolean was = BuildAdvice.warranted(g, m);
-        quietly(() -> g.saveGame(10, "warrant-held"));
-        quietly(() -> g.buildStack(clinic, more, true));
-        assertTrue("fixture: " + more + " more clinics than the save moved warranted() from " + was + " to " + BuildAdvice.warranted(g, m),
-                BuildAdvice.warranted(g, m) != was);
-        warrantWriter("a load (the save of " + standing + " clinics loaded back over " + (standing + more) + ")", g, m, schoolName,
-                () -> g.loadGameSave(10));
-        assertTrue("...and the load put back the " + standing + " clinics", g.getBuildingManager().getQuantity(
-                g.getBuildingManager().getTemplateByName(clinicName).getId()) == standing && BuildAdvice.warranted(g, m) == was);
+    /**
+     * 6. A LOAD, in a city of its own: the city on the clinics under the first work saved to slot 11 (slot 10 is the town's, which the
+     * blocks after it load), more finished, warm there, and the save loaded back (its scratch folder, never the player's).
+     */
+    static void warrantLoad(Town town, long fewer, long more) {
+        Game h = cityOf(town, "a load");
+        BuildAdvice.Measure m = town.measure();
+        BuildingManager bm = h.getBuildingManager();
+        BuildingsTemplate clinic = bm.getTemplateByName(town.clinicName());
+        quietly(() -> bm.retire(clinic, town.clinics() - fewer));
+        boolean was = BuildAdvice.warranted(h, m);
+        boolean[] saved = {false};
+        assertTrue("fixture: this city saves under its scratch folder (" + h.getGameFiles().savesDirectory() + "), never the player's", underScratch(town.root(), h));
+        quietly(() -> saved[0] = h.saveGame(11, "warrant-held").ok);
+        quietly(() -> h.buildStack(clinic, more, true));
+        assertTrue("fixture: the " + fewer + " clinics are saved to slot 11, and " + more + " more moved warranted() from " + was + " to "
+                + BuildAdvice.warranted(h, m), saved[0] && !was && BuildAdvice.warranted(h, m));
+        warrantWriter("a load (the save of " + fewer + " clinics loaded back over " + (fewer + more) + ")", h, m, town.schoolName(),
+                () -> h.loadGameSave(11));
+        assertTrue("...and the load put back the " + fewer + " clinics", h.getBuildingManager().getQuantity(
+                h.getBuildingManager().getTemplateByName(town.clinicName()).getId()) == fewer && BuildAdvice.warranted(h, m) == was);
     }
 
     /**
-     * The counts, and the run. One count() search asks the held warrant many times and reads it once; one valuation reads it once as well
-     * (its own relief warrant, its count()s handed it); and three passes of the automatic builder with every held answer also read afresh
-     * never differ.
+     * The counts, and the run, in a city of its own. One count() search asks the held warrant many times and reads it once; one valuation
+     * reads it once as well (its own relief warrant, its count()s handed it); and three passes of the automatic builder with every held
+     * answer also read afresh never differ.
      */
-    static void warrantCounts(Game g, BuildAdvice.Measure m, String schoolName, String clinicName, long clinics, double[] ample) {
+    static void warrantCounts(Town town) {
+        Game g = cityOf(town, "the counts and the run");
+        BuildAdvice.Measure m = town.measure();
         BuildingManager bm = g.getBuildingManager();
-        BuildingsTemplate clinic = bm.getTemplateByName(clinicName);
-        BuildingsTemplate school = bm.getTemplateByName(schoolName);
-        g.setCashForTest(1e12);
-        quietly(() -> g.buildStack(clinic, clinics - bm.getQuantity(clinic.getId()), true));
-        g.getPopulationManager().restoreSkilledHeads(ample);
+        BuildingsTemplate school = bm.getTemplateByName(town.schoolName());
         double demand = BuildAdvice.supplyDemand(g, m, Map.of())[1], seats = BuildAdvice.built(g, m, school);
-        assertTrue(String.format("fixture: the city is back on its %,d clinics, warranted, with doctor vacancies of %.1f, over two schools of %.1f seats",
-                bm.getQuantity(clinic.getId()), demand, seats), BuildAdvice.warranted(g, m) && demand > 2 * seats);
+        assertTrue(String.format("fixture: the city is on its %,d clinics, warranted, with doctor vacancies of %.1f, over two schools of %.1f seats",
+                bm.getQuantity(bm.getTemplateByName(town.clinicName()).getId()), demand, seats), BuildAdvice.warranted(g, m) && demand > 2 * seats);
         BuildAdvice.warrantBare = false;
         BuildAdvice.warrantChecked = false;
         long asked = BuildAdvice.WARRANT_ASKED.get(), read = BuildAdvice.WARRANT_READ.get();
