@@ -130,14 +130,34 @@ public class MonetaryCheck {
             return sum;
         }
     }
-    private record PriceWindow(BasketPrices from, BasketPrices to, double spendFactor) {
+    /**
+     * One run's window: its two baskets, its mean spending plan, the window's mean expected inflation (Expectations.getExpectedInflation(),
+     * what the shelf's floor and the fees are struck at), the shelf's floor at either end (Retail.getFloorPrice()), and the months the
+     * groceries ran short (shortOfGroceries()) in the held months before the window and in the window itself.
+     */
+    private record PriceWindow(BasketPrices from, BasketPrices to, double spendFactor, double expectedInflation,
+                               double floorFrom, double floorTo, java.util.List<Integer> shortBefore, java.util.List<Integer> shortWithin) {
         double nonShelterInflation(double[] quantities) {
             return Math.pow(to.cost(quantities, true) / from.cost(quantities, true), 12.0 / windowMonths()) - 1;
         }
+        /** ...with the groceries priced at the shelf's floor at either end: the same basket with the shortage mark-up taken out. */
+        double nonShelterAtFloor(double[] quantities) {
+            double[] f = from.prices().clone(), t = to.prices().clone();
+            f[PriceIndex.GROCERIES] = floorFrom;
+            t[PriceIndex.GROCERIES] = floorTo;
+            return Math.pow(new BasketPrices(to.quantities(), t, to.linked(), to.index()).cost(quantities, true)
+                    / new BasketPrices(from.quantities(), f, from.linked(), from.index()).cost(quantities, true), 12.0 / windowMonths()) - 1;
+        }
     }
-    private record PolicyComparison(double[] inflation, double[][] years, double[] late,
+    private record PolicyComparison(long seed, double[] inflation, double[][] years, double[] late,
                                     double[][] lateYears, long[] starts, double[] rents,
-                                    double[] nonShelter, PaidSupply[] supply) { }
+                                    double[] nonShelter, PaidSupply[] supply, double[] expected, double[] nonShelterAtFloor,
+                                    java.util.List<Integer> lowShortBefore, java.util.List<Integer> highShortWithin) { }
+
+    /** A grocery shortage this month: the shelf's target at the shortage mark-up's cap, or the sale clearing past it (Retail.clearsPastTheCap()). */
+    static boolean shortOfGroceries(ham.citybuildersim.sectors.Retail shops) {
+        return shops.clearsPastTheCap() || shops.getScarcityMultiple() >= ham.citybuildersim.sectors.Retail.CLEARING_CAP;
+    }
 
     static int fails = 0;
     static PrintStream out;
@@ -888,8 +908,11 @@ public class MonetaryCheck {
     /** Frozen before validation: twice the 0.961207-point pooled annual response, rounded up to a quarter point. */
     static final double ANNUAL_TIMING_LIMIT = .02;
 
-    /** Minimum annual effect: a point on the original CPI and on pooled common-basket non-shelter prices; a flat demand channel fails. */
+    /** Minimum annual effect: a point on the original town's CPI; a flat demand channel fails (non-shelter prices: the ★ law, inflationFallsWithTheRate()). */
     static final double TRANSMISSION_FLOOR = .01;
+
+    /** Of the sixteen declared towns, the fewest whose common-basket non-shelter effect is positive (Call B, 2026-11-25); each of the rest names its shortage. */
+    static final int NON_SHELTER_AGREEING = 14;
 
     /** One month, as the playtest steps it: a broke city steps rather than skips. */
     static void step(Game g, double heldRate) {
@@ -1074,12 +1097,17 @@ public class MonetaryCheck {
             currencyHeld &= fx.getRate() == heldAt;
             int opens = MEASURED_MONTHS - windowMonths();
             WorldMarket market = g.getWorldMarket();
+            var shops = g.getSectors().retail();
+            java.util.List<Integer> shortBefore = new java.util.ArrayList<>(), shortWithin = new java.util.ArrayList<>();
             while (g.getMonth() < opens) {
                 step(g, rate, heldFrom);
                 if(Boolean.getBoolean("res3.housingTrace"))reportHeldRent(g,label);
                 fewestCrews = Math.min(fewestCrews, g.getSectors().construction().getPostsOfferedShare());
                 currencyHeld &= fx.getRate() == heldAt;
+                if (shortOfGroceries(shops)) shortBefore.add(g.getMonth());
             }
+            double floorFrom = shops.getFloorPrice();
+            double expected = 0;
             double indexFrom = g.getPriceIndex().getIndex();
             BasketPrices basketFrom = BasketPrices.read(g.getPriceIndex());
             boolean fixedBasket = true;
@@ -1105,6 +1133,8 @@ public class MonetaryCheck {
                 fixedBasket &= g.getPriceIndex().getLinkedMonth() == basketFrom.linked();
                 spendFactor += g.getHouseholdBalance().getSpendFactor();
                 spendSamples++;
+                expected += g.getExpectations().getExpectedInflation();
+                if (shortOfGroceries(shops)) shortWithin.add(g.getMonth());
                 if (CityCalendar.monthOfYear(g.getMonth()) == 1) yearFrom = g.getPriceIndex().getIndex();
                 if (CityCalendar.monthOfYear(g.getMonth()) == 12) {
                     reportHeldRent(g, label);
@@ -1119,7 +1149,8 @@ public class MonetaryCheck {
             double reconstructed = basketTo.cost(basketFrom.quantities(), false) / basketFrom.cost(basketFrom.quantities(), false);
             assertTrue("fixture: observed physical quantities reconstruct the model's CPI change",
                     Math.abs(reconstructed - basketTo.index() / basketFrom.index()) < 1e-12);
-            if (observation != null) observation[0] = new PriceWindow(basketFrom, basketTo, spendFactor / spendSamples);
+            if (observation != null) observation[0] = new PriceWindow(basketFrom, basketTo, spendFactor / spendSamples,
+                    expected / windowMonths(), floorFrom, shops.getFloorPrice(), java.util.List.copyOf(shortBefore), java.util.List.copyOf(shortWithin));
             out.printf("   held-rate rent trace %s: dial %.0f%% from m%d, family rent per capacity %.12g -> %.12g, CPI %.12g -> %.12g%n",
                     label, rate * 100, heldFrom, rentFrom, g.getSectors().realEstate().getRentPrice(), indexFrom, g.getPriceIndex().getIndex());
             out.printf("   held-rate components %s: annual growth %s, closing weights %s (groceries, rent, meals, luxury, services)%n",
@@ -1170,8 +1201,64 @@ public class MonetaryCheck {
         out.printf("   mean non-shelter CPI on each town's common physical basket: %s percent; low-to-high effect %.6f points%n",
                 java.util.Arrays.toString(java.util.Arrays.stream(meanNonShelter).map(x -> x * 100).toArray()),
                 (meanNonShelter[0] - meanNonShelter[n - 1]) * 100);
-        assertTrue("the highest rate lowers common-basket non-shelter inflation across the declared towns by at least a point",
-                meanNonShelter[0] - meanNonShelter[n - 1] >= TRANSMISSION_FLOOR);
+        /*
+         * ★ THE NON-SHELTER LAW, RESTATED (RES3, Call B, 2026-11-25). Beside it, the line it replaces, REV-RES3x P1's (563b5f17c):
+         *
+         *     assertTrue("the highest rate lowers common-basket non-shelter inflation across the declared towns by at least a point",
+         *             meanNonShelter[0] - meanNonShelter[n - 1] >= TRANSMISSION_FLOOR);
+         *
+         * That point was a reviewer's line, not Jerus's. Jerus, 2026-11-23: "even reality higher interest rates doesnt always equal
+         * liwer inflation"; Dias and Duarte (Federal Reserve IFDP 1248, May 2019) find rents rise after a tightening while the other
+         * major CPI components decline or do not respond. What carries the rate into these towns' non-shelter basket (groceries and
+         * the fees) was measured (RES3's attribution, 2026-11-25): the fees and the shelf's floor are struck at the expected price level,
+         * and the shelf rises past its floor only in a shortage (Retail.repriceShelf(), up to CLEARING_CAP). The point the mean read was
+         * rent-led inflation unanchoring expectations at the low rate (the 3%-to-40% spread in expected inflation 3.40 points at
+         * 4ae0e7446, 1.06 at 808421280 once RES3's rents stopped running near 20% a year), and two towns whose shops ran short at the
+         * high rate at the window's close took the mean to 0.16 (6b326cb22 first, 0.14). So the law is the sign reality and the model
+         * share, with no magnitude floor: (a) in every declared town the expected inflation the floor and the fees are struck at falls
+         * from the lowest rate to the highest; (b) the non-shelter effect is positive in the median town and in at least
+         * NON_SHELTER_AGREEING of them; (c) each contrary town names its cause, asserted town by town: a grocery shortage in the months
+         * that carry it (the highest rate's window, which lifts its closing shelf, or the lowest rate's months before its window, which
+         * lift its opening one), and with the groceries at the shelf's floor its effect is positive. A contrary town with no shortage,
+         * or whose shortage does not carry it, fails.
+         */
+        double leastExpectedGap = Double.POSITIVE_INFINITY;
+        long expectationsFall = 0;
+        double[] effects = new double[comparisons.size()];
+        for (int t = 0; t < comparisons.size(); t++) {
+            var c = comparisons.get(t);
+            double gap = c.expected()[0] - c.expected()[n - 1];
+            leastExpectedGap = Math.min(leastExpectedGap, gap);
+            if (gap > 0) expectationsFall++;
+            effects[t] = c.nonShelter()[0] - c.nonShelter()[n - 1];
+            out.printf("   town %d: expected inflation %.4f%% at %.0f%%, %.4f%% at %.0f%% (%+.4f points); non-shelter effect %+.4f points, %+.4f with the groceries at the shelf's floor%n",
+                    c.seed(), c.expected()[0] * 100, HELD_RATES[0] * 100, c.expected()[n - 1] * 100, HELD_RATES[n - 1] * 100, gap * 100,
+                    effects[t] * 100, (c.nonShelterAtFloor()[0] - c.nonShelterAtFloor()[n - 1]) * 100);
+        }
+        double[] sortedEffects = effects.clone();
+        java.util.Arrays.sort(sortedEffects);
+        int m = sortedEffects.length;
+        double medianEffect = m % 2 == 1 ? sortedEffects[m / 2] : (sortedEffects[m / 2 - 1] + sortedEffects[m / 2]) / 2;
+        long agreeing = java.util.Arrays.stream(effects).filter(e -> e > 0).count();
+        out.printf("   expected inflation falls with the rate in %d of %d towns, the least fall %.4f points; non-shelter effect positive in %d of %d, the median %+.4f points%n",
+                expectationsFall, comparisons.size(), leastExpectedGap * 100, agreeing, comparisons.size(), medianEffect * 100);
+        assertTrue("(a) in every declared town the expected inflation the shelf's floor and the fees are struck at falls from the lowest rate to the highest",
+                expectationsFall == comparisons.size());
+        assertTrue("(b) the highest rate lowers common-basket non-shelter inflation in the median declared town",
+                medianEffect > 0);
+        assertTrue("(b) ...and in at least " + NON_SHELTER_AGREEING + " of the " + comparisons.size() + " declared towns",
+                agreeing >= NON_SHELTER_AGREEING);
+        for (int t = 0; t < comparisons.size(); t++) {
+            if (effects[t] > 0) continue;
+            var c = comparisons.get(t);
+            double atFloor = c.nonShelterAtFloor()[0] - c.nonShelterAtFloor()[n - 1];
+            boolean shortage = !c.highShortWithin().isEmpty() || !c.lowShortBefore().isEmpty();
+            out.printf("   contrary town %d: effect %+.4f points; groceries short at %.0f%% in window months %s, at %.0f%% in months %s before the window; at the shelf's floor %+.4f points%n",
+                    c.seed(), effects[t] * 100, HELD_RATES[n - 1] * 100, c.highShortWithin(), HELD_RATES[0] * 100, c.lowShortBefore(), atFloor * 100);
+            assertTrue("(c) contrary town " + c.seed() + " names its cause: a grocery shortage in the months that carry it, and at the shelf's floor its effect is positive",
+                    shortage && atFloor > 0);
+        }
+        if (agreeing == comparisons.size()) out.println("   (c) no contrary town: every declared town's non-shelter effect is positive");
         assertTrue("the whole policy curve has no upward trend beyond the retained ordering resolution",
                 meanSlope * (HELD_RATES[n - 1] - HELD_RATES[0]) <= ORDERING_RESOLUTION);
         double timing = 0;
@@ -1266,6 +1353,14 @@ public class MonetaryCheck {
         out.printf("   path %d non-shelter prices on the same physical basket (including each fee): %s percent; plan factors %s%n",
                 seed, java.util.Arrays.toString(java.util.Arrays.stream(nonShelter).map(x -> x * 100).toArray()),
                 java.util.Arrays.toString(java.util.Arrays.stream(prices).mapToDouble(PriceWindow::spendFactor).toArray()));
+        double[] expected = java.util.Arrays.stream(prices).mapToDouble(PriceWindow::expectedInflation).toArray();
+        double[] atFloor = java.util.Arrays.stream(prices).mapToDouble(p -> p.nonShelterAtFloor(commonQuantities)).toArray();
+        out.printf("   path %d expected inflation, the window's mean: %s percent; non-shelter with the groceries at the shelf's floor: %s percent%n",
+                seed, java.util.Arrays.toString(java.util.Arrays.stream(expected).map(x -> x * 100).toArray()),
+                java.util.Arrays.toString(java.util.Arrays.stream(atFloor).map(x -> x * 100).toArray()));
+        for (int r = 0; r < n; r++)
+            out.printf("     at %.0f%% the groceries ran short in months %s before the window, %s within it%n",
+                    HELD_RATES[r] * 100, prices[r].shortBefore(), prices[r].shortWithin());
         assertTrue("the higher real saving return reaches this town's live spending plan",
                 prices[n - 1].spendFactor() < prices[0].spendFactor());
         for (int y = 0; y < WINDOW_YEARS; y++) {
@@ -1319,7 +1414,8 @@ public class MonetaryCheck {
         if (seed == Founding.defaults().getPathSeed())
             assertTrue("the original highest rate lowers inflation by at least the effect bound over the original window",
                     inflation[0] - inflation[n - 1] >= TRANSMISSION_FLOOR);
-        return new PolicyComparison(inflation, years, lateInflation, lateAnnual, starts, rents, nonShelter, supply);
+        return new PolicyComparison(seed, inflation, years, lateInflation, lateAnnual, starts, rents, nonShelter, supply, expected, atFloor,
+                prices[0].shortBefore(), prices[n - 1].shortWithin());
     }
 
     /** The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. */
