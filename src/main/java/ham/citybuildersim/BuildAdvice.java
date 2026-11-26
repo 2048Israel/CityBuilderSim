@@ -691,7 +691,7 @@ public final class BuildAdvice {
 
     /* ----- THE FIRM SUPPLY (PW3, 2026-11-23; spec-electricity 2.8) -----
        Power is planned for the year's peak hour (PowerDispatch.PLAN_PEAK_HOUR, losses in), and the supply that meets
-       it is the FIRM supply: the founding grid at the utilities' pooled fill, the works' own power sold to the grid
+       it is the FIRM supply: the jobless founding grid, the works' own power sold to the grid
        (PW1-P's first gap: it was left out, so a city of works was told to build plants it did not need), and every
        plant at its own posts' fill (the fifth: one farm's posts no longer lower every plant's output) times its
        credit - a fuelled row's production1 is its availability already and a station's its water, so 1, and a wind
@@ -738,11 +738,6 @@ public final class BuildAdvice {
         UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
         BuildingManager bm = game.getBuildingManager();
         double[] fill = game.getPopulationManager().getJobFillRate();
-        long[] je = bm.getJobArrayPerCategory(BuildingType.ELECTRICITY);
-        long[] jw = bm.getJobArrayPerCategory(BuildingType.WATER);
-        double jobs = 0;
-        for (int i = 0; i < je.length; i++) jobs += je[i] + jw[i];
-        double filled = u.getAverageUtilityFill() * jobs;
         double demand = p.scale() * u.getConsumption() + WorksValue.pendingPowerLoad(game, p.months());
         double share = variableShare(game, added), firm = Math.max(0, u.getWorksPower());
         // ...each standing stack (not the catalogue's templates: a plant off the menu still stands), at its own posts' fill.
@@ -758,19 +753,9 @@ public final class BuildAdvice {
             NewUnit nu = adding(game, t, n);
             demand += n * nu.getElectricityConsumption();
             if (t.getCategory() == BuildingType.ELECTRICITY) firm += n * nu.getProduction1() * credit(game, t, share) * firmFill(t, staffing(nu, fill));
-            // ...and the posts of a utility added join the pool the founding grid runs at, as UtilitiesHandler pools them.
-            if (t.getCategory() == BuildingType.ELECTRICITY || t.getCategory() == BuildingType.WATER) {
-                for (JobType job : JobType.values()) {
-                    int posts = nu.getJobs(job);
-                    if (posts == 0) continue;
-                    jobs += (double) n * posts;
-                    filled += (double) n * posts * (job.ordinal() < fill.length ? fill[job.ordinal()] : 1);
-                }
-            }
         }
-        double pooled = jobs > 0 ? filled / jobs : 1;
-        // The founding grid at the pooled fill, and at its size with nobody on shift (UtilitiesHandler.updateEnergyRatio()).
-        firm += u.getFoundingGridKw() * (pooled > 0 ? pooled : 1);
+        // PW9: the endowment owns no posts; hiring a small plant cannot remove its power. Match native dispatch.
+        firm += u.getFoundingGridKw();
         return new double[] {Math.max(0, firm), demand * PowerDispatch.PLAN_PEAK_HOUR};
     }
 
