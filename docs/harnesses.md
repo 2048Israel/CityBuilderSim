@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**259 harness files, 30,052 labelled assertions.** AllChecks runs 259 of them.
+**259 harness files, 30,053 labelled assertions.** AllChecks runs 259 of them.
 
 ## Which harnesses read which class
 
@@ -17634,7 +17634,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L245 an incumbent's one-ULP remainder creates no extra normal mover
   - L246 rounding residual eligibility never invents an incumbent or a door
 
-## HousingDoorCheck.java - 13 labelled assertions
+## HousingDoorCheck.java - 14 labelled assertions
 
 > The landlords' order at the lender's door (HN1, 2026-11-18): a played
 > city's households held from the homes that fit them while the plan passed
@@ -17650,24 +17650,25 @@ _(this harness does not label its checks through a helper - it prints its findin
 > the till: five blocks bought outright. Nothing was built for four years;
 > ...
 
-- **L198 1. the fixture: orders the plan passed, the segment short; none cut for its down payment**
-  - L217 fixture: the plan passed the landlords orders while their segment was short of doors
-  - L218 ...and the door cut or held none of them for its down payment, raised at the door's own price (FB15, HN1-A)
-- **L221 2. no landlord with the door's price of one in its till, on ground for one, is left with none**
-  - L234 no month holds a landlord whose till buys one of the homes the plan passed outright, while its segment
-- **L237 3. an order the door cut is a halving of what the plan passed, and says it was trimmed**
-  - L251 every order the door cut is the plan's order halved, down to one
-  - L252 ...and the advisor's line says it was trimmed
-  - L275 fixture: the window holds an order the door would have refused for the bank's capital, put to the owners
-  - L277 ...and each was offered to the owners whole: what the till lacked on the order, not only its down payment
-  - L279 ...and no month the door trimmed is left marked as held for the bank's capital
-- **L281 4. LongPlaytest's watch, and the homes that finished by size**
-  - L290 no month of the window leaves more than one household with no door (LongPlaytest's watch)
-  - L296 fixture: building fell behind in the window and kept up in it: months the landlords' order was trimmed or held, and months it was not
-  - L298 households live overcrowded, counted past the census line, in the months building falls behind (call A)
-  - L299 ...more of them a month than in the months building keeps up
-- **L301 5. the households' identity through the mortgage door (HL1)**
-  - L303 the households' cash identity closes every played month, beside the landlords' trimmed mortgages
+- **L214 1. the fixture: orders the plan passed, the segment short; none cut for its down payment**
+  - L233 fixture: the plan passed the landlords orders while their segment was short of doors
+  - L234 ...and the door cut or held none of them for its down payment, raised at the door's own price (FB15, HN1-A)
+- **L237 2. no landlord with the door's price of one in its till, on ground for one, is left with none**
+  - L250 no month holds a landlord whose till buys one of the homes the plan passed outright, while its segment
+- **L253 3. an order the door cut is a halving of what the plan passed, and says it was trimmed**
+  - L267 every order the door cut is the plan's order halved, down to one
+  - L268 ...and the advisor's line says it was trimmed
+  - L291 fixture: the window holds an order the door would have refused for the bank's capital, put to the owners
+  - L293 ...and each was offered to the owners whole: what the till lacked on the order, not only its down payment
+  - L295 ...and no month the door trimmed is left marked as held for the bank's capital
+- **L297 4. LongPlaytest's watch, and the homes that finished by size**
+  - L306 no month of the window leaves more than one household with no door (LongPlaytest's watch)
+  - L316 households live overcrowded in the window, counted past the census line, none of them doorless (call A)
+  - L318 fixture: the households outgrew the homes in some months of the window and the homes caught up in others
+  - L320 overcrowding rises over the months the town's households outgrow its homes
+  - L321 ...by more a month than over the months the homes catch up
+- **L324 5. the households' identity through the mortgage door (HL1)**
+  - L326 the households' cash identity closes every played month, beside the landlords' trimmed mortgages
 
 ## HousingInventoryCheck.java - 75 labelled assertions
 

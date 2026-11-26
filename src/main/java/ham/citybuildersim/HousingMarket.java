@@ -522,15 +522,20 @@ public final class HousingMarket {
         // Each home's doors summed in summarize()'s order and held to the homes standing, as bounded() holds the other passes: a vacancy
         // read as stock less a floating sum, taken whole, can pass the stock by an ulp (D90 1,988.0000000000002 of 1,988, RES3c 2026-11-25,
         // which the inventory's match refused mid-month). The lodgers and the households stay; only the door-equivalents and their bill trim.
+        // Who the trim takes off a door lodges on it, as lodging()'s do: its contract sponsored, no bill, counted hosted and crowded. The
+        // paid contracts scaled with the households kept fell short of them (RES3c, 2026-11-26): at AUTO2 seed 6's m568 a lease of 2.73e-12
+        // households of D90, 1.82e-12 of a door left of 5,160, was short 9.1e-13 against its own resolution of 2.7e-24, threw "Invalid
+        // lease" partway through the month, and the audit found the month's money, food and utilities unbooked (M1: 105 months in 80 runs).
         Map<HousingInventory.Key,Double> limits=new HashMap<>(),used=new HashMap<>();for(var o:offers)limits.put(o.key(),o.count());
-        List<HousingChoice.Lease> held=new ArrayList<>();
+        List<HousingChoice.Lease> held=new ArrayList<>();double trimmed=0;
         for(var l:merged.values()){double before=used.getOrDefault(l.home(),0.0),limit=limits.getOrDefault(l.home(),0.0),n=l.count();
             if(before+n>limit){double fit=Math.max(0,limit-before);while(fit>0&&before+fit>limit)fit=Math.nextDown(fit);
                 if(n-fit>FamilyModel.packingRounding(limit))throw new IllegalStateException("Housing overcrowding exceeds physical homes");
                 double f=fit/n;var fu=l.funding();
-                l=new HousingChoice.Lease(l.cell(),l.home(),fit,l.bill()*f,l.households(),new HousingChoice.Funding(fu.full()*f,fu.half()*f,fu.sponsored()));}
+                double full=fu.full()*f,half=fu.half()*f,off=(fu.full()-full)+(fu.half()-half);trimmed+=off;
+                l=new HousingChoice.Lease(l.cell(),l.home(),fit,l.bill()*f,l.households(),new HousingChoice.Funding(full,half,fu.sponsored()+off));}
             used.put(l.home(),before+l.count());held.add(l);}
-        hosted+=lodged;overcrowded=Collections.unmodifiableMap(crowded);
+        hosted+=lodged+trimmed;extra+=trimmed;overcrowded=Collections.unmodifiableMap(crowded);
         Map<String,Double> oldBudgets=new HashMap<>();for(var shift:sharing)oldBudgets.put(shift.target(),shift.targetBudget());
         result=HousingChoice.summarize(demand,offers,held,result.kept(),result.suitable(),result.crowded()+extra,oldBudgets);
     }
