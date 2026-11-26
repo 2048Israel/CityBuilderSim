@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,824 constants in 645 files.**
+**6,837 constants in 645 files.**
 
 ## model (3075 constants)
 
@@ -292,9 +292,9 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5489 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
 | 6403 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
 | 6585 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
-| 8195 | `BuildingManager.POSTS_EDITS` | `new java.util.concurrent.atomic.AtomicLong()` | Raised after every change to the stacks' posts or the list of stacks, in any city (AP5): transient, never saved. |
-| 8402 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 9734 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 8196 | `BuildingManager.POSTS_EDITS` | `new java.util.concurrent.atomic.AtomicLong()` | Raised after every change to the stacks' posts or the list of stacks, in any city (AP5): transient, never saved. |
+| 8403 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
+| 9735 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BuildingVisual.java ([map](map/BuildingVisual.md))
 
@@ -366,8 +366,8 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 1513 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
-| 1516 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
+| 1514 | `BuildingsTemplate.TONNES_PER_WORKER` | `20` | One worker's monthly travel, as tonnes of freight. |
+| 1517 | `BuildingsTemplate.WORKERS_PER_HOME` | `1.2` | A home's monthly travel, as workers. |
 
 ### BusinessDebtManager.java ([map](map/BusinessDebtManager.md))
 
@@ -6033,7 +6033,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2245 constants)
+## harnesses (2258 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -7646,20 +7646,33 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1532 | `LabourCheck.PAYROLL_GRADUATE_FILL` | `.5` | The share of its posts each graduate band holds in heads in the payroll town (FS16), so a band is part filled and the job types fill unevenly. |
 | 1535 | `LabourCheck.PAYROLL_TOWN_MONTHS` | `120` | The months the payroll town plays before its fills are put by hand (FS16): ten years, so the identity reads the sectors and posts a lived city has, not a founding's (a KEEP: the played town is its ... |
 | 1538 | `LabourCheck.LAYOFF_TOWN_PEOPLE` | `1_000` | The people put into the builders' town of the payroll section (FS16), so the sector's households have workers to be paid. |
-| 1738 | `LabourCheck.HELD_FILL` | `.5` | The share of its posts each graduate band holds in heads, and the unskilled posts in workers, in the held-figures town (AP5): every band has posts open for a move to fill. |
-| 1741 | `LabourCheck.HELD_TOWN_PEOPLE` | `1_000` | The people put into the held-figures town (AP5), so it has a workforce for the month's labour market to be struck on. |
-| 1744 | `LabourCheck.HELD_INSTANT` | `5` | The buildings put up at once, in the held-figures section (AP5). |
-| 1747 | `LabourCheck.HELD_ON_SITE` | `3` | The buildings ordered on site, in the held-figures section (AP5). |
-| 1750 | `LabourCheck.HELD_SCRAPPED` | `2` | The buildings scrapped, in the held-figures section (AP5). |
-| 1753 | `LabourCheck.HELD_IMPRISONED` | `.1` | The share of the unskilled workers put in prison, in the held-figures section (AP5). |
-| 1756 | `LabourCheck.HELD_HEADS_ADDED` | `.25` | The share of a band's posts written onto its heads through the array getSkilledHeads() hands out, in the held-figures section (AP5). |
-| 1759 | `LabourCheck.HELD_LICENSED` | `.25` | The share of the university heads who take a doctor's licence, in the held-figures section (AP5). |
-| 2077 | `LabourCheck.RENT_TOWN_PEOPLE` | `4_000` | People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). |
-| 2099 | `LabourCheck.ARRIVALS_OVER_DEPARTURES` | `10` | How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). |
-| 2102 | `LabourCheck.PRICED_MONTHS` | `60` | Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. |
-| 2114 | `LabourCheck.ROOM_TOWN` | `4000` | The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). |
-| 2132 | `LabourCheck.TIE_AVERAGE_OVER_GOING_RATE` | `1.3` | The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. |
-| 2134 | `LabourCheck.TIE_NEXT_AVERAGE_OVER_LAST` | `1.1` | The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. |
+| 1743 | `LabourCheck.HELD_FILL` | `.5` | The share of its posts each graduate band holds in heads, and the unskilled posts in workers, in the held-figures town (AP5): every band has posts open for a move to fill. |
+| 1746 | `LabourCheck.HELD_TOWN_PEOPLE` | `1_000` | The people put into the held-figures town (AP5), so it has a workforce for the month's labour market to be struck on. |
+| 1749 | `LabourCheck.HELD_INSTANT` | `5` | The buildings put up at once, in the held-figures section (AP5). |
+| 1752 | `LabourCheck.HELD_ON_SITE` | `3` | The buildings ordered on site, in the held-figures section (AP5). |
+| 1755 | `LabourCheck.HELD_SCRAPPED` | `2` | The buildings scrapped, in the held-figures section (AP5). |
+| 1758 | `LabourCheck.HELD_IMPRISONED` | `.1` | The share of the unskilled workers put in prison, in the held-figures section (AP5). |
+| 1761 | `LabourCheck.HELD_HEADS_ADDED` | `.25` | The share of a band's posts written onto its heads through the array getSkilledHeads() hands out, in the held-figures section (AP5). |
+| 1764 | `LabourCheck.HELD_LICENSED` | `.25` | The share of the university heads who take a doctor's licence, in the held-figures section (AP5). |
+| 1767 | `LabourCheck.HELD_CREWS_OUTPUT` | `1e15` | The construction points put into the shops on site at once, in the held-figures section (AP5): more than any order owes, so every one finishes. |
+| 1770 | `LabourCheck.HELD_RECIPE_HANDS` | `4` | The unskilled posts a shop's second recipe adds, in the held-figures section (AP5): a fourth of them is one post, the blend's step. |
+| 1773 | `LabourCheck.HELD_BLEND_ON` | `1` | The shops on the second recipe in the held-figures section's blend (AP5): one in four, so the blend's posts are one more than the first recipe's. |
+| 1776 | `LabourCheck.HELD_BLEND_OFF` | `3` | ...and on the first. |
+| 1779 | `LabourCheck.HELD_ORDER_BIG` | `0x1p53` | The house's weight in the held-figures section's ordered sum (AP5): 2^53, so the house's buildings are a number whose last place is wider than one. |
+| 1782 | `LabourCheck.HELD_ORDER_PART` | `.375` | Each apartment stack's part of the house's last place in that sum (AP5): under a half, so either alone is lost after the house, both together over it. |
+| 1785 | `LabourCheck.HELD_WORKERS_ADDED` | `.25` | The share of the unskilled workers added to the workforce, in the held-figures section (AP5). |
+| 1788 | `LabourCheck.HELD_OWNERS` | `.1` | The share of the workforce whose families own their businesses, in the held-figures section (AP5). |
+| 1791 | `LabourCheck.HELD_STUDYING` | `.25` | The share of the widest graduate band's heads at their studies, in the held-figures section (AP5). |
+| 1794 | `LabourCheck.HELD_JOINED_POSTS` | `100` | The graduate posts in the held-figures section's shared market (AP5), where the wage ladder splits the workers between two bands. |
+| 1797 | `LabourCheck.HELD_JOINED_HEADS_PER_POST` | `3` | ...the graduate heads to each of them, so the band has workers to spare for the unskilled posts... |
+| 1800 | `LabourCheck.HELD_JOINED_UNSKILLED_POSTS` | `4_000` | ...the unskilled posts, far more than the workers for them, so the bottom band pays more than the graduate one and the two are one market... |
+| 1803 | `LabourCheck.HELD_JOINED_UNSKILLED` | `10` | ...and the unskilled workers. |
+| 2289 | `LabourCheck.RENT_TOWN_PEOPLE` | `4_000` | People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). |
+| 2311 | `LabourCheck.ARRIVALS_OVER_DEPARTURES` | `10` | How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). |
+| 2314 | `LabourCheck.PRICED_MONTHS` | `60` | Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. |
+| 2326 | `LabourCheck.ROOM_TOWN` | `4000` | The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). |
+| 2344 | `LabourCheck.TIE_AVERAGE_OVER_GOING_RATE` | `1.3` | The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. |
+| 2346 | `LabourCheck.TIE_NEXT_AVERAGE_OVER_LAST` | `1.1` | The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. |
 
 ### LandCheck.java ([map](map/LandCheck.md))
 

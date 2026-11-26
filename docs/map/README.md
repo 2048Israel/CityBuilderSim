@@ -4,7 +4,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 645 files, 699,627 lines, 30,563 methods, 6,824 constants. `GameVersion.VERSION` is "0.9.210", `SAVE_FORMAT` 66.
+**The tree:** 645 files, 699,841 lines, 30,565 methods, 6,837 constants. `GameVersion.VERSION` is "0.9.210", `SAVE_FORMAT` 66.
 
 ## model (281 files)
 
@@ -33,11 +33,11 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BuildersShort.java](BuildersShort.md) | 371 | 20 | The builders short (FC1): what an order pays a point of work as the builders run out of points for the sites - a premium that rises with the months... | 13 |
 | [BuildingCatalog.java](BuildingCatalog.md) | 894 | 30 | Reads the building definitions out of buildings.json. | 25 |
 | [BuildingInstance.java](BuildingInstance.md) | 40 | 4 |  | 1 |
-| [BuildingManager.java](BuildingManager.md) | 9,772 | 321 | The city's buildings: the catalogue of templates, the stacks standing and on site with the contracts the builders are working to and who placed the... | 166 |
+| [BuildingManager.java](BuildingManager.md) | 9,773 | 321 | The city's buildings: the catalogue of templates, the stacks standing and on site with the contracts the builders are working to and who placed the... | 166 |
 | [BuildingType.java](BuildingType.md) | 255 | 0 |  | 110 |
 | [BuildingVisual.java](BuildingVisual.md) | 553 | 24 | How the painted map draws each building type: its class and colour, its footprint (the model's own land for it), whether it is a road and of which ... | 33 |
 | [BuildingsStacks.java](BuildingsStacks.md) | 972 | 88 | One building type in the city: how many stand, how many are on site, and the progress, material and contract its sites carry. | 75 |
-| [BuildingsTemplate.java](BuildingsTemplate.md) | 1,726 | 191 | One kind of building, and what it costs to put up. | 248 |
+| [BuildingsTemplate.java](BuildingsTemplate.md) | 1,727 | 191 | One kind of building, and what it costs to put up. | 248 |
 | [BusinessDebt.java](BusinessDebt.md) | 100 | 14 | Base class for private-sector borrowing. | 11 |
 | [BusinessDebtManager.java](BusinessDebtManager.md) | 3,848 | 253 | Private-sector credit. | 44 |
 | [BusinessInvestment.java](BusinessInvestment.md) | 1,846 | 108 | Capacity planning for the private sector. | 102 |
@@ -209,7 +209,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [QuayRail.java](QuayRail.md) | 148 | 10 | Which terminals on the harbour's quay the railway reaches (HB2, 2026-11-09), and the plots of track between their boxes: pure, from the shore and t... | 3 |
 | [Rankings.java](Rankings.md) | 736 | 39 | The Rankings board as the screen draws it: a measure's table of ranked places, the active city among the real world's 196 nations and 62 city regio... | 6 |
 | [RealDollar.java](RealDollar.md) | 137 | 9 | The real US dollar, constant 2015 dollars, and what the city's money is against it (WN4, D29): the D$ per real US$, the city's real GDP in it, and ... | 6 |
-| [Recipe.java](Recipe.md) | 198 | 24 | A way a building runs: what it uses, what it makes, who it needs and what it draws, and when it is known and what piece of equipment it needs. | 19 |
+| [Recipe.java](Recipe.md) | 198 | 24 | A way a building runs: what it uses, what it makes, who it needs and what it draws, and when it is known and what piece of equipment it needs. | 20 |
 | [RecipeChange.java](RecipeChange.md) | 68 | 5 | One discovery's signed undo, relative to a template's immutable modern figures. | 9 |
 | [RecipeChanges.java](RecipeChanges.md) | 627 | 47 | Composes independent discovery changes on the selected process recipe. | 13 |
 | [Recipes.java](Recipes.md) | 494 | 33 | Chooses the recipe each part of a stack runs, at the city's own prices, and sets the template's figures to what its buildings run: the driver of R1... | 19 |
@@ -528,7 +528,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [KeptCheck.java](KeptCheck.md) | 10,010 | 256 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 8 |
 | [KeptTimingCheck.java](KeptTimingCheck.md) | 682 | 20 | What the kept pages cost: KeptCheck's timed sections, each kept month on a page against the same month built new, within its budget through Timing. | 0 |
 | [KnownRedsCheck.java](KnownRedsCheck.md) | 351 | 12 | The harness for AllChecks' known reds, time limit and resource admission. | 0 |
-| [LabourCheck.java](LabourCheck.md) | 2,149 | 26 | Verifies the labour market: who can hold a job, and what it costs. | 4 |
+| [LabourCheck.java](LabourCheck.md) | 2,361 | 28 | Verifies the labour market: who can hold a job, and what it costs. | 4 |
 | [LandCheck.java](LandCheck.md) | 3,900 | 64 | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. | 9 |
 | [LandClassCheck.java](LandClassCheck.md) | 1,349 | 51 | A price for each class of ground, checked (ET3, slice A; docs/studies/spec-earth2-terrain.md 5.1 and 5.2): the going price stays the price of flat ... | 4 |
 | [LandNationsCheck.java](LandNationsCheck.md) | 1,842 | 67 | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor an... | 1 |

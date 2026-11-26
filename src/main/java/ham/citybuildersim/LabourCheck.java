@@ -1728,10 +1728,15 @@ public class LabourCheck {
          (b) the city's posts, the posts withheld and a sector's buildings are the bare ones, built from the stacks once;
          (c) a build at once adds its posts to the next reading and an order on site adds none, and each is read afresh;
          (d) a stack of a template not yet built moves its sector's buildings;
-         (e) buildings added to a stack directly, buildings scrapped and a building's posts moved are read afresh;
+         (e) buildings added to a stack directly, buildings scrapped and a building's posts moved are read afresh; and on posts
+             held (REV-AP5): a building finished on site, a building's figures set to one recipe and blended from two, a standing
+             building's sector reassigned, and the stacks stood in another order, each compared with the bare reading after it;
          (f) the people moved by each path a pass could (the posts they are told, the prisoners, the heads written through the
-             array getSkilledHeads() hands out, the licences) are read afresh, and a read with nothing moved is not;
-         (g) a scope opened inside it is the same one, and closed, nothing is held.
+             array getSkilledHeads() hands out, the licences) and by every other input the fill reads (the workforce, the
+             owners, the students by setStudying() and through the array it keeps, the wage ladder where two bands are one
+             market) are read afresh, and a read with nothing moved is not;
+         (g) every stack cleared, on posts held, is read afresh;
+         (h) a scope opened inside it is the same one, and closed, nothing is held.
        ======================================================================================= */
 
     /** The share of its posts each graduate band holds in heads, and the unskilled posts in workers, in the held-figures town (AP5): every band has posts open for a move to fill. */
@@ -1757,6 +1762,45 @@ public class LabourCheck {
 
     /** The share of the university heads who take a doctor's licence, in the held-figures section (AP5). */
     static final double HELD_LICENSED = .25;
+
+    /** The construction points put into the shops on site at once, in the held-figures section (AP5): more than any order owes, so every one finishes. */
+    static final double HELD_CREWS_OUTPUT = 1e15;
+
+    /** The unskilled posts a shop's second recipe adds, in the held-figures section (AP5): a fourth of them is one post, the blend's step. */
+    static final int HELD_RECIPE_HANDS = 4;
+
+    /** The shops on the second recipe in the held-figures section's blend (AP5): one in four, so the blend's posts are one more than the first recipe's. */
+    static final long HELD_BLEND_ON = 1;
+
+    /** ...and on the first. */
+    static final long HELD_BLEND_OFF = 3;
+
+    /** The house's weight in the held-figures section's ordered sum (AP5): 2^53, so the house's buildings are a number whose last place is wider than one. */
+    static final double HELD_ORDER_BIG = 0x1p53;
+
+    /** Each apartment stack's part of the house's last place in that sum (AP5): under a half, so either alone is lost after the house, both together over it. */
+    static final double HELD_ORDER_PART = .375;
+
+    /** The share of the unskilled workers added to the workforce, in the held-figures section (AP5). */
+    static final double HELD_WORKERS_ADDED = .25;
+
+    /** The share of the workforce whose families own their businesses, in the held-figures section (AP5). */
+    static final double HELD_OWNERS = .1;
+
+    /** The share of the widest graduate band's heads at their studies, in the held-figures section (AP5). */
+    static final double HELD_STUDYING = .25;
+
+    /** The graduate posts in the held-figures section's shared market (AP5), where the wage ladder splits the workers between two bands. */
+    static final long HELD_JOINED_POSTS = 100;
+
+    /** ...the graduate heads to each of them, so the band has workers to spare for the unskilled posts... */
+    static final double HELD_JOINED_HEADS_PER_POST = 3;
+
+    /** ...the unskilled posts, far more than the workers for them, so the bottom band pays more than the graduate one and the two are one market... */
+    static final long HELD_JOINED_UNSKILLED_POSTS = 4_000;
+
+    /** ...and the unskilled workers. */
+    static final long HELD_JOINED_UNSKILLED = 10;
 
     /** Every post of a template, over the job types: the getter a sector's buildings are read through in the held-figures section (AP5). */
     static double allPosts(BuildingsTemplate b) {
@@ -1825,6 +1869,46 @@ public class LabourCheck {
         assertTrue("(e) " + change + " move the next reading by the template's posts, each job type", byTheirPosts);
         assertTrue("...which is the bare reading", java.util.Arrays.equals(now, WorksValue.bareWhile(() -> bm.getTotalJobs())));
         assertTrue("...read afresh, once", s.postsRead == builds + 1);
+    }
+
+    /**
+     * Every posts figure a pass reads, as raw bits (AP5): each job type's posts, at every post and withheld, each sector's posts withheld, and
+     * each sector's buildings by their posts, their capacity and a weight.
+     */
+    static long[] postsReading(BuildingManager bm, java.util.Collection<String> sectors, java.util.function.ToDoubleFunction<BuildingsTemplate> weight) {
+        java.util.List<Long> out = new java.util.ArrayList<>();
+        for (long n : bm.getTotalJobs()) out.add(n);
+        for (JobType type : JobType.values()) {
+            out.add(bm.getTotalJobsAtEveryPost(type));
+            out.add(bm.getPostsWithheld(type));
+            for (String sector : sectors) out.add(bm.getPostsWithheld(sector, type));
+        }
+        for (String sector : sectors) {
+            out.add(Double.doubleToRawLongBits(bm.totalBySector(sector, LabourCheck::allPosts)));
+            out.add(Double.doubleToRawLongBits(bm.totalBySector(sector, BuildingsTemplate::getCapacity)));
+            out.add(Double.doubleToRawLongBits(bm.totalBySector(sector, weight)));
+        }
+        long[] bits = new long[out.size()];
+        for (int i = 0; i < bits.length; i++) bits[i] = out.get(i);
+        return bits;
+    }
+
+    /**
+     * One change to the stacks on posts held (AP5): the posts read and held first, a second read building nothing; then the change, after which
+     * every reading is the bare one, built afresh once; and the change moved a reading, so one held over it would be stale.
+     */
+    static void heldThen(String change, BuildingManager bm, WorksValue.Scope s, java.util.Collection<String> sectors,
+                         java.util.function.ToDoubleFunction<BuildingsTemplate> weight, Runnable move) {
+        long[] before = postsReading(bm, sectors, weight);
+        long builds = s.postsRead;
+        assertTrue("fixture: before " + change + " the posts are held: read again, nothing is built",
+                java.util.Arrays.equals(postsReading(bm, sectors, weight), before) && s.postsRead == builds);
+        move.run();
+        long[] after = postsReading(bm, sectors, weight);
+        long[] bare = WorksValue.bareWhile(() -> postsReading(bm, sectors, weight));
+        assertTrue(change + ", on posts held: every reading after it is the bare one", java.util.Arrays.equals(after, bare));
+        assertTrue("...read afresh, once", s.postsRead == builds + 1);
+        assertTrue("fixture: " + change + " moved a reading, so one held over it would be stale", !java.util.Arrays.equals(bare, before));
     }
 
     static void labourHeldForAPass() {
@@ -1978,6 +2062,70 @@ public class LabourCheck {
             assertTrue("...and put back, the reading is the one before it",
                     java.util.Arrays.equals(bm.getTotalJobs(), scrapped) && s.postsRead == builds + 2);
 
+            /*
+             * ...AND ON POSTS HELD, every other path a month or a pass meets: each change made after the posts were read and held, and every
+             * figure read after it compared with the bare one. The homes are three stacks of one sector, the house's first, weighted so that a
+             * sum over them in the list's order shows that order in its last bit: the house's buildings at 2^53 each, each apartment stack at
+             * HELD_ORDER_PART of the house's last place, lost after the house alone and not together.
+             */
+            BuildingsTemplate house = t(g, "House"), studio = t(g, "Studio Apartments"), lowRise = t(g, "Low-Rise Apartments");
+            String homes = house.getSector();
+            bm.addStack(studio, HELD_INSTANT, true);
+            bm.addStack(lowRise, HELD_INSTANT, true);
+            sectors.add(homes);
+            java.util.List<BuildingsStacks> view = bm.getStacksView();
+            assertTrue("fixture: the town's homes are three stacks of one sector, the house's first in the list",
+                    studio.getSector().equals(homes) && lowRise.getSector().equals(homes) && view.indexOf(bm.getStack(house)) >= 0
+                            && view.indexOf(bm.getStack(house)) < view.indexOf(bm.getStack(studio))
+                            && view.indexOf(bm.getStack(house)) < view.indexOf(bm.getStack(lowRise)));
+            double part = Math.ulp(HELD_ORDER_BIG * bm.getStack(house).getQuantity()) * HELD_ORDER_PART;
+            java.util.Map<BuildingsTemplate, Double> weights = new java.util.IdentityHashMap<>();
+            weights.put(house, HELD_ORDER_BIG);
+            weights.put(studio, part / bm.getStack(studio).getQuantity());
+            weights.put(lowRise, part / bm.getStack(lowRise).getQuantity());
+            java.util.function.ToDoubleFunction<BuildingsTemplate> weight = b -> weights.getOrDefault(b, 0.0);
+
+            long onSite = shops.getUnderConstruction(), shopsStanding = shops.getQuantity();
+            heldThen("(e) the buildings on site finished (advanceConstruction)", bm, s, sectors, weight,
+                    () -> quietly(() -> shops.advanceConstruction(HELD_CREWS_OUTPUT)));
+            assertTrue("fixture: ...every one of them, and they stand", onSite > 0 && shops.getUnderConstruction() == 0
+                    && shops.getQuantity() == shopsStanding + onSite);
+
+            Recipe base = Recipe.topLevelOf(shop);
+            int[] busier = new int[JobType.values().length];
+            for (JobType type : JobType.values()) busier[type.ordinal()] = base.getJobs(type);
+            busier[moved.ordinal()] += HELD_RECIPE_HANDS;
+            Recipe moreHands = new Recipe("ap5-more-hands", "more hands", Recipe.DEFAULT_SINCE, null, false, base.makes(), base.uses(),
+                    busier, base.getElectricity(), base.getGen(), base.getWater(), base.getConsumables());
+            try {
+                heldThen("(e) a building's figures set to one recipe (runRecipes, one part)", bm, s, sectors, weight,
+                        () -> shop.runRecipes(moreHands, shops.getQuantity(), null, 0));
+                assertTrue("fixture: ...the shop has the recipe's posts", shop.getJobs(moved) == was + HELD_RECIPE_HANDS);
+                heldThen("(e) a building's figures blended from two recipes (runRecipes, two parts)", bm, s, sectors, weight,
+                        () -> shop.runRecipes(moreHands, HELD_BLEND_ON, base, HELD_BLEND_OFF));
+                assertTrue("fixture: ...the shop's posts are between the two recipes'", shop.getJobs(moved) > was && shop.getJobs(moved) < was + HELD_RECIPE_HANDS);
+            } finally {
+                shop.runRecipes(base, 1, null, 0);
+            }
+            assertTrue("fixture: ...and back on its own figures, the shop has its posts again", shop.getJobs(moved) == was);
+
+            String retail = shop.getSector();
+            long buildersWithhold = bm.getPostsWithheld(builders, moved);
+            try {
+                heldThen("(e) a standing building's sector reassigned (setSector)", bm, s, sectors, weight, () -> shop.setSector(builders));
+                assertTrue("...and the builders now withhold a share of the shops' posts as well", bm.getPostsWithheld(builders, moved) > buildersWithhold);
+            } finally {
+                shop.setSector(retail);
+            }
+            assertTrue("...and put back, the builders withhold what they did",
+                    bm.getPostsWithheld(builders, moved) == buildersWithhold && shop.getSector().equals(retail));
+
+            int[] reversed = new int[view.size()];
+            for (int i = 0; i < reversed.length; i++) reversed[i] = view.get(view.size() - 1 - i).getBuilding().getId();
+            heldThen("(e) the stacks stood in another order (orderStacks)", bm, s, sectors, weight, () -> bm.orderStacks(reversed));
+            assertTrue("fixture: ...the house's stack now after the apartments'", view.indexOf(bm.getStack(house)) > view.indexOf(bm.getStack(studio))
+                    && view.indexOf(bm.getStack(house)) > view.indexOf(bm.getStack(lowRise)));
+
             // (f) the people, moved by each path a pass could
             assertTrue("(f) the buildings moved and the people were not told: the vacancies were not read again", s.vacanciesRead == 1);
             long[] stood = pm.getJobVacancy();
@@ -2006,16 +2154,80 @@ public class LabourCheck {
             pm.addLicences(newly);
             stood = heldAfter("doctors' licences granted", s, pm, stood);
             licensed[doctor.ordinal()] = held;
-            heldAfter("...and written back through the array getLicensedHeads() hands out", s, pm, stood);
+            stood = heldAfter("...and written back through the array getLicensedHeads() hands out", s, pm, stood);
+
+            long workers = pm.getWorkforce();
+            pm.restoreWorkforce(workers + Math.max(1, (long) Math.floor(unskilledWorkers * HELD_WORKERS_ADDED)));
+            stood = heldAfter("more workers in the workforce", s, pm, stood);
+            pm.restoreWorkforce(workers);
+            stood = heldAfter("...and the workforce as it was", s, pm, stood);
+
+            double owning = pm.getOwners();
+            pm.setOwners(owning + Math.max(1, Math.floor(workers * HELD_OWNERS)));
+            stood = heldAfter("some of the workers' families owning their businesses", s, pm, stood);
+            pm.setOwners(owning);
+            stood = heldAfter("...and the owners as they were", s, pm, stood);
+
+            double[] studying = new double[postsInBand.length];
+            double atStudies = Math.max(1, Math.floor(heads[widest] * HELD_STUDYING));
+            studying[widest] = atStudies;
+            pm.setStudying(studying);
+            stood = heldAfter("some of the widest band's heads at their studies (setStudying)", s, pm, stood);
+            studying[widest] += atStudies;
+            stood = heldAfter("...more of them, written through the array setStudying() kept", s, pm, stood);
+            pm.setStudying(null);
+            stood = heldAfter("...and none", s, pm, stood);
+
+            /*
+             * THE WAGE LADDER moves the fill only where two bands are one market: the bands' bases then split the pooled workers between
+             * them. So the people are set to make one, a graduate band whose base is another multiple of the unskilled on the other ladder,
+             * its heads three to each of its posts, and the unskilled posts far more than their workers.
+             */
+            WageLadder ladder = pm.getLadder(), other = ladder == WageLadder.TODAY ? WageLadder.Y1901 : WageLadder.TODAY;
+            double[] on = PopulationManager.bandBases(ladder), off = PopulationManager.bandBases(other);
+            JobType graduate = null;
+            for (JobType type : JobType.values()) {
+                int b = WageBand.of(type).ordinal();
+                if (b != unskilled && !PopulationManager.isGated(type) && on[b] / on[unskilled] != off[b] / off[unskilled]) {
+                    graduate = type;
+                    break;
+                }
+            }
+            assertTrue("fixture: on the other ladder a graduate band's base is another multiple of the unskilled", graduate != null);
+            if (graduate != null) {
+                int band = WageBand.of(graduate).ordinal();
+                long[] posts = new long[JobType.values().length];
+                posts[JobType.NO_DIPLOMA.ordinal()] = HELD_JOINED_UNSKILLED_POSTS;
+                posts[graduate.ordinal()] = HELD_JOINED_POSTS;
+                double[] joined = new double[postsInBand.length];
+                joined[band] = HELD_JOINED_POSTS * HELD_JOINED_HEADS_PER_POST;
+                pm.updateJobs(posts);
+                pm.restoreSkilledHeads(joined);
+                pm.restoreWorkforce((long) joined[band] + HELD_JOINED_UNSKILLED);
+                pm.setOwners(0);
+                pm.setImprisoned(0);
+                stood = pm.getJobVacancy();
+                PopulationManager.BandFill fill = pm.fillByBand();
+                assertTrue("fixture: the graduate band and the unskilled are one market, so the bands' bases split the workers between them",
+                        fill.market[band] == fill.market[unskilled]);
+                pm.setLadder(other);
+                stood = heldAfter("the wage ladder changed, with the unskilled and a graduate band one market (setLadder)", s, pm, stood);
+                pm.setLadder(ladder);
+                heldAfter("...and changed back", s, pm, stood);
+            }
             System.out.printf("   in the scope the vacancies were filled %d times and the posts built %d times%n", s.vacanciesRead, s.postsRead);
 
-            // (g) a scope inside it
+            // (g) every stack cleared, on posts held
+            heldThen("(g) every stack cleared (clearStacks)", bm, s, sectors, weight, () -> bm.clearStacks());
+            assertTrue("fixture: ...the city has no stacks", bm.getStacksView().isEmpty());
+
+            // (h) a scope inside it
             try (WorksValue.Scope inner = WorksValue.hold(g)) {
-                assertTrue("(g) a scope opened inside it is the same one, one deeper", inner == s);
+                assertTrue("(h) a scope opened inside it is the same one, one deeper", inner == s);
             }
             assertTrue("...and the outer one is still open when the inner one closes", WorksValue.open() == s);
         }
-        assertTrue("(g) closed, no scope is open on this thread", WorksValue.open() == null);
+        assertTrue("(h) closed, no scope is open on this thread", WorksValue.open() == null);
         // ...and what moves now is read bare: nothing held over from the scope, and the scope counts none of it.
         long fills = scope.vacanciesRead, builds = scope.postsRead;
         pm.setImprisoned(pm.getImprisoned() + 1);

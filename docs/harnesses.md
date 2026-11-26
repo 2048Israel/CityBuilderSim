@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**257 harness files, 29,425 labelled assertions.** AllChecks runs 257 of them.
+**257 harness files, 29,439 labelled assertions.** AllChecks runs 257 of them.
 
 ## Which harnesses read which class
 
@@ -282,7 +282,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [RankingsScreen](map/RankingsScreen.md) | **none** |
 | [RealDollar](map/RealDollar.md) | PriceLevelCheck, RankingsCheck, RealDollarCheck |
 | [RealEstate](map/RealEstate.md) | DiscoveryCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, PopulationCheck, ReadPathCheck, ReloadCheck, RoadCheck, StaffingDrawCheck, Village1900Check, WageLadderCheck |
-| [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, WaterPowerCheck |
+| [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, LabourCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, WaterPowerCheck |
 | [RecipeChange](map/RecipeChange.md) | ModernEngineeringCheck, ModernRowsCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck |
 | [RecipeChanges](map/RecipeChanges.md) | FittingCheck, HistoricalLicenceCheck, ModernEngineeringCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck |
 | [Recipes](map/Recipes.md) | DiscoveryCheck, FieldOperatorsCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, MaterialsCheck, ModernEngineeringCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, Village1900Check, WaterPowerCheck |
@@ -20130,7 +20130,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L277 kept: an untagged log of the tally is known red only
   - L283 kept: a run the unmended runner tagged NEW is rejudged known red only
 
-## LabourCheck.java - 253 labelled assertions
+## LabourCheck.java - 267 labelled assertions
 
 > Verifies the labour market: who can hold a job, and what it costs. Not part
 > of the game.
@@ -20376,62 +20376,76 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1697 (a) ...and the households are paid what the employers paid, the laid-off posts in nobody's pay
   - L1710 a month with the work for them hires every crew back
   - L1714 (a) ...and the households are paid what the employers paid, that month too
-  - L1804 (f)
-  - L1805 ...read afresh, once
-  - L1807 ...and a read with nothing moved is not another fill
-  - L1808 fixture: the move changed the vacancies, so a figure held over it would be stale
-  - L1825 (e)
-  - L1826 ...which is the bare reading
-  - L1827 ...read afresh, once
-- **L1831 the labour figures held for a pass are the bare ones, read afresh when they move (AP5)**
-  - L1867 fixture: the town has people, and posts in several sectors
-  - L1868 fixture: the builders lay crews off, so the posts they offer are a share of theirs
-  - L1869 fixture: the doctors' posts are gated, the hospitals have them, and there are heads at university to hold a licence
-  - L1871 fixture: the shops have posts, and the police station is a building the town has none of
-  - L1873 fixture: the unskilled and the widest graduate band have posts open and workers to place
-  - L1875 fixture: no scope is open to begin with
-  - L1884 (a) the vacancies read in a pass are the bare fill
-  - L1885 ...and read again are the same figure
-  - L1886 ...from one fill, not two
-  - L1888 ...and a caller who writes to the figure it was handed does not move the held one
-  - L1889 ...and the fill rate is the bare one, to the bit
-  - L1893 (b) the city's posts are the bare ones
-  - L1894 ...and the jobs the game offers, the research posts with them
-  - L1901 ...every job type's posts at every post
-  - L1902 ...the posts the sectors withhold of each job type
-  - L1903 ...and the builders' own
-  - L1904 ...and the posts withheld over every job type
-  - L1914 fixture: some sector has housing capacity and so a reading to compare
-  - L1915 ...a sector's buildings by their capacity are the bare ones, in every sector
-  - L1916 ...and by their posts
-  - L1917 ...all of them from one build of the posts, not one each
-  - L1928 (c) buildings put up at once add their posts to the next reading, each job type by the template's own
-  - L1929 ...which is the bare reading
-  - L1930 ...read afresh, once
-  - L1933 fixture: the order went on site, none of it standing
-  - L1934 (c) an order on site adds no posts: the reading is the one before
-  - L1935 ...and the bare one
-  - L1936 ...read afresh after the order, whether or not it moved a post
-  - L1938 ...and not again with nothing moved since
-  - L1946 (d) a stack of a template not yet built moves its sector's buildings by its posts
-  - L1947 ...to the bare reading
-  - L1948 ...read afresh, once
-  - L1962 (e) buildings scrapped take their posts from the next reading
-  - L1963 ...which is the bare reading
-  - L1964 ...read afresh, once
-  - L1971 (e) a building given one more post adds one to the next reading for each of them standing
-  - L1973 ...which is the bare reading
-  - L1974 ...read afresh, once
-  - L1978 ...and put back, the reading is the one before it
-  - L1982 (f) the buildings moved and the people were not told: the vacancies were not read again
-  - L1984 ...and a read with nothing moved is not a fill
-  - L1985 fixture: the posts built since the people were told them are not the ones they hold
-  - L2014 (g) a scope opened inside it is the same one, one deeper
-  - L2016 ...and the outer one is still open when the inner one closes
-  - L2018 (g) closed, no scope is open on this thread
-  - L2023 ...so the vacancies are the bare fill after the people moved
-  - L2024 ...and the posts the bare ones after a build
-  - L2025 ...with no fill and no build of the posts counted by the scope that closed
+  - L1848 (f)
+  - L1849 ...read afresh, once
+  - L1851 ...and a read with nothing moved is not another fill
+  - L1852 fixture: the move changed the vacancies, so a figure held over it would be stale
+  - L1869 (e)
+  - L1870 ...which is the bare reading
+  - L1871 ...read afresh, once
+  - L1904 fixture: before
+  - L1910 ...read afresh, once
+  - L1911 fixture:
+- **L1915 the labour figures held for a pass are the bare ones, read afresh when they move (AP5)**
+  - L1951 fixture: the town has people, and posts in several sectors
+  - L1952 fixture: the builders lay crews off, so the posts they offer are a share of theirs
+  - L1953 fixture: the doctors' posts are gated, the hospitals have them, and there are heads at university to hold a licence
+  - L1955 fixture: the shops have posts, and the police station is a building the town has none of
+  - L1957 fixture: the unskilled and the widest graduate band have posts open and workers to place
+  - L1959 fixture: no scope is open to begin with
+  - L1968 (a) the vacancies read in a pass are the bare fill
+  - L1969 ...and read again are the same figure
+  - L1970 ...from one fill, not two
+  - L1972 ...and a caller who writes to the figure it was handed does not move the held one
+  - L1973 ...and the fill rate is the bare one, to the bit
+  - L1977 (b) the city's posts are the bare ones
+  - L1978 ...and the jobs the game offers, the research posts with them
+  - L1985 ...every job type's posts at every post
+  - L1986 ...the posts the sectors withhold of each job type
+  - L1987 ...and the builders' own
+  - L1988 ...and the posts withheld over every job type
+  - L1998 fixture: some sector has housing capacity and so a reading to compare
+  - L1999 ...a sector's buildings by their capacity are the bare ones, in every sector
+  - L2000 ...and by their posts
+  - L2001 ...all of them from one build of the posts, not one each
+  - L2012 (c) buildings put up at once add their posts to the next reading, each job type by the template's own
+  - L2013 ...which is the bare reading
+  - L2014 ...read afresh, once
+  - L2017 fixture: the order went on site, none of it standing
+  - L2018 (c) an order on site adds no posts: the reading is the one before
+  - L2019 ...and the bare one
+  - L2020 ...read afresh after the order, whether or not it moved a post
+  - L2022 ...and not again with nothing moved since
+  - L2030 (d) a stack of a template not yet built moves its sector's buildings by its posts
+  - L2031 ...to the bare reading
+  - L2032 ...read afresh, once
+  - L2046 (e) buildings scrapped take their posts from the next reading
+  - L2047 ...which is the bare reading
+  - L2048 ...read afresh, once
+  - L2055 (e) a building given one more post adds one to the next reading for each of them standing
+  - L2057 ...which is the bare reading
+  - L2058 ...read afresh, once
+  - L2062 ...and put back, the reading is the one before it
+  - L2077 fixture: the town's homes are three stacks of one sector, the house's first in the list
+  - L2091 fixture: ...every one of them, and they stand
+  - L2103 fixture: ...the shop has the recipe's posts
+  - L2106 fixture: ...the shop's posts are between the two recipes'
+  - L2110 fixture: ...and back on its own figures, the shop has its posts again
+  - L2116 ...and the builders now withhold a share of the shops' posts as well
+  - L2120 ...and put back, the builders withhold what they did
+  - L2126 fixture: ...the house's stack now after the apartments'
+  - L2130 (f) the buildings moved and the people were not told: the vacancies were not read again
+  - L2132 ...and a read with nothing moved is not a fill
+  - L2133 fixture: the posts built since the people were told them are not the ones they hold
+  - L2196 fixture: on the other ladder a graduate band's base is another multiple of the unskilled
+  - L2211 fixture: the graduate band and the unskilled are one market, so the bands' bases split the workers between them
+  - L2222 fixture: ...the city has no stacks
+  - L2226 (h) a scope opened inside it is the same one, one deeper
+  - L2228 ...and the outer one is still open when the inner one closes
+  - L2230 (h) closed, no scope is open on this thread
+  - L2235 ...so the vacancies are the bare fill after the people moved
+  - L2236 ...and the posts the bare ones after a build
+  - L2237 ...with no fill and no build of the posts counted by the scope that closed
 
 ## LandCheck.java - 606 labelled assertions
 
