@@ -448,7 +448,44 @@ ordinary retirements also respond to the changed city.
 
 QR1 raw files: `target/ensemble/QR1-pair-1900-v2`; derived full-precision
 proof copied to `target/qr1-pair1900-report.json`. The two today measurements
-and formal ensemble remain pending.
+remain pending; the formal ensemble is complete below.
+
+### Formal 80-run ensemble
+
+**PASS, exit 0**, 80/80 complete, source snapshot **4ead0c597**, executable
+tree identical to **1803d5cbc**, base main **3bf83d20e** (fresh merge was
+unchanged). Requested 02:44, admitted about 02:59 after the nightly;
+finished/copied/scored 03:34:37 local on 2026-11-26, box runtime 34.8 min.
+No laptop fallback or overlapping heavy job of this builder. The box ran
+Eclipse Adoptium/OpenJDK 21.0.13 LTS. Native data paths are named in the
+committed baseline; hashes equal the PC's data:
+earth-2 `c26de66da2bdc2c831a27c59e4203f66`,
+world-1 `c7ac48229b39a4a48c668b4a5fe5c8a8`.
+
+| Score | 0.9.208 baseline | QR1 |
+|---|---:|---:|
+| M1/F1 hard criteria | 10/10 PASS | 10/10 PASS |
+| Overall criteria | 23/26 | 24/26 |
+
+AUTO2, ZERO_SLACK, ZERO_HOT, SHOCK and HIGH each have **M1: 0 failed,
+0 unread** and **F1: 0/16 finding runs, no names**, matching all baseline
+hard readings. Independent inspection of all eighty raw CSVs agrees.
+Every policy has the exact seeds 0–15, all requested months, 80 DONE,
+zero missing/short/NO-DONE/throw/exception logs. This ordinary policy
+ensemble has only played rows; it is independent of the auxiliary default
+measurements' unread founding baseline.
+
+Only changed information verdict: ZERO_HOT H2 **FAIL → PASS**. Excess
+inflation median **0.18% [−3.95%, 2.02%]**, 15/16 below their AUTO2 twin;
+baseline **0.67% [−5.09%, 4.25%]**. AUTO2 A1 remains FAIL (2.93%
+[2.50%, 3.44%]); A2 remains FAIL (14 [7, 24] months). H1 remains retired,
+one retired criterion; none vacuous. These information scores are retained,
+not changed into shipping requirements.
+
+Committed score/provenance/summary: `docs/ensemble/QR1.md`. Full kept run:
+`target/ensemble/QR1` (baseline, score, summary, snapshot, progress, times,
+80 CSVs, 80 retirement sidecars, 80 logs and timing files); transport log
+`target/QR1-box-ensemble.log`, exit file `target/QR1-box-ensemble.exit`.
 
 P3 considered and not taken, as instructed: shorten or deny a fresh full
 operating-loss runway after a long interest-only net-loss spell.
