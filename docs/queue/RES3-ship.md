@@ -8,7 +8,9 @@ funding path receive the actual mix, costs and work; the synthetic pipeline is r
 Commits historical and present-day quote, budget, availability and paid-build reports.
 Emergency shelter keeps funded demand for separate doors; paid and hosted placements
 clear together. Past the census line, more than two a room, a family lives overcrowded
-as the 1901 census counted it, never doorless; movers weigh the half share they would take,
+as the 1901 census counted it, never doorless, and a family that could pay and finds no
+door standing boards with a housed one, as a fifth to a third of town households took
+boarders about 1900; movers weigh the half share they would take,
 and the incoming forecast is bounded by migration's own draw.
 Feasible orders use the affordable backlog and actual operating returns.
 Rent CPI follows comparable class bills; completed consumer purchases supply reference
