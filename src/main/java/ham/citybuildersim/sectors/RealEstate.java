@@ -10,6 +10,7 @@ import ham.citybuildersim.Good;
 import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.Markets;
+import ham.citybuildersim.MoneyAudit;
 import ham.citybuildersim.PayTier;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.Trade;
@@ -726,7 +727,10 @@ public final class RealEstate extends Sector {
             // the city would actually fill. Asking both on fillable doors
             // stopped a city building housing entirely.
             double hurdle = game.getEconomyManager().housingBuildHurdle(t);
-            if (hurdle > 0 && (housingMarket.active()?typedIncome:t.getCapacity() * price) < hurdle) {
+            // A block let to its last door at quotes struck on the hurdle (HousingMarket.unbuiltQuote()) earns the hurdle
+            // itself, to the rounding of the sum of its leases' bills.
+            double tie = housingMarket.active() ? Math.max(MoneyAudit.ULP_STEPS * Math.ulp(hurdle), MoneyAudit.RELATIVE_TOLERANCE * hurdle) : 0;
+            if (hurdle > 0 && (housingMarket.active()?typedIncome:t.getCapacity() * price) < hurdle - tie) {
                 blocked = String.format("rent does not cover a new %s", t.getName());
                 continue;
             }

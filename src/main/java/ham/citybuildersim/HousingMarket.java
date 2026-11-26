@@ -282,7 +282,7 @@ public final class HousingMarket {
         }
         for(ClassState c:classes.values())if(opening.contains(c.key())){
             double anchor=c.capital*RealEstate.LANDLORD_YIELD/12;
-            c.ask=c.homes==0?Math.max(anchor,c.carry):anchor;
+            c.ask=c.homes==0?unbuiltQuote(c,anchor):anchor;
         }
     }
     public HousingChoice.Result clear(Game game,List<HousingChoice.Demand> cells){
@@ -1008,6 +1008,17 @@ public final class HousingMarket {
             if(c.tradeQuantity>0){c.lastTrade=c.tradeValue/c.tradeQuantity;c.stale=0;}else c.stale++;
         }
     }
+    /**
+     * THE QUOTE OF A CLASS NOT YET BUILT (RES3c, 2026-11-26): the gross comparator, or what a landlord would build the class
+     * for, its actual operating carry and the margin every build is held to (EconomyManager.housingBuildHurdle()), whichever
+     * is more. The gross .058 stays gross (spec 4.4); the class's would-be tenants and their budgets decide whether it is built.
+     * WHY: the floor was the carry alone, so wherever the gross yield on a home's value fell under its carry and margin, a
+     * block let to its last door at its own quote could never clear its own hurdle. HousingCheck's staffing town (82 people,
+     * 453 posts) drew 647 heads with no home for them, and its Studio, let in full, earned 1.815 against a 2.035 hurdle (a
+     * carry of 1.53, 0.68 of it the pay of two diploma posts): only a class already standing, whose ask scarcity lifts,
+     * could ever be built, and a new form never.
+     */
+    private static double unbuiltQuote(ClassState c,double anchor){return Math.max(anchor,c.carry*(1+RealEstate.BUILD_MARGIN));}
     /** Existing lease-length log adjustment and expected-inflation drift, class by class. */
     public void reprice(double expectedMonthly){
         for(ClassState c:classes.values()){
@@ -1015,7 +1026,7 @@ public final class HousingMarket {
             // An unbuilt class keeps its opening supply quote until it has a market.
             double pressure=c.homes>0?c.demand/c.homes:1;
             double anchor=c.capital*RealEstate.LANDLORD_YIELD/12;
-            c.target=c.homes>0?anchor*Math.pow(pressure,RealEstate.SCARCITY_ELASTICITY):Math.max(anchor,c.carry);
+            c.target=c.homes>0?anchor*Math.pow(pressure,RealEstate.SCARCITY_ELASTICITY):unbuiltQuote(c,anchor);
             double balanced=c.homes*RealEstate.GLUT_PRESSURE;
             // Allocation can round down by an ULP at a full door. Classify
             // economic vacancy with the same quantity bound as the match.
