@@ -4,7 +4,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 652 files, 703,940 lines, 30,789 methods, 6,887 constants. `GameVersion.VERSION` is "0.9.214", `SAVE_FORMAT` 66.
+**The tree:** 652 files, 703,952 lines, 30,789 methods, 6,887 constants. `GameVersion.VERSION` is "0.9.214", `SAVE_FORMAT` 66.
 
 ## model (283 files)
 
@@ -18,7 +18,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AuctionTally.java](AuctionTally.md) | 145 | 11 | The city's auctions counted: how many sales the treasury has booked, what they sold and what they asked, how often the stop sat more than a point o... | 4 |
 | [AutoBuilder.java](AutoBuilder.md) | 2,953 | 177 | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and ... | 28 |
 | [BalanceSheet.java](BalanceSheet.md) | 201 | 30 | A simple balance sheet for one business in the city. | 6 |
-| [Bank.java](Bank.md) | 7,042 | 507 | The city's commercial bank: every loan in it, and every default. | 78 |
+| [Bank.java](Bank.md) | 7,045 | 507 | The city's commercial bank: every loan in it, and every default. | 78 |
 | [BankRules.java](BankRules.md) | 73 | 10 | The city's saved banking rules, shared by lenders and both policy pages. | 6 |
 | [BoatSchedule.java](BoatSchedule.md) | 1,068 | 62 | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7... | 21 |
 | [BondMarket.java](BondMarket.md) | 2,342 | 194 | The corporate bond market: every bond the city's businesses have issued, who holds each, the order book each trades on, and the rule each participa... | 32 |
@@ -403,7 +403,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AutoBuildCheck.java](AutoBuildCheck.md) | 2,191 | 50 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 2 |
 | [BankCheck.java](BankCheck.md) | 5,169 | 36 | The commercial bank, and the families it discharges. | 3 |
 | [BankFailureCheck.java](BankFailureCheck.md) | 735 | 23 | The hands-off bank's failures, caused separately and counted across Random cities. | 0 |
-| [BankRulesCheck.java](BankRulesCheck.md) | 270 | 5 | The window against collateral and the bank's rules as the player's dials. | 1 |
+| [BankRulesCheck.java](BankRulesCheck.md) | 279 | 5 | The window against collateral and the bank's rules as the player's dials. | 1 |
 | [BasketYearCheck.java](BasketYearCheck.md) | 807 | 37 | The household's basket by year (R0e slice 1): the year's basket in a city founded the 1900 way, today's in every other. | 0 |
 | [BondCheck.java](BondCheck.md) | 2,028 | 54 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
 | [BooksCheck.java](BooksCheck.md) | 299 | 3 | Verifies a sector's income statement and balance sheet, off the template. | 0 |

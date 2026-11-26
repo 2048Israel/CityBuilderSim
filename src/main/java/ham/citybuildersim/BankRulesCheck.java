@@ -136,6 +136,15 @@ public final class BankRulesCheck {
         b.setCash(1);
         cb.settleWindow(1_000);
         check("a repaid shortfall destroys the whole advance", cb.getAdvancesToBank() == 0);
+        int[] collateralReads = {0};
+        b.setGovernmentCollateral(() -> { collateralReads[0]++; return 100; });
+        check("a zero request does not price collateral it cannot borrow against",
+                b.windowFunding() == 0 && collateralReads[0] == 0);
+        b.setCash(-2_000);
+        check("a positive request still prices and obeys eligible collateral",
+                b.windowFunding() > 0 && collateralReads[0] == 1
+                        && b.windowFunding() <= b.windowCollateral());
+        b.setGovernmentCollateral(null);
 
         out.println("--- 2. the equity desk has a stable cash budget ---");
         b.setCash(-2_000);

@@ -912,7 +912,7 @@ final class CentralBankScreen {
     /** THE POLICY RATE, read: the dial today and its real rate, with the door to Policy where it is set. */
     private VBox policyRateCard(DebtManager market) {
         return card(cardHead(Icons.POLICY, Palette.MONEY, "THE POLICY RATE",
-                        "The rate the central bank sets: what the commercial bank pays to borrow at its window and is paid on its "
+                        "The rate the central bank sets: the base for window borrowing before the chosen spread, the rate paid on "
                                 + "reserves, and what the city's paper is priced up from. Changing it stages a proposal on Policy's "
                                 + "Money page, which is applied there.", null),
                 figure(ratePerYear(market.getPolicyRate()), Palette.SIZE_LEAD, Palette.TEXT_HEAD),

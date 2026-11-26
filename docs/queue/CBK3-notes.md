@@ -235,7 +235,10 @@ indexes/maps, regenerated from the merged source. Its central Policy page
 now calls the identical BankRulesPane as Policy, with its own redraw callback;
 there is one BankRules model. No CBK2 pace/direct-purchase control is built.
 CLAUDE's interface count is55. Post-merge --fast: compile green, zero firm
-Stale findings,209 informational soft. Post-merge model checks are underway.
+Stale findings,209 informational soft. Post-merge BankRulesCheck reproduces every copied-city total above exactly,
+and all three mixed-collateral bit comparisons pass. CentralBankStatementCheck
+passes its played statements, read-only twins and247-slot old/new save paths.
+The complete CentralBankCheck is running on ab69c5418.
 
 The helper's immutable6ff source review found owned repeated collateral work:
 each bank-held bond's marketValue called curve(), whose key scanned the whole
@@ -317,18 +320,96 @@ Gameplay write-up: claude/the-window-against-collateral.md. Eye check: the two
 rule pages retain thumb/scroll/nodes through month redraws and set the same
 saved values. No separate pending eye-check row is needed.
 
-The required manual publication route is unfinished. Browser connector host
-was unavailable; native Edge reached the owned CityBuilderSim artifact,
-pinned version6, showing build0.8.11/format40. No artifact content was edited,
-exported or published. Native input then stopped because its policy guard
-could not verify the current Windows browser URL. Its SKILL/guidance requires
-stopping app input for that turn; no further input was attempted. The prior
-minimisation attempt is unverified and the task tab may remain. Generated
-docs/manual files are untouched. Resume publication only through a permitted
-artifact edit/publish/pull and ManualToMarkdown route.
+The initial brief's manual-publication instruction was superseded by
+orchestrator mail20261126-193817-304: manual editions belong to the
+orchestrator at a milestone/Jerus request. The builder stops that route,
+leaves docs/manual.* untouched and provides the player text below. This is
+not a readiness block. Before that correction, the browser host was
+unavailable; native Edge reached the owned pinned-version6 artifact and
+then stopped on URL verification. No artifact was edited/exported/published;
+no further browser/app input is being attempted. The task tab's final window
+state is unverified.
+
+## For the manual
+
+Use the Bank tab to choose the commercial bank or the central bank. The
+central bank's Policy page and Policy > Money > Bank rules show the same
+banking rules. Moving one changes the rule at once, on both pages, and the
+city saves it. The policy-rate proposal still uses Policy's Apply control.
+
+The window lends against eligible collateral, after a haircut: it counts70%
+of secured business loans and rental mortgages,15% of unsecured household
+loans, and95% of the market value of the government paper the bank owns.
+Loan allowances are deducted. Company shares, carry loans and company bonds
+do not qualify. The collateral-share control can reduce the window's ceiling
+further. At normal settlement, funding beyond that ceiling is borrowed abroad
+at a term wholesale rate, payable in the city's own money. Its price follows
+the local policy outlook and credit premium. Expensive funding and the
+capital rules can therefore leave less credit available.
+
+The share desk also needs stable cash. It cannot finance a new purchase with
+overnight window money or hot deposits from abroad; the same cash budget
+applies to every purchase it makes. An inherited share portfolio is still
+owned and marked at current prices: these rules do not erase it or
+promise its old issue price. Funding and the statements show the window and
+foreign term borrowing separately. Interest paid abroad is not income of the
+central bank and does not become a treasury remittance.
+
+The controls start at these values:
+
+| Rule | Starting value | What tightening it does |
+|---|---|---|
+| Window spread over policy |0.25 percentage point|Raises the price of secured overnight funds|
+| Window collateral share |100%|A lower share reduces secured funding|
+| Minimum risk capital |8%|Requires more equity for the same risk-weighted loans|
+| Countercyclical capital buffer |0%|Adds to the bank's conservation capital target, up to2.5%|
+| Minimum leverage equity |3%|Requires more equity against total exposure, including insured mortgages|
+| Reserve requirement |0%|Keeps more deposit cash out of lending and share purchases|
+| Mortgage loan / cost |85%|A lower cap requires a larger down payment|
+| Mortgage debt / annual income |Off|An enabled, lower multiple permits less principal against annual net property rent|
+| Business loan / assets |90%|A lower cap reduces new working-credit room against the business's assets|
+
+The mortgage payment-coverage test still applies when the additional income
+multiple is off. New limits guide new credit decisions and funding rollovers;
+opening an older city preserves what it actually owed in the saved month.
+The next settlement applies the new window rule. A remittance is the central
+bank's realised surplus after its costs and carried losses; no fixed share
+of the treasury's revenue is guaranteed or imposed.
 
 Finish final named/integration checks and lawful Central timeout resolution;
 review the diff, main/RES3 movement and pick, then push provisional ship/LE1
 queue row and mail mends at with the review line. The stranger's money/save
 review precedes the final80-run ensemble; an ALL pick needs the orchestrator's
 separate dry-run go. No final readiness or gate reuse is claimed here.
+
+The ab69 full Central run was deliberately stopped at19:43 after six of the
+24 strictness rows, no preceding assertion red. Only its verified child
+PID27760 (parent9928, created19:36:26 under this named runner) was ended;
+no other process tree was touched. The wrapper consequently reports exit-1
+and no FAIL line. This is an aborted/incomplete run, never a green verdict;
+its partial log is target/CBK3-central-ab69-stopped.log.
+
+Source inspection found another owned cost: windowFunding priced all eligible
+government holdings even when its final requested amount was zero. It now
+computes that unchanged request first, returning only on requested==0; NaN requests
+still follow the original minimum, and positive requests still value all
+collateral. The harness causes zero and positive requests and counts actual
+valuation callbacks. The change introduces no held value or writer, and the
+same full harness will be restarted after copied-city/default/save checks.
+The integration helper found no accounting or247-slot save conflict, but
+flagged the policy-rate card's wording: it now says the policy rate is the
+window's base before the chosen spread. No model rate is changed by that text.
+
+Helper20 confirms the zero-request identity for valid finite collateral and
+no economic/cache-writer side effect. The comment was narrowed to NaN
+requests: an arbitrary callback returning a collateral NaN is no longer
+called on zero demand; universal NaN equivalence is not claimed. Actual
+positive-demand collateral remains fully priced and capped. No check of
+money, saved amounts or valid positive lending is weakened.
+
+Final zero-request build: --fast green (zero firm/209 soft), BankRulesCheck
+including both actual callback-count assertions and all120 copied-city
+months green. It again reproduces remittance476.704248490,
+revenue33741.426003542,1.4128160%, three failures and worst audit
+1.95086613530e-10 exactly. The three mixed government-collateral prices are
+bit-identical. The skipped zero-demand reader changes no measured outcome.

@@ -1,4 +1,4 @@
-# BankRulesCheck.java - 270 lines · 5 methods · 2 constants · harnesses
+# BankRulesCheck.java - 279 lines · 5 methods · 2 constants · harnesses
 
 `ham/citybuildersim/BankRulesCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -28,10 +28,10 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 14 | 257 | **type** `public final class BankRulesCheck` | The window against collateral and the bank's rules as the player's dials. |
+| 14 | 266 | **type** `public final class BankRulesCheck` | The window against collateral and the bank's rules as the player's dials. |
 | 19 | 4 | `static void check(String label, boolean ok)` |  |
 | 24 | 5 | `static void silently(Runnable action)` |  |
 | 31 | 39 | `static boolean saveChecks() throws Exception` | Real writer and loader, including an otherwise identical save with the new keys absent. |
 | 72 | 45 | `static void evidence(Path source) throws Exception` | Reads only the supplied evidence folder; all play and autosaves use a fresh scratch. |
-| 118 | 152 | `public static void main(String[] args) throws Exception` |  |
+| 118 | 161 | `public static void main(String[] args) throws Exception` |  |
 

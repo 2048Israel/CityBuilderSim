@@ -3477,8 +3477,11 @@ public class Bank {
         if (!(branches > 0)) return 0;
         double need = wholesaleFunding();
         double termRequired = Math.max(0, requiredStableFunding() - coreStableFunding());
-        return Math.min(windowCollateral() * rules.get(BankRules.Dial.WINDOW_LIMIT),
-                Math.max(0, need - Math.max(Math.max(0, securities), termRequired)));
+        double requested = Math.max(0, need - Math.max(Math.max(0, securities), termRequired));
+        // A zero request needs no collateral price; do not walk the government's
+        // whole book for a cash-rich bank. NaN requests still reach the original minimum.
+        if (requested == 0) return 0;
+        return Math.min(windowCollateral() * rules.get(BankRules.Dial.WINDOW_LIMIT), requested);
     }
 
     /** NSFR approximation by book: the equity desk is wholly stable-funded, with no overnight allowance. */

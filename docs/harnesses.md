@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**260 harness files, 29,613 labelled assertions.** AllChecks runs 260 of them.
+**260 harness files, 29,615 labelled assertions.** AllChecks runs 260 of them.
 
 ## Which harnesses read which class
 
@@ -1856,7 +1856,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L718 MoneyAudit closes in every month of every seed at its own tolerance
   - L721 every bank's equity movement is explained by its books, including failures
 
-## BankRulesCheck.java - 35 labelled assertions
+## BankRulesCheck.java - 37 labelled assertions
 
 > The window against collateral and the bank's rules as the player's dials.
 > WHY (CBK3): a capital-only equity desk could be financed without limit at
@@ -1875,35 +1875,37 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L134 even a direct advance cannot exceed the collateral
   - L135 a further advance has no room
   - L138 a repaid shortfall destroys the whole advance
-- **L140 2. the equity desk has a stable cash budget**
-  - L144 equity adds no eligible collateral
-  - L147 the desk's whole unsupported inventory is funded abroad
-  - L149 the window is still inside the collateral after refinancing
-  - L150 capital without stable cash cannot buy shares
-  - L153 core deposits cause a positive but finite desk cash budget
-  - L154 the capital rule also respects that cash budget
-  - L156 one fill spends the budget for every later name
-  - L159 hot money cannot replenish the stable desk budget
-- **L161 3. tighter saved rules constrain their own credit door**
-  - L168 a higher capital minimum supports less credit
-  - L169 raising risk capital does not relax the insured-loan leverage target
-  - L175 a capital change reprices concentration weight at once, preserving its absolute add-on
-  - L177 concentration does not let a tighter capital rule reduce required equity
-  - L182 a higher leverage floor leaves less exposure room
-  - L186 the countercyclical buffer requires more retained capital
-  - L190 reserves withhold deposits from lending
-  - L201 a higher window spread raises the cost of genuinely window-funded credit
-  - L207 closing the window removes secured credit without changing collateral
-  - L213 a tighter business loan-to-assets rule leaves less credit and exposure
-  - L218 a tighter loan-to-cost cap refuses the insufficient down payment
-  - L222 a tighter debt-to-income rule refuses excess debt against rent
-  - L228 foreign local-money term funding cannot use a cheap USD short rate
-  - L245 one-read collateral curve keeps each paper's price to the bit at
-- **L250 4. every default is the pre-dial Part 1 rule**
-  - L255 the dial list matches the measured Part 1 rules
-  - L259 the additional mortgage income limit starts off
-- **L262 5. dials and financing survive the real save paths**
-  - L263 new fields round-trip and a save with no fields reads the defaults
+  - L141 a zero request does not price collateral it cannot borrow against
+  - L144 a positive request still prices and obeys eligible collateral
+- **L149 2. the equity desk has a stable cash budget**
+  - L153 equity adds no eligible collateral
+  - L156 the desk's whole unsupported inventory is funded abroad
+  - L158 the window is still inside the collateral after refinancing
+  - L159 capital without stable cash cannot buy shares
+  - L162 core deposits cause a positive but finite desk cash budget
+  - L163 the capital rule also respects that cash budget
+  - L165 one fill spends the budget for every later name
+  - L168 hot money cannot replenish the stable desk budget
+- **L170 3. tighter saved rules constrain their own credit door**
+  - L177 a higher capital minimum supports less credit
+  - L178 raising risk capital does not relax the insured-loan leverage target
+  - L184 a capital change reprices concentration weight at once, preserving its absolute add-on
+  - L186 concentration does not let a tighter capital rule reduce required equity
+  - L191 a higher leverage floor leaves less exposure room
+  - L195 the countercyclical buffer requires more retained capital
+  - L199 reserves withhold deposits from lending
+  - L210 a higher window spread raises the cost of genuinely window-funded credit
+  - L216 closing the window removes secured credit without changing collateral
+  - L222 a tighter business loan-to-assets rule leaves less credit and exposure
+  - L227 a tighter loan-to-cost cap refuses the insufficient down payment
+  - L231 a tighter debt-to-income rule refuses excess debt against rent
+  - L237 foreign local-money term funding cannot use a cheap USD short rate
+  - L254 one-read collateral curve keeps each paper's price to the bit at
+- **L259 4. every default is the pre-dial Part 1 rule**
+  - L264 the dial list matches the measured Part 1 rules
+  - L268 the additional mortgage income limit starts off
+- **L271 5. dials and financing survive the real save paths**
+  - L272 new fields round-trip and a save with no fields reads the defaults
 
 ## BasketYearCheck.java - 109 labelled assertions
 

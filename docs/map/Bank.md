@@ -1,4 +1,4 @@
-# Bank.java - 7,042 lines · 507 methods · 79 constants · model
+# Bank.java - 7,045 lines · 507 methods · 79 constants · model
 
 `ham/citybuildersim/Bank.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -91,113 +91,113 @@
 | 2931 | THE CITY'S PAPER CHANGES HANDS (0.7.1) |
 | 3243 | FEES (0.7.7) |
 | 3318 | THE FUNDING SIDE |
-| 3641 | · · SPLIT THREE WAYS, NOT TWO, AND IT USED TO LOSE MONEY. |
-| 3691 | WHAT TO PAY SAVERS: A DECISION, NOT A CONSTANT. |
-| 3837 | THE THREE STATEMENTS |
-| 3949 | · tax |
-| 4074 | · LAST MONTH, KEPT ON PURPOSE |
-| 4227 | THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) |
-| 4306 | · the allowance |
-| 4585 | · what it holds |
-| 4727 | · the leverage ratio (0.7.11, round 2) |
-| 4807 | · what it does with profit |
-| 4929 | · its own shares |
-| 5094 | · what it lends |
-| 5184 | · the save |
-| 5361 | · reading |
-| 5388 | THE BRANCHES, BY THEIR CUSTOMERS (0.7.19) |
-| 5656 | · a branch whose fees do not cover it is closed (0.7.19) |
-| 6104 | WHAT THE BANK TAB READS (0.7.9) |
-| 6136 | · the interest, by who paid it |
-| 6173 | · what moved it between two presses |
-| 6210 | · its year of statements |
-| 6427 | · its balance sheet (0.7.13) |
-| 6521 | · when the lines do not add up (BI1, 2026-11-20) |
-| 6646 | · its rates, in a ladder |
-| 6699 | · in words |
-| 6766 | · what its book weighs |
-| 6809 | · its funding |
-| 6841 | · another branch |
-| 6855 | · how its equity moved |
-| 6924 | · its equity, in two parts |
+| 3644 | · · SPLIT THREE WAYS, NOT TWO, AND IT USED TO LOSE MONEY. |
+| 3694 | WHAT TO PAY SAVERS: A DECISION, NOT A CONSTANT. |
+| 3840 | THE THREE STATEMENTS |
+| 3952 | · tax |
+| 4077 | · LAST MONTH, KEPT ON PURPOSE |
+| 4230 | THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) |
+| 4309 | · the allowance |
+| 4588 | · what it holds |
+| 4730 | · the leverage ratio (0.7.11, round 2) |
+| 4810 | · what it does with profit |
+| 4932 | · its own shares |
+| 5097 | · what it lends |
+| 5187 | · the save |
+| 5364 | · reading |
+| 5391 | THE BRANCHES, BY THEIR CUSTOMERS (0.7.19) |
+| 5659 | · a branch whose fees do not cover it is closed (0.7.19) |
+| 6107 | WHAT THE BANK TAB READS (0.7.9) |
+| 6139 | · the interest, by who paid it |
+| 6176 | · what moved it between two presses |
+| 6213 | · its year of statements |
+| 6430 | · its balance sheet (0.7.13) |
+| 6524 | · when the lines do not add up (BI1, 2026-11-20) |
+| 6649 | · its rates, in a ladder |
+| 6702 | · in words |
+| 6769 | · what its book weighs |
+| 6812 | · its funding |
+| 6844 | · another branch |
+| 6858 | · how its equity moved |
+| 6927 | · its equity, in two parts |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 4816 | `Bank.Payout.NO_BANK` |  |
-| 4816 | `Bank.Payout.FAILED` |  |
-| 4816 | `Bank.Payout.UNDER_MINIMUM` |  |
-| 4816 | `Bank.Payout.REBUILDING` |  |
-| 4816 | `Bank.Payout.PAYING` |  |
-| 4816 | `Bank.Payout.RETURNING` |  |
-| 6223 | `Bank.Line.INTEREST` |  |
-| 6223 | `Bank.Line.FROM_BUSINESSES` |  |
-| 6223 | `Bank.Line.FROM_HOUSEHOLDS` |  |
-| 6223 | `Bank.Line.FROM_CITY` |  |
-| 6223 | `Bank.Line.FROM_CARRY` |  |
-| 6223 | `Bank.Line.FROM_RESERVES` |  |
-| 6223 | `Bank.Line.DISCOUNT` |  |
-| 6224 | `Bank.Line.SAVERS` |  |
-| 6224 | `Bank.Line.WINDOW` |  |
-| 6224 | `Bank.Line.NET_INTEREST` |  |
-| 6225 | `Bank.Line.FEES` |  |
-| 6225 | `Bank.Line.ACCOUNT_FEES` |  |
-| 6225 | `Bank.Line.LOAN_FEES_PAID` |  |
-| 6225 | `Bank.Line.LOAN_FEES_OWED` |  |
-| 6226 | `Bank.Line.PROVISIONS` |  |
-| 6226 | `Bank.Line.WRITE_OFFS` |  |
-| 6226 | `Bank.Line.TRADING` |  |
-| 6226 | `Bank.Line.PAPER_GAINS` |  |
-| 6226 | `Bank.Line.REVENUE` |  |
-| 6227 | `Bank.Line.COSTS` |  |
-| 6227 | `Bank.Line.PAYROLL` |  |
-| 6227 | `Bank.Line.UPKEEP` |  |
-| 6227 | `Bank.Line.PRE_TAX` |  |
-| 6227 | `Bank.Line.TAX` |  |
-| 6227 | `Bank.Line.NET` |  |
-| 6228 | `Bank.Line.DIVIDENDS` |  |
-| 6228 | `Bank.Line.BUYBACKS` |  |
-| 6228 | `Bank.Line.ISSUED` |  |
-| 6228 | `Bank.Line.RETAINED` |  |
-| 6229 | `Bank.Line.BOOK` |  |
-| 6229 | `Bank.Line.EQUITY` |  |
-| 6231 | `Bank.Line.FROM_BONDS` | 0.7.12's: the coupons on its bonds, its underwriting fees and its gains on bonds. |
-| 6231 | `Bank.Line.UNDERWRITING` |  |
-| 6231 | `Bank.Line.BOND_GAINS` |  |
-| 6232 | `Bank.Line.WHOLESALE_ABROAD` |  |
-| 6443 | `Bank.Sheet.RESERVES` |  |
-| 6443 | `Bank.Sheet.BUSINESS_LOANS` |  |
-| 6443 | `Bank.Sheet.INTERIM` |  |
-| 6443 | `Bank.Sheet.MORTGAGES` |  |
-| 6443 | `Bank.Sheet.FAMILIES` |  |
-| 6443 | `Bank.Sheet.CARRY` |  |
-| 6443 | `Bank.Sheet.CITY_PAPER` |  |
-| 6443 | `Bank.Sheet.BONDS` |  |
-| 6443 | `Bank.Sheet.ALLOWANCE` |  |
-| 6443 | `Bank.Sheet.DESK` |  |
-| 6444 | `Bank.Sheet.ASSETS` |  |
-| 6445 | `Bank.Sheet.DEPOSIT_FUNDING` |  |
-| 6445 | `Bank.Sheet.WINDOW` |  |
-| 6445 | `Bank.Sheet.FOREIGN_DEPOSITS` |  |
-| 6445 | `Bank.Sheet.DESK_SHORT` |  |
-| 6445 | `Bank.Sheet.UNEARNED_DISCOUNT` |  |
-| 6446 | `Bank.Sheet.LIABILITIES` |  |
-| 6447 | `Bank.Sheet.EQUITY` |  |
-| 6448 | `Bank.Sheet.HOUSEHOLD_DEPOSITS` |  |
-| 6448 | `Bank.Sheet.SECTOR_DEPOSITS` |  |
-| 6449 | `Bank.Sheet.PAID_IN` |  |
-| 6449 | `Bank.Sheet.RETAINED` |  |
-| 6451 | `Bank.Sheet.PREFERRED` | The city's preferred at par (0.7.14): equity's third part, beside paid in and retained. |
-| 6452 | `Bank.Sheet.WHOLESALE_ABROAD` |  |
-| 6769 | `Bank.Book.BUSINESSES` |  |
-| 6769 | `Bank.Book.CITY` |  |
-| 6769 | `Bank.Book.FAMILIES` |  |
-| 6769 | `Bank.Book.CARRY` |  |
-| 6769 | `Bank.Book.DESK` |  |
-| 6769 | `Bank.Book.MORTGAGES` |  |
-| 6769 | `Bank.Book.BONDS` |  |
-| 6769 | `Bank.Book.CONCENTRATION` |  |
+| 4819 | `Bank.Payout.NO_BANK` |  |
+| 4819 | `Bank.Payout.FAILED` |  |
+| 4819 | `Bank.Payout.UNDER_MINIMUM` |  |
+| 4819 | `Bank.Payout.REBUILDING` |  |
+| 4819 | `Bank.Payout.PAYING` |  |
+| 4819 | `Bank.Payout.RETURNING` |  |
+| 6226 | `Bank.Line.INTEREST` |  |
+| 6226 | `Bank.Line.FROM_BUSINESSES` |  |
+| 6226 | `Bank.Line.FROM_HOUSEHOLDS` |  |
+| 6226 | `Bank.Line.FROM_CITY` |  |
+| 6226 | `Bank.Line.FROM_CARRY` |  |
+| 6226 | `Bank.Line.FROM_RESERVES` |  |
+| 6226 | `Bank.Line.DISCOUNT` |  |
+| 6227 | `Bank.Line.SAVERS` |  |
+| 6227 | `Bank.Line.WINDOW` |  |
+| 6227 | `Bank.Line.NET_INTEREST` |  |
+| 6228 | `Bank.Line.FEES` |  |
+| 6228 | `Bank.Line.ACCOUNT_FEES` |  |
+| 6228 | `Bank.Line.LOAN_FEES_PAID` |  |
+| 6228 | `Bank.Line.LOAN_FEES_OWED` |  |
+| 6229 | `Bank.Line.PROVISIONS` |  |
+| 6229 | `Bank.Line.WRITE_OFFS` |  |
+| 6229 | `Bank.Line.TRADING` |  |
+| 6229 | `Bank.Line.PAPER_GAINS` |  |
+| 6229 | `Bank.Line.REVENUE` |  |
+| 6230 | `Bank.Line.COSTS` |  |
+| 6230 | `Bank.Line.PAYROLL` |  |
+| 6230 | `Bank.Line.UPKEEP` |  |
+| 6230 | `Bank.Line.PRE_TAX` |  |
+| 6230 | `Bank.Line.TAX` |  |
+| 6230 | `Bank.Line.NET` |  |
+| 6231 | `Bank.Line.DIVIDENDS` |  |
+| 6231 | `Bank.Line.BUYBACKS` |  |
+| 6231 | `Bank.Line.ISSUED` |  |
+| 6231 | `Bank.Line.RETAINED` |  |
+| 6232 | `Bank.Line.BOOK` |  |
+| 6232 | `Bank.Line.EQUITY` |  |
+| 6234 | `Bank.Line.FROM_BONDS` | 0.7.12's: the coupons on its bonds, its underwriting fees and its gains on bonds. |
+| 6234 | `Bank.Line.UNDERWRITING` |  |
+| 6234 | `Bank.Line.BOND_GAINS` |  |
+| 6235 | `Bank.Line.WHOLESALE_ABROAD` |  |
+| 6446 | `Bank.Sheet.RESERVES` |  |
+| 6446 | `Bank.Sheet.BUSINESS_LOANS` |  |
+| 6446 | `Bank.Sheet.INTERIM` |  |
+| 6446 | `Bank.Sheet.MORTGAGES` |  |
+| 6446 | `Bank.Sheet.FAMILIES` |  |
+| 6446 | `Bank.Sheet.CARRY` |  |
+| 6446 | `Bank.Sheet.CITY_PAPER` |  |
+| 6446 | `Bank.Sheet.BONDS` |  |
+| 6446 | `Bank.Sheet.ALLOWANCE` |  |
+| 6446 | `Bank.Sheet.DESK` |  |
+| 6447 | `Bank.Sheet.ASSETS` |  |
+| 6448 | `Bank.Sheet.DEPOSIT_FUNDING` |  |
+| 6448 | `Bank.Sheet.WINDOW` |  |
+| 6448 | `Bank.Sheet.FOREIGN_DEPOSITS` |  |
+| 6448 | `Bank.Sheet.DESK_SHORT` |  |
+| 6448 | `Bank.Sheet.UNEARNED_DISCOUNT` |  |
+| 6449 | `Bank.Sheet.LIABILITIES` |  |
+| 6450 | `Bank.Sheet.EQUITY` |  |
+| 6451 | `Bank.Sheet.HOUSEHOLD_DEPOSITS` |  |
+| 6451 | `Bank.Sheet.SECTOR_DEPOSITS` |  |
+| 6452 | `Bank.Sheet.PAID_IN` |  |
+| 6452 | `Bank.Sheet.RETAINED` |  |
+| 6454 | `Bank.Sheet.PREFERRED` | The city's preferred at par (0.7.14): equity's third part, beside paid in and retained. |
+| 6455 | `Bank.Sheet.WHOLESALE_ABROAD` |  |
+| 6772 | `Bank.Book.BUSINESSES` |  |
+| 6772 | `Bank.Book.CITY` |  |
+| 6772 | `Bank.Book.FAMILIES` |  |
+| 6772 | `Bank.Book.CARRY` |  |
+| 6772 | `Bank.Book.DESK` |  |
+| 6772 | `Bank.Book.MORTGAGES` |  |
+| 6772 | `Bank.Book.BONDS` |  |
+| 6772 | `Bank.Book.CONCENTRATION` |  |
 
 ## Constants
 
@@ -265,23 +265,23 @@
 | 3445 | `Bank.GOVERNMENT_STABLE_SHARE` | `.05` | Basel NSFR required stable funding for Level 1 government paper. |
 | 3447 | `Bank.HOUSEHOLD_STABLE_SHARE` | `.95` | Basel NSFR available stable funding from stable retail deposits. |
 | 3449 | `Bank.BUSINESS_STABLE_SHARE` | `.50` | Basel NSFR available stable funding from short non-financial corporate deposits. |
-| 3748 | `Bank.DEPOSIT_SHARE_FLUSH` | `.35` | The share of the policy rate a bank flush with reserves passes to its savers: about a third, because its next deposit only earns the policy rate at the central bank less the cost of the account - set so that this bank... |
-| 3751 | `Bank.DEPOSIT_SHARE_AT_WINDOW` | `.90` | ...and the share a bank funding at the window passes on: nine-tenths, because every deposit it finds saves it the window's rate, so it pays close to the policy rate for one - the way banks short of funding bid for it ... |
-| 3754 | `Bank.DEPOSIT_RATE_SPEED` | `1.0 / 6` | How far from last month's rate toward the one its funding asks for the bank moves in a month: a sixth, so most of a move reaches savers inside a year and none of it in a single step. |
-| 4309 | `Bank.SECTOR_WATCH_LEVERAGE` | `BusinessDebtManager.MAX_LOAN_TO_ASSETS` | Risk-staging reference at the original 90% business loan/assets ceiling. |
-| 4313 | `Bank.HOUSEHOLD_BOOK` | `"Households"` | The key the families' book is saved and shown under, beside the sectors' names. |
-| 4588 | `Bank.CONSERVATION_BUFFER` | `.025` | The least buffer a bank holds over the minimum: the Basel III capital conservation buffer, 2.5% of risk-weighted assets (BCBS, December 2010). |
-| 4606 | `Bank.BUFFER_BEFORE_L8` | `0` | The least buffer a bank holds over the minimum before Basel III (L8): none was required, so its buffer is its worst year alone (BIS, 12 Sep 2010: the conservation buffer is Basel III's). |
-| 4622 | `Bank.MANAGEMENT_CUSHION` | `.025` | How far over its target a bank runs before it calls its capital surplus: 2.5 points, the gap between the ~13.5% Canada's big banks held and the 11% OSFI expected of them (June 2026). |
-| 4625 | `Bank.YEAR_MONTHS` | `12` | A year, in months: the loss record's window, the dividends' and buybacks' "over the year", and how long an excess takes to return. |
-| 4716 | `Bank.MAX_BUFFER` | `.085` | The most buffer a bank holds over the minimum, however bad a year it has seen: 8.5 points, the whole Basel III stack - the 2.5-point conservation buffer, a countercyclical buffer at its 2.5-point ceiling and the 3.5-p... |
-| 4810 | `Bank.PAYOUT_IN_BAND` | `.45` | The share of its profit after tax a bank inside its band pays its owners: 45%, inside the 40-50% payout range Canada's big banks target; RBC paid 43% of its 2025 earnings. |
-| 4813 | `Bank.EXCESS_PAYOUT_MONTHS` | `YEAR_MONTHS` | How many months a bank over the top of its band takes to return the excess: a year, the term of a normal-course issuer bid on the TSX. |
-| 5016 | `Bank.OWN_ISSUE_DEAD_BAND` | `1e-9` | How far under its target, as a share of it, the bank must be before it issues its own shares: a billionth - rounding, not a rule - so a buyback that stopped exactly on the target does not turn into an issue on the las... |
-| 5097 | `Bank.RATIONED_GROWTH` | `.01` | A borrower's debt may grow this much a month halfway between the minimum and the target: 1%, the top of the 0-1% a month Jerus's brief gave a bank short of capital; nothing at the minimum, no limit at the target (lend... |
-| 5481 | `Bank.CUSTOMERS_PER_BRANCH` | `16_000` | The customers one branch serves: 16,000, TD's clients per branch - "approximately 16 million clients in Canadian Personal and Business banking" through "more than 1,000 branches" (TD, corporate information, as of Apri... |
-| 6456 | `Bank.SHEET_ASSETS` | `{ Sheet.RESERVES, Sheet.BUSINESS_LOANS, Sheet.INTERIM, Sheet.MORTGAGES, Sheet...` | The asset lines, in the page's order: they sum to totalAssets(). |
-| 6460 | `Bank.SHEET_LIABILITIES` | `{ Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS, Sheet.DESK_SHO...` | ...and the liability lines: they sum to totalLiabilities(). |
+| 3751 | `Bank.DEPOSIT_SHARE_FLUSH` | `.35` | The share of the policy rate a bank flush with reserves passes to its savers: about a third, because its next deposit only earns the policy rate at the central bank less the cost of the account - set so that this bank... |
+| 3754 | `Bank.DEPOSIT_SHARE_AT_WINDOW` | `.90` | ...and the share a bank funding at the window passes on: nine-tenths, because every deposit it finds saves it the window's rate, so it pays close to the policy rate for one - the way banks short of funding bid for it ... |
+| 3757 | `Bank.DEPOSIT_RATE_SPEED` | `1.0 / 6` | How far from last month's rate toward the one its funding asks for the bank moves in a month: a sixth, so most of a move reaches savers inside a year and none of it in a single step. |
+| 4312 | `Bank.SECTOR_WATCH_LEVERAGE` | `BusinessDebtManager.MAX_LOAN_TO_ASSETS` | Risk-staging reference at the original 90% business loan/assets ceiling. |
+| 4316 | `Bank.HOUSEHOLD_BOOK` | `"Households"` | The key the families' book is saved and shown under, beside the sectors' names. |
+| 4591 | `Bank.CONSERVATION_BUFFER` | `.025` | The least buffer a bank holds over the minimum: the Basel III capital conservation buffer, 2.5% of risk-weighted assets (BCBS, December 2010). |
+| 4609 | `Bank.BUFFER_BEFORE_L8` | `0` | The least buffer a bank holds over the minimum before Basel III (L8): none was required, so its buffer is its worst year alone (BIS, 12 Sep 2010: the conservation buffer is Basel III's). |
+| 4625 | `Bank.MANAGEMENT_CUSHION` | `.025` | How far over its target a bank runs before it calls its capital surplus: 2.5 points, the gap between the ~13.5% Canada's big banks held and the 11% OSFI expected of them (June 2026). |
+| 4628 | `Bank.YEAR_MONTHS` | `12` | A year, in months: the loss record's window, the dividends' and buybacks' "over the year", and how long an excess takes to return. |
+| 4719 | `Bank.MAX_BUFFER` | `.085` | The most buffer a bank holds over the minimum, however bad a year it has seen: 8.5 points, the whole Basel III stack - the 2.5-point conservation buffer, a countercyclical buffer at its 2.5-point ceiling and the 3.5-p... |
+| 4813 | `Bank.PAYOUT_IN_BAND` | `.45` | The share of its profit after tax a bank inside its band pays its owners: 45%, inside the 40-50% payout range Canada's big banks target; RBC paid 43% of its 2025 earnings. |
+| 4816 | `Bank.EXCESS_PAYOUT_MONTHS` | `YEAR_MONTHS` | How many months a bank over the top of its band takes to return the excess: a year, the term of a normal-course issuer bid on the TSX. |
+| 5019 | `Bank.OWN_ISSUE_DEAD_BAND` | `1e-9` | How far under its target, as a share of it, the bank must be before it issues its own shares: a billionth - rounding, not a rule - so a buyback that stopped exactly on the target does not turn into an issue on the las... |
+| 5100 | `Bank.RATIONED_GROWTH` | `.01` | A borrower's debt may grow this much a month halfway between the minimum and the target: 1%, the top of the 0-1% a month Jerus's brief gave a bank short of capital; nothing at the minimum, no limit at the target (lend... |
+| 5484 | `Bank.CUSTOMERS_PER_BRANCH` | `16_000` | The customers one branch serves: 16,000, TD's clients per branch - "approximately 16 million clients in Canadian Personal and Business banking" through "more than 1,000 branches" (TD, corporate information, as of Apri... |
+| 6459 | `Bank.SHEET_ASSETS` | `{ Sheet.RESERVES, Sheet.BUSINESS_LOANS, Sheet.INTERIM, Sheet.MORTGAGES, Sheet...` | The asset lines, in the page's order: they sum to totalAssets(). |
+| 6463 | `Bank.SHEET_LIABILITIES` | `{ Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS, Sheet.DESK_SHO...` | ...and the liability lines: they sum to totalLiabilities(). |
 
 ## Fields (state)
 
@@ -388,52 +388,52 @@
 | 3458 | `private double foreignFundingRate` |  |
 | 3459 | `private double lastForeignShare` |  |
 | 3461 | `private java.util.function.DoubleSupplier governmentCollateral` |  |
-| 3777 | `private double chosenDepositRate` | The rate the bank chose this month, before rule 2 asked whether its margin could pay it. |
-| 3829 | `private int monthsPayoutHeld` | HOW OFTEN RULE 2 HELD THE SAVERS UNDER THE CHOSEN RATE - counted for the run, not saved, for the reason the bid-up's counter was: a rule that never binds looks exactly like one that does not exist. |
-| 3976 | `private double taxPaid` | Jerus: "quick question banks are taxed right?" |
-| 3977 | `private double profitLastMonth` |  |
-| 4057 | `private double struckProfit, carriedLate, restoredLate` | PROFIT THAT LANDS AFTER THE CLOSE (0.7.7). |
-| 4058 | `private boolean closedThisMonth` |  |
-| 4093 | `private double lastPayroll, lastUpkeep, lastInterest, lastBook` |  |
-| 4096 | `private double lastOperating, lastUpkeepPerLater` | Last month's operating cost and what one later branch carried of it (revised 0.7.19): see laterBranchCost(). |
-| 4099 | `private double lastKept` | Last month's interest margin and fees - what its book KEPT, which the branch test asked of a counter from 0.7.7 to 0.7.18; still struck and saved, and read by no rule since. |
-| 4424 | `private final java.util.Map<String, Double> sectorAllowance` | Each sector's allowance by name, what each held when the month opened, and what each was written off by this month. |
-| 4425 | `private final java.util.Map<String, Double> openingSectorAllowance` |  |
-| 4426 | `private final java.util.Map<String, Double> writtenOffBySector` |  |
-| 4428 | `private final java.util.Set<String> sectorsWatched` | The sectors whose books are in stage 2, as the last provide() found them. |
-| 4430 | `private final java.util.Map<String, Double> stageTwoShares` | ...and the share of each sector's book in stage 2, firm by firm (0.7.8). |
-| 4433 | `private double householdAllowance, openingHouseholdAllowance, householdWrittenOff, householdWatchedDebt` | The families' allowance, the same three, and how much of their debt is in cells in trouble. |
-| 4436 | `private double openingAllowance, allowanceUsed` | The whole allowance as the month opened, and how much of the month's write-offs it covered. |
-| 4548 | `private final java.util.Map<String, double[]> allowanceReadings` |  |
-| 4609 | `private boolean conservationBufferRequired` | Whether the Basel III conservation buffer is the city's rule this month: true until Game says otherwise, as in every city that knows L8. |
-| 4628 | `private final double[] lossRing` | The last year's provisions and weighted book, a ring of the months the bank had a branch. |
-| 4629 | `private final double[] riskRing` |  |
-| 4630 | `private int lossMonths` |  |
-| 4632 | `private double worstLossRate` | The worst year's provisions over its average weighted book it has recorded: the loss the buffer is sized to take. |
-| 4924 | `private double payoutProfit, payoutExcess, payoutOverTarget` | What the month's payout read: the profit after tax it was paid on, what the bank held over the top of its band, and over its target. |
-| 4960 | `private double sharesBoughtBack, sharesIssued` | THE DESK DEALS IN THE BANK'S OWN SHARES BY ITS CAPITAL RULE (0.7.8): it buys them back from whoever sells while the bank is at or over its own target (buysBackOwnShares()) and only with what it holds over it (buybackR... |
-| 5080 | `private final double[] dividendRing` | The owners' year: dividends and buybacks, a ring of months with this one in it. |
-| 5081 | `private final double[] buybackRing` |  |
-| 5082 | `private int payoutMonths` |  |
-| 5573 | `private transient java.util.function.DoubleSupplier newBranchExtra` | THE NEW BRANCH'S OWN CREW (QN1, 2026-11-19; docs/queue/QN1.md, REV-R2e-6 finding 4). |
-| 5673 | `private int uncoveredMonths` | Closed months in a row the fees have not covered the branches past the first; struck at closeMonth(), carried in lastMonthToSave(). |
-| 6147 | `private double interestFromBusinesses, interestFromCity, interestFromHouseholds, discountAccreted` | The month's interest by who paid it: the businesses, the city's coupons, the families' credit lines, and the discount on the city's paper as it is earned. |
-| 6181 | `private double treasuryBuybackGain` | What the treasury buying its paper back gained the bank (negative: lost it) since the month opened. |
-| 6190 | `private double allowanceOpened` | The allowance a save from before 0.7.8 was given on load (openAllowance()): its equity fell by it between two presses. |
-| 6198 | `private double bailoutsLifetime` | What the city has put into it in rescues over its life - resolutions since 0.7.14 (takeResolutionCapital()), gifts before - carried in the solvency record since 0.7.9; a save from before counts from its load. |
-| 6207 | `private boolean monthKnown` | True once the month's lines are a month's: one played, or lines a save carried. |
-| 6296 | `private final double[][] statementRing` | The months before this one, a year of them less this one: each filed whole at the top of the month after (startMonth()), when everything booked after its close is in it. |
-| 6297 | `private int statementsFiled` |  |
-| 6576 | `private final double[][] sheetRing` | The sheet at the top of each of the last YEAR_MONTHS months - every line, then the loans and the interim financing by sector - filed at startMonth() before anything moves, so the oldest is the sheet exactly a year bef... |
-| 6577 | `private int sheetsFiled` |  |
-| 6968 | `private double paidInOpening, retainedOpening` | ITS EQUITY, IN TWO PARTS (0.7.13, round 2). |
-| 6969 | `private boolean splitKnown` |  |
+| 3780 | `private double chosenDepositRate` | The rate the bank chose this month, before rule 2 asked whether its margin could pay it. |
+| 3832 | `private int monthsPayoutHeld` | HOW OFTEN RULE 2 HELD THE SAVERS UNDER THE CHOSEN RATE - counted for the run, not saved, for the reason the bid-up's counter was: a rule that never binds looks exactly like one that does not exist. |
+| 3979 | `private double taxPaid` | Jerus: "quick question banks are taxed right?" |
+| 3980 | `private double profitLastMonth` |  |
+| 4060 | `private double struckProfit, carriedLate, restoredLate` | PROFIT THAT LANDS AFTER THE CLOSE (0.7.7). |
+| 4061 | `private boolean closedThisMonth` |  |
+| 4096 | `private double lastPayroll, lastUpkeep, lastInterest, lastBook` |  |
+| 4099 | `private double lastOperating, lastUpkeepPerLater` | Last month's operating cost and what one later branch carried of it (revised 0.7.19): see laterBranchCost(). |
+| 4102 | `private double lastKept` | Last month's interest margin and fees - what its book KEPT, which the branch test asked of a counter from 0.7.7 to 0.7.18; still struck and saved, and read by no rule since. |
+| 4427 | `private final java.util.Map<String, Double> sectorAllowance` | Each sector's allowance by name, what each held when the month opened, and what each was written off by this month. |
+| 4428 | `private final java.util.Map<String, Double> openingSectorAllowance` |  |
+| 4429 | `private final java.util.Map<String, Double> writtenOffBySector` |  |
+| 4431 | `private final java.util.Set<String> sectorsWatched` | The sectors whose books are in stage 2, as the last provide() found them. |
+| 4433 | `private final java.util.Map<String, Double> stageTwoShares` | ...and the share of each sector's book in stage 2, firm by firm (0.7.8). |
+| 4436 | `private double householdAllowance, openingHouseholdAllowance, householdWrittenOff, householdWatchedDebt` | The families' allowance, the same three, and how much of their debt is in cells in trouble. |
+| 4439 | `private double openingAllowance, allowanceUsed` | The whole allowance as the month opened, and how much of the month's write-offs it covered. |
+| 4551 | `private final java.util.Map<String, double[]> allowanceReadings` |  |
+| 4612 | `private boolean conservationBufferRequired` | Whether the Basel III conservation buffer is the city's rule this month: true until Game says otherwise, as in every city that knows L8. |
+| 4631 | `private final double[] lossRing` | The last year's provisions and weighted book, a ring of the months the bank had a branch. |
+| 4632 | `private final double[] riskRing` |  |
+| 4633 | `private int lossMonths` |  |
+| 4635 | `private double worstLossRate` | The worst year's provisions over its average weighted book it has recorded: the loss the buffer is sized to take. |
+| 4927 | `private double payoutProfit, payoutExcess, payoutOverTarget` | What the month's payout read: the profit after tax it was paid on, what the bank held over the top of its band, and over its target. |
+| 4963 | `private double sharesBoughtBack, sharesIssued` | THE DESK DEALS IN THE BANK'S OWN SHARES BY ITS CAPITAL RULE (0.7.8): it buys them back from whoever sells while the bank is at or over its own target (buysBackOwnShares()) and only with what it holds over it (buybackR... |
+| 5083 | `private final double[] dividendRing` | The owners' year: dividends and buybacks, a ring of months with this one in it. |
+| 5084 | `private final double[] buybackRing` |  |
+| 5085 | `private int payoutMonths` |  |
+| 5576 | `private transient java.util.function.DoubleSupplier newBranchExtra` | THE NEW BRANCH'S OWN CREW (QN1, 2026-11-19; docs/queue/QN1.md, REV-R2e-6 finding 4). |
+| 5676 | `private int uncoveredMonths` | Closed months in a row the fees have not covered the branches past the first; struck at closeMonth(), carried in lastMonthToSave(). |
+| 6150 | `private double interestFromBusinesses, interestFromCity, interestFromHouseholds, discountAccreted` | The month's interest by who paid it: the businesses, the city's coupons, the families' credit lines, and the discount on the city's paper as it is earned. |
+| 6184 | `private double treasuryBuybackGain` | What the treasury buying its paper back gained the bank (negative: lost it) since the month opened. |
+| 6193 | `private double allowanceOpened` | The allowance a save from before 0.7.8 was given on load (openAllowance()): its equity fell by it between two presses. |
+| 6201 | `private double bailoutsLifetime` | What the city has put into it in rescues over its life - resolutions since 0.7.14 (takeResolutionCapital()), gifts before - carried in the solvency record since 0.7.9; a save from before counts from its load. |
+| 6210 | `private boolean monthKnown` | True once the month's lines are a month's: one played, or lines a save carried. |
+| 6299 | `private final double[][] statementRing` | The months before this one, a year of them less this one: each filed whole at the top of the month after (startMonth()), when everything booked after its close is in it. |
+| 6300 | `private int statementsFiled` |  |
+| 6579 | `private final double[][] sheetRing` | The sheet at the top of each of the last YEAR_MONTHS months - every line, then the loans and the interim financing by sector - filed at startMonth() before anything moves, so the oldest is the sheet exactly a year bef... |
+| 6580 | `private int sheetsFiled` |  |
+| 6971 | `private double paidInOpening, retainedOpening` | ITS EQUITY, IN TWO PARTS (0.7.13, round 2). |
+| 6972 | `private boolean splitKnown` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 73 | 6970 | **type** `public class Bank` | The city's commercial bank: every loan in it, and every default. |
+| 73 | 6973 | **type** `public class Bank` | The city's commercial bank: every loan in it, and every default. |
 | 76 | 1 | `public BankRules rules()` |  |
 | 77 | 1 | `public double windowSpread()` |  |
 | 78 | 1 | `public double mortgageLoanToCost()` |  |
@@ -740,7 +740,7 @@
 | 3315 | 1 | `public double getLoanFeesPaid()` |  |
 | 3316 | 1 | `public double getLoanFeesOwed()` |  |
 
-### THE FUNDING SIDE (lines 3318-3690)
+### THE FUNDING SIDE (lines 3318-3693)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -759,412 +759,412 @@
 | 3454 | 1 | `public double getWindowOutstanding()` |  |
 | 3462 | 1 | `public void setGovernmentCollateral(java.util.function.DoubleSupplier value)` |  |
 | 3465 | 9 | `public double windowCollateral()` | Eligible domestic loans net of allowances and government paper at market, after haircuts; no equity or carry. |
-| 3476 | 7 | `public double windowFunding()` | Window tranche: collateralised and with every dollar of equity inventory kept out of it. |
-| 3485 | 8 | `public double requiredStableFunding()` | NSFR approximation by book: the equity desk is wholly stable-funded, with no overnight allowance. |
-| 3495 | 4 | `public double coreStableFunding()` | Own capital and core deposits; hot money and overnight advances have no stable value. |
-| 3501 | 1 | `public double getForeignWholesale()` | The foreign wholesale liability actually settled, distinct from hot deposits. |
-| 3502 | 1 | `public double getForeignWholesaleIn()` |  |
-| 3503 | 1 | `public double getForeignWholesaleOut()` |  |
-| 3504 | 1 | `public double getForeignFundingCost()` |  |
-| 3505 | 1 | `public double getForeignFundingRate()` |  |
-| 3506 | 1 | `public double foreignShare()` |  |
-| 3507 | 1 | `public double getWindowFundingCost()` |  |
-| 3510 | 7 | `public void settleForeignFunding(double window)` | Refinance the residual abroad; net cash already carries the borrowing, so only its gross pool moves. |
-| 3519 | 4 | `public double[] fundingToSave()` | Stocks and flows kept together so loading cannot reconstruct a month's financing. |
-| 3524 | 13 | `public void restoreFunding(double[] saved)` |  |
-| 3539 | 1 | `public void setForeignFundingRate(double annual)` | Foreign lenders' term quote in local money, including the city's credit spread. |
-| 3546 | 1 | `public double fundingRate()` | The weighted annual price of its external funding: the collateralised window at policy plus its saved spread and foreign term money at its local-money quote. |
-| 3559 | 131 | `public void fundToCover(double policyAnnual)` | Settles the funding for the month: charge for what was borrowed, then borrow what is short or repay what is spare. |
+| 3476 | 10 | `public double windowFunding()` | Window tranche: collateralised and with every dollar of equity inventory kept out of it. |
+| 3488 | 8 | `public double requiredStableFunding()` | NSFR approximation by book: the equity desk is wholly stable-funded, with no overnight allowance. |
+| 3498 | 4 | `public double coreStableFunding()` | Own capital and core deposits; hot money and overnight advances have no stable value. |
+| 3504 | 1 | `public double getForeignWholesale()` | The foreign wholesale liability actually settled, distinct from hot deposits. |
+| 3505 | 1 | `public double getForeignWholesaleIn()` |  |
+| 3506 | 1 | `public double getForeignWholesaleOut()` |  |
+| 3507 | 1 | `public double getForeignFundingCost()` |  |
+| 3508 | 1 | `public double getForeignFundingRate()` |  |
+| 3509 | 1 | `public double foreignShare()` |  |
+| 3510 | 1 | `public double getWindowFundingCost()` |  |
+| 3513 | 7 | `public void settleForeignFunding(double window)` | Refinance the residual abroad; net cash already carries the borrowing, so only its gross pool moves. |
+| 3522 | 4 | `public double[] fundingToSave()` | Stocks and flows kept together so loading cannot reconstruct a month's financing. |
+| 3527 | 13 | `public void restoreFunding(double[] saved)` |  |
+| 3542 | 1 | `public void setForeignFundingRate(double annual)` | Foreign lenders' term quote in local money, including the city's credit spread. |
+| 3549 | 1 | `public double fundingRate()` | The weighted annual price of its external funding: the collateralised window at policy plus its saved spread and foreign term money at its local-money quote. |
+| 3562 | 131 | `public void fundToCover(double policyAnnual)` | Settles the funding for the month: charge for what was borrowed, then borrow what is short or repay what is spare. |
 
-### WHAT TO PAY SAVERS: A DECISION, NOT A CONSTANT. (lines 3691-3836)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3762 | 7 | `public double fundingPosition()` | How the bank is funded, 0 to 1: 0 while it holds reserves (its cash is positive), 1 once it is borrowing at the window, and in between the share of what its branches gathered that it has lent out. |
-| 3771 | 4 | `public double depositShare()` | The share of the policy rate the bank's funding asks it to pass on: between DEPOSIT_SHARE_FLUSH and DEPOSIT_SHARE_AT_WINDOW, by fundingPosition(). |
-| 3778 | 1 | `public double getChosenDepositRate()` |  |
-| 3790 | 19 | `private double chooseDepositRate(double policyAnnual)` | The month's deposit interest, in money. |
-| 3820 | 7 | `public double depositRateAt(double policyAnnual)` | RULE 1 ON ITS OWN, at a policy rate of the caller's (0.7.36): the rate the bank would choose for its savers next month - the rate its funding asks for (depositShare() of the dial, under the window's), moved a sixth of... |
-| 3830 | 1 | `public int getMonthsPayoutHeld()` |  |
-| 3833 | 1 | `public double getFundingCost()` | What the window charged this month, paid to the central bank. |
-| 3835 | 1 | `public double getPlacementIncome()` | What its reserves earned at the central bank this month, at the policy rate. |
-
-### THE THREE STATEMENTS (lines 3837-3948)
+### WHAT TO PAY SAVERS: A DECISION, NOT A CONSTANT. (lines 3694-3839)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3860 | 1 | `public double cashReserves()` | Cash it is actually sitting on. |
-| 3867 | 1 | `public double totalAssets()` | Total assets: the loan book net of what it has set aside against it (netLoans(), since 0.7.8), whatever cash it has not lent, and what the desk holds. |
-| 3870 | 1 | `public double netLoans()` | The loans as the balance sheet carries them (0.7.8): what is owed, less the allowance for what will not come back. |
-| 3873 | 1 | `public double shortSecurities()` | ...and a desk that is short owes the shares: a liability at the mark. |
-| 3900 | 3 | `public double totalLiabilities()` | What the bank owes: what it borrowed to fund its book (past its deposits, at the central bank's window since 0.7.0), and the hot money. |
-| 3912 | 1 | `public double equity()` | The residual - and, once the two above are written out, simply the book plus the cash position. |
-| 3915 | 1 | `public double getOpeningEquity()` | Equity as it stood at the top of the month. |
-| 3920 | 1 | `public double interestIncome()` | What every borrower paid it this month. |
-| 3923 | 3 | `public double netInterestIncome()` | ...less what it paid savers and what it paid the window. |
-| 3928 | 1 | `public double feeIncome()` | ...plus its fees, since 0.7.7: the accounts, and the loans written. |
-| 3938 | 1 | `public double afterLosses()` | ...less the provision for the loans that will not come back (0.7.8): what the allowance rose by, and whatever the month wrote off that it had not already set aside - provisions(). |
-| 3941 | 1 | `public double operatingExpenses()` | ...less the tellers and the lights. |
-| 3944 | 1 | `public double afterTrading()` | ...plus what the desk made or lost. |
-| 3947 | 1 | `public double profitBeforeTax()` | What it made before the city took its share. |
+| 3765 | 7 | `public double fundingPosition()` | How the bank is funded, 0 to 1: 0 while it holds reserves (its cash is positive), 1 once it is borrowing at the window, and in between the share of what its branches gathered that it has lent out. |
+| 3774 | 4 | `public double depositShare()` | The share of the policy rate the bank's funding asks it to pass on: between DEPOSIT_SHARE_FLUSH and DEPOSIT_SHARE_AT_WINDOW, by fundingPosition(). |
+| 3781 | 1 | `public double getChosenDepositRate()` |  |
+| 3793 | 19 | `private double chooseDepositRate(double policyAnnual)` | The month's deposit interest, in money. |
+| 3823 | 7 | `public double depositRateAt(double policyAnnual)` | RULE 1 ON ITS OWN, at a policy rate of the caller's (0.7.36): the rate the bank would choose for its savers next month - the rate its funding asks for (depositShare() of the dial, under the window's), moved a sixth of... |
+| 3833 | 1 | `public int getMonthsPayoutHeld()` |  |
+| 3836 | 1 | `public double getFundingCost()` | What the window charged this month, paid to the central bank. |
+| 3838 | 1 | `public double getPlacementIncome()` | What its reserves earned at the central bank this month, at the policy rate. |
 
-### tax (lines 3949-4073)
+### THE THREE STATEMENTS (lines 3840-3951)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3992 | 1 | `public double getProfitLastMonth()` | Profit the tax is charged on: the month that has just finished - and, since 0.7.7, what the month before it earned after its own close (getCarriedLate(); see PROFIT THAT LANDS AFTER THE CLOSE). |
-| 3995 | 54 | `public void closeMonth()` | Called at the end of the month, once the profit is final. |
-| 4061 | 3 | `public double lateProfit()` | What this month earned after its close: the part of its profit next month's tax and dividend will carry. |
-| 4066 | 1 | `public double getCarriedLate()` | What last month earned after its close, inside getProfitLastMonth(). |
-| 4069 | 4 | `public void restoreLateProfit(double value)` | The load path: what the saved month earned after its close. |
+| 3863 | 1 | `public double cashReserves()` | Cash it is actually sitting on. |
+| 3870 | 1 | `public double totalAssets()` | Total assets: the loan book net of what it has set aside against it (netLoans(), since 0.7.8), whatever cash it has not lent, and what the desk holds. |
+| 3873 | 1 | `public double netLoans()` | The loans as the balance sheet carries them (0.7.8): what is owed, less the allowance for what will not come back. |
+| 3876 | 1 | `public double shortSecurities()` | ...and a desk that is short owes the shares: a liability at the mark. |
+| 3903 | 3 | `public double totalLiabilities()` | What the bank owes: what it borrowed to fund its book (past its deposits, at the central bank's window since 0.7.0), and the hot money. |
+| 3915 | 1 | `public double equity()` | The residual - and, once the two above are written out, simply the book plus the cash position. |
+| 3918 | 1 | `public double getOpeningEquity()` | Equity as it stood at the top of the month. |
+| 3923 | 1 | `public double interestIncome()` | What every borrower paid it this month. |
+| 3926 | 3 | `public double netInterestIncome()` | ...less what it paid savers and what it paid the window. |
+| 3931 | 1 | `public double feeIncome()` | ...plus its fees, since 0.7.7: the accounts, and the loans written. |
+| 3941 | 1 | `public double afterLosses()` | ...less the provision for the loans that will not come back (0.7.8): what the allowance rose by, and whatever the month wrote off that it had not already set aside - provisions(). |
+| 3944 | 1 | `public double operatingExpenses()` | ...less the tellers and the lights. |
+| 3947 | 1 | `public double afterTrading()` | ...plus what the desk made or lost. |
+| 3950 | 1 | `public double profitBeforeTax()` | What it made before the city took its share. |
 
-### LAST MONTH, KEPT ON PURPOSE (lines 4074-4226)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4101 | 15 | `public double[] lastMonthToSave()` |  |
-| 4140 | 25 | `public void restoreLastMonth(double[] state)` | ...AND THE TWO PRICES THE MONTH CLOSED AT, added 2026-09-13 with the cost-of-funds floor. |
-| 4167 | 1 | `public void setProfitLastMonth(double value)` | Restored from the save, so next month taxes the right figure. |
-| 4179 | 1 | `public void setDepositRate(double rate)` | What savers were paid in the month this save was taken in. |
-| 4182 | 1 | `public double getTaxPaid()` | What the city took this month. |
-| 4195 | 5 | `public double chargeTax(double annualProfitRate)` | Hands the city its share of last month's profit. |
-| 4202 | 3 | `private static double taxOn(double profit, double profitTaxRate)` | The city's share of a month's profit at this rate: nothing on a loss. |
-| 4213 | 3 | `public double taxAt(double annualProfitRate)` | What chargeTax() would take at the top of next month at this rate (0.7.36): the profit the month just closed on, taxed at it. |
-| 4223 | 3 | `public double getProfitAfterTaxLastMonth(double profitTaxRate)` | Last month's profit AFTER the tax it will be charged at this rate: what the owners are paid a share of (Game.payDividends()) and what the register records (Equity.recordMonth()), as every sector's own net income is. |
-
-### THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) (lines 4227-4305)
-
-### the allowance (lines 4306-4584)
+### tax (lines 3952-4076)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4316 | 3 | `public static double lossIfDefaulted(double principal, double assets)` | What the BACKSTOP would cost the bank on a business owing this against these assets (BusinessDebtManager.restructure()): everything owed past BusinessDebtManager.RESTRUCTURE_TARGET of its assets - all of it, for a sec... |
-| 4321 | 4 | `public static boolean sectorWatched(double principal, double assets)` | A business borrower in trouble: owing past SECTOR_WATCH_LEVERAGE of its assets, or anything at all against none. |
-| 4334 | 6 | `public static double stageTwoShare(double principal, double assets)` | The share of a sector's firms, by what they owe, past the watch line: the curve's spread of fortunes (BusinessDebtManager.ASSET_VOLATILITY) read at SECTOR_WATCH_LEVERAGE instead of the default point, N(ln(L / SECTOR_W... |
-| 4372 | 3 | `public static double sectorAllowance(double principal, double assets)` | The allowance a business's book holds, read off the curve its firms default on (0.7.8) - the same PD(L) that writes the month's slice off (BusinessDebtManager.defaultProbability()), so the allowance is what the slices... |
-| 4385 | 3 | `public static double sectorAllowance(double owed, double principal, double assets)` | ...ON WHAT IT OWES NOW, READ AT ITS QUARTER (0.7.8): the curve read at principal over assets - the averages of its last quarter's readings (BusinessDebtManager.quarterPrincipal(), quarterAssets()) - and the loss struc... |
-| 4398 | 13 | `public static double sectorAllowance(double owed, double principal, double assets, double lossGivenDefault)` | ...AT A LOSS GIVEN DEFAULT OF ITS OWN (0.7.12): a loan's for what the sector owes the bank, a bond's for the sector's bonds it holds (BusinessDebtManager, RECOVERIES BY INSTRUMENT, since round 2; round 1 read the two ... |
-| 4419 | 3 | `private static double floorAt(double lgd)` | THE FLOOR IS THE SOUND BOOK'S LOSS, at this loss given default (0.7.12): BASE_LOSS_RATE is a sound LOAN's loss, so at a loan's loss given default it is BASE_LOSS_RATE, and a dollar that loses more when it defaults - a... |
-| 4456 | 17 | `public void provide(java.util.Map<String, double[]> sectors, double households, double householdsWatched)` | THE MONTH'S PROVISION: sets every book's allowance from its borrowers as they stand now, and draws the month's write-offs against what each book held when the month opened. |
-| 4481 | 11 | `public void openAllowance(java.util.Map<String, double[]> sectors, double households, double householdsWatched)` | ...and a bank that has never held one: the allowance its borrowers call for, set up WITHOUT a provision - the month it opens on holds it from its start. |
-| 4493 | 27 | `private void strikeAllowance(java.util.Map<String, double[]> sectors, double households, double householdsWatched)` |  |
-| 4522 | 5 | `public double getAllowance()` | Everything set aside against the book. |
-| 4529 | 1 | `public double getSectorAllowance()` | ...against the businesses' book, all of it. |
-| 4531 | 1 | `public double getSectorAllowance(String sector)` | ...against one sector's. |
-| 4544 | 4 | `public double[] getAllowanceReading(String sector)` | What the allowance on a sector was struck on, as Game.bankReadings() handed it over at the month's provision: {the quarter's principal, its assets, what it owes that nobody insures, the loans' loss given default, the ... |
-| 4550 | 1 | `public double getWrittenOff(String sector)` | What this month wrote off one sector's book - its defaulted firms' slice, or the backstop (0.7.8: the Bank tab's "this month", beside the allowance). |
-| 4552 | 1 | `public double getHouseholdAllowance()` | ...against the families'. |
-| 4554 | 1 | `public int getStage(String sector)` | 2 when that sector's book is in trouble - most of its firms past the watch line - 1 when most are sound. |
-| 4556 | 1 | `public double getStageTwoShare(String sector)` | The share of that sector's book in stage 2, as the last provide() struck it (stageTwoShare()). |
-| 4558 | 1 | `public int getHouseholdStage()` | 2 when any family's line is in trouble, 1 when none is. |
-| 4560 | 1 | `public double getHouseholdWatchedDebt()` | The families' debt in the cells that are in trouble. |
-| 4562 | 1 | `public java.util.Set<String> getSectorsWatched()` | The sectors whose books are in stage 2. |
-| 4564 | 1 | `public int getBooksWatched()` | How many of its books are in stage 2: each sector's, and the families' as one (0.7.9, the Bank tab's count of borrowers in trouble). |
-| 4566 | 1 | `public double getOpeningAllowance()` | The allowance the month opened with. |
-| 4574 | 1 | `public double provisions()` | THE PROVISION, the income statement's line: what the allowance rose by this month and whatever was written off that it had not set aside - which is the allowance's move plus every write-off. |
-| 4577 | 1 | `public double getAllowanceUsed()` | The month's write-offs that the allowance had already set aside. |
-| 4580 | 1 | `public double getWriteOffsBeyondAllowance()` | ...and the part it had not, which reached the statement the month it was written off. |
-| 4583 | 1 | `public double getProvisionCharge()` | The part of the provision that went into the allowance: its rise less what the write-offs drew out of it. |
+| 3995 | 1 | `public double getProfitLastMonth()` | Profit the tax is charged on: the month that has just finished - and, since 0.7.7, what the month before it earned after its own close (getCarriedLate(); see PROFIT THAT LANDS AFTER THE CLOSE). |
+| 3998 | 54 | `public void closeMonth()` | Called at the end of the month, once the profit is final. |
+| 4064 | 3 | `public double lateProfit()` | What this month earned after its close: the part of its profit next month's tax and dividend will carry. |
+| 4069 | 1 | `public double getCarriedLate()` | What last month earned after its close, inside getProfitLastMonth(). |
+| 4072 | 4 | `public void restoreLateProfit(double value)` | The load path: what the saved month earned after its close. |
 
-### what it holds (lines 4585-4726)
+### LAST MONTH, KEPT ON PURPOSE (lines 4077-4229)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4612 | 1 | `public void hearCapitalRule(boolean basel3)` | Hears which capital rule stands this month: true from the month L8 is known (always, in a city founded the default way). |
-| 4615 | 1 | `public boolean conservationBufferRequired()` | Whether the Basel III conservation buffer is the rule this month (L8). |
-| 4618 | 2 | `public double bufferFloor()` | The least buffer the rule asks over the minimum this month: CONSERVATION_BUFFER once L8 is known, BUFFER_BEFORE_L8 before. |
-| 4635 | 10 | `private void recordLosses()` | Files the month that has just closed into the loss record. |
-| 4662 | 8 | `public double trailingLossRate()` | The last twelve recorded months' provisions over their average weighted book - or over what its branches' founding capital is built to carry at the minimum (branches x paidInPerBranch / CAPITAL_RATIO), whichever is la... |
-| 4672 | 1 | `public double getWorstLossRate()` | The worst year it has lived through, as the capital target reads it. |
-| 4719 | 1 | `public double capitalBuffer()` | Its buffer over the minimum: the worst year it has recorded, never less than the rule's floor (bufferFloor(): CONSERVATION_BUFFER from L8) nor more than MAX_BUFFER. |
-| 4722 | 1 | `public double capitalTarget()` | THE TARGET it chooses: the city's minimum and its own buffer. |
-| 4725 | 1 | `public double capitalTop()` | ...and the top of its band. |
+| 4104 | 15 | `public double[] lastMonthToSave()` |  |
+| 4143 | 25 | `public void restoreLastMonth(double[] state)` | ...AND THE TWO PRICES THE MONTH CLOSED AT, added 2026-09-13 with the cost-of-funds floor. |
+| 4170 | 1 | `public void setProfitLastMonth(double value)` | Restored from the save, so next month taxes the right figure. |
+| 4182 | 1 | `public void setDepositRate(double rate)` | What savers were paid in the month this save was taken in. |
+| 4185 | 1 | `public double getTaxPaid()` | What the city took this month. |
+| 4198 | 5 | `public double chargeTax(double annualProfitRate)` | Hands the city its share of last month's profit. |
+| 4205 | 3 | `private static double taxOn(double profit, double profitTaxRate)` | The city's share of a month's profit at this rate: nothing on a loss. |
+| 4216 | 3 | `public double taxAt(double annualProfitRate)` | What chargeTax() would take at the top of next month at this rate (0.7.36): the profit the month just closed on, taxed at it. |
+| 4226 | 3 | `public double getProfitAfterTaxLastMonth(double profitTaxRate)` | Last month's profit AFTER the tax it will be charged at this rate: what the owners are paid a share of (Game.payDividends()) and what the register records (Equity.recordMonth()), as every sector's own net income is. |
 
-### the leverage ratio (0.7.11, round 2) (lines 4727-4806)
+### THE BANK AS A BUSINESS WITH ITS CAPITAL (0.7.8) (lines 4230-4308)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 4749 | 1 | `public double exposure()` | THE EXPOSURE MEASURE the leverage ratio is struck on: everything on its balance sheet at the value the sheet carries it at, whatever it weighs - totalAssets(). |
-| 4752 | 4 | `public double leverageRatio()` | Equity over the exposure measure: the leverage ratio a regulator reads. |
-| 4766 | 1 | `public double leverageTarget()` | ITS OWN LEVERAGE TARGET: LEVERAGE_RATIO_MIN scaled by the buffer it chose on the risk side - LEVERAGE_RATIO_MIN x capitalTarget() / CAPITAL_RATIO. |
-| 4769 | 1 | `public double leverageTop()` | ...and the top of its band on the same measure: LEVERAGE_RATIO_MIN x capitalTop() / CAPITAL_RATIO. |
-| 4786 | 3 | `public double minimumEquity()` | THE MINIMUM THE CITY REQUIRES, IN MONEY: the larger of the risk-based one, CAPITAL_RATIO of the weighted book, and the leverage one, LEVERAGE_RATIO_MIN of the exposure. |
-| 4791 | 3 | `public boolean leverageBinds()` | True when the leverage requirement is the larger - when a bank's zero-weighted assets are what its capital is short against. |
-| 4796 | 1 | `public double bindingRatio()` | Its capital as a ratio on the measure that binds: the leverage ratio when leverageBinds(), the risk-based capitalRatio() otherwise - the figure the Bank tab's bar and status read. |
-| 4799 | 1 | `public double bindingMinimum()` | The minimum on the binding measure: LEVERAGE_RATIO_MIN or CAPITAL_RATIO. |
-| 4802 | 1 | `public double bindingTarget()` | Its target on the binding measure: leverageTarget() or capitalTarget(). |
-| 4805 | 1 | `public double bindingTop()` | ...and the top of its band on it: leverageTop() or capitalTop(). |
-
-### what it does with profit (lines 4807-4928)
+### the allowance (lines 4309-4587)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4816 | 1 | **type** `public enum Payout` | What the bank does with its profit, as its capital stands. |
-| 4823 | 3 | `public double targetEquity()` | The equity its target calls for on the book it has: the larger of its target on the weighted book and its leverage target on the exposure (0.7.11, round 2 - minimumEquity() says why). |
-| 4835 | 4 | `public double topEquity()` | The equity at the top of its band - and NEVER LESS THAN WHAT ITS STANDING BRANCHES WERE FOUNDED WITH, paidInPerBranch each: the capital a counter is opened with is what the running costs are already priced on (strikeP... |
-| 4841 | 4 | `public double excessCapital()` | What it holds past the top of its band: what it returns, a twelfth a month. |
-| 4847 | 9 | `public Payout payoutStance()` | Where its capital puts it, for the words and the rules. |
-| 4858 | 10 | `public String payoutDecision()` | ...in words, for the Bank tab. |
-| 4878 | 11 | `public double dividendDue(double profitAfterTax)` | WHAT IT PAYS ITS OWNERS this month, on last month's profit after tax. |
-| 4897 | 3 | `public double payOwners(double profitAfterTax)` | Pays its owners what dividendDue() says, and keeps what the rule read - the profit it was paid on, the excess over the top and the room over the target - so the month's decision can be read back. |
-| 4909 | 13 | `public double payOwners(double profitAfterTax, double sharesInIssue)` | ...and with the shares in issue, for the city's consent (0.7.14): while a block of its preferred is under three years old the common dividend a share does not rise past what it was the year before the city bought it (... |
-| 4925 | 1 | `public double getPayoutProfit()` |  |
-| 4926 | 1 | `public double getPayoutExcess()` |  |
-| 4927 | 1 | `public double getPayoutOverTarget()` |  |
+| 4319 | 3 | `public static double lossIfDefaulted(double principal, double assets)` | What the BACKSTOP would cost the bank on a business owing this against these assets (BusinessDebtManager.restructure()): everything owed past BusinessDebtManager.RESTRUCTURE_TARGET of its assets - all of it, for a sec... |
+| 4324 | 4 | `public static boolean sectorWatched(double principal, double assets)` | A business borrower in trouble: owing past SECTOR_WATCH_LEVERAGE of its assets, or anything at all against none. |
+| 4337 | 6 | `public static double stageTwoShare(double principal, double assets)` | The share of a sector's firms, by what they owe, past the watch line: the curve's spread of fortunes (BusinessDebtManager.ASSET_VOLATILITY) read at SECTOR_WATCH_LEVERAGE instead of the default point, N(ln(L / SECTOR_W... |
+| 4375 | 3 | `public static double sectorAllowance(double principal, double assets)` | The allowance a business's book holds, read off the curve its firms default on (0.7.8) - the same PD(L) that writes the month's slice off (BusinessDebtManager.defaultProbability()), so the allowance is what the slices... |
+| 4388 | 3 | `public static double sectorAllowance(double owed, double principal, double assets)` | ...ON WHAT IT OWES NOW, READ AT ITS QUARTER (0.7.8): the curve read at principal over assets - the averages of its last quarter's readings (BusinessDebtManager.quarterPrincipal(), quarterAssets()) - and the loss struc... |
+| 4401 | 13 | `public static double sectorAllowance(double owed, double principal, double assets, double lossGivenDefault)` | ...AT A LOSS GIVEN DEFAULT OF ITS OWN (0.7.12): a loan's for what the sector owes the bank, a bond's for the sector's bonds it holds (BusinessDebtManager, RECOVERIES BY INSTRUMENT, since round 2; round 1 read the two ... |
+| 4422 | 3 | `private static double floorAt(double lgd)` | THE FLOOR IS THE SOUND BOOK'S LOSS, at this loss given default (0.7.12): BASE_LOSS_RATE is a sound LOAN's loss, so at a loan's loss given default it is BASE_LOSS_RATE, and a dollar that loses more when it defaults - a... |
+| 4459 | 17 | `public void provide(java.util.Map<String, double[]> sectors, double households, double householdsWatched)` | THE MONTH'S PROVISION: sets every book's allowance from its borrowers as they stand now, and draws the month's write-offs against what each book held when the month opened. |
+| 4484 | 11 | `public void openAllowance(java.util.Map<String, double[]> sectors, double households, double householdsWatched)` | ...and a bank that has never held one: the allowance its borrowers call for, set up WITHOUT a provision - the month it opens on holds it from its start. |
+| 4496 | 27 | `private void strikeAllowance(java.util.Map<String, double[]> sectors, double households, double householdsWatched)` |  |
+| 4525 | 5 | `public double getAllowance()` | Everything set aside against the book. |
+| 4532 | 1 | `public double getSectorAllowance()` | ...against the businesses' book, all of it. |
+| 4534 | 1 | `public double getSectorAllowance(String sector)` | ...against one sector's. |
+| 4547 | 4 | `public double[] getAllowanceReading(String sector)` | What the allowance on a sector was struck on, as Game.bankReadings() handed it over at the month's provision: {the quarter's principal, its assets, what it owes that nobody insures, the loans' loss given default, the ... |
+| 4553 | 1 | `public double getWrittenOff(String sector)` | What this month wrote off one sector's book - its defaulted firms' slice, or the backstop (0.7.8: the Bank tab's "this month", beside the allowance). |
+| 4555 | 1 | `public double getHouseholdAllowance()` | ...against the families'. |
+| 4557 | 1 | `public int getStage(String sector)` | 2 when that sector's book is in trouble - most of its firms past the watch line - 1 when most are sound. |
+| 4559 | 1 | `public double getStageTwoShare(String sector)` | The share of that sector's book in stage 2, as the last provide() struck it (stageTwoShare()). |
+| 4561 | 1 | `public int getHouseholdStage()` | 2 when any family's line is in trouble, 1 when none is. |
+| 4563 | 1 | `public double getHouseholdWatchedDebt()` | The families' debt in the cells that are in trouble. |
+| 4565 | 1 | `public java.util.Set<String> getSectorsWatched()` | The sectors whose books are in stage 2. |
+| 4567 | 1 | `public int getBooksWatched()` | How many of its books are in stage 2: each sector's, and the families' as one (0.7.9, the Bank tab's count of borrowers in trouble). |
+| 4569 | 1 | `public double getOpeningAllowance()` | The allowance the month opened with. |
+| 4577 | 1 | `public double provisions()` | THE PROVISION, the income statement's line: what the allowance rose by this month and whatever was written off that it had not set aside - which is the allowance's move plus every write-off. |
+| 4580 | 1 | `public double getAllowanceUsed()` | The month's write-offs that the allowance had already set aside. |
+| 4583 | 1 | `public double getWriteOffsBeyondAllowance()` | ...and the part it had not, which reached the statement the month it was written off. |
+| 4586 | 1 | `public double getProvisionCharge()` | The part of the provision that went into the allowance: its rise less what the write-offs drew out of it. |
 
-### its own shares (lines 4929-5093)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4963 | 6 | `public void buyBackOwnShares(double paid)` | The desk bought the bank's own shares back and cancelled them: cash out, equity down, no income. |
-| 4971 | 5 | `public void issueOwnShares(double received)` | ...and issued new ones: cash in, equity up, no income. |
-| 4982 | 7 | `public boolean buysBackOwnShares()` | True when the desk buys the bank's own shares back from whoever sells: standing, and at or over its own capital target. |
-| 5010 | 4 | `public boolean issuesOwnShares()` | ...and when it issues new ones to whoever buys: standing, lending, and UNDER its own target - raising the capital its rule says it is short of, and never while it holds what it wants. |
-| 5028 | 3 | `public double spareCapital(double inventory)` | WHAT IT HOLDS OVER ITS TARGET: its equity less targetEquity(), with the desk's inventory carried at `inventory` rather than at the securities line's last mark - the line lags the desk's deals within a month until the ... |
-| 5033 | 6 | `private double spareOnRisk(double inventory)` | Its spare capital against its target on the weighted book, the inventory carried at `inventory`. |
-| 5045 | 6 | `private double spareOnLeverage(double inventory)` | ...and against its leverage target on the exposure (0.7.11, round 2). |
-| 5053 | 1 | `public double spareCapital()` | ...on the books as they stand: equity() less targetEquity(). |
-| 5072 | 3 | `public double buybackRoom(double inventory)` | THE MOST IT MAY SPEND BUYING ITS OWN SHARES BACK NOW: what it holds over its target, spareCapital(inventory), so that no purchase takes it under the target - a month's buybacks never exceed the capital over target at ... |
-| 5076 | 1 | `public double getSharesBoughtBack()` |  |
-| 5077 | 1 | `public double getSharesIssued()` |  |
-| 5085 | 1 | `public double dividendsOverYear()` | Dividends over the last twelve months, this one included. |
-| 5087 | 1 | `public double buybacksOverYear()` | ...and its own shares bought back. |
-| 5090 | 3 | `public double returnOnEquity()` | This month's net income over the equity it opened with, a year: the return a bank is read by. |
-
-### what it lends (lines 5094-5183)
+### what it holds (lines 4588-4729)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5108 | 5 | `public double lendingGrowthLimit()` | HOW FAST THE BANK LETS A BORROWER'S DEBT GROW THIS MONTH, on the capital it has: no limit at or over its target (and with no branch - a city with no bank is lent to from outside); none under the minimum or failed; in ... |
-| 5115 | 25 | `private double growthLimitOn(double equity)` | lendingGrowthLimit()'s curve on this much equity and the book as it stands: equity() for the month's rule, less the month's known losses for the band's share (MC2, bandShare()). |
-| 5142 | 7 | `public boolean lendsOnlyToKeepBorrowersGoing()` | True when it lends only what keeps its existing borrowers going: under the minimum, or failed. |
-| 5151 | 6 | `public double lendingLimit()` | The growth of the book the capital rule allows this month, in money: infinite when it lends freely. |
-| 5159 | 8 | `public String lendingStance()` | ...in words. |
+| 4615 | 1 | `public void hearCapitalRule(boolean basel3)` | Hears which capital rule stands this month: true from the month L8 is known (always, in a city founded the default way). |
+| 4618 | 1 | `public boolean conservationBufferRequired()` | Whether the Basel III conservation buffer is the rule this month (L8). |
+| 4621 | 2 | `public double bufferFloor()` | The least buffer the rule asks over the minimum this month: CONSERVATION_BUFFER once L8 is known, BUFFER_BEFORE_L8 before. |
+| 4638 | 10 | `private void recordLosses()` | Files the month that has just closed into the loss record. |
+| 4665 | 8 | `public double trailingLossRate()` | The last twelve recorded months' provisions over their average weighted book - or over what its branches' founding capital is built to carry at the minimum (branches x paidInPerBranch / CAPITAL_RATIO), whichever is la... |
+| 4675 | 1 | `public double getWorstLossRate()` | The worst year it has lived through, as the capital target reads it. |
+| 4722 | 1 | `public double capitalBuffer()` | Its buffer over the minimum: the worst year it has recorded, never less than the rule's floor (bufferFloor(): CONSERVATION_BUFFER from L8) nor more than MAX_BUFFER. |
+| 4725 | 1 | `public double capitalTarget()` | THE TARGET it chooses: the city's minimum and its own buffer. |
+| 4728 | 1 | `public double capitalTop()` | ...and the top of its band. |
 
-### the save (lines 5184-5360)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 5195 | 18 | `public java.util.Map<String, double[]> allowanceToSave()` | The allowance, book by book (0.7.8): each sector's name, and HOUSEHOLD_BOOK for the families, to {the allowance, what it held when the month opened, what the month wrote off, and whether it is in trouble - 1 or 0 for ... |
-| 5215 | 29 | `public boolean restoreAllowance(java.util.Map<String, double[]> saved)` | ...and back. |
-| 5245 | 5 | `private static double sum(java.util.Map<String, Double> m)` |  |
-| 5258 | 12 | `public double[] capitalRecordToSave()` | The record the target and the owners' year are struck from (0.7.8): the months recorded, the worst year, the rings of provisions and of the weighted book, the owners' month count and the rings of dividends and buybacks. |
-| 5271 | 11 | `public void restoreCapitalRecord(double[] in)` |  |
-| 5292 | 28 | `public double[] monthLinesToSave()` | THE MONTH'S STATEMENT LINES (0.7.8), for the save. |
-| 5322 | 38 | `public void restoreMonthLines(double[] v)` | ...and back. |
-
-### reading (lines 5361-5387)
+### the leverage ratio (0.7.11, round 2) (lines 4730-4809)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5363 | 1 | `public double getCash()` |  |
-| 5364 | 1 | `public double getDeposits()` |  |
-| 5365 | 1 | `public double getBranches()` |  |
-| 5366 | 1 | `public double getSectorBook()` |  |
-| 5367 | 1 | `public double getCityBook()` |  |
-| 5368 | 1 | `public double getHouseholdBook()` |  |
-| 5369 | 1 | `public double getInterestEarned()` |  |
-| 5370 | 1 | `public double getWriteOffs()` |  |
-| 5371 | 1 | `public double getPayroll()` |  |
-| 5372 | 1 | `public double getUpkeep()` |  |
-| 5373 | 1 | `public double getLentToHouseholds()` |  |
-| 5374 | 1 | `public double getRepaidByHouseholds()` |  |
-| 5384 | 3 | `public double getNetIncome()` | The month's profit: interest earned, less the cost of the money, less the loans that died, less the cost of running the place. |
+| 4752 | 1 | `public double exposure()` | THE EXPOSURE MEASURE the leverage ratio is struck on: everything on its balance sheet at the value the sheet carries it at, whatever it weighs - totalAssets(). |
+| 4755 | 4 | `public double leverageRatio()` | Equity over the exposure measure: the leverage ratio a regulator reads. |
+| 4769 | 1 | `public double leverageTarget()` | ITS OWN LEVERAGE TARGET: LEVERAGE_RATIO_MIN scaled by the buffer it chose on the risk side - LEVERAGE_RATIO_MIN x capitalTarget() / CAPITAL_RATIO. |
+| 4772 | 1 | `public double leverageTop()` | ...and the top of its band on the same measure: LEVERAGE_RATIO_MIN x capitalTop() / CAPITAL_RATIO. |
+| 4789 | 3 | `public double minimumEquity()` | THE MINIMUM THE CITY REQUIRES, IN MONEY: the larger of the risk-based one, CAPITAL_RATIO of the weighted book, and the leverage one, LEVERAGE_RATIO_MIN of the exposure. |
+| 4794 | 3 | `public boolean leverageBinds()` | True when the leverage requirement is the larger - when a bank's zero-weighted assets are what its capital is short against. |
+| 4799 | 1 | `public double bindingRatio()` | Its capital as a ratio on the measure that binds: the leverage ratio when leverageBinds(), the risk-based capitalRatio() otherwise - the figure the Bank tab's bar and status read. |
+| 4802 | 1 | `public double bindingMinimum()` | The minimum on the binding measure: LEVERAGE_RATIO_MIN or CAPITAL_RATIO. |
+| 4805 | 1 | `public double bindingTarget()` | Its target on the binding measure: leverageTarget() or capitalTarget(). |
+| 4808 | 1 | `public double bindingTop()` | ...and the top of its band on it: leverageTop() or capitalTop(). |
 
-### THE BRANCHES, BY THEIR CUSTOMERS (0.7.19) (lines 5388-5655)
+### what it does with profit (lines 4810-4931)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5489 | 1 | `public boolean wantsBranch()` | True when the city should be opening another counter: a city with loans and no bank at all always wants its first, the charter; after that, only while there are customers for another and their fees would cover it - se... |
-| 5492 | 46 | `public boolean wantsBranch(double standing)` | ...counting these branches standing - see THE BRANCHES, BY THEIR CUSTOMERS. |
-| 5540 | 1 | `public boolean customersForAnother()` | Whether there are customers for another branch: more than CUSTOMERS_PER_BRANCH for every branch standing. |
-| 5541 | 3 | `public boolean customersForAnother(double standing)` |  |
-| 5552 | 1 | `public boolean feesWouldCoverAnother()` | Whether the month's fees would still cover every branch with one more, at what each carries (revised 0.7.19): the charter's cost and a later branch's for each of the rest - fees >= (branches + 1) x a later branch's co... |
-| 5553 | 4 | `public boolean feesWouldCoverAnother(double standing)` |  |
-| 5576 | 1 | `public void setNewBranchExtra(java.util.function.DoubleSupplier extra)` | The investors hand in C_new - C for the branch they would open (BusinessInvestment.newBranchExtra()); null for none. |
-| 5579 | 1 | `double newBranchExtra()` | C_new - C: what a new branch's own crew costs over a later branch's cached cost; 0 with none handed in. |
-| 5582 | 4 | `public double newBranchCost()` | C_new: what the branch opened next would cost a month, a later branch's cost and its own crew's difference; 0 with nothing known to cost. |
-| 5587 | 3 | `public double laterBranchCost()` |  |
-| 5592 | 1 | `public double feesPerBranch()` | What one branch takes in fees this month: the month's account fees over the branches standing. |
-| 5595 | 1 | `public double feesPerBranchWithAnother()` | ...and another branch would, with it standing: the fees over one more. |
-| 5596 | 1 | `public double feesPerBranchWithAnother(double standing)` |  |
-| 5599 | 1 | `public double customersPerBranch()` | The customers one branch serves this month: the customers over the branches standing. |
-| 5608 | 5 | `public double branchesTheFeesCover()` | The most branches the month's fees cover at what each cost last month: the charter at its cost, the rest at a later branch's (revised 0.7.19) - n of them cost n later branches less the charter's exempt operating cost ... |
-| 5619 | 1 | `public int branchesToClose()` | How many branches close this month (0.7.19): every one past what the month's fees cover, at once, and never the first. |
-| 5622 | 4 | `public int branchesToClose(double standing)` | ...counting these branches standing. |
-| 5631 | 1 | `public String branchHoldReason()` | Why no branch is opening, in the investment advisor's words (0.7.19), or null when one would. |
-| 5632 | 15 | `public String branchHoldReason(double standing)` |  |
-| 5649 | 6 | `public String branchOpenReason(double standing)` | ...and the case for one that would: its customers and its fees against its cost. |
+| 4819 | 1 | **type** `public enum Payout` | What the bank does with its profit, as its capital stands. |
+| 4826 | 3 | `public double targetEquity()` | The equity its target calls for on the book it has: the larger of its target on the weighted book and its leverage target on the exposure (0.7.11, round 2 - minimumEquity() says why). |
+| 4838 | 4 | `public double topEquity()` | The equity at the top of its band - and NEVER LESS THAN WHAT ITS STANDING BRANCHES WERE FOUNDED WITH, paidInPerBranch each: the capital a counter is opened with is what the running costs are already priced on (strikeP... |
+| 4844 | 4 | `public double excessCapital()` | What it holds past the top of its band: what it returns, a twelfth a month. |
+| 4850 | 9 | `public Payout payoutStance()` | Where its capital puts it, for the words and the rules. |
+| 4861 | 10 | `public String payoutDecision()` | ...in words, for the Bank tab. |
+| 4881 | 11 | `public double dividendDue(double profitAfterTax)` | WHAT IT PAYS ITS OWNERS this month, on last month's profit after tax. |
+| 4900 | 3 | `public double payOwners(double profitAfterTax)` | Pays its owners what dividendDue() says, and keeps what the rule read - the profit it was paid on, the excess over the top and the room over the target - so the month's decision can be read back. |
+| 4912 | 13 | `public double payOwners(double profitAfterTax, double sharesInIssue)` | ...and with the shares in issue, for the city's consent (0.7.14): while a block of its preferred is under three years old the common dividend a share does not rise past what it was the year before the city bought it (... |
+| 4928 | 1 | `public double getPayoutProfit()` |  |
+| 4929 | 1 | `public double getPayoutExcess()` |  |
+| 4930 | 1 | `public double getPayoutOverTarget()` |  |
 
-### a branch whose fees do not cover it is closed (0.7.19) (lines 5656-6103)
+### its own shares (lines 4932-5096)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 5676 | 1 | `public boolean closesBranch()` | Whether any branch closes this month: see branchesToClose(). |
-| 5677 | 1 | `public boolean closesBranch(double standing)` |  |
-| 5680 | 1 | `public int getUncoveredMonths()` | Closed months in a row the fees have not covered the branches past the first. |
-| 5694 | 8 | `public double capacityWith(double branchCount)` | Capacity this bank would have with a given number of branches. |
-| 5715 | 10 | `public double headroom()` | How much more it could lend before it counts itself full (EASY_STRAIN): what the carry trade may take - and, since 0.7.8, no more than keeps the bank at its own capital target. |
-| 5759 | 1 | `public double projectHeadroom()` | Growth commitments fit the target even above it (BF1). |
-| 5762 | 1 | `public double settledProjectHeadroom()` | ...once the month's loan book has settled and its losses are on it: headroom() at or over the target, the band's share under it (MC2). |
-| 5764 | 9 | `private double growthHeadroom(double loss)` |  |
-| 5775 | 1 | `public double leverageHeadroom()` | Insured growth consumes exposure, with no risk weight or assumed business-loan mix: the room to the leverage target over it, the band's share under it (MC2, projectHeadroom()). |
-| 5778 | 1 | `public double projectLeverageHeadroom()` | The same leverage room before the month's known losses have reached the loan book. |
-| 5780 | 7 | `private double insuredHeadroom(double loss)` |  |
-| 5799 | 6 | `private double bandShare(double equityLeft, double toMinimum)` | THE BAND'S SHARE IN MONEY (MC2): the growth limit's share of the book the binding measure counts, as lendingLimit() takes it, on this much equity - RATIONED_GROWTH x x/(1-x) of the exposure while the leverage ratio bi... |
-| 5806 | 7 | `private double unsettledCreditLoss()` |  |
-| 5814 | 1 | `public void setCash(double value)` |  |
-| 5816 | 87 | `public void reset()` |  |
-| 5923 | 172 | `public void redenominate(double scale)` | Every figure on the bank's balance sheet, in the new unit. |
-| 6098 | 5 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
+| 4966 | 6 | `public void buyBackOwnShares(double paid)` | The desk bought the bank's own shares back and cancelled them: cash out, equity down, no income. |
+| 4974 | 5 | `public void issueOwnShares(double received)` | ...and issued new ones: cash in, equity up, no income. |
+| 4985 | 7 | `public boolean buysBackOwnShares()` | True when the desk buys the bank's own shares back from whoever sells: standing, and at or over its own capital target. |
+| 5013 | 4 | `public boolean issuesOwnShares()` | ...and when it issues new ones to whoever buys: standing, lending, and UNDER its own target - raising the capital its rule says it is short of, and never while it holds what it wants. |
+| 5031 | 3 | `public double spareCapital(double inventory)` | WHAT IT HOLDS OVER ITS TARGET: its equity less targetEquity(), with the desk's inventory carried at `inventory` rather than at the securities line's last mark - the line lags the desk's deals within a month until the ... |
+| 5036 | 6 | `private double spareOnRisk(double inventory)` | Its spare capital against its target on the weighted book, the inventory carried at `inventory`. |
+| 5048 | 6 | `private double spareOnLeverage(double inventory)` | ...and against its leverage target on the exposure (0.7.11, round 2). |
+| 5056 | 1 | `public double spareCapital()` | ...on the books as they stand: equity() less targetEquity(). |
+| 5075 | 3 | `public double buybackRoom(double inventory)` | THE MOST IT MAY SPEND BUYING ITS OWN SHARES BACK NOW: what it holds over its target, spareCapital(inventory), so that no purchase takes it under the target - a month's buybacks never exceed the capital over target at ... |
+| 5079 | 1 | `public double getSharesBoughtBack()` |  |
+| 5080 | 1 | `public double getSharesIssued()` |  |
+| 5088 | 1 | `public double dividendsOverYear()` | Dividends over the last twelve months, this one included. |
+| 5090 | 1 | `public double buybacksOverYear()` | ...and its own shares bought back. |
+| 5093 | 3 | `public double returnOnEquity()` | This month's net income over the equity it opened with, a year: the return a bank is read by. |
 
-### WHAT THE BANK TAB READS (0.7.9) (lines 6104-6135)
-
-### the interest, by who paid it (lines 6136-6172)
+### what it lends (lines 5097-5186)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6154 | 9 | `public void takeInterest(double fromCity, double fromBusinesses)` | The businesses' interest and the city's coupons, settled together: the same cash and income as takeInterest() on their sum, to the bit, and each kept by who paid it. |
-| 6165 | 1 | `public double getInterestFromBusinesses()` | What the businesses paid it in interest this month. |
-| 6167 | 1 | `public double getInterestFromCity()` | ...the city, in coupons on the paper the bank holds. |
-| 6169 | 1 | `public double getInterestFromHouseholds()` | ...the families, on their credit lines. |
-| 6171 | 1 | `public double getDiscountAccreted()` | ...and the discount on the city's paper it earned this month, which no cash carries. |
+| 5111 | 5 | `public double lendingGrowthLimit()` | HOW FAST THE BANK LETS A BORROWER'S DEBT GROW THIS MONTH, on the capital it has: no limit at or over its target (and with no branch - a city with no bank is lent to from outside); none under the minimum or failed; in ... |
+| 5118 | 25 | `private double growthLimitOn(double equity)` | lendingGrowthLimit()'s curve on this much equity and the book as it stands: equity() for the month's rule, less the month's known losses for the band's share (MC2, bandShare()). |
+| 5145 | 7 | `public boolean lendsOnlyToKeepBorrowersGoing()` | True when it lends only what keeps its existing borrowers going: under the minimum, or failed. |
+| 5154 | 6 | `public double lendingLimit()` | The growth of the book the capital rule allows this month, in money: infinite when it lends freely. |
+| 5162 | 8 | `public String lendingStance()` | ...in words. |
 
-### what moved it between two presses (lines 6173-6209)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6182 | 1 | `public double getTreasuryBuybackGain()` |  |
-| 6191 | 1 | `public double getAllowanceOpened()` |  |
-| 6199 | 1 | `public double getBailoutsLifetime()` |  |
-| 6208 | 1 | `public boolean isMonthKnown()` |  |
-
-### its year of statements (lines 6210-6426)
+### the save (lines 5187-5363)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6222 | 12 | **type** `public enum Line` | The lines of a month's statement the Bank tab sets beside last month's and adds up over a year, every one money: the interest and who paid it; what savers and the window were paid; fees and their three kinds; provisio... |
-| 6236 | 1 | `public double revenue()` | What it earned before provisions and costs: net interest, fees, the desk and the city's paper - what its costs are read against. |
-| 6247 | 1 | `public double getRetained()` | What it kept of the month's profit once its owners were paid: net income less the dividend and its own shares bought back. |
-| 6250 | 39 | `public double thisMonth(Line line)` | A line as this month stands. |
-| 6299 | 5 | `private void fileStatement()` |  |
-| 6306 | 1 | `public boolean knowsLastMonth()` | True when last month is on file: a month was played before this one, or a save carried it. |
-| 6309 | 4 | `public double lastMonth(Line line)` | A line as last month ended, everything booked after its close included. |
-| 6315 | 1 | `public int monthsInYear()` | How many months the year's figures cover: this one and those on file, YEAR_MONTHS at most. |
-| 6318 | 8 | `public double overYear(Line line)` | A line added up over monthsInYear(), this month included - for the flows; the two stocks want averageOverYear(). |
-| 6328 | 1 | `public double averageOverYear(Line line)` | ...and averaged over them: a month's worth. |
-| 6335 | 4 | `public double returnOnEquityOverYear()` | What it earned over the year, at a yearly rate, on the equity it held on average: the return a bank is read by, and steadier than a month's (returnOnEquity()). |
-| 6345 | 4 | `public double provisionRateOverYear()` | Provisions over the year, at a yearly rate, as a share of the book it held on average: its credit losses as a bank reports them - a sound book's is BASE_LOSS_RATE. |
-| 6356 | 4 | `public double netInterestMarginOverYear()` | Net interest income over the year, at a yearly rate, on the assets that earned it interest on average (averageEarningAssetsOverYear()): its net interest margin, steadier than a month's (netInterestMargin()). |
-| 6370 | 8 | `public double averageEarningAssetsOverYear()` | Its earning assets (earningAssets()) averaged over the months the year's flows cover (monthsInYear()): this month's, and those of the sheets filed at the close of the months before it, read from the year of balance sh... |
-| 6380 | 6 | `private static double earningLines(double[] filedSheet)` | The eight lines of one filed sheet that earn interest, added: what earningAssets() was when it was filed. |
-| 6392 | 4 | `public double costShareOverYear()` | Its staff and branches over the year as a share of what it earned before them (revenue()): the efficiency ratio, about 50-60% at a real bank. |
-| 6398 | 10 | `public double[] statementYearToSave()` | The year of statements, for the save: how many are filed, how many lines each, then the ring's months in slot order. |
-| 6415 | 11 | `public void restoreStatementYear(double[] in)` | ...and back. |
+| 5198 | 18 | `public java.util.Map<String, double[]> allowanceToSave()` | The allowance, book by book (0.7.8): each sector's name, and HOUSEHOLD_BOOK for the families, to {the allowance, what it held when the month opened, what the month wrote off, and whether it is in trouble - 1 or 0 for ... |
+| 5218 | 29 | `public boolean restoreAllowance(java.util.Map<String, double[]> saved)` | ...and back. |
+| 5248 | 5 | `private static double sum(java.util.Map<String, Double> m)` |  |
+| 5261 | 12 | `public double[] capitalRecordToSave()` | The record the target and the owners' year are struck from (0.7.8): the months recorded, the worst year, the rings of provisions and of the weighted book, the owners' month count and the rings of dividends and buybacks. |
+| 5274 | 11 | `public void restoreCapitalRecord(double[] in)` |  |
+| 5295 | 28 | `public double[] monthLinesToSave()` | THE MONTH'S STATEMENT LINES (0.7.8), for the save. |
+| 5325 | 38 | `public void restoreMonthLines(double[] v)` | ...and back. |
 
-### its balance sheet (0.7.13) (lines 6427-6520)
+### reading (lines 5364-5390)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6442 | 12 | **type** `public enum Sheet` | THE LINES OF ITS BALANCE SHEET, as the model books it (THE THREE STATEMENTS): what totalAssets() and totalLiabilities() sum, line by line, the allowance negative, and equity() the residual; then the two deposits it co... |
-| 6480 | 29 | `public double sheet(Sheet line)` | A line of its balance sheet as it stands: its reserves at the central bank (the cash it is not borrowing; its placements abroad came home to the central bank in 0.7.0); what the businesses owe it outside the insured m... |
-| 6516 | 1 | `public double sheetResidual()` | What its lines leave unexplained: the asset lines, less the liability lines, less equity. |
-| 6519 | 1 | `public double yearAgoResidual()` | ...and the same of the sheet a year ago; nothing when none is on file. |
+| 5366 | 1 | `public double getCash()` |  |
+| 5367 | 1 | `public double getDeposits()` |  |
+| 5368 | 1 | `public double getBranches()` |  |
+| 5369 | 1 | `public double getSectorBook()` |  |
+| 5370 | 1 | `public double getCityBook()` |  |
+| 5371 | 1 | `public double getHouseholdBook()` |  |
+| 5372 | 1 | `public double getInterestEarned()` |  |
+| 5373 | 1 | `public double getWriteOffs()` |  |
+| 5374 | 1 | `public double getPayroll()` |  |
+| 5375 | 1 | `public double getUpkeep()` |  |
+| 5376 | 1 | `public double getLentToHouseholds()` |  |
+| 5377 | 1 | `public double getRepaidByHouseholds()` |  |
+| 5387 | 3 | `public double getNetIncome()` | The month's profit: interest earned, less the cost of the money, less the loans that died, less the cost of running the place. |
 
-### when the lines do not add up (BI1, 2026-11-20) (lines 6521-6645)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6533 | 3 | `public static boolean addsUp(double residual, double size)` | Whether a residual is within what MoneyAudit.tolerance() allows a book of this size; a residual or a size that is not a finite number is not, so the page says so rather than hiding it. |
-| 6538 | 1 | `public double sheetSize()` | The size of the sheet the lines are read against: every line's magnitude, each carrying its own rounding into the sum (the allowance is negative on the page). |
-| 6541 | 1 | `public double yearAgoSheetSize()` | ...the sheet a year ago; nothing when none is on file. |
-| 6544 | 1 | `public boolean sheetAddsUp()` | True when its lines add up within MoneyAudit.tolerance() of the sheet's size: the page's "Its lines do not add up" is its opposite. |
-| 6547 | 1 | `public boolean yearAgoSheetAddsUp()` | ...and the sheet a year ago; true when none is on file, which the page has nothing to say of. |
-| 6549 | 6 | `private static double sizeOf(java.util.function.ToDoubleFunction<Sheet> at)` |  |
-| 6557 | 1 | `public double liabilitiesAndEquity()` | The other side of the sheet: its liabilities and its equity together. |
-| 6560 | 1 | `public double yearAgoLiabilitiesAndEquity()` | ...and a year ago; nothing when none is on file. |
-| 6562 | 6 | `private static double residual(java.util.function.ToDoubleFunction<Sheet> at)` |  |
-| 6579 | 10 | `private void fileSheet()` |  |
-| 6591 | 1 | `public boolean knowsYearAgo()` | True when the sheet a year before this one is on file: a year played in this build, or a save that carried one. |
-| 6594 | 3 | `public double yearAgo(Sheet line)` | A line of the sheet a year before this one; nothing when none is on file. |
-| 6599 | 3 | `public double yearAgoLoansToSector(int sector)` | What the sector at this index of Sectors.KEYS owed it a year ago, outside its insured mortgages and interim financing. |
-| 6604 | 4 | `public double yearAgoInterimToSector(int sector)` | ...and its interim financing then. |
-| 6610 | 11 | `public double[] sheetYearToSave()` | The year of sheets, for the save: how many are filed, the lines and the sectors each holds, then the ring's months in slot order. |
-| 6628 | 17 | `public void restoreSheetYear(double[] in)` | ...and back. |
-
-### its rates, in a ladder (lines 6646-6698)
+### THE BRANCHES, BY THEIR CUSTOMERS (0.7.19) (lines 5391-5658)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6662 | 22 | **type** `public record Ladder(double policy, double savers, double saversChose, double saversShare, double fundingPo...` | THE LADDER OF ITS RATES at one policy rate, read at one moment: the policy rate; what savers were paid, the rate the bank chose, the share of the policy rate its funding asks it to pass on and the funding position tha... |
-| 6668 | 1 | `public double saversOverPolicy()` _(in Bank.Ladder)_ | Savers' rate less the policy rate: under it by the bank's margin on a deposit. |
-| 6670 | 1 | `public double transferOverPolicy()` _(in Bank.Ladder)_ | The funds-transfer price over the policy rate: the window's penalty on its share, and the term premium. |
-| 6672 | 1 | `public double primeOverTransfer()` _(in Bank.Ladder)_ | Prime over the funds-transfer price: the running costs, the expected loss and the capital charge. |
-| 6674 | 1 | `public double parts()` _(in Bank.Ladder)_ | The four parts added up in prime's own order - which is prime. |
-| 6676 | 1 | `public double overPrime(double rate)` _(in Bank.Ladder)_ | A borrower's rate over prime: the step each borrower's rung is labelled with - its own risk, or for the carry trade the costs it does not carry. |
-| 6678 | 1 | `public double mortgageTransferOverPolicy()` _(in Bank.Ladder)_ | An insured mortgage's money over the policy rate: the window's penalty on its share, and the ten-year term premium. |
-| 6680 | 1 | `public double mortgageOverTransfer()` _(in Bank.Ladder)_ | An insured mortgage's rate over its money: running the bank, and the capital its leverage requirement ties up (round 2). |
-| 6682 | 1 | `public double mortgageRunning()` _(in Bank.Ladder)_ | ...the first of those two: what running the bank adds to an insured mortgage (0.7.33; the Bank tab worked it out until then), so its money, this and mortgageCapital add up to mortgage. |
-| 6686 | 12 | `public Ladder ladder(double policyAnnual)` | The ladder at this policy rate. |
+| 5492 | 1 | `public boolean wantsBranch()` | True when the city should be opening another counter: a city with loans and no bank at all always wants its first, the charter; after that, only while there are customers for another and their fees would cover it - se... |
+| 5495 | 46 | `public boolean wantsBranch(double standing)` | ...counting these branches standing - see THE BRANCHES, BY THEIR CUSTOMERS. |
+| 5543 | 1 | `public boolean customersForAnother()` | Whether there are customers for another branch: more than CUSTOMERS_PER_BRANCH for every branch standing. |
+| 5544 | 3 | `public boolean customersForAnother(double standing)` |  |
+| 5555 | 1 | `public boolean feesWouldCoverAnother()` | Whether the month's fees would still cover every branch with one more, at what each carries (revised 0.7.19): the charter's cost and a later branch's for each of the rest - fees >= (branches + 1) x a later branch's co... |
+| 5556 | 4 | `public boolean feesWouldCoverAnother(double standing)` |  |
+| 5579 | 1 | `public void setNewBranchExtra(java.util.function.DoubleSupplier extra)` | The investors hand in C_new - C for the branch they would open (BusinessInvestment.newBranchExtra()); null for none. |
+| 5582 | 1 | `double newBranchExtra()` | C_new - C: what a new branch's own crew costs over a later branch's cached cost; 0 with none handed in. |
+| 5585 | 4 | `public double newBranchCost()` | C_new: what the branch opened next would cost a month, a later branch's cost and its own crew's difference; 0 with nothing known to cost. |
+| 5590 | 3 | `public double laterBranchCost()` |  |
+| 5595 | 1 | `public double feesPerBranch()` | What one branch takes in fees this month: the month's account fees over the branches standing. |
+| 5598 | 1 | `public double feesPerBranchWithAnother()` | ...and another branch would, with it standing: the fees over one more. |
+| 5599 | 1 | `public double feesPerBranchWithAnother(double standing)` |  |
+| 5602 | 1 | `public double customersPerBranch()` | The customers one branch serves this month: the customers over the branches standing. |
+| 5611 | 5 | `public double branchesTheFeesCover()` | The most branches the month's fees cover at what each cost last month: the charter at its cost, the rest at a later branch's (revised 0.7.19) - n of them cost n later branches less the charter's exempt operating cost ... |
+| 5622 | 1 | `public int branchesToClose()` | How many branches close this month (0.7.19): every one past what the month's fees cover, at once, and never the first. |
+| 5625 | 4 | `public int branchesToClose(double standing)` | ...counting these branches standing. |
+| 5634 | 1 | `public String branchHoldReason()` | Why no branch is opening, in the investment advisor's words (0.7.19), or null when one would. |
+| 5635 | 15 | `public String branchHoldReason(double standing)` |  |
+| 5652 | 6 | `public String branchOpenReason(double standing)` | ...and the case for one that would: its customers and its fees against its cost. |
 
-### in words (lines 6699-6765)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6714 | 27 | `public String status()` | THE BANK'S STATE IN ONE SENTENCE, with the figure that decides it: the first thing the Bank tab says. |
-| 6743 | 22 | `public String targetReason()` | Why its capital target is what it is, in words: the cap, its worst year, or the standard buffer and why. |
-
-### what its book weighs (lines 6766-6808)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6769 | 1 | **type** `public enum Book` | The eight things on its books that capacity weighs: the four it lends on, the insured mortgages inside the businesses' (0.7.11), the desk's shares, and since 0.7.12 the businesses' bonds it holds and the weight the bo... |
-| 6777 | 1 | **type** `public record WeightRow(Book book, double face, double term, double risk, double weighted)` | One row of what the book weighs: its face; the share of it its remaining term counts for (maturityWeight(), on average over its loans - 1 where nothing runs off); its risk weight; and what it weighs, face x term x risk. |
-| 6786 | 17 | `public java.util.List<WeightRow> weightTable()` | Every row, the desk's shares included: the weighted column foots to getWeightedBook(). |
-| 6804 | 4 | `private static WeightRow weightRow(Book book, double face, double risk, double weighted)` |  |
-
-### its funding (lines 6809-6840)
+### a branch whose fees do not cover it is closed (0.7.19) (lines 5659-6106)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6812 | 1 | `public double getHouseholdDeposits()` | What the families have banked with it. |
-| 6814 | 1 | `public double getSectorDeposits()` | ...and what the businesses hold in credit. |
-| 6826 | 5 | `public void restoreDeposits(double household, double sector)` | The deposit book as the month last set it, put back by the load path (FW2, 2026-10-24; F-S1-1). |
-| 6833 | 1 | `public double getPaidInPerBranch()` | What its owners put up when a branch opens, in today's money: PAID_IN_PER_BRANCH, reformed, and struck at the expected price level since 0.7.42 (seedConstants()). |
-| 6836 | 1 | `public double localDeposits()` | The city's own savings with it: everything banked, less the world's - all of it gathered since 0.7.19 (depositsGathered()). |
-| 6839 | 1 | `public double fundingLimit()` | What its funding would carry: what it gathered, lent LEVERAGE times over - the second of capacity()'s two limits. |
+| 5679 | 1 | `public boolean closesBranch()` | Whether any branch closes this month: see branchesToClose(). |
+| 5680 | 1 | `public boolean closesBranch(double standing)` |  |
+| 5683 | 1 | `public int getUncoveredMonths()` | Closed months in a row the fees have not covered the branches past the first. |
+| 5697 | 8 | `public double capacityWith(double branchCount)` | Capacity this bank would have with a given number of branches. |
+| 5718 | 10 | `public double headroom()` | How much more it could lend before it counts itself full (EASY_STRAIN): what the carry trade may take - and, since 0.7.8, no more than keeps the bank at its own capital target. |
+| 5762 | 1 | `public double projectHeadroom()` | Growth commitments fit the target even above it (BF1). |
+| 5765 | 1 | `public double settledProjectHeadroom()` | ...once the month's loan book has settled and its losses are on it: headroom() at or over the target, the band's share under it (MC2). |
+| 5767 | 9 | `private double growthHeadroom(double loss)` |  |
+| 5778 | 1 | `public double leverageHeadroom()` | Insured growth consumes exposure, with no risk weight or assumed business-loan mix: the room to the leverage target over it, the band's share under it (MC2, projectHeadroom()). |
+| 5781 | 1 | `public double projectLeverageHeadroom()` | The same leverage room before the month's known losses have reached the loan book. |
+| 5783 | 7 | `private double insuredHeadroom(double loss)` |  |
+| 5802 | 6 | `private double bandShare(double equityLeft, double toMinimum)` | THE BAND'S SHARE IN MONEY (MC2): the growth limit's share of the book the binding measure counts, as lendingLimit() takes it, on this much equity - RATIONED_GROWTH x x/(1-x) of the exposure while the leverage ratio bi... |
+| 5809 | 7 | `private double unsettledCreditLoss()` |  |
+| 5817 | 1 | `public void setCash(double value)` |  |
+| 5819 | 87 | `public void reset()` |  |
+| 5926 | 172 | `public void redenominate(double scale)` | Every figure on the bank's balance sheet, in the new unit. |
+| 6101 | 5 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit - since 0.7.42 the unit over the expected price level they are struck at, every month (Game.restrikeMoneyConstants()). |
 
-### another branch (lines 6841-6854)
+### WHAT THE BANK TAB READS (0.7.9) (lines 6107-6138)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 6844 | 1 | `public double capacityAnotherBranchWouldAdd()` | The capacity one more branch would add: the capital it would open with, since 0.7.19 - it brings no deposits the bank does not already reach. |
-| 6847 | 1 | `public double runningCostPerBranch()` | What a branch cost to run last month on average: the payroll, the repairs and (since 0.7.19) the operating cost the branches past the charter paid, over the branches standing. |
-| 6850 | 4 | `public double feeCover()` | This month's fees against this month's running costs, over every branch: what each branch past the first is held to (0.7.19). |
-
-### how its equity moved (lines 6855-6923)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 6875 | 34 | **type** `public record EquityMovement(double opening, double kept, double fromShareholders, double fromCity, double ...` | HOW ITS EQUITY MOVED since the month opened, every cause named: what it kept (net income); capital put in by its shareholders at home and abroad, and by the city in a rescue; the founding settlement, the month the cit... |
-| 6881 | 6 | `public double residual()` _(in Bank.EquityMovement)_ | What none of the causes explains. |
-| 6889 | 8 | `public double scale()` _(in Bank.EquityMovement)_ | The size of the figures residual() is made of, each as a magnitude: what MoneyAudit.tolerance() reads it against (0.7.54). |
-| 6907 | 1 | `public boolean addsUp()` _(in Bank.EquityMovement)_ | True when the causes explain the month's change in equity within MoneyAudit.tolerance() of scale() - the rule of the sheet and its split (addsUp(), BI1) - and the page's "Something moved its equity without telling it"... |
-| 6916 | 7 | `public EquityMovement equityMovement()` | The month's movement, as it stands. |
-
-### its equity, in two parts (lines 6924-7042)
+### the interest, by who paid it (lines 6139-6175)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 6972 | 1 | `public boolean knowsEquitySplit()` | True when this bank has kept its equity in two parts since it was founded; false on a save from before 0.7.13's round 2. |
-| 6981 | 4 | `public double paidInThisMonth()` | What its owners and the city put in this month: its offerings at home and abroad, new shares, less shares bought back, and the city's capital in a resolution - and since 0.7.14, less the old owners' paid-in written of... |
-| 6998 | 6 | `public double retainedThisMonth()` | ...and everything else that moved its equity this month: its net income, less its dividend, the founding settlement, what its creditors absorbed (before 0.7.14), the treasury's buybacks, an older save's allowance - an... |
-| 7006 | 1 | `public double paidInCapital()` | Its paid-in capital as it stands. |
-| 7009 | 1 | `public double retainedEarnings()` | Its retained earnings as they stand - the Balance sheet page's, not getRetained()'s month's payout. |
-| 7012 | 3 | `public double equitySplitResidual()` | What the parts leave unexplained against equity() - paid in, retained and, since 0.7.14, the city's preferred: nothing when every cause is routed, and nothing when !knowsEquitySplit(). |
-| 7017 | 3 | `public double equitySplitSize()` | The size of what the split is read against: the magnitudes of its three parts and of equity, each carrying its own rounding into the sum; nothing when !knowsEquitySplit(). |
-| 7022 | 1 | `public boolean equitySplitAddsUp()` | True when the parts add up to equity within MoneyAudit.tolerance() of the split's size (see sheetAddsUp()); true when !knowsEquitySplit(), which the page has nothing to say of. |
-| 7025 | 1 | `public double paidInOpening()` | Its paid-in capital at the top of the month, for the save; nothing when !knowsEquitySplit(). |
-| 7028 | 1 | `public double retainedOpening()` | ...and its retained earnings. |
-| 7035 | 6 | `public void restoreEquitySplit(Double paidIn, Double retained)` | The load path: the two counters at the top of the saved month, after the month's lines are restored (restoreMonthLines()). |
+| 6157 | 9 | `public void takeInterest(double fromCity, double fromBusinesses)` | The businesses' interest and the city's coupons, settled together: the same cash and income as takeInterest() on their sum, to the bit, and each kept by who paid it. |
+| 6168 | 1 | `public double getInterestFromBusinesses()` | What the businesses paid it in interest this month. |
+| 6170 | 1 | `public double getInterestFromCity()` | ...the city, in coupons on the paper the bank holds. |
+| 6172 | 1 | `public double getInterestFromHouseholds()` | ...the families, on their credit lines. |
+| 6174 | 1 | `public double getDiscountAccreted()` | ...and the discount on the city's paper it earned this month, which no cash carries. |
+
+### what moved it between two presses (lines 6176-6212)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6185 | 1 | `public double getTreasuryBuybackGain()` |  |
+| 6194 | 1 | `public double getAllowanceOpened()` |  |
+| 6202 | 1 | `public double getBailoutsLifetime()` |  |
+| 6211 | 1 | `public boolean isMonthKnown()` |  |
+
+### its year of statements (lines 6213-6429)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6225 | 12 | **type** `public enum Line` | The lines of a month's statement the Bank tab sets beside last month's and adds up over a year, every one money: the interest and who paid it; what savers and the window were paid; fees and their three kinds; provisio... |
+| 6239 | 1 | `public double revenue()` | What it earned before provisions and costs: net interest, fees, the desk and the city's paper - what its costs are read against. |
+| 6250 | 1 | `public double getRetained()` | What it kept of the month's profit once its owners were paid: net income less the dividend and its own shares bought back. |
+| 6253 | 39 | `public double thisMonth(Line line)` | A line as this month stands. |
+| 6302 | 5 | `private void fileStatement()` |  |
+| 6309 | 1 | `public boolean knowsLastMonth()` | True when last month is on file: a month was played before this one, or a save carried it. |
+| 6312 | 4 | `public double lastMonth(Line line)` | A line as last month ended, everything booked after its close included. |
+| 6318 | 1 | `public int monthsInYear()` | How many months the year's figures cover: this one and those on file, YEAR_MONTHS at most. |
+| 6321 | 8 | `public double overYear(Line line)` | A line added up over monthsInYear(), this month included - for the flows; the two stocks want averageOverYear(). |
+| 6331 | 1 | `public double averageOverYear(Line line)` | ...and averaged over them: a month's worth. |
+| 6338 | 4 | `public double returnOnEquityOverYear()` | What it earned over the year, at a yearly rate, on the equity it held on average: the return a bank is read by, and steadier than a month's (returnOnEquity()). |
+| 6348 | 4 | `public double provisionRateOverYear()` | Provisions over the year, at a yearly rate, as a share of the book it held on average: its credit losses as a bank reports them - a sound book's is BASE_LOSS_RATE. |
+| 6359 | 4 | `public double netInterestMarginOverYear()` | Net interest income over the year, at a yearly rate, on the assets that earned it interest on average (averageEarningAssetsOverYear()): its net interest margin, steadier than a month's (netInterestMargin()). |
+| 6373 | 8 | `public double averageEarningAssetsOverYear()` | Its earning assets (earningAssets()) averaged over the months the year's flows cover (monthsInYear()): this month's, and those of the sheets filed at the close of the months before it, read from the year of balance sh... |
+| 6383 | 6 | `private static double earningLines(double[] filedSheet)` | The eight lines of one filed sheet that earn interest, added: what earningAssets() was when it was filed. |
+| 6395 | 4 | `public double costShareOverYear()` | Its staff and branches over the year as a share of what it earned before them (revenue()): the efficiency ratio, about 50-60% at a real bank. |
+| 6401 | 10 | `public double[] statementYearToSave()` | The year of statements, for the save: how many are filed, how many lines each, then the ring's months in slot order. |
+| 6418 | 11 | `public void restoreStatementYear(double[] in)` | ...and back. |
+
+### its balance sheet (0.7.13) (lines 6430-6523)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6445 | 12 | **type** `public enum Sheet` | THE LINES OF ITS BALANCE SHEET, as the model books it (THE THREE STATEMENTS): what totalAssets() and totalLiabilities() sum, line by line, the allowance negative, and equity() the residual; then the two deposits it co... |
+| 6483 | 29 | `public double sheet(Sheet line)` | A line of its balance sheet as it stands: its reserves at the central bank (the cash it is not borrowing; its placements abroad came home to the central bank in 0.7.0); what the businesses owe it outside the insured m... |
+| 6519 | 1 | `public double sheetResidual()` | What its lines leave unexplained: the asset lines, less the liability lines, less equity. |
+| 6522 | 1 | `public double yearAgoResidual()` | ...and the same of the sheet a year ago; nothing when none is on file. |
+
+### when the lines do not add up (BI1, 2026-11-20) (lines 6524-6648)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6536 | 3 | `public static boolean addsUp(double residual, double size)` | Whether a residual is within what MoneyAudit.tolerance() allows a book of this size; a residual or a size that is not a finite number is not, so the page says so rather than hiding it. |
+| 6541 | 1 | `public double sheetSize()` | The size of the sheet the lines are read against: every line's magnitude, each carrying its own rounding into the sum (the allowance is negative on the page). |
+| 6544 | 1 | `public double yearAgoSheetSize()` | ...the sheet a year ago; nothing when none is on file. |
+| 6547 | 1 | `public boolean sheetAddsUp()` | True when its lines add up within MoneyAudit.tolerance() of the sheet's size: the page's "Its lines do not add up" is its opposite. |
+| 6550 | 1 | `public boolean yearAgoSheetAddsUp()` | ...and the sheet a year ago; true when none is on file, which the page has nothing to say of. |
+| 6552 | 6 | `private static double sizeOf(java.util.function.ToDoubleFunction<Sheet> at)` |  |
+| 6560 | 1 | `public double liabilitiesAndEquity()` | The other side of the sheet: its liabilities and its equity together. |
+| 6563 | 1 | `public double yearAgoLiabilitiesAndEquity()` | ...and a year ago; nothing when none is on file. |
+| 6565 | 6 | `private static double residual(java.util.function.ToDoubleFunction<Sheet> at)` |  |
+| 6582 | 10 | `private void fileSheet()` |  |
+| 6594 | 1 | `public boolean knowsYearAgo()` | True when the sheet a year before this one is on file: a year played in this build, or a save that carried one. |
+| 6597 | 3 | `public double yearAgo(Sheet line)` | A line of the sheet a year before this one; nothing when none is on file. |
+| 6602 | 3 | `public double yearAgoLoansToSector(int sector)` | What the sector at this index of Sectors.KEYS owed it a year ago, outside its insured mortgages and interim financing. |
+| 6607 | 4 | `public double yearAgoInterimToSector(int sector)` | ...and its interim financing then. |
+| 6613 | 11 | `public double[] sheetYearToSave()` | The year of sheets, for the save: how many are filed, the lines and the sectors each holds, then the ring's months in slot order. |
+| 6631 | 17 | `public void restoreSheetYear(double[] in)` | ...and back. |
+
+### its rates, in a ladder (lines 6649-6701)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6665 | 22 | **type** `public record Ladder(double policy, double savers, double saversChose, double saversShare, double fundingPo...` | THE LADDER OF ITS RATES at one policy rate, read at one moment: the policy rate; what savers were paid, the rate the bank chose, the share of the policy rate its funding asks it to pass on and the funding position tha... |
+| 6671 | 1 | `public double saversOverPolicy()` _(in Bank.Ladder)_ | Savers' rate less the policy rate: under it by the bank's margin on a deposit. |
+| 6673 | 1 | `public double transferOverPolicy()` _(in Bank.Ladder)_ | The funds-transfer price over the policy rate: the window's penalty on its share, and the term premium. |
+| 6675 | 1 | `public double primeOverTransfer()` _(in Bank.Ladder)_ | Prime over the funds-transfer price: the running costs, the expected loss and the capital charge. |
+| 6677 | 1 | `public double parts()` _(in Bank.Ladder)_ | The four parts added up in prime's own order - which is prime. |
+| 6679 | 1 | `public double overPrime(double rate)` _(in Bank.Ladder)_ | A borrower's rate over prime: the step each borrower's rung is labelled with - its own risk, or for the carry trade the costs it does not carry. |
+| 6681 | 1 | `public double mortgageTransferOverPolicy()` _(in Bank.Ladder)_ | An insured mortgage's money over the policy rate: the window's penalty on its share, and the ten-year term premium. |
+| 6683 | 1 | `public double mortgageOverTransfer()` _(in Bank.Ladder)_ | An insured mortgage's rate over its money: running the bank, and the capital its leverage requirement ties up (round 2). |
+| 6685 | 1 | `public double mortgageRunning()` _(in Bank.Ladder)_ | ...the first of those two: what running the bank adds to an insured mortgage (0.7.33; the Bank tab worked it out until then), so its money, this and mortgageCapital add up to mortgage. |
+| 6689 | 12 | `public Ladder ladder(double policyAnnual)` | The ladder at this policy rate. |
+
+### in words (lines 6702-6768)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6717 | 27 | `public String status()` | THE BANK'S STATE IN ONE SENTENCE, with the figure that decides it: the first thing the Bank tab says. |
+| 6746 | 22 | `public String targetReason()` | Why its capital target is what it is, in words: the cap, its worst year, or the standard buffer and why. |
+
+### what its book weighs (lines 6769-6811)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6772 | 1 | **type** `public enum Book` | The eight things on its books that capacity weighs: the four it lends on, the insured mortgages inside the businesses' (0.7.11), the desk's shares, and since 0.7.12 the businesses' bonds it holds and the weight the bo... |
+| 6780 | 1 | **type** `public record WeightRow(Book book, double face, double term, double risk, double weighted)` | One row of what the book weighs: its face; the share of it its remaining term counts for (maturityWeight(), on average over its loans - 1 where nothing runs off); its risk weight; and what it weighs, face x term x risk. |
+| 6789 | 17 | `public java.util.List<WeightRow> weightTable()` | Every row, the desk's shares included: the weighted column foots to getWeightedBook(). |
+| 6807 | 4 | `private static WeightRow weightRow(Book book, double face, double risk, double weighted)` |  |
+
+### its funding (lines 6812-6843)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6815 | 1 | `public double getHouseholdDeposits()` | What the families have banked with it. |
+| 6817 | 1 | `public double getSectorDeposits()` | ...and what the businesses hold in credit. |
+| 6829 | 5 | `public void restoreDeposits(double household, double sector)` | The deposit book as the month last set it, put back by the load path (FW2, 2026-10-24; F-S1-1). |
+| 6836 | 1 | `public double getPaidInPerBranch()` | What its owners put up when a branch opens, in today's money: PAID_IN_PER_BRANCH, reformed, and struck at the expected price level since 0.7.42 (seedConstants()). |
+| 6839 | 1 | `public double localDeposits()` | The city's own savings with it: everything banked, less the world's - all of it gathered since 0.7.19 (depositsGathered()). |
+| 6842 | 1 | `public double fundingLimit()` | What its funding would carry: what it gathered, lent LEVERAGE times over - the second of capacity()'s two limits. |
+
+### another branch (lines 6844-6857)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6847 | 1 | `public double capacityAnotherBranchWouldAdd()` | The capacity one more branch would add: the capital it would open with, since 0.7.19 - it brings no deposits the bank does not already reach. |
+| 6850 | 1 | `public double runningCostPerBranch()` | What a branch cost to run last month on average: the payroll, the repairs and (since 0.7.19) the operating cost the branches past the charter paid, over the branches standing. |
+| 6853 | 4 | `public double feeCover()` | This month's fees against this month's running costs, over every branch: what each branch past the first is held to (0.7.19). |
+
+### how its equity moved (lines 6858-6926)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6878 | 34 | **type** `public record EquityMovement(double opening, double kept, double fromShareholders, double fromCity, double ...` | HOW ITS EQUITY MOVED since the month opened, every cause named: what it kept (net income); capital put in by its shareholders at home and abroad, and by the city in a rescue; the founding settlement, the month the cit... |
+| 6884 | 6 | `public double residual()` _(in Bank.EquityMovement)_ | What none of the causes explains. |
+| 6892 | 8 | `public double scale()` _(in Bank.EquityMovement)_ | The size of the figures residual() is made of, each as a magnitude: what MoneyAudit.tolerance() reads it against (0.7.54). |
+| 6910 | 1 | `public boolean addsUp()` _(in Bank.EquityMovement)_ | True when the causes explain the month's change in equity within MoneyAudit.tolerance() of scale() - the rule of the sheet and its split (addsUp(), BI1) - and the page's "Something moved its equity without telling it"... |
+| 6919 | 7 | `public EquityMovement equityMovement()` | The month's movement, as it stands. |
+
+### its equity, in two parts (lines 6927-7045)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 6975 | 1 | `public boolean knowsEquitySplit()` | True when this bank has kept its equity in two parts since it was founded; false on a save from before 0.7.13's round 2. |
+| 6984 | 4 | `public double paidInThisMonth()` | What its owners and the city put in this month: its offerings at home and abroad, new shares, less shares bought back, and the city's capital in a resolution - and since 0.7.14, less the old owners' paid-in written of... |
+| 7001 | 6 | `public double retainedThisMonth()` | ...and everything else that moved its equity this month: its net income, less its dividend, the founding settlement, what its creditors absorbed (before 0.7.14), the treasury's buybacks, an older save's allowance - an... |
+| 7009 | 1 | `public double paidInCapital()` | Its paid-in capital as it stands. |
+| 7012 | 1 | `public double retainedEarnings()` | Its retained earnings as they stand - the Balance sheet page's, not getRetained()'s month's payout. |
+| 7015 | 3 | `public double equitySplitResidual()` | What the parts leave unexplained against equity() - paid in, retained and, since 0.7.14, the city's preferred: nothing when every cause is routed, and nothing when !knowsEquitySplit(). |
+| 7020 | 3 | `public double equitySplitSize()` | The size of what the split is read against: the magnitudes of its three parts and of equity, each carrying its own rounding into the sum; nothing when !knowsEquitySplit(). |
+| 7025 | 1 | `public boolean equitySplitAddsUp()` | True when the parts add up to equity within MoneyAudit.tolerance() of the split's size (see sheetAddsUp()); true when !knowsEquitySplit(), which the page has nothing to say of. |
+| 7028 | 1 | `public double paidInOpening()` | Its paid-in capital at the top of the month, for the save; nothing when !knowsEquitySplit(). |
+| 7031 | 1 | `public double retainedOpening()` | ...and its retained earnings. |
+| 7038 | 6 | `public void restoreEquitySplit(Double paidIn, Double retained)` | The load path: the two counters at the top of the saved month, after the month's lines are restored (restoreMonthLines()). |
 
