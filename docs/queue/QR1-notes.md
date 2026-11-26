@@ -399,6 +399,7 @@ of total forgiveness, never added to it.
 |---|---:|---:|---:|---:|---:|
 | 1900/main | 1003070.5468181840 | 230623.13222283978 | 230623.13222283978 | 159142294.59705200 | 2525125039.9677700 |
 | 1900/QR1 | 232136.36881434554 | 230623.13222283978 | 230623.13222283978 | 52130432.027748300 | 2495023485.2011690 |
+| today/main | 2040115.7308789315 | 1917098.4283502998 | 1917098.4283502998 | 63450490.99591165 | 1292420315.3396397 |
 
 Main/1900 has **853** in-ban sector-months. Distress receipts comprise plot
 **130786384.42549273**, material **28355910.171559263**. All retirement:
@@ -518,6 +519,42 @@ window and post-primary assertions remain required; the old truncated
 109-paying-event trace is context only. No dry-run request or ready-marker
 removal before the paired table is complete. Remaining work resumes after
 boot if it cannot fit safely.
+
+The v3 window closed at calendar 2400 before 04:26. Exactly 2400 contiguous
+rows, founding baseline plus 2399 played rows, all actual audits pass,
+residual maximum 0, no findings/gaps/nonfinite values. This is the first
+complete 0.9.208 today reference; the previous 2370/2387 trace was partial.
+Its **117** distress sales/**1017** buildings and **109** operating-positive
+sales/**837** buildings independently reproduce that earlier evidence.
+Full LongPlaytest/post-primary verdict is pending the final helper proof
+at this checkpoint; the wrapper has ended at exit **4**, with the auxiliary
+founding-row scorer limitation described above.
+
+Saved F **2040115.7308789315**, independently summed monthly F
+**2040115.7308789531**; maximum row difference **3.3527612686157227e-08**
+nominal thousands (addition order). Fban and B agree exactly, **1025**
+in-ban sector-months. All-retirement plot cash **1121219986.1907644**,
+material **171200329.1488748**, **765** events/**3000** buildings. Distress
+plot **56393739.15022093**, material **7056751.845690727**. Operating-positive
+distress gross **57114270.1856413**, plot **50766253.20284146**, material
+**6348016.9827998215**. All five cash/count cumulatives reconcile exactly
+to the actual event-order sidecar in every row, no regressions.
+
+| Today/main sector | Distress events/buildings | Operating-positive events/buildings | Distress months |
+|---|---:|---:|---|
+| Retail | 3/47 | 3/47 | 328–329, 448 |
+| Materials | 1/1 | 1/1 | 357 |
+| Heavy Industry | 50/187 | 49/183 | 807–811, 916, 1273–1295, 1508, 1510, 1513–1524, 1526–1529, 1531–1533 |
+| Cement & Concrete | 42/571 | 38/398 | 915–928, 930–931, 1220–1236, 1532, 1534, 1544–1547, 1552, 1558, 1563 |
+| Oil | 15/205 | 15/205 | 1512–1526 |
+| Refining | 5/5 | 3/3 | 1240, 1242, 1299, 1522, 1925 |
+| Forestry | 1/1 | 0/0 | 1523 |
+
+Frozen measurements/provenance copied to
+`target/qr1-main-today-v3-frozen-measurements.json` and
+`target/qr1-main-today-v3-frozen-report.txt`. The QR1/today counterpart and
+matched excess-forgiveness test remain required, on the same PC/settings.
+They and the ALL dry run resume after boot; the provisional marker stays.
 
 P3 considered and not taken, as instructed: shorten or deny a fresh full
 operating-loss runway after a long interest-only net-loss spell.
