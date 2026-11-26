@@ -923,3 +923,55 @@ PW9-save37 slice now diagnoses fixture-only versus native save/advice
 fault, with at most two named probes and no model/save fix authority.
 Readiness remains provisional until that finding and final measurements
 are settled; this failed full gate is not reused.
+
+## Bounded disposition of the earlier-save prototype
+
+PW9-save37's isolated clean probe explains the specific m37 mismatch as
+stale fixture-derived state after eight instant depots, not an established
+native save defect. Depot stock is 5 then 13, but cached jobs remain
+2,814 against 3,076 derived from stock (+183/+79 by qualification). Roads
+are 5,526 versus 6,246 and built area 20,841,000 versus 21,321,000. Load
+derives the new stock. After replaying only the synthetic draw, the same
+448,876.9863 demand readout still meets different supply: 229,401.8759
+live versus 193,725.7322 loaded, from the stale service fills. Thus equal
+synthetic consumption alone never established equal model inputs.
+
+The raw Oil5@m37 versus Oil4@m39 and draw-only Oil5 versus Oil7@m37 are
+retained, reproduced cleanly and explained by that violated premise.
+Trend/history, fixture holds/date and the first-unit quote agree. This
+does not justify restoring a loaded cache from the unbroken twin.
+★ Treat this particular prototype as invalid fixture input, preserve its
+evidence, and keep the committed original m39 real DataSave plus genuine
+post-save power-load/order law unchanged. No model/save fix, format bump,
+new queued bug or known-red exemption follows from an unestablished
+native defect.
+
+Limits are explicit: the coherent-history/normal-services comparison
+matched all observed pre-pass fields and nonempty general-service orders,
+but its **power-order-nonempty premise failed** in both twins. Its
+whole-stack `dueIn` also over-advanced four pending mills and does not
+prove ordinary reachability. It is supporting evidence only, never a
+claim of general native save correctness or a green power assertion.
+The already-committed m39/post-mill case supplies the actual nonempty
+power-order equality. A further ordinary early-power save test remains
+the report's identified experiment, not a claimed failure to waive.
+
+One temporary compile failed, then a generator accidentally registered
+the probe three times, launching duplicate children against shared
+private paths. All exited; **that run's evidence is discarded**. The
+accepted diagnostic has one registry entry, fresh private roots and
+`-Dcbs.parallel=1`. Its wrapper ended 4, retaining the negative controls
+and failed power premise; maps/Stale had zero firm findings. The helper
+restored its tracked tree and source hashes and ended with no jobs.
+Full bounded source/field evidence and limitations are in
+`target/PW9-save37-report.txt` and `codex-PW9-save37/target/PW9-save37`.
+This extra diagnosis changed no shipped source or save law.
+
+Origin/main then advanced to `2560ada85`, solely DM5's queue assignment;
+merge `c4540c978` brings it in, with no production/resource/pom diff.
+The orchestrator's `20261126-030048-184` requires a 05:00 laptop restart,
+no new turns after 04:30, and commit/push/end at a stopping point by
+04:30. The reviewed code/records were pushed at `c4540c978` with the
+provisional marker. Final same-platform default-trace and native power
+measurements now run in a fresh bounded slice; global jobs require their
+allocation and enough pre-restart time, otherwise resume after boot.
