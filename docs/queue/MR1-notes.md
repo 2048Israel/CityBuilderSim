@@ -400,9 +400,80 @@ ManufacturingCheck **0**, PopulationCheck **0**, in
 or model edit was used. Generated harness listings retain their generator's
 empty numbered comment lines; the MR1 source diff has no whitespace errors.
 
-## Outstanding
 
-The authorized 80-run ensemble is running on the gate box at the kept
-reviewed gameplay snapshot, against `docs/ensemble/0.9.210.md`. Record its
-verdict and commit its baseline before dropping the provisional marker.
-The pick is not ALL, so no dry run is owed.
+## Final acceptance
+
+The authorized box ensemble completed **80/80**, with no missing or short
+runs. **M1 and F1 pass in every policy, 10/10 hard criteria**, as on 0.9.210;
+there are no money-audit failures or LongPlaytest findings. Its kept files
+are `target/ensemble/MR1/`, with the launcher log
+`target/MR1-ensemble.txt`. The actual classes snapshot is
+`84234b69c400aebf92f2640029b53acd92f608fe`, over `ded8345fc`, played on
+gatebox with OpenJDK 21.0.13 and the box's
+`/home/jerus/cbs/main/data/earth-2.bin` and `world-1.bin`. The committed
+report is [MR1's baseline](../ensemble/MR1.md), scored against
+[0.9.210](../ensemble/0.9.210.md). The version token alone replaces the
+report heading and introductory model version; the actual snapshot,
+data, host and JSON provenance are preserved.
+
+The box first queued MR1 behind AP5's dry run. The first eight runs began
+about 11:38 AST; AP5's publication gate then took priority, after which
+MR1 resumed the same snapshot. No laptop fallback was used; MR1 started
+only the permitted serial fast and named-harness JVMs on this laptop.
+AP5's runtime-only merge and the post-merge checks are
+recorded above; the ensemble is a gameplay comparison, not an AP5 timing
+measurement.
+
+Scores beside the required baseline (definitions, thresholds and all
+unscored readings remain in the two linked reports):
+
+All 26 criterion verdicts are unchanged. Some range endpoints move:
+AUTO2's minimum final population rises from 2,985,818 to 3,585,360, and
+ZERO_SLACK's from 1,728,034 to 3,231,842; their medians are unchanged.
+No per-seed mechanism is inferred from these aggregate readings.
+
+- 0.9.210: criteria passed: 24/26 (vacuous, not counted: 0; retired, not counted: 1); missing runs: none; short runs: none
+- MR1: criteria passed: 24/26 (vacuous, not counted: 0; retired, not counted: 1); missing runs: none; short runs: none
+- MR1: batch verdict PASS (hard criteria passed 10/10)
+
+| policy / criterion | 0.9.210: reading; verdict | MR1: reading; verdict |
+|---|---|---|
+| AUTO2 / A1 | 2.96% [2.35% to 3.22%]; FAIL | 2.96% [2.35% to 3.22%]; FAIL (10/16 in band) |
+| AUTO2 / A2 | 13 [7 to 22]; FAIL | 13 [7 to 22]; FAIL |
+| AUTO2 / A3 | 0 [0 to 3]; 99.98% [96.34% to 100.00%]; PASS | 0 [0 to 3]; 99.98% [96.34% to 100.00%]; PASS |
+| ZERO_SLACK / S1 | 2.45% [1.24% to 4.41%]; PASS | 2.45% [1.24% to 4.41%]; PASS (16/16 seeds within) |
+| ZERO_HOT / H2 | -0.72% [-4.15% to 4.23%]; PASS | -0.72% [-4.10% to 4.23%]; PASS (15/16 below) |
+| SHOCK / K1 | 18.25% [14.68% to 21.64%]; PASS | 18.25% [14.68% to 21.18%]; PASS |
+| SHOCK / K2 | 2.24% [0.97% to 4.11%]; -0.15% [-1.59% to 0.97%]; PASS | 2.24% [0.97% to 4.11%]; -0.15% [-1.59% to 0.61%]; PASS |
+| HIGH / R1 | -3.48% [-5.81% to -1.74%]; PASS | -3.48% [-5.52% to -1.74%]; PASS |
+| HIGH / R2 | 1.42% [-0.01% to 5.98%]; PASS | 1.42% [-0.01% to 5.82%]; PASS |
+| HIGH / R3 | -3.14% [-5.65% to -2.03%]; PASS | -3.14% [-7.22% to -2.03%]; PASS (0 above +1 pt) |
+| ALL / T1 | 16/16 (m464 [441 to 531]); PASS | 16/16 (m464 [441 to 531]); PASS |
+| AUTO2 / T2 | 7,395,916 [2,985,818 to 9,226,936]; PASS | 7,395,916 [3,585,360 to 9,226,936]; PASS |
+| AUTO2 / M1 | 0 (0); PASS | 0 (0); PASS |
+| AUTO2 / F1 | 0/16 []; PASS | 0/16 []; PASS |
+| ZERO_SLACK / T2 | 5,303,088 [1,728,034 to 5,742,799]; PASS | 5,303,088 [3,231,842 to 5,742,799]; PASS |
+| ZERO_SLACK / M1 | 0 (0); PASS | 0 (0); PASS |
+| ZERO_SLACK / F1 | 0/16 []; PASS | 0/16 []; PASS |
+| ZERO_HOT / T2 | 21,333 [9,488 to 31,953]; PASS | 21,333 [9,488 to 31,953]; PASS |
+| ZERO_HOT / M1 | 0 (0); PASS | 0 (0); PASS |
+| ZERO_HOT / F1 | 0/16 []; PASS | 0/16 []; PASS |
+| SHOCK / T2 | 684,858 [382,125 to 1,312,702]; PASS | 684,858 [395,974 to 1,312,702]; PASS |
+| SHOCK / M1 | 0 (0); PASS | 0 (0); PASS |
+| SHOCK / F1 | 0/16 []; PASS | 0/16 []; PASS |
+| HIGH / T2 | 245,141 [88,689 to 397,454]; PASS | 245,141 [90,281 to 397,454]; PASS |
+| HIGH / M1 | 0 (0); PASS | 0 (0); PASS |
+| HIGH / F1 | 0/16 []; PASS | 0/16 []; PASS |
+| ALL / pairing | 64/64; PASS | 64/64; PASS |
+
+H1 remains retired and excluded from the count. Informational scores do
+not waive a law or alter the M1/F1 ship rule. PopulationCheck's original
+80% bound is green against the target its played city actually used; the
+old MR1 known-red row is absent from the ship file. Copper's scoped FS8
+timeout row remains, with the traced evidence above.
+
+The reviewer SHIP is the readiness go. The pick is nine, not ALL, so no
+dry run is owed. The provisional marker is removed last in its own
+commit, after these records are pushed; the publisher runs the fresh pick
+on the main it merges onto. The optional late-first-loan P2 remains
+documented above as expressly permitted, with its reason for deferral.
