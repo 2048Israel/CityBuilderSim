@@ -372,6 +372,11 @@ public final class WorksValue {
         private Loads loads;
         /** Schedules built while it was open (NewUnitCheck 13: one with no change on site). */
         long built;
+        /** The labour figures held while it is open (AP5): the vacancies with every input they were read from, and the stacks' posts. */
+        long[] vacancy, vacancyAt;
+        BuildingManager.HeldPosts posts;
+        /** Vacancies and posts read afresh while it was open (LabourCheck's and AutoBuildCheck's counts, never a time). */
+        long vacanciesRead, postsRead;
 
         private Scope(Game game) { this.game = game; }
 
@@ -406,6 +411,78 @@ public final class WorksValue {
 
     /** The open scope on this thread, for tests; null when none is. */
     static Scope open() { return HELD.get(); }
+
+    /* ----- THE LABOUR FIGURES HELD FOR ONE PASS (AP5, 2026-11-26) -----
+       Jerus's slot 9 (m4866, 21.9 million people, 112 stacks) ran 3.8-6.2 months a second at 50x against 10: the pass was
+       47% of the FX thread, and each candidate's valuation asked again for the vacancies (PopulationManager.getJobVacancy(),
+       a fill of the bands), the posts (BuildingManager.getTotalJobs(), a map of the sectors' posts a job type) and a
+       sector's buildings (BuildingManager.totalBySector(), a walk of the stacks), none of which the pass changes until it
+       builds. The scope holds them for its city, each with what it was read at: the vacancies with every number their
+       fill reads (PopulationManager.vacancyInputs()), so a change to the people by any path, an escaped array's included,
+       reads afresh; the posts with BuildingManager's count of the stacks' edits, raised after every change to a stack's
+       buildings, a building's posts or the list of stacks, and so after every order the pass places. The same sums in the
+       same order: every figure is the bare one to the bit (LabourCheck, AutoBuildCheck). Closed, nothing is held. ----- */
+
+    /** The scope open on this thread for the city these people are, or null (AP5). */
+    static Scope heldFor(PopulationManager people) {
+        Scope s = HELD.get();
+        return s != null && s.game.getPopulationManager() == people ? s : null;
+    }
+
+    /** The scope open on this thread for the city these buildings are, or null (AP5). */
+    static Scope heldFor(BuildingManager buildings) {
+        Scope s = HELD.get();
+        return s != null && s.game.getBuildingManager() == buildings ? s : null;
+    }
+
+    /**
+     * Set by a harness (AP5): every held labour figure is also read afresh and compared to the bit, and LABOUR_DIFFERED
+     * counts those that were not the same. Off in play; never set outside a check.
+     */
+    static boolean labourChecked;
+    /** Held labour figures read and compared while labourChecked was set, and those that differed from the bare figure. */
+    static final java.util.concurrent.atomic.AtomicLong LABOUR_COMPARED = new java.util.concurrent.atomic.AtomicLong(),
+            LABOUR_DIFFERED = new java.util.concurrent.atomic.AtomicLong();
+
+    /** A held figure against the bare one, when a harness has asked (labourChecked); returns the held one. */
+    static long[] compared(long[] held, java.util.function.Supplier<long[]> bare) {
+        if (labourChecked) {
+            LABOUR_COMPARED.incrementAndGet();
+            if (!java.util.Arrays.equals(held, bareWhile(bare))) LABOUR_DIFFERED.incrementAndGet();
+        }
+        return held;
+    }
+
+    /** ...one long. */
+    static long compared(long held, java.util.function.LongSupplier bare) {
+        if (labourChecked) {
+            LABOUR_COMPARED.incrementAndGet();
+            if (held != bareWhile(() -> bare.getAsLong())) LABOUR_DIFFERED.incrementAndGet();
+        }
+        return held;
+    }
+
+    /** ...one double, to the bit. */
+    static double compared(double held, java.util.function.DoubleSupplier bare) {
+        if (labourChecked) {
+            LABOUR_COMPARED.incrementAndGet();
+            if (Double.doubleToRawLongBits(held) != Double.doubleToRawLongBits(bareWhile(() -> bare.getAsDouble())))
+                LABOUR_DIFFERED.incrementAndGet();
+        }
+        return held;
+    }
+
+    /** A reading taken as no scope were open on this thread (AP5: the bare figure a held one is compared with); the scope is open again after. */
+    static <T> T bareWhile(java.util.function.Supplier<T> reading) {
+        Scope open = HELD.get();
+        if (open == null) return reading.get();
+        HELD.remove();
+        try {
+            return reading.get();
+        } finally {
+            HELD.set(open);
+        }
+    }
 
     /**
      * The held loads for this city, rebuilt when the site's stamp has moved; null when no scope for it is open, or inside

@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**257 harness files, 29,362 labelled assertions.** AllChecks runs 257 of them.
+**257 harness files, 29,439 labelled assertions.** AllChecks runs 257 of them.
 
 ## Which harnesses read which class
 
@@ -41,7 +41,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MonetaryCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeCostCheck, UndemandedFeedCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, EssentialWorksCheck, ForestryCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdCheck, HousingInventoryCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewUnitCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SubstationCheck, TruckRouteCheck, WaterPowerCheck, WoodProductsCheck, WorksFinanceCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
-| [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, ForeignChoiceCheck, ForeignCrewsCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HydrogenSteelCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, NewUnitCheck, OutsideCheck, PostwarRecipeCheck, PowerPlanCheck, PowerPlantsCheck, PublicLicenceCheck, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, SulphideLeachCheck, Village1900Check, WaterPowerCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
+| [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, ForeignChoiceCheck, ForeignCrewsCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HydrogenSteelCheck, InvestCheck, KeptCheck, LabourCheck, LandmassCheck, LongPlaytest, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, NewUnitCheck, OutsideCheck, PostwarRecipeCheck, PowerPlanCheck, PowerPlantsCheck, PublicLicenceCheck, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, SulphideLeachCheck, Village1900Check, WaterPowerCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FB13Check, FarmlandReserveCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MonetaryCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SubstationCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, Village1900Check, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, HoldersCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CardCheck, CreditCheck, CreditCrunchCheck, DistressBleedCheck, FittingCheck, ForeignChoiceCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, InvestCheck, KeptCheck, LongPlaytest, MortgageCheck, NewGameCheck, OrderDoorCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck, YoungBankCheck |
@@ -282,7 +282,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [RankingsScreen](map/RankingsScreen.md) | **none** |
 | [RealDollar](map/RealDollar.md) | PriceLevelCheck, RankingsCheck, RealDollarCheck |
 | [RealEstate](map/RealEstate.md) | DiscoveryCheck, HouseholdCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, MortgageCheck, NewGameCheck, PopulationCheck, ReadPathCheck, ReloadCheck, RoadCheck, StaffingDrawCheck, Village1900Check, WageLadderCheck |
-| [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, WaterPowerCheck |
+| [Recipe](map/Recipe.md) | BuildingDataCheck, DiscoveryCheck, LabourCheck, LicenceFeesCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, WaterPowerCheck |
 | [RecipeChange](map/RecipeChange.md) | ModernEngineeringCheck, ModernRowsCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck |
 | [RecipeChanges](map/RecipeChanges.md) | FittingCheck, HistoricalLicenceCheck, ModernEngineeringCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck |
 | [Recipes](map/Recipes.md) | DiscoveryCheck, FieldOperatorsCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, LicenceFeesCheck, MaterialsCheck, ModernEngineeringCheck, NewUnitCheck, PostwarRecipeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, Village1900Check, WaterPowerCheck |
@@ -384,7 +384,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Where](map/Where.md) | KeptCheck |
 | [WoodProducts](map/WoodProducts.md) | BankFailureCheck, BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | BankCheck, CapitalGainsCheck, CardCheck, DenominationCheck, HoldersCheck, HouseholdCheck, HouseholdStageCheck, MoneyWordsCheck |
-| [WorksValue](map/WorksValue.md) | ChildcareCheck, EssentialWorksCheck, NewUnitCheck, PowerPlanCheck, WorksFinanceCheck |
+| [WorksValue](map/WorksValue.md) | AutoBuildCheck, ChildcareCheck, EssentialWorksCheck, LabourCheck, NewUnitCheck, PowerPlanCheck, WorksFinanceCheck |
 | [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FB13Check, FittingCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, InterestAbroadCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PartnerCallsCheck, PlanCheck, PortCheck, PowerPlanCheck, PowerPlantsCheck, PriceLevelCheck, QuarryingCheck, QuayRailCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, SulphideLeachCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
 | [WorldChain](map/WorldChain.md) | WorldMarketCheck |
 | [WorldData](map/WorldData.md) | CopperRefiningCheck, DenominationCheck, DeterminismCheck, GlobeCheck, GoldPriceCheck, InterestAbroadCheck, LandNationsCheck, MapCheck, NationsCheck, PartnerCallsCheck, PartnersCheck, PegAnchorCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
@@ -938,7 +938,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1851 a skip lists every sale automatic building made: at least each ask offered again, one a line with its stop, its tail and
   - L1856 ...and its headlines say automatic building came up short at its cap, and how many times it sold
 
-## AutoBuildCheck.java - 71 labelled assertions
+## AutoBuildCheck.java - 79 labelled assertions
 
 > Automatic building (0.7.73, batch N4): AutoBuilder's month held to its
 > rules, in a city it builds for decades and in fixtures that cause each of
@@ -954,87 +954,96 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 > 
 > ...
 
-- **L171 10. the 1900 city: automatic building answers missing power**
-  - L181 fixture: 1900 power demand is above its founding supply
-  - L185 the 1900 power shortage orders a known works
-  - L187 the works is essential under the model's rule
-- **L195 9. essential works and their land from cash over the debt limit (AW1)**
-  - L223 cash above the debt limit orders both power and streets through the normal builder
-  - L225 the orders buy the ground they need from cash and issue no debt
-- **L233 1. the settings**
-  - L237 a new city has it off
-  - L238 ...its spare margin at DEFAULT_SLACK, 15%, its debt limit at DEFAULT_DEBT_LIMIT, 240% of a year's GDP
-  - L249 the margin's slider keeps to its ends, 0 and SLACK_MOST, and to whole per cents
-  - L255 ...the debt limit's to 0 and DEBT_LIMIT_MOST, six years of GDP - past 300%, as Jerus asked - and DEBT_STEP's
-  - L264 switching it, moving a slider and Build from cash anyway are decisions, in the construction kind
-  - L270 off,
-  - L277 a save from before it (no state) loads with it off, at its defaults, with nothing done
-  - L286 one from 0.7.73 to 0.7.80 keeps its switch and margin, and reads the default limit and the toggle off:
-- **L307 2. the advice's card**
-  - L337 fixture: the town is short of something the advice has a card for, at the advice's own margin (SLACK)
-  - L339 fixture: ...a building the payback does not hold (0.7.104: an essential service, or one the treasury does
-  - L349 the pass's first order is the card
-- **L375 3. a city on it for decades**
-  - L486 it ran a pass every month
-  - L491 after every pass every service it keeps is at the margin's target, has works under way, or the
-  - L493 ...and every reason it gave was true: no ground for one, a bond for one past the limit, one that would not
-  - L502 it builds nothing outside its remit (
-  - L512 ...and bare ground only: no field bought for its ore (
-  - L520 ...nor spends the cash under a month's tax, the reserve (
-  - L521 essential works in the remit never acquire a payback veto
-- **L807 4. a saved city plays on as the one it was saved from**
-  - L821 fixture: the decades' city, auto-build on, saved
-  - L831 it loads on, at the same margin, limit and Build from cash anyway, with the same log, totals and holds
-  - L836 ...what a resident pays the city, as the payback reads it (0.7.104; the revenue it read the budget against until
-  - L838 ...the debt it reads the limit against (0.7.81)
-  - L839 ...and the year of GDP it sets the debt against
-  - L851 fixture: the saved city turned people away from general care for its fee
-  - L892 fixture: ...and it placed orders in those months (
-  - L907 its state through the save's own Gson: the same settings, log and totals, the ground it bought among them,
-  - L936 fixture: the town with no ground free, auto-build on, saved and loaded on, with the same ground
-- **L975 5. what holds it back, caused**
-  - L992 fixture: the town short of road, its cash at a month's tax
-  - L994 a debt limit of 0%: it holds and borrows nothing
-  - L1048 a first police station is a service it keeps where there is none, however far past the need one goes
-  - L1081 the first warranted school is essential and ordered without a payback veto
-  - L1086 the inbox does not invent a payback refusal for the essential school
-  - L1099 the twin with fiscal room also orders its first school without weighing a payback
-  - L1114 a first essential school follows the debt and funding rules, without a first-kind cash-only veto
-- **L1135 6. essential cards carry no payback veto, including after a save**
-  - L1144 fixture: the missing elementary school has a category card before the essential order is placed
-  - L1148 the deficit town orders its warranted school without weighing payback
-  - L1152 the card carries no payback hold after the essential order
-  - L1153 no payback appraisal was retained for the essential card
-  - L1156 the inbox also carries no invented payback refusal
-  - L1161 saved and loaded mid-month, the essential card still has no payback hold
-  - L1164 switched off, it holds nothing back, and the card carries no line
-  - L1168 fiscal room does not reintroduce a payback veto on work already ordered
-- **L1311 7. a young city refused for a small sum keeps building (FW4)**
-  - L1379 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
-  - L1382 fixture: the first refused order is for the young city's own general-care shortage
-  - L1464 the formerly refused general-care service itself gains operating capacity, and the city grows
-  - L1587 fixture: the first measure the town is short of (those before it brought ahead, standing) has a card in its ranking
-  - L1611 ...and its log says the first was more than the money would pay for
-  - L1647 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
-  - L1652 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
-  - L1685 fixture: the town short of a service, with no ground free
-  - L1700 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
-  - L1706 ...its log's order carries the ground: its square feet, price and places
-  - L1725 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
-  - L1726 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
-  - L1749 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
-  - L1783 over the limit it buys no ground and places nothing, and borrows nothing
-  - L1823 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
-  - L1825 it buys none of them - no field for its ore - and holds the order for want of ground
-  - L1828 ...and the inbox says so, naming the land office
-  - L1831 ...settled the month it is switched off
-  - L1929 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
-  - L1983 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
-  - L2008 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
-  - L2013 ...and the inbox says the city is over the limit, and names Build from cash anyway
-  - L2044 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
-- **L2061 8. care of every kind is essential, on a deficit (CC1-S)**
-  - L2102 a school is essential too: the same deficit does not hold it for payback
+- **L177 10. the 1900 city: automatic building answers missing power**
+  - L187 fixture: 1900 power demand is above its founding supply
+  - L191 the 1900 power shortage orders a known works
+  - L193 the works is essential under the model's rule
+- **L205 11. the pass reads the labour figures held, the bare ones to the bit, after its own builds too (AP5)**
+  - L215 fixture: 1900 power demand is above its founding supply, so the pass has a works to order
+  - L216 fixture: no scope is open to begin with
+  - L238 the pass ordered a building, so the posts it holds were moved by its own order
+  - L239 the pass read labour figures held, and every one was compared with the bare figure
+  - L240 ...and not one of them differed from it, to the bit, after the pass's own orders too
+  - L241 the posts were built afresh after an order in the pass, not held over it
+  - L242 ...and held reads outnumber the fills and builds they were read from, so the hold is worth having
+  - L243 the pass's own scope was the harness's, one deeper, and nothing is held once both are closed
+- **L250 9. essential works and their land from cash over the debt limit (AW1)**
+  - L278 cash above the debt limit orders both power and streets through the normal builder
+  - L280 the orders buy the ground they need from cash and issue no debt
+- **L288 1. the settings**
+  - L292 a new city has it off
+  - L293 ...its spare margin at DEFAULT_SLACK, 15%, its debt limit at DEFAULT_DEBT_LIMIT, 240% of a year's GDP
+  - L304 the margin's slider keeps to its ends, 0 and SLACK_MOST, and to whole per cents
+  - L310 ...the debt limit's to 0 and DEBT_LIMIT_MOST, six years of GDP - past 300%, as Jerus asked - and DEBT_STEP's
+  - L319 switching it, moving a slider and Build from cash anyway are decisions, in the construction kind
+  - L325 off,
+  - L332 a save from before it (no state) loads with it off, at its defaults, with nothing done
+  - L341 one from 0.7.73 to 0.7.80 keeps its switch and margin, and reads the default limit and the toggle off:
+- **L362 2. the advice's card**
+  - L392 fixture: the town is short of something the advice has a card for, at the advice's own margin (SLACK)
+  - L394 fixture: ...a building the payback does not hold (0.7.104: an essential service, or one the treasury does
+  - L404 the pass's first order is the card
+- **L430 3. a city on it for decades**
+  - L541 it ran a pass every month
+  - L546 after every pass every service it keeps is at the margin's target, has works under way, or the
+  - L548 ...and every reason it gave was true: no ground for one, a bond for one past the limit, one that would not
+  - L557 it builds nothing outside its remit (
+  - L567 ...and bare ground only: no field bought for its ore (
+  - L575 ...nor spends the cash under a month's tax, the reserve (
+  - L576 essential works in the remit never acquire a payback veto
+- **L862 4. a saved city plays on as the one it was saved from**
+  - L876 fixture: the decades' city, auto-build on, saved
+  - L886 it loads on, at the same margin, limit and Build from cash anyway, with the same log, totals and holds
+  - L891 ...what a resident pays the city, as the payback reads it (0.7.104; the revenue it read the budget against until
+  - L893 ...the debt it reads the limit against (0.7.81)
+  - L894 ...and the year of GDP it sets the debt against
+  - L906 fixture: the saved city turned people away from general care for its fee
+  - L947 fixture: ...and it placed orders in those months (
+  - L962 its state through the save's own Gson: the same settings, log and totals, the ground it bought among them,
+  - L991 fixture: the town with no ground free, auto-build on, saved and loaded on, with the same ground
+- **L1030 5. what holds it back, caused**
+  - L1047 fixture: the town short of road, its cash at a month's tax
+  - L1049 a debt limit of 0%: it holds and borrows nothing
+  - L1103 a first police station is a service it keeps where there is none, however far past the need one goes
+  - L1136 the first warranted school is essential and ordered without a payback veto
+  - L1141 the inbox does not invent a payback refusal for the essential school
+  - L1154 the twin with fiscal room also orders its first school without weighing a payback
+  - L1169 a first essential school follows the debt and funding rules, without a first-kind cash-only veto
+- **L1190 6. essential cards carry no payback veto, including after a save**
+  - L1199 fixture: the missing elementary school has a category card before the essential order is placed
+  - L1203 the deficit town orders its warranted school without weighing payback
+  - L1207 the card carries no payback hold after the essential order
+  - L1208 no payback appraisal was retained for the essential card
+  - L1211 the inbox also carries no invented payback refusal
+  - L1216 saved and loaded mid-month, the essential card still has no payback hold
+  - L1219 switched off, it holds nothing back, and the card carries no line
+  - L1223 fiscal room does not reintroduce a payback veto on work already ordered
+- **L1366 7. a young city refused for a small sum keeps building (FW4)**
+  - L1434 fixture: at the reserve its pass holds an order for the money, none ordered ahead of it
+  - L1437 fixture: the first refused order is for the young city's own general-care shortage
+  - L1519 the formerly refused general-care service itself gains operating capacity, and the city grows
+  - L1642 fixture: the first measure the town is short of (those before it brought ahead, standing) has a card in its ranking
+  - L1666 ...and its log says the first was more than the money would pay for
+  - L1702 it buys no ground - not the city's deficit, and not an order's own, which could not be placed - and places
+  - L1707 ...and the inbox says how much more ground its buildings stand on than it owns, naming the land office
+  - L1740 fixture: the town short of a service, with no ground free
+  - L1755 ...and the inbox notes the purchase and why: the offers, the order and what it lacked
+  - L1761 ...its log's order carries the ground: its square feet, price and places
+  - L1780 fixture: no ground free and the cash at a month's tax: an order that needs ground and money
+  - L1781 at a debt limit of 0% - the town over it, owing its central bank's advances (0.7.101; within it on its bonds and
+  - L1804 under a limit every bond would cross it buys no ground and borrows nothing - for no building in the advice's
+  - L1838 over the limit it buys no ground and places nothing, and borrows nothing
+  - L1878 fixture: no ground free and every offer with ore under it, dry ground in each - Build's shortcut would buy one
+  - L1880 it buys none of them - no field for its ore - and holds the order for want of ground
+  - L1883 ...and the inbox says so, naming the land office
+  - L1886 ...settled the month it is switched off
+  - L1984 ...overdrawn, the bond's cash clears the overdraft first: all the city owes after it is its paper, the bond's face
+  - L2038 under the limit, a bond that would take the debt past it is not taken: held for the limit, no paper, the
+  - L2063 over the limit it builds nothing and borrows nothing, though the cash would pay: held for the limit
+  - L2068 ...and the inbox says the city is over the limit, and names Build from cash anyway
+  - L2099 ...and with the cash at a month's tax, held for the cash, nothing borrowed, the inbox saying it builds from
+- **L2116 8. care of every kind is essential, on a deficit (CC1-S)**
+  - L2157 a school is essential too: the same deficit does not hold it for payback
 
 ## BankCheck.java - 617 labelled assertions
 
@@ -20121,7 +20130,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L277 kept: an untagged log of the tally is known red only
   - L283 kept: a run the unmended runner tagged NEW is rejudged known red only
 
-## LabourCheck.java - 198 labelled assertions
+## LabourCheck.java - 267 labelled assertions
 
 > Verifies the labour market: who can hold a job, and what it costs. Not part
 > of the game.
@@ -20137,236 +20146,306 @@ _(this harness does not label its checks through a helper - it prints its findin
 > workers sat idle. The eleven job types were real on the demand side and
 > ...
 
-- **L87 1. THE GOING RATE ANCHORS THE LADDER, AND THE FLOOR STARTS UNDER IT**
-- **L100 the going rate anchors the ladder, and the floor starts under it**
-  - L103 the going rate is the unskilled tier
-  - L105 the floor starts at the default share of the going rate
-  - L107 ...which is under the going rate, a floor of its own
-  - L109 the going rate in today's money is the going rate lifted by the cost of living
-  - L113 
-  - L120 a new city has no job paid the floor
-  - L126 founded on
-  - L128 ...the floor starts at the default share of it
-  - L130 ...and the unskilled base is the anchor, as the ladder pays it
-  - L138 a currency reform takes the going rate with it
-  - L143 ...and every base
-  - L144 ...and the floor's share of the going rate is unchanged
-- **L147 2. THE DIAL MOVES ONLY THE WAGES UNDER IT**
-- **L157 the dial moves only the wages under it**
-  - L170 fixture: the floor sits between the diploma's base and the college jobs', inside the dial's bounds
-  - L186 the no-diploma wage is lifted to the floor
-  - L187 the diploma wage is lifted to the floor
-  - L191 the
-  - L195 fixture: every college and university wage is over the floor, so it is no floor to them
-  - L196 the doctor's base is unchanged
-  - L197 ...and the ladder's bases kept their shape
-  - L200 the no-diploma and diploma bands are the ones paid the floor
-  - L203 and the dial is bounded
-  - L211 without the law no job is paid the floor or near it
-  - L218 a wage a little over the floor is near it, and not paid it
-  - L220 ...and the doctor's, far over it, is neither
-  - L222 ...and the job paid the floor is not near it
-- **L225 2b. THE FLOOR'S TIE**
-- **L234 the floor's tie**
-  - L236 a new market's floor is tied to prices, at the default share
-  - L239 the ties have their words
-  - L254 fixture: the cost of living rose (
-  - L255 tied to prices, the real floor is unchanged while prices rise (
-  - L257 ...and the cash floor rises with them
-  - L259 ...by the cost of living
-  - L266 fixture: the same rise in the cost of living (
-  - L267 tied to nothing, the cash floor holds while prices rise (
-  - L269 ...so the real floor falls with them
-  - L271 ...by the cost of living
-  - L279 fixture: prices fell far enough to take a cash floor past the top of the dial
-  - L281 tied to nothing, a cash floor that prices would take over the dial's top is held at the top (
-  - L290 setting the cost of living (the load path) does not strike a cash floor
-  - L296 tying the floor does not move it that month
-  - L299 tied to the average wage, the cash floor is the share of it
-  - L303 ...whatever the cost of living and the player's nudge
-  - L307 setting the floor under it moves the share to match
-  - L308 ...and the cash floor is what was set
-  - L310 ...and the next month's strike keeps it
-  - L316 a month with no average wage (nobody paid, or not a number) leaves the floor where it was
-  - L321 a tie that would take the floor over the dial's top holds it at the top
-  - L324 ...and one that would take it under the dial's bottom holds it at the bottom
-  - L327 setting the floor over the dial holds the share at its top too
-  - L332 tied to prices, the average wage moves no floor
-  - L335 ...and the dial leaves the share alone
-  - L342 a share over the top of the range is held to it
-  - L344 ...and one under the bottom of it
-  - L346 a tie to the average wage is said at its share
-  - L350 ...and said once: the same tie again is no decision
-  - L352 a tie to nothing is said as a cash figure
-  - L355 a null tie reads prices, and is said so
-- **L359 3. SCARCITY RAISES IT, SURPLUS LOWERS IT**
-- **L364 a shortage raises the wage, a glut lowers it**
-  - L381 a shortage pays over the odds
-  - L383 ...but not without limit
-  - L385 a glut pays under them
-  - L387 ...and stops at the bottom of the range
-  - L401 fixture: the default floor is over the unskilled band's own floor of the going rate
-  - L403 no wage falls below the minimum
-  - L405 ...so an unskilled glut is pinned, at a floor over its own
-  - L407 ...and paid the floor
-  - L427 fixture: the Diploma glut is held at the indexed floor, over the founding one and its tolerance
-  - L430 a band held at the indexed floor with people spare is pinned at a cost of living of 1.1
-- **L433 4. IT IS LAGGED, WHICH IS THE POINT**
-- **L441 and it gets there slowly**
-  - L465 one month does not close the gap
-  - L466 ...it closes ADJUST_RATE of it
-  - L474 a shortage takes a year or more to price in
-  - L475 ...and does get there eventually
-- **L477 5. NOBODY IS A DOCTOR WHO IS NOT A DOCTOR**
-- **L485 and a city cannot staff what it has not attracted**
-  - L516 fixture: the college band has more posts than people to put in them
-  - L518 fixture: the university band has more graduates than graduate posts
-  - L531 no more
-  - L543 graduates with no graduate work cascade downward
-  - L545 ...and nothing cascades up
-  - L558 fixture: a city nobody has moved into has no university workers
-  - L563 skilled workers exist at all - migration supplied them
-- **L566 6. AND IT SURVIVES A SAVE**
-- **L573 through a save**
-  - L600 the city saved
-  - L605 the floor's tie came back through a real save
-  - L606 ...and its share
-  - L612 
-  - L616 the
-  - L626 a tie to the average wage survives state() and restore()
-  - L627 ...with its share
-  - L631 an array cut before the tie restores prices
-  - L632 ...at the default share
-  - L638 a tie out of range reads prices
-  - L653 ...and a recomputed market would NOT have matched
-- **L655 RENT NO LONGER FOLLOWS THE UNSKILLED WAGE (2026-09-07).**
-- **L678 rent is a market, not a wage formula**
-  - L680 a reloaded city charges the rent it was charging
-  - L692 fixture: the control is the same town: it struck the same rent target
-  - L695 fixture: the city has a housing cost to price against
-  - L726 fixture: doubling the floor moved the unskilled wage
-  - L730 fixture: ...and the floor is what they are paid, the same month without it pays them less
-  - L740 doubling the minimum wage does not double rent
-  - L742 ...and rent is not the wage formula any more
-  - L753 the rent TARGET is not a wage formula either
-- **L756 ARRIVING CHILDREN ARE NOT GRADUATES (2026-09-06).**
-- **L767 arriving children are not graduates**
-- **L783 CAUSED, NOT HUNTED FOR (FS16).**
-  - L826 fixture: found a month with skilled arrivals in it
-  - L827 fixture: the skilled arrivals outnumber the departures
-  - L829 fixture: the city is not all adults
-  - L831 the skilled counts gained the ADULT share of the skilled arrivals
-  - L845 fixture: the two explanations are far enough apart to tell apart
-  - L847 ...and not the whole mix
-- **L850 A DOCTOR SHORTAGE IS PRICED ON DOCTORS (2026-09-06).**
-- **L859 a doctor shortage is priced on doctors**
-  - L896 fixture: more doctor posts than licence holders
-  - L898 the market reports a licence shortage
-  - L900 doctors are paid over the band
-  - L902 ...and never over the ceiling
-  - L904 an ungated graduate job carries no licence premium
-  - L906 licence holders arrive in response to the price
-- **L909 WHO MOVES IN, AND WHY (2026-09-07).**
-- **L927 who moves in, and why**
-  - L942 fixture: somebody moved in at all
-  - L943 fixture: this city pays its labourers no more than the going rate
-  - L945 NOBODY ARRIVES WITHOUT A DIPLOMA into a city paying the going rate for them
-  - L951 ...and at the ceiling they are the world's share of migrants with no diploma, 7.5%
-- **L954 SOME ARRIVE WITHOUT A DIPLOMA, FOR THE WAGE (0.7.18).**
-- **L969 some arrive without a diploma, for the wage**
-  - L991 fixture: the town pays its labourers over the going rate
-  - L993 fixture: somebody moved in
-  - L994 a dear unskilled wage brings arrivals without a diploma
-  - L997 ...against the diploma arrivals, the ceiling times reach() times the chance of work - the graduates' own terms
-  - L1014 fixture: the graduate band is NOT bid up - only doctors are
-  - L1016 a doctor shortage brings doctors on its own
-  - L1027 a licence holder is one of the university arrivals, not an extra head
-- **L1039 the pull curve**
-  - L1040 at the going rate a graduate has no reason to come
-  - L1042 ...nor below it
-  - L1043 at twice the going rate, a third of the ceiling
-  - L1045 at the wage ceiling, all of it
-  - L1047 ...and never more, however far a premium is pushed
-  - L1049 a diploma is the base and is not competed for
-  - L1051 the graduate ceilings stay under it - the world has few to spare
-- **L1055 7. THE TIE'S AVERAGE SURVIVES A LOAD AND A REFORM (WS1)**
-- **L1067 the tie's average survives a load and a reform (WS1)**
-  - L1073 the month struck the floor on an average of the played city's wages
-  - L1078 fixture: the floor was struck on an average fed by hand
-  - L1079 fixture: the floor was struck, not held at a bound of the dial
-  - L1081 the floor the month struck is the share of the average it read
-  - L1083 the played city under the tie saved
-  - L1087 the tie came back through the real save path, at its share
-  - L1089 ...and the average it last read came back with it
-  - L1095 the live city's dial move puts the share at the move's cash over the last average
-  - L1096 the loaded city's, before any month, puts it at the move's cash over the last average
-  - L1098 ...the same share the live city gets from the same move, not the share before it
-  - L1101 the month read an average of its own
-  - L1103 a played month leaves the loaded city's tie share at the dial's move, not the share before it
-  - L1107 fixture: the loaded city read an average fed by hand
-  - L1108 fixture: the floor was struck again, not held at a bound of the dial
-  - L1110 after a month the loaded city's floor is still the dial's share of the new average (not undone to the share before)
-  - L1120 the average survives state() and restore()
-  - L1123 an array cut before the average keeps the tie it carries
-  - L1125 ...and reads no average, as before
-  - L1127 ...so a dial move leaves its share alone
-  - L1130 a month with no average wage saves 0, never a NaN
-  - L1141 fixture (reform x
-  - L1143 a reform x
-  - L1145 ...so the same real floor times the scale has the same tie share as before it
-- **L1150 8. THE TIE'S SHARE STOPS SHORT OF THE RATCHET (WS1)**
-- **L1161 the tie's share stops short of the ratchet (WS1)**
-  - L1165 asking the average wage itself holds the share at the top of the range
-  - L1167 ...and asking .05 holds it at the bottom
-  - L1168 the top of the range stops short of the average wage itself
-  - L1179 fixture: the world file has nations with a minimum-wage-to-average-wage ratio
-  - L1180 the range reaches the lowest nation's ratio, so it can be copied
-  - L1181 ...and the highest, so none is out of reach
-  - L1201 fixture: the average wage is over the unskilled wage by more than the top of the range lets the floor reach
-  - L1234 the floor bound in most of the months (it lifted the unskilled wage over what the market alone pays)
-  - L1235 the floor settles: its month-on-month move is under 0.1% by the end
-  - L1236 the floor stayed under the mean wage of the posts it does not hold, every month
-  - L1237 the floor never reached the top of the dial
-  - L1238 the university band's lowest wage stayed above the floor, every month
-- **L1338 wages against the index they chase**
-  - L1416 fixture: the basket is based, so there is an index to chase
-  - L1443 fixture: the crawl really did inflate the basket, steadily
-  - L1445 every month wages chased the index the city published
-  - L1447 ...and moved by the expected month to EXPECTED_SHARE and the chase to the rest - one indexation, not two
-  - L1449 so the wage index sits inside the lag's window, every month
-  - L1451 ...which under a rising index is BELOW it, not a third above
-  - L1459 fixture: the currency was reformed
-  - L1460 a reform leaves the wage index where it was
-  - L1461 ...and the level it is walking toward
-  - L1462 ...and the price index it walks toward
-  - L1470 ...and two years on, wages still chase the index the city published
-  - L1472 ...the expected month and the chase at a time
-  - L1473 ...inside the lag's window
-  - L1478 fixture: the reformed city saved
-  - L1481 the wage index reloads
-  - L1483 ...and the level it is walking toward
-  - L1485 ...and the price index it is handed
-  - L1499 and a reloaded city's wages chase the index it publishes
-  - L1501 ...the expected month and the chase at a time
-  - L1502 ...inside the lag's window
-- **L1535 every employer pays each job type's wage for the posts filled, the sick included**
-  - L1589 fixture: the city's job types fill unevenly
-  - L1600 (a) every employer's payroll is what the households are paid
-  - L1601 (c) ...and the average-fill figure is not the sectors' payroll on this city
-  - L1613 (a) ...and each sector's payroll is its filled posts at the households' wage
-  - L1630 fixture: some sector is working, so there is an output for the sickness to slow
-  - L1631 (b) half the city off sick, fill held: no sector's payroll moves
-  - L1632 ...while every working sector's output falls with it
-  - L1633 ...and the households are paid what they were
-  - L1662 fixture: nothing is on site, so the builders' work is the repairs of the standing city
-  - L1664 fixture: the repairs need less of the depots than the core crew
-  - L1671 fixture: the builders have less work than crews, and lay some off
-  - L1675 ...offering the share of their posts the work needs over their fill, never fewer than the core crew
-  - L1682 ...each job type's posts at that share, rounded once
-  - L1688 the posts not offered are not in the city's count
-  - L1691 (a) ...and the households are paid what the employers paid, the laid-off posts in nobody's pay
-  - L1704 a month with the work for them hires every crew back
-  - L1708 (a) ...and the households are paid what the employers paid, that month too
+- **L92 1. THE GOING RATE ANCHORS THE LADDER, AND THE FLOOR STARTS UNDER IT**
+- **L105 the going rate anchors the ladder, and the floor starts under it**
+  - L108 the going rate is the unskilled tier
+  - L110 the floor starts at the default share of the going rate
+  - L112 ...which is under the going rate, a floor of its own
+  - L114 the going rate in today's money is the going rate lifted by the cost of living
+  - L118 
+  - L125 a new city has no job paid the floor
+  - L131 founded on
+  - L133 ...the floor starts at the default share of it
+  - L135 ...and the unskilled base is the anchor, as the ladder pays it
+  - L143 a currency reform takes the going rate with it
+  - L148 ...and every base
+  - L149 ...and the floor's share of the going rate is unchanged
+- **L152 2. THE DIAL MOVES ONLY THE WAGES UNDER IT**
+- **L162 the dial moves only the wages under it**
+  - L175 fixture: the floor sits between the diploma's base and the college jobs', inside the dial's bounds
+  - L191 the no-diploma wage is lifted to the floor
+  - L192 the diploma wage is lifted to the floor
+  - L196 the
+  - L200 fixture: every college and university wage is over the floor, so it is no floor to them
+  - L201 the doctor's base is unchanged
+  - L202 ...and the ladder's bases kept their shape
+  - L205 the no-diploma and diploma bands are the ones paid the floor
+  - L208 and the dial is bounded
+  - L216 without the law no job is paid the floor or near it
+  - L223 a wage a little over the floor is near it, and not paid it
+  - L225 ...and the doctor's, far over it, is neither
+  - L227 ...and the job paid the floor is not near it
+- **L230 2b. THE FLOOR'S TIE**
+- **L239 the floor's tie**
+  - L241 a new market's floor is tied to prices, at the default share
+  - L244 the ties have their words
+  - L259 fixture: the cost of living rose (
+  - L260 tied to prices, the real floor is unchanged while prices rise (
+  - L262 ...and the cash floor rises with them
+  - L264 ...by the cost of living
+  - L271 fixture: the same rise in the cost of living (
+  - L272 tied to nothing, the cash floor holds while prices rise (
+  - L274 ...so the real floor falls with them
+  - L276 ...by the cost of living
+  - L284 fixture: prices fell far enough to take a cash floor past the top of the dial
+  - L286 tied to nothing, a cash floor that prices would take over the dial's top is held at the top (
+  - L295 setting the cost of living (the load path) does not strike a cash floor
+  - L301 tying the floor does not move it that month
+  - L304 tied to the average wage, the cash floor is the share of it
+  - L308 ...whatever the cost of living and the player's nudge
+  - L312 setting the floor under it moves the share to match
+  - L313 ...and the cash floor is what was set
+  - L315 ...and the next month's strike keeps it
+  - L321 a month with no average wage (nobody paid, or not a number) leaves the floor where it was
+  - L326 a tie that would take the floor over the dial's top holds it at the top
+  - L329 ...and one that would take it under the dial's bottom holds it at the bottom
+  - L332 setting the floor over the dial holds the share at its top too
+  - L337 tied to prices, the average wage moves no floor
+  - L340 ...and the dial leaves the share alone
+  - L347 a share over the top of the range is held to it
+  - L349 ...and one under the bottom of it
+  - L351 a tie to the average wage is said at its share
+  - L355 ...and said once: the same tie again is no decision
+  - L357 a tie to nothing is said as a cash figure
+  - L360 a null tie reads prices, and is said so
+- **L364 3. SCARCITY RAISES IT, SURPLUS LOWERS IT**
+- **L369 a shortage raises the wage, a glut lowers it**
+  - L386 a shortage pays over the odds
+  - L388 ...but not without limit
+  - L390 a glut pays under them
+  - L392 ...and stops at the bottom of the range
+  - L406 fixture: the default floor is over the unskilled band's own floor of the going rate
+  - L408 no wage falls below the minimum
+  - L410 ...so an unskilled glut is pinned, at a floor over its own
+  - L412 ...and paid the floor
+  - L432 fixture: the Diploma glut is held at the indexed floor, over the founding one and its tolerance
+  - L435 a band held at the indexed floor with people spare is pinned at a cost of living of 1.1
+- **L438 4. IT IS LAGGED, WHICH IS THE POINT**
+- **L446 and it gets there slowly**
+  - L470 one month does not close the gap
+  - L471 ...it closes ADJUST_RATE of it
+  - L479 a shortage takes a year or more to price in
+  - L480 ...and does get there eventually
+- **L482 5. NOBODY IS A DOCTOR WHO IS NOT A DOCTOR**
+- **L490 and a city cannot staff what it has not attracted**
+  - L521 fixture: the college band has more posts than people to put in them
+  - L523 fixture: the university band has more graduates than graduate posts
+  - L536 no more
+  - L548 graduates with no graduate work cascade downward
+  - L550 ...and nothing cascades up
+  - L563 fixture: a city nobody has moved into has no university workers
+  - L568 skilled workers exist at all - migration supplied them
+- **L571 6. AND IT SURVIVES A SAVE**
+- **L578 through a save**
+  - L605 the city saved
+  - L610 the floor's tie came back through a real save
+  - L611 ...and its share
+  - L617 
+  - L621 the
+  - L631 a tie to the average wage survives state() and restore()
+  - L632 ...with its share
+  - L636 an array cut before the tie restores prices
+  - L637 ...at the default share
+  - L643 a tie out of range reads prices
+  - L658 ...and a recomputed market would NOT have matched
+- **L660 RENT NO LONGER FOLLOWS THE UNSKILLED WAGE (2026-09-07).**
+- **L683 rent is a market, not a wage formula**
+  - L685 a reloaded city charges the rent it was charging
+  - L697 fixture: the control is the same town: it struck the same rent target
+  - L700 fixture: the city has a housing cost to price against
+  - L731 fixture: doubling the floor moved the unskilled wage
+  - L735 fixture: ...and the floor is what they are paid, the same month without it pays them less
+  - L745 doubling the minimum wage does not double rent
+  - L747 ...and rent is not the wage formula any more
+  - L758 the rent TARGET is not a wage formula either
+- **L761 ARRIVING CHILDREN ARE NOT GRADUATES (2026-09-06).**
+- **L772 arriving children are not graduates**
+- **L788 CAUSED, NOT HUNTED FOR (FS16).**
+  - L831 fixture: found a month with skilled arrivals in it
+  - L832 fixture: the skilled arrivals outnumber the departures
+  - L834 fixture: the city is not all adults
+  - L836 the skilled counts gained the ADULT share of the skilled arrivals
+  - L850 fixture: the two explanations are far enough apart to tell apart
+  - L852 ...and not the whole mix
+- **L855 A DOCTOR SHORTAGE IS PRICED ON DOCTORS (2026-09-06).**
+- **L864 a doctor shortage is priced on doctors**
+  - L901 fixture: more doctor posts than licence holders
+  - L903 the market reports a licence shortage
+  - L905 doctors are paid over the band
+  - L907 ...and never over the ceiling
+  - L909 an ungated graduate job carries no licence premium
+  - L911 licence holders arrive in response to the price
+- **L914 WHO MOVES IN, AND WHY (2026-09-07).**
+- **L932 who moves in, and why**
+  - L947 fixture: somebody moved in at all
+  - L948 fixture: this city pays its labourers no more than the going rate
+  - L950 NOBODY ARRIVES WITHOUT A DIPLOMA into a city paying the going rate for them
+  - L956 ...and at the ceiling they are the world's share of migrants with no diploma, 7.5%
+- **L959 SOME ARRIVE WITHOUT A DIPLOMA, FOR THE WAGE (0.7.18).**
+- **L974 some arrive without a diploma, for the wage**
+  - L996 fixture: the town pays its labourers over the going rate
+  - L998 fixture: somebody moved in
+  - L999 a dear unskilled wage brings arrivals without a diploma
+  - L1002 ...against the diploma arrivals, the ceiling times reach() times the chance of work - the graduates' own terms
+  - L1019 fixture: the graduate band is NOT bid up - only doctors are
+  - L1021 a doctor shortage brings doctors on its own
+  - L1032 a licence holder is one of the university arrivals, not an extra head
+- **L1044 the pull curve**
+  - L1045 at the going rate a graduate has no reason to come
+  - L1047 ...nor below it
+  - L1048 at twice the going rate, a third of the ceiling
+  - L1050 at the wage ceiling, all of it
+  - L1052 ...and never more, however far a premium is pushed
+  - L1054 a diploma is the base and is not competed for
+  - L1056 the graduate ceilings stay under it - the world has few to spare
+- **L1060 7. THE TIE'S AVERAGE SURVIVES A LOAD AND A REFORM (WS1)**
+- **L1072 the tie's average survives a load and a reform (WS1)**
+  - L1078 the month struck the floor on an average of the played city's wages
+  - L1083 fixture: the floor was struck on an average fed by hand
+  - L1084 fixture: the floor was struck, not held at a bound of the dial
+  - L1086 the floor the month struck is the share of the average it read
+  - L1088 the played city under the tie saved
+  - L1092 the tie came back through the real save path, at its share
+  - L1094 ...and the average it last read came back with it
+  - L1100 the live city's dial move puts the share at the move's cash over the last average
+  - L1101 the loaded city's, before any month, puts it at the move's cash over the last average
+  - L1103 ...the same share the live city gets from the same move, not the share before it
+  - L1106 the month read an average of its own
+  - L1108 a played month leaves the loaded city's tie share at the dial's move, not the share before it
+  - L1112 fixture: the loaded city read an average fed by hand
+  - L1113 fixture: the floor was struck again, not held at a bound of the dial
+  - L1115 after a month the loaded city's floor is still the dial's share of the new average (not undone to the share before)
+  - L1125 the average survives state() and restore()
+  - L1128 an array cut before the average keeps the tie it carries
+  - L1130 ...and reads no average, as before
+  - L1132 ...so a dial move leaves its share alone
+  - L1135 a month with no average wage saves 0, never a NaN
+  - L1146 fixture (reform x
+  - L1148 a reform x
+  - L1150 ...so the same real floor times the scale has the same tie share as before it
+- **L1155 8. THE TIE'S SHARE STOPS SHORT OF THE RATCHET (WS1)**
+- **L1166 the tie's share stops short of the ratchet (WS1)**
+  - L1170 asking the average wage itself holds the share at the top of the range
+  - L1172 ...and asking .05 holds it at the bottom
+  - L1173 the top of the range stops short of the average wage itself
+  - L1184 fixture: the world file has nations with a minimum-wage-to-average-wage ratio
+  - L1185 the range reaches the lowest nation's ratio, so it can be copied
+  - L1186 ...and the highest, so none is out of reach
+  - L1206 fixture: the average wage is over the unskilled wage by more than the top of the range lets the floor reach
+  - L1239 the floor bound in most of the months (it lifted the unskilled wage over what the market alone pays)
+  - L1240 the floor settles: its month-on-month move is under 0.1% by the end
+  - L1241 the floor stayed under the mean wage of the posts it does not hold, every month
+  - L1242 the floor never reached the top of the dial
+  - L1243 the university band's lowest wage stayed above the floor, every month
+- **L1344 wages against the index they chase**
+  - L1422 fixture: the basket is based, so there is an index to chase
+  - L1449 fixture: the crawl really did inflate the basket, steadily
+  - L1451 every month wages chased the index the city published
+  - L1453 ...and moved by the expected month to EXPECTED_SHARE and the chase to the rest - one indexation, not two
+  - L1455 so the wage index sits inside the lag's window, every month
+  - L1457 ...which under a rising index is BELOW it, not a third above
+  - L1465 fixture: the currency was reformed
+  - L1466 a reform leaves the wage index where it was
+  - L1467 ...and the level it is walking toward
+  - L1468 ...and the price index it walks toward
+  - L1476 ...and two years on, wages still chase the index the city published
+  - L1478 ...the expected month and the chase at a time
+  - L1479 ...inside the lag's window
+  - L1484 fixture: the reformed city saved
+  - L1487 the wage index reloads
+  - L1489 ...and the level it is walking toward
+  - L1491 ...and the price index it is handed
+  - L1505 and a reloaded city's wages chase the index it publishes
+  - L1507 ...the expected month and the chase at a time
+  - L1508 ...inside the lag's window
+- **L1541 every employer pays each job type's wage for the posts filled, the sick included**
+  - L1595 fixture: the city's job types fill unevenly
+  - L1606 (a) every employer's payroll is what the households are paid
+  - L1607 (c) ...and the average-fill figure is not the sectors' payroll on this city
+  - L1619 (a) ...and each sector's payroll is its filled posts at the households' wage
+  - L1636 fixture: some sector is working, so there is an output for the sickness to slow
+  - L1637 (b) half the city off sick, fill held: no sector's payroll moves
+  - L1638 ...while every working sector's output falls with it
+  - L1639 ...and the households are paid what they were
+  - L1668 fixture: nothing is on site, so the builders' work is the repairs of the standing city
+  - L1670 fixture: the repairs need less of the depots than the core crew
+  - L1677 fixture: the builders have less work than crews, and lay some off
+  - L1681 ...offering the share of their posts the work needs over their fill, never fewer than the core crew
+  - L1688 ...each job type's posts at that share, rounded once
+  - L1694 the posts not offered are not in the city's count
+  - L1697 (a) ...and the households are paid what the employers paid, the laid-off posts in nobody's pay
+  - L1710 a month with the work for them hires every crew back
+  - L1714 (a) ...and the households are paid what the employers paid, that month too
+  - L1848 (f)
+  - L1849 ...read afresh, once
+  - L1851 ...and a read with nothing moved is not another fill
+  - L1852 fixture: the move changed the vacancies, so a figure held over it would be stale
+  - L1869 (e)
+  - L1870 ...which is the bare reading
+  - L1871 ...read afresh, once
+  - L1904 fixture: before
+  - L1910 ...read afresh, once
+  - L1911 fixture:
+- **L1915 the labour figures held for a pass are the bare ones, read afresh when they move (AP5)**
+  - L1951 fixture: the town has people, and posts in several sectors
+  - L1952 fixture: the builders lay crews off, so the posts they offer are a share of theirs
+  - L1953 fixture: the doctors' posts are gated, the hospitals have them, and there are heads at university to hold a licence
+  - L1955 fixture: the shops have posts, and the police station is a building the town has none of
+  - L1957 fixture: the unskilled and the widest graduate band have posts open and workers to place
+  - L1959 fixture: no scope is open to begin with
+  - L1968 (a) the vacancies read in a pass are the bare fill
+  - L1969 ...and read again are the same figure
+  - L1970 ...from one fill, not two
+  - L1972 ...and a caller who writes to the figure it was handed does not move the held one
+  - L1973 ...and the fill rate is the bare one, to the bit
+  - L1977 (b) the city's posts are the bare ones
+  - L1978 ...and the jobs the game offers, the research posts with them
+  - L1985 ...every job type's posts at every post
+  - L1986 ...the posts the sectors withhold of each job type
+  - L1987 ...and the builders' own
+  - L1988 ...and the posts withheld over every job type
+  - L1998 fixture: some sector has housing capacity and so a reading to compare
+  - L1999 ...a sector's buildings by their capacity are the bare ones, in every sector
+  - L2000 ...and by their posts
+  - L2001 ...all of them from one build of the posts, not one each
+  - L2012 (c) buildings put up at once add their posts to the next reading, each job type by the template's own
+  - L2013 ...which is the bare reading
+  - L2014 ...read afresh, once
+  - L2017 fixture: the order went on site, none of it standing
+  - L2018 (c) an order on site adds no posts: the reading is the one before
+  - L2019 ...and the bare one
+  - L2020 ...read afresh after the order, whether or not it moved a post
+  - L2022 ...and not again with nothing moved since
+  - L2030 (d) a stack of a template not yet built moves its sector's buildings by its posts
+  - L2031 ...to the bare reading
+  - L2032 ...read afresh, once
+  - L2046 (e) buildings scrapped take their posts from the next reading
+  - L2047 ...which is the bare reading
+  - L2048 ...read afresh, once
+  - L2055 (e) a building given one more post adds one to the next reading for each of them standing
+  - L2057 ...which is the bare reading
+  - L2058 ...read afresh, once
+  - L2062 ...and put back, the reading is the one before it
+  - L2077 fixture: the town's homes are three stacks of one sector, the house's first in the list
+  - L2091 fixture: ...every one of them, and they stand
+  - L2103 fixture: ...the shop has the recipe's posts
+  - L2106 fixture: ...the shop's posts are between the two recipes'
+  - L2110 fixture: ...and back on its own figures, the shop has its posts again
+  - L2116 ...and the builders now withhold a share of the shops' posts as well
+  - L2120 ...and put back, the builders withhold what they did
+  - L2126 fixture: ...the house's stack now after the apartments'
+  - L2130 (f) the buildings moved and the people were not told: the vacancies were not read again
+  - L2132 ...and a read with nothing moved is not a fill
+  - L2133 fixture: the posts built since the people were told them are not the ones they hold
+  - L2196 fixture: on the other ladder a graduate band's base is another multiple of the unskilled
+  - L2211 fixture: the graduate band and the unskilled are one market, so the bands' bases split the workers between them
+  - L2222 fixture: ...the city has no stacks
+  - L2226 (h) a scope opened inside it is the same one, one deeper
+  - L2228 ...and the outer one is still open when the inner one closes
+  - L2230 (h) closed, no scope is open on this thread
+  - L2235 ...so the vacancies are the bare fill after the people moved
+  - L2236 ...and the posts the bare ones after a build
+  - L2237 ...with no fill and no build of the posts counted by the scope that closed
 
 ## LandCheck.java - 606 labelled assertions
 

@@ -5254,6 +5254,7 @@ public class BuildingManager {
                 s -> place.getOrDefault(s.getBuilding().getId(), Integer.MAX_VALUE)));
         stacks.clear();
         stacks.addAll(ordered);
+        postsMoved();
     }
 
     private java.util.function.Consumer<BuildingsStacks> onScrap = s -> { };
@@ -5278,6 +5279,15 @@ public class BuildingManager {
      * the buildings up as before. An instant build ignores it: it comes as placed.
      */
     public void addStack(BuildingsTemplate template, long quantity, boolean noConstruction, Fitout fit) {
+        // Every order moves the posts held for a pass (AP5, THE POSTS HELD FOR ONE PASS): raised after it, whichever way it went.
+        try {
+            placeStack(template, quantity, noConstruction, fit);
+        } finally {
+            postsMoved();
+        }
+    }
+
+    private void placeStack(BuildingsTemplate template, long quantity, boolean noConstruction, Fitout fit) {
 
         if (template.getName() == null) {
             System.out.println("error");
@@ -5378,6 +5388,7 @@ public class BuildingManager {
 
     public void addInstance(BuildingsTemplate template) {
         instances.add(new BuildingInstance(template));
+        postsMoved();
     }
 
     /* =====================================================================
@@ -8155,10 +8166,78 @@ public class BuildingManager {
 
     /** Every post of a job type the city's buildings have, offered this month or not (0.7.17). */
     public long getTotalJobsAtEveryPost(JobType type) {
-        long total = 0;
-        for (BuildingsStacks stack : stacks) total += stack.getTotalJobs(type);
+        // The stacks' posts held for the auto-builder's pass (AP5, THE POSTS HELD FOR ONE PASS); the instances are read live.
+        HeldPosts held = heldPosts();
+        long total = held != null ? WorksValue.compared(held.everyPost[type.ordinal()], () -> stacksPosts(type)) : stacksPosts(type);
         for (BuildingInstance inst : instances) total += inst.getJobs(type);
         return total;
+    }
+
+    /** Every post of a job type the stacks have, summed afresh. */
+    private long stacksPosts(JobType type) {
+        long total = 0;
+        for (BuildingsStacks stack : stacks) total += stack.getTotalJobs(type);
+        return total;
+    }
+
+    /* ----- THE POSTS HELD FOR ONE PASS (AP5, 2026-11-26) -----
+       The auto-builder's pass asked getTotalJobs() (a map of the sectors' posts for every job type) and totalBySector() (a
+       walk of the stacks) again for every candidate it valued: 22.5% of slot 9's FX thread at 50x. While a WorksValue scope
+       is open for this city on this thread they read what is held here, built once from the stacks: each job type's posts,
+       each sector's posts of each type, and each sector's stacks in the list's order. It is keyed on POSTS_EDITS, read
+       before it is built and raised after every change to what it is read from: a stack's buildings (BuildingsStacks:
+       addQuantity, increaseQuantity, removeQuantity, a building finished), a building's posts (BuildingsTemplate: setJobs,
+       runRecipes), the sector a building is grouped under (setSector), the list (addStack, so every order, orderStacks,
+       clearStacks) and the instances (addInstance). A stack's template is set once, at its making. The
+       shares offered and the posts past the buildings are read live; the sums are longs and totalBySector() adds the same
+       terms in the same order, so every figure is the bare one to the bit. ----- */
+
+    /** Raised after every change to the stacks' posts or the list of stacks, in any city (AP5): transient, never saved. */
+    private static final java.util.concurrent.atomic.AtomicLong POSTS_EDITS = new java.util.concurrent.atomic.AtomicLong();
+
+    /** A stack's buildings, a building's posts or the list of stacks has changed: posts held for a pass are read afresh (AP5). */
+    static void postsMoved() { POSTS_EDITS.incrementAndGet(); }
+
+    /** The stacks' posts as one pass read them (AP5), with the count of edits they were read at. */
+    static final class HeldPosts {
+        final long at;
+        /** Each job type's posts over the stacks, by ordinal. */
+        final long[] everyPost;
+        /** Each owning sector's posts of each job type, by ordinal. */
+        final java.util.Map<String, long[]> bySector = new java.util.LinkedHashMap<>();
+        /** Each owning sector's stacks, in the list's order. */
+        final java.util.Map<String, BuildingsStacks[]> stacksOf = new java.util.HashMap<>();
+
+        HeldPosts(long at, List<BuildingsStacks> stacks) {
+            this.at = at;
+            JobType[] types = JobType.values();
+            everyPost = new long[types.length];
+            java.util.Map<String, List<BuildingsStacks>> own = new java.util.HashMap<>();
+            for (BuildingsStacks stack : stacks) {
+                String sector = stack.getBuilding().getSector();
+                long[] posts = bySector.computeIfAbsent(sector, k -> new long[types.length]);
+                for (JobType type : types) {
+                    long n = stack.getTotalJobs(type);
+                    everyPost[type.ordinal()] += n;
+                    posts[type.ordinal()] += n;
+                }
+                own.computeIfAbsent(sector, k -> new ArrayList<>()).add(stack);
+            }
+            for (java.util.Map.Entry<String, List<BuildingsStacks>> e : own.entrySet())
+                stacksOf.put(e.getKey(), e.getValue().toArray(new BuildingsStacks[0]));
+        }
+    }
+
+    /** The posts held for the scope open on this thread for this city, built afresh when the stacks have changed; null with none open. */
+    private HeldPosts heldPosts() {
+        WorksValue.Scope s = WorksValue.heldFor(this);
+        if (s == null) return null;
+        long at = POSTS_EDITS.get();
+        if (s.posts == null || s.posts.at != at) {
+            s.posts = new HeldPosts(at, stacks);
+            s.postsRead++;
+        }
+        return s.posts;
     }
 
     /**
@@ -8184,6 +8263,15 @@ public class BuildingManager {
      */
     public long getPostsWithheld(JobType type) {
         if (offeredShare == null) return 0;
+        HeldPosts held = heldPosts();
+        if (held != null) {
+            long withheld = 0;
+            for (java.util.Map.Entry<String, long[]> e : held.bySector.entrySet()) {
+                long posts = e.getValue()[type.ordinal()];
+                if (posts != 0) withheld += posts - postsOffered(posts, offeredShareOf(e.getKey(), type));
+            }
+            return WorksValue.compared(withheld, () -> getPostsWithheld(type));
+        }
         java.util.Map<String, Long> bySector = new java.util.HashMap<>();
         for (BuildingsStacks stack : stacks) {
             long posts = stack.getTotalJobs(type);
@@ -8199,6 +8287,13 @@ public class BuildingManager {
     /** The posts of a job type one sector does not offer this month: getPostsWithheld(type) for that sector alone (IC1). */
     public long getPostsWithheld(String sector, JobType type) {
         if (offeredShare == null || sector == null) return 0;
+        HeldPosts held = heldPosts();
+        if (held != null) {
+            long[] own = held.bySector.get(sector);
+            long posts = own == null ? 0 : own[type.ordinal()];
+            return WorksValue.compared(posts == 0 ? 0 : posts - postsOffered(posts, offeredShareOf(sector, type)),
+                    () -> getPostsWithheld(sector, type));
+        }
         long posts = 0;
         for (BuildingsStacks stack : stacks) {
             if (sector.equals(stack.getBuilding().getSector())) posts += stack.getTotalJobs(type);
@@ -8367,6 +8462,14 @@ public class BuildingManager {
 
     /** Finished buildings only: quantity times the getter, over the sector's stacks. */
     public double totalBySector(String sector, ToDoubleFunction<BuildingsTemplate> getter) {
+        // A sector's stacks held for the auto-builder's pass (AP5, THE POSTS HELD FOR ONE PASS): the same stacks in the same order, read live.
+        HeldPosts held = heldPosts();
+        if (held != null) {
+            double total = 0;
+            BuildingsStacks[] own = held.stacksOf.get(sector);
+            if (own != null) for (BuildingsStacks stack : own) total += stack.getQuantity() * getter.applyAsDouble(stack.getBuilding());
+            return WorksValue.compared(total, () -> totalBySector(sector, getter));
+        }
         double total = 0;
         for (BuildingsStacks stack : stacks) {
             BuildingsTemplate t = stack.getBuilding();
@@ -9574,6 +9677,7 @@ public class BuildingManager {
     public void clearStacks() {
         housing.clear();
         stacks.clear();
+        postsMoved();
     }
 
     /**
