@@ -55,7 +55,7 @@
 
 **Uses:** [BuildAdvice](BuildAdvice.md) (388), [PowerDispatch](PowerDispatch.md) (123), [Game](Game.md) (59), [BuildingsTemplate](BuildingsTemplate.md) (49), [AutoBuilder](AutoBuilder.md) (34), [WorksValue](WorksValue.md) (21), [UtilitiesHandler](UtilitiesHandler.md) (17), [BuildingType](BuildingType.md) (14), [WorksFinanceCheck](WorksFinanceCheck.md) (10), [BuildingManager](BuildingManager.md) (9), [CityCalendar](CityCalendar.md) (7), [JobType](JobType.md) (7), [LandManager](LandManager.md) (6), [Substations](Substations.md) (6), [EssentialWorksCheck](EssentialWorksCheck.md) (6), [SubstationCheck](SubstationCheck.md) (5), [BuildingsStacks](BuildingsStacks.md) (4), [LandParcel](LandParcel.md) (4), [BuildersFirstCheck](BuildersFirstCheck.md) (3), [LandMarket](LandMarket.md) (3), [BusinessInvestment](BusinessInvestment.md) (3), [Good](Good.md) (3), [NewUnit](NewUnit.md) (3), [World](World.md) (2), [Landmasses](Landmasses.md) (2), [InfrastructureManager](InfrastructureManager.md) (2), [Traffic](Traffic.md) (2), [HeavyIndustry](HeavyIndustry.md) (2), [ResearchCatalog](ResearchCatalog.md) (2), [WageBand](WageBand.md) (2)... and 3 more
 
-**Used by (1):** [FarmlandReserveCheck](FarmlandReserveCheck.md)
+**Used by (2):** [EssentialWorksCheck](EssentialWorksCheck.md), [FarmlandReserveCheck](FarmlandReserveCheck.md)
 
 ## Sections
 

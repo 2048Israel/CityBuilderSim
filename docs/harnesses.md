@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**257 harness files, 29,343 labelled assertions.** AllChecks runs 257 of them.
+**257 harness files, 29,346 labelled assertions.** AllChecks runs 257 of them.
 
 ## Which harnesses read which class
 
@@ -39,13 +39,13 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BuildingCatalog](map/BuildingCatalog.md) | BridgeMapCheck, BuildingDataCheck, CrossingCheck, DiscoveryCheck, EarthTerrainCheck, EquipmentCheck, GatewayCheck, IslandNetCheck, JunctionCheck, MainLineCheck, MapCheck, PlanCheck, PortCheck, PowerDispatchCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, RailDrawCheck, RecipeCheck, ResearchCheck, SlopeCheck, WellCheck, WorldMarketCheck |
 | [BuildingInstance](map/BuildingInstance.md) | **none** |
 | [BuildingManager](map/BuildingManager.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankFailureCheck, BasketYearCheck, BondCheck, BooksCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CarCheck, CausesOfDeathCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EarthFoundingCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HouseholdMemoryCheck, HousingCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MonetaryCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestructureCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SicknessCheck, StaffingDrawCheck, SubstationCheck, SulphideLeachCheck, SupplierCreditCheck, TradeCostCheck, UndemandedFeedCheck, VanCheck, WantedPostsCheck, WaterCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
-| [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, ForestryCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdCheck, HousingInventoryCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewUnitCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SubstationCheck, TruckRouteCheck, WaterPowerCheck, WoodProductsCheck, WorksFinanceCheck |
+| [BuildingType](map/BuildingType.md) | AuctionCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildingDataCheck, CementConcreteCheck, ChildcareCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, CrimeCheck, DiscoveryCheck, EssentialWorksCheck, ForestryCheck, HaulageCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HouseholdCheck, HousingInventoryCheck, HydroCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, JunctionCheck, LabourCheck, LandClassCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MapCheck, MaterialsCheck, MiningCheck, NewUnitCheck, OilCheck, PlanCheck, PolicyPreviewCheck, PortCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailDepotCheck, RailDrawCheck, RecipeCheck, ResearchCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SubstationCheck, TruckRouteCheck, WaterPowerCheck, WoodProductsCheck, WorksFinanceCheck |
 | [BuildingVisual](map/BuildingVisual.md) | BridgeMapCheck, ChildcareCheck, CrossingCheck, EarthTerrainCheck, ForestryCheck, GatewayCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, LongPlaytest, MainLineCheck, MapCheck, PlanCheck, PortCheck, RailDrawCheck, RunWorksCheck, SlopeCheck, TruckRouteCheck |
 | [BuildingsStacks](map/BuildingsStacks.md) | BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, ChildcareCheck, ConstructionControlCheck, DeathCareFirstCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, ForeignChoiceCheck, ForeignCrewsCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HydrogenSteelCheck, InvestCheck, KeptCheck, LandmassCheck, LongPlaytest, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, NewUnitCheck, OutsideCheck, PostwarRecipeCheck, PowerPlanCheck, PowerPlantsCheck, PublicLicenceCheck, RecipeCheck, RefineryCheck, ResearchViewCheck, RoadCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, SulphideLeachCheck, Village1900Check, WaterPowerCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
 | [BuildingsTemplate](map/BuildingsTemplate.md) | AgricultureCheck, AuctionCheck, AutoBuildCheck, BankCheck, BankFailureCheck, BooksCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, BuildersFirstCheck, BuildingDataCheck, BuildingStackCheck, BusinessServicesCheck, BuybackCheck, CalendarCheck, CallCheck, CapitalFlowCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, ChildcareCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperBufferCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, DeathCareFirstCheck, DeathRecordCheck, DenominationCheck, DiscoveryCheck, DistressBleedCheck, DriverlessTruckCheck, ER1Check, EarthFoundingCheck, EducationCheck, ElectrolyserCheck, EquipmentCheck, EssentialWorksCheck, ExpectationsCheck, FB13Check, FarmlandReserveCheck, FieldOperatorsCheck, FitoutCheck, FittingCheck, FloatLinkCheck, FoodIndustryCheck, FoodProcessingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FreightViewCheck, FundCheck, FundLedgerCheck, GapOrderCheck, GatewayCheck, GdpCheck, GoldMiningCheck, GroundInputCheck, HaulageCheck, HealthCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydroCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, IslandLinkCheck, IslandRailCheck, KeptCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MaterialsCheck, MedicineCheck, MiningCheck, ModernEngineeringCheck, ModernRowsCheck, MonetaryCheck, MortgageCheck, NewGameCheck, NewUnitCheck, OilCheck, OilViewCheck, OrderDoorCheck, OrderSearchCheck, OutsideCheck, PassThroughCheck, PlanCheck, PlaytestFixCheck, PolicyCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PostwarRecipeCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PriceLevelCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RecipeCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RoadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, StaffingDrawCheck, StaffingTieCheck, SubstationCheck, SulphideLeachCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, Village1900Check, WantedPostsCheck, WaterCheck, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, WorldMarketCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessDebt](map/BusinessDebt.md) | BankCheck, BankFailureCheck, CreditCheck, HoldersCheck, LongPlaytest, MortgageCheck |
 | [BusinessDebtManager](map/BusinessDebtManager.md) | AuctionCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, CardCheck, CreditCheck, CreditCrunchCheck, DistressBleedCheck, FittingCheck, ForeignChoiceCheck, FundLedgerCheck, HistoryCheck, HoldersCheck, InvestCheck, KeptCheck, LongPlaytest, MortgageCheck, NewGameCheck, OrderDoorCheck, OrderSearchCheck, ReadPathCheck, RefineryCheck, SaveFileCheck, SupplierCreditCheck, WantedPostsCheck, YoungBankCheck |
-| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, GapOrderCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, NewUnitCheck, OilCheck, OrderDoorCheck, OrderSearchCheck, PolicyCheck, PortCheck, PostwarRecipeCheck, PowerPlanCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
+| [BusinessInvestment](map/BusinessInvestment.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildAdviceCheck, BuildCardCheck, BuildersFirstCheck, BuildingStackCheck, BusinessServicesCheck, CementConcreteCheck, CoalMiningCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, DiscoveryCheck, DistressBleedCheck, ER1Check, EquipmentCheck, FitoutCheck, FittingCheck, FoodIndustryCheck, FoodProcessingCheck, ForestryCheck, FoundingYardCheck, GapOrderCheck, HaulageCheck, HousingCheck, HousingDoorCheck, HydrogenSteelCheck, IndustryViewCheck, InvestCheck, LandmassCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MaterialsCheck, MortgageCheck, NewUnitCheck, OilCheck, OrderDoorCheck, OrderSearchCheck, PolicyCheck, PortCheck, PostwarRecipeCheck, PowerPlanCheck, PrizeCheck, QuarryingCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, ResearchCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, StaffingTieCheck, SulphideLeachCheck, WantedPostsCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [BusinessLoan](map/BusinessLoan.md) | BankCheck, BankFailureCheck, BondCheck, CreditCheck, MortgageCheck |
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, CardCheck, DistressBleedCheck, GdpCheck, LongPlaytest, PrizeCheck |
 | [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, CreditCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, HoldersCheck, ReadPathCheck |
@@ -162,7 +162,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Haulage](map/Haulage.md) | BondCheck, BuildCardCheck, DriverlessTruckCheck, EquipmentCheck, FoodProcessingCheck, Forms1900Check, FreightViewCheck, HaulageCheck, HealthCheck, HomeRailCheck, LandlordPortCheck, LongPlaytest, MapCheck, MaterialsCheck, RailCheck, ScaleCheck, TradeBandCheck, TruckRouteCheck |
 | [Health](map/Health.md) | BuildAdviceCheck, CausesOfDeathCheck, ChartCheck, ChildcareCheck, DeathCareFirstCheck, EssentialWorksCheck, HealthCheck, LongPlaytest, OutsideCheck, ReadPathCheck, ReloadCheck, SaveFileCheck, ScaleCheck, SicknessCheck, YearBookCheck |
 | [Healthcare](map/Healthcare.md) | AutoBuildCheck, BuildAdviceCheck, CausesOfDeathCheck, ChildcareCheck, DeathCareFirstCheck, EssentialWorksCheck, ExpectationsCheck, HealthCheck, LongPlaytest, OutsideCheck, PopulationCheck, SaveFileCheck, SicknessCheck |
-| [HeavyIndustry](map/HeavyIndustry.md) | AgricultureCheck, BuildCardCheck, BuildingDataCheck, CementConcreteCheck, CopperRefiningCheck, DenominationCheck, ElectrolyserCheck, FreightViewCheck, GdpCheck, HaulageCheck, HydrogenSteelCheck, IndustryViewCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, PolicyPreviewCheck, PortCheck, PowerPlanCheck, PriceLevelCheck, RailCheck, ReadPathCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
+| [HeavyIndustry](map/HeavyIndustry.md) | AgricultureCheck, BuildCardCheck, BuildingDataCheck, CementConcreteCheck, CopperRefiningCheck, DenominationCheck, ElectrolyserCheck, EssentialWorksCheck, FreightViewCheck, GdpCheck, HaulageCheck, HydrogenSteelCheck, IndustryViewCheck, LabourCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, PolicyPreviewCheck, PortCheck, PowerPlanCheck, PriceLevelCheck, RailCheck, ReadPathCheck, SaveFileCheck, SectorFlowCheck, TradeCostCheck, VanCheck, WoodProductsCheck |
 | [HistoryGrapher](map/HistoryGrapher.md) | **none** |
 | [HistorySave](map/HistorySave.md) | BuybackCheck, ChartCheck, ChildcareCheck, ClockCheck, DeathRecordCheck, DebtExchangeCheck, DenominationCheck, GovernmentPlayerCheck, GovernmentViewCheck, HistoryCheck, HouseholdMemoryCheck, InboxCheck, InterestAbroadCheck, KeptCheck, LicenceFeesCheck, PartnersCheck, PowerViewCheck, PriceLevelCheck, PublicLicenceCheck, RankingsCheck, ReadPathCheck, ReplayCheck, ResearchViewCheck, SaveFileCheck, SaveSlotCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
 | [HistoryScreen](map/HistoryScreen.md) | **none** |
@@ -10301,7 +10301,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L376 ...and every month of it is conserved
   - L385 ...with the register and the households agreeing on every company
 
-## EssentialWorksCheck.java - 93 labelled assertions
+## EssentialWorksCheck.java - 96 labelled assertions
 
 > Essential works ordered for their unmet service, including their ground (HW1).
 > WHY. Highways waited behind street sites at the twelve-month cap; schools
@@ -10337,96 +10337,100 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L305 fixture: streets already serve their full demand before the power allocation
 - **L310 an unaffordable full power order takes the cash-funded step that can raise service**
   - L326 fixture has a plant that can raise power service
-  - L337 the affordable step orders one
-- **L343 professional eligibility on both sides of the useful-demand threshold**
-  - L365 fixture: eligible graduates will study and the city's doctor vacancies exceed one school's threshold
-  - L370 below thirty percent the professional school is unwarranted and omitted
-  - L377 above thirty percent, with no school, the professional service is warranted and not maintained
-- **L384 a known industrial opening needs its power ahead**
-  - L389 fixture: unrelated essential services already have their operating capacity
-  - L405 fixture: a paid mill opens within the planning horizon while current power has its reserve
-  - L413 the forecast adds the mill's physical electrical draw only once it opens
-  - L418 the power card anticipates the ordered industrial load before it is operating
-  - L423 the automatic path orders power before that industrial completion
-- **L428 a slow hospital cannot hold faster care**
-  - L452 fixture: operating care is short, the slow hospital covers it, and a clinic can open earlier
-  - L458 the care card offers an earlier useful order while the hospital is pending
-  - L463 the automatic path places that service's interim order
-- **L468 maintained service prices later works and their borrowing**
-  - L487 fixture: the funded service has a positive growth trend, paid posts and positive borrowing terms
-  - L489 the comparison includes the future service additions and their capital
-  - L491 the comparison includes the new debt's issue and coupon costs
-  - L496 cash that covers the complete sequence has no new financing charge
-  - L497 valuation places no order and moves no cash or debt
-- **L502 complete fleets charge their actual traffic wear and shared fares**
-  - L509 fixture: two lines share the same riders and the fare is positive
-  - L514 two lines collect the full network's fares once
-  - L521 the whole two-road order pays wear at its own relieved traffic
-  - L536 fixture: existing gravel roads cost less to repair with the new paved road
-  - L540 the new work includes the changed repair bill of the existing gravel stock
-- **L559 the higher monetary service loss gets the scarce cash first**
-  - L584 fixture: streets lose more output although power has the greater missing share
-  - L588 the monetary loss puts streets before power in the actual remit
-  - L593 the higher-loss street work uses the cash first and power waits for funding
-  - L671 fixture: the school is useful and entirely unserved, and the care plan is cheaper
-  - L674 fixture: current care is on the intended side of full service
-  - L677 fixture: the available cash funds care, with the intended school funding gap
-  - L684 the school remains a hard cash or debt hold and the spare-care order preserves its funds
-  - L688 the same care card labels the automatic funding hold
-  - L696 a real scratch save and load keeps the same funding reason on the care card
-  - L702 switching automatic building off clears the funding hold on both cards
-  - L706 switching it back on before a new pass restores no stale funding hold
-  - L711 the fully unserved school is ordered before the partly served capped-care work
-- **L717 staff-short works pay only the posts filled in the utility books**
-  - L729 fixture: the plant has paid staff and unfilled posts
-  - L731 the card's running bill charges upkeep and filled-post payroll
-  - L741 the plan's running cost and payroll use the same filled-post basis
-- **L747 care prevents only the sickness the model can reduce**
-  - L761 fixture: only founding care remains short of the city, and the order restores full coverage
-  - L768 fixture: sickness is capped before and after the care improvement
-  - L771 care that leaves sickness capped claims zero prevented output
-  - L775 fixture: uncapped care comparison has the same other causes and no outbreak
-  - L787 uncapped care's credit equals the model's sickness reduction, including its unhoused cause
-- **L792 the Build advice and automatic order use the same plan**
-  - L805 overview cards require the NEEDS YOU row their screen reads
-  - L810 fixture: the power card leads the automatic remit and its full order is fundable
-  - L815 the power plan is sized to its whole order's actual opening and planning horizon
-  - L822 the card uses the player's automatic reserve and full-service target
-  - L824 the automatic path orders the card's exact building and count
-  - L826 the automatic path records the exact whole-plan valuation displayed by the card
-- **L832 pending coal does not hide an earlier forecast power loss**
-  - L860 fixture: unrelated essential services already have their operating capacity
-  - L872 fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind
-  - L877 wind prevents positive physical output loss before the pending coal opens
-  - L887 fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner
-  - L896 the automatic path orders earlier wind before the forecast shortage becomes physical
-  - L904 the faster wind brings the saved first-completion deadline forward from the coal quote
-- **L909 pending fresh water at its cap cannot be called a closing plan**
-  - L929 fixture: pending fresh plants exhaust the cap, water remains short, and one more cannot reduce its shortage
-  - L936 the fresh-only path offers no zero-help order
-  - L939 the normal water card chooses desalination and its count closes the demand
-- **L945 priority work waits in front of the first pending plant**
-  - L973 fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal
-  - L976 the first coal quote retains the entire earlier priority delay
-  - L979 coal that cannot open inside the horizon erases none of the earlier wind's physical benefit
-- **L984 power delivered for fewer than six months still prevents lost work**
-  - L1010 fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier
-  - L1017 the sub-six-month service window has positive relief and avoided output loss
-- **L1022 paving is sized to the final order's own opening**
-  - L1053 fixture: paving is worth offering and the growing city needs more than its unprojected paving count
-  - L1057 the paving quote and projection both use the final count's complete opening
-- **L1063 pending capacity keeps its deadline through a real mid-construction save and load**
-  - L1098 fixture: operating power is short, pending diesel covers it (
-  - L1107 pending capacity covers the shortage before its quoted deadline (
-  - L1133 the unbroken city reaches the mid-construction save month
-  - L1169 the mid-construction scratch save loaded through DataSave with its original pending date
-  - L1179 both scratch timelines advance every compared month
-  - L1182 fixture: later priority work kept operating power short throughout the original deadline
-  - L1183 fixture: the later priority work finished nothing, so the repairs left the builders a site output at the last pass
-  - L1186 monthly passes respect the original pending deadline before it expires (began
-  - L1188 past that deadline the automatic path orders more power despite the pending diesel
-  - L1189 ...and the plant it orders is the one that opens before the diesels (
-  - L1192 the real loaded city and its unbroken twin place the same later automatic orders, one by one (
+  - L348 the affordable step orders one
+- **L354 professional eligibility on both sides of the useful-demand threshold**
+  - L376 fixture: eligible graduates will study and the city's doctor vacancies exceed one school's threshold
+  - L381 below thirty percent the professional school is unwarranted and omitted
+  - L388 above thirty percent, with no school, the professional service is warranted and not maintained
+- **L395 a known industrial opening needs its power ahead**
+  - L400 fixture: unrelated essential services already have their operating capacity
+  - L416 fixture: a paid mill opens within the planning horizon while current power has its reserve
+  - L424 the forecast adds the mill's physical electrical draw only once it opens
+  - L429 the power card anticipates the ordered industrial load before it is operating
+  - L434 the automatic path orders power before that industrial completion
+- **L439 a slow hospital cannot hold faster care**
+  - L463 fixture: operating care is short, the slow hospital covers it, and a clinic can open earlier
+  - L469 the care card offers an earlier useful order while the hospital is pending
+  - L474 the automatic path places that service's interim order
+- **L479 maintained service prices later works and their borrowing**
+  - L498 fixture: the funded service has a positive growth trend, paid posts and positive borrowing terms
+  - L500 the comparison includes the future service additions and their capital
+  - L502 the comparison includes the new debt's issue and coupon costs
+  - L507 cash that covers the complete sequence has no new financing charge
+  - L508 valuation places no order and moves no cash or debt
+- **L513 complete fleets charge their actual traffic wear and shared fares**
+  - L520 fixture: two lines share the same riders and the fare is positive
+  - L525 two lines collect the full network's fares once
+  - L532 the whole two-road order pays wear at its own relieved traffic
+  - L547 fixture: existing gravel roads cost less to repair with the new paved road
+  - L551 the new work includes the changed repair bill of the existing gravel stock
+- **L570 the higher monetary service loss gets the scarce cash first**
+  - L595 fixture: streets lose more output although power has the greater missing share
+  - L599 the monetary loss puts streets before power in the actual remit
+  - L604 the higher-loss street work uses the cash first and power waits for funding
+  - L682 fixture: the school is useful and entirely unserved, and the care plan is cheaper
+  - L685 fixture: current care is on the intended side of full service
+  - L688 fixture: the available cash funds care, with the intended school funding gap
+  - L695 the school remains a hard cash or debt hold and the spare-care order preserves its funds
+  - L699 the same care card labels the automatic funding hold
+  - L707 a real scratch save and load keeps the same funding reason on the care card
+  - L713 switching automatic building off clears the funding hold on both cards
+  - L717 switching it back on before a new pass restores no stale funding hold
+  - L722 the fully unserved school is ordered before the partly served capped-care work
+- **L728 staff-short works pay only the posts filled in the utility books**
+  - L740 fixture: the plant has paid staff and unfilled posts
+  - L742 the card's running bill charges upkeep and filled-post payroll
+  - L752 the plan's running cost and payroll use the same filled-post basis
+- **L758 care prevents only the sickness the model can reduce**
+  - L772 fixture: only founding care remains short of the city, and the order restores full coverage
+  - L779 fixture: sickness is capped before and after the care improvement
+  - L782 care that leaves sickness capped claims zero prevented output
+  - L786 fixture: uncapped care comparison has the same other causes and no outbreak
+  - L798 uncapped care's credit equals the model's sickness reduction, including its unhoused cause
+- **L803 the Build advice and automatic order use the same plan**
+  - L816 overview cards require the NEEDS YOU row their screen reads
+  - L821 fixture: the power card leads the automatic remit and its full order is fundable
+  - L843 the card uses the player's automatic reserve and full-service target
+  - L845 the automatic path orders the card's exact building and count
+  - L847 the automatic path records the exact whole-plan valuation displayed by the card
+- **L881 pending coal does not hide an earlier forecast power loss**
+  - L909 fixture: unrelated essential services already have their operating capacity
+  - L921 fixture: constant physical power is short and pending coal covers the entire horizon, opening after wind
+  - L926 wind prevents positive physical output loss before the pending coal opens
+  - L936 fixture: power is covered now, its forecast is short before coal opens, and wind can open sooner
+  - L958 the original seasonal reserve gap orders ordinary Steam which closes, ahead of the nonclosing wind (
+  - L967 the faster Steam brings the saved first-completion deadline forward from the coal quote
+- **L972 native wind bridges a physical month before coal, with its next seasonal peak covered**
+  - L981 new control reaches the native offered year after Steam retires; all ordinary eligible plants remain on the menu
+  - L989 new wind control has unrelated essential services in operation
+  - L1041 the automatic path orders the closing wind before the forecast shortage becomes physical (
+  - L1045 the earlier wind's native opening advances the saved pending deadline ahead of coal
+- **L1050 pending fresh water at its cap cannot be called a closing plan**
+  - L1070 fixture: pending fresh plants exhaust the cap, water remains short, and one more cannot reduce its shortage
+  - L1077 the fresh-only path offers no zero-help order
+  - L1080 the normal water card chooses desalination and its count closes the demand
+- **L1086 priority work waits in front of the first pending plant**
+  - L1114 fixture: even the whole yard needs more than the valued horizon to finish the priority roads before coal
+  - L1117 the first coal quote retains the entire earlier priority delay
+  - L1120 coal that cannot open inside the horizon erases none of the earlier wind's physical benefit
+- **L1125 power delivered for fewer than six months still prevents lost work**
+  - L1151 fixture: constant demand is short, coal will cover it, and wind opens between one and six months earlier
+  - L1158 the sub-six-month service window has positive relief and avoided output loss
+- **L1163 paving is sized to the final order's own opening**
+  - L1194 fixture: paving is worth offering and the growing city needs more than its unprojected paving count
+  - L1198 the paving quote and projection both use the final count's complete opening
+- **L1204 pending capacity keeps its deadline through a real mid-construction save and load**
+  - L1239 fixture: operating power is short, pending diesel covers it (
+  - L1248 pending capacity covers the shortage before its quoted deadline (
+  - L1278 the original city reaches its unchanged mid-construction save month
+  - L1280 the native additional Oil order precedes the original checkpoint (
+  - L1316 the mid-construction scratch save loaded through DataSave with its original pending date
+  - L1326 both scratch timelines advance every compared month
+  - L1329 fixture: later priority work kept operating power short throughout the original deadline
+  - L1330 fixture: the later priority work finished nothing, so the repairs left the builders a site output at the last pass
+  - L1333 the persistent post-checkpoint industrial load causes a further real power order (
+  - L1335 ...and the plant it orders is the one that opens before the diesels (
+  - L1338 the real loaded city and its unbroken twin place the same later automatic orders, one by one (
 
 ## ExchangeCheck.java - 266 labelled assertions
 
