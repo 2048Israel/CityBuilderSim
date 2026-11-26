@@ -10062,6 +10062,9 @@ public class LongPlaytest {
              * its first bond, for a shortfall of $20.82 against little bond room, was $0.80 (the record 0.0731): every cell halved left D
              * 0.0366 and its coupon 0.000033, under a cent, so the orphaned line could not be seen. Chosen by its coupon, the bond is
              * Retail's (due m129, the record 5.41, 1 of 59 cells halved), on any path that issues one.
+             * RES3c, 2026-11-26: ...and of an issuer with money in its till. On RES3's path the soonest so chosen was Industry's (due
+             * m127), whose till was empty from before m121: its backstop wrote every Industry bond to nothing at m123, so the bond
+             * never matured; every bond of an issuer with cash matured in its month (Construction's, Real Estate's, Restaurants').
              */
             final String bondLine = "- households BondFaceOrphaned";
             Game bondTown = foundingCity(GameFiles.scratch("moneycheck-bonds"));
@@ -10074,6 +10077,8 @@ public class LongPlaytest {
             for (CorporateBond b : bondMarket.getBonds()) {
                 if (!(b.households() > 0) || !(gBooks.bondFaceHeld(b.id) > 0)) continue;
                 if (!(b.households() / 2 * b.coupon / CorporateBond.COUPONS_A_YEAR > reach)) continue;
+                // ...whose issuer can pay it: a till with nothing in it is the one the backstop writes to nothing before its maturity.
+                if (!(bondTown.getEconomyManager().getSectorCash(b.issuer()) > 0)) continue;
                 if (soonest == null || b.maturityMonth() < soonest.maturityMonth()) soonest = b;
             }
             assertTrue("fixture: the bond town's households hold a corporate bond whose coupon on half its record clears twice the visible line", soonest != null);
