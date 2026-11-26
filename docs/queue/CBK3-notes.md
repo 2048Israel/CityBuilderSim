@@ -1,143 +1,340 @@
-# CBK3 ? build notes
+# CBK3 - the window against collateral and the bank's rules as dials
 
-Base: b2f50a9ef, 0.9.213, format 66. Work in progress.
+Work in progress; not a ship record. Base b2f50a9ef, 0.9.213, format66.
+The builder keeps decisions and review; CBK3-trace's bounded diagnostic
+reports and scorer slice are described below. All runs name main's Earth2
+and World1 files. No player save directory or slot was accessed.
 
-## Evidence before Part 1
+## Finding and repair
 
-The supplied `C:/Users/Jerus/AppData/Local/Temp/cbs-CBK3-autosave/1257`
-was copied by BankRulesCheck into a fresh TempDirs folder and loaded through
-package-private GameFiles(dir, legacy). No player save directory was accessed.
-The loaded m133 values were desk 9861.906318872, cash -17366.424253986,
-window 12142.809656253, trailing treasury revenue 1998.942287585.
-Played m134?253 without changing the saved settings: remittance 10134.551266349,
-revenue 48341.489897126, share 20.9644992%; six further bank failures.
-The first twelve months' share was 46.5852538%. Worst money residual
-1.02318153949e-10 save units, within the unchanged cent tolerance.
-Kept local logs: target/CBK3-evidence-before.log and target/CBK3-before.txt.
+Exchange.postDesk/deskLimits sized the desk from capital, fair value, company
+and book caps. Bank.deskCanCarry rechecked capital at every fill; it did not
+check stable cash. deskPays then reduced net cash. At the next settlement,
+all borrowing beyond deposits went to the unlimited window. Large equity
+inventory and repeated overnight funding could therefore reinforce each other.
+The read-only helper identified the exact path; the builder implemented it.
 
-The read-only CBK3-trace helper identified Exchange.postDesk/deskLimits and
-Bank.deskCanCarry: capital/name/book caps are rechecked at fills but there is
-no stable cash budget. deskPays subtracts cash unconditionally. fundToCover
-prices all funding past deposits at the window, and settleWindow has no
-collateral cap. The month's equity trading follows the window settlement.
-The helper changed no code; the builder keeps the model decision and review.
+* ★ Design choice: keep customer market making and fair-price sale rules, add
+  one stable cash budget in Bank.deskCanCarry shared by posting and every fill.
+  Cash plus core deposits, after hot withdrawals and required reserves, is
+  what a new purchase can spend. Existing inventory is refinanced, not erased
+  or sold below fair. No GDP or remittance cap was added.
+* ★ Design choice: window collateral is domestic loans net of allowances plus
+  bank-owned government paper at market, after haircuts. Secured business and
+  rental mortgages take30%, unsecured households85%, government paper5%.
+  Equity, carry and unrated corporate bonds get zero. Mortgage eligibility is
+  an ELA-like secured-property approximation, not ordinary SLF eligibility.
+* ★ Design choice: collateral is necessary but does not supply stable funding.
+  The aggregate NSFR approximation requires85% for ordinary loans,65% for
+  insured low-risk mortgages,5% for government paper and100% for equity.
+  Core stable funding is equity plus95% of household and50% of sector deposits;
+  hot deposits and overnight advances have no stable value. Foreign term
+  funding covers the stable-funding gap and residual past the window.
+* ★ Design choice: replacement wholesale principal is payable in local money,
+  with a one-year rolling funding benchmark. Its independent expected local
+  policy path plus existing country-credit and term premia prices it. Using
+  the USD short rate without USD principal would let the bank bypass the
+  local dial. Reusing the treasury yield would feed the bank's funding floor
+  back into itself. The quote excludes that floor and treasury QE compression;
+  loan pricing counts the loan's term premium once.
+* ★ Design choice: foreign creditors retain their interest claim in resolution.
+  The existing central-bank standstill remains interest-free. New credit still
+  obeys the bank's freeze and capital rules. This batch adds no borrower or
+  connected-group identities and no new source of bank capital.
 
 ## Reality checked
 
-- [Fed collateral eligibility](https://www.frbdiscountwindow.org/pages/collateral/collateral_eligibility):
-  ordinary window collateral includes eligible loans and debt securities;
-  equity is absent, and loans require an enforceable first-priority interest.
-- [Fed margins](https://www.frbdiscountwindow.org/pages/collateral/collateral_valuation):
-  Treasury lending values are 95?99% of market value by duration. Loan lending
-  values depend on risk, maturity and estimated fair value.
-- [Bank of Canada SLF](https://www.bankofcanada.ca/2026/09/assets-eligible-collateral-standing-liquidity-facility-310125/):
-  non-mortgage loan haircuts include secured business 30%, unsecured business
-  40%, secured consumer 65% and unsecured consumer 85%.
-- [Bank of Canada ELA](https://www.bankofcanada.ca/markets/market-operations-liquidity-provision/framework-market-operations-liquidity-provision/emergency-lending-assistance/):
-  emergency advances still require collateral; mortgages can qualify with
-  case-specific valuation and haircuts.
-- [Basel NSFR](https://www.bis.org/committees/bcbs/basel-framework/standard/nsf?allChapters=true),
-  NSF30.14 and 30.31: short central-bank/interbank funding has 0% stable value;
-  non-HQLA listed equity normally needs 85% stable funding.
-- [Basel LCR](https://www.bis.org/committees/bcbs/basel-framework/standard/lcr?allChapters=true):
-  HQLA must cover net stressed 30-day cash outflows at 100%; collateral
-  eligibility alone does not make an asset a stable source of funding.
-- [Fed Volcker rule](https://www.federalreserve.gov/supervisionreg/volcker-rule.htm)
-  prohibits proprietary trading in general;
-  [SEC market-making explanation](https://www.sec.gov/newsroom/speeches-statements/2014-spch020414jr)
-  preserves customer market making with inventory tied to expected demand.
+[Fed collateral eligibility](https://www.frbdiscountwindow.org/pages/collateral/collateral_eligibility)
+and [Fed margins](https://www.frbdiscountwindow.org/pages/collateral/collateral_valuation)
+require secured advances, give Treasuries95-99% lending values by duration,
+and value loans by risk and estimated fair value. Ordinary equity is absent
+from the eligible securities list. The conservative5% government haircut is
+applied to the game's current market value, not face.
 
-## Checks so far
+[Bank of Canada SLF collateral](https://www.bankofcanada.ca/2026/09/assets-eligible-collateral-standing-liquidity-facility-310125/)
+lists30% for secured business portfolios and85% for unsecured consumers.
+[ELA](https://www.bankofcanada.ca/markets/market-operations-liquidity-provision/framework-market-operations-liquidity-provision/emergency-lending-assistance/)
+still requires collateral and permits mortgages with case-specific valuation.
+The rental-mortgage30% haircut is this model's secured-property approximation.
 
-- Initial `./batch-check.sh --fast`: green, no firm stale findings.
-- Initial named BankRulesCheck evidence run: zero failures, 120 months.
+[Basel NSFR](https://www.bis.org/committees/bcbs/basel-framework/standard/nsf?allChapters=true)
+NSF30.11/.13 assign stable retail95% and short corporate deposits50%; .14 gives
+short central-bank/interbank funds0%; .26/.30/.31 assign government paper5%,
+low-risk mortgages65%, ordinary long loans/non-HQLA equity85%. The desk's100%
+stable requirement is deliberately stronger. [LCR](https://www.bis.org/committees/bcbs/basel-framework/standard/lcr?allChapters=true)
+requires HQLA against stressed30-day net outflows at100%: collateral eligibility
+is not stable funding. This is an aggregate approximation, not a complete
+regulatory liquidity return.
 
-## Part 1 measured
+[The Fed's Volcker summary](https://www.federalreserve.gov/supervisionreg/volcker-rule.htm)
+prohibits proprietary trading in general; [the SEC's market-making explanation](https://www.sec.gov/newsroom/speeches-statements/2014-spch020414jr)
+retains customer market making with inventory tied to expected demand.
+[The Fed's reserve rule](https://www.federalreserve.gov/monetarypolicy/reservereq.htm?hl=en-US)
+has been zero since March26,2020, matching the saved default.
 
-? Keep the exchange's customer market making, capital/name/book caps and
-fair-price sale rule. Add a common core-cash budget to Bank.deskCanCarry,
-which posting and every fill already call: net cash plus local deposits,
-less the cash that hot depositors can withdraw. A fill spends the same
-budget across every company. Existing inventory is refinanced rather than
-sold below fair or written off.
+The real remittance comparison is a range, not a target cap. The Fed remitted
+$107.4bn in2021 ([release](https://www.federalreserve.gov/newsevents/pressreleases/other20220114a.htm));
+FY2021 receipts were$4,046bn ([Treasury](https://fiscal.treasury.gov/accounting/us-financial-report/2021/statements-of-change-cash-balance)),
+about2.65%, with different calendar/fiscal periods.
 
-? Domestic secured business loans and rental mortgages carry a 30% haircut;
-the mortgage choice is the ELA-like secured-property approximation, not an
-assertion that unsecuritised mortgages are SLF-eligible. Unsecured household
-loans carry 85%; government paper 5%. Values are net of loss allowances;
-equity, carry loans and unrated corporate bonds receive zero collateral value.
-The window takes at most 100% of the remainder and excludes equity inventory
-from its funded tranche. Foreign wholesale covers the rest at
-DebtManager.foreignRate(), the world's short rate plus the city's credit spread.
-The financing is settled again after equity/bond trading and hot withdrawals,
-inside the same audit, without a second interest charge.
+## Copied-city evidence
 
-Final Part 1 scratch continuation m134?253: remittance 1164.481533619,
-revenue 27303.596854126, share **4.2649382%** (before 20.9644992%).
-Three bank failures (before six). Worst audit residual 1.73031367012e-10
-save units, within the unchanged cent bound. Final window 1468.570822581; the existing
-desk remains marked at market and its unsupported funding comes from abroad.
-Kept local log: target/CBK3-evidence-part1-nsfr.log. Named BankRulesCheck passes
-its direct-advance collateral, no equity collateral, stable budget shared at
-fills, no hot-money desk budget, and copied-city audit checks.
+BankRulesCheck copies only the supplied temp evidence into TempDirs, then
+loads through package-private GameFiles(dir,legacy). The provided1257 folder
+is never written. The loaded m133 values match the brief: desk9861.906318872,
+cash-17366.424253986, window12142.809656253, trailing revenue1998.942287585.
+Original continuation m134-253: remittance10134.551266349, revenue48341.489897126,
+share20.9644992%, six further bank failures, worst audit1.02318153949e-10.
+Its first12-month share was46.5852538%. Log: target/CBK3-evidence-before.log.
 
-The real comparison is a range, not a 3% cap: the Fed remitted $107.4bn in
-2021 ([Fed release](https://www.federalreserve.gov/newsevents/pressreleases/other20220114a.htm));
-FY2021 federal receipts were $4,046bn
-([Treasury statements](https://fiscal.treasury.gov/accounting/us-financial-report/2021/statements-of-change-cash-balance)),
-about 2.65% with different calendar/fiscal periods. No remittance ceiling
-or hidden transfer was added.
+Current repaired continuation, the same120 months and saved settings:
+remittance476.704248490, revenue33741.426003542, share1.4128160%, three further
+failures, worst audit1.95086613530e-10 save units. Every month passed the
+unchanged cent bound, collateral ceiling and exclusion of equity inventory
+from window financing. Final window1846.310417314; inherited desk3443.455032691 remains at
+market. Log: target/CBK3-evidence-final.log; launcher target/CBK3-part1-final.txt.
 
-New foreign wholesale stock and flows are saved in DataSave.bankFunding,
-restored on load, reset for a new city and redenominated. Missing state is
-zero, the actual foreign wholesale liability of a format-66 city before CBK3;
-its already-saved window remains intact until the first normal settlement.
-No format bump or conversion is needed. The new statement enum lines append
-at the end; historical arrays already restore missing appended lines as zero.
+Provisional observations2.94%,8.78% and4.26% were superseded while correcting
+the funding-price/currency link and adding stable funding. They were never
+remittance targets. Their scratch logs remain for the build trace. Only the
+current repaired run above is the model measurement.
 
-## Single-borrower scope answered
+## Saved rules and old saves
 
-The CBK3-trace helper found no borrower/group IDs or defensible firm-size
-measure: sector books pool many firms, and neither loan tickets nor building
-counts establish control. The Bank notes record Jerus rejecting the old
-industry-as-borrower rule after it sent 99% of business borrowing abroad.
-The builder asked the orchestrator by bus (20261126-165333-983-CBK3-565f).
-Its instruction (20261126-165359-042-orchestrator-423c) is to ship nine working
-dials, neither show nor save an inert borrower dial, and queue a persistent
-borrower ledger and allocation premise before Basel's cap, exempting sovereigns.
-No ticket cap or invented firm count is used. A free queued ID is checked
-before the ship file is written.
+BankRules owns nine settings. Bank, BusinessDebtManager and mortgage order
+checks share it; DataSave writes/reads the array and Game restores it. Defaults
+keep window spread0.25pt, the repaired collateral limit100%, capital8%,
+countercyclical0, leverage3%, reserves0, mortgage LTC85%, additional DTI off,
+working-capital loan/assets90%. Conservation retains its research date and
+mortgage payment coverage remains1.20. The new DTI is principal over property
+annual net rent, distinct from DSCR, and starts off because none existed.
 
-? The accounting trace also found that loan pricing treated every wholesale
-unit as window money. Funding prices now split the lagged window and foreign
-shares, with both costs paid exactly once. Foreign creditors continue to earn
-their contractual interest in resolution; only the pre-existing central-bank
-standstill is interest-free. The new local-currency foreign liability is
-included in Game's external holdings, own reserves and world risk exposure;
-it is not mislabelled as the treasury's USD debt.
+* ★ Design choice: risk-capital tightening must not relax insured-credit leverage
+  targets. Their scaling keeps the original8% reference. Reserve withholding
+  reaches funding, the desk budget and branch previews. Pricing, auctions,
+  mortgage messages and screen minima read current rules, not default constants.
+  Limits apply to new decisions and funding rollovers, not a retroactive erasure.
 
-? Collateral alone allows permanent maturity mismatch. The final Part 1
-allocation also requires stable funding: 85% of ordinary loans, 65% of insured
-low-risk mortgages, 5% of government paper, and 100% of equity inventory.
-Core stable funds are equity plus 95% of household deposits and 50% of sector
-deposits (Basel NSF30.11, .13, .26, .30, .31). Foreign replacement funds are
-term wholesale liabilities denominated in local money; no fictitious USD
-principal or exchange gain is created. Overnight advances and hot deposits
-have zero stable value. This is an aggregate NSFR approximation; it does not
-claim to model a bank's full regulatory liquidity return.
+DataSave.bankFunding keeps authoritative foreign stock, gross draws/repayments,
+interest and the lagged pricing mix. Monthly flows clear after statements are
+filed; reset clears them and redenomination scales amounts, not rates.
+The gross audit pool is net cash + actual CB advances + settled foreign stock
+- unsettled city paper. Foreign draws/repayments are FINANCIAL, interest INCOME;
+only window transactions are MONEY. Foreign principal is already in negative
+net cash/borrowings and is never credited or added to liabilities twice.
 
-The earlier collateral-only 2.94% observation was provisional: correcting
-funding prices made its permanent overnight support visible (8.78%). The
-stable-funding law, rather than a tuned remittance cap, gives the final 4.26%.
-The first year's inherited-city share is 8.30%, including its inherited
-remittance due and treasury flows. No existing stock is erased to force a
-historical loaded city instantly into the new steady state.
+No format bump/conversion: missing new foreign fields mean zero, their actual
+pre-CBK3 value. A native66 save retains its actual CB claim until normal
+settlement. Its saved total funding expense is still the window expense when
+foreign expense is absent. Historical enum lines append, old missing lines
+read zero, and lagged saved pricing remains the historical quote. Actual CB
+claims are supplied separately to bank statements, rather than replaced by
+the new target on load. BankRulesCheck and SaveFileCheck exercise the real
+writer/loader and otherwise-identical missing-key saves.
 
-Part 2 keeps all existing constants as defaults. The new mortgage DTI rule
-is off by default: the existing product has a payment-coverage test, not a
-principal/annual-income cap. Its separate DSCR remains 1.20. The reserve
-requirement and discretionary countercyclical buffer also start at zero.
-BankRules owns the nine settings; DataSave writes/reads the array, the Game
-load restores it, and both lenders use the same instance. Policy's Bank rules
-page uses the existing Kept/Ladder set-at-once pattern. CBK1's page still waits
-for CBK1 to ship before it is wired to this same pane.
+## Single-borrower limitation settled
+
+CBK3-trace found no borrower/group IDs or defensible firm-size measure. Sector
+books pool firms; tickets and building counts do not establish control. Bank's
+notes record Jerus withdrawing sector-as-borrower after99% of credit went abroad.
+The builder asked by bus (mail20261126-165333-983-CBK3-565f).
+The orchestrator's20261126-165359-042 instruction: ship nine working dials,
+neither show nor save an inert borrower control, and queue a ledger/allocation
+premise before Basel25%, exempting sovereigns. LE1 was checked free and its
+brief is docs/queue/LE1.md; it will be queued through this batch's ship file.
+No ticket cap or invented firm count is used.
+
+## Check record so far
+
+- Initial --fast: green; later added UI file required CLAUDE count54, now mended.
+- BankRulesCheck: current model and120-month copied-city run green, including
+  direct-advance cap, no equity collateral, shared fill budget/no hot-money
+  budget, tighter controls, defaults, actual saves and missing-key defaults.
+- CentralBankCheck initial pre-final-quote run: two stale assertions equated
+  the wholesale blend/bill with the window alone, plus1740s timeout in its fixed
+ 24-city strictness measurement. No shapes, horizon, shock, cent or save bound
+  changed. The stale laws now test both bills and the CB's actual portion at
+  original tolerances. The current final-model run is in progress.
+- BankCheck: five stale funding expectations diagnosed by the helper: omitted
+  foreign term price/share, wholesale blend mistaken for window rate/cost,
+  and insolvency mistaken for100% overnight funding. All fixtures and original
+  tolerances remain. Actual tranche/reconciliation assertions replace those
+  identities; the deposit-funded failed bank still freezes new credit.
+  These are not the known HT1-H played-loss premises; those passed in this run.
+- AllChecks name matching is substring based: the call BankCheck also selected
+  CentralBankCheck and YoungBankCheck. Young passed; Central's current run
+  continues. Further narrow runs use serial settings, with exact named JVMs
+  where needed to avoid rerunning an unrelated long harness.
+
+## Ensemble observations and explicit exception
+
+The published0.9.212/MR1 baseline is snapshot84234b69c. Its raw CSV/header/logs
+on gatebox confirm no remittance/revenue/failure counters; F1=0 measures
+findings, not ordinary rescued bank failures. No omitted flow was inferred
+from cash, M0 or ending capital.
+
+The orchestrator approved the one supplemental replay exception in
+20261126-173158-709: retained baseline classes, identical80 policies/seeds,
+getter observations only, proving all eight default trace md5s equal with and
+without observers. The job started by mail174132-646 and is running at
+/home/jerus/cbs/observations/CBK3-before-20261126. Its copied class manifest must
+match retained MR1. Original archive is untouched. The runner uses the box's
+ensemble/box locks and yields to gates/nightly.
+
+Ensemble.fundingColumns adds only cb_remitted, budget_revenue, their share,
+cumulative bank_failures including rescued episodes, and cb_remitted_cum.
+ObserverTrace attaches that exact getter-only function to the supported
+LongPlaytest observer, keeping results outside Game. The scorer slice adds
+optional informational observations and baseline metadata, leaving every
+existing criterion/threshold/verdict and M1/F1 unchanged. Weighted flow sums,
+not average monthly ratios, define the revenue share. Results follow when done.
+
+## Remaining before mends
+
+Finish required named checks, merge CBK1 once shipped and wire the SAME
+BankRulesPane onto its central policy page, merge main/RES3 as required,
+review final diff, refresh maps/fast/pick, and write the provisional ship file.
+The final CBK3 ensemble still follows stranger SHIP; this baseline exception
+is not approval to skip that review. The manual uses its artifact publication
+route; generated docs/manual files are unchanged. Gameplay write-up:
+claude/the-window-against-collateral.md. Eye check: both rule pages retain nodes,
+thumb and scroll across month redraws and show the same saved values.
+
+Build verification update: all six existing ensemble self-tests pass under Git
+Bash (target/CBK3-score-tests.txt), along with the seven bank-observer cases.
+The earlier PowerShell invocation could not locate bash for four runner cases;
+rerunning through the required shell resolved that environment error.
+The baseline proof passed all eight byte comparisons and retained-class
+manifests. Its first ensemble start rejected an equivalent explicit-path
+settings string; resuming with main-data autodiscovery retained the original
+snapshot settings and started all 80 runs. No archive or guard was changed.
+
+## Equity valuation lead, included in this fix
+
+The orchestrator relayed RES3's lead in mail 20261126-174636-318. The helper
+confirmed Equity.fairValue returned the last offering quote at zero mature
+income/spare value, but capitalised even tiny positive income. Exchange's
+fair mark and Bank.markSecurities carry that discontinuity into inventory,
+trading income, equity and desk capacity. This is a separate amplifier of the
+funding defect; source alone does not establish its share of the observed
+city's desk stock.
+
+* ★ Design choice: remove the mature listing's zero-only historical-price
+  fallback. Its existing spare-cash plus capitalised-income valuation now
+  reaches the existing monetary floor continuously. Keep the under-12-month
+  prospects rule, actual income, cash, holdings and mark-loss accounting.
+  A stale issue quote is not a guarantee of recoverable value. This preserves
+  the existing no-growth forecasting premise rather than inventing a book or
+  option-value floor.
+
+[IFRS 13's current-market exit-price definition](https://www.ifrs.org/issued-standards/list-of-standards/ifrs-13-fair-value-measurement/)
+supports rejecting a historical issue-price guarantee. Choosing the existing
+income model's continuous zero limit is a model inference, not a claim that
+all real loss-making companies are worthless. The copied-city measurement
+above was rerun on commit 6ff36d2d8 with the shared-floor correction: 1.4128160%, three failures, cent audit
+and both funding bounds green. The preceding 1.7921789% run is preserved in
+target/CBK3-evidence-before-equity.log and is superseded.
+
+* ★ Design choice: concentration's absolute economic capital add-on remains
+  unchanged when the regulatory minimum moves; its equivalent book weight is
+  derived from the current minimum immediately, not cached until next month.
+  Risk staging retains its calibrated 90% reference: lowering a regulatory
+  new-credit ceiling does not itself make an existing borrower riskier.
+  The new harness causes a nonzero concentration and changes the dial without
+  refreshing the book; required equity rises and the add-on remains exact.
+
+The new EquityCheck regression caught an implementation error before any
+valuation commit: identical return text existed in priceOf and fairValue.
+The first edit changed the young-company method, leaving the mature fallback
+in place. Seven new assertions failed, including the unchanged young-company
+law. The helper proved the wrong site from source and the fixture outputs;
+the parent restored priceOf and changed only mature fairValue. No expected
+value or tolerance was changed. The earlier 1.7981594% replay and 5/24 bank
+failure observation used that wrong-site edit and are provisional, preserved
+as target/CBK3-evidence-wrong-return.log and target/CBK3-bankfailure-wrong-return.log.
+Both are rerun on the corrected source before review.
+
+Corrected mature-only run (commit a32abc1a1): BankRulesCheck and all 120 monthly
+collateral/desk/cent assertions pass. Its 4.2055303% remittance share remains
+above the cited Fed 2021 comparison; it is measured, not forced to that target.
+Five additional failures are one fewer than the same original continuation.
+The mature valuation correction books real mark losses; the earlier three-
+failure interim funding-only figure is not the final model result.
+
+Broader validation on a32abc1a1 found a real defect: BankFailureCheck seed 10
+produced non-finite audit pools and bank equity, and its cent assertion failed.
+The copied-city result above is not sufficient to ship this model. The helper
+is tracing the first non-finite value, including the mature-floor/split unit
+interaction. No assertion, tolerance or fixture is relaxed. Full failed log:
+target/CBK3-bankfailure-nan.log. Further model checks wait for the mend.
+
+Central timeout diagnosis (helper report 20261126-182123-744): the preserved
+run completed 20/24 fixed strictness rows before 1740s, with no earlier
+assertion failure. The 26,400 nominal city-month table/helpers are unchanged
+from main. Four rows and subsequent rule/save/section22 par-conservation
+assertions were not executed. This is TIMED OUT/INCOMPLETE, not green; main's
+latest gate has no Central timeout, and its registered HT1-H assertion pair
+is a different red. No budget, shapes, horizon or bounds are changed. A final
+named run remains due, and any repeated cutoff needs honest classification.
+
+* ★ Design choice: repair the existing no-worthless-consolidation law with
+  one threshold. Equity's presentation floor is anchored to expected prices;
+  Exchange's nominal floor was not. Exchange now uses the greater threshold
+  consistently to strike fair value, classify atFloor and skip consolidation.
+  A presentation epsilon is not positive business value. There is no new saved
+  state and no change to cash, income, ownership or legitimate split factors.
+  This mends the causal mismatch rather than clipping non-finite balances.
+
+The completed bad run first failed seed 6 at m76, then seed 10 at m113,
+13/20 at m76 and22 at m75. It recorded3162 split/consolidation events. The old
+log does not identify the first overflowing company/operator, so that is not
+claimed. The helper found the source amplification and is building a direct
+never-traded floor/recovery regression. It also found an equity-check blind
+spot: abs(NaN)>bound is false; explicit finiteness strengthens that assertion
+without changing its existing tolerance. MonetaryCheck passes on the shared-
+floor repair; SaveFileCheck is running. Full24-seed audit replay remains due.
+
+Final shared-floor replay on6ff36d2d8: BankFailureCheck passes all24seeds,
+2880 monthly money audits and explicitly finite equity movements, with5/24
+ordinary failures and317 splits/consolidations (the failed run had3162).
+BankRulesCheck's120-month copiedcity also passes:1.4128160%,3additional
+failuresvs6original. Its full values above are current; the4.2055303% pre-
+shared-floor measurement is kept in target/CBK3-evidence-before-shared-floor.log
+and is superseded. Monetary/Equity/Exchange aregreen; SaveFile is known-red-
+only (registered REV-HC1P5). Rejudging saved suite gives native exit3;
+PowerShell otherwise normalizes a nonzero child exit to1, so later calls
+explicitly propagate LASTEXITCODE. Bounds/fixtures areunchanged.
+
+The approved baseline replay has finished80/80. All28 stored criterion
+values/verdicts and old policy summaries match0.9.212 exactly:24/26 overall,
+M1/F1hard10/10, A1/A2 informational FAIL asbefore, H1retired. All102352
+recorded rows have complete flow/failure observations;114 monthly ratio
+cells with nonpositive monthly revenue remain unavailable and are not
+averaged. The new observations count289 cumulative bank failures in78/80
+runs (max8), despiteF1=0. Recorded windows are AUTO2m2-2400, ZERO_SLACK2-2040,
+ZERO_HOT2-402, SHOCK2-840, HIGH2-720. Candidate comparison must match them.
+The new baseline is docs/ensemble/CBK3-before.md. Verdict mailed185017-677;
+there is no CBK3 heavy job left on the box. Final candidate ensemble is not
+run or certified until strangerSHIP.
+
+Final pre-CBK1 named Central run on6ff36d2d8 also stopped at1740s:20/24
+informational rows completed, no earlier assertion red, remaining four rows
+and subsequent rule/save/par-conservation assertions unexecuted. Native
+wrapper exit4, target/CBK3-central-6ff-timeout.log. It remains INCOMPLETE.
+The parent has commissioned a source-only check of new collateral/wholesale
+curve work before attributing the cutoff to a fixture/runtime class.
+
+CBK1 shipped at482dbfab2 (0.9.214, stillformat66); orchestrator message
+20261126-190438-166 says merge and put the SAME banking rules on its Policy
+page. The merge follows this finished run to avoid changing an active check's
+source beneath it. RES3 has not yet been merged.
+
+Manual route inspection: the browser connector host was unavailable. Native
+Edge reached the owned CityBuilderSim artifact, pinned version6, whose page
+still says build0.8.11/format40. No artifact content was changed. The native
+input tool then stopped because it could not verify the current Windows
+browser URL, so no further UI input is allowed this turn. The minimization
+attempt's outcome is not verified; the task tab may remain. Generated manual
+files are untouched, and the release copy remains a draft until the required
+artifact publication route can be completed. Computer-use SKILL.md and its
+guidance were read; its interrupted-turn instruction is to stop app input.

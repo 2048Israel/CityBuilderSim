@@ -1,4 +1,4 @@
-# BankFailureCheck.java - 734 lines · 23 methods · 4 constants · harnesses
+# BankFailureCheck.java - 735 lines · 23 methods · 4 constants · harnesses
 
 `ham/citybuildersim/BankFailureCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -45,7 +45,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 26 | 709 | **type** `public final class BankFailureCheck` | The hands-off bank's failures, caused separately and counted across Random cities. |
+| 26 | 710 | **type** `public final class BankFailureCheck` | The hands-off bank's failures, caused separately and counted across Random cities. |
 | 31 | 4 | `static void check(String label, boolean ok)` |  |
 | 36 | 3 | `static void close(String label, double a, double b)` |  |
 | 40 | 6 | `static Game town(String label)` |  |
@@ -56,7 +56,7 @@
 | 199 | 15 | `static void writtenOffRetirement()` |  |
 | 215 | 137 | `static void credit() throws Exception` |  |
 
-### 9. THE BAND'S SHARE UNDER THE LEVERAGE TARGET (MC2, 2026-11-20) (lines 353-734)
+### 9. THE BAND'S SHARE UNDER THE LEVERAGE TARGET (MC2, 2026-11-20) (lines 353-735)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -72,6 +72,6 @@
 | 605 | 29 | `static void shares()` |  |
 | 635 | 34 | `static void rounding()` |  |
 | 670 | 17 | `static void bondDust() throws Exception` |  |
-| 688 | 36 | `static void seeds()` |  |
-| 725 | 9 | `public static void main(String[] args) throws Exception` |  |
+| 688 | 37 | `static void seeds()` |  |
+| 726 | 9 | `public static void main(String[] args) throws Exception` |  |
 
