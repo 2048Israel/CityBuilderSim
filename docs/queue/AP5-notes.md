@@ -203,3 +203,9 @@ whole: fixtures cause each move (a hospital for the gated posts, depots laying c
 template the town lacks), each threshold shown from both sides, every comparison exact. It added
 two assertions the brief lacked (`addQuantity`, `increaseQuantity` on the stack), without which
 the first mutation stayed green.
+
+## 8. The dry run
+
+`sh tools/gate.sh AP5 --dry-run` on the gate box, after REV-AP5's SHIP on adb39bd2c (main ded8345fc, not moved):
+gate exit 0, run `/home/jerus/cbs/runs/cbs-gate-AP5-XKcPbjfP`; the suite 1084 s, exit 3, known red only (all main's);
+no unnamed lines; the tree as it was.
