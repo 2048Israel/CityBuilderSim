@@ -52,13 +52,16 @@ import java.util.Locale;
  *      call A (RES3c, 2026-11-25) a household the census line has no door for
  *      lives past it, overcrowded (HousingMarket.overcrowding(), the 1891 and
  *      1901 censuses' 7.04 million families in 6.26 million houses), and
- *      overcrowding rises when building falls behind the town's households:
- *      in the months the landlords' order is trimmed or held (its down
- *      payment, the lender's test, the bank's capital, or no land) households
- *      live overcrowded, more of them a month than in the months building
- *      keeps up (call A's first town: none at m888 with its ground gone,
- *      36.993 households at m831's boom, the orders trimmed to a few Houses
- *      for the down payment);
+ *      overcrowding rises when the town's households outgrow its homes: over
+ *      the months the households seeking a home grow by more than the homes
+ *      standing, overcrowding rises, and by more a month than over the months
+ *      the homes catch up. The months the landlords' order is trimmed or held
+ *      (its down payment, the lender's test, the bank's capital, or no land)
+ *      are printed beside it, not asserted: a month's order is not its stock
+ *      of crowding, and the comparison by order turned over with main 0.9.208
+ *      (behind 10.688 a month against 3.454 kept up on RES3's own town; 0.192
+ *      against 2.065 on the merge, its peak, 52.100 at m830, the month before
+ *      the order trimmed at m831; RES3c, 2026-11-26);
  *   5. every played month's households' cash identity closes beside the accepted and refused mortgage orders (HL1).
  */
 public final class HousingDoorCheck {
@@ -137,6 +140,10 @@ public final class HousingDoorCheck {
         MoneyAudit.Households[] worstHouseholds = { MoneyAudit.Households.NONE };
         // Call A: the households living past the census line, by whether building fell behind the town's households.
         Tally behind = new Tally(), keptUp = new Tally(), forLand = new Tally();
+        // ...and by the cause the censuses read: [0] the months the households outgrew the homes, [1] the months the homes
+        // caught up; the rise of overcrowding over each, and last month's overcrowded, households seeking and homes standing.
+        int[] grew = { 0, 0 };
+        double[] rose = { 0, 0 }, last = { -1, 0, 0 };
         double[] boom = { -1, -1 };
         String[] boomLine = { "" };
         try {
@@ -167,6 +174,15 @@ public final class HousingDoorCheck {
                 if (still > worstUnplaced[0]) { worstUnplaced[0] = still; worstMonth[0] = m; worstHousing[0]=housingSnapshot(g); }
                 var market = g.getSectors().realEstate().housingMarket();
                 double crowded = market.overcrowded();
+                double seeking = 0;
+                for (var d : market.demands()) seeking += d.count();
+                long standing = g.getBuildingManager().getHousingInventory().homes();
+                if (last[0] >= 0) {
+                    int k = seeking - last[1] > standing - last[2] ? 0 : 1;
+                    grew[k]++;
+                    rose[k] += crowded - last[0];
+                }
+                last[0] = crowded; last[1] = seeking; last[2] = standing;
                 // The model's own readings of building falling behind: the month's order at the door trimmed or held (its
                 // down payment, the lender's test, the bank's capital), or the landlords held for land.
                 boolean land = g.getLandBlockedSectors().contains(RE);
@@ -293,10 +309,17 @@ public final class HousingDoorCheck {
         out.println("   building keeping up, " + keptUp.text());
         out.println("   of them held for land, " + forLand.text());
         out.printf(Locale.ROOT, "   the boom, m%d: %.3f households overcrowded (%.0f people); %s%n", BOOM, boom[0], boom[1], boomLine[0]);
-        check("fixture: building fell behind in the window and kept up in it: months the landlords' order was trimmed or held, and months it was not",
-                behind.months > 0 && keptUp.months > 0);
-        check("households live overcrowded, counted past the census line, in the months building falls behind (call A)", behind.most > 0);
-        check("...more of them a month than in the months building keeps up", behind.mean() > keptUp.mean());
+        out.printf(Locale.ROOT, "   the households outgrowing the homes, %d months: overcrowding rose %.3f households over them (%.4f a month)%n",
+                grew[0], rose[0], grew[0] > 0 ? rose[0] / grew[0] : 0);
+        out.printf(Locale.ROOT, "   the homes catching up, %d months: it rose %.3f over them (%.4f a month)%n",
+                grew[1], rose[1], grew[1] > 0 ? rose[1] / grew[1] : 0);
+        check("households live overcrowded in the window, counted past the census line, none of them doorless (call A)",
+                Math.max(behind.most, keptUp.most) > 0);
+        check("fixture: the households outgrew the homes in some months of the window and the homes caught up in others",
+                grew[0] > 0 && grew[1] > 0);
+        check("overcrowding rises over the months the town's households outgrow its homes", rose[0] > 0);
+        check("...by more a month than over the months the homes catch up",
+                grew[0] > 0 && grew[1] > 0 && rose[0] / grew[0] > rose[1] / grew[1]);
 
         out.println("\n--- 5. the households' identity through the mortgage door (HL1) ---");
         out.printf("   %d months, %d open; worst %s%n", householdMonths[0], householdMonths[1], worstHouseholds[0]);
