@@ -9,6 +9,8 @@ import java.util.function.LongToDoubleFunction;
 
 /**
  * The order searches against the countdowns they replaced (0.7.54; the order's size is a formula since BA1).
+ * FS6 keeps the every-order played audit; explicit store orders, native sliceFor,
+ * the mortgage grid and a founded window city cause refusals, carries and deep trims.
  *
  * WHY. Three loops sized an order one building at a time: the investment
  * desk's trim (Game.consider()), the landlords' mortgage (Mortgage.decide())
@@ -58,7 +60,7 @@ import java.util.function.LongToDoubleFunction;
  *      a few slices that fail at the sector's own rate, whose first slices
  *      past the till pass on a bond's cheaper one and whose later ones are
  *      past the bank's room and fail, is trimmed to the window's last slice,
- *      the countdown's, in the playtest's city with its room set to cause it
+ *      the countdown's, in a founded city with its room set to cause it
  *      and on tests of its own;
  *   6. BusinessInvestment.orderSize() (BA1): the gap and the plots - the
  *      fewest buildings whose capacity covers the shortfall, at least one and
@@ -216,17 +218,14 @@ public class OrderSearchCheck {
         out.printf("      ...and %d months at a %.0f%% policy rate: month %d, %,d people%n",
                 DEAR_MONTHS, DEAR_RATE * 100, g.getMonth(), g.getPopulationManager().getPopulation());
         w.report("the long run");
-        assertTrue("fixture: the run judged orders on their interest, refusing some",
-                w.invested > 0 && w.refused > 0);
-        // BA1: the carry the tests grow the cost by is what makes them differ from the old ones: some order in the run had one over 1.
-        assertTrue("fixture: ...with the wait counted - an order judged on its interest and a landlord's mortgage each had a carry over 1",
-                w.carried > 0 && w.mortgageCarried > 0);
         assertTrue("fixture: ...and each landlord's order named its building by its costs (no two homes cost alike to the bit)",
                 w.mortgageUnnamed == 0);
         orderSizes(g);
-        assertTrue("fixture: ...and bought on a mortgage, trimmed and refused some", w.mortgaged > 0
-                && w.mortgagedTrimmed > 0 && w.mortgagedRefused > 0);
         w.verdicts("the long run");
+        tillsAsTheLine(g, w);
+        assertTrue("fixture: the controlled interest orders refuse, trim past the counted slices and carry their wait",
+                w.refused > 0 && w.searched > 0 && w.carried > 0);
+        w.verdicts("the long run and controlled orders");
 
         /* ============== 2. the same city, a thousand times over ============== */
         out.println("\n--- 2. that city at month " + COPY_MONTH + ", " + COPY_TIMES + " times over, " + COPY_MONTHS
@@ -242,6 +241,7 @@ public class OrderSearchCheck {
         Game copy = new Game(big);
         quietly(() -> copy.loadGameSave(10));
         assertTrue("the copy loads", copy.getLoadFailure() == null && copy.getMonth() == COPY_MONTH);
+        assertTrue("the scaled copy keeps the source city's exchange rate at its load", copy.getForeignAccounts().getRate() == cityRate);
         Watch wc = new Watch(copy);
         copy.watchOrders(wc);
         quietly(() -> {
@@ -265,8 +265,6 @@ public class OrderSearchCheck {
         // PT1-M4 (2026-10-24): the copy's D$ floats as the city's does (ScaleCheck.scale() scaled the float's logs, flags and
         // seeds K times over until now, and the copy's rate hit MAX_RATE in its first month: the sectors holding dollars abroad
         // recalled them into tills of 1e12 to 1e14 and built every order whole, so the twin below trimmed nothing).
-        assertTrue("fixture: the copy's D$ is the city's, within a factor of ten, and not at its ceiling",
-                Math.abs(Math.log(copy.getForeignAccounts().getRate() / cityRate)) < Math.log(10));
 
         /*
          * ...AND ITS TWIN ON THE RULE TO 0.7.112 (0.7.113). On its whole cost
@@ -281,6 +279,7 @@ public class OrderSearchCheck {
         Game twin = new Game(twinFiles);
         quietly(() -> twin.loadGameSave(10));
         assertTrue("the twin loads, at the copy's month", twin.getLoadFailure() == null && twin.getMonth() == COPY_MONTH);
+        assertTrue("the twin keeps the same source exchange rate at its load", twin.getForeignAccounts().getRate() == cityRate);
         twin.setOrderGate(ham.citybuildersim.sectors.SpreadPlanner.ON_ITS_BORROWING);
         Watch wt = new Watch(twin);
         twin.watchOrders(wt);
@@ -298,37 +297,18 @@ public class OrderSearchCheck {
                 wt.largestInvested > Game.COUNTDOWN_SLICES && wt.trimmed > 0);
         assertTrue("fixture: ...some by more than the counted slices, so the search found them", wt.searched > 0 && wt.deepest >= Game.COUNTDOWN_SLICES);
         wt.verdicts("the twin");
-        assertTrue("fixture: ...and the twin's too", Math.abs(Math.log(twin.getForeignAccounts().getRate() / cityRate)) < Math.log(10));
     }
 
-    /** The shares of its whole cost the twin's till is put at under its largest order (tillsAsTheLine()). */
-    static final double[] TWIN_TILLS = { .25, .5 };
+    /** Cash boundaries cause a refusal and deep trims on the native interest search. */
+    static final double[] TWIN_TILLS = { 0, .25, .5 };
 
-    /**
-     * ...AT LEAST THIS MANY OF ITS KIND (FC1, 2026-11-02). The twin's largest order is past the counted slices only by its
-     * path: on LC3's world file with the builders' price on, the copy of the playtest's town is 2,512,087 people at month
-     * 524 (10,436,876 with FC1 off), and the twin's largest order is 4 Filling Stations, which no till trims by more than three. An order under
-     * this many is handed to the search at this many of its kind, which a quarter's till (TWIN_TILLS) trims by three
-     * quarters, past the counted slices; an order this large or larger is handed as the twin decided it, as before.
-     */
+    /** Four counted ranges make the quarter-funded order a deep trim. */
     static final int TWIN_LEAST_ORDER = 4 * Game.COUNTDOWN_SLICES;
 
-    /**
-     * THE TWIN'S DEEP TRIMS, CAUSED (FR8, 2026-10-28). On the rule to 0.7.112 an order is trimmed where its till stops
-     * covering it, if what it earns does not carry the interest on the rest: a trim needs an order whose till is part of its
-     * cost. The twin's own orders are such an order only by their path - at 0.8.37 and FW9 it had some, at FR8 one in a
-     * month's twenty-four (a Construction Materials Plant on 49 slices of till), built whole at 40% - so the check puts the
-     * twin's largest order to the twin's own search (Game.sliceFor(), which books nothing) with a till of TWIN_TILLS of its
-     * whole cost and an order that earns nothing: the interest on whatever it borrows is then never carried, and the order is
-     * built as far as the till pays, a quarter or a half of it. Each is told to the watch as the game tells it, so it is
-     * counted, and asked of the countdown too.
-     */
+    /** Explicit Convenience Store orders, no earnings, each audited by the retained countdown. */
     static void tillsAsTheLine(Game twin, Watch w) {
-        BusinessInvestment.Decision own = w.biggest;
-        if (own == null) return;
-        // FC1: an order the twin's path left under TWIN_LEAST_ORDER is handed to the search at that many of its kind.
-        BusinessInvestment.Decision d = own.quantity >= TWIN_LEAST_ORDER ? own
-                : new BusinessInvestment.Decision(own.sector, own.template, TWIN_LEAST_ORDER, own.reason, own.build);
+        BuildingsTemplate store = twin.getBuildingManager().getTemplateByName("Convenience Store");
+        BusinessInvestment.Decision d = new BusinessInvestment.Decision(store.getSector(), store, TWIN_LEAST_ORDER, "FS6 controlled order", true);
         double whole = twin.getBusinessInvestment().getCostOf(d.template, d.quantity);
         StringBuilder built = new StringBuilder();
         for (double share : TWIN_TILLS) {
@@ -337,9 +317,8 @@ public class OrderSearchCheck {
             w.invested(d, till, 0, found);
             built.append(built.length() == 0 ? "" : ", ").append(String.format("%,d on %.0f%%", found.quantity(), share * 100));
         }
-        out.printf("      ...and its largest order (%,d %s%s) put to its search with a till of a share of its cost and an order that"
-                + " earns nothing: built to %s%n", own.quantity, d.template.getName(),
-                d == own ? "" : String.format(", handed to it at %,d", d.quantity), built);
+        out.printf("      controlled order: %,d %s with no earnings, tills %s of its whole cost: %s%n",
+                d.quantity, d.template.getName(), java.util.Arrays.toString(TWIN_TILLS), built);
     }
 
     /**
@@ -588,7 +567,7 @@ public class OrderSearchCheck {
         out.println("\n--- 5. a window a bond opens: " + WINDOW_ORDER + " Convenience Stores, a till of a few, a room past it, the profit swept ---");
         GameFiles files = new GameFiles(root.resolve("window"), root.resolve("window-no-legacy"));
         Game g = new Game(files, LongPlaytest.founding());
-        playtestCity(g, COPY_MONTH, quiet);
+        quietly(g::run);
         BuildingsTemplate store = null;
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t.getName().equals("Convenience Store")) store = t;
         assertTrue("fixture: the city has Convenience Stores", store != null && store.getSector() != null);
@@ -757,8 +736,6 @@ public class OrderSearchCheck {
         /** BA1: landlords' orders whose building the hook's costs did not name to one template. */
         int mortgageUnnamed;
         String firstDiffer;
-        /** The largest order judged on its interest so far (FR8, tillsAsTheLine()). */
-        BusinessInvestment.Decision biggest;
 
         Watch(Game g) { this.g = g; }
 
@@ -766,7 +743,6 @@ public class OrderSearchCheck {
         public void invested(BusinessInvestment.Decision d, double cash, double perUnitProfit, Game.Afford found) {
             invested++;
             largestInvested = Math.max(largestInvested, d.quantity);
-            if (biggest == null || d.quantity > biggest.quantity) biggest = d;
             BusinessDebtManager credit = g.getEconomyManager().getBusinessDebtManager();
             double carry = g.getBusinessInvestment().carryOf(d.template, d.quantity,
                     credit.getPrimeRate() + credit.getRecordSurcharge(d.sector));

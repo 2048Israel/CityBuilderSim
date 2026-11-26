@@ -1,9 +1,11 @@
-# BuildingStackCheck.java - 678 lines · 14 methods · 5 constants · harnesses
+# BuildingStackCheck.java - 680 lines · 14 methods · 4 constants · harnesses
 
 `ham/citybuildersim/BuildingStackCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through
 > the save and the load, through ScaleCheck's scaler, and in the sums a city is read by.
+> FS6 finishes the ordered House stack directly before saving the standing town;
+> its known count supplies both sides of the integer ceiling.
 > 
 > WHY (SQ1, found by ST3). BuildingsStacks kept its quantity, its on-site count and its unfitted counts in
 > an int, and a building type's units merge into one stack. Jerus's plans are cities of 5 and 10 billion
@@ -52,64 +54,63 @@
 > The orders here are int-sized, as the game's are; a stack passes the ceiling by two of them, or by the
 > scaler. Written so that it compiles against main's int stack, where it is red: the sums wrap.
 
-**Uses:** [Game](Game.md) (39), [BuildingsStacks](BuildingsStacks.md) (17), [BuildingManager](BuildingManager.md) (14), [GameFiles](GameFiles.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (13), [LongPlaytest](LongPlaytest.md) (12), [ScaleCheck](ScaleCheck.md) (7), [JobType](JobType.md) (5), [EquipmentCheck](EquipmentCheck.md) (4), [Markets](Markets.md) (4), [BuildCard](BuildCard.md) (4), [BusinessInvestment](BusinessInvestment.md) (3), [BuildCardCheck](BuildCardCheck.md) (2), [OldMetal](OldMetal.md) (2), [DemolitionLog](DemolitionLog.md) (1), [TempDirs](TempDirs.md) (1), [Landmasses](Landmasses.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Good](Good.md) (1), [Investor](Investor.md) (1), [ConstructionControl](ConstructionControl.md) (1)
+**Uses:** [Game](Game.md) (39), [BuildingsStacks](BuildingsStacks.md) (18), [BuildingManager](BuildingManager.md) (14), [GameFiles](GameFiles.md) (13), [BuildingsTemplate](BuildingsTemplate.md) (13), [LongPlaytest](LongPlaytest.md) (12), [ScaleCheck](ScaleCheck.md) (7), [JobType](JobType.md) (5), [EquipmentCheck](EquipmentCheck.md) (4), [Markets](Markets.md) (4), [BuildCard](BuildCard.md) (4), [BusinessInvestment](BusinessInvestment.md) (3), [BuildCardCheck](BuildCardCheck.md) (2), [OldMetal](OldMetal.md) (2), [DemolitionLog](DemolitionLog.md) (1), [TempDirs](TempDirs.md) (1), [Landmasses](Landmasses.md) (1), [GoodsMarket](GoodsMarket.md) (1), [Good](Good.md) (1), [Investor](Investor.md) (1), [ConstructionControl](ConstructionControl.md) (1)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 121 | · the fixture: a young town, saved with its houses on site and again once they stand |
-| 151 | · 1. a stack takes orders past 2^31 - 1 |
-| 191 | · 2. the unfitted count rides with the stack |
-| 203 | · 3. the sums: homes, posts and household places |
-| 230 | · 4. ScaleCheck.scale(): the copy's House stack past 2^31 |
-| 256 | · 5. the same from a save written with an order on site |
-| 276 | · 6. an order carries the loaded copy past 2^31 - 1, and its save reads back whole |
-| 314 | · 7. Game.buildStack on a copy just under the ceiling: its quote, its ground and its invoice (SQ1b) |
-| 386 | · 8. a month's draw past 2^31 units: the books it feeds read it whole |
-| 440 | · 10. a template has one stack, and a shed takes what it asks of it (SB1) |
-| 444 | 10. A TEMPLATE HAS ONE STACK, AND A SHED TAKES WHAT IT ASKS OF IT (SB1) |
+| 120 | · the fixture: a young town, saved with its houses on site and again once they stand |
+| 152 | · 1. a stack takes orders past 2^31 - 1 |
+| 192 | · 2. the unfitted count rides with the stack |
+| 204 | · 3. the sums: homes, posts and household places |
+| 231 | · 4. ScaleCheck.scale(): the copy's House stack past 2^31 |
+| 257 | · 5. the same from a save written with an order on site |
+| 277 | · 6. an order carries the loaded copy past 2^31 - 1, and its save reads back whole |
+| 315 | · 7. Game.buildStack on a copy just under the ceiling: its quote, its ground and its invoice (SQ1b) |
+| 388 | · 8. a month's draw past 2^31 units: the books it feeds read it whole |
+| 442 | · 10. a template has one stack, and a shed takes what it asks of it (SB1) |
+| 446 | 10. A TEMPLATE HAS ONE STACK, AND A SHED TAKES WHAT IT ASKS OF IT (SB1) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 68 | `BuildingStackCheck.FIXTURE_MONTHS` | `3` | The fixture's months before it is saved with its houses finished: a young town, which keeps the run short. |
-| 71 | `BuildingStackCheck.ORDER_HOUSES` | `40` | The House order the fixture's town has on site when its first save is written. |
-| 74 | `BuildingStackCheck.ROOM_BELOW` | `100` | How far below the ceiling section 6's copy stands, so that one order of the next size passes it. |
-| 447 | `BuildingStackCheck.PLAYED_MONTHS` | `24` | Months the played city runs in section 10, a stack count read at the end of each. |
-| 453 | `BuildingStackCheck.FIXTURE_CASH` | `1e6` | What section 10's fixtures are given to pay a demolition and a plot with: enough for them, and small enough that a double still tells the plot's price from the treasury (a 1e12 added to a treasury of millions lost the... |
+| 70 | `BuildingStackCheck.ORDER_HOUSES` | `40` | The House order the fixture's town has on site when its first save is written. |
+| 73 | `BuildingStackCheck.ROOM_BELOW` | `100` | How far below the ceiling section 6's copy stands, so that one order of the next size passes it. |
+| 449 | `BuildingStackCheck.PLAYED_MONTHS` | `24` | Months the played city runs in section 10, a stack count read at the end of each. |
+| 455 | `BuildingStackCheck.FIXTURE_CASH` | `1e6` | What section 10's fixtures are given to pay a demolition and a plot with: enough for them, and small enough that a double still tells the plot's price from the treasury (a 1e12 added to a treasury of millions lost the... |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 63 | `static int fails` |  |
-| 64 | `static PrintStream out` |  |
-| 65 | `static PrintStream quiet` |  |
+| 65 | `static int fails` |  |
+| 66 | `static PrintStream out` |  |
+| 67 | `static PrintStream quiet` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 61 | 618 | **type** `public class BuildingStackCheck` | A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through the save and the load, through ScaleCheck's scaler, and in the sums a city is read by. |
-| 76 | 5 | `static void same(String label, long actual, long expected)` |  |
-| 82 | 4 | `static void assertTrue(String label, boolean ok)` |  |
-| 88 | 5 | `static void near(String label, double actual, double expected, double tolerance)` | A figure read against the one it should be, relative to the larger of the two or to one; both printed (SB1). |
-| 95 | 3 | `static DemolitionLog.Entry newest(Game g)` | The newest line of a city's demolition log (the log lists newest first). |
-| 99 | 5 | `static void quietly(Runnable r)` |  |
-| 105 | 13 | `public static void main(String[] args) throws Exception` |  |
-| 119 | 324 | `static void run(Path root) throws Exception` |  |
+| 63 | 618 | **type** `public class BuildingStackCheck` | A building stack that holds more than 2^31 - 1 buildings reads back whole: through an order, through the save and the load, through ScaleCheck's scaler, and in the sums a city is read by. |
+| 75 | 5 | `static void same(String label, long actual, long expected)` |  |
+| 81 | 4 | `static void assertTrue(String label, boolean ok)` |  |
+| 87 | 5 | `static void near(String label, double actual, double expected, double tolerance)` | A figure read against the one it should be, relative to the larger of the two or to one; both printed (SB1). |
+| 94 | 3 | `static DemolitionLog.Entry newest(Game g)` | The newest line of a city's demolition log (the log lists newest first). |
+| 98 | 5 | `static void quietly(Runnable r)` |  |
+| 104 | 13 | `public static void main(String[] args) throws Exception` |  |
+| 118 | 327 | `static void run(Path root) throws Exception` |  |
 
-### 10. A TEMPLATE HAS ONE STACK, AND A SHED TAKES WHAT IT ASKS OF IT (SB1) (lines 444-678)
+### 10. A TEMPLATE HAS ONE STACK, AND A SHED TAKES WHAT IT ASKS OF IT (SB1) (lines 446-680)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 456 | 6 | `static int mostPerId(java.util.List<Integer> ids)` | The most stacks any one id has among these (SB1): the tripwire's own reading, proved on lists it can tell apart. |
-| 464 | 5 | `static int mostStacksOfOne(BuildingManager bm)` | The most stacks any one template has in this manager. |
-| 471 | 5 | `static long postsOf(BuildingManager bm)` | Every post the buildings offer, over every kind of job (BuildingManager.getTotalJobs(JobType)). |
-| 478 | 5 | `static Game cityOn(Path root, String label)` | A fixture city on a folder of its own, founded the way the playtest's is. |
-| 485 | 11 | `static long shed(Game g, java.lang.reflect.Method retire, java.lang.reflect.Method investor, BuildingsTemplate t, long count) t...` | Game's own shedding path, called as Game calls it: a decision of the sector's template and a count, the sector's investor selling, the distress rule not the one deciding. |
-| 497 | 174 | `static void oneStackPerTemplate(Path root) throws Exception` |  |
-| 673 | 5 | `static BuildingsStacks stackOf(Game g, String name)` | A game's stack of the template named, or null: each game's templates are its own, so a stack is found by the game's own. |
+| 458 | 6 | `static int mostPerId(java.util.List<Integer> ids)` | The most stacks any one id has among these (SB1): the tripwire's own reading, proved on lists it can tell apart. |
+| 466 | 5 | `static int mostStacksOfOne(BuildingManager bm)` | The most stacks any one template has in this manager. |
+| 473 | 5 | `static long postsOf(BuildingManager bm)` | Every post the buildings offer, over every kind of job (BuildingManager.getTotalJobs(JobType)). |
+| 480 | 5 | `static Game cityOn(Path root, String label)` | A fixture city on a folder of its own, founded the way the playtest's is. |
+| 487 | 11 | `static long shed(Game g, java.lang.reflect.Method retire, java.lang.reflect.Method investor, BuildingsTemplate t, long count) t...` | Game's own shedding path, called as Game calls it: a decision of the sector's template and a count, the sector's investor selling, the distress rule not the one deciding. |
+| 499 | 174 | `static void oneStackPerTemplate(Path root) throws Exception` |  |
+| 675 | 5 | `static BuildingsStacks stackOf(Game g, String name)` | A game's stack of the template named, or null: each game's templates are its own, so a stack is found by the game's own. |
 

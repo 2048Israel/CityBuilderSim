@@ -1,8 +1,8 @@
-# gate of Merge batch/OA1: the open ask holds an essential works for years (REV-PW3d, 2026-11-24): AutoBuilder's open ask (`covered()`, `stillToRaise()`, around AutoBuilder.java 2654-2671) cuts a Water Treatment Plant on DEBT while a raised bond is held, so in PW3's ensemble seeds 6, 9 and 15 sit at 24-26% of water served from about m290 to m402 with power served in full; main's, outside PW3's hunks. No real city leaves three quarters of its water unserved for nine years while it holds a raised bond: an essential works the city lacks is funded from the bond it raised, or the open ask releases it. Cause it in a harness from a city that lacks water and holds a bond, 0.9.208
+# gate of Merge batch/FS6: sweep: the map and the district plans (MapCheck, PlanCheck, OrderSearchCheck, BuildingStackCheck, GatewayCheck); takes BQ1, LM1-R, KS1-rest's map lines (after SZ1; not beside PX2, PW1, SQ1b, HL1-M). Back from Pending 2026-11-24 (contract section 6, the orchestrator's): at 968e7db94 two hard MapCheck failures, S4's open/closed share law and the mine building-count identity, with four other primaries green. The batch merges main, has a helper trace each against main (main's, or the sweep's?), then mends; no waiver, 0.9.208
 # date: 2026-11-26
 # earth-2.bin: named
 # nightly: 2026-11-25 03:03 0.9.202 d657b3a83 4,000 months: RED, exit 1 in 971 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-25-d657b3a83-xbsFLHkH
-# suite: 246 harnesses run in 954s: 228 passed, 18 failed
+# suite: 250 harnesses run in 869s: 233 passed, 17 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -57,7 +57,7 @@ PopulationCheck | ...but it does fill, given a decade                        FAI
 PopulationCheck | 1 FAILED
 MapCheck | exit 1
 MapCheck | ...no two + junctions of drawn street nearer than JUNCTION_APART plots, either way: about eight houses' length apart FAIL
-MapCheck | 2 FAILED
+MapCheck | 1 FAILED
 RailDrawCheck | exit 1
 RailDrawCheck | ...and where the line runs on through that plot (a T) its plots and the two beside are not replaced and are track in the picture: 3 of 4 FAIL
 RailDrawCheck | 1 FAILED
@@ -65,13 +65,6 @@ PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
 PlanCheck | every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface FAIL
 PlanCheck | 2 FAILED
-KeptCheck | exit 5
-KeptCheck | nonrepeating content blocks still hand back at least three in four of the nodes drawn again (1 readings, least 74.8%) FAIL
-KeptCheck | fixture: the fund holds a bond, null, that runs 0 months, past the 2 months its pages are watched FAIL
-KeptCheck | every row that folds opened on Portfolio: the redraw and the next equal a page built new FAIL
-KeptCheck | every row that folds opened on Portfolio adds to the page (750 lines, then 0) FAIL
-KeptCheck | the full kept check's objects leave a quarter of AllChecks.HEAP_MB free (the live heap, less the render targets a software renderer keeps on it) FAIL
-KeptCheck | 5 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
@@ -87,3 +80,10 @@ RefineryCheck | 1 FAILED
 GroundSkipCheck | exit 1
 GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 30 month(s) FAIL
 GroundSkipCheck | 1 FAILED
+KeptCheck | exit 5
+KeptCheck | nonrepeating content blocks still hand back at least three in four of the nodes drawn again (1 readings, least 74.8%) FAIL
+KeptCheck | fixture: the fund holds a bond, null, that runs 0 months, past the 2 months its pages are watched FAIL
+KeptCheck | every row that folds opened on Portfolio: the redraw and the next equal a page built new FAIL
+KeptCheck | every row that folds opened on Portfolio adds to the page (750 lines, then 0) FAIL
+KeptCheck | the full kept check's objects leave a quarter of AllChecks.HEAP_MB free (the live heap, less the render targets a software renderer keeps on it) FAIL
+KeptCheck | 5 FAILED

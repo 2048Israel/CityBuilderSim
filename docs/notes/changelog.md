@@ -18,6 +18,15 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FS6 — the map sweep: MapCheck, PlanCheck, OrderSearchCheck, BuildingStackCheck, GatewayCheck — 2026-11-25, ready, see docs/queue/FS6-notes.md
+The map sweep's five harnesses cause their premises on fixtures of their own and assert them hard, with no waiver
+(flaky-suite study 6.5; takes BQ1, LM1-R and KS1-rest's three map timing lines). MapCheck 2c buys its two blocks
+as the land market sells them, whole blocks of the level that may hold ground the city owns, beside the district's
+streets, so the second block's arrivals reach open and closed cells and its share law checks something; a block
+apart from the streets keeps none of the streets laid on it, as land with no road to it is not built up. 8d's mine
+copy holds what its ground holds by the auto-builder's ground rule and is drawn one for one before and after the
+birth. The + floor on MapCheck 1's played city (Map 1, Plan 17) is PX2's. Harnesses only. Untagged: the game is unchanged.
+
 ### PF1 — the power forecast reads works under construction — 2026-11-25, ready, see docs/queue/PF1-notes.md
 REV-PW3g read LongPlaytest's m116-m150 power served at 0.57-0.61 as a power forecast blind to a mill under construction.
 PF1's trace on 0.9.208 found that the forecast already carries every non-power works on site, at its rated draw, from the
