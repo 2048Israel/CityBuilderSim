@@ -64,7 +64,7 @@
 
 **Uses:** [DebtManager](DebtManager.md) (3), [PriceIndex](PriceIndex.md) (2)
 
-**Used by (11):** [CentralBankCheck](CentralBankCheck.md), [CityNeeds](CityNeeds.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [PolicyScreen](PolicyScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YieldCurve](YieldCurve.md)
+**Used by (12):** [CentralBankCheck](CentralBankCheck.md), [CentralBankScreen](CentralBankScreen.md), [CityNeeds](CityNeeds.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [PolicyScreen](PolicyScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YieldCurve](YieldCurve.md)
 
 ## Sections
 
