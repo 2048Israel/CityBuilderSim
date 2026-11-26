@@ -1,8 +1,8 @@
 # The harnesses
 
-Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-25 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**257 harness files, 29,313 labelled assertions.** AllChecks runs 257 of them.
+**257 harness files, 29,323 labelled assertions.** AllChecks runs 257 of them.
 
 ## Which harnesses read which class
 
@@ -9022,11 +9022,11 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1376 the credit check counts each research job's 2.25 heads of demand plus TARGET_HEADROOM,
   - L1378 ...and with the posts held again it is what it was
 
-## DistressBleedCheck.java - 37 labelled assertions
+## DistressBleedCheck.java - 44 labelled assertions
 
 > The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over
 > BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_MONTHS running while it owes the desk,
-> and a quarter of its biggest holding a month only once it is overdrawn with no lender (AQ1).
+> and a quarter of its biggest holding a month after the same operating-loss runway when overdrawn with no lender (QR1).
 > 
 > WHY: on main's AUTO2 ensemble, seed 2, Business Services lost money 101 months running. The shortfall desk lent it
 > $409M of the losses and the sector held every office through all of it, until the desk refused at month 1091; then the
@@ -9067,22 +9067,29 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L432 a net count past the dial with the operating streak under it sells nothing, the plant losing money or not
   - L433 a loss that is only interest holds: months at or above the dial on the net count with the plant's own result at or above zero, nothing sold
   - L435 ...and the rule is not dead: the centres go when the operating streak reaches the dial
-- **L437 6. overdrawn with no lender, the quarter as before**
-  - L447 fixture: the rule was asked of a sector past the dial that still held centres
-  - L453 it sells
-  - L454 ...from the biggest holding
-  - L455 ...MAX_RETIREMENT_FRACTION of it, rounded up and at most all of it
-  - L456 ...which is more than the one a lent sector sells, so the two rules are two rules
-- **L458 7. only a sector the spare-capacity rule cannot reach bleeds**
-  - L468 at least one sector bleeds while lent
-  - L495 fixture: at least one sector that does not bleed has lost money for the dial's months and is not overdrawn
-  - L497 a sector that does not bleed, not overdrawn, sells nothing to the distress rule however long it has lost money
-  - L506 fixture: the plant a sector that does not bleed holds is sold by it once it is overdrawn, so only the bleed's gate holds it while it is lent
-  - L512 Business Services, in the state the sectors that do not bleed were asked in, sells a centre
-- **L516 8. a sector living on its own cash is not lent**
-  - L536 fixture: a sector living on its own cash owes the desk nothing, holds cash at or above zero and its centres, with both streaks past the dial
-  - L538 a sector living on its own cash is not lent: nothing is sold at any count from the dial to the dial plus BLEED_MONTHS
-  - L539 ...and the same sector, its streaks and cash as they were, sells a centre once the desk lends it
+- **L437 6. overdrawn with no lender: running costs before liquidation (QR1)**
+  - L449 the existing no-lender restructuring writes down debt and closes the overdraft while keeping the plant
+  - L460 fixture: paying plant is overdrawn, has no lender and has net losses past the dial solely from interest
+  - L465 interest-only losses sell no paying plant even overdrawn with no lender
+  - L475 fixture: the operating-loss streak is one month short, the net streak already past the dial
+  - L477 the quarter waits for the full operating-loss runway
+  - L483 fixture: the rule was asked of a sector past the dial that still held centres
+  - L490 it sells
+  - L491 ...from the biggest holding
+  - L492 ...MAX_RETIREMENT_FRACTION of it, rounded up and at most all of it
+  - L493 ...which is more than the one a lent sector sells, so the two rules are two rules
+  - L500 running result
+- **L504 7. only a sector the spare-capacity rule cannot reach bleeds**
+  - L514 at least one sector bleeds while lent
+  - L541 fixture: at least one sector that does not bleed has lost money for the dial's months and is not overdrawn
+  - L543 a sector that does not bleed, not overdrawn, sells nothing to the distress rule however long it has lost money
+  - L548 a sector that does not bleed also keeps paying plant when overdrawn
+  - L554 fixture: the plant a sector that does not bleed holds is sold by it once it is overdrawn, so only the bleed's gate holds it while it is lent
+  - L560 Business Services, in the state the sectors that do not bleed were asked in, sells a centre
+- **L564 8. a sector living on its own cash is not lent**
+  - L584 fixture: a sector living on its own cash owes the desk nothing, holds cash at or above zero and its centres, with both streaks past the dial
+  - L586 a sector living on its own cash is not lent: nothing is sold at any count from the dial to the dial plus BLEED_MONTHS
+  - L587 ...and the same sector, its streaks and cash as they were, sells a centre once the desk lends it
 
 ## DriverlessTruckCheck.java - 66 labelled assertions
 
@@ -13239,39 +13246,39 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L429 every month from month 2, the output was nameplate x posts offered share x fill x road x work
   - L430 the builders' payroll over the run is positive: they paid the people who did the work
 - **L458 5. the last building that builds is never sold**
-  - L468 fixture: the builders have lost money for
-  - L472 the spare-capacity rule does not sell the yard, though nothing uses it
-  - L473 ...and says why:
-  - L475 the distress rule does not sell it either, overdrawn and refused credit
-  - L476 ...and says why:
-  - L477 the city may not buy the yard out and demolish it
-  - L480 fixture: a
-  - L482 with a depot beside it the spare-capacity rule sells one of the two (it picked the
-  - L487 ...and so does the distress rule (it picked the
-  - L491 ...and the city may buy the yard out, the depot standing
-  - L492 ...or the depot out, the yard standing
-  - L527 fixture:
-- **L546 6. a founded village has hands for its shops; the depot's idle crews, which held its twin, are spare now (IC1)**
-  - L553 the yard's village opened its first shop at month
-  - L555 fixture: the yard's builders went idle at the core crew in
-  - L558 fixture: the depot's twin went idle at the core crew in
-  - L560 the twin held back more posts in its idle months than the yard did (
-  - L562 ...and, its idle crews being spare for the gate since IC1, opened its first shop at month
-- **L575 7. the last builder is not bought out in the same window, in either order**
-  - L594 fixture:
-  - L601 fixture: the city buys the
-  - L603 ...it stands until the month starts, closing
-  - L606 in the same window the
-  - L608 ...a buy-out of it is refused (
-  - L609 ...and nothing was paid for it
-  - L610 ...nor may the builders retire it: mayRetire() says no
-  - L613 after the month starts the
-  - L615 ...the builders' capacity is the
-  - L617 ...and the one left that builds is still not for the city to buy out
-- **L623 8. money is conserved**
-  - L626 every month played here was audited
-  - L627 the money audit's worst month is within 0.01% of what moved
-  - L628 ...and nothing moved a pool after it
+  - L472 fixture: the builders have lost on operations and in net for
+  - L477 the spare-capacity rule does not sell the yard, though nothing uses it
+  - L478 ...and says why:
+  - L480 the distress rule does not sell it either, overdrawn and refused credit
+  - L481 ...and says why:
+  - L482 the city may not buy the yard out and demolish it
+  - L485 fixture: a
+  - L487 with a depot beside it the spare-capacity rule sells one of the two (it picked the
+  - L492 ...and so does the distress rule (it picked the
+  - L496 ...and the city may buy the yard out, the depot standing
+  - L497 ...or the depot out, the yard standing
+  - L532 fixture:
+- **L551 6. a founded village has hands for its shops; the depot's idle crews, which held its twin, are spare now (IC1)**
+  - L558 the yard's village opened its first shop at month
+  - L560 fixture: the yard's builders went idle at the core crew in
+  - L563 fixture: the depot's twin went idle at the core crew in
+  - L565 the twin held back more posts in its idle months than the yard did (
+  - L567 ...and, its idle crews being spare for the gate since IC1, opened its first shop at month
+- **L580 7. the last builder is not bought out in the same window, in either order**
+  - L599 fixture:
+  - L606 fixture: the city buys the
+  - L608 ...it stands until the month starts, closing
+  - L611 in the same window the
+  - L613 ...a buy-out of it is refused (
+  - L614 ...and nothing was paid for it
+  - L615 ...nor may the builders retire it: mayRetire() says no
+  - L618 after the month starts the
+  - L620 ...the builders' capacity is the
+  - L622 ...and the one left that builds is still not for the city to buy out
+- **L628 8. money is conserved**
+  - L631 every month played here was audited
+  - L632 the money audit's worst month is within 0.01% of what moved
+  - L633 ...and nothing moved a pool after it
 
 ## FreightViewCheck.java - 88 labelled assertions
 
@@ -18417,7 +18424,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L603 dealFactor() of a sale is the factor of its move, one or more
   - L605 ...and the move of a sale is dearer, a purchase's weaker
 
-## InvestCheck.java - 325 labelled assertions
+## InvestCheck.java - 326 labelled assertions
 
 > Verifies the private investment engine: forecasting, the demand tests, and
 > the brake. Not part of the game.
@@ -18562,232 +18569,233 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L870 dearer land makes a house dearer
   - L874 four houses, four plots
 - **L880 14. distress**
-  - L905 a solvent sector is left alone however long it has lost
-  - L910 ...and an overdrawn one gets its two years first
-  - L914 after two years overdrawn it sheds, with nothing spare at all
-  - L915 ...its biggest holding
-  - L916 ...at the gradual rate, not all at once
-  - L918 ...and not while it is still building
-  - L928 a distressed retailer sells shops
-  - L929 ...and never the city's bank
-- **L931 15. every building gets the crew it can use**
-  - L966 fixture: no site is owed less than its share, so no cap binds
-  - L968 a site's crew is its buildings times the crew one can use, its points to CREW_SCALE_EXPONENT: the depot
-  - L970 ...the blocks
-  - L971 ...the universities
-  - L973 ...so a university gets a bigger crew than a block, by its points to CREW_SCALE_EXPONENT
-  - L975 ...more than one block's crew, and less than its points alone would give
-  - L976 ...and the shares spend the whole output
-  - L983 no site takes more than it owes: a depot a hundred points from done gets its hundred
-  - L984 ...and what it did not take goes to the others by the same rule
-  - L986 a crew does not shrink as its building nears completion: the universities' share is their buildings' crews'
-  - L992 output past everything owed is not handed out
-  - L995 the month built what the sites took
-  - L996 the depot opened
-  - L997 ...and nothing is parked on its empty stack
-  - L998 the university a point from done opened too
-  - L1003 no stack carries progress past what it owes
-  - L1007 a month with more than every site owes finishes every site
-  - L1008 ...builds only what was owed, and the rest is idle
-  - L1012 ...and none of it is banked
-  - L1018 load: what a stack carries past what it owes is cleared, and counted
-  - L1020 ...all of it on a stack with nothing on site
-  - L1021 ...and down to what it owes on one with work on it
-- **L1023 16. the landlords' order is the gap, whatever is on site (BA1)**
-  - L1044 fixture: the ground holds a million houses and more
-  - L1045 nothing on site: the gap, a million houses of it
-  - L1048 ten universities on site: the same order, the city's queue is not the landlords' to wait out
-  - L1051 fifty of their own houses on site: the same order, a million
-  - L1053 months of work on site, for the screens: what their sites owe over the builders' site output
-  - L1068 a plant's wait: its points over its crew's share of the site output, beside everything on site
-  - L1071 ...and an order is the gap and the plots, whatever that wait: a gap of a billion is the ground for it
-  - L1073 fixture: that order waits far past a year at those crews (the months the old cap held it to)
-  - L1075 ...never below one, as before
-- **L1077 17. the builders keep what their repairs and queue need**
-  - L1094 fixture: the builders are staffed, have repairs to do and nothing queued
-  - L1097 with nothing queued the need is the repairs, read in staffed output
-  - L1099 ...against the nameplate the depots are sold in
-  - L1114 fixture: nothing on site, and the repairs need more than the core crew
-  - L1117 a builder busy with repairs keeps the crews doing them
-  - L1120 a queue longer than the sites are left keeps every depot
-  - L1123 ...so a builder losing money with that queue sells nothing
-- **L1126 18. a band nobody can fill (0.7.18)**
-- **L1141 a band nobody can fill**
-  - L1151 fixture: the city has no university workers and nobody above them
-  - L1153 fixture: the plant's other posts pass the share on their own
-  - L1154 with migrants who come for the band, its empty posts are friction - it passes
-  - L1160 with no spare, nobody above and no migrants, nobody can fill the band
-  - L1162 ...and the plant fails, whatever its share
-  - L1163 ...and the advisor says which posts
-  - L1165 spare workers alone make a band fillable
-  - L1166 somebody above who can step down alone makes it fillable
-  - L1167 migrants who come for it alone make it fillable
-  - L1168 ...and with none of the three, nobody can fill it
-  - L1174 in a default city every band has migrants who come for it
-  - L1186 ...so over five years of it no planner is refused for a band nobody can fill
-- **L1189 19. the builders' price (0.7.19)**
-- **L1205 the builders' price: labour at today's wages, the tax passed on, material at the price it is drawn (0.7.19)**
-  - L1222 before the labour market has priced anybody, the work is its cash cost
-  - L1265 fixture: the builders' wages have moved off the founding ladder
-  - L1266 ...by the rise that was set
-  - L1267 the builders' index is their depot's wage bill today over at the founding ladder
-  - L1269 ...and a House's work is its cash cost with only its labour moved by it
-  - L1275 fixture: the builders charge a sales tax
-  - L1278 the quote's work is ten Houses' work at today's wages
-  - L1279 the quote is the work and the material over one less the builders' rate
-  - L1281 ...its allowance the material in it, on the same terms
-  - L1283 ...and its sales tax what the total carries past the work and the material
-  - L1285 so what the builders keep of it, once they remit and buy, is the work
-  - L1299 fixture: the draw costs the builders something
-  - L1305 the city pays what the material cost the builders, grossed up, less its allowance
-  - L1307 ...and the builders earn it, beside the work
-  - L1309 ...on the investment line, as the work is
-  - L1316 a quote that allowed more than the draw cost is refunded the difference
-  - L1318 ...out of what the builders earn
-  - L1322 fixture: the shops claim the tax on their buildings, the landlords and the bank's branch do not
-  - L1336 each payer pays its units' share of the draw less its allowance: the shops
-  - L1338 ...and the landlords
-  - L1339 the shops are recorded as having bought the month's work on their premises and its escalation
-  - L1342 ...the landlords, who cannot claim, are not
-  - L1351 the next strike credits the shops the builders' rate on it, as a capital credit
-  - L1354 ...and the month closes the audit, the escalation and the credits in it
-  - L1367 the bank's repair bill is its branches' work at today's wages and their material, a year's 1%, with the tax
-  - L1376 fixture: a depot's posts cost something
-  - L1377 a depot's estimate is its points at the work's price, less its posts at today's wages and its standing costs
-  - L1385 fixture: the city reforms its currency
-  - L1386 a reform leaves the builders' index where it was
-  - L1387 ...and the work in today's money a tenth of what it was
-  - L1401 fixture: the city's Houses are on site under its own contract, material still to draw
-  - L1418 a save carries every payer's contract on site, field for field
-  - L1440 an older save's contract on site is read as its template's owner's - the landlords', for Houses,
-  - L1444 ...the whole contract left, and the material the sites still owe
-  - L1446 ...with an allowance of what is left past the work still owed at its cash cost
-  - L1465 fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older
-- **L1470 the rebates on a new rental home (0.7.19, revised)**
-  - L1472 the landlords' apartment buildings are purpose-built rental and get all the tax back; a House does not qualify
-  - L1475 ...and the city and the bank's branch get none of it back: the city's rebate is the tax coming home
-  - L1508 fixture: the three Houses fall under $350,000, between, and past $450,000
-  - L1510 ...so the rebate is the whole of A, part of it, and nothing
-  - L1516 a landlord's apartment building costs it its price before the tax
-  - L1517 ...a House its price and the tax less the rebate on it
-  - L1519 ...and the repairs on either the bill with all its tax: no rebate reaches a repair
-  - L1528 the landlords' new apartments are recorded as bought from the builders, the work and its escalation, for the rebate
-  - L1535 fixture: the landlords have a rebate coming
-  - L1537 the next strike pays the landlords the builders' rate on it, handed to them apart
-  - L1539 ...and their sales tax, on an exempt rent, is nothing: the rebate is not a tax on them
-  - L1542 ...and the month closes the audit with the rebate in it
-  - L1560 fixture: the landlords ordered an apartment building and five Houses
-  - L1563 an apartment building's contract is booked to get all its tax back, the Houses' the share the rule gives them
-- **L1593 an order is tested on its whole cost, whoever pays (0.7.113)**
-  - L1625 fixture: prime is struck, the restaurants own their till, a Diner costs something, and both bars are above nothing
-  - L1627 fixture: the wait is counted (BA1) - a Diner opens after a wait, so each bar is struck on a cost grown over it (carry over 1)
-  - L1629 fixture: the city is not under a borrowing ban for the restaurants
-  - L1634 fixture: the rule until 0.7.112 asked nothing of it from a till holding twice its cost
-  - L1637 A CASH-RICH SECTOR'S ORDER THAT EARNS LESS THAN ITS INTEREST ON ITS WHOLE COST IS REFUSED
-  - L1640 ...and the same order on a loan is refused alike
-  - L1642 ...and half from the till and half borrowed, alike
-  - L1645 from the till, earning PROFIT_OVER_INTEREST times a month's interest at the real rate on its whole cost
-  - L1647 ...and a hair under that is refused
-  - L1649 on a loan, the same bar at the rate the loan is judged at builds it
-  - L1651 ...and a hair under that is refused
-  - L1653 the refusal's rate is the one the whole order is judged at: the till's, then the loan's
-  - L1664 fixture: those earnings fail the order's own bar (half from the till)
-  - L1666 \"AT PRIME\" FOLLOWS THE WHOLE COST: earnings that would carry prime's interest on what it borrows,
-  - L1678 fixture: the luxury shops own nothing, so their loan is priced past prime
-  - L1680 ...and earnings over prime's bar on the whole cost, under the order's, are refused at prime
-  - L1692 an order of three, the till paying for one, earning each its share of the bar on all three's cost is
-  - L1695 ...and earning half the lower bar, none of it - the slice the till pays for included
-- **L1738 every business may build ahead: an order on site does not stop the next, and counts as supply (BA1)**
-  - L1767 fixture: the builders have a month for the sites, and the city could staff a store
-  - L1772 fixture: the shops are short by several stores, with nothing of theirs on site: they order
-  - L1782 A SECTOR SHORT OF CAPACITY WITH ITS OWN ORDER ON SITE ORDERS AGAIN (the cap held it to one: \"already building\")
-  - L1784 ...the stores on site counted as baskets to come: only what is still missing is ordered, not the whole shortage again
-  - L1791 A SECTOR WHOSE ORDER ON SITE COVERS THE SHORTAGE DOES NOT ORDER AGAIN, with the order on site
-  - L1793 ...the shops' own coverage on site is what holds it (Retail.storeCoverageOnSite())
-  - L1800 fixture: no kitchen on site
-  - L1802 the kitchens' seats on site are the Diners' under construction: three Diners' tables, and the seats standing unchanged
-- **L1810 an order is the gap and the plots; the horizon grows with the lead (BA1)**
-  - L1820 fixture: the ground holds a thousand stores
-  - L1821 a shortfall that needs 600 stores is 600
-  - L1822 ...one baskets under 600 stores' is still 600 (rounded up)
-  - L1823 ...and 599 stores' exactly is 599
-  - L1825 fixture: at a point of site output a store waits for years
-  - L1826 ...whatever the wait: 600 stores' shortfall, its wait years long, is 600 (the cut that read the wait is gone)
-  - L1829 a gap of nothing orders one: floored at one
-  - L1830 ...a negative gap, one
-  - L1831 ...a building that holds nothing to count, one
-  - L1833 the ground for seven stores caps the order at seven
-  - L1834 ...and the gap's own when it is under the plots
-  - L1836 ...and no ground, no order
-  - L1840 fixture: the horizon starts at six months and goes no further than twelve
-  - L1841 horizonFor(0) is the least, PLANNING_HORIZON
-  - L1842 ...(3), the least too
-  - L1843 ...(6), the least where it ends
-  - L1844 ...(9), the lead itself
-  - L1845 ...(12), the lead itself and the most
-  - L1846 ...(20), never past HORIZON_MOST
-  - L1847 ...a lead that is not a number, HORIZON_MOST
-  - L1848 ...an endless lead, HORIZON_MOST
-  - L1849 ...the longest wait Double.MAX_VALUE reads (no builders at all), HORIZON_MOST
-  - L1850 ...a lead under nothing, the least
-  - L1860 leadFor(lead + horizonFor(lead)) is the lead, within 1e-9, for leads from 0 to 100 by a quarter month (worst
-  - L1861 ...because lead + horizonFor(lead) rises strictly with the lead, so the sum says its lead
-  - L1862 leadFor() of the least, six months, is no lead
-  - L1863 ...of anything under it, none
-  - L1869 a building that opens in 30 months is sized to 30 + HORIZON_MOST months (the lead was clamped to twelve until BA1)
-  - L1871 ...its growth the businesses' growthFactor() over them
-  - L1872 one that opens in 9: 9 + 9
-  - L1873 ...in 3: 3 + the least
-  - L1874 ...in 0: the least
-  - L1875 ...a stalled one (NaN) counts as none: the least
-  - L1876 ...the order that opens in a year and a half is sized for the demand a year after it opens, not six months
-- **L1883 the interest on the wait: a cost grown over the months until the order opens (BA1)**
-  - L1893 exactly 1 at no wait
-  - L1894 ...for a wait under nothing
-  - L1895 ...for a wait that is not a number
-  - L1896 ...for a rate of nothing, however long the wait
-  - L1897 ...for a rate under nothing
-  - L1899 a year's wait at 9% with no inflation expected: (1 + .09 / 12)^12
-  - L1900 ...a wait of 30 months
-  - L1901 ...half a month, a fraction of a month's interest
-  - L1903 with 5% inflation expected the rate it grows at is the real one, 4%: (1 + .04 / 12)^12
-  - L1906 ...and never under REAL_HURDLE_FLOOR of the rate, however much is expected: (1 + .09 x .25 / 12)^12
-  - L1909 infinite for a wait that never ends: Double.MAX_VALUE, which leadTime() reads for no builders
-  - L1911 ...and for an infinite one
-  - L1919 it rises with every month of wait, from 1
-  - L1922 with no output supplier a bare fixture's carry is exactly 1
-  - L1924 with one, 5 stores' carry is waitCarry() over leadTime() at that output
-  - L1926 ...above 1, a store waiting for the builders
-  - L1927 ...1 for no template
-  - L1928 ...1 for fewer than one
-  - L1930 with the builders giving the sites nothing the wait never ends and the carry is infinite
-  - L1933 ...and 1 again once no output is handed in
-  - L1951 fixture: the carry is a finite one over 1 for a single store behind a queue
-  - L1952 carryOf() is never under 1 and never falls as the order grows, from 1 to 200 stores
-  - L1953 ...and does rise: 200 stores wait longer than one
-- **L1959 the wait counts: an order that carries its interest as though it opened tomorrow does not when the queue is long (BA1)**
-  - L1987 fixture: the queue lengthens the Diner's wait, and so its carry, and a Diner costs the same on it
-  - L1992 fixture: it earns more than the interest on its cost as though it opened tomorrow (the test before the wait counted), under the interest on the cost grown ov...
-  - L1994 it passes servicesItsOwnDebt() on its whole cost at carry 1
-  - L1996 fixture: the till pays it all and the restaurants are not under a ban
-  - L1997 ...but behind the queue its interest test does not carry: the carry is the long wait's and the cost is grown by it
-  - L1999 ...and consider()'s own search refuses the same order
-  - L2002 fixture: the universities' site is cleared
-  - L2004 with the queue gone the wait is the Diner's own and the same order carries its interest
-  - L2006 ...and consider()'s search builds it
-- **L2012 the posts of a sector's own buildings on site are spoken for: staffing counts them (BA1)**
-  - L2023 fixture: the city has no room (crowding 0), so migration brings nobody for the gate's year and the draw is nothing
-  - L2038 fixture: the city's spare workers are enough for one store's posts and not for two's, in both bands it uses
-  - L2043 fixture: nothing of the shops' is on site
-  - L2044 with nothing of its own on site, a store passes the staffing test
-  - L2047 ...a Diner on site (another sector's) does not touch the shops' test
-  - L2052 with a store of its own on site, the workers it will need are not spare: the second store fails the test
-  - L2055 ...by the posts on site, band by band: the diploma band's spare falls by a store's diploma posts, the unskilled band's by its own and what came down to it
-  - L2059 ...the posts the sector has on site, BuildingManager.postsOnSite(), are the store's, job by job
-  - L2064 fixture: the store's site is cleared
-  - L2065 with the order gone the posts are not spoken for and the store passes again
-  - L2129 the run's tally is consistent: no more orders cleared than judged, none cleared ahead that was not cleared
-  - L2132 ...and no order is cleared for more than the business asked
+  - L908 a solvent sector is left alone however long it has lost
+  - L914 ...and an overdrawn one gets its two years first
+  - L918 fixture: the mine has lost on its running costs for the distress runway
+  - L921 after two years overdrawn it sheds, with nothing spare at all
+  - L922 ...its biggest holding
+  - L923 ...at the gradual rate, not all at once
+  - L925 ...and not while it is still building
+  - L936 a distressed retailer sells shops
+  - L937 ...and never the city's bank
+- **L939 15. every building gets the crew it can use**
+  - L974 fixture: no site is owed less than its share, so no cap binds
+  - L976 a site's crew is its buildings times the crew one can use, its points to CREW_SCALE_EXPONENT: the depot
+  - L978 ...the blocks
+  - L979 ...the universities
+  - L981 ...so a university gets a bigger crew than a block, by its points to CREW_SCALE_EXPONENT
+  - L983 ...more than one block's crew, and less than its points alone would give
+  - L984 ...and the shares spend the whole output
+  - L991 no site takes more than it owes: a depot a hundred points from done gets its hundred
+  - L992 ...and what it did not take goes to the others by the same rule
+  - L994 a crew does not shrink as its building nears completion: the universities' share is their buildings' crews'
+  - L1000 output past everything owed is not handed out
+  - L1003 the month built what the sites took
+  - L1004 the depot opened
+  - L1005 ...and nothing is parked on its empty stack
+  - L1006 the university a point from done opened too
+  - L1011 no stack carries progress past what it owes
+  - L1015 a month with more than every site owes finishes every site
+  - L1016 ...builds only what was owed, and the rest is idle
+  - L1020 ...and none of it is banked
+  - L1026 load: what a stack carries past what it owes is cleared, and counted
+  - L1028 ...all of it on a stack with nothing on site
+  - L1029 ...and down to what it owes on one with work on it
+- **L1031 16. the landlords' order is the gap, whatever is on site (BA1)**
+  - L1052 fixture: the ground holds a million houses and more
+  - L1053 nothing on site: the gap, a million houses of it
+  - L1056 ten universities on site: the same order, the city's queue is not the landlords' to wait out
+  - L1059 fifty of their own houses on site: the same order, a million
+  - L1061 months of work on site, for the screens: what their sites owe over the builders' site output
+  - L1076 a plant's wait: its points over its crew's share of the site output, beside everything on site
+  - L1079 ...and an order is the gap and the plots, whatever that wait: a gap of a billion is the ground for it
+  - L1081 fixture: that order waits far past a year at those crews (the months the old cap held it to)
+  - L1083 ...never below one, as before
+- **L1085 17. the builders keep what their repairs and queue need**
+  - L1102 fixture: the builders are staffed, have repairs to do and nothing queued
+  - L1105 with nothing queued the need is the repairs, read in staffed output
+  - L1107 ...against the nameplate the depots are sold in
+  - L1122 fixture: nothing on site, and the repairs need more than the core crew
+  - L1125 a builder busy with repairs keeps the crews doing them
+  - L1128 a queue longer than the sites are left keeps every depot
+  - L1131 ...so a builder losing money with that queue sells nothing
+- **L1134 18. a band nobody can fill (0.7.18)**
+- **L1149 a band nobody can fill**
+  - L1159 fixture: the city has no university workers and nobody above them
+  - L1161 fixture: the plant's other posts pass the share on their own
+  - L1162 with migrants who come for the band, its empty posts are friction - it passes
+  - L1168 with no spare, nobody above and no migrants, nobody can fill the band
+  - L1170 ...and the plant fails, whatever its share
+  - L1171 ...and the advisor says which posts
+  - L1173 spare workers alone make a band fillable
+  - L1174 somebody above who can step down alone makes it fillable
+  - L1175 migrants who come for it alone make it fillable
+  - L1176 ...and with none of the three, nobody can fill it
+  - L1182 in a default city every band has migrants who come for it
+  - L1194 ...so over five years of it no planner is refused for a band nobody can fill
+- **L1197 19. the builders' price (0.7.19)**
+- **L1213 the builders' price: labour at today's wages, the tax passed on, material at the price it is drawn (0.7.19)**
+  - L1230 before the labour market has priced anybody, the work is its cash cost
+  - L1273 fixture: the builders' wages have moved off the founding ladder
+  - L1274 ...by the rise that was set
+  - L1275 the builders' index is their depot's wage bill today over at the founding ladder
+  - L1277 ...and a House's work is its cash cost with only its labour moved by it
+  - L1283 fixture: the builders charge a sales tax
+  - L1286 the quote's work is ten Houses' work at today's wages
+  - L1287 the quote is the work and the material over one less the builders' rate
+  - L1289 ...its allowance the material in it, on the same terms
+  - L1291 ...and its sales tax what the total carries past the work and the material
+  - L1293 so what the builders keep of it, once they remit and buy, is the work
+  - L1307 fixture: the draw costs the builders something
+  - L1313 the city pays what the material cost the builders, grossed up, less its allowance
+  - L1315 ...and the builders earn it, beside the work
+  - L1317 ...on the investment line, as the work is
+  - L1324 a quote that allowed more than the draw cost is refunded the difference
+  - L1326 ...out of what the builders earn
+  - L1330 fixture: the shops claim the tax on their buildings, the landlords and the bank's branch do not
+  - L1344 each payer pays its units' share of the draw less its allowance: the shops
+  - L1346 ...and the landlords
+  - L1347 the shops are recorded as having bought the month's work on their premises and its escalation
+  - L1350 ...the landlords, who cannot claim, are not
+  - L1359 the next strike credits the shops the builders' rate on it, as a capital credit
+  - L1362 ...and the month closes the audit, the escalation and the credits in it
+  - L1375 the bank's repair bill is its branches' work at today's wages and their material, a year's 1%, with the tax
+  - L1384 fixture: a depot's posts cost something
+  - L1385 a depot's estimate is its points at the work's price, less its posts at today's wages and its standing costs
+  - L1393 fixture: the city reforms its currency
+  - L1394 a reform leaves the builders' index where it was
+  - L1395 ...and the work in today's money a tenth of what it was
+  - L1409 fixture: the city's Houses are on site under its own contract, material still to draw
+  - L1426 a save carries every payer's contract on site, field for field
+  - L1448 an older save's contract on site is read as its template's owner's - the landlords', for Houses,
+  - L1452 ...the whole contract left, and the material the sites still owe
+  - L1454 ...with an allowance of what is left past the work still owed at its cash cost
+  - L1473 fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older
+- **L1478 the rebates on a new rental home (0.7.19, revised)**
+  - L1480 the landlords' apartment buildings are purpose-built rental and get all the tax back; a House does not qualify
+  - L1483 ...and the city and the bank's branch get none of it back: the city's rebate is the tax coming home
+  - L1516 fixture: the three Houses fall under $350,000, between, and past $450,000
+  - L1518 ...so the rebate is the whole of A, part of it, and nothing
+  - L1524 a landlord's apartment building costs it its price before the tax
+  - L1525 ...a House its price and the tax less the rebate on it
+  - L1527 ...and the repairs on either the bill with all its tax: no rebate reaches a repair
+  - L1536 the landlords' new apartments are recorded as bought from the builders, the work and its escalation, for the rebate
+  - L1543 fixture: the landlords have a rebate coming
+  - L1545 the next strike pays the landlords the builders' rate on it, handed to them apart
+  - L1547 ...and their sales tax, on an exempt rent, is nothing: the rebate is not a tax on them
+  - L1550 ...and the month closes the audit with the rebate in it
+  - L1568 fixture: the landlords ordered an apartment building and five Houses
+  - L1571 an apartment building's contract is booked to get all its tax back, the Houses' the share the rule gives them
+- **L1601 an order is tested on its whole cost, whoever pays (0.7.113)**
+  - L1633 fixture: prime is struck, the restaurants own their till, a Diner costs something, and both bars are above nothing
+  - L1635 fixture: the wait is counted (BA1) - a Diner opens after a wait, so each bar is struck on a cost grown over it (carry over 1)
+  - L1637 fixture: the city is not under a borrowing ban for the restaurants
+  - L1642 fixture: the rule until 0.7.112 asked nothing of it from a till holding twice its cost
+  - L1645 A CASH-RICH SECTOR'S ORDER THAT EARNS LESS THAN ITS INTEREST ON ITS WHOLE COST IS REFUSED
+  - L1648 ...and the same order on a loan is refused alike
+  - L1650 ...and half from the till and half borrowed, alike
+  - L1653 from the till, earning PROFIT_OVER_INTEREST times a month's interest at the real rate on its whole cost
+  - L1655 ...and a hair under that is refused
+  - L1657 on a loan, the same bar at the rate the loan is judged at builds it
+  - L1659 ...and a hair under that is refused
+  - L1661 the refusal's rate is the one the whole order is judged at: the till's, then the loan's
+  - L1672 fixture: those earnings fail the order's own bar (half from the till)
+  - L1674 \"AT PRIME\" FOLLOWS THE WHOLE COST: earnings that would carry prime's interest on what it borrows,
+  - L1686 fixture: the luxury shops own nothing, so their loan is priced past prime
+  - L1688 ...and earnings over prime's bar on the whole cost, under the order's, are refused at prime
+  - L1700 an order of three, the till paying for one, earning each its share of the bar on all three's cost is
+  - L1703 ...and earning half the lower bar, none of it - the slice the till pays for included
+- **L1746 every business may build ahead: an order on site does not stop the next, and counts as supply (BA1)**
+  - L1775 fixture: the builders have a month for the sites, and the city could staff a store
+  - L1780 fixture: the shops are short by several stores, with nothing of theirs on site: they order
+  - L1790 A SECTOR SHORT OF CAPACITY WITH ITS OWN ORDER ON SITE ORDERS AGAIN (the cap held it to one: \"already building\")
+  - L1792 ...the stores on site counted as baskets to come: only what is still missing is ordered, not the whole shortage again
+  - L1799 A SECTOR WHOSE ORDER ON SITE COVERS THE SHORTAGE DOES NOT ORDER AGAIN, with the order on site
+  - L1801 ...the shops' own coverage on site is what holds it (Retail.storeCoverageOnSite())
+  - L1808 fixture: no kitchen on site
+  - L1810 the kitchens' seats on site are the Diners' under construction: three Diners' tables, and the seats standing unchanged
+- **L1818 an order is the gap and the plots; the horizon grows with the lead (BA1)**
+  - L1828 fixture: the ground holds a thousand stores
+  - L1829 a shortfall that needs 600 stores is 600
+  - L1830 ...one baskets under 600 stores' is still 600 (rounded up)
+  - L1831 ...and 599 stores' exactly is 599
+  - L1833 fixture: at a point of site output a store waits for years
+  - L1834 ...whatever the wait: 600 stores' shortfall, its wait years long, is 600 (the cut that read the wait is gone)
+  - L1837 a gap of nothing orders one: floored at one
+  - L1838 ...a negative gap, one
+  - L1839 ...a building that holds nothing to count, one
+  - L1841 the ground for seven stores caps the order at seven
+  - L1842 ...and the gap's own when it is under the plots
+  - L1844 ...and no ground, no order
+  - L1848 fixture: the horizon starts at six months and goes no further than twelve
+  - L1849 horizonFor(0) is the least, PLANNING_HORIZON
+  - L1850 ...(3), the least too
+  - L1851 ...(6), the least where it ends
+  - L1852 ...(9), the lead itself
+  - L1853 ...(12), the lead itself and the most
+  - L1854 ...(20), never past HORIZON_MOST
+  - L1855 ...a lead that is not a number, HORIZON_MOST
+  - L1856 ...an endless lead, HORIZON_MOST
+  - L1857 ...the longest wait Double.MAX_VALUE reads (no builders at all), HORIZON_MOST
+  - L1858 ...a lead under nothing, the least
+  - L1868 leadFor(lead + horizonFor(lead)) is the lead, within 1e-9, for leads from 0 to 100 by a quarter month (worst
+  - L1869 ...because lead + horizonFor(lead) rises strictly with the lead, so the sum says its lead
+  - L1870 leadFor() of the least, six months, is no lead
+  - L1871 ...of anything under it, none
+  - L1877 a building that opens in 30 months is sized to 30 + HORIZON_MOST months (the lead was clamped to twelve until BA1)
+  - L1879 ...its growth the businesses' growthFactor() over them
+  - L1880 one that opens in 9: 9 + 9
+  - L1881 ...in 3: 3 + the least
+  - L1882 ...in 0: the least
+  - L1883 ...a stalled one (NaN) counts as none: the least
+  - L1884 ...the order that opens in a year and a half is sized for the demand a year after it opens, not six months
+- **L1891 the interest on the wait: a cost grown over the months until the order opens (BA1)**
+  - L1901 exactly 1 at no wait
+  - L1902 ...for a wait under nothing
+  - L1903 ...for a wait that is not a number
+  - L1904 ...for a rate of nothing, however long the wait
+  - L1905 ...for a rate under nothing
+  - L1907 a year's wait at 9% with no inflation expected: (1 + .09 / 12)^12
+  - L1908 ...a wait of 30 months
+  - L1909 ...half a month, a fraction of a month's interest
+  - L1911 with 5% inflation expected the rate it grows at is the real one, 4%: (1 + .04 / 12)^12
+  - L1914 ...and never under REAL_HURDLE_FLOOR of the rate, however much is expected: (1 + .09 x .25 / 12)^12
+  - L1917 infinite for a wait that never ends: Double.MAX_VALUE, which leadTime() reads for no builders
+  - L1919 ...and for an infinite one
+  - L1927 it rises with every month of wait, from 1
+  - L1930 with no output supplier a bare fixture's carry is exactly 1
+  - L1932 with one, 5 stores' carry is waitCarry() over leadTime() at that output
+  - L1934 ...above 1, a store waiting for the builders
+  - L1935 ...1 for no template
+  - L1936 ...1 for fewer than one
+  - L1938 with the builders giving the sites nothing the wait never ends and the carry is infinite
+  - L1941 ...and 1 again once no output is handed in
+  - L1959 fixture: the carry is a finite one over 1 for a single store behind a queue
+  - L1960 carryOf() is never under 1 and never falls as the order grows, from 1 to 200 stores
+  - L1961 ...and does rise: 200 stores wait longer than one
+- **L1967 the wait counts: an order that carries its interest as though it opened tomorrow does not when the queue is long (BA1)**
+  - L1995 fixture: the queue lengthens the Diner's wait, and so its carry, and a Diner costs the same on it
+  - L2000 fixture: it earns more than the interest on its cost as though it opened tomorrow (the test before the wait counted), under the interest on the cost grown ov...
+  - L2002 it passes servicesItsOwnDebt() on its whole cost at carry 1
+  - L2004 fixture: the till pays it all and the restaurants are not under a ban
+  - L2005 ...but behind the queue its interest test does not carry: the carry is the long wait's and the cost is grown by it
+  - L2007 ...and consider()'s own search refuses the same order
+  - L2010 fixture: the universities' site is cleared
+  - L2012 with the queue gone the wait is the Diner's own and the same order carries its interest
+  - L2014 ...and consider()'s search builds it
+- **L2020 the posts of a sector's own buildings on site are spoken for: staffing counts them (BA1)**
+  - L2031 fixture: the city has no room (crowding 0), so migration brings nobody for the gate's year and the draw is nothing
+  - L2046 fixture: the city's spare workers are enough for one store's posts and not for two's, in both bands it uses
+  - L2051 fixture: nothing of the shops' is on site
+  - L2052 with nothing of its own on site, a store passes the staffing test
+  - L2055 ...a Diner on site (another sector's) does not touch the shops' test
+  - L2060 with a store of its own on site, the workers it will need are not spare: the second store fails the test
+  - L2063 ...by the posts on site, band by band: the diploma band's spare falls by a store's diploma posts, the unskilled band's by its own and what came down to it
+  - L2067 ...the posts the sector has on site, BuildingManager.postsOnSite(), are the store's, job by job
+  - L2072 fixture: the store's site is cleared
+  - L2073 with the order gone the posts are not spoken for and the store passes again
+  - L2137 the run's tally is consistent: no more orders cleared than judged, none cleared ahead that was not cleared
+  - L2140 ...and no order is cleared for more than the business asked
 
 ## IslandLinkCheck.java - 61 labelled assertions
 
@@ -28834,7 +28842,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L687 ...and no kind rails more than crossed of it, either way
   - L690 ...and having moved boxes, its freight station is drawn a container yard (TrainSchedule.boxesByRail())
 
-## RailDepotCheck.java - 75 labelled assertions
+## RailDepotCheck.java - 77 labelled assertions
 
 > The railway's stations: the Rail Depot, and the rules that put a station
 > first and track only where it is needed (FR7, 2026-10-18; docs/queue/FR7.md
@@ -28931,22 +28939,24 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L581 the premise, from one side: a city with no station offered that threshold orders a Rail Depot
   - L586 ...and from the other: a tonne under it orders nothing, so the sale the guard refuses is the one that would be bought back
   - L588 the first station is the Rail Depot, the smallest of the catalogue
-  - L596 the distress rule:
-  - L602 ...a tonne under the threshold, the same losses sell the Rail Depot
-  - L607 a lone terminal offered a depot's threshold may not be sold either: a depot would be ordered
-  - L612 two depots standing offered three thresholds: one may go, the guard is the last station's
-  - L615 a spur, a Truck Depot and a null are no station, so none of them is a sale that would be bought back
-- **L629 10. spare track counts in track tonnes, while sets or stations limit what runs**
-  - L638 fixture: the most-held kind is the line, with
-  - L642 the buildings add up to the retirement capacity in track tonnes (sets limit=
-  - L648 the rule sells the most-held line and the share its constants allow (sets limit=
-  - L653 offered freight that needs the track with TARGET_HEADROOM prevents a sale (sets limit=
-  - L670 fixture:
-  - L679 the whole sale preserves operating headroom and sells only the safe quantity of
-- **L689 goods keep station headroom even when spare sidings hide the lost yard room**
-  - L703 fixture: depots are most held, sets bind, and even the whole gradual sale passes the aggregate headroom
-  - L715 only the depots spare to goods are sold, while bulk may use sidings
-  - L718 the railway still deals both kinds' headroom after the whole sale
+  - L599 fixture: the kept depot has the distress runway of operating losses
+  - L602 the distress rule:
+  - L611 fixture: the sold depot has the same distress runway of operating losses
+  - L614 ...a tonne under the threshold, the same losses sell the Rail Depot
+  - L619 a lone terminal offered a depot's threshold may not be sold either: a depot would be ordered
+  - L624 two depots standing offered three thresholds: one may go, the guard is the last station's
+  - L627 a spur, a Truck Depot and a null are no station, so none of them is a sale that would be bought back
+- **L641 10. spare track counts in track tonnes, while sets or stations limit what runs**
+  - L650 fixture: the most-held kind is the line, with
+  - L654 the buildings add up to the retirement capacity in track tonnes (sets limit=
+  - L660 the rule sells the most-held line and the share its constants allow (sets limit=
+  - L665 offered freight that needs the track with TARGET_HEADROOM prevents a sale (sets limit=
+  - L682 fixture:
+  - L691 the whole sale preserves operating headroom and sells only the safe quantity of
+- **L701 goods keep station headroom even when spare sidings hide the lost yard room**
+  - L715 fixture: depots are most held, sets bind, and even the whole gradual sale passes the aggregate headroom
+  - L727 only the depots spare to goods are sold, while bulk may use sidings
+  - L730 the railway still deals both kinds' headroom after the whole sale
 
 ## RailDrawCheck.java - 172 labelled assertions
 

@@ -1,6 +1,6 @@
 # The order the month runs in
 
-Generated 2026-11-26 by `ham.citybuildersim.tools.MonthOrder` - the top-level statements of each method below, in order, with the comment above each and where each call goes. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-25 by `ham.citybuildersim.tools.MonthOrder` - the top-level statements of each method below, in order, with the comment above each and where each call goes. Do not edit; regenerate with `Regenerate maps.bat`.
 
 `Game.nextMonth()` is what the clock and the button call; it does the bookkeeping either side of `SimulationEngine.simulateMonth()`, which is the spine. Read the two together. A statement shown as `if (...) {` or `for (...) {` is a whole block; open the source at that line for its body.
 
@@ -548,9 +548,9 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 93. **L16463** `buildingManager.getHousingInventory().match(families.occupiedBySize());` → [BuildingManager.getHousingInventory](map/BuildingManager.md) (L5241), [FamilyModel.occupiedBySize](map/FamilyModel.md) (L1695)
 94. **L16468** `getSectors().realEstate().setRentWeight(` → [Game.getSectors](map/Game.md) (L3245), [FamilyModel.studioRentWeight](map/FamilyModel.md) (L1386), [FamilyModel.familyRentWeight](map/FamilyModel.md) (L1387)  
    _What the landlords can bill, off the match rather than off an average, and split by which segment the door was in._
-95. **L16472** `businessInvestment.setFamilies(families);` → [BusinessInvestment.setFamilies](map/BusinessInvestment.md) (L1585)  
+95. **L16472** `businessInvestment.setFamilies(families);` → [BusinessInvestment.setFamilies](map/BusinessInvestment.md) (L1591)  
    _And the advisor prices a new home on who would move into it._
-96. **L16473** `businessInvestment.setBank(bank);` → [BusinessInvestment.setBank](map/BusinessInvestment.md) (L1590)
+96. **L16473** `businessInvestment.setBank(bank);` → [BusinessInvestment.setBank](map/BusinessInvestment.md) (L1596)
 97. **L16489** `families.shareByAffordability(households.livingAlonePressure(families));` → [FamilyModel.shareByAffordability](map/FamilyModel.md) (L2060), [HouseholdAccounts.livingAlonePressure](map/HouseholdAccounts.md) (L915)  
    _...and the ones who cannot afford one either._
 98. **L16491** `families.shareSeekersByAffordability(households.seekerPressure(new double[] {` → [FamilyModel.shareSeekersByAffordability](map/FamilyModel.md) (L2102), [HouseholdAccounts.seekerPressure](map/HouseholdAccounts.md) (L1022), [Unemployment.getHoused](map/Unemployment.md) (L155), [FamilyModel.getSeekers](map/FamilyModel.md) (L286)  
