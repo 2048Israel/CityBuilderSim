@@ -6,8 +6,8 @@ Builder: Codex (GPT-6.1-Sol), `batch/PW9`, worktree `codex-PW9`, from
 ## What changed and why
 
 The catalogue gains **Small Steam Station**, permanent id **172**, 850 kW
-nameplate, 733 average kW in the game's month, coal-fired, available from
-1900, with a 15-month construction setting under the existing pooled rule. Its native dispatch buys
+nameplate, 733 average kW in the game's month, coal-fired, offered for new
+orders in 1900–1914, with a 15-month construction setting under the existing pooled rule. Its native dispatch buys
 thermal coal, charges the utility and passes those costs to the ordinary
 planner. Its existing need-date and price rules apply; the generic dated
 credit repair below supplies their matched inputs, including `timely()`.
@@ -24,8 +24,8 @@ native output, native dispatch, annual dispatch cost and planner supply.
 Each built plant keeps its own staffing rule; water staffing is unchanged.
 
 The first played orders also exposed a pending-work date mismatch. The
-planner now compares native queued generation and industrial load at the
-same completion frontier, keeping genuine interim reserve and seasonal
+review mend compares native queued generation and industrial load at the
+same whole-month dispatch dates and next seasonal peak, keeping genuine interim and reserve
 needs. Its first-unit promise protects a crew; it no longer opens every
 pending generator in a preview. The existing need-date and price rules
 remain, with the binding dated requirement used consistently for sizing
@@ -43,7 +43,8 @@ existing utility shape and its land field; FS6 was told by bus.
 The data below are facts or explicitly marked estimates, with no copied
 source prose or images in the game. US Census and EPA publications are US
 government public domain; the 1900 Engineering News issue has expired US
-copyright; Peabody's utility page supplies facts only, not licensed prose.
+copyright; Peabody, ASME and the staffing account below supply facts only,
+with no copied prose.
 
 - [US Census, *Central Electric Light and Power Stations, 1902*, table 1,
   printed p.6](https://archive.org/details/centralelectric00goog): 3,620
@@ -88,9 +89,10 @@ copyright; Peabody's utility page supplies facts only, not licensed prose.
   modern efficiency is attached to the small size.
 - ★ **Supporting estimates:** 85% availability and $9.37/MWh variable
   upkeep use the existing coal row's convention; 850 × .85 × 730/720
-  rounds to 733 average kW. Five posts (four firemen/operators, one skilled
-  operator) are near the 1907 municipal census's 4.45 employees per
-  station, but their tier split is an estimate. One acre includes the
+  rounds to 733 average kW. The initial five-post estimate used the 1907
+  municipal mean of 4.45 employees per station; REV-PW9 correctly found
+  that a fleet mean does not establish round-the-clock staffing for this
+  station. The nine-post revision is sourced below. One acre includes the
   boiler/engine rooms and coal yard; own draw 1 kW (the existing catalogue
   uses whole kW) and road load 1 are small utility estimates. Cooling uses the existing steam rule. No
   special lifetime was invented: the planner retains its common bond-life
@@ -102,13 +104,52 @@ copyright; Peabody's utility page supplies facts only, not licensed prose.
   rule. The helper checked the documented PW2 paths on main and the new
   row (`lead-semantics.txt`); no construction or timing rule was changed.
 
+### Review mends: the period and operating staff
+
+★ **Last new-order year 1914, inclusive.** [ASME's Coolspring Power Museum
+history](https://www.asme.org/about-asme/engineering-history/landmarks/215-coolspring-power-museum)
+places internal-combustion competition for electric generation by 1900 and
+for all but the largest installations by 1915, with turbines dominant at
+the large end. The catalogue boundary closes this reciprocating station
+at that transition. It is a modelling date drawn from a historical
+transition, with December 1914 the last offered month. Diesel is already
+available from 1910. `until` defaults to zero (no end) for existing rows;
+menus, direct orders and the future menu honour it. Standing and queued
+stations remain in the catalogue and native dispatch after it closes.
+PowerPlantsCheck causes December 1914/January 1915 with funded orders,
+and requires both the standing dispatch row and earlier pending order to
+survive closure. BuildingDataCheck compares the field with the fallback.
+
+★ **Nine operating posts, six unskilled and three trained.** N. M.
+Argabrite's firsthand retrospective, [“We Expect a Lot from the Safety
+Man,” *National Safety News*, January 1936, printed p.10](https://cdn.toxicdocs.org/VJ/VJR5dMp3DX8eeO9XOmYkraQ7o/VJR5dMp3DX8eeO9XOmYkraQ7o.pdf),
+describes small powerhouses 25–30 years earlier with engineer, fireman and
+oiler duties, commonly on twelve-hour days. The original scan and issue
+contents were checked. Three eight-hour watch teams are the model's
+allowance for those three operating duties: three trained operators and
+six firemen/oilers. Nine is an explicit staffing estimate based on that
+period operating organization, rather than a measured Peabody headcount.
+The wage tiers are an estimate too. Five did not provide that coverage.
+Availability, fuel efficiency and cost are unchanged.
+
 ## Saves
 
 ★ No format bump: appending a permanent id leaves every old id and saved
 field intact. An old save does not read its existing buildings wrongly.
 No conversion code and no save-slot writes.
 
+The review's `until` is catalogue metadata, zero/unbounded on every old
+row. `Ahead.powerFactor` is a transient advice value, with the existing
+three-argument constructor retaining factor 1; the save classes and saved
+AutoBuilder state do not store Ahead/Suggestion values. No owned save
+field or saved enum changes in these mends.
+
 ## Measurements and checks
+
+The chronology below retains the first proposal's evidence through
+`141e35ee0`, including its rejected continuous frontier and adverse played
+results. REV-PW9 rejected that proposal; the review-mend results follow
+separately. Earlier “final” artifact names identify that earlier candidate.
 
 The new PowerPlanCheck section was run against main's unchanged catalogue
 and fallback at `4f6bb2b5c`, with the current harness copied and freshly
@@ -329,7 +370,7 @@ stranger because catalogue choices move city money, so that review remains
 required. The provisional ship file passes `tools/known-reds.sh` (exit 0);
 there is no owned known-red waiver.
 
-### Final-model native comparison
+### First review candidate's native comparison (`141e35ee0`)
 
 Both bounded named measurements completed on the exact five model/resource
 blobs from `f00e4e58c` (the model of `4a525e610`), verified before and after
@@ -429,9 +470,254 @@ byte for byte. Source and runtime catalogue SHA256 is
 Other sessions' named checks overlapped these runs; timing is not an
 isolated-machine comparison.
 
-## Review and remaining gate work
+## REV-PW9 and its mends
 
-The city's power orders move money and the catalogue changes: a stranger's
-review is required. The provisional ship marker remains until the review,
-the final-model ensemble against the newest 1900 baseline, and any required
-dry run have their go. No dry run or ensemble was started without that go.
+The orchestrator's review instruction `20261125-233817-850` is NOT SHIP:
+two P1s, with the row's figures, money handling and old saves accepted.
+It requires the monthly/seasonal planner correction, a sourced last order
+year, the Substation delay attribution, better staffing and the independent
+oracle's fixed founding-grid law. No further stranger review is required;
+the mended findings are the go for the ensemble, followed by the requested
+ALL dry-run slot. The provisional marker remains.
+
+### P1-a: the 23-station order was a sub-month quote gap
+
+An isolated read-only replay of exact `141e35ee0` captured the actual
+selected suggestion and placement at m439. Its month and event CSVs match
+the retained first-review candidate byte for byte. The selection is 23
+stations, actual quoted lead 14.6206896552 months, but its binding date is
+14.999999999999998, immediately before a diesel's 15-month quote. The
+industrial load jumps at 14.72462586324, from 194 to 22,044 kW. The
+artificial interval lasts **0.275374137 month**. The credited six small
+stations give 38,035.0413 kW against 52,667.1196 kW reserve demand. At
+month 15 the queued diesel counts: 56,304.9268 against 52,668.7502, covered.
+At the next native northern July peak, offset 24, the same commissioned
+fleet covers 55,175.6457 kW reserve demand too.
+
+★ **Replace the continuous-frontier law.** The game commissions and
+dispatches in whole months. A fraction of a month between quotes cannot
+be presented as an independent dispatch at the year's peak hour. The
+planner must compare both sides at monthly commissioning states, test
+reserve at the next native seasonal peak with due generators included,
+and retain actual-month physical shortages before that peak. The count
+may fall as the gap closes; retaining `max(quoted, required)` was a
+conservative over-order, not an acceptable quantity rule. This explicitly
+supersedes the earlier continuous 9c law and its retained-count decision.
+Its surviving law is matched dates and genuine interim need, now caused
+at actual monthly resolution. Money and save checks stay intact.
+
+Reality check: [EIA's explanation of NERC's seasonal reliability
+assessment](https://www.eia.gov/todayinenergy/detail.php?id=31492) describes
+reserve as expected unused generation at peak load, with existing and
+planned resources assessed together. [NERC's reserve-margin
+definition](https://www.nerc.com/programs/reliability-assessment--performance-analysis/reliability-indicators/m-1-reserve-margin)
+also compares anticipated resource capacity with peak seasonal demand.
+The game's own month sequence and seasonal curve determine its discrete
+commissioning and peak dates; the reserve percentage remains the player's
+existing setting.
+
+Root-owned code for the cutoff, nine posts, catalogue parity and independent
+oracle is at `785f7e2de`; compilation and named validation are pending the
+helper's serial JVM slot. The independent oracle sums the fixed founding
+endowment, works' surplus and each standing/added plant's own staffed firm
+output; its pending draw and peak demand now match the physical law while
+its cash-flow computation remains independent of WorksValue.
+
+Diagnosis incidents: the first temporary Substation observer dereferenced
+an absent stack; its corrected attempt then passed an integer to a floating
+formatter. Both stopped at m85 before any Substation order and saved no
+files. They are observer failures, not model reds or evidence about the
+delay. The observer was corrected offline and replacement calls explicitly
+bounded. A baseline compile then caught a current-only diagnostic helper
+reference; no baseline month ran on that attempt. The reference was removed
+before its replacement. Prior artifacts remain preserved.
+
+### P1-b: why the first proposal's Substation slipped
+
+The completed main/current pair uses the actual native player and logs
+GRID's cuts and construction state. Both successful runs exit 0, save
+zero files, and reproduce their retained month/event CSVs byte for byte.
+At pre115 **both main and PW9 hold GRID with `Cut.BUILDERS` to protect the
+College's first completion**: that crew-protection law is inherited.
+Main releases and orders at pre116, opening m162. The first PW9 proposal
+still protects College at pre116, then records `Cut.DEBT` at pre117–118,
+orders at pre119 and opens m177. The delay is three months in ordering and
+twelve more in construction (46 → 58 months from its order).
+
+| Substation native construction state | main | first proposal |
+|---|---|---|
+| Progress at m120 | 13,042.72 | 3,093.63 |
+| Progress at m150 | 105,996.43 | 90,299.51 |
+| Progress at m162, out of 132,000 points | complete | 113,048.81 |
+| m160 current-state home plan, allocated / total points | 1,556 / 1,556 | 1,083.48 / 1,595 |
+| Builder fill at m127 | .7200 | .7160 |
+
+The m160 allocation is a read-only plan at the observed state, not a
+reconstructed struck flow. The current queue still contains steam stations
+and more other work. AutoBuilder, ConstructionControl and SimulationEngine
+are unchanged between the two models; BuildingManager's model change is
+the catalogue row. The changed generation, finance and industrial-growth
+path meets the existing College protection, debt limit and allocation
+rules. The evidence does not isolate every delayed point to direct steam
+construction; the tiny fill difference alone does not explain twelve
+months. None of those resource/conservation laws was relaxed.
+
+The “today” flag is modern equipment on the same 1900 calendar: pre101 is
+May 1908. The 1914 last order year closes later chronological orders; it
+does not remove those early eligible orders. The final combined rerun must
+therefore measure delivery again rather than claiming the end year alone
+restores the old result. FC2-C owns a distinct capped-site/foreign-crew
+allocation question; it is not an established owner for this College/debt
+hold, so it is not used as a catch-all waiver.
+
+The first attempt at the revised monthly 9c fixture exposed a zero-clamped
+first diesel quote and an invalid extrapolated interval; it is not red
+proof. The corrected fixture uses native August 1900, keeping the same
+three diesels and economic inputs, with positive first-unit dates and flat
+history. Its seasonal control targets the actual July peak. No production
+mend had been applied to that rejected fixture attempt.
+
+The valid monthly regression then runs on unchanged `141e35ee0` planner
+code with the revised catalogue: seven intended 9c behaviour failures,
+zero failed premises, all earlier laws and the scarce-staffing independent
+oracle equality green. After the mend all PowerPlanCheck laws pass.
+The original 8a fractional deadline is retained as a late control, beside
+an on-time case whose seasonal-demand forecast crosses between native
+whole commissioning months; the earlier fractional “on-time” premise was
+not silently deleted. Root's expected peak date calls PowerDispatch's
+native peak/hemisphere helpers instead of repeating the planner's search.
+
+★ **Keep the monthly reading coherent and lifetime valuation unchanged.**
+`Ahead` carries a power demand factor alongside native growth `k`, with
+all existing three-argument callers retaining their annual peak-hour
+meaning. Physical-month sizing, closure, share, screening and the published
+zero-reserve reading use that same factor; next-peak reserve retains the
+player's setting. The finite distinct-count worklist validates each
+actual quote against every applicable month and capacity cap, can fall to
+a smaller count, and chooses the least feasible evaluated quantity.
+Root reviewed the helper's model diff and removed an unused load snapshot
+and an extra propagation of one month's factor into the multi-year
+`servedOverLife` reader. The actual-completion annual dispatch and existing
+life/cash-flow calculations remain unchanged. The oracle's matching factor
+is its only change after the root-owned fix.
+
+Model mend commit: `651b80a00`. Helper proof and reports:
+`codex-PW9-r2/target/PW9-r2/{handoff.txt,diagnosis.txt,red-valid-PowerPlanCheck-harness.log,reviewed-PowerPlanCheck-harness.log,handoff-fast-run.log}`,
+with exact tested hashes and paired grid observation logs. The helper's
+reviewed named check and final standalone fast check exit 0, Stale zero
+firm. It briefly overlapped a finishing named wrapper's maps/Stale with
+an early fast wrapper after the harness had passed; both exited 0, with
+no native playtest overlap. A final fully standalone fast check replaced
+that overlapping fast as the handoff evidence. All its jobs exited before
+root resumed JVM work.
+
+Root `./batch-check.sh --fast` on the mended source: exit 0, Stale zero
+firm, 209 soft. Root BuildingDataCheck: exit 0, including nine posts,
+the order window and complete fallback parity. Root PowerPlantsCheck:
+exit 0, all 159 checks, including native closure/refusal and preservation
+of standing/pending capacity. Root PowerPlanCheck, BuildAdviceCheck,
+WorksFinanceCheck and NewUnitCheck then each exit 0 in serial named
+calls. No full pick ran on the laptop. The maps at `35abdbe03` are from
+that source; the later project prose commit changes no model.
+
+### Final combined review-mend comparison
+
+Fresh worktree `codex-PW9-r2-measure` was cut at `35abdbe03`, model
+`651b80a00` plus metadata/staffing `785f7e2de`. All 689 tracked src/main
+files were verified before the three-file observer-only patch; all other
+687 files were reverified afterward. Both authorized native calls exit 0
+and save zero files, default first through m440, then modern equipment
+through m180. No extra replay or model repair occurred. All helper jobs
+ended. Runtime/source catalogue SHA256 in both calls is
+`145c0affb5c41e9a9d7e1110d2d71521d9e1ffb9d593825f5594c204d4b2e26a`.
+
+| Default 1900, final comparison | main BEFORE | final mends |
+|---|---|---|
+| First generator pass / visible month | m417 / m418, 1 Diesel | m417 / m418, 1 Diesel |
+| Order population / peak share / current energy | 5,446 / 1.27844 / 100% | same |
+| Retained dispatch at order | m416, 100% | same |
+| Retained native whole-order lead | 30.0 months | 30.0 months |
+| First unit opens / population | m435 / 7,593 | same |
+| Peak share / current energy at opening | 2.40482 / 100% | 2.46939 / 100% |
+| Retained dispatch at opening | m434, 100% | same |
+| Minimum peak share, m2–440 | .91560 at m434 | same |
+| Minimum current energy, m2–435 / m2–440 | 100% / .99263 at m439 | same |
+| Months below 95%, both windows | 0 | 0 |
+| Generator units / events, through m435 and m440 | 3 Diesel / 2 | 3 Diesel / 2 |
+| Generator spend, through m435 and m440 | about $10.5M rounded quotes | $10,507,089.59 actual |
+| Purchased generator land | exact spend unavailable | $0 |
+| Substation pass / opening | m409 / m440 | same |
+
+The final first order's actual building cost is $3,282,067.97; the second
+orders two diesels at pre429 for $7,225,021.62. No oil or small steam is
+ordered through m440, and no generator order occurs at m439. The default
+first needs new generation in September 1934, after the station's new-order
+window. The controlled 1906 town still orders the small station. The
+rejected proposal's **$50,967,663.13 → $10,507,089.59**, with the same
+three-diesel procurement as main. Exact main spend was not retained, so
+no exact main dollar delta is claimed. Population, current energy, retained
+dispatch served/asked/generated fields and fleet match main in every
+monthly row through m440; current firm/peak share differ in six rows after
+the first opening. This is not a comparison of every private city field.
+
+| Modern-equipment city, m2–180 | main BEFORE | final mends |
+|---|---|---|
+| First generator pass / visible month | m121 / m122, 1 Diesel | m101 / m102, 9 Small Steam |
+| Order population / peak share / current energy | 5,608 / .57075 / .82168 | 3,995 / 1.25336 / 100% |
+| Retained dispatch at order | m120, .87430 | m100, 100% |
+| Retained native whole-order lead | 56.5 months | 22.1 months |
+| First unit opens / population | m151 / 7,490 | m103 / 4,186 |
+| Peak share / current energy at opening | 1.98217 / .96063 | 1.31713 / 100% |
+| Retained dispatch at opening | m150, .99156 | m102, 100% |
+| Minimum peak share | .56361 at m126 | 1.08736 at m123 |
+| Minimum current energy | .80246 at m126 | .72736 at m127 |
+| Months below 95% current energy | 5 | 8 |
+| Generator units / events | 1 Diesel / 1 | 31 Small Steam / 7 |
+| Generator spend | about $2.0M rounded quote | $4,212,507.00 actual |
+| Purchased generator land | exact spend unavailable | $33,219.07 |
+| Substation pass / opening | m116 / m162 | m119 / m175 |
+| Population at m180 | 8,218 | 10,471 |
+
+Final steam orders occur at pre101–129, May 1908–September 1910, inside
+the sourced order window. All 31 stand by m171. Initial order cost is
+$1,120,268.08 with no purchased land. The revision reduces the first
+proposal's 40 stations/$5.62980M/12 low-energy months to **31/$4.21251M/8**;
+the Substation opens at m175 rather than m177. Against main, delivery and
+procurement remain adverse by the ratios/counts above, despite earlier
+generation and more population. The historical cutoff is not used to
+pretend that a May 1908 order happened in calendar 2026.
+
+At m89/m90 the final city retains the same populations 2,909/2,965, peak
+shares 2.15712/2.13683 and 100% current energy as main. Actual passes still
+hold three wanted steam units, order zero with `Cut.BUILDERS`, and protect
+Elementary; m90 also holds GRID for Elementary. At m120, peak share is
+1.59345 and current energy 100%, versus main's .57117/.87430. Both rows'
+retained dispatch is m119 at 100%; those flow dates are kept distinct.
+
+★ **Leave the remaining inherited wire/crew coordination to PW9-G.** Final
+actual held strings protect College's quoted first completion at
+pre115–118, then GRID orders at pre119. This final path does not reuse the
+first proposal's pre117–118 debt-cut claim. Ordering is three months later
+than main and construction lasts 56 rather than 46 months. At native
+dispatch m127 (retained at m128), 21.083 MW is offered, but the 10 MW
+wire ceiling allows only 7.2 GWh generated / 6.84 GWh delivered against
+9.899 GWh gross asked; steam offers 11.083 MW and generates zero. Similar
+retained wire-bound flows remain at m151/m163. The power curve alone does
+not establish delivered service. These inherited protection/allocation
+rules remain; no fixture, staffing figure, debt cap or construction point
+was weakened. [PW9-G](PW9-G.md) owns the separate future GRID date/delivery
+coordination finding, with no known-red waiver. It is queued in this ship
+file rather than assigned to the unrelated FC2-C, SW1, MKR1 or PB1 rows.
+
+Evidence: `codex-PW9-r2-measure/target/PW9-measure/r2-README.txt`,
+`r2-after-{1900,today}-*`, `r2-comparison-*`, `r2-cost-totals.csv`,
+`r2-actual-pass-evidence.txt` and full source/runtime/observer manifests.
+All 333 prior artifact files were preserved byte for byte. Other sessions'
+ReloadCheck overlapped; timings are not an isolated-machine comparison.
+
+## Remaining gate work
+
+The review mends and focused names are green, with the remaining inherited
+delivery coordination queued as above. The final-model ensemble is against
+`0.9.208.md` as instructed, then the pick is ALL so the orchestrator must
+allocate the dry run. No ensemble or dry run has started yet.
