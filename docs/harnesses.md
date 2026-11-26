@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**259 harness files, 30,138 labelled assertions.** AllChecks runs 259 of them.
+**259 harness files, 30,161 labelled assertions.** AllChecks runs 259 of them.
 
 ## Which harnesses read which class
 
@@ -17685,14 +17685,14 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L386 fixture: the households outgrew the homes in some months of the window and the homes caught up in others
   - L393 fixture: households that could pay found no door standing and boarded with a housed family (call A over R1g)
   - L394 ...every boarder counted by the census's own line, overcrowded past two persons a room and boarding within it (REV-RES3b P1-4)
-  - L395 ...paying its hosts board, every cent paid out of the boarders' cells received into their hosts' (REV-RES3b P1-1)
-  - L396 ...and the month's own money audit and the households' cash identity exact in every month of them (REV-RES3b P1-3)
-  - L397 a save and load with boarders standing brings back every boarder, its count by the line and its board (REV-RES3b P1-2)
-  - L398 the fire's displaced live past the census line, more than two persons a room, overcrowded and never doorless (call A, REV-RES3b P1-4)
-  - L401 sharing rises over the months the town's households outgrow its homes
-  - L402 ...by more a month than over the months the homes catch up
-- **L405 5. the households' identity through the mortgage door (HL1)**
-  - L407 the households' cash identity closes every played month, beside the landlords' trimmed mortgages
+  - L397 ...owing its hosts board, and paying it at the next month's settlement, every cent paid out of the boarders' cells received into their hosts' (REV-RES3b P1-1)
+  - L399 ...and the month's own money audit and the households' cash identity exact in every month of them (REV-RES3b P1-3)
+  - L400 a save and load with boarders standing brings back every boarder, its count by the line and its board (REV-RES3b P1-2)
+  - L401 the fire's displaced live past the census line, more than two persons a room, overcrowded and never doorless (call A, REV-RES3b P1-4)
+  - L404 sharing rises over the months the town's households outgrow its homes
+  - L405 ...by more a month than over the months the homes catch up
+- **L408 5. the households' identity through the mortgage door (HL1)**
+  - L410 the households' cash identity closes every played month, beside the landlords' trimmed mortgages
 
 ## HousingInventoryCheck.java - 75 labelled assertions
 
@@ -17783,7 +17783,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L281 first month retains the conveyed title
   - L283 a new city clears both physical and assignment cohorts
 
-## HousingMarketCheck.java - 564 labelled assertions
+## HousingMarketCheck.java - 587 labelled assertions
 
 > Integrated quotes, funded sites, rental receipts, budgets and reload evidence.
 > WHY (RES3): a synthetic catalogue quote does not prove an actual funded project
@@ -18181,214 +18181,239 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1278 a prior zero charge cannot create an unfunded empty-door right
   - L1279 without a funded host no rent is invented
   - L1280 without a funded host no door is occupied
-- **L1291 a boarder pays its hosts board on both sides, every cent, and the census line says if it is overcrowded**
-  - L1301 fixture: two household cells with households (
-  - L1308 fixture: the one door stands
-  - L1319 fixture: the host family of
-  - L1327 a boarder of one boards with the host,
-  - L1328 ...owing board, half the door's ask (
-  - L1329 ...its cell pays it out of the board it owes
-  - L1330 ...out of its savings, every cent
-  - L1331 ...the host's cell receives it
-  - L1332 ...into its savings, every cent
-  - L1333 ...billed to no landlord
-  - L1335 ...within the census line: boarding, not overcrowding
-  - L1336 ...counted within the line
-  - L1338 ...past the census line, more than two persons a room: overcrowded
-  - L1339 ...and not counted within it
-- **L1351 the trim holds the doors to the homes standing and cannot throw (REV-RES3b P1-3)**
-  - L1355 fixture: the doors summed in the market's order pass the stock by an ulp (
-  - L1360 an ulp past the stock is trimmed, not thrown: the doors held to the homes standing
-  - L1361 ...every household kept
-  - L1362 ...the cut lodged on its door, sponsored
-  - L1363 ...within the packing resolution: nothing past the stock to report
-  - L1366 a pass a door past the stock is held to it all the same, never thrown
-  - L1367 ...every household kept, the one cut lodged
-  - L1368 ...its bill trimmed with its doors
-  - L1369 ...and reported past the stock for LongPlaytest's finding
-- **L1372 RES3 staged housing stocks follow the same funded census**
-  - L1386 a newly unemployed household carries actual source cash
-  - L1387 its existing card balance follows it
-  - L1388 HC1 current borrower share follows
-  - L1389 HC1 late balance follows
-  - L1390 HC1 late borrower share follows
-  - L1391 HC1 shut-out share follows
-  - L1392 security units follow the same stock route
-  - L1393 security basis follows the same stock route
-  - L1394 tagged security units follow
-  - L1395 tagged security claim follows
-  - L1396 student principal follows
-  - L1397 paper follows
-  - L1397 foreign cash follows
-  - L1398 individual bond face follows
-  - L1399 projection leaves every saved live field unchanged
-  - L1400 projection leaves all live bond holdings unchanged
-  - L1402 real inherited cash can fund a finite housing buffer
-  - L1403 quoting also leaves every saved live field unchanged
-  - L1405 equal new cells share cash pro rata
-  - L1406 extra people bring no invented opening cash
-  - L1407 extra people bring no invented card balance
-  - L1409 a different city's complete stock state restores into the warmed ledger
-  - L1411 a warmed quote cannot retain the old city's cash
-  - L1413 an invalid restore is refused
-  - L1414 a refused restore preserves the live ledger
-  - L1415 a refused restore cannot revive stale quoted resources
-  - L1419 no source stocks or received income gives no funded bid
-  - L1422 empty unfunded doors create no tenancy
-  - L1423 the no-funding household stays explicitly unplaced
-- **L1436 housing quotes keep opening paid income and recurring fee source weights**
-  - L1463 a billed fee without source heads still reserves the existing fresh split
-  - L1466 detached stocks preserve the live fixed-bill floor and its live rent denominator
-  - L1467 quoting changes no live disposable income
-  - L1468 quoting changes no live income after fixed bills
-- **L1471 carried student principal reserves current contractual service**
-  - L1485 the new working cell really carries principal from the old unemployed source
-  - L1488 a quote reserves the carried loan's contractual term and current-rate interest
-  - L1490 the quote's reservation agrees with the actual model strike
-  - L1493 a current rate change is reserved without waiting for settled flow fields
-  - L1494 student service quotes and a detached comparison strike change no live saved field
-  - L1496 a working cell carrying no student principal reserves no student service
-  - L1498 unemployed principal remains in contractual forbearance
-  - L1502 an enrolled student's existing principal is not serviced during study
-- **L1506 rent commitment uses surviving recipients; live fixed-bill floor stays separate**
-  - L1514 the unchanged live non-rent fixed floor leaves seven resources
-  - L1519 actual retention scales ten old households to the two current recipients
-  - L1520 the surviving actual rent bill is four, not the stale twenty
-  - L1522 actual current rent commitment is two per household
-  - L1524 contraction protects only the surviving actual commitment from saving
-  - L1526 expansion spreads the original bill over twenty recipients
-  - L1527 both quotes preserve all live saved stocks and flows
-  - L1528 both quotes preserve live household recipients
-  - L1529 both quotes preserve live disposable
-  - L1530 both quotes preserve live fixed-bill balance
-  - L1533 no live source recipients inherit stale bill protection
-- **L1538 current paid occupancy and funded independent-door pressure both survive forecasting**
-  - L1549 fixture one actual recipe door at budget
-  - L1550 fixture actual RE inventory stock at budget
-  - L1551 fixture has no endogenous source households at budget
-  - L1560 actual paid halves retain both old households at budget
-  - L1567 actual newcomer pays for a door only where one is genuinely vacant at budget
-  - L1568 ...and otherwise boards with the housed, never doorless, at budget
-  - L1569 actual occupied footprint uses current paid doors at budget
-  - L1570 actual newcomer leaves no household with no door at budget
-  - L1571 ...who found no door standing counted a boarder at budget
-  - L1572 actual total household source closes at budget
-  - L1573 actual rent follows occupied asks at budget
-  - L1574 only affordable paid crowding is completed after movers, a boarder crowded beside it
-  - L1575 paid incumbent bills follow the completed physical footprint
-  - L1576 fixture retains ask twenty at budget
-  - L1580 forecast preserves funded newcomer and independent-door backlog at budget
-  - L1581 forecast new projects collect only supported full-door income at budget
-  - L1582 forecast moves no actual housing state at budget
-- **L1587 unfinished committed homes and incompatible spare stock**
-  - L1595 committed fixture has one finished family door
-  - L1596 committed fixture excludes endogenous arrivals
-  - L1598 supported stack input is still actually under construction
-  - L1599 unfinished registry contains the one committed door
-  - L1601 spare studio is known and every dwelling excludes children
-  - L1602 incompatible spare is actual finished RE stock
-  - L1612 committed forecast keeps both paid actual families
-  - L1613 neither pending nor incompatible stock creates current occupied doors
-  - L1614 neither pending nor incompatible stock creates current rent
-  - L1615 both actual families remain sheltered
-  - L1618 only suitable affordable committed doors cover independent pressure, pipeline=
-  - L1619 covered pipeline cannot promise a duplicate new funded order, pipeline=
-  - L1620 child families promise no studio project income
-  - L1620 child families require no incompatible studio project
-  - L1621 forecast leaves actual housing and construction inventory unchanged
-  - L1622 forecast never advances the committed work
-- **L1649 late paid footprint completion preserves movers, host funding and equivalent shares**
-  - L1654 equivalent incumbent receives pro-rata physical completion
-  - L1654 equivalent incumbent pays the identical physical delta
-  - L1654 equivalent household source unchanged
-  - L1655 rationed completion occupies all three current doors
-  - L1655 rationed completion leaves one crowded equivalent
-  - L1657 equivalent completion does not confer input-order priority
-  - L1660 full-funded host keeps its one bill rather than paying twice
-  - L1660 hosted zero-bill guest stays free
-  - L1661 full-funded host and guest retain one actual door
-  - L1661 full-funded hosted provenance unchanged
-  - L1661 full-funded guest is not evicted
-  - L1665 mixed host completes only its funded deficit
-  - L1666 mixed host bill funds exactly two households
-  - L1666 mixed paid household count unchanged
-  - L1667 mixed hosted guest physical share unchanged
-  - L1667 mixed guest bill stays zero
-  - L1668 mixed hosted counter unchanged
-  - L1668 mixed paid crowding becomes only the hosted guest
-  - L1668 mixed footprint never expands past funding
-  - L1674 native normal control proves four households can be housed
-  - L1674 native normal control has no unplaced free guests
-  - L1676 late completion does not strand guests feasible in the normal control
-  - L1677 new host placement preserves exact payer households and bill
-  - L1678 new zero-budget guests are assigned exactly once
-  - L1679 newly funded host provenance counts the two new guests
-  - L1679 newly funded host crowding counts only the two guests
-  - L1683 old/new guest follow-up preserves exact payer households and bill
-  - L1684 already hosted zero guest is not assigned a second time
-  - L1685 new zero guests receive exactly the remaining source quantity
-  - L1686 old and new zero guests preserve all six household units
-  - L1687 old/new zero guests leave no feasible source unplaced
-  - L1687 old/new zero guests use three funded physical doors
-  - L1687 old/new zero guest total bills stay three asks
-  - L1688 hosted provenance contains one old plus two new guests
-  - L1688 crowding provenance contains only those three guests
-- **L1722 financial claims and physical guest donations do not create a second funded bid**
-  - L1733 paid pair keeps its two funded normal bids
-  - L1734 paid pair can fund another full door
-  - L1737 cheap alternative has no finished current stock
-  - L1738 cheap alternative is quoted at ten
-  - L1741 new alternative income fits resources remaining after retained claims
-  - L1742 implied remaining incumbents can still pay the retained bill
-  - L1743 alternative quote preserves actual leases and stock
-- **L1747 actual sponsored groups survive coalescence with newly funded sharing groups**
-  - L1766 coalesced
-  - L1767 coalesced
-  - L1768 coalesced
-  - L1769 coalesced
-  - L1770 coalesced
-  - L1771 coalesced
-  - L1772 coalesced
-- **L1776 forecast current contracts and prospective worker cohorts close separate sources**
-  - L1792 press
-  - L1793 press
-  - L1794 press
-  - L1795 press
-  - L1796 press
-  - L1797 press
-  - L1798 press
-  - L1799 press
-  - L1800 press
-  - L1803 press
-  - L1804 press
-  - L1805 press
-  - L1809 no funded future job cohort requests another free candidate
-  - L1811 prospective worker cause is actual jobs under construction
-  - L1812 actual future jobs create a positive separately projected worker cohort
-  - L1813 projected arriving workers do not inflate the current household source
-  - L1816 incoming projection is repeatable without consuming current contracts
-- **L1819 late normal vacancies receive only privately funded paid-half excess**
-  - L1831 cross excess keeps the old funded footprint exact
-  - L1831 cross excess keeps the old bill exact
-  - L1832 cross excess moves exactly the eligible source household
-  - L1833 cross excess updates the remaining full/half modes
-  - L1834 normal newcomer has priority over excess upgrades
-  - L1835 cross excess uses the actual alternative only when funded
-  - L1836 cross excess preserves source households
-  - L1837 cross excess cannot consume unavailable native stock
-- **L1841 all three coalesced contract modes survive native fresh and running loads**
-  - L1850 nonzero full/half/sponsored contract round-trips exactly
-  - L1851 denomination preserves every contract quantity
-  - L1851 denomination scales only the actual bill
-  - L1854 load rejects funded components inconsistent with actual occupied stock
-  - L1857 load rejects lost sponsored provenance
-  - L1858 all-mode fixture saves natively in scratch slot10
-  - L1866 native load preserves coalesced contract bytes
-  - L1869 next clearing cannot retain an unaffordable full-price component
-  - L1870 without a funded host every actual assignment is now a paid half
-  - L1871 previous sponsorship has priority only in actually funded host room
-  - L1872 next clearing keeps the three actual households
-- **L1886 small scratch-city integrated profile**
+- **L1317 a boarder pays its hosts board on both sides, every cent, and the census line says if it is overcrowded**
+  - L1321 fixture: two household cells with households (
+  - L1328 fixture: the one door stands
+  - L1339 fixture: the host family of
+  - L1346 a boarder of one boards with the host,
+  - L1347 ...owing board, half the door's ask (
+  - L1348 ...owed at the clearing
+  - L1351 ...and moves no money at the clearing: settled with the rents, at the next month's settlement
+  - L1355 ...its cell pays it out of the board it owes
+  - L1356 ...out of its savings, every cent
+  - L1357 ...the host's cell receives it
+  - L1358 ...into its savings, every cent
+  - L1359 ...billed to no landlord
+  - L1360 ...and settled once: nothing owed after
+  - L1362 ...within the census line: boarding, not overcrowding
+  - L1363 ...counted within the line
+  - L1365 ...past the census line, more than two persons a room: overcrowded
+  - L1366 ...and not counted within it
+- **L1381 the board is settled on the leases' census: a cell the census fills pays, a household it moves takes none**
+  - L1388 fixture: a cell of two households or more, two others with households and a working cell with none (
+  - L1395 fixture: the boarder's cell had no household at the clearing and owes its host board (
+  - L1400 a cell the census filled since the clearing pays its board out of the savings it inherited
+  - L1401 ...booked to it
+  - L1402 ...received into the host's savings, every cent
+  - L1403 ...and the cell its household left pays none of it
+  - L1408 fixture: the halved cell owes its host board (
+  - L1413 a cell the census halved since the clearing pays its whole board out of the households it keeps
+  - L1414 ...received into the host's savings, every cent
+  - L1415 ...and the households it moved to another cell carry none of it
+- **L1424 a currency reform scales the board owed, paid and received with the savings it moves, through a save and load**
+  - L1428 fixture: two household cells with households
+  - L1437 fixture: board owed, paid and received before the reform (
+  - L1438 fixture: a reform of 1,000 to 1
+  - L1439 the reform scales the board owed
+  - L1440 ...the board paid
+  - L1441 ...and received
+  - L1442 ...as it scales the boarder's savings
+  - L1443 ...and the lease bills
+  - L1448 a save and load after the reform brings back the reformed board, owed, paid and received, cell by cell
+  - L1453 ...and the boarder settles the reformed board out of its reformed savings
+- **L1463 the trim holds the doors to the homes standing and cannot throw (REV-RES3b P1-3)**
+  - L1467 fixture: the doors summed in the market's order pass the stock by an ulp (
+  - L1472 an ulp past the stock is trimmed, not thrown: the doors held to the homes standing
+  - L1473 ...every household kept
+  - L1474 ...the cut lodged on its door, sponsored
+  - L1475 ...within the packing resolution: nothing past the stock to report
+  - L1478 a pass a door past the stock is held to it all the same, never thrown
+  - L1479 ...every household kept, the one cut lodged
+  - L1480 ...its bill trimmed with its doors
+  - L1481 ...and reported past the stock for LongPlaytest's finding
+- **L1484 RES3 staged housing stocks follow the same funded census**
+  - L1498 a newly unemployed household carries actual source cash
+  - L1499 its existing card balance follows it
+  - L1500 HC1 current borrower share follows
+  - L1501 HC1 late balance follows
+  - L1502 HC1 late borrower share follows
+  - L1503 HC1 shut-out share follows
+  - L1504 security units follow the same stock route
+  - L1505 security basis follows the same stock route
+  - L1506 tagged security units follow
+  - L1507 tagged security claim follows
+  - L1508 student principal follows
+  - L1509 paper follows
+  - L1509 foreign cash follows
+  - L1510 individual bond face follows
+  - L1511 projection leaves every saved live field unchanged
+  - L1512 projection leaves all live bond holdings unchanged
+  - L1514 real inherited cash can fund a finite housing buffer
+  - L1515 quoting also leaves every saved live field unchanged
+  - L1517 equal new cells share cash pro rata
+  - L1518 extra people bring no invented opening cash
+  - L1519 extra people bring no invented card balance
+  - L1521 a different city's complete stock state restores into the warmed ledger
+  - L1523 a warmed quote cannot retain the old city's cash
+  - L1525 an invalid restore is refused
+  - L1526 a refused restore preserves the live ledger
+  - L1527 a refused restore cannot revive stale quoted resources
+  - L1531 no source stocks or received income gives no funded bid
+  - L1534 empty unfunded doors create no tenancy
+  - L1535 the no-funding household stays explicitly unplaced
+- **L1548 housing quotes keep opening paid income and recurring fee source weights**
+  - L1575 a billed fee without source heads still reserves the existing fresh split
+  - L1578 detached stocks preserve the live fixed-bill floor and its live rent denominator
+  - L1579 quoting changes no live disposable income
+  - L1580 quoting changes no live income after fixed bills
+- **L1583 carried student principal reserves current contractual service**
+  - L1597 the new working cell really carries principal from the old unemployed source
+  - L1600 a quote reserves the carried loan's contractual term and current-rate interest
+  - L1602 the quote's reservation agrees with the actual model strike
+  - L1605 a current rate change is reserved without waiting for settled flow fields
+  - L1606 student service quotes and a detached comparison strike change no live saved field
+  - L1608 a working cell carrying no student principal reserves no student service
+  - L1610 unemployed principal remains in contractual forbearance
+  - L1614 an enrolled student's existing principal is not serviced during study
+- **L1618 rent commitment uses surviving recipients; live fixed-bill floor stays separate**
+  - L1626 the unchanged live non-rent fixed floor leaves seven resources
+  - L1631 actual retention scales ten old households to the two current recipients
+  - L1632 the surviving actual rent bill is four, not the stale twenty
+  - L1634 actual current rent commitment is two per household
+  - L1636 contraction protects only the surviving actual commitment from saving
+  - L1638 expansion spreads the original bill over twenty recipients
+  - L1639 both quotes preserve all live saved stocks and flows
+  - L1640 both quotes preserve live household recipients
+  - L1641 both quotes preserve live disposable
+  - L1642 both quotes preserve live fixed-bill balance
+  - L1645 no live source recipients inherit stale bill protection
+- **L1650 current paid occupancy and funded independent-door pressure both survive forecasting**
+  - L1661 fixture one actual recipe door at budget
+  - L1662 fixture actual RE inventory stock at budget
+  - L1663 fixture has no endogenous source households at budget
+  - L1672 actual paid halves retain both old households at budget
+  - L1679 actual newcomer pays for a door only where one is genuinely vacant at budget
+  - L1680 ...and otherwise boards with the housed, never doorless, at budget
+  - L1681 actual occupied footprint uses current paid doors at budget
+  - L1682 actual newcomer leaves no household with no door at budget
+  - L1683 ...who found no door standing counted a boarder at budget
+  - L1684 actual total household source closes at budget
+  - L1685 actual rent follows occupied asks at budget
+  - L1686 only affordable paid crowding is completed after movers, a boarder crowded beside it
+  - L1687 paid incumbent bills follow the completed physical footprint
+  - L1688 fixture retains ask twenty at budget
+  - L1692 forecast preserves funded newcomer and independent-door backlog at budget
+  - L1693 forecast new projects collect only supported full-door income at budget
+  - L1694 forecast moves no actual housing state at budget
+- **L1699 unfinished committed homes and incompatible spare stock**
+  - L1707 committed fixture has one finished family door
+  - L1708 committed fixture excludes endogenous arrivals
+  - L1710 supported stack input is still actually under construction
+  - L1711 unfinished registry contains the one committed door
+  - L1713 spare studio is known and every dwelling excludes children
+  - L1714 incompatible spare is actual finished RE stock
+  - L1724 committed forecast keeps both paid actual families
+  - L1725 neither pending nor incompatible stock creates current occupied doors
+  - L1726 neither pending nor incompatible stock creates current rent
+  - L1727 both actual families remain sheltered
+  - L1730 only suitable affordable committed doors cover independent pressure, pipeline=
+  - L1731 covered pipeline cannot promise a duplicate new funded order, pipeline=
+  - L1732 child families promise no studio project income
+  - L1732 child families require no incompatible studio project
+  - L1733 forecast leaves actual housing and construction inventory unchanged
+  - L1734 forecast never advances the committed work
+- **L1761 late paid footprint completion preserves movers, host funding and equivalent shares**
+  - L1766 equivalent incumbent receives pro-rata physical completion
+  - L1766 equivalent incumbent pays the identical physical delta
+  - L1766 equivalent household source unchanged
+  - L1767 rationed completion occupies all three current doors
+  - L1767 rationed completion leaves one crowded equivalent
+  - L1769 equivalent completion does not confer input-order priority
+  - L1772 full-funded host keeps its one bill rather than paying twice
+  - L1772 hosted zero-bill guest stays free
+  - L1773 full-funded host and guest retain one actual door
+  - L1773 full-funded hosted provenance unchanged
+  - L1773 full-funded guest is not evicted
+  - L1777 mixed host completes only its funded deficit
+  - L1778 mixed host bill funds exactly two households
+  - L1778 mixed paid household count unchanged
+  - L1779 mixed hosted guest physical share unchanged
+  - L1779 mixed guest bill stays zero
+  - L1780 mixed hosted counter unchanged
+  - L1780 mixed paid crowding becomes only the hosted guest
+  - L1780 mixed footprint never expands past funding
+  - L1786 native normal control proves four households can be housed
+  - L1786 native normal control has no unplaced free guests
+  - L1788 late completion does not strand guests feasible in the normal control
+  - L1789 new host placement preserves exact payer households and bill
+  - L1790 new zero-budget guests are assigned exactly once
+  - L1791 newly funded host provenance counts the two new guests
+  - L1791 newly funded host crowding counts only the two guests
+  - L1795 old/new guest follow-up preserves exact payer households and bill
+  - L1796 already hosted zero guest is not assigned a second time
+  - L1797 new zero guests receive exactly the remaining source quantity
+  - L1798 old and new zero guests preserve all six household units
+  - L1799 old/new zero guests leave no feasible source unplaced
+  - L1799 old/new zero guests use three funded physical doors
+  - L1799 old/new zero guest total bills stay three asks
+  - L1800 hosted provenance contains one old plus two new guests
+  - L1800 crowding provenance contains only those three guests
+- **L1834 financial claims and physical guest donations do not create a second funded bid**
+  - L1845 paid pair keeps its two funded normal bids
+  - L1846 paid pair can fund another full door
+  - L1849 cheap alternative has no finished current stock
+  - L1850 cheap alternative is quoted at ten
+  - L1853 new alternative income fits resources remaining after retained claims
+  - L1854 implied remaining incumbents can still pay the retained bill
+  - L1855 alternative quote preserves actual leases and stock
+- **L1859 actual sponsored groups survive coalescence with newly funded sharing groups**
+  - L1878 coalesced
+  - L1879 coalesced
+  - L1880 coalesced
+  - L1881 coalesced
+  - L1882 coalesced
+  - L1883 coalesced
+  - L1884 coalesced
+- **L1888 forecast current contracts and prospective worker cohorts close separate sources**
+  - L1904 press
+  - L1905 press
+  - L1906 press
+  - L1907 press
+  - L1908 press
+  - L1909 press
+  - L1910 press
+  - L1911 press
+  - L1912 press
+  - L1915 press
+  - L1916 press
+  - L1917 press
+  - L1921 no funded future job cohort requests another free candidate
+  - L1923 prospective worker cause is actual jobs under construction
+  - L1924 actual future jobs create a positive separately projected worker cohort
+  - L1925 projected arriving workers do not inflate the current household source
+  - L1928 incoming projection is repeatable without consuming current contracts
+- **L1931 late normal vacancies receive only privately funded paid-half excess**
+  - L1943 cross excess keeps the old funded footprint exact
+  - L1943 cross excess keeps the old bill exact
+  - L1944 cross excess moves exactly the eligible source household
+  - L1945 cross excess updates the remaining full/half modes
+  - L1946 normal newcomer has priority over excess upgrades
+  - L1947 cross excess uses the actual alternative only when funded
+  - L1948 cross excess preserves source households
+  - L1949 cross excess cannot consume unavailable native stock
+- **L1953 all three coalesced contract modes survive native fresh and running loads**
+  - L1962 nonzero full/half/sponsored contract round-trips exactly
+  - L1963 denomination preserves every contract quantity
+  - L1963 denomination scales only the actual bill
+  - L1966 load rejects funded components inconsistent with actual occupied stock
+  - L1969 load rejects lost sponsored provenance
+  - L1970 all-mode fixture saves natively in scratch slot10
+  - L1978 native load preserves coalesced contract bytes
+  - L1981 next clearing cannot retain an unaffordable full-price component
+  - L1982 without a funded host every actual assignment is now a paid half
+  - L1983 previous sponsorship has priority only in actually funded host room
+  - L1984 next clearing keeps the three actual households
+- **L1998 small scratch-city integrated profile**
 
 ## HydroCheck.java - 102 labelled assertions
 
