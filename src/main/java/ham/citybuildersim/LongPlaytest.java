@@ -50,6 +50,9 @@ public class LongPlaytest {
     /** The run's length: 2,400 months at the gate, 4,000 nightly (GT1, 2026-11-02: what 2026-11-01 found showed between months 1,100 and 1,800), or -Dplaytest.months=N for a look at one mechanic (a trace of its own, not the baseline). */
     static final int TARGET_MONTHS = Integer.getInteger("playtest.months", 2400);
 
+    /** The industrial city's students' grant, a share of the course's tuition: half, under TaxPolicy's TUITION_SHARE ceiling. */
+    static final double INDUSTRIAL_TUITION_GRANT = 0.5;
+
     /* ===================================================================
        FINDINGS
 
@@ -9416,6 +9419,15 @@ public class LongPlaytest {
                whatever the assertion count says.
                ================================================================= */
             g.buildStack(t(g, "Bus Network"), 3, false);
+            /*
+             * AND A GRANT ON TUITION, SO THE ROWS' OWN LINE HAS A CAUSE (RES3c, 2026-11-26). Since RES3 every cell with
+             * a household in it settles its row's share (0894946a7), and HouseholdBalance's UnsettledIncome arises only
+             * where a row is handed take-home with no household in it. Play has one: a TUITION_SHARE grant is struck on
+             * the student body's tuition once education has enrolled the month's intake, after the census rebuilt the
+             * families, so in the month of the new college's first intake the students' row is paid with no student
+             * household yet counted (m137 here, the whole row's 0.48). Section 13's count of the own lines reads it.
+             */
+            g.getEconomyManager().getTaxPolicy().setGrant(TaxPolicy.GrantBasis.TUITION_SHARE, INDUSTRIAL_TUITION_GRANT);
 
             worst = play("with mines, mills, a cemetery, a college and a bus, 240 months", g, 240, verbose);
             // ...the longest this file plays: the households' books over it are section 13's.
