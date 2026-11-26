@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### FS6 — the map sweep: MapCheck, PlanCheck, OrderSearchCheck, BuildingStackCheck, GatewayCheck — 2026-11-25, ready, see docs/queue/FS6-notes.md
 The map sweep's five harnesses cause their premises on fixtures of their own and assert them hard, with no waiver
