@@ -160,6 +160,80 @@ def med(vals):
     return float(pd.Series(v).median()) if v else math.nan
 
 
+BANK_MEASURES = {
+    "cb_remittance_share": "central bank remittance / budget revenue over recorded months",
+    "bank_failures": "bank failures, cumulative at recorded end; runs with failures",
+}
+
+
+def bank_observation(df):
+    """Optional recorded flows and failure counter; unavailable observations stay JSON null."""
+    recorded = df[df["phase"] != "founding"].reset_index(drop=True).sort_values("month")
+    result = {"window_start": None, "window_end": None, "months_recorded": len(recorded),
+              "cb_remitted_sum": None, "budget_revenue_sum": None,
+              "cb_remittance_share": None, "bank_failures": None}
+    if recorded.empty:
+        return result
+    result.update(window_start=int(recorded["month"].iloc[0]),
+                  window_end=int(recorded["month"].iloc[-1]))
+
+    def values(column):
+        if column not in recorded:
+            return None
+        numbers = pd.to_numeric(recorded[column], errors="coerce").astype(float).tolist()
+        return numbers if all(math.isfinite(x) for x in numbers) else None
+
+    for column, key in (("cb_remitted", "cb_remitted_sum"), ("budget_revenue", "budget_revenue_sum")):
+        numbers = values(column)
+        if numbers is not None:
+            try:
+                total = math.fsum(numbers)
+                result[key] = total if math.isfinite(total) else None
+            except OverflowError:
+                pass
+    remitted, revenue = result["cb_remitted_sum"], result["budget_revenue_sum"]
+    if remitted is not None and revenue is not None and revenue > 0:
+        share = remitted / revenue
+        result["cb_remittance_share"] = share if math.isfinite(share) else None
+    failures = values("bank_failures")
+    if failures is not None and all(x >= 0 and x.is_integer() for x in failures) \
+            and all(a <= b for a, b in zip(failures, failures[1:])):
+        # Resolutions can reopen a bank in the same month; its final status is not the episode count.
+        result["bank_failures"] = int(failures[-1])
+    return result
+
+
+def bank_observation_values(observations):
+    """Policy summaries name their coverage, so a missing seed is never counted as zero."""
+    result = {}
+    for key in BANK_MEASURES:
+        numbers = [row.get(key) for row in observations.values()]
+        numbers = [x for x in numbers if isinstance(x, (int, float)) and math.isfinite(x)]
+        coverage = f"{len(numbers)}/{len(observations)} runs observed"
+        if not numbers:
+            result[key] = f"unavailable ({coverage})"
+        elif key == "cb_remittance_share":
+            result[key] = f"{spread(numbers)} ({coverage})"
+        else:
+            result[key] = (f"{sum(numbers):,.0f} total; {sum(x > 0 for x in numbers)}/{len(numbers)} runs with failures"
+                           f" ({coverage})")
+    return result
+
+
+def matching_bank_baseline(observations, policy_baseline):
+    """Compare only the same seeds and complete recorded windows; legacy data cannot match."""
+    prior = policy_baseline.get("bank_observations", {})
+    matched = {}
+    for seed, row in observations.items():
+        old = prior.get(seed) if isinstance(prior, dict) else None
+        start, end = row.get("window_start"), row.get("window_end")
+        if isinstance(old, dict) and start is not None and end is not None \
+                and row["months_recorded"] == end - start + 1 \
+                and all(old.get(k) == row[k] for k in ("window_start", "window_end", "months_recorded")):
+            matched[seed] = old
+    return matched
+
+
 def read_baseline(path):
     """A summary.json, or a docs/ensemble/<version>.md whose fenced json block is one (EN1)."""
     with open(path, encoding="utf-8") as f:
@@ -212,6 +286,7 @@ def main():
     seeds = sorted({s for (_, s) in runs})
     rows = []      # (policy, id, measure, value, threshold, verdict)
     summary = {"seeds": len(seeds), "policies": {}}
+    bank_baselines = {}
 
     def add(pol, cid, what, value, threshold, ok, note=""):
         # A verdict worked out on pandas' figures is numpy's bool, which "is True" never is: until
@@ -437,6 +512,16 @@ def main():
         add(p, "F1", "runs with a LongPlaytest finding", f"{len(fnd)}/{len(pr)} {names[:3]}",
             f"≤ baseline {bf}" if bf is not None else "baseline (this run)",
             (len(fnd) <= bf) if bf is not None else "info")
+        observations = {str(s): bank_observation(df) for s, df in pr}
+        summary["policies"][p]["bank_observations"] = observations
+        values = bank_observation_values(observations)
+        matched = matching_bank_baseline(observations, (base or {}).get("policies", {}).get(p, {}))
+        previous = bank_observation_values(matched)
+        for key, measure in BANK_MEASURES.items():
+            add(p, "info", measure, values[key], "-", "info")
+            bank_baselines[(p, measure)] = {"value": (
+                previous[key] + f"; matching windows {len(matched)}/{len(pr)}" if matched
+                else "unavailable (no matching recorded windows)")}
     # THE PAIRING, CHECKED: before its switch every run must be its AUTO2 twin to the bit.
     same = total = 0
     for (p, s), df in runs.items():
@@ -464,6 +549,8 @@ def main():
     for pol, cid, what, value, thr, verdict in rows:
         kind = "hard" if cid in HARD else "info"
         prior = (base or {}).get("criteria", {}).get(f"{pol}/{cid}", {})
+        if cid == "info":
+            prior = bank_baselines.get((pol, what), prior)
         previous = prior.get("verdict", "unavailable") if cid != "info" else "-"
         current = verdict.split()[0]
         if cid != "info":
