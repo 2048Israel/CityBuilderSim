@@ -91,6 +91,23 @@ three re-reads: `PopulationManager.getJobVacancy` 17.1%, `BuildingManager.getTot
 | t-month.csv | 76cb77eb8939ba272d1b9dd04d50adce |
 | t-pop.csv | e414af0cff9d46c1c091b99598b1674e |
 
+  **Again after QR1 shipped** (0.9.210, which moves the trace: it changes when firms sell plant).
+  Merged at f48f79d77; QR1 adds no writer of a stack's buildings, a template's posts or the
+  people (its sales go through the paths that raise). Main's classes built from the merged tree
+  with main's five model files (ded8345fc), against the merged branch's. All eight the same:
+
+| file | md5, main ded8345fc and AP5 f48f79d77 |
+|---|---|
+| t-bank.csv | aa2af5f1316c33dde8ba9366884ce152 |
+| t-bonds.csv | fa135be296fe76e98685d040a2d05a33 |
+| t-borrow.csv | 36b47896b1f126a8b75ef1102132319d |
+| t-build.csv | d2e6afe778756cef8b4c8186b0c316df |
+| t-house.csv | 96cf152bb7b38f96e2198749252b88b2 |
+| t-labour.csv | e9cf9e0947a832addd388e041eaeccaf |
+| t-month.csv | 9989337eb618a85564fa3d65307aeabe |
+| t-pop.csv | c6f5e3bacc4ae22a60a9be9775855794 |
+
+  LabourCheck 0 and AutoBuildCheck 3 (the same known red) again on the merge.
   So no ensemble. The slot-9 run's log (565 lines: the auto-builder's orders and their figures,
   the reports, every month's people) is the same in all four headless runs below once the timing
   lines are out: md5 ef60c24e224995a79164964eb11d6df5.
@@ -99,7 +116,8 @@ three re-reads: `PopulationManager.getJobVacancy` 17.1%, `BuildingManager.getTot
 
 The copy of 2026-11-25 (dojha, m4866), recopied into `%TEMP%/cbs-AP5-scratchpad/` for every run,
 loaded through `GameFiles(dir, legacy)`, `-Xmx4g`, AP2's drivers (`Perf9`, `PausedProbe`). Other
-sessions loaded the laptop, so AP2's 219 ms is not comparable; main and AP5 alternated.
+sessions loaded the laptop, so AP2's 219 ms is not comparable; main and AP5 alternated. Taken
+before the QR1 merge: main e3e390acf against a7906f265's model (QR1 touches nothing the pass holds).
 
 Headless, 12 months after 2 warm:
 
