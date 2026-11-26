@@ -312,9 +312,9 @@ dry-run request.
 
 The paired runs use `-Densemble.defaultPlaytest=true`: the driver invokes
 `LongPlaytest.main()` itself, leaving its policy actions, save/reload,
-overshoot and final checks intact. Optional primary-created and completed-month
+overshoot and final checks intact. Optional primary-created and state-sample
 callbacks are null in ordinary harnesses and the formal policy ensemble.
-They capture only the primary Game's contiguous months 1–2400, reinstall the
+They capture only the primary Game's contiguous calendar months 1–2400, reinstall the
 transient retirement observer after round trips, then detach it before later
 fixture cities. Each pair has its own label; an AUTO2 policy run is not a
 substitute for the default player. The exporter also sums actual monthly
@@ -323,16 +323,41 @@ in sector-months with an actual in-ban backstop. Its DONE marker certifies
 complete, error-free exports only: the full playtest's assertions remain in
 the log and retain their own verdict. No extra historical 80-run replay runs.
 
+The first paired attempt (`QR1-main-1900`, main probe **7b940d073**) failed the
+exporter's continuity assertion immediately at calendar month 2; it supplies
+no usable cash totals. A helper traced Game's convention: month 1 is the
+unsimulated founding baseline, `Game.run()` initializes it, and the first
+played tick ends at month 2. The capture now explicitly emits and labels that
+one baseline after `g.run()`, with zero accumulated monthly flows, followed
+by 2–2400 played rows. It asserts `!hasMonthRun()` on the baseline and
+`hasMonthRun()` thereafter as well as exact calendar continuity. It adds no
+simulation or audit and changes no calendar. The failed attempt ended on
+its own after the post-primary checks. Fresh labels keep its failed snapshot
+separate from the corrected captures.
+
+Box admission twice found PW9 running and RES3's complete ensemble waiting
+(GB3 FULL=2); no QR1 formal model ran. The launcher is a `/bin/sh` script:
+an initial `bash tools/gate-box.sh` parse failure was corrected to its normal
+`sh` invocation without changing the publisher. Read-only helper snapshot
+05:24 UTC found PW9 55/80 and RES3 0/80 waiting. The orchestrator was told;
+the explicitly approved PC-if-busy path runs paired defaults here, `JOBS=1`,
+one at a time. The formal 80 remains for the box. Retained capacity evidence:
+`target/QR1-box-ensemble-capacity.log` and its `.exit`.
+
 The final event/sector export refinement on **3f87c257c** repeats `--fast`,
 exact BankCheck whole and EnsembleCheck: **all 0**. Its new event running
 result is also checked negative in both BankCheck sale fixtures. No decision
 rule, audit tolerance or cash movement changes with the observations.
 
-The default-player capture refinement **9f360541f** repeats `--fast`, exact
-whole BankCheck and EnsembleCheck: **all 0**, finished after 01:11 local on
-2026-11-26. The formal ensemble will run this final model plus these records;
-the matching main probe adds the same optional observations, never the QR1
-gate. Both source snapshots are pushed before the box compiles them.
+The default-player implementation at **9f360541f** passed `--fast`, exact
+whole BankCheck and EnsembleCheck (**all 0**, after 01:11 local on
+2026-11-26), before the startup capture correction above. The corrected
+source **1803d5cbc** repeats all three: **all 0**, finished by 01:35.
+Matching main probe **4f0492990** repeats `--fast` and EnsembleCheck:
+**both 0**, by 01:38. The founding row leaves both audit fields unavailable;
+the empty initial audit sentinel cannot masquerade as an executed audit.
+The matching main probe adds the same optional observations, never the QR1
+gate. Both source snapshots are pushed before any corrected measurement.
 
 P3 considered and not taken, as instructed: shorten or deny a fresh full
 operating-loss runway after a long interest-only net-loss spell.
