@@ -16946,7 +16946,9 @@ public class Game {
         families.setTypedRoom(legacy->getSectors().realEstate().housingMarket().roomLeft(this,legacy));
         householdBalance.setRentBills(c -> getSectors().realEstate().housingMarket().active()
                 ? getSectors().realEstate().housingMarket().rentFor(c.key(),housingCellCount(c)) : Double.NaN);
-        householdBalance.setBoard(b -> getSectors().realEstate().housingMarket().settleBoard(b));
+        // ...and a boarder's board in its rent line, its host's in its income, billed as the rent is (RES3, REV-RES3b on 0925f4661).
+        householdBalance.setBoard(b -> getSectors().realEstate().housingMarket().strikeBoard(b),
+                () -> getSectors().realEstate().housingMarket().boardStruck());
         householdBalance.setHousedShares(this::housedShareOf);
         householdBalance.setCarAssetPrice(() -> motoring.getUsedCarPrice() > 0 ? motoring.getUsedCarPrice()
                 : getMarkets().get(Good.CARS).getLocalPrice() * HouseholdBalance.USED_CAR_FLOOR);

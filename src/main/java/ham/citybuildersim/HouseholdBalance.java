@@ -662,10 +662,23 @@ public class HouseholdBalance {
     /** RES3 actual class bill per household; NaN retains the bare-model pooled-rent API. */
     private ToDoubleFunction<Household> rentBills = c -> Double.NaN;
     public void setRentBills(ToDoubleFunction<Household> bills) { rentBills=bills; }
-    /** RES3 (REV-RES3b on 19fcb37f0): the board the last clearing's boarders owe their hosts, settled once the stock has
-     *  followed the people, on the census the leases were struck on, before every household's month (HousingMarket.settleBoard()). */
-    private java.util.function.Consumer<HouseholdBalance> board = b -> { };
-    public void setBoard(java.util.function.Consumer<HouseholdBalance> board) { this.board=board; }
+    /**
+     * RES3: the board the last clearing's boarders owe their hosts, struck once the stock has followed the people, on
+     * the census the leases were struck on (REV-RES3b on 19fcb37f0), and billed the rents' own way (REV-RES3b on
+     * 0925f4661): each boarder cell's billed in its rent line, each host cell's credited in full as the month's income,
+     * both by cell, and a departed boarder's on the rents' own line (unsettled, getUnsettledRent()). The load path
+     * re-plans on the month's as struck (struck, saved by the market), as it does on the rest of the settled month.
+     */
+    public record BoardStrike(java.util.Map<String,Double> billed, java.util.Map<String,Double> received, double unsettled) {
+        public static final BoardStrike NONE = new BoardStrike(java.util.Map.of(), java.util.Map.of(), 0);
+        double out(Household c) { return c.households > 0 ? billed.getOrDefault(c.key(), 0.0) / c.households : 0; }
+        double in(Household c) { return c.households > 0 ? received.getOrDefault(c.key(), 0.0) / c.households : 0; }
+    }
+    private java.util.function.Function<HouseholdBalance,BoardStrike> board = b -> BoardStrike.NONE;
+    private java.util.function.Supplier<BoardStrike> boardStruck = () -> BoardStrike.NONE;
+    public void setBoard(java.util.function.Function<HouseholdBalance,BoardStrike> strike, java.util.function.Supplier<BoardStrike> struck) {
+        this.board=strike; this.boardStruck=struck;
+    }
     /** The student's large finite treasury allowance is money too, and follows the city's unit. */
     public void setMoneyUnitSource(java.util.function.DoubleSupplier source){for(Household c:cells)if(c instanceof StudentHousehold s)s.setMoneyUnitSource(source);}
     private double rentBill(Household c,double pooled) {
@@ -1544,8 +1557,9 @@ public class HouseholdBalance {
 
         /* ---- the stock belongs to the people, not to the cells ---- */
         followThePeople(fresh, buffer, plan);
-        // ...the board, on the census the clearing struck its leases on (RES3, HousingMarket.settleBoard()).
-        board.accept(this);
+        // ...the board, on the census the clearing struck its leases on, billed with the rents (RES3, HousingMarket.strikeBoard()).
+        BoardStrike boarded = board.apply(this);
+        lastUnsettledRent += boarded.unsettled();
 
         /* ---- and every household's month ---- */
         plannedSpend = 0;
@@ -1564,12 +1578,14 @@ public class HouseholdBalance {
                     : rowShopping[c.row()] * shopWeight[i] / rowShopWeight[c.row()] / c.households;
 
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
-            double rentDue = rentBill(c,rentPerHousehold);
+            // ...and a boarder's board, the second part of its rent line, owed its hosts (RES3).
+            double rentDue = rentBill(c,rentPerHousehold) + boarded.out(c);
             c.studentLoanRate = studentLoanRate;
             // ...and the bank's account fee with the other fixed bills (0.7.7).
             double accountDue = accountFeeFor(c, c.households);
             double feesDue = feesPer[i] + accountDue;
-            c.settle(disposablePer[i], rentDue, feesDue, spentPer,
+            // ...a host's board, its boarders' rent lines, credited in full as the month's income, as a landlord books a rent (RES3).
+            c.settle(disposablePer[i] + boarded.in(c), rentDue, feesDue, spentPer,
                     foodPricePerHead, riskFreeAnnual, liquidity, localPerUsd);
             c.accountFee = accountDue;
             // HL1 (2026-11-11): the bills a household could not fund (the sellers booked them in full), and what this cell was handed of the rows' totals.
@@ -5487,12 +5503,14 @@ public class HouseholdBalance {
         foldEmptyCells();
 
         plannedSpend = 0;
+        // ...the board as the settled month struck it, saved (RES3): a host's income and a boarder's rent line.
+        BoardStrike boarded = boardStruck.get();
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
             if (!(c.households > 0)) { c.clearWorking(); continue; }
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
             c.studentLoanRate = studentLoanRate;
-            c.restrike(disposablePer[i], rentBill(c,rentPerHousehold),
+            c.restrike(disposablePer[i] + boarded.in(c), rentBill(c,rentPerHousehold) + boarded.out(c),
                     feesPer[i] + accountFeeFor(c, c.households),
                     foodPricePerHead, riskFreeAnnual);
             c.voucher = foodAssistanceFor(c, foodPricePerHead);

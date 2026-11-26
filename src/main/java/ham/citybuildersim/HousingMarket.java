@@ -42,12 +42,15 @@ public final class HousingMarket {
         public Map<String,Double> overcrowded=new LinkedHashMap<>();
         /** ...those it placed within the line, by cell (boarding, lodging or on a share, not overcrowded); an older save has none. */
         public Map<String,Double> withinTheLine=new LinkedHashMap<>();
-        /** The payers boarding with a housed family, by cell, and the month's board, what each boarder cell paid and each
-         *  host cell received (settleBoard()); an older save has none. */
+        /** The payers boarding with a housed family, by cell, and the month's board, what each boarder cell was billed in
+         *  its rent line and each host cell credited as income (strikeBoard()); an older save has none. */
         public Map<String,Double> boarding=new LinkedHashMap<>(),boardPaid=new LinkedHashMap<>(),boardReceived=new LinkedHashMap<>();
-        /** The board the clearing's boarders owe, by the home they board in, settled at the next month's household
-         *  settlement (settleBoard(), REV-RES3b on 19fcb37f0); an older save has none. */
+        /** The board the clearing's boarders owe, by the home they board in, billed at the next month's household
+         *  settlement with the rents (strikeBoard(), REV-RES3b on 19fcb37f0 and on 0925f4661); an older save has none. */
         public List<Board> owed=new ArrayList<>();
+        /** The month's board credited to hosts whose boarder's cell had no household left to bill, and owed on a home no
+         *  host household was left in (strikeBoard()); an older save has none. */
+        public double boardUnsettled,boardUnhosted;
     }
     private final Map<HousingInventory.Key,ClassState> classes=new LinkedHashMap<>();
     private List<HousingChoice.Lease> leases=List.of();
@@ -67,8 +70,9 @@ public final class HousingMarket {
     private Map<String,Double> overcrowded=Map.of();
     /** ...those it placed within the line, the payers boarding, and the board paid and received, by cell, saved with it. */
     private Map<String,Double> withinTheLine=Map.of(),boarding=Map.of(),boardPaid=Map.of(),boardReceived=Map.of();
+    private double boardUnsettled,boardUnhosted;
     /** The board each boarding cell owes this clearing, by the home it boards in (overcrowding()), settled at the next
-     *  month's household settlement on the census the leases were struck on (settleBoard()); saved. */
+     *  month's household settlement on the census the leases were struck on, with the rents (strikeBoard()); saved. */
     private List<Board> owed=List.of();
     /** A boarding cell's board on a home: what overcrowding() set it owing, half the door's ask a household up to its budget. */
     public record Board(String cell,HousingInventory.Key home,double due){}
@@ -84,11 +88,20 @@ public final class HousingMarket {
      *  a room: not overcrowded, yet wanting a home of their own (Game.getHouseholdsWantingAHome()); saved with the state. */
     public double withinTheLine(){return sum(withinTheLine);}
     /** The households whose budget funds a share that found no door standing and board with a housed family (overcrowding()),
-     *  overcrowded or within the line as their door's persons a room fall, paying their hosts board (settleBoard()); saved. */
+     *  overcrowded or within the line as their door's persons a room fall, paying their hosts board (strikeBoard()); saved. */
     public double boarders(){return sum(boarding);}
-    /** This month's board, the last clearing's boarders', paid out of their cells and into their hosts' cells, every cent,
-     *  at the household settlement (settleBoard()); saved. */
+    /** This month's board, the last clearing's boarders', billed into their cells' rent lines at the household settlement
+     *  and credited in full to their hosts' cells as income (strikeBoard()); what a boarder could not fund is its unfunded,
+     *  as its rent's is. Saved. */
     public double boardPaid(){return sum(boardPaid);}
+    /** ...the board credited to hosts whose boarder's cell had no household left to bill, a departure the rents' own
+     *  line carries (HouseholdBalance.getUnsettledRent()); and owed on a home no host household was left in, billed to
+     *  nobody. Neither has a cause in the month as the game plays it: the leases' census is the settlement's. Saved. */
+    public double boardUnsettled(){return boardUnsettled;}
+    public double boardUnhosted(){return boardUnhosted;}
+    /** The month's board as its settlement struck it, from the saved state: what the load path re-plans on
+     *  (HouseholdBalance.planOnly()), so a reloaded plan is the settled month's. */
+    public HouseholdBalance.BoardStrike boardStruck(){return new HouseholdBalance.BoardStrike(boardPaid,boardReceived,boardUnsettled);}
     /** The board this clearing's boarders owe, settled at the next month's household settlement; saved. */
     public double boardOwed(){double n=0;for(var b:owed)n+=b.due();return n;}
     public Map<String,Double> boardOwedByCell(){Map<String,Double> m=new LinkedHashMap<>();for(var b:owed)m.merge(b.cell(),b.due(),Double::sum);return m;}
@@ -519,7 +532,7 @@ public final class HousingMarket {
      * line has room for is settled before it; who can fund a share it fits takes a door or share past the line at its
      * ask like anyone, and finding no door standing boards with a housed family (boarders()), as a fifth to a third of
      * urban households took boarders about 1900 (Modell and Hareven 1973), paying its hosts board, booked on both
-     * sides by settleBoard(); no landlord is paid and no class is billed for it. retainAndClear() keeps a door within
+     * sides by strikeBoard(); no landlord is paid and no class is billed for it. retainAndClear() keeps a door within
      * the line only, so it runs again at each clearing. Who it houses is counted by the census's own line on the door it
      * lives on (REV-RES3b P1-4): past two persons a room overcrowded (overcrowded()), within it not (withinTheLine()),
      * both saved with the state; either still seeks a door of its own (roomLeft()) and still presses the rent as when it
@@ -565,7 +578,7 @@ public final class HousingMarket {
         }
         // Who pays for neither lodges, and who could pay but found no door boards: a household beside each occupied door a
         // round, nearest first, no landlord's bill; the boarder owes its hosts board, half the door's ask a household up to
-        // its budget, settled by settleBoard(). The census's line is read on the door it lives on (REV-RES3b P1-4): the
+        // its budget, billed with the rents by strikeBoard(). The census's line is read on the door it lives on (REV-RES3b P1-4): the
         // door's people, the incumbents' a door and the lodgers' before it spread a household to a door a round, and its own.
         Map<String,Boolean> pays=new HashMap<>();Map<String,Double> budgets=new HashMap<>();
         for(var d:left){pays.put(d.key(),paysAShare(d));budgets.put(d.key(),d.budget());}
@@ -632,33 +645,39 @@ public final class HousingMarket {
     /**
      * The board (REV-RES3b P1-1): each boarding cell pays the cells housed on the doors of the home it boards in, by their
      * doors, what overcrowding() set it owing, half the door's ask a household up to its budget, as boarders paid their
-     * hosts about 1900 (Modell and Hareven 1973). Settled as the rents are, at the next month's household settlement
-     * (HouseholdBalance.advanceMonth(), Game sets the hook), once the stock has followed the people: the clearing struck
-     * the leases and the budgets on the census that settlement keeps (HouseholdBalance.housingCensusCells()), so the
-     * wallets read here are those households' - a cell the census fills since the clearing pays out of the savings it
-     * inherited, and a household the census moves out of a cell takes none of that cell's board with it (REV-RES3b on
-     * 19fcb37f0: settled in the clearing's month on the live census, both were wrong). Both sides of the households'
-     * money in the one step: what a boarding cell's savings cannot meet is not paid, and a home with no host cell that
-     * has households is owed nothing, so every cent paid out of a boarder's cell is a cent into its hosts'. No landlord
-     * is paid and no class is billed; the boarder's lease stays sponsored. Settled once: what was owed is then cleared.
+     * hosts about 1900 (Modell and Hareven 1973). It goes the rents' own way (REV-RES3b on 0925f4661: settled on a path
+     * of its own, out of the opening savings, a wage-funded boarder paid nothing its budget funded and what went unpaid
+     * was erased). Struck here, at the next month's household settlement once the stock has followed the people, on the
+     * census the clearing struck the leases on (HouseholdBalance.housingCensusCells(), REV-RES3b on 19fcb37f0), and
+     * then billed as a rent is: a boarder's board is the second part of its rent line (HouseholdBalance.advanceMonth()),
+     * paid out of the month's income first and then as the household's other bills are, what it cannot fund its
+     * unfunded, with the eviction, default and write-off a rent's shortfall has; its host is its landlord, credited the
+     * board in full as the month's income, as the landlord books a rent in full at the clearing. A boarder's cell with
+     * no household left to bill is a departure, the rents' rule: its hosts were credited and no household was charged,
+     * the rents' own line on the households' identity (getUnsettledRent()). A home with no host household left is owed
+     * nothing and its boarders are billed none (boardUnhosted()). No class is billed; the boarder's lease stays
+     * sponsored. Struck once: what was owed is then cleared, and what was billed and credited is saved, so the load
+     * path re-plans on the settled month's rent lines and incomes (boardStruck()).
      */
-    void settleBoard(HouseholdBalance balance){
-        boardPaid=Map.of();boardReceived=Map.of();if(owed.isEmpty())return;
-        Map<HousingInventory.Key,Map<Household,Double>> hosts=new HashMap<>();
+    HouseholdBalance.BoardStrike strikeBoard(HouseholdBalance balance){
+        boardPaid=Map.of();boardReceived=Map.of();boardUnsettled=0;boardUnhosted=0;
+        if(owed.isEmpty())return HouseholdBalance.BoardStrike.NONE;
+        Map<HousingInventory.Key,Map<String,Double>> hosts=new HashMap<>();
         for(var l:leases)if(l.count()>0){var c=balance.cellByKey(owner(l.cell()));
-            if(c!=null&&c.households>0)hosts.computeIfAbsent(l.home(),k->new LinkedHashMap<>()).merge(c,l.count(),Double::sum);}
-        Map<Household,Double> due=new LinkedHashMap<>();
-        for(var b:owed){var c=balance.cellByKey(owner(b.cell()));
-            if(c!=null&&c.households>0&&b.due()>0&&hosts.containsKey(b.home()))due.merge(c,b.due(),Double::sum);}
-        Map<Household,Double> meets=new HashMap<>();
-        for(var e:due.entrySet()){var c=e.getKey();double can=Math.max(0,c.savings*c.households);meets.put(c,e.getValue()>can?can/e.getValue():1);}
+            if(c!=null&&c.households>0)hosts.computeIfAbsent(l.home(),k->new LinkedHashMap<>()).merge(c.key(),l.count(),Double::sum);}
         Map<String,Double> paid=new LinkedHashMap<>(),received=new LinkedHashMap<>();
-        for(var b:owed){var c=balance.cellByKey(owner(b.cell()));if(c==null||!meets.containsKey(c)||!hosts.containsKey(b.home()))continue;
-            double pay=b.due()*meets.get(c);if(!(pay>0)||!Double.isFinite(pay))continue;
-            var on=hosts.get(b.home());double doors=0;for(double v:on.values())doors+=v;
-            for(var h:on.entrySet()){double x=pay*h.getValue()/doors;h.getKey().savings+=x/h.getKey().households;received.merge(h.getKey().key(),x,Double::sum);}
-            c.savings-=pay/c.households;paid.merge(c.key(),pay,Double::sum);}
-        boardPaid=Collections.unmodifiableMap(paid);boardReceived=Collections.unmodifiableMap(received);owed=List.of();
+        double unsettled=0,unhosted=0;
+        for(var b:owed){if(!(b.due()>0)||!Double.isFinite(b.due()))continue;
+            var on=hosts.get(b.home());
+            if(on==null){unhosted+=b.due();continue;}
+            double doors=0;for(double v:on.values())doors+=v;
+            for(var h:on.entrySet())received.merge(h.getKey(),b.due()*h.getValue()/doors,Double::sum);
+            var c=balance.cellByKey(owner(b.cell()));
+            if(c!=null&&c.households>0)paid.merge(c.key(),b.due(),Double::sum);else unsettled+=b.due();}
+        owed=List.of();
+        boardPaid=Collections.unmodifiableMap(paid);boardReceived=Collections.unmodifiableMap(received);
+        boardUnsettled=unsettled;boardUnhosted=unhosted;
+        return boardStruck();
     }
     /** A class's doors offered past the census line, at its ask over share (0: a lodger's, no bill), every other test kept. */
     private static HousingChoice.Offer pastTheLine(HousingChoice.Offer o,double n,int share){
@@ -1008,7 +1027,7 @@ public final class HousingMarket {
     public State forSave(){State s=new State();s.month=month;s.classes=classes();s.leases=new ArrayList<>(leases);s.demand=new ArrayList<>(demand);s.pipeline=new ArrayList<>(pipeline);s.sharing=new ArrayList<>(sharing);
         s.hosted=hosted;s.rentPriceIndex=rentPriceIndex;
         s.kept=result.kept();s.suitable=result.suitable();s.crowded=result.crowded();s.unaffordable=result.unaffordable();s.noSuitable=result.noSuitable();s.unplaced=result.unplaced();s.overcrowded=new LinkedHashMap<>(overcrowded);
-        s.withinTheLine=new LinkedHashMap<>(withinTheLine);s.boarding=new LinkedHashMap<>(boarding);s.boardPaid=new LinkedHashMap<>(boardPaid);s.boardReceived=new LinkedHashMap<>(boardReceived);s.owed=new ArrayList<>(owed);return s;}
+        s.withinTheLine=new LinkedHashMap<>(withinTheLine);s.boarding=new LinkedHashMap<>(boarding);s.boardPaid=new LinkedHashMap<>(boardPaid);s.boardReceived=new LinkedHashMap<>(boardReceived);s.owed=new ArrayList<>(owed);s.boardUnsettled=boardUnsettled;s.boardUnhosted=boardUnhosted;return s;}
     private static void nonnegative(double n){if(!Double.isFinite(n)||n<0)throw new IllegalArgumentException("Invalid saved housing quantity");}
     private static void validate(State s){
         nonnegative(s.rentPriceIndex);
@@ -1058,7 +1077,9 @@ public final class HousingMarket {
         double paidOut=0,paidIn=0;
         if(s.boardPaid!=null)for(var v:s.boardPaid.values()){if(v==null)throw new IllegalArgumentException("Invalid saved board");nonnegative(v);paidOut+=v;}
         if(s.boardReceived!=null)for(var v:s.boardReceived.values()){if(v==null)throw new IllegalArgumentException("Invalid saved board");nonnegative(v);paidIn+=v;}
-        if(Math.abs(paidOut-paidIn)>MoneyAudit.tolerance(paidOut))throw new IllegalArgumentException("Saved board paid and received do not reconcile");
+        nonnegative(s.boardUnsettled);nonnegative(s.boardUnhosted);
+        // ...what the hosts were credited is what the boarders were billed, and a departed boarder's (REV-RES3b on 0925f4661).
+        if(Math.abs(paidOut+s.boardUnsettled-paidIn)>MoneyAudit.tolerance(paidIn))throw new IllegalArgumentException("Saved board paid and received do not reconcile");
         // ...and the board owed, each a boarding cell's on a home (REV-RES3b on 19fcb37f0).
         if(s.owed!=null)for(var b:s.owed){
             if(b==null||b.cell()==null||b.home()==null||!profiles.containsKey(b.cell())
@@ -1087,7 +1108,7 @@ public final class HousingMarket {
     private static Map<String,Double> kept(Map<String,Double> m){return m==null?Map.of():Collections.unmodifiableMap(new LinkedHashMap<>(m));}
     public void restore(State s){if(s!=null)validate(s);reset();if(s==null)return;month=s.month;for(ClassState c:s.classes)classes.put(c.key(),c.copy());leases=List.copyOf(s.leases);demand=List.copyOf(s.demand);pipeline=List.copyOf(s.pipeline);sharing=List.copyOf(s.sharing);
         hosted=s.hosted;rentPriceIndex=s.rentPriceIndex;overcrowded=s.overcrowded==null?Map.of():Collections.unmodifiableMap(new LinkedHashMap<>(s.overcrowded));
-        withinTheLine=kept(s.withinTheLine);boarding=kept(s.boarding);boardPaid=kept(s.boardPaid);boardReceived=kept(s.boardReceived);owed=s.owed==null?List.of():List.copyOf(s.owed);
+        withinTheLine=kept(s.withinTheLine);boarding=kept(s.boarding);boardPaid=kept(s.boardPaid);boardReceived=kept(s.boardReceived);owed=s.owed==null?List.of():List.copyOf(s.owed);boardUnsettled=s.boardUnsettled;boardUnhosted=s.boardUnhosted;
         result=new HousingChoice.Result(leases,s.kept,s.suitable,s.crowded,s.unaffordable,s.noSuitable,s.unplaced);}
     /** The native load additionally checks the complete physical catalogue, including unavailable quotes. */
     public void restore(State s,BuildingManager buildings){
@@ -1101,7 +1122,7 @@ public final class HousingMarket {
         }
         restore(s);
     }
-    public void reset(){classes.clear();leases=List.of();demand=List.of();offers=List.of();pipeline=List.of();sharing=List.of();hosted=0;overcrowded=Map.of();withinTheLine=Map.of();boarding=Map.of();boardPaid=Map.of();boardReceived=Map.of();owed=List.of();pastTheStock=0;rentPriceIndex=0;arrivalProjection=false;formingFamilies=formingAdults=0;month=Integer.MIN_VALUE;result=new HousingChoice.Result(List.of(),0,0,0,0,0,0);}
+    public void reset(){classes.clear();leases=List.of();demand=List.of();offers=List.of();pipeline=List.of();sharing=List.of();hosted=0;overcrowded=Map.of();withinTheLine=Map.of();boarding=Map.of();boardPaid=Map.of();boardReceived=Map.of();owed=List.of();boardUnsettled=boardUnhosted=0;pastTheStock=0;rentPriceIndex=0;arrivalProjection=false;formingFamilies=formingAdults=0;month=Integer.MIN_VALUE;result=new HousingChoice.Result(List.of(),0,0,0,0,0,0);}
     public void redenominate(double scale){for(ClassState c:classes.values()){c.ask*=scale;c.capital*=scale;c.carry*=scale;c.target*=scale;c.lastTrade*=scale;c.tradeValue*=scale;}
         rentPriceIndex*=scale;
         leases=leases.stream().map(l->new HousingChoice.Lease(l.cell(),l.home(),l.count(),l.bill()*scale,l.households(),l.funding())).toList();
@@ -1112,6 +1133,6 @@ public final class HousingMarket {
         // on 19fcb37f0: a 1,000:1 reform left the board a thousand times the savings it moves between).
         offers=offers.stream().map(o->new HousingChoice.Offer(o.key(),o.count(),o.capacity(),o.bedrooms(),o.area(),o.quality(),o.garden(),o.stepFree(),o.rent()*scale,o.recurring()*scale)).toList();
         owed=owed.stream().map(b->new Board(b.cell(),b.home(),b.due()*scale)).toList();
-        boardPaid=scaled(boardPaid,scale);boardReceived=scaled(boardReceived,scale);
+        boardPaid=scaled(boardPaid,scale);boardReceived=scaled(boardReceived,scale);boardUnsettled*=scale;boardUnhosted*=scale;
         result=new HousingChoice.Result(leases,result.kept(),result.suitable(),result.crowded(),result.unaffordable(),result.noSuitable(),result.unplaced());}
 }
