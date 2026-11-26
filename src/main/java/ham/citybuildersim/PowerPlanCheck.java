@@ -52,6 +52,8 @@ import java.util.Set;
  *      LongPlaytest's m116-m150 power served at 0.57-0.61 as a forecast blind to such a works; PF1's trace found it already carried, and this pins it.
  *   9a. A SMALL TOWN IN 1906 orders small steam stations, through the ordinary dated catalogue and automatic order path;
  *       with that row absent the same town orders the 86 MW Oil-Fired Plant (PW9). The station's lead closes the actual gap before diesel's year.
+ *   9b. THE JOBLESS FOUNDING GRID does not lose power when the first small station hires: its endowment is fixed, the new
+ *       plant's output is staffed. Preview and native dispatch agree at scarce staff; zero/full staff, water/substation posts and K endowments too.
  *  10. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
  *      the default run's counts are LongPlaytest's line, "the power planner (PW3)".
  */
@@ -1433,6 +1435,77 @@ public final class PowerPlanCheck {
                         && (bm.getStack(oil) == null || bm.getStack(oil).getUnderConstruction() == 0));
     }
 
+    /** PW9's played finding: the first 733 kW station fabricated a 1,545 kW loss from the jobless founding grid. */
+    static void foundingGrid(Path root) {
+        out.println("--- 9b. a small station cannot consume the jobless founding endowment (PW9) ---");
+        Game g = WorksFinanceCheck.founded(root, "founding-grid", new String[][] {{"House", "900"}, {"Construction Depot", "5"}});
+        WorksFinanceCheck.place(g, 3_000);
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate small = plant(g, "Small Steam Station"), water = plant(g, "Water Treatment Plant"), sub = plant(g, "Substation");
+        long[] wanted = new long[JobType.values().length];
+        for (JobType j : JobType.values()) wanted[j.ordinal()] = small.getJobs(j);
+        g.getPopulationManager().updateJobs(wanted);
+        g.getPopulationManager().restoreWorkforce(small.getTotalJobs() - 1);
+        double[] heads = new double[WageBand.values().length];
+        heads[WageBand.of(JobType.DIPLOMA).ordinal()] = small.getJobs(JobType.DIPLOMA);
+        g.getPopulationManager().restoreSkilledHeads(heads);
+        double[] fill = g.getPopulationManager().getJobFillRate();
+        NewUnit unit = NewUnit.of(g, small);
+        double own = BuildAdvice.staffing(unit, fill), base = g.getServicesManager().getUtilitiesHandler().getFoundingGridKw();
+        check("fixture: no power/water posts stand; the sourced station has five posts and a positive scarce fill below the old net-loss boundary",
+                java.util.Arrays.stream(bm.getJobArrayPerCategory(BuildingType.ELECTRICITY)).sum() == 0
+                        && java.util.Arrays.stream(bm.getJobArrayPerCategory(BuildingType.WATER)).sum() == 0
+                        && small.getTotalJobs() == 5 && own > 0 && own < base / (base + unit.getProduction1()));
+        double before = BuildAdvice.supplyDemand(g, POWER, Map.of(), BuildAdvice.NOW)[0];
+        double preview = BuildAdvice.supplyDemand(g, POWER, Map.of(small, 1L), BuildAdvice.NOW)[0];
+        check("the first small station's preview preserves the endowment and adds its resolved staffed power",
+                close(before, base, 1e-12) && close(preview - before, unit.getProduction1() * own, 1e-12) && preview > before);
+        g.setCashForTest(1e12);
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2);
+        Game.BuildResult[] placed = {null};
+        quietly(() -> placed[0] = g.buildStack(small, 1, true));
+        UtilitiesHandler actual = g.getServicesManager().getUtilitiesHandler();
+        g.getServicesManager().updateJobFillRate(fill);
+        g.getServicesManager().updateServiceWages(new double[fill.length]);
+        g.getServicesManager().updateServices();
+        check("the actual first station's staffed generation agrees with the preview, with the row and jobs intact",
+                placed[0] == Game.BuildResult.SUCCESS && bm.getQuantity(small.getId()) == 1
+                        && small.getTotalJobs() == 5 && close(actual.getProduction(), base + unit.getProduction1() * own, 1e-12)
+                        && close(actual.getProduction(), preview, 1e-12));
+        double standing = BuildAdvice.supplyDemand(g, POWER, Map.of(), BuildAdvice.NOW)[0];
+        check("water and substation posts added to the planner cannot derate the founding grid or the existing plant",
+                close(BuildAdvice.supplyDemand(g, POWER, Map.of(water, 1L), BuildAdvice.NOW)[0], standing, 1e-12)
+                        && close(BuildAdvice.supplyDemand(g, POWER, Map.of(sub, 1L), BuildAdvice.NOW)[0], standing, 1e-12));
+        for (double staffed : new double[] {0, .5, 1}) {
+            double[] rates = new double[fill.length];
+            java.util.Arrays.fill(rates, staffed);
+            long[] posts = new long[fill.length];
+            for (JobType j : JobType.values()) posts[j.ordinal()] = small.getJobs(j);
+            for (long k : new long[] {1, 3}) {
+                UtilitiesHandler nativePower = new UtilitiesHandler();
+                nativePower.setFoundingEndowments(k);
+                nativePower.setWattsProduction(small.getProduction1());
+                nativePower.setWattsConsumption(nativePower.getFoundingGridKw() / PowerDispatch.PLAN_PEAK_HOUR * .9);
+                nativePower.updateJobFillRate(rates);
+                nativePower.updateUtilitiyWages(new double[fill.length], posts, new long[fill.length]);
+                for (boolean catalogue : new boolean[] {false, true}) {
+                    nativePower.setPlants(catalogue ? Map.of(small, 1L) : null);
+                    nativePower.updateEnergyRatio();
+                    double grid = nativePower.getLatestRows().stream().filter(r -> r.name.equals("grid")).mapToDouble(r -> r.kw).sum();
+                    check("native " + (catalogue ? "catalogue" : "bare handler") + ", fill " + staffed + ", endowments " + k + ": fixed grid, staffed plant and the spread's same free grid",
+                            close(grid, k * base, 1e-12)
+                                    && close(nativePower.getProduction(), k * base + small.getProduction1() * staffed, 1e-12)
+                                    && nativePower.yearRunning(Map.of()) == 0);
+                }
+                nativePower.setPlants(Map.of());
+                nativePower.updateUtilitiyWages(new double[fill.length], new long[fill.length], posts);
+                nativePower.updateEnergyRatio();
+                check("water-only posts, fill " + staffed + ", endowments " + k + ": founding generation stays fixed",
+                        close(nativePower.getProduction(), k * base, 1e-12));
+            }
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         java.util.Locale.setDefault(java.util.Locale.CANADA);
         Path root = TempDirs.create("powerplancheck");
@@ -1452,6 +1525,7 @@ public final class PowerPlanCheck {
         holdsPower(root);
         millUnderConstruction(root);
         earlyTown(root);
+        foundingGrid(root);
         out.println("--- 10. how often each fires ---");
         out.printf("this harness's suggestions: reserve test %d, spread %d (the default run's: LongPlaytest, \"the power planner (PW3)\")%n",
                 BuildAdvice.RESERVE_ORDERS.get(), BuildAdvice.SPREAD_ORDERS.get());
