@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over
  * BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_MONTHS running while it owes the desk,
- * and a quarter of its biggest holding a month only once it is overdrawn with no lender (AQ1).
+ * and a quarter of its biggest holding a month after the same operating-loss runway when overdrawn with no lender (QR1).
  *
  * WHY: on main's AUTO2 ensemble, seed 2, Business Services lost money 101 months running. The shortfall desk lent it
  * $409M of the losses and the sector held every office through all of it, until the desk refused at month 1091; then the
@@ -438,8 +438,17 @@ public class DistressBleedCheck {
         out.println("\n--- overdrawn with no lender: interest-only losses hold, operating losses sell ---");
 
         // Cause the condition: the plant earns its running costs every month, interest makes every month a net loss,
-        // and the shortfall desk has lent nothing. Both clocks read the statements rather than a restored count.
+        // and a prior restructuring blocks fresh credit despite the remaining debt. Both clocks read the statements.
         Town c = town("dbleed-c");
+        // The no-interim-lender backstop already restructures debt and closes the overdraft without selling the plant.
+        c.lend(c.key);
+        double assets = LOAN / (2 * BusinessDebtManager.INSOLVENCY_TRIGGER);
+        c.desk.setAssets(c.key, assets);
+        c.desk.setCash(c.key, OVERDRAWN);
+        double writtenOff = c.desk.restructure(c.key, true);
+        assertTrue("the existing no-lender restructuring writes down debt and closes the overdraft while keeping the plant",
+                writtenOff > 0 && Math.abs(c.desk.getPrincipal(c.key) - assets * BusinessDebtManager.RESTRUCTURE_TARGET) < 1e-6
+                        && c.desk.getCash(c.key) == 0 && c.desk.takeOverdraftForgiven(c.key) == -OVERDRAWN && c.held() == CENTRES);
         c.cash(c.key, OVERDRAWN);
         long interestSales = 0;
         for (int i = 0; i < DISTRESS + BLEED; i++) {
@@ -449,7 +458,8 @@ public class DistressBleedCheck {
             interestSales += sold(c.ask(c.bs));
         }
         assertTrue("fixture: paying plant is overdrawn, has no lender and has net losses past the dial solely from interest",
-                c.bs.getCash() < 0 && c.desk.getPrincipal(c.key) == 0 && c.held() == CENTRES
+                c.bs.getCash() < 0 && c.desk.getPrincipal(c.key) > 0 && c.desk.isBorrowingBlocked(c.key)
+                        && !c.desk.canFundProject(c.key, LOAN) && c.held() == CENTRES
                         && c.bs.statement().operatingIncome > 0 && c.bs.getNetIncome() < 0
                         && c.plans.getLossMonths(c.key) == DISTRESS + BLEED && c.plans.getOperatingLossMonths(c.key) == 0);
         assertTrue("interest-only losses sell no paying plant even overdrawn with no lender", interestSales == 0);
@@ -472,10 +482,10 @@ public class DistressBleedCheck {
         BusinessInvestment.Decision quarter = c.ask(c.bs);
         assertTrue("fixture: the rule was asked of a sector past the dial that still held centres",
                 c.plans.getLossMonths(c.key) >= DISTRESS && c.plans.getOperatingLossMonths(c.key) == DISTRESS
-                        && quarterHeld == CENTRES && c.bs.getCash() < 0 && c.desk.getPrincipal(c.key) == 0);
+                        && quarterHeld == CENTRES && c.bs.getCash() < 0 && c.desk.isBorrowingBlocked(c.key));
         long want = Math.min(quarterHeld, Math.max(1, (long) Math.ceil(quarterHeld * BusinessInvestment.MAX_RETIREMENT_FRACTION)));
         long bleedStep = Math.max(1, quarterHeld / BLEED);
-        out.printf("   %d centres held at a net count of %d, cash $%,.0fk, nothing owed to the desk: %d sold; a lent sector would sell %d%n",
+        out.printf("   %d centres held at a net count of %d, cash $%,.0fk, fresh credit blocked: %d sold; a lent sector would sell %d%n",
                 quarterHeld, c.plans.getLossMonths(c.key), c.bs.getCash(), quarter.quantity, bleedStep);
         assertTrue("it sells", quarter.build);
         assertTrue("...from the biggest holding", quarter.template != null && quarter.template.getId() == c.contact.getId());
@@ -490,16 +500,6 @@ public class DistressBleedCheck {
             assertTrue("running result " + running + " resets the distress clock while interest keeps net income below zero",
                     c.plans.getOperatingLossMonths(c.key) == 0 && c.bs.getNetIncome() < 0 && !c.ask(c.bs).build);
         }
-
-        // The no-interim-lender backstop already restructures the debt and closes the overdraft without selling the plant.
-        c.lend(c.key);
-        double assets = LOAN / (2 * BusinessDebtManager.INSOLVENCY_TRIGGER);
-        c.desk.setAssets(c.key, assets);
-        c.desk.setCash(c.key, OVERDRAWN);
-        double writtenOff = c.desk.restructure(c.key, true);
-        assertTrue("the existing no-lender restructuring writes down debt and closes the overdraft while keeping the plant",
-                writtenOff > 0 && Math.abs(c.desk.getPrincipal(c.key) - assets * BusinessDebtManager.RESTRUCTURE_TARGET) < 1e-6
-                        && c.desk.getCash(c.key) == 0 && c.desk.takeOverdraftForgiven(c.key) == -OVERDRAWN && c.held() == CENTRES);
 
         /* ============ 7. only a sector the spare-capacity rule cannot reach bleeds ============ */
         out.println("\n--- only a sector with no demand reading bleeds ---");
