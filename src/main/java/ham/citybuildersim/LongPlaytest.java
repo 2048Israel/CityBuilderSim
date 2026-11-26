@@ -5166,53 +5166,81 @@ public class LongPlaytest {
         }
     }
 
-    /** Every district planned through the map's own chain, then each one's boxes decoded (CL3Probe's way: tile k, x = b & 31, y = (b >> 5) & 31, type = b >>> BOX_TYPE_SHIFT), the packed ones left out. */
+    /**
+     * Every district planned through the map's own chain, each one's boxes decoded (CL3Probe's way: tile k, x = b & 31,
+     * y = (b >> 5) & 31, type = b >>> BOX_TYPE_SHIFT), the packed ones left out. A district is read as soon as a job
+     * leaves its plan current, so none is planned again only to be read.
+     * WHY: the map keeps the last PLANS_KEPT districts drawn; read after the whole city was planned, every district
+     * before them was planned a second time to be read, with the month before's snapshot and most of this one's held,
+     * and at the dry run's m2389 (RES3, 188 districts, 10.8 million people) one of those plans ran the 2 GB heap out in
+     * DistrictPlan's overflow log. Read when current, a plan is the one the city draws: nothing the model reads moves
+     * while the snapshot is made. What no job left current (an edge district whose band's packing came after its plan
+     * had left the cache) is read last, through drawnOf(), as before.
+     */
     static Map<Long, LayoutSnap> layoutSnapshot(CityMap m) {
         List<CityMap.District> ds = new ArrayList<>(m.districts());
-        for (CityMap.District d : ds) {
-            if (m.planned(d)) continue;
-            for (CityMap.Job j : m.planJobs(d)) {
-                j.run();
-                m.adopt(j);
-            }
-        }
-        m.packed();
         int nt = m.types().length;
         Map<Long, LayoutSnap> out = new java.util.HashMap<>();
+        java.util.Set<CityMap.District> unread = new java.util.LinkedHashSet<>(ds);
         for (CityMap.District d : ds) {
-            CityMap.Drawn dr = m.drawnOf(d);
-            if (dr == null) continue;
-            int total = 0;
-            for (int[] bx : dr.boxes) if (bx != null) total += bx.length;
-            long[] keys = new long[total];
-            int n = 0;
-            LayoutSnap s = new LayoutSnap();
-            s.byType = new int[nt];
-            for (int k = 0; k < CityMap.TILES; k++) {
-                int[] bx = dr.boxes[k];
-                if (bx == null) continue;
-                long tx = (long) (k % CityMap.TILES_A_SIDE) * World.TILE, ty = (long) (k / CityMap.TILES_A_SIDE) * World.TILE;
-                for (int b : bx) {
-                    if ((b & CityMap.PACKED_BIT) != 0) continue;
-                    int type = b >>> CityMap.BOX_TYPE_SHIFT;
-                    keys[n++] = ((((long) type << 40) | ((tx + (b & 31)) << 20) | (ty + ((b >> 5) & 31))) << 10) | (((b >> 10) & 31) << 5) | ((b >> 15) & 31);
-                    if (type < nt) s.byType[type]++;
+            if (!unread.contains(d)) continue;
+            if (!m.planned(d)) {
+                for (CityMap.Job j : m.planJobs(d)) {
+                    j.run();
+                    m.adopt(j);
+                    layoutReadCurrent(m, unread, nt, out);
                 }
             }
-            java.util.Arrays.sort(keys, 0, n);
-            s.boxes = new long[n];
-            s.dims = new int[n];
-            for (int i = 0; i < n; i++) {
-                s.boxes[i] = keys[i] >> 10;
-                s.dims[i] = (int) (keys[i] & 1023);
-            }
-            s.carryIn = m.carried(d)[0];
-            s.carryLog = m.carriedLog(d);
-            s.counted = new int[nt];
-            for (int t = 0; t < nt; t++) s.counted[t] = d.count(t);
-            out.put(layoutKey(d), s);
+            layoutReadCurrent(m, unread, nt, out);
         }
+        m.packed();
+        for (CityMap.District d : unread) layoutRead(m, d, nt, out);
         return out;
+    }
+
+    /** Reads every district not yet read whose plan is current, while the map still has it drawn. */
+    private static void layoutReadCurrent(CityMap m, java.util.Set<CityMap.District> unread, int nt, Map<Long, LayoutSnap> out) {
+        for (java.util.Iterator<CityMap.District> it = unread.iterator(); it.hasNext(); ) {
+            CityMap.District d = it.next();
+            if (!m.planned(d)) continue;
+            layoutRead(m, d, nt, out);
+            it.remove();
+        }
+    }
+
+    /** One district's snapshot, by layoutKey(): its plan as drawnOf() gives it (planned here if it is not current). */
+    private static void layoutRead(CityMap m, CityMap.District d, int nt, Map<Long, LayoutSnap> out) {
+        CityMap.Drawn dr = m.drawnOf(d);
+        if (dr == null) return;
+        int total = 0;
+        for (int[] bx : dr.boxes) if (bx != null) total += bx.length;
+        long[] keys = new long[total];
+        int n = 0;
+        LayoutSnap s = new LayoutSnap();
+        s.byType = new int[nt];
+        for (int k = 0; k < CityMap.TILES; k++) {
+            int[] bx = dr.boxes[k];
+            if (bx == null) continue;
+            long tx = (long) (k % CityMap.TILES_A_SIDE) * World.TILE, ty = (long) (k / CityMap.TILES_A_SIDE) * World.TILE;
+            for (int b : bx) {
+                if ((b & CityMap.PACKED_BIT) != 0) continue;
+                int type = b >>> CityMap.BOX_TYPE_SHIFT;
+                keys[n++] = ((((long) type << 40) | ((tx + (b & 31)) << 20) | (ty + ((b >> 5) & 31))) << 10) | (((b >> 10) & 31) << 5) | ((b >> 15) & 31);
+                if (type < nt) s.byType[type]++;
+            }
+        }
+        java.util.Arrays.sort(keys, 0, n);
+        s.boxes = new long[n];
+        s.dims = new int[n];
+        for (int i = 0; i < n; i++) {
+            s.boxes[i] = keys[i] >> 10;
+            s.dims[i] = (int) (keys[i] & 1023);
+        }
+        s.carryIn = m.carried(d)[0];
+        s.carryLog = m.carriedLog(d);
+        s.counted = new int[nt];
+        for (int t = 0; t < nt; t++) s.counted[t] = d.count(t);
+        out.put(layoutKey(d), s);
     }
 
     /**
