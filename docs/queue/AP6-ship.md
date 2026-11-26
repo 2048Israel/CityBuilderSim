@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-AP6-n2pixxVo -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — AP6, slot 9 at 50x: the posts past, the bond book and the month's sector walks — 2026-11-26, ready, see docs/queue/AP6-notes.md
 The jobs array reads the farms' posts past once per call; the month reuses AP5's stamped raw posts and ordered sector groups, with offered shares and sector getters live.
