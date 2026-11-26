@@ -26,10 +26,12 @@ import java.io.PrintStream;
  *      inside the skip buy ground, each look within its GROUND_AHEAD_CASH_SHARE of the cash, and every offer bought is
  *      paid (the land office's dollars and the city's ground grow by the offers); the landlords are never held for
  *      land; and the playtest's own audit of every month (LongPlaytest.audit()) flags nothing in it the old skip did not.
- *   3. AN OFFER THE SHARE CANNOT PAY STILL WAITS. The same town skipped the old way until its landlords are held for
- *      land, its cash then short of the best offer over GROUND_AHEAD_CASH_SHARE but within the cash: the look the
- *      watched skip makes buys nothing, pays nothing and places nothing, and is counted short; the next comes HORIZON
- *      months on, and with the share able to pay it buys the offer and the landlords are released.
+ *   3. AN OFFER THE SHARE CANNOT PAY STILL WAITS, IN A CITY ITS OWN TEST WILL NOT LEND TO. The same town skipped the
+ *      old way until its landlords are held for land, borrowed on the funding page's bond until the player's own test
+ *      for borrowing (LongPlaytest.canService()) refuses any more (FB11: else a sector waiting on ground is funded on
+ *      that bond, ER1Check), its cash then short of the best offer over GROUND_AHEAD_CASH_SHARE but within the cash:
+ *      the look the watched skip makes buys nothing, pays nothing and places nothing, and is counted short; the next
+ *      comes HORIZON months on, and with the share able to pay it buys the offer and the landlords are released.
  *   4. EACH CITY KEEPS ITS OWN LOOK. Two towns built alike and skipped watched in step, a month of one and a month of
  *      the other, look at their ground in the same months and end alike: the record of the last look is the city's.
  */
@@ -262,12 +264,22 @@ public class GroundSkipCheck {
                 aNew.containsAll(bNew));
 
         /* ---------- 3. the unaffordable offer ---------- */
-        out.println("--- 3. an offer the share cannot pay still waits: nothing bought, paid or placed, the next look HORIZON months on ---");
+        out.println("--- 3. an offer the share cannot pay, in a city its own test will not lend to, still waits: nothing bought, paid or placed, the next look HORIZON months on ---");
         Game c = town();
         LandManager cl = c.getLandManager();
         for (int i = 0; i < SKIP && !(landlordsHeld(c) && LongPlaytest.groundLookDue(c)); i++) month(c);
         check("premise: skipped the old way, the landlords are held for land and a look is due",
                 landlordsHeld(c) && LongPlaytest.groundLookDue(c) && cl.getUsedShare() > LongPlaytest.groundAheadUtilisation(c));
+        // ...a city the player's own test will not lend to (FB11): borrowed on the funding page's bond until the test refuses
+        // any more, then as much again, so that its revenue does not restore the test inside the HORIZON months below.
+        DebtManager cDebt = c.getDebtManager();
+        double cOwed = cDebt.getAllPrincipal();
+        double lot = Math.max(c.fundingLot("Term"), 12 * Math.max(1, c.getEconomyManager().getTaxIncome()));
+        for (int i = 0; i < 200 && LongPlaytest.canService(c, 0); i++)
+            quietly(() -> c.handleLongBondForCash(lot, Game.BUILD_BOND_YEARS, c.fundingLot("Term")));
+        double cAdded = cDebt.getAllPrincipal() - cOwed;
+        if (cAdded > 0) quietly(() -> c.handleLongBondForCash(cAdded, Game.BUILD_BOND_YEARS, c.fundingLot("Term")));
+        check("premise: the town borrowed until the player's own test refused even no more", cAdded > 0 && !LongPlaytest.canService(c, 0));
         LandParcel offer = c.bestOffer(Game.LandNeed.room());
         double price = offer == null ? Double.NaN : offer.localPrice(c.getForeignAccounts().getRate());
         if (offer != null) c.setCashForTest(price / LongPlaytest.GROUND_AHEAD_CASH_SHARE * .9);

@@ -1,6 +1,6 @@
 # CpiCoverageFinding.java - 353 lines · 14 methods · 2 constants · model
 
-`ham/citybuildersim/CpiCoverageFinding.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CpiCoverageFinding.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > Nine-component CPI coverage, comparable prices, and native saved observations.
 > WHY: closing fleets cannot recover purchases, and a pump/queue unit-value average

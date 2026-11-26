@@ -18,6 +18,50 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### FS6 — the map sweep: MapCheck, PlanCheck, OrderSearchCheck, BuildingStackCheck, GatewayCheck — 2026-11-25, ready, see docs/queue/FS6-notes.md
+The map sweep's five harnesses cause their premises on fixtures of their own and assert them hard, with no waiver
+(flaky-suite study 6.5; takes BQ1, LM1-R and KS1-rest's three map timing lines). MapCheck 2c buys its two blocks
+as the land market sells them, whole blocks of the level that may hold ground the city owns, beside the district's
+streets, so the second block's arrivals reach open and closed cells and its share law checks something; a block
+apart from the streets keeps none of the streets laid on it, as land with no road to it is not built up. 8d's mine
+copy holds what its ground holds by the auto-builder's ground rule and is drawn one for one before and after the
+birth. The + floor on MapCheck 1's played city (Map 1, Plan 17) is PX2's. Harnesses only. Untagged: the game is unchanged.
+
+### PF1 — the power forecast reads works under construction — 2026-11-25, ready, see docs/queue/PF1-notes.md
+REV-PW3g read LongPlaytest's m116-m150 power served at 0.57-0.61 as a power forecast blind to a mill under construction.
+PF1's trace on 0.9.208 found that the forecast already carries every non-power works on site, at its rated draw, from the
+month its queue opens it (`WorksValue.pendingPowerLoad()` in `BuildAdvice.powerSupplyDemand()`, since HW1), and the need
+date reads it, so no game code changes. PowerPlanCheck 9 now pins the law end to end. Two towns know only the Diesel
+Station. In the one with a Large Mini-Mill on site, whose opening falls a month at a time, 6 diesels are ordered on line 12
+months before the mill opens. Its twin without the mill orders nothing at any of 48 steps, and under a trend-only forecast
+three of its checks go red. A utility plans a large load the same way, from its signed request on its ramp schedule
+(ERCOT's 2025 Long-Term Load Forecast). The 1900 default city never learns the mill in 240 months. Today's city still steps
+at m120, from plant leads of 30-130 months against a 29-month build, and has no small firm row before the 1910 diesel (PW9's).
+Untagged: the game is unchanged.
+
+### 0.9.208 — OA1, the open ask holds an essential works for years — 2026-11-25, ready, see docs/queue/OA1-notes.md
+Automatic building's open ask (D30) now spends the bond money it raised on the works it raised it for. The reserve
+was taken out of an ask's proceeds, and once its sales passed the order's cost nothing was offered again, so the debt
+limit's test never ran: in PW3's ensemble a Water Treatment Plant's ask held its raised money for 135 months with water
+served at 26%, its earmark keeping every other order waiting "for Water". An ask's proceeds now come first, outside
+the reserve, as a real city's restricted bond proceeds sit beside its operating reserve (GASB 54, GFOA), and they pay
+the works as a fenced fund would: where the month's bills drew the cash under them, the order is placed all the same
+and the treasury is overdrawn by what the bills drew, as far as the central bank advances. The paper is never sold
+twice; an ask the treasury cannot pay waits at most six months open, then is withdrawn (the six months a tax-exempt
+issuer has to expect to bind its proceeds, 26 CFR 1.148-2(e)(2)). AskProceedsCheck causes it from a town short of
+water, the drawn and short-market cases played for months (15 red on the old rule); AuctionCheck's "bills draw the
+money" and WorksFinanceCheck's fully raised ask are restated to that law.
+
+### 0.9.207 — FB11, held towns: why no works pays, and the advisor's land funding — 2026-11-25, ready, see docs/queue/FB11-notes.md
+The playtest's player buys the ground a sector waits on with a bond, where its cash share could not. While the city's landlords or a works wait for
+ground, the player pays what the share allows from the cash and raises the rest, an overdraft with it, on the funding page's bond (the land office's
+own route). It does so only when its own test for borrowing carries it: the interest on the whole debt, the new bond in it, at the bond's quoted
+rate, at most a quarter of the tax (main's rule, no principal in it). Never when the land is paid from the vault; never for ground nobody asked for.
+LandMarket's whole offers, prices and sellers are untouched; `-Dplaytest.groundFunding=off` plays the old player. In Rotterdam's 1900 city, held
+283 of 401 months for ground on 0.9.206 with up to 394,000 in its treasury, the landlords waited 4 months and it held 443,756 people at month
+1,302 (42,503 on main). Measured again on 0.9.206, the held towns of seeds 3, 11 and 13 (RE3-J) and seed 14's housing finding (FB11H) are gone
+on both foundings, so those two rows left the batch.
+
 ### 0.9.206 — R1g, the 1900 city grows — 2026-11-24, ready, see docs/queue/R1g-notes.md
 A city founded the 1900 way grows now, and the founding screen and the playtest (the gate's audit) found it by default: today's city under
 `-Dplaytest.founded=today`. It had stalled at a few hundred people, because 1901's wages paid for today's homes (rent 0.61 of take-home at

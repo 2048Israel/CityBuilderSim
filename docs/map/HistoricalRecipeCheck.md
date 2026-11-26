@@ -1,6 +1,6 @@
 # HistoricalRecipeCheck.java - 743 lines · 31 methods · 2 constants · harnesses
 
-`ham/citybuildersim/HistoricalRecipeCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistoricalRecipeCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > Each sourced 1900 undo runs before its entry, knowledge alone does not fit
 > equipment, independent pieces compose, and the default city stays modern.

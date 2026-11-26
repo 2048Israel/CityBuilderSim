@@ -1,6 +1,6 @@
 # CpiReferenceFinding.java - 195 lines · 11 methods · 1 constants · model
 
-`ham/citybuildersim/CpiReferenceFinding.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CpiReferenceFinding.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > Actual reference expenditure and purchase coverage, using the pre-correction API.
 > WHY: a component-count check cannot show the omitted household money or the

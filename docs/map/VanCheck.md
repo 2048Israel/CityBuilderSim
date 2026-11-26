@@ -1,6 +1,6 @@
 # VanCheck.java - 537 lines · 6 methods · 0 constants · harnesses
 
-`ham/citybuildersim/VanCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/VanCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > The vans: what a sector needs, what it costs it, and what happens while it
 > waits for them.

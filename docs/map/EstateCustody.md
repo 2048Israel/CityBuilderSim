@@ -1,6 +1,6 @@
 # EstateCustody.java - 155 lines · 38 methods · 2 constants · model
 
-`ham/citybuildersim/EstateCustody.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EstateCustody.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > The treasury's passive owner of assets for which an estate has no heir (HT1).
 > WHY: the old no-heir path sent the property abroad; it was neither owned by

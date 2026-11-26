@@ -1,6 +1,6 @@
 # FinancialOwnerFinding.java - 106 lines · 7 methods · 0 constants · model
 
-`ham/citybuildersim/FinancialOwnerFinding.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FinancialOwnerFinding.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > Caused absent-owner and positive fractional-owner laws, registered through DenominationCheck.
 > WHY: the optional-action threshold classified real fractional owners as absent;

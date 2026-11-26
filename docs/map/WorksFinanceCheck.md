@@ -1,6 +1,6 @@
-# WorksFinanceCheck.java - 1,086 lines · 28 methods · 6 constants · harnesses
+# WorksFinanceCheck.java - 1,104 lines · 28 methods · 6 constants · harnesses
 
-`ham/citybuildersim/WorksFinanceCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WorksFinanceCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > Essential funding reservations, actual parcel cash and quoted bond terms (HW1).
 > WHY. A plan could count available cash twice, finance fractional parcels,
@@ -12,9 +12,9 @@
 > sections read towns played 24 and 36 months, whose builders, growth and GDP moved
 > with every change to the month.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (141), [AutoBuilder](AutoBuilder.md) (56), [Game](Game.md) (43), [EssentialWorksCheck](EssentialWorksCheck.md) (41), [BuildingsTemplate](BuildingsTemplate.md) (36), [LandManager](LandManager.md) (28), [WorksValue](WorksValue.md) (13), [BuildingManager](BuildingManager.md) (12), [InfrastructureManager](InfrastructureManager.md) (10), [LandParcel](LandParcel.md) (7), [BuildingsStacks](BuildingsStacks.md) (7), [AdviceValueOracle](AdviceValueOracle.md) (6), [ConstructionControl](ConstructionControl.md) (6), [Traffic](Traffic.md) (6), [CareType](CareType.md) (5), [CityLand](CityLand.md) (5), [Auction](Auction.md) (5), [RoadCheck](RoadCheck.md) (5), [Sector](Sector.md) (4), [DebtQuote](DebtQuote.md) (4), [BuildingType](BuildingType.md) (4), [AgeBand](AgeBand.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [RunWorksCheck](RunWorksCheck.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [Sectors](Sectors.md) (2), [AuctionCheck](AuctionCheck.md) (2), [BuildAdviceCheck](BuildAdviceCheck.md) (2)... and 10 more
+**Uses:** [BuildAdvice](BuildAdvice.md) (141), [AutoBuilder](AutoBuilder.md) (58), [Game](Game.md) (43), [EssentialWorksCheck](EssentialWorksCheck.md) (41), [BuildingsTemplate](BuildingsTemplate.md) (36), [LandManager](LandManager.md) (28), [WorksValue](WorksValue.md) (13), [BuildingManager](BuildingManager.md) (12), [InfrastructureManager](InfrastructureManager.md) (10), [LandParcel](LandParcel.md) (7), [BuildingsStacks](BuildingsStacks.md) (7), [AdviceValueOracle](AdviceValueOracle.md) (6), [ConstructionControl](ConstructionControl.md) (6), [Traffic](Traffic.md) (6), [DebtQuote](DebtQuote.md) (5), [CareType](CareType.md) (5), [CityLand](CityLand.md) (5), [Auction](Auction.md) (5), [RoadCheck](RoadCheck.md) (5), [Sector](Sector.md) (4), [BuildingType](BuildingType.md) (4), [AgeBand](AgeBand.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [RunWorksCheck](RunWorksCheck.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [Sectors](Sectors.md) (2), [AuctionCheck](AuctionCheck.md) (2), [BuildAdviceCheck](BuildAdviceCheck.md) (2)... and 10 more
 
-**Used by (1):** [PowerPlanCheck](PowerPlanCheck.md)
+**Used by (2):** [AskProceedsCheck](AskProceedsCheck.md), [PowerPlanCheck](PowerPlanCheck.md)
 
 ## Constants
 
@@ -37,7 +37,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 1065 | **type** `public final class WorksFinanceCheck` | Essential funding reservations, actual parcel cash and quoted bond terms (HW1). |
+| 22 | 1083 | **type** `public final class WorksFinanceCheck` | Essential funding reservations, actual parcel cash and quoted bond terms (HW1). |
 | 26 | 4 | `static void check(String words, boolean condition)` |  |
 | 31 | 3 | `static boolean close(double a, double b)` |  |
 | 72 | 31 | `static Game founded(Path root, String name, String[][] works)` | FS15: the city a section's premise is set on, caused. |
@@ -53,17 +53,17 @@
 | 320 | 75 | `static void roundedCash(Path root, boolean borrowFirst)` | The physical calendar supplies counts; this ledger independently carries each quote's cash. |
 | 396 | 13 | `static AutoBuilder.OpenAsk ask(BuildAdvice.Suggestion plan, int month, double raised)` |  |
 | 410 | 3 | `static void reservationRelease(Path root)` |  |
-| 414 | 65 | `static void reservationRelease(Path root, boolean fullyRaised)` |  |
-| 480 | 33 | `static void groundUse(String name)` |  |
-| 514 | 31 | `static void independentPending(Path root)` |  |
-| 546 | 4 | `static double addedPoints(Game.BuildQuote quote, BuildingsTemplate t, long count)` |  |
-| 551 | 32 | `static void prospectiveQueue(Path root)` |  |
-| 584 | 97 | `static void crewPromise(Path root, boolean partial) throws Exception` |  |
-| 682 | 14 | `static Game reserveTown(Path root, String name)` |  |
-| 697 | 64 | `static void pavingHold(Path root)` |  |
-| 762 | 74 | `static void highwayPromise(Path root)` |  |
-| 837 | 94 | `static void promotedDepot(Path root)` |  |
-| 932 | 31 | `static void commonCalendar(Path root)` |  |
-| 964 | 80 | `static void growingCalendarChoice(Path root)` |  |
-| 1045 | 41 | `public static void main(String[] args) throws Exception` |  |
+| 414 | 83 | `static void reservationRelease(Path root, boolean fullyRaised)` |  |
+| 498 | 33 | `static void groundUse(String name)` |  |
+| 532 | 31 | `static void independentPending(Path root)` |  |
+| 564 | 4 | `static double addedPoints(Game.BuildQuote quote, BuildingsTemplate t, long count)` |  |
+| 569 | 32 | `static void prospectiveQueue(Path root)` |  |
+| 602 | 97 | `static void crewPromise(Path root, boolean partial) throws Exception` |  |
+| 700 | 14 | `static Game reserveTown(Path root, String name)` |  |
+| 715 | 64 | `static void pavingHold(Path root)` |  |
+| 780 | 74 | `static void highwayPromise(Path root)` |  |
+| 855 | 94 | `static void promotedDepot(Path root)` |  |
+| 950 | 31 | `static void commonCalendar(Path root)` |  |
+| 982 | 80 | `static void growingCalendarChoice(Path root)` |  |
+| 1063 | 41 | `public static void main(String[] args) throws Exception` |  |
 

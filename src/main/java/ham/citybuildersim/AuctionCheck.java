@@ -1687,7 +1687,11 @@ public class AuctionCheck {
         p.getBank().setDepositRate(deposit);
         roomTo(p, 1e9);
         p.setCashForTest(AutoBuilder.reserve(p));
+        // What the treasury could pay at the end of the month's pass, its sales in: its cash and the central bank's advance (OA1).
+        double[] roomP = { Double.NaN };
+        p.autoBuildProbeForTest = after -> { if (after && Double.isNaN(roomP[0])) roomP[0] = p.discretionaryRoom(); };
         printed(() -> p.simulateMonths(1));
+        p.autoBuildProbeForTest = null;
         double costsP = 0;
         boolean raisedAllP = !pb.asks().isEmpty();
         for (AutoBuilder.OpenAsk k : pb.asks()) {
@@ -1698,9 +1702,15 @@ public class AuctionCheck {
                         + " cost less what it had raised), not short",
                 pb.asks().size() == openP && salesBy(p, "Automatic building") == openP
                         && p.getAutoSalesThisMonth().stream().noneMatch(TimeSkipReport.AutoSale::shortSale) && raisedAllP);
-        assertTrue("...but the money it raised before was drawn by the month's bills, so the treasury does not hold the cost for any: no"
-                        + " order is placed on money that is not there",
-                pb.getOrders() == 0 && pb.log().isEmpty() && pb.asks().size() == openP);
+        // OA1, 2026-11-25: an ask raised in full is paid from its proceeds where the bills drew the cash under them, the treasury
+        // overdrawn by what they drew as far as the central bank advances (AskProceedsCheck 2). Here the drawn money is past that
+        // advance, so the order waits: the claim is restated to that reason (it was "no order is placed on money that is not there").
+        double leastCostP = Double.POSITIVE_INFINITY;
+        for (AutoBuilder.OpenAsk k : pb.asks()) leastCostP = Math.min(leastCostP, k.cost());
+        out.printf("      drawn: %d ask(s), costs %.0f, the treasury's cash and advance at the pass %.0f%n", openP, costsP, roomP[0]);
+        assertTrue("...but the money it raised before was drawn by the month's bills past what the central bank advances: the treasury"
+                        + " cannot pay any of the orders (its cash and the advance short of each), so none is placed",
+                pb.getOrders() == 0 && pb.log().isEmpty() && pb.asks().size() == openP && leastCostP > roomP[0]);
         double principalP = p.getDebtManager().getAllPrincipal();
         java.util.Map<AutoBuilder.OpenAsk, Double> raisedBefore = new java.util.IdentityHashMap<>();
         for (AutoBuilder.OpenAsk k : pb.asks()) raisedBefore.put(k, k.raised());

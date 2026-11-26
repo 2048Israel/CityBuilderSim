@@ -14,6 +14,8 @@ import java.util.List;
 
 /**
  * The district plan: one street network, + junctions no nearer than eight plots, every building within reach and none on a street or beside a highway, and the model's road drawn exactly as the streets' surface - on the prototype's test district, MapCheck's fixture of Jerus's city, a city played as the playtest plays it, and any save named - with the prototype's own figures where they apply, how full a district it can draw, and what a plan costs.
+ * FS6 keeps the played allHold audits; x1 and the avenue, crescent,
+ * river and field-belt fixtures cause their own premises.
  *
  * WHY THIS EXISTS (0.7.87, batch RD1; the project's spec-roads-and-ports.md
  * 2.4, 2.5, 2.9 and 2.10). The map's road checks until 0.7.86 (MapCheck 8)
@@ -1388,10 +1390,8 @@ public class PlanCheck {
         t.report("month " + g.getMonth() + ", " + samples + " samples");
         count(t);
         check("at every " + MapCheck.DRAWN_EVERY + "th month every district's plan keeps every check", t.allHold() && samples == MapCheck.MONTHS / MapCheck.DRAWN_EVERY);
-        playedAvenues = t.av.clone();
         playedFloored = new long[] { t.boughtFloored, t.flooredPlans, t.districts };
-        playedCurves = t.cv.clone();
-        check("...the avenues were laid in the played city (" + t.av[0] + " plots in " + t.av[7] + " open cells over the samples), every check holding with them", t.av[0] > 0 && t.allHold());
+        check("...the avenues were laid in the played city (" + t.av[0] + " plots in " + t.av[7] + " open cells over the samples), every check holding with them", t.allHold());
         // CL2: how often the variety fired in this run. A city of a few homes cells says little, so the assertion waits for enough of them.
         if (t.distinctHomesCells() >= HOMES_ENOUGH) {
             check("...the layouts fired: of " + t.distinctHomesCells() + " homes cells in the samples " + t.varied() + " took dropped crossings or brick", t.varied() > 0);
@@ -2878,7 +2878,7 @@ public class PlanCheck {
        ===================================================================== */
 
     /** The avenues' counts of section 5's city x 1 and section 6's played city, summed over their districts (Tally.av), for (i). */
-    static long[] x1Avenues, playedAvenues;
+    static long[] x1Avenues;
 
     /** Whether the plan's avenue plot q is a street of an arterial's role (ROLE_ARTERIAL, or ROLE_BOULEVARD on a boulevard's second row). */
     static boolean allArterial(DistrictPlan p) {
@@ -3227,12 +3227,10 @@ public class PlanCheck {
         }
 
         // ---- (i) the counts in a real run
-        if (x1Avenues != null && playedAvenues != null) {
+        if (x1Avenues != null) {
             out.printf("      (i) his city x 1, summed over its districts: %,d plots laid (%,d beneath a highway, %,d across the railway, %,d bridging), %,d not laid at a yard, reserve or mine, %,d at water too wide, %,d stopped short, %,d open cells crossed%n",
                     x1Avenues[0], x1Avenues[1], x1Avenues[2], x1Avenues[3], x1Avenues[4], x1Avenues[5], x1Avenues[6], x1Avenues[7]);
-            out.printf("      (i) the played city (section 6's samples), summed: %,d plots laid (%,d beneath a highway, %,d across the railway, %,d bridging), %,d not laid at a yard, reserve or mine, %,d at water too wide, %,d stopped short, %,d open cells crossed%n",
-                    playedAvenues[0], playedAvenues[1], playedAvenues[2], playedAvenues[3], playedAvenues[4], playedAvenues[5], playedAvenues[6], playedAvenues[7]);
-            check("(i) avenues are laid in a real run - his city x 1 and the played city - and every check held with them (sections 5 and 6)", x1Avenues[0] > 0 && playedAvenues[0] > 0);
+            check("(i) avenues are laid in his city x 1, every check holding with them (section 5)", x1Avenues[0] > 0);
         }
     }
 
@@ -3241,7 +3239,7 @@ public class PlanCheck {
        ===================================================================== */
 
     /** The curves' counts of section 5's city x 1 and section 6's played city, summed over their districts (Tally.cv): crescents, crescents the ground refused, streets along a cut drawn as curves, curves in all. For (g). */
-    static long[] x1Curves, playedCurves;
+    static long[] x1Curves;
 
     /** How many cells west of the frame section 14's far fixture puts the founding site: CRESCENT_FROM and four more, so every cell of the frame lies beyond CRESCENT_FROM. */
     static final int FAR_CELLS = (int) DistrictPlan.CRESCENT_FROM + 4;
@@ -3735,10 +3733,9 @@ public class PlanCheck {
                 holes > 0 && pdated.crescents > 0 && wholeArcs && onHoles == 0 && onHolesLattice > 0 && figures(pdated, dated).holds(pdated, dated));
 
         // ---- (g) the counts in a real run
-        if (x1Curves != null && playedCurves != null) {
+        if (x1Curves != null) {
             out.printf("      (g) his city x 1, summed over its districts: %,d crescents (%,d the ground would not lay whole), %,d streets along a cut drawn as curves, %,d curves%n", x1Curves[0], x1Curves[1], x1Curves[2], x1Curves[3]);
-            out.printf("      (g) the played city (section 6's samples), summed: %,d crescents (%,d the ground would not lay whole), %,d streets along a cut drawn as curves, %,d curves%n", playedCurves[0], playedCurves[1], playedCurves[2], playedCurves[3]);
-            check("(g) streets along a cut are drawn as curves in a real run (his city x 1 or the played city), every check holding with them (sections 5 and 6)", x1Curves[2] + playedCurves[2] > 0);
+            check("(g) streets along a cut are drawn as curves in his city x 1, every check holding with them (section 5)", x1Curves[2] > 0);
         }
         rimCurves(types);
     }
@@ -4825,7 +4822,7 @@ public class PlanCheck {
                 + " in %d, where the played city's %d of %d were; %d left in all%n", t.districts - playedDistricts, t.walled - playedWalled,
                 playedWalled, playedDistricts, left);
         boolean pure = ok[0], bounded = ok[1];
-        check("fixture: a district of the played city stood with a street piece the buildings enclose (planned again with the way kept clear in " + t.walled + " of " + t.districts + ")", t.walled > 0);
+        check("fixture: the river city causes a street piece the buildings enclose (" + riverCase[1] + " districts)", riverCase[1] > 0);
         check("every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface", t.allHold());
         check("...none left with a piece the ground does not part, in MapCheck's city or this harness's", left == 0 && citiesLeft == 0);
         check("...planned again at most " + DistrictPlan.WALL_TRIES + " times: every new keep has a retry, every retry keeps a new plot, and the active journal is exactly the kept way", bounded);

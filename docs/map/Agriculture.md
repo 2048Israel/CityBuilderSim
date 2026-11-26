@@ -1,6 +1,6 @@
-# Agriculture.java - 607 lines · 27 methods · 7 constants · sectors
+# Agriculture.java - 611 lines · 27 methods · 7 constants · sectors
 
-`ham/citybuildersim/sectors/Agriculture.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/Agriculture.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > The fields, and what they cost the city in ground.
 > 
@@ -65,7 +65,7 @@
 | 248 | THE OPERATORS (R6d, 2026-11-18; docs/studies/research-speculative.md 3.2, FE8) |
 | 327 | · plan |
 | 367 | · NOBODY BREAKS GROUND ON A FIELD WHILE SOMEBODY IS SLEEPING OUTSIDE |
-| 497 | · the screen |
+| 501 | · the screen |
 
 ## Constants
 
@@ -77,7 +77,7 @@
 | 169 | `Agriculture.HORSE_POSTS_FACTOR` | `1 /(1 - 0.273)` | A horse farm's posts against a tractor farm's: the tractor took 27.3% of US farm jobs, 1910-60 (PE14, [P2.47], est.). |
 | 262 | `Agriculture.OPERATORS_A_MACHINE` | `1` | The posts a machine's operator holds, 1 NO_DIPLOMA post (an estimate: the Grain Farm's three such posts are its tractor, its combine and a hand, the Mixed Farm's two its tractor and a hand). |
 | 270 | `Agriculture.WATCH_A_MACHINE` | `0.1` | The remote watch an autonomous machine asks for, as a share of one DIPLOMA post: 0.1, an estimate and no builder's target. |
-| 492 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
+| 496 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
 
 ## Fields (state)
 
@@ -90,7 +90,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 539 | **type** `public final class Agriculture extends Sector` | The fields, and what they cost the city in ground. |
+| 69 | 543 | **type** `public final class Agriculture extends Sector` | The fields, and what they cost the city in ground. |
 | 71 | 29 | `public Agriculture()` |  |
 
 ### reading (lines 101-143)
@@ -128,19 +128,19 @@
 | 316 | 4 | `public double groundShare()` | The ground bill as a share of what the fields sell - the clock, in one number. |
 | 322 | 4 | `public double payrollShare()` | Wages as a share of the same, which is the number that should stay small. |
 
-### plan (lines 327-496)
+### plan (lines 327-500)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 365 | 71 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | THE GENERIC MAKER'S RULE DECIDES WHAT, AND THE GROUND DECIDES WHETHER. |
-| 459 | 22 | `private double worthAtTheFloor(ham.citybuildersim.BuildingsTemplate t, BusinessInvestment plans)` | What a farm would clear in a month at the EXPORT FLOOR - the worst price the world will ever hand it - rather than at whatever crops happen to fetch the month somebody is deciding. |
-| 495 | 1 | `public double firstPlantUtilisation()` |  |
+| 365 | 75 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | THE GENERIC MAKER'S RULE DECIDES WHAT, AND THE GROUND DECIDES WHETHER. |
+| 463 | 22 | `private double worthAtTheFloor(ham.citybuildersim.BuildingsTemplate t, BusinessInvestment plans)` | What a farm would clear in a month at the EXPORT FLOOR - the worst price the world will ever hand it - rather than at whatever crops happen to fetch the month somebody is deciding. |
+| 499 | 1 | `public double firstPlantUtilisation()` |  |
 
-### the screen (lines 497-607)
+### the screen (lines 501-611)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 500 | 58 | `public List<Sector.Line> ownLines(Game game)` |  |
-| 567 | 18 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with a silo: it holds a harvest, sells what the mills want and ships the rest, and shrinks only on distress. |
-| 597 | 10 | `public double unitsOf(BuildingsTemplate t)` | What one building contributes to the measure above: its harvest, each good valued at that good's export floor - one building's share of the capacity figure retirementDemandAndCapacity() adds up, in the same money. |
+| 504 | 58 | `public List<Sector.Line> ownLines(Game game)` |  |
+| 571 | 18 | `public double[] retirementDemandAndCapacity(Game game)` | A price taker with a silo: it holds a harvest, sells what the mills want and ships the rest, and shrinks only on distress. |
+| 601 | 10 | `public double unitsOf(BuildingsTemplate t)` | What one building contributes to the measure above: its harvest, each good valued at that good's export floor - one building's share of the capacity figure retirementDemandAndCapacity() adds up, in the same money. |
 

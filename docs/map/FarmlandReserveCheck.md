@@ -1,6 +1,6 @@
 # FarmlandReserveCheck.java - 419 lines · 17 methods · 6 constants · harnesses
 
-`ham/citybuildersim/FarmlandReserveCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FarmlandReserveCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > The farmland reserve, the model (RG1, 2026-11-25; Jerus, 2026-11-24: "Policy, that also lets farms crops as well be cheaper"): the
 > fields' zone at the sellers' farmland price, outside the crowding premium, holding ground for every farm - Agriculture's fields and

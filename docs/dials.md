@@ -1,10 +1,10 @@
 # The dials
 
-Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
+Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,823 constants in 652 files.**
+**6,841 constants in 653 files.**
 
-## model (3092 constants)
+## model (3093 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -55,9 +55,10 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 217 | `AutoBuilder.ORDER_MONTHS` | `12` | No more than opens inside this many months: the businesses' own rule for an order until BA1 (BusinessInvestment.MAX_ORDER_MONTHS, which went with the cap on orders), kept for the city's automatic o... |
 | 422 | `AutoBuilder.HELD_BACK` | `"Automatic building holds it back; "` | What the advice card's line opens with (PT1-M3); the inbox's words for the payback follow. |
 | 708 | `AutoBuilder.PAID_MONTHS` | `12` | Months of monthPaid() the payback's figure averages: a year, as a lender reads a city's accounts - a year of its own recurring revenue, the sale of its property left out, as a city's debt limit is ... |
-| 1901 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
-| 2004 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
-| 2029 | `AutoBuilder.ASSEMBLE_MOST` | `4 * LandMarket.OFFERS` | The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on ... |
+| 1943 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
+| 2046 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
+| 2071 | `AutoBuilder.ASSEMBLE_MOST` | `4 * LandMarket.OFFERS` | The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on ... |
+| 2727 | `AutoBuilder.PROCEEDS_WAIT_MONTHS` | `6` | The most months an ask whose bond has raised its order's cost waits, open, for a treasury that cannot pay it - the month's bills spent the proceeds and the central bank advances no more - before it... |
 
 ### Bank.java ([map](map/Bank.md))
 
@@ -412,12 +413,12 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 86 | `BusinessInvestment.PROFIT_OVER_INTEREST` | `1.25` | A project must clear its interest by this much to be worth doing. |
 | 144 | `BusinessInvestment.BACKLOG_MONTHS_BEFORE_EXPANDING` | `9` | Months of construction backlog above which the builders build themselves more capacity. |
 | 463 | `BusinessInvestment.MIN_MONTHS_OF_SITE_WORK` | `TREND_WINDOW / 2` | The months of site work kept before the builders size an order to their median (OG1): half the window. |
-| 701 | `BusinessInvestment.RETIREMENT_LOSS_MONTHS` | `6` | Consecutive loss-making months before a sector starts selling capacity. |
-| 704 | `BusinessInvestment.RETIREMENT_SLACK` | `.25` | Capacity has to exceed demand by this much before any of it is spare. |
-| 707 | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | `.25` | Most of its excess a sector will scrap in one month. |
-| 718 | `BusinessInvestment.DISTRESS_LOSS_MONTHS` | `24` | Months of losses before a sector that is overdrawn and refused credit starts liquidating plant it is actually using. |
-| 727 | `BusinessInvestment.BLEED_MONTHS` | `DISTRESS_LOSS_MONTHS` | The months a price taker takes to sell its biggest holding once its plant has run at an operating loss DISTRESS_LOSS_MONTHS running (its own saved streak, getOperatingLossMonths(), the old metal it... |
-| 1460 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
+| 707 | `BusinessInvestment.RETIREMENT_LOSS_MONTHS` | `6` | Consecutive loss-making months before a sector starts selling capacity. |
+| 710 | `BusinessInvestment.RETIREMENT_SLACK` | `.25` | Capacity has to exceed demand by this much before any of it is spare. |
+| 713 | `BusinessInvestment.MAX_RETIREMENT_FRACTION` | `.25` | Most of its excess a sector will scrap in one month. |
+| 724 | `BusinessInvestment.DISTRESS_LOSS_MONTHS` | `24` | Months of losses before a sector that is overdrawn and refused credit starts liquidating plant it is actually using. |
+| 733 | `BusinessInvestment.BLEED_MONTHS` | `DISTRESS_LOSS_MONTHS` | The months a price taker takes to sell its biggest holding once its plant has run at an operating loss DISTRESS_LOSS_MONTHS running (its own saved streak, getOperatingLossMonths(), the old metal it... |
+| 1466 | `BusinessInvestment.REAL_HURDLE_FLOOR` | `.25` | The least of the rate a project is tested against, however much inflation its owners expect: a quarter of it. |
 
 ### Buyback.java ([map](map/Buyback.md))
 
@@ -748,9 +749,9 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 297 | `CityNeeds.SERVED` | `"served", SHORT = "short", TIGHT = "tight", ENOUGH = "enough"` | The gauges' words (0.7.41), the same on every screen: what the figure is, and its verdict's three words. |
 | 300 | `CityNeeds.AT_THE_PEAK_HOUR` | `" at the peak hour"` | What the POWER row's share is read at (PW1; PW3 the year's peak hour): the firm supply against the peak hour's draw, not the month's average, so "48% served at the peak hour". |
 | 324 | `CityNeeds.SERVED_AS_MULTIPLE` | `5` | From this served share up (5 = five times what is asked) a share prints as a multiple, "30×", not a per cent: in a town of 40 a power plant read 13333% served (PT1). |
-| 666 | `CityNeeds.GROUND_YELLOW` | `LandManager.BLOCK_SQ_FT` | Free ground under which NEEDS YOU lists the GROUND row: a block, 100,000 sq ft. |
-| 669 | `CityNeeds.TRUST_RED` | `.5` | Trust in the central bank under which a fall is red in the PRICES row: half - under it, what people expect is more recent prices than the bank's target. |
-| 1010 | `CityNeeds.FIRST_SCHOOL_SHARE` | `BuildAdvice.FIRST_WORK_SHARE` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, ... |
+| 668 | `CityNeeds.GROUND_YELLOW` | `LandManager.BLOCK_SQ_FT` | Free ground under which NEEDS YOU lists the GROUND row: a block, 100,000 sq ft. |
+| 671 | `CityNeeds.TRUST_RED` | `.5` | Trust in the central bank under which a fall is red in the PRICES row: half - under it, what people expect is more recent prices than the bank's target. |
+| 1012 | `CityNeeds.FIRST_SCHOOL_SHARE` | `BuildAdvice.FIRST_WORK_SHARE` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, ... |
 
 ### CityRuns.java ([map](map/CityRuns.md))
 
@@ -1697,31 +1698,31 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1861 | `Game.FOUNDERS_NOTE_MONTHS` | `120` | For this many months the screens say where the vault's first dollars came from; after that they are the city's own. |
 | 2192 | `Game.RISK_OFF_NAMED` | `{ "JPY", "CHF", "AUD" }` | The three the log names in a risk-off: the yen and the franc rise, the Australian dollar falls. |
 | 3443 | `Game.LAND_FILES` | `new java.util.HashMap<>()` | The world files opened for the land office, by path: opened once per JVM and never closed (MapView keeps its own open the same way), so the cities of a JVM share them. |
-| 4158 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
-| 4161 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
-| 7530 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
-| 7533 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
-| 8667 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0, 0)` | No trade at all: every figure nothing. |
-| 9664 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
-| 9923 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
-| 11154 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
-| 11733 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
-| 12554 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
-| 13197 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
-| 13367 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
-| 13411 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
-| 13571 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15507 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 15519 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 15522 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15550 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 15561 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 15601 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 17442 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 17854 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 18520 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 18523 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
-| 18526 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 4180 | `Game.STATIONS_SLOT` | `"Filling stations"` | Where the forecourts' word is filed among the month's investment lines (0.7.83): apart from the shops', as the bank's is. |
+| 4183 | `Game.LABS_SLOT` | `"Research labs"` | Where the Research Labs' word is filed among the month's investment lines (R4): apart from Business Services' own, as the forecourts' is. |
+| 7552 | `Game.COUNTDOWN_SLICES` | `16` | The countdown's own slices consider() asks before it searches: an order trimmed by fewer is decided slice by slice, as before 0.7.54. |
+| 7555 | `Game.PRIME_SCAN_SLICES` | `4096` | The largest order whose refusal asks every slice whether it would carry its interest at prime, as the countdown did; a larger one asks the four that decide it. |
+| 8689 | `Game.ForeignOffer.NONE` | `new ForeignOffer(0, 0, 0, 0)` | No trade at all: every figure nothing. |
+| 9686 | `Game.NO_GROUND_AHEAD` | `new GroundAhead(0, 0, 0, 0)` |  |
+| 9945 | `Game.BITUMEN_BINDER_SHARE` | `.05` | The share of an asphalt surface's weight that is bitumen: five per cent [R18]. |
+| 11176 | `Game.LICENCE_COVER_TO_OPEN` | `.5` |  |
+| 11755 | `Game.BRIDGE_FOR_GOOD` | `"A bridge stands for good: taking one down is not built yet"` | Why a bridge cannot be demolished (ET6-C): one that stands is for good until the demolition of a bridge is built. |
+| 12576 | `Game.CENTS_PER_UNIT` | `100 / PriceLevel.FACTOR` | How many of the model's proceeds granules go to a unit of money: a hundred at today's prices, and a hundred over the founding's price level (PriceLevel.FACTOR) at the founding's, so a proceeds figu... |
+| 13219 | `Game.DEFAULT_OVERDRAFT_YEARS` | `1.0` | How deep the city may go before its foreign creditors are not paid. |
+| 13389 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
+| 13433 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
+| 13593 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15529 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 15541 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 15544 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15572 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
+| 15583 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 15623 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
+| 17475 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 17887 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 18553 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 18556 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
+| 18559 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -1762,7 +1763,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.206"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.208"` | Bump on release. |
 | 8398 | `GameVersion.SAVE_FORMAT` | `67` | RES3: typed leases, comparable rent/CPI observations and held monetary inputs cannot be reconstructed from a format-66 city. |
 | 8469 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `67` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8477 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -2134,9 +2135,9 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 25 | `HousingChoice.AREA_PER_PERSON` | `20` | Desired private floor area added per household member. |
 | 27 | `HousingChoice.AREA_PER_TIER` | `.15` | Each tier's increment in the desired-area vector. |
 | 29 | `HousingChoice.YOUNG_AREA` | `.9` | Young adults' desired area relative to established households. |
-| 35 | `HousingChoice.PERSONS_PER_ROOM` | `2` | The census line: the census of England and Wales called a home overcrowded past two persons a room (1891, and so to 1931), its rooms its bedrooms and a kitchen. |
-| 39 | `HousingChoice.QUALITY_PER_TIER` | `.20` | Each tier's extra preference for finish quality. |
-| 41 | `HousingChoice.GARDEN_AREA` | `100` | Outdoor square metres at which the family garden term saturates. |
+| 36 | `HousingChoice.PERSONS_PER_ROOM` | `2` | The census line: the census of England and Wales called a home overcrowded past two persons a room (1891, and so to 1931), its rooms its bedrooms and a kitchen. |
+| 40 | `HousingChoice.QUALITY_PER_TIER` | `.20` | Each tier's extra preference for finish quality. |
+| 42 | `HousingChoice.GARDEN_AREA` | `100` | Outdoor square metres at which the family garden term saturates. |
 
 ### HousingForms.java ([map](map/HousingForms.md))
 
@@ -4265,7 +4266,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 169 | `Agriculture.HORSE_POSTS_FACTOR` | `1 /(1 - 0.273)` | A horse farm's posts against a tractor farm's: the tractor took 27.3% of US farm jobs, 1910-60 (PE14, [P2.47], est.). |
 | 262 | `Agriculture.OPERATORS_A_MACHINE` | `1` | The posts a machine's operator holds, 1 NO_DIPLOMA post (an estimate: the Grain Farm's three such posts are its tractor, its combine and a hand, the Mixed Farm's two its tractor and a hand). |
 | 270 | `Agriculture.WATCH_A_MACHINE` | `0.1` | The remote watch an autonomous machine asks for, as a share of one DIPLOMA post: 0.1, an estimate and no builder's target. |
-| 492 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
+| 496 | `Agriculture.FIRST_FARM_UTILISATION` | `.5` | Half a farm's nameplate, a month, before the first one is sunk. |
 
 ### Automotive.java ([map](map/Automotive.md))
 
@@ -6075,7 +6076,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2227 constants)
+## harnesses (2244 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6126,6 +6127,24 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 81 | `ArrivalMixCheck.COLLEGE` | `WageBand.COLLEGE.ordinal()` |  |
 | 82 | `ArrivalMixCheck.UNIVERSITY` | `WageBand.UNIVERSITY.ordinal()` |  |
 | 218 | `ArrivalMixCheck.ADULT_SHARE` | `PopulationCohorts.equilibriumShare(AgeBand.ADULT)` | The adult share the fixtures run at (PopulationCheck's). |
+
+### AskProceedsCheck.java ([map](map/AskProceedsCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 39 | `AskProceedsCheck.out` | `System.out` |  |
+| 51 | `AskProceedsCheck.WATER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.WATER)` |  |
+| 52 | `AskProceedsCheck.POWER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)` |  |
+| 53 | `AskProceedsCheck.ROADS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.ROADS)` |  |
+| 56 | `AskProceedsCheck.BINDING_COMMITMENT_MONTHS` | `6` | The months the works may take to be ordered at the latest: the six months in which a tax-exempt issuer must expect to bind 5% of the proceeds (26 CFR 1.148-2(e)(2)). |
+| 59 | `AskProceedsCheck.WATER_DRAW_OVER_SUPPLY` | `3` | How many times what the plants supply the buildings are made to draw, so the town is short of water. |
+| 62 | `AskProceedsCheck.LIMIT_ROOM` | `1` | The room the debt limit is given over the town's ratio, in years of GDP: a sale of an order's gap fits within it, a second plant's whole bond does not. |
+| 65 | `AskProceedsCheck.PAVED_ROADS` | `24` | How many Paved Roads the town stands, so its streets are ahead of their load and the only works the builder wants first is water. |
+| 68 | `AskProceedsCheck.AMPLE_ROOM` | `1e9, SHORT_ROOM = 100` | The face of paper the bank has room for where the market is made ample, and where it is made short. |
+| 70 | `AskProceedsCheck.BY` | `"Automatic building"` |  |
+| 73 | `AskProceedsCheck.RESERVE_BESIDE` | `.5` | The share of the reserve the cash holds beside the proceeds in the finding: the proceeds whole, the reserve half there, so the cash is over the cost and the cash over the reserve is under it. |
+| 76 | `AskProceedsCheck.PROCEEDS_LEFT` | `.5` | The share of the proceeds the treasury still holds after the month's bills drew the rest, where the bills have drawn them. |
+| 79 | `AskProceedsCheck.WATER_RAISED` | `.6, POWER_RAISED =.3, FREE_RESERVES = 1` | The shares of their costs that section 5's two asks have raised, each short of its cost; and how many reserves of cash stand free over the reserve and the money the asks hold. |
 
 ### AuctionCheck.java ([map](map/AuctionCheck.md))
 
@@ -6246,7 +6265,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 992 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind.BUILDING }...` | The examples: a word shaped as the model files it, and the kind it must read as. |
+| 995 | `BuildCardCheck.KIND_EXAMPLES` | `{ { "Built 2 Industrial Bakery - output short of demand", BuildCard.WordKind.BUILDING }...` | The examples: a word shaped as the model files it, and the kind it must read as. |
 
 ### BuildersFirstCheck.java ([map](map/BuildersFirstCheck.md))
 
@@ -6265,11 +6284,10 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 68 | `BuildingStackCheck.FIXTURE_MONTHS` | `3` | The fixture's months before it is saved with its houses finished: a young town, which keeps the run short. |
-| 71 | `BuildingStackCheck.ORDER_HOUSES` | `40` | The House order the fixture's town has on site when its first save is written. |
-| 74 | `BuildingStackCheck.ROOM_BELOW` | `100` | How far below the ceiling section 6's copy stands, so that one order of the next size passes it. |
-| 447 | `BuildingStackCheck.PLAYED_MONTHS` | `24` | Months the played city runs in section 10, a stack count read at the end of each. |
-| 453 | `BuildingStackCheck.FIXTURE_CASH` | `1e6` | What section 10's fixtures are given to pay a demolition and a plot with: enough for them, and small enough that a double still tells the plot's price from the treasury (a 1e12 added to a treasury ... |
+| 70 | `BuildingStackCheck.ORDER_HOUSES` | `40` | The House order the fixture's town has on site when its first save is written. |
+| 73 | `BuildingStackCheck.ROOM_BELOW` | `100` | How far below the ceiling section 6's copy stands, so that one order of the next size passes it. |
+| 449 | `BuildingStackCheck.PLAYED_MONTHS` | `24` | Months the played city runs in section 10, a stack count read at the end of each. |
+| 455 | `BuildingStackCheck.FIXTURE_CASH` | `1e6` | What section 10's fixtures are given to pay a demolition and a plot with: enough for them, and small enough that a double still tells the plot's price from the treasury (a 1e12 added to a treasury ... |
 
 ### BusinessServicesCheck.java ([map](map/BusinessServicesCheck.md))
 
@@ -6546,12 +6564,12 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 245 | `CreditCrunchCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
 | 252 | `CreditCrunchCheck.months` | `new ArrayList<>()` |  |
 | 265 | `CreditCrunchCheck.BINDS_BY` | `1.25` | ★ How far over the risk-based requirement the hold puts the leverage requirement: the book may weigh a quarter more by the strike. |
-| 287 | `CreditCrunchCheck.GROUND_BLOCKS` | `CreditCrunchCheck.ORDER` | ★ The ground stood before each crunch month, in blocks of Low-Rise Apartments: section 4's order, so the landlords never wait on land. |
-| 314 | `CreditCrunchCheck.WATCH` | `1` | The households placed nowhere that LongPlaytest's watch flags past (its audit's "households with no home"): one, the rounding. |
-| 507 | `CreditCrunchCheck.ORDER` | `6` | ★ The order caused (REV-FB15): main's seed 13 asked for up to six blocks while its bank was short (m190-194). |
-| 509 | `CreditCrunchCheck.TILL` | `1.5` | ★ The till the order meets, in the door's price of one block: one block outright, whatever the issue brings. |
-| 511 | `CreditCrunchCheck.MAX_PLOTS` | `60` | The plots the fixture may buy for the order's ground. |
-| 519 | `CreditCrunchCheck.ORDER_RATE` | `.08` | ★ The insured mortgage rate the order is read at (R1g): a calm market's, so the lender's test passes more of the order than the till buys outright and what trims it is the bank's capital. |
+| 317 | `CreditCrunchCheck.GROUND_BLOCKS` | `CreditCrunchCheck.ORDER` | ★ The ground stood before each crunch month, in blocks of Low-Rise Apartments: section 4's order, so the landlords never wait on land. |
+| 344 | `CreditCrunchCheck.WATCH` | `1` | The households placed nowhere that LongPlaytest's watch flags past (its audit's "households with no home"): one, the rounding. |
+| 540 | `CreditCrunchCheck.ORDER` | `6` | ★ The order caused (REV-FB15): main's seed 13 asked for up to six blocks while its bank was short (m190-194). |
+| 542 | `CreditCrunchCheck.TILL` | `1.5` | ★ The till the order meets, in the door's price of one block: one block outright, whatever the issue brings. |
+| 544 | `CreditCrunchCheck.MAX_PLOTS` | `60` | The plots the fixture may buy for the order's ground. |
+| 552 | `CreditCrunchCheck.ORDER_RATE` | `.08` | ★ The insured mortgage rate the order is read at (R1g): a calm market's, so the lender's test passes more of the order than the till buys outright and what trims it is the bank's capital. |
 
 ### CrossingCheck.java ([map](map/CrossingCheck.md))
 
@@ -6722,7 +6740,7 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 19 | `ER1Check.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Suppresses the game's month narration while the fixture runs. |
+| 32 | `ER1Check.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Suppresses the game's month narration while the fixture runs. |
 
 ### EarthCheck.java ([map](map/EarthCheck.md))
 
@@ -7167,22 +7185,22 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 154 | `GatewayCheck.COAST_TRACK_TIMES` | `10` | The coast fixture's railway: each track type's count times this, 10 - enough track that the railway's gate arm reaches the coast and waits at the sea (section 16). |
-| 157 | `GatewayCheck.COAST_SAVED_AT` | `100` | The month section 21 saves the coast city at: past the month its main line first runs on beyond an arm that waits at the sea, between 55 and 60 on this world (CC1-M's loads at every fifth month: th... |
-| 160 | `GatewayCheck.COAST_HELD` | `10` | The months section 21 plays past MapCheck.MONTHS with the counts held. |
-| 163 | `GatewayCheck.HALIFAX_LAT` | `44.656780322078724, HALIFAX_LON = - 63.613890005401984` | Jerus's founding site, Halifax (section 17), in degrees. |
-| 166 | `GatewayCheck.MOST_HIGHWAYS` | `20` | The most Elevated Highways section 19 tries when it looks for the count that reaches a street. |
-| 169 | `GatewayCheck.EPS` | `1e-9` | The tolerance of a position in plots or pixels, well below anything either measures. |
-| 172 | `GatewayCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Where quietly() sends what the code under it prints, as section 23 lays its city: nowhere. |
-| 175 | `GatewayCheck.HIGHWAYS` | `100, TRACKS = 10` | Highways and railway lines the section 23 city is laid with, as the large fixtures here (gatewayCity(types, 100, 10)). |
-| 178 | `GatewayCheck.HANDFUL` | `4` | How many tiles of the section 23 city are read plot by plot, both ways: a handful, spread over the city. |
-| 231 | `GatewayCheck.GROUND_BEFORE_SL1` | `{ 430_556, 2_368_060, 2_152_782, 107_639 }` | The four sea terminals' ground in square feet, ids 94-97, as it was before SL1 (2026-10-28, main at 0.8.66): a Tanker Terminal, a Bulk Terminal, a Container Terminal and a General Cargo Terminal. |
-| 768 | `GatewayCheck.LINK_DISTRICTS` | `1` | How many districts out from the hub section 23's link looks for a line (linkWay()'s `most`): one, the nearest ring of candidates. |
-| 1070 | `GatewayCheck.VIEW_W` | `1000, VIEW_H = 600, LABEL_W = 110, LABEL_H = 13` | The view and the label it is tried with: 1,000 x 600 pixels, a label 110 wide and 13 high above its baseline. |
-| 1132 | `GatewayCheck.LABEL_BOTH_W` | `LABEL_W * LandMap.WORLD_BOTH_WORDS.length() /(double) LandMap.WORLD_WORDS.length()` | The shared label's width in the harness: WORLD_BOTH_WORDS in the font that makes WORLD_WORDS LABEL_W wide (monospaced: by the characters). |
-| 1348 | `GatewayCheck.HAUGESUND_LAT` | `59.4119, HAUGESUND_LON = 5.2775` | Section 22's Earth place: Haugesund, as the Earth's data names it, laid HAUGESUND_SIDE districts a side - its railway's arm runs south to the city's edge, and the land beyond is water within TrainS... |
-| 1349 | `GatewayCheck.HAUGESUND_SIDE` | `4` |  |
-| 1352 | `GatewayCheck.TN1_DRY_IN` | `360_000, TN1_GENERAL_OUT = 120_000` | Tonnes a month for section 22's schedule, by Ports.Cargo: dry bulk landed and general cargo shipped, about Jerus's city's at month 1,204. |
+| 156 | `GatewayCheck.COAST_TRACK_TIMES` | `10` | The coast fixture's railway: each track type's count times this, 10 - enough track that the railway's gate arm reaches the coast and waits at the sea (section 16). |
+| 159 | `GatewayCheck.COAST_SAVED_AT` | `1` | Section 21 installs coastCounts in its first month, causing the sea stop and the arm beyond it before saving. |
+| 162 | `GatewayCheck.COAST_HELD` | `10` | The final months section 21 holds the counts after its dated growth. |
+| 165 | `GatewayCheck.HALIFAX_LAT` | `44.656780322078724, HALIFAX_LON = - 63.613890005401984` | Jerus's founding site, Halifax (section 17), in degrees. |
+| 168 | `GatewayCheck.MOST_HIGHWAYS` | `20` | The most Elevated Highways section 19 tries when it looks for the count that reaches a street. |
+| 171 | `GatewayCheck.EPS` | `1e-9` | The tolerance of a position in plots or pixels, well below anything either measures. |
+| 174 | `GatewayCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Where quietly() sends what the code under it prints, as section 23 lays its city: nowhere. |
+| 177 | `GatewayCheck.HIGHWAYS` | `100, TRACKS = 10` | Highways and railway lines the section 23 city is laid with, as the large fixtures here (gatewayCity(types, 100, 10)). |
+| 180 | `GatewayCheck.HANDFUL` | `4` | How many tiles of the section 23 city are read plot by plot, both ways: a handful, spread over the city. |
+| 233 | `GatewayCheck.GROUND_BEFORE_SL1` | `{ 430_556, 2_368_060, 2_152_782, 107_639 }` | The four sea terminals' ground in square feet, ids 94-97, as it was before SL1 (2026-10-28, main at 0.8.66): a Tanker Terminal, a Bulk Terminal, a Container Terminal and a General Cargo Terminal. |
+| 770 | `GatewayCheck.LINK_DISTRICTS` | `1` | How many districts out from the hub section 23's link looks for a line (linkWay()'s `most`): one, the nearest ring of candidates. |
+| 1074 | `GatewayCheck.VIEW_W` | `1000, VIEW_H = 600, LABEL_W = 110, LABEL_H = 13` | The view and the label it is tried with: 1,000 x 600 pixels, a label 110 wide and 13 high above its baseline. |
+| 1136 | `GatewayCheck.LABEL_BOTH_W` | `LABEL_W * LandMap.WORLD_BOTH_WORDS.length() /(double) LandMap.WORLD_WORDS.length()` | The shared label's width in the harness: WORLD_BOTH_WORDS in the font that makes WORLD_WORDS LABEL_W wide (monospaced: by the characters). |
+| 1352 | `GatewayCheck.HAUGESUND_LAT` | `59.4119, HAUGESUND_LON = 5.2775` | Section 22's Earth place: Haugesund, as the Earth's data names it, laid HAUGESUND_SIDE districts a side - its railway's arm runs south to the city's edge, and the land beyond is water within TrainS... |
+| 1353 | `GatewayCheck.HAUGESUND_SIDE` | `4` |  |
+| 1356 | `GatewayCheck.TN1_DRY_IN` | `360_000, TN1_GENERAL_OUT = 120_000` | Tonnes a month for section 22's schedule, by Ports.Cargo: dry bulk landed and general cargo shipped, about Jerus's city's at month 1,204. |
 
 ### GdpCheck.java ([map](map/GdpCheck.md))
 
@@ -7342,11 +7360,11 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 40 | `GroundSkipCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | The game's and the playtest's narration while a fixture plays. |
-| 43 | `GroundSkipCheck.SKIP` | `60` | The rhythm's sixty-month skip (LongPlaytest.main(), stop % 6 == 3): the gap the default playtest's m743-m805 was. |
-| 46 | `GroundSkipCheck.UNDER_THE_LINE` | `.002` | How far under the player's line the fixture leaves the ground built on: a look there buys nothing. |
-| 92 | `GroundSkipCheck.TOWN_MONTHS` | `240` | The months the town is played before its look: past the founding's surge, when the businesses' forecast reads a town growing by the tenth of a percent a month and not by percents. |
-| 96 | `GroundSkipCheck.TOWN_SLOT` | `1` |  |
+| 42 | `GroundSkipCheck.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | The game's and the playtest's narration while a fixture plays. |
+| 45 | `GroundSkipCheck.SKIP` | `60` | The rhythm's sixty-month skip (LongPlaytest.main(), stop % 6 == 3): the gap the default playtest's m743-m805 was. |
+| 48 | `GroundSkipCheck.UNDER_THE_LINE` | `.002` | How far under the player's line the fixture leaves the ground built on: a look there buys nothing. |
+| 94 | `GroundSkipCheck.TOWN_MONTHS` | `240` | The months the town is played before its look: past the founding's surge, when the businesses' forecast reads a town growing by the tenth of a percent a month and not by percents. |
+| 98 | `GroundSkipCheck.TOWN_SLOT` | `1` |  |
 
 ### HaulageCheck.java ([map](map/HaulageCheck.md))
 
@@ -7453,11 +7471,12 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 60 | `HousingDoorCheck.SEED` | `12` | The seed R0h's ensemble found it on, and today's main holds its landlords at the door on. |
-| 62 | `HousingDoorCheck.FROM` | `430, TO = 900` | The months watched, months already run: HL1 retains m431-500 and continues to m900; its first capital trim is m502, eight fire by m900. |
-| 64 | `HousingDoorCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
-| 65 | `HousingDoorCheck.RE` | `Sectors.REAL_ESTATE` |  |
-| 92 | `HousingDoorCheck.asks` | `new ArrayList<>()` |  |
+| 70 | `HousingDoorCheck.SEED` | `12` | The seed R0h's ensemble found it on, and today's main holds its landlords at the door on. |
+| 72 | `HousingDoorCheck.FROM` | `430, TO = 900` | The months watched, months already run: HL1 retains m431-500 and continues to m900; its first capital trim is m502, eight fire by m900. |
+| 74 | `HousingDoorCheck.TARGET` | `.02` | The ensemble's AUTO2: the autopilot at this target, every month (Ensemble.TARGET). |
+| 75 | `HousingDoorCheck.RE` | `Sectors.REAL_ESTATE` |  |
+| 77 | `HousingDoorCheck.BOOM` | `831` | Call A's first town's boom (a6b4e2369): 36.993 households overcrowded, the landlords' 389 Houses trimmed to 14 for the down payment. |
+| 116 | `HousingDoorCheck.asks` | `new ArrayList<>()` |  |
 
 ### HousingMarketCheck.java ([map](map/HousingMarketCheck.md))
 
@@ -7867,44 +7886,46 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 3526 | `LongPlaytest.BUDGET_EVERY` | `Integer.getInteger("playtest.budget", 0)` | -Dplaytest.budget=N (0.7.139, batch CC1): every N months the treasury's month, line by line - what came in and what went out, care by kind and childcare's own running (its centres' posts and upkeep... |
 | 3551 | `LongPlaytest.childcareBuilt` | `new java.util.TreeMap<>()` | ...the buildings, by name. |
 | 3554 | `LongPlaytest.schoolsOrdered` | `new java.util.HashMap<>()` | What the flag has ordered of each school, so one under construction is not ordered twice. |
-| 4200 | `LongPlaytest.OIL_FUEL_IMPORTS_SHARE` | `.01` | The share of a month's GDP the fuel bought abroad has to pass before the test player buys oil (0.7.62): spec-land 3's K entry, 1%. |
-| 4230 | `LongPlaytest.refinedRun` | `new java.util.EnumMap<>(Good.class)` | ...and the refinery's products over the run (0.7.76, batch O1): made, by product, and what of them its tanks could not hold (spec-oil 6's joint-products risk). |
-| 4335 | `LongPlaytest.terminalsOrdered` | `new java.util.TreeMap<>()` | Terminals the test player ordered, by name; the looks that found a berth's worth with no coast; the first terminal's month. |
-| 4344 | `LongPlaytest.PORTS_TRACE` | `Boolean.getBoolean("playtest.ports")` | -Dplaytest.ports=true (0.7.86): the ports yearly - each kind's tonnes across the boundary, its berths, its share at sea and the month's calls (portsLine()). |
-| 4433 | `LongPlaytest.refinersOpened` | `new java.util.TreeMap<>(), refinersSold = new java.util.TreeMap<>()` | THE SPREAD PLANNER'S BUILDINGS OVER THE RUN (0.7.82, batch O5): each of the refiners' buildings opened and sold back, and the crude units and the conversion units standing at most. |
-| 4439 | `LongPlaytest.refinersLast` | `new java.util.HashMap<>()` | Each refiner's count last month, by template id (R1d): the refiners' known templates grow as a 1900 city researches them, so a count kept by the list's index ran past the first month's list (month ... |
-| 4499 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
-| 4506 | `LongPlaytest.GROUND_AHEAD_CASH_SHARE` | `.10` | The share of the treasury's cash one look spends keeping ground ahead (0.7.58, J1d): a tenth, the share the war chest tops the reserves up from and the every-13th-stop purchase is held under. |
-| 4654 | `LongPlaytest.GROUND_WATCH` | `! "off".equalsIgnoreCase(System.getProperty("playtest.groundWatch", "on").trim())` | -Dplaytest.groundWatch=off plays the skip as it was until LP-G1, no look inside it, for a trace to set beside (the run is then the old one to the byte); on when unset. |
-| 4657 | `LongPlaytest.groundLooked` | `java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>())` | The month each city's ground was last looked at (keepGroundAhead()), by the city: weakly held, so a harness's cities are let go. |
-| 4692 | `LongPlaytest.GROUND_TRACE` | `groundTraceWindow(System.getProperty("playtest.groundTrace"))` | -Dplaytest.groundTrace=FROM-TO (LP-G1): the months whose ground looks and landlords are traced, to the error stream; unset, none and the run as it was. |
-| 4831 | `LongPlaytest.mapSidecarMonths` | `new ArrayList<>()` | Actual played-city months whose saved sidecars were accepted directly, including every source journal (DM2). |
-| 4878 | `LongPlaytest.LAYOUT_WINDOW` | `13` | How many months a window of the layout's watch is. |
-| 4880 | `LongPlaytest.LAYOUT_STARTS` | `layoutStarts(TARGET_MONTHS)` | The months each window follows: TARGET_MONTHS / 4, / 2, 3 / 4 and TARGET_MONTHS - LAYOUT_WINDOW, those that fit in the run and clear the window before. |
-| 4913 | `LongPlaytest.layoutSpillByMonth` | `new java.util.TreeMap<>()` | The spill's moves by the month they were found in (the month pair ending there): how many pairs had any, and when. |
-| 4917 | `LongPlaytest.layoutOldBoxes` | `new java.util.HashMap<>()` | ...each district's industry boxes, by its key... |
-| 4919 | `LongPlaytest.layoutOldDims` | `new java.util.HashMap<>()` | ...and each of those boxes' size (LayoutSnap.dims), in the same order. |
-| 4921 | `LongPlaytest.layoutOldCounts` | `new java.util.HashMap<>()` | ...and each district's count of boxes by type. |
-| 4923 | `LongPlaytest.layoutOldModel` | `new java.util.HashMap<>()` | ...and each district's model count of every type (District.count()) then and the lowest it has been in any month since: a finding's detail (an old works that left in a dip of its type's count did n... |
-| 4932 | `LongPlaytest.layoutOldSpill` | `new java.util.HashSet<>()` | The districts a spill reached when the oldest works were kept (a carry in), and the old works in a district a spill reached then or at the end, counted apart: a district joining the map's order ahe... |
-| 4945 | `LongPlaytest.layoutOldLive` | `new java.util.HashMap<>(), layoutOldSent = new java.util.HashMap<>()` | THE WORKS SENT ON (RN1-H-M, 2026-11-20). |
-| 5269 | `LongPlaytest.layoutBandsAt` | `new ArrayList<>()` | How many boxes each window's first month holds in the homes' band, in industry and in the outer kinds, one phrase a window: what the oldest works are read against. |
-| 5926 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
-| 5932 | `LongPlaytest.ABROAD_SHARE` | `.8` | CC1-S: the share of the city's own quote for a sale that the dollar quote for it must come under for the build to borrow abroad. |
-| 5935 | `LongPlaytest.QUOTED_BORROWING` | `Boolean.parseBoolean(System.getProperty("playtest.quotedBorrowing", "true"))` | The build compares quotes for the sale by default (QB1); -Dplaytest.quotedBorrowing=false keeps the old rates-before-sale counterfactual. |
-| 5991 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
-| 6649 | `LongPlaytest.ADDED_BACK_TERMS` | `{ "food", "materials", "luxuries", "held goods" }` | The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. |
-| 6651 | `LongPlaytest.addedBackMonths` | `new int [ ADDED_BACK_TERMS.length ], addedBackFirst = { - 1, - 1, - 1, - 1 }, addedBack...` | Months each term added a write-off back, the first, and the largest with its month. |
-| 6653 | `LongPlaytest.addedBackWorst` | `new double [ ADDED_BACK_TERMS.length ]` |  |
-| 6655 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
-| 6708 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
-| 6716 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
-| 6867 | `LongPlaytest.COPPER_WORKS` | `{ "Copper Smelter", "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mill", "Wire...` | The copper works the summary counts at the end (CU2), by their names in buildings.json; CopperRefiningCheck's played count reads the line. |
-| 8715 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
-| 8864 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
-| 8870 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
-| 8989 | `LongPlaytest.CLEAN_UP_WALKS` | `3` | The most times cleanUp() walks a scratch tree to have it gone: a file renamed or deleted under one walk is found, or not, by the next (RN1-H-M). |
-| 9049 | `LongPlaytest.MoneyFixtures.OWN_LINES` | `MoneyAudit.OWN_LINES` | The households' own lines (HL1), by the label MoneyAudit.households() notes them under. |
+| 4211 | `LongPlaytest.OIL_FUEL_IMPORTS_SHARE` | `.01` | The share of a month's GDP the fuel bought abroad has to pass before the test player buys oil (0.7.62): spec-land 3's K entry, 1%. |
+| 4241 | `LongPlaytest.refinedRun` | `new java.util.EnumMap<>(Good.class)` | ...and the refinery's products over the run (0.7.76, batch O1): made, by product, and what of them its tanks could not hold (spec-oil 6's joint-products risk). |
+| 4346 | `LongPlaytest.terminalsOrdered` | `new java.util.TreeMap<>()` | Terminals the test player ordered, by name; the looks that found a berth's worth with no coast; the first terminal's month. |
+| 4355 | `LongPlaytest.PORTS_TRACE` | `Boolean.getBoolean("playtest.ports")` | -Dplaytest.ports=true (0.7.86): the ports yearly - each kind's tonnes across the boundary, its berths, its share at sea and the month's calls (portsLine()). |
+| 4444 | `LongPlaytest.refinersOpened` | `new java.util.TreeMap<>(), refinersSold = new java.util.TreeMap<>()` | THE SPREAD PLANNER'S BUILDINGS OVER THE RUN (0.7.82, batch O5): each of the refiners' buildings opened and sold back, and the crude units and the conversion units standing at most. |
+| 4450 | `LongPlaytest.refinersLast` | `new java.util.HashMap<>()` | Each refiner's count last month, by template id (R1d): the refiners' known templates grow as a 1900 city researches them, so a count kept by the list's index ran past the first month's list (month ... |
+| 4510 | `LongPlaytest.GROWTH_DISCOUNT` | `.15` | How much of a gain arrives later rather than now. |
+| 4517 | `LongPlaytest.GROUND_AHEAD_CASH_SHARE` | `.10` | The share of the treasury's cash one look spends keeping ground ahead (0.7.58, J1d): a tenth, the share the war chest tops the reserves up from and the every-13th-stop purchase is held under. |
+| 4559 | `LongPlaytest.GROUND_FUNDING` | `! "off".equalsIgnoreCase(System.getProperty("playtest.groundFunding", "on").trim())` | -Dplaytest.groundFunding=off plays the player as it was until FB11, no ground funded (the run is then the old one to the byte), for a trace to set beside; on when unset. |
+| 4593 | `LongPlaytest.FUNDED_SLACK` | `1e-6` | What a bond may fall short of the gap it was asked for and still fund the offer (FB11): a millionth of the price, the bond auction's rounding, not a part of the cash share. |
+| 4749 | `LongPlaytest.GROUND_WATCH` | `! "off".equalsIgnoreCase(System.getProperty("playtest.groundWatch", "on").trim())` | -Dplaytest.groundWatch=off plays the skip as it was until LP-G1, no look inside it, for a trace to set beside (the run is then the old one to the byte); on when unset. |
+| 4752 | `LongPlaytest.groundLooked` | `java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>())` | The month each city's ground was last looked at (keepGroundAhead()), by the city: weakly held, so a harness's cities are let go. |
+| 4787 | `LongPlaytest.GROUND_TRACE` | `groundTraceWindow(System.getProperty("playtest.groundTrace"))` | -Dplaytest.groundTrace=FROM-TO (LP-G1): the months whose ground looks and landlords are traced, to the error stream; unset, none and the run as it was. |
+| 4926 | `LongPlaytest.mapSidecarMonths` | `new ArrayList<>()` | Actual played-city months whose saved sidecars were accepted directly, including every source journal (DM2). |
+| 4973 | `LongPlaytest.LAYOUT_WINDOW` | `13` | How many months a window of the layout's watch is. |
+| 4975 | `LongPlaytest.LAYOUT_STARTS` | `layoutStarts(TARGET_MONTHS)` | The months each window follows: TARGET_MONTHS / 4, / 2, 3 / 4 and TARGET_MONTHS - LAYOUT_WINDOW, those that fit in the run and clear the window before. |
+| 5008 | `LongPlaytest.layoutSpillByMonth` | `new java.util.TreeMap<>()` | The spill's moves by the month they were found in (the month pair ending there): how many pairs had any, and when. |
+| 5012 | `LongPlaytest.layoutOldBoxes` | `new java.util.HashMap<>()` | ...each district's industry boxes, by its key... |
+| 5014 | `LongPlaytest.layoutOldDims` | `new java.util.HashMap<>()` | ...and each of those boxes' size (LayoutSnap.dims), in the same order. |
+| 5016 | `LongPlaytest.layoutOldCounts` | `new java.util.HashMap<>()` | ...and each district's count of boxes by type. |
+| 5018 | `LongPlaytest.layoutOldModel` | `new java.util.HashMap<>()` | ...and each district's model count of every type (District.count()) then and the lowest it has been in any month since: a finding's detail (an old works that left in a dip of its type's count did n... |
+| 5027 | `LongPlaytest.layoutOldSpill` | `new java.util.HashSet<>()` | The districts a spill reached when the oldest works were kept (a carry in), and the old works in a district a spill reached then or at the end, counted apart: a district joining the map's order ahe... |
+| 5040 | `LongPlaytest.layoutOldLive` | `new java.util.HashMap<>(), layoutOldSent = new java.util.HashMap<>()` | THE WORKS SENT ON (RN1-H-M, 2026-11-20). |
+| 5364 | `LongPlaytest.layoutBandsAt` | `new ArrayList<>()` | How many boxes each window's first month holds in the homes' band, in industry and in the outer kinds, one phrase a window: what the oldest works are read against. |
+| 6021 | `LongPlaytest.DEBT_SERVICE_LIMIT` | `.25` | Whether the advisor can afford the PAYMENTS, not whether it likes the size. |
+| 6027 | `LongPlaytest.ABROAD_SHARE` | `.8` | CC1-S: the share of the city's own quote for a sale that the dollar quote for it must come under for the build to borrow abroad. |
+| 6030 | `LongPlaytest.QUOTED_BORROWING` | `Boolean.parseBoolean(System.getProperty("playtest.quotedBorrowing", "true"))` | The build compares quotes for the sale by default (QB1); -Dplaytest.quotedBorrowing=false keeps the old rates-before-sale counterfactual. |
+| 6086 | `LongPlaytest.refusals` | `new LinkedHashMap<>()` | Why the advisor could not do the thing it wanted to. |
+| 6744 | `LongPlaytest.ADDED_BACK_TERMS` | `{ "food", "materials", "luxuries", "held goods" }` | The inventory terms in NationalAccounts.getWrittenOffAddedBack()'s order. |
+| 6746 | `LongPlaytest.addedBackMonths` | `new int [ ADDED_BACK_TERMS.length ], addedBackFirst = { - 1, - 1, - 1, - 1 }, addedBack...` | Months each term added a write-off back, the first, and the largest with its month. |
+| 6748 | `LongPlaytest.addedBackWorst` | `new double [ ADDED_BACK_TERMS.length ]` |  |
+| 6750 | `LongPlaytest.EVENTS_PRINTED` | `12` | The events printed as they happen, each term's first few: enough to say where a trace moved. |
+| 6803 | `LongPlaytest.stakes` | `new ArrayList<>()` |  |
+| 6811 | `LongPlaytest.mostHeld` | `new double [ Equity.COMPANIES.length ]` |  |
+| 6962 | `LongPlaytest.COPPER_WORKS` | `{ "Copper Smelter", "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mill", "Wire...` | The copper works the summary counts at the end (CU2), by their names in buildings.json; CopperRefiningCheck's played count reads the line. |
+| 8813 | `LongPlaytest.DISTINCT_ROUNDS` | `64` | The most letters distinctCuts() adds to a name: past the longest key there is nothing left to add. |
+| 8962 | `LongPlaytest.PROBE_QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
+| 8968 | `LongPlaytest.PROBE_MONTH_NANOS` | `new long [ 20_000 ]` | Per-month wall time of the probe's run(g, 1), nanoseconds, by month index. |
+| 9087 | `LongPlaytest.CLEAN_UP_WALKS` | `3` | The most times cleanUp() walks a scratch tree to have it gone: a file renamed or deleted under one walk is found, or not, by the next (RN1-H-M). |
+| 9147 | `LongPlaytest.MoneyFixtures.OWN_LINES` | `MoneyAudit.OWN_LINES` | The households' own lines (HL1), by the label MoneyAudit.households() notes them under. |
 
 ### LuxuryRetailCheck.java ([map](map/LuxuryRetailCheck.md))
 
@@ -7939,161 +7960,160 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 447 | `MapCheck.MONTHS` | `120` | Months the city of section 1 is played: 120 (the design's). |
-| 450 | `MapCheck.IRON_AT` | `MONTHS / 3` | The month the played city is handed a whole iron field and orders a mine on it, if it has none (0.7.64): a third of the way. |
-| 462 | `MapCheck.JERUS_COUNTS` | `{ 1913, 200, 1212, 0, 65, 4, 1701, 4, 0, 2, 5, 48, 11, 81, 21, 0, 0, 239, 114, 1, 2, 0,...` | Jerus's city at month 1,851 (his autosave, 509,455 people on 89.63 km2 of dry ground): every building type's count, by id - 14,214 buildings, the design's own fixture for the map's sizes; 8,204 sin... |
-| 467 | `MapCheck.JERUS_PEOPLE` | `509_455` | ...his people. |
-| 470 | `MapCheck.JERUS_KM2` | `89.63` | ...and his dry ground, in km2. |
-| 473 | `MapCheck.JERUS_FILL` | `0.92` | His buildings' footprint over his dry ground: 91.8% (the design's measure), so the design's square city holds this share of a district - his density. |
-| 476 | `MapCheck.JERUS_FOOTPRINT_KM2` | `82.273` | ...the land those buildings stood on, by the catalogue his save was measured with (0.7.70's): 82.273 km2, 91.8% of his dry ground (runs/fixN2-notes.md). |
-| 494 | `MapCheck.TIMES` | `{ 1, 9_814, 10_000, 19_629 }` | The copies measured: his city x 1, x 9,814 (5 billion people), x 10,000 (the design's) and x 19,629 (10 billion). |
-| 497 | `MapCheck.DENSE` | `2` | The copy whose screen is all city, at his density, that section 3 paints: x 10,000. |
-| 500 | `MapCheck.SCREEN_ACROSS` | `18, SCREEN_DOWN = 11, SCREEN_TILES = SCREEN_ACROSS * SCREEN_DOWN` | The screen: 18 x 11 tiles, 198 - a 1,389 x 868 view at L0's least 3.2 px a plot is 13.6 x 8.5 tiles, the design's "about 200 with a margin". |
-| 503 | `MapCheck.SCREEN_MS` | `80` | The design's bound on that screen's paint and raster, in ms (derived: 38 at its measured 0.19 ms a tile). |
-| 506 | `MapCheck.SCREEN_RATIO` | `1.5` | The most any copy's screen may take against the 5B copy's, the first whose screen is all city (the design's; against the city x 1's until 0.7.64 - section 5's note). |
-| 509 | `MapCheck.RECONCILE_MS` | `5` | The design's bound on a month's change at 5B and at 10B, in ms of the main thread's CPU since 0.7.100 (measured 0.76; section 5's note). |
-| 512 | `MapCheck.PX` | `4` | Pixels a plot the screen is rastered at: 4, L0's image (spec-land 2.6). |
-| 515 | `MapCheck.WARM_ROUNDS` | `3, TIMED_ROUNDS = 5` | Rounds of the screen run over every copy before any is timed, and rounds timed, each copy in turn: the least of each copy's timed rounds is its time. |
-| 518 | `MapCheck.DRY_PLACE` | `0.97` | How dry the place the copies stand on must be, at a sample a tile over 3 x 3 districts: 97% - every screen tile can be built on, the painter's worst case. |
-| 521 | `MapCheck.DRAWN_EVERY` | `30` | The months of section 1's city at which every tile is painted and what is drawn counted against the model: every 30th, four of its 120 (0.7.64). |
-| 591 | `MapCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
-| 1044 | `MapCheck.SPILL_FIRST_CELLS` | `2, SPILL_SECOND_CELLS = 6` | The cells across the window of whole cells a spill's first district owns and its second: 2 and 6 of a district's 8 - the first draws little, the second all it is carried. |
-| 1203 | `MapCheck.BOUGHT_PLOTS` | `64` | The side of a bought block, at least: 64 plots (rounded up to whole blocks of the land's level), a few cells of a district's 8 across. |
-| 1541 | `MapCheck.RIM_WORKS` | `12, RIM_FLATS = 72` | The works and the flats the out-of-ground city is given a month, and where its founding site stands in its district (plots from its north-west corner): a district's order from the site is then 92, ... |
-| 1542 | `MapCheck.RIM_SITE_AT` | `{ 220, 128 }` |  |
-| 1545 | `MapCheck.RIM_PACKED` | `60, RIM_LOOK_EVERY = 4` | The packed buildings 2e wants before it looks, and how many months it adds between looks. |
-| 1769 | `MapCheck.PAST_HOUSES` | `140` | The houses pastByHand() packs: more than its owned block's 100 plots hold (FB5). |
-| 2468 | `MapCheck.RELAY_GROWTH_MONTHS` | `60` | The months 4c grows its spread claim at most, a works a month, to find one owed into a district that counts none: 60. |
-| 2519 | `MapCheck.BAND_SMALL` | `2` | The band's size in 2i: four districts make two bands, the bought fifth a third. |
-| 2624 | `MapCheck.MIX` | `{ "Low-Rise Apartments", "Small Grocery Store", "Bakery", "Elementary School", "Industr...` | What the founding district is given month by month besides houses, in turn (an apartment block, shops, a school, works): buildings of several sizes for its plan to place. |
-| 2627 | `MapCheck.USED_SHARE` | `0.5` | How much of its room the founding district is brought to before a run is laid across it: half of the cells its plan may fill (CityMap.PLAN_FILL of its owned plots). |
-| 2630 | `MapCheck.BUILDINGS_A_MONTH` | `3` | The buildings of the mix the founding district is given each month, beside its houses. |
-| 2633 | `MapCheck.MONTHS_BETWEEN` | `4` | Months of arrivals after each change of the runs, before the next plan is drawn: the buildings that must go on the ground as the run left it. |
-| 2636 | `MapCheck.HIGHWAY_MONTHS` | `60, HIGHWAY_STEP = 8` | The most months the highways are given to reach the district, and the Elevated Highways added a month while they do. |
-| 2639 | `MapCheck.HIGHWAY_CLEAR` | `1` | A building keeps this far from a highway plot (batch H5: no building touches one, corners included): the reach, in plots, within which a highway laid takes a box's place. |
-| 2769 | `MapCheck.RUN_KINDS` | `{ DistrictPlan.FIXED_YARD, DistrictPlan.FIXED_RAIL, DistrictPlan.FIXED_HIGHWAY, Distric...` | The kinds of fixed plot the runs lay, in the order a line prints them. |
-| 2771 | `MapCheck.RUN_NAMES` | `{ "yard", "rail", "highway", "reserve" }` | ...and their names, in the same order. |
-| 3387 | `MapCheck.IDLE_GAP` | `3` | Months a depot is away in 2e's short gap: fewer than CityRuns.YARD_IDLE_MONTHS (the playtest's gaps were 3 to 93). |
-| 3811 | `MapCheck.NEW_CITY_MONTHS` | `{ 0, 1, 12 }` | The months a new default city is drawn at: as founded, a month on and a year on (Jerus: "a brand new city shows that it has a few houses and a shop when it doesnt"). |
-| 4475 | `MapCheck.ACCESS_HIGHWAYS_ADDED` | `200, ACCESS_DEPOTS_ADDED = 3` | The access fixture's added highways and Truck Depots: enough highways to cross, three depots to place. |
-| 4643 | `MapCheck.SPURS_ADDED` | `12, BULK_WORKS_ADDED = 90` | The sidings fixture's added Rail Spurs and bulk works (JunctionCheck's two bulk types, two in three the larger). |
-| 4947 | `MapCheck.CORRIDOR_STAGES` | `{ { 1, 6 }, { 3, 92 }, { 6, 400 }, { 9, 1385 } }` | Spec 2.7's table on the game's own ground: the design's dry place, the city's ground a square 1, 3, 6 and 9 districts a side (4 to 35 km from its middle, the prototype's 4 to 34), and its Elevated ... |
-| 5103 | `MapCheck.YARDS_ADDED` | `2, FREIGHT_ADDED = 1` | The fixture's added rail: Rail Terminals (yards) and Freight Lines, to hold the yards' rule on (his city has spurs, no yard; 0.7.72's fixture). |
-| 5401 | `MapCheck.SIDECAR_BYTES` | `500_000` | The most a sidecar may be at 5 and 10 billion people, log and all, in deflated bytes (CL3): the 10B copy's measured 333,776 (294,101 without the log, in FORMAT 8; its 1,457,418 records the canonica... |
-| 5404 | `MapCheck.SIDECAR_MS` | `500` | The most the 5B and 10B copies' sidecar may take to write, and to read, in ms (CL3): measured 271 and 267 at 10B (240 and 161 at 5B), and near twice that. |
-| 5454 | `MapCheck.THREADS` | `java.lang.management.ManagementFactory.getThreadMXBean()` | The JVM's threads, read for the main thread's CPU time. |
-| 5457 | `MapCheck.CPU_STEP_MS` | `0.1` | The coarsest step of the thread's CPU clock a bound is read on, in ms: 0.1, a twentieth of the quickest stamp timed; coarser (Windows: 15.6) and the bounds are read on the wall clock. |
-| 5460 | `MapCheck.CPU_TIMED` | `cpuTimed()` | Whether a month is timed on the main thread's CPU: this JVM measures it, it is on (turned on here if it is off), and its clock steps no coarser than CPU_STEP_MS. |
-| 5632 | `MapCheck.FULL_MONTHS_MAX` | `240` | The most months of +0.01% section 5b grows the 10B copy before it must be full (it was full after about 32 in UP8's measure). |
-| 5635 | `MapCheck.FULL_TIMED` | `12` | Months section 5b times once the copy is full. |
-| 5698 | `MapCheck.SMALL_W` | `600, SMALL_H = 400` | The land office's small map, in pixels (spec-land 2.8). |
-| 5722 | `MapCheck.SCREEN_POINTS` | `{ { 0, 0 }, { 300, 200 }, { 1344, 805 }, { 17.25, 640.5 }, { 1000, 3 } }` | Points across the screen the transforms are tried at. |
-| 6184 | `MapCheck.BIG_OFFER_LEVEL` | `9` | The level of the offer the overlay's clip is tried on, zoomed in as far as the view goes: 9, blocks of 15.36 km - an offer of 2 x 4 of them is over three views across even at the expanded size, whi... |
-| 6291 | `MapCheck.DRAFT_MONTHS` | `24` | Months the draft's town is played before its map is drawn: 24. |
-| 6421 | `MapCheck.SHORE_SIDE` | `3` | The section's city: three districts a side, all of it owned and drawn canonically on its measured ground - the playtest's coast (its bay, its south shore, its lagoon) - about a site one district we... |
-| 6465 | `MapCheck.BOAT_FRAME_MS` | `0.5` | The design's bound on a frame's boats at 10 billion, in ms (spec-oil 5's O13 row: "a frame's boats <= 0.5 ms at 10B, measured 0.38"). |
-| 6468 | `MapCheck.BOAT_FRAMES` | `200` | Frames timed for that bound, a round: 200 at times through the month; the least of TIMED_ROUNDS rounds' means after WARM_ROUNDS. |
-| 6471 | `MapCheck.ROUTES_ALL_MS` | `ham.citybuildersim.ui.UserInterface.SECONDS_PER_MONTH * 1000` | A month at normal speed, in ms: ui.UserInterface.SECONDS_PER_MONTH x 1000, 5,000 - what every terminal's route found from scratch at 10 billion must be found within (SL1, 2026-10-28). |
-| 6474 | `MapCheck.ROUTES_MONTH_MS` | `ham.citybuildersim.ui.UserInterface.SECONDS_PER_MONTH * 1000 / ham.citybuildersim.ui.Us...` | A month at the clock's top speed, in ms: SECONDS_PER_MONTH x 1000 over UserInterface.SPEED_TOP, 100 - what a month's new terminals' routes, laid onto those kept, must be found within at 10 billion ... |
-| 6477 | `MapCheck.ROUTES_MONTH_SHARE` | `0.01` | The share of the 10 billion lanes' terminals a month lays: 1%, 200 of the 20,000 (SL1). |
-| 6480 | `MapCheck.ROUTES_ROUNDS` | `3` | Rounds of the 10 billion routes' timings, the least kept (a find from scratch is the slow one, so fewer than the frames'): 3 after one warm round. |
-| 6511 | `MapCheck.HARBOUR_ROUNDS` | `12` | Rounds of orders on the harbour's coast, each one more of every terminal and tank farm: 12, more than the harbours hold, so that some come up short. |
-| 6514 | `MapCheck.HARBOUR_FILL` | `60` | Terminals asked of the harbour's coast one at a time for the exactness: 60, more than its two harbours take. |
-| 6674 | `MapCheck.BUNDLE_LAYS` | `8` | Harbour works laid after the harbour's first whose districts' plans are read for the buildings they move: 8. |
-| 6986 | `MapCheck.ARM_WALK_SHIFT_X` | `- 60, ARM_WALK_SHIFT_Y = 12` | GatewayCheck's coast with its founding site 60 plots west and 12 south (found by trying the site's shifts): the coast whose best shore is the gate arm's end - the rule, its works not kept off the a... |
-| 7039 | `MapCheck.HARBOUR_MANY` | `60` | General Cargo Terminals standing on the small coast of the harbours' cost: 10 (SHORE_FEW), and on the big: 60, which its two harbours hold (about 96 do). |
-| 7096 | `MapCheck.SHORE_FEW` | `10` | General Cargo Terminals standing on the small coast of the shore's cost: 10. |
-| 7099 | `MapCheck.SHORE_MANY` | `300` | ...and on the big coast: 300, where a late city stands thousands. |
-| 7102 | `MapCheck.SHORE_GROWTH` | `2` | How many times the cost of a month's terminal may grow from SHORE_FEW standing to SHORE_MANY: twice (it was 21 times, 74 ms and 1,557 ms: every plot the search read asked every work, and every sear... |
-| 7105 | `MapCheck.SHORE_WARM` | `3, SHORE_TIMED = 15` | Months of one more terminal before the timing and timed, a terminal each: SHORE_WARM that are not, then the median of SHORE_TIMED kept (a month is about a ms, which a pause moves). |
-| 7108 | `MapCheck.SHORE_MARGIN` | `2` | Plots asked about each work beyond its box, verge and quay: 2, past the cell the index keeps a work in. |
-| 7111 | `MapCheck.SHORE_FILL` | `20` | Terminals asked of the coast that fills, one at a time: 20, more than its 12. |
-| 7114 | `MapCheck.SHORE_LAGOON` | `40` | Terminals asked of each lagoon, one at a time: 40. |
-| 7910 | `MapCheck.TRAIN_FRAME_MS` | `BOAT_FRAME_MS` | The design's bound on a frame's trains at 10 billion, in ms: the boats' (spec-freight 4.4, "the same structure is well inside budget"). |
-| 7913 | `MapCheck.TRAIN_YARDS_A_SIDE` | `40` | Yards a side of the synthetic city the frame is timed on at 10 billion: 40, 1,600 yards, 12,800 routes on one main line. |
-| 8383 | `MapCheck.MOST_TURN_DEG` | `30` | The most two neighbouring vehicles of a train may differ in heading, in degrees: 30 (FX5; on 0.8.14 a corner turned them 90 and a ladder 60). |
-| 8386 | `MapCheck.LADDER_TURN_DEG` | `45` | ...and on a yard's ladder, the tightest curve the railway has: 45 degrees (FX5: an S of up to a few plots across over YARD_LADDER, 3 plots, turns a depot's neighbours 40; the long yards slice Y lay... |
-| 8530 | `MapCheck.TRUCK_FRAME_MS` | `TRAIN_FRAME_MS` | The design's bound on a frame's trucks at 10 billion, in ms: the trains' (FR9: the trips run the trains' pace, and a frame is the same structure). |
-| 8533 | `MapCheck.TRUCK_ROADS` | `20` | Roads a district of the synthetic city has at 10 billion: 20, each with a world trip and a home trip, so a district's schedule holds 40 routes. |
-| 8624 | `MapCheck.SCREEN_W_PX` | `1389, SCREEN_H_PX = 868` | The view's size in pixels the frames are timed at: section 5's 1,389 x 868 screen. |
-| 8627 | `MapCheck.PROTO_TONNES` | `896_308, PROTO_PEOPLE = 469_092` | BoatProto's trade (the oil spec's prototype, its out/boat.txt): the playtest's tonnes across the boundary a month at m4000 (pt0770's save) and its people then, scaled from by people. |
-| 8630 | `MapCheck.PROTO_LANES` | `20_000` | BoatProto's lanes at 10B: its cap of 20,000, each from its berth 200 plots east and 1,500 north ("a lane 45 km out to sea, north of the coast"). |
-| 8632 | `MapCheck.PROTO_LANE_DX` | `200, PROTO_LANE_DY = - 1_500` | ...each lane's far end, in plots from its berth: 200 east and 1,500 north (north is less y). |
-| 8792 | `MapCheck.WINDOW_STRIDE` | `EarthTerrainCheck.WINDOW / MapFrame.NODE_PX` | The stride the study's windows are drawn at: EarthTerrainCheck.WINDOW / NODE_PX, 16 plots a pixel - one node is the window, a world cell, and from it the far node strokes its own water and dithers ... |
-| 8795 | `MapCheck.CLOSE_STRIDES` | `{ 2, 4, 8 }` | The strides under WINDOW_STRIDE the windows are drawn at too, where the far node is E2's region but for its rivers: 2, 4 and 8 plots a pixel. |
-| 8798 | `MapCheck.SEAM_SHIFT_PX` | `MapFrame.NODE_PX / 2` | How far a node is moved to hold the 180th meridian with its neighbour, in pixels: half a node, 64 - whole blocks of EarthTerrain.FAR_BLEND_PX, so two nodes read every pixel they share alike. |
-| 8801 | `MapCheck.CHUKOTKA_LAT` | `66, CHUKOTKA_LON = 180` | The full file's seam: the 180th meridian in Chukotka, 66 N, rivers and lakes either side of it. |
-| 8804 | `MapCheck.CHUKOTKA_STRIDE` | `EarthTerrain.FAR_TILE_BLEND_STRIDE` | ...drawn at 64 plots a pixel (1.9 km; a node 246 km across), EarthTerrain.FAR_TILE_BLEND_STRIDE: every river stroked (FAR_RIVER_SHARE's 23 m), each tile's points blended. |
-| 8807 | `MapCheck.LAKES_LAT` | `62, LAKES_LON = 26` | The full file's small lakes: Finland's lake district, 62 N 26 E. |
-| 8810 | `MapCheck.LAKES_NODES` | `3` | ...over this many nodes a side about the spot at WINDOW_STRIDE: 3, 184 km, a few thousand lakes. |
-| 9208 | `MapCheck.PICTURE_MONTHS` | `MONTHS` | Months section 11 plays the played city on, every district's picture asked after each as a far view asks for it: MONTHS more. |
-| 9220 | `MapCheck.PICTURE_CASH_MONTHS` | `12` | FR8, 2026-10-28 (the path moved): the months of its GDP the played city is handed in cash at each look of the advisor in 11's run when it holds less. |
-| 9229 | `MapCheck.PICTURE_SIGMAS` | `4` | How far a picture's share of a kind may stand from its plots' share: this many of its binomial spreads (DistrictPicture.spread()), and a pixel - four, about one district in 16,000 past it by chance. |
-| 9232 | `MapCheck.NODE_ROUNDS` | `TIMED_ROUNDS` | Rounds a far node is timed over after WARM_ROUNDS, the least its time: TIMED_ROUNDS. |
-| 9699 | `MapCheck.FAR_DISTRICTS` | `4` | How far out the played city's far block is bought: 4 districts past its built-up ground's east edge (31 km) - districts of its own, nothing built in them. |
-| 9702 | `MapCheck.STAMP_WARM` | `20, STAMP_TIMED = 10` | Rounds the stamp is drawn before it is timed, and rounds timed, the least its time: 20 and 10 - it is drawn every month of play, so its steady state is what is timed, the JIT's compiling done (abou... |
-| 9944 | `MapCheck.KEY_FRAMES` | `60` | Frames of the keys' second: 60, the pump's (a sixtieth each). |
-| 9947 | `MapCheck.KEY_SLOP_PX` | `1e-3` | How far a second of the keys may miss KEY_PX_A_SECOND, in pixels: a thousandth (★E9) - on the plane it is exact; on the globe each frame's drag keeps the point grabbed under the pointer to GlobeChe... |
-| 9950 | `MapCheck.MATRIX_PLOTS` | `1e-6` | The composed matrix's worst against the camera's and the plane's own projections, in plots: a millionth (★E9; measured 4e-10). |
-| 10459 | `MapCheck.BOXES` | `200` | Boxes drawn at random on the played city's opening view, each tried against every plot under it: 200. |
-| 10462 | `MapCheck.GLOBE_BOXES` | `60` | ...and through the globe's camera, each against a point at every free plot's middle: 60. |
-| 10465 | `MapCheck.FIELD_BUYS_MOST` | `200` | The most offers the city buys toward an iron field for one to be on offer: 200, MiningCheck.makeRoom()'s own bound. |
-| 10468 | `MapCheck.BOX_PLOTS_MOST` | `200_000` | The most plots a box is tried on, one by one: 200,000 - a box larger is drawn again smaller. |
-| 10471 | `MapCheck.GLOBE_LAT` | `51.90625, GLOBE_LON = 4.48125` | Where the globe's check looks from: EarthCheck's Rotterdam window's centre, the played city's site put there. |
-| 10869 | `MapCheck.PICKS_MONTHS` | `3` | The months section 14b holds the picks over, each with a place relisted: 3. |
-| 10872 | `MapCheck.PICKS_HELD` | `3` | The offers section 14b picks and holds over the months: 3. |
-| 11039 | `MapCheck.FAR_PLOTS` | `World.SIDE / 4.0` | How far from the city section 14c sets the plane: a quarter of the world's side, in plots. |
-| 11042 | `MapCheck.FAR_DRAGS` | `50` | The drags section 14c carries the plane on, further out, of the pixels each. |
-| 11088 | `MapCheck.PRESS_PLOTS` | `400` | The plots of an offer's rectangle section 14d tries for the owned-or-free rule: at most about this many, a stride over the rectangle. |
-| 11189 | `MapCheck.STEPS` | `{ { 1, 0 }, { - 1, 0 }, { 0, 1 }, { 0, - 1 } }` | The four steps from a block to its neighbours: east, west, south, north. |
-| 12191 | `MapCheck.MATERIALS_SIDE` | `10` | The materials fixture's square, in districts a side: 10 (77 km), wide enough to hold fields of every typed slot on the default world. |
-| 12194 | `MapCheck.MATERIALS_SECTORS` | `{ Sectors.MINING, Sectors.HEAVY_INDUSTRY, Sectors.COAL_MINING, Sectors.QUARRYING, Secto...` | The nine materials industries, Iron Mining to Wood Products (spec-materials 2.1): every building of theirs drawn with a look of its own. |
-| 12531 | `MapCheck.MATERIALS_RINGS` | `24` | How far out materialsPlace() looks, in cells: 24. |
-| 12572 | `MapCheck.AV_SAMPLES` | `4` | How many samples a step of an avenue's line is sampled at: four, a quarter step apart. |
-| 12575 | `MapCheck.CROSSING_TILES` | `4` | How many tiles either way of the origin's tile the crossings are read over: 4, nine tiles a side (MF1). |
-| 12578 | `MapCheck.AV_STEPS` | `400` | The farthest an arm is followed from the origin, in steps: 400, past a district and a half. |
-| 12586 | `MapCheck.AV_TIMES` | `9, AV_SIDE = 6, AV_SHIFT_X = 104, AV_SHIFT_Y = 56` | The city the avenues are drawn on: Jerus's city x 9 on a square of 6 districts a side (his density, as the copies', every district full) whose founding site is the dry place's moved AV_SHIFT_X plot... |
-| 12606 | `MapCheck.AvTiles.OWNED` | `1, BENEATH = 2, BRIDGE = 4` | Flag bits of a plot: it is owned, a street passes beneath a highway on it, it is a bridge's. |
-| 12965 | `MapCheck.CV_FROM` | `3, CV_TO = 8` | The districts the curves are looked for in, in districts east and south of the founding site's: 3 to 8 - past CRESCENT_FROM (16 cells, two districts) wherever the cell lies. |
-| 12968 | `MapCheck.CV_CRESCENTS` | `8, CV_SHORES = 16` | The most crescents and shore curves the audit follows: 8 and 16 (the shore curves that cross a tile's edge, and those that bend, first). |
-| 12971 | `MapCheck.CV_TURN_SPAN` | `4` | How far apart, in plots, the turn audit's samples are: 4 - at a crescent's radius (22.6 plots) a turn of 0.18 radian between neighbours. |
-| 12974 | `MapCheck.CV_CENTRE_PX` | `1.0` | How far the band's middle, measured across it from the pixels, may lie from the line: a pixel - the least a raster can place a band, and less than the 2.8 pixels at 4 px a plot a staircase's bars l... |
-| 12977 | `MapCheck.CV_NARROW_PX` | `1.5` | How much narrower than its street the band, measured across it, may measure: 1.5 pixels (a pixel's rounding at either end and a half). |
-| 12980 | `MapCheck.CV_GENTLE` | `0.2` | How much the line may turn within a plot and a quarter either side of a sample for the band to be measured across it there: 0.2 radian - a crescent turns 0.06 over that; a shore street's corner (ro... |
-| 12983 | `MapCheck.CV_MEASURED` | `{ 0.5, 0.35 }` | The share of a kind's samples the band must have been measured across (crescents, shore curves): a half, and 35% - a shore's line turns a corner every few plots, and the band is not measured within... |
-| 13583 | `MapCheck.HIS_TIMES` | `80` | The copy at Jerus's own district count: x 80, 125 districts, 11 a side (CL3's notes cite 115 for his cities), between x 1's 4 districts and 5B's 14,661. |
-| 13586 | `MapCheck.REDRAW_MONTHS` | `24, REDRAW_MONTHS_5B = 12` | The months grown at x 1 and at x 80, and at 5B (its months are slower): 24 and 12. |
-| 13589 | `MapCheck.REDRAW_WARM` | `3` | The first months of each fixture are drawn, compared and not counted in its figures: 3, the JIT's compiling done before a month is read. |
-| 13592 | `MapCheck.GROW_PER_MILLE` | `1000, GROW_PER_TEN_THOUSAND = 10_000` | A month's growth as a share of each type's count: 1/1,000 (+0.1%) at x 1 and x 80, 1/10,000 (+0.01%) at 5B, as section 5's, at least one building each. |
-| 13595 | `MapCheck.RUNS_EVERY` | `4` | The runs' types (a highway's, a track's) are grown only in every 4th month, so most months lay no run, as in play. |
-| 13598 | `MapCheck.CHAIN_ROUNDS` | `5` | The times a month's screens are drawn: the month's, then again after each round of the chain's jobs (handed out, run, adopted) until none is left, at most 5 (4 until batch UP5: a lazy job that cann... |
-| 13601 | `MapCheck.PLAYED_BEFORE` | `3, PLAYED_AFTER = 3` | The months the played city is grown before its land purchase and after it: 3 and 3. |
-| 13604 | `MapCheck.PLAYED_WARM_MAX` | `6` | The most months the played city is grown, not judged, to settle its stamp's view before the months judged: 6 (WN3, after EM1: it took 1). |
-| 13607 | `MapCheck.PURCHASE_SIDE` | `32` | The side of the block the played city buys, in plots: 32, a hole in its built-up ground's box (the played city's ground is irregular). |
-| 13610 | `MapCheck.MAP_MONTH_MS` | `19` | The most a month's FX-side map work may take at 5B, in ms, its median month - the stamp, the far view's screen, an L0 screen re-stamped (since UP5 keyed, and read where the key moved) and the chain... |
-| 13613 | `MapCheck.GROW` | `0, ONE = 1, SETTLE = 2` | The kinds of month: the grown one, one built type raised by one, and the first, which only draws. |
-| 14356 | `MapCheck.DIGEST_TIMED` | `5` | How many times the guard's digest is worked out afresh for the figure section 18 prints: 5, for a mean. |
-| 14819 | `MapCheck.JOB_LAZY` | `0, JOB_EAGER = 1, JOB_PLANNED = 2` | How a plan job was handed out (batch UP9, slice A): lazy (no input gathered, a link to take), eager with a link to take, or to be planned (no link to take: the first that broke, a district whose ow... |
-| 15339 | `MapCheck.NEAR_BOX_KM` | `8` | The side of the box of the city's ground the borders are crossed against, km: 8 - a few kilometres, and wide enough for the fixture's Belgium-Netherlands line, which Natural Earth runs 2.7 km from ... |
-| 15442 | `MapCheck.YARD_SITE_AT` | `{ 250, 144 }` | Where the founding site stands in 20's first district, plots from its north-west corner: 6 plots in from its east edge, so the nearest crossing it owns is across it. |
-| 15445 | `MapCheck.YARD_STRIP` | `32` | The strip along the first district's east edge the city does not own, in plots: wider than a crossing's reach from the site, so the hub is not in the first district. |
-| 15448 | `MapCheck.YARD_NEXT` | `{ 0, 80, 96, 208 }` | The block the city owns in the second district, { x0, y0, x1, y1 } in plots from its north-west corner: room for the yard and some works, none for a second depot once they stand. |
-| 15451 | `MapCheck.YARD_MONTHS` | `6, YARD_FLATS = 20, YARD_WORKS = 3` | The months the first district is given flats and the second works before the second is filled: the flats and the works, a month each. |
-| 15569 | `MapCheck.BUILT_SIDE` | `160` | The owned ground of 21 and 22's district, plots a side from its north-west corner; the founding site is in the middle of it. |
-| 15572 | `MapCheck.BUILT_BOUGHT` | `{ 100, 100, 28, 4 }` | The ground 21 buys inside the district's frame, { x, y, across, down } in plots from its north-west corner: 112 plots, WN3's purchase at m2078, as a notch in the owned ground. |
-| 15575 | `MapCheck.BUILT_SHARE` | `0.9` | How much of its room the district is filled to before the purchase or the departure: nine tenths of the cells its plan may fill (CityMap.PLAN_FILL of its owned plots). |
-| 15578 | `MapCheck.BUILT_HOUSES` | `600, BUILT_STORES = 12, BUILT_RODS = 2, BUILT_WORKS = 8` | What the district is given a month: houses, Convenience Stores, and (21) Rod Mills, Meat Works and Bottling Plants. |
-| 15581 | `MapCheck.BUILT_DEPARTURES` | `3` | The Convenience Stores 22 sends away, one at a time, a month of arrivals between. |
-| 15719 | `MapCheck.DEPOT_LEAVES_MONTHS` | `3` | The months of works 23 gives the yard's district before its second Rail Depot and after it, YARD_WORKS a month. |
-| 15771 | `MapCheck.ICON_PASS_MS` | `0.1` | The most the pass of finding and thinning the deposits of one frame may take, in ms (LM1): about 10 times the median measured when it was written, 0.011 ms on the PC, the cells' lists kept (CityLan... |
-| 15774 | `MapCheck.CUT_OFF_STEP` | `1.01` | The step the fixture walks the scale down by from L1's, to the first FAR: a hundredth. |
-| 15777 | `MapCheck.LM_SCAN_HALF_VIEWS` | `6` | How far from the city the fixture looks for a box of two kinds, in half-views each way: 6. |
-| 15780 | `MapCheck.LM_KINDS_MIN` | `2` | The kinds of resource the fixture's box holds at least: 2 (where the world has them). |
-| 15783 | `MapCheck.LM_WIDE_CELLS` | `4` | The wide frame the thinning is held on, in world cells across: 4 - the top of a city's scouting zoom (DepositMarks.ICON_CELLS_MOST's note: one to four). |
-| 15786 | `MapCheck.LM_PASS_RUNS` | `15` | Passes timed for a median: 15. |
-| 15789 | `MapCheck.LM_PAN_VIEWS` | `0.25` | The pan the second frame is moved by, in views: a quarter - inside the box a search covers (a half view each side of the view when DepositMarks.SEARCH_TIMES is 2). |
-| 15792 | `MapCheck.LM_DARK_INK` | `0x0b1118` | The mark's dark ink, as MapView writes it on a light colour: 0x0b1118. |
-| 16108 | `MapCheck.IconCanvas.STOP_MS` | `10_000` | The longest stop() waits for the toolkit's thread to end, in ms: 10 s. |
+| 449 | `MapCheck.MONTHS` | `120` | Months the city of section 1 is played: 120 (the design's). |
+| 452 | `MapCheck.IRON_AT` | `MONTHS / 3` | The month the played city is handed a whole iron field and orders a mine on it, if it has none (0.7.64): a third of the way. |
+| 464 | `MapCheck.JERUS_COUNTS` | `{ 1913, 200, 1212, 0, 65, 4, 1701, 4, 0, 2, 5, 48, 11, 81, 21, 0, 0, 239, 114, 1, 2, 0,...` | Jerus's city at month 1,851 (his autosave, 509,455 people on 89.63 km2 of dry ground): every building type's count, by id - 14,214 buildings, the design's own fixture for the map's sizes; 8,204 sin... |
+| 469 | `MapCheck.JERUS_PEOPLE` | `509_455` | ...his people. |
+| 472 | `MapCheck.JERUS_KM2` | `89.63` | ...and his dry ground, in km2. |
+| 475 | `MapCheck.JERUS_FILL` | `0.92` | His buildings' footprint over his dry ground: 91.8% (the design's measure), so the design's square city holds this share of a district - his density. |
+| 478 | `MapCheck.JERUS_FOOTPRINT_KM2` | `82.273` | ...the land those buildings stood on, by the catalogue his save was measured with (0.7.70's): 82.273 km2, 91.8% of his dry ground (runs/fixN2-notes.md). |
+| 496 | `MapCheck.TIMES` | `{ 1, 9_814, 10_000, 19_629 }` | The copies measured: his city x 1, x 9,814 (5 billion people), x 10,000 (the design's) and x 19,629 (10 billion). |
+| 499 | `MapCheck.DENSE` | `2` | The copy whose screen is all city, at his density, that section 3 paints: x 10,000. |
+| 502 | `MapCheck.SCREEN_ACROSS` | `18, SCREEN_DOWN = 11, SCREEN_TILES = SCREEN_ACROSS * SCREEN_DOWN` | The screen: 18 x 11 tiles, 198 - a 1,389 x 868 view at L0's least 3.2 px a plot is 13.6 x 8.5 tiles, the design's "about 200 with a margin". |
+| 505 | `MapCheck.SCREEN_MS` | `80` | The design's bound on that screen's paint and raster, in ms (derived: 38 at its measured 0.19 ms a tile). |
+| 508 | `MapCheck.SCREEN_RATIO` | `1.5` | The most any copy's screen may take against the 5B copy's, the first whose screen is all city (the design's; against the city x 1's until 0.7.64 - section 5's note). |
+| 511 | `MapCheck.RECONCILE_MS` | `5` | The design's bound on a month's change at 5B and at 10B, in ms of the main thread's CPU since 0.7.100 (measured 0.76; section 5's note). |
+| 514 | `MapCheck.PX` | `4` | Pixels a plot the screen is rastered at: 4, L0's image (spec-land 2.6). |
+| 517 | `MapCheck.WARM_ROUNDS` | `3, TIMED_ROUNDS = 5` | Rounds of the screen run over every copy before any is timed, and rounds timed, each copy in turn: the least of each copy's timed rounds is its time. |
+| 520 | `MapCheck.DRY_PLACE` | `0.97` | How dry the place the copies stand on must be, at a sample a tile over 3 x 3 districts: 97% - every screen tile can be built on, the painter's worst case. |
+| 523 | `MapCheck.DRAWN_EVERY` | `30` | The months of section 1's city at which every tile is painted and what is drawn counted against the model: every 30th, four of its 120 (0.7.64). |
+| 593 | `MapCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` |  |
+| 1059 | `MapCheck.SPILL_FIRST_CELLS` | `2, SPILL_SECOND_CELLS = 6` | The cells across the window of whole cells a spill's first district owns and its second: 2 and 6 of a district's 8 - the first draws little, the second all it is carried. |
+| 1218 | `MapCheck.BOUGHT_PLOTS` | `64` | The side of a bought block, at least: 64 plots (rounded up to whole blocks of the land's level), a few cells of a district's 8 across. |
+| 1558 | `MapCheck.ANY_STREETS` | `0, BESIDE_STREETS = 1, APART_FROM_STREETS = - 1` | nearestBlock()'s read of the streets: a block's fresh ground in an open cell may lie beside the standing streets or not, and either goes. |
+| 1731 | `MapCheck.RIM_WORKS` | `12, RIM_FLATS = 72` | The works and the flats the out-of-ground city is given a month, and where its founding site stands in its district (plots from its north-west corner): a district's order from the site is then 92, ... |
+| 1732 | `MapCheck.RIM_SITE_AT` | `{ 220, 128 }` |  |
+| 1735 | `MapCheck.RIM_PACKED` | `60, RIM_LOOK_EVERY = 4` | The packed buildings 2e wants before it looks, and how many months it adds between looks. |
+| 1959 | `MapCheck.PAST_HOUSES` | `140` | The houses pastByHand() packs: more than its owned block's 100 plots hold (FB5). |
+| 2659 | `MapCheck.RELAY_GROWTH_MONTHS` | `60` | The months 4c grows its spread claim at most, a works a month, to find one owed into a district that counts none: 60. |
+| 2710 | `MapCheck.BAND_SMALL` | `2` | The band's size in 2i: four districts make two bands, the bought fifth a third. |
+| 2815 | `MapCheck.MIX` | `{ "Low-Rise Apartments", "Small Grocery Store", "Bakery", "Elementary School", "Industr...` | What the founding district is given month by month besides houses, in turn (an apartment block, shops, a school, works): buildings of several sizes for its plan to place. |
+| 2818 | `MapCheck.USED_SHARE` | `0.5` | How much of its room the founding district is brought to before a run is laid across it: half of the cells its plan may fill (CityMap.PLAN_FILL of its owned plots). |
+| 2821 | `MapCheck.BUILDINGS_A_MONTH` | `3` | The buildings of the mix the founding district is given each month, beside its houses. |
+| 2824 | `MapCheck.MONTHS_BETWEEN` | `4` | Months of arrivals after each change of the runs, before the next plan is drawn: the buildings that must go on the ground as the run left it. |
+| 2827 | `MapCheck.HIGHWAY_MONTHS` | `60, HIGHWAY_STEP = 8` | The most months the highways are given to reach the district, and the Elevated Highways added a month while they do. |
+| 2830 | `MapCheck.HIGHWAY_CLEAR` | `1` | A building keeps this far from a highway plot (batch H5: no building touches one, corners included): the reach, in plots, within which a highway laid takes a box's place. |
+| 2960 | `MapCheck.RUN_KINDS` | `{ DistrictPlan.FIXED_YARD, DistrictPlan.FIXED_RAIL, DistrictPlan.FIXED_HIGHWAY, Distric...` | The kinds of fixed plot the runs lay, in the order a line prints them. |
+| 2962 | `MapCheck.RUN_NAMES` | `{ "yard", "rail", "highway", "reserve" }` | ...and their names, in the same order. |
+| 3578 | `MapCheck.IDLE_GAP` | `3` | Months a depot is away in 2e's short gap: fewer than CityRuns.YARD_IDLE_MONTHS (the playtest's gaps were 3 to 93). |
+| 4002 | `MapCheck.NEW_CITY_MONTHS` | `{ 0, 1, 12 }` | The months a new default city is drawn at: as founded, a month on and a year on (Jerus: "a brand new city shows that it has a few houses and a shop when it doesnt"). |
+| 4740 | `MapCheck.ACCESS_HIGHWAYS_ADDED` | `200, ACCESS_DEPOTS_ADDED = 3` | The access fixture's added highways and Truck Depots: enough highways to cross, three depots to place. |
+| 4908 | `MapCheck.SPURS_ADDED` | `12, BULK_WORKS_ADDED = 90` | The sidings fixture's added Rail Spurs and bulk works (JunctionCheck's two bulk types, two in three the larger). |
+| 5212 | `MapCheck.CORRIDOR_STAGES` | `{ { 1, 6 }, { 3, 92 }, { 6, 400 }, { 9, 1385 } }` | Spec 2.7's table on the game's own ground: the design's dry place, the city's ground a square 1, 3, 6 and 9 districts a side (4 to 35 km from its middle, the prototype's 4 to 34), and its Elevated ... |
+| 5368 | `MapCheck.YARDS_ADDED` | `2, FREIGHT_ADDED = 1` | The fixture's added rail: Rail Terminals (yards) and Freight Lines, to hold the yards' rule on (his city has spurs, no yard; 0.7.72's fixture). |
+| 5676 | `MapCheck.SIDECAR_BYTES` | `500_000` | The most a sidecar may be at 5 and 10 billion people, log and all, in deflated bytes (CL3): the 10B copy's measured 333,776 (294,101 without the log, in FORMAT 8; its 1,457,418 records the canonica... |
+| 5679 | `MapCheck.SIDECAR_MS` | `500` | The most the 5B and 10B copies' sidecar may take to write, and to read, in ms (CL3): measured 271 and 267 at 10B (240 and 161 at 5B), and near twice that. |
+| 5729 | `MapCheck.THREADS` | `java.lang.management.ManagementFactory.getThreadMXBean()` | The JVM's threads, read for the main thread's CPU time. |
+| 5732 | `MapCheck.CPU_STEP_MS` | `0.1` | The coarsest step of the thread's CPU clock a bound is read on, in ms: 0.1, a twentieth of the quickest stamp timed; coarser (Windows: 15.6) and the bounds are read on the wall clock. |
+| 5735 | `MapCheck.CPU_TIMED` | `cpuTimed()` | Whether a month is timed on the main thread's CPU: this JVM measures it, it is on (turned on here if it is off), and its clock steps no coarser than CPU_STEP_MS. |
+| 5907 | `MapCheck.FULL_MONTHS_MAX` | `240` | The most months of +0.01% section 5b grows the 10B copy before it must be full (it was full after about 32 in UP8's measure). |
+| 5910 | `MapCheck.FULL_TIMED` | `12` | Months section 5b times once the copy is full. |
+| 5973 | `MapCheck.SMALL_W` | `600, SMALL_H = 400` | The land office's small map, in pixels (spec-land 2.8). |
+| 5997 | `MapCheck.SCREEN_POINTS` | `{ { 0, 0 }, { 300, 200 }, { 1344, 805 }, { 17.25, 640.5 }, { 1000, 3 } }` | Points across the screen the transforms are tried at. |
+| 6460 | `MapCheck.BIG_OFFER_LEVEL` | `9` | The level of the offer the overlay's clip is tried on, zoomed in as far as the view goes: 9, blocks of 15.36 km - an offer of 2 x 4 of them is over three views across even at the expanded size, whi... |
+| 6691 | `MapCheck.SHORE_SIDE` | `3` | The section's city: three districts a side, all of it owned and drawn canonically on its measured ground - the playtest's coast (its bay, its south shore, its lagoon) - about a site one district we... |
+| 6735 | `MapCheck.BOAT_FRAME_MS` | `0.5` | The design's bound on a frame's boats at 10 billion, in ms (spec-oil 5's O13 row: "a frame's boats <= 0.5 ms at 10B, measured 0.38"). |
+| 6738 | `MapCheck.BOAT_FRAMES` | `200` | Frames timed for that bound, a round: 200 at times through the month; the least of TIMED_ROUNDS rounds' means after WARM_ROUNDS. |
+| 6741 | `MapCheck.ROUTES_ALL_MS` | `ham.citybuildersim.ui.UserInterface.SECONDS_PER_MONTH * 1000` | A month at normal speed, in ms: ui.UserInterface.SECONDS_PER_MONTH x 1000, 5,000 - what every terminal's route found from scratch at 10 billion must be found within (SL1, 2026-10-28). |
+| 6744 | `MapCheck.ROUTES_MONTH_MS` | `ham.citybuildersim.ui.UserInterface.SECONDS_PER_MONTH * 1000 / ham.citybuildersim.ui.Us...` | A month at the clock's top speed, in ms: SECONDS_PER_MONTH x 1000 over UserInterface.SPEED_TOP, 100 - what a month's new terminals' routes, laid onto those kept, must be found within at 10 billion ... |
+| 6747 | `MapCheck.ROUTES_MONTH_SHARE` | `0.01` | The share of the 10 billion lanes' terminals a month lays: 1%, 200 of the 20,000 (SL1). |
+| 6750 | `MapCheck.ROUTES_ROUNDS` | `3` | Rounds of the 10 billion routes' timings, the least kept (a find from scratch is the slow one, so fewer than the frames'): 3 after one warm round. |
+| 6781 | `MapCheck.HARBOUR_ROUNDS` | `12` | Rounds of orders on the harbour's coast, each one more of every terminal and tank farm: 12, more than the harbours hold, so that some come up short. |
+| 6784 | `MapCheck.HARBOUR_FILL` | `60` | Terminals asked of the harbour's coast one at a time for the exactness: 60, more than its two harbours take. |
+| 6944 | `MapCheck.BUNDLE_LAYS` | `8` | Harbour works laid after the harbour's first whose districts' plans are read for the buildings they move: 8. |
+| 7256 | `MapCheck.ARM_WALK_SHIFT_X` | `- 60, ARM_WALK_SHIFT_Y = 12` | GatewayCheck's coast with its founding site 60 plots west and 12 south (found by trying the site's shifts): the coast whose best shore is the gate arm's end - the rule, its works not kept off the a... |
+| 7309 | `MapCheck.HARBOUR_MANY` | `60` | General Cargo Terminals standing on the small coast of the harbours' cost: 10 (SHORE_FEW), and on the big: 60, which its two harbours hold (about 96 do). |
+| 7366 | `MapCheck.SHORE_FEW` | `10` | General Cargo Terminals standing on the small coast of the shore's cost: 10. |
+| 7369 | `MapCheck.SHORE_MANY` | `300` | ...and on the big coast: 300, where a late city stands thousands. |
+| 7372 | `MapCheck.SHORE_GROWTH` | `2` | How many times the cost of a month's terminal may grow from SHORE_FEW standing to SHORE_MANY: twice (it was 21 times, 74 ms and 1,557 ms: every plot the search read asked every work, and every sear... |
+| 7375 | `MapCheck.SHORE_WARM` | `3, SHORE_TIMED = 15` | Months of one more terminal before the timing and timed, a terminal each: SHORE_WARM that are not, then the median of SHORE_TIMED kept (a month is about a ms, which a pause moves). |
+| 7378 | `MapCheck.SHORE_MARGIN` | `2` | Plots asked about each work beyond its box, verge and quay: 2, past the cell the index keeps a work in. |
+| 7381 | `MapCheck.SHORE_FILL` | `20` | Terminals asked of the coast that fills, one at a time: 20, more than its 12. |
+| 7384 | `MapCheck.SHORE_LAGOON` | `40` | Terminals asked of each lagoon, one at a time: 40. |
+| 8180 | `MapCheck.TRAIN_FRAME_MS` | `BOAT_FRAME_MS` | The design's bound on a frame's trains at 10 billion, in ms: the boats' (spec-freight 4.4, "the same structure is well inside budget"). |
+| 8183 | `MapCheck.TRAIN_YARDS_A_SIDE` | `40` | Yards a side of the synthetic city the frame is timed on at 10 billion: 40, 1,600 yards, 12,800 routes on one main line. |
+| 8654 | `MapCheck.MOST_TURN_DEG` | `30` | The most two neighbouring vehicles of a train may differ in heading, in degrees: 30 (FX5; on 0.8.14 a corner turned them 90 and a ladder 60). |
+| 8657 | `MapCheck.LADDER_TURN_DEG` | `45` | ...and on a yard's ladder, the tightest curve the railway has: 45 degrees (FX5: an S of up to a few plots across over YARD_LADDER, 3 plots, turns a depot's neighbours 40; the long yards slice Y lay... |
+| 8801 | `MapCheck.TRUCK_FRAME_MS` | `TRAIN_FRAME_MS` | The design's bound on a frame's trucks at 10 billion, in ms: the trains' (FR9: the trips run the trains' pace, and a frame is the same structure). |
+| 8804 | `MapCheck.TRUCK_ROADS` | `20` | Roads a district of the synthetic city has at 10 billion: 20, each with a world trip and a home trip, so a district's schedule holds 40 routes. |
+| 8895 | `MapCheck.SCREEN_W_PX` | `1389, SCREEN_H_PX = 868` | The view's size in pixels the frames are timed at: section 5's 1,389 x 868 screen. |
+| 8898 | `MapCheck.PROTO_TONNES` | `896_308, PROTO_PEOPLE = 469_092` | BoatProto's trade (the oil spec's prototype, its out/boat.txt): the playtest's tonnes across the boundary a month at m4000 (pt0770's save) and its people then, scaled from by people. |
+| 8901 | `MapCheck.PROTO_LANES` | `20_000` | BoatProto's lanes at 10B: its cap of 20,000, each from its berth 200 plots east and 1,500 north ("a lane 45 km out to sea, north of the coast"). |
+| 8903 | `MapCheck.PROTO_LANE_DX` | `200, PROTO_LANE_DY = - 1_500` | ...each lane's far end, in plots from its berth: 200 east and 1,500 north (north is less y). |
+| 9063 | `MapCheck.WINDOW_STRIDE` | `EarthTerrainCheck.WINDOW / MapFrame.NODE_PX` | The stride the study's windows are drawn at: EarthTerrainCheck.WINDOW / NODE_PX, 16 plots a pixel - one node is the window, a world cell, and from it the far node strokes its own water and dithers ... |
+| 9066 | `MapCheck.CLOSE_STRIDES` | `{ 2, 4, 8 }` | The strides under WINDOW_STRIDE the windows are drawn at too, where the far node is E2's region but for its rivers: 2, 4 and 8 plots a pixel. |
+| 9069 | `MapCheck.SEAM_SHIFT_PX` | `MapFrame.NODE_PX / 2` | How far a node is moved to hold the 180th meridian with its neighbour, in pixels: half a node, 64 - whole blocks of EarthTerrain.FAR_BLEND_PX, so two nodes read every pixel they share alike. |
+| 9072 | `MapCheck.CHUKOTKA_LAT` | `66, CHUKOTKA_LON = 180` | The full file's seam: the 180th meridian in Chukotka, 66 N, rivers and lakes either side of it. |
+| 9075 | `MapCheck.CHUKOTKA_STRIDE` | `EarthTerrain.FAR_TILE_BLEND_STRIDE` | ...drawn at 64 plots a pixel (1.9 km; a node 246 km across), EarthTerrain.FAR_TILE_BLEND_STRIDE: every river stroked (FAR_RIVER_SHARE's 23 m), each tile's points blended. |
+| 9078 | `MapCheck.LAKES_LAT` | `62, LAKES_LON = 26` | The full file's small lakes: Finland's lake district, 62 N 26 E. |
+| 9081 | `MapCheck.LAKES_NODES` | `3` | ...over this many nodes a side about the spot at WINDOW_STRIDE: 3, 184 km, a few thousand lakes. |
+| 9479 | `MapCheck.PICTURE_MONTHS` | `MONTHS` | Months section 11 plays the played city on, every district's picture asked after each as a far view asks for it: MONTHS more. |
+| 9482 | `MapCheck.PICTURE_SIGMAS` | `4` | How far a picture's share may stand from its plots: four binomial spreads and a pixel. |
+| 9485 | `MapCheck.NODE_ROUNDS` | `TIMED_ROUNDS` | Rounds a far node is timed over after WARM_ROUNDS, the least its time: TIMED_ROUNDS. |
+| 9951 | `MapCheck.FAR_DISTRICTS` | `4` | How far out the played city's far block is bought: 4 districts past its built-up ground's east edge (31 km) - districts of its own, nothing built in them. |
+| 9954 | `MapCheck.STAMP_WARM` | `20, STAMP_TIMED = 10` | Rounds the stamp is drawn before it is timed, and rounds timed, the least its time: 20 and 10 - it is drawn every month of play, so its steady state is what is timed, the JIT's compiling done (abou... |
+| 10196 | `MapCheck.KEY_FRAMES` | `60` | Frames of the keys' second: 60, the pump's (a sixtieth each). |
+| 10199 | `MapCheck.KEY_SLOP_PX` | `1e-3` | How far a second of the keys may miss KEY_PX_A_SECOND, in pixels: a thousandth (★E9) - on the plane it is exact; on the globe each frame's drag keeps the point grabbed under the pointer to GlobeChe... |
+| 10202 | `MapCheck.MATRIX_PLOTS` | `1e-6` | The composed matrix's worst against the camera's and the plane's own projections, in plots: a millionth (★E9; measured 4e-10). |
+| 10711 | `MapCheck.BOXES` | `200` | Boxes drawn at random on the played city's opening view, each tried against every plot under it: 200. |
+| 10714 | `MapCheck.GLOBE_BOXES` | `60` | ...and through the globe's camera, each against a point at every free plot's middle: 60. |
+| 10717 | `MapCheck.FIELD_BUYS_MOST` | `200` | The most offers the city buys toward an iron field for one to be on offer: 200, MiningCheck.makeRoom()'s own bound. |
+| 10720 | `MapCheck.BOX_PLOTS_MOST` | `200_000` | The most plots a box is tried on, one by one: 200,000 - a box larger is drawn again smaller. |
+| 10723 | `MapCheck.GLOBE_LAT` | `51.90625, GLOBE_LON = 4.48125` | Where the globe's check looks from: EarthCheck's Rotterdam window's centre, the played city's site put there. |
+| 11122 | `MapCheck.PICKS_MONTHS` | `3` | The months section 14b holds the picks over, each with a place relisted: 3. |
+| 11125 | `MapCheck.PICKS_HELD` | `3` | The offers section 14b picks and holds over the months: 3. |
+| 11287 | `MapCheck.FAR_PLOTS` | `World.SIDE / 4.0` | How far from the city section 14c sets the plane: a quarter of the world's side, in plots. |
+| 11290 | `MapCheck.FAR_DRAGS` | `50` | The drags section 14c carries the plane on, further out, of the pixels each. |
+| 11336 | `MapCheck.PRESS_PLOTS` | `400` | The plots of an offer's rectangle section 14d tries for the owned-or-free rule: at most about this many, a stride over the rectangle. |
+| 11437 | `MapCheck.STEPS` | `{ { 1, 0 }, { - 1, 0 }, { 0, 1 }, { 0, - 1 } }` | The four steps from a block to its neighbours: east, west, south, north. |
+| 12439 | `MapCheck.MATERIALS_SIDE` | `10` | The materials fixture's square, in districts a side: 10 (77 km), wide enough to hold fields of every typed slot on the default world. |
+| 12442 | `MapCheck.MATERIALS_SECTORS` | `{ Sectors.MINING, Sectors.HEAVY_INDUSTRY, Sectors.COAL_MINING, Sectors.QUARRYING, Secto...` | The nine materials industries, Iron Mining to Wood Products (spec-materials 2.1): every building of theirs drawn with a look of its own. |
+| 12779 | `MapCheck.MATERIALS_RINGS` | `24` | How far out materialsPlace() looks, in cells: 24. |
+| 12820 | `MapCheck.AV_SAMPLES` | `4` | How many samples a step of an avenue's line is sampled at: four, a quarter step apart. |
+| 12823 | `MapCheck.CROSSING_TILES` | `4` | How many tiles either way of the origin's tile the crossings are read over: 4, nine tiles a side (MF1). |
+| 12826 | `MapCheck.AV_STEPS` | `400` | The farthest an arm is followed from the origin, in steps: 400, past a district and a half. |
+| 12834 | `MapCheck.AV_TIMES` | `9, AV_SIDE = 6, AV_SHIFT_X = 104, AV_SHIFT_Y = 56` | The city the avenues are drawn on: Jerus's city x 9 on a square of 6 districts a side (his density, as the copies', every district full) whose founding site is the dry place's moved AV_SHIFT_X plot... |
+| 12854 | `MapCheck.AvTiles.OWNED` | `1, BENEATH = 2, BRIDGE = 4` | Flag bits of a plot: it is owned, a street passes beneath a highway on it, it is a bridge's. |
+| 13213 | `MapCheck.CV_FROM` | `3, CV_TO = 8` | The districts the curves are looked for in, in districts east and south of the founding site's: 3 to 8 - past CRESCENT_FROM (16 cells, two districts) wherever the cell lies. |
+| 13216 | `MapCheck.CV_CRESCENTS` | `8, CV_SHORES = 16` | The most crescents and shore curves the audit follows: 8 and 16 (the shore curves that cross a tile's edge, and those that bend, first). |
+| 13219 | `MapCheck.CV_TURN_SPAN` | `4` | How far apart, in plots, the turn audit's samples are: 4 - at a crescent's radius (22.6 plots) a turn of 0.18 radian between neighbours. |
+| 13222 | `MapCheck.CV_CENTRE_PX` | `1.0` | How far the band's middle, measured across it from the pixels, may lie from the line: a pixel - the least a raster can place a band, and less than the 2.8 pixels at 4 px a plot a staircase's bars l... |
+| 13225 | `MapCheck.CV_NARROW_PX` | `1.5` | How much narrower than its street the band, measured across it, may measure: 1.5 pixels (a pixel's rounding at either end and a half). |
+| 13228 | `MapCheck.CV_GENTLE` | `0.2` | How much the line may turn within a plot and a quarter either side of a sample for the band to be measured across it there: 0.2 radian - a crescent turns 0.06 over that; a shore street's corner (ro... |
+| 13231 | `MapCheck.CV_MEASURED` | `{ 0.5, 0.35 }` | The share of a kind's samples the band must have been measured across (crescents, shore curves): a half, and 35% - a shore's line turns a corner every few plots, and the band is not measured within... |
+| 13831 | `MapCheck.HIS_TIMES` | `80` | The copy at Jerus's own district count: x 80, 125 districts, 11 a side (CL3's notes cite 115 for his cities), between x 1's 4 districts and 5B's 14,661. |
+| 13834 | `MapCheck.REDRAW_MONTHS` | `24, REDRAW_MONTHS_5B = 12` | The months grown at x 1 and at x 80, and at 5B (its months are slower): 24 and 12. |
+| 13837 | `MapCheck.REDRAW_WARM` | `3` | The first months of each fixture are drawn, compared and not counted in its figures: 3, the JIT's compiling done before a month is read. |
+| 13840 | `MapCheck.GROW_PER_MILLE` | `1000, GROW_PER_TEN_THOUSAND = 10_000` | A month's growth as a share of each type's count: 1/1,000 (+0.1%) at x 1 and x 80, 1/10,000 (+0.01%) at 5B, as section 5's, at least one building each. |
+| 13843 | `MapCheck.RUNS_EVERY` | `4` | The runs' types (a highway's, a track's) are grown only in every 4th month, so most months lay no run, as in play. |
+| 13846 | `MapCheck.CHAIN_ROUNDS` | `5` | The times a month's screens are drawn: the month's, then again after each round of the chain's jobs (handed out, run, adopted) until none is left, at most 5 (4 until batch UP5: a lazy job that cann... |
+| 13849 | `MapCheck.PLAYED_BEFORE` | `3, PLAYED_AFTER = 3` | The months the played city is grown before its land purchase and after it: 3 and 3. |
+| 13852 | `MapCheck.PLAYED_WARM_MAX` | `6` | The most months the played city is grown, not judged, to settle its stamp's view before the months judged: 6 (WN3, after EM1: it took 1). |
+| 13855 | `MapCheck.PURCHASE_SIDE` | `32` | The side of the block the played city buys, in plots: 32, a hole in its built-up ground's box (the played city's ground is irregular). |
+| 13858 | `MapCheck.MAP_MONTH_MS` | `19` | The most a month's FX-side map work may take at 5B, in ms, its median month - the stamp, the far view's screen, an L0 screen re-stamped (since UP5 keyed, and read where the key moved) and the chain... |
+| 13861 | `MapCheck.GROW` | `0, ONE = 1, SETTLE = 2` | The kinds of month: the grown one, one built type raised by one, and the first, which only draws. |
+| 14604 | `MapCheck.DIGEST_TIMED` | `5` | How many times the guard's digest is worked out afresh for the figure section 18 prints: 5, for a mean. |
+| 15067 | `MapCheck.JOB_LAZY` | `0, JOB_EAGER = 1, JOB_PLANNED = 2` | How a plan job was handed out (batch UP9, slice A): lazy (no input gathered, a link to take), eager with a link to take, or to be planned (no link to take: the first that broke, a district whose ow... |
+| 15587 | `MapCheck.NEAR_BOX_KM` | `8` | The side of the box of the city's ground the borders are crossed against, km: 8 - a few kilometres, and wide enough for the fixture's Belgium-Netherlands line, which Natural Earth runs 2.7 km from ... |
+| 15690 | `MapCheck.YARD_SITE_AT` | `{ 250, 144 }` | Where the founding site stands in 20's first district, plots from its north-west corner: 6 plots in from its east edge, so the nearest crossing it owns is across it. |
+| 15693 | `MapCheck.YARD_STRIP` | `32` | The strip along the first district's east edge the city does not own, in plots: wider than a crossing's reach from the site, so the hub is not in the first district. |
+| 15696 | `MapCheck.YARD_NEXT` | `{ 0, 80, 96, 208 }` | The block the city owns in the second district, { x0, y0, x1, y1 } in plots from its north-west corner: room for the yard and some works, none for a second depot once they stand. |
+| 15699 | `MapCheck.YARD_MONTHS` | `6, YARD_FLATS = 20, YARD_WORKS = 3` | The months the first district is given flats and the second works before the second is filled: the flats and the works, a month each. |
+| 15817 | `MapCheck.BUILT_SIDE` | `160` | The owned ground of 21 and 22's district, plots a side from its north-west corner; the founding site is in the middle of it. |
+| 15820 | `MapCheck.BUILT_BOUGHT` | `{ 100, 100, 28, 4 }` | The ground 21 buys inside the district's frame, { x, y, across, down } in plots from its north-west corner: 112 plots, WN3's purchase at m2078, as a notch in the owned ground. |
+| 15823 | `MapCheck.BUILT_SHARE` | `0.9` | How much of its room the district is filled to before the purchase or the departure: nine tenths of the cells its plan may fill (CityMap.PLAN_FILL of its owned plots). |
+| 15826 | `MapCheck.BUILT_HOUSES` | `600, BUILT_STORES = 12, BUILT_RODS = 2, BUILT_WORKS = 8` | What the district is given a month: houses, Convenience Stores, and (21) Rod Mills, Meat Works and Bottling Plants. |
+| 15829 | `MapCheck.BUILT_DEPARTURES` | `3` | The Convenience Stores 22 sends away, one at a time, a month of arrivals between. |
+| 15967 | `MapCheck.DEPOT_LEAVES_MONTHS` | `3` | The months of works 23 gives the yard's district before its second Rail Depot and after it, YARD_WORKS a month. |
+| 16019 | `MapCheck.ICON_PASS_MS` | `0.1` | The most the pass of finding and thinning the deposits of one frame may take, in ms (LM1): about 10 times the median measured when it was written, 0.011 ms on the PC, the cells' lists kept (CityLan... |
+| 16022 | `MapCheck.CUT_OFF_STEP` | `1.01` | The step the fixture walks the scale down by from L1's, to the first FAR: a hundredth. |
+| 16025 | `MapCheck.LM_SCAN_HALF_VIEWS` | `6` | How far from the city the fixture looks for a box of two kinds, in half-views each way: 6. |
+| 16028 | `MapCheck.LM_KINDS_MIN` | `2` | The kinds of resource the fixture's box holds at least: 2 (where the world has them). |
+| 16031 | `MapCheck.LM_WIDE_CELLS` | `4` | The wide frame the thinning is held on, in world cells across: 4 - the top of a city's scouting zoom (DepositMarks.ICON_CELLS_MOST's note: one to four). |
+| 16034 | `MapCheck.LM_PASS_RUNS` | `15` | Passes timed for a median: 15. |
+| 16037 | `MapCheck.LM_PAN_VIEWS` | `0.25` | The pan the second frame is moved by, in views: a quarter - inside the box a search covers (a half view each side of the view when DepositMarks.SEARCH_TIMES is 2). |
+| 16040 | `MapCheck.LM_DARK_INK` | `0x0b1118` | The mark's dark ink, as MapView writes it on a light colour: 0x0b1118. |
+| 16356 | `MapCheck.IconCanvas.STOP_MS` | `10_000` | The longest stop() waits for the toolkit's thread to end, in ms: 10 s. |
 
 ### MarketCheck.java ([map](map/MarketCheck.md))
 
@@ -8184,18 +8204,19 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 60 | `MonetaryCheck.POLICY_SEEDS` | `java.util.stream.LongStream.range(16, 32).toArray()` | Independent validation paths; timing limits were calibrated on the default town and paths 0-15. |
-| 855 | `MonetaryCheck.HELD_RATES` | `{.03,.10,.20,.40 }` | The policy rates the one founding is held at, from month 25: the three of the baseline, and since 0.7.2 a fourth at 40% - past the old stop of the dial (25% until 0.7.2), the uncapped case. |
-| 858 | `MonetaryCheck.MEASURED_MONTHS` | `84` | The month each run ends at, and its window with it: the December of the seventh year, the month before the next January's solve of the world's prices (asserted against the calendar). |
-| 861 | `MonetaryCheck.WINDOW_YEARS` | `3` | The whole calendar years the rows are read over: three, the 36 months the section read before FS10, each from its January's solve to its December. |
-| 869 | `MonetaryCheck.HELD_FROM` | `LongPlaytest.HELD_AFTER + 1` | The month the dial is held from: the one after LongPlaytest.HELD_AFTER, the months the held runs start after. |
-| 884 | `MonetaryCheck.ORDERING_RESOLUTION` | `.0065` | The original 0.65-point ordering resolution. |
-| 887 | `MonetaryCheck.TIMING_LIMIT` | `.0075` | Frozen before validation: twice 0.356534 points on default/path 0-15, rounded up to a quarter point. |
-| 889 | `MonetaryCheck.ANNUAL_TIMING_LIMIT` | `.02` | Frozen before validation: twice the 0.961207-point pooled annual response, rounded up to a quarter point. |
-| 892 | `MonetaryCheck.TRANSMISSION_FLOOR` | `.01` | Minimum annual effect: a point on the original CPI and on pooled common-basket non-shelter prices; a flat demand channel fails. |
-| 1326 | `MonetaryCheck.WORLD_LEVEL_SET` | `1.5` | The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. |
-| 1329 | `MonetaryCheck.PINNED_RATE` | `1.0` | The rate section 5's fixture pins the currency at (ForeignAccounts.pinRate()): one D$ to the US$, a long way from either bound. |
-| 1332 | `MonetaryCheck.FIXTURE_SHELF_RISE` | `.01` | What the fixture's shelf rises a month, a fraction: a point, so the index it strikes is not 1.000 and its year of readings reads a rate. |
-| 1335 | `MonetaryCheck.FIXTURE_RENT_RISE` | `.005` | ...and what its rent rises a month: half of that, so the two components part. |
+| 875 | `MonetaryCheck.HELD_RATES` | `{.03,.10,.20,.40 }` | The policy rates the one founding is held at, from month 25: the three of the baseline, and since 0.7.2 a fourth at 40% - past the old stop of the dial (25% until 0.7.2), the uncapped case. |
+| 878 | `MonetaryCheck.MEASURED_MONTHS` | `84` | The month each run ends at, and its window with it: the December of the seventh year, the month before the next January's solve of the world's prices (asserted against the calendar). |
+| 881 | `MonetaryCheck.WINDOW_YEARS` | `3` | The whole calendar years the rows are read over: three, the 36 months the section read before FS10, each from its January's solve to its December. |
+| 889 | `MonetaryCheck.HELD_FROM` | `LongPlaytest.HELD_AFTER + 1` | The month the dial is held from: the one after LongPlaytest.HELD_AFTER, the months the held runs start after. |
+| 904 | `MonetaryCheck.ORDERING_RESOLUTION` | `.0065` | The original 0.65-point ordering resolution. |
+| 907 | `MonetaryCheck.TIMING_LIMIT` | `.0075` | Frozen before validation: twice 0.356534 points on default/path 0-15, rounded up to a quarter point. |
+| 909 | `MonetaryCheck.ANNUAL_TIMING_LIMIT` | `.02` | Frozen before validation: twice the 0.961207-point pooled annual response, rounded up to a quarter point. |
+| 912 | `MonetaryCheck.TRANSMISSION_FLOOR` | `.01` | Minimum annual effect: a point on the original town's CPI; a flat demand channel fails (non-shelter prices: the ★ law, inflationFallsWithTheRate()). |
+| 915 | `MonetaryCheck.NON_SHELTER_AGREEING` | `14` | Of the sixteen declared towns, the fewest whose common-basket non-shelter effect is positive (Call B, 2026-11-25); each of the rest names its shortage. |
+| 1422 | `MonetaryCheck.WORLD_LEVEL_SET` | `1.5` | The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. |
+| 1425 | `MonetaryCheck.PINNED_RATE` | `1.0` | The rate section 5's fixture pins the currency at (ForeignAccounts.pinRate()): one D$ to the US$, a long way from either bound. |
+| 1428 | `MonetaryCheck.FIXTURE_SHELF_RISE` | `.01` | What the fixture's shelf rises a month, a fraction: a point, so the index it strikes is not 1.000 and its year of readings reads a rate. |
+| 1431 | `MonetaryCheck.FIXTURE_RENT_RISE` | `.005` | ...and what its rent rises a month: half of that, so the two components part. |
 
 ### MoneyDatesCheck.java ([map](map/MoneyDatesCheck.md))
 
@@ -8311,23 +8332,23 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 76 | `OrderSearchCheck.LONG_MONTHS` | `1200` | Months the playtest's city plays with every order watched... |
-| 79 | `OrderSearchCheck.DEAR_MONTHS` | `120` | ...then this many more with the policy rate held at DEAR_RATE, so the mortgage lender trims and refuses. |
-| 81 | `OrderSearchCheck.DEAR_RATE` | `.15` | ...and the policy rate those months are held at. |
-| 123 | `OrderSearchCheck.COPY_MONTH` | `500` | The copy of that city: the month it is copied at, how many times over, and how many months it plays. |
-| 126 | `OrderSearchCheck.ROOM_GIVEN_PLOTS` | `1000` | BA1: the plots of the smallest building the city is given the ground for in section 6, which the long run's builders have left it none (orderSizes()). |
-| 128 | `OrderSearchCheck.COPY_TIMES` | `1000` | ...how many times over it is copied... |
-| 130 | `OrderSearchCheck.COPY_MONTHS` | `24` | ...and the months the copy plays. |
-| 139 | `OrderSearchCheck.COPY_RATE` | `DEAR_RATE` | The policy rate the copy's months are held at (FR8, 2026-10-28): the long run's dear stretch's, DEAR_RATE. |
-| 155 | `OrderSearchCheck.TWIN_RATE` | `.40` | The policy rate the twin's months are held at (FW9, 2026-10-25). |
-| 305 | `OrderSearchCheck.TWIN_TILLS` | `{.25,.5 }` | The shares of its whole cost the twin's till is put at under its largest order (tillsAsTheLine()). |
-| 314 | `OrderSearchCheck.TWIN_LEAST_ORDER` | `4 * Game.COUNTDOWN_SLICES` | ...AT LEAST THIS MANY OF ITS KIND (FC1, 2026-11-02). |
-| 543 | `OrderSearchCheck.WINDOW_ORDER` | `94` | The order the window is caused in: Retail's Convenience Stores, more than the counted slices and past the doubling's steps (94, 78, 76, 72, 64, 48, 16, 1) of the window. |
-| 545 | `OrderSearchCheck.WINDOW_TILLS` | `{ 2, 4 }` | The slices the till pays for, which fail at the sector's own rate: two and four, so the doubling's last step (slice 1) is not in the window... |
-| 547 | `OrderSearchCheck.WINDOW_ROOMS` | `{ 3, 6, 9 }` | ...and how many slices past the till the bank's room reaches, which a bond raises whole and may pass: a window of that many at most. |
-| 549 | `OrderSearchCheck.WINDOW_PROFIT_FROM` | `.005` | The profit of a building the sweep starts at, as a share of a twelfth of its cost (a building that earns its cost a year at 100%)... |
-| 551 | `OrderSearchCheck.WINDOW_PROFIT_TO` | `1` | ...ends at... |
-| 553 | `OrderSearchCheck.WINDOW_PROFIT_STEP` | `1.04` | ...and steps by. |
+| 78 | `OrderSearchCheck.LONG_MONTHS` | `1200` | Months the playtest's city plays with every order watched... |
+| 81 | `OrderSearchCheck.DEAR_MONTHS` | `120` | ...then this many more with the policy rate held at DEAR_RATE, so the mortgage lender trims and refuses. |
+| 83 | `OrderSearchCheck.DEAR_RATE` | `.15` | ...and the policy rate those months are held at. |
+| 125 | `OrderSearchCheck.COPY_MONTH` | `500` | The copy of that city: the month it is copied at, how many times over, and how many months it plays. |
+| 128 | `OrderSearchCheck.ROOM_GIVEN_PLOTS` | `1000` | BA1: the plots of the smallest building the city is given the ground for in section 6, which the long run's builders have left it none (orderSizes()). |
+| 130 | `OrderSearchCheck.COPY_TIMES` | `1000` | ...how many times over it is copied... |
+| 132 | `OrderSearchCheck.COPY_MONTHS` | `24` | ...and the months the copy plays. |
+| 141 | `OrderSearchCheck.COPY_RATE` | `DEAR_RATE` | The policy rate the copy's months are held at (FR8, 2026-10-28): the long run's dear stretch's, DEAR_RATE. |
+| 157 | `OrderSearchCheck.TWIN_RATE` | `.40` | The policy rate the twin's months are held at (FW9, 2026-10-25). |
+| 303 | `OrderSearchCheck.TWIN_TILLS` | `{ 0,.25,.5 }` | Cash boundaries cause a refusal and deep trims on the native interest search. |
+| 306 | `OrderSearchCheck.TWIN_LEAST_ORDER` | `4 * Game.COUNTDOWN_SLICES` | Four counted ranges make the quarter-funded order a deep trim. |
+| 522 | `OrderSearchCheck.WINDOW_ORDER` | `94` | The order the window is caused in: Retail's Convenience Stores, more than the counted slices and past the doubling's steps (94, 78, 76, 72, 64, 48, 16, 1) of the window. |
+| 524 | `OrderSearchCheck.WINDOW_TILLS` | `{ 2, 4 }` | The slices the till pays for, which fail at the sector's own rate: two and four, so the doubling's last step (slice 1) is not in the window... |
+| 526 | `OrderSearchCheck.WINDOW_ROOMS` | `{ 3, 6, 9 }` | ...and how many slices past the till the bank's room reaches, which a bond raises whole and may pass: a window of that many at most. |
+| 528 | `OrderSearchCheck.WINDOW_PROFIT_FROM` | `.005` | The profit of a building the sweep starts at, as a share of a twelfth of its cost (a building that earns its cost a year at 100%)... |
+| 530 | `OrderSearchCheck.WINDOW_PROFIT_TO` | `1` | ...ends at... |
+| 532 | `OrderSearchCheck.WINDOW_PROFIT_STEP` | `1.04` | ...and steps by. |
 
 ### OutsideCheck.java ([map](map/OutsideCheck.md))
 
@@ -8419,31 +8440,31 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 232 | `PlanCheck.TIMED` | `5` | Repeats a district's plan is timed over, after one untimed: its median is its time. |
-| 243 | `PlanCheck.PLAN_MS` | `MapCheck.SCREEN_MS / 2` | The most a district's plan may take, the slowest of the dense screen's districts (each its median of TIMED): half MapCheck's screen, 40 ms (star) - one plan and a screen painted from plans within S... |
-| 246 | `PlanCheck.TABLE` | `{ { 49, 15, 9802, 828, 8974, 0, 13, 26, 280, 2995 }, { 48, 13, 6052, 3137, 2915, 0, 0, ...` | The prototype's figures of the spec's 2.5 table, for his roads, the same trips paved and half that: cells, homes cells, street plots, narrow, full, tracks, square cells, boulevard cells, + junction... |
-| 252 | `PlanCheck.TABLE_BUILDINGS` | `3617, TABLE_BUILDING_PLOTS = 32217` | ...its buildings and their plots... |
-| 254 | `PlanCheck.TABLE_BUDGET` | `{ 9388, 4484, 2242 }` | ...and the road of each budget, whole plots. |
-| 257 | `PlanCheck.TEST_HUB_X` | `66, TEST_HUB_Y = 86` | The prototype's hub on its test district, in the district's plots: (70, 90) in its frame, 4 plots in. |
-| 260 | `PlanCheck.TEST_UNOWNED_ROWS` | `40, TEST_UNOWNED_FROM = 196` | The part of the test district the prototype did not own: its first 40 rows east of plot 196 (O[:44, 200:] in its frame). |
-| 263 | `PlanCheck.FILLS` | `{ 0.75, 0.80, 0.85, 0.92 }` | The fills of 2.10's table: the model's buildings and roads at these shares of a flat district's ground. |
-| 266 | `PlanCheck.PROTO_FRAME` | `264` | The ground 2.10's fills are shares of: the prototype's frame, the district and 4 plots about it, 264 x 264 (its n = OFF + 32 x 8 + 4) - so its 75% is 79.8% of the district's own 256 x 256. |
-| 269 | `PlanCheck.GRAVEL_TRIPS` | `900, PAVED_TRIPS = 1200` | Gravel's and paved road's trips a road (buildings.json's capacities, as the prototype read them): the same city paved holds his roads' trips on Paved Roads. |
-| 279 | `PlanCheck.TEST_GROUND` | `"g36f14g13f1g14f29g89u61/g36f15g11f2g14f28g90u61/g35f17g10f2g13f29g90u61/g35f17g24f30g9...` | THE PROTOTYPE'S TEST DISTRICT (claude/roads-prototype/proto2.py and roads_proto.py, written out by batch RD1): district_ground(264, 7) - grass, forest, a river two to four plots wide, a bay of sea ... |
-| 322 | `PlanCheck.TEST_NUDGE` | `{ 0.3727494347187473, 0.03906684873305479, 0.22912251263578634, 0.5245030267418446, 0.8...` | Each cell's nudge, h32(4127, 'cell', c) as a fraction, cell ci + cj x CELLS_A_SIDE. |
-| 340 | `PlanCheck.TEST_ACROSS` | `2483539012620168834L` | Each cell's direction, a bit a cell: set where h32(4127, 'dir', c) is under a half (east-west), read as 0.25, else 0.75. |
-| 342 | `PlanCheck.TEST_TYPES` | `{ 0, 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 17, 18, 19, 20, 22, 23, 25, 27, 28, 31, 32, 33, 3...` | The types its buildings are, by id (BuildingVisual.table())... |
-| 344 | `PlanCheck.TEST_COUNTS` | `{ 899, 94, 569, 30, 2, 799, 2, 1, 2, 23, 5, 112, 54, 1, 1, 13, 6, 4, 1, 2, 22, 22, 19, ...` | ...how many of each, scaled_buildings at 70% of its dry ground... |
-| 346 | `PlanCheck.TEST_DEAL` | `{ 0.8623860022826665, 0.4688361493186886, 0.49244847032280087, 0.9101025582510129, 0.04...` | ...and each type's start, h32(4127, 'deal', t) as a fraction. |
-| 360 | `PlanCheck.TEST_GRAVEL` | `8407.741935483871, TEST_PAVED = 980.6451612903226, TEST_PAVED_ALL = 4483.870967741936` | Its road plots (Input.gravel and Input.paved): his Gravel and Paved Roads, and the same trips all paved (the third budget half of it). |
-| 362 | `PlanCheck.TEST_PLACED_JERUS` | `- 1980402857778823524L, TEST_STREETS_JERUS = - 7143981648789130548L` | Each budget's plan as the prototype made it, its buildings' and its streets' FNV-1a digests (placedDigest(), streetDigest()): his roads... |
-| 364 | `PlanCheck.TEST_PLACED_PAVED` | `9000504916410474359L, TEST_STREETS_PAVED = - 4283127041626870812L` | ...the same trips paved... |
-| 366 | `PlanCheck.TEST_PLACED_THIN` | `9000504916410474359L, TEST_STREETS_THIN = 4092048347058802282L` | ...and half that. |
-| 626 | `PlanCheck.ARM_DX` | `{ 1, - 1, - 1, 1 }, ARM_DY = { 1, 1, - 1, - 1 }` | The four avenues' headings (dx, dy) by arm, CityRuns.diagCode()'s numbering: south-east 0, south-west 1, north-west 2, north-east 3. |
-| 863 | `PlanCheck.COAL_GROUND_DRAWN` | `2_000_000` | The Coal Power Plant's ground as the prototype and 0.8.11 drew it, sq ft. |
-| 866 | `PlanCheck.COAL_PLANT` | `9` | The Coal Power Plant's catalogue id. |
-| 916 | `PlanCheck.BUDGETS` | `{ "his roads", "the same trips paved", "half that" }` | The three budgets' names, as the sections print them. |
-| 1342 | `PlanCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` | A stream that drops what is written to it: the game's and the playtest's prose while a section plays or loads a city. |
+| 234 | `PlanCheck.TIMED` | `5` | Repeats a district's plan is timed over, after one untimed: its median is its time. |
+| 245 | `PlanCheck.PLAN_MS` | `MapCheck.SCREEN_MS / 2` | The most a district's plan may take, the slowest of the dense screen's districts (each its median of TIMED): half MapCheck's screen, 40 ms (star) - one plan and a screen painted from plans within S... |
+| 248 | `PlanCheck.TABLE` | `{ { 49, 15, 9802, 828, 8974, 0, 13, 26, 280, 2995 }, { 48, 13, 6052, 3137, 2915, 0, 0, ...` | The prototype's figures of the spec's 2.5 table, for his roads, the same trips paved and half that: cells, homes cells, street plots, narrow, full, tracks, square cells, boulevard cells, + junction... |
+| 254 | `PlanCheck.TABLE_BUILDINGS` | `3617, TABLE_BUILDING_PLOTS = 32217` | ...its buildings and their plots... |
+| 256 | `PlanCheck.TABLE_BUDGET` | `{ 9388, 4484, 2242 }` | ...and the road of each budget, whole plots. |
+| 259 | `PlanCheck.TEST_HUB_X` | `66, TEST_HUB_Y = 86` | The prototype's hub on its test district, in the district's plots: (70, 90) in its frame, 4 plots in. |
+| 262 | `PlanCheck.TEST_UNOWNED_ROWS` | `40, TEST_UNOWNED_FROM = 196` | The part of the test district the prototype did not own: its first 40 rows east of plot 196 (O[:44, 200:] in its frame). |
+| 265 | `PlanCheck.FILLS` | `{ 0.75, 0.80, 0.85, 0.92 }` | The fills of 2.10's table: the model's buildings and roads at these shares of a flat district's ground. |
+| 268 | `PlanCheck.PROTO_FRAME` | `264` | The ground 2.10's fills are shares of: the prototype's frame, the district and 4 plots about it, 264 x 264 (its n = OFF + 32 x 8 + 4) - so its 75% is 79.8% of the district's own 256 x 256. |
+| 271 | `PlanCheck.GRAVEL_TRIPS` | `900, PAVED_TRIPS = 1200` | Gravel's and paved road's trips a road (buildings.json's capacities, as the prototype read them): the same city paved holds his roads' trips on Paved Roads. |
+| 281 | `PlanCheck.TEST_GROUND` | `"g36f14g13f1g14f29g89u61/g36f15g11f2g14f28g90u61/g35f17g10f2g13f29g90u61/g35f17g24f30g9...` | THE PROTOTYPE'S TEST DISTRICT (claude/roads-prototype/proto2.py and roads_proto.py, written out by batch RD1): district_ground(264, 7) - grass, forest, a river two to four plots wide, a bay of sea ... |
+| 324 | `PlanCheck.TEST_NUDGE` | `{ 0.3727494347187473, 0.03906684873305479, 0.22912251263578634, 0.5245030267418446, 0.8...` | Each cell's nudge, h32(4127, 'cell', c) as a fraction, cell ci + cj x CELLS_A_SIDE. |
+| 342 | `PlanCheck.TEST_ACROSS` | `2483539012620168834L` | Each cell's direction, a bit a cell: set where h32(4127, 'dir', c) is under a half (east-west), read as 0.25, else 0.75. |
+| 344 | `PlanCheck.TEST_TYPES` | `{ 0, 1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 17, 18, 19, 20, 22, 23, 25, 27, 28, 31, 32, 33, 3...` | The types its buildings are, by id (BuildingVisual.table())... |
+| 346 | `PlanCheck.TEST_COUNTS` | `{ 899, 94, 569, 30, 2, 799, 2, 1, 2, 23, 5, 112, 54, 1, 1, 13, 6, 4, 1, 2, 22, 22, 19, ...` | ...how many of each, scaled_buildings at 70% of its dry ground... |
+| 348 | `PlanCheck.TEST_DEAL` | `{ 0.8623860022826665, 0.4688361493186886, 0.49244847032280087, 0.9101025582510129, 0.04...` | ...and each type's start, h32(4127, 'deal', t) as a fraction. |
+| 362 | `PlanCheck.TEST_GRAVEL` | `8407.741935483871, TEST_PAVED = 980.6451612903226, TEST_PAVED_ALL = 4483.870967741936` | Its road plots (Input.gravel and Input.paved): his Gravel and Paved Roads, and the same trips all paved (the third budget half of it). |
+| 364 | `PlanCheck.TEST_PLACED_JERUS` | `- 1980402857778823524L, TEST_STREETS_JERUS = - 7143981648789130548L` | Each budget's plan as the prototype made it, its buildings' and its streets' FNV-1a digests (placedDigest(), streetDigest()): his roads... |
+| 366 | `PlanCheck.TEST_PLACED_PAVED` | `9000504916410474359L, TEST_STREETS_PAVED = - 4283127041626870812L` | ...the same trips paved... |
+| 368 | `PlanCheck.TEST_PLACED_THIN` | `9000504916410474359L, TEST_STREETS_THIN = 4092048347058802282L` | ...and half that. |
+| 628 | `PlanCheck.ARM_DX` | `{ 1, - 1, - 1, 1 }, ARM_DY = { 1, 1, - 1, - 1 }` | The four avenues' headings (dx, dy) by arm, CityRuns.diagCode()'s numbering: south-east 0, south-west 1, north-west 2, north-east 3. |
+| 865 | `PlanCheck.COAL_GROUND_DRAWN` | `2_000_000` | The Coal Power Plant's ground as the prototype and 0.8.11 drew it, sq ft. |
+| 868 | `PlanCheck.COAL_PLANT` | `9` | The Coal Power Plant's catalogue id. |
+| 918 | `PlanCheck.BUDGETS` | `{ "his roads", "the same trips paved", "half that" }` | The three budgets' names, as the sections print them. |
+| 1344 | `PlanCheck.QUIET` | `new PrintStream(new OutputStream() { @ Override public void write(int b) { } @ Override...` | A stream that drops what is written to it: the game's and the playtest's prose while a section plays or loads a city. |
 | 1413 | `PlanCheck.HOMES_ENOUGH` | `10` | The homes cells a played city's samples must hold before they are asked to show a layout other than the comb (CL2): ten cells all keeping the comb by the hash alone has a chance of 1 in 59,049. |
 | 1420 | `PlanCheck.ESTATE_FILL` | `0.4` | The share of a flat district's plots each estate-band type is set at, alone: 0.4 - room to spare, so what differs is the cells they take. |
 | 1514 | `PlanCheck.SPARE_FILL` | `FILLS [ 0 ], FULL_FILL = FILLS [ FILLS.length - 1 ]` | Section 4's fill with cells to spare (2.10's first, 75%) and its fullest (92%: every cell open, and outer kinds left without a place when the bands keep apart). |
@@ -8460,22 +8481,22 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2180 | `PlanCheck.BATCHES` | `40` | The batches the dense screen's counts are dealt in (h): forty months. |
 | 2183 | `PlanCheck.COVER_LEAST` | `0.95` | What the order of arrival must cover of the ground today's plans cover on the dense screen: 95%. |
 | 2606 | `PlanCheck.HOUSES_A_MONTH` | `1000` | The houses each month from the first to the fifth brings: with the shops, works and farms beside them, enough to fill the old ground. |
-| 3247 | `PlanCheck.FAR_CELLS` | `(int) DistrictPlan.CRESCENT_FROM + 4` | How many cells west of the frame section 14's far fixture puts the founding site: CRESCENT_FROM and four more, so every cell of the frame lies beyond CRESCENT_FROM. |
-| 3250 | `PlanCheck.CROWDED_FILL` | `0.90, CROWDED_ROADS = 0.7` | Section 14's crowded fixture: 90% of the ground, with 0.7 of his roads - the ladder takes several builds (the later ones from its turns), squares a few homes cells and leaves a few buildings out, a... |
-| 3253 | `PlanCheck.ROAD_RICH` | `BOULEVARD_ROADS` | The roads section 14's road-rich fixture is given, a factor of his: BOULEVARD_ROADS, 1 - road enough for the ladder to square cells and make boulevards. |
-| 3256 | `PlanCheck.MID_WEST` | `1.25` | Section 14 (b)'s site, in cells west of the frame's edge short of CRESCENT_FROM: 1.25 - the frame's first column of cells lies within CRESCENT_FROM of it and its second beyond. |
-| 3259 | `PlanCheck.ARM_SITE` | `21 * DistrictPlan.CELL` | Section 14 (c)'s site for an avenue across the frame: (-ARM_SITE, -ARM_SITE), 21 cells out along the diagonal, so its south-east arm runs through the frame's diagonal cells - the ones nearest it, w... |
-| 3747 | `PlanCheck.HOUSES_A_MONTH_FAR` | `3000` | The houses each month brings in (f): enough to open a homes cell or three a month beyond CRESCENT_FROM. |
-| 3864 | `PlanCheck.RIM_FROM` | `3` | The rim of the dense city (rimCurves()): districts this many or more from the one the founding site lies in, by the larger of their columns and rows. |
-| 3867 | `PlanCheck.RIM_EVERY` | `37` | ...and of those, one in this many is planned: 37, a stride that takes districts all round it. |
-| 4052 | `PlanCheck.RUN_HOUSES` | `250` | The houses each month of the runs' fixtures brings: with the shops, works and farms beside them, a district that grows by some hundreds of boxes a month. |
-| 4208 | `PlanCheck.Across.YW` | `8, YH = 7, HW = 40` |  |
-| 5187 | `PlanCheck.RESERVE_SIDE` | `19` | The reserve of a cloverleaf, in plots a side: CityRuns.F_RESERVE's 19 x 19 (InterchangeGround). |
-| 5255 | `PlanCheck.STRIP` | `TilePainter.JUNCTION_APART` | How far from the verge the strip reaches, in plots beyond it: 8, the width of one block of the lattice (TilePainter.JUNCTION_APART). |
-| 5265 | `PlanCheck.STRIP_MARGIN` | `0.02` | The most the highway may cost the strip, in share of its plots (a building or a street) used, against the same district with no highway (the same fill, the same arrivals; the verge, which H5 bars t... |
-| 5268 | `PlanCheck.FRONTAGE_OFFSET` | `37` | The highway's offset, in plots: its staircase is the plots with y = x - OFFSET and y = x - OFFSET - 1, off the avenues' arms (which lie on x - y = 0). |
-| 5271 | `PlanCheck.MAIN_LATE_STRIP_USED` | `4373` | Used strip plots on main 01402a54e in this section's identical late-run fixture (2026-11-15), 4373/6936. |
-| 5441 | `PlanCheck.RR1_TURN_NW` | `100, RR1_TURN_SE = 200` | Section 20's turns (RR1): the diagonal highway turns at both ends of its run along a row - west at its north-west end, east at its south-east one, as Jerus's fjord city's (0.9.181, his shots 2 and ... |
+| 3245 | `PlanCheck.FAR_CELLS` | `(int) DistrictPlan.CRESCENT_FROM + 4` | How many cells west of the frame section 14's far fixture puts the founding site: CRESCENT_FROM and four more, so every cell of the frame lies beyond CRESCENT_FROM. |
+| 3248 | `PlanCheck.CROWDED_FILL` | `0.90, CROWDED_ROADS = 0.7` | Section 14's crowded fixture: 90% of the ground, with 0.7 of his roads - the ladder takes several builds (the later ones from its turns), squares a few homes cells and leaves a few buildings out, a... |
+| 3251 | `PlanCheck.ROAD_RICH` | `BOULEVARD_ROADS` | The roads section 14's road-rich fixture is given, a factor of his: BOULEVARD_ROADS, 1 - road enough for the ladder to square cells and make boulevards. |
+| 3254 | `PlanCheck.MID_WEST` | `1.25` | Section 14 (b)'s site, in cells west of the frame's edge short of CRESCENT_FROM: 1.25 - the frame's first column of cells lies within CRESCENT_FROM of it and its second beyond. |
+| 3257 | `PlanCheck.ARM_SITE` | `21 * DistrictPlan.CELL` | Section 14 (c)'s site for an avenue across the frame: (-ARM_SITE, -ARM_SITE), 21 cells out along the diagonal, so its south-east arm runs through the frame's diagonal cells - the ones nearest it, w... |
+| 3744 | `PlanCheck.HOUSES_A_MONTH_FAR` | `3000` | The houses each month brings in (f): enough to open a homes cell or three a month beyond CRESCENT_FROM. |
+| 3861 | `PlanCheck.RIM_FROM` | `3` | The rim of the dense city (rimCurves()): districts this many or more from the one the founding site lies in, by the larger of their columns and rows. |
+| 3864 | `PlanCheck.RIM_EVERY` | `37` | ...and of those, one in this many is planned: 37, a stride that takes districts all round it. |
+| 4049 | `PlanCheck.RUN_HOUSES` | `250` | The houses each month of the runs' fixtures brings: with the shops, works and farms beside them, a district that grows by some hundreds of boxes a month. |
+| 4205 | `PlanCheck.Across.YW` | `8, YH = 7, HW = 40` |  |
+| 5184 | `PlanCheck.RESERVE_SIDE` | `19` | The reserve of a cloverleaf, in plots a side: CityRuns.F_RESERVE's 19 x 19 (InterchangeGround). |
+| 5252 | `PlanCheck.STRIP` | `TilePainter.JUNCTION_APART` | How far from the verge the strip reaches, in plots beyond it: 8, the width of one block of the lattice (TilePainter.JUNCTION_APART). |
+| 5262 | `PlanCheck.STRIP_MARGIN` | `0.02` | The most the highway may cost the strip, in share of its plots (a building or a street) used, against the same district with no highway (the same fill, the same arrivals; the verge, which H5 bars t... |
+| 5265 | `PlanCheck.FRONTAGE_OFFSET` | `37` | The highway's offset, in plots: its staircase is the plots with y = x - OFFSET and y = x - OFFSET - 1, off the avenues' arms (which lie on x - y = 0). |
+| 5268 | `PlanCheck.MAIN_LATE_STRIP_USED` | `4373` | Used strip plots on main 01402a54e in this section's identical late-run fixture (2026-11-15), 4373/6936. |
+| 5438 | `PlanCheck.RR1_TURN_NW` | `100, RR1_TURN_SE = 200` | Section 20's turns (RR1): the diagonal highway turns at both ends of its run along a row - west at its north-west end, east at its south-east one, as Jerus's fjord city's (0.9.181, his shots 2 and ... |
 
 ### PlaytestFixCheck.java ([map](map/PlaytestFixCheck.md))
 
@@ -8550,17 +8571,19 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 50 | `PowerPlanCheck.out` | `System.out` |  |
-| 62 | `PowerPlanCheck.POWER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)` |  |
-| 64 | `PowerPlanCheck.COAL` | `"Coal Power Plant", TURBINE = "Oil-Fired Turbine", DIESEL = "Diesel Station", WIND = "W...` |  |
-| 378 | `PowerPlanCheck.GAP_SHARE` | `0.5` | What fraction of one credited Wind Farm's firm kW the dear town of 6a is short by at the reserve test. |
-| 386 | `PowerPlanCheck.OVER_SHARE` | `1.1` | (6a(ii)) The second dear town's gap at a farm's opening, as a multiple of FIRST_WORK_SHARE of one Diesel Station's firm kW: over the share, so the diesel is a candidate, and under what the farms th... |
-| 472 | `PowerPlanCheck.DEPOTS` | `100` | Construction Depots standing in the pending-plant fixture's town: their 400 points each lift the builders' output over the diesels' upkeep. |
-| 475 | `PowerPlanCheck.PREP_MONTHS` | `60` | The months of the builders' whole output the coal's ground owes in preparation (a foothill pad, the works): its first plant opens after the farm's 36. |
-| 711 | `PowerPlanCheck.SEASONAL` | `PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR` | The year's highest month's peak block over the peak hour's draw: the firm supply the month's dispatch needs at its worst over the supply the plan does (PowerDispatch.PLAN_PEAK_SEASON over PLAN_PEAK... |
-| 719 | `PowerPlanCheck.NOW_OVER` | `1.02, NOW_UNDER =.99` | The month's firm supply over the seasonal peak's draw, just over it (the month does not lack) and just under it (it does), in 8a's last two fixtures. |
-| 722 | `PowerPlanCheck.GROWTH_AT_LEAD` | `.30` | The town's growth over the coal plant's lead in 8a's growing town (BusinessInvestment.growthFactor() at the lead, less one), to a hundredth (the history is whole people). |
-| 904 | `PowerPlanCheck.ARRIVES` | `12` | (viii)'s months until the calendar brings the Diesel Station: as 1910's to a town of 1908, well inside coal's lead with the diesel's. |
+| 57 | `PowerPlanCheck.out` | `System.out` |  |
+| 69 | `PowerPlanCheck.POWER` | `BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)` |  |
+| 71 | `PowerPlanCheck.COAL` | `"Coal Power Plant", TURBINE = "Oil-Fired Turbine", DIESEL = "Diesel Station", WIND = "W...` |  |
+| 385 | `PowerPlanCheck.GAP_SHARE` | `0.5` | What fraction of one credited Wind Farm's firm kW the dear town of 6a is short by at the reserve test. |
+| 393 | `PowerPlanCheck.OVER_SHARE` | `1.1` | (6a(ii)) The second dear town's gap at a farm's opening, as a multiple of FIRST_WORK_SHARE of one Diesel Station's firm kW: over the share, so the diesel is a candidate, and under what the farms th... |
+| 479 | `PowerPlanCheck.DEPOTS` | `100` | Construction Depots standing in the pending-plant fixture's town: their 400 points each lift the builders' output over the diesels' upkeep. |
+| 482 | `PowerPlanCheck.PREP_MONTHS` | `60` | The months of the builders' whole output the coal's ground owes in preparation (a foothill pad, the works): its first plant opens after the farm's 36. |
+| 718 | `PowerPlanCheck.SEASONAL` | `PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR` | The year's highest month's peak block over the peak hour's draw: the firm supply the month's dispatch needs at its worst over the supply the plan does (PowerDispatch.PLAN_PEAK_SEASON over PLAN_PEAK... |
+| 726 | `PowerPlanCheck.NOW_OVER` | `1.02, NOW_UNDER =.99` | The month's firm supply over the seasonal peak's draw, just over it (the month does not lack) and just under it (it does), in 8a's last two fixtures. |
+| 729 | `PowerPlanCheck.GROWTH_AT_LEAD` | `.30` | The town's growth over the coal plant's lead in 8a's growing town (BusinessInvestment.growthFactor() at the lead, less one), to a hundredth (the history is whole people). |
+| 911 | `PowerPlanCheck.ARRIVES` | `12` | (viii)'s months until the calendar brings the Diesel Station: as 1910's to a town of 1908, well inside coal's lead with the diesel's. |
+| 1282 | `PowerPlanCheck.MILL_PAST` | `6` | The whole months the mill's quote to open starts past the diesel's lead and the opening's horizon, before it falls to them a month at a time. |
+| 1285 | `PowerPlanCheck.MILL_SPARE` | `.5` | The share of the mill's own seasonal draw the twin's seasonal peak leaves spare at the mill's opening, so the mill town is short by the rest. |
 
 ### PowerPlantsCheck.java ([map](map/PowerPlantsCheck.md))
 
@@ -8919,9 +8942,9 @@ Generated 2026-11-25 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1264 | `ScaleCheck.Figures.WITHIN` | `{ TRACK_PEOPLE, TRACK_CASH, TRACK_SAVINGS, TRACK_GDP, TRACK_DEPOSITS, TRACK_PRICES, TRA...` |  |
 | 1325 | `ScaleCheck.AFFORDABILITY_WITHIN` | `.01` | How far a free copy's affordability pull may stand from the city's in any month (0.7.55): the rents' multiplier on the migrants' target (Migration.affordabilityPull()). |
 | 1697 | `ScaleCheck.INTENSIVE` | `Pattern.compile("(price\|Price\|rate\|Rate\|month\|Month\|Months\|share\|Share\|ratio\|Ratio\|targ...` | A name the scaler leaves alone wherever it meets one, unless EXTENSIVE names it: a price, a rate, a month, an id, a share, a ratio or a target, as scale_save.py's SKIP read them, and since 0.7.54 t... |
-| 1734 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMonth", "las...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
-| 1746 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxCharged", "...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
-| 1773 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "sectorBooksBefo...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
+| 1737 | `ScaleCheck.EXTENSIVE` | `java.util.Set.of("recognisedThisMonth", "escalationThisMonth", "repairsThisMonth", "las...` | THE NAMES THE PATTERN READ WRONG (0.7.54). |
+| 1749 | `ScaleCheck.TOP` | `{ "cash", "householdSavings", "landOwned", "insurancePremiums", "propertyTaxCharged", "...` | The save's top-level keys scaled: scale_save.py's list, less the works yard. |
+| 1776 | `ScaleCheck.NAMED` | `java.util.Set.of("sectors", "markets", "businessDebts", "sectorBooks", "sectorBooksBefo...` | The five TOP keys scale_save.py handed sc() under a name of their own: the sectors, the markets, the business debts and the books, this month's and last's. |
 
 ### SectorFlowCheck.java ([map](map/SectorFlowCheck.md))
 
