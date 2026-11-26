@@ -706,6 +706,83 @@ reviewer's line.
   and received at the next settlement in 5 of 5, at most 570.19 a month;
   613.41 owed back through the m901 save and load); DenominationCheck known
   red only (exit 3, six of main's seven lines, 1e-9 apart).
+- REV-RES3b on 0925f4661: two more P1s, both real against the code.
+  1. settleBoard() paid the board only out of the opening savings, before
+     the month's income, and erased what went unpaid: a boarder with wages
+     and no savings paid nothing its budget funded, and its host lost the
+     receivable with no arrears or default; a missing payer or host was
+     skipped and discarded the same way.
+  2. HousingMarketCheck's census fixture set counts and savings by hand and
+     called settleBoard() past followThePeople() and advanceMonth(); the
+     reform fixture settled the original city, not the loaded one; no death
+     or move-out was caused.
+- ★ (the orchestrator's call, to converge) The board goes the rents' own
+  way; settleBoard()'s settlement of its own is gone. The rents' path takes
+  a household as payee: it books the landlord in full and bills the
+  household, whose shortfall is its unfunded with the eviction, default and
+  write-off a rent's has, and the households' identity closes it by its own
+  lines (+ households Unfunded, + households UnsettledRent) with no pool on
+  either side, which is the board exactly. HousingMarket.strikeBoard(), at
+  the settlement after followThePeople() (the leases' census), returns
+  HouseholdBalance.BoardStrike: billed and credited by cell, and the
+  unsettled. The settlement adds a boarder's board to its rent line
+  (rentDue, paid out of the month's income first) and a host's to its
+  month's income (not the rows' settledIncome tally: no pool paid it). A
+  boarder's cell with no household left is a departure on the rents' line
+  (lastUnsettledRent: the host credited, no household charged); a home
+  with no host household left is owed nothing (boardUnhosted). Saved:
+  billed and credited (boardPaid, boardReceived), boardUnsettled and
+  boardUnhosted, validated (billed and unsettled make the credited) and
+  scaled by the reform and by ScaleCheck. The load path re-plans on the
+  saved strike (boardStruck(), planOnly()), so a reloaded plan is the live
+  one's. Boarding keeps only what it adds: who hosts (the home's lease
+  cells with households, by doors), who boards, what is owed (cleared once
+  struck). Supersedes the ★ above that set "carry the board inside the
+  rent bill" aside: it bills no landlord, its payee is the host household.
+- A departure or a lost host has no cause in the game's months: the leases'
+  census is the settlement's, so a boarder's cell and its hosts' have
+  households when it bills. HousingDoorCheck asserts both nought in every
+  settlement month. Seen: with the board the month's bills left unfunded
+  fall, the hosts' income funding their own (the one-House town 0 against
+  1.41e-4 without it).
+- Caused (49efdeb55; the model bac87017a). HousingMarketCheck: boardOwedAtTheClearing()
+  (was boardBookedBothSides(); its settlement half is the next section's);
+  boardWithTheRents() plays the one-House town a month (3.39 boarders, 0.0835
+  owed), saves it, and plays the next month natively in the original and two
+  loaded twins, one with the owed board taken off, a working boarder's
+  savings (COUPLE:SKILLED) taken to nothing in both: every boarder billed
+  its whole board, credited in full to 68 host cells, each host's income up
+  by its board to 5.5e-17, no boarder's cell leaving a cent more unfunded,
+  both audits exact in all three, the loaded twin's settlement the
+  original's cell by cell; the boarder with no savings billed its whole
+  board and paying it out of its wages (income past its rent line 0.304,
+  nothing unfunded); the census the clearing projected moving households
+  out of boarders' cells before the settlement, a partner's death from
+  COUPLE:COLLEGE to SINGLE_ADULT:COLLEGE and the retiring from
+  COUPLE:SKILLED, every flow's savings the twin's without the board, the
+  widowed household's new cell billed none of its old cell's board and the
+  cells they left billed their whole board on the households they keep;
+  and a save and load of the month re-planning every household's income,
+  rent line and plan to the live city's exactly. boardThroughAReform()
+  played through: a 1,000:1 reform with board owed, a save and load, and the
+  LOADED city's month billing the reformed board, a thousandth of the
+  unreformed twin's cell by cell (2e-22), credited in full, audits exact; a
+  second reform after that month scaling the board billed and credited,
+  back through a save. boardOnTheLeasesCensus() is deleted: its causes are
+  the census's own moves now. Restated in HousingDoorCheck: "...and paying
+  it at the next month's settlement, every cent paid out of the boarders'
+  cells received into their hosts'" is now "...billed with the rents at the
+  next month's settlement into the boarders' rent lines and credited in
+  full to their hosts as income, every cent, none past a departed boarder
+  or a lost host" (the count also requires the unsettled and unhosted
+  nought).
+- On these mends: HousingMarketCheck, SaveFileCheck, ScaleCheck,
+  Village1900Check, MonetaryCheck and BankCheck green; HousingDoorCheck
+  known red only (MC1: the board owed in 6 of 6 months with boarders,
+  billed and credited at the next settlement in 5 of 5, none past a
+  departed boarder or a lost host, at most 613.41 a month; 613.41 owed back
+  through the m901 save and load); DenominationCheck known red only (six of
+  main's seven lines, 1e-9 apart).
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
