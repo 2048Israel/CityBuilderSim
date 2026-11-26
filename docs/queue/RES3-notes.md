@@ -835,6 +835,18 @@ reviewer's line.
   SaveFileCheck, ScaleCheck, Village1900Check, MonetaryCheck and BankCheck
   green; HousingDoorCheck known red only (MC1); DenominationCheck known red
   only (six of main's seven lines, 1e-9 apart).
+- The combined ensemble on the merge (RES3-m212-20261126, be56c3c9d, on
+  the gate box, against 0.9.212.md), committed as docs/ensemble/RES3.md in
+  place of RES3-board-20261126's: batch verdict PASS, every hard criterion
+  green, M1 0 audit months and F1 0 of 16 runs in each of the five
+  policies, no run missing or short; 21 of 25 criteria. AUTO2 inflation
+  2.86% (12 of 16 in band; FAIL to PASS), final population 8.18 million
+  against 7.40 million. ZERO_HOT's H2 VACUOUS (no burst to stop). The
+  information criterion T2 below 75% of main's in ZERO_HOT (8,994 against
+  21,333), SHOCK (235,618 against 684,858) and HIGH (103,282 against
+  245,141), as in every RES3 ensemble since the merge and the lodging mend
+  (against 0.9.208: 8,675, 222,388 and 71,644): RES3's housing model on the
+  short-run towns.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
