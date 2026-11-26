@@ -7,7 +7,7 @@ MR1 re-measures PopulationCheck's modern fixture and today's default first.
 base, owns those traces and reports findings here; no model edits delegated.
 MemWatch committed memory before its start: 30.3% (2026-11-26 07:57 local).
 
-## WHY and the proposed call
+## WHY and the call
 
 The real-options account supports waiting for evidence after a loss, rather
 than buying sunk capacity on one newly favourable estimate. Pindyck,
@@ -26,7 +26,7 @@ gives a concrete loss-driven capacity reduction: a smaller plant footprint
 and lower costs aimed to restore viability while leaving room for a market
 rebound. It does not describe a ban on productive technology investment.
 
-★ Proposed: Manufacturing remembers its own recently closed running results,
+★ Manufacturing remembers its own recently closed running results,
 excluding plant-sale scrap receipts as AQ1 does. A loss holds expansion until
 a full year of consecutive months covering operating costs; interest alone
 does not restart that clock. This is a model dial for sustained recovery,
@@ -36,6 +36,23 @@ staffing, land and credit tests still decide what a recovered sector orders.
 The count belongs in Manufacturing's existing SectorState extras hook, which
 already travels through DataSave and Game's load path. No shared save field
 or money-transfer formula is needed.
+
+The implementation uses `Manufacturing.afterBank()` so it observes the final
+statement once, at the same monthly close as the existing operating-loss
+history. The capped count is initially satisfied for first entry, reset on
+any negative running result, and advanced on nonnegative running results.
+An empty business can therefore re-enter after the same window; it is not
+locked out forever after a complete liquidation. Opening new plant does not
+erase this history. `plan()` returns a no-order decision with the count
+until the dial is met. It does not change the lender or retirement rules.
+
+The scalar is saved and restored by Manufacturing's `SectorState.extras`,
+already carried in DataSave and restored by Game; it is not a time series and
+needs no HistorySave field. Missing history remains unknown in an older
+save, rather than reconstructed from closing balances. No saved value's
+meaning changes, no conversion is added and no format bump is owed under
+the old-saves rule. Reset restores first-entry status. The count is not
+money and does not redenominate.
 
 ## Checks and measurements
 
@@ -48,6 +65,14 @@ or money-transfer formula is needed.
   No Manufacturing plant or site remains through m122. Works proposals from
   m108 are refused by bank capital. The current red must be traced on its
   own cause, not attributed to AQ1's old measurements.
+- First finding attempt (planner behaviour unchanged): invalid red proof.
+  Initial entry and the final order were already held because the new
+  fixture set owned land but omitted the planner's monthly land snapshot.
+  MR1-trace diagnosed that prerequisite; the fixture now sets the snapshot
+  explicitly and reports the first order's reason. The extended harness
+  also asserts staffing, estimated earnings and cost so a prerequisite hold
+  cannot make the recovery assertions vacuous.
+- Recovery model `--fast`: green, compile 61 s, Stale 0 firm findings.
 - `tools/batch-id.sh MR1` initially flags the remote branch because the
   orchestrator pre-pushed it at exactly origin/main's spine; no MR1 merge or
   published record exists. The first batch commit will make the remote tip

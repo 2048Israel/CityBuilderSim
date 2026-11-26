@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**257 harness files, 29,362 labelled assertions.** AllChecks runs 257 of them.
+**257 harness files, 29,381 labelled assertions.** AllChecks runs 257 of them.
 
 ## Which harnesses read which class
 
@@ -247,7 +247,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Offending](map/Offending.md) | **none** |
 | [Oil](map/Oil.md) | BuildingDataCheck, EarthFoundingCheck, LongPlaytest, MapCheck, OilCheck, OilViewCheck, ReadPathCheck, RefineryViewCheck, SaveFileCheck, SectorStatementCheck, WellCheck |
 | [OilView](map/OilView.md) | EarthFoundingCheck, HistoricalRecipeCheck, OilViewCheck, ReadPathCheck, WellCheck |
-| [OldMetal](map/OldMetal.md) | BankCheck, BuildCardCheck, BuildingStackCheck, CapitalFlowCheck, CopperBufferCheck, CopperRefiningCheck, DistressBleedCheck, IndustryViewCheck, LongPlaytest, MaterialsCheck, ReadPathCheck, SaveFileCheck, UndemandedFeedCheck |
+| [OldMetal](map/OldMetal.md) | BankCheck, BuildCardCheck, BuildingStackCheck, CapitalFlowCheck, CopperBufferCheck, CopperRefiningCheck, DistressBleedCheck, IndustryViewCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, ReadPathCheck, SaveFileCheck, UndemandedFeedCheck |
 | [OrderBook](map/OrderBook.md) | BankCheck, BankFailureCheck, BondCheck, CapitalGainsCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, KeptCheck, LongPlaytest, MarketCheck, MoneyWordsCheck, OrderBookCheck, OwnerCheck, ReadPathCheck, SaveFileCheck, ShortSellingCheck |
 | [OreView](map/OreView.md) | LandCheck |
 | [OrphanHousehold](map/OrphanHousehold.md) | OutsideCheck |
@@ -325,7 +325,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SectorBooks](map/SectorBooks.md) | BankCheck, BusinessServicesCheck, CapitalFlowCheck, CentralBankCheck, CreditCheck, CrimeCheck, HistoryCheck, HoldersCheck, LandClassCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MortgageCheck, OrderDoorCheck, PolicyPreviewCheck, PrizeCheck, ReloadCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, SupplierCreditCheck |
 | [SectorFlow](map/SectorFlow.md) | IndustryViewCheck, KeptCheck, ReadPathCheck, SectorFlowCheck |
 | [SectorScreen](map/SectorScreen.md) | **none** |
-| [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, GoldMiningCheck, HistoricalLicenceCheck, HomeRailCheck, HousingCheck, LicenceFeesCheck, PortCheck, RailCheck, SectorStatementCheck, TradeBandCheck, TruckRouteCheck, VanCheck |
+| [SectorState](map/SectorState.md) | BooksCheck, FreightViewCheck, GoldMiningCheck, HistoricalLicenceCheck, HomeRailCheck, HousingCheck, LicenceFeesCheck, ManufacturingCheck, PortCheck, RailCheck, SectorStatementCheck, TradeBandCheck, TruckRouteCheck, VanCheck |
 | [SectorStatements](map/SectorStatements.md) | CapitalFlowCheck, CentralBankCheck, LandClassCheck, ReloadCheck, SectorStatementCheck |
 | [Sectors](map/Sectors.md) | AgricultureCheck, BankCheck, BankFailureCheck, BondCheck, BooksCheck, BuildCardCheck, BuildersFirstCheck, BuildingDataCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CementConcreteCheck, CentralBankCheck, ChartCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CrimeCheck, CurveCheck, DeathCareFirstCheck, DenominationCheck, DeterminismCheck, EducationCheck, EquityCheck, ExchangeCheck, FarmlandReserveCheck, FitoutCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignCrewsCheck, ForestryCheck, FoundingYardCheck, FreightViewCheck, FundCheck, GapOrderCheck, GdpCheck, GoldMiningCheck, GroundSkipCheck, HaulageCheck, HealthCheck, HistoricalRecipeCheck, HoldersCheck, HomeRailCheck, HouseholdCheck, HousingCheck, HousingDoorCheck, HousingInventoryCheck, HydrogenSteelCheck, IndustryViewCheck, InfrastructureCheck, InvestCheck, KeptCheck, KeptTimingCheck, LabourCheck, LandCheck, LandClassCheck, LandlordPortCheck, LicenceFeesCheck, LongPlaytest, LuxuryRetailCheck, ManufacturingCheck, MapCheck, MarketCheck, MaterialsCheck, MiningCheck, MonetaryCheck, MoneyWordsCheck, MortgageCheck, NewGameCheck, OilCheck, OilViewCheck, OrderDoorCheck, OutsideCheck, OwnerCheck, PartnersCheck, PolicyCheck, PolicyOpenCheck, PolicyPreviewCheck, PopulationCheck, PortCheck, PowerPlantsCheck, PowerPriceCheck, PrizeCheck, QuarryingCheck, RailCheck, RailDepotCheck, ReadPathCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, ResearchViewCheck, RestaurantsCheck, RunWorksCheck, SaveFileCheck, ScaleCheck, SectorFlowCheck, SectorStatementCheck, ShortSellingCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TradeBandCheck, TradeCostCheck, TreasuryCheck, UndemandedFeedCheck, VanCheck, Village1900Check, WaterPowerCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck, YearBookCheck, YoungBankCheck, ZoningCheck, ZoningViewCheck |
 | [ServicesManager](map/ServicesManager.md) | BuildAdviceCheck, NewGameCheck, ReadPathCheck, WaterCheck |
@@ -342,7 +342,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [SourceTree](map/SourceTree.md) | StaleCheck |
 | [SpreadPlanner](map/SpreadPlanner.md) | BuildCardCheck, CementConcreteCheck, CoalMiningCheck, CopperMiningCheck, CopperRefiningCheck, EquipmentCheck, FittingCheck, ForestryCheck, HaulageCheck, HistoricalRecipeCheck, HydrogenSteelCheck, IndustryViewCheck, LicenceFeesCheck, LongPlaytest, MaterialsCheck, ModernEngineeringCheck, OilCheck, OilViewCheck, OrderSearchCheck, PortCheck, QuarryingCheck, RefineryCheck, RefineryViewCheck, ResearchCheck, SaveFileCheck, SulphideLeachCheck, WoodProductsCheck |
 | [Stale](map/Stale.md) | StaleCheck |
-| [Statement](map/Statement.md) | BankCheck, BondCheck, BooksCheck, BusinessServicesCheck, CapitalFlowCheck, CopperRefiningCheck, DistressBleedCheck, EssentialWorksCheck, Forms1900Check, GdpCheck, HouseholdCheck, HydrogenSteelCheck, LongPlaytest, MaterialsCheck, MiningCheck, NewGameCheck, RailCheck, SectorStatementCheck, TradeBandCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck |
+| [Statement](map/Statement.md) | BankCheck, BondCheck, BooksCheck, BusinessServicesCheck, CapitalFlowCheck, CopperRefiningCheck, DistressBleedCheck, EssentialWorksCheck, Forms1900Check, GdpCheck, HouseholdCheck, HydrogenSteelCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, MiningCheck, NewGameCheck, RailCheck, SectorStatementCheck, TradeBandCheck, WellCheck, WoodProductsCheck, WorksFinanceCheck |
 | [StatementView](map/StatementView.md) | **none** |
 | [StrategicReserve](map/StrategicReserve.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, OilCheck, OilViewCheck, ReadPathCheck, SaveFileCheck |
 | [StreetCurves](map/StreetCurves.md) | MapCheck, PlanCheck |
@@ -22297,7 +22297,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2019 laid again a month later on ground whose version moved (the line grown again where it waited): the same
   - L2029 control: open west to the city's edge, the arm opposite the gate arm runs on to it as FX2 has it, within LOOK plots of the box's west edge
 
-## ManufacturingCheck.java - 61 labelled assertions
+## ManufacturingCheck.java - 80 labelled assertions
 
 > The ninth sector: what the city makes out of its own steel, and ships.
 > 
@@ -22313,75 +22313,95 @@ _(this harness does not label its checks through a helper - it prints its findin
 >   1. the two goods are export-only, flow not stock, and clear at the floor
 > ...
 
-- **L98 a line's costs are split between its outputs, not charged twice**
-  - L103 
-  - L113 
-  - L115 ...with every one a real share, not nothing and not all of it
-- **L126 1. two goods the city makes**
-- **L153 two goods that leave**
-  - L163 a beam still cannot be bought from the world, at any price
-  - L165 ...but a machine can, now that something here buys one
-  - L167 ...and the world charges a premium for it over what it pays
-  - L170 shaped steel is worth more than the steel in it
-  - L172 ...and a machine is worth more than the beam
-  - L177 nobody here bidding - a tonne fetches the export floor
-  - L179 ...which at founding is the world's own price
-  - L182 a weak currency lifts what the work fetches
-- **L185 2. and steel has a ceiling now**
-  - L188 steel is importable - something here buys it
-  - L190 ...at the world's hot-rolled price, landed
-  - L191 ...which is above what a mill gets shipping it out
-  - L196 a city with mills and no fabricator: steel sits on the floor, as it always did
-  - L199 a city with a fabricator and no mill pays the world's price
-  - L202 ...and a city with both splits the difference
-- **L207 3. the templates are the design's arithmetic**
-  - L273 fabrication loses five percent of every tonne it cuts
-  - L276 ...and the works loses the same, being the same trade
-  - L279 machining takes a tonne and a bit under a half
-  - L338 fabrication lives and dies on the steel price: its steel its biggest bill, past its wages
-  - L341 ...and the machine works on the wage bill
-  - L342 neither is a business at all if both bite
-  - L352 a fabrication yard takes more ground a post than a steel mill
-  - L355 ...and more than anything else an investor builds
-  - L358 the machine works does not - machining happens indoors
-  - L360 ...and pays for its density in power instead
-- **L364 4. the traps**
-  - L377 no plant here needs a licence at all - none of them practise anything
-  - L384 the staffing floor is eighty percent
-  - L395 a village cannot staff the biggest plant in the game
-  - L398 ...so the sector does not ask for one
-  - L399 ...and says why, in people rather than money
-- **L403 5. the two brakes, each caused**
-  - L443 two shops is 2,400 tonnes of fabricating capacity
-  - L445 ...and one machine works is 180 of machinery
-  - L447 it sold something
-  - L448 ...and every tonne of it left the city
-  - L449 everything it sold, it exported
-  - L451 it bought steel to do it
-  - L454 the two together are under one, or it would be shedding
-  - L474 dear steel makes another shop worth less
-  - L477 ...far less: it is most of what a shop spends, and half again on it takes nine tenths of what a shop clears
-  - L480 ...while the machine works is still worth building
-  - L481 ...which is the whole point of having both
-  - L503 fixture: the floor four times over is law, and most of the city's workers are paid it
-  - L509 quadrupling the wage floor makes another machine works worth less
-  - L511 ...and it is the machine works that gives way first
-- **L515 6. the books, the audit, and a reload**
-  - L558 every sector's statement still foots
-  - L559 and the money identity holds with a ninth sector in it
-  - L569 the mills sold steel at home for the first time in this game's history
-  - L571 ...and got more than the ship would have paid
-  - L573 ...and less than the fabricator would have paid the world
-  - L575 the fabricators bought from them
-  - L587 the plants take lubricants at the spec's rate a tonne made: two shops' and a machine works' litres a month
-  - L590 ...a maker's input, bid whole at the operating rate and bought: from the world, with no lube plant here
-  - L594 ...and on the statement as an import of lubricants
-  - L597 Manufacturing is the ninth sector
-  - L599 ...and the share register is the sectors and the bank
-  - L611 a reloaded city has the same fabricating capacity
-  - L614 ...the same machinery capacity
-  - L616 ...the same cash
-  - L619 ...and the same steel price, restored rather than recomputed
+- **L100 a line's costs are split between its outputs, not charged twice**
+  - L105 
+  - L115 
+  - L117 ...with every one a real share, not nothing and not all of it
+- **L128 1. two goods the city makes**
+- **L155 two goods that leave**
+  - L165 a beam still cannot be bought from the world, at any price
+  - L167 ...but a machine can, now that something here buys one
+  - L169 ...and the world charges a premium for it over what it pays
+  - L172 shaped steel is worth more than the steel in it
+  - L174 ...and a machine is worth more than the beam
+  - L179 nobody here bidding - a tonne fetches the export floor
+  - L181 ...which at founding is the world's own price
+  - L184 a weak currency lifts what the work fetches
+- **L187 2. and steel has a ceiling now**
+  - L190 steel is importable - something here buys it
+  - L192 ...at the world's hot-rolled price, landed
+  - L193 ...which is above what a mill gets shipping it out
+  - L198 a city with mills and no fabricator: steel sits on the floor, as it always did
+  - L201 a city with a fabricator and no mill pays the world's price
+  - L204 ...and a city with both splits the difference
+- **L209 3. the templates are the design's arithmetic**
+  - L275 fabrication loses five percent of every tonne it cuts
+  - L278 ...and the works loses the same, being the same trade
+  - L281 machining takes a tonne and a bit under a half
+  - L340 fabrication lives and dies on the steel price: its steel its biggest bill, past its wages
+  - L343 ...and the machine works on the wage bill
+  - L344 neither is a business at all if both bite
+  - L354 a fabrication yard takes more ground a post than a steel mill
+  - L357 ...and more than anything else an investor builds
+  - L360 the machine works does not - machining happens indoors
+  - L362 ...and pays for its density in power instead
+- **L366 4. the traps**
+  - L379 no plant here needs a licence at all - none of them practise anything
+  - L386 the staffing floor is eighty percent
+  - L397 a village cannot staff the biggest plant in the game
+  - L400 ...so the sector does not ask for one
+  - L401 ...and says why, in people rather than money
+- **L405 5. the two brakes, each caused**
+  - L445 two shops is 2,400 tonnes of fabricating capacity
+  - L447 ...and one machine works is 180 of machinery
+  - L449 it sold something
+  - L450 ...and every tonne of it left the city
+  - L451 everything it sold, it exported
+  - L453 it bought steel to do it
+  - L456 the two together are under one, or it would be shedding
+  - L476 dear steel makes another shop worth less
+  - L479 ...far less: it is most of what a shop spends, and half again on it takes nine tenths of what a shop clears
+  - L482 ...while the machine works is still worth building
+  - L483 ...which is the whole point of having both
+  - L505 fixture: the floor four times over is law, and most of the city's workers are paid it
+  - L511 quadrupling the wage floor makes another machine works worth less
+  - L513 ...and it is the machine works that gives way first
+- **L517 6. the books, the audit, and a reload**
+  - L560 every sector's statement still foots
+  - L561 and the money identity holds with a ninth sector in it
+  - L571 the mills sold steel at home for the first time in this game's history
+  - L573 ...and got more than the ship would have paid
+  - L575 ...and less than the fabricator would have paid the world
+  - L577 the fabricators bought from them
+  - L589 the plants take lubricants at the spec's rate a tonne made: two shops' and a machine works' litres a month
+  - L592 ...a maker's input, bid whole at the operating rate and bought: from the world, with no lube plant here
+  - L596 ...and on the statement as an import of lubricants
+  - L599 Manufacturing is the ninth sector
+  - L601 ...and the share register is the sectors and the bank
+  - L613 a reloaded city has the same fabricating capacity
+  - L616 ...the same machinery capacity
+  - L618 ...the same cash
+  - L621 ...and the same steel price, restored rather than recomputed
+- **L638 MR1: the market's own recovery after a bleed sale**
+  - L657 a sector without a losing record can open its first works
+  - L659 the prospective new works has workers, positive earnings and a positive cost
+  - L672 its lender covered the losses and the bleed sells one of two shops
+  - L676 the remaining plant is one shop
+  - L677 the loss-making market orders no new works
+  - L680 one paying month after the bleed is not sustained recovery
+  - L682 opening a plant does not erase the market's recovery record
+  - L685 a positive statement from scrap sales still holds expansion
+  - L692 every paying month below the recovery dial still holds expansion
+  - L693 the held order still has workers and a positive estimated profit
+  - L695 scrap receipts reset recovery before the paying months were counted
+  - L701 a disk save carries the exact recovery count
+  - L702 loading below the dial does not permit expansion
+  - L705 at the dial, covering running costs permits the profitable order again
+  - L706 interest-only net losses do not prevent operating recovery
+  - L708 the loaded plant reaches the same recovery boundary
+  - L710 a fresh operating loss starts the wait again
+  - L715 an absent older-save field has no invented operating history
+  - L717 a new game starts without a losing record
 
 ## MapCheck.java - 845 labelled assertions
 

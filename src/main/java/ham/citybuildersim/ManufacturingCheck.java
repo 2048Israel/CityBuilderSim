@@ -634,9 +634,10 @@ public class ManufacturingCheck {
     }
 
     /** The fixture causes a lent bleed; new works remain profitable and staffable throughout the recovery. */
-    static void expansionAfterBleed() {
+    static void expansionAfterBleed() throws Exception {
         out.println("\n--- MR1: the market's own recovery after a bleed sale ---");
-        Game city = new Game(GameFiles.scratch("manufacturing-recovery"));
+        GameFiles files = GameFiles.scratch("manufacturing-recovery");
+        Game city = new Game(files);
         city.playOnLiterals();
         quietly(() -> {
             city.run();
@@ -654,6 +655,10 @@ public class ManufacturingCheck {
         String key = maker.key();
         BusinessInvestment.Decision first = maker.plan(plans, city);
         report("a sector without a losing record can open its first works", first.build, first.reason);
+        BuildingsTemplate prospect = first.build ? first.template : buildings.getTemplateByName(WORKS);
+        assertTrue("the prospective new works has workers, positive earnings and a positive cost",
+                maker.staffing(prospect).passes() && maker.estimatedMonthlyProfit(plans.newUnit(prospect), plans) > 0
+                        && plans.getCostOf(prospect, 1) > 0);
         BuildingsTemplate shop = buildings.getTemplateByName(SHOP);
         quietly(() -> {
             buildings.addStack(shop, 2, true);
@@ -673,6 +678,8 @@ public class ManufacturingCheck {
 
         runningMonth(maker, plans, 1, 0);
         assertTrue("one paying month after the bleed is not sustained recovery", !maker.plan(plans, city).build);
+        plans.noteOpened(key);
+        assertTrue("opening a plant does not erase the market's recovery record", !maker.plan(plans, city).build);
         // Liquidation receipts must not masquerade as recovery of the plant's own trade.
         runningMonth(maker, plans, -1, 2);
         assertTrue("a positive statement from scrap sales still holds expansion", !maker.plan(plans, city).build);
@@ -683,10 +690,31 @@ public class ManufacturingCheck {
             heldThroughout &= !maker.plan(plans, city).build;
         }
         assertTrue("every paying month below the recovery dial still holds expansion", heldThroughout);
+        assertTrue("the held order still has workers and a positive estimated profit",
+                maker.staffing(prospect).passes() && maker.estimatedMonthlyProfit(plans.newUnit(prospect), plans) > 0);
+        check("scrap receipts reset recovery before the paying months were counted",
+                maker.getExpansionRecoveryMonths(), recovery - 1, 0);
+        quietly(() -> city.saveGame(10));
+        Game back = new Game(files);
+        quietly(() -> { back.run(); back.loadGameSave(10); });
+        Manufacturing loaded = back.getSectors().manufacturing();
+        check("a disk save carries the exact recovery count", loaded.getExpansionRecoveryMonths(), recovery - 1, 0);
+        assertTrue("loading below the dial does not permit expansion", !loaded.plan(back.getBusinessInvestment(), back).build);
         runningMonth(maker, plans, 0, 0);
         BusinessInvestment.Decision recovered = maker.plan(plans, city);
         assertTrue("at the dial, covering running costs permits the profitable order again", recovered.build);
         assertTrue("interest-only net losses do not prevent operating recovery", maker.statement().netIncome < 0);
+        runningMonth(loaded, back.getBusinessInvestment(), 0, 0);
+        check("the loaded plant reaches the same recovery boundary", loaded.getExpansionRecoveryMonths(), recovery, 0);
+        runningMonth(maker, plans, -1, 0);
+        assertTrue("a fresh operating loss starts the wait again", !maker.plan(plans, city).build);
+
+        SectorState older = maker.toState();
+        older.extras.remove("expansionRecoveryMonths");
+        maker.restore(older);
+        check("an absent older-save field has no invented operating history", maker.getExpansionRecoveryMonths(), recovery, 0);
+        maker.reset();
+        check("a new game starts without a losing record", maker.getExpansionRecoveryMonths(), recovery, 0);
     }
 
     /** Close a controlled trading result through the same banking and history doors as the real month. */
