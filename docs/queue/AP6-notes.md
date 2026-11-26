@@ -255,10 +255,11 @@ without changing projected arithmetic or order. Expected `WorksValue` and
 money `BondMarket.java`; threading `+volatile` in `BuildingManager.java` and
 `+new ThreadLocal` in `WorksValue.java`. Saves are unchanged. The required
 stranger review is the orchestrator's on the provisional mends handoff.
-No local `--pick`/ALL run, dry run or ensemble was started. The marker stays
-provisional until the review/go and the approved gate-box dry run. There is
-no gate-run comment yet. Main was fetched again after the trace: e02e09bc0,
-still only the queue update, already merged.
+At that provisional handoff, no local `--pick`/ALL run, dry run or ensemble
+had been started. The marker stayed provisional pending review/go and the
+approved gate-box dry run; no gate-run comment had yet been added. Main was
+fetched again after the trace: e02e09bc0, still only the queue update, already
+merged.
 
 REV-AP6 cleared `c98f7dd66` for shipment (2026-11-26): no P1. The review found
 no aggregate-bonds reader during the deferral window, confirmed the fold on a
@@ -269,3 +270,106 @@ and says to re-query after an edit. Documentation only; arithmetic unchanged.
 The orchestrator approved the ALL dry run and reserved the box for AP6.
 The documentation clarification passes `--fast` (compile, maps, Stale 0 firm).
 Origin/main was fetched before starting it: unchanged e02e09bc0.
+
+## 8. Approved dry run and the funded-sale red
+
+The approved ALL dry run is kept remotely at
+`/home/jerus/cbs/runs/cbs-gate-AP6-n2pixxVo`, copied home to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-AP6-n2pixxVo`.
+Its branch was `e89531244f0db5da2cf3a4e550f4ae144f7333ec` and its main
+was `e02e09bc00d9b79ff2194c8164bf932a0c006a93`; the run's main before/after
+heads agree. Compilation passed in 9 seconds. The pick was ALL, 258 names;
+the actual suite ran 245 harnesses in 1109 seconds: 229 green, 15 known-red
+and one unnamed-red harness. The suite step finished in 1127 seconds with
+exit 4, and the gate/client exited 1 at 19:32:13 UTC on 2026-11-26.
+
+The three unnamed lines are `KeptCheck | exit 1`,
+`KeptCheck | fixture: Term 10 sold through the model, its proceeds fund the treasury and its buyers owe the settle FAIL`,
+and `KeptCheck | 1 FAILED`. The failure is section 92, at
+`checks/KeptCheck.log:5285`; the following line reports a sold LongTermBond
+due month 4487 and the subsequent book/redraw assertions pass. The retained
+log does not print the seven operands combined by the funding assertion.
+At the stop, the signature was absent from both pinned main's records and
+the provisional ship file.
+
+★ Keep the red hard until its cause is proved. A read-only helper traced
+the fixture and unchanged treasury booking code, but could not assign the
+failure from the log alone. Authorize one named `KeptCheck` on pinned main
+in the separate detached `codex-AP6-kept-main` scratch worktree, with only
+failure diagnostic printing: the original assertion and tolerance remain
+verbatim. No source changes on AP6 after its dry run, no full baseline suite,
+and no ensemble. The provisional marker remains. A second read-only helper
+was briefly started before a queued resume notification arrived; it was
+stopped, made no edits or JVM runs, and the first helper retains the task.
+
+The dry-run result was mailed to the orchestrator. Origin/main was fetched
+again during the diagnosis and is still the pinned `e02e09bc0`.
+
+### Pinned-main control: exact signature reproduced
+
+The helper ran exactly `./batch-check.sh KeptCheck`, with the required named
+Earth/world data, in detached main `e02e09bc00d9b79ff2194c8164bf932a0c006a93`.
+It completed in 1597.2 seconds: KeptCheck exit 1, batch exit 4, foreground
+waiter exit 0. All owned run/wait sessions ended. It reproduces the same
+Term 10 funding assertion at month 4367, due month 4487. The only scratch
+source edit adds 34 failure-only diagnostic lines; the original funding
+expression and tolerance are preserved verbatim. No scratch change is on AP6.
+
+| Operand | Main diagnostic value |
+| --- | --- |
+| Cash before | 8505577380096.2520 (`429ef16fac640102`) |
+| Cash after | 33402234151322.850 (`42be61104d219ada`) |
+| Quoted proceeds | 24896656771226.598 (`42b6a4b462089a99`) |
+| Measured cash difference | 24896656771226.600 (`42b6a4b462089a9a`) |
+| Cash residual / allowance | 0.00390625 / 0.001953125 |
+| ULP of old cash / proceeds and new cash | 0.0009765625 / 0.00390625 |
+| Auction count | 230 to 231 |
+| Settlement due | 0 to 24896656771226.598, residual 0 |
+| Sale face / unsettled face | 25000000000000 / 25000000000000 |
+
+All six other conditions pass: auction tag, positive face, positive proceeds,
+auction count, settlement-due delta and unsettled face. The cash-difference
+condition alone fails. Its allowance is twice the old-cash ULP, smaller than
+one ULP at the proceeds/new-cash scale; normal addition/subtraction rounding
+therefore produces a residual of one larger-scale ULP, above that allowance.
+This is an exact reproduction of the new assertion on pinned main, rather than a guess from
+the different AP5 city. `KeptCheck`, `Game`, `Debt`, `DebtManager` and the
+treasury booking path have no AP6 source changes.
+
+★ Name the exact red under the existing queued **HT1-H**, which owns the
+remaining played-city fixture findings (including rounding edges). FS5 swept
+this section but has shipped, so it is not the queued fix. Do not change the
+funding check or fixture in AP6. The source/math, conservation/save checks,
+and trace proof remain unchanged. The stopped suite may be rejudged with the
+new row without replaying any harness or mutating the kept run.
+
+The complete diagnostic evidence is preserved under
+`C:/Users/Jerus/Documents/NetBeansProjects/CityBuilderSim/.claude/worktrees/codex-AP6-kept-main/target/`:
+`AP6-main-kept-diagnostic.diff`, `AP6-main-kept-diagnostics.txt`,
+`AP6-main-kept-result.json`, `AP6-main-kept.txt`, and `checks/KeptCheck.log`
+and `checks/suite.txt`. The helper made no commits/push, real-slot writes,
+parent-source edits or kept-run changes. Origin/main was fetched once more
+after the control and is still `e02e09bc0`.
+
+The main diagnostic files, command/pins and the two check logs were also
+copied to `C:/Users/Jerus/AppData/Local/Temp/cbs-AP6-evidence/kept-main/`.
+The original helper worktree and the gate's kept directory remain intact.
+
+Rejudgement of the copied ALL suite used `CBS_REJUDGE=1` and
+`./batch-check.sh --judge target/AP6-dry-rejudge/checks/suite.txt`.
+Its immediately recorded exit is **3**, `known red only - 16 harnesses`,
+and `checks/new-reds.txt` is empty. The combined known-red rows validate
+with `tools/known-reds.sh` (exit 0). No harness was replayed for this verdict.
+The copy, combined rows and verdict are in `target/AP6-dry-rejudge/`.
+
+★ Read the judge's recorded status rather than treating PowerShell's outer
+exit 1 as a new failure: the helper verified `exit.txt` contains 3 and the
+saved verdict agrees. The Bash wrapper captured the judge status immediately;
+PowerShell normalizes an unpropagated native nonzero exit. No additional row,
+assertion or tolerance was changed after that outer status, and it was not rerun.
+
+Only these notes and the ship file changed after the dry run. The code,
+harnesses and generated maps remain the reviewed dry-run snapshot. All helper
+and owned run/wait sessions have ended. The stopped gate asked for a renewed
+`AP6 mends at` handoff after naming its new red; keep the provisional marker
+for that handoff, with the kept ALL run and its now-known-only verdict.
