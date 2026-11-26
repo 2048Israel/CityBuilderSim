@@ -3599,17 +3599,39 @@ public class Game {
         return getCurrency().qualify(Formats.INSTANCE.amount(thousands));
     }
 
+    /* ----- AN ORDER PAID FROM ITS OWN BOND'S PROCEEDS (OA1, 2026-11-25) -----
+       A bond the city sold for a works is the works's: its proceeds are
+       restricted to it (GASB 54) and pay for it, as a fenced fund would. The
+       city's one treasury cannot fence them, so the month's bills may have
+       drawn the cash under them; the automatic builder's order for that works
+       is then paid from the proceeds all the same, and the treasury goes under
+       by what the bills drew - the overdraft the deficit would have left on a
+       fenced fund - as far as the central bank advances (AutoBuilder checks
+       discretionaryRoom() first). proceedsUnder is how far one such order may
+       take the cash under, set by AutoBuilder.place() around that order's
+       ground and building and cleared after them; 0 at every other moment,
+       so every other purchase needs its cash as before. Not saved. */
+
+    /** How far the order AutoBuilder is placing may take the cash under, paid from its own bond's proceeds (OA1); 0 otherwise. */
+    private double proceedsUnder;
+
+    /** Lets the order AutoBuilder places next draw `under` past the cash, its bond's proceeds the month's bills drew (OA1); 0 clears it. */
+    void allowProceeds(double under) {
+        proceedsUnder = under > 0 ? under : 0;
+    }
+
     /**
      * The most the city can pay for this parcel today, in local money: its
      * cash, and - paying from the vault - the vault's part of the parcel at
      * today's rate. Affordable when the treasury can pay the converted part
      * out of its cash, as a purchase always had to be; the vault's part needs
-     * no cash at all.
+     * no cash at all. An order paid from its own bond's proceeds (OA1) may
+     * pay past the cash by proceedsUnder.
      */
     private double landPayable(LandParcel parcel) {
         double fromVault = landPaidFromVault
                 ? Math.min(parcel.getPriceUsd(), foreign.getReservesUsd()) : 0;
-        return Math.max(0, cash) + fromVault * foreign.getRate();
+        return Math.max(0, cash + proceedsUnder) + fromVault * foreign.getRate();
     }
 
     /** Whether buyLandParcel() would buy this parcel today, paid the way the toggle says - what the land office colours a plot's price by (red when not, since 0.7.26 the only verdict on it); since 0.7.13 its button asks landNeedsFunding() instead. */
@@ -10711,7 +10733,7 @@ public class Game {
             lastHandRefusal = "the Paved Road site stops at the month's end"; return false;
         }
         BuildQuote q = quotePave(n);
-        if (q.total > cash) { lastHandRefusal = "the treasury is short of the quote"; return false; }
+        if (q.total > cash + proceedsUnder) { lastHandRefusal = "the treasury is short of the quote"; return false; }
         BuildingsStacks site = buildingManager.getStack(to);
         long ahead = site == null ? 0 : site.getUnderConstruction();
         buildingManager.addStack(to, n, false);
@@ -11010,7 +11032,7 @@ public class Game {
             return;
         }
 
-        if (totalCost <= cash) {
+        if (totalCost <= cash + proceedsUnder) {
             totalCost = treasuryPays(TreasuryLine.BUILDINGS, totalCost);
             if (island) landManager.allocateOn(landmass, landNeeded);
             else if (landManager.reserveKeyOf(selected) != null) landManager.allocateCityFarm(landNeeded, works);
@@ -12079,7 +12101,7 @@ public class Game {
             return BuildResult.NO_LAND;
         }
 
-        if(totalCost <= cash){
+        if(totalCost <= cash + proceedsUnder){
             processBuildOrder(template, quantity, noConstruction, landmass);
             return BuildResult.SUCCESS;
         } else{

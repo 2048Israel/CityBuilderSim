@@ -1,6 +1,6 @@
 # BondMarket.java - 2,301 lines · 190 methods · 16 constants · model
 
-`ham/citybuildersim/BondMarket.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BondMarket.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > The corporate bond market: every bond the city's businesses have issued,
 > who holds each, the order book each trades on, and the rule each

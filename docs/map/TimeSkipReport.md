@@ -1,6 +1,6 @@
 # TimeSkipReport.java - 682 lines · 68 methods · 1 constants · model
 
-`ham/citybuildersim/TimeSkipReport.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/TimeSkipReport.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > What happened while you were not watching.
 > 
@@ -44,7 +44,7 @@
 
 **Uses:** [DecisionLog](DecisionLog.md) (11), [CityCalendar](CityCalendar.md) (1), [Bank](Bank.md) (1)
 
-**Used by (7):** [AuctionCheck](AuctionCheck.md), [AutoBuilder](AutoBuilder.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [ReloadCheck](ReloadCheck.md), [SkipReportCheck](SkipReportCheck.md), [UserInterface](UserInterface.md)
+**Used by (8):** [AskProceedsCheck](AskProceedsCheck.md), [AuctionCheck](AuctionCheck.md), [AutoBuilder](AutoBuilder.md), [Game](Game.md), [HealthCheck](HealthCheck.md), [ReloadCheck](ReloadCheck.md), [SkipReportCheck](SkipReportCheck.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

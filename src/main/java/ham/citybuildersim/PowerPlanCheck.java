@@ -1,5 +1,7 @@
 package ham.citybuildersim;
 
+import ham.citybuildersim.sectors.HeavyIndustry;
+
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.Map;
@@ -43,7 +45,12 @@ import java.util.Set;
  *      at the plant's own completion, its lead and the town's growth over it, orders as ever, the month short or not (REV-PW3e) (8a). And
  *      the month lacks power when its peak month's peak block goes unserved, which
  *      the city's own dispatch shows at three firm levels, not below the plan's peak hour (BuildAdvice.lacksNow(), 8b); and the auto-builder's holds read the same "short now", through a real pass, in both directions (AutoBuilder.crewLimit() and pendingDelay(), 8b (b)).
- *   9. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
+ *   9. A WORKS UNDER CONSTRUCTION IS IN THE FORECAST (PF1, 2026-11-25): a works on site counts at its rated draw (NewUnit) from the month its queue
+ *      opens it (WorksValue.pendingPowerLoad()), and the plan orders the plant to be on line by then; the same town without it orders nothing. A utility
+ *      plans a large load from its signed request on its ramp schedule (ERCOT's 2025 Long-Term Load Forecast adds a large load with a signed agreement
+ *      and a financial commitment on its ramp schedule, as a 2023 Texas law requires); here a works on site is that request. REV-PW3g (item 6) read
+ *      LongPlaytest's m116-m150 power served at 0.57-0.61 as a forecast blind to such a works; PF1's trace found it already carried, and this pins it.
+ *  10. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
  *      the default run's counts are LongPlaytest's line, "the power planner (PW3)".
  */
 public final class PowerPlanCheck {
@@ -1269,6 +1276,114 @@ public final class PowerPlanCheck {
         }
     }
 
+    /* ----- 9. a works under construction ----- */
+
+    /** The whole months the mill's quote to open starts past the diesel's lead and the opening's horizon, before it falls to them a month at a time. */
+    static final double MILL_PAST = 6;
+
+    /** The share of the mill's own seasonal draw the twin's seasonal peak leaves spare at the mill's opening, so the mill town is short by the rest. */
+    static final double MILL_SPARE = .5;
+
+    /**
+     * 9, PF1 (2026-11-25): a works on site is in the plan's forecast from the month it is due to open, at its rated draw, and the plant it needs
+     * is ordered to be on line by then; the same town without it orders nothing. A utility plans a large load from its signed request on its
+     * ramp schedule (ERCOT's 2025 Long-Term Load Forecast adds a large load with a signed agreement and a financial commitment, its "Contracts",
+     * on their ramp schedules, as a 2023 Texas law requires: ercot.com/files/docs/2025/04/08/ERCOT-2025-Long-Term-Load-Forecast-Report.pdf);
+     * here a works on site is that request. REV-PW3g (2026-11-24, item 6) read LongPlaytest's m116-m150 power served at 0.57-0.61 as a forecast
+     * blind to a works under construction; PF1's trace (0.9.208) found the forecast already carries each at its rated draw from its due month
+     * (WorksValue.pendingPowerLoad()), so this pins it end to end, red under a trend-only forecast.
+     *
+     * Two towns with the Diesel Station the one plant known, slack 0, the flat history, the same builders (DEPOTS, so that a score of diesels are
+     * quoted at their own lead and not at the founding's few crews), the same draw: the twin's, set so its reserve is covered at the diesel's
+     * opening and its seasonal peak at its completion, with MILL_SPARE of the mill's own seasonal draw to spare. The mill town has a Large Mini-Mill
+     * on site (the Steel Mini-Mill's 3.7 MW is under the 12% of the draw that lies between the plan's peak hour and the seasonal peak, so a twin
+     * set to be short by half of it would itself order two diesels), its work done to leave its quote to open past the lead and the horizon
+     * (BuildingsStacks.setConstructionProgress()), and the quote then falls a month at a time, a month being the builders' output at every post
+     * put on the stack's progress. At each step both towns are asked for the power suggestion.
+     */
+    static void millUnderConstruction(Path root) {
+        out.println("--- 9. a works under construction: its rated draw is in the forecast from the month it is due to open, and the power it needs is ordered to be on line then; the same town without it orders nothing ---");
+        Game g = town(root, "pf1-mill", DIESEL), twin = town(root, "pf1-twin", DIESEL);
+        for (Game q : new Game[] {g, twin}) {
+            BuildingsTemplate depot = plant(q, BuildersFirstCheck.DEPOT);
+            q.getAutoBuilder().setSlack(0, null);
+            quietly(() -> q.buildStack(depot, DEPOTS, true));
+            q.getServicesManager().updateServices();
+        }
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate diesel = plant(g, DIESEL), mill = bm.getTemplate(HeavyIndustry.LARGE_MINI_MILL);
+        double lead = twin.quoteBuild(plant(twin, DIESEL), 1).months, horizon = BusinessInvestment.horizonFor(lead);
+        double growthLead = twin.getBusinessInvestment().growthFactor(lead), growthOpen = twin.getBusinessInvestment().growthFactor(lead + horizon);
+        Game.BuildResult[] placed = new Game.BuildResult[1];
+        quietly(() -> placed[0] = g.buildStack(mill, 1, false));
+        BuildingsStacks stack = bm.getStack(mill);
+        int output = g.getBuildingOutputAtEveryPost();
+        if (stack != null) stack.setConstructionProgress(stack.pointsOnSite() - (Math.ceil(lead + horizon) + MILL_PAST) * output);
+        double start = bm.siteUnitMonths(mill, 1, output), rated = NewUnit.of(g, mill).getElectricityConsumption();
+        check(String.format("fixture: the Diesel Station's lead is %.1f months and the opening's horizon %.1f (the town's growth over the lead %.4f and over both %.4f, the flat history), the same %.1f in the mill town "
+                        + "with the %s on site; the mill is quoted to open in %.1f months, past %.1f, and draws %.0f kW once open; the twin has none on site (%b)",
+                        lead, horizon, growthLead, growthOpen, g.quoteBuild(diesel, 1).months, mill.getName(), start, lead + horizon, rated, twin.getBuildingManager().getStacksUnderConstruction().isEmpty()),
+                placed[0] == Game.BuildResult.SUCCESS && stack != null && bm.getStacksUnderConstruction().contains(stack) && stack.getUnderConstruction() == 1
+                        && twin.getBuildingManager().getStacksUnderConstruction().isEmpty() && close(growthLead, 1, 1e-9) && close(growthOpen, 1, 1e-9)
+                        && close(g.quoteBuild(diesel, 1).months, lead, 1e-9) && start > lead + horizon && rated > 0);
+        if (stack == null) return;
+
+        // The twin's draw: the diesel's opening has the reserve covered, and the seasonal peak MILL_SPARE of the mill's own seasonal draw to spare.
+        BuildAdvice.Ahead open = BuildAdvice.opening(twin, lead, 0), done = completion(twin, lead);
+        double firm = BuildAdvice.supplyDemand(twin, POWER, Map.of(), open)[0];
+        drawGap(twin, open, (firm / PowerDispatch.PLAN_PEAK_SEASON - MILL_SPARE * rated) * PowerDispatch.PLAN_PEAK_HOUR - firm);
+        g.getServicesManager().getUtilitiesHandler().setWattsConsumption(twin.getServicesManager().getUtilitiesHandler().getConsumption());
+        double[] sdDone = BuildAdvice.supplyDemand(twin, POWER, Map.of(), done), sdOpen = BuildAdvice.supplyDemand(twin, POWER, Map.of(), open);
+        BuildAdvice.Suggestion bare = suggest(twin);
+        check(String.format("fixture: the twin, drawing %.0f kW, has its seasonal peak covered at the diesel's completion (%.0f kW against %.0f) and its peak hour at the opening (%.0f against %.0f), "
+                        + "and its power suggestion is %s", twin.getServicesManager().getUtilitiesHandler().getConsumption(), sdDone[0], sdDone[1] * SEASONAL, sdOpen[0], sdOpen[1], named(bare)),
+                sdDone[0] >= sdDone[1] * SEASONAL && sdOpen[0] >= sdOpen[1] && bare == null);
+        double[] sdMill = BuildAdvice.supplyDemand(g, POWER, Map.of(), completion(g, start));
+        double short0 = sdMill[1] * SEASONAL - sdMill[0], own = rated * PowerDispatch.PLAN_PEAK_SEASON;
+        check(String.format("fixture: at the mill's opening its rated draw puts the seasonal peak short by %.0f kW, %.0f%% of its own seasonal draw, where the twin's is covered",
+                        short0, 100 * short0 / own),
+                BuildAdvice.seasonalShort(g, POWER, Map.of(), start) && !BuildAdvice.seasonalShort(twin, POWER, Map.of(), start) && short0 > 0 && short0 < own);
+
+        // The steps: the mill's quote to open falls a month at a time, nothing else changed; both towns are asked at each.
+        BuildAdvice.Suggestion first = null;
+        double firstM = Double.NaN, firstLead = Double.NaN;
+        boolean closed = false, reads = true, twinNothing = true;
+        int steps = 0, firstStep = -1;
+        double before0 = Double.NaN, after0 = Double.NaN;
+        for (double m = start; m >= 1; m = bm.siteUnitMonths(mill, 1, g.getBuildingOutputAtEveryPost())) {
+            double[] dm = {BuildAdvice.supplyDemand(g, POWER, Map.of(), completion(g, m - .5))[1], BuildAdvice.supplyDemand(g, POWER, Map.of(), completion(g, m + .5))[1]};
+            double[] dt = {BuildAdvice.supplyDemand(twin, POWER, Map.of(), completion(twin, m - .5))[1], BuildAdvice.supplyDemand(twin, POWER, Map.of(), completion(twin, m + .5))[1]};
+            reads &= close(dm[0], dt[0], 1e-9) && close(dm[1], dt[1] + rated * PowerDispatch.PLAN_PEAK_HOUR, 1e-9);
+            if (steps == 0) {
+                before0 = dm[0] - dt[0];
+                after0 = dm[1] - dt[1];
+            }
+            twinNothing &= suggest(twin) == null;
+            if (first == null) {
+                BuildAdvice.Suggestion s = suggest(g);
+                if (s != null) {
+                    first = s;
+                    firstM = m;
+                    firstStep = steps;
+                    firstLead = g.quoteBuild(s.template(), s.count()).months;
+                    closed = !BuildAdvice.seasonalShort(g, POWER, Map.of(s.template(), s.count()), m);
+                }
+            }
+            steps++;
+            stack.setConstructionProgress(stack.getConstructionProgress() + g.getBuildingOutputAtEveryPost());
+        }
+        check(String.format("the forecast reads the works from the month it is due to open, at its rated draw: at each of %d steps the mill town's peak-hour demand a half month before the opening is the twin's "
+                        + "(%.0f kW over it at the first step) and a half month after it is over by the mill's rated %.0f kW at the plan's peak hour (%.0f kW at the first step)",
+                        steps, before0, rated * PowerDispatch.PLAN_PEAK_HOUR, after0),
+                steps > 0 && reads);
+        boolean diesels = first != null && first.template() == diesel;
+        check(String.format("the mill town's first order is %s, at step %d with the mill %.0f months from its opening, inside the %.1f months the order is planned over; it is on line in %.1f months, "
+                        + "%.1f to spare before the mill opens, and with it counted the seasonal peak at the mill's opening is covered (%b)",
+                        named(first), firstStep, firstM, first == null ? Double.NaN : first.ahead().months(), firstLead, firstM - firstLead, closed),
+                diesels && firstM <= first.ahead().months() + 1e-9 && firstLead < firstM + 1 && closed);
+        check(String.format("the same town without the mill orders nothing at any of the %d steps", steps), steps > 0 && twinNothing);
+    }
+
     public static void main(String[] args) throws Exception {
         java.util.Locale.setDefault(java.util.Locale.CANADA);
         Path root = TempDirs.create("powerplancheck");
@@ -1286,7 +1401,8 @@ public final class PowerPlanCheck {
         lacksNow(root);
         holds(root);
         holdsPower(root);
-        out.println("--- 9. how often each fires ---");
+        millUnderConstruction(root);
+        out.println("--- 10. how often each fires ---");
         out.printf("this harness's suggestions: reserve test %d, spread %d (the default run's: LongPlaytest, \"the power planner (PW3)\")%n",
                 BuildAdvice.RESERVE_ORDERS.get(), BuildAdvice.SPREAD_ORDERS.get());
         check("the reserve test and the spread each fired here", BuildAdvice.RESERVE_ORDERS.get() > 0 && BuildAdvice.SPREAD_ORDERS.get() > 0);

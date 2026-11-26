@@ -760,8 +760,9 @@ public final class AutoBuilder {
     /**
      * What an order may take of the cash: what is over the reserve; an
      * overdraft counted in full, as Build's funding page counts it
-     * (Game.buildFundingGap()); and since D30 less what open asks have raised
-     * (spendableFor()) - that money is each ask's order's and nothing else's.
+     * (Game.buildFundingGap()); and since D30 beside what open asks have
+     * raised, as far as the cash still holds it (spendableFor()) - that money
+     * is each ask's order's and nothing else's.
      */
     public static double spendable(Game game) {
         return game.getAutoBuilder().spendableFor(game, null);
@@ -774,23 +775,44 @@ public final class AutoBuilder {
     }
 
     /**
-     * What the cash over the reserve leaves for ONE ask's order (D30): the
-     * spendable cash less what every OTHER open ask has raised, as far as the
-     * cash goes - the treasury's other bills may still draw on it, and when
-     * they have the earmark is only what is left. `own` is the ask whose
-     * order it is, whose own raised money is in the cash and counts; null is
-     * an order of the builder's own, which leaves every ask's money alone.
+     * What the treasury holds for ONE ask's order (D30, OA1): its own bond
+     * proceeds, as far as the cash still holds them, and beside them the cash
+     * over the reserve that no ask's proceeds take. `own` is the ask whose
+     * order it is; null is an order of the builder's own, which leaves every
+     * ask's proceeds alone and spends only what is over the reserve beside
+     * them. An overdraft counts in full, as before.
+     *
+     * THE PROCEEDS COME FIRST, OUTSIDE THE RESERVE (OA1, 2026-11-25). Bond
+     * proceeds raised for a works are the works's, restricted to it, and a
+     * city's operating reserve is reckoned on its unrestricted money beside
+     * them (GASB Statement 54: proceeds restricted by the bond's terms are
+     * restricted fund balance; GFOA's fund-balance practice puts the reserve,
+     * two months of operating revenue, in the unrestricted balance). WHY: the
+     * reserve was taken out of the cash first and the proceeds counted only
+     * over it, so a city whose cash had dipped under its reserve before the
+     * sale held its proceeds for nothing: in PW3's ensemble (ZERO_HOT seeds 6,
+     * 9 and 15) a Water Treatment Plant's ask had raised its whole cost by its
+     * fifth month, the cash 53.4M against the order's 49.8M, and it waited on
+     * a reserve of 6.9M for 133 months, water served at 26%.
+     *
+     * Each ask's proceeds are its raised money at most its order's cost (what
+     * a repricing left over is the city's), and the cash holds them oldest ask
+     * first: where the month's bills have drawn the cash under them, the
+     * latest asks' are the ones gone.
      */
     double spendableForMeasure(Game game, BuildAdvice.Measure m) {
         return spendableFor(game, askFor(m));
     }
 
     double spendableFor(Game game, OpenAsk own) {
-        double free = overReserve(game);
-        if (!(free > 0) || asks.isEmpty()) return free;
-        double others = 0;
-        for (OpenAsk a : asks) if (a != own && a.raised > 0) others += a.raised;
-        return free - Math.min(others, free);
+        if (asks.isEmpty() || game.getCash() < 0) return overReserve(game);
+        double left = game.getCash(), mine = 0;
+        for (OpenAsk a : asks) {
+            double proceeds = Math.min(Math.max(0, Math.min(a.raised, a.cost)), left);
+            left -= proceeds;
+            if (a == own) mine = proceeds;
+        }
+        return mine + Math.max(0, left - reserve(game));
     }
 
     /** What a bond must bring for an order of `total`: the part the spendable cash does not cover. */
@@ -814,6 +836,8 @@ public final class AutoBuilder {
     }
 
     private boolean canPay(Game game, double total, OpenAsk own) {
+        // An ask's order its proceeds cover is paid from them (OA1), whatever the month's bills drew: nothing more is borrowed for it.
+        if (own != null && funded(game, own) >= total - 1e-6 * Math.max(1, total)) return payable(game, total);
         double gap = total - spendableFor(game, own);
         if (!within(game)) return cashAnyway && !(gap > 0);
         if (!(gap > 0)) return true;
@@ -1620,8 +1644,8 @@ public final class AutoBuilder {
      * what the spendable cash does not cover, and writes it down; false where
      * it could not (the order is then held, and an ask stays open).
      *
-     * @param from the open ask whose order this is (D30): its raised money is
-     *             in the cash and counts, so there is nothing to borrow - the
+     * @param from the open ask whose order this is (D30): its raised money
+     *             pays it, in the cash or drawn by the bills (OA1), so there is nothing to borrow - the
      *             same path, a bond of nothing - and the log says it waited.
      */
     private boolean place(Game game, BuildAdvice.Measure m, BuildAdvice.Suggestion s, String name, long wanted, long n,
@@ -1655,7 +1679,14 @@ public final class AutoBuilder {
         }
         // ...and its exact cost: the cash the land office's toggle makes of paying for exactly these offers, each at the price it is listed at.
         double landCash = game.landCashFor(buy);
-        double gap = cost + landCash - spendableFor(game, from);
+        // An ask's order is paid from its bond's proceeds (OA1), whatever the month's bills drew of them: what it borrows is the cost past them.
+        double gap = cost + landCash - (from == null ? spendableFor(game, null) : funded(game, from));
+        // ...and where the bills drew them, the treasury pays past its cash as far as the central bank advances; past that, nothing moves.
+        if (from != null && cost + landCash > game.getCash() && !payable(game, cost + landCash)) {
+            hold(m, s, Cut.DEBT, wanted, m.label() + ": the treasury cannot pay for " + n + " " + name + " today - the month's"
+                    + " bills have spent its ask's proceeds and the central bank advances no more; no ground was bought for it.", weighed);
+            return false;
+        }
         // Overdrawn, the bond clears the overdraft too, as Build's funding page counts it (Game.buildFundingGap()).
         double overdraft = Math.max(0, -game.getCash());
         double raised = 0;
@@ -1682,32 +1713,41 @@ public final class AutoBuilder {
         List<LandParcel> got = new ArrayList<>();
         List<String> places = new ArrayList<>();
         boolean assembled = true;
-        for (LandParcel held : buy) {
-            LandParcel o = game.getLandManager().getMarket().find(held.getId());
-            if (o == null || o.getPriceUsd() != held.getPriceUsd() || !game.buyLandParcel(o.getId())) {
-                assembled = false;
-                break;
+        // An ask's order whose proceeds the month's bills drew takes the cash under by what they drew (OA1, Game.allowProceeds()), for
+        // this order's ground and building only.
+        double under = from == null ? 0 : Math.max(0, Math.min(cost + landCash, Math.max(0, from.raised) + raised) - game.getCash());
+        boolean placed;
+        game.allowProceeds(under);
+        try {
+            for (LandParcel held : buy) {
+                LandParcel o = game.getLandManager().getMarket().find(held.getId());
+                if (o == null || o.getPriceUsd() != held.getPriceUsd() || !game.buyLandParcel(o.getId())) {
+                    assembled = false;
+                    break;
+                }
+                got.add(o);
+                places.add(o.where());
+                landCost += o.localPrice(rate);
+                landSq += o.getSizeSqFt();
             }
-            got.add(o);
-            places.add(o.where());
-            landCost += o.localPrice(rate);
-            landSq += o.getSizeSqFt();
+            landOffers += got.size();
+            landSqFt += landSq;
+            landSpent += landCost;
+            assembledOffers += Math.max(0, got.size() - ground.offers().size());
+            if (!assembled) {
+                // ...a residual failure the held ground should have left none of: an offer gone or priced otherwise than on the rehearsal. What was bought stays the city's.
+                if (!got.isEmpty()) bought.add(boughtWords(m, name, n, got, landCost, landShort, ground) + " Its order could not be placed.");
+                hold(m, s, Cut.NONE, wanted, m.label() + ": the ground for " + n + " " + name + " could not be bought as it was held ("
+                        + got.size() + " of " + buy.size() + " offers).", weighed);
+                return false;
+            }
+            // ...a sea terminal by the rule alone (ET5 D10): home if the city owns shore on it, else a landmass it has linked - never an island no port
+            // links here: the island links are link()'s (AL1); the card's pick (Game.choosePortLandmass()) is the player's.
+            placed = s.paving() ? game.paveRoads(n)
+                    : game.buildStack(s.template(), n, false, Landmasses.RULE) == Game.BuildResult.SUCCESS;
+        } finally {
+            game.allowProceeds(0);
         }
-        landOffers += got.size();
-        landSqFt += landSq;
-        landSpent += landCost;
-        assembledOffers += Math.max(0, got.size() - ground.offers().size());
-        if (!assembled) {
-            // ...a residual failure the held ground should have left none of: an offer gone or priced otherwise than on the rehearsal. What was bought stays the city's.
-            if (!got.isEmpty()) bought.add(boughtWords(m, name, n, got, landCost, landShort, ground) + " Its order could not be placed.");
-            hold(m, s, Cut.NONE, wanted, m.label() + ": the ground for " + n + " " + name + " could not be bought as it was held ("
-                    + got.size() + " of " + buy.size() + " offers).", weighed);
-            return false;
-        }
-        // ...a sea terminal by the rule alone (ET5 D10): home if the city owns shore on it, else a landmass it has linked - never an island no port
-        // links here: the island links are link()'s (AL1); the card's pick (Game.choosePortLandmass()) is the player's.
-        boolean placed = s.paving() ? game.paveRoads(n)
-                : game.buildStack(s.template(), n, false, Landmasses.RULE) == Game.BuildResult.SUCCESS;
         if (!placed) {
             if (!got.isEmpty()) bought.add(boughtWords(m, name, n, got, landCost, landShort, ground) + " Its order could not be placed.");
             hold(m, s, Cut.NONE, wanted, m.label() + ": " + n + " " + name + " could not be placed.", weighed);
@@ -1722,6 +1762,8 @@ public final class AutoBuilder {
                         ? "; " + n + " ordered to preserve " + crewHolds.get(m.label()) + "'s quoted first completion"
                         : cutWords(cut, wanted, n)) + land + (raised > 0 && overdraft > 0 ? "; the bond also cleared the treasury's "
                 + DecisionLog.money(overdraft) + " overdraft, as Build's funding page does" : "")
+                + (under > 0 ? "; paid from its ask's proceeds, which the month's bills had drawn on: the treasury is overdrawn by " + DecisionLog.money(under)
+                        + ", the deficit a fenced fund would have left" : "")
                 + (first == null ? "" : "; the advice ranks " + first.wanted() + " " + refusedName(first.s()) + " first, "
                 + (first.cut() == Cut.GROUND ? "for which no ground could be had"
                 : first.cut() == Cut.PAYBACK ? "which would not pay back"
@@ -2314,7 +2356,7 @@ public final class AutoBuilder {
        smallest order, because it is what a count cut to the money came down
        to): the bond is sold for what it will sell, the money raised is kept
        in the treasury, and the order is NOT placed - nothing is ever ordered
-       on money not there. From then on, each month BEFORE the pass ranks
+       on money not raised. From then on, each month BEFORE the pass ranks
        anything new (pass()), every open ask is offered again at the builder's
        cap for what is still to raise (reoffer()); when what it has raised
        plus the spendable cash covers the order, the order is placed on the
@@ -2328,14 +2370,27 @@ public final class AutoBuilder {
        ask a measure, and its order waits for its money rather than ordering
        again.
 
-       THE ORDER IS PLACED ON MONEY THAT IS THERE, AND THE PAPER IS NOT SOLD
-       TWICE: covered() is the treasury holding the order's cost for it - the
-       raised money still in the cash, plus any cash over the reserve beside
-       it. What is still to raise (stillToRaise()) is the cost less the
-       greater of that and everything the ask has raised in all, so once its
-       sales have raised the whole cost a month's bills that drew the money
-       leave the order waiting for the cash to be there, not borrowing it
-       again: a city in a deficit does not pile up bonds for one order.
+       THE PROCEEDS PAY THE WORKS (OA1, 2026-11-25), as a fenced fund pays
+       them. An ask is covered (covered()) once its bond's proceeds, or what
+       the treasury holds for it where that is more - its proceeds still in
+       the cash, which the reserve is not taken out of, and the cash over the
+       reserve beside them (spendableFor(), held()) - reach the order's cost.
+       Where the month's bills have drawn the cash under the proceeds, the
+       order is paid from them all the same, and the treasury goes under by
+       what the bills drew, as far as the central bank advances
+       (Game.allowProceeds(), payable()): the deficit a fenced fund would have
+       left on the overdraft. What is still to raise (stillToRaise()) is the
+       cost less the proceeds, so the paper is never sold twice; where the
+       central bank advances no more, the ask waits, selling nothing, and is
+       withdrawn once open PROCEEDS_WAIT_MONTHS. Until OA1 the reserve came
+       out of the proceeds and the order waited for the cash to hold its cost,
+       and an ask whose sales had passed its cost could neither place, sell
+       nor be withdrawn: PW3's ensemble held a Water Treatment Plant on its
+       raised bond for 135 months (docs/queue/OA1-notes.md). A real city's
+       bond proceeds are restricted to the works they were raised for (GASB
+       54), and a tax-exempt issue's issuer must expect to bind 5% of them
+       within six months and spend 85% within three years to keep its
+       temporary period (26 CFR 1.148-2(e)(2)).
 
        WITHDRAWN when the advice no longer ranks the order (the measure is
        ahead without it, or its building has dropped out of the ranking, or it
@@ -2423,12 +2478,13 @@ public final class AutoBuilder {
     }
 
     /**
-     * What the treasury holds for one ask's order right now: the cash over the
-     * reserve, less what every other ask has raised, and never under nothing
-     * (an overdraft is the treasury's, not a debt of the order's). Its own
-     * raised money is in it - unless the month's bills have drawn it, which
-     * they may, and then this is only what is left. The order is placed when
-     * this covers its cost.
+     * What the treasury holds for one ask's order right now: its own proceeds
+     * as far as the cash still holds them, the reserve not taken out of them,
+     * and the cash over the reserve beside every ask's proceeds
+     * (spendableFor(), OA1); never under nothing (an overdraft is the
+     * treasury's, not a debt of the order's). The month's bills may draw the
+     * proceeds, and then this is only what is left; the order is paid from
+     * its proceeds all the same (funded(), covered()).
      */
     double held(Game game, OpenAsk own) {
         return Math.max(0, spendableFor(game, own));
@@ -2517,11 +2573,13 @@ public final class AutoBuilder {
                 ? String.format(" at its cap of %.2f%% (%s)", q.auction().ceiling() * 100, CapSetting.words(cap))
                 : " at its cap (" + CapSetting.words(cap) + ")";
         if (a.raised >= a.cost - 1e-6 * Math.max(1, a.cost)) {
-            // Raised in full, and the month's bills have drawn it: the paper is not sold twice.
+            // Raised in full, and the treasury cannot pay it today (OA1): nothing more is sold, and its end is set.
             return String.format("%s: the %d-year bond for %d %s raised %s of the %s the order costs, but the treasury holds only"
-                            + " %s for it now - the month's bills have drawn the rest. The order waits for the cash to be there;"
-                            + " nothing more is borrowed for it.", a.measure(), Game.BUILD_BOND_YEARS, a.count, a.building(),
-                    money(a.raised), money(a.cost), money(Math.max(0, held)));
+                            + " %s for it now - the month's bills have drawn the rest, and the central bank advances no more:"
+                            + " nothing more is borrowed for it, and the order waits for the treasury to pay it, and the ask is"
+                            + " withdrawn once it has been open %d months.",
+                    a.measure(), Game.BUILD_BOND_YEARS, a.count, a.building(), money(a.raised), money(a.cost),
+                    money(Math.max(0, held)), PROCEEDS_WAIT_MONTHS);
         }
         return String.format("%s: the %d-year bond for %d %s sold short%s; %s raised of the %s the order costs, %s still to"
                         + " raise. The order waits for the money and the ask is offered again every month.",
@@ -2575,7 +2633,7 @@ public final class AutoBuilder {
      * borrowed); not, the bond is offered again at the cap for what is still
      * to raise, and the order is placed that month if that covers it. An ask
      * the advice no longer ranks, or one whose next sale would cross the debt
-     * limit, is withdrawn, and what it raised stays.
+     * limit, or one raised in full that the treasury cannot pay once open PROCEEDS_WAIT_MONTHS, is withdrawn, and what it raised stays.
      */
     private void reoffer(Game game, List<CityNeeds.Need> all, List<BuildAdvice.Measure> kept, OpenAsk a) {
         BuildAdvice.Measure m = null;
@@ -2646,6 +2704,13 @@ public final class AutoBuilder {
             }
             return;
         }
+        // Raised in full, and the treasury cannot pay it today: the month's bills spent the proceeds and the central bank advances
+        // no more. It sells nothing more and waits, and its end is set: open PROCEEDS_WAIT_MONTHS, it is withdrawn (OA1, REV-OA1).
+        if (funded(game, a) >= a.cost - 1e-6 * Math.max(1, a.cost) && a.monthsOpen(game.getMonth()) >= PROCEEDS_WAIT_MONTHS) {
+            withdrawAsk(a, "its bond raised the order's cost, but the month's bills have spent the proceeds and the central bank"
+                    + " advances no more, so the treasury cannot pay the order", null);
+            return;
+        }
         a.toRaise = stillToRaise(game, a);
         String line = askWords(a, q, held(game, a));
         GameLog.note("Automatic building: " + line);
@@ -2653,28 +2718,68 @@ public final class AutoBuilder {
     }
 
     /**
-     * Whether what the treasury holds for an ask's order pays for it: the
-     * cash over the reserve, less every other ask's raised money (held()), at
-     * least the order's cost as priced now. This is the rule that places an
-     * order - never on money that is not there.
+     * The most months an ask whose bond has raised its order's cost waits,
+     * open, for a treasury that cannot pay it - the month's bills spent the
+     * proceeds and the central bank advances no more - before it is
+     * withdrawn: six, the term in which a tax-exempt issuer must reasonably
+     * expect to bind 5% of a works's proceeds (26 CFR 1.148-2(e)(2)).
+     */
+    static final int PROCEEDS_WAIT_MONTHS = 6;
+
+    /**
+     * Whether an ask's order is paid for (OA1): its bond's proceeds, or what
+     * the treasury holds for it beside them where that is more (funded()), at
+     * least the order's cost as priced now, and the treasury able to pay it
+     * today (payable()). This is the rule that places an order - never on
+     * money that was not raised.
      */
     private boolean covered(Game game, OpenAsk a) {
-        return held(game, a) >= a.cost - 1e-6 * Math.max(1, a.cost);
+        return funded(game, a) >= a.cost - 1e-6 * Math.max(1, a.cost) && payable(game, a.cost);
     }
 
     /**
-     * What an ask has still to raise: the order's cost less the greater of
-     * what the treasury holds for it and what its sales have raised in all.
-     * The paper already sold is not sold again - when the month's bills have
-     * drawn the money it raised, the order waits for the cash to be there
-     * (covered()), and the city does not borrow the same order twice.
+     * What an ask's order is paid from (OA1): its bond's proceeds, which are
+     * the works's whether or not the month's bills have drawn the cash under
+     * them, or what the treasury holds for it (held(): the proceeds still in
+     * the cash and the cash over the reserve beside them), whichever is more.
+     */
+    private double funded(Game game, OpenAsk a) {
+        return Math.max(Math.max(0, a.raised), held(game, a));
+    }
+
+    /**
+     * Whether the treasury can pay `total` today: its cash and, past it, what
+     * the central bank still advances (Game.discretionaryRoom()). Where the
+     * month's bills have drawn an ask's proceeds, its order takes the cash
+     * under by what they drew, an overdraft (Game.allowProceeds()).
+     */
+    private static boolean payable(Game game, double total) {
+        return total <= game.discretionaryRoom() + 1e-6 * Math.max(1, total);
+    }
+
+    /**
+     * What an ask has still to raise: its order's cost less its proceeds, or
+     * less what the treasury holds for it where that is more (funded()). The
+     * paper is never sold twice, and an overdraft is the treasury's, not the
+     * order's: what an ask sells in all is its order's cost, and a repricing.
+     *
+     * WHY (OA1, 2026-11-25): an ask whose sales had passed its cost waited for
+     * the treasury to hold the cost over the reserve, and a treasury the bills
+     * kept under it never did: the ask could neither place, sell nor be
+     * withdrawn. In PW3's seeds it held a Water Treatment Plant from m267 to
+     * the run's end at m402, its earmark keeping every other order of the
+     * builder's waiting "for Water" (works orders flat at 70). Its order is
+     * placed from the proceeds now (covered()). OA1's first mend sold again
+     * what the bills drew instead, bounded only by the debt limit: a deficit
+     * wider than the market sells at the cap then sold paper every month for
+     * an order it never covered (REV-OA1).
      */
     private double stillToRaise(Game game, OpenAsk a) {
         return stillToRaise(game, a, a.cost);
     }
 
     private double stillToRaise(Game game, OpenAsk a, double cost) {
-        return Math.max(0, cost - Math.max(held(game, a), a.raised));
+        return Math.max(0, cost - Math.max(Math.max(0, a.raised), spendableFor(game, a)));
     }
 
     /* =====================================================================
