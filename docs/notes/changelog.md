@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.208 — OA1, the open ask holds an essential works for years — 2026-11-25, ready, see docs/queue/OA1-notes.md
+Automatic building's open ask (D30) now spends the bond money it raised on the works it raised it for. The reserve
+was taken out of an ask's proceeds, and once its sales passed the order's cost nothing was offered again, so the debt
+limit's test never ran: in PW3's ensemble a Water Treatment Plant's ask held its raised money for 135 months with water
+served at 26%, its earmark keeping every other order waiting "for Water". An ask's proceeds now come first, outside
+the reserve, as a real city's restricted bond proceeds sit beside its operating reserve (GASB 54, GFOA), and they pay
+the works as a fenced fund would: where the month's bills drew the cash under them, the order is placed all the same
+and the treasury is overdrawn by what the bills drew, as far as the central bank advances. The paper is never sold
+twice; an ask the treasury cannot pay waits at most six months open, then is withdrawn (the six months a tax-exempt
+issuer has to expect to bind its proceeds, 26 CFR 1.148-2(e)(2)). AskProceedsCheck causes it from a town short of
+water, the drawn and short-market cases played for months (15 red on the old rule); AuctionCheck's "bills draw the
+money" and WorksFinanceCheck's fully raised ask are restated to that law.
+
 ### 0.9.207 — FB11, held towns: why no works pays, and the advisor's land funding — 2026-11-25, ready, see docs/queue/FB11-notes.md
 The playtest's player buys the ground a sector waits on with a bond, where its cash share could not. While the city's landlords or a works wait for
 ground, the player pays what the share allows from the cash and raises the rest, an overdraft with it, on the funding page's bond (the land office's

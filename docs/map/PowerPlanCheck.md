@@ -1,6 +1,6 @@
 # PowerPlanCheck.java - 1,296 lines · 47 methods · 11 constants · harnesses
 
-`ham/citybuildersim/PowerPlanCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PowerPlanCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities.
 > 

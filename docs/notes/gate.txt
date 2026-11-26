@@ -1,8 +1,8 @@
-# gate of Merge batch/R1g: the 1900 city grows; final ensemble against 0.9.180 is complete, but F1 is hard red in AUTO2 and ZERO_SLACK seed 1: monthly GDP -360.892347 at month 1135, annual GDP negative at 1145; all money audits pass. Back from Pending 2026-11-24 (contract section 6, the orchestrator's): the batch merges main, has a helper trace the negative GDP from a saved city's components to a bounded cause, then mends, re-runs the ensemble and dry runs; no waiver, 0.9.206
-# date: 2026-11-25
+# gate of Merge batch/OA1: the open ask holds an essential works for years (REV-PW3d, 2026-11-24): AutoBuilder's open ask (`covered()`, `stillToRaise()`, around AutoBuilder.java 2654-2671) cuts a Water Treatment Plant on DEBT while a raised bond is held, so in PW3's ensemble seeds 6, 9 and 15 sit at 24-26% of water served from about m290 to m402 with power served in full; main's, outside PW3's hunks. No real city leaves three quarters of its water unserved for nine years while it holds a raised bond: an essential works the city lacks is funded from the bond it raised, or the open ask releases it. Cause it in a harness from a city that lacks water and holds a bond, 0.9.208
+# date: 2026-11-26
 # earth-2.bin: named
 # nightly: 2026-11-25 03:03 0.9.202 d657b3a83 4,000 months: RED, exit 1 in 971 s: FAIL industry stands farther out than the homes 1 time(s), months 4000-4000; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-25-d657b3a83-xbsFLHkH
-# suite: 251 harnesses run in 1159s: 233 passed, 18 failed
+# suite: 246 harnesses run in 954s: 228 passed, 18 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED

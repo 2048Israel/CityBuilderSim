@@ -1,6 +1,6 @@
 # PolicyOpenCheck.java - 425 lines · 15 methods · 7 constants · harnesses
 
-`ham/citybuildersim/PolicyOpenCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/PolicyOpenCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > Every Policy lever is open from the city's first month, in every city, and nothing opens one later (OP1, 2026-11-19).
 > 

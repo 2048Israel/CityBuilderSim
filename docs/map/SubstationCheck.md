@@ -1,6 +1,6 @@
 # SubstationCheck.java - 375 lines · 24 methods · 3 constants · harnesses
 
-`ham/citybuildersim/SubstationCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SubstationCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > Substations at both sides of their carry, the order that keeps the peak covered, and their costs in the bills (PW5).
 > WHY. A flat wires charge and unlimited wires passed PW1's price checks. These fixtures change real city stock,

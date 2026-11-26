@@ -1,6 +1,6 @@
 # DebtQuote.java - 308 lines · 12 methods · 1 constants · model
 
-`ham/citybuildersim/DebtQuote.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DebtQuote.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > What a loan would cost, worked out BEFORE the player agrees to it.
 > 
@@ -50,7 +50,7 @@
 
 **Uses:** [Auction](Auction.md) (2), [Currency](Currency.md) (1)
 
-**Used by (30):** [AdviceValueOracle](AdviceValueOracle.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md), [PriceLevelCheck](PriceLevelCheck.md), [StepsCheck](StepsCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md)
+**Used by (31):** [AdviceValueOracle](AdviceValueOracle.md), [AskProceedsCheck](AskProceedsCheck.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [BuybackCheck](BuybackCheck.md), [CallCheck](CallCheck.md), [CreditCheck](CreditCheck.md), [CurveCheck](CurveCheck.md), [DebtMoneysCheck](DebtMoneysCheck.md), [FinancesScreen](FinancesScreen.md), [FloatLinkCheck](FloatLinkCheck.md), [ForeignDebtCheck](ForeignDebtCheck.md), [FundCheck](FundCheck.md), [Game](Game.md), [HoldersCheck](HoldersCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [LandCheck](LandCheck.md), [LandMap](LandMap.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [NewGameCheck](NewGameCheck.md), [Pieces](Pieces.md), [PriceLevelCheck](PriceLevelCheck.md), [StepsCheck](StepsCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md)
 
 ## Constants
 
