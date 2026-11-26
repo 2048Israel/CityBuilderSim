@@ -86,14 +86,18 @@ public class PowerPlantsCheck {
             new Study("Oil-Fired Turbine", 2275, 100_000, 0.90, 24, false, Good.DIESEL, 9447, 260, 10, 6, 1949, ""),
             new Study("Biomass Plant", 4843, 50_000, 0.85, 60, true, Good.WOOD_PELLETS, 13300, 0.750, 100, 25, 1970, ""),
             new Study("Wind Farm", 1712, 20_000, 0.338, 36, false, null, 0, 0, 40, 2, 1980, "wind"),
-            new Study("Solar Farm", 1484, 50_000, 0.24, 24, false, null, 0, 0, 333, 4, 1982, "solar"));
+            new Study("Solar Farm", 1484, 50_000, 0.24, 24, false, null, 0, 0, 333, 4, 1982, "solar"),
+            // PW9: Engineering News's 1900 $100/kW, at the catalogue's 2025 dollar level; EPA's historical heat rate.
+            new Study("Small Steam Station", 100 / PriceLevel.HISTORICAL_FACTOR, 850, .85, 15, true, Good.THERMAL_COAL,
+                    75000, 75000 * PowerDispatch.MJ_PER_BTU / PowerDispatch.heatContentMJ(Good.THERMAL_COAL) * 1000, 1, 5, 1900, ""));
 
     /** The new fuelled rows, the good each burns and the sector at home that makes it. */
     static final String[][] FUELLED = {
             {"Oil-Fired Plant", "FUEL_OIL", Sectors.REFINING},
             {"Diesel Station", "DIESEL", Sectors.REFINING},
             {"Oil-Fired Turbine", "DIESEL", Sectors.REFINING},
-            {"Biomass Plant", "WOOD_PELLETS", Sectors.WOOD_PRODUCTS}};
+            {"Biomass Plant", "WOOD_PELLETS", Sectors.WOOD_PRODUCTS},
+            {"Small Steam Station", "THERMAL_COAL", Sectors.COAL_MINING}};
 
     static void check(String label, boolean ok, String detail) {
         System.out.println((ok ? "  ok   " : "  FAIL ") + label + (detail == null || detail.isEmpty() ? "" : " - " + detail));
@@ -597,8 +601,8 @@ public class PowerPlantsCheck {
         List<String> known = new ArrayList<>(), menu = new ArrayList<>();
         for (BuildingsTemplate t : b.getKnownTemplates()) if (t.getCategory() == BuildingType.ELECTRICITY) known.add(t.getName());
         for (BuildingsTemplate t : b.getTemplatesByCategory(EnumSet.of(BuildingType.ELECTRICITY))) menu.add(t.getName());
-        check("a 1900 city (month " + g.getMonth() + ") knows the coal and the oil-fired plants, the hydro station and the substation, and no other",
-                known.equals(List.of("Coal Power Plant", "Hydro Station", "Substation", "Oil-Fired Plant")), known + "");
+        check("a 1900 city (month " + g.getMonth() + ") knows coal, oil, hydro, the substation and PW9's small steam station, and no later row",
+                known.equals(List.of("Coal Power Plant", "Hydro Station", "Substation", "Oil-Fired Plant", "Small Steam Station")), known + "");
         check("...its build menu's power is the same list, and an order for a diesel station is refused NOT_KNOWN", menu.equals(known)
                 && hushed(() -> g.buildStack(b.getTemplateByName("Diesel Station"), 1, true)) == Game.BuildResult.NOT_KNOWN, menu + "");
         int edge = ResearchCatalog.knownFrom("1910");

@@ -72,6 +72,12 @@ public class BuildingDataCheck {
                         && !grid.isOwnedBySector() && grid.getCapacity() == Substations.SUBSTATION_MW * 1000
                         && grid.getProduction1() == 0 && grid.getTotalJobs() == 140
                         && near(todays(grid.getCashCost()) + todays(BuildingManager.MATERIALS_WORLD_PRICE) * grid.getConstructionMaterials(), 440004));
+        BuildingsTemplate steam = byId(data, 172);
+        assertTrue("PW9 appends the period's 850 kW Small Steam Station, coal-fired from 1900 with a 15-month lead",
+                steam != null && "Small Steam Station".equals(steam.getName()) && steam.getCategory() == BuildingType.ELECTRICITY
+                        && !steam.isOwnedBySector() && steam.getNameplate() == 850 && steam.getProduction1() == 733
+                        && steam.getFuel() == Good.THERMAL_COAL && steam.getHeatRate() == 75000 && steam.cooling()
+                        && steam.buildMonths() == 15 && steam.getSince() == 1900);
 
         /* ---------- every field of every building ---------- */
         System.out.println("\n--- field by field, against the built-in definitions ---");
@@ -838,6 +844,7 @@ public class BuildingDataCheck {
         years.put(169, 1949);   // PW2: the Oil-Fired Turbine (Belle Isle)
         years.put(170, 1970);   // PW2: the Biomass Plant, with the Wood Pellet Mill
         years.put(171, 1982);   // PW2: the Solar Farm (Lugo, 1 MW)
+        years.put(172, 1900);   // PW9: a small reciprocating steam station (Peabody's 850 kW, 1892)
         assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1900 since R2 (its Bessemer and open-hearth recipes are its 1900 ways, E1 dates its oxygen-converter recipe"
                         + " and not the building; it was 1952, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"

@@ -5193,7 +5193,24 @@ public class BuildingManager {
                 .setBuildMonths(24).setElectricityConsumption(1).setWaterConsumption(0)
                 .setJobs(JobType.DIPLOMA, 3).setJobs(JobType.COLLEGE_ENGINEERING, 1)
                 .setLandSqFt(14505480).setRoadLoad(5).setSince(1982).setId(171));
-        //add more buildings; next Building ID is 172
+        /* PW9: a town's steam station, not a modern unit shrunk by renumbering an old id.
+           WHY: the 1902 central-station census counted 3,620 stations (815 municipal), about 377 kW of primary power each;
+           1907's 4,714 averaged about 638 kW (US Census, Central Electric Light and Power Stations 1907, table 1,
+           https://archive.org/details/centralelectricl00unitrich; the 1902 report: https://archive.org/details/centralelectric00goog).
+           Peabody's utility records 850 kW and June 1891 approval to September 1892 operation (15 months):
+           https://pmlp.com/226/Our-History. Engineering News, 1900-07-26 p54: $100/kW for boilers, engines and dynamos;
+           $85,000 in 1900 dollars is $3.284M at the catalogue's 2025 level, split by HY1's rule.
+           EPA, Steam Electric Development Document (1974), IV: 1900's heat rate 75,000 Btu/kWh
+           (https://nepis.epa.gov/Exe/ZyPURL.cgi?Dockey=9100Z5L9.TXT).
+           Availability 85%, repairs/MWh the coal row's; five posts and one acre are estimates (PW9 notes).
+           Census/EPA: US public domain; Engineering News: expired US copyright; Peabody: facts only, no copied text. */
+        templates.add(new BuildingsTemplate("Small Steam Station", BuildingType.ELECTRICITY)
+                .setCashCost(2400).setConstructionPoints(269).setConstructionMaterials(44)
+                .setProduction1(733).setNameplate(850).setFuel("THERMAL_COAL").setHeatRate(75000).setVariableUpkeep(9.37)
+                .setCooling(true).setBuildMonths(15).setElectricityConsumption(0.05).setWaterConsumption(0)
+                .setJobs(JobType.NO_DIPLOMA, 4).setJobs(JobType.DIPLOMA, 1)
+                .setLandSqFt(43560).setRoadLoad(1).setSince(1900).setId(172));
+        //add more buildings; next Building ID is 173
         for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }
 
