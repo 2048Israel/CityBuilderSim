@@ -1712,7 +1712,10 @@ public class ScaleCheck {
             + "(^|\\.)workFill$|"
             // PW1-R, 2026-11-25: the struck book's season, the month's load over the year's mean, which its bills carry; the copy loaded
             // it K times over and billed every class K times its kWh (the K = 617,055 copy's treasury 1.6e10 to 3.1e13 in a month).
-            + "(^|\\.)season$)");
+            + "(^|\\.)season$|"
+            // RES3c, 2026-11-25: the water tariff, a price per unit of water; the copy loaded it K times over and billed K squared
+            // water (the sectors' utility bills 1.44e6 a city against 1,437 in month 1, the bank in resolution, savings bailed in).
+            + "(^|\\.)waterTariff$)");
 
     /*
      * THE NAMES THE PATTERN READ WRONG (0.7.54). The scaled copy's first month
@@ -1888,6 +1891,11 @@ public class ScaleCheck {
         // household places, the doctor, the nursery, the almshouse, the churchyard and the constabulary were one founded city's
         // and a copy K times over had a K-th of them per head: it lost 1.3% of its people in its first month and 6.1% in six.
         d.addProperty("foundingEndowments", k * (d.has("foundingEndowments") ? d.get("foundingEndowments").getAsLong() : 1L));
+        // RES3c, 2026-11-25: the bank's held books (its deposits, loan books and sector loans, all money) and the month's wage
+        // totals, which the load puts back over its rebuild: left a city's, the 1000x copy's deposits read a K-th of the city's
+        // at month 0 (0.266 against 265.99) and its wage bill a K-th, the affordability pull parting by 1.0.
+        whole(d, "bankHeldBooks", k);
+        whole(d, "populationWageTotals", k);
         registers(d, k);
         d.addProperty("slotName", "scaled x" + k);
         Files.createDirectories(to.getParent());
