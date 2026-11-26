@@ -334,6 +334,28 @@ record or VERSION was edited. The final post-check fetch still names
 
 ## Final trajectory verification and review sequence
 
+REV-MR1 on `9b20bdc0d` returned **SHIP** (2026-11-26): all three requested
+mends accepted, money and saves sound. Its nonblocking P2 remains recorded:
+`afterBank()` reads principal before `settleBusinessCredit()`. If the first
+loan arrives on exactly the 24th operating-loss close and the next close
+pays, the bleed can sell while the recovery record never arms. Current
+measured cities do not take that edge (the modern city already owes 486.65
+at m39; the default's twelve losses are unlent).
+
+★ Leave that P2 as expressly permitted. `runPrivateInvestment()` runs
+retirement and insolvency before calling the expansion planners; a sale can
+repay the first loan, so adding a check in `plan()` alone is not complete.
+A reliable observation belongs after credit settles and before retirement
+can erase the principal. Wiring that event/phase and adding an independent
+late-first-loan fixture while preserving the existing pre-runway controls
+is more than the permitted few lines/one fixture line. Do not add mutation
+to the nominal retirement-measure query to avoid that wiring. No source
+change is made after the reviewed model for this optional point.
+
+SHIP authorizes the ensemble and final marker removal without another dry
+run: the pick remains nine, not ALL. `origin/main` was fetched and merged
+before the ensemble; it remained `ded8345fc`.
+
 ★ The brief explicitly owes the final model an 80-run ensemble after the
 reviewer's SHIP, against `docs/ensemble/0.9.210.md` (or a newer main baseline
 if one ships). The first submission prepared but did not run a default
