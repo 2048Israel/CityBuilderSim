@@ -6089,12 +6089,13 @@
    "electricity": 1,
    "water": 0,
    "jobs": {
-    "NO_DIPLOMA": 4,
-    "DIPLOMA": 1
+    "NO_DIPLOMA": 6,
+    "DIPLOMA": 3
    },
    "land": 43560,
    "roadLoad": 1,
-   "since": 1900
+   "since": 1900,
+   "until": 1914
   }
  ]
 }

@@ -89,7 +89,7 @@ public class PowerPlantsCheck {
             new Study("Solar Farm", 1484, 50_000, 0.24, 24, false, null, 0, 0, 333, 4, 1982, "solar"),
             // PW9: Engineering News's 1900 $100/kW, at the catalogue's 2025 dollar level; EPA's historical heat rate.
             new Study("Small Steam Station", 100 / PriceLevel.HISTORICAL_FACTOR, 850, .85, 15, true, Good.THERMAL_COAL,
-                    75000, 3.15, 1, 5, 1900, ""));
+                    75000, 3.15, 1, 9, 1900, ""));
 
     /** The new fuelled rows, the good each burns and the sector at home that makes it. */
     static final String[][] FUELLED = {
@@ -619,6 +619,31 @@ public class PowerPlantsCheck {
                 && later.getBuildingManager().getTemplatesByCategory(EnumSet.of(BuildingType.ELECTRICITY)).contains(diesel);
         check("...in January 1910 it is known and in the build menu", after && later.getMonth() == edge);
         check("...and its order passes the year: it is not refused NOT_KNOWN", hushed(() -> later.buildStack(diesel, 1, true)) == Game.BuildResult.SUCCESS);
+        BuildingsTemplate steam = later.getBuildingManager().getTemplateByName("Small Steam Station");
+        int closes = PolicyDates.monthOf(1915, 1); // ASME's transition date, independent of a missing/wrong catalogue boundary.
+        check("PW9's last new-order year is inclusive: December 1914 offered, January 1915 closed, including research-aware reads",
+                steam.getUntil() == 1914 && steam.knownAt(closes - 1) && !steam.knownAt(closes)
+                        && steam.knownAt(closes - 1, later.getResearch()) && !steam.knownAt(closes, later.getResearch())
+                        && diesel.getUntil() == 0 && diesel.knownAt(closes));
+        quietly(() -> later.simulateMonths(closes - 1 - later.getMonth()));
+        later.setCashForTest(Founding.WEALTHY_CASH);
+        check("fixture: December 1914 offers small steam now, and its one-month-ahead menu already closes",
+                later.getMonth() == closes - 1 && later.getBuildingManager().isTemplateKnown(steam)
+                        && !later.getBuildingManager().isTemplateKnownIn(steam, 1));
+        Game.BuildResult standing = hushed(() -> later.buildStack(steam, 1, true));
+        Game.BuildResult pending = hushed(() -> later.buildStack(steam, 1, false));
+        check("the final offered month accepts both a standing fixture order and an ordinary pending order",
+                standing == Game.BuildResult.SUCCESS && pending == Game.BuildResult.SUCCESS);
+        quietly(() -> later.simulateMonths(1));
+        check("January 1915 removes the row from new-order menus and refuses a funded direct order",
+                later.getMonth() == closes && !later.getBuildingManager().getKnownTemplates().contains(steam)
+                        && !later.getBuildingManager().getTemplatesByCategory(EnumSet.of(BuildingType.ELECTRICITY)).contains(steam)
+                        && hushed(() -> later.buildStack(steam, 1, false)) == Game.BuildResult.NOT_KNOWN);
+        check("ending new orders preserves the catalogue id, the standing station, its dispatch row and the previously ordered site",
+                later.getBuildingManager().getTemplates().contains(steam)
+                        && later.getBuildingManager().getQuantity(steam.getId()) == 1
+                        && later.getBuildingManager().getStack(steam).getUnderConstruction() == 1
+                        && rowOf(later.getServicesManager().getUtilitiesHandler(), steam.getName()) != null);
         sectionEnd();
     }
 

@@ -5202,14 +5202,19 @@ public class BuildingManager {
            $85,000 in 1900 dollars is $3.284M at the catalogue's 2025 level, split by HY1's rule.
            EPA, Steam Electric Development Document (1974), IV: 1900's heat rate 75,000 Btu/kWh
            (https://nepis.epa.gov/Exe/ZyPURL.cgi?Dockey=9100Z5L9.TXT).
-           Availability 85%, repairs/MWh the coal row's; five posts and one acre are estimates (PW9 notes).
-           Census/EPA: US public domain; Engineering News: expired US copyright; Peabody: facts only, no copied text. */
+           New orders end in 1914: ASME's Coolspring history dates internal-combustion competition for all but the largest
+           installations by 1915; steam turbines dominate the large ones (https://www.asme.org/about-asme/engineering-history/landmarks/215-coolspring-power-museum).
+           Nine posts: three engineer/fireman/oiler watch teams, based on N. M. Argabrite's firsthand small-powerhouse account,
+           National Safety News, January 1936, p.10 (https://cdn.toxicdocs.org/VJ/VJR5dMp3DX8eeO9XOmYkraQ7o/VJR5dMp3DX8eeO9XOmYkraQ7o.pdf).
+           Three eight-hour watches are the staffing allowance; the source describes twelve-hour duty in many plants, not an 850 kW headcount.
+           Availability 85%, repairs/MWh the coal row's; one acre is an estimate (PW9 notes).
+           Census/EPA: US public domain; Engineering News: expired US copyright; Peabody/ASME/Argabrite: facts only, no copied text. */
         templates.add(new BuildingsTemplate("Small Steam Station", BuildingType.ELECTRICITY)
                 .setCashCost(2400).setConstructionPoints(269).setConstructionMaterials(44)
                 .setProduction1(733).setNameplate(850).setFuel("THERMAL_COAL").setHeatRate(75000).setVariableUpkeep(9.37)
                 .setCooling(true).setBuildMonths(15).setElectricityConsumption(1).setWaterConsumption(0)
-                .setJobs(JobType.NO_DIPLOMA, 4).setJobs(JobType.DIPLOMA, 1)
-                .setLandSqFt(43560).setRoadLoad(1).setSince(1900).setId(172));
+                .setJobs(JobType.NO_DIPLOMA, 6).setJobs(JobType.DIPLOMA, 3)
+                .setLandSqFt(43560).setRoadLoad(1).setSince(1900).setUntil(1914).setId(172));
         //add more buildings; next Building ID is 173
         for (int i = firstBuiltIn; i < templates.size(); i++) templates.get(i).pricedAtFoundingLevel();
     }

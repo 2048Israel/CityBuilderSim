@@ -77,7 +77,8 @@ public class BuildingDataCheck {
                 steam != null && "Small Steam Station".equals(steam.getName()) && steam.getCategory() == BuildingType.ELECTRICITY
                         && !steam.isOwnedBySector() && steam.getNameplate() == 850 && steam.getProduction1() == 733
                         && steam.getFuel() == Good.THERMAL_COAL && steam.getHeatRate() == 75000 && steam.cooling()
-                        && steam.buildMonths() == 15 && steam.getSince() == 1900);
+                        && steam.buildMonths() == 15 && steam.getSince() == 1900 && steam.getUntil() == 1914
+                        && steam.getJobs(JobType.NO_DIPLOMA) == 6 && steam.getJobs(JobType.DIPLOMA) == 3);
 
         /* ---------- every field of every building ---------- */
         System.out.println("\n--- field by field, against the built-in definitions ---");
@@ -233,6 +234,7 @@ public class BuildingDataCheck {
                 System.out.println("  FAIL " + who + ": old metal " + actual.oldMetalTaken() + " != " + expected.oldMetalTaken());
             }
             check(who + " since", actual.getSince(), expected.getSince());
+            check(who + " last new-order year (PW9)", actual.getUntil(), expected.getUntil());
             // ...and as written (R2): a year or a research.json code, which the year alone cannot tell (PE4 and 1902 are both 1902).
             if (!actual.getSinceText().equals(expected.getSinceText())) {
                 fails++;
