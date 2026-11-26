@@ -638,7 +638,7 @@ public class Equity {
     }
 
     /** A share's worth at the market's floor, in today's money: Exchange.MIN_FAIR, seeded by the unit. What a residue of a cancellation comes to less than, a share at a time. See priceOf() and dividendPerShareAnnual(). */
-    private double noValue() {
+    double noValue() {
         return Exchange.MIN_FAIR * (foundingPrice / FOUNDING_PRICE);
     }
 

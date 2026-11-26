@@ -651,7 +651,16 @@ public class Exchange {
     public double fair(int c)        { return fair[c]; }
 
     /** ...true when that is the exchange's floor (minFair), which a company whose book and record are gone sits at (BO1: the owner family's broke rule). */
-    public boolean atFloor(int c)    { return fair[c] <= minFair; }
+    public boolean atFloor(int c)    { return fair[c] <= valuationFloor(); }
+
+    /**
+     * One floor for valuation and worthless-company classification (CBK3).
+     * The register's real-price anchor can move above the venue's nominal
+     * floor. A presentation epsilon must never trigger repeated consolidations.
+     */
+    private double valuationFloor() {
+        return register == null ? minFair : Math.max(minFair, register.noValue());
+    }
 
     /** A company's money past its cushion at the last step, total: its till, its dollars abroad and its bonds, less six months of its costs, never under nothing (EM1). */
     public double spareOf(int c)       { return spare[c]; }
@@ -839,7 +848,7 @@ public class Exchange {
             spare[c] = holdsMoney ? Math.max(0, this.companies.money(c) - cushion(c)) : 0;
             earnings[c] = register.getTrailingIncome(c);
             moneyIncome[c] = holdsMoney ? this.companies.moneyIncome(c) : 0;
-            fair[c] = Math.max(minFair, register.fairValue(c, book[c], spare[c], worldRate));
+            fair[c] = Math.max(valuationFloor(), register.fairValue(c, book[c], spare[c], worldRate));
             emigrantShares[c] = households == null ? 0
                     : Math.max(0, Math.min(households.getSharesTakenAway(c) - households.departingTaxShares(c),
                             register.getForeignShares(c) - register.foreignTaxShares(c)));
@@ -2334,7 +2343,7 @@ public class Exchange {
         for (int c = 0; c < n; c++) {
             if (register.getShares(c) <= 0) continue;
             // A company worth nothing is not consolidated into nothing.
-            if (fair[c] <= minFair) continue;
+            if (atFloor(c)) continue;
             double quote = price(c);
             if (quote <= wage * SPLIT_AT && quote >= wage * CONSOLIDATE_BELOW) continue;
             double k = Math.pow(10, Math.floor(Math.log10(quote / target)));

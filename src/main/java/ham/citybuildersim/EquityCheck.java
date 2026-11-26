@@ -164,6 +164,101 @@ public class EquityCheck {
                 zero.fairValue(company, 0, 0, worldRate), floor * scale, floor * scale * 1e-9);
     }
 
+    /** No buyback money, but a paid wage makes the exchange's automatic split rule active. */
+    static Exchange.Companies wageOnlyCompanies(double wage) {
+        return new Exchange.Companies() {
+            public double averageMonthlyWage() { return wage; }
+            public double cashAvailable(int company, double wanted) { return 0; }
+            public double till(int company) { return 0; }
+            public void payBuyback(int company, double cash) { }
+            public double assets(int company) { return 0; }
+            public double equity(int company) { return 0; }
+            public double monthlyOperatingCost(int company) { return 0; }
+            public double monthlyDebtService(int company) { return 0; }
+        };
+    }
+
+    static boolean finiteListing(Equity register, Exchange market, int company) {
+        return register.getShares(company) > 0 && Double.isFinite(register.getShares(company))
+                && Double.isFinite(register.getForeignShares(company)) && Double.isFinite(register.getDealerShares(company))
+                && Double.isFinite(register.getLastPrice(company)) && Double.isFinite(market.price(company))
+                && Double.isFinite(market.fair(company)) && market.getSplitFactor(company) > 0
+                && Double.isFinite(market.getSplitFactor(company));
+    }
+
+    /* ================= 11. the anchored floor cannot cause a consolidation loop (CBK3) ================= */
+    static void anchoredFloorIsNotAConsolidation() {
+        out.println("\n--- 11. the anchored presentation floor is not a reason to consolidate a worthless company ---");
+        int company = Equity.indexOf(Sectors.INDUSTRY);
+        double worldRate = DebtManager.WORLD_BASE_RATE;
+        String[] cases = { "zero income", "negative income", "positive income below the floor" };
+        for (double denomination : new double[] { 1, 100 }) {
+            double expectedLevel = 2, wage = Equity.FOUNDING_PRICE / denomination;
+            Exchange.Companies companies = wageOnlyCompanies(wage);
+            for (int k = 0; k < cases.length; k++) {
+                String label = cases[k] + " at denomination " + denomination;
+                Equity register = new Equity();
+                register.seedConstants(denomination);
+                register.offer(company, register.foundingPrice(), 0, null, worldRate);
+                double issued = register.getShares(company), abroad = register.getForeignShares(company);
+                // The real monthly anchor moves the register's yardstick, while the venue keeps nominal money.
+                register.seedConstants(denomination / expectedLevel);
+                double floor = register.noValue();
+                double annual = k == 0 ? 0 : k == 1 ? -register.foundingPrice()
+                        : floor * issued * Equity.requiredReturn(worldRate) / 2;
+                for (int m = 0; m < Equity.RECORD_MONTHS; m++) register.recordMonth(company, annual / Equity.RECORD_MONTHS, 0);
+                Exchange market = new Exchange();
+                market.seedConstants(denomination);
+                double[] books = new double[Equity.COMPANIES.length];
+                assertTrue("fixture: " + label + " is mature, never traded and below the active wage band",
+                        register.valuedOnRecord(company) && !market.hasTraded(company) && issued > 0 && abroad == issued
+                                && floor > Exchange.MIN_FAIR / denomination && floor < wage * Exchange.CONSOLIDATE_BELOW);
+                market.startMonth();
+                market.takeMonth(register, null, null, companies, books, worldRate, 0, Equity.RECORD_MONTHS);
+                boolean firstSafe = finiteListing(register, market, company) && market.atFloor(company)
+                        && market.getSplit(company) == 0 && register.getShares(company) == issued;
+                assertTrue(label + ": the first step classifies the anchored floor and makes no consolidation", firstSafe);
+                // The old floor comparison is already red here: never drive its known shrinking-share loop into overflow.
+                if (!firstSafe) continue;
+                close(label + ": the market uses the register's anchored floor", market.fair(company), floor, floor * 1e-9);
+                boolean stable = true;
+                for (int m = 1; m <= 240; m++) {
+                    register.recordMonth(company, annual / Equity.RECORD_MONTHS, 0);
+                    market.startMonth();
+                    market.takeMonth(register, null, null, companies, books, worldRate, 0, Equity.RECORD_MONTHS + m);
+                    stable &= finiteListing(register, market, company) && market.atFloor(company)
+                            && !market.hasTraded(company) && market.getSplit(company) == 0 && market.getSplitFactor(company) == 1
+                            && register.getShares(company) == issued && register.getForeignShares(company) == abroad
+                            && register.getDealerShares(company) == 0;
+                    if (!stable) break;
+                }
+                assertTrue(label + ": 240 more monthly steps keep finite prices and every share without a split", stable);
+                if (!stable) continue;
+                close(label + ": the actual income is preserved", register.getTrailingIncome(company), annual, Math.abs(annual) * 1e-12);
+                close(label + ": presentation-floor total value is unchanged", issued * market.fair(company), issued * floor, issued * floor * 1e-9);
+
+                double recovery = 32 * floor * issued * Equity.requiredReturn(worldRate);
+                for (int m = 0; m < Equity.RECORD_MONTHS; m++) register.recordMonth(company, recovery / Equity.RECORD_MONTHS, 0);
+                double beforePrice = register.fairValue(company, 0, 0, worldRate), beforeValue = issued * beforePrice;
+                assertTrue("fixture: " + label + " recovers above the floor but still below the consolidation band",
+                        Double.isFinite(beforeValue) && beforePrice > floor && beforePrice < wage * Exchange.CONSOLIDATE_BELOW);
+                market.startMonth();
+                market.takeMonth(register, null, null, companies, books, worldRate, 0, Equity.RECORD_MONTHS + 241);
+                boolean recovered = finiteListing(register, market, company);
+                assertTrue(label + ": actual positive income recovers with finite prices, shares and split factor", recovered);
+                if (!recovered) continue;
+                assertTrue(label + ": recovery leaves the floor and really exercises automatic consolidation",
+                        !market.atFloor(company) && market.getSplit(company) > 0 && market.getSplit(company) < 1);
+                close(label + ": the recovered total value survives the automatic consolidation",
+                        register.getShares(company) * market.fair(company), beforeValue, beforeValue * 1e-9);
+                close(label + ": fair recomputation preserves that same recovered total value",
+                        register.getShares(company) * register.fairValue(company, 0, 0, worldRate), beforeValue, beforeValue * 1e-9);
+                close(label + ": the foreign owners still hold every share", register.getForeignShares(company), register.getShares(company), 0);
+                close(label + ": the split changes no actual recovery income", register.getTrailingIncome(company), recovery, recovery * 1e-12);
+            }
+        }
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -492,6 +587,7 @@ public class EquityCheck {
         assertTrue("...with the register and the households agreeing on every company", agree);
 
         maturePricesFollowTheirRecord();
+        anchoredFloorIsNotAConsolidation();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
