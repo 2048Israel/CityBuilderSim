@@ -847,6 +847,41 @@ reviewer's line.
   245,141), as in every RES3 ensemble since the merge and the lodging mend
   (against 0.9.208: 8,675, 222,388 and 71,644): RES3's housing model on the
   short-run towns.
+- The dry run at 65a455d39 (the box's cbs-gate-RES3-GOpFhvdd, 2026-11-26):
+  suite exit 4, 97 unnamed lines in 23 harnesses. Run again on the
+  pre-merge tip 046058c7b here: every one but PopulationCheck red there
+  with the same counts, so RES3's own; PopulationCheck the merge's (green
+  on 046058c7b). The causes found (read from the logs and the code, three
+  helpers; to be shown by mends):
+  - Money: ShortSellingCheck theCity() an audit residual of 2.4357 over 3
+    months (main 0): RES3's leak, first.
+  - HealthCheck 10: one cell (an elder living alone, formerly Unskilled,
+    x82) pays none of its care; the housing bid reserves only the care
+    billed (HouseholdBalance.strikeHousingBudgets), so a priced-out cell's
+    next bid spends its care on housing. Green at fde7db7b9.
+  - LongPlaytest: an OutOfMemoryError at m2389 in the layout watch's
+    re-plan (CityMap.drawnOf, DistrictPlan): RES3's city is 10.8 million
+    at m2350 (main 6.1), 188 districts (63), a box a House, about 12
+    people a box (main 71); CityMap.carriedLog clones every link's log
+    per snapshot. 616k doors empty of 3.81 million (main 190k of 1.89):
+    family doors pressed 0.77, studios 4.16. And "the books closed WITH
+    their own lines": UnsettledIncome 0 in HA1's town since 0894946a7
+    settles fractional cells.
+  - SaveSlotCheck: Bank.HeldBooks a record (9d2d98699) and
+    DebtStatistics.Survey's groups an unmodifiable view (9b6f066e4), shared
+    between history snapshots.
+  - Harness mechanics: HoldersCheck section 7's fake old save keeps
+    bankHeldBooks; CapitalGainsCheck's default release compared at 1e-9 on
+    two 2.8e7 totals; ShortSellingCheck's purchase sized against a month's
+    outflow; ZoningCheck reads getStillUnplaced(), 0 by call A; KeptCheck a
+    half-post knife edge at the preview's wages.
+  - Towns that develop otherwise (to cause again, not hide): Bond,
+    YoungBank, Auction, Curve, ForeignDebt, ER1 (suspect: Real Estate
+    billed its homes' utilities since 2e593f825); HousingCheck,
+    ForeignChoice, Population (the typed forecast's newcomers capped at
+    Migration's target, no unhoused demand); BuildersFirst, EssentialWorks,
+    PostwarRecipe, Materials, Road (fewer people and crews); PriceLevel
+    (h.capitalTaxWrittenOff a claim written off in one twin alone).
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
