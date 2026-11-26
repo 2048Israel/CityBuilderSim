@@ -109,6 +109,15 @@ old senior-care comment. PopulationCheck is rerun after this correction.
   No Manufacturing plant or site remains through m122. Works proposals from
   m108 are refused by bank capital. The current red must be traced on its
   own cause, not attributed to AQ1's old measurements.
+- Corrected PopulationCheck on the **unchanged main model**: exit 0, full
+  normal harness after the helper's attribution observer, using only the
+  PopulationCheck source from `c9381343e` on `ded8345fc`. At m121 the played
+  city has 431 residents; end-state raw draw 556.231996, actual calculation's
+  pre-pull draw 556.124610 (jobs 231.124610, homes 325), rent/jobs pull
+  0.787085757, crime pull 1, senior pull 1.028056715, homes pull 0.809168799;
+  the actual target is 444.894748. Last completion is a Boutique at m85,
+  none m86–122: the red is not a late Manufacturing capacity jump. The
+  observer's source changes were restored. No OX2/SW1/MKR1/PB1 mend is taken.
 - Base 1900 default, real LongPlaytest via the observer: exit 0, city phase
   2,292 s, ends m2405 because final player actions pass the requested 2400.
   Manufacturing has zero distress sales; its only 12 operating-loss months
@@ -136,6 +145,13 @@ old senior-care comment. PopulationCheck is rerun after this correction.
   explicitly and reports the first order's reason. The extended harness
   also asserts staffing, estimated earnings and cost so a prerequisite hold
   cannot make the recovery assertions vacuous.
+- Valid red proof on the unchanged base planner: the two files from
+  `f23016b4c` add only the dial and finding; `batch-check.sh ManufacturingCheck`
+  exits 4 with precisely the four recovery holds red (loss-making market,
+  first paying month, scrap-inflated statement, paying months below the
+  dial). First entry, the lent one-of-two Shop sale, remaining one Shop,
+  at-dial expansion and interest-only recovery all pass. The earlier land
+  setup failure is absent; this is the finding red on main behaviour.
 - Recovery model `--fast`: green, compile 61 s, Stale 0 firm findings.
 - `sh tools/pick.sh origin/main HEAD` at `1c5d2e8c6`: BuildingDataCheck,
   CopperRefiningCheck, GdpCheck, ManufacturingCheck, MaterialsCheck,
@@ -144,6 +160,80 @@ old senior-care comment. PopulationCheck is rerun after this correction.
   sector history, so MR1 explicitly requests money **and saves** review.
   With this pick no dry run is owed. The final pick is recomputed before
   mailing mends.
+- Final model acceptance checks so far: ManufacturingCheck 0 (including
+  both disk-save boundaries), PopulationCheck 0, BuildingDataCheck 0.
+- MR1-log, a fresh read-only Codex log helper (MemWatch commit 34.4% before
+  start), confirmed CopperRefiningCheck is actively playing its seed-1
+  LongPlaytest child, not stalled. At 08:58:49 AST it was at m720/2400,
+  CPU advancing, no child exception/timeout/red. The parent harness already
+  has the exact registered FS8 Rotterdam order-cut red (0 months; []),
+  `target/checks/CopperRefiningCheck.log:113`; no exemption or owner is changed.
+  The helper started no JVM and ended with no jobs. Its child-log evidence
+  is the scratch `copperrefiningcheck-rodmills.../seed1.log` it reported by bus.
+- CopperRefiningCheck hit AllChecks' **outer 1,740-second wall guard** at
+  09:21:13 AST (1,740.1 s), before its child's own 28-minute guard. The only
+  additional real failure is `FAIL: timed out after 1740 s`; `exit 1` is
+  synthetic. No other model-law failure appears in retained output. The
+  still-advancing child was last observed at m1800, CPU 1,226.33 s, at
+  09:12:31; its scratch log was removed when the tree ended. All PIDs ended.
+  FS8 explicitly owns this Copper section-11 played audit and moving it to
+  nightly (`docs/studies/flaky-suite.md:423–428`, by-harness row 182).
+  ★ Name this laptop wall-time class to FS8 in the provisional ship file,
+  exactly as the standing moved-city/load rule says; change no limit or
+  model/check premise and add no blanket `exit 1` exemption. Preserve
+  `target/MR1-CopperRefiningCheck-suite.txt` and
+  `target/MR1-CopperRefiningCheck-harness.log` before the next named run.
+  Canonical kept-log judgment, `CBS_REJUDGE=1 sh ./batch-check.sh --judge
+  target/MR1-CopperRefiningCheck-suite.txt`, reports **known red only** with
+  this row and the pre-existing Rotterdam FS8 row. No harness is replayed.
+  The captured canonical judgment exits **3**.
+  The provisional registry check also confirms the old MR1 PopulationCheck
+  exemption is retired (`! PopulationCheck ...`).
+
+### Final acceptance verdict
+
+On model `3968aa6e0` over `ded8345fc`, run strictly serial through Git Bash
+with the shared Earth/world files and `-Dcbs.parallel=1`:
+
+| check | exit | evidence |
+|---|---:|---|
+| final `--fast` | 0 | `target/MR1-final-fast.txt`; compile 61 s, Stale 0 firm, maps regenerated |
+| ManufacturingCheck | 0 | `target/MR1-ManufacturingCheck.txt` |
+| PopulationCheck | 0 | `target/MR1-PopulationCheck.txt` |
+| BuildingDataCheck | 0 | `target/MR1-BuildingDataCheck.txt` |
+| ArrivalMixCheck | 0 | `target/MR1-ArrivalMixCheck.txt` |
+| BooksCheck | 0 | `target/MR1-BooksCheck.txt` |
+| GdpCheck | 0 | `target/MR1-GdpCheck.txt` |
+| MaterialsCheck | 0 | `target/MR1-MaterialsCheck.txt` |
+| CopperRefiningCheck, kept-log rejudge | 3 | `target/MR1-CopperRefiningCheck-rejudge.txt`; exact FS8 classes above, original suite and log retained |
+| TimingCheck | 0 | `target/MR1-TimingCheck.txt` |
+| SaveFileCheck | 0 | `target/MR1-SaveFileCheck.txt` |
+| ReloadCheck | 0 | `target/MR1-ReloadCheck.txt` |
+| ReadPathCheck | 0 | `target/MR1-ReadPathCheck.txt` |
+
+All acceptance JVMs have exited. The final source diff was reviewed by the
+builder: Manufacturing alone changes gameplay; no shared month, lender,
+transfer, conservation or save-check code changes. The two helpers were
+read-only apart from restored diagnostic instrumentation; none authored a
+model diff. No save slot outside scratch files was written. No published
+record or VERSION was edited. The final post-check fetch still names
+`ded8345fc` as main, so no main merge or repeated checks are needed.
+
+## Final trajectory verification and review sequence
+
+★ The brief explicitly owes the final model an 80-run ensemble after the
+stranger's SHIP. Keep that full comparison, against the newest baseline,
+rather than add another exploratory laptop prefix. A proposed first-400
+comparison was prepared but not run: the helper's original turn ended
+before its late authorization arrived, and I revoked its automatic resume
+before starting final named checks. The source-only preparation also found
+that `LongPlaytest.TARGET_MONTHS` changes watch windows and skip truncation,
+so shortening the horizon would not prove an identical input path.
+No unchanged-final-default claim is made from the baseline measurements.
+The early recovery hold can change staffing refusals/WantedPosts even when
+the old planner was already refusing to build; the ensemble is the required
+final trajectory evidence. Review's SHIP is the go for it, per the brief's
+final ordering, with main merged first. No extra ensemble request is owed.
 - `tools/batch-id.sh MR1` initially flags the remote branch because the
   orchestrator pre-pushed it at exactly origin/main's spine; no MR1 merge or
   published record exists. The first batch commit will make the remote tip
@@ -151,8 +241,8 @@ old senior-care comment. PopulationCheck is rerun after this correction.
 
 ## Outstanding
 
-Finish the base default trace and Population attribution; prove the finding
-red before the gate; run save/reload verification and named checks, then
-request stranger's money/saves review. If the default trace moves, the
-ensemble is run on the final pushed model after the review's SHIP, against
-the newest baseline (currently `docs/ensemble/0.9.210.md`).
+Request stranger's money/saves review on the pushed provisional ship file,
+including the PopulationCheck law correction. After its SHIP, merge main
+and run the brief's ensemble on the
+final pushed model against the newest baseline (currently
+`docs/ensemble/0.9.210.md`). The pick is not ALL, so no dry run is owed.
