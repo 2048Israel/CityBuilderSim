@@ -365,6 +365,39 @@ What they did (RES3c, 2026-11-25):
   (114.6 at m897), and broke CreditCrunchCheck's fixtures: not applied.
   Green founded today's way. To the orchestrator.
 
+The orchestrator's calls, 2026-11-25 22:42 (from reality, tell-at-ship):
+(A) A family past the line lives overcrowded, as the 1891 and 1901
+censuses counted it (more than two a room is overcrowded, not homeless;
+7.04 million families or separate occupiers in 6.26 million inhabited
+houses in 1901), never doorless. It takes the nearest door or share at the
+over-line burden and is counted overcrowded. HousingDoorCheck's no-door
+watch stays, with the real effect asserted beside it. Not a hard gate on
+migration, which answers housing through cost and its pull. A town out of
+ground builds denser: its own batch, DN1, queued in the ship file with
+m888's figures. (B) MonetaryCheck takes the helper's restatement:
+Jerus's 11-23 answer ("even reality higher interest rates doesnt always
+equal lower inflation") is the law, and the one-point mean was a
+reviewer's line.
+
+- ★ (B), 33614cba8. Reviewer's line (REV-RES3x P1, 563b5f17c): "the
+  highest rate lowers common-basket non-shelter inflation across the
+  declared towns by at least a point". Restated: expected inflation falls
+  with the rate in every town (16 of 16, the least 0.7948 points); the
+  non-shelter effect is positive in the median town (+0.7149) and in at
+  least 14 of the 16 (14); each contrary town's grocery shortage is named
+  in the months that carry it, and its effect turns positive with the
+  groceries at the shelf's floor (town 21: -4.7655, short at 40% in m81-84,
+  +0.2490 at the floor; town 29: -2.9959, m82-84, +0.9528).
+- ScaleCheck, once the copy loaded (the lease funding above): the scaler
+  left the bank's held books (9d2d98699) and the month's wage totals
+  (18c8dd4b9) at one city's, and multiplied the water tariff (ca9bb9339), a
+  price, K times. The 1000x copy's deposits read a K-th of the city's at
+  month 0 (0.266 against 265.99), its wage bill a K-th (the affordability
+  pull parting by 1.0), and its sectors billed K squared water (1.44e6 a
+  city against 1,437 in month 1, the bank in resolution). All three are
+  mended in the scaler (fa8a16692); ScaleCheck is green, the two
+  known-reds lines included.
+
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
 240–600 inclusive, with 361 observations. Native findings, audits, purity and
