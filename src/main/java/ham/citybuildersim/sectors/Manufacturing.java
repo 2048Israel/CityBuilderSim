@@ -78,13 +78,13 @@ import java.util.Map;
  */
 public final class Manufacturing extends Sector {
 
-    /** Months covering its own running costs after an operating loss before Manufacturing orders more plant: a full year's evidence of recovery (MR1). */
+    /** Months covering its running costs after the lent DISTRESS_LOSS_MONTHS operating-loss runway before Manufacturing orders more plant: a full year's recovery (MR1). */
     public static final int EXPANSION_RECOVERY_MONTHS = 12;
 
-    // No losing record yet: first entry is allowed. Closed operating losses reset this clock.
+    // The dial means no recovery hold is active; first entry and ordinary short losses are allowed.
     private int expansionRecoveryMonths = EXPANSION_RECOVERY_MONTHS;
 
-    /** Consecutive closed months covering running costs since the last loss, capped at the expansion dial (MR1). */
+    /** Paying months in an armed recovery, or the expansion dial when no recovery hold is active (MR1). */
     public int getExpansionRecoveryMonths() { return expansionRecoveryMonths; }
 
     /*
@@ -93,13 +93,25 @@ public final class Manufacturing extends Sector {
      * capacity. Irreversible investment has an option value of waiting for
      * evidence (Pindyck 1990; docs/queue/MR1-notes.md, WHY). Observe the closed
      * trading result, as AQ1's bleed does, excluding the old metal sold when
-     * plant is retired. Interest-only losses do not restart recovery.
+     * plant is retired. Arm only at AQ1's operating-loss runway while lent,
+     * not on a short loss spell funded from its own cash (REV-MR1). Once
+     * armed, another loss restarts the twelve paying months; completing them
+     * releases the hold. Interest-only losses do not restart recovery.
      */
     @Override
     protected void afterBank() {
         double running = statement().operatingIncome - statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0);
-        if (running < 0) expansionRecoveryMonths = 0;
+        if (running < 0 && (expansionRecoveryMonths < EXPANSION_RECOVERY_MONTHS || lentLossRunway())) {
+            expansionRecoveryMonths = 0;
+        }
         else if (expansionRecoveryMonths < EXPANSION_RECOVERY_MONTHS) expansionRecoveryMonths++;
+    }
+
+    /** bank() closes before recordOperatingResult(): the saved streak here is through the previous close. */
+    private boolean lentLossRunway() {
+        return game != null
+                && game.getBusinessInvestment().getOperatingLossMonths(key()) >= BusinessInvestment.DISTRESS_LOSS_MONTHS - 1
+                && game.getEconomyManager().getBusinessDebtManager().getPrincipal(key()) > 0;
     }
 
     @Override
@@ -268,7 +280,7 @@ public final class Manufacturing extends Sector {
         String sector = key();
         if (expansionRecoveryMonths < EXPANSION_RECOVERY_MONTHS) {
             return BusinessInvestment.Decision.no(sector, String.format(
-                    "%d of %d months covering its own running costs since the last operating loss",
+                    "operating recovery: %d of %d months covering its own running costs after sustained lent losses",
                     expansionRecoveryMonths, EXPANSION_RECOVERY_MONTHS));
         }
 

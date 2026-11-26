@@ -9,7 +9,7 @@ MemWatch committed memory before its start: 30.3% (2026-11-26 07:57 local).
 
 ## WHY and the call
 
-The real-options account supports waiting for evidence after a loss, rather
+The real-options account supports waiting for evidence after sustained distress, rather
 than buying sunk capacity on one newly favourable estimate. Pindyck,
 [Irreversibility, Uncertainty, and Investment (1990)](https://www.nber.org/papers/w3307),
 explains why a firm can value postponement while learning about prices and
@@ -26,10 +26,13 @@ gives a concrete loss-driven capacity reduction: a smaller plant footprint
 and lower costs aimed to restore viability while leaving room for a market
 rebound. It does not describe a ban on productive technology investment.
 
-★ Manufacturing remembers its own recently closed running results,
-excluding plant-sale scrap receipts as AQ1 does. A loss holds expansion until
-a full year of consecutive months covering operating costs; interest alone
-does not restart that clock. This is a model dial for sustained recovery,
+★ Manufacturing arms recovery only when its operating-loss streak reaches
+`BusinessInvestment.DISTRESS_LOSS_MONTHS` while it is lent (AQ1's runway).
+It then holds expansion until a full year of consecutive months covering
+operating costs, excluding plant-sale scrap receipts as AQ1 does. An active
+recovery resets on a running loss; a short loss spell before it is armed or
+after it is completed leaves ordering unchanged. Interest alone does not
+restart that clock. This is a model dial for sustained recovery,
 not an empirical claim that every real firm waits exactly a year. A new
 sector may enter before it has a record. The existing new-works estimate,
 staffing, land and credit tests still decide what a recovered sector orders.
@@ -39,8 +42,13 @@ or money-transfer formula is needed.
 
 The implementation uses `Manufacturing.afterBank()` so it observes the final
 statement once, at the same monthly close as the existing operating-loss
-history. The capped count is initially satisfied for first entry, reset on
-any negative running result, and advanced on nonnegative running results.
+history. The dial means no hold is active, including first entry. Once the
+lent loss runway arms it, the count resets on a negative running result and
+advances on nonnegative running results. `afterBank()` precedes
+`recordOperatingResult()`: on a losing close it reads the existing streak
+through the previous month, so the trigger is that streak at runway minus
+one, plus this losing close, with principal above zero. This phase dependency
+is documented in the method; no second loss history or saved flag is added.
 An empty business can therefore re-enter after the same window; it is not
 locked out forever after a complete liquidation. Opening new plant does not
 erase this history. `plan()` returns a no-order decision with the count
@@ -63,7 +71,9 @@ Other calls: the bleed's current predicate forgets the problem at the first
 paying month (AQ1's measured one-month delay), so it is not a recovery rule.
 A sale-only timer would add a retirement event to shared code and could
 expire while the business still lost money; the observed running record
-covers both recent losses and a bleed, which already requires losses.
+retains the sustained lent losses after a bleed even when the immediate
+loss predicate has cleared. The first submission's any-one-loss activation
+was rejected by REV-MR1; a self-funded short spell must not start recovery.
 Per-plant profitability or an additional utilization cutoff would require a
 different allocation of the sector's books. This batch keeps the sector as
 the accounting unit and changes Manufacturing alone, as its row asks.
@@ -89,16 +99,43 @@ to satisfy an unpulled target. It does not calibrate the game's pulls.
 ★ Keep the exact played fixture, the one-month inertia assertion, the 80%
 decade share, the independent raw ratio and every overshoot/conservation
 check. Apply the decade share to the same actual target already used by the
-overshoot law, with an added positive-target guard. The existing controlled
-dear-city fixture sets rent burden to twice the model's target, keeps jobs
-and no home draw, and proves the actual target is lower than the unpulled
-draw; MR1 adds that effect as an explicit assertion. The fixture is not moved
-and the model's affordability/crime/senior-care effects are not hidden.
-Printed figures distinguish raw draw and actual target. The pending probe
-will identify this particular played city's pulls without guessing from the
-old senior-care comment. PopulationCheck is rerun after this correction.
+overshoot law, with an added positive-target guard. REV-MR1 accepted this
+law and rejected the first added dear-city assertion as redundant. `play()`
+now returns the played city's own job/home draws, their job/home pulls and
+affordability pull (tuple entries 12–16), all from the same migration call.
+The played-city assertion reconciles target = job draw × jobs pull + home
+draw × homes pull and requires its actual affordability pull below one.
+The fixture is not moved, and no controlled-fixture difference is claimed
+as evidence about the played city. Printed figures show those inputs.
 
 ## Checks and measurements
+
+### REV-MR1 mends (after NOT SHIP on 62df472c3)
+
+- **P1, trigger:** the original any-one-loss activation was too broad. It
+  is replaced by AQ1's existing operating-loss runway while lent. The twelve
+  paying months are unchanged. Inactive recovery leaves a short spell alone;
+  active recovery resets on a running loss and disarms after twelve paying
+  closes. A fixture compares the actual order (build/template/quantity/reason)
+  before and throughout a short unlent spell, then throughout lent losses
+  below the runway; all must match. The last runway loss arms the old bleed
+  fixture. One isolated loss after completed recovery also leaves its order
+  unchanged.
+- **P1, played-city evidence:** remove the redundant added dear-city effect
+  line. Carry and reconcile the actual played city's draws/pulls, requiring
+  its recorded affordability pull below one. Correct the comment that had
+  attributed a controlled-fixture difference to the played city.
+- **P2, loaded controls:** set the planner's land snapshot after each load.
+  Both loaded holds must explicitly name `operating recovery:`; after the
+  next paying close the loaded plant must actually order. This removes the
+  former no-land vacuity.
+- First revised `--fast`: 0, compile 58 s, Stale 0 firm findings. Revised
+  ManufacturingCheck: 0 (`target/MR1-review-ManufacturingCheck.txt`), including
+  the new unchanged-order controls and both loaded hold reasons.
+
+The original measurements and first-submission check record below remain
+historical evidence. New-path measurements and the revised pick follow the
+mends before the second review request.
 
 - Base `./batch-check.sh --fast`: green; compile 60 s, maps unchanged,
   Stale 0 firm findings, tree 0 changed.
@@ -190,7 +227,7 @@ old senior-care comment. PopulationCheck is rerun after this correction.
   The provisional registry check also confirms the old MR1 PopulationCheck
   exemption is retired (`! PopulationCheck ...`).
 
-### Final acceptance verdict
+### First-submission acceptance verdict (62df472c3; superseded by REV-MR1)
 
 On model `3968aa6e0` over `ded8345fc`, run strictly serial through Git Bash
 with the shared Earth/world files and `-Dcbs.parallel=1`:

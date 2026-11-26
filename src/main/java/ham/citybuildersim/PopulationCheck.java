@@ -944,8 +944,6 @@ public class PopulationCheck {
                     wgDear.getLastAffordabilityPull() < 1 && wgDear.getLastHomeDraw() == 0 && wgDear.getLastJobDraw() > 0);
             check("a dear city's target is the jobs' draw x the affordability pull, senior care adding nothing to it",
                     wgDear.getLastTarget(), wgDear.getLastJobDraw() * Migration.affordabilityPull(wgDearBurden), 1e-9);
-            assertTrue("a dear city's actual target is below its unpulled draw",
-                    wgDear.getLastTarget() < wgDear.getLastDrawBeforePulls());
             assertTrue("...and the jobs' pull never exceeds 1", wgDear.getLastJobsPull() <= 1
                     && wgCaring.getLastJobsPull() <= 1 && wgPlain.getLastJobsPull() <= 1);
             assertTrue("...nor does it at inputs over 1", Migration.jobsPull(1.5, 1.5) == 1 && Migration.jobsPull(1, 2) == 1);
@@ -1121,10 +1119,17 @@ public class PopulationCheck {
          * Senior care, affordability and crime change the actual draw. It is
          * recorded when migration runs, before the arrivals change the adult
          * share. Rebuilding the unpulled ratio after the month cannot supply
-         * the target the city filled toward. The controlled dear-city fixture
-         * above causes this difference; the played fixture and its 80% law stay.
+         * the target the city filled toward. play() carries this city's own
+         * pre-pull draws and pulls from that same calculation; reconcile them
+         * below, including its actual affordability effect (REV-MR1).
          */
         double modelTarget = settled[11];
+        assertTrue("the played city has both pre-pull draws", settled[12] > 0 && settled[13] > 0);
+        assertTrue("the played city's own affordability pull is below one", settled[16] > 0 && settled[16] < 1);
+        check("the played city's target is its own jobs and homes at their own pulls",
+                modelTarget, settled[12] * settled[14] + settled[13] * settled[15], 1e-9);
+        System.out.printf("   played draws: jobs %.6f x %.9f; homes %.6f x %.9f; affordability %.9f%n",
+                settled[12], settled[14], settled[13], settled[15], settled[16]);
 
         System.out.printf("   after 1 month: %,.0f people;  after 120: %,.0f"
                 + "  (raw draw %,.0f; model target %,.0f)%n", oneMonth[0], settled[0], target, modelTarget);
@@ -1377,7 +1382,13 @@ public class PopulationCheck {
             g.getMigration().getLastArrivals(),
             g.getMigration().getLastDepartures(),
             // The target the model ACTUALLY used, not one rebuilt out here.
-            g.getMigration().getLastTarget()
+            g.getMigration().getLastTarget(),
+            // Same-call flow inputs and pulls, before arrivals change the city's state (REV-MR1).
+            g.getMigration().getLastJobDraw(),
+            g.getMigration().getLastHomeDraw(),
+            g.getMigration().getLastJobsPull(),
+            g.getMigration().getLastHomesPull(),
+            g.getMigration().getLastAffordabilityPull()
         };
     }
 

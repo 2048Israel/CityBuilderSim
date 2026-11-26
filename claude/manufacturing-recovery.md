@@ -7,10 +7,12 @@ pay for one month without proving that its market can support expansion.
 The estimate is still useful, but the existing business supplies evidence
 about prices and costs that the estimate alone misses.
 
-MR1 makes a recent operating loss hold new capacity until Manufacturing has
-covered its running costs for twelve consecutive closed months. A full year
-is the model's recovery dial. Proceeds from scrapping plant do not count as
-trading recovery; interest alone does not break it. The sector can enter for
+MR1 arms a recovery hold when Manufacturing reaches the distress rule's
+twenty-four consecutive operating-loss months while it is lent. It can order
+new plant again after covering its running costs for twelve consecutive
+closed months. A full year is the recovery dial. A short self-funded loss
+spell leaves ordering unchanged. Proceeds from scrapping plant do not count
+as trading recovery; interest alone does not break it. The sector can enter for
 the first time without a prior record, and a business that has sold its last
 plant can try again after the same window. Once the record permits an order,
 the usual earnings, workers, ground and financing tests still apply. The
