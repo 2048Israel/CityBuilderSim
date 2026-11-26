@@ -2008,6 +2008,29 @@ public class LabourCheck {
         share[0] = 1;
         BuildingsStacks shops = bm.getStack(shop);
         sectorMoved("an order adds a new stack", bm, sectors, weight, () -> bm.addStack(t(g, "Police Station"), HELD_INSTANT, true));
+
+        // A NEW site changes the held grouping without addQuantity's independent raise.
+        // Keep the instant-stack case above: its premise is not replaced by this one.
+        BuildingsTemplate site = bm.getTemplates().stream()
+                .filter(b -> bm.getStack(b) == null && allPosts(b) > 0 && b.getConstructionMaterials() > 0)
+                .findFirst().orElseThrow();
+        assertTrue("fixture: the on-site order's template has no stack yet", bm.getStack(site) == null);
+        sectorReadings(bm, sectors, weight);
+        long[] bareBeforeSite = WorksValue.bareWhile(() -> sectorReadings(bm, sectors, weight));
+        int groupSize = WorksValue.bareWhile(() -> bm.getSectorStacks(site.getSector())).size();
+        bm.addStack(site, HELD_INSTANT, false);
+        java.util.List<BuildingsStacks> siteGroup = bm.getSectorStacks(site.getSector());
+        long[] afterSite = sectorReadings(bm, sectors, weight);
+        long[] bareAfterSite = WorksValue.bareWhile(() -> sectorReadings(bm, sectors, weight));
+        assertTrue("fixture: the new buildings are on site, with no finished total moved",
+                bm.getStack(site).getQuantity() == 0 && bm.getStack(site).getUnderConstruction() == HELD_INSTANT
+                    && java.util.Arrays.equals(bareBeforeSite, bareAfterSite));
+        assertTrue("a new on-site stack refreshes the warmed group's identities and order",
+                siteGroup.equals(WorksValue.bareWhile(() -> bm.getSectorStacks(site.getSector())))
+                    && siteGroup.size() == groupSize + 1 && siteGroup.contains(bm.getStack(site)));
+        assertTrue("...and every next held reading has the bare bits", java.util.Arrays.equals(afterSite, bareAfterSite));
+        assertTrue("...and the new group is reused on another reading", siteGroup == bm.getSectorStacks(site.getSector()));
+
         sectorMoved("addQuantity finishes buildings", bm, sectors, weight, () -> shops.addQuantity(HELD_INSTANT));
         sectorMoved("increaseQuantity adds buildings", bm, sectors, weight, () -> shops.increaseQuantity(HELD_INSTANT));
         sectorMoved("a plant sale retires buildings", bm, sectors, weight, () -> bm.retire(shop, HELD_SCRAPPED));

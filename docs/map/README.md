@@ -4,7 +4,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 646 files, 700,607 lines, 30,597 methods, 6,839 constants. `GameVersion.VERSION` is "0.9.212", `SAVE_FORMAT` 66.
+**The tree:** 646 files, 700,630 lines, 30,597 methods, 6,839 constants. `GameVersion.VERSION` is "0.9.212", `SAVE_FORMAT` 66.
 
 ## model (281 files)
 
@@ -528,7 +528,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [KeptCheck.java](KeptCheck.md) | 10,010 | 256 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 8 |
 | [KeptTimingCheck.java](KeptTimingCheck.md) | 682 | 20 | What the kept pages cost: KeptCheck's timed sections, each kept month on a page against the same month built new, within its budget through Timing. | 0 |
 | [KnownRedsCheck.java](KnownRedsCheck.md) | 351 | 12 | The harness for AllChecks' known reds, time limit and resource admission. | 0 |
-| [LabourCheck.java](LabourCheck.md) | 2,550 | 31 | Verifies the labour market: who can hold a job, and what it costs. | 5 |
+| [LabourCheck.java](LabourCheck.md) | 2,573 | 31 | Verifies the labour market: who can hold a job, and what it costs. | 5 |
 | [LandCheck.java](LandCheck.md) | 3,900 | 64 | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. | 9 |
 | [LandClassCheck.java](LandClassCheck.md) | 1,349 | 51 | A price for each class of ground, checked (ET3, slice A; docs/studies/spec-earth2-terrain.md 5.1 and 5.2): the going price stays the price of flat ... | 4 |
 | [LandNationsCheck.java](LandNationsCheck.md) | 1,842 | 67 | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor an... | 1 |

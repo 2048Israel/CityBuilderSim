@@ -76,7 +76,23 @@ not AP5's earlier absolute figures. Full figures and after measurements follow b
 
 Initial `./batch-check.sh --fast`: green, compile 55 s, Stale 0 firm.
 `LabourCheck` on the final model: exit 0 (one named harness).
+`BondCheck`: exit 0. Its native eager/deferred twins each trade 9 times and write
+18 faces per month on ids 2, 17, 101: **18 eager folds become 4 deferred folds**,
+in each of two months. Cell/aggregate/book/saved/audit figures match raw bits;
+manual/waterfall settlement stays eager, including after a deliberately thrown fill.
 ★ `MonthPostsCheck` runs LabourCheck's two controlled held-figure sections for
 the mutation trials. The full LabourCheck keeps both sections; no assertion is
 removed. This avoids replaying unrelated census and wages for every removed raise.
+`MonthPostsCheck`: exit 0 before the trials. All 20 trials at `83389d532` were
+new assertion reds; sources restored after each. A read-only evidence helper
+confirmed post-writer bare-bit/rebuild failures for clear, finish and both recipes.
+It found the instant-stack trial's missing `addStack` raise was masked by
+`addQuantity`'s independent raise (the two reds were AP5's existing-order counts).
+★ Added a separate **new on-site stack** witness, preserving the instant-stack
+premise: warm the grouping, place an absent template with zero finished quantity,
+then compare its ordered identities and every held reading with the bare walk.
+The bare finished totals must stay unchanged, while membership grows by one.
+The strengthened `MonthPostsCheck` is green (exit 0). Its 16 writer/input/work
+mutations are repeated on that final harness; the bond harness and its four
+mutations are unchanged by this test-only addition.
 The final results, warmed-cache writer coverage and mutation table will be recorded here.
