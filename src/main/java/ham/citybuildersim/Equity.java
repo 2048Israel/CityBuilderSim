@@ -1085,9 +1085,10 @@ public class Equity {
      * around this; an offering with no market sells at it. A company with no
      * shares is worth the founding price, and one with under RECORD_MONTHS
      * months on the record is still held on prospects (priceOf()), as the
-     * world already holds it. A value no more than a share at the market's
-     * floor is no value, and the last price stands (the floor priceOf() ends
-     * with).
+     * world already holds it. Once the record is mature, the same formula
+     * reaches the monetary floor continuously: a historical offering quote
+     * is not recoverable value when earnings and spare cash disappear (CBK3).
+     * It must not reappear only at zero and inflate the bank desk's mark.
      *
      * WHY IT REPLACED BOOK-OR-DIVIDENDS. priceOf() takes the more of a
      * company's book and its dividends capitalised, and a book is 95% cash and
@@ -1115,7 +1116,7 @@ public class Equity {
         if (l.shares <= 0) return foundingPrice;
         if (l.months < RECORD_MONTHS) return priceOf(l, bookEquity, worldRate);
         double value = Math.max(0, spare) + Math.max(0, l.trailingIncome()) / requiredReturn(worldRate);
-        return value > noValue() * l.shares ? value / l.shares : l.lastPrice;
+        return Math.max(noValue(), value / l.shares);
     }
 
     /** True when fairValue() prices the company on its record: it has shares and a full year on the record (EM1); before that it is held on prospects. */
