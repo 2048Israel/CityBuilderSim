@@ -640,3 +640,78 @@ does not prescribe this model's twenty-four-month timer or make operating
 profit a guarantee of viability. QR1 retains the separate saved operating
 runway and existing debt resolution; no new viability rule or queue row is
 added. The P2 measurements make the resulting support visible.
+
+### PW9 integration before the authorized dry run (2026-11-26)
+
+The orchestrator authorized the ALL dry run at 06:21 on 825e9e279 or the
+new head. The required last main fetch found PW9 published at e3e390acf
+(0.9.209, format 66). Merge 07a61922d retains PW9's power planning and
+QR1's operating-loss gate, bank fixtures and transient observations.
+Only generated harness/map/month-order documents conflicted; these were
+regenerated from the combined sources. No publisher record or version was
+edited by QR1: their merge changes are inherited from main.
+
+The read-only QR1-pw9-integration helper found no phase, settlement or save
+conflict. PW9's Game edits guard offered building dates during founding;
+QR1's edits observe completed retirement receipts. Its power dispatch and
+planning change the played city, while the added station's expiry applies
+only to its electricity row. The shop/mine/depot sale fixtures keep their
+native rows and both saved loss histories.
+
+★ The combined executable model must have its own ensemble: contract
+section 3 makes the second batch to ship repeat it on the new main.
+The completed 0.9.208 formal score and four P2 comparisons above remain
+evidence for their named sources; they are not described as PW9 results.
+The review go authorizes the ensemble; it precedes the already authorized
+dry run, one heavy job at a time, against the new 0.9.209 baseline.
+
+Combined-model checks ran serially with native Earth/world paths and
+`-Dcbs.parallel=1`: `--fast` **0**, `DistressBleedCheck` **0**,
+`EnsembleCheck` **0**, exact whole `BankCheck` **0**, `InvestCheck` **3**,
+`FoundingYardCheck` **0**, `RailDepotCheck` **0**. Logs and exit files are
+`target/QR1-pw9-*`. QR1-pw9-check-proof verified actual section 15 execution:
+funded distress sale, receipt/stock/pricing/cash assertions, both cent
+audits (sale month and later materials use), and the broke-builders
+zero-receipt case all pass. There is no separate cent-audit assertion in
+the broke-builders branch; neither of the two funded-sale audits was
+skipped. DistressBleedCheck retains both operating-loss threshold sides
+and the interest-only/profit/breakeven holds.
+
+InvestCheck has exactly one failed assertion, zero NEW reds: the existing
+HT1-H played builders' wage/House-rebate fixture (prefix `fixture: the
+builders' wages have moved since founding`), already named by main's
+known-red records and gate. No BankCheck waiver or new known-red row is
+used. The pick is **ALL 257**, BusinessInvestment now 66 readers; its
+automatic review line still says no money/saves/threading. The explicit
+REV-QR1 money review and its mended P1 remain the applicable review.
+
+The required PW9-merged refresh **QR1-PW9** completed on the gate box with
+caller exit **0**, source/classes **07a61922d**, snapshot
+**2026-11-26T10:34Z**, against **docs/ensemble/0.9.209.md**. Box wall time
+**35.0 minutes**, summed run time **277.8 minutes**. OpenJDK **21.0.13 LTS**,
+native box Earth/world paths as in that baseline, no extra JAVA_OPTS or
+laptop fallback. The kept copied run is `target/ensemble/QR1-PW9`; its
+`baseline.md`, with only the two publication-version tokens substituted,
+replaces `docs/ensemble/QR1.md` as the final combined-model baseline.
+
+**80/80** CSVs/DONEs, 16 unique seeds per policy, 64/64 paired comparisons;
+policy lengths AUTO2 **2400**, ZERO_SLACK **2040**, ZERO_HOT **402**, SHOCK
+**840**, HIGH **720**. Missing/short runs and throws/error markers **0**.
+Every policy has **M1 0 failed / 0 unread**, **F1 0/16 findings []**:
+hard **10/10 PASS**, aggregate **24/26**, versus baseline **23/26**, with
+one retired criterion. The only changed soft verdict is **HIGH T2
+FAIL → PASS**, median final population **245,141** versus **116,844**.
+A1 remains FAIL, inflation **2.96% [2.35,3.22]**, 10/16 in band, versus
+**3.04% [2.48,3.46]**, 7/16; A2 remains FAIL, longest >10% yoy spell
+**13 [7,22]** months versus **14 [9,30]**. H2 remains PASS, tail excess
+**−0.72% [−4.15,4.23]**, 15/16 below burst, versus
+**−0.37% [−4.15,4.39]**, 14/16. QR1-pw9-ensemble-proof verified the complete
+artifacts and matching baseline/summary JSON. The earlier four P2 default
+runs were not replayed on PW9; their source-qualified evidence and the
+orchestrator's acceptance remain above.
+
+A fresh fetch immediately after this ensemble still gives main
+**e3e390acf**. The combined executable model is unchanged; only this record
+and the refreshed ensemble artifact are being committed before the
+standing authorized dry run. No further code review is required by the
+reviewer's instruction, and no model or fixture changed after the merge.
