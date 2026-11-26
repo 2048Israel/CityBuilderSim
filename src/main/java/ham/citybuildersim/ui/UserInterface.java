@@ -6144,7 +6144,9 @@ public class UserInterface extends Application {
             case "finances":   financesScreen.financeArea = null;
                                financesScreen.financePage = FinancesScreen.FINANCE_HOME;   break;
             case "bank":       bankScreen.bankArea    = null;
-                               bankScreen.bankPage    = BankScreen.BANK_HOME;      break;
+                               bankScreen.bankPage    = BankScreen.BANK_HOME;
+                               bankScreen.side        = null;     // the rail's bank icon lands on the choice of the two banks (CBK1)
+                               bankScreen.central.page = CentralBankScreen.OVERVIEW;      break;
             case "trade":      tradeScreen.tradeArea   = null;
                                tradeScreen.tradePage   = TradeScreen.TRADE_HOME;     break;
             case "policy":     policyScreen.policyArea  = null;
@@ -6563,10 +6565,12 @@ public class UserInterface extends Application {
                 landScreen.showLandMenu();
                 break;
             case "bank":
+                bankScreen.side = BankScreen.COMMERCIAL;     // the commercial bank's notice (CBK1)
                 bankScreen.showBankMenu();
                 break;
             case "preferred":
                 // The offer's Accept and Decline are at the top of the landing (0.7.14).
+                bankScreen.side = BankScreen.COMMERCIAL;
                 bankScreen.bankArea = null;
                 bankScreen.showBankMenu();
                 break;

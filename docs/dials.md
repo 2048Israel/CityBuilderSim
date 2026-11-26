@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,855 constants in 647 files.**
+**6,861 constants in 648 files.**
 
 ## model (3085 constants)
 
@@ -4595,37 +4595,39 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 77 | `WoodProducts.PAPER_MILL` | `137` | The Paper Mill's (0.7.140): 5,500 t of paper a month from 5,775 t of pulp and 850,000 litres of fuel oil. |
 | 80 | `WoodProducts.PELLET_MILL` | `138` | The Wood Pellet Mill's (0.7.140): 6,000 t of pellets a month from 13,200 m3 of residues. |
 
-## interface (1206 constants)
+## interface (1212 constants)
 
 ### BankScreen.java ([map](map/BankScreen.md))
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 124 | `BankScreen.BANK_PAGES` | `"The bank's pages"` | null is the Overview; BANK_PAGES, the pages behind it |
-| 126 | `BankScreen.BANK_HOME` | `"Profit"` | The page behind the Overview that is lit until the player picks another; the rail's bank icon resets to it. |
-| 130 | `BankScreen.BANK_PAGE_NAMES` | `{ "Profit", "Balance sheet", "Lending", "Funding", "Capital & owners", "History" }` | The six pages behind the Overview, in the chip strip's order: the balance sheet beside the income statement since 0.7.13. |
-| 134 | `BankScreen.OVERVIEW` | `"Overview"` | The strip (0.7.33): the Overview first - it was the landing, with a button back to it at the foot of every page - then the six. |
-| 136 | `BankScreen.CHIPS` | `{ OVERVIEW, "Profit", "Balance sheet", "Lending", "Funding", "Capital & owners", "Histo...` | ...the strip's seven chips: the Overview, then BANK_PAGE_NAMES in their order. |
-| 139 | `BankScreen.CHIP_ICONS` | `{ Icons.OVERVIEW, Icons.COIN, Icons.FINANCES, Icons.SECTOR, Icons.BANK, Icons.STAFF, Ic...` | ...and each chip's icon. |
-| 164 | `BankScreen.FRAME_CHROME` | `190` | How much of the stage the fixed frame takes above the page's scroller - the head, the chips and, on a page, the status strip - until the frame is laid out and its own height is read (0.7.33). |
-| 167 | `BankScreen.STAGE_REST` | `36` | What the menu spends around the frame and the page: its padding over and under them and the gap between, and the four pixels of slack its height is held to (UserInterface's rootMenu) - GovernmentSc... |
-| 170 | `BankScreen.SET_ASIDE` | `"#setAside", PRICING = "#pricing", LANDLORDS = "#landlords", FAMILIES = "#families", CA...` | The scroll targets a door can land on: Lending's cards and its pricing, Funding's carry card, the details folds. |
-| 476 | `BankScreen.BOUND_TO_FRAME` | `"bank.frame", BOUND_TO_SCROLLER = "bank.scroller"` | The key in a kept scroller's properties for the frame its height is bound to, and in a kept page's for the scroller its width is bound to (frameOver()). |
-| 492 | `BankScreen.LEAD_INFO` | `"Every loan in the city is its money, priced from what it costs the bank to make." + "T...` | The tab's (i): the Overview's lead (the spec's L2), with what the Overview shows. |
-| 499 | `BankScreen.PAGE_INFO` | `{ "Its income statement, and what it did with the profit: a walk from the interest it e...` | Each page's (i), in BANK_PAGE_NAMES' order: what it holds (the landing's row blurbs until 0.7.33). |
-| 1183 | `BankScreen.LADDER_INFO` | `"From the price of money to what each borrower pays.Every step up is a cost " + "the ba...` | THE LADDER's (i): the landing's note (the spec's L10), with what the parts are. |
-| 1578 | `BankScreen.NOTHING` | `.0005` | A step under half a dollar is nothing: it is left off the walk and named under it. |
-| 1686 | `BankScreen.PROVISIONS_INFO` | `"A provision is money set aside for loans expected to go bad: a year's " + "expected lo...` | The provisions' note (the spec's T, Profit 790), behind the step's tooltip and the statement's line. |
-| 1726 | `BankScreen.RATIOS_INFO` | `"The margin is what it charges less what it pays for its money, on everything that earn...` | The ratios' note (Profit 874), behind MARGIN's and COSTS' (i). |
-| 2198 | `BankScreen.OWNS` | `List.of(new SheetPart(Bank.Sheet.BUSINESS_LOANS, "Loans to the businesses", Palette.BUS...` | What it owns, in the bars' order (the spec's section 3): the businesses' loans first, its reserves last; the allowance is the net tick. |
-| 2210 | `BankScreen.OWES` | `List.of(new SheetPart(Bank.Sheet.DEPOSIT_FUNDING, "Lent past its own cash, on its depos...` | ...and what it owes, then its owners' (equity last). |
-| 2483 | `BankScreen.BESIDE_INFO` | `"Counted for what it can lend and not held on its sheet in full: the families' " + "sav...` | BESIDE THE SHEET's (i) (Balance sheet 1161). |
-| 2793 | `BankScreen.BOOK_INFO` | `"Everything it has lent, by who owes it: the businesses' loans and the bonds of theirs ...` | Who-owes-it note (Lending 1225), behind THE BOOK's (i). |
-| 3454 | `BankScreen.LEND_AGAINST_INFO` | `"Savings reach the bank wherever its branches are - online - so it lends " + "against e...` | What it can lend against (Funding 1681), behind the banked bar's (i). |
-| 3931 | `BankScreen.STAKE_INFO` | `"A resolution makes every share the city's, in its fund's rescue book, which its rule "...` | The city's stake's note (Capital 2002). |
-| 4026 | `BankScreen.MOVED_INFO` | `"Equity moves by what it earned, what it was given and what it paid out, and by " + "no...` | The equity's note (Capital 1990): Jerus's rule on a plug. |
-| 4082 | `BankScreen.RESCUES_INFO` | `"When a bank loses more than it owns, the city resolves it: the old owners lose " + "ev...` | The rescues' note (Capital 2027). |
-| 4308 | `BankScreen.RESCUE_INFO` | `"Its owners lose everything: the households' shares and the world's pass to the city " ...` | The rescue's note (Rescue 2119). |
+| 148 | `BankScreen.COMMERCIAL` | `"Commercial bank", CENTRAL = "Central bank"` | The commercial bank's side of the tab, and the central bank's: what `side` is set to when one of them is open (CBK1). |
+| 154 | `BankScreen.BANK_PAGES` | `"The bank's pages"` | null is the Overview; BANK_PAGES, the pages behind it |
+| 156 | `BankScreen.BANK_HOME` | `"Profit"` | The page behind the Overview that is lit until the player picks another; the rail's bank icon resets to it. |
+| 160 | `BankScreen.BANK_PAGE_NAMES` | `{ "Profit", "Balance sheet", "Lending", "Funding", "Capital & owners", "History" }` | The six pages behind the Overview, in the chip strip's order: the balance sheet beside the income statement since 0.7.13. |
+| 164 | `BankScreen.OVERVIEW` | `"Overview"` | The strip (0.7.33): the Overview first - it was the landing, with a button back to it at the foot of every page - then the six. |
+| 166 | `BankScreen.CHIPS` | `{ OVERVIEW, "Profit", "Balance sheet", "Lending", "Funding", "Capital & owners", "Histo...` | ...the strip's seven chips: the Overview, then BANK_PAGE_NAMES in their order. |
+| 169 | `BankScreen.CHIP_ICONS` | `{ Icons.OVERVIEW, Icons.COIN, Icons.FINANCES, Icons.SECTOR, Icons.BANK, Icons.STAFF, Ic...` | ...and each chip's icon. |
+| 194 | `BankScreen.FRAME_CHROME` | `190` | How much of the stage the fixed frame takes above the page's scroller - the head, the chips and, on a page, the status strip - until the frame is laid out and its own height is read (0.7.33). |
+| 197 | `BankScreen.STAGE_REST` | `36` | What the menu spends around the frame and the page: its padding over and under them and the gap between, and the four pixels of slack its height is held to (UserInterface's rootMenu) - GovernmentSc... |
+| 200 | `BankScreen.SET_ASIDE` | `"#setAside", PRICING = "#pricing", LANDLORDS = "#landlords", FAMILIES = "#families", CA...` | The scroll targets a door can land on: Lending's cards and its pricing, Funding's carry card, the details folds. |
+| 557 | `BankScreen.BOUND_TO_FRAME` | `"bank.frame", BOUND_TO_SCROLLER = "bank.scroller"` | The key in a kept scroller's properties for the frame its height is bound to, and in a kept page's for the scroller its width is bound to (frameOver()). |
+| 573 | `BankScreen.LEAD_INFO` | `"Every loan in the city is its money, priced from what it costs the bank to make." + "T...` | The tab's (i): the Overview's lead (the spec's L2), with what the Overview shows. |
+| 580 | `BankScreen.PAGE_INFO` | `{ "Its income statement, and what it did with the profit: a walk from the interest it e...` | Each page's (i), in BANK_PAGE_NAMES' order: what it holds (the landing's row blurbs until 0.7.33). |
+| 601 | `BankScreen.CHOICE_INFO` | `"The city has two banks.The commercial bank takes the city's deposits and lends " + "th...` | The choice's (i) (CBK1): what the two banks are, and that a card opens one. |
+| 1335 | `BankScreen.LADDER_INFO` | `"From the price of money to what each borrower pays.Every step up is a cost " + "the ba...` | THE LADDER's (i): the landing's note (the spec's L10), with what the parts are. |
+| 1730 | `BankScreen.NOTHING` | `.0005` | A step under half a dollar is nothing: it is left off the walk and named under it. |
+| 1838 | `BankScreen.PROVISIONS_INFO` | `"A provision is money set aside for loans expected to go bad: a year's " + "expected lo...` | The provisions' note (the spec's T, Profit 790), behind the step's tooltip and the statement's line. |
+| 1878 | `BankScreen.RATIOS_INFO` | `"The margin is what it charges less what it pays for its money, on everything that earn...` | The ratios' note (Profit 874), behind MARGIN's and COSTS' (i). |
+| 2350 | `BankScreen.OWNS` | `List.of(new SheetPart(Bank.Sheet.BUSINESS_LOANS, "Loans to the businesses", Palette.BUS...` | What it owns, in the bars' order (the spec's section 3): the businesses' loans first, its reserves last; the allowance is the net tick. |
+| 2362 | `BankScreen.OWES` | `List.of(new SheetPart(Bank.Sheet.DEPOSIT_FUNDING, "Lent past its own cash, on its depos...` | ...and what it owes, then its owners' (equity last). |
+| 2635 | `BankScreen.BESIDE_INFO` | `"Counted for what it can lend and not held on its sheet in full: the families' " + "sav...` | BESIDE THE SHEET's (i) (Balance sheet 1161). |
+| 2945 | `BankScreen.BOOK_INFO` | `"Everything it has lent, by who owes it: the businesses' loans and the bonds of theirs ...` | Who-owes-it note (Lending 1225), behind THE BOOK's (i). |
+| 3606 | `BankScreen.LEND_AGAINST_INFO` | `"Savings reach the bank wherever its branches are - online - so it lends " + "against e...` | What it can lend against (Funding 1681), behind the banked bar's (i). |
+| 4083 | `BankScreen.STAKE_INFO` | `"A resolution makes every share the city's, in its fund's rescue book, which its rule "...` | The city's stake's note (Capital 2002). |
+| 4178 | `BankScreen.MOVED_INFO` | `"Equity moves by what it earned, what it was given and what it paid out, and by " + "no...` | The equity's note (Capital 1990): Jerus's rule on a plug. |
+| 4234 | `BankScreen.RESCUES_INFO` | `"When a bank loses more than it owns, the city resolves it: the old owners lose " + "ev...` | The rescues' note (Capital 2027). |
+| 4460 | `BankScreen.RESCUE_INFO` | `"Its owners lose everything: the households' shares and the world's pass to the city " ...` | The rescue's note (Rescue 2119). |
 
 ### Branding.java ([map](map/Branding.md))
 
@@ -4665,6 +4667,15 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5418 | `BuildScreen.RECEIPTS` | `5` | How many purchases the receipt keeps. |
 | 5730 | `BuildScreen.PAYBACK_LINE` | `2 * NEED_CARD` | The pay-back line's width on the no-deposit page (0.7.101): two of Build's need cards, about as wide as the WHY section's hand-wrapped lines above it. |
 | 6389 | `BuildScreen.FUND_CAP_INFO` | `"The previews above are the auction for the cash this run is short of, at the " + "high...` | The cap block's (i) on the funding page (CD2, D30). |
+
+### CentralBankScreen.java ([map](map/CentralBankScreen.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 59 | `CentralBankScreen.OVERVIEW` | `"Overview", INCOME = "Income statement", SHEET = "Balance sheet", MADE_AND_DESTROYED = ...` | The Overview, and the eight pages behind it. |
+| 64 | `CentralBankScreen.PAGES` | `{ OVERVIEW, INCOME, SHEET, MADE_AND_DESTROYED, HOLDINGS, INFLATION, MONEY, HISTORY, POL...` | The nine chips, in the strip's order: the Overview first. |
+| 67 | `CentralBankScreen.ICONS` | `{ Icons.OVERVIEW, Icons.COIN, Icons.FINANCES, Icons.BANKNOTE, Icons.SAFE, Icons.FLAME, ...` | ...and each chip's icon. |
+| 71 | `CentralBankScreen.PAGE_INFO` | `{ "The central bank at a glance: the money it has made, what it holds, its month and th...` | Each page's (i), in PAGES' order. |
 
 ### ChartFitBench.java ([map](map/ChartFitBench.md))
 
@@ -5133,8 +5144,8 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2562 | `KeptBench.STOPPED` | `List.of("deposit", "coast", "river", "bridge", "licence", "land", "water")` | The stopped pages' kinds, by the way the model refuses an order. |
 | 2751 | `KeptBench.FUNDING_CAP_TITLE` | `"THE HIGHEST YIELD YOU WILL TAKE"` | The title over the funding page's cap chips, as BuildScreen.shortAnswers() writes it. |
 | 2885 | `KeptBench.ABSENT` | `"absent"` | What hoverKept() says when the page has no node of the kind asked for. |
-| 4162 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
-| 6125 | `KeptBench.RECURRING_LINES` | `{ "Raised by issuing paper", "Principal repaid", "Interest that was no cash", "Gain(los...` | KS1-Gov: the rows a scope parks are the ones last asked for. |
+| 4180 | `KeptBench.PRECISE` | `Boolean.getBoolean("keptbench.precise")` | Whether a signature writes a node's place and size to four decimals instead of one (-Dkeptbench.precise=true). |
+| 6143 | `KeptBench.RECURRING_LINES` | `{ "Raised by issuing paper", "Principal repaid", "Interest that was no cash", "Gain(los...` | KS1-Gov: the rows a scope parks are the ones last asked for. |
 
 ### Ladder.java ([map](map/Ladder.md))
 
@@ -6003,11 +6014,11 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5779 | `UserInterface.RAIL_BUTTON` | `54` | A rail button's height, and the least it may shrink to on a short window. |
 | 5780 | `UserInterface.RAIL_BUTTON_MIN` | `40` |  |
 | 5783 | `UserInterface.RAIL_ICON` | `20` | How big a rail icon is drawn: its 24-unit grid at 20 pixels. |
-| 6272 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
-| 6633 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
-| 6636 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
-| 6639 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
-| 6860 | `UserInterface.SPEED_MIN_WIDTH` | `34` | The least the reading is wide, in pixels: the width it held before UP7, so that at pace it sits where it did. |
+| 6274 | `UserInterface.INBOX_WIDTH` | `530` | See refreshInbox: sized to the notice bodies, not to the corner. |
+| 6637 | `UserInterface.TOAST_SECONDS` | `8` | How long a toast stays before it fades, in seconds. |
+| 6640 | `UserInterface.TOAST_MAX` | `3` | How many toasts at once. |
+| 6643 | `UserInterface.TOAST_WIDTH` | `340` | How wide a toast's text wraps. |
+| 6864 | `UserInterface.SPEED_MIN_WIDTH` | `34` | The least the reading is wide, in pixels: the width it held before UP7, so that at pace it sits where it did. |
 
 ### VaultTable.java ([map](map/VaultTable.md))
 

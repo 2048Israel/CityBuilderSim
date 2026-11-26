@@ -3045,9 +3045,27 @@ public final class KeptBench {
     /** The screen on its Overview (`area` null), or on a page behind it in a view, as a chip or the switch would put it (the next draw shows it). */
     public void bankOpen(String area, String page, boolean statement) {
         BankScreen s = ui.bankScreen;
+        s.side = BankScreen.COMMERCIAL;
         s.bankArea = area == null ? null : BankScreen.BANK_PAGES;
         s.bankPage = page == null ? BankScreen.BANK_HOME : page;
         ui.sectorScreen.statementView = statement;
+    }
+
+    /** The Bank tab on its choice of the two banks, as the rail's icon would put it (the next draw shows it). */
+    public void bankChoice() {
+        ui.bankScreen.side = null;
+    }
+
+    /** The Bank tab on one page of the central bank, as a chip would put it (the next draw shows it). */
+    public void centralOpen(String page) {
+        BankScreen s = ui.bankScreen;
+        s.side = BankScreen.CENTRAL;
+        s.central.page = page;
+    }
+
+    /** The central bank's pages, in the chip strip's order. */
+    public static List<String> centralPages() {
+        return List.of(CentralBankScreen.PAGES);
     }
 
     /** A fold ("details"), a statement line or a borrower's sectors opened or closed, by its key, as a click on it would. */

@@ -60,6 +60,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CellSpread](map/CellSpread.md) | CardCheck, DebtStatisticsCheck, HealthCheck, OutsideCheck |
 | [CementConcrete](map/CementConcrete.md) | BuildingDataCheck, CementConcreteCheck, Forms1900Check, IndustryViewCheck, QuarryingCheck |
 | [CentralBank](map/CentralBank.md) | AutoBuildCheck, BankCheck, BuybackCheck, CallCheck, CentralBankCheck, CentralBankStatementCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, FloatLinkCheck, ForeignCheck, FundCheck, GoldMiningCheck, GoldStandardCheck, HoldersCheck, LongPlaytest, MoneyDatesCheck, MortgageCheck, PolicyOpenCheck, PolicyPreviewCheck, SaveFileCheck, ScaleCheck |
+| [CentralBankScreen](map/CentralBankScreen.md) | **none** |
 | [CentralBankStatements](map/CentralBankStatements.md) | CentralBankStatementCheck |
 | [ChartFitBench](map/ChartFitBench.md) | ChartFitCheck |
 | [ChartModel](map/ChartModel.md) | BankCheck, ChartCheck, ForeignDebtCheck, HistoryCheck, KeptCheck, KeptTimingCheck, ReadPathCheck, ResearchViewCheck |
