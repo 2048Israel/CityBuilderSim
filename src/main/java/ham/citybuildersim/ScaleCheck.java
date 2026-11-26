@@ -882,6 +882,11 @@ public class ScaleCheck {
         out.printf("%-84s %s  \"%s\"%s%n", label, ok ? "OK" : "FAIL", actual, ok ? "" : " against \"" + expected + "\"");
     }
 
+    /** A city's households' take-home a person, the month just played: the rent burden's denominator (Game, Migration). */
+    static double takeHome(Game g) {
+        return g.getHouseholds().getDisposableIncome() / Math.max(1.0, g.getPopulationManager().getPopulation());
+    }
+
     /**
      * Section 6: a city's save (`small`, of `pop1` people) copied to `target`
      * people and played with every sector free to build.
@@ -953,11 +958,6 @@ public class ScaleCheck {
      * probe, moved the sixth month's people by 44 of 5.7 million, and the
      * roads are left. Its blocks, fields and iron are the founded city's.
      */
-    /** A city's households' take-home a person, the month just played: the rent burden's denominator (Game, Migration). */
-    static double takeHome(Game g) {
-        return g.getHouseholds().getDisposableIncome() / Math.max(1.0, g.getPopulationManager().getPopulation());
-    }
-
     static void free(Path root, GameFiles small, long pop1, double target, Original original) throws Exception {
         long k = Math.round(target / Math.max(1, pop1));
         out.printf("%n--- the sectors free, %,.0f people (K = %,d): whole, adding up, conserved, in time ---%n", target, k);
