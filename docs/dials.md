@@ -159,22 +159,22 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 123 | `BondMarket.BANK` | `"bank"` | The bank's desk, on the book. |
-| 125 | `BondMarket.WORLD` | `"world"` | The world, on the book. |
-| 127 | `BondMarket.CELL` | `"household:"` | One household cell on the book - bidding, asking, or selling in the waterfall: this, then its key. |
-| 129 | `BondMarket.FUND` | `"city"` | The city's fund, by its rule (0.7.14; TreasuryFund). |
-| 131 | `BondMarket.FUND_HAND` | `"city:hand"` | ...and by the player's hand. |
-| 146 | `BondMarket.DEFAULT_RATE_FLOOR` | `Bank.BASE_LOSS_RATE / BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT` | THE LEAST A DEFAULT RATE IS READ AT: the through-the-cycle default rate a sound loan is priced for, Bank.BASE_LOSS_RATE over a loan's loss given default, BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT... |
-| 149 | `BondMarket.TERM_YEARS` | `CorporateBond.TERM_MONTHS / 12.0` | The term in years, for spreading an issue's costs over its life. |
-| 152 | `BondMarket.CHEAPER_BY` | `1e-11` | The arithmetic a bond's all-in cost may sit over the loan's and still be "no dearer": a billionth of a point a year - the bisection's own resolution, not a margin (plan()). |
-| 155 | `BondMarket.ISSUE_ROUNDING` | `1e-14` | The relative shortfall at the issue-size fixed point, below the nominal twins' 1e-9 tolerance even after repeated refinancing (BS1). |
-| 158 | `BondMarket.PRICE_TICK` | `1e-12` | The price step per unit of bond face, so mathematically equal bids retain arrival priority across currency units (OB1, BS1). |
-| 163 | `BondMarket.BILL_LOT` | `1_000` | A bill's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
-| 165 | `BondMarket.BOND_LOT` | `100_000` | A fixed-rate bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
-| 167 | `BondMarket.AMORTIZING_LOT` | `10_000` | An amortizing bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
-| 169 | `BondMarket.FLOATING_LOT` | `100_000` | A floating-rate note's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
-| 171 | `BondMarket.LINKED_LOT` | `100_000` | An inflation-linked bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
-| 436 | `BondMarket.FACE_DUST` | `PriceLevel.atFounding(OrderBook.DUST)` | OrderBook.DUST of face is money, seeded at founding prices (BF1). |
+| 126 | `BondMarket.BANK` | `"bank"` | The bank's desk, on the book. |
+| 128 | `BondMarket.WORLD` | `"world"` | The world, on the book. |
+| 130 | `BondMarket.CELL` | `"household:"` | One household cell on the book - bidding, asking, or selling in the waterfall: this, then its key. |
+| 132 | `BondMarket.FUND` | `"city"` | The city's fund, by its rule (0.7.14; TreasuryFund). |
+| 134 | `BondMarket.FUND_HAND` | `"city:hand"` | ...and by the player's hand. |
+| 149 | `BondMarket.DEFAULT_RATE_FLOOR` | `Bank.BASE_LOSS_RATE / BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT` | THE LEAST A DEFAULT RATE IS READ AT: the through-the-cycle default rate a sound loan is priced for, Bank.BASE_LOSS_RATE over a loan's loss given default, BusinessDebtManager.LOAN_LOSS_GIVEN_DEFAULT... |
+| 152 | `BondMarket.TERM_YEARS` | `CorporateBond.TERM_MONTHS / 12.0` | The term in years, for spreading an issue's costs over its life. |
+| 155 | `BondMarket.CHEAPER_BY` | `1e-11` | The arithmetic a bond's all-in cost may sit over the loan's and still be "no dearer": a billionth of a point a year - the bisection's own resolution, not a margin (plan()). |
+| 158 | `BondMarket.ISSUE_ROUNDING` | `1e-14` | The relative shortfall at the issue-size fixed point, below the nominal twins' 1e-9 tolerance even after repeated refinancing (BS1). |
+| 161 | `BondMarket.PRICE_TICK` | `1e-12` | The price step per unit of bond face, so mathematically equal bids retain arrival priority across currency units (OB1, BS1). |
+| 166 | `BondMarket.BILL_LOT` | `1_000` | A bill's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
+| 168 | `BondMarket.BOND_LOT` | `100_000` | A fixed-rate bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
+| 170 | `BondMarket.AMORTIZING_LOT` | `10_000` | An amortizing bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
+| 172 | `BondMarket.FLOATING_LOT` | `100_000` | A floating-rate note's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
+| 174 | `BondMarket.LINKED_LOT` | `100_000` | An inflation-linked bond's lot in thousands at the reference price level, repriced at the month and capped by the minimum issue. |
+| 439 | `BondMarket.FACE_DUST` | `PriceLevel.atFounding(OrderBook.DUST)` | OrderBook.DUST of face is money, seeded at founding prices (BF1). |
 
 ### BridgeSurvey.java ([map](map/BridgeSurvey.md))
 
@@ -7669,12 +7669,12 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1798 | `LabourCheck.HELD_JOINED_HEADS_PER_POST` | `3` | ...the graduate heads to each of them, so the band has workers to spare for the unskilled posts... |
 | 1801 | `LabourCheck.HELD_JOINED_UNSKILLED_POSTS` | `4_000` | ...the unskilled posts, far more than the workers for them, so the bottom band pays more than the graduate one and the two are one market... |
 | 1804 | `LabourCheck.HELD_JOINED_UNSKILLED` | `10` | ...and the unskilled workers. |
-| 2417 | `LabourCheck.RENT_TOWN_PEOPLE` | `4_000` | People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). |
-| 2439 | `LabourCheck.ARRIVALS_OVER_DEPARTURES` | `10` | How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). |
-| 2442 | `LabourCheck.PRICED_MONTHS` | `60` | Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. |
-| 2454 | `LabourCheck.ROOM_TOWN` | `4000` | The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). |
-| 2472 | `LabourCheck.TIE_AVERAGE_OVER_GOING_RATE` | `1.3` | The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. |
-| 2474 | `LabourCheck.TIE_NEXT_AVERAGE_OVER_LAST` | `1.1` | The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. |
+| 2419 | `LabourCheck.RENT_TOWN_PEOPLE` | `4_000` | People put into the town "rent is a market" is read on, so its labourers outnumber its posts and the floor, not scarcity, is what holds their wage (FS16). |
+| 2441 | `LabourCheck.ARRIVALS_OVER_DEPARTURES` | `10` | How many times the month's skilled arrivals must outnumber its departures for it to be one the adult share of the ARRIVALS can be read off (FS16). |
+| 2444 | `LabourCheck.PRICED_MONTHS` | `60` | Months a hand-fed market is priced against its posts: ADJUST_RATE a month closes all but under a thousandth of the gap to its target in this many. |
+| 2456 | `LabourCheck.ROOM_TOWN` | `4000` | The town a hand-drawn month of arrivals is made into: this many people, with room, jobs and homes for more (ArrivalMixCheck.draw()'s size). |
+| 2474 | `LabourCheck.TIE_AVERAGE_OVER_GOING_RATE` | `1.3` | The average wage the tie's section feeds a market by hand, over its going rate: with its shares .5 and .6 the floor lands inside the dial's bounds. |
+| 2476 | `LabourCheck.TIE_NEXT_AVERAGE_OVER_LAST` | `1.1` | The next month's average in the tie's section, over the last one fed: a step off it, so a floor struck on the old average is told from one on the new. |
 
 ### LandCheck.java ([map](map/LandCheck.md))
 

@@ -1961,7 +1961,8 @@ public class LabourCheck {
         int[] calls = {0};
         bm.setPostsPast(() -> { calls[0]++; return g.getSectors().postsPastBuildings(); });
         long[] previous = null;
-        for (int form = 0; form < 3; form++) {
+        try (WorksValue.Scope ignored = WorksValue.hold(g)) {
+          for (int form = 0; form < 3; form++) {
             farms.setHorseShare(form == 1 ? 1 : 0);
             farms.setOperatedShare(form == 2 ? 0 : 1);
             calls[0] = 0;
@@ -1973,6 +1974,7 @@ public class LabourCheck {
             if (previous != null) assertTrue("fixture: changing the farms' horses or operators moves the next jobs reading",
                     !java.util.Arrays.equals(jobs, previous));
             previous = jobs;
+          }
         }
         bm.setPostsPast(() -> null);
         long[] noPast = bm.getTotalJobs();

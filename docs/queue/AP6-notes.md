@@ -32,7 +32,21 @@ not AP5's earlier absolute figures. Full figures and after measurements follow b
 - The bond mechanism was diagnosed by a MemWatch helper (read-only, 15-line report).
   It found one sorted holdings-map fold per settlement, and recommended a narrow
   posting scope rather than a persistent money cache. A second helper implements that
-  scope and its BondCheck fixtures; the builder reviews the diff and owns the checks.
+  scope and its BondCheck fixtures; the builder reviewed both files and kept the
+  settlement expressions and their order. Only its two household face writers
+  use `putBondFace` during posting, collecting touched identities. A `finally`
+  recounts each with the original sorted-id fold; its nested `finally` clears the
+  scope even after failure. Every other settlement remains eager. No map delta
+  arithmetic and no money figure held after the posting call. Counters and an
+  eager-mode twin switch are transient, per market, and used by BondCheck.
+  The helper found no aggregate reader between the precomputed weights/targets
+  and this scope's end: capacity uses live face, cash and posting budgets.
+- ★ Keep bond aggregates eager outside that narrow call. Primary issues, maturity,
+  defaults, census/migration/estates/folding, redenomination, clear/reset and load
+  retain their existing writers and recounts. There is no new retained money
+  cache for any of those paths to invalidate. The two changed settlement writers
+  are exercised on warmed native monthly twins, with partial fills on three ids,
+  manual and waterfall trades, and an exception after the seller has changed.
 
 ## 3. Checks, mutations, and trace
 

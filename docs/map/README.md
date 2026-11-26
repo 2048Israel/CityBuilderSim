@@ -4,7 +4,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 645 files, 700,231 lines, 30,581 methods, 6,839 constants. `GameVersion.VERSION` is "0.9.212", `SAVE_FORMAT` 66.
+**The tree:** 645 files, 700,542 lines, 30,596 methods, 6,839 constants. `GameVersion.VERSION` is "0.9.212", `SAVE_FORMAT` 66.
 
 ## model (281 files)
 
@@ -20,7 +20,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BalanceSheet.java](BalanceSheet.md) | 201 | 30 | A simple balance sheet for one business in the city. | 6 |
 | [Bank.java](Bank.md) | 6,942 | 480 | The city's commercial bank: every loan in it, and every default. | 77 |
 | [BoatSchedule.java](BoatSchedule.md) | 1,068 | 62 | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7... | 21 |
-| [BondMarket.java](BondMarket.md) | 2,301 | 190 | The corporate bond market: every bond the city's businesses have issued, who holds each, the order book each trades on, and the rule each participa... | 32 |
+| [BondMarket.java](BondMarket.md) | 2,342 | 194 | The corporate bond market: every bond the city's businesses have issued, who holds each, the order book each trades on, and the rule each participa... | 32 |
 | [BookDesk.java](BookDesk.md) | 184 | 20 | The debt book as a desk: every figure the book page and a line's page draw (CD6, spec-city-debt.md section 7, boards 1 and 2), a pure model of what... | 5 |
 | [BridgeGround.java](BridgeGround.md) | 72 | 7 | The ground a bridge is surveyed over, read from the World and the city's land: the Earth's terrain, relief and landmass a tile at a time, the city'... | 1 |
 | [BridgeSurvey.java](BridgeSurvey.md) | 438 | 25 | The survey of a long bridge's crossing: the shortest chain of plots from the city's own dry ground on a far landmass to its own buildable ground on... | 10 |
@@ -400,7 +400,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [BankCheck.java](BankCheck.md) | 5,155 | 36 | The commercial bank, and the families it discharges. | 3 |
 | [BankFailureCheck.java](BankFailureCheck.md) | 734 | 23 | The hands-off bank's failures, caused separately and counted across Random cities. | 0 |
 | [BasketYearCheck.java](BasketYearCheck.md) | 807 | 37 | The household's basket by year (R0e slice 1): the year's basket in a city founded the 1900 way, today's in every other. | 0 |
-| [BondCheck.java](BondCheck.md) | 1,760 | 43 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
+| [BondCheck.java](BondCheck.md) | 2,028 | 54 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
 | [BooksCheck.java](BooksCheck.md) | 299 | 3 | Verifies a sector's income statement and balance sheet, off the template. | 0 |
 | [BrandingCheck.java](BrandingCheck.md) | 219 | 5 | The game's icon is in the jar at every size it is given, the exe's .ico carries the sizes it should, the store's title art is drawn to the start sc... | 0 |
 | [BridgeCheck.java](BridgeCheck.md) | 977 | 39 | The long bridges checked (ET6, 2026-10-26; docs/queue/ET6-notes.md): the survey of a crossing on grids of its own making and on the Earth, what a s... | 3 |
@@ -528,7 +528,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [KeptCheck.java](KeptCheck.md) | 10,010 | 256 | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exact... | 8 |
 | [KeptTimingCheck.java](KeptTimingCheck.md) | 682 | 20 | What the kept pages cost: KeptCheck's timed sections, each kept month on a page against the same month built new, within its budget through Timing. | 0 |
 | [KnownRedsCheck.java](KnownRedsCheck.md) | 351 | 12 | The harness for AllChecks' known reds, time limit and resource admission. | 0 |
-| [LabourCheck.java](LabourCheck.md) | 2,489 | 31 | Verifies the labour market: who can hold a job, and what it costs. | 4 |
+| [LabourCheck.java](LabourCheck.md) | 2,491 | 31 | Verifies the labour market: who can hold a job, and what it costs. | 4 |
 | [LandCheck.java](LandCheck.md) | 3,900 | 64 | Verifies the land ledger: what the city owns, what it can allocate, what it charges, and that the three numbers never drift apart. | 9 |
 | [LandClassCheck.java](LandClassCheck.md) | 1,349 | 51 | A price for each class of ground, checked (ET3, slice A; docs/studies/spec-earth2-terrain.md 5.1 and 5.2): the going price stays the price of flat ... | 4 |
 | [LandNationsCheck.java](LandNationsCheck.md) | 1,842 | 67 | Land bought from the nation it lies in, checked (WN5; docs/studies/spec-nations.md 6.2-6.4, D21, D22): the land table, each nation's land factor an... | 1 |

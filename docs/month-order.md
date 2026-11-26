@@ -35,7 +35,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 18. **L14237** `equity.startMonth();` → [Equity.startMonth](map/Equity.md) (L420)  
    _The register's month: nothing offered, nothing paid, until it is._
 19. **L14238** `exchange.startMonth(month);` → [Exchange.startMonth](map/Exchange.md) (L535)
-20. **L14239** `bondMarket.startMonth();` → [BondMarket.startMonth](map/BondMarket.md) (L1263)
+20. **L14239** `bondMarket.startMonth();` → [BondMarket.startMonth](map/BondMarket.md) (L1266)
 21. **L14240** `economyManager.clearEquityFlows();` → [EconomyManager.clearEquityFlows](map/EconomyManager.md) (L1702)
 22. **L14258** `treasuryOpening = treasuryRecorded ? treasuryClosing : cash;`  
    _THE WINDOW IS PRESS TO PRESS, not tick to tick._
@@ -128,13 +128,13 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 87. **L14514** `cityDiscountForBank = 0;`
 88. **L14516** `double sectorInterestPaid = 0;`
 89. **L14517** `for (Sector s : getSectors().all()) sectorInterestPaid += s.statement().interest;` → [Game.getSectors](map/Game.md) (L3245)
-90. **L14523** `double issuerCoupons = bondMarket.getCouponsStruck();` → [BondMarket.getCouponsStruck](map/BondMarket.md) (L1140)  
+90. **L14523** `double issuerCoupons = bondMarket.getCouponsStruck();` → [BondMarket.getCouponsStruck](map/BondMarket.md) (L1143)  
    _The city's coupons and the businesses' interest, kept by who paid them since 0.7.9 - the same cash and income as their sum, to the bit._
 91. **L14524** `bank.takeInterest(interestDue, sectorInterestPaid - issuerCoupons);` → [Bank.takeInterest](map/Bank.md) (L2838)
-92. **L14525** `bondMarket.recordCouponIssuerCharge(issuerCoupons);` → [BondMarket.recordCouponIssuerCharge](map/BondMarket.md) (L291)
-93. **L14526** `double bankCoupon = bondMarket.getCouponsDueToBank();` → [BondMarket.getCouponsDueToBank](map/BondMarket.md) (L1148)
+92. **L14525** `bondMarket.recordCouponIssuerCharge(issuerCoupons);` → [BondMarket.recordCouponIssuerCharge](map/BondMarket.md) (L294)
+93. **L14526** `double bankCoupon = bondMarket.getCouponsDueToBank();` → [BondMarket.getCouponsDueToBank](map/BondMarket.md) (L1151)
 94. **L14527** `bank.takeBondCoupons(bankCoupon);` → [Bank.takeBondCoupons](map/Bank.md) (L569)
-95. **L14528** `bondMarket.recordCouponBankPayment(bankCoupon);` → [BondMarket.recordCouponBankPayment](map/BondMarket.md) (L299)
+95. **L14528** `bondMarket.recordCouponBankPayment(bankCoupon);` → [BondMarket.recordCouponBankPayment](map/BondMarket.md) (L302)
 96. **L14530** `refreshBank();` → [Game.refreshBank](map/Game.md) (L5239)
 97. **L14531** `lender.projectLoansSettled();`
 98. **L14534** `provideForLosses();` → [Game.provideForLosses](map/Game.md) (L5407)  
@@ -183,7 +183,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 125. **L14739** `tradeShares();` → [Game.tradeShares](map/Game.md) (L5143)
 126. **L14749** `settleThePreferred();` → [Game.settleThePreferred](map/Game.md) (L5717)  
    _...and the city's preferred (0.7.14): every block at its third anniversary repaid whole at par with its unpaid dividends, from the bank's capital over its target and the rest by an offering of new ..._
-127. **L14759** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1296), [Exchange.cityMarketValue](map/Exchange.md) (L1964)  
+127. **L14759** `bondMarket.takeMonth(month, exchange.cityMarketValue(equity));` → [BondMarket.takeMonth](map/BondMarket.md) (L1299), [Exchange.cityMarketValue](map/Exchange.md) (L1964)  
    _...AND THE BONDS TRADE (0.7.12): the month's coupons paid to their holders, last month's orders withdrawn, every bond valued and every participant's orders posted again - after the shares, and befo..._
 128. **L14760** `strikeBankBonds();` → [Game.strikeBankBonds](map/Game.md) (L5350)
 129. **L14765** `outward.setPaperBook(debtManager.firmBookRatio(), debtManager.firmBookYield());` → [OutwardInvestment.setPaperBook](map/OutwardInvestment.md) (L452), [DebtManager.firmBookRatio](map/DebtManager.md) (L2984), [DebtManager.firmBookYield](map/DebtManager.md) (L2990)  
@@ -315,7 +315,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 20. **L15294** `economyManager.getBusinessDebtManager().setConcentrationCharges(concentrationCharges());` → [EconomyManager.getBusinessDebtManager](map/EconomyManager.md) (L53), [Game.concentrationCharges](map/Game.md) (L5390)  
    _...and every business's spread sits on the bank's prime (0.7.7; the city's rate until then), on the dial as it stands this month - and the landlords' insured mortgages are written and renewed at th..._
 21. **L15295** `economyManager.updateBusinessCredit(bank.prime(debtManager.getPolicyRate()),` → [EconomyManager.updateBusinessCredit](map/EconomyManager.md) (L684), [Bank.prime](map/Bank.md) (L1137), [DebtManager.getPolicyRate](map/DebtManager.md) (L77), [Bank.insuredMortgageRate](map/Bank.md) (L1158)
-22. **L15299** `bondMarket.strikeCoupons();` → [BondMarket.strikeCoupons](map/BondMarket.md) (L1093)  
+22. **L15299** `bondMarket.strikeCoupons();` → [BondMarket.strikeCoupons](map/BondMarket.md) (L1096)  
    _...and the bonds' coupons struck on the same face the interest bills just were, by who holds each now (0.7.12)._
 23. **L15304** `economyManager.chargePropertyTax();` → [EconomyManager.chargePropertyTax](map/EconomyManager.md) (L854)  
    _Property tax with the interest bill, and for the same reason: both are owed before the month's statements run, so what each sector banks is already net of them._
