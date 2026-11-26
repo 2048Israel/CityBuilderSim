@@ -657,6 +657,55 @@ reviewer's line.
   under 125.5k), where the box passed it (0, 7.3 s), and green on main
   0.9.210 on the PC: not REV-RES3b's commits; the box judges it in the dry
   run.
+- REV-RES3b on 19fcb37f0: the four mends and the two restatements raise no
+  finding; two new P1s in the board's money, both checked against the code
+  and real, mended in 3a0999743 (the model) and fbf713a06 (the harnesses):
+  1. The clearing strikes the leases and the budgets on the projected
+     census (HouseholdBalance.housingCensusCells(), the census the next
+     month's settlement keeps), but the board was settled at the clearing
+     on the live one: a cell the census had just filled (live count 0) was
+     skipped, and households the census was moving out of a cell paid its
+     board. The rents were never so: struck at the clearing (L16497),
+     debited at the next month's settlement (L15449) once the stock has
+     followed the people. The board now settles there too
+     (HouseholdBalance.advanceMonth()'s board hook after followThePeople(),
+     HousingMarket.settleBoard()), and what is owed in between is saved in
+     the format-67 State (owed: cell, home, due), validated (each a boarding
+     cell's) and scaled by ScaleCheck.
+  2. redenominate() left boardPaid and boardReceived unscaled. It scales
+     them now, and the board owed; and the last clearing's offers (rent and
+     recurring, read between clearings, HousingMarket.java:499), the one
+     other money list the batch added that the reform missed. The saved
+     maps were already in the State; the owed board is new to it.
+- ★ The board settles one month after its clearing, with the rents, not in
+  the clearing's month (supersedes "boardHosts() books it in the clearing's
+  month" above). Other ways: settle at the clearing on the projected
+  census's wallets (none exist until the settlement makes them); carry the
+  board inside the rent bill (it would bill a landlord-less transfer as
+  rent).
+- Caused (fbf713a06). HousingMarketCheck: boardBookedBothSides() now
+  asserts the clearing moves no money and the settlement moves the board,
+  owed then settled once; boardOnTheLeasesCensus() moves the census between
+  the clearing and the settlement, a working cell with no household
+  (SINGLE_ADULT:PROFESSIONAL) filled with a household and its savings pays
+  its board of 0.02799 out of them, the cell it left paying none, and a
+  cell halved pays its whole board out of the households it keeps, those
+  moved carrying none, the host's savings up by the board each time;
+  boardThroughAReform() reforms 1,000 to 1 with board owed, paid and
+  received (0.02799 each), all three scaled with the boarder's savings and
+  the lease bills, a save and load after it bringing them back cell by
+  cell, and the reformed board settled out of the reformed savings.
+  Restated in HousingDoorCheck: "...paying its hosts board, every cent ..."
+  in every month with boarders is now "...owing its hosts board, and
+  paying it at the next month's settlement, every cent ...": the board
+  owed in every month with boarders, paid and received in every month
+  after one; the round trip at m901 brings back the owed board.
+- On these mends: HousingMarketCheck, SaveFileCheck, ScaleCheck,
+  Village1900Check, MonetaryCheck and BankCheck green; HousingDoorCheck
+  known red only (MC1: the board owed in 6 of 6 months with boarders, paid
+  and received at the next settlement in 5 of 5, at most 570.19 a month;
+  613.41 owed back through the m901 save and load); DenominationCheck known
+  red only (exit 3, six of main's seven lines, 1e-9 apart).
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
