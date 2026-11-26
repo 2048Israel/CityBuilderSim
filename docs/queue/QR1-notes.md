@@ -398,6 +398,7 @@ of total forgiveness, never added to it.
 | City/model | Forgiven F | In-ban forgiven Fban | Actual in-ban backstop B | Distress receipts D | All retirement receipts R |
 |---|---:|---:|---:|---:|---:|
 | 1900/main | 1003070.5468181840 | 230623.13222283978 | 230623.13222283978 | 159142294.59705200 | 2525125039.9677700 |
+| 1900/QR1 | 232136.36881434554 | 230623.13222283978 | 230623.13222283978 | 52130432.027748300 | 2495023485.2011690 |
 
 Main/1900 has **853** in-ban sector-months. Distress receipts comprise plot
 **130786384.42549273**, material **28355910.171559263**. All retirement:
@@ -415,8 +416,39 @@ The sixteen sales' net-loss streaks are 24–33; operating-loss streaks 0–18,
 all below the dial. Raw CSV/sidecar/log/snapshot:
 `C:/Users/Jerus/AppData/Local/Temp/QR1-main-money-20261126/target/ensemble/QR1-main-1900-v2`.
 Full-precision helper evidence copied to `target/qr1-main1900-report.json`
-and `target/qr1-main1900-final-report.txt`. QR1/1900 is running on the same
-PC and settings; the two today runs and formal ensemble remain pending.
+and `target/qr1-main1900-final-report.txt`.
+
+QR1/1900 completed on the same PC and settings, snapshot **44630ff6e**,
+model/default capture **1803d5cbc**, label `QR1-pair-1900-v2`.
+LongPlaytest **PASS**, primary m2405 in 1792 s; **79/79** post-primary money
+fixtures pass. All **78** shared CSV fields match main exactly through
+calendar 1776; the first economic/money difference is exactly main's first
+distress sale, m1777. Thus the observations and default player agree before
+the rule first changes a sale.
+
+QR1 retires **237** buildings in **two** Cement & Concrete distress sales,
+m1837–1838: both have negative running income, operating-loss streaks
+**24–25**, net-loss **27–28**, both at or beyond the dial. **Zero**
+operating-positive distress sales. Distress plot cash **42012455.467058810**,
+material **10117976.560689492**. All retirement: **748** events/**17302**
+buildings. Its saved and independent cumulative F agree at the endpoint,
+maximum interim difference 1.4551915228366852e-11; Fban and B agree, still
+**853** in-ban sector-months. All five retirement cumulatives reconcile
+exactly to their event-order sidecar at every month; all played audits pass,
+no findings, numeric defects or gaps. Its auxiliary policy scorer also
+retains exit 4 for the sole unaudited founding row, as explained above.
+
+Matched 1900 result: **extra F = −770934.17800383846**,
+**avoided D = 107011862.569303700**, nominal local-currency thousands.
+Forgiveness falls, so the condition “extra F > 0 and greater than the
+distress receipts it replaces” is **false**. Main's paying-only distress
+receipts **85325583.69961971** remain descriptive context, not a substitute
+for the actual all-distress difference. Both R totals are reported because
+ordinary retirements also respond to the changed city.
+
+QR1 raw files: `target/ensemble/QR1-pair-1900-v2`; derived full-precision
+proof copied to `target/qr1-pair1900-report.json`. The two today measurements
+and formal ensemble remain pending.
 
 P3 considered and not taken, as instructed: shorten or deny a fresh full
 operating-loss runway after a long interest-only net-loss spell.
