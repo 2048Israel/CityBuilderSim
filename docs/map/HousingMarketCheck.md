@@ -1,4 +1,4 @@
-# HousingMarketCheck.java - 2,044 lines · 68 methods · 2 constants · harnesses
+# HousingMarketCheck.java - 2,069 lines · 68 methods · 2 constants · harnesses
 
 `ham/citybuildersim/HousingMarketCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -6,7 +6,7 @@
 > WHY (RES3): a synthetic catalogue quote does not prove an actual funded project
 > or a month whose occupied rents and household cash reconcile.
 
-**Uses:** [HousingChoice](HousingChoice.md) (213), [Game](Game.md) (112), [FamilyStructure](FamilyStructure.md) (47), [HousingMarket](HousingMarket.md) (45), [PayTier](PayTier.md) (44), [HousingInventory](HousingInventory.md) (38), [HouseholdBalance](HouseholdBalance.md) (36), [GameFiles](GameFiles.md) (35), [Household](Household.md) (33), [FamilyModel](FamilyModel.md) (31), [HousingForms](HousingForms.md) (24), [AgeBand](AgeBand.md) (24), [Sectors](Sectors.md) (20), [WorkingHousehold](WorkingHousehold.md) (18), [RealEstate](RealEstate.md) (15), [LongPlaytest](LongPlaytest.md) (15), [PopulationCohorts](PopulationCohorts.md) (11), [MoneyAudit](MoneyAudit.md) (10), [HouseholdAccounts](HouseholdAccounts.md) (10), [Founding](Founding.md) (9), [AdultStage](AdultStage.md) (8), [Mortgage](Mortgage.md) (7), [UnemployedHousehold](UnemployedHousehold.md) (7), [TaxPolicy](TaxPolicy.md) (6), [JobType](JobType.md) (6), [Equity](Equity.md) (4), [HousingRecipe](HousingRecipe.md) (3), [StudentHousehold](StudentHousehold.md) (3), [PriceLevel](PriceLevel.md) (2), [BusinessInvestment](BusinessInvestment.md) (2)... and 8 more
+**Uses:** [HousingChoice](HousingChoice.md) (215), [Game](Game.md) (113), [FamilyStructure](FamilyStructure.md) (47), [HousingMarket](HousingMarket.md) (45), [PayTier](PayTier.md) (44), [HousingInventory](HousingInventory.md) (38), [HouseholdBalance](HouseholdBalance.md) (36), [GameFiles](GameFiles.md) (35), [Household](Household.md) (33), [FamilyModel](FamilyModel.md) (31), [HousingForms](HousingForms.md) (24), [AgeBand](AgeBand.md) (24), [WorkingHousehold](WorkingHousehold.md) (20), [Sectors](Sectors.md) (20), [RealEstate](RealEstate.md) (15), [LongPlaytest](LongPlaytest.md) (15), [PopulationCohorts](PopulationCohorts.md) (11), [MoneyAudit](MoneyAudit.md) (10), [HouseholdAccounts](HouseholdAccounts.md) (10), [AdultStage](AdultStage.md) (9), [Founding](Founding.md) (9), [Mortgage](Mortgage.md) (7), [UnemployedHousehold](UnemployedHousehold.md) (7), [TaxPolicy](TaxPolicy.md) (6), [JobType](JobType.md) (6), [Equity](Equity.md) (4), [HousingRecipe](HousingRecipe.md) (3), [StudentHousehold](StudentHousehold.md) (3), [PriceLevel](PriceLevel.md) (2), [BusinessInvestment](BusinessInvestment.md) (2)... and 8 more
 
 ## Constants
 
@@ -26,7 +26,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 13 | 2032 | **type** `public final class HousingMarketCheck` | Integrated quotes, funded sites, rental receipts, budgets and reload evidence. |
+| 13 | 2057 | **type** `public final class HousingMarketCheck` | Integrated quotes, funded sites, rental receipts, budgets and reload evidence. |
 | 19 | 1 | `static void check(String label, boolean ok)` |  |
 | 20 | 1 | `static void near(String label, double a, double b)` |  |
 | 21 | 5 | `static void audits(Game g)` |  |
@@ -72,28 +72,28 @@
 | 1361 | 1 | `static HousingMarket marketOf(Game g)` |  |
 | 1363 | 5 | `static boolean audited(Game g)` | The month's two audits closed, the pools' and the households' own, as HousingDoorCheck reads them. |
 | 1369 | 4 | `static double gap(Map<String, Double> a, Map<String, Double> b)` | The largest gap between two maps of money, key by key (a key one lacks reads zero). |
-| 1386 | 70 | `static void boardWithTheRents()` | REV-RES3b on 0925f4661: the board goes the rents' own way, through the game's own months. |
-| 1462 | 32 | `static void boardThroughAReform()` | REV-RES3b on 19fcb37f0, P1 2, played through (REV-RES3b on 0925f4661: its fixture settled the original city, not the loaded one). |
-| 1500 | 21 | `static void trimHeldToStock()` | REV-RES3b P1-3: the trim to the standing stock (HousingMarket.holdToStock(), overcrowding()'s) cannot throw. |
-| 1521 | 54 | `static void stagedHousingStocks()` |  |
-| 1577 | 8 | `static HouseholdAccounts paidHousingRow(int row, double people, double income, double fees)` | An actually paid non-wage row and its billed source population, before the next census. |
-| 1585 | 35 | `static void stagedHousingFlows()` |  |
-| 1620 | 34 | `static void carriedStudentService()` |  |
-| 1655 | 30 | `static void rentCommitmentBudgets()` |  |
-| 1687 | 48 | `static void independentDoorPressure()` |  |
-| 1736 | 39 | `static void committedDoorBoundaries()` |  |
-| 1776 | 1 | `static HousingInventory.Key lateHome()` |  |
-| 1777 | 1 | `static HousingChoice.Demand lateDemand(String key, double count, double budget)` |  |
-| 1778 | 20 | `static HousingMarket lateFixture(String label, int stock, List<HousingChoice.Demand> current, List<HousingChoice.Demand> previo...` |  |
-| 1798 | 43 | `static void latePaidFootprints()` |  |
-| 1843 | 1 | **type** `private record FundingFixture(Game game, HousingMarket market, BuildingsTemplate house, BuildingsTemplate s...` |  |
-| 1844 | 3 | `static HousingChoice.Demand fundingDemand(String key, double count, boolean retired, double budget)` |  |
-| 1847 | 24 | `static FundingFixture fundingFixture(String label, List<HousingChoice.Demand> demand, boolean pair, boolean cheap)` |  |
-| 1871 | 24 | `static void fundedPressureAndForecast()` |  |
-| 1896 | 29 | `static void coalescedSponsored()` |  |
-| 1925 | 43 | `static void sharingForecastSources()` |  |
-| 1968 | 22 | `static void crossClassPaidExcess()` |  |
-| 1990 | 35 | `static void savedContractModes() throws Exception` |  |
-| 2025 | 10 | `public static void main(String[] args) throws Exception` |  |
-| 2035 | 9 | `static void smallProfile(StringBuilder report)` |  |
+| 1386 | 95 | `static void boardWithTheRents()` | REV-RES3b on 0925f4661: the board goes the rents' own way, through the game's own months. |
+| 1487 | 32 | `static void boardThroughAReform()` | REV-RES3b on 19fcb37f0, P1 2, played through (REV-RES3b on 0925f4661: its fixture settled the original city, not the loaded one). |
+| 1525 | 21 | `static void trimHeldToStock()` | REV-RES3b P1-3: the trim to the standing stock (HousingMarket.holdToStock(), overcrowding()'s) cannot throw. |
+| 1546 | 54 | `static void stagedHousingStocks()` |  |
+| 1602 | 8 | `static HouseholdAccounts paidHousingRow(int row, double people, double income, double fees)` | An actually paid non-wage row and its billed source population, before the next census. |
+| 1610 | 35 | `static void stagedHousingFlows()` |  |
+| 1645 | 34 | `static void carriedStudentService()` |  |
+| 1680 | 30 | `static void rentCommitmentBudgets()` |  |
+| 1712 | 48 | `static void independentDoorPressure()` |  |
+| 1761 | 39 | `static void committedDoorBoundaries()` |  |
+| 1801 | 1 | `static HousingInventory.Key lateHome()` |  |
+| 1802 | 1 | `static HousingChoice.Demand lateDemand(String key, double count, double budget)` |  |
+| 1803 | 20 | `static HousingMarket lateFixture(String label, int stock, List<HousingChoice.Demand> current, List<HousingChoice.Demand> previo...` |  |
+| 1823 | 43 | `static void latePaidFootprints()` |  |
+| 1868 | 1 | **type** `private record FundingFixture(Game game, HousingMarket market, BuildingsTemplate house, BuildingsTemplate s...` |  |
+| 1869 | 3 | `static HousingChoice.Demand fundingDemand(String key, double count, boolean retired, double budget)` |  |
+| 1872 | 24 | `static FundingFixture fundingFixture(String label, List<HousingChoice.Demand> demand, boolean pair, boolean cheap)` |  |
+| 1896 | 24 | `static void fundedPressureAndForecast()` |  |
+| 1921 | 29 | `static void coalescedSponsored()` |  |
+| 1950 | 43 | `static void sharingForecastSources()` |  |
+| 1993 | 22 | `static void crossClassPaidExcess()` |  |
+| 2015 | 35 | `static void savedContractModes() throws Exception` |  |
+| 2050 | 10 | `public static void main(String[] args) throws Exception` |  |
+| 2060 | 9 | `static void smallProfile(StringBuilder report)` |  |
 
