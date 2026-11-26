@@ -1,4 +1,4 @@
-# BuildingCatalog.java - 892 lines · 30 methods · 1 constants · model
+# BuildingCatalog.java - 894 lines · 30 methods · 1 constants · model
 
 `ham/citybuildersim/BuildingCatalog.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -48,35 +48,35 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 47 | 846 | **type** `public class BuildingCatalog` | Reads the building definitions out of buildings.json. |
+| 47 | 848 | **type** `public class BuildingCatalog` | Reads the building definitions out of buildings.json. |
 | 54 | 3 | `public String getSource()` |  |
 | 62 | 44 | `public List<BuildingsTemplate> load()` | the caller should use its own defaults. |
 | 108 | 42 | `List<BuildingsTemplate> parse(Reader reader)` |  |
 | 152 | 13 | `private void readHousing(JsonObject o, BuildingsTemplate template)` | RES2 immutable mix metadata; absence keeps hand-built/mod templates compatible. |
-| 166 | 109 | `private BuildingsTemplate readBuilding(JsonObject o, Set<Integer> seenIds)` |  |
-| 280 | 6 | `private void readSince(BuildingsTemplate template, String name)` | When a building first existed (R2): "since" is a year (1902) or a code of research.json ("PE4"), read by BuildingsTemplate.setSince(). |
-| 293 | 13 | `private void readOldMetal(JsonObject o, BuildingsTemplate template, String name)` | The city's old metal a Scrap Yard takes (0.7.123, batch I4): "oldMetal": {"STEEL": 10500}, tonnes a month at nameplate by metal. |
-| 318 | 63 | `private void readEquipment(JsonObject o, BuildingsTemplate template, String name)` | The equipment a building can be fitted with (R1, 2026-11-05; Equipment): "equipment": [{"id": "electric-drive", "name": "Electric motor drive", "since": "1900", "ends": "STEAM", "buys": {"MACHINERY": 10.9}, "work": 11... |
-| 383 | 13 | `private String sinceText(JsonObject p)` | A "since" (a building's, a piece's or a recipe's) as text: a whole JSON number is its digits ("1900"), a string as written ("PE14"), absent or anything else empty. |
-| 408 | 46 | `private void readRecipes(JsonObject o, BuildingsTemplate template, String name)` | The ways a building runs (R1c, 2026-11-05; Recipe; research-design 2.1): "recipes": [{"id": "old", "name": "Beehive ovens"}, {"id": "by-product", "since": 1905, "needsEquipment": "by-product-ovens", "uses": {"COKING_C... |
-| 456 | 59 | `private Recipe readRecipe(JsonObject p, String id, BuildingsTemplate template, String name)` | One recipe of a list, its unstated figures the template's top level; null (reported) for one that is no good. |
-| 517 | 18 | `private java.util.Map<Good, Double> recipeGoods(JsonObject p, String key, java.util.Map<Good, Double> inherited, String id, Str...` | What a recipe makes or uses: the template's own when the recipe does not state the key, else what it states (an empty object is nothing); null, reported, for an unknown good or a key that is not an object. |
-| 537 | 24 | `private void readRecipeChanges(JsonObject o, BuildingsTemplate template, String name)` | Independent signed undos, each sourced and keyed by its discovery. |
-| 563 | 13 | `private void dropIdlePieces(BuildingsTemplate template, String name)` | Keeps a piece ending no form only if a process recipe or independent change needs it. |
-| 586 | 29 | `private void readSite(JsonObject o, BuildingsTemplate template, String name)` | The site a mine or a well stands on (0.7.110, batch I1): "site": {"resource": "IRON", "type": "ANY", "sites": 1, "dig": 1} - the resource whose sites it takes, the type of field it needs (a Deposit.FieldType of that r... |
-| 624 | 12 | `private void readOffshore(JsonObject o, BuildingsTemplate template, String name)` | One of the oil buildings at sea (0.7.91, batch O10): "offshore": {"kind": "PLATFORM", "slots": 12}, {"kind": "WELL"} or {"kind": "PIPELINE", "onshore": 3000} - a platform's jacket and its wells' slots, a well in one, ... |
-| 647 | 25 | `private void readPort(JsonObject o, BuildingsTemplate template, String name)` | A sea terminal's berth (0.7.86, batch O9): "port": {"cargo": "LIQUID", "tonnes": 30000000} - the kind of cargo it handles (Ports.Cargo) and its tonnes a year. |
-| 686 | 31 | `private void readSector(JsonObject o, BuildingsTemplate template, String name)` | Who owns it and what it makes - see BuildingsTemplate's note. |
-| 727 | 12 | `private void readCare(JsonObject o, BuildingsTemplate template, String name)` | The care type, if there is one. |
-| 741 | 12 | `private void readTeaches(JsonObject o, BuildingsTemplate template, String name)` | What a school teaches. |
-| 755 | 12 | `private void readResearches(JsonObject o, BuildingsTemplate template, String name)` | The field a Research Lab researches (R4): a ResearchCatalog.Field's name. |
-| 769 | 12 | `private void readSafety(JsonObject o, BuildingsTemplate template, String name)` | What a safety building does - POLICE or PRISON. |
-| 783 | 12 | `private void readSource(JsonObject o, BuildingsTemplate template, String name)` | What a water works draws, FRESH or SEA (0.7.59). |
-| 805 | 12 | `private void readRefinery(JsonObject o, BuildingsTemplate template, String name)` | A refinery's conversion unit (0.7.80, batch O4): its kind and the litres a month of its feed stream it takes at nameplate, |
-| 824 | 12 | `private void readRequiresLicence(JsonObject o, BuildingsTemplate template, String name)` | The licence a building's practice is built on. |
-| 837 | 17 | `private void readJobs(JsonObject o, BuildingsTemplate template, String name)` |  |
-| 856 | 7 | `private double number(JsonObject o, String key)` | Missing or unreadable fields read as 0, so entries only list what they use. |
-| 865 | 10 | `private BridgeWorks.Kind bridgeKind(JsonObject o, String name)` | A long bridge's kind (ET6's "bridge": "HIGHWAY", "RAIL" or "ROAD"): absent, null; one the game does not know is reported and read as none. |
-| 877 | 7 | `private boolean flag(JsonObject o, String key)` | A true/false key (FR7's "siding"): absent, null or not a boolean, false. |
-| 885 | 7 | `private String string(JsonObject o, String key)` |  |
+| 166 | 111 | `private BuildingsTemplate readBuilding(JsonObject o, Set<Integer> seenIds)` |  |
+| 282 | 6 | `private void readSince(BuildingsTemplate template, String name)` | When a building first existed (R2): "since" is a year (1902) or a code of research.json ("PE4"), read by BuildingsTemplate.setSince(). |
+| 295 | 13 | `private void readOldMetal(JsonObject o, BuildingsTemplate template, String name)` | The city's old metal a Scrap Yard takes (0.7.123, batch I4): "oldMetal": {"STEEL": 10500}, tonnes a month at nameplate by metal. |
+| 320 | 63 | `private void readEquipment(JsonObject o, BuildingsTemplate template, String name)` | The equipment a building can be fitted with (R1, 2026-11-05; Equipment): "equipment": [{"id": "electric-drive", "name": "Electric motor drive", "since": "1900", "ends": "STEAM", "buys": {"MACHINERY": 10.9}, "work": 11... |
+| 385 | 13 | `private String sinceText(JsonObject p)` | A "since" (a building's, a piece's or a recipe's) as text: a whole JSON number is its digits ("1900"), a string as written ("PE14"), absent or anything else empty. |
+| 410 | 46 | `private void readRecipes(JsonObject o, BuildingsTemplate template, String name)` | The ways a building runs (R1c, 2026-11-05; Recipe; research-design 2.1): "recipes": [{"id": "old", "name": "Beehive ovens"}, {"id": "by-product", "since": 1905, "needsEquipment": "by-product-ovens", "uses": {"COKING_C... |
+| 458 | 59 | `private Recipe readRecipe(JsonObject p, String id, BuildingsTemplate template, String name)` | One recipe of a list, its unstated figures the template's top level; null (reported) for one that is no good. |
+| 519 | 18 | `private java.util.Map<Good, Double> recipeGoods(JsonObject p, String key, java.util.Map<Good, Double> inherited, String id, Str...` | What a recipe makes or uses: the template's own when the recipe does not state the key, else what it states (an empty object is nothing); null, reported, for an unknown good or a key that is not an object. |
+| 539 | 24 | `private void readRecipeChanges(JsonObject o, BuildingsTemplate template, String name)` | Independent signed undos, each sourced and keyed by its discovery. |
+| 565 | 13 | `private void dropIdlePieces(BuildingsTemplate template, String name)` | Keeps a piece ending no form only if a process recipe or independent change needs it. |
+| 588 | 29 | `private void readSite(JsonObject o, BuildingsTemplate template, String name)` | The site a mine or a well stands on (0.7.110, batch I1): "site": {"resource": "IRON", "type": "ANY", "sites": 1, "dig": 1} - the resource whose sites it takes, the type of field it needs (a Deposit.FieldType of that r... |
+| 626 | 12 | `private void readOffshore(JsonObject o, BuildingsTemplate template, String name)` | One of the oil buildings at sea (0.7.91, batch O10): "offshore": {"kind": "PLATFORM", "slots": 12}, {"kind": "WELL"} or {"kind": "PIPELINE", "onshore": 3000} - a platform's jacket and its wells' slots, a well in one, ... |
+| 649 | 25 | `private void readPort(JsonObject o, BuildingsTemplate template, String name)` | A sea terminal's berth (0.7.86, batch O9): "port": {"cargo": "LIQUID", "tonnes": 30000000} - the kind of cargo it handles (Ports.Cargo) and its tonnes a year. |
+| 688 | 31 | `private void readSector(JsonObject o, BuildingsTemplate template, String name)` | Who owns it and what it makes - see BuildingsTemplate's note. |
+| 729 | 12 | `private void readCare(JsonObject o, BuildingsTemplate template, String name)` | The care type, if there is one. |
+| 743 | 12 | `private void readTeaches(JsonObject o, BuildingsTemplate template, String name)` | What a school teaches. |
+| 757 | 12 | `private void readResearches(JsonObject o, BuildingsTemplate template, String name)` | The field a Research Lab researches (R4): a ResearchCatalog.Field's name. |
+| 771 | 12 | `private void readSafety(JsonObject o, BuildingsTemplate template, String name)` | What a safety building does - POLICE or PRISON. |
+| 785 | 12 | `private void readSource(JsonObject o, BuildingsTemplate template, String name)` | What a water works draws, FRESH or SEA (0.7.59). |
+| 807 | 12 | `private void readRefinery(JsonObject o, BuildingsTemplate template, String name)` | A refinery's conversion unit (0.7.80, batch O4): its kind and the litres a month of its feed stream it takes at nameplate, |
+| 826 | 12 | `private void readRequiresLicence(JsonObject o, BuildingsTemplate template, String name)` | The licence a building's practice is built on. |
+| 839 | 17 | `private void readJobs(JsonObject o, BuildingsTemplate template, String name)` |  |
+| 858 | 7 | `private double number(JsonObject o, String key)` | Missing or unreadable fields read as 0, so entries only list what they use. |
+| 867 | 10 | `private BridgeWorks.Kind bridgeKind(JsonObject o, String name)` | A long bridge's kind (ET6's "bridge": "HIGHWAY", "RAIL" or "ROAD"): absent, null; one the game does not know is reported and read as none. |
+| 879 | 7 | `private boolean flag(JsonObject o, String key)` | A true/false key (FR7's "siding"): absent, null or not a boolean, false. |
+| 887 | 7 | `private String string(JsonObject o, String key)` |  |
 
