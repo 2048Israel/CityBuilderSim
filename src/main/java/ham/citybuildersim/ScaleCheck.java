@@ -1833,6 +1833,8 @@ public class ScaleCheck {
             // ...within it, the boarders, and the board paid and received, by cell (REV-RES3b): households and money, K times.
             for (String key : new String[] { "withinTheLine", "boarding", "boardPaid", "boardReceived" }) whole(market, key, k);
             named(market.get("owed"), k, "due");
+            // ...and the month's board credited past a departed boarder or owed past a lost host (REV-RES3b on 0925f4661): money, K times.
+            for (String key : new String[] { "boardUnsettled", "boardUnhosted" }) scalar(market, key, k);
         }
         // The land's books (0.7.67): each holding's five areas and its forest's timber, K times over, as the
         // square feet are - its blocks, its fields, its iron and its offers the founded city's.

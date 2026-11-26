@@ -394,7 +394,9 @@ public final class HousingDoorCheck {
         check("...every boarder counted by the census's own line, overcrowded past two persons a room and boarding within it (REV-RES3b P1-4)", board[0] > 0 && board[1] == board[0]);
         // Restated (REV-RES3b on 19fcb37f0) from "...paying its hosts board, every cent ..." in every month with boarders:
         // the board is settled as the rents are, at the next month's household settlement, on the census the leases keep.
-        check("...owing its hosts board, and paying it at the next month's settlement, every cent paid out of the boarders' cells received into their hosts' (REV-RES3b P1-1)",
+        // Restated (REV-RES3b on 0925f4661) from "...and paying it at the next month's settlement, every cent paid out of
+        // the boarders' cells received into their hosts'": the board is billed the rents' own way.
+        check("...owing its hosts board, billed with the rents at the next month's settlement into the boarders' rent lines and credited in full to their hosts as income, every cent, none past a departed boarder or a lost host (REV-RES3b P1-1)",
                 board[0] > 0 && board[5] == board[0] && board[4] > 0 && board[3] == board[4]);
         check("...and the month's own money audit and the households' cash identity exact in every month of them (REV-RES3b P1-3)", board[0] > 0 && board[2] == board[0]);
         check("a save and load with boarders standing brings back every boarder, its count by the line and its board (REV-RES3b P1-2)", trip[0] >= 0 && trip[1] == 1 && trip[2] == 1);
@@ -482,9 +484,9 @@ public final class HousingDoorCheck {
      * (REV-RES3b P1-4), [2] of them the month's own money audit and the households' cash identity exact (P1-3: an audit
      * of an earlier month is no witness), [5] of them the board owed for the month's boarders; and [4] the months after a
      * month with boarders, the settlement month of their board (REV-RES3b on 19fcb37f0: settled as the rents are, at the
-     * next month's household settlement on the leases' census), [3] of them the board paid out of the boarders' cells
-     * received into their hosts' to the audit's tolerance (P1-1) - no landlord billed, the board a transfer between
-     * households. boardMost: [0] the most boarders, [1] its month, [2] the most board paid, [3] last month's boarders.
+     * next month's household settlement on the leases' census), [3] of them the board billed into the boarders' rent
+     * lines credited to their hosts to the audit's tolerance, none past a departed boarder or owed a lost host (P1-1;
+     * REV-RES3b on 0925f4661, the rents' own way) - no landlord billed, the board a transfer between households. boardMost: [0] the most boarders, [1] its month, [2] the most board paid, [3] last month's boarders.
      */
     static void boarders(Game g, MoneyAudit.Households households, int[] board, double[] boardMost) {
         var market = g.getSectors().realEstate().housingMarket();
@@ -492,7 +494,10 @@ public final class HousingDoorCheck {
         double paid = market.boardPaid(), received = market.boardReceived();
         if (boardMost[3] > 0) {
             board[4]++;
-            if (paid > 0 && Math.abs(paid - received) <= MoneyAudit.tolerance(paid)) board[3]++;
+            // ...billed into the boarders' rent lines and credited in full to their hosts, none past a departed boarder or
+            // owed a lost host (REV-RES3b on 0925f4661: with the rents).
+            if (paid > 0 && Math.abs(paid - received) <= MoneyAudit.tolerance(paid)
+                    && market.boardUnsettled() == 0 && market.boardUnhosted() == 0) board[3]++;
         }
         boardMost[2] = Math.max(boardMost[2], paid);
         boardMost[3] = boarding;
