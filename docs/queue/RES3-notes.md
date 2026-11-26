@@ -332,6 +332,38 @@ What they did (RES3c, 2026-11-25):
   (197 struck, 29 left; was "the bare draw over UNPULLED, 2, times its
   people", now 1.50). Kept as they were: the pull cuts the draw, the room
   under today's twin's, s4's draw share, s5's home.
+- The lender's readers, run on it. OrderSearchCheck's countdown read the
+  whole order's rent at every count, so 29 of 168 mortgages to m500 differed
+  (m15: an order of 53, the game lends 1 at a coverage of 1.743, the count
+  reads 0.791). Read per slice, all 168 match. The watch hook now hands
+  noiOf on (OrderWatch.mortgaged's default overload; f4ae23aa4).
+  OrderSearchCheck's copy failed to load: ScaleCheck.scale multiplied a
+  lease's count, bill and households but not its funding (d82144d00), so
+  the scaled lease funded a thousandth of its households. The scaler now
+  scales full, half and sponsored. BuildCardCheck's town, since 4f690edfc:
+  600 Houses held 1,784 people and none out of work, so every card failed
+  STAFFING first (Rail Spur 26% staffable now). 800 hold 2,107 and 71
+  (cece71550), and the cards read LOSS, no feed and INTEREST again.
+- MonetaryCheck, 5 reds on 6b326cb22, 1 on 808421280: the non-shelter
+  basket's mean low-to-high effect of a point, RES3's own claim (REV-RES3x
+  P1, 563b5f17c). Bisected over paths 16-31: 4ae0e7446 3.107, 4f690edfc
+  2.713, 83da694bb 1.617, bbb290e6b 2.803, 0f710131e 2.790, 6b326cb22 0.139,
+  808421280 0.160 (median 0.71, 14 of 16 positive). The basket is 86%
+  groceries at a shelf floor; the expected-inflation gap between 3% and 40%
+  fell from 3.40 points to 1.06 as RES3's rents stopped leading inflation.
+  At 40% a Convenience Store closes (m66-72), and two paths meet grocery
+  shortages at full employment (-4.77, -3.00). No line to mend found; to the
+  orchestrator.
+- HousingDoorCheck: MC1 is main's known red (the 1900-founded replay's bank
+  leverage never binds). The no-door watch went 6.918 at m490 (3b8b387be),
+  253.8 with the half ask and no bound (6b326cb22's model), 47.986 at m888
+  on the bound. All are sitters, families of six. Every door of every
+  class is full and the ground is gone ("needs 743 m2, 13.1 free"), and no
+  line takes a second six. Arrivals slow to about 0.3 of their rate but
+  never stop. Reading the room under the census line (a second household
+  only where halves() holds) made the city bigger and the watch worse
+  (114.6 at m897), and broke CreditCrunchCheck's fixtures: not applied.
+  Green founded today's way. To the orchestrator.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
