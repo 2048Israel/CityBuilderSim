@@ -40,6 +40,11 @@ public final class HousingMarket {
         public double rentPriceIndex;
         /** The households housed past the census line, by cell (overcrowding()); an older save has none. */
         public Map<String,Double> overcrowded=new LinkedHashMap<>();
+        /** ...those it placed within the line, by cell (boarding, lodging or on a share, not overcrowded); an older save has none. */
+        public Map<String,Double> withinTheLine=new LinkedHashMap<>();
+        /** The payers boarding with a housed family, by cell, and the clearing's board, what each boarder cell paid and each
+         *  host cell received (boardHosts()); an older save has none. */
+        public Map<String,Double> boarding=new LinkedHashMap<>(),boardPaid=new LinkedHashMap<>(),boardReceived=new LinkedHashMap<>();
     }
     private final Map<HousingInventory.Key,ClassState> classes=new LinkedHashMap<>();
     private List<HousingChoice.Lease> leases=List.of();
@@ -57,16 +62,38 @@ public final class HousingMarket {
     private double formingFamilies, formingAdults;
     /** The households housed past the census line this clearing, by cell (overcrowding()), saved with the state. */
     private Map<String,Double> overcrowded=Map.of();
+    /** ...those it placed within the line, the payers boarding, and the board paid and received, by cell, saved with it. */
+    private Map<String,Double> withinTheLine=Map.of(),boarding=Map.of(),boardPaid=Map.of(),boardReceived=Map.of();
+    /** The board each boarding cell owes this clearing, by the home it boards in (overcrowding()), booked by boardHosts(). */
+    private List<Board> owed=List.of();
+    private record Board(String cell,HousingInventory.Key home,double due){}
+    /** The most door-equivalents this clearing's trim held to the standing stock past its packing resolution (holdToStock()). */
+    private double pastTheStock;
     /** Emergency guests whose host already funds the door; no extra rent or credit is invented. */
     public double hosted(){return hosted;}
     /** Households living past the census line, overcrowded as the censuses counted them, never without a door (overcrowding()). */
     public double overcrowded(){double n=0;for(double v:overcrowded.values())n+=v;return n;}
     /** Their people, at their cells' sizes. */
     public double overcrowdedPeople(){var sizes=sizes();double n=0;for(var e:overcrowded.entrySet())n+=e.getValue()*sizes.getOrDefault(e.getKey(),0);return n;}
-    /** Of them, the households whose budget funds a share that found no door standing and board with a housed family
-     *  (overcrowding()), counted overcrowded and billed nothing; not saved, so a load reads none until its next clearing. */
-    public double boarders(){return boarders;}
-    private double boarders;
+    /** Households overcrowding() placed within the census line, boarding, lodging or on a share at no more than two persons
+     *  a room: not overcrowded, yet wanting a home of their own (Game.getHouseholdsWantingAHome()); saved with the state. */
+    public double withinTheLine(){return sum(withinTheLine);}
+    /** The households whose budget funds a share that found no door standing and board with a housed family (overcrowding()),
+     *  overcrowded or within the line as their door's persons a room fall, paying their hosts board (boardHosts()); saved. */
+    public double boarders(){return sum(boarding);}
+    /** This clearing's board, paid out of the boarders' cells and into their hosts' cells, every cent (boardHosts()); saved. */
+    public double boardPaid(){return sum(boardPaid);}
+    public double boardReceived(){return sum(boardReceived);}
+    /** By cell: past the line, within it, boarding, and the board paid and received. */
+    public Map<String,Double> overcrowdedByCell(){return overcrowded;}
+    public Map<String,Double> withinTheLineByCell(){return withinTheLine;}
+    public Map<String,Double> boardingByCell(){return boarding;}
+    public Map<String,Double> boardPaidByCell(){return boardPaid;}
+    public Map<String,Double> boardReceivedByCell(){return boardReceived;}
+    /** The most door-equivalents this clearing held to the standing stock past the packing resolution: a pass that placed
+     *  doors no house has, trimmed rather than thrown partway through the month (holdToStock()); LongPlaytest flags it. */
+    public double pastTheStock(){return pastTheStock;}
+    private static double sum(Map<String,Double> m){double n=0;for(double v:m.values())n+=v;return n;}
     public double sharingGroups(){return sharing.stream().mapToDouble(Sharing::groups).sum();}
     public List<HousingChoice.Demand> demands(){return demand;}
     /** The last clearing's doors as offered (not saved: a load has none until its next clearing). */
@@ -147,9 +174,10 @@ public final class HousingMarket {
             double slots=Math.max(0,2*owned-assigned);
             if(c.capacity>FamilyModel.STUDIO_MAX_SIZE)family+=slots;else compact+=slots;
         }
-        // Who lives past the census line (overcrowding()) still seeks a door of its own: its room is kept as the doorless's.
-        if(result.unplaced()>0||!overcrowded.isEmpty())for(var d:demand){double taken=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
-            double missing=Math.max(0,d.count()-taken+overcrowded.getOrDefault(d.key(),0.0));if(d.children()>0)children+=missing;else adults+=missing;}
+        // Who lives past the census line or beside another family within it (overcrowding()) still seeks a door of its own:
+        // its room is kept as the doorless's.
+        if(result.unplaced()>0||!overcrowded.isEmpty()||!withinTheLine.isEmpty())for(var d:demand){double taken=leases.stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+            double missing=Math.max(0,d.count()-taken+overcrowded.getOrDefault(d.key(),0.0)+withinTheLine.getOrDefault(d.key(),0.0));if(d.children()>0)children+=missing;else adults+=missing;}
         family=Math.max(0,family-children);double inCompact=Math.min(compact,adults);compact-=inCompact;family=Math.max(0,family-(adults-inCompact));
         if(arrivalProjection){
             family=Math.max(0,family-formingFamilies);inCompact=Math.min(compact,formingAdults);compact-=inCompact;family=Math.max(0,family-(formingAdults-inCompact));
@@ -261,6 +289,7 @@ public final class HousingMarket {
         var housed=result.leases();
         overcrowding(game.getMonth());
         leases=result.leases();month=game.getMonth();
+        boardHosts(game);
         strikePriceDemand(offers,housed);
         Map<HousingInventory.Key,Double> actual=new LinkedHashMap<>();
         for(var s:inventory.stock())actual.put(s.key(),classes.get(s.key()).occupied);
@@ -481,11 +510,12 @@ public final class HousingMarket {
      * bill and no new money, a household beside each occupied door a round. It is the last pass: every placement the
      * line has room for is settled before it; who can fund a share it fits takes a door or share past the line at its
      * ask like anyone, and finding no door standing boards with a housed family (boarders()), as a fifth to a third of
-     * urban households took boarders about 1900 (Modell and Hareven 1973): no class is billed for it, because the
-     * boarder's rent to its host is a transfer between households, which nets to zero in the households' aggregate only.
-     * retainAndClear() keeps a door within the line only, so it runs again at each clearing. Who it houses is
-     * counted overcrowded (overcrowded(), saved with the state), still seeks a door of its own (roomLeft()) and still
-     * presses the rent as when it had none (strikePriceDemand()).
+     * urban households took boarders about 1900 (Modell and Hareven 1973), paying its hosts board, booked on both
+     * sides by boardHosts(); no landlord is paid and no class is billed for it. retainAndClear() keeps a door within
+     * the line only, so it runs again at each clearing. Who it houses is counted by the census's own line on the door it
+     * lives on (REV-RES3b P1-4): past two persons a room overcrowded (overcrowded()), within it not (withinTheLine()),
+     * both saved with the state; either still seeks a door of its own (roomLeft()) and still presses the rent as when it
+     * had none (strikePriceDemand()). Nothing it decides is taken before all of it is (holdToStock(), REV-RES3b P1-3).
      *
      * WHY: with every door full and the ground gone, the line left HousingDoorCheck's town (AUTO2 seed 12) 47.986
      * households with no door at m888, every one a family of six with no door the line fits beside another, and with
@@ -500,7 +530,7 @@ public final class HousingMarket {
      * against 2.58% a year), and the orchestrator's call put call A over R1g for payers.
      */
     private void overcrowding(int now){
-        overcrowded=Map.of();boarders=0;
+        overcrowded=Map.of();withinTheLine=Map.of();boarding=Map.of();owed=List.of();pastTheStock=0;
         List<HousingChoice.Lease> all=new ArrayList<>(result.leases());
         Map<String,Double> placed=new HashMap<>();for(var l:all)placed.merge(l.cell(),l.households(),Double::sum);
         List<HousingChoice.Demand> left=new ArrayList<>();
@@ -510,8 +540,10 @@ public final class HousingMarket {
         double source=demand.stream().mapToDouble(HousingChoice.Demand::count).sum();
         if(left.isEmpty()||left.stream().mapToDouble(HousingChoice.Demand::count).sum()<=FamilyModel.packingRounding(source))return;
         Map<HousingInventory.Key,Double> occupied=new HashMap<>();for(var l:all)occupied.merge(l.home(),l.count(),Double::sum);
-        Map<String,Double> crowded=new LinkedHashMap<>();double extra=0,lodged=0;
-        // A door still standing at its ask, then half of one at half of it.
+        Map<String,Double> crowded=new LinkedHashMap<>(),within=new LinkedHashMap<>();double extra=0,lodged=0;
+        var homes=homes();var sizes=sizes();
+        // A door still standing at its ask, then half of one at half of it: share households of the cell to a door, past
+        // the census line if their persons are more than two a room (HousingChoice.line()).
         for(int share=1;share<=2&&!left.isEmpty();share++){
             List<HousingChoice.Offer> vacant=new ArrayList<>();
             for(var o:offers){double n=Math.max(0,o.count()-occupied.getOrDefault(o.key(),0.0));if(n>0)vacant.add(pastTheLine(o,share*n,share));}
@@ -519,22 +551,34 @@ public final class HousingMarket {
             var taken=HousingChoice.clear(left,vacant,List.of(),now).leases();
             for(var l:taken){double n=l.count(),doors=n/share;
                 all.add(share==1?l:new HousingChoice.Lease(l.cell(),l.home(),doors,l.bill(),n,new HousingChoice.Funding(0,n,0)));
-                occupied.merge(l.home(),doors,Double::sum);crowded.merge(l.cell(),n,Double::sum);extra+=n;}
+                var o=homes.get(l.home());boolean past=o==null||share*sizes.getOrDefault(l.cell(),0)>HousingChoice.line(o.bedrooms());
+                occupied.merge(l.home(),doors,Double::sum);(past?crowded:within).merge(l.cell(),n,Double::sum);extra+=n;}
             left=remaining(left,taken);
         }
         // Who pays for neither lodges, and who could pay but found no door boards: a household beside each occupied door a
-        // round, nearest first, billed nothing (the boarder's rent to its host nets to zero between households).
-        Map<String,Boolean> pays=new HashMap<>();for(var d:left)pays.put(d.key(),paysAShare(d));double boarded=0;
+        // round, nearest first, no landlord's bill; the boarder owes its hosts board, half the door's ask a household up to
+        // its budget, booked by boardHosts(). The census's line is read on the door it lives on (REV-RES3b P1-4): the
+        // door's people, the incumbents' a door and the lodgers' before it spread a household to a door a round, and its own.
+        Map<String,Boolean> pays=new HashMap<>();Map<String,Double> budgets=new HashMap<>();
+        for(var d:left){pays.put(d.key(),paysAShare(d));budgets.put(d.key(),d.budget());}
+        Map<HousingInventory.Key,Double> people=new HashMap<>(),lodgedOn=new HashMap<>(),lodgedPeople=new HashMap<>();
+        for(var l:all)people.merge(l.home(),l.households()*sizes.getOrDefault(l.cell(),0),Double::sum);
+        Map<String,Double> boards=new LinkedHashMap<>();List<Board> dues=new ArrayList<>();
         while(!left.isEmpty()){
             List<HousingChoice.Offer> doors=new ArrayList<>();
             for(var o:offers){double n=occupied.getOrDefault(o.key(),0.0);if(n>0)doors.add(pastTheLine(o,n,0));}
             var taken=doors.isEmpty()?List.<HousingChoice.Lease>of():HousingChoice.clear(left,doors,List.of(),now).leases();
-            double round=0,payers=0,before=left.stream().mapToDouble(HousingChoice.Demand::count).sum();
-            for(var l:taken){double n=l.count();
-                all.add(new HousingChoice.Lease(l.cell(),l.home(),0,0,n,new HousingChoice.Funding(0,0,n)));crowded.merge(l.cell(),n,Double::sum);round+=n;
-                if(pays.getOrDefault(l.cell(),false))payers+=n;}
+            double round=0,before=left.stream().mapToDouble(HousingChoice.Demand::count).sum();
+            for(var l:taken){double n=l.count();var h=l.home();var o=homes.get(h);int size=sizes.getOrDefault(l.cell(),0);
+                double on=occupied.getOrDefault(h,0.0),lodgers=lodgedOn.getOrDefault(h,0.0),layer=on>0?Math.floor(lodgers/on+1e-9):0;
+                double persons=(on>0?people.getOrDefault(h,0.0)/on:0)+(layer>0?layer*lodgedPeople.getOrDefault(h,0.0)/lodgers:0)+size;
+                boolean past=o==null||persons>HousingChoice.line(o.bedrooms());
+                all.add(new HousingChoice.Lease(l.cell(),h,0,0,n,new HousingChoice.Funding(0,0,n)));(past?crowded:within).merge(l.cell(),n,Double::sum);round+=n;
+                lodgedOn.merge(h,n,Double::sum);lodgedPeople.merge(h,n*size,Double::sum);
+                if(pays.getOrDefault(l.cell(),false)){boards.merge(l.cell(),n,Double::sum);
+                    if(o!=null)dues.add(new Board(l.cell(),h,n*Math.min((o.rent()+o.recurring())/2,budgets.getOrDefault(l.cell(),0.0))));}}
             if(!(round>FamilyModel.packingRounding(before)))break;
-            extra+=round;lodged+=round;boarded+=payers;left=remaining(left,taken);
+            extra+=round;lodged+=round;left=remaining(left,taken);
         }
         if(!(extra>0))return;
         Map<LeaseKey,HousingChoice.Lease> merged=new LinkedHashMap<>();
@@ -546,18 +590,63 @@ public final class HousingMarket {
         // paid contracts scaled with the households kept fell short of them (RES3c, 2026-11-26): at AUTO2 seed 6's m568 a lease of 2.73e-12
         // households of D90, 1.82e-12 of a door left of 5,160, was short 9.1e-13 against its own resolution of 2.7e-24, threw "Invalid
         // lease" partway through the month, and the audit found the month's money, food and utilities unbooked (M1: 105 months in 80 runs).
+        var held=holdToStock(merged.values(),offers);
+        Map<String,Double> oldBudgets=new HashMap<>();for(var shift:sharing)oldBudgets.put(shift.target(),shift.targetBudget());
+        var cleared=HousingChoice.summarize(demand,offers,held.leases(),result.kept(),result.suitable(),result.crowded()+extra+held.trimmed(),oldBudgets);
+        // Decided: only now does the market take any of it (REV-RES3b P1-3), so nothing above can leave the month part-applied.
+        hosted+=lodged+held.trimmed();pastTheStock=held.past();result=cleared;
+        overcrowded=Collections.unmodifiableMap(crowded);withinTheLine=Collections.unmodifiableMap(within);
+        boarding=Collections.unmodifiableMap(boards);owed=List.copyOf(dues);
+    }
+    /** The leases held to the homes standing, the households the trim took off a door, and its most past the resolution. */
+    record Held(List<HousingChoice.Lease> leases,double trimmed,double past){}
+    /**
+     * Each home's doors summed in the order given and held to the homes standing: who the trim takes off a door lodges on it,
+     * its contract sponsored, no bill (the households and their funding kept, so the lease is valid by construction). A
+     * trim within the packing resolution is a floating sum's ulp; past it, a pass placed doors no house has, held to the
+     * stock all the same and reported (past, LongPlaytest's finding) rather than thrown partway through the month, where
+     * Game's catch could not take back what the month had already moved (REV-RES3b P1-3; the throw at AUTO2 seed 6's m568).
+     */
+    static Held holdToStock(java.util.Collection<HousingChoice.Lease> leases,List<HousingChoice.Offer> offers){
         Map<HousingInventory.Key,Double> limits=new HashMap<>(),used=new HashMap<>();for(var o:offers)limits.put(o.key(),o.count());
-        List<HousingChoice.Lease> held=new ArrayList<>();double trimmed=0;
-        for(var l:merged.values()){double before=used.getOrDefault(l.home(),0.0),limit=limits.getOrDefault(l.home(),0.0),n=l.count();
+        List<HousingChoice.Lease> held=new ArrayList<>();double trimmed=0,past=0;
+        for(var l:leases){double before=used.getOrDefault(l.home(),0.0),limit=limits.getOrDefault(l.home(),0.0),n=l.count();
             if(before+n>limit){double fit=Math.max(0,limit-before);while(fit>0&&before+fit>limit)fit=Math.nextDown(fit);
-                if(n-fit>FamilyModel.packingRounding(limit))throw new IllegalStateException("Housing overcrowding exceeds physical homes");
+                past=Math.max(past,n-fit-FamilyModel.packingRounding(limit));
                 double f=fit/n;var fu=l.funding();
                 double full=fu.full()*f,half=fu.half()*f,off=(fu.full()-full)+(fu.half()-half);trimmed+=off;
                 l=new HousingChoice.Lease(l.cell(),l.home(),fit,l.bill()*f,l.households(),new HousingChoice.Funding(full,half,fu.sponsored()+off));}
             used.put(l.home(),before+l.count());held.add(l);}
-        hosted+=lodged+trimmed;extra+=trimmed;overcrowded=Collections.unmodifiableMap(crowded);boarders=boarded;
-        Map<String,Double> oldBudgets=new HashMap<>();for(var shift:sharing)oldBudgets.put(shift.target(),shift.targetBudget());
-        result=HousingChoice.summarize(demand,offers,held,result.kept(),result.suitable(),result.crowded()+extra,oldBudgets);
+        return new Held(held,trimmed,Math.max(0,past));
+    }
+    /** The household cell a lease's cell belongs to (a sharing or pool key carries its cell's before the '#', as rentFor() reads). */
+    private static String owner(String cell){int i=cell.indexOf('#');return i<0?cell:cell.substring(0,i);}
+    /**
+     * The board (REV-RES3b P1-1): each boarding cell pays the cells housed on the doors of the home it boards in, by their
+     * doors, what overcrowding() set it owing, half the door's ask a household up to its budget, as boarders paid their
+     * hosts about 1900 (Modell and Hareven 1973). Booked on both sides of the households' money in the clearing's month,
+     * inside the audit's window: what a boarding cell's savings cannot meet is not paid, and a home with no host cell
+     * that has households is owed nothing, so every cent paid out of a boarder's cell is a cent into its hosts'. No
+     * landlord is paid and no class is billed; the boarder's lease stays sponsored.
+     */
+    private void boardHosts(Game game){
+        boardPaid=Map.of();boardReceived=Map.of();if(owed.isEmpty())return;
+        var balance=game.getHouseholdBalance();
+        Map<HousingInventory.Key,Map<Household,Double>> hosts=new HashMap<>();
+        for(var l:leases)if(l.count()>0){var c=balance.cellByKey(owner(l.cell()));
+            if(c!=null&&c.households>0)hosts.computeIfAbsent(l.home(),k->new LinkedHashMap<>()).merge(c,l.count(),Double::sum);}
+        Map<Household,Double> due=new LinkedHashMap<>();
+        for(var b:owed){var c=balance.cellByKey(owner(b.cell()));
+            if(c!=null&&c.households>0&&b.due()>0&&hosts.containsKey(b.home()))due.merge(c,b.due(),Double::sum);}
+        Map<Household,Double> meets=new HashMap<>();
+        for(var e:due.entrySet()){var c=e.getKey();double can=Math.max(0,c.savings*c.households);meets.put(c,e.getValue()>can?can/e.getValue():1);}
+        Map<String,Double> paid=new LinkedHashMap<>(),received=new LinkedHashMap<>();
+        for(var b:owed){var c=balance.cellByKey(owner(b.cell()));if(c==null||!meets.containsKey(c)||!hosts.containsKey(b.home()))continue;
+            double pay=b.due()*meets.get(c);if(!(pay>0)||!Double.isFinite(pay))continue;
+            var on=hosts.get(b.home());double doors=0;for(double v:on.values())doors+=v;
+            for(var h:on.entrySet()){double x=pay*h.getValue()/doors;h.getKey().savings+=x/h.getKey().households;received.merge(h.getKey().key(),x,Double::sum);}
+            c.savings-=pay/c.households;paid.merge(c.key(),pay,Double::sum);}
+        boardPaid=Collections.unmodifiableMap(paid);boardReceived=Collections.unmodifiableMap(received);
     }
     /** A class's doors offered past the census line, at its ask over share (0: a lodger's, no bill), every other test kept. */
     private static HousingChoice.Offer pastTheLine(HousingChoice.Offer o,double n,int share){
@@ -906,7 +995,8 @@ public final class HousingMarket {
     }
     public State forSave(){State s=new State();s.month=month;s.classes=classes();s.leases=new ArrayList<>(leases);s.demand=new ArrayList<>(demand);s.pipeline=new ArrayList<>(pipeline);s.sharing=new ArrayList<>(sharing);
         s.hosted=hosted;s.rentPriceIndex=rentPriceIndex;
-        s.kept=result.kept();s.suitable=result.suitable();s.crowded=result.crowded();s.unaffordable=result.unaffordable();s.noSuitable=result.noSuitable();s.unplaced=result.unplaced();s.overcrowded=new LinkedHashMap<>(overcrowded);return s;}
+        s.kept=result.kept();s.suitable=result.suitable();s.crowded=result.crowded();s.unaffordable=result.unaffordable();s.noSuitable=result.noSuitable();s.unplaced=result.unplaced();s.overcrowded=new LinkedHashMap<>(overcrowded);
+        s.withinTheLine=new LinkedHashMap<>(withinTheLine);s.boarding=new LinkedHashMap<>(boarding);s.boardPaid=new LinkedHashMap<>(boardPaid);s.boardReceived=new LinkedHashMap<>(boardReceived);return s;}
     private static void nonnegative(double n){if(!Double.isFinite(n)||n<0)throw new IllegalArgumentException("Invalid saved housing quantity");}
     private static void validate(State s){
         nonnegative(s.rentPriceIndex);
@@ -943,6 +1033,20 @@ public final class HousingMarket {
         if(s.overcrowded!=null)for(var e:s.overcrowded.entrySet()){var n=e.getValue();
             if(n==null||!profiles.containsKey(e.getKey()))throw new IllegalArgumentException("Invalid saved overcrowding");nonnegative(n);
             if(n>placed.getOrDefault(e.getKey(),0.0)+FamilyModel.packingRounding(n))throw new IllegalArgumentException("Saved overcrowding exceeds its cell's placements");}
+        // ...within the line too, the two together within the cell's placements, and the boarders within them (REV-RES3b P1-2).
+        Map<String,Double> past=s.overcrowded==null?Map.of():s.overcrowded;
+        if(s.withinTheLine!=null)for(var e:s.withinTheLine.entrySet()){var n=e.getValue();
+            if(n==null||!profiles.containsKey(e.getKey()))throw new IllegalArgumentException("Invalid saved housing within the line");nonnegative(n);
+            double both=n+past.getOrDefault(e.getKey(),0.0);
+            if(both>placed.getOrDefault(e.getKey(),0.0)+FamilyModel.packingRounding(both))throw new IllegalArgumentException("Saved crowding exceeds its cell's placements");}
+        if(s.boarding!=null)for(var e:s.boarding.entrySet()){var n=e.getValue();
+            if(n==null||!profiles.containsKey(e.getKey()))throw new IllegalArgumentException("Invalid saved boarding");nonnegative(n);
+            double both=past.getOrDefault(e.getKey(),0.0)+(s.withinTheLine==null?0:s.withinTheLine.getOrDefault(e.getKey(),0.0));
+            if(n>both+FamilyModel.packingRounding(n))throw new IllegalArgumentException("Saved boarders exceed their cell's crowding");}
+        double paidOut=0,paidIn=0;
+        if(s.boardPaid!=null)for(var v:s.boardPaid.values()){if(v==null)throw new IllegalArgumentException("Invalid saved board");nonnegative(v);paidOut+=v;}
+        if(s.boardReceived!=null)for(var v:s.boardReceived.values()){if(v==null)throw new IllegalArgumentException("Invalid saved board");nonnegative(v);paidIn+=v;}
+        if(Math.abs(paidOut-paidIn)>MoneyAudit.tolerance(paidOut))throw new IllegalArgumentException("Saved board paid and received do not reconcile");
         Set<String> shifted=new HashSet<>(),targets=new HashSet<>();
         for(var t:s.sharing){
             for(double n:new double[]{t.groups(),t.sourceCount(),t.targetCount(),t.sourceBudget(),t.targetBudget()})nonnegative(n);
@@ -962,8 +1066,10 @@ public final class HousingMarket {
                 ||Math.abs(requested-assigned-s.unplaced)>rounding)
             throw new IllegalArgumentException("Saved housing allocation flows do not reconcile");
     }
+    private static Map<String,Double> kept(Map<String,Double> m){return m==null?Map.of():Collections.unmodifiableMap(new LinkedHashMap<>(m));}
     public void restore(State s){if(s!=null)validate(s);reset();if(s==null)return;month=s.month;for(ClassState c:s.classes)classes.put(c.key(),c.copy());leases=List.copyOf(s.leases);demand=List.copyOf(s.demand);pipeline=List.copyOf(s.pipeline);sharing=List.copyOf(s.sharing);
         hosted=s.hosted;rentPriceIndex=s.rentPriceIndex;overcrowded=s.overcrowded==null?Map.of():Collections.unmodifiableMap(new LinkedHashMap<>(s.overcrowded));
+        withinTheLine=kept(s.withinTheLine);boarding=kept(s.boarding);boardPaid=kept(s.boardPaid);boardReceived=kept(s.boardReceived);
         result=new HousingChoice.Result(leases,s.kept,s.suitable,s.crowded,s.unaffordable,s.noSuitable,s.unplaced);}
     /** The native load additionally checks the complete physical catalogue, including unavailable quotes. */
     public void restore(State s,BuildingManager buildings){
@@ -977,7 +1083,7 @@ public final class HousingMarket {
         }
         restore(s);
     }
-    public void reset(){classes.clear();leases=List.of();demand=List.of();offers=List.of();pipeline=List.of();sharing=List.of();hosted=0;overcrowded=Map.of();boarders=0;rentPriceIndex=0;arrivalProjection=false;formingFamilies=formingAdults=0;month=Integer.MIN_VALUE;result=new HousingChoice.Result(List.of(),0,0,0,0,0,0);}
+    public void reset(){classes.clear();leases=List.of();demand=List.of();offers=List.of();pipeline=List.of();sharing=List.of();hosted=0;overcrowded=Map.of();withinTheLine=Map.of();boarding=Map.of();boardPaid=Map.of();boardReceived=Map.of();owed=List.of();pastTheStock=0;rentPriceIndex=0;arrivalProjection=false;formingFamilies=formingAdults=0;month=Integer.MIN_VALUE;result=new HousingChoice.Result(List.of(),0,0,0,0,0,0);}
     public void redenominate(double scale){for(ClassState c:classes.values()){c.ask*=scale;c.capital*=scale;c.carry*=scale;c.target*=scale;c.lastTrade*=scale;c.tradeValue*=scale;}
         rentPriceIndex*=scale;
         leases=leases.stream().map(l->new HousingChoice.Lease(l.cell(),l.home(),l.count(),l.bill()*scale,l.households(),l.funding())).toList();

@@ -1742,6 +1742,13 @@ public class LongPlaytest {
          * Counting doors answers neither question. FamilyModel now reports what
          * both valves failed to place, which is the thing this flag is about.
          */
+        // The trim to the standing stock (HousingMarket.holdToStock()): past the packing resolution a pass placed doors no
+        // house has, held to the stock rather than thrown partway through the month (REV-RES3b P1-3), so read here.
+        double pastTheStock = g.getSectors().realEstate().housingMarket().pastTheStock();
+        if (pastTheStock > 0) {
+            flag(month, "housing placed past the standing stock",
+                    String.format("%.3g door-equivalents held to the homes standing", pastTheStock), pastTheStock);
+        }
         double homeless = g.getFamilies().getStillUnplaced();
         if (homeless > 1) {
             flag(month, "households with no home",

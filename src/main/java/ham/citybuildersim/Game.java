@@ -16093,14 +16093,16 @@ public class Game {
     public FamilyModel getFamilies()      { return families; }
     /**
      * The households wanting a home of their own: those with no door at all (FamilyModel.getStillUnplaced()) and those
-     * living past the census line, overcrowded (HousingMarket.overcrowded()), as a player, an advisor and a planner read
-     * a town's need of homes. WHY (RES3c, 2026-11-25): since call A nobody past the line is doorless, and the readers of
+     * living past the census line, overcrowded (HousingMarket.overcrowded()), and those boarding or lodging with another
+     * family within it (HousingMarket.withinTheLine(), REV-RES3b P1-4: under two persons a room is boarding, not
+     * overcrowding, and still no home of their own), as a player, an advisor and a planner read a town's need of homes. WHY (RES3c, 2026-11-25): since call A nobody past the line is doorless, and the readers of
      * the doorless alone - the playtest's player, the HOMES need, the fields' guard - read a town of families three to a
      * door, past two persons a room, as "everybody housed" (HousingDoorCheck's town: none with no door, 36.993 households
      * overcrowded at m831).
      */
     public double getHouseholdsWantingAHome() {
-        return families.getStillUnplaced() + getSectors().realEstate().housingMarket().overcrowded();
+        var market = getSectors().realEstate().housingMarket();
+        return families.getStillUnplaced() + market.overcrowded() + market.withinTheLine();
     }
     public HouseholdBalance getHouseholdBalance() { return householdBalance; }
     public Migration getMigration()       { return migration; }
