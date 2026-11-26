@@ -1,6 +1,6 @@
 # BusinessInvestment.java - 1,846 lines · 108 methods · 13 constants · model
 
-`ham/citybuildersim/BusinessInvestment.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessInvestment.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > Capacity planning for the private sector.
 > 

@@ -6392,6 +6392,7 @@ public class LongPlaytest {
             countWorks(g, worksOn, worksOver, worksOrders);
             traceMonth(g);
             traceGroundMonth(g);
+            if (monthCompleted != null) monthCompleted.accept(g);
         }
     }
 
@@ -6938,6 +6939,9 @@ public class LongPlaytest {
     /** The copper works the summary counts at the end (CU2), by their names in buildings.json; CopperRefiningCheck's played count reads the line. */
     static final String[] COPPER_WORKS = {"Copper Smelter", "Electrolytic Refinery", "Scrap Copper Refinery", "Rod Mill", "Wire & Cable Works"};
 
+    /** Optional same-month observers for a primary-run cash measurement (QR1); null in the normal harness. */
+    static java.util.function.Consumer<Game> primaryCreated, monthCompleted;
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -6957,6 +6961,7 @@ public class LongPlaytest {
         // On the flag's preset (0.7.10): Standard when unset. See THE FOUNDING, AS A CHOICE.
         // ...and on the real Earth under --earth (0.7.121): ON THE REAL EARTH.
         Game g = new Game(files, played(EARTH));
+        if (primaryCreated != null) primaryCreated.accept(g);
         if (OWNERS != null) g.getHouseholdBalance().setOwnerLine(OWNERS);
         retirementWatch = new RetirementWatch();
         landLedgerMonths = landLedgerDiffMonths = landLedgerWorstMonth = 0;
@@ -7198,6 +7203,7 @@ public class LongPlaytest {
                 // run happens to be in.
                 if (stop % 7 == 0) {
                     roundTrip(g, files, slot);
+                    if (primaryCreated != null) primaryCreated.accept(g);
                     slot = (slot % 9) + 1;
                 }
 
