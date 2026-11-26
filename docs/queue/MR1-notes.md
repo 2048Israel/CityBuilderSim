@@ -109,6 +109,14 @@ old senior-care comment. PopulationCheck is rerun after this correction.
   No Manufacturing plant or site remains through m122. Works proposals from
   m108 are refused by bank capital. The current red must be traced on its
   own cause, not attributed to AQ1's old measurements.
+- Base 1900 default, real LongPlaytest via the observer: exit 0, city phase
+  2,292 s, ends m2405 because final player actions pass the requested 2400.
+  Manufacturing has zero distress sales; its only 12 operating-loss months
+  are m314–325, with no principal during that spell. At m2400: population
+  6,864,565, jobs 2,937,353; Manufacturing holds 159 Shops, 841 Machine Works,
+  309 Fabrication Works, 2 Wire & Cable Works, 4 sites and no principal.
+  **Neither current played path reproduces AQ1's old bleed-then-reorder of
+  remaining plant. The caused two-shop bleed fixture carries MR1's finding.**
 - Runner correction: MR1-trace launched the original target-only observer
   directly before my follow-up made the batch-check wrapper explicit. It
   delegates the real LongPlaytest and is a mechanism probe, not a claimed
@@ -117,6 +125,10 @@ old senior-care comment. PopulationCheck is rerun after this correction.
   `./batch-check.sh` invocation at a time. No timeout is extended.
 - Population law correction `--fast`: green, compile 61 s, Stale 0 firm
   findings, maps regenerated. Full PopulationCheck remains to be rerun.
+- Final save-boundary harness additions `--fast`: green, compile 61 s,
+  Stale 0 firm findings. The finding now loads a real scratch-disk save at
+  zero recovery immediately after the bleed and again one month below the
+  dial, then checks the next close reaches the same boundary.
 - First finding attempt (planner behaviour unchanged): invalid red proof.
   Initial entry and the final order were already held because the new
   fixture set owned land but omitted the planner's monthly land snapshot.

@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**257 harness files, 29,383 labelled assertions.** AllChecks runs 257 of them.
+**257 harness files, 29,385 labelled assertions.** AllChecks runs 257 of them.
 
 ## Which harnesses read which class
 
@@ -22297,7 +22297,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2019 laid again a month later on ground whose version moved (the line grown again where it waited): the same
   - L2029 control: open west to the city's edge, the arm opposite the gate arm runs on to it as FX2 has it, within LOOK plots of the box's west edge
 
-## ManufacturingCheck.java - 80 labelled assertions
+## ManufacturingCheck.java - 82 labelled assertions
 
 > The ninth sector: what the city makes out of its own steel, and ships.
 > 
@@ -22388,20 +22388,22 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L672 its lender covered the losses and the bleed sells one of two shops
   - L676 the remaining plant is one shop
   - L677 the loss-making market orders no new works
-  - L680 one paying month after the bleed is not sustained recovery
-  - L682 opening a plant does not erase the market's recovery record
-  - L685 a positive statement from scrap sales still holds expansion
-  - L692 every paying month below the recovery dial still holds expansion
-  - L693 the held order still has workers and a positive estimated profit
-  - L695 scrap receipts reset recovery before the paying months were counted
-  - L701 a disk save carries the exact recovery count
-  - L702 loading below the dial does not permit expansion
-  - L705 at the dial, covering running costs permits the profitable order again
-  - L706 interest-only net losses do not prevent operating recovery
-  - L708 the loaded plant reaches the same recovery boundary
-  - L710 a fresh operating loss starts the wait again
-  - L715 an absent older-save field has no invented operating history
-  - L717 a new game starts without a losing record
+  - L681 a disk save preserves zero recovery after the bleed
+  - L683 loading the just-bled market does not permit an order
+  - L687 one paying month after the bleed is not sustained recovery
+  - L689 opening a plant does not erase the market's recovery record
+  - L692 a positive statement from scrap sales still holds expansion
+  - L699 every paying month below the recovery dial still holds expansion
+  - L700 the held order still has workers and a positive estimated profit
+  - L702 scrap receipts reset recovery before the paying months were counted
+  - L707 a disk save carries the exact recovery count
+  - L708 loading below the dial does not permit expansion
+  - L711 at the dial, covering running costs permits the profitable order again
+  - L712 interest-only net losses do not prevent operating recovery
+  - L714 the loaded plant reaches the same recovery boundary
+  - L716 a fresh operating loss starts the wait again
+  - L721 an absent older-save field has no invented operating history
+  - L723 a new game starts without a losing record
 
 ## MapCheck.java - 845 labelled assertions
 

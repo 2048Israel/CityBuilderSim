@@ -675,6 +675,13 @@ public class ManufacturingCheck {
         if (sale.build) buildings.retire(sale.template, sale.quantity);
         check("the remaining plant is one shop", buildings.getQuantity(shop.getId()), 1, 0);
         assertTrue("the loss-making market orders no new works", !maker.plan(plans, city).build);
+        quietly(() -> city.saveGame(10));
+        Game back = new Game(files);
+        quietly(() -> { back.run(); back.loadGameSave(10); });
+        check("a disk save preserves zero recovery after the bleed",
+                back.getSectors().manufacturing().getExpansionRecoveryMonths(), 0, 0);
+        assertTrue("loading the just-bled market does not permit an order",
+                !back.getSectors().manufacturing().plan(back.getBusinessInvestment(), back).build);
 
         runningMonth(maker, plans, 1, 0);
         assertTrue("one paying month after the bleed is not sustained recovery", !maker.plan(plans, city).build);
@@ -695,8 +702,7 @@ public class ManufacturingCheck {
         check("scrap receipts reset recovery before the paying months were counted",
                 maker.getExpansionRecoveryMonths(), recovery - 1, 0);
         quietly(() -> city.saveGame(10));
-        Game back = new Game(files);
-        quietly(() -> { back.run(); back.loadGameSave(10); });
+        quietly(() -> back.loadGameSave(10));
         Manufacturing loaded = back.getSectors().manufacturing();
         check("a disk save carries the exact recovery count", loaded.getExpansionRecoveryMonths(), recovery - 1, 0);
         assertTrue("loading below the dial does not permit expansion", !loaded.plan(back.getBusinessInvestment(), back).build);

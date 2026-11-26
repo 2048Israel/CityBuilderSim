@@ -1,4 +1,4 @@
-# ManufacturingCheck.java - 743 lines · 10 methods · 5 constants · harnesses
+# ManufacturingCheck.java - 749 lines · 10 methods · 5 constants · harnesses
 
 `ham/citybuildersim/ManufacturingCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -65,20 +65,20 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 38 | 706 | **type** `public class ManufacturingCheck` | The ninth sector: what the city makes out of its own steel, and ships. |
+| 38 | 712 | **type** `public class ManufacturingCheck` | The ninth sector: what the city makes out of its own steel, and ships. |
 | 44 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 49 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 54 | 9 | `static void check(String label, double actual, double expected, double tol)` |  |
 | 64 | 5 | `static void quietly(Runnable r)` |  |
 
-### WHOSE COST IS IT - Sector.costShareOf(), guarded here because this is (lines 86-743)
+### WHOSE COST IS IT - Sector.costShareOf(), guarded here because this is (lines 86-749)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 99 | 23 | `static void costSharesAddUp(Game g)` |  |
 | 123 | 512 | `public static void main(String[] args) throws Exception` |  |
-| 637 | 82 | `static void expansionAfterBleed() throws Exception` | The fixture causes a lent bleed; new works remain profitable and staffable throughout the recovery. |
-| 721 | 10 | `static void runningMonth(Manufacturing maker, BusinessInvestment plans, double running, double scrap)` | Close a controlled trading result through the same banking and history doors as the real month. |
-| 732 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
-| 738 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
+| 637 | 88 | `static void expansionAfterBleed() throws Exception` | The fixture causes a lent bleed; new works remain profitable and staffable throughout the recovery. |
+| 727 | 10 | `static void runningMonth(Manufacturing maker, BusinessInvestment plans, double running, double scrap)` | Close a controlled trading result through the same banking and history doors as the real month. |
+| 738 | 5 | `static double jobsOf(BuildingsTemplate t)` |  |
+| 744 | 5 | `static double payrollOf(BuildingsTemplate t)` |  |
 
