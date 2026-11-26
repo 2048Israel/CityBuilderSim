@@ -484,6 +484,15 @@ reviewer's line.
   cells that can fund a share and wait for the building (overcrowding()
   skips paysAShare, R1g's rule). The ensemble on c7adb1caf
   (RES3-lodge-20261126) is the measure.
+- The ensemble on c7adb1caf (RES3-lodge-20261126, against 0.9.208.md),
+  9 of 10 hard criteria: M1 green in every policy (0 audit months; 105
+  before the mend). F1 red in AUTO2 alone: 1 of 16 runs, seed 0, "households
+  with no home" (getStillUnplaced() > 1) in the one month m1950, the town
+  5,710,339 people; ZERO_SLACK, ZERO_HOT, SHOCK and HIGH 0 of 16. Next,
+  after the 05:00 restart: the figure and its cells at m1950 (AUTO2 seed 0,
+  -Dplaytest.housingTrace=true), whether they are R1g's waiting cells that
+  overcrowding() skips (paysAShare) or a residue, and the mend or the
+  restatement the reality says; then the ensemble again.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
