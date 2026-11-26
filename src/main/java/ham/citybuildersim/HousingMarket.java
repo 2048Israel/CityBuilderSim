@@ -78,11 +78,14 @@ public final class HousingMarket {
      * cheaper of the door's ask and a paid half share's, half the ask: a room in a shared house is an asked rent too, and
      * only a guest pays nothing (the orchestrator's call, 2026-11-25).
      */
-    public double askedBurden(Game game,double disposable){
+    public double askedBurden(Game game,double disposable){return asked(game,disposable,true);}
+    /** The same with every household asked a whole door's rent: what a household alone weighs, before a half share is open to it. */
+    public double aloneBurden(Game game,double disposable){return asked(game,disposable,false);}
+    private double asked(Game game,double disposable,boolean shares){
         if(!active()||!(disposable>0))return Double.NaN;
         double asked=0;var doors=supply(game);
         for(var d:demand){double best=Double.POSITIVE_INFINITY;
-            for(var o:doors)if(o.count()>0&&HousingChoice.suitable(d,o,false))best=Math.min(best,HousingChoice.halves(d,o)?o.rent()/2:o.rent());
+            for(var o:doors)if(o.count()>0&&HousingChoice.suitable(d,o,false))best=Math.min(best,shares&&HousingChoice.halves(d,o)?o.rent()/2:o.rent());
             if(Double.isFinite(best))asked+=d.count()*best;}
         return asked/disposable;
     }
