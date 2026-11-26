@@ -646,8 +646,17 @@ reviewer's line.
   own pull parts by more, its take-home a person is under the city's (the
   own pull's 0.0102 printed). Exit 0.
 - Green on the mends: HousingMarketCheck, SaveFileCheck, Village1900Check,
-  CreditCrunchCheck, HousingChoiceCheck, ScaleCheck (restated);
-  HousingDoorCheck known red only (MC1).
+  CreditCrunchCheck, HousingChoiceCheck, ScaleCheck (restated), BankCheck,
+  MonetaryCheck, ReloadCheck; HousingDoorCheck known red only (MC1). The
+  BankCheck name also ran CentralBankCheck, timed out on the PC at 1,740 s
+  beside two other JVMs (the box's), and YoungBankCheck, red on the PC
+  ("the control writes nothing off, and each loss lands where it was sized
+  with a margin the control's own month cannot cross": case (b)'s loss
+  passes the cushion by 78k, under the control's own month of 199.7k). It
+  is red on the PC at the merge alone, at 819a0fe58 and at 8bb03c69f (48k
+  under 125.5k), where the box passed it (0, 7.3 s), and green on main
+  0.9.210 on the PC: not REV-RES3b's commits; the box judges it in the dry
+  run.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
