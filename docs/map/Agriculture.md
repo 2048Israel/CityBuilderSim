@@ -54,7 +54,7 @@
 
 **Uses:** [Good](Good.md) (22), [BusinessInvestment](BusinessInvestment.md) (8), [Game](Game.md) (4), [Formats](Formats.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [Sector](Sector.md) (2), [JobType](JobType.md) (2), [BuildingType](BuildingType.md) (1), [Equipment](Equipment.md) (1), [EconomyManager](EconomyManager.md) (1), [NewUnit](NewUnit.md) (1), [LandManager](LandManager.md) (1)
 
-**Used by (14):** [AgricultureCheck](AgricultureCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FittingCheck](FittingCheck.md), [FoodIndustry](FoodIndustry.md), [FoodIndustryCheck](FoodIndustryCheck.md), [Forms1900Check](Forms1900Check.md), [LongPlaytest](LongPlaytest.md), [RecipeChanges](RecipeChanges.md), [ScaleCheck](ScaleCheck.md), [Sectors](Sectors.md), [ZoningCheck](ZoningCheck.md)
+**Used by (15):** [AgricultureCheck](AgricultureCheck.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [FittingCheck](FittingCheck.md), [FoodIndustry](FoodIndustry.md), [FoodIndustryCheck](FoodIndustryCheck.md), [Forms1900Check](Forms1900Check.md), [LabourCheck](LabourCheck.md), [LongPlaytest](LongPlaytest.md), [RecipeChanges](RecipeChanges.md), [ScaleCheck](ScaleCheck.md), [Sectors](Sectors.md), [ZoningCheck](ZoningCheck.md)
 
 ## Sections
 

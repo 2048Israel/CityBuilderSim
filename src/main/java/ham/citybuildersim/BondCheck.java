@@ -225,6 +225,7 @@ public class BondCheck {
         if (paperIssued) coupons(g);
         if (paperIssued) concentration(g);
         eachTypeTrades();
+        deferredBondRecounts();
         priceTick();
         if (paperIssued) saveAndLoad(g, root);
         if (paperIssued) maturity(g);
@@ -1714,6 +1715,273 @@ public class BondCheck {
                 && w.bm.getBetweenHouseholdsTrades() > 0 && w.rich.bondFace(1) > 0);
         close("...the face the one gave up the other took", (facePoor - w.poor.bondFace(1)) * 100, w.rich.bondFace(1) * 100, 1e-9);
         close("...and no pool line", w.bm.getHouseholdsBought() + w.bm.getHouseholdsSold(), 0, 0);
+    }
+
+    /* ======================= 9b. DEFER ONLY THE MONTH'S HOUSEHOLD FOLDS ======================= */
+
+    /** A fixture-only failed buyer lookup, inside Settle after the seller has actually changed. */
+    static final class RecountBalance extends HouseholdBalance {
+        Household seller;
+        int id;
+        double before;
+        boolean armed, thrown;
+        final RuntimeException failure = new IllegalStateException("BondCheck settlement probe");
+
+        @Override public Household cellByKey(String key) {
+            if (armed && Double.doubleToRawLongBits(seller.bondFace(id)) != Double.doubleToRawLongBits(before)) {
+                armed = false;
+                thrown = true;
+                throw failure;
+            }
+            return super.cellByKey(key);
+        }
+    }
+
+    /**
+     * Two sellers precede two buyers on three nonconsecutive ids. The small
+     * seller's cheaper ask is exhausted, then each buyer partially fills the
+     * large seller. Its spare cash makes that seller's ask dearer, so arrival
+     * rounding cannot decide which seller trades. No bank, world or company
+     * participates. This adds a fixture; section 9's premise stays unchanged.
+     */
+    static final class RecountMarket {
+        final RecountBalance hb = new RecountBalance();
+        final BondMarket bm = new BondMarket();
+        final Household[] cells = new Household[4];
+        int month = 1;
+
+        RecountMarket(boolean eager) {
+            PayTier[] tiers = {PayTier.UNSKILLED, PayTier.SKILLED, PayTier.COLLEGE, PayTier.PROFESSIONAL};
+            double[][] mix = new double[FamilyStructure.values().length][PayTier.values().length];
+            double[] pay = new double[HouseholdBalance.ROWS], none = new double[HouseholdBalance.ROWS];
+            for (PayTier tier : tiers) {
+                mix[FamilyStructure.COUPLE.ordinal()][tier.ordinal()] = 100;
+                pay[tier.ordinal()] = 100 * 4.0;
+            }
+            hb.advanceMonth((s, t) -> mix[s.ordinal()][t.ordinal()], pay, 0, none, none, .25, .05, 1);
+            for (int i = 0; i < cells.length; i++) cells[i] = hb.cell(FamilyStructure.COUPLE, tiers[i]);
+            cells[0].savings = 0;
+            cells[1].savings = 20;
+            cells[2].savings = cells[3].savings = 100;
+            hb.setBondMarket(bm);
+            bm.attach(new BondMarket.Readings() {
+                @Override public int month() { return month; }
+                @Override public double curve(int months) { return .04; }
+                @Override public double policyRate() { return .03; }
+                @Override public double depositRate() { return .01; }
+                @Override public double worldRate() { return .20; }
+                @Override public double countryPremium() { return 0; }
+                @Override public double monthlyGdp() { return 1_000_000; }
+                @Override public double localPerUsd() { return 1; }
+                @Override public boolean worldRunning() { return false; }
+                @Override public double unit() { return 1; }
+            }, hb, null, null, null);
+            BondMarket.State state = new BondMarket.State();
+            state.bonds = new ArrayList<>();
+            for (int id : new int[] {2, 17, 101}) {
+                CorporateBond b = new CorporateBond(id, ISSUER, 10_000, .06, 0, CorporateBond.TERM_MONTHS);
+                b.households = b.face;
+                state.bonds.add(b);
+                cells[0].setBondFace(id, 1);
+                cells[1].setBondFace(id, 99);
+            }
+            state.nextId = 102;
+            bm.restore(state);
+            bm.eagerBondRecountsForCheck(eager);
+        }
+
+        void armFailure() {
+            hb.seller = cells[0];
+            hb.id = bm.getBonds().get(0).id();
+            hb.before = hb.seller.bondFace(hb.id);
+            hb.armed = true;
+        }
+    }
+
+    static boolean rawSame(double... values) {
+        for (int i = 0; i < values.length; i += 2)
+            if (Double.doubleToRawLongBits(values[i]) != Double.doubleToRawLongBits(values[i + 1])) return false;
+        return true;
+    }
+
+    static boolean rawArray(double[] a, double[] b) {
+        if (a.length != b.length) return false;
+        for (int i = 0; i < a.length; i++) if (!rawSame(a[i], b[i])) return false;
+        return true;
+    }
+
+    static boolean rawOrders(List<OrderBook.Order> a, List<OrderBook.Order> b) {
+        if (a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) {
+            OrderBook.Order x = a.get(i), y = b.get(i);
+            if (x.seq() != y.seq() || !x.who().equals(y.who()) || x.side() != y.side() || x.month() != y.month()
+                    || !rawSame(x.price(), y.price(), x.quantity(), y.quantity(), x.submitted(), y.submitted())) return false;
+        }
+        return true;
+    }
+
+    static double[] bondAuditFlows(BondMarket b) {
+        return new double[] {b.getHouseholdsBought(), b.getHouseholdsSold(), b.getHouseholdsBoughtAbroad(), b.getHouseholdsSoldAbroad(),
+            b.getWorldBought(), b.getWorldSold(), b.getWorldPurchases(), b.getWorldSales(), b.getBetweenHouseholds(),
+            b.getBetweenHouseholdsTrades(), b.getLifeBetweenHouseholds(), b.getLifeBetweenHouseholdsTrades(),
+            b.getCouponsToHouseholds(), b.getCouponsToBank(), b.getCouponsToCompanies(), b.getCouponsAbroad(),
+            b.getPrincipalToHouseholds(), b.getPrincipalToBank(), b.getPrincipalToCompanies(), b.getPrincipalAbroad(),
+            b.getOrphanedToHouseholds(), b.getLossHouseholds(), b.getLossBank(), b.getLossCompanies(), b.getWorldWrittenOff(),
+            b.getIssuedFace(), b.getIssuedCosts(), b.getIssues(), b.getEmigrantsFace(), b.getCompaniesSoldShort(),
+            b.getCouponsPaid(), b.getPrincipalRepaid(), b.getWrittenOffThisMonth(), b.couponClearingCash(),
+            b.recordedIssuerCouponDebit(), b.recordedBankCouponPaid(), b.couponUnpaidEntitlement(),
+            b.getLastPostedBuy(), b.getLastPostedSell(), b.getLastFilled(), b.getLastSellsPosted(), b.getLastSellsWaited(),
+            b.getLastSellQuantityWaited(), b.getLastTrades()};
+    }
+
+    /** Compare the actual model reads, without tolerance or recounting either twin for the assertion. */
+    static void recountTwins(String label, RecountMarket a, RecountMarket b) {
+        for (int i = 0; i < a.cells.length; i++) {
+            Household x = a.cells[i], y = b.cells[i];
+            boolean same = x.key().equals(y.key()) && x.bondFace.keySet().equals(y.bondFace.keySet());
+            for (int id : x.bondFace.keySet()) same &= rawSame(x.bondFace(id), y.bondFace(id));
+            assertTrue(label + ": cell " + i + " face, aggregate and cash have identical raw bits", same
+                    && rawSame(x.bonds(), y.bonds(), x.totalBonds(), y.totalBonds(), x.savings(), y.savings(),
+                        x.totalSavings(), y.totalSavings(), x.bondsSold(), y.bondsSold(), x.bondIncome(), y.bondIncome(),
+                        x.netWorth(), y.netWorth(), x.households(), y.households()));
+        }
+        assertTrue(label + ": household aggregate reads have identical raw bits",
+                rawSame(a.hb.totalBonds(), b.hb.totalBonds(), a.hb.totalSavings(), b.hb.totalSavings(),
+                    a.hb.getBondRatio(), b.hb.getBondRatio(), a.hb.marketValueOfBonds(), b.hb.marketValueOfBonds(),
+                    a.hb.totalBondsSold(), b.hb.totalBondsSold(), a.hb.totalBondIncome(), b.hb.totalBondIncome()));
+        boolean books = sameBonds(a.bm, b.bm);
+        for (CorporateBond x : a.bm.getBonds()) {
+            CorporateBond y = b.bm.bond(x.id());
+            if (y == null) { books = false; continue; }
+            books &= rawSame(x.face(), y.face(), x.households(), y.households(), x.world(), y.world(),
+                    x.bank(), y.bank(), x.bankCost(), y.bankCost(), x.city, y.city, x.custody(), y.custody());
+            OrderBook p = a.bm.bookOf(x), q = b.bm.bookOf(y);
+            books &= rawOrders(p.bids(), q.bids()) && rawOrders(p.asks(), q.asks())
+                    && p.lastTradeMonth() == q.lastTradeMonth() && p.trades() == q.trades()
+                    && p.sellsPosted() == q.sellsPosted() && p.sellsWaited() == q.sellsWaited()
+                    && p.buysPosted() == q.buysPosted() && p.buysWaited() == q.buysWaited()
+                    && rawSame(p.postedBuy(), q.postedBuy(), p.postedSell(), q.postedSell(), p.filledBuy(), q.filledBuy(),
+                        p.filledSell(), q.filledSell(), p.volume(), q.volume(), p.turnover(), q.turnover(),
+                        p.lastPrice(), q.lastPrice(), p.sellQuantityWaited(), q.sellQuantityWaited());
+        }
+        assertTrue(label + ": holdings, fills and full resting books have identical raw bits", books);
+        assertTrue(label + ": saved month/life and audit-flow getters have identical raw bits",
+                rawArray(a.bm.toState().month, b.bm.toState().month) && rawArray(a.bm.toState().life, b.bm.toState().life)
+                    && rawArray(bondAuditFlows(a.bm), bondAuditFlows(b.bm)));
+    }
+
+    static void eagerOutside(String label, RecountMarket a, RecountMarket b) {
+        CorporateBond x = a.bm.getBonds().get(0), y = b.bm.bond(x.id());
+        long writes = b.bm.bondWritesForCheck(), folds = b.bm.bondRecountsForCheck();
+        List<OrderBook.Fill> p = a.bm.tradeForCheck(x, BondMarket.CELL + a.cells[2].key(), OrderBook.Side.BUY,
+                a.bm.bookOf(x).bestAsk(), .1);
+        List<OrderBook.Fill> q = b.bm.tradeForCheck(y, BondMarket.CELL + b.cells[2].key(), OrderBook.Side.BUY,
+                b.bm.bookOf(y).bestAsk(), .1);
+        assertTrue(label + ": manual order actually fills, with identical fill records", !p.isEmpty() && rawFills(p, q));
+        assertTrue(label + ": manual seller and buyer recount eagerly", b.bm.bondWritesForCheck() - writes == 2L * q.size()
+                && b.bm.bondRecountsForCheck() - folds == b.bm.bondWritesForCheck() - writes && !q.isEmpty());
+        recountTwins(label + " manual", a, b);
+
+        // A fresh low bid rests under the surviving asks; the waterfall's dear
+        // borrowing rate crosses it, exercising both household sides eagerly.
+        double bid = Math.min(.5, a.bm.bookOf(x).bestAsk() / 2);
+        String buyer = BondMarket.CELL + a.cells[3].key();
+        List<OrderBook.Fill> bidA = a.bm.tradeForCheck(x, buyer, OrderBook.Side.BUY, bid, 1);
+        List<OrderBook.Fill> bidB = b.bm.tradeForCheck(y, buyer, OrderBook.Side.BUY, bid, 1);
+        assertTrue(label + ": the waterfall's bid rests without a fill",
+                bidA.isEmpty() && bidB.isEmpty()
+                    && a.bm.bookOf(x).resting(buyer, OrderBook.Side.BUY) > 0
+                    && b.bm.bookOf(y).resting(buyer, OrderBook.Side.BUY) > 0);
+        writes = b.bm.bondWritesForCheck(); folds = b.bm.bondRecountsForCheck();
+        double raisedA = a.bm.sellForCell(a.cells[0], .001, 1), raisedB = b.bm.sellForCell(b.cells[0], .001, 1);
+        assertTrue(label + ": waterfall fills and both sides recount eagerly", raisedA > 0 && rawSame(raisedA, raisedB)
+                && b.bm.bondWritesForCheck() > writes
+                && b.bm.bondRecountsForCheck() - folds == b.bm.bondWritesForCheck() - writes);
+        recountTwins(label + " waterfall", a, b);
+    }
+
+    static boolean rawFills(List<OrderBook.Fill> a, List<OrderBook.Fill> b) {
+        if (a.size() != b.size()) return false;
+        for (int i = 0; i < a.size(); i++) {
+            OrderBook.Fill x = a.get(i), y = b.get(i);
+            if (!x.buyer().equals(y.buyer()) || !x.seller().equals(y.seller())
+                    || !rawSame(x.quantity(), y.quantity(), x.price(), y.price())) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Mutation witnesses: remove finally's recountBonds and the raw aggregates
+     * fail; omit the seller's touched identity and the two seller totals fail;
+     * omit the buyer's identity and the two buyer totals fail. Leave the scope
+     * non-null and eagerOutside's fold counts and aggregates fail immediately,
+     * including after the thrown settle. These mutations need no fixture change.
+     * Both Settle writers must keep putBondFace's original value/arithmetic;
+     * neither primary/coupon/default/census writers nor Household are changed.
+     */
+    static void deferredBondRecounts() {
+        out.println("\n--- 9b. native household posting folds touched identities once, with eager raw-bit twins ---");
+        RecountMarket a = new RecountMarket(true), b = new RecountMarket(false);
+        assertTrue("fixture: at least three nonconsecutive bond ids trade",
+                b.bm.getBonds().size() >= 3 && b.bm.getBonds().get(1).id() > b.bm.getBonds().get(0).id() + 1
+                    && b.bm.getBonds().get(2).id() > b.bm.getBonds().get(1).id() + 1);
+        for (int month = 1; month <= 2; month++) {
+            a.month = b.month = month;
+            // Warm all aggregates before trading: comparisons must not repair them.
+            recountTwins("warm month " + month, a, b);
+            double[][] before = new double[b.cells.length][b.bm.getBonds().size()];
+            for (int i = 0; i < b.cells.length; i++) for (int j = 0; j < before[i].length; j++)
+                before[i][j] = b.cells[i].bondFace(b.bm.getBonds().get(j).id());
+            long aw = a.bm.bondWritesForCheck(), ar = a.bm.bondRecountsForCheck();
+            long bw = b.bm.bondWritesForCheck(), br = b.bm.bondRecountsForCheck();
+            a.bm.startMonth(); b.bm.startMonth();
+            a.bm.takeMonth(month); b.bm.takeMonth(month);
+            int trades = 0, touched = 0;
+            for (int j = 0; j < b.bm.getBonds().size(); j++) {
+                CorporateBond bond = b.bm.getBonds().get(j);
+                OrderBook book = b.bm.bookOf(bond);
+                trades += book.trades();
+                boolean partial = book.asks().stream().anyMatch(o -> o.who().equals(BondMarket.CELL + b.cells[1].key())
+                        && o.quantity() > 0 && o.quantity() < o.submitted());
+                assertTrue("month " + month + ": id " + bond.id() + " has multiple fills and a partially filled seller",
+                        book.trades() > book.buysPosted() && book.buysPosted() >= 2 && book.filledSell() > 0 && partial);
+            }
+            for (int i = 0; i < b.cells.length; i++) {
+                boolean moved = true;
+                for (int j = 0; j < before[i].length; j++) {
+                    double after = b.cells[i].bondFace(b.bm.getBonds().get(j).id());
+                    moved &= i < 2 ? after < before[i][j] : after > before[i][j];
+                }
+                assertTrue("month " + month + ": cell " + i + " actually " + (i < 2 ? "sold" : "bought") + " every id", moved);
+                if (moved) touched++;
+            }
+            assertTrue("month " + month + ": both sides of every actual fill wrote live face",
+                    trades >= 3 * b.bm.getBonds().size() && a.bm.bondWritesForCheck() - aw == 2L * trades
+                        && b.bm.bondWritesForCheck() - bw == 2L * trades && b.bm.getBetweenHouseholdsTrades() == trades);
+            assertTrue("month " + month + ": eager folds every write; deferred folds exactly four touched cells",
+                    a.bm.bondRecountsForCheck() - ar == a.bm.bondWritesForCheck() - aw
+                        && touched == b.cells.length && b.bm.bondRecountsForCheck() - br == touched
+                        && b.bm.bondRecountsForCheck() - br < a.bm.bondRecountsForCheck() - ar);
+            out.printf("   month %d: %d trades, %d face writes, eager folds %d, deferred folds %d%n", month, trades,
+                    b.bm.bondWritesForCheck() - bw, a.bm.bondRecountsForCheck() - ar, b.bm.bondRecountsForCheck() - br);
+            recountTwins("month " + month, a, b);
+            eagerOutside("after month " + month, a, b);
+        }
+
+        RecountMarket thrownA = new RecountMarket(true), thrownB = new RecountMarket(false);
+        recountTwins("warm thrown settlement", thrownA, thrownB);
+        for (RecountMarket f : List.of(thrownA, thrownB)) {
+            f.armFailure();
+            boolean caught = false;
+            try { f.bm.takeMonth(1); }
+            catch (RuntimeException ex) { if (ex != f.hb.failure) throw ex; caught = true; }
+            assertTrue("fixture: settlement threw after a seller write and before the buyer write", caught && f.hb.thrown
+                    && f.cells[0].bondFace(f.hb.id) < f.hb.before && f.cells[2].bondFace(f.hb.id) == 0
+                    && f.bm.bondWritesForCheck() == 1);
+            assertTrue("the thrown settlement still recounts its touched seller", f.bm.bondRecountsForCheck() == 1);
+        }
+        recountTwins("thrown settlement finally", thrownA, thrownB);
+        eagerOutside("after thrown settlement", thrownA, thrownB);
     }
 
     /* ============================ 1c. MATURITY ============================ */

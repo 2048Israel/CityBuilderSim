@@ -1,8 +1,8 @@
-# gate of Merge batch/MR1: manufacturing's re-order after a bleed sale (the recommended way of AQ1's call, ★; Jerus may overturn it): on PopulationCheck's played city AQ1's bleed sells one of two Fabrication Shops at m73 (24 months of operating losses its lender covered, principal 1,000); the lone shop pays from m86 and `Manufacturing.plan()` orders a 276-post Fabrication Works on credit (principal 538 to 3,341), which stands by m105 and loses again from m110 (operating income -19 a month and principal 4,126 at m121, against 1,489 in main's town). The target jumps 225 in the last 24 months and the city stands at 1,141 of 1,524 (75%, the line asks 80%). A gate on the bleed's own predicate in `Game.consider()` only delays the order a month (measured): the planner weighs one works' estimated profit, not a market whose plant lost money for 24 months. Done: PopulationCheck's "...but it does fill, given a decade" green on AQ1's path and on main's, 0.9.212
+# gate of Merge batch/AP6: slot 9 at 50x after AP5 (7.7-10.0 months a second): the posts past read once per job type in every `getTotalJobs()` (6.6% of the FX thread), the bond book's `OrderBook.submit` (10.2%), the month's `totalBySector` walks outside the pass (9.5%), `Game.runPrivateInvestment` (11.9%); measured before and after, exact (the trace's eight md5s equal). After CBK1, ahead of CBK2 (Jerus's slot 9; CBK2 waits on CBK1), 0.9.213
 # date: 2026-11-26
 # earth-2.bin: named
 # nightly: 2026-11-26 02:59 0.9.208 3bf83d20e 4,000 months: RED, exit 1 in 796 s: FAIL a building on the map moved 3 time(s), months 3005-3011; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-26-3bf83d20e-Z21yRgkj
-# suite: 243 harnesses run in 1243s: 227 passed, 16 failed
+# suite: 245 harnesses run in 1109s: 229 passed, 16 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -52,6 +52,9 @@ PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
 PlanCheck | every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface FAIL
 PlanCheck | 2 FAILED
+KeptCheck | exit 1
+KeptCheck | fixture: Term 10 sold through the model, its proceeds fund the treasury and its buyers owe the settle FAIL
+KeptCheck | 1 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
@@ -61,12 +64,12 @@ CarCheck | the fixture: one household's money buys a car at the price the draw i
 CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  62 cars, 1 step(s) of the import price; paid 56.232508772885560, the ship's product 55.440508772885560; 6.0 cars on the makers' shelves
 CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 55.440508772885560, paid 56.232508772885560
 CarCheck | 3 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED
 GroundSkipCheck | exit 1
 GroundSkipCheck | ...and the landlords' order is held for land with no home on site FAIL
 GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 0 month(s) FAIL
 GroundSkipCheck | premise: skipped the old way, the landlords are held for land and a look is due FAIL
 GroundSkipCheck | ...and places nothing: the landlords are still held for land FAIL
 GroundSkipCheck | 4 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED

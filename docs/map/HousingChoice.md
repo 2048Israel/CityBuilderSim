@@ -1,4 +1,4 @@
-# HousingChoice.java - 390 lines · 30 methods · 12 constants · model
+# HousingChoice.java - 456 lines · 31 methods · 12 constants · model
 
 `ham/citybuildersim/HousingChoice.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -6,7 +6,7 @@
 > WHY (RES3): size-only packing hid premium vacancy and let an enum's first cell
 > win a rationed home. Residual paths maximize suitable placements before preferences.
 
-**Uses:** [HousingInventory](HousingInventory.md) (13), [FamilyModel](FamilyModel.md) (12)
+**Uses:** [FamilyModel](FamilyModel.md) (17), [HousingInventory](HousingInventory.md) (16)
 
 **Used by (11):** [DenominationCheck](DenominationCheck.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HousingChoiceCheck](HousingChoiceCheck.md), [HousingDoorCheck](HousingDoorCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md), [LongPlaytest](LongPlaytest.md), [MonetaryCheck](MonetaryCheck.md), [RealEstate](RealEstate.md), [Village1900Check](Village1900Check.md)
 
@@ -31,15 +31,15 @@
 
 | line | field | says |
 |---:|---|---|
-| 383 | `final int to, cost` |  |
-| 383 | `double left` |  |
-| 383 | `Edge reverse` |  |
+| 449 | `final int to, cost` |  |
+| 449 | `double left` |  |
+| 449 | `Edge reverse` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 10 | 381 | **type** `public final class HousingChoice` | A bounded household-cell to dwelling-class allocation, retaining valid leases first. |
+| 10 | 447 | **type** `public final class HousingChoice` | A bounded household-cell to dwelling-class allocation, retaining valid leases first. |
 | 11 | 1 | `private HousingChoice()` |  |
 | 38 | 1 | `public static int line(int bedrooms)` | The most people a door of so many bedrooms holds at the census line (H55 4, D90 6, H120 8). |
 | 43 | 5 | **type** `public record Demand(String key, double count, int size, int children, boolean retired, int tier, boolean y...` |  |
@@ -68,20 +68,22 @@
 | 104 | 3 | `public static Result clear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month)` | Equivalent nodes share their allocation pro rata; input order confers no priority. |
 | 108 | 3 | `public static Result clear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month, boolean emergency)` | Planning can reserve suitable homes without assuming emergency crowding in a new project. |
 | 112 | 51 | `public static Result clear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month, boolean emergency, Set<...` | sitting: the cells whose incumbents keep their doors whatever their budget, until they can be evicted (tenure). |
-| 168 | 36 | `private static Result retainAndClear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month, boolean emerg...` | Existing funded door shares precede new movers; their household quantity is not a whole-door quantity. |
-| 205 | 1 | **type** `private record DemandSignature(int size, int children, boolean retired, int tier, boolean young, double bud...` |  |
-| 206 | 1 | **type** `record Completion(List<Lease> leases, double moved)` |  |
-| 207 | 1 | **type** `private record ContractKey(String cell, HousingInventory.Key home)` |  |
-| 208 | 5 | `static List<Lease> coalesce(List<Lease> leases)` |  |
-| 214 | 58 | `static Completion completePaidExcess(List<Demand> demand, List<Offer> offers, List<Lease> old, int month)` | After all movers, keep old claims exact and move only paid-half excess to unused normal doors. |
-| 273 | 15 | `public static Result summarize(List<Demand> demand, List<Offer> offers, List<Lease> leases, double kept, double normal, double ...` | Books the outcome of internal emergency phases without clearing or pricing again. |
-| 288 | 1 | **type** `private record OfferSignature(int capacity, int bedrooms, double area, double quality, double garden, boole...` |  |
-| 290 | 1 | `private static double residual(double left, double source)` | A subtraction residue is measured against its original source, before it can create a graph node. |
-| 291 | 33 | `private static double allocate(List<Demand> ds, List<Offer> os, double[] need, double[] free, double[][] x, int month, boolean ...` |  |
-| 330 | 53 | `private static double completeEmergency(List<Demand> ds, List<Offer> os, double[] need, double[] free, double[][] x, double[][]...` | Complete the maximum normal matching through its residual paths. |
-| 383 | 1 | **type** `private static final class Edge` |  |
-| 383 | 1 | `Edge(int to, double left, int cost)` _(in HousingChoice.Edge)_ |  |
-| 384 | 4 | `private static long rotatedKey(String key, int month)` |  |
-| 388 | 1 | `private static Edge edge(List<List<Edge>> g, int u, int v, double cap)` |  |
-| 389 | 1 | `private static Edge costEdge(List<List<Edge>> g, int u, int v, double cap, int cost)` |  |
+| 168 | 40 | `private static Result retainAndClear(List<Demand> demands, List<Offer> offers, List<Lease> incumbents, int month, boolean emerg...` | Existing funded door shares precede new movers; their household quantity is not a whole-door quantity. |
+| 212 | 1 | **type** `private record Down(List<Lease> kept, double vacated, double vacatedExtra, double doors, double extra)` | What moveDown() left: the leases kept, with the movers' new ones; the doors the movers left and the households of theirs past those doors (two to a share); the doors they took and the households past those. |
+| 224 | 46 | `private static Down moveDown(Map<String, Demand> cells, Map<HousingInventory.Key, Offer> homes, List<Offer> offers, List<Lease>...` | MOVING DOWN (RES3c, 2026-11-26). |
+| 271 | 1 | **type** `private record DemandSignature(int size, int children, boolean retired, int tier, boolean young, double bud...` |  |
+| 272 | 1 | **type** `record Completion(List<Lease> leases, double moved)` |  |
+| 273 | 1 | **type** `private record ContractKey(String cell, HousingInventory.Key home)` |  |
+| 274 | 5 | `static List<Lease> coalesce(List<Lease> leases)` |  |
+| 280 | 58 | `static Completion completePaidExcess(List<Demand> demand, List<Offer> offers, List<Lease> old, int month)` | After all movers, keep old claims exact and move only paid-half excess to unused normal doors. |
+| 339 | 15 | `public static Result summarize(List<Demand> demand, List<Offer> offers, List<Lease> leases, double kept, double normal, double ...` | Books the outcome of internal emergency phases without clearing or pricing again. |
+| 354 | 1 | **type** `private record OfferSignature(int capacity, int bedrooms, double area, double quality, double garden, boole...` |  |
+| 356 | 1 | `private static double residual(double left, double source)` | A subtraction residue is measured against its original source, before it can create a graph node. |
+| 357 | 33 | `private static double allocate(List<Demand> ds, List<Offer> os, double[] need, double[] free, double[][] x, int month, boolean ...` |  |
+| 396 | 53 | `private static double completeEmergency(List<Demand> ds, List<Offer> os, double[] need, double[] free, double[][] x, double[][]...` | Complete the maximum normal matching through its residual paths. |
+| 449 | 1 | **type** `private static final class Edge` |  |
+| 449 | 1 | `Edge(int to, double left, int cost)` _(in HousingChoice.Edge)_ |  |
+| 450 | 4 | `private static long rotatedKey(String key, int month)` |  |
+| 454 | 1 | `private static Edge edge(List<List<Edge>> g, int u, int v, double cap)` |  |
+| 455 | 1 | `private static Edge costEdge(List<List<Edge>> g, int u, int v, double cap, int cost)` |  |
 

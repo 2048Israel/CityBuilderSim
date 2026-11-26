@@ -380,7 +380,7 @@ public final class WorksValue {
 
         private Scope(Game game) { this.game = game; }
 
-        /** Closes it at its outermost close: nothing is held after. */
+        /** Closes the outermost valuation scope: its loads and labour readings are no longer used. */
         @Override public void close() {
             if (--depth == 0 && HELD.get() == this) HELD.remove();
         }
@@ -390,6 +390,10 @@ public final class WorksValue {
     private record Loads(Map<BuildingsTemplate, PendingWork> schedule, Map<BuildingsTemplate, Double> draws) { }
 
     private static final ThreadLocal<Scope> HELD = new ThreadLocal<>();
+    private static final ThreadLocal<Boolean> BARE = new ThreadLocal<>();
+
+    /** A harness's bare reading also bypasses sector groupings held outside a pass (AP6). */
+    static boolean bareReading() { return Boolean.TRUE.equals(BARE.get()); }
 
     /** Every schedule of the works on site built, held or bare: NewUnitCheck 13's count, never a time. */
     static final java.util.concurrent.atomic.AtomicLong SCHEDULES = new java.util.concurrent.atomic.AtomicLong();
@@ -472,15 +476,17 @@ public final class WorksValue {
         return held;
     }
 
-    /** A reading taken as no scope were open on this thread (AP5: the bare figure a held one is compared with); the scope is open again after. */
+    /** An original walk without held figures or groups (AP5/AP6); restores the scope and bare mode even on failure. */
     static <T> T bareWhile(java.util.function.Supplier<T> reading) {
         Scope open = HELD.get();
-        if (open == null) return reading.get();
+        boolean wasBare = bareReading();
         HELD.remove();
+        BARE.set(true);
         try {
             return reading.get();
         } finally {
-            HELD.set(open);
+            if (open == null) HELD.remove(); else HELD.set(open);
+            if (wasBare) BARE.set(true); else BARE.remove();
         }
     }
 
