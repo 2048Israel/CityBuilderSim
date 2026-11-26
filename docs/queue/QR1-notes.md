@@ -400,6 +400,7 @@ of total forgiveness, never added to it.
 | 1900/main | 1003070.5468181840 | 230623.13222283978 | 230623.13222283978 | 159142294.59705200 | 2525125039.9677700 |
 | 1900/QR1 | 232136.36881434554 | 230623.13222283978 | 230623.13222283978 | 52130432.027748300 | 2495023485.2011690 |
 | today/main | 2040115.7308789315 | 1917098.4283502998 | 1917098.4283502998 | 63450490.995911660 | 1292420315.3396397 |
+| today/QR1 | 3289308.5887949120 | 3134846.3537176778 | 3134846.3537176778 | 52771870.161509360 | 4297111122.8663320 |
 
 Main/1900 has **853** in-ban sector-months. Distress receipts comprise plot
 **130786384.42549273**, material **28355910.171559263**. All retirement:
@@ -563,6 +564,72 @@ gross sum **63450490.99591165**, difference **7.450580596923828e-09** from
 addition order. Both actual cash components and every monthly cumulative
 reconcile, with no tolerance or check changed. No Manufacturing sale/MR1
 condition occurred in this reference.
+
+### Today pair completed after boot
+
+`QR1-pair-today-v3`, snapshot **8ff8f5451**, executable-identical to
+**1803d5cbc** and formal snapshot **4ead0c597**, uses the same PC, Oracle
+21.0.4, native data, Standard/today, seed 0 and default player as its main
+reference. **Full LongPlaytest PASS**, primary m2405 in **2311 s**, findings
+clean; post-primary **79/79 PASS**, full wall **2362.3 s**. Auxiliary policy
+scorer exit **4** remains recorded for the one unaudited founding row;
+every one of the **2399** played audits passed. No gaps, duplicates, throws,
+nonfinite values, negative receipts, phase errors or cumulative regressions.
+
+All **78** shared fields match main through all **327** pre-sale rows.
+The first difference is exactly m328: main sells 12 Retail buildings while
+running income is **+27.094175732368580**, net-loss streak 24/op streak 0;
+QR1 retains them. All seven capture/driver/Game classes, LongPlaytest and
+BuildingManager classes match byte for byte between the pair. Thus no
+observer/player difference precedes the rule's first changed decision.
+
+Saved F **3289308.5887949120**, independent monthly F
+**3289308.5887949370**; maximum row difference
+**2.7008354663848877e-08**, relative **8.212528622358036e-15**, from addition
+order. Fban and B agree exactly in every row, **1111** sector-months.
+All-retirement plot **3654468943.3324475**, material **642642179.5338858**,
+**788** events/**3523** buildings. Distress plot **44448743.037920505**,
+material **8323127.1235888535**, canonical exported gross
+**52771870.161509360**, **23** events/**389** buildings. All five cumulative
+cash/count columns reconcile exactly to the event-order sidecar at every
+row. Direct-event gross **52771870.16150934** differs by
+**1.4901161193847656e-08** due addition order; comparisons use canonical
+exported component cumulatives.
+
+**Zero** operating-positive distress sales, buildings or receipts. Every
+actual sale has negative running income (−1380891.9308487247 to
+−45.005532765775584), operating-loss streak **24–39** and net-loss **24–155**,
+both meeting the existing dial. The old 109 paying sector/month cases become
+96 with no same-sector/month retirement and 13 ordinary-only retirements,
+zero distress; this is not a building-identity claim after the cities diverge.
+
+| Today/QR1 sector | Distress events/buildings | Calendar months |
+|---|---:|---|
+| Cement & Concrete | 6/361 | 862–863, 1094–1095, 1816–1817 |
+| Copper Refining | 15/15 | 512, 574, 709, 775, 853, 946, 1081–1082, 1411–1412, 1532–1533, 1745, 1894–1895 |
+| Forestry | 1/1 | 1106 |
+| Heavy Industry | 1/12 | 862 |
+
+No Manufacturing distress/immediate-reorder condition was observed; MR1 is
+untouched. Exact exported-decimal comparison, nominal local thousands:
+**extra F = 1249192.8579159805**, **avoided D = 10678620.834402300**.
+Forgiveness rises (about $1.249bn) by less than the receipts replaced
+(about $10.679bn), so the requested **excess condition is false**. The 1900
+pair instead lowers forgiveness. Both paired tests therefore meet the
+reviewer's condition; no excess-forgiveness notification is owed.
+
+All four complete default runs and all 79 post-primary assertions in each
+pass. Full today comparison proof copied to
+`target/qr1-pair-today-v3-final-proof.json` and `-final-report.txt`; raw data
+kept at `target/ensemble/QR1-pair-today-v3`. Formal M1/F1 remains independently
+PASS as recorded above, not replaced by these four auxiliary measurements.
+
+Before the dry-run request, main was fetched and merged at **ff17f82b1**,
+importing **2560ada85**. The only main difference from 3bf83d20e is QUEUE.md's
+DM5 nightly evidence, one insertion/deletion; no executable/model, data or
+harness changed. No code-check repetition or new ensemble is justified by
+that documentation-only merge. The existing named green checks and the ALL
+pick remain; the dry run is still owed before readiness.
 
 P3 considered and not taken, as instructed: shorten or deny a fresh full
 operating-loss runway after a long interest-only net-loss spell.
