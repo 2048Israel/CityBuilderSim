@@ -30,10 +30,14 @@ three re-reads: `PopulationManager.getJobVacancy` 17.1%, `BuildingManager.getTot
   and the instances are read live. `postsMoved()` raises the count after: `addStack` (every
   order, in a `finally`; the old body is `placeStack`), `orderStacks`, `clearStacks`,
   `addInstance`; `BuildingsStacks.addQuantity`, `increaseQuantity`, `removeQuantity`, a building
-  finished in `advanceConstruction`; `BuildingsTemplate.setJobs` and both paths of `runRecipes`.
-  Those are every writer of a stack's quantity, of a template's posts (`jobsByEducation`,
-  package-private but written only in its class) and of the list: grepped, no other.
-- **`LabourCheck`**, last section (banner 14), 82 assertions; **`AutoBuildCheck` 11**, 8.
+  finished in `advanceConstruction`; `BuildingsTemplate.setJobs`, both paths of `runRecipes`, and
+  (REV-AP5) `setSector`, the key the held posts are grouped by. Those are every writer of a
+  stack's quantity, of a template's posts (`jobsByEducation`, package-private but written only in
+  its class), of a template's sector and of the list: grepped, no other. A stack's template is set
+  only in its constructor, and a new stack is not in the list until `addStack` or the load path
+  puts it there, which raises.
+- **`LabourCheck`**, last section (banner 14), 153 assertions (82 before REV-AP5);
+  **`AutoBuildCheck` 11**, 8.
 
 ## 3. The calls
 
@@ -77,6 +81,39 @@ three re-reads: `PopulationManager.getJobVacancy` 17.1%, `BuildingManager.getTot
 | held vacancies never read again | LabourCheck | 28 |
 | no raise in `addStack`'s `finally` | LabourCheck / AutoBuildCheck | 2 / 1 |
 
+- **REV-AP5** (the stranger's review of 5b537d56c, two P1s, both true against the code):
+  1. `setSector` regrouped the held posts without a raise: mended (d33257ff8).
+  2. The section never changed a warmed cache by the other paths: added (bf889e983). Every change
+     is made after the figures were read and held, a second read building nothing, and every
+     figure after it is compared with the bare one.
+     - Stacks: `heldThen` reads every posts figure a pass reads, as raw bits: each job type's
+       posts, at every post and withheld; each sector's withheld; and each sector's buildings by
+       posts, capacity and a weight. Covered: a building finished on site, `runRecipes` with one
+       part and blended from two, `setSector` into the builders (who then withhold a share of the
+       shops' posts), `orderStacks`, and `clearStacks`.
+     - The order shows only in a double's last bit. So the homes are three stacks of one sector
+       with a weight: the house's buildings at 2^53 each, each apartment stack at 0.375 of the
+       house's last place. Either alone is lost after the house, both together are not.
+     - People: `heldAfter` adds the workforce, the owners, and the students (`setStudying`, then
+       through the array it keeps). The wage ladder moves the fill only where two bands are one
+       market, so the people are set to make one; a fixture asserts `BandFill.market` joins them.
+  - How each was shown red: the raise replaced by a comment, or the stamp field written as 0, then
+    `./batch-check.sh LabourCheck`, then `git checkout` of the file. All ten were red only on their
+    own assertions:
+
+| mutation | file:line at bf889e983 | new assertions red |
+|---|---|---:|
+| no raise for a building finished on site | `BuildingsStacks.java:753` | 2 |
+| no raise in `runRecipes`'s blend | `BuildingsTemplate.java:756` | 2 |
+| no raise in `setFigures` (one recipe) | `BuildingsTemplate.java:771` | 2 |
+| no raise in `orderStacks` | `BuildingManager.java:5257` | 2 |
+| no raise in `clearStacks` | `BuildingManager.java:9680` | 2 |
+| no raise in `setSector` | `BuildingsTemplate.java:184` | 3 |
+| the stamp without the workforce | `PopulationManager.java:424` | 7 |
+| ...without the owners | `PopulationManager.java:426` | 7 |
+| ...without the students' numbers | `PopulationManager.java:428` | 9 |
+| ...without the bands' bases (the ladder) | `PopulationManager.java:423` | 7 |
+
 - **The trace does not move**: the default playtest, `-Dplaytest.trace`, one JVM each, main's
   classes (e3e390acf) and the branch's (a7906f265's model, run at 54d9ad311). All eight the same:
 
@@ -107,7 +144,9 @@ three re-reads: `PopulationManager.getJobVacancy` 17.1%, `BuildingManager.getTot
 | t-month.csv | 9989337eb618a85564fa3d65307aeabe |
 | t-pop.csv | c6f5e3bacc4ae22a60a9be9775855794 |
 
-  LabourCheck 0 and AutoBuildCheck 3 (the same known red) again on the merge.
+  LabourCheck 0 and AutoBuildCheck 3 (the same known red) again on the merge. **And after
+  REV-AP5's mends** (bf889e983, origin/main still ded8345fc): the branch's trace again, all eight
+  the md5s above; LabourCheck 0, AutoBuildCheck 3 (the same known red).
   So no ensemble. The slot-9 run's log (565 lines: the auto-builder's orders and their figures,
   the reports, every month's people) is the same in all four headless runs below once the timing
   lines are out: md5 ef60c24e224995a79164964eb11d6df5.
