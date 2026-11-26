@@ -150,7 +150,27 @@ Stale 0 firm; `MonthPostsCheck`, `BondCheck`, `CapitalGainsCheck`, `OrderBookChe
 `SaveFileCheck`, `ReadPathCheck`, and `ReloadCheck` each exit 0, one per call.
 `AutoBuildCheck` exits 3, only main's recorded care-fee fixture red (FS12), as in
 AP5. `LabourCheck` also exits 0 on the same model. No conservation, save or
-round-trip assertion was weakened. The default trace and slot-9 pair follow.
+round-trip assertion was weakened.
+
+The final AP6 default replay (class snapshot `a667a6afd`, after all mutations
+were restored) also exits **0**. Both runs use the same explicit Earth/world
+files and `-Xmx4g`, one model JVM at a time. All eight complete trace files are
+identical; verified automatically again after both processes exited:
+
+| trace file | main b7c7c19af (e02 docs only) | AP6 a667a6afd |
+|---|---|---|
+| t-bank.csv | aa2af5f1316c33dde8ba9366884ce152 | aa2af5f1316c33dde8ba9366884ce152 |
+| t-bonds.csv | fa135be296fe76e98685d040a2d05a33 | fa135be296fe76e98685d040a2d05a33 |
+| t-borrow.csv | 36b47896b1f126a8b75ef1102132319d | 36b47896b1f126a8b75ef1102132319d |
+| t-build.csv | d2e6afe778756cef8b4c8186b0c316df | d2e6afe778756cef8b4c8186b0c316df |
+| t-house.csv | 96cf152bb7b38f96e2198749252b88b2 | 96cf152bb7b38f96e2198749252b88b2 |
+| t-labour.csv | e9cf9e0947a832addd388e041eaeccaf | e9cf9e0947a832addd388e041eaeccaf |
+| t-month.csv | 9989337eb618a85564fa3d65307aeabe | 9989337eb618a85564fa3d65307aeabe |
+| t-pop.csv | c6f5e3bacc4ae22a60a9be9775855794 | c6f5e3bacc4ae22a60a9be9775855794 |
+
+No ensemble: the trace is unchanged. Full logs, CSVs and classes are kept in
+`main-trace/`, `ap6-trace/`, `main-classes/` and `ap6-classes/` under the evidence
+directory. No player save slot was written.
 
 ## 5. Slot 9, the adjacent pair
 
@@ -228,3 +248,14 @@ Under relief: `warranted` 357 samples (9.66% FX), the direct count call 276
 prove which answers are fixed within an unchanged valuation, then reuse those
 without changing projected arithmetic or order. Expected `WorksValue` and
 `BuildAdvice`; the brief is `docs/queue/AP7.md`. No AP7 code was built.
+
+## 7. Handoff
+
+`tools/pick.sh origin/main HEAD` picks **ALL, 258 harnesses**. Its review line:
+money `BondMarket.java`; threading `+volatile` in `BuildingManager.java` and
+`+new ThreadLocal` in `WorksValue.java`. Saves are unchanged. The required
+stranger review is the orchestrator's on the provisional mends handoff.
+No local `--pick`/ALL run, dry run or ensemble was started. The marker stays
+provisional until the review/go and the approved gate-box dry run. There is
+no gate-run comment yet. Main was fetched again after the trace: e02e09bc0,
+still only the queue update, already merged.
