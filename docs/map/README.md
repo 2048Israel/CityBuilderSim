@@ -4,7 +4,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 645 files, 697,856 lines, 30,503 methods, 6,814 constants. `GameVersion.VERSION` is "0.9.208", `SAVE_FORMAT` 66.
+**The tree:** 645 files, 697,972 lines, 30,504 methods, 6,816 constants. `GameVersion.VERSION` is "0.9.208", `SAVE_FORMAT` 66.
 
 ## model (281 files)
 
@@ -180,7 +180,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [NationalAccounts.java](NationalAccounts.md) | 1,644 | 138 | The city's GDP, measured properly, plus the government's own books. | 46 |
 | [Nations.java](Nations.md) | 841 | 47 | The nations beyond the city, each on the world's path: its year - output, people, prices and its money's rate to the US dollar - from the path (His... | 44 |
 | [NationsMap.java](NationsMap.md) | 1,085 | 69 | The nations on the map, without the toolkit: the borders simplified and cut to a view, each nation's dot and the name written on its land, what lie... | 10 |
-| [NewUnit.java](NewUnit.md) | 227 | 31 | One new building of a template, as it would run (QN1): the recipe, posts, utility draw, output and input of a building ordered now - the pieces it ... | 37 |
+| [NewUnit.java](NewUnit.md) | 227 | 31 | One new building of a template, as it would run (QN1): the recipe, posts, utility draw, output and input of a building ordered now - the pieces it ... | 38 |
 | [Notice.java](Notice.md) | 119 | 17 | One thing the city needs told about, and whether anybody has looked at it. | 18 |
 | [Observation.java](Observation.md) | 71 | 5 | The played city's path premises, reported without counting a failure. | 12 |
 | [Offending.java](Offending.md) | 182 | 5 | Who is at risk of offending, sorted by reason, and the thefts handed to them. | 1 |
@@ -311,7 +311,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [Freight.java](Freight.md) | 2,239 | 112 | The Freight sector: the city's carrier, in the railway's slot (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.md 3.1, D1). | 47 |
 | [GoldMining.java](GoldMining.md) | 171 | 16 | Gold mines and their mills recover fine ounces at a geology-dependent grade. | 4 |
 | [Haulage.java](Haulage.md) | 1,561 | 99 | Freight's Haulage division: the trucks that carry the city leg of every bulk tonne (FR2, 2026-10-18; docs/studies/spec-freight-and-infrastructure.m... | 30 |
-| [HeavyIndustry.java](HeavyIndustry.md) | 370 | 20 | The mills - Iron & Steel since 0.7.120, under the key it was saved by, "Heavy Industry": the arc furnaces, which melt scrap into steel, and since 0... | 33 |
+| [HeavyIndustry.java](HeavyIndustry.md) | 370 | 20 | The mills - Iron & Steel since 0.7.120, under the key it was saved by, "Heavy Industry": the arc furnaces, which melt scrap into steel, and since 0... | 34 |
 | [LuxuryRetail.java](LuxuryRetail.md) | 590 | 24 | The luxury shops. | 6 |
 | [Manufacturing.java](Manufacturing.md) | 382 | 16 | What the city makes out of its own steel, and ships. | 7 |
 | [Materials.java](Materials.md) | 88 | 4 | The materials plant. | 1 |
@@ -576,7 +576,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PortCheck.java](PortCheck.md) | 2,416 | 73 | The city's ports and their boats (0.7.86, batch O9; docs/studies/spec-oil.md 2.9, 2.10 and 4's PortCheck; runs/research-freight.md 5). | 6 |
 | [PostwarRecipeCheck.java](PostwarRecipeCheck.md) | 934 | 21 | The postwar engineering and business discoveries run their sourced earlier figures, compose in either order, retain saved decisions and leave defau... | 0 |
 | [PowerDispatchCheck.java](PowerDispatchCheck.md) | 413 | 24 | The month's merit order (PW1, 2026-11-11; PowerDispatch, UtilitiesHandler's struck book): the load cut in six half-blocks, the works first, the win... | 0 |
-| [PowerPlanCheck.java](PowerPlanCheck.md) | 1,296 | 47 | The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities. | 1 |
+| [PowerPlanCheck.java](PowerPlanCheck.md) | 1,412 | 48 | The power planner (PW3): wind and solar by place and season, the reserve test and the spread, checked on caused cities. | 1 |
 | [PowerPlantsCheck.java](PowerPlantsCheck.md) | 642 | 23 | The power plants and their fuels (PW2, 2026-11-23; spec-electricity 2.3 and 2.5): the Oil-Fired Plant, the Diesel Station, the Oil-Fired Turbine, t... | 0 |
 | [PowerPriceCheck.java](PowerPriceCheck.md) | 747 | 31 | The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck book's prices, what... | 6 |
 | [PowerViewCheck.java](PowerViewCheck.md) | 372 | 14 | Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves. | 1 |
