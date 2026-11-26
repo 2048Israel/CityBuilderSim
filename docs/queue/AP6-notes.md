@@ -95,4 +95,136 @@ The bare finished totals must stay unchanged, while membership grows by one.
 The strengthened `MonthPostsCheck` is green (exit 0). Its 16 writer/input/work
 mutations are repeated on that final harness; the bond harness and its four
 mutations are unchanged by this test-only addition.
-The final results, warmed-cache writer coverage and mutation table will be recorded here.
+The final 16 cache trials at `a667a6afd` all produced assertion reds (exit 4),
+not compile failures or exceptions. The four bond trials are at `83389d532`;
+their model and harness are unchanged by the on-site membership addition.
+Each notification below was removed alone, or the input/reuse was disabled,
+then the named harness run, then the original source restored in `finally`.
+The full normal compile/maps/Stale and both focused harnesses are green again
+after restoration. Logs and the trial driver are kept with the evidence.
+
+| mutation | harness | new assertion reds |
+|---|---|---:|
+| no raise in `BuildingsStacks.addQuantity` | MonthPostsCheck | 6 |
+| no raise when `advanceConstruction` finishes buildings | MonthPostsCheck | 4 |
+| no raise in `removeQuantity` (retirement/sale) | MonthPostsCheck | 7 |
+| no raise in `increaseQuantity` | MonthPostsCheck | 6 |
+| no raise in `BuildingsTemplate.setSector` | MonthPostsCheck | 5 |
+| no raise in `runRecipes`' blend | MonthPostsCheck | 4 |
+| no raise in `setFigures` (one recipe) | MonthPostsCheck | 4 |
+| no raise in `setJobs` | MonthPostsCheck | 8 |
+| no raise in `orderStacks` | MonthPostsCheck | 4 |
+| no raise in `addStack`'s `finally`, including the new site | MonthPostsCheck | 4 |
+| no raise in `clearStacks` | MonthPostsCheck | 4 |
+| `heldPosts`' edit stamp fixed at 0 | MonthPostsCheck | 72 |
+| always rebuild the month's raw posts/grouping | MonthPostsCheck | 12 |
+| read posts past again for each job type | MonthPostsCheck | 3 |
+| omit the live posts-past reading | MonthPostsCheck | 8 |
+| omit the live offered-share reading | MonthPostsCheck | 3 |
+| omit the final touched-cell recount | BondCheck | 20 |
+| seller puts face without joining the touched set | BondCheck | 20 |
+| buyer puts face without joining the touched set | BondCheck | 10 |
+| leave the deferral scope set after posting | BondCheck | 49 |
+
+The month reads every value `postsReading` covers as raw bits: jobs by type,
+every post, withheld by type and sector, and sector totals by jobs, capacity
+and an order-sensitive weight. Writers are warmed first, including a site
+finishing, both recipes, ownership, reorder, clear, initialized load and sale.
+`resetBuildingManager` uses `clearStacks`; `loadGameSave`/`newGame` replace the
+manager and get fresh caches. Every sale path reaches `retire`/`removeQuantity`.
+Instances, changing offered callbacks, horse/operator shares and arbitrary
+sector getters are live; a newly added instance is checked against the bare
+array. AP5's people-input cases remain in both harnesses: heads/licences through
+live arrays, prisoners, workforce, owners, studying through both setters and
+the kept array, and the wage ladder's bases. No conservation or save law changed.
+
+## 4. Trace and final validation
+
+The unmodified b7c7c19af default `LongPlaytest`, `-Dplaytest.trace`, `-Xmx4g`,
+explicit Earth/world paths, exits 0. All eight hashes are also AP5's post-QR1
+hashes. Main's e02e09bc0 queue-only update was merged at d06efc365: no model
+file changed. The final AP6 replay and remaining validation are recorded below.
+
+After all mutations were restored, a normal `./batch-check.sh --fast` is green,
+Stale 0 firm; `MonthPostsCheck`, `BondCheck`, `CapitalGainsCheck`, `OrderBookCheck`,
+`SaveFileCheck`, `ReadPathCheck`, and `ReloadCheck` each exit 0, one per call.
+`AutoBuildCheck` exits 3, only main's recorded care-fee fixture red (FS12), as in
+AP5. `LabourCheck` also exits 0 on the same model. No conservation, save or
+round-trip assertion was weakened. The default trace and slot-9 pair follow.
+
+## 5. Slot 9, the adjacent pair
+
+All three headless runs load the same m4866 city, population 21,918,046, auto on.
+12 measured months after 2 warm; median is the driver's upper middle observation.
+
+| classes/run | mean | median | max (ms/month) |
+|---|---:|---:|---:|
+| main b7c7c19af, initial | 368.4 | 346.1 | 526.8 |
+| main b7c7c19af, adjacent | 293.4 | 278.6 | 402.6 |
+| AP6 a667a6afd, adjacent | 271.3 | 257.4 | 404.9 |
+
+The adjacent mean improves **7.53%**, median **7.61%**; the max is 0.57% higher.
+The changed laptop load is visible in the two main runs: do not compare AP6 with
+the initial run or AP5's absolute figures as if they were one pair.
+
+The same AP2 driver at 50x, 5 seconds a screen; each entry is months/second,
+then frame p50 / p95 in ms. Full maxima and source-launch commands are in
+`after-profile/report.md` and the kept reproduction scripts.
+
+| screen | main, adjacent | AP6 | FRAME_P95 |
+|---|---|---|---:|
+| Build | 3.7; 174 / 335 | 6.7; 128 / 201 | 99 |
+| Land | 3.9; 240 / 340 | 6.1; 152 / 280 | 57 |
+| People | 3.6; 258 / 436 | 8.1; 114 / 164 | 34 |
+| Services | 4.8; 197 / 272 | 7.9; 118 / 192 | 37 |
+| Infra | 4.3; 247 / 273 | 10.0; 59 / 132 | 43 |
+| Sectors | 4.8; 196 / 272 | 9.7; 59 / 122 | 65 |
+| Govt | 5.4; 179 / 251 | 9.9; 15 / 89 | 36 |
+| Finances | 4.3; 237 / 264 | 9.8; 14 / 84 | 32 |
+| Bank | 5.7; 171 / 240 | 10.0; 15 / 92 | 42 |
+| Trade | 7.1; 138 / 190 | 9.9; 16 / 86 | 20 |
+| Policy | 9.0; 102 / 150 | 9.8; 72 / 109 | 32 |
+| History | 6.4; 136 / 271 | 9.9; 17 / 91 | 60 |
+| Rankings | 7.7; 112 / 224 | 9.9; 17 / 98 | 60 |
+
+All p95s still fail their budgets; Build, Land, People and Services remain
+materially below 10 months/second. The driver's separate clock-month median/max
+is 218.2 / 2834 ms on main, 184.5 / 2267 on AP6 (max includes opening autosave).
+The adjacent headless MODEL logs match after removing paths/load/timing/heap,
+month/window and world-solver timing lines: **515 retained lines, zero differences**;
+all 14 monthly populations match. This supports, not replaces, the raw-bit proofs.
+
+## 6. One final profile; AP7 queued, not built
+
+As required while still short of 10, the final window recording was read once
+offline: `ap6-ui/ui-4866.jfr`, 66.56 s, 9,366 total ExecutionSamples, **3,696 FX**,
+no missing/truncated FX stacks. The reader used `-Xmx256m`, one active processor,
+Serial GC; exited 0 and left no JVM. Full source/counts in `after-profile/`.
+
+| inclusive method | samples | % FX |
+|---|---:|---:|
+| Game.nextMonth | 3110 | 84.15 |
+| AutoBuilder.pass | 1312 | 35.50 |
+| WorksValue.relief | 1023 | 27.68 |
+| BuildAdvice.supplyDemand | 497 | 13.45 |
+| EquipmentFit.priced / fittedForNew (each) | 269 | 7.28 |
+| BuildingManager.getKnownTemplates | 258 | 6.98 |
+| BondMarket.takeMonth | 566 | 15.31 |
+| BondMarket.postHouseholds | 521 | 14.10 |
+| Household.recountBonds | 68 | 1.84 |
+| BuildingManager.totalBySector | 63 | 1.70 |
+| BuildingManager.getPostsWithheld | 29 | 0.78 |
+| Game.runPrivateInvestment | 371 | 10.04 |
+
+Inclusive rows overlap. `getPostsPast` has zero sampled frames, which does not
+mean zero runtime: the array getter now reads the supplier directly once.
+`totalBySector` self is 13 samples (0.35%); its nearest app frames 22 (0.60%).
+
+★ Queue **AP7**, validated free by `tools/batch-id.sh`, for the repeated city
+eligibility reads in the maintenance valuation, not another change in AP6.
+Under relief: `warranted` 357 samples (9.66% FX), the direct count call 276
+(7.47%), known-template scans 216 (5.84%); the latter repeatedly ask research.
+`warranted` takes no projected date or added-buildings argument. AP7 must first
+prove which answers are fixed within an unchanged valuation, then reuse those
+without changing projected arithmetic or order. Expected `WorksValue` and
+`BuildAdvice`; the brief is `docs/queue/AP7.md`. No AP7 code was built.
