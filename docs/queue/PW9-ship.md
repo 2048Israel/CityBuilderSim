@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-PW9-8zOS00nm -->
-<!-- readiness: provisional -->
 <!-- ensemble: docs/ensemble/PW9.md; final-source snapshot 58d830238 against 0.9.208; 80/80 complete, PASS 10/10 hard, 23/26 overall -->
 <!-- checkpoint: guard 54d4b6cc6; final ensemble PASS10/10 hard; whole boxed dry exit0/suite3, no NEW reds, LongPlaytest passed -->
 ## changelog
