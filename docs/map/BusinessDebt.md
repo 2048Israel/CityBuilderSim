@@ -1,6 +1,6 @@
 # BusinessDebt.java - 100 lines · 14 methods · 0 constants · model
 
-`ham/citybuildersim/BusinessDebt.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BusinessDebt.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Base class for private-sector borrowing.
 > 

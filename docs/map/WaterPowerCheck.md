@@ -1,6 +1,6 @@
 # WaterPowerCheck.java - 435 lines · 18 methods · 2 constants · harnesses
 
-`ham/citybuildersim/WaterPowerCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WaterPowerCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The water priced from its cost, as PW1 prices power (PW1-W, 2026-11-23; Jerus's Q1 for power: "Market price"), with the licence's
 > power read from the dispatch (PW1-L) and a recipe's own power weighed at the prices the strike pays it (PW1-G), through the game's

@@ -1,6 +1,6 @@
 # SchoolingProbe.java - 59 lines · 2 methods · 0 constants · interface
 
-`ham/citybuildersim/ui/SchoolingProbe.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/SchoolingProbe.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Reads the qualification page's actual drawing inputs without starting a JavaFX window.
 > WHY (WG3/WS2). A correct after-cost model would still mislead if a bar read

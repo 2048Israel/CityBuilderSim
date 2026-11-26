@@ -1,6 +1,6 @@
 # Recipes.java - 494 lines · 33 methods · 1 constants · model
 
-`ham/citybuildersim/Recipes.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Recipes.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > Chooses the recipe each part of a stack runs, at the city's own prices, and sets the template's figures to what its buildings run: the driver of
 > R1c's recipes, as EquipmentForms is of R1's forms.

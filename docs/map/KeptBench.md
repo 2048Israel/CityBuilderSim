@@ -1,6 +1,6 @@
 # KeptBench.java - 6,190 lines · 630 methods · 14 constants · interface
 
-`ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The game's kept screens on scenes of their own, without a stage, for KeptCheck and KeptTimingCheck.
 > Each Page draws the real screen code from its retained pool or an empty pool. The methods below

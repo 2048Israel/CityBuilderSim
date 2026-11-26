@@ -1,6 +1,6 @@
 # WantedPosts.java - 231 lines · 22 methods · 1 constants · model
 
-`ham/citybuildersim/WantedPosts.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/WantedPosts.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The posts the city's businesses wanted this month and the staffing gate would not let them open, and the part of
 > them the labour market prices as if they were offered (LD1).

@@ -1,6 +1,6 @@
 # GapOrderCheck.java - 414 lines · 14 methods · 4 constants · harnesses
 
-`ham/citybuildersim/GapOrderCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GapOrderCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > A planner orders to the gap, not one building a month (OG1, 2026-11-22).
 > 

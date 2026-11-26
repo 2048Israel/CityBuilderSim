@@ -1,6 +1,6 @@
 # AskProceedsCheck.java - 562 lines · 29 methods · 13 constants · harnesses
 
-`ham/citybuildersim/AskProceedsCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/AskProceedsCheck.java` - generated 2026-11-25 by CodeMap; line numbers are as of that run.
 
 > The bond proceeds an open ask has raised pay its works, as a fenced fund pays them: the treasury holds them outside the operating
 > reserve, the order is placed on them, and where the month's bills drew the cash under them the order is paid from them all the
