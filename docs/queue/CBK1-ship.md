@@ -1,5 +1,4 @@
 <!-- gate-run: /home/jerus/cbs/runs/cbs-gate-CBK1-3jmVouYl -->
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — CBK1, the Bank tab's two banks and the central bank's page — 2026-11-26, ready, see docs/queue/CBK1-notes.md
 The Bank tab opens on a choice (Jerus, 2026-11-26: "when you click bank you have two options, the commercial bank, and the
