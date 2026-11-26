@@ -1112,21 +1112,27 @@ public class PopulationCheck {
                 + Migration.HOME_WEIGHT * settled[5];
 
         /*
-         * ...and asked for, for the assertion, which is a statement about the
-         * MODEL'S OWN target.
+         * ...and asked for, for filling and overshoot, which are statements
+         * about the MODEL'S OWN target (MR1).
          *
          * These two are not the same number and the difference is the point.
-         * The target gets multiplied by the senior-care pull, and the day that
-         * factor arrived this restatement quietly stopped describing what
-         * Migration does - so "a city past its target" was being tested against
-         * a target the city had never used. Exactly the trap InfrastructureCheck
-         * fell into when it restated getConstructionOutput() and was wrong the
-         * day a fourth multiplier appeared.
+         * Senior care, affordability and crime change the actual draw. It is
+         * recorded when migration runs, before the arrivals change the adult
+         * share. Rebuilding the unpulled ratio after the month cannot supply
+         * the target the city filled toward. play() carries this city's own
+         * pre-pull draws and pulls from that same calculation; reconcile them
+         * below, including its actual affordability effect (REV-MR1).
          */
         double modelTarget = settled[11];
+        assertTrue("the played city has both pre-pull draws", settled[12] > 0 && settled[13] > 0);
+        assertTrue("the played city's own affordability pull is below one", settled[16] > 0 && settled[16] < 1);
+        check("the played city's target is its own jobs and homes at their own pulls",
+                modelTarget, settled[12] * settled[14] + settled[13] * settled[15], 1e-9);
+        System.out.printf("   played draws: jobs %.6f x %.9f; homes %.6f x %.9f; affordability %.9f%n",
+                settled[12], settled[14], settled[13], settled[15], settled[16]);
 
         System.out.printf("   after 1 month: %,.0f people;  after 120: %,.0f"
-                + "  (target %,.0f)%n", oneMonth[0], settled[0], target);
+                + "  (raw draw %,.0f; model target %,.0f)%n", oneMonth[0], settled[0], target, modelTarget);
 
         /*
          * INERTIA, which is the entire point of the switch. The old model
@@ -1136,8 +1142,9 @@ public class PopulationCheck {
          */
         assertTrue("a city does not fill in a single month",
                 oneMonth[0] < settled[0] * .5);
+        assertTrue("the decade city has a positive migration target", modelTarget > 0);
         assertTrue("...but it does fill, given a decade",
-                settled[0] > target * .8);
+                settled[0] > modelTarget * .8);
 
         /*
          * THE OVERSHOOT IS REAL AND IT IS NOT SICKNESS.
@@ -1192,7 +1199,7 @@ public class PopulationCheck {
          */
         assertTrue("...and does not run away entirely", settled[0] < target * 3.5);
         System.out.printf("   the model's own target is %,.0f (the ratio above uses"
-                + " %,.0f, before the senior-care pull)%n", modelTarget, target);
+                + " %,.0f, before the pulls)%n", modelTarget, target);
 
         assertTrue("...because a city past its target stops pulling people in",
                 settled[0] <= modelTarget || settled[9] == 0);
@@ -1375,7 +1382,13 @@ public class PopulationCheck {
             g.getMigration().getLastArrivals(),
             g.getMigration().getLastDepartures(),
             // The target the model ACTUALLY used, not one rebuilt out here.
-            g.getMigration().getLastTarget()
+            g.getMigration().getLastTarget(),
+            // Same-call flow inputs and pulls, before arrivals change the city's state (REV-MR1).
+            g.getMigration().getLastJobDraw(),
+            g.getMigration().getLastHomeDraw(),
+            g.getMigration().getLastJobsPull(),
+            g.getMigration().getLastHomesPull(),
+            g.getMigration().getLastAffordabilityPull()
         };
     }
 

@@ -1,8 +1,8 @@
-# gate of Merge batch/AP5: slot 9 slow again at 50x (Jerus, 2026-11-25 ~22:35: "ok once again, slow down, slot 9"): `AutoBuilder.pass` is 47% of the FX thread, re-reading the labour figures (`getJobVacancy`, `getPostsWithheld`, `totalBySector`) for every candidate; held for the pass on a version count, exact (the trace's md5s equal), measured on the slot-9 copy before and after. Next free lane, ahead of the rows below, 0.9.211
+# gate of Merge batch/MR1: manufacturing's re-order after a bleed sale (the recommended way of AQ1's call, ★; Jerus may overturn it): on PopulationCheck's played city AQ1's bleed sells one of two Fabrication Shops at m73 (24 months of operating losses its lender covered, principal 1,000); the lone shop pays from m86 and `Manufacturing.plan()` orders a 276-post Fabrication Works on credit (principal 538 to 3,341), which stands by m105 and loses again from m110 (operating income -19 a month and principal 4,126 at m121, against 1,489 in main's town). The target jumps 225 in the last 24 months and the city stands at 1,141 of 1,524 (75%, the line asks 80%). A gate on the bleed's own predicate in `Game.consider()` only delays the order a month (measured): the planner weighs one works' estimated profit, not a market whose plant lost money for 24 months. Done: PopulationCheck's "...but it does fill, given a decade" green on AQ1's path and on main's, 0.9.212
 # date: 2026-11-26
 # earth-2.bin: named
 # nightly: 2026-11-26 02:59 0.9.208 3bf83d20e 4,000 months: RED, exit 1 in 796 s: FAIL a building on the map moved 3 time(s), months 3005-3011; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-26-3bf83d20e-Z21yRgkj
-# suite: 248 harnesses run in 1067s: 232 passed, 16 failed
+# suite: 243 harnesses run in 1243s: 227 passed, 16 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -42,9 +42,6 @@ DenominationCheck | the same currency                                           
 DenominationCheck | the same treasury                                              FAIL  405.3186196818 != 405.3188635672  (6.02e-07 apart)
 DenominationCheck | the same bank                                                  FAIL  291.5866929739 != 291.6348114746  (0.000165 apart)
 DenominationCheck | 7 FAILED
-PopulationCheck | exit 1
-PopulationCheck | ...but it does fill, given a decade                        FAIL
-PopulationCheck | 1 FAILED
 MapCheck | exit 1
 MapCheck | ...no two + junctions of drawn street nearer than JUNCTION_APART plots, either way: about eight houses' length apart FAIL
 MapCheck | 1 FAILED
@@ -64,12 +61,12 @@ CarCheck | the fixture: one household's money buys a car at the price the draw i
 CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  62 cars, 1 step(s) of the import price; paid 56.232508772885560, the ship's product 55.440508772885560; 6.0 cars on the makers' shelves
 CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 55.440508772885560, paid 56.232508772885560
 CarCheck | 3 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
 GroundSkipCheck | exit 1
 GroundSkipCheck | ...and the landlords' order is held for land with no home on site FAIL
 GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 0 month(s) FAIL
 GroundSkipCheck | premise: skipped the old way, the landlords are held for land and a look is due FAIL
 GroundSkipCheck | ...and places nothing: the landlords are still held for land FAIL
 GroundSkipCheck | 4 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
-CopperRefiningCheck | 1 FAILED

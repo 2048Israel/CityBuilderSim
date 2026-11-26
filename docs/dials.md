@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,837 constants in 645 files.**
+**6,838 constants in 645 files.**
 
 ## model (3075 constants)
 
@@ -1751,7 +1751,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.211"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.212"` | Bump on release. |
 | 8392 | `GameVersion.SAVE_FORMAT` | `66` | R6e-rest: THE DESALINATION PLANT BEFORE THE PRESSURE EXCHANGER (format 66). |
 | 8460 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `66` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (is... |
 | 8468 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |
@@ -4211,7 +4211,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 43 | `ZoningView.SHORT_SHARE` | `1e-6` | A zone holds less than it wants by more than this share of its want: SHORT (Z10's "holds 12.4 of 40 km²"), not a rounding. |
 
-## sectors (222 constants)
+## sectors (223 constants)
 
 ### Agriculture.java ([map](map/Agriculture.md))
 
@@ -4402,9 +4402,10 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 89 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY` | `10` | Lubricants a tonne of machinery made takes: ten litres (spec-oil 2.5, est.). |
-| 92 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED` | `2` | ...and a tonne of fabricated steel: two litres (spec-oil 2.5, est.). |
-| 109 | `Manufacturing.WIRE_CABLE_WORKS` | `128` | The Wire & Cable Works' permanent id in buildings.json (0.7.133): 2,000 t of wire and cable a month from 2,000 t of rod. |
+| 82 | `Manufacturing.EXPANSION_RECOVERY_MONTHS` | `12` | Months covering its running costs after the lent DISTRESS_LOSS_MONTHS operating-loss runway before Manufacturing orders more plant: a full year's recovery (MR1). |
+| 142 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_OF_MACHINERY` | `10` | Lubricants a tonne of machinery made takes: ten litres (spec-oil 2.5, est.). |
+| 145 | `Manufacturing.LUBRICANT_LITRES_A_TONNE_FABRICATED` | `2` | ...and a tonne of fabricated steel: two litres (spec-oil 2.5, est.). |
+| 162 | `Manufacturing.WIRE_CABLE_WORKS` | `128` | The Wire & Cable Works' permanent id in buildings.json (0.7.133): 2,000 t of wire and cable a month from 2,000 t of rod. |
 
 ### Materials.java ([map](map/Materials.md))
 
@@ -7919,11 +7920,11 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 68 | `ManufacturingCheck.SHOP` | `"Fabrication Shop"` |  |
-| 69 | `ManufacturingCheck.WORKS` | `"Fabrication Works"` |  |
-| 70 | `ManufacturingCheck.MACH` | `"Machine Works"` |  |
-| 79 | `ManufacturingCheck.STEEL_WAS` | `1.284 * PriceLevel.FACTOR, FABRICATED_WAS = 2.21 * PriceLevel.FACTOR, MACHINERY_WAS = 9...` | The prices the three plants were costed on, written down (2026-09-13 to 0.7.119): steel landed at the US band, and the two goods made of it. |
-| 82 | `ManufacturingCheck.STEEL_FALL` | `STEEL_WAS -.650 * PriceLevel.FACTOR` | Steel's fall a tonne at the import price on 0.7.120, the figure Q6b moved each good by: 1.284 to .650. |
+| 70 | `ManufacturingCheck.SHOP` | `"Fabrication Shop"` |  |
+| 71 | `ManufacturingCheck.WORKS` | `"Fabrication Works"` |  |
+| 72 | `ManufacturingCheck.MACH` | `"Machine Works"` |  |
+| 81 | `ManufacturingCheck.STEEL_WAS` | `1.284 * PriceLevel.FACTOR, FABRICATED_WAS = 2.21 * PriceLevel.FACTOR, MACHINERY_WAS = 9...` | The prices the three plants were costed on, written down (2026-09-13 to 0.7.119): steel landed at the US band, and the two goods made of it. |
+| 84 | `ManufacturingCheck.STEEL_FALL` | `STEEL_WAS -.650 * PriceLevel.FACTOR` | Steel's fall a tonne at the import price on 0.7.120, the figure Q6b moved each good by: 1.284 to .650. |
 
 ### MapCheck.java ([map](map/MapCheck.md))
 
