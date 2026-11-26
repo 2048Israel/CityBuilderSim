@@ -181,7 +181,7 @@ final class AdviceValueOracle {
             if (t.getCategory() == BuildingType.ELECTRICITY) supply += firm(utility, t, unit, count, fill, share);
         }
         supply += utility.getFoundingGridKw();
-        return new double[] {Math.max(0, supply), demand * PowerDispatch.PLAN_PEAK_HOUR};
+        return new double[] {Math.max(0, supply), demand * PowerDispatch.PLAN_PEAK_HOUR * at.powerFactor()};
     }
 
     private static double firm(UtilitiesHandler utility, BuildingsTemplate t, NewUnit unit, long count, double[] fill, double share) {

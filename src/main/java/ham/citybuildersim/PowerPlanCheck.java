@@ -1001,15 +1001,19 @@ public final class PowerPlanCheck {
                 s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
 
         out.println("--- 8a (v', v''). the slow row on its last on-time month: a faster row meeting the gap at its opening for less waits it; the slow row the cheaper orders ---");
-        // (v') the seasonal peak at its line half a month before coal's completion, at the world's fuel prices: short at the completion
-        // and covered a month before it, so coal is on time, not late (REV-PW3g's P1: (v) and (vii) are late, and (viii) is (v)'s draw).
+        // (v') the seasonal peak crosses its line between the last two whole dispatch months. A quote of 352.2 opens
+        // in month 353, so 352 must still be covered for coal to be on time. The original slow-.5 crossing is kept below
+        // as the late control: it made month 352 short while calling a month-353 commissioning on time.
         // The diesels close coal's gap at its opening for less by the screening curve, the rule's (c): they order at their own last
         // on-time month instead, and nothing orders now.
         u.setFuelPrice(Good::worldImportPrice);
-        drawRatio(g, completion(g, slow - .5), 1 / SEASONAL);
-        boolean shortAtSlow = BuildAdvice.seasonalShort(g, POWER, site, slow);
-        late = BuildAdvice.seasonalShort(g, POWER, WorksValue.openBy(g, site, slow - 1), slow - 1);
-        fastCovered = !BuildAdvice.seasonalShort(g, POWER, WorksValue.openBy(g, site, fast), fast);
+        double slowMonth = Math.ceil(slow), fastMonth = Math.ceil(fast);
+        drawRatio(g, completion(g, slowMonth - .5), 1 / SEASONAL);
+        boolean shortAtSlow = BuildAdvice.seasonalShort(g, POWER, site, slowMonth);
+        late = BuildAdvice.seasonalShort(g, POWER, WorksValue.openBy(g, site, slowMonth - 1), slowMonth - 1);
+        fastCovered = !BuildAdvice.seasonalShort(g, POWER, WorksValue.openBy(g, site, fastMonth), fastMonth);
+        check(String.format("fixture: native quote %.3f commissions in whole month %.0f; first short month %.0f, prior %.0f covered",
+                        slow, slowMonth, slowMonth, slowMonth - 1), shortAtSlow && !late && fastCovered);
         n = BuildAdvice.count(g, POWER, site, Map.of(diesel, 1L), pSlow, BuildAdvice.MOST, true)[0];
         nLead = g.quoteBuild(diesel, Math.max(1, n)).months;
         cheap = BuildAdvice.screening(g, diesel, Math.max(1, n), site, pSlow, land);
@@ -1045,6 +1049,21 @@ public final class PowerPlanCheck {
         s = suggest(g);
         check("the slow row on its last on-time month and the cheaper: it orders (" + named(s) + ")",
                 s != null && s.template() == coal && s.count() == 1 && BuildAdvice.RESERVE_ORDERS.get() == r0 + 1);
+
+        // Preserve the original fractional scenario, with the very same cheaper-coal fuel control: its real monthly
+        // deadline is already missed. A faster row still meets it later; this must not order the late coal plant.
+        drawRatio(g, completion(g, slow - .5), 1 / SEASONAL);
+        n = BuildAdvice.count(g, POWER, site, Map.of(diesel, 1L), pSlow, BuildAdvice.MOST, true)[0];
+        cheap = BuildAdvice.screening(g, coal, 1, site, pSlow, land);
+        dear = BuildAdvice.screening(g, diesel, Math.max(1, n), site, pSlow, land);
+        check("fixture: original slow-.5 crossing is already short in the whole month before coal, while faster completion is covered and coal stays cheaper",
+                BuildAdvice.seasonalShort(g, POWER, WorksValue.openBy(g, site, slowMonth - 1), slowMonth - 1)
+                        && !BuildAdvice.seasonalShort(g, POWER, WorksValue.openBy(g, site, fastMonth), fastMonth) && cheap < dear);
+        r0 = BuildAdvice.RESERVE_ORDERS.get();
+        s0 = BuildAdvice.SPREAD_ORDERS.get();
+        s = suggest(g);
+        check("original fractional crossing: the slower cheaper row is monthly late and waits for the faster row (" + named(s) + ")",
+                s == null && BuildAdvice.RESERVE_ORDERS.get() == r0 && BuildAdvice.SPREAD_ORDERS.get() == s0);
 
         out.println("--- 8a (viii, ix). a faster firm row the calendar brings onto the menu in time is weighed by its arrival and its lead ---");
         // (viii) (v)'s draw at the world's fuel prices, the menu coal alone now and the diesel from ARRIVES months on (as the 1910 Diesel
@@ -1454,14 +1473,27 @@ public final class PowerPlanCheck {
         double[] fill = g.getPopulationManager().getJobFillRate();
         NewUnit unit = NewUnit.of(g, small);
         double own = BuildAdvice.staffing(unit, fill), base = g.getServicesManager().getUtilitiesHandler().getFoundingGridKw();
-        check("fixture: no power/water posts stand; the sourced station has five posts and a positive scarce fill below the old net-loss boundary",
+        check("fixture: no power/water posts stand; the sourced station has nine posts and a positive scarce fill below the old net-loss boundary",
                 java.util.Arrays.stream(bm.getJobArrayPerCategory(BuildingType.ELECTRICITY)).sum() == 0
                         && java.util.Arrays.stream(bm.getJobArrayPerCategory(BuildingType.WATER)).sum() == 0
-                        && small.getTotalJobs() == 5 && own > 0 && own < base / (base + unit.getProduction1()));
+                        && small.getTotalJobs() == 9 && own > 0 && own < base / (base + unit.getProduction1()));
         double before = BuildAdvice.supplyDemand(g, POWER, Map.of(), BuildAdvice.NOW)[0];
         double preview = BuildAdvice.supplyDemand(g, POWER, Map.of(small, 1L), BuildAdvice.NOW)[0];
         check("the first small station's preview preserves the endowment and adds its resolved staffed power",
                 close(before, base, 1e-12) && close(preview - before, unit.getProduction1() * own, 1e-12) && preview > before);
+        double[] oracle = AdviceValueOracle.powerService(g, Map.of(small, 1L), BuildAdvice.NOW, Map.of());
+        double[] planned = BuildAdvice.supplyDemand(g, POWER, Map.of(small, 1L), BuildAdvice.NOW);
+        check("the independent power oracle agrees with the scarce first-station supply and demand",
+                close(oracle[0], planned[0], 1e-12) && close(oracle[1], planned[1], 1e-12));
+        double seasonal = PowerDispatch.PLAN_PEAK * PowerDispatch.season(CityCalendar.monthOfYear(g.getMonth()),
+                g.getServicesManager().getUtilitiesHandler().latitude()) / PowerDispatch.PLAN_PEAK_HOUR;
+        BuildAdvice.Ahead physical = new BuildAdvice.Ahead(0, 1, 0, seasonal);
+        double[] physicalOracle = AdviceValueOracle.powerService(g, Map.of(small, 1L), physical, Map.of());
+        double[] physicalPlan = BuildAdvice.supplyDemand(g, POWER, Map.of(small, 1L), physical);
+        check("a physical-month Ahead keeps native growth and firm supply while the independent oracle scales the same demand",
+                physical.k() == 1 && close(physicalPlan[0], planned[0], 1e-12)
+                        && close(physicalPlan[1], planned[1] * seasonal, 1e-12)
+                        && close(physicalOracle[0], physicalPlan[0], 1e-12) && close(physicalOracle[1], physicalPlan[1], 1e-12));
         g.setCashForTest(1e12);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2);
         Game.BuildResult[] placed = {null};
@@ -1472,7 +1504,7 @@ public final class PowerPlanCheck {
         g.getServicesManager().updateServices();
         check("the actual first station's staffed generation agrees with the preview, with the row and jobs intact",
                 placed[0] == Game.BuildResult.SUCCESS && bm.getQuantity(small.getId()) == 1
-                        && small.getTotalJobs() == 5 && close(actual.getProduction(), base + unit.getProduction1() * own, 1e-12)
+                        && small.getTotalJobs() == 9 && close(actual.getProduction(), base + unit.getProduction1() * own, 1e-12)
                         && close(actual.getProduction(), preview, 1e-12));
         double standing = BuildAdvice.supplyDemand(g, POWER, Map.of(), BuildAdvice.NOW)[0];
         check("water and substation posts added to the planner cannot derate the founding grid or the existing plant",
@@ -1526,10 +1558,25 @@ public final class PowerPlanCheck {
         s.setConstructionProgress((lo + hi) / 2);
     }
 
-    /** 9c: isolate the small bridge and coal waiver menus; larger pending diesels still count physically while off the menu. */
+    /** The next native highest-load calendar month on or after this whole-month opening. */
+    static int nextPowerPeak(Game g, double lead) {
+        int first = (int) Math.ceil(lead);
+        double latitude = g.getServicesManager().getUtilitiesHandler().latitude();
+        int calendarPeak = PowerDispatch.northern(PowerDispatch.peakMonth(), latitude);
+        return first + Math.floorMod(calendarPeak - CityCalendar.monthOfYear(g.getMonth() + first), 12);
+    }
+
+    /** 9c corrects the old continuous premise: commissioning and load enter the same whole monthly dispatch. */
     static void pendingDates(Path root) {
-        out.println("--- 9c. pending generation and load are compared at the same dates, preserving interim reserve and seasonal needs ---");
+        out.println("--- 9c. whole monthly generation/load states and the next native seasonal reserve peak ---");
         Game g = town(root, "pending-dates", "Small Steam Station", DIESEL);
+        // August 1900 gives the three native pending-unit quotes a positive first date before the next July peak.
+        int toAugust = (8 - CityCalendar.monthOfYear(g.getMonth()) + 12) % 12;
+        quietly(() -> g.simulateMonths(toAugust));
+        long population = g.getPopulationManager().getPopulation();
+        g.getBusinessInvestment().restorePopulationHistory(java.util.List.of(population, population));
+        g.getHistorySave().getPopulation().clear();
+        g.getHistorySave().getMonth().clear();
         BuildingsTemplate small = plant(g, "Small Steam Station"), diesel = plant(g, DIESEL);
         BuildingsTemplate mill = g.getBuildingManager().getTemplate(HeavyIndustry.LARGE_MINI_MILL);
         quietly(() -> {
@@ -1538,112 +1585,107 @@ public final class PowerPlanCheck {
             g.buildStack(mill, 1, false);
         });
         know(g, small.getName());
-        g.getBuildingManager().setTemplateKnownIn((t, months) -> t.getCategory() != BuildingType.ELECTRICITY
+        BuildingManager bm = g.getBuildingManager();
+        bm.setTemplateKnownIn((t, months) -> t.getCategory() != BuildingType.ELECTRICITY
                 || Substations.isSubstation(t) || t == small);
         g.getAutoBuilder().setSlack(0, null);
         g.getServicesManager().updateServices();
-        double lead = g.quoteBuild(small, 1).months, horizon = BusinessInvestment.horizonFor(lead);
-        double last = lead + .9 * horizon, after = lead + .95 * horizon, before = lead + .8 * horizon;
+        double lead = g.quoteBuild(small, 1).months;
+        int peak = nextPowerPeak(g, lead);
+        double last = peak + .2, submonth = peak + .1, persistent = peak - .1;
         dueIn(g, diesel, last);
-        dueIn(g, mill, after);
+        dueIn(g, mill, submonth);
         Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(g, POWER);
-        BuildingManager bm = g.getBuildingManager();
         double first = bm.siteUnitMonths(diesel, 1, g.getBuildingOutputAtEveryPost());
         double actualLast = bm.siteUnitMonths(diesel, 3, g.getBuildingOutputAtEveryPost());
-        double load = bm.siteUnitMonths(mill, 1, g.getBuildingOutputAtEveryPost());
         double unit = BuildAdvice.unit(g, POWER, small), gap = 1.2 * BuildAdvice.FIRST_WORK_SHARE * unit;
-        // With two diesels open, the mill's load leaves a useful but sub-unit reserve gap, covered by the third diesel.
-        BuildAdvice.Ahead p = new BuildAdvice.Ahead(after + .01, g.getBusinessInvestment().growthFactor(after + .01), 0);
-        double have = BuildAdvice.supplyDemand(g, POWER, Map.of(diesel, 2L), p)[0];
-        drawGap(g, p, have + gap - BuildAdvice.supplyDemand(g, POWER, Map.of(), p)[0]);
-        check(String.format("9c fixture: only small steam offered; pending diesels first %.3f < lead %.3f < last %.3f < load %.3f < Ahead %.3f, flat growth and native load %.0f kW",
-                        first, lead, actualLast, load, lead + horizon, WorksValue.pendingPowerLoad(g, after + .01)),
-                first >= 0 && first < lead && lead < actualLast && actualLast < load && load < lead + horizon
-                        && close(p.k(), 1, 1e-9) && WorksValue.pendingPowerLoad(g, after + .01) > 0
-                        && !bm.isTemplateKnown(diesel) && bm.isTemplateKnown(small));
+        BuildAdvice.Ahead instant = new BuildAdvice.Ahead(submonth + .01, 1, 0);
+        Map<BuildingsTemplate, Long> beforeLast = WorksValue.openBy(g, site, Math.floor(last));
+        double have = BuildAdvice.supplyDemand(g, POWER, beforeLast, instant)[0];
+        drawGap(g, instant, have + gap - BuildAdvice.supplyDemand(g, POWER, Map.of(), instant)[0]);
         double baseDraw = g.getServicesManager().getUtilitiesHandler().getConsumption();
+        check(String.format("9c fixture: orderable early calendar %d; native first %.3f < lead %.3f <= peak %d < last %.3f; positive sub-month gap",
+                        CityCalendar.yearOf(g.getMonth()), first, lead, peak, actualLast),
+                CityCalendar.yearOf(g.getMonth()) <= 1914 && small.knownAt(g.getMonth()) && first > 0 && first < lead
+                        && lead <= peak && peak < actualLast && Math.ceil(submonth) == Math.ceil(actualLast)
+                        && BuildAdvice.supplyDemand(g, POWER, beforeLast, instant)[1] > have);
         for (String promise : new String[] {"absent", "expired", "live"}) {
             AutoBuilder.State state = g.getAutoBuilder().toState();
             state.pendingUntil.clear();
             if (!promise.equals("absent")) state.pendingUntil.put(POWER.label(), g.getMonth() + (promise.equals("live") ? first : -1));
             g.getAutoBuilder().restore(state);
-            check("9c fixture: " + promise + " first-unit promise keeps the physical three-diesel site",
+            check("9c fixture: " + promise + " first-unit promise keeps all three physical pending diesels",
                     BuildAdvice.units(g.getAutoBuilder().pendingCapacity(g, POWER)) == 3
                             && (promise.equals("live") ? Double.isFinite(g.getAutoBuilder().promisedMonths(g, POWER))
                             : Double.isNaN(g.getAutoBuilder().promisedMonths(g, POWER))));
             dueIn(g, diesel, last);
-            dueIn(g, mill, after);
+            dueIn(g, mill, submonth);
             g.getServicesManager().getUtilitiesHandler().setWattsConsumption(baseDraw);
-            double[] early = BuildAdvice.supplyDemand(g, POWER, WorksValue.openBy(g, site, Math.nextDown(actualLast)),
-                    new BuildAdvice.Ahead(Math.nextDown(actualLast), 1, 0));
-            double[] start = BuildAdvice.supplyDemand(g, POWER, WorksValue.openBy(g, site, lead), new BuildAdvice.Ahead(lead, 1, 0));
-            double[] loaded = BuildAdvice.supplyDemand(g, POWER, WorksValue.openBy(g, site, after + .01), new BuildAdvice.Ahead(after + .01, 1, 0));
-            check("9c A premise (" + promise + "): reserve covered at completion, before the last generator and after the load",
-                    start[0] >= start[1] && early[0] >= early[1] && loaded[0] >= loaded[1]);
+            double[] peakBeforeLoad = BuildAdvice.supplyDemand(g, POWER, WorksValue.openBy(g, site, peak), new BuildAdvice.Ahead(peak, 1, 0));
+            double[] bothOpen = BuildAdvice.supplyDemand(g, POWER, WorksValue.openBy(g, site, peak + 1), new BuildAdvice.Ahead(peak + 1, 1, 0));
+            check("9c A premise (" + promise + "): same-month load/generator gap has no monthly dispatch or next-peak reserve need",
+                    peakBeforeLoad[0] >= peakBeforeLoad[1] && bothOpen[0] >= bothOpen[1]
+                            && WorksValue.pendingPowerLoad(g, peak) == 0 && WorksValue.pendingPowerLoad(g, peak + 1) > 0);
             BuildAdvice.Suggestion covered = suggest(g);
-            check("9c A (" + promise + "): matched covered dates add no reserve generators (" + named(covered) + ")", covered == null);
+            check("9c A (" + promise + "): a sub-month gap adds no plant (" + named(covered) + ")", covered == null);
 
-            dueIn(g, mill, before);
-            double jump = bm.siteUnitMonths(mill, 1, g.getBuildingOutputAtEveryPost());
-            BuildAdvice.Ahead at = new BuildAdvice.Ahead(jump + .01, 1, 0);
-            Map<BuildingsTemplate, Long> opened = WorksValue.openBy(g, site, at.months());
+            // Move ONLY the native load across the monthly peak. Pending generation and every promise stay the same.
+            dueIn(g, mill, persistent);
+            BuildAdvice.Ahead at = new BuildAdvice.Ahead(peak, 1, 0);
+            Map<BuildingsTemplate, Long> opened = WorksValue.openBy(g, site, peak);
             double[] sd = BuildAdvice.supplyDemand(g, POWER, opened, at);
             long bridge = BuildAdvice.count(g, POWER, opened, Map.of(small, 1L), at, BuildAdvice.MOST, true)[0];
-            double[] frozen = BuildAdvice.supplyDemand(g, POWER, WorksValue.openBy(g, site, lead), new BuildAdvice.Ahead(lead + horizon, 1, 0));
-            long falseOrder = BuildAdvice.count(g, POWER, WorksValue.openBy(g, site, lead), Map.of(small, 1L),
-                    new BuildAdvice.Ahead(lead + horizon, 1, 0), BuildAdvice.MOST, true)[0];
-            check(String.format("9c B premise (%s): move only load to %.3f, reserve gap %.1f >= share %.1f, seasonal covered, bridge %d < frozen %d (gap %.1f)",
-                            promise, jump, sd[1] - sd[0], BuildAdvice.FIRST_WORK_SHARE * bridge * unit, bridge, falseOrder, frozen[1] - frozen[0]),
-                    lead < jump && jump < actualLast && sd[0] >= sd[1] * SEASONAL
-                            && sd[1] - sd[0] >= BuildAdvice.FIRST_WORK_SHARE * bridge * unit && bridge > 0 && bridge < falseOrder);
+            check("9c B premise (" + promise + "): a whole peak month needs a useful smaller reserve bridge before the pending generator",
+                    Math.ceil(persistent) == peak && Math.ceil(actualLast) == peak + 1 && sd[1] > sd[0]
+                            && sd[1] - sd[0] >= BuildAdvice.FIRST_WORK_SHARE * bridge * unit && bridge > 0
+                            && sd[0] >= sd[1] * SEASONAL);
             BuildAdvice.Suggestion s = suggest(g);
-            check("9c B (" + promise + "): quantity, actual quote and binding evaluation date are coherent",
-                    s == null || close(s.lead(), g.quoteBuild(s.template(), s.count()).months, 1e-9)
-                            && s.ahead().months() >= s.lead() && s.ahead().months() <= BuildAdvice.opening(g, s.lead(), 0).months());
-            check("9c B (" + promise + "): sufficient smaller reserve-only bridge survives covered Ahead (" + named(s) + ")",
-                    s != null && s.template() == small && s.count() == bridge && s.lead() < jump
+            check("9c B (" + promise + "): real next-peak reserve need survives (" + named(s) + ")",
+                    s != null && s.template() == small && s.count() == bridge && s.closes()
+                            && close(s.lead(), g.quoteBuild(s.template(), s.count()).months, 1e-9)
+                            && s.ahead().months() == peak
                             && BuildAdvice.supplyDemand(g, POWER, BuildAdvice.plus(opened, small, s.count()), at)[0] >= sd[1]);
 
-            // Isolate coal for the waiver: its oversized order's reserve gap is below FIRST_WORK_SHARE, but the seasonal gap is real.
             BuildingsTemplate coal = plant(g, COAL);
             know(g, COAL);
             bm.setTemplateKnownIn((t, months) -> t.getCategory() != BuildingType.ELECTRICITY || Substations.isSubstation(t) || t == coal);
             double coalLead = g.quoteBuild(coal, 1).months;
-            dueIn(g, diesel, coalLead + BusinessInvestment.horizonFor(coalLead) / 2);
+            int coalPeak = nextPowerPeak(g, coalLead);
+            dueIn(g, diesel, coalPeak + BusinessInvestment.horizonFor(coalLead) / 2);
             dueIn(g, mill, lead / 2);
-            Map<BuildingsTemplate, Long> byLead = WorksValue.openBy(g, site, coalLead);
-            double firm = BuildAdvice.supplyDemand(g, POWER, byLead, completion(g, coalLead))[0];
-            drawGap(g, completion(g, coalLead), firm / SEASONAL * 1.01
-                    - BuildAdvice.supplyDemand(g, POWER, Map.of(), completion(g, coalLead))[0]);
-            double[] done = BuildAdvice.supplyDemand(g, POWER, byLead, completion(g, coalLead));
-            check("9c C premise (" + promise + "): actual seasonal gap at completion, reserve gap below the isolated coal row's share",
-                    done[0] < done[1] * SEASONAL && done[1] - done[0] < BuildAdvice.FIRST_WORK_SHARE * BuildAdvice.unit(g, POWER, coal));
+            Map<BuildingsTemplate, Long> byLead = WorksValue.openBy(g, site, coalPeak);
+            double season = PowerDispatch.PLAN_PEAK * PowerDispatch.season(CityCalendar.monthOfYear(g.getMonth() + coalPeak),
+                    g.getServicesManager().getUtilitiesHandler().latitude()) / PowerDispatch.PLAN_PEAK_HOUR;
+            double firm = BuildAdvice.supplyDemand(g, POWER, byLead, completion(g, coalPeak))[0];
+            drawGap(g, completion(g, coalPeak), firm / season * 1.01
+                    - BuildAdvice.supplyDemand(g, POWER, Map.of(), completion(g, coalPeak))[0]);
+            double[] done = BuildAdvice.supplyDemand(g, POWER, byLead, completion(g, coalPeak));
+            check("9c C premise (" + promise + "): a physical whole peak-month seasonal shortage is below the coal first-work share",
+                    done[0] < done[1] * season && done[1] - done[0] < BuildAdvice.FIRST_WORK_SHARE * BuildAdvice.unit(g, POWER, coal));
             s = suggest(g);
-            check("9c C (" + promise + "): real early seasonal gap remains served (" + named(s) + ")",
-                    s != null && s.template() == coal && !BuildAdvice.seasonalShort(g, POWER, BuildAdvice.plus(byLead, coal, s.count()), s.lead()));
-
+            check("9c C (" + promise + "): physical interim seasonal need remains served (" + named(s) + ")",
+                    s != null && s.template() == coal && s.closes());
+            if (s != null) {
+                Map<BuildingsTemplate, Long> actual = BuildAdvice.plus(WorksValue.openBy(g, site, s.ahead().months()), coal, s.count());
+                BuildAdvice.Ahead unpadded = new BuildAdvice.Ahead(s.ahead().months(), s.ahead().k(), 0, s.ahead().powerFactor());
+                check("9c C (" + promise + "): count, quote, growth, seasonal factor and published opening agree",
+                        close(s.lead(), g.quoteBuild(s.template(), s.count()).months, 1e-9)
+                                && close(s.ahead().k(), g.getBusinessInvestment().growthFactor(s.ahead().months()), 1e-12)
+                                && s.ahead().months() == Math.rint(s.ahead().months())
+                                && BuildAdvice.maintained(g, POWER, actual, s.ahead())
+                                && close(s.afterAtOpening(), BuildAdvice.figure(g, POWER, actual, unpadded), 1e-12));
+            }
             know(g, small.getName());
             bm.setTemplateKnownIn((t, months) -> t.getCategory() != BuildingType.ELECTRICITY || Substations.isSubstation(t) || t == small);
-            g.getServicesManager().getUtilitiesHandler().setWattsConsumption(baseDraw);
-            dueIn(g, mill, after);
-            dueIn(g, diesel, lead + horizon + 1);
-            double beyond = bm.siteUnitMonths(diesel, 3, g.getBuildingOutputAtEveryPost());
-            double[] end = BuildAdvice.supplyDemand(g, POWER, WorksValue.openBy(g, site, lead + horizon), new BuildAdvice.Ahead(lead + horizon, 1, 0));
-            check("9c D premise (" + promise + "): last plant after Ahead leaves a useful reserve gap", beyond > lead + horizon && end[1] > end[0]
-                    && end[1] - end[0] >= BuildAdvice.FIRST_WORK_SHARE * unit
-                    && BuildAdvice.supplyDemand(g, POWER, site, new BuildAdvice.Ahead(lead + horizon, 1, 0))[0] >= end[1]);
-            s = suggest(g);
-            check("9c D (" + promise + "): generator after Ahead cannot count early (" + named(s) + ")",
-                    s != null && s.template() == small && s.count() == bridge);
         }
         dueIn(g, diesel, last);
-        dueIn(g, mill, after);
+        dueIn(g, mill, submonth);
         g.getServicesManager().getUtilitiesHandler().setWattsConsumption(baseDraw);
         BuildAdvice.Suggestion s = suggest(g);
         double cash = g.getCash();
         long units = BuildAdvice.units(BuildAdvice.onSite(g, POWER));
         if (s != null) quietly(() -> g.getAutoBuilder().placeForTest(g, POWER, s, s.count()));
-        check("9c A: the covered power order path spends nothing and adds no units", g.getCash() == cash
+        check("9c A: sub-month non-need spends nothing and adds no units", g.getCash() == cash
                 && BuildAdvice.units(BuildAdvice.onSite(g, POWER)) == units);
     }
 

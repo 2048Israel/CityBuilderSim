@@ -756,7 +756,7 @@ public final class BuildAdvice {
         }
         // PW9: the endowment owns no posts; hiring a small plant cannot remove its power. Match native dispatch.
         firm += u.getFoundingGridKw();
-        return new double[] {Math.max(0, firm), demand * PowerDispatch.PLAN_PEAK_HOUR};
+        return new double[] {Math.max(0, firm), demand * PowerDispatch.PLAN_PEAK_HOUR * p.powerFactor()};
     }
 
     /**
@@ -1231,9 +1231,12 @@ public final class BuildAdvice {
     /**
      * The demand an order is sized against (0.7.51): today's, `months`
      * ahead grown by k (BusinessInvestment.growthFactor()), and padded by
-     * `slack`.
+     * `slack`. Power's physical dispatch month also carries its seasonal peak
+     * factor; other callers retain the annual peak-hour demand.
      */
-    public record Ahead(double months, double k, double slack) {
+    public record Ahead(double months, double k, double slack, double powerFactor) {
+        /** Existing callers plan the annual peak hour; a physical dispatch month supplies its own seasonal peak factor. */
+        public Ahead(double months, double k, double slack) { this(months, k, slack, 1); }
         /** What today's demand is multiplied by. */
         public double scale() { return k * (1 + slack); }
     }
@@ -1556,26 +1559,32 @@ public final class BuildAdvice {
             if (power && !isFarm(t)) firmRows.put(t, 0);
             // Counted twice: at today's demand with the slack, for the order's
             // own wait; then at the demand it opens to after that wait.
-            long most = power ? reserveMost(game, t, site) : MOST;
+            long most = MOST;
             Map<BuildingsTemplate, Long> one = plus(new LinkedHashMap<>(), t, 1);
-            long[] today = count(game, m, site, one, new Ahead(0, 1, slack), most, maintain);
-            if (today[0] <= 0 && !full) continue;
-            long n = Math.max(1, today[0]);
+            long n;
             double lead;
             Ahead p;
             long[] found;
             Map<BuildingsTemplate, Long> at = site;
-            while (true) {
-                lead = game.quoteBuild(t, n).months;
-                p = opening(game, lead, slack);
-                if (power) {
-                    PowerRequirement required = powerRequirement(game, m, t, dates, n, lead, p, maintain);
-                    at = required.at();
-                    p = required.ahead();
-                    found = required.count();
-                } else found = count(game, m, at, one, p, most, maintain);
-                if ((!full && !power) || found[0] <= n) break;
-                n = found[0];
+            if (power) {
+                PowerPlan plan = powerPlan(game, m, t, dates, slack, maintain);
+                if (plan == null) continue;
+                n = plan.count();
+                lead = plan.lead();
+                at = plan.binding().at();
+                p = plan.binding().ahead();
+                found = new long[] {n, plan.closes() ? 1 : 0};
+            } else {
+                long[] today = count(game, m, site, one, new Ahead(0, 1, slack), most, maintain);
+                if (today[0] <= 0 && !full) continue;
+                n = Math.max(1, today[0]);
+                while (true) {
+                    lead = game.quoteBuild(t, n).months;
+                    p = opening(game, lead, slack);
+                    found = count(game, m, at, one, p, most, maintain);
+                    if (!full || found[0] <= n) break;
+                    n = found[0];
+                }
             }
             // ...and a plant whose whole dated requirement the site already covers is not a reserve order (the spread may still weigh it).
             if (power && (full ? maintained(game, m, at, p) : ahead(game, m, at, p))) continue;
@@ -1591,7 +1600,7 @@ public final class BuildAdvice {
             // month is its last on time, or it is late: due by the waiver alone and short a month before its completion too. Which due row
             // orders is decided over them all after the loop (THE NEED DATE).
             if (power) {
-                double wait = Double.isNaN(lead) ? 0 : Math.max(0, lead);
+                double wait = Double.isNaN(lead) ? 0 : Math.ceil(Math.max(0, lead));
                 double[] sd = supplyDemand(game, m, at, p);
                 boolean share = sd[1] - sd[0] >= FIRST_WORK_SHARE * found[0] * unit;
                 if (!share && !seasonalShort(game, m, dates.openBy(wait), wait)) continue;
@@ -1692,7 +1701,7 @@ public final class BuildAdvice {
             Map<BuildingsTemplate, Long> done = times(site, pavingStep(game), n);
             double freed = pavingFrees(game) * (double) n;
             return new Suggestion(need, m, best.t(), n, q.total, before, whenOnSite, figure(game, m, done),
-                    figure(game, m, done, new Ahead(best.ahead().months(), best.ahead().k(), 0)),
+                    figure(game, m, done, new Ahead(best.ahead().months(), best.ahead().k(), 0, best.ahead().powerFactor())),
                     best.closes(), credit, units(site), best.unit(), best.per(), best.ahead(), best.lead(),
                     -freed, -landValue(game, freed, landLeft), 0,
                     next == null ? null : next.t(), next == null ? Double.NaN : next.per(), lost,
@@ -1702,7 +1711,7 @@ public final class BuildAdvice {
         boolean credit = q.total > cashLeft;
         double after = figure(game, m, plus(site, best.t(), n));
         Map<BuildingsTemplate, Long> dated = m.kind() == Kind.POWER ? WorksValue.openBy(game, site, best.ahead().months()) : site;
-        double atOpening = figure(game, m, plus(dated, best.t(), n), new Ahead(best.ahead().months(), best.ahead().k(), 0));
+        double atOpening = figure(game, m, plus(dated, best.t(), n), new Ahead(best.ahead().months(), best.ahead().k(), 0, best.ahead().powerFactor()));
         double sq = best.t().getLandSqFt() * (double) n;
         return new Suggestion(need, m, best.t(), n, q.total, before, whenOnSite, after, atOpening,
                 best.closes(), credit, units(site), best.unit(), best.per(), best.ahead(), best.lead(),
@@ -1845,7 +1854,7 @@ public final class BuildAdvice {
         double[] sd = supplyDemand(game, m, at, p);
         double firm = n * unit(game, m, t), used = Math.min(firm, Math.max(0, sd[1] - sd[0]));
         if (!(used > 0)) return Double.POSITIVE_INFINITY;
-        double hours = sliceHours(slice(sd[0], sd[1] / PowerDispatch.PLAN_PEAK_HOUR));
+        double hours = sliceHours(slice(sd[0], sd[1] / (PowerDispatch.PLAN_PEAK_HOUR * p.powerFactor())));
         double year = yearCost(game, t, n, capitalOf(game, t, n, landLeft), lifeFactor(game));
         return (year + runningPerKwh(game, t) * used * hours) / used;
     }
@@ -1869,51 +1878,83 @@ public final class BuildAdvice {
         return closes ? net : net / added;
     }
 
-    /** The binding dated requirement, including the instant before a generator opens and every native load jump. */
+    /** One whole monthly constraint; its Ahead carries the actual demand factor into counts, guards, rank and display. */
     private record PowerRequirement(Map<BuildingsTemplate, Long> at, Ahead ahead, long[] count) { }
 
-    private static PowerRequirement powerRequirement(Game game, Measure m, BuildingsTemplate t, WorksValue.PowerDates dates,
-                                                       long quoted, double lead, Ahead horizon, boolean maintain) {
+    /** One actual count and quote, validated against every applicable monthly requirement. */
+    private record PowerPlan(long count, double lead, PowerRequirement binding, boolean closes) { }
+
+    private static List<PowerRequirement> powerRequirements(Game game, Measure m, BuildingsTemplate t,
+                                                             WorksValue.PowerDates dates, double lead, double slack, boolean maintain) {
         double from = Double.isNaN(lead) ? 0 : Math.max(0, lead);
+        int peak = dates.nextPeak(from);
         List<PowerRequirement> tests = new ArrayList<>();
         long most = MOST;
-        for (double month : dates.frontier(from, horizon.months())) {
+        for (double month : dates.frontier(from)) most = Math.min(most, reserveMost(game, t, dates.openBy(month)));
+        for (double month : dates.frontier(from)) {
             Map<BuildingsTemplate, Long> at = dates.openBy(month);
-            Ahead p = new Ahead(month, game.getBusinessInvestment().growthFactor(month), horizon.slack());
-            most = Math.min(most, reserveMost(game, t, at));
-            tests.add(new PowerRequirement(at, p, null));
+            double factor = month == peak ? 1 : PowerDispatch.PLAN_PEAK
+                    * PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth() + (int) month),
+                            game.getServicesManager().getUtilitiesHandler().latitude()) / PowerDispatch.PLAN_PEAK_HOUR;
+            Ahead p = new Ahead(month, game.getBusinessInvestment().growthFactor(month), month == peak ? slack : 0, factor);
+            long[] n = powerCovered(game, m, at, p, maintain) ? new long[] {0, 1}
+                    : count(game, m, at, Map.of(t, 1L), p, most, maintain);
+            tests.add(new PowerRequirement(at, p, n));
         }
-        PowerRequirement binding = null;
-        double worst = Double.NEGATIVE_INFINITY;
-        for (PowerRequirement test : tests) {
-            double[] sd = supplyDemand(game, m, test.at(), test.ahead());
-            long[] n = (maintain ? maintained(game, m, test.at(), test.ahead()) : ahead(game, m, test.at(), test.ahead()))
-                    ? new long[] {0, 1} : count(game, m, test.at(), Map.of(t, 1L), test.ahead(), most, maintain);
-            double gap = sd[1] - sd[0];
-            if (binding == null || n[0] > binding.count()[0] || n[0] == binding.count()[0] && gap >= worst) {
-                binding = new PowerRequirement(test.at(), test.ahead(), n);
-                worst = gap;
-            }
-        }
-        // A falling requirement can follow a pending commissioning. Keep the feasible count already quoted, so the order's
-        // lead, dated guards and rank all describe that same count; the bounded growth loop remains the other measures' too.
-        long n = binding.count()[0] == 0 ? 0 : Math.max(quoted, binding.count()[0]);
-        if (n > most) return new PowerRequirement(binding.at(), binding.ahead(), new long[] {0, 0});
-        boolean closes = true;
-        double shortfall = Double.NEGATIVE_INFINITY;
-        // Falling farm credit is not monotone in count: the largest individually required count must actually close every date.
-        for (PowerRequirement test : tests) {
-            Map<BuildingsTemplate, Long> done = plus(test.at(), t, n);
-            if (!(maintain ? maintained(game, m, done, test.ahead()) : ahead(game, m, done, test.ahead()))) {
-                closes = false;
-                double[] sd = supplyDemand(game, m, done, test.ahead());
-                if (sd[1] - sd[0] > shortfall) {
+        return tests;
+    }
+
+    private static boolean powerCovered(Game game, Measure m, Map<BuildingsTemplate, Long> at, Ahead p, boolean maintain) {
+        return maintain ? maintained(game, m, at, p) : ahead(game, m, at, p);
+    }
+
+    /**
+     * Search distinct dated requirements, not a count that can only rise. Each actual count is quoted once and may add
+     * new per-date counts to the finite worklist (1..MOST). A cycle cannot repeat; the least feasible evaluated count
+     * wins. Falling farm credit is checked again at the actual quoted count over every date, never inferred from a maximum.
+     */
+    private static PowerPlan powerPlan(Game game, Measure m, BuildingsTemplate t, WorksValue.PowerDates dates,
+                                       double slack, boolean maintain) {
+        java.util.SortedSet<Long> pending = new java.util.TreeSet<>();
+        java.util.Set<Long> seen = new java.util.HashSet<>();
+        pending.add(1L);
+        PowerPlan best = null, partial = null;
+        while (!pending.isEmpty()) {
+            long n = pending.first();
+            pending.remove(n);
+            if (n < 1 || n > MOST || !seen.add(n)) continue;
+            double lead = game.quoteBuild(t, n).months;
+            if (Double.isInfinite(lead) || lead > Integer.MAX_VALUE - game.getMonth() - 12.0) continue;
+            List<PowerRequirement> tests = powerRequirements(game, m, t, dates, lead, slack, maintain);
+            PowerRequirement binding = null;
+            double worst = Double.NEGATIVE_INFINITY;
+            long most = MOST, largest = 0;
+            boolean need = false, closes = true, allCanClose = true;
+            for (PowerRequirement test : tests) {
+                long required = test.count()[0];
+                if (required > 0 && !seen.contains(required)) pending.add(required);
+                most = Math.min(most, reserveMost(game, t, test.at()));
+                double[] sd = supplyDemand(game, m, test.at(), test.ahead());
+                double gap = sd[1] - sd[0];
+                need |= !powerCovered(game, m, test.at(), test.ahead(), maintain);
+                allCanClose &= test.count()[1] == 1;
+                closes &= powerCovered(game, m, plus(test.at(), t, n), test.ahead(), maintain);
+                if (binding == null || required > largest || required == largest && gap > worst) {
                     binding = test;
-                    shortfall = sd[1] - sd[0];
+                    largest = required;
+                    worst = gap;
                 }
             }
+            if (most > 0 && !seen.contains(most) && most < n) pending.add(most);
+            if (!need || n > most) continue;
+            PowerPlan plan = new PowerPlan(n, lead, binding, closes);
+            if (closes && (best == null || n < best.count())) best = plan;
+            // Preserve a physically limited farm's cannot-close tier, without calling an unproved firm count a closer.
+            if (!allCanClose && n == largest && (partial == null || n < partial.count())) partial = plan;
         }
-        return new PowerRequirement(binding.at(), binding.ahead(), new long[] {n, closes ? 1 : 0});
+        PowerPlan plan = best != null ? best : partial;
+        if (plan == null || Double.compare(plan.lead(), game.quoteBuild(t, plan.count()).months) != 0) return null;
+        return plan;
     }
 
     /**
@@ -1939,7 +1980,8 @@ public final class BuildAdvice {
             BuildingsTemplate u = row.getKey();
             double one = row.getValue() + game.quoteBuild(u, 1).months;
             if (u == d.t() || !(one < d.lead())) continue;
-            if (late && !seasonalShort(game, m, dates.openBy(one), one)) return false;
+            double monthly = Double.isNaN(one) ? 0 : Math.ceil(Math.max(0, one));
+            if (late && !seasonalShort(game, m, dates.openBy(monthly), monthly)) return false;
             long[] c = count(game, m, at, plus(new LinkedHashMap<>(), u, 1), d.ahead(), reserveMost(game, u, at), maintain);
             if (c[0] <= 0 || c[1] != 1) continue;
             double soon = row.getValue() + game.quoteBuild(u, c[0]).months;

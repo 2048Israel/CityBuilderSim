@@ -643,6 +643,7 @@ public class PowerPlantsCheck {
                 later.getBuildingManager().getTemplates().contains(steam)
                         && later.getBuildingManager().getQuantity(steam.getId()) == 1
                         && later.getBuildingManager().getStack(steam).getUnderConstruction() == 1
+                        && later.getAutoBuilder().pendingCapacity(later, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)).getOrDefault(steam, 0L) == 1
                         && rowOf(later.getServicesManager().getUtilitiesHandler(), steam.getName()) != null);
         sectionEnd();
     }
