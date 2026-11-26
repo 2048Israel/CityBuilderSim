@@ -1131,3 +1131,65 @@ The next required step is the allocated whole boxed dry run. The
 orchestrator's GB6 instruction leaves the old PC timeout to that full
 judge, with no PC rerun or additional review. The provisional marker
 stays until the dry-run verdict and final records; AG6VUQWA is not reused.
+
+## Final whole boxed dry run — green
+
+The orchestrator allocated the only boxed dry run in
+`20261126-055225-578`, on pushed branch commit
+`b31598376f5f528353a977b5d6f78db02c7bacf8`. Main was fetched again and
+remained `2560ada85407904e6de5e97f403ab1b18967b864`, already merged.
+Those are the two commits this kept run tests. Root launched
+`sh tools/gate.sh PW9 --dry-run` through Bash in the background with a
+7,200-second timeout and no laptop fallback. The entire launcher and
+its retained exit file ended **0**; root collected the tool process.
+
+The run is `/home/jerus/cbs/runs/cbs-gate-PW9-8zOS00nm`, retained on the
+box and copied home to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-PW9-8zOS00nm`.
+Its `ship.log`, `checks.complete`, manifests and check logs are the kept
+evidence; root wrapper files are `target/PW9-final-dryrun.log` and
+`target/PW9-final-dryrun-exit.txt`. Root's ship file names the **remote**
+run in its **first-line** gate-run comment for reuse. The earlier failed
+AG6VUQWA run remains evidence only and is not named for reuse.
+
+Compile passed in10s. The clone's src/pom/batch-check identity matches
+the pushed branch except for publisher-generated GameVersion.java;
+root did not manually edit VERSION. Actual runtime is Temurin
+21.0.13+9 with named real box earth/world data. Box data SHA256s are
+earth `c897b2421d0b742899c034eeba84a4668f6534cae85e9c5500fa9a26172ae33b`
+and world `fbd11a6a3b880ffeeae4e5c07e7a9d950b3d28f17f7c77656aea7a1071a6fcc1`.
+The read-only helper mistakenly invoked `java -version` once to identify
+runtime; it exited immediately, and subsequent runtime reads used release
+metadata/proc only. It performed no native run or gate control.
+
+The actual final line is **gate exit0 at 2026-11-26 10:14:18 UTC**.
+The suite's exit3 is green by the batch instructions: ALL257 picked,
+254 run, **237 passed /17 known-red harnesses**, **zero NEW and zero
+unnamed reds**. Monocle9, OBSERVED3 and SOFT3 counts are retained. No new
+known-red row, queued sweep or exemption is needed. The existing main
+known-red tags cover the other17; no assertion was weakened to pass.
+There are zero harness skips; Globe, ShortSelling and OrderSearch are
+the three unselected nightly checks. The three path sections observed
+and not counted are ConstructionControlCheck1, PriceLevelCheck1 and
+PrizeCheck1; their SKIPPED markers do not mean missing harnesses. Soft
+timings are SaveSlotCheck1/MapCheck2 under the existing soft-timing mode.
+
+**LongPlaytest completed with all checks passed on the box**, settling
+the earlier PC timeout as instructed by GB6. The EssentialWorks findings
+that stopped the first dry run are green in this whole run. KeptCheck
+finished as a known red. This is the whole-suite judgement, not an
+inference from individual early passes or the ensemble alone.
+LongPlaytest reached2400 in403.4s; EssentialWorks, PowerPlan, BuildAdvice,
+WorksFinance, PowerPlants, Materials, BuildingData and PowerDispatch all
+exit0. Suite elapsed1196s, checks1216s, whole gate1220s.
+
+The independent helper verifies the final red disposition and retained
+run seals in `target/PW9-finaldry-report.txt`. Its readers/jobs are
+closed before the ready report. Since this dry run only notes and the
+ship file change: source/model remain the final ensemble's model54.
+All918 manifest entries verify in both remote and Windows copies;
+both `checks.complete` seals and tested-commit files agree. Manifest
+SHA256 is `02815b31b94fead174b53b69c0ac891a7a1908dd1a65114d0df24c6f02aa6b10`.
+The final marker removal is its own last commit after these records;
+origin is checked before the `PW9 ready at` mail. No real `ship.sh` or
+main push is performed by this builder.
