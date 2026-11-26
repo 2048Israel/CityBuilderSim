@@ -8049,7 +8049,9 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
         // The dials staged: the rows before and after, the tray and its budget, the sentence for each case.
         double cost = engFu.postCost();
         int posts = engFu.grantPosts();
-        double more = (posts + 3) * cost, past = engFu.grantToFillRoom() + 3 * cost, lowPrize = engFu.labThreshold() / 2;
+        // Three posts up is staged in the middle of the third post (RES3c, 2026-11-26): Research.posts() floors grant / cost, so a grant of
+        // exactly (posts + 3) * cost sits on the floor's edge, and at RES3's wages the quotient's last bit read 13 posts for 14.
+        double more = (posts + 3.5) * cost, past = engFu.grantToFillRoom() + 3 * cost, lowPrize = engFu.labThreshold() / 2;
         check("fixture: engineering has a threshold for a lab (" + engFu.labThreshold() + ") and room for more posts than it has (" + posts + " of " + engFu.roomPosts() + ")",
                 engFu.labThreshold() > 0 && engFu.roomPosts() > posts + 3);
         Hand stageMore = b -> { b.policyStage(KeptBench.researchGrantKey(eng), more); return null; };
