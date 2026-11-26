@@ -32459,57 +32459,57 @@ _(no printed sections or labelled assertions found)_
   - L4614 a currency whose gold broke (
   - L4618 ...an array from before FB14 (158 slots) reads the last break a peg's, as every break was worded before
   - L4619 ...and the city's own, which never broke off gold, saves 0
-  - L4626 the central bank's array ends with the gold's two figures: due back at the next top (
-  - L4631 ...a restore returns both to the bit, and what it saves is what it read
-  - L4635 ...and an array from before FB14, two slots shorter, reads nothing due and nothing retired for gold
-  - L4637 fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22
-  - L4641 fixture: the vault earned this month and since founding, each money's rate on its own balance (slots 142-146: the month's US$
-  - L4646 ...and the history writes each finished year's table by partner and good (1)
-  - L4654 ...and the history writes the eight policy rates (policyUSD ... policyCHF) a month each, as many points as the euro's series
-  - L4660 a load builds the market and restores its year
-  - L4663 ...its mill prices and supply scales bit for bit
-  - L4670 ...restored and not solved again: no sweeps in the loaded market (
-  - L4673 a load restores the world's moneys in the month they were saved in, the very same state to the bit
-  - L4675 ...and the D$ with its world as it was: every slot of the foreign accounts, 95-104 among them, to the bit
-  - L4678 a load restores the policy rates in the month they were saved in, to the bit, and hands the city the US's rate as it was
-  - L4681 ...and the history's policy series as they were
-  - L4698 ...and the vault in eight as it was: the eight balances and their rates, gold's balance and price, the mix, the chosen and the trade shares, the month's cros...
-  - L4699 ...the trade by partner, the month and the year to date, as it was
-  - L4700 ...the finished years in the history
-  - L4702 ...so the map's feed is last month's trade at once: its month, its lanes and its year to date
-  - L4715 ...and every good's market stands at the band it was struck at (
-  - L4718 a loaded city whose saved year is this year solves nothing: the live city's month and the loaded one's print no solve
-  - L4720 the month after runs the same in both: the moneys, the D$'s rate and its world's line to the bit
-  - L4725 ...and the policy rates and the city's price of money to the bit (the US's rate
-  - L4729 the month after runs the same in both: the cash to the cent and the trade by partner
-  - L4742 a save of format 47 is no longer readable: the floor is past it (WN3: it has no solved world and no trade by partner)
-  - L4755 a save with no world moneys loads, and they are caught up from the first January to the saved month (
-  - L4757 ...with the very cycle and risk-off the saved city had: they are a function of the seed and the month
-  - L4766 a save with no policy rates loads, and they are rebuilt from the first January to the saved month: the very state the saved city had, to the bit (a function ...
-  - L4781 fixture: with no world file the city has no market and no partner record
-  - L4783 ...no moneys either, and its D$ has no world (WN4)
-  - L4785 saved
-  - L4787 ...and its save writes none of the new keys, in the markets or beside them
-  - L4791 ...no policy rates, and its price of money is the constant (XR4)
-  - L4795 ...every market on the goods' literals
-- **L4820 current-format land repair and refusal**
-  - L4836 a current-format save's changed land figure loads and redraws its actual ground
-  - L4860 ...and the refused save is untouched
-- **L4985 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT**
-  - L5017 
-  - L5023 ...and matches the city that was saved
-  - L5049 
-  - L5052 ...and it is back at month one
-- **L5054 5. WHAT A RELOAD MUST NOT FORGET**
-  - L5093 the mine has a payroll at all after a load
-  - L5094 ...and it is the payroll it was working
-  - L5098 utility income survives a load
-  - L5100 the residents' statement is not blank after a load
-  - L5102 ...and the government's revenue block is not either
-  - L5110 ...and rebuilding it does not book the month twice
-  - L5118 the population trend survives, so forecasts are not flat
-  - L5126 every sector's losing streak survives a load
-  - L5133 every sector's operating-loss streak (AQ1, the one the bleed reads) survives a load
+  - L4627 the central bank's array, as FB14 left it, ends with the gold's two figures (CBK1's statements follow): due back at the next top (
+  - L4632 ...a restore returns both to the bit, and what it saves is what it read
+  - L4636 ...and an array from before FB14, two slots shorter, reads nothing due and nothing retired for gold
+  - L4638 fixture: the vault holds euros and pounds beside its dollars on a chosen mix, the eight have moved against each other under it, and the dollars are slot 22
+  - L4642 fixture: the vault earned this month and since founding, each money's rate on its own balance (slots 142-146: the month's US$
+  - L4647 ...and the history writes each finished year's table by partner and good (1)
+  - L4655 ...and the history writes the eight policy rates (policyUSD ... policyCHF) a month each, as many points as the euro's series
+  - L4661 a load builds the market and restores its year
+  - L4664 ...its mill prices and supply scales bit for bit
+  - L4671 ...restored and not solved again: no sweeps in the loaded market (
+  - L4674 a load restores the world's moneys in the month they were saved in, the very same state to the bit
+  - L4676 ...and the D$ with its world as it was: every slot of the foreign accounts, 95-104 among them, to the bit
+  - L4679 a load restores the policy rates in the month they were saved in, to the bit, and hands the city the US's rate as it was
+  - L4682 ...and the history's policy series as they were
+  - L4699 ...and the vault in eight as it was: the eight balances and their rates, gold's balance and price, the mix, the chosen and the trade shares, the month's cros...
+  - L4700 ...the trade by partner, the month and the year to date, as it was
+  - L4701 ...the finished years in the history
+  - L4703 ...so the map's feed is last month's trade at once: its month, its lanes and its year to date
+  - L4716 ...and every good's market stands at the band it was struck at (
+  - L4719 a loaded city whose saved year is this year solves nothing: the live city's month and the loaded one's print no solve
+  - L4721 the month after runs the same in both: the moneys, the D$'s rate and its world's line to the bit
+  - L4726 ...and the policy rates and the city's price of money to the bit (the US's rate
+  - L4730 the month after runs the same in both: the cash to the cent and the trade by partner
+  - L4743 a save of format 47 is no longer readable: the floor is past it (WN3: it has no solved world and no trade by partner)
+  - L4756 a save with no world moneys loads, and they are caught up from the first January to the saved month (
+  - L4758 ...with the very cycle and risk-off the saved city had: they are a function of the seed and the month
+  - L4767 a save with no policy rates loads, and they are rebuilt from the first January to the saved month: the very state the saved city had, to the bit (a function ...
+  - L4782 fixture: with no world file the city has no market and no partner record
+  - L4784 ...no moneys either, and its D$ has no world (WN4)
+  - L4786 saved
+  - L4788 ...and its save writes none of the new keys, in the markets or beside them
+  - L4792 ...no policy rates, and its price of money is the constant (XR4)
+  - L4796 ...every market on the goods' literals
+- **L4821 current-format land repair and refusal**
+  - L4837 a current-format save's changed land figure loads and redraws its actual ground
+  - L4861 ...and the refused save is untouched
+- **L4986 4. A CITY IS THE SAME CITY AFTER YOU LOAD IT**
+  - L5018 
+  - L5024 ...and matches the city that was saved
+  - L5050 
+  - L5053 ...and it is back at month one
+- **L5055 5. WHAT A RELOAD MUST NOT FORGET**
+  - L5094 the mine has a payroll at all after a load
+  - L5095 ...and it is the payroll it was working
+  - L5099 utility income survives a load
+  - L5101 the residents' statement is not blank after a load
+  - L5103 ...and the government's revenue block is not either
+  - L5111 ...and rebuilding it does not book the month twice
+  - L5119 the population trend survives, so forecasts are not flat
+  - L5127 every sector's losing streak survives a load
+  - L5134 every sector's operating-loss streak (AQ1, the one the bleed reads) survives a load
 
 ## SaveSlotCheck.java - 227 labelled assertions
 
