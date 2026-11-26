@@ -472,8 +472,11 @@ not waive a law or alter the M1/F1 ship rule. PopulationCheck's original
 old MR1 known-red row is absent from the ship file. Copper's scoped FS8
 timeout row remains, with the traced evidence above.
 
-The reviewer SHIP is the readiness go. The pick is nine, not ALL, so no
-dry run is owed. The provisional marker is removed last in its own
+The reviewer SHIP is the readiness go. Committing the baseline adds
+EnsembleCheck to the original nine picked harnesses: the final pick is
+**ten**, not ALL. The named EnsembleCheck passes **0**, with its kept log
+`target/MR1-EnsembleCheck-final.txt` and exit file alongside. No dry run
+is owed. The provisional marker is removed last in its own
 commit, after these records are pushed; the publisher runs the fresh pick
 on the main it merges onto. The optional late-first-loan P2 remains
 documented above as expressly permitted, with its reason for deferral.
