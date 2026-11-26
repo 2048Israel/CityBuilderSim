@@ -7927,7 +7927,7 @@ public class Game {
 
     /** What the lender reads for an order: what n cost, the insured rate and the real rate it is tested at, one's rent net of carrying it, and Mortgage.decide()'s answer. */
     private record LenderReading(java.util.function.LongToDoubleFunction costOf, double insured, double tested, double noi,
-                                 Mortgage.Decision decision) { }
+                                 java.util.function.LongToDoubleFunction noiOf, Mortgage.Decision decision) { }
 
     /** The lender's reading of an order of `quantity` with `cash` in hand - the one call the landlords' order (considerOnMortgage()) and the build card (lenderTest()) both make, so they cannot disagree. */
     private LenderReading lenderReads(BuildingsTemplate t, long quantity, double cash, double perUnitRent) {
@@ -7943,7 +7943,7 @@ public class Game {
         java.util.function.LongToDoubleFunction carryOf = n -> businessInvestment.carryOf(t, n, insured);
         double carry = economyManager.housingCarry(t), noi = perUnitRent - carry, flat = perUnitRent;
         java.util.function.LongToDoubleFunction noiOf = forecast == null ? n -> flat - carry : n -> forecast.income(t, n) / n - carry;
-        return new LenderReading(costOf, insured, tested, noi, Mortgage.decide(quantity, costOf, cash, noiOf, tested, carryOf));
+        return new LenderReading(costOf, insured, tested, noi, noiOf, Mortgage.decide(quantity, costOf, cash, noiOf, tested, carryOf));
     }
 
     /**
@@ -8014,7 +8014,7 @@ public class Game {
         LenderReading read = lenderReads(t, decision.quantity, cash, perUnitRent);
         double insured = read.insured(), tested = read.tested(), noi = read.noi();
         Mortgage.Decision d = read.decision();
-        if (orderWatch != null) orderWatch.mortgaged(decision.quantity, read.costOf(), cash, noi, tested, d);
+        if (orderWatch != null) orderWatch.mortgaged(decision.quantity, read.costOf(), read.noiOf(), cash, noi, tested, d);
 
         if (d.quantity() <= 0) {
             (d.shortOfDown() ? heldForDownPayment : refusedByLender).add(decision.sector);

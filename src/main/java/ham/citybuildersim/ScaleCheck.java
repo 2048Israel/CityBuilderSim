@@ -1788,7 +1788,9 @@ public class ScaleCheck {
         if (d.has("housingMarket") && !d.get("housingMarket").isJsonNull()) {
             JsonObject market = d.getAsJsonObject("housingMarket");
             named(market.get("classes"), k, "demand", "homes", "occupied", "tradeQuantity", "tradeValue");
-            named(market.get("leases"), k, "count", "bill", "households");
+            // A lease's funding is households too (full payers, half shares, the sponsored): scaled with them, or the
+            // copy's leases fund a thousandth of their households and the load refuses them (RES3c, 2026-11-25).
+            named(market.get("leases"), k, "count", "bill", "households", "full", "half", "sponsored");
             named(market.get("demand"), k, "count");
             named(market.get("pipeline"), k, "count");
             named(market.get("sharing"), k, "groups", "sourceCount", "targetCount");

@@ -555,6 +555,12 @@ public class BusinessInvestment {
         /** Game.considerOnMortgage(): what Mortgage.decide() was asked, and its answer. */
         default void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, double cash,
                                double noiPerUnit, double annualRate, Mortgage.Decision found) { }
+        /** ...with the lender's own reading of each size it was shown, noiOf(n) a building's rent less its carry in an order of n
+         *  (Mortgage.decide() reads each slice at its own rent roll, RES3c); noiPerUnit is the whole order's. By default the above. */
+        default void mortgaged(long asked, java.util.function.LongToDoubleFunction costOf, java.util.function.LongToDoubleFunction noiOf,
+                               double cash, double noiPerUnit, double annualRate, Mortgage.Decision found) {
+            mortgaged(asked, costOf, cash, noiPerUnit, annualRate, found);
+        }
     }
 
     private OrderWatch orderWatch;
