@@ -1220,16 +1220,44 @@ public class MapCheck {
     /** One building of a plan: its type and its box in the frame's plots. */
     record PlanBox(int type, int x, int y, int w, int h) { }
 
-    /** A rectangle of plots bought inside a district, [x0, x1) x [y0, y1) in the world, and how many of its plots are dry. */
-    record Bought(long x0, long y0, long x1, long y1, int dry) {
+    /**
+     * A rectangle of plots bought inside a district, [x0, x1) x [y0, y1) in the world, as the land market sells a block of the land's level: it may hold plots the
+     * city owns already, and only its unowned plots at the choice (the fresh ones) are bought. `dry` counts the fresh plots that are dry; `fresh` marks them,
+     * row by row over the block (null: every plot of it is fresh, a block wholly unowned).
+     */
+    record Bought(long x0, long y0, long x1, long y1, int dry, java.util.BitSet fresh) {
+        /** A block wholly unowned at the choice: every plot fresh. */
+        Bought(long x0, long y0, long x1, long y1, int dry) {
+            this(x0, y0, x1, y1, dry, null);
+        }
+
         /** How far its nearest plot is from plot (sx, sy), in plots. */
         double nearest(long sx, long sy) {
             return Math.hypot(Math.max(Math.max(x0 - sx, 0), sx - (x1 - 1)), Math.max(Math.max(y0 - sy, 0), sy - (y1 - 1)));
         }
 
-        /** Whether the box lies wholly on this block, a box in the frame whose first plot is (fx, fy) in the world. */
+        /** Whether plot (x, y) of the world lies on this block and was unowned when it was chosen. */
+        boolean isFresh(long x, long y) {
+            if (x < x0 || x >= x1 || y < y0 || y >= y1) return false;
+            return fresh == null || fresh.get((int) ((y - y0) * (x1 - x0) + (x - x0)));
+        }
+
+        /** How many of its plots were unowned when it was chosen: the plots a purchase adds. */
+        int freshPlots() {
+            return fresh == null ? (int) ((x1 - x0) * (y1 - y0)) : fresh.cardinality();
+        }
+
+        /** How many of its plots the city owned already. */
+        int ownedPlots() {
+            return (int) ((x1 - x0) * (y1 - y0)) - freshPlots();
+        }
+
+        /** Whether the box lies wholly on this block's fresh plots, a box in the frame whose first plot is (fx, fy) in the world: a plot the city owned before does not count. */
         boolean holds(PlanBox b, long fx, long fy) {
-            return fx + b.x() >= x0 && fy + b.y() >= y0 && fx + b.x() + b.w() <= x1 && fy + b.y() + b.h() <= y1;
+            for (int j = 0; j < b.h(); j++) {
+                for (int i = 0; i < b.w(); i++) if (!isFresh(fx + b.x() + i, fy + b.y() + j)) return false;
+            }
+            return true;
         }
     }
 
@@ -1301,7 +1329,7 @@ public class MapCheck {
             spill = nearestFreeBlock(land, otherFrame);
             other = spill == null ? null : e;
         }
-        boolean soundSpill = spill != null && soundBlock(land, otherFrame, spill);
+        boolean soundSpill = spill != null && soundBlock(land, otherFrame, spill) && land.grid().owned(spill.x0(), spill.y0(), spill.x1(), spill.y1()) == 0;
         int otherOwned0 = other == null ? 0 : other.owned();
         if (spill != null) land.extend(new LandParcel(-5, 1, 0, land.level(), spill.x0(), spill.y0(), spill.x1(), spill.y1(), null, null, null, 0, 0), h.last(), 0);
         long blocks = 1L << land.level();
@@ -1321,6 +1349,7 @@ public class MapCheck {
         // ----- the first block, bought between months, and the month after -----
         Bought b1 = nearestFreeBlock(land, frame, p1);
         boolean sound1 = b1 != null && soundBlock(land, frame, b1);
+        boolean joins1 = b1 != null && joinsStreets(p1, b1, frame);
         int ownedBefore1 = d.owned();
         int boughtMonth1 = h.last();
         if (b1 != null) land.extend(new LandParcel(-5, 1, 0, land.level(), b1.x0(), b1.y0(), b1.x1(), b1.y1(), null, null, null, 0, 0), boughtMonth1, 0);
@@ -1345,8 +1374,16 @@ public class MapCheck {
         // ----- the second block, and arrivals filling its added room -----
         Bought b2 = nearestFreeBlock(land, frame, p3);
         boolean sound2 = b2 != null && soundBlock(land, frame, b2);
+        boolean joins2 = b2 != null && joinsStreets(p3, b2, frame);
         int ownedBefore2 = d.owned();
         int boughtMonth2 = h.last();
+        // The control, planned and not bought: the nearest block 2c took before the market's rule was followed (wholly unowned), whose ground in an open cell touches none of the district's streets.
+        Bought lock = nearestLandlockedBlock(land, frame, p3);
+        DistrictPlan.Input lockIn = m.planInput(d);
+        int lockMarked = lock == null ? 0 : markBought(lockIn, lock, boughtMonth2);
+        DistrictPlan pc = lock == null ? null : DistrictPlan.make(lockIn);
+        int lockTaken = pc == null ? 0 : pc.strays - p3.strays, lockKept = pc == null ? 0 : pc.boughtStreets - p3.boughtStreets;
+        int lockCells = pc == null ? 0 : pc.boughtCells - p3.boughtCells;
         if (b2 != null) land.extend(new LandParcel(-5, 1, 0, land.level(), b2.x0(), b2.y0(), b2.x1(), b2.y1(), null, null, null, 0, 0), boughtMonth2, 0);
         boolean dated2 = land.purchases().get(land.purchases().size() - 1).month() == boughtMonth2 && boughtMonth2 > boughtMonth1;
         h.run(b2 == null ? 0 : b2.dry() / each);
@@ -1366,12 +1403,14 @@ public class MapCheck {
                 spill == null ? -1 : spill.nearest(land.siteX(), land.siteY()), b1 == null ? -1 : b1.nearest(land.siteX(), land.siteY()),
                 b2 == null ? -1 : b2.nearest(land.siteX(), land.siteY()));
         out.printf("      S1 (month %d): %,d houses, %,d cells free, the plan places %,d; first block %s bought in month %d, %,d dry plots (owned %,d -> %,d);"
-                + " S2: %,d houses, the plan places %,d, %,d of S1's moved%n", month1, count1, free1, p1.buildings, b1 == null ? "none" : "[" + b1.x0() + "," + b1.x1() + ") x ["
-                + b1.y0() + "," + b1.y1() + ")", boughtMonth1, b1 == null ? 0 : b1.dry(), ownedBefore1, ownedAfter1, count2, p2.buildings, moved12);
+                + " S2: %,d houses, the plan places %,d, %,d of S1's moved%n", month1, count1, free1, p1.buildings, describe(b1), boughtMonth1, b1 == null ? 0 : b1.dry(),
+                ownedBefore1, ownedAfter1, count2, p2.buildings, moved12);
         out.printf("      S3 (month %d, full): %,d houses, %,d cells free, the plan places %,d; second block %s bought in month %d, %,d dry plots (owned %,d -> %,d);"
                 + " S4 (month %d): %,d houses, the plan places %,d, %,d of S3's %,d moved, %,d new ones on the second block%n", month3, count3, free3, p3.buildings,
-                b2 == null ? "none" : "[" + b2.x0() + "," + b2.x1() + ") x [" + b2.y0() + "," + b2.y1() + ")", boughtMonth2, b2 == null ? 0 : b2.dry(), ownedBefore2,
-                ownedAfter2, h.last(), count4, p4.buildings, moved34, s3.size(), onNew);
+                describe(b2), boughtMonth2, b2 == null ? 0 : b2.dry(), ownedBefore2, ownedAfter2, h.last(), count4, p4.buildings, moved34, s3.size(), onNew);
+        out.printf("      the control, planned as bought in month %d and not bought: the nearest block wholly unowned with both buckets whose ground in an open cell touches none of the district's streets (the largest side to have one), %s;"
+                + " %,d of its plots marked bought, %,d cell layings on it, %,d street plots laid there, %,d taken up (strays), %,d kept (the plan's boughtStreets %,d, %,d at S3)%n", boughtMonth2, describe(lock),
+                lockMarked, lockCells, lockTaken + lockKept, lockTaken, lockKept, pc == null ? 0 : pc.boughtStreets, p3.boughtStreets);
 
         // The ground bought inside the cells already open (FX9): of each block's dry interior plots, those in cells open before it was bought and those in cells closed, and how many of each a plan builds on.
         int[] on3 = builtOn(p1, p3, b1, frame), off3 = builtOn(p1, p3off, b1, frame);
@@ -1390,14 +1429,15 @@ public class MapCheck {
         check("fixture: another district has a block bought in it, of whole blocks, wholly unowned, at least half dry, and room for the houses a full district cannot take", soundSpill && spillRoom);
         check("fixture: the district holds some houses and has room to spare, and its plan places every one of them",
                 count1 > 0 && free1 >= each && s1.size() == count1 && p1.overflowCount() == 0);
-        check("fixture: the first block is of whole blocks of the land's level, inside the frame, wholly unowned, at least half dry", sound1);
-        check("fixture: the first block, bought between months (dated the month that ran), adds its dry plots to the district's owned ground and the month after it takes houses",
+        check("fixture: the first block is of whole blocks of the land's level, inside the frame, not wholly owned (as the market sells a block that holds plots the city owns: only its unowned plots are bought and counted), its unowned part at least half dry", sound1);
+        check("fixture: the first block, bought between months (dated the month that ran), adds its unowned dry plots to the district's owned ground and the month after it takes houses",
                 b1 != null && dated1 && ownedAfter1 - ownedBefore1 == b1.dry() && count2 > count1 && s2.size() > s1.size());
         check("a district that is not full and buys land inside itself keeps what stands where it stands: every box of the plan before stands in the plan after (" + s1.size() + " of them, "
                 + moved12 + " moved)", moved12 == 0 && s1.size() > 0);
         check("fixture: the district is full - it takes no house in the month that follows, another district takes them all", free3 < each && fullTakesNone && s3.size() > s2.size());
-        check("fixture: the second block is of whole blocks of the land's level, inside the frame, wholly unowned, at least half dry", sound2);
-        check("fixture: the second block, bought between months, adds its dry plots to the district's owned ground, and the full district takes houses again (the room the land added)",
+        check("fixture: the second block is of whole blocks of the land's level, inside the frame, not wholly owned (as the market sells a block that holds plots the city owns: only its unowned plots are bought and counted), its unowned part at least half dry", sound2);
+        check("fixture: each block's unowned ground in an open cell lies beside the district's standing streets (as ground a city buys beside its own streets)", joins1 && joins2);
+        check("fixture: the second block, bought between months, adds its unowned dry plots to the district's owned ground (not those the city owned already), and the full district takes houses again (the room the land added)",
                 b2 != null && dated2 && ownedAfter2 - ownedBefore2 == b2.dry() && count4 > count3 && ownedAfter2 > ownedBefore2);
         check("a district that is full and buys land inside itself keeps what stands where it stands: every box of the plan before stands in the plan after (" + s3.size() + " of them, "
                 + moved34 + " moved)", moved34 == 0 && s3.size() > 0);
@@ -1411,8 +1451,36 @@ public class MapCheck {
         check("fixture: the second bought block has open and newly occupied closed cells", open4 && on4[2] > 0);
         check("...the same for the second block (S4): " + on4[1] + " of " + on4[0] + " in the open cells against " + on4[3] + " of " + on4[2] + " in the closed, at least 3/4 of the closed share; with the streets off it is not: "
                     + off4[1] + " of " + off4[0] + " against " + off4[3] + " of " + off4[2], on4[2] > 0 && openShareHolds(on4) && !openShareHolds(off4));
+        check("fixture: a block of whole blocks of the land's level, wholly unowned, half dry, with open and closed cells (what 2c bought before) has its ground in an open cell touching none of the district's streets"
+                + (lock == null ? "" : " (" + (lock.x1() - lock.x0()) + " plots across)") + ", and the plan of the district with it bought has its ground marked bought",
+                lock != null && lockMarked == lock.freshPlots() && lockMarked == (long) (lock.x1() - lock.x0()) * (lock.y1() - lock.y0()) && pc != null && pc.boughtCells > p3.boughtCells);
+        check("...ground bought in an open cell that touches none of the district's streets gets no streets of its own: pruneApart takes up every plot cellsOnGrown laid there (land with no road to it is not built up): "
+                + (lockTaken + lockKept) + " plots laid, " + lockTaken + " taken up, " + lockKept + " kept (boughtStreets " + (pc == null ? 0 : pc.boughtStreets) + " against " + p3.boughtStreets + " at S3)",
+                pc != null && lockTaken + lockKept > 0 && pc.boughtStreets == p3.boughtStreets);
         check("the full district holds its houses at home: at S3 the plan places more of them with the streets on than with FX6's way (" + p3.buildings + " against " + p3off.buildings + " of " + count3 + ")",
                 p3.buildings > p3off.buildings);
+    }
+
+    /** A block as the printed lines say it: its rectangle, and how many of its plots are unowned (the ones bought) and how many the city owned already. */
+    static String describe(Bought b) {
+        if (b == null) return "none";
+        return "[" + b.x0() + "," + b.x1() + ") x [" + b.y0() + "," + b.y1() + ") (" + String.format("%,d", b.freshPlots()) + " unowned plots, " + String.format("%,d", b.ownedPlots()) + " owned already)";
+    }
+
+    /** Marks a block's unowned plots bought in a month on a plan's input, as the city's purchase of it would (owned, dated); the plots marked. The land is not touched. */
+    static int markBought(DistrictPlan.Input in, Bought b, int month) {
+        if (in.boughtAt == null) in.boughtAt = new int[DistrictPlan.AREA];
+        int n = 0;
+        for (long y = b.y0(); y < b.y1(); y++) {
+            for (long x = b.x0(); x < b.x1(); x++) {
+                int p = (int) ((y - in.y0) * DistrictPlan.FRAME + (x - in.x0));
+                if (!b.isFresh(x, y) || in.owned[p]) continue;
+                in.owned[p] = true;
+                in.boughtAt[p] = month;
+                n++;
+            }
+        }
+        return n;
     }
 
     /** The plan of d drawn fresh from the map with the streets on the ground bought inside an open cell off (FX6's way, DistrictPlan.streetsOnBought), the switch set back after. */
@@ -1426,8 +1494,8 @@ public class MapCheck {
     }
 
     /**
-     * Of block b's dry plots in the cells' interiors (neither on a cell's west column nor its north row), {those in cells open in `before`, of them those a box of `after` covers,
-     * those in cells closed in `before`, of them those a box of `after` covers}.
+     * Of block b's fresh dry plots (those the city did not own when it was chosen) in the cells' interiors (neither on a cell's west column nor its north row),
+     * {those in cells open in `before`, of them those a box of `after` covers, those in cells closed in `before`, of them those a box of `after` covers}.
      */
     static int[] builtOn(DistrictPlan before, DistrictPlan after, Bought b, DistrictPlan.Input frame) {
         int[] n = new int[4];
@@ -1440,7 +1508,8 @@ public class MapCheck {
         }
         for (int y = (int) (b.y0() - frame.y0); y < b.y1() - frame.y0; y++) {
             for (int x = (int) (b.x0() - frame.x0); x < b.x1() - frame.x0; x++) {
-                if (x % DistrictPlan.CELL == 0 || y % DistrictPlan.CELL == 0 || !World.dry(frame.terrain[y * DistrictPlan.FRAME + x])) continue;
+                if (x % DistrictPlan.CELL == 0 || y % DistrictPlan.CELL == 0 || !World.dry(frame.terrain[y * DistrictPlan.FRAME + x])
+                        || !b.isFresh(frame.x0 + x, frame.y0 + y)) continue;
                 int c = (x / DistrictPlan.CELL) + (y / DistrictPlan.CELL) * DistrictPlan.CELLS_A_SIDE;
                 int at = before.cellKind[c] != DistrictPlan.CLOSED ? 0 : 2;
                 n[at]++;
@@ -1485,22 +1554,65 @@ public class MapCheck {
         return nearestFreeBlock(land, frame, null);
     }
 
-    /** Both sides of the FX9 comparison must be dry interior ground before the purchase. */
+    /** nearestBlock()'s read of the streets: a block's fresh ground in an open cell may lie beside the standing streets or not, and either goes. */
+    static final int ANY_STREETS = 0, BESIDE_STREETS = 1, APART_FROM_STREETS = -1;
+
+    /**
+     * The block a city buys inside a district that has a plan standing (FX9's comparison), as the land market sells it (LandMarket offers and prices a draft by its
+     * unowned plots; a block is skipped only when none is unowned): a whole block of the land's level that is not wholly owned, so its plots the city owns
+     * already are not bought again, and every count taken over its fresh plots alone (the plots unowned now). With no plan (the spill block) it is
+     * wholly unowned, as nearestFreeBlock(land, frame) has it.
+     * Both buckets of builtOn() must be non-empty, and the fresh ground in an open cell must join the district's standing streets (joinsStreets()).
+     */
     static Bought nearestFreeBlock(CityLand land, DistrictPlan.Input frame, DistrictPlan before) {
-        long b = 1L << land.level(), side = (BOUGHT_PLOTS + b - 1) / b * b;
+        return nearestBlock(land, frame, before, before != null, before != null ? BESIDE_STREETS : ANY_STREETS, boughtSide(land));
+    }
+
+    /** The side of a bought block: BOUGHT_PLOTS rounded up to whole blocks of the land's level. */
+    static long boughtSide(CityLand land) {
+        long b = 1L << land.level();
+        return (BOUGHT_PLOTS + b - 1) / b * b;
+    }
+
+    /**
+     * The block 2c bought before the market's rule was taken as it is sold (wholly unowned), but one whose ground in an open cell touches none of the district's
+     * streets: the control of what a district does with land bought in a cell it has no road to. Of the bought side (boughtSide()) where the ground has such a block,
+     * else of the largest smaller side of whole blocks of the level (the city's own ground leaves a gap to the open cells beside it where none that size lies apart).
+     */
+    static Bought nearestLandlockedBlock(CityLand land, DistrictPlan.Input frame, DistrictPlan before) {
+        long b = 1L << land.level();
+        for (long side = boughtSide(land); side >= 2 * b; side -= b) {
+            Bought c = nearestBlock(land, frame, before, false, APART_FROM_STREETS, side);
+            if (c != null) return c;
+        }
+        return null;
+    }
+
+    /**
+     * The nearest block of whole land blocks inside a frame, `side` plots across (boughtSide(): BOUGHT_PLOTS at the least, rounded up to the level's blocks), whose fresh part is at least half dry
+     * and, with a plan before it, has dry interior plots in cells open before it and in cells closed. `asSold`: the block may hold plots the city owns, one wholly
+     * owned being skipped; otherwise it must lie wholly unowned. `streets`: whether its fresh ground in an open cell must lie beside the standing streets, or must not.
+     * Nearest first - its nearest plot to the founding site, then its middle. Null when there is none.
+     */
+    static Bought nearestBlock(CityLand land, DistrictPlan.Input frame, DistrictPlan before, boolean asSold, int streets, long side) {
+        long b = 1L << land.level();
         long sx = land.siteX(), sy = land.siteY();
+        boolean[] owned = asSold ? ownedOver(land, frame) : null;
         Bought best = null;
         double bestNear = 0, bestMid = 0;
         for (long y0 = Math.floorDiv(frame.y0 + b - 1, b) * b; y0 + side <= frame.y0 + DistrictPlan.SIDE; y0 += b) {
             for (long x0 = Math.floorDiv(frame.x0 + b - 1, b) * b; x0 + side <= frame.x0 + DistrictPlan.SIDE; x0 += b) {
                 long x1 = x0 + side, y1 = y0 + side;
-                if (land.grid().owned(x0, y0, x1, y1) != 0) continue;
-                int dry = dryPlots(frame, x0, y0, x1, y1);
-                if (2L * dry < side * side) continue;
-                Bought c = new Bought(x0, y0, x1, y1, dry);
+                long unowned = land.grid().unowned(x0, y0, x1, y1);
+                if (asSold ? unowned == 0 : unowned != side * side) continue;
+                java.util.BitSet fresh = asSold && unowned < side * side ? freshOf(owned, frame, x0, y0, x1, y1) : null;
+                int dry = freshDry(frame, x0, y0, x1, y1, fresh);
+                if (2L * dry < unowned) continue;
+                Bought c = new Bought(x0, y0, x1, y1, dry, fresh);
                 if (before != null) {
                     int[] sides = builtOn(before, before, c, frame);
                     if (sides[0] == 0 || sides[2] == 0) continue;
+                    if (streets != ANY_STREETS && joinsStreets(before, c, frame) != (streets == BESIDE_STREETS)) continue;
                 }
                 double near = c.nearest(sx, sy), mid = Math.hypot((x0 + x1) / 2.0 - sx, (y0 + y1) / 2.0 - sy);
                 if (best == null || near < bestNear || near == bestNear && mid < bestMid) {
@@ -1513,6 +1625,56 @@ public class MapCheck {
         return best;
     }
 
+    /** The plots of the frame the city owns now (some holding of the land's grid), row by row over the frame as its terrain is. */
+    static boolean[] ownedOver(CityLand land, DistrictPlan.Input frame) {
+        boolean[] owned = new boolean[DistrictPlan.AREA];
+        for (int y = 0; y < DistrictPlan.FRAME; y++) {
+            for (int x = 0; x < DistrictPlan.FRAME; x++) owned[y * DistrictPlan.FRAME + x] = land.grid().owned(frame.x0 + x, frame.y0 + y, frame.x0 + x + 1, frame.y0 + y + 1) != 0;
+        }
+        return owned;
+    }
+
+    /** Which plots of [x0, x1) x [y0, y1) are unowned (owned[] as ownedOver() has it), row by row over the block. */
+    static java.util.BitSet freshOf(boolean[] owned, DistrictPlan.Input frame, long x0, long y0, long x1, long y1) {
+        java.util.BitSet fresh = new java.util.BitSet((int) ((x1 - x0) * (y1 - y0)));
+        for (long y = y0; y < y1; y++) {
+            for (long x = x0; x < x1; x++) {
+                if (!owned[(int) ((y - frame.y0) * DistrictPlan.FRAME + (x - frame.x0))]) fresh.set((int) ((y - y0) * (x1 - x0) + (x - x0)));
+            }
+        }
+        return fresh;
+    }
+
+    /** The dry plots among a block's fresh ones (fresh as Bought.fresh has it: null for all of them). */
+    static int freshDry(DistrictPlan.Input frame, long x0, long y0, long x1, long y1, java.util.BitSet fresh) {
+        int n = 0;
+        for (long y = y0; y < y1; y++) {
+            for (long x = x0; x < x1; x++) {
+                if (fresh != null && !fresh.get((int) ((y - y0) * (x1 - x0) + (x - x0)))) continue;
+                if (World.dry(frame.terrain[(int) ((y - frame.y0) * DistrictPlan.FRAME + (x - frame.x0))])) n++;
+            }
+        }
+        return n;
+    }
+
+    /**
+     * Whether a block's fresh ground in an open cell (open in `before`) joins the district's standing streets: some fresh dry plot of such a cell lies four-adjacent to a
+     * street plot of `before` (DistrictPlan.isStreet(), a plot of the frame as its terrain is). Ground a city buys beside its streets can be given streets that join
+     * them; ground in a cell with no street to it cannot (pruneApart()).
+     */
+    static boolean joinsStreets(DistrictPlan before, Bought b, DistrictPlan.Input frame) {
+        int f = DistrictPlan.FRAME;
+        for (long y = b.y0(); y < b.y1(); y++) {
+            for (long x = b.x0(); x < b.x1(); x++) {
+                int fx = (int) (x - frame.x0), fy = (int) (y - frame.y0), p = fy * f + fx;
+                if (!b.isFresh(x, y) || !World.dry(frame.terrain[p])) continue;
+                if (before.cellKind[fx / DistrictPlan.CELL + fy / DistrictPlan.CELL * DistrictPlan.CELLS_A_SIDE] == DistrictPlan.CLOSED) continue;
+                if (fx > 0 && before.isStreet(p - 1) || fx + 1 < f && before.isStreet(p + 1) || fy > 0 && before.isStreet(p - f) || fy + 1 < f && before.isStreet(p + f)) return true;
+            }
+        }
+        return false;
+    }
+
     /** The dry plots of [x0, x1) x [y0, y1) in the world, read from a plan input's ground (the world's, over the frame). */
     static int dryPlots(DistrictPlan.Input frame, long x0, long y0, long x1, long y1) {
         int n = 0;
@@ -1522,15 +1684,30 @@ public class MapCheck {
         return n;
     }
 
-    /** Whether a block about to be bought is what 2c says it is, checked on the land as it stands: whole blocks of its level, inside the frame, wholly unowned, at least half dry. */
+    /**
+     * Whether a block about to be bought is what 2c says it is, checked on the land as it stands: whole blocks of its level, inside the frame, not wholly owned (the market
+     * sells a block that holds plots the city owns; only its unowned plots are bought and counted), the plots it carries as fresh the ones unowned now, and that fresh part at
+     * least half dry, its dry count the fresh dry plots'.
+     */
     static boolean soundBlock(CityLand land, DistrictPlan.Input frame, Bought b) {
         long blocks = 1L << land.level();
         boolean whole = b.x0() % blocks == 0 && b.y0() % blocks == 0 && b.x1() % blocks == 0 && b.y1() % blocks == 0
                 && (b.x1() - b.x0()) >= BOUGHT_PLOTS && (b.y1() - b.y0()) >= BOUGHT_PLOTS;
         boolean inside = b.x0() >= frame.x0 && b.y0() >= frame.y0 && b.x1() <= frame.x0 + DistrictPlan.SIDE && b.y1() <= frame.y0 + DistrictPlan.SIDE;
-        boolean free = land.grid().owned(b.x0(), b.y0(), b.x1(), b.y1()) == 0;
-        boolean dry = b.dry() == dryPlots(frame, b.x0(), b.y0(), b.x1(), b.y1()) && 2L * b.dry() >= (b.x1() - b.x0()) * (b.y1() - b.y0());
-        return whole && inside && free && dry;
+        if (!whole || !inside) return false;
+        boolean[] owned = ownedOver(land, frame);
+        int fresh = 0;
+        boolean carried = true;
+        for (long y = b.y0(); y < b.y1(); y++) {
+            for (long x = b.x0(); x < b.x1(); x++) {
+                boolean unowned = !owned[(int) ((y - frame.y0) * DistrictPlan.FRAME + (x - frame.x0))];
+                if (unowned) fresh++;
+                carried &= unowned == b.isFresh(x, y);
+            }
+        }
+        boolean notWhollyOwned = fresh > 0 && land.grid().unowned(b.x0(), b.y0(), b.x1(), b.y1()) == fresh;
+        int dry = freshDry(frame, b.x0(), b.y0(), b.x1(), b.y1(), b.fresh());
+        return notWhollyOwned && carried && b.freshPlots() == fresh && b.dry() == dry && 2L * dry >= fresh;
     }
 
 
