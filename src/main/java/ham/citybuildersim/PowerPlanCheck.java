@@ -50,6 +50,8 @@ import java.util.Set;
  *      plans a large load from its signed request on its ramp schedule (ERCOT's 2025 Long-Term Load Forecast adds a large load with a signed agreement
  *      and a financial commitment on its ramp schedule, as a 2023 Texas law requires); here a works on site is that request. REV-PW3g (item 6) read
  *      LongPlaytest's m116-m150 power served at 0.57-0.61 as a forecast blind to such a works; PF1's trace found it already carried, and this pins it.
+ *   9a. A SMALL TOWN IN 1906 orders small steam stations, through the ordinary dated catalogue and automatic order path;
+ *       with that row absent the same town orders the 86 MW Oil-Fired Plant (PW9). The station's lead closes the actual gap before diesel's year.
  *  10. HOW OFTEN EACH FIRES: each suggestion counts once, on its own counter (BuildAdvice.RESERVE_ORDERS, SPREAD_ORDERS);
  *      the default run's counts are LongPlaytest's line, "the power planner (PW3)".
  */
@@ -1384,6 +1386,53 @@ public final class PowerPlanCheck {
         check(String.format("the same town without the mill orders nothing at any of the %d steps", steps), steps > 0 && twinNothing);
     }
 
+    /** PW9: a town of three thousand, short at the seasonal peak, four years before diesel is known. */
+    static void earlyTown(Path root) {
+        out.println("--- 9a. a small firm plant for a 1906 town (PW9) ---");
+        Game g = WorksFinanceCheck.founded(root, "small-steam-1906", new String[][] {
+                {"House", "900"}, {"Construction Depot", "5"}, {"Water Treatment Plant", "1"}, {"Commercial Bank", "1"}});
+        quietly(() -> g.simulateMonths(ResearchCatalog.knownFrom("1906") - g.getMonth()));
+        WorksFinanceCheck.place(g, 3_000);
+        g.getBusinessInvestment().restorePopulationHistory(java.util.List.of(3_000.0, 3_000.0));
+        g.getHistorySave().getPopulation().clear();
+        g.getHistorySave().getMonth().clear();
+        g.setCashForTest(1e12);
+        g.getAutoBuilder().setCashAnyway(true, null);
+        g.getAutoBuilder().setSlack(0, null);
+        BuildingManager bm = g.getBuildingManager();
+        g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2);
+        // Restore the real date gates: founded() lends other cases an early discovery of wind.
+        bm.setTemplateKnown(t -> t.getCategory() != BuildingType.ELECTRICITY || t.knownAt(g.getMonth()));
+        bm.setTemplateKnownIn((t, months) -> t.getCategory() != BuildingType.ELECTRICITY || t.knownAt(g.getMonth() + months));
+        // A small but real seasonal shortfall, independent of whether the missing row exists.
+        drawRatio(g, BuildAdvice.NOW, PowerDispatch.PLAN_PEAK_HOUR / PowerDispatch.PLAN_PEAK_SEASON * 1.01);
+        double[] before = BuildAdvice.supplyDemand(g, POWER, Map.of(), BuildAdvice.NOW);
+        BuildingsTemplate small = plant(g, "Small Steam Station"), oil = plant(g, "Oil-Fired Plant"), diesel = plant(g, DIESEL);
+        check("fixture: 1906, three thousand people, seasonal power short now, oil known and diesel not yet known",
+                CityCalendar.yearOf(g.getMonth()) == 1906 && g.getPopulationManager().getPopulation() == 3_000 && BuildAdvice.lacksNow(g, POWER)
+                        && bm.isTemplateKnown(oil) && !bm.isTemplateKnown(diesel));
+        bm.setTemplateKnown(t -> t != small && (t.getCategory() != BuildingType.ELECTRICITY || t.knownAt(g.getMonth())));
+        bm.setTemplateKnownIn((t, months) -> t != small && (t.getCategory() != BuildingType.ELECTRICITY || t.knownAt(g.getMonth() + months)));
+        BuildAdvice.Suggestion old = suggest(g);
+        check("without the small station the same town orders the 86 MW Oil-Fired Plant (" + named(old) + ")",
+                old != null && old.template() == oil);
+        bm.setTemplateKnown(t -> t.getCategory() != BuildingType.ELECTRICITY || t.knownAt(g.getMonth()));
+        bm.setTemplateKnownIn((t, months) -> t.getCategory() != BuildingType.ELECTRICITY || t.knownAt(g.getMonth() + months));
+        BuildAdvice.Suggestion s = suggest(g);
+        check("the 1906 town orders the Small Steam Station through the normal planner (" + named(s) + ")",
+                small != null && s != null && s.template() == small && s.count() > 0 && s.closes());
+        if (small == null || s == null || s.template() != small) return;
+        double[] after = BuildAdvice.supplyDemand(g, POWER, Map.of(small, s.count()), s.ahead());
+        check("the small order closes the peak-hour gap and is quoted before diesel's year",
+                before[0] < before[1] && after[0] >= after[1]
+                        && g.getMonth() + s.lead() < ResearchCatalog.knownFrom(diesel.getSinceText()));
+        boolean[] placed = {false};
+        quietly(() -> placed[0] = g.getAutoBuilder().placeForTest(g, POWER, s, s.count()));
+        check("the automatic path actually places the small stations, with no Oil-Fired Plant on site",
+                placed[0] && bm.getStack(small) != null && bm.getStack(small).getUnderConstruction() == s.count()
+                        && (bm.getStack(oil) == null || bm.getStack(oil).getUnderConstruction() == 0));
+    }
+
     public static void main(String[] args) throws Exception {
         java.util.Locale.setDefault(java.util.Locale.CANADA);
         Path root = TempDirs.create("powerplancheck");
@@ -1402,6 +1451,7 @@ public final class PowerPlanCheck {
         holds(root);
         holdsPower(root);
         millUnderConstruction(root);
+        earlyTown(root);
         out.println("--- 10. how often each fires ---");
         out.printf("this harness's suggestions: reserve test %d, spread %d (the default run's: LongPlaytest, \"the power planner (PW3)\")%n",
                 BuildAdvice.RESERVE_ORDERS.get(), BuildAdvice.SPREAD_ORDERS.get());
