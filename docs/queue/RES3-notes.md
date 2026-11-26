@@ -535,6 +535,25 @@ reviewer's line.
   crowded expectation 1 - completed is now 1 - completed + boarded. Green
   on (2): HousingMarketCheck, HousingChoiceCheck, Village1900Check,
   SaveFileCheck, CreditCrunchCheck.
+- HousingDoorCheck's boarders, caused (08a0eae22): the town's window ends
+  at m900 with no whole structure vacant, so a coda's fire leaves one
+  structure in four of every housing class standing (1,249 taken occupied,
+  their ground released) and plays six months: 2,049.786 households that
+  could pay boarded with housed families at m901, every month of the six
+  with every boarder counted overcrowded and the money audit and the
+  households' cash identity exact, none doorless (a quarter of every class,
+  415 structures, had left every payer a door or a share past the line).
+  HousingDoorCheck known red only (MC1). The pick's MonetaryCheck green,
+  OrderDoorCheck main's known red only; TimingCheck is the box's.
+- The ensemble on the boarding (RES3-board-20261126, 9c9bd548d, against
+  0.9.208.md), committed as docs/ensemble/RES3.md: every hard criterion
+  green, M1 0 audit months and F1 0 of 16 runs in each of the five
+  policies; AUTO2 inflation 2.70% (13 of 16 in band), final population
+  7.82 million against 6.24 million. The information criterion T2 is below
+  75% of main's in ZERO_HOT (8,675 against 15,883), SHOCK (222,388 against
+  533,324) and HIGH (71,644 against 182,116), as on the merge and the
+  lodging mend before boarding (SHOCK the same 222,388): RES3's housing
+  model on the short-run towns, not the boarders.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
