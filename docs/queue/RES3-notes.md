@@ -783,6 +783,28 @@ reviewer's line.
   departed boarder or a lost host, at most 613.41 a month; 613.41 owed back
   through the m901 save and load); DenominationCheck known red only (six of
   main's seven lines, 1e-9 apart).
+- REV-RES3b on d713bb421: one P1, real against the code. The next
+  clearing's housing budget (HouseholdBalance.strikeHousingBudgets()) took
+  back from the settlement's afterFixed only the landlord's bill
+  (chargedRent), where since bac87017a the settlement counts the board in
+  the rent line: the board was left a fixed expense beside the rent, and a
+  boarder's budget held down by it (5 for housing with 4 of board a budget
+  of 1), so an unchanged payer could lodge or be priced out of a door.
+  Mended: the board the settlement struck (boardStruck()) is taken back
+  with the rent, the live and the projected alike, as the housing rent it
+  now is. Caused in HousingMarketCheck (boardWithTheRents()): after the
+  board month, the boarder main's arithmetic holds down most
+  (COUPLE:UNSKILLED:YOUNG, by 0.0166 against its board of 0.0169, the rest
+  masked by the projected fixed expenses' max()), its next budget up by no
+  more than its board; the one-House town's vacant House, asking 0.05598,
+  is not bought whole at half that lift short of the ask (main's
+  arithmetic: 0 whole doors) and is bought whole with the board added back.
+- On these mends: HousingMarketCheck, SaveFileCheck, ScaleCheck,
+  Village1900Check, MonetaryCheck and BankCheck green; HousingDoorCheck
+  known red only (MC1; the board owed in 6 of 6 months with boarders,
+  billed and credited at the next settlement in 5 of 5, at most 613.41 a
+  month, 613.41 owed back through the m901 save and load);
+  DenominationCheck known red only (six of main's seven lines, 1e-9 apart).
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
