@@ -1978,7 +1978,14 @@ public final class BuildAdvice {
                                   boolean maintain, double landLeft) {
         for (Map.Entry<BuildingsTemplate, Integer> row : firm.entrySet()) {
             BuildingsTemplate u = row.getKey();
-            double one = row.getValue() + game.quoteBuild(u, 1).months;
+            Game.BuildQuote first = game.quoteBuild(u, 1);
+            // A future menu row must pass the same first-unit ground and funding screen as an order now.
+            // Otherwise an unaffordable future plan can veto the cash-funded partial step that the pass can place.
+            if (row.getValue() > 0) {
+                AutoBuilder.Ground ground = AutoBuilder.groundFor(game, u, 1);
+                if (ground == null || !game.getAutoBuilder().pays(game, ground.cash() + first.total, false)) continue;
+            }
+            double one = row.getValue() + first.months;
             if (u == d.t() || !(one < d.lead())) continue;
             double monthly = Double.isNaN(one) ? 0 : Math.ceil(Math.max(0, one));
             if (late && !seasonalShort(game, m, dates.openBy(monthly), monthly)) return false;
