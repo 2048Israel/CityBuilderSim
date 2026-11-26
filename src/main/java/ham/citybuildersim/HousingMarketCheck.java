@@ -1452,6 +1452,31 @@ public final class HousingMarketCheck {
             parted=Math.max(parted,Math.max(Math.abs(c.disposable-r.disposable),Math.max(Math.abs(c.afterFixed-r.afterFixed),Math.abs(c.planned-r.planned))));}
         check("fixture: the month saved billed board ("+marketOf(again).boardPaid()+")",marketOf(again).boardPaid()>0);
         near("a save and load re-plans on the settled board: every household's income, rent line and plan the live city's, cell by cell",parted,0);
+        // The next clearing's housing budget (REV-RES3b on d713bb421): the board is the housing rent it now is, taken back
+        // with the landlord's bill (HouseholdBalance.strikeHousingBudgets()), where main's arithmetic, the landlord's bill
+        // alone, left it a fixed expense beside the rent and a boarder's budget held down by it.
+        var struck=mb.boardStruck();
+        var now=hb.strikeHousingBudgets(back.getFamilies(),back.getHouseholds(),0,c->mb.rentFor(c.key(),c.households()),c->Double.NaN);
+        var asMain=hb.strikeHousingBudgets(back.getFamilies(),back.getHouseholds(),0,c->mb.rentFor(c.key(),c.households())-struck.out(c),c->Double.NaN);
+        WorkingHousehold bound=null;double lift=0;
+        for(String cell:mb.boardPaidByCell().keySet()){double d=now.get(cell).budget()-asMain.get(cell).budget();
+            if(hb.cellByKey(cell) instanceof WorkingHousehold c&&d>lift){bound=c;lift=d;}}
+        check("fixture: a boarder whose next housing budget main's arithmetic holds down ("+(bound==null?"none":bound.key())+", by "+lift+")",bound!=null&&lift>0);
+        if(bound==null)return;
+        check("the next clearing's budget takes the board back with the rent, up by no more than the board ("+struck.out(bound)+")",lift<=struck.out(bound)+1e-12);
+        Game g0=oneHouseTown("res3-board-boundary");var m0=marketOf(g0);
+        String key=bound.key();int size=bound.shape().size(),tier=bound.tier().ordinal();boolean young=bound.stage()==AdultStage.YOUNG;
+        m0.restore(null);m0.clear(g0,List.of(new HousingChoice.Demand(key,1,size,0,false,tier,young,1e6)));
+        var door=m0.offers().stream().filter(o->o.count()>0).findFirst().orElse(null);
+        check("fixture: the one House of a town stands vacant to that boarder",door!=null);
+        if(door==null)return;
+        double ask=door.rent()+door.recurring();double[] whole=new double[2];
+        for(int k=0;k<2;k++){m0.restore(null);
+            var r=m0.clear(g0,List.of(new HousingChoice.Demand(key,1,size,0,false,tier,young,ask+(k==0?-lift:lift)/2)));
+            whole[k]=r.leases().stream().filter(l->l.cell().equals(key)).mapToDouble(l->l.funding().full()).sum();}
+        check("at the door's ask ("+ask+"), the budget main's arithmetic strikes, half that lift short, cannot buy the door ("+whole[0]+" whole doors)",whole[0]<1);
+        near("...the board added back buys it",whole[1],1);
+        m0.restore(null);
     }
     /**
      * REV-RES3b on 19fcb37f0, P1 2, played through (REV-RES3b on 0925f4661: its fixture settled the original city, not
