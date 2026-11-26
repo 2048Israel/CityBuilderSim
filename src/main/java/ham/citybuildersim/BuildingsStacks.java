@@ -658,6 +658,7 @@ public class BuildingsStacks {
         if (n < 0 && !mayRemove.test(-n)) throw new IllegalStateException("Housing titles prevent removal");
         long before = quantity;
         quantity += n;
+        BuildingManager.postsMoved();
         if (quantity < before) lowerUnfitted(before);
         physicalChanged.accept(this);
     }
@@ -749,6 +750,7 @@ public class BuildingsStacks {
 
         long startedConstruction = underConstruction + finished;
         quantity += finished;
+        if (finished != 0) BuildingManager.postsMoved();
         if (finished > 0) physicalChanged.accept(this);
         constructionProgress = underConstruction > 0 ? remainingOutput : 0;
         lastFinished = finished;
@@ -882,6 +884,7 @@ public class BuildingsStacks {
         if (!mayRemove.test(Math.min(quantity, amount))) throw new IllegalStateException("Housing titles prevent removal");
         long before = quantity;
         quantity = Math.max(quantity - amount, 0);
+        BuildingManager.postsMoved();
         if (quantity < before) lowerUnfitted(before);
         physicalChanged.accept(this);
     }
@@ -901,6 +904,7 @@ public class BuildingsStacks {
     public void increaseQuantity(long amount) {
         long before = quantity;
         this.quantity += amount;
+        BuildingManager.postsMoved();
         if (quantity < before) lowerUnfitted(before);
     }
 
