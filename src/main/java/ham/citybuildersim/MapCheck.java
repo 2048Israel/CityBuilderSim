@@ -4430,6 +4430,19 @@ public class MapCheck {
         }
     }
 
+    /** The raster's buildings against the model's, type by type: {the sum of the differences, the model's buildings the map draws, the raster's}. */
+    static long[] drawnOneForOne(Raster r, BuildingVisual.Type[] types, long[] model) {
+        long off = 0, modelN = 0, drawnN = 0;
+        for (int t = 0; t < types.length; t++) {
+            if (types[t] == null || !types[t].drawn()) continue;
+            long want = t < model.length ? model[t] : 0;
+            modelN += want;
+            drawnN += r.buildings[t];
+            off += Math.abs(want - r.buildings[t]);
+        }
+        return new long[] { off, modelN, drawnN };
+    }
+
     /**
      * The network's rules on a map's drawn raster (0.7.88): one network but
      * where the ground parts it, no road alone, + junctions apart, every
@@ -4466,14 +4479,8 @@ public class MapCheck {
             worst = Math.max(worst, Math.abs(r.surface[k] + left[k] - want));
             sf.append(String.format("%s%s %,.1f + %,.1f of %,d", k == 1 ? "" : "; ", k == 1 ? "gravel" : k == 2 ? "paved" : "highway", r.surface[k], left[k], want));
         }
-        long off = 0, modelN = 0, drawnN = 0;
-        for (int t = 0; t < types.length; t++) {
-            if (types[t] == null || !types[t].drawn()) continue;
-            long want = t < model.length ? model[t] : 0;
-            modelN += want;
-            drawnN += r.buildings[t];
-            off += Math.abs(want - r.buildings[t]);
-        }
+        long[] one = drawnOneForOne(r, types, model);
+        long off = one[0], modelN = one[1], drawnN = one[2];
         int[] pk = m.packedCounts();
         out.printf("      %s, %d districts, every tile and a tile round them: %,d road plots in %d piece(s) (the largest %,d), %d of them the city's"
                 + " own ground joins to it; %,d alone; %,d + junctions, %d pairs nearer than %d%n", what, m.districts().size(), roadPlots, net[0], net[1],
@@ -4503,11 +4510,22 @@ public class MapCheck {
        plots of surface counted and not drawn, and the arterial's stub beyond
        the mine a piece of its own that the city's ground joins (BF1-M's
        67-plot piece and DM3-R's 1.5 plots and six buildings beyond REACH on
-       their paths). The copy here causes it on any path: the played city's
-       ground with a house for every dry plot it owns, so its plans fill and
-       lay their cells' streets across the iron field as well (built on
-       last), and the played city's road, so those streets carry surface; at
-       month 100 an iron mine is born on the field. TilePainter's THE STREET
+       their paths). The copy here causes it on any path: owned iron ground
+       with its road first (the played city's road per building: the model
+       holds no rule that decides a city's road from its buildings, and the
+       fixture town has none of its own) and then houses until the buildings
+       and the road stand on all the dry ground it owns and no further, as
+       a city the auto-builder grows stays at or under its ground
+       (AutoBuilder.overFull(), groundFor(); Game.groundUse() counts a road
+       plot as ground like a building), so its plans fill and lay their
+       cells' streets across the iron field as well (built on last) and
+       those streets carry surface; at month 100 an iron mine is born on
+       the field. It held a house for every dry plot and Jerus's whole road
+       inventory (FS6, 2026-11-25): 11.7 plots of building and road to each
+       plot owned, a city no game holds, and the map had no ground for 49 of
+       its 1,854 buildings (CityMap.packAtEdge()), the raster law's "every
+       building drawn" red on a fixture's fault, not the map's. It is drawn
+       before the birth too, one for one. TilePainter's THE STREET
        ACROSS A MINE draws the plans' streets on it across the mine, and
        TileRaster keeps their pixels inside the mine's box.
        --------------------------------------------------------------------- */
@@ -4519,16 +4537,69 @@ public class MapCheck {
         return c;
     }
 
+    /** The model's road of a kind in road types' counts (roadPlotsOf() counts their plots). */
+    static long roadCountOf(long[] model, BuildingVisual.Type[] types, int kind) {
+        long n = 0;
+        for (int t = 0; t < types.length && t < model.length; t++) if (types[t] != null && types[t].road() == kind) n += model[t];
+        return n;
+    }
+
+    /** The ground the model's buildings and road stand on, square feet: each type's own (BuildingVisual.Type.sqFt()) times its count, the sum AutoBuilder.overFull() reads in the game's terms. */
+    static double modelGround(long[] model, BuildingVisual.Type[] types) {
+        double sqFt = 0;
+        for (int t = 0; t < types.length && t < model.length; t++) if (types[t] != null) sqFt += model[t] * (double) types[t].sqFt();
+        return sqFt;
+    }
+
     /** 8d: the owned-iron fixture a mine is born on, the plans' streets on the mine's ground before and after, drawn across it, and the network on its raster. */
-    static void mineOnStreets(Game g) {
-        g = fixtureTown("mine-streets", true);
+    static void mineOnStreets(Game played) {
+        Game g = fixtureTown("mine-streets", true);
         BuildingVisual.Type[] types = g.getMapTypes();
-        long[] model = new long[types.length];
-        long ownedDry = 0;
-        for (CityMap.District d : g.getCityMap().districts()) ownedDry += d.owned();
-        model[idOf(g, "House")] = ownedDry;
-        for (int t = 0; t < types.length && t < JERUS_COUNTS.length; t++) if (types[t] != null && types[t].road() != BuildingVisual.NOT_A_ROAD) model[t] = JERUS_COUNTS[t];
+        int house = idOf(g, "House");
+        // The ground rule of a city the auto-builder grows (AutoBuilder.overFull(): the allocated ground over the owned, getLinkedAllocatedSqFt() over getLinkedOwnedSqFt()):
+        // the owned side is the land office's own figure; the model's buildings and road stand on the ground each of their types takes (BuildingVisual.Type.sqFt(), the
+        // template's land, road plots as much ground as any building: Game.groundUse() sets only highways and rail apart as runs).
+        double owned = g.getLandManager().getLinkedOwnedSqFt();
+        long[] own = g.getMapCounts(), playedCounts = played.getMapCounts();
+        boolean ownRoad = roadCountOf(own, types, BuildingVisual.GRAVEL) + roadCountOf(own, types, BuildingVisual.PAVED) + roadCountOf(own, types, BuildingVisual.HIGHWAY) > 0;
+        long playedBuildings = modelBuildings(playedCounts, types);
+        // The copy of n houses, the road its rule gives them, and the iron mine born at 100.
+        java.util.function.LongFunction<long[]> copyOf = n -> {
+            long[] c = new long[types.length];
+            c[house] = n;
+            for (int t = 0; t < types.length; t++) {
+                if (types[t] == null || types[t].road() == BuildingVisual.NOT_A_ROAD) continue;
+                if (ownRoad) c[t] = t < own.length ? own[t] : 0;
+                else if (t < playedCounts.length && playedBuildings > 0) c[t] = Math.round((double) playedCounts[t] * n / playedBuildings);
+            }
+            c[Mining.IRON_MINE] = 1;
+            return c;
+        };
+        long houses = 0;
+        while (modelGround(copyOf.apply(houses + 1), types) <= owned) houses++;
+        long[] model = copyOf.apply(houses);
+        double used = modelGround(model, types), next = modelGround(copyOf.apply(houses + 1), types);
+        model[Mining.IRON_MINE] = 0;
+        long roadPlots = modelRoadPlots(model, types);
+        out.printf("      the copy's inventory: %,d houses and the road %s: %,d gravel roads (%,d plots), %,d paved (%,d), %,d highways (%,d); the ground they and the mine"
+                + " born at 100 use %,.0f sq ft of the %,.0f the copy owns (%.2f%%; over by %,.0f, the one house more would be over by %,.0f)%n", houses,
+                ownRoad ? "the fixture town's own (the model holds no function that decides a city's road from its buildings)"
+                        : "the played city's per building (the model holds no function that decides a city's road from its buildings; the fixture town has none of its own): "
+                                + String.format("%,d buildings, %,d gravel roads, %,d paved, %,d highways", playedBuildings,
+                                        roadCountOf(playedCounts, types, BuildingVisual.GRAVEL), roadCountOf(playedCounts, types, BuildingVisual.PAVED), roadCountOf(playedCounts, types, BuildingVisual.HIGHWAY)),
+                roadCountOf(model, types, BuildingVisual.GRAVEL), roadPlotsOf(model, types, BuildingVisual.GRAVEL), roadCountOf(model, types, BuildingVisual.PAVED),
+                roadPlotsOf(model, types, BuildingVisual.PAVED), roadCountOf(model, types, BuildingVisual.HIGHWAY), roadPlotsOf(model, types, BuildingVisual.HIGHWAY), used, owned, 100 * used / owned, Math.max(0, used - owned),
+                Math.max(0, next - owned));
+        check(String.format("fixture: the copy holds no more building and road than its owned ground, as a city the auto-builder grows does (AutoBuilder's ground rule):"
+                + " %,d houses and %,d road plots use %,.0f sq ft of the %,.0f it owns, one house more would not fit", houses, roadPlots, used, owned),
+                houses > 0 && roadPlots > 0 && used <= owned && next > owned);
         CityMap copy = CityMap.canonical(g.getCityLand().copy(), g.getLandManager()::remainingByHolding, types, model, 99);
+        Raster r99 = Raster.of(copy);
+        long[] drawn99 = drawnOneForOne(r99, types, model);
+        int[] pk99 = copy.packedCounts();
+        out.printf("      ...at month 99, before the mine is born: %,d buildings drawn of the model's %,d (%,d packed at the city's edge, %d drawn smaller, %d with no ground,"
+                + " %d past the ground the city owns)%n", drawn99[2], drawn99[1], pk99[0], pk99[1], pk99[2], pk99[3]);
+        check("...before the mine is born, every building drawn, one for one", drawn99[0] == 0 && pk99[2] == 0);
         List<CityMap.District> before = new ArrayList<>(copy.districts());
         List<byte[]> sites = new ArrayList<>(), codes = new ArrayList<>();
         for (CityMap.District d : before) {
@@ -4561,9 +4632,11 @@ public class MapCheck {
             minePlots++;
             if (r.isRoad(q)) roadInMines++;
         }
-        out.printf("      a copy of directly bought iron ground, %,d houses (one a dry plot it owns) and its road: the mine born at 100 on %d plots,"
+        long[] drawn100 = drawnOneForOne(r, types, model);
+        out.printf("      a copy of directly bought iron ground, %,d houses and its road: the mine born at 100 on %d plots,"
                 + " %d of them its plans' streets at 99; the plans' streets on %d of the %d mined plots of their frames now, %d road plots"
-                + " drawn in the %d plots of the mines' boxes%n", ownedDry, born, streetsBefore, streetsNow, mined, roadInMines, minePlots);
+                + " drawn in the %d plots of the mines' boxes%n", houses, born, streetsBefore, streetsNow, mined, roadInMines, minePlots);
+        out.printf("      ...drawn before the birth, %,d buildings of the model's %,d; after it, %,d of the model's %,d%n", drawn99[2], drawn99[1], drawn100[2], drawn100[1]);
         check("fixture: a mine is born at month 100 on plots its plans had laid streets on", reconciled && born > 0 && streetsBefore > 0);
         check("...its plans keep those streets (the buildings beside them stand by them), and the map draws them across the mine",
                 streetsNow > 0 && roadInMines > 0);
