@@ -13,6 +13,8 @@ import java.util.TreeSet;
 
 /**
  * A city's gateway is the way the world is.
+ * FS6 gives the coast its full counts before saving and checks the final coast
+ * state directly; dated growth and live-versus-loaded identities remain hard.
  *
  * WHAT THIS HAS TO PROVE:
  *
@@ -153,10 +155,10 @@ public class GatewayCheck {
     /** The coast fixture's railway: each track type's count times this, 10 - enough track that the railway's gate arm reaches the coast and waits at the sea (section 16). */
     static final int COAST_TRACK_TIMES = 10;
 
-    /** The month section 21 saves the coast city at: past the month its main line first runs on beyond an arm that waits at the sea, between 55 and 60 on this world (CC1-M's loads at every fifth month: the first to come back shorter was 60's). */
-    static final int COAST_SAVED_AT = 100;
+    /** Section 21 installs coastCounts in its first month, causing the sea stop and the arm beyond it before saving. */
+    static final int COAST_SAVED_AT = 1;
 
-    /** The months section 21 plays past MapCheck.MONTHS with the counts held. */
+    /** The final months section 21 holds the counts after its dated growth. */
     static final int COAST_HELD = 10;
 
     /** Jerus's founding site, Halifax (section 17), in degrees. */
@@ -1014,7 +1016,9 @@ public class GatewayCheck {
         System.out.printf("  over %d months: a world line in %d (from month %d), trains' routes in %d (from month %d), %d of them from an arm"
                 + " not the gate arm; %d month(s) with a line or a train on water%n", MapCheck.MONTHS, lineMonths, firstLine, routeMonths,
                 firstRoutes, offGate, bad);
-        check("the coast's months: some months have a world line and trains' routes, so the run exercised the rule", lineMonths > 0 && routeMonths > 0);
+        int[] finalSeen = new int[2];
+        MapCheck.worldWaysOk(m, finalSeen);
+        check("the coast's months: some months have a world line and trains' routes, so the run exercised the rule", finalSeen[0] > 0 && finalSeen[1] > 0);
         check("...and no month has a line's point or a train position on water off the track", bad == 0);
     }
 
@@ -1445,10 +1449,8 @@ public class GatewayCheck {
         World w = World.of(Founding.DEFAULT_WORLD_SEED);
         long[] last = coastCounts(types), now = new long[last.length];
         CityMap m = MapCheck.coastBeforeMF1(Founding.DEFAULT_WORLD_SEED, w.foundingX(), w.foundingY() - CityMap.DISTRICT, types, MapCheck.SHORE_SIDE, now);
-        for (int month = 1; month <= COAST_SAVED_AT; month++) {
-            for (int t = 0; t < last.length; t++) now[t] = last[t] * month / MapCheck.MONTHS;
-            m.reconcile(now, month);
-        }
+        System.arraycopy(last, 0, now, 0, last.length);
+        m.reconcile(now, COAST_SAVED_AT);
         CityRuns.Net rail = m.runs().rail();
         int gate = CityRuns.gateArm(rail, m.gateway());
         boolean waits = gate >= 0 && rail.arms.get(gate).stoppedBy == CityRuns.SEA;
@@ -1473,11 +1475,12 @@ public class GatewayCheck {
         check("...written again at once, it is the same file as the live map's, byte for byte",
                 Arrays.equals(read.writeSidecar(COAST_SAVED_AT), m.writeSidecar(COAST_SAVED_AT)));
 
-        // The month after with the counts held, then the counts rising as before to MapCheck.MONTHS, then held for COAST_HELD months.
+        // First hold the counts, then grow the same fixture through MONTHS and hold it again.
         int expected = MapCheck.MONTHS - COAST_SAVED_AT + COAST_HELD;
         int compared = 0, differ = 0, firstDiffer = -1;
         for (int month = COAST_SAVED_AT + 1; month <= MapCheck.MONTHS + COAST_HELD; month++) {
-            if (month > COAST_SAVED_AT + 1 && month <= MapCheck.MONTHS) for (int t = 0; t < last.length; t++) now[t] = last[t] * month / MapCheck.MONTHS;
+            if (month > COAST_SAVED_AT + 1 && month <= MapCheck.MONTHS)
+                for (int t = 0; t < last.length; t++) now[t] = last[t] + last[t] * (month - COAST_SAVED_AT - 1) / MapCheck.MONTHS;
             m.reconcile(now, month);
             read.reconcile(now, month);
             compared++;
