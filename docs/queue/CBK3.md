@@ -78,6 +78,6 @@ The central bank's page (CBK1) carries them, and Policy shows them too: one mode
 - **CBK1 first.** It merges CBK1 once CBK1 ships, before Part 2's dials go on its page, and gates after CBK1.
 - **AP6.** If AP6 ships first, CBK3 merges it and keeps AP6's held figures exact on any path it adds. If CBK3 ships first, AP6 merges it.
 - **CBK2** waits on CBK3: both move the central bank's book and Policy's dials.
-- **The manual.** Its banking section is updated by the publish route (the artifact page, then `tools.ManualToMarkdown`), never by editing `docs/manual.*`.
+- **The manual is not this batch's.** A manual edition comes only at a milestone or at Jerus's request (docs/orchestrator.md). The notes carry a "For the manual" section with the banking text for it, and `docs/manual.*` stays untouched.
 
 Versioned. Money, saves and the default behaviour move: an 80-run ensemble, and a stranger's review at "mends at".
