@@ -1,10 +1,10 @@
-# DistressBleedCheck.java - 550 lines · 18 methods · 11 constants · harnesses
+# DistressBleedCheck.java - 598 lines · 18 methods · 11 constants · harnesses
 
 `ham/citybuildersim/DistressBleedCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
 > The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over
 > BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_MONTHS running while it owes the desk,
-> and a quarter of its biggest holding a month only once it is overdrawn with no lender (AQ1).
+> and a quarter of its biggest holding a month after the same operating-loss runway when overdrawn with no lender (QR1).
 > 
 > WHY: on main's AUTO2 ensemble, seed 2, Business Services lost money 101 months running. The shortfall desk lent it
 > $409M of the losses and the sector held every office through all of it, until the desk refused at month 1091; then the
@@ -28,7 +28,7 @@
 >      operating streak under the dial (back at 0, a loss that is only interest, or begun again), nothing is sold where the first
 >      form of the rule (e17ee67f9's: the net count alone, the plant losing money this month) would have sold; and the centres
 >      go when the operating streak reaches the dial
->   6. overdrawn with no lender, the quarter as before
+>   6. overdrawn with no lender, interest-only losses keep paying plant; the quarter starts only at the operating-loss dial
 >   7. only a sector the spare-capacity rule cannot reach bleeds (the three overrides), and, as behaviour, a sector that
 >      does not bleed, lent, not overdrawn, sells nothing to the rule however long it has lost money, where Business
 >      Services in the same state sells
@@ -45,7 +45,7 @@
 > two other batches' paths and the fixture's own premises went red with the rule untouched. Nothing here is a timing: each
 > state is the state, and each threshold is read from both sides against the model's constants.
 
-**Uses:** [BusinessInvestment](BusinessInvestment.md) (16), [Sector](Sector.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (5), [Game](Game.md) (4), [OldMetal](OldMetal.md) (4), [BuildingManager](BuildingManager.md) (3), [Statement](Statement.md) (2), [BusinessServices](BusinessServices.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [GameFiles](GameFiles.md) (1)
+**Uses:** [BusinessInvestment](BusinessInvestment.md) (16), [Sector](Sector.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (5), [Game](Game.md) (4), [OldMetal](OldMetal.md) (4), [BusinessDebtManager](BusinessDebtManager.md) (3), [BuildingManager](BuildingManager.md) (3), [Statement](Statement.md) (2), [BusinessServices](BusinessServices.md) (1), [GameFiles](GameFiles.md) (1)
 
 ## Sections
 
@@ -56,9 +56,9 @@
 | 305 | · 3. plant goes while it is still lent |
 | 340 | · 4. never faster than the pace |
 | 372 | · 5. a net-loss count carried past the dial by interest sells nothing |
-| 437 | · 6. overdrawn with no lender, the quarter as before |
-| 458 | · 7. only a sector the spare-capacity rule cannot reach bleeds |
-| 516 | · 8. a sector living on its own cash is not lent |
+| 437 | · 6. overdrawn with no lender: running costs before liquidation (QR1) |
+| 504 | · 7. only a sector the spare-capacity rule cannot reach bleeds |
+| 564 | · 8. a sector living on its own cash is not lent |
 
 ## Constants
 
@@ -94,7 +94,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 496 | **type** `public class DistressBleedCheck` | The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_... |
+| 55 | 544 | **type** `public class DistressBleedCheck` | The distress rule for a price taker whose operating losses the bank's shortfall desk is still lending: it sells its plant over BusinessInvestment.BLEED_MONTHS once its plant has run at an operating loss DISTRESS_LOSS_... |
 | 61 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 66 | 5 | `static void quietly(Runnable r)` |  |
 | 102 | 59 | **type** `static final class Town` | A scratch city with the sector's fixture in it, and the doors the rule reads through. |
@@ -114,5 +114,5 @@
 | 197 | 7 | `static BuildingsTemplate freightPlant(Town t)` | A building of Freight's the sector may sell and that counts toward its measure: plant for a sector that does not bleed to hold. |
 | 205 | 5 | `static String list(List<Long> xs)` |  |
 | 212 | 1 | **type** `record Month(String what, double operating, double oldMetal, int streak)` | One month's statement for section 1's streak formula, and the streak it must leave from a streak one short of the dial. |
-| 214 | 336 | `public static void main(String[] args) throws Exception` |  |
+| 214 | 384 | `public static void main(String[] args) throws Exception` |  |
 

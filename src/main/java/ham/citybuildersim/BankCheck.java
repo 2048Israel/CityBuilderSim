@@ -2720,11 +2720,28 @@ public class BankCheck {
         if (overdraft > 0) econ.setSectorCash(sector, Math.min(econ.getSectorCash(sector), -overdraft));
     }
 
-    /** Sets a sector's loss streak, the months the distress rule reads, and leaves every other sector's as it stands. */
-    static void restoreStreak(BusinessInvestment plans, String sector, int months) {
+    /** Sets both distress-loss streaks (QR1), leaving every other sector's histories as they stand. */
+    static void restoreDistressStreaks(BusinessInvestment plans, String sector, int months) {
         java.util.Map<String, Integer> streaks = new java.util.LinkedHashMap<>(plans.getLossMonthsState());
         streaks.put(sector, months);
         plans.restoreLossMonths(streaks);
+        java.util.Map<String, Integer> operating = new java.util.LinkedHashMap<>(plans.getOperatingLossMonthsState());
+        operating.put(sector, months);
+        plans.restoreOperatingLossMonths(operating);
+    }
+
+    /** Causes the next strike's operating loss with real shop repairs, sized from its booked revenue (QR1). Returns its previous own rate, or zero for the default. */
+    static double losingShopRepairs(Game city, Sector retail, BuildingsTemplate shop) {
+        double previous = shop.hasOwnRepairs() ? shop.repairsPerYear() : 0;
+        EconomyManager econ = city.getEconomyManager();
+        double price = city.getBuildingManager().getConstructionMaterialPrice();
+        double revenue = Math.max(0, retail.pending().revenue());
+        double bill = econ.maintenanceBillFor(retail, price);
+        assertTrue("fixture: the standing shop has a positive repair bill to scale", bill > 0);
+        if (bill > 0) shop.setRepairsPerYear(shop.repairsPerYear() * (1 + 2 * Math.max(1, revenue) / bill));
+        assertTrue("fixture: the shop's real repair bill exceeds its booked revenue",
+                econ.maintenanceBillFor(retail, price) > revenue);
+        return previous;
     }
 
     static void aFailingSectorsPlantIsSoldToTheBuilders() throws Exception {
@@ -2768,6 +2785,8 @@ public class BankCheck {
         BusinessInvestment plans = city.getBusinessInvestment();
         ham.citybuildersim.sectors.Construction builders = city.getSectors().construction();
         BuildingsTemplate shop = template(city, "Convenience Store");
+        java.util.List<Game.Retirement> retirements = new java.util.ArrayList<>();
+        city.watchRetirements(retirements::add);
         double[] measure = retail.retirementDemandAndCapacity(city);
         assertTrue("fixture: the town's families came and want groceries, within the months waited for them", measure[0] > 0);
         assertTrue("fixture: retail has a shop to retire and nothing spare to sell, so only the distress rule would retire it",
@@ -2776,14 +2795,15 @@ public class BankCheck {
         credit.issueLoan(RET, Math.max(0, 1.3 * credit.getAssets(RET) - credit.getPrincipal(RET)), city.getMonth());
 
         // Held in distress, caused: shut out of credit, overdrawn with no lender, the register's twelve losing months
-        // (holdFromOrdering) and the losing streak the rule reads; the builders in funds. Then the one month it sells in.
+        // (holdFromOrdering) and both losing streaks the rule reads; the builders in funds. The played month must also
+        // lose on running costs: a paying month would reset the operating streak and keep the plant (QR1).
         Game.Salvage sale = null;
         MoneyAudit.Result audit = null;
         double stockBefore = 0, shopsBefore = 0, priceBefore = 0, overdrawnBy = 0, costBefore = 0;
         double tillWas = econ.getSectorCash(RET);
         holdFromOrdering(city, RET, 2 * shop.getCashCost());
         overdrawnBy = econ.getSectorCash(RET) - tillWas;
-        restoreStreak(plans, RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
+        restoreDistressStreaks(plans, RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
         double buildersHad = builders.getCash();
         econ.setSectorCash(builders.key(), Math.max(buildersHad, BUILDERS_CASH_FOR_A_SALE));
         double handedToBuilders = builders.getCash() - buildersHad;
@@ -2794,19 +2814,28 @@ public class BankCheck {
         // month than the retirement, so the price it sold at is the
         // one standing when the month opened.
         priceBefore = city.getMarkets().get(Good.MATERIALS).getLocalPrice();
+        double repairsBefore = losingShopRepairs(city, retail, shop);
         System.setOut(quiet);
         try {
             city.simulateMonths(1);
         } finally {
+            shop.setRepairsPerYear(repairsBefore);
             System.setOut(out);
         }
         audit = city.getLastMoneyAudit();
+        assertTrue("fixture: the played sale month lost on retail's running costs and kept the operating-loss runway",
+                retail.statement().operatingIncome - retail.statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0) < 0
+                        && plans.getOperatingLossMonths(RET) >= BusinessInvestment.DISTRESS_LOSS_MONTHS);
         for (Game.Salvage s : city.getSalvageThisMonth()) {
             if (s.seller().equals(RET) && s.distress() && sale == null) sale = s;
         }
         assertTrue("fixture: retail in distress retired plant, and the rule that did it was the distress rule",
                 sale != null);
         if (sale == null) return;
+        Game.Retirement observed = retirements.stream().filter(r -> r.distress() && r.sector().equals(RET)).findFirst().orElse(null);
+        assertTrue("the receipt observer records the actual distress sale, with plot cash and the builders' material payment",
+                observed != null && observed.buildings() == sale.buildings() && observed.plotPaid() >= 0 && observed.runningIncome() < 0
+                        && observed.materialPaid() == sale.paid());
         /*
          * ...IN A MONTH THAT NO OTHER SECTOR SOLD PLANT IN (LD1). The builders' stock and cash below move by every sale of
          * the month, and the figures asserted are this sale's: a second sale in the month (the builders' cash moved out
@@ -2919,20 +2948,30 @@ public class BankCheck {
         // A builder that cannot pay buys nothing: the building is scrapped
         // for nothing, as it always was. Retail is put in distress as above, the builders overdrawn, and the month played.
         Game.Salvage broke = null;
+        retirements.clear();
         holdFromOrdering(city, RET, 2 * shop.getCashCost());
-        restoreStreak(plans, RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
+        restoreDistressStreaks(plans, RET, BusinessInvestment.DISTRESS_LOSS_MONTHS);
         econ.setSectorCash(builders.key(), -1e12 * PriceLevel.FACTOR);
+        repairsBefore = losingShopRepairs(city, retail, shop);
         System.setOut(quiet);
         try {
             city.simulateMonths(1);
         } finally {
+            shop.setRepairsPerYear(repairsBefore);
             System.setOut(out);
         }
+        assertTrue("fixture: the broke-builders month lost on retail's running costs and kept the operating-loss runway",
+                retail.statement().operatingIncome - retail.statement().otherParts.getOrDefault(OldMetal.SOLD, 0.0) < 0
+                        && plans.getOperatingLossMonths(RET) >= BusinessInvestment.DISTRESS_LOSS_MONTHS);
         for (Game.Salvage s : city.getSalvageThisMonth()) {
             if (s.seller().equals(RET)) broke = s;
         }
         assertTrue("fixture: retail retired plant again, with the builders overdrawn", broke != null);
         if (broke == null) return;
+        Game.Retirement observedBroke = retirements.stream().filter(r -> r.distress() && r.sector().equals(RET)).findFirst().orElse(null);
+        assertTrue("the receipt observer also records the broke-builders sale with zero material cash",
+                observedBroke != null && observedBroke.buildings() == broke.buildings() && observedBroke.materialPaid() == 0
+                        && observedBroke.runningIncome() < 0);
         assertTrue("builders who cannot pay buy nothing, and pay nothing",
                 broke.unitsBought() == 0 && broke.paid() == 0 && broke.units() > 0);
         close("...so the seller is paid nothing for it", city.getSalvageThisMonth(RET), 0, 0);

@@ -588,16 +588,28 @@ public class RailDepotCheck {
         assertTrue("the first station is the Rail Depot, the smallest of the catalogue",
                 cat.fr.firstStation() == depot);
 
-        // The distress rule: DISTRESS_LOSS_MONTHS of losses, overdrawn, nothing in flight.
+        // The distress rule: DISTRESS_LOSS_MONTHS of operating and net losses, overdrawn, nothing in flight (QR1).
         Fx keptInDistress = new Fx().stand("Rail Depot", 1);
         keptInDistress.offer(0, depotNeeds);
-        for (int i = 0; i < BusinessInvestment.DISTRESS_LOSS_MONTHS; i++) keptInDistress.plans.recordSectorResult(keptInDistress.fr.key(), -1);
+        keptInDistress.fr.statement().operatingIncome = -1;
+        for (int i = 0; i < BusinessInvestment.DISTRESS_LOSS_MONTHS; i++) {
+            keptInDistress.plans.recordSectorResult(keptInDistress.fr.key(), -1);
+            keptInDistress.plans.recordOperatingResult(keptInDistress.fr);
+        }
+        assertTrue("fixture: the kept depot has the distress runway of operating losses",
+                keptInDistress.plans.getOperatingLossMonths(keptInDistress.fr.key()) == BusinessInvestment.DISTRESS_LOSS_MONTHS);
         BusinessInvestment.Decision keptDecision = keptInDistress.plans.planDistressRetirement(keptInDistress.fr, -1, 0);
         report("the distress rule: " + BusinessInvestment.DISTRESS_LOSS_MONTHS + " months of losses, overdrawn, the depot's threshold offered: it sells nothing",
                 !keptDecision.build, say(keptDecision));
         Fx soldInDistress = new Fx().stand("Rail Depot", 1);
         soldInDistress.offer(0, depotNeeds - 1);
-        for (int i = 0; i < BusinessInvestment.DISTRESS_LOSS_MONTHS; i++) soldInDistress.plans.recordSectorResult(soldInDistress.fr.key(), -1);
+        soldInDistress.fr.statement().operatingIncome = -1;
+        for (int i = 0; i < BusinessInvestment.DISTRESS_LOSS_MONTHS; i++) {
+            soldInDistress.plans.recordSectorResult(soldInDistress.fr.key(), -1);
+            soldInDistress.plans.recordOperatingResult(soldInDistress.fr);
+        }
+        assertTrue("fixture: the sold depot has the same distress runway of operating losses",
+                soldInDistress.plans.getOperatingLossMonths(soldInDistress.fr.key()) == BusinessInvestment.DISTRESS_LOSS_MONTHS);
         BusinessInvestment.Decision soldDecision = soldInDistress.plans.planDistressRetirement(soldInDistress.fr, -1, 0);
         report("...a tonne under the threshold, the same losses sell the Rail Depot",
                 soldDecision.build && soldDecision.template == soldInDistress.t("Rail Depot"), say(soldDecision));

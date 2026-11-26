@@ -3077,9 +3077,10 @@ public class BusinessDebtManager {
 
         /*
          * ONE DEFAULT IS ONE EPISODE. A sector inside its ban is already in
-         * resolution: it cannot borrow, and the distress rule is selling its
-         * plant month by month. Judging it insolvent again every month while
-         * that happens - which it is, its assets are falling - counted each
+         * resolution: it cannot borrow. The distress rule may sell plant that
+         * keeps losing on running costs; paying plant keeps operating (QR1).
+         * Judging it insolvent again every month as plant is sold and its
+         * assets fall counted each
          * month as a fresh default, and the escalating exclusion did what it
          * says: 46 write-downs on Retail in one run, a ban of 525 months, and
          * a city that could not build a shop for forty years. The record

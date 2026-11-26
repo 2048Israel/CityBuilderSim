@@ -1,8 +1,8 @@
-# gate of Merge batch/PW9: a small firm plant for the early towns (REV-PW3g item 3, 2026-11-24): no 1900 firm row of 0.5-1 MW, so a 1906 town buys the 86 MW Oil-Fired Plant; stations of 1902 averaged ~380 kW. After PW3, 0.9.209
+# gate of Merge batch/QR1: the distress rule's quarter sells plant that pays its running costs when the only loss is interest: its gate (`BusinessInvestment.planDistressRetirement`, overdrawn with no lender) reads the NET-loss streak, so a sector whose operating income is positive sells `MAX_RETIREMENT_FRACTION` of its biggest holding a month once interest has kept it in loss `DISTRESS_LOSS_MONTHS` running. Default playtest, merged with 0.9.134: Heavy Industry m2151-2155, 7 Steel Mini-Mills (910 posts) on operating income +$571M to +$201M a month, $283B owed, operating-loss streak 0; on AQ1's e17ee67f9: Manufacturing m1818-1820, 19 Machine Works (about 3,300 posts, out of work to 29.7%) on +$20M to +$125M a month, $9.1B owed. ★ The gate also reads AQ1's operating-loss streak: an overdrawn sector whose plant has paid its running costs (streak under the dial) sells no plant to the distress rule, its overdraft left to the bank's restructuring, which QR1 reads first; other ways: the quarter at `BLEED_MONTHS`'s pace instead; sell only plant that loses on its running costs; keep main's, 0.9.210
 # date: 2026-11-26
 # earth-2.bin: named
 # nightly: 2026-11-26 02:59 0.9.208 3bf83d20e 4,000 months: RED, exit 1 in 796 s: FAIL a building on the map moved 3 time(s), months 3005-3011; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-26-3bf83d20e-Z21yRgkj
-# suite: 254 harnesses run in 1196s: 237 passed, 17 failed
+# suite: 250 harnesses run in 1295s: 233 passed, 17 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -34,24 +34,14 @@ HoldersCheck | fixture: ...and the step came from the households                
 HoldersCheck | fixture: in the middle - the households still hold some                  FAIL
 HoldersCheck | 4 FAILED
 DenominationCheck | exit 1
-DenominationCheck | the same output                                                FAIL  13.4410064646 != 13.4422201183  (9.03e-05 apart)
-DenominationCheck | ...and the same year of it                                     FAIL  151.3561804286 != 151.3601391195  (2.62e-05 apart)
-DenominationCheck | the same rent                                                  FAIL  0.0001631749 != 0.0001631749  (1.40e-07 apart)
-DenominationCheck | the same price level                                           FAIL  1.8574009296 != 1.8574358297  (1.88e-05 apart)
-DenominationCheck | the same currency                                              FAIL  0.0248989225 != 0.0248990487  (5.07e-06 apart)
-DenominationCheck | the same treasury                                              FAIL  287.2374864409 != 287.2342582858  (1.12e-05 apart)
-DenominationCheck | the same shops' till                                           FAIL  1.0021386214 != 1.0023356848  (0.000197 apart)
-DenominationCheck | the same bank                                                  FAIL  219.0845507955 != 219.0854389518  (4.05e-06 apart)
-DenominationCheck | the same people live there, to the person                      FAIL
-DenominationCheck | the same output                                                FAIL  7.9106231275 != 7.6065306809  (0.0400 apart)
-DenominationCheck | ...and the same year of it                                     FAIL  102.9372678490 != 103.3137144216  (0.00364 apart)
-DenominationCheck | the same rent                                                  FAIL  0.0001035565 != 0.0001023815  (0.0115 apart)
-DenominationCheck | the same price level                                           FAIL  1.2608416715 != 1.3029071150  (0.0323 apart)
-DenominationCheck | the same currency                                              FAIL  0.0064428725 != 0.0064943058  (0.00792 apart)
-DenominationCheck | the same treasury                                              FAIL  451.9956954681 != 450.1995326703  (0.00399 apart)
-DenominationCheck | the same shops' till                                           FAIL  6.8310521662 != 0.0000000000  (6.83e+12 apart)
-DenominationCheck | the same bank                                                  FAIL  290.9424403684 != 286.8030577154  (0.0144 apart)
-DenominationCheck | 17 FAILED
+DenominationCheck | the same output                                                FAIL  6.9609872102 != 6.9609576822  (4.24e-06 apart)
+DenominationCheck | ...and the same year of it                                     FAIL  93.1893011155 != 93.1892399112  (6.57e-07 apart)
+DenominationCheck | the same rent                                                  FAIL  0.0001219619 != 0.0001219619  (2.83e-09 apart)
+DenominationCheck | the same price level                                           FAIL  1.3013143467 != 1.3013130320  (1.01e-06 apart)
+DenominationCheck | the same currency                                              FAIL  0.0064500529 != 0.0064500583  (8.40e-07 apart)
+DenominationCheck | the same treasury                                              FAIL  405.3186196818 != 405.3188635672  (6.02e-07 apart)
+DenominationCheck | the same bank                                                  FAIL  291.5866929739 != 291.6348114746  (0.000165 apart)
+DenominationCheck | 7 FAILED
 PopulationCheck | exit 1
 PopulationCheck | ...but it does fill, given a decade                        FAIL
 PopulationCheck | 1 FAILED
@@ -65,13 +55,6 @@ PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
 PlanCheck | every district as the map draws it keeps every check: one network or pieces the ground parts, the + floor, reach, none on a street, the surface FAIL
 PlanCheck | 2 FAILED
-KeptCheck | exit 5
-KeptCheck | nonrepeating content blocks still hand back at least three in four of the nodes drawn again (1 readings, least 74.8%) FAIL
-KeptCheck | fixture: the fund holds a bond, null, that runs 0 months, past the 2 months its pages are watched FAIL
-KeptCheck | every row that folds opened on Portfolio: the redraw and the next equal a page built new FAIL
-KeptCheck | every row that folds opened on Portfolio adds to the page (750 lines, then 0) FAIL
-KeptCheck | the full kept check's objects leave a quarter of AllChecks.HEAP_MB free (the live heap, less the render targets a software renderer keeps on it) FAIL
-KeptCheck | 5 FAILED
 DeathRecordCheck | exit 1
 DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
 DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
@@ -81,6 +64,12 @@ CarCheck | the fixture: one household's money buys a car at the price the draw i
 CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  62 cars, 1 step(s) of the import price; paid 56.232508772885560, the ship's product 55.440508772885560; 6.0 cars on the makers' shelves
 CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 55.440508772885560, paid 56.232508772885560
 CarCheck | 3 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | ...with the world's file named, the rule cut an order in at least one month of the run (the Rotterdam January where rod's price fell under its cathode's) FAIL  0 months; []
+CopperRefiningCheck | 1 FAILED
 GroundSkipCheck | exit 1
-GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 30 month(s) FAIL
-GroundSkipCheck | 1 FAILED
+GroundSkipCheck | ...and the landlords' order is held for land with no home on site FAIL
+GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 0 month(s) FAIL
+GroundSkipCheck | premise: skipped the old way, the landlords are held for land and a look is due FAIL
+GroundSkipCheck | ...and places nothing: the landlords are still held for land FAIL
+GroundSkipCheck | 4 FAILED
