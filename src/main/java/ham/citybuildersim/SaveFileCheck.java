@@ -4720,13 +4720,14 @@ public class SaveFileCheck {
             brokeOld.restore(java.util.Arrays.copyOf(brokeSlots, ForeignAccounts.LAST_BREAK_GOLD_SLOT));
             assertTrue("...an array from before FB14 (158 slots) reads the last break a peg's, as every break was worded before", !brokeOld.lastBreakWasGold());
             assertTrue("...and the city's own, which never broke off gold, saves 0", savedFx[ForeignAccounts.LAST_BREAK_GOLD_SLOT] == 0 && !savedAccounts.lastBreakWasGold());
-            // FB14 (GD3's review, item 6): the bank's two figures for the gold's sales, at the end of its array: what is due back at the next month's top, and what was
-            // retired for gold since the founding (vaultInNewMoney() is the dollars bought less it).
+            // FB14 (GD3's review, item 6): the bank's two figures for the gold's sales, at the end of its array as FB14 left it: what is due back at the next month's
+            // top, and what was retired for gold since the founding (vaultInNewMoney() is the dollars bought less it). CBK1 (2026-11-26) appends its statements'
+            // block after them, so they are read where FB14 put them, the two slots before CentralBankStatementCheck.BEFORE_CBK1, and not at the array's end.
             CentralBank bank = new CentralBank();
             bank.goldPaidOut(7.25);
             double[] bankSaved = bank.toSaveArray();
-            final int dueSlot = bankSaved.length - 2, retiredSlot = bankSaved.length - 1;
-            assertTrue("the central bank's array ends with the gold's two figures: due back at the next top (" + bankSaved[dueSlot] + ") and retired for gold since founding (" + bankSaved[retiredSlot] + ")",
+            final int dueSlot = CentralBankStatementCheck.BEFORE_CBK1 - 2, retiredSlot = CentralBankStatementCheck.BEFORE_CBK1 - 1;
+            assertTrue("the central bank's array, as FB14 left it, ends with the gold's two figures (CBK1's statements follow): due back at the next top (" + bankSaved[dueSlot] + ") and retired for gold since founding (" + bankSaved[retiredSlot] + ")",
                     bankSaved[dueSlot] == bank.getGoldRedeemDue() && bankSaved[dueSlot] == 7.25 && bankSaved[retiredSlot] == bank.getGoldRedeemedLifetime());
             bankSaved[retiredSlot] = 41.5;
             CentralBank bankBack = new CentralBank();

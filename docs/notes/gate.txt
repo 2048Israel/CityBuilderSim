@@ -1,8 +1,8 @@
-# gate of Merge batch/AP6: slot 9 at 50x after AP5 (7.7-10.0 months a second): the posts past read once per job type in every `getTotalJobs()` (6.6% of the FX thread), the bond book's `OrderBook.submit` (10.2%), the month's `totalBySector` walks outside the pass (9.5%), `Game.runPrivateInvestment` (11.9%); measured before and after, exact (the trace's eight md5s equal). After CBK1, ahead of CBK2 (Jerus's slot 9; CBK2 waits on CBK1), 0.9.213
+# gate of Merge batch/CBK1: the Bank tab's two banks (Jerus, desk chat 2026-11-26: "yes queue both, and preferbly soon"): Bank opens on Commercial or Central; the commercial bank's statements in the sectors' form; the central bank's own pages (income statement, balance sheet, money made and destroyed, holdings at market, inflation and credibility, money, history, its policy dials), every figure a getter, the cards on Finances and Government linking to it. Next free lane, ahead of the rows below, 0.9.214
 # date: 2026-11-26
 # earth-2.bin: named
 # nightly: 2026-11-26 02:59 0.9.208 3bf83d20e 4,000 months: RED, exit 1 in 796 s: FAIL a building on the map moved 3 time(s), months 3005-3011; nightly tier OK; observations: 4 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 0 SLOWER, 1 standing miss(es), 0 first-night miss(es), 0 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-26-3bf83d20e-Z21yRgkj
-# suite: 245 harnesses run in 1109s: 229 passed, 16 failed
+# suite: 248 harnesses run in 1006s: 232 passed, 16 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED

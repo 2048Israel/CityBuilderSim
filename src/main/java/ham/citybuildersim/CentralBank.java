@@ -264,8 +264,13 @@ public final class CentralBank {
         this.vault = vault == null ? () -> 0 : vault;
     }
 
-    /** Clears the month's flows. Called at the top of a month, before anything moves. */
+    /**
+     * Clears the month's flows. Called at the top of a month, before anything moves. Since CBK1 it first files the month that
+     * ended - its lines as last month's and its sheet in the year's ring - and notes M0 as this month opens (fileMonth(): reads only).
+     */
     public void startMonth() {
+        fileMonth();
+        struckProfit = lossRecovered = toRemit = lossAdded = 0;
         issued = retired = 0;
         advancedToBank = repaidByBank = 0;
         advancedToTreasury = repaidByTreasury = 0;
@@ -405,12 +410,17 @@ public final class CentralBank {
      */
     public void closeMonth() {
         double profit = monthProfit();
+        // CBK1: what the strike did, written beside it for the income statement - the same figures, read by nothing in the month.
+        struckProfit += profit;
         if (profit > 0) {
             double recovered = Math.min(lossCarried, profit);
             lossCarried -= recovered;
             remittanceDue += profit - recovered;
+            lossRecovered += recovered;
+            toRemit += profit - recovered;
         } else if (profit < 0) {
             lossCarried += -profit;
+            lossAdded += -profit;
         }
     }
 
@@ -924,6 +934,204 @@ public final class CentralBank {
     public double getRetiredLifetime()    { return retiredLifetime; }
     public double getRemittedLifetime()   { return remittedLifetime; }
 
+    /* ================== ITS OWN STATEMENTS (CBK1, 2026-11-26) ==================
+     *
+     * Jerus, 2026-11-26: "give both the banks proper statements, aka ability
+     * to not only view summary but also the statements same way the other
+     * sectors, but make sure to really include alot of stuff into the
+     * central bank area". Until CBK1 this bank was a card on Finances and a
+     * smaller one on Government, its month a list of getters a card read
+     * once and forgot: no last month to set it against, no sheet a year ago,
+     * and nothing that said what the strike at closeMonth() did with the
+     * profit - how much made good a loss and how much was owed the treasury.
+     *
+     * READ, NEVER READ BACK. Every figure here is one this bank already
+     * books, written beside it as it is booked (closeMonth()'s split) or
+     * copied as the month that booked it ends (fileMonth(), at the top of the
+     * next): nothing in the month reads any of it, so no month's arithmetic
+     * moves (the playtest's trace is the same to the byte). CentralBankStatements
+     * sets these as statements; CentralBankStatementCheck holds them to the
+     * figures they copy.
+     *
+     * SAVED, because a flow cannot be read back from the state a month ended
+     * in: the month's lines, last month's and the year of sheets go in the
+     * array after FB14's slots (THE SAVE), so a city opened shows the month
+     * it was saved in and the next month's "last month" is that month; an
+     * older save reads none of them, a bank whose last month and year ago
+     * are not known yet.
+     * ===================================================================== */
+
+    /** A line of its month, as its own pages read it: what this month booked, and last month's beside it (lastMonth()). */
+    public enum Line {
+        WINDOW_INTEREST, ADVANCES_INTEREST, PAPER_COUPONS, PAPER_GAINS, RESERVES_INTEREST,
+        PROFIT, LOSS_RECOVERED, TO_REMIT, LOSS_ADDED, REMITTED,
+        ADVANCED_TO_BANK, ADVANCED_TO_TREASURY, BOUGHT_PAPER, BOUGHT_FROM_BANK, BOUGHT_FROM_HOUSEHOLDS, BOUGHT_FROM_WORLD,
+        BOUGHT_AT_ISSUE, PAR_AT_ISSUE, DOLLARS_BOUGHT, GOLD_MINTED,
+        REPAID_BY_BANK, REPAID_BY_TREASURY, SOLD_PAPER, PAPER_REDEEMED, BOUGHT_BACK, GOLD_REDEEMED,
+        DEFENDED, ISSUED, RETIRED, M0_AT_START
+    }
+
+    /** ...and a line of its balance sheet, as they read it: this month's and a year ago's (yearAgo()). */
+    public enum Sheet {
+        WINDOW, TREASURY, PAPER, REDEMPTION_DUE, VAULT, ASSETS, RESERVES, CURRENCY, LIABILITIES, EQUITY,
+        LOSS_CARRIED, REMITTANCE_DUE
+    }
+
+    private static final Line[] LINES = Line.values();
+    private static final Sheet[] SHEETS = Sheet.values();
+
+    /** How many months of its sheet it keeps, for the balance sheet's year-ago column: a year, the commercial bank's. */
+    public static final int SHEET_MONTHS = 12;
+
+    /** What closeMonth() struck this month: the profit, and of it what made good a loss carried and what is owed the treasury; or the loss it carried. */
+    private double struckProfit, lossRecovered, toRemit, lossAdded;
+    /** M0 as this month opened, before anything moved (fileMonth()). */
+    private double m0AtStart;
+    /** Last month's lines, in Line's order, and how many months have been filed since founding (or since an older save was opened). */
+    private final double[] lastLines = new double[LINES.length];
+    private int monthsFiled;
+    /** The sheet at the end of each of the last SHEET_MONTHS months, a ring, and how many have been filed. */
+    private final double[][] sheetRing = new double[SHEET_MONTHS][SHEETS.length];
+    private int sheetsFiled;
+
+    /** Last month's lines and its sheet filed, and M0 noted as this month opens: startMonth()'s first step. Reads only. */
+    private void fileMonth() {
+        for (Line l : LINES) lastLines[l.ordinal()] = thisMonth(l);
+        monthsFiled++;
+        double[] row = sheetRing[sheetsFiled % SHEET_MONTHS];
+        for (Sheet s : SHEETS) row[s.ordinal()] = sheet(s);
+        sheetsFiled++;
+        m0AtStart = m0();
+    }
+
+    /** Nothing filed: a bank whose last month and year ago are not known (reset()). */
+    private void forgetFiled() {
+        java.util.Arrays.fill(lastLines, 0);
+        for (double[] row : sheetRing) java.util.Arrays.fill(row, 0);
+        monthsFiled = sheetsFiled = 0;
+    }
+
+    /** One line of this month, as booked so far. BOUGHT_FROM_BANK is the rest of what it paid for paper: neither the households, the world nor the treasury at issue. */
+    public double thisMonth(Line line) {
+        return switch (line) {
+            case WINDOW_INTEREST        -> windowInterest;
+            case ADVANCES_INTEREST      -> advancesInterest;
+            case PAPER_COUPONS          -> paperCoupons;
+            case PAPER_GAINS            -> paperGains;
+            case RESERVES_INTEREST      -> interestOnReserves;
+            case PROFIT                 -> struckProfit;
+            case LOSS_RECOVERED         -> lossRecovered;
+            case TO_REMIT               -> toRemit;
+            case LOSS_ADDED             -> lossAdded;
+            case REMITTED               -> remitted;
+            case ADVANCED_TO_BANK       -> advancedToBank;
+            case ADVANCED_TO_TREASURY   -> advancedToTreasury;
+            case BOUGHT_PAPER           -> boughtPaper;
+            case BOUGHT_FROM_BANK       -> getBoughtFromBank();
+            case BOUGHT_FROM_HOUSEHOLDS -> boughtFromHouseholds;
+            case BOUGHT_FROM_WORLD      -> boughtFromWorld;
+            case BOUGHT_AT_ISSUE        -> boughtAtIssue;
+            case PAR_AT_ISSUE           -> parAtIssue;
+            case DOLLARS_BOUGHT         -> dollarsBought;
+            case GOLD_MINTED            -> goldMinted;
+            case REPAID_BY_BANK         -> repaidByBank;
+            case REPAID_BY_TREASURY     -> repaidByTreasury;
+            case SOLD_PAPER             -> soldPaper;
+            case PAPER_REDEEMED         -> paperRedeemed;
+            case BOUGHT_BACK            -> boughtBack;
+            case GOLD_REDEEMED          -> goldRedeemed;
+            case DEFENDED               -> defendedThisMonth;
+            case ISSUED                 -> issued;
+            case RETIRED                -> retired;
+            case M0_AT_START            -> m0AtStart;
+        };
+    }
+
+    /** ...the save's way back in, for every line but the one worked out from the others (BOUGHT_FROM_BANK). */
+    private void restoreLine(Line line, double v) {
+        switch (line) {
+            case WINDOW_INTEREST        -> windowInterest = v;
+            case ADVANCES_INTEREST      -> advancesInterest = v;
+            case PAPER_COUPONS          -> paperCoupons = v;
+            case PAPER_GAINS            -> paperGains = v;
+            case RESERVES_INTEREST      -> interestOnReserves = v;
+            case PROFIT                 -> struckProfit = v;
+            case LOSS_RECOVERED         -> lossRecovered = v;
+            case TO_REMIT               -> toRemit = v;
+            case LOSS_ADDED             -> lossAdded = v;
+            case REMITTED               -> remitted = v;
+            case ADVANCED_TO_BANK       -> advancedToBank = v;
+            case ADVANCED_TO_TREASURY   -> advancedToTreasury = v;
+            case BOUGHT_PAPER           -> boughtPaper = v;
+            case BOUGHT_FROM_BANK       -> { }
+            case BOUGHT_FROM_HOUSEHOLDS -> boughtFromHouseholds = v;
+            case BOUGHT_FROM_WORLD      -> boughtFromWorld = v;
+            case BOUGHT_AT_ISSUE        -> boughtAtIssue = v;
+            case PAR_AT_ISSUE           -> parAtIssue = v;
+            case DOLLARS_BOUGHT         -> dollarsBought = v;
+            case GOLD_MINTED            -> goldMinted = v;
+            case REPAID_BY_BANK         -> repaidByBank = v;
+            case REPAID_BY_TREASURY     -> repaidByTreasury = v;
+            case SOLD_PAPER             -> soldPaper = v;
+            case PAPER_REDEEMED         -> paperRedeemed = v;
+            case BOUGHT_BACK            -> boughtBack = v;
+            case GOLD_REDEEMED          -> goldRedeemed = v;
+            case DEFENDED               -> defendedThisMonth = v;
+            case ISSUED                 -> issued = v;
+            case RETIRED                -> retired = v;
+            case M0_AT_START            -> m0AtStart = v;
+        }
+    }
+
+    /**
+     * Whether last month is known: two months filed, since the first filing is of a month nobody played here - the one before
+     * a city's first, or the month an older save was opened in, whose lines that save did not keep.
+     */
+    public boolean knowsLastMonth() { return monthsFiled > 1; }
+
+    /** One line of last month; 0 until it is known. */
+    public double lastMonth(Line line) { return knowsLastMonth() ? lastLines[line.ordinal()] : 0; }
+
+    /** What it paid the commercial bank for paper this month: the rest of getBoughtPaper() once the households, the world and the treasury at issue are out. */
+    public double getBoughtFromBank() { return boughtPaper - boughtFromHouseholds - boughtFromWorld - boughtAtIssue; }
+
+    /** What closeMonth() struck as this month's profit (a loss negative): monthProfit() at the strike. */
+    public double getStruckProfit()  { return struckProfit; }
+    /** ...of a profit, what made good a loss carried from before. */
+    public double getLossRecovered() { return lossRecovered; }
+    /** ...and the rest, owed to the treasury and paid at the top of the next month (remit()). */
+    public double getToRemit()       { return toRemit; }
+    /** ...or a loss, carried to be made good from future profit and not remitted. */
+    public double getLossAdded()     { return lossAdded; }
+    /** M0 as this month opened, before anything moved: M0 now less it is getM0Moved() in a month with no reform in it. */
+    public double getM0AtStart()     { return m0AtStart; }
+
+    /** One line of the sheet now. ASSETS, LIABILITIES and EQUITY are totalAssets(), totalLiabilities() and equity(). */
+    public double sheet(Sheet line) {
+        return switch (line) {
+            case WINDOW         -> advancesToBank;
+            case TREASURY       -> advancesToTreasury;
+            case PAPER          -> paperHeld;
+            case REDEMPTION_DUE -> redemptionDue;
+            case VAULT          -> getVault();
+            case ASSETS         -> totalAssets();
+            case RESERVES       -> reserves;
+            case CURRENCY       -> currency;
+            case LIABILITIES    -> totalLiabilities();
+            case EQUITY         -> equity();
+            case LOSS_CARRIED   -> lossCarried;
+            case REMITTANCE_DUE -> remittanceDue;
+        };
+    }
+
+    /** Whether a year of sheets is filed, so a year ago is known. */
+    public boolean knowsYearAgo() { return sheetsFiled >= SHEET_MONTHS; }
+
+    /** One line of the sheet as it stood a year ago, at the end of the month twelve before this one; 0 until a year is filed. */
+    public double yearAgo(Sheet line) {
+        return knowsYearAgo() ? sheetRing[sheetsFiled % SHEET_MONTHS][line.ordinal()] : 0;
+    }
+
     /* ============================ THE SAVE ============================ */
 
     /**
@@ -937,13 +1145,15 @@ public final class CentralBank {
      * since 0.7.2 what the defence has spent since founding; and since
      * 0.7.15 what it has paid the households for their paper, and (round 2)
      * what it has paid at issue rolling its own paper, and that paper's par;
-     * and since XR2 what it has paid in new money for the vault's dollars. A
-     * slot appended later reads zero from an older save, which is a bank that
-     * has not done that yet. A save without the key founds an empty bank. The
+     * and since XR2 what it has paid in new money for the vault's dollars;
+     * and since CBK1 the month's own lines after all - this month's, last
+     * month's and the year of sheets, for its own pages (ITS OWN
+     * STATEMENTS). A slot appended later reads zero from an older save, which
+     * is a bank that has not done that yet. A save without the key founds an empty bank. The
      * two dials, the holdings and the ceiling, are under keys of their own.
      */
     public double[] toSaveArray() {
-        double[] out = new double[13 + REVENUE_MONTHS + 14];
+        double[] out = new double[13 + REVENUE_MONTHS + 15 + 3 + 2 * LINES.length + SHEET_MONTHS * SHEETS.length];
         int i = 0;
         out[i++] = advancesToBank;
         out[i++] = advancesToTreasury;
@@ -973,6 +1183,15 @@ public final class CentralBank {
         out[i++] = goldMintedLifetime;
         out[i++] = goldRedeemDue;
         out[i++] = goldRedeemedLifetime;
+        // CBK1's (ITS OWN STATEMENTS): the month's lines, last month's and how many are filed, each block led by its length, so a
+        // build with more lines reads an older array's and skips nothing of its own; then the year of sheets the same way.
+        out[i++] = LINES.length;
+        for (Line l : LINES) out[i++] = thisMonth(l);
+        for (Line l : LINES) out[i++] = lastLines[l.ordinal()];
+        out[i++] = monthsFiled;
+        out[i++] = SHEETS.length;
+        for (double[] row : sheetRing) for (Sheet s : SHEETS) out[i++] = row[s.ordinal()];
+        out[i++] = sheetsFiled;
         return out;
     }
 
@@ -1014,6 +1233,19 @@ public final class CentralBank {
         // ...and FB14's: an older save owes the mint nothing and has retired nothing for gold.
         if (i < saved.length) goldRedeemDue = Math.max(0, saved[i++]);
         if (i < saved.length) goldRedeemedLifetime = Math.max(0, saved[i++]);
+        // ...and CBK1's: an older save has filed nothing, a bank whose last month and year ago are not known yet.
+        if (i < saved.length) {
+            int n = Math.max(0, (int) saved[i++]);
+            for (int k = 0; k < n && i < saved.length; k++, i++) if (k < LINES.length) restoreLine(LINES[k], saved[i]);
+            for (int k = 0; k < n && i < saved.length; k++, i++) if (k < LINES.length) lastLines[k] = saved[i];
+            if (i < saved.length) monthsFiled = Math.max(0, (int) saved[i++]);
+        }
+        if (i < saved.length) {
+            int n = Math.max(0, (int) saved[i++]);
+            for (int r = 0; r < SHEET_MONTHS; r++)
+                for (int k = 0; k < n && i < saved.length; k++, i++) if (k < SHEETS.length) sheetRing[r][k] = saved[i];
+            if (i < saved.length) sheetsFiled = Math.max(0, (int) saved[i++]);
+        }
     }
 
     /** An empty bank: nothing lent, nothing made. */
@@ -1034,6 +1266,7 @@ public final class CentralBank {
         java.util.Arrays.fill(revenue, 0);
         revenueFilled = revenueNext = 0;
         startMonth();
+        forgetFiled();
     }
 
     /**
@@ -1065,5 +1298,9 @@ public final class CentralBank {
         dollarsBought *= scale;  dollarsBoughtLifetime *= scale;
         goldRedeemed *= scale;  goldRedeemedLifetime *= scale;  goldRedeemDue *= scale;
         for (int r = 0; r < REVENUE_MONTHS; r++) revenue[r] *= scale;
+        // ...and CBK1's: every line and every sheet it has filed is money too.
+        struckProfit *= scale;  lossRecovered *= scale;  toRemit *= scale;  lossAdded *= scale;  m0AtStart *= scale;
+        for (int k = 0; k < lastLines.length; k++) lastLines[k] *= scale;
+        for (double[] row : sheetRing) for (int k = 0; k < row.length; k++) row[k] *= scale;
     }
 }

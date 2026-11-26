@@ -1438,6 +1438,9 @@ final class GovernmentScreen {
             });
             card.getChildren().addAll(lines);
         }
+        // CBK1 (2026-11-26): the central bank has pages of its own in the Bank tab; this card is a way to them.
+        card.getChildren().add(Kept.scope("central pages", () -> doorPill("The central bank's own pages · Bank › Central bank", Icons.BANK,
+                Palette.MONEY, () -> ui.bankScreen.openCentral(CentralBankScreen.OVERVIEW))));
         return card;
     }
 

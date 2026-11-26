@@ -89,6 +89,7 @@ import java.util.concurrent.TimeUnit;
  *      with software canvas render targets measured separately, without moving the heap dial.
  * 103. Caused FB2 regressions: buyback resolution, header geometry, bar labels, Partners and Search,
  *      and Government's recurring lines retained after one-off lines fill a parked scope.
+ * 104-106. Bank's choice and the central bank's nine pages: kept pages, equality, pictures and reshaping (CBK1).
  *
  * WHY (FS5): the old header repeated several hundred lines of these methods' premises and labels;
  * this section map keeps the assertions discoverable while paying for the new checks machinery.
@@ -4024,6 +4025,162 @@ public class KeptCheck {
         check("...and the Summary view picked again, scrolled, at its top (" + s[2] + ")", (double) s[2] == 0);
     }
 
+    /* ----- The Bank's choice and the central bank (CBK1) ----- */
+
+    /** The central bank's pages that are longer than the bench's window in this city, so that a player can scroll them (the others fit it). */
+static final List<String> CENTRAL_LONG = List.of("History", "Policy");
+
+/** What the harness calls one of the central bank's pages: its Overview, or "the central bank's Income statement page". */
+    static String centralName(String page) {
+        return page.equals(KeptBench.centralPages().get(0)) ? "the central bank's " + page : "the central bank's " + page + " page";
+    }
+
+    /** The hand that puts the Bank tab on its choice of the two banks. */
+    static Hand bankChoiceOn() {
+        return b -> {
+            b.bankChoice();
+            return null;
+        };
+    }
+
+    /** The hand that puts the Bank tab on one page of the central bank. */
+    static Hand centralOn(String page) {
+        return b -> {
+            b.centralOpen(page);
+            return null;
+        };
+    }
+
+    /** Sections 104 to 106: the Bank tab's choice of its two banks, and the central bank's nine pages, kept (CBK1). */
+    static void central(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n=== The Bank's choice and the central bank (CBK1) ===");
+        // The clock paused, as the Bank's sections have it: a month stepped by hand counts up at any speed, the harder case for a page kept.
+        fx(() -> {
+            bench.clock(false, null);
+            bench.speed(0);
+            return null;
+        });
+        List<String> chips = KeptBench.centralPages();
+        final String home = chips.get(0);
+        KeptBench.Page choicePage = fx(() -> bench.central("the Bank's choice", null));
+        KeptBench.Page overview = fx(() -> bench.central(centralName(home), home));
+        pageKeptCaused(g, bench, choicePage, 104);
+        pageKeptCaused(g, bench, overview, 104);
+
+        // 105: the choice and each of the nine pages, the kept page against a page built new, and its pixels.
+        List<KeptBench.Page> pages = new ArrayList<>();
+        pages.add(choicePage);
+        for (String chip : chips) pages.add(chip.equals(home) ? overview : fx(() -> bench.central(centralName(chip), chip)));
+        for (KeptBench.Page p : pages) {
+            arrive(bench, p);
+            pageShows(g, bench, p, 105);
+        }
+
+        // 106: what reshapes the Bank tab's two sides: the choice, each page of the central bank in turn, the commercial bank's Overview, the choice again.
+        KeptBench.Page tab = fx(() -> bench.central("the Bank tab's two sides", null));
+        List<Choice> sides = new ArrayList<>();
+        sides.add(choice("the choice", bankChoiceOn()));
+        for (String chip : chips) sides.add(choice(centralName(chip), centralOn(chip)));
+        sides.add(choice("the commercial bank's Overview", bankOn(null, false)));
+        sides.add(choice("the choice again", bankChoiceOn()));
+        pageReshapedCaused(g, bench, tab, 106, sides);
+        centralPicks(g, bench);
+    }
+
+    /**
+     * Section 106: a chip of the central bank picked lands at the top of its page, as the commercial bank's does (bankPicks): the page's own chip
+     * keeps its scroller and puts it at the top, a month leaves it where the player left it, and the chip of another page, the way back to a page
+     * left scrolled, the choice and the way in from the choice each land at the top.
+     */
+    static void centralPicks(Game g, KeptBench bench) throws Exception {
+        System.out.println("\n--- 106: a chip of the central bank picked lands at the top of its page ---");
+        List<String> chips = KeptBench.centralPages();
+        for (String chip : chips) {
+            KeptBench.Page page = fx(() -> bench.central(centralName(chip), chip));
+            Object[] r = fx(() -> {
+                bench.home(page);
+                bench.showBank();
+                bench.passes();
+                bench.settle();
+                javafx.scene.control.ScrollPane sp = bench.pageScroller();
+                if (sp == null) return null;
+                double room = sp.getContent().getLayoutBounds().getHeight() - sp.getViewportBounds().getHeight();
+                sp.setVvalue(.6);
+                bench.passes();
+                double put = sp.getVvalue();
+                // A month lands: the kept scroller stays where the player left it.
+                month(g);
+                bench.showBank();
+                bench.passes();
+                // (The scroller keeps the pixel it is at when the content grows or shrinks by a card, so its fraction moves: a reset would be 0.)
+                boolean stayed = bench.pageScroller() == sp && sp.getVvalue() > 0;
+                double later = bench.pageScroller() == null ? Double.NaN : bench.pageScroller().getVvalue();
+                // The page's own chip, picked.
+                bench.centralPick(chip);
+                bench.passes();
+                boolean ownSame = bench.pageScroller() == sp;
+                double ownAt = sp.getVvalue();
+                String ownDiffers = againstNew(bench, page);
+                return new Object[]{room, put, stayed, ownSame, ownAt, ownDiffers, later};
+            });
+            if (r == null) {
+                check(page.name() + " has a scroller", false);
+                continue;
+            }
+            System.out.printf("  %s: %.0f px to scroll; scrolled to %.6f; a month later it stayed: %s (at %.6f); its own chip: %.2f (the same scroller: %s)%n",
+                    page.name(), r[0], r[1], r[2], r[6], r[4], r[3]);
+            if (CENTRAL_LONG.contains(chip)) {
+                check(page.name() + " is longer than its window (" + String.format("%.0f", (double) r[0]) + " px to scroll), and its scroller took the player's value (" + r[1] + ")",
+                        (double) r[0] > 0 && (double) r[1] > 0);
+            } else {
+                // (The page fits its window: there is no pixel to scroll, but the scroller keeps the value put on it by hand, so the landing is still read on its value.)
+                check(page.name() + " fits its window (" + String.format("%.0f", -(double) r[0]) + " px to spare), and its scroller took the value put on it (" + r[1] + ")", (double) r[1] > 0);
+            }
+            check("...a month landing leaves the kept scroller where it was put", (boolean) r[2]);
+            check("...its own chip picked leaves the same scroller (the page is kept) at the top (" + r[4] + ")", (boolean) r[3] && (double) r[4] == 0);
+            check("...and the page is equal to a page built new", r[5] == null);
+            if (r[5] != null) System.out.println("  " + r[5]);
+        }
+        // Another page's chip from a scrolled page, the way back to the page left scrolled, the choice and the way in from it: each another scope,
+        // on two pages that are longer than their window.
+        final String first = CENTRAL_LONG.get(0), second = CENTRAL_LONG.get(1);
+        KeptBench.Page start = fx(() -> bench.central(centralName(first), first));
+        Object[] s = fx(() -> {
+            bench.home(start);
+            bench.showBank();
+            bench.passes();
+            bench.settle();
+            javafx.scene.control.ScrollPane sp = bench.pageScroller();
+            double room = sp.getContent().getLayoutBounds().getHeight() - sp.getViewportBounds().getHeight();
+            sp.setVvalue(.6);
+            bench.centralPick(second);
+            bench.passes();
+            double otherAt = bench.pageScroller().getVvalue();
+            bench.pageScroller().setVvalue(.6);
+            bench.centralPick(first);
+            bench.passes();
+            double backAt = bench.pageScroller().getVvalue();
+            bench.pageScroller().setVvalue(.6);
+            bench.bankChoicePick();
+            bench.passes();
+            double choiceAt = bench.pageScroller().getVvalue();
+            bench.pageScroller().setVvalue(.6);
+            bench.centralPick(first);
+            bench.passes();
+            double inAt = bench.pageScroller().getVvalue();
+            String differs = againstNew(bench, start);
+            bench.home(start);
+            return new Object[]{otherAt, backAt, choiceAt, inAt, differs, room};
+        });
+        check(first + " is longer than its window (" + String.format("%.0f", (double) s[5]) + " px to scroll)", (double) s[5] > 0);
+        check("another page's chip picked from a scrolled page lands at its top (" + s[0] + ")", (double) s[0] == 0);
+        check("...the page left scrolled, picked again, at its top (" + s[1] + ")", (double) s[1] == 0);
+        check("...the choice, picked from a scrolled page, at its top (" + s[2] + ")", (double) s[2] == 0);
+        check("...and a page of the central bank picked from the choice, scrolled, at its top (" + s[3] + ")", (double) s[3] == 0);
+        check("...and that page is equal to a page built new", s[4] == null);
+        if (s[4] != null) System.out.println("  " + s[4]);
+    }
+
     /* ----- Finances ----- */
 
     /** The paper the money sections sell, one of each kind the Borrow page offers (and a callable bond too): {kind, term, "callable" or ""}. The Note first: it falls due soonest. */
@@ -5841,11 +5998,13 @@ public class KeptCheck {
         }
     }
 
-    /** Sections 55 to 67: the money screens kept (68, their cost, is KeptTimingCheck's since FS4). */
+    /** Sections 55 to 67, and 104 to 106 (the Bank's choice and the central bank): the money screens kept (68, their cost, is KeptTimingCheck's since FS4). */
     static void money(Game g, KeptBench bench) throws Exception {
         long t = System.nanoTime();
         bank(g, bench);
         t = took("the Bank (55 to 57)", t);
+        central(g, bench);
+        t = took("the Bank's choice and the central bank (104 to 106)", t);
         finances(g, bench);
         financesMenus(g, bench);
         t = took("Finances (58 to 60)", t);
