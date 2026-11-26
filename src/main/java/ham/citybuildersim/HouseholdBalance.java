@@ -734,10 +734,13 @@ public class HouseholdBalance {
         double[] bills=splitByPeople(fresh,fees);
         Household[] housingCells=housingCensusCells(families,fresh);
         java.util.Map<String,HousingResources> result=new java.util.LinkedHashMap<>();
+        // ...a boarder's board is the housing rent it now is (RES3, REV-RES3b on d713bb421): the settlement billed it in the
+        // rent line (afterFixed), so it is taken back with the landlord's bill, not left a fixed expense beside the rent.
+        BoardStrike boarded=boardStruck.get();
         for(int i=0;i<cells.length;i++){
             Household c=housingCells[i],live=cells[i];
-            double liveRent=chargedRent.applyAsDouble(live);
-            double committedRent=Math.min(liveRent,chargedRent.applyAsDouble(c));
+            double liveRent=chargedRent.applyAsDouble(live)+boarded.out(live);
+            double committedRent=Math.min(liveRent,chargedRent.applyAsDouble(c)+boarded.out(c));
             double scheduled=currentIncome.applyAsDouble(c);
             // An opening paid pool cannot concentrate on fewer recipients or fund extra arrivals.
             double paidIncome=sourceWeight[c.row()]>0?income[c.row()]*c.earningWeight()
