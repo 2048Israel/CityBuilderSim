@@ -136,6 +136,18 @@ pages and the links - checked that the three embedded Policy cards call nothing 
 than its window" premise asserted only on the two pages that are (History, Policy), the scroll kept
 checked on all nine; no assertion weakened.
 
+REV-CBK1 (the orchestrator's stranger's review): SHIP, no findings - the income lines against the
+profit formula, the money statement against issue and retire, the load path and the restored flows
+(nothing feeds the next month), FB14's slots, the FX path and the md5 method.
+
+## The dry run
+
+`sh tools/gate.sh CBK1 --dry-run` at 335c41373 on origin/main b2f50a9ef, on the gate box, run
+`/home/jerus/cbs/runs/cbs-gate-CBK1-3jmVouYl` (its `ship.log`, `unnamed.txt`; the PC's
+`target/CBK1-dry.txt`): gate exit 0. The suite (ALL) took 1,023 s, exit 3, known red only (AutoBuild,
+Car, Currency, DeathRecord, Denomination, ForeignDebt, GroundSkip, Holders, HousingDoor, Invest, Kept,
+Map, OrderDoor, Plan, RailDraw, Road and the rest of main's list), nothing new.
+
 ## Left for Jerus
 
 An eye on the pages: Bank, then each card, then each of the nine chips (nothing pending).
