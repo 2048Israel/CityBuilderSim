@@ -132,6 +132,82 @@ as evidence about the played city. Printed figures show those inputs.
 - First revised `--fast`: 0, compile 58 s, Stale 0 firm findings. Revised
   ManufacturingCheck: 0 (`target/MR1-review-ManufacturingCheck.txt`), including
   the new unchanged-order controls and both loaded hold reasons.
+- Revised PopulationCheck: 0 (`target/MR1-review-PopulationCheck.txt`), with
+  the played-city reconciliation and affordability premise.
+
+### Revised-path re-measurement (31f796999)
+
+`MR1-remeasure`, a fresh diagnostic Codex session (MemWatch commit 45.8%
+before start), ran exactly two named invocations, serially, with the revised
+Manufacturing model on the unchanged base. All temporary instrumentation
+and generated files were restored to detached `ded8345fc`; all its jobs ended.
+
+Modern PopulationCheck fixture, through m122: first recovery arm is **m40**,
+the previous saved operating-loss count 23 plus this losing close reaching
+24. Principal is 486.653699484 at m39, 408.864466743 at the sale callback,
+zero at m40 close; its only Shop is sold then. Recovery is 0 at m40, 1 at
+m41, through 11 at m51, and 12 at m52. There are exactly twelve recovery
+holds, m40–51, **zero holds before qualifying distress**, and none later.
+No accepted Manufacturing re-order follows through m122. The day-zero
+houses/shops/depots, Real Estate hold and FX pin were unchanged.
+
+The played m121 tuple `[target, jobDraw, homeDraw, jobsPull, homesPull,
+affordability]` is `[444.89474827672313, 231.12461002178142, 325,
+0.7870857574205539, 0.8091687985821512, 0.7870857574205539]`. Its reconciled
+target is 444.89474827672313, residual **0.0**; population is 431, end-state
+raw draw 556.23199550631 versus migration-call raw draw 556.1246100217815.
+Thus the new played-city assertion establishes the actual rent effect at
+the actual calculation, rather than borrowing a controlled-fixture result.
+Evidence: helper `target/MR1-remeasure-population-flow.csv` and related files.
+
+1900 default, observed through m400 with `TARGET_MONTHS=2400` and the same
+full-run input schedule: findings 0, **no recovery holds**, recovery remains
+12 throughout, including the twelve negative closes m314–325 with principal
+0. Eight baseline/model CSVs match in **2,796 rows / 207,906 common state and
+flow cells**, zero differences. The custom trace matches all 400 monthly
+states and 73 events after excluding only the new recovery scalar. The full
+baseline CSV SHA256 was verified unchanged. This named LongPlaytest run is
+a diagnostic prefix, **not a full LongPlaytest acceptance pass**.
+
+Inference, separately from observation: the complete base run to m2405 has
+no later operating-loss window. The revised guard is inactive on the sole
+loss spell and cannot alter the identical path thereafter; no new full
+2400-month laptop baseline/model run was made. The requested full ensemble
+still follows the reviewer's SHIP.
+
+### Revised acceptance verdict (31f796999)
+
+The review mends were checked with `--fast` (0, compile 58 s), followed by
+ManufacturingCheck 0 and PopulationCheck 0. Those two fresh results were
+reused when completing the unchanged pick; they were not replayed merely
+to put the names into one invocation. All remaining named calls ran serially
+with the shared Earth/world files and `-Dcbs.parallel=1`.
+
+| picked harness | exit |
+|---|---:|
+| ArrivalMixCheck | 0 |
+| BooksCheck | 0 |
+| BuildingDataCheck | 0 |
+| CopperRefiningCheck | 3, registered FS8 only |
+| GdpCheck | 0 |
+| ManufacturingCheck | 0 |
+| MaterialsCheck | 0 |
+| PopulationCheck | 0 |
+| TimingCheck | 0 |
+
+The additional save checks also pass: SaveFileCheck 0, ReloadCheck 0,
+ReadPathCheck 0. Evidence is `target/MR1-review-<Harness>.txt`, with the
+fresh Copper log copied to `target/MR1-review-CopperRefiningCheck-harness.log`.
+No source, conservation, save assertion or time limit was changed during
+these checks. The revised source diff was reviewed by the builder against
+62df472c3; all three requested mends are present. All acceptance and
+diagnostic jobs have exited; helpers have ended. Final post-check fetch
+still names main `ded8345fc`, so no merge or repeat is required.
+
+`sh tools/pick.sh origin/main HEAD` remains nine of 257 harnesses. Its
+automatic money/saves/threading review line is still "not needed"; the
+brief's manual money/saves review requirement and the same REV-MR1
+reviewer's re-read take precedence. The provisional marker remains.
 
 The original measurements and first-submission check record below remain
 historical evidence. New-path measurements and the revised pick follow the
@@ -259,18 +335,20 @@ record or VERSION was edited. The final post-check fetch still names
 ## Final trajectory verification and review sequence
 
 ★ The brief explicitly owes the final model an 80-run ensemble after the
-stranger's SHIP. Keep that full comparison, against the newest baseline,
-rather than add another exploratory laptop prefix. A proposed first-400
-comparison was prepared but not run: the helper's original turn ended
-before its late authorization arrived, and I revoked its automatic resume
-before starting final named checks. The source-only preparation also found
-that `LongPlaytest.TARGET_MONTHS` changes watch windows and skip truncation,
-so shortening the horizon would not prove an identical input path.
-No unchanged-final-default claim is made from the baseline measurements.
-The early recovery hold can change staffing refusals/WantedPosts even when
-the old planner was already refusing to build; the ensemble is the required
-final trajectory evidence. Review's SHIP is the go for it, per the brief's
-final ordering, with main merged first. No extra ensemble request is owed.
+reviewer's SHIP, against `docs/ensemble/0.9.210.md` (or a newer main baseline
+if one ships). The first submission prepared but did not run a default
+prefix comparison. REV-MR1 requested re-measurement of the corrected
+activation, so the revised-prefix evidence above now supplies it. It keeps
+`TARGET_MONTHS=2400`: reducing that value would change the watch windows
+and skip truncation and would not preserve the input schedule.
+
+The revised default prefix is identical and never arms recovery. The full
+baseline has no later qualifying loss window; subsequent equivalence is an
+inference from that inactive guard, not a new full-model LongPlaytest pass.
+The explicit ensemble remains owed and will check all seeds, including
+ones where qualifying distress does occur. Review's SHIP is its go, with
+main merged and the final model pushed first; no extra ensemble question
+is owed. The revised pick remains nine harnesses, so no dry run is owed.
 - `tools/batch-id.sh MR1` initially flags the remote branch because the
   orchestrator pre-pushed it at exactly origin/main's spine; no MR1 merge or
   published record exists. The first batch commit will make the remote tip
@@ -278,8 +356,8 @@ final ordering, with main merged first. No extra ensemble request is owed.
 
 ## Outstanding
 
-Request stranger's money/saves review on the pushed provisional ship file,
-including the PopulationCheck law correction. After its SHIP, merge main
-and run the brief's ensemble on the
+Send the second mends on the updated provisional ship file to the same
+reviewer. After its SHIP, merge main and run
+the brief's ensemble on the
 final pushed model against the newest baseline (currently
 `docs/ensemble/0.9.210.md`). The pick is not ALL, so no dry run is owed.
