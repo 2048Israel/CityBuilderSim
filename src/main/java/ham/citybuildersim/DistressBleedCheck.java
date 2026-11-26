@@ -491,6 +491,16 @@ public class DistressBleedCheck {
                     c.plans.getOperatingLossMonths(c.key) == 0 && c.bs.getNetIncome() < 0 && !c.ask(c.bs).build);
         }
 
+        // The no-interim-lender backstop already restructures the debt and closes the overdraft without selling the plant.
+        c.lend(c.key);
+        double assets = LOAN / (2 * BusinessDebtManager.INSOLVENCY_TRIGGER);
+        c.desk.setAssets(c.key, assets);
+        c.desk.setCash(c.key, OVERDRAWN);
+        double writtenOff = c.desk.restructure(c.key, true);
+        assertTrue("the existing no-lender restructuring writes down debt and closes the overdraft while keeping the plant",
+                writtenOff > 0 && Math.abs(c.desk.getPrincipal(c.key) - assets * BusinessDebtManager.RESTRUCTURE_TARGET) < 1e-6
+                        && c.desk.getCash(c.key) == 0 && c.desk.takeOverdraftForgiven(c.key) == -OVERDRAWN && c.held() == CENTRES);
+
         /* ============ 7. only a sector the spare-capacity rule cannot reach bleeds ============ */
         out.println("\n--- only a sector with no demand reading bleeds ---");
 
@@ -534,6 +544,8 @@ public class DistressBleedCheck {
 
         long freightHeld = track == null ? 0 : bm.getQuantity(track.getId());
         a.cash(freight.key(), OVERDRAWN);
+        a.streaks(freight.key(), DISTRESS, 0);
+        assertTrue("a sector that does not bleed also keeps paying plant when overdrawn", !a.ask(freight).build);
         a.streaks(freight.key(), DISTRESS, DISTRESS);
         BusinessInvestment.Decision freightOverdrawn = a.ask(freight);
         a.cash(freight.key(), CASH);
