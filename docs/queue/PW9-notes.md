@@ -831,8 +831,10 @@ the helper ended with a clean tracked tree and no child JVM. Evidence:
 The decisive cash trace finds a feasible 3,015-unit Small Steam full plan
 with a 733.97-month quote. It is **not** rejected as infeasible. Instead
 `timely()` vetoes it for the slightly cheaper future Diesel full plan
-(cost/value 0.0872665 versus 0.087811), although that future row's first
-unit fails the budget that let one 102.92 steam unit survive. The current
+(cost/value 0.0872665 versus 0.087811). That future row is not orderable
+today and survives the cash fallback without the corresponding budget
+screen. The coding slice independently verified its first-unit quote as
+1,194.30 plus zero ground, legally unfundable against 103.95. The current
 15-month steam increment is fundable from 103.95 cash; the veto turns that
 legal incremental step into an all-held result.
 
@@ -856,3 +858,68 @@ control and cause a separate real early-wind need. The old exact
 lead-plus-horizon pin must become the actual-count native frontier law.
 No original fixture has been hidden, conservation/save law weakened, or
 new known-red row proposed.
+
+## EssentialWorks mend and focused verification
+
+Source commit `54d4b6cc683259d63b6662d86fa4e5dff88a8cce` changes only
+BuildAdvice and EssentialWorksCheck; generated maps are in `48eeba3eb`.
+★ The nine-line production change quotes a future POWER row's first unit
+and reuses `AutoBuilder.groundFor`/`pays` before either timely veto. Ground
+uses `LandManager.rehearse`, payment uses existing `canPay`/bond quotes;
+these are pure feasibility reads. No new budget model, future revenue,
+lifecycle value, non-POWER comparison, price, stock, payroll or save field
+is introduced. Source review checked the bounded guard and all retained
+controls; both applied source files are SHA256-identical to the checked
+helper tree, whose base differed from root only in notes.
+
+The unchanged scarce-cash premise now buys one 102.91966621238079 Steam
+unit of the 3,015 wanted, with zero borrowing/debt change. The future
+Diesel's 1,194.30 first unit fails the same legal screen. The advice-parity
+control's actual five-Coal quote is 393.588 months, with native seasonal
+peak/binding month 402; every intervening native month closes and exact
+card/automatic count/value parity remains asserted.
+
+The original pending fixture and m39 save checkpoint stay intact. Added
+observation proves Oil5 at m37, before that checkpoint. At m39 Oil6 and
+Diesel36 are pending; the candidate peak +400 counts Oil6/Diesel0,
+484,446 supply against 395,522 reserve, and no extra power order. A new
+native mill project after the unchanged real save/load adds 77,000 kW
+at opening +6, zero the month before. Both continuations then order Oil1
+at m40 and Gravel13 at m41; the complete nonempty order sequences are
+equal, one by one. No draw/history restoration equalizes the saved twins.
+
+The original interim wind scenario retains its actual reserve-only
+Steam39 choice and first-completion protection. The additional control
+plays normally into 1915, so Steam retires by its real offer window;
+other eligible plants, native capacity/cost and native dispatch remain.
+At absolute m181 it orders Wind1 before the first physical loss at m186.
+Wind opens at m217, before coal m220 and the already-covered peak m223;
+at its opening it removes the native 24,674 kWh loss exactly, with
+positive used/avoided value and an advanced saved deadline. This asserts
+an early order and relief before coal, not commissioning before m186.
+The test helper's initial kW/kWh error was corrected using native
+`unserved[half] * halfHours(half)`, preserving the intended energy target;
+no model size, date, threshold or zero-closure law was tuned.
+
+Final serial wrappers in `codex-PW9-mend` all ended **0**:
+EssentialWorksCheck, PowerPlanCheck, BuildAdviceCheck, WorksFinanceCheck
+and `--fast` (Stale zero firm). PowerPlan's existing cheaper-future,
+whole-month/seasonal, pending-count and falling-count controls stay green.
+Root applied the reviewed patches, verified both source hashes and ran
+its own complete `--fast`, also **0** (`target/PW9-postgate-fast.log`).
+Per-name logs, hashes, failed prototype runs and source/test dispositions
+are in `codex-PW9-mend/target/PW9-mend-report.txt`,
+`PW9-mend-patch-sha256.txt` and its named log paths. Both helpers and all
+their wrappers/JVMs ended before this next diagnosis was started.
+
+★ Reject restoring real derived state after load to make a prototype
+pass. An attempted earlier m37 save exposed a synthetic consumption
+setter not in PowerState; restoring only that draw still left Oil7 versus
+Oil5 and different remits. That residual is **not exonerated** by the
+passing original checkpoint. The attempted restoration is absent from
+the committed source. Failed evidence and exact source leads remain in
+`codex-PW9-mend/target/PW9-mend-early-save-finding.txt`. A fresh bounded
+PW9-save37 slice now diagnoses fixture-only versus native save/advice
+fault, with at most two named probes and no model/save fix authority.
+Readiness remains provisional until that finding and final measurements
+are settled; this failed full gate is not reused.
