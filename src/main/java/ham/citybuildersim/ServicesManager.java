@@ -155,15 +155,14 @@ public class ServicesManager {
                 utilitiesHandler::setBuildingWaterDraw,
                 BuildingsTemplate::getWaterConsumption);
 
-        // ...but only businesses are invoiced for it. Residents, the homes
-        // they live in, the city's own buildings and the bank draw water
-        // nobody is billed for.
+        // Sector-owned buildings are invoiced, including rental homes through
+        // Real Estate. Residents' per-person draw, city buildings and the bank
+        // remain unbilled.
         //
-        // SINCE THE SECTOR TEMPLATE (2026-09-11) the paying customer is
-        // exactly the business building a sector owns: every sector's
-        // statement charges the power and water of its own buildings, the
-        // homes excepted (see BuildingsTemplate.isBilledForUtilities). That
-        // replaced a hand-kept list of four categories, which had at one
+        // The sector template replaced a hand-kept list of four categories:
+        // every sector's statement charges its own buildings. RES3 includes
+        // rental homes in that invoice (BuildingsTemplate.isBilledForUtilities).
+        // The old list had at one
         // point left 73% of the city's power billed to nobody while the
         // utility booked revenue on all of it - money from nowhere. The
         // utility's REVENUE is read off the statements themselves (see
@@ -177,13 +176,13 @@ public class ServicesManager {
                 buildingManager.getTotalDouble(
                         t -> BuildingsTemplate.isBilledForUtilities(t) ? t.getWaterConsumption() : 0));
 
-        // ...and what the homes draw of the rest (0.7.28), which the Services
-        // screen splits the unbilled draw by: homes, and the city's own.
+        // Only unbilled homes belong in this second category. Rental homes
+        // already occur in the billed category and must not be counted twice.
         utilitiesHandler.setHomesDraw(
                 buildingManager.getTotalDouble(
-                        t -> t.getCategory() == BuildingType.RESIDENTIAL ? t.getElectricityConsumption() : 0),
+                        t -> t.getCategory() == BuildingType.RESIDENTIAL && !BuildingsTemplate.isBilledForUtilities(t) ? t.getElectricityConsumption() : 0),
                 buildingManager.getTotalDouble(
-                        t -> t.getCategory() == BuildingType.RESIDENTIAL ? t.getWaterConsumption() : 0));
+                        t -> t.getCategory() == BuildingType.RESIDENTIAL && !BuildingsTemplate.isBilledForUtilities(t) ? t.getWaterConsumption() : 0));
 
         updateInfrastructure();
     }

@@ -80,6 +80,57 @@ public class InvestCheck {
         try { g.simulateMonths(1); } finally { System.setOut(out); }
     }
 
+    /** Full occupancy decides eligibility; sparse current rent only ranks the legacy alternatives. */
+    static void legacyPartialFill(Path root) {
+        System.out.println("\n--- legacy housing keeps positive-gross partial-fill projects eligible ---");
+        Game g = city(root, "legacy-partial-fill");
+        var bm = g.getBuildingManager();
+        var em = g.getEconomyManager();
+        var re = g.getSectors().realEstate();
+        var house = template(g, "House");
+        bm.addStack(house, 100, true);
+        re.housingMarket().reset();
+        var plans = new BusinessInvestment(bm, em);
+        plans.setFamilies(g.getFamilies());
+        plans.setLandAvailable(house.getLandSqFt(), 0);
+        assertTrue("fixture: legacy housing market is inactive", !re.housingMarket().active());
+        assertTrue("fixture: standing housing covers latent job demand", re.latentHeadShortfall() <= 0);
+        assertTrue("fixture: House is the only known family form that fits",
+                bm.getTemplatesBySector(re.key()).stream()
+                        .filter(t -> t.getCapacity() > 0 && t.homeSize() > FamilyModel.STUDIO_MAX_SIZE
+                                && plans.plotsAvailableFor(t) > 0)
+                        .toList().equals(java.util.List.of(house)));
+
+        double carry = em.housingCarry(house);
+        double hurdle = em.housingBuildHurdle(house);
+        double rent = hurdle / house.getCapacity() * (1 + ham.citybuildersim.sectors.RealEstate.BUILD_MARGIN);
+        re.setRentPrice(rent);
+        // Half the doors needed to cover this project's actual operating carry.
+        double partialDoors = carry / (FamilyModel.rentWeightOf(house.homeSize()) * rent) / 2;
+        long familyHomes = bm.getHousingInventory().stock().stream()
+                .filter(s -> s.dwelling().capacity() > FamilyModel.STUDIO_MAX_SIZE)
+                .mapToLong(s -> s.structures() * s.dwelling().count()).sum();
+        re.setSegments(0, familyHomes, 0, familyHomes + partialDoors,
+                0, (familyHomes + partialDoors) * house.homeSize());
+        double gross = re.estimatedMonthlyProfit(NewUnit.standing(house), plans);
+        assertTrue("fixture: sparse fill is positive and below a whole House", partialDoors > 0 && partialDoors < house.getDwellings());
+        assertTrue("fixture: House has a positive actual project quote and carry", plans.getCostOf(house, 1) > 0 && carry > 0);
+        assertTrue("fixture: full House rent clears its actual build hurdle", house.getCapacity() * re.priceForSegment(house) >= hurdle);
+        assertTrue("fixture: currently fillable House rent is positive with negative NOI", gross > 0 && gross - carry < 0);
+        var choice = re.plan(plans, g);
+        assertTrue("legacy full-hurdle eligibility survives negative partial-fill NOI", choice.build && choice.template == house);
+
+        plans.setLandAvailable(0, 0);
+        var noLand = re.plan(plans, g);
+        assertTrue("legacy positive-gross project still requires land", !noLand.build && noLand.reason.startsWith("no land"));
+        plans.setLandAvailable(house.getLandSqFt(), 0);
+        re.setRentPrice(hurdle / house.getCapacity() / 2);
+        assertTrue("legacy project below its full-occupancy hurdle still refuses", !re.plan(plans, g).build);
+        re.setRentPrice(rent);
+        re.setSegments(0, familyHomes, 0, familyHomes, 0, familyHomes * (double) house.homeSize());
+        assertTrue("legacy zero fillable doors still produce no order", !re.plan(plans, g).build);
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -201,10 +252,15 @@ public class InvestCheck {
          */
         Game held = city(root, "held");
         BuildingManager heldBuildings = held.getBuildingManager();
-        heldBuildings.addStack(template(held, "House"), 1_000, true);
+        heldBuildings.addStack(template(held, "House"), 10_000, true);
         heldBuildings.addStack(template(held, "Bakery"), 30, true);
         heldBuildings.addStack(template(held, "Construction Depot"), 10, true);
         month(held);
+        // RES3: the formatting fixture is ahead in affordable doors as well as
+        // beds. A vacant premium portfolio is no longer sufficient to cause a hold.
+        BuildingsTemplate heldHouse=template(held,"House");
+        held.getSectors().realEstate().housingMarket().setAsk(new HousingInventory.Key(heldHouse.getId(),
+                heldHouse.getHousingRecipe().mix().getFirst().id()),0);
         BusinessInvestment plansHeld = new BusinessInvestment(heldBuildings, held.getEconomyManager());
         plansHeld.setLandAvailable(1e12, 0);
         long heldJobs = held.getPopulationManager().getTotalJobs() + heldBuildings.getPostsWithheld();
@@ -213,6 +269,8 @@ public class InvestCheck {
         assertTrue("fixture: the landlords hold with a thousand posts or more", !hold.build && heldJobs >= 1_000
                 && hold.reason.startsWith("housing ahead of jobs"));
         assertTrue("the hold's word groups its thousands", hold.reason.contains(String.format("(%,d now, ", heldJobs)));
+
+        legacyPartialFill(root);
 
         /* ==================== 4. retail ==================== */
         System.out.println("\n--- retail: baskets wanted against what the shops hand over ---");
@@ -490,7 +548,9 @@ public class InvestCheck {
         // ...and cut by the plots: the ground for four is four, however big the gap.
         BusinessInvestment fourPlots = new BusinessInvestment(hb, housed.getEconomyManager());
         fourPlots.setLandAvailable(picked.getLandSqFt() * 4, 0);
-        check("the ground for four plots -> four, however big the gap", fourPlots.orderSize(2500, picked.getCapacity(), picked), 4);
+        double moreThanFour = 5.0 * picked.getCapacity();
+        assertTrue("fixture: the gap needs more than four of the chosen building",moreThanFour>4.0*picked.getCapacity());
+        check("the ground for four plots -> four, however big the gap", fourPlots.orderSize(moreThanFour, picked.getCapacity(), picked), 4);
         check("...and the gap's own when it is under the plots", fourPlots.orderSize(picked.getCapacity() * 2.0, picked.getCapacity(), picked), 2);
         fourPlots.setLandAvailable(0, 0);
         check("...and none where there is no ground at all", fourPlots.orderSize(2500, picked.getCapacity(), picked), 0);
@@ -714,8 +774,15 @@ public class InvestCheck {
         assertTrue("land short of the gap -> still builds", d.build);
         check("...but only what there are plots for", d.quantity, 5);
 
-        // Not quite one plot is no plot.
-        tight.setLandAvailable(footprint - 1, 0);
+        // Not quite the smallest known housing plot is no plot. A preferred
+        // form's plot can still leave room for a legitimate smaller alternative.
+        double smallestHousingPlot = hb.getTemplatesBySector(landlords.key()).stream()
+                .filter(t -> t.getCapacity() > 0 && t.getLandSqFt() > 0)
+                .mapToDouble(BuildingsTemplate::getLandSqFt).min().orElseThrow();
+        tight.setLandAvailable(smallestHousingPlot - 1, 0);
+        assertTrue("fixture: no known housing form fits this ground",
+                hb.getTemplatesBySector(landlords.key()).stream().filter(t -> t.getCapacity() > 0)
+                        .noneMatch(t -> tight.plotsAvailableFor(t) > 0));
         d = landlords.plan(tight, housed);
         assertTrue("under one plot -> refuses", !d.build);
         assertTrue("...and says land is why", d.reason.startsWith("no land"));
@@ -740,6 +807,42 @@ public class InvestCheck {
         tight.setLandAvailable(1e12, 0);
         d = landlords.plan(tight, housed);
         assertTrue("land no longer binding -> the order is back", d.build && d.quantity > 5);
+        var quantityMarket = housed.getSectors().realEstate().housingMarket();
+        assertTrue("fixture: the land-order quantity uses actual funded housing demand", quantityMarket.active());
+        /*
+         * RES3c, 2026-11-25. Since the ask is struck on the home's market value (RES3's mend 1) the landlords' best home
+         * here is a Duplex, two doors of one kind, and a form of one kind has its need at its income's knee: every door of
+         * the need lets at its class's ask and none past it, so the order is the need and the hurdle never cuts inside it
+         * (641 Duplexes, each 0.0776 a month against a hurdle of 0.0486). The hurdle cuts inside the need of a form of
+         * several kinds, whose need is the most-wanted kind's and leaves the other kinds' doors empty. So each best home
+         * the need cuts is priced out of first place, as section 2 prices out the House (its materials a millionfold),
+         * until the best is one the hurdle cuts, and all are put back after.
+         */
+        java.util.Map<BuildingsTemplate, Integer> pricedOut = new java.util.LinkedHashMap<>();
+        while (d.build && d.template != null && pricedOut.size() < 20
+                && d.quantity >= quantityMarket.forecast(housed).quantityNeeded(d.template)) {
+            pricedOut.put(d.template, d.template.getConstructionMaterials());
+            d.template.setConstructionMaterials(d.template.getConstructionMaterials() * 1_000_000 + 1_000_000);
+            d = landlords.plan(tight, housed);
+        }
+        System.out.printf("   priced out of first place: %s; the best is then %s%n",
+                pricedOut.keySet().stream().map(BuildingsTemplate::getName).collect(java.util.stream.Collectors.joining(", ")),
+                d.template == null ? "none" : d.template.getName());
+        if (d.build && d.template != null) {
+            var quantityForecast = quantityMarket.forecast(housed);
+            double hurdle = housed.getEconomyManager().housingBuildHurdle(d.template);
+            assertTrue("the returned order clears its actual forecast-income hurdle",
+                    quantityForecast.income(d.template, d.quantity) >= hurdle * d.quantity);
+            boolean nextRequested = d.quantity < quantityForecast.quantityNeeded(d.template)
+                    && d.quantity < tight.plotsAvailableFor(d.template);
+            assertTrue("fixture: the next quantity is inside both funded demand and the land cap", nextRequested);
+            if (nextRequested) {
+                long next = d.quantity + 1;
+                assertTrue("the next requested quantity is blocked by its actual forecast-income hurdle",
+                        quantityForecast.income(d.template, next) < hurdle * next);
+            }
+        }
+        pricedOut.forEach(BuildingsTemplate::setConstructionMaterials);
 
         /*
          * THE LANDLORDS ORDER THE GAP, NOT MONTHS OF WORK (BA1). REWRITTEN: this asserted that sites owing more than
@@ -806,6 +909,16 @@ public class InvestCheck {
         housedBuilders.updateJobFillRate(thinned);
         housedBuilders.updateWages(housed.getEconomyManager().getWageRates(), housedBuilders.postsPerTier());
         double roomLeft = AutoBuilder.ORDER_MONTHS * housed.getBuildingOutputAtEveryPost() - owedRe;
+        // RES3c, 2026-11-25: a month's output is whole points (Game.getBuildingOutputAtEveryPost()), so a year's room moves
+        // in steps of ORDER_MONTHS; with a Duplex of 86 points the best home, 95% of it came out a step high, at 86. The
+        // crews are thinned on until the room is under it.
+        for (int i = 0; i < 60 && roomLeft >= bestHome.getConstructionPoints(); i++) {
+            thin *= 0.98;
+            java.util.Arrays.fill(thinned, thin);
+            housedBuilders.updateJobFillRate(thinned);
+            housedBuilders.updateWages(housed.getEconomyManager().getWageRates(), housedBuilders.postsPerTier());
+            roomLeft = AutoBuilder.ORDER_MONTHS * housed.getBuildingOutputAtEveryPost() - owedRe;
+        }
         System.out.printf("   crews at %.3f of their posts: %,.0f points of a year's room, a %s is %,d and a %s %,d%n", thin, roomLeft,
                 bestHome.getName(), bestHome.getConstructionPoints(), smallest.getName(), smallest.getConstructionPoints());
         assertTrue("fixture: a year's room is less than one of the best home, and more than the smallest",
@@ -1281,9 +1394,28 @@ public class InvestCheck {
         double rB19 = pe.buildersSalesRate();
         double rM19 = pe.getTaxPolicy().effectiveSalesRate(priced19.getSectors().materials());
         assertTrue("fixture: the builders charge a sales tax", rB19 > 0);
-        Game.BuildQuote q19 = priced19.quoteBuild(house19, 10);
+        // Quote before a first month, on genuinely empty sites, at the same
+        // explicit wage ladder. No order premium is read back from the pricer.
+        Game quoteCity19 = city(root, "builders-price-empty-queue");
+        quoteCity19.playOnLiterals();
+        BuildingManager quoteBuildings19 = quoteCity19.getBuildingManager();
+        EconomyManager quoteEconomy19 = quoteCity19.getEconomyManager();
+        quoteEconomy19.getTaxPolicy().reset();
+        quoteEconomy19.updateWages(set19, quoteBuildings19.getJobArrayByName("Commercial Bank"));
+        assertTrue("fixture: the quote has no queued site or priority work", quoteBuildings19.pointsOwedOnSite() == 0);
+        double sites19 = quoteCity19.getBuildingOutputAtEveryPost();
+        double output19 = quoteCity19.getConstructionOutputAtEveryPost();
+        assertTrue("fixture: ten Houses stay below the premium knee at the local sites' pace",
+                output19 == 0 || (sites19 > 0
+                        && 9 * house19.getConstructionPoints() <= BuildersShort.KNEE_MONTHS * sites19));
+        assertTrue("fixture: the empty-queue quote has the same wages and tax rates",
+                quoteBuildings19.nonMaterialCost(template(quoteCity19, "House")) == pb.nonMaterialCost(house19)
+                        && quoteEconomy19.buildersSalesRate() == rB19
+                        && quoteEconomy19.getTaxPolicy().effectiveSalesRate(quoteCity19.getSectors().materials()) == rM19);
+        Game.BuildQuote q19 = quoteCity19.quoteBuild(template(quoteCity19, "House"), 10);
         double plantNet19 = q19.plantCost * (1 - rM19);
-        check("the quote's work is ten Houses' work at today's wages", q19.sticker, 10 * pb.nonMaterialCost(house19), 1e-9);
+        check("the empty-queue quote's work is ten Houses' work at today's wages, with premium exactly one",
+                q19.sticker, 10 * pb.nonMaterialCost(house19), 1e-9);
         check("the quote is the work and the material over one less the builders' rate",
                 q19.total, (q19.sticker + q19.importCost + plantNet19) / (1 - rB19), 1e-9);
         check("...its allowance the material in it, on the same terms",

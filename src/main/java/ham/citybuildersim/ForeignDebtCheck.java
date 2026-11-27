@@ -816,6 +816,14 @@ public class ForeignDebtCheck {
         System.setOut(quiet);
         try {
             city = tradingCity(dir);
+            /*
+             * RES3: ...AND A BANK THAT STANDS TO BID FOR IT. This city's bank has failed by month 60 (it is in resolution, its equity -D$221), where it stood
+             * open when the section was written, and a bank in resolution bids nothing for the
+             * city's paper (Game.auctionBidders(): its room is nothing). The households alone took 79.4 of the 6-month note's 80.2 of face:
+             * a short sale under the minimum issue, "Nothing issued", and the ladder lost its note. So the treasury resolves the bank first,
+             * as it does in play (Game.resolveBank(): the hole and the capital to reopen), and the bank bids for the face the households leave.
+             */
+            if (city.getBank().isInResolution()) city.resolveBank();
             city.handleTBillLogic(3_000 * PriceLevel.FACTOR, 6, 100 * PriceLevel.FACTOR);
             city.handleMediumBondLogic(4_000 * PriceLevel.FACTOR, 5, 100 * PriceLevel.FACTOR);
             city.handleLongBondLogic(5_000 * PriceLevel.FACTOR, 20, 100 * PriceLevel.FACTOR);

@@ -591,7 +591,8 @@ public class BuildingsStacks {
      * This site's claim on the foreign crews' book (REV-FC2, the second review; BuildingManager.noteAbroad(),
      * abroadOwedOf()): the work its orders handed him, in a unit only the claims of the sites with points owed share -
      * his book is theirs in proportion to their claims, so his month, and any cut of his book, falls on every site's
-     * work abroad alike, and a cancel takes the site's own and no other's. Saved as points (DataSave.abroadOwedById).
+     * work abroad alike, and a cancel takes the site's own and no other's. Saved as points (DataSave.abroadOwedById) and as
+     * the claims themselves (DataSave.abroadClaimById, R1g), which the load puts back over the points.
      */
     private double abroadClaim;
 

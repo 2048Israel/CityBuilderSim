@@ -4267,12 +4267,15 @@ public final class CityMap {
      * What was carried to district d as {month, code} pairs, in the order they came (CL3; Link.in), null for none - its link's, once
      * planned. A carry is never written after it is made: not to be written. The playtest's layout watch compares it pair by pair
      * (PT1-M4): carried() counts it by type, and a log changed in its middle (the squaring of an upstream district's log with its
-     * plan's counts, DistrictPlan's OVERFLOW LOG) can leave the counts as they were.
+     * plan's counts, DistrictPlan's OVERFLOW LOG) can leave the counts as they were. The link's own array, not a copy:
+     * a link's logs are never written once it is made (carryMoves() makes a new link on a clone, a plan's carry out is a
+     * clone of its overflow log), so the watch keeps it a month as it is; it is not to be written. Copied, the watch held
+     * every district's whole history of carries twice over beside the map's (RES3c, 2026-11-26, the m2389 heap).
      */
     public int[] carriedLog(District d) {
         drawnOf(d);
         Link l = links.get(d);
-        return l == null || l.in == null ? null : l.in.clone();   // a copy: the watch keeps it a month
+        return l == null ? null : l.in;
     }
 
     /**

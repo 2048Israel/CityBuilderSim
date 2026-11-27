@@ -1716,7 +1716,12 @@ public class TruckRouteCheck {
                     seenIn + " / " + seenOut + " / " + seenHome);
 
             Game bare = new Game(GameFiles.scratch("truckcheck-bare"));
-            quietly(() -> { bare.newGame(); for (int i = 0; i < 3; i++) bare.toggleNextMonth(); });
+            quietly(() -> {
+                bare.newGame();
+                for (Sector sector : bare.getSectors().all()) bare.getBusinessInvestment().holdSector(sector.key());
+                bare.getBusinessInvestment().holdBranches();
+                for (int i = 0; i < 3; i++) bare.toggleNextMonth();
+            });
             double bulk = 0;
             for (Sector s : bare.getSectors().all()) for (Good g : Good.values()) bulk += Haulage.legTonnes(s, g, 0);
             Freight bf = bare.getSectors().freight();

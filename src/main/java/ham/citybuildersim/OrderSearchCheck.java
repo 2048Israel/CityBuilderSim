@@ -768,7 +768,7 @@ public class OrderSearchCheck {
         }
 
         @Override
-        public void mortgaged(long asked, LongToDoubleFunction costOf, double cash, double noiPerUnit,
+        public void mortgaged(long asked, LongToDoubleFunction costOf, LongToDoubleFunction noiOf, double cash, double noiPerUnit,
                               double annualRate, Mortgage.Decision found) {
             mortgaged++;
             largestMortgage = Math.max(largestMortgage, asked);
@@ -780,7 +780,9 @@ public class OrderSearchCheck {
             } else if (carryOf.applyAsDouble(asked) > 1) {
                 mortgageCarried++;
             }
-            Mortgage.Decision byCount = decidedByCount(asked, costOf, cash, noiPerUnit, annualRate, carryOf);
+            // ...each count read at its own rent roll, as the lender reads each slice since RES3 (0f710131e): the whole
+            // order's figure read every count at its average, and 29 of 168 mortgages to m500 differed (RES3c, 2026-11-25).
+            Mortgage.Decision byCount = decidedByCount(asked, costOf, cash, noiOf, annualRate, carryOf);
             if (byCount.quantity() > 0 && byCount.quantity() < asked) mortgagedTrimmed++;
             if (byCount.quantity() == 0) mortgagedRefused++;
             if (!found.equals(byCount)) {
@@ -855,6 +857,12 @@ public class OrderSearchCheck {
     /** Mortgage.decide()'s count: down from what was asked, the lender's test on the shortfall grown by the order's carry (BA1; n -> 1 for none). */
     static Mortgage.Decision decidedByCount(long asked, LongToDoubleFunction costOf,
                                             double cash, double noiPerUnit, double annualRate, LongToDoubleFunction carryOf) {
+        return decidedByCount(asked, costOf, cash, n -> noiPerUnit, annualRate, carryOf);
+    }
+
+    /** ...with each count's own rent roll, noiOf(n) a building's rent less its carry in an order of n. */
+    static Mortgage.Decision decidedByCount(long asked, LongToDoubleFunction costOf,
+                                            double cash, LongToDoubleFunction noiOf, double annualRate, LongToDoubleFunction carryOf) {
         String trimmedBy = null;
         double ownForOne = Double.NaN, coverageOfOne = Double.NaN;
         boolean shortForOne = false;
@@ -869,7 +877,7 @@ public class OrderSearchCheck {
                 if (trimmedBy == null) trimmedBy = Mortgage.Decision.DOWN_PAYMENT;
                 continue;
             }
-            double coverage = Mortgage.coverage(noiPerUnit * n, (cost - cash) * carryOf.applyAsDouble(n), annualRate);
+            double coverage = Mortgage.coverage(noiOf.applyAsDouble(n) * n, (cost - cash) * carryOf.applyAsDouble(n), annualRate);
             if (n == 1) coverageOfOne = coverage;
             if (coverage >= Mortgage.MORTGAGE_DEBT_COVERAGE) return new Mortgage.Decision(n, trimmedBy, false, ownForOne, coverageOfOne);
             if (trimmedBy == null) trimmedBy = Mortgage.Decision.LENDERS_TEST;

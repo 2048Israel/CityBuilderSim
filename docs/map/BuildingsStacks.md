@@ -1,4 +1,4 @@
-# BuildingsStacks.java - 972 lines · 88 methods · 0 constants · model
+# BuildingsStacks.java - 973 lines · 88 methods · 0 constants · model
 
 `ham/citybuildersim/BuildingsStacks.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -47,15 +47,15 @@
 | 514 | `private final java.util.ArrayList<Lot> lots` |  |
 | 517 | `private long lastFinishedLoose` | Finished in the most recent advanceConstruction() call with no lot: loose, theirs to be decided at the finish. |
 | 519 | `private final java.util.TreeMap<String, Long> lastFinishedWithout` | ...and of those that finished in lots, how many came without each piece, by id. |
-| 596 | `private double abroadClaim` | This site's claim on the foreign crews' book (REV-FC2, the second review; BuildingManager.noteAbroad(), abroadOwedOf()): the work its orders handed him, in a unit only the claims of the sites with points owed share - ... |
-| 648 | `private java.util.function.LongPredicate mayRemove` | for immediate add |
-| 649 | `private java.util.function.Consumer<BuildingsStacks> physicalChanged` |  |
+| 597 | `private double abroadClaim` | This site's claim on the foreign crews' book (REV-FC2, the second review; BuildingManager.noteAbroad(), abroadOwedOf()): the work its orders handed him, in a unit only the claims of the sites with points owed share - ... |
+| 649 | `private java.util.function.LongPredicate mayRemove` | for immediate add |
+| 650 | `private java.util.function.Consumer<BuildingsStacks> physicalChanged` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9 | 964 | **type** `public class BuildingsStacks` | One building type in the city: how many stand, how many are on site, and the progress, material and contract its sites carry. |
+| 9 | 965 | **type** `public class BuildingsStacks` | One building type in the city: how many stand, how many are on site, and the progress, material and contract its sites carry. |
 | 84 | 22 | **type** `public static final class Contract` | WHO PAID FOR THE CONTRACT, AND FOR THE MATERIAL IN IT (0.7.19). |
 | 94 | 1 | `Contract(String payer, boolean creditable)` _(in BuildingsStacks.Contract)_ |  |
 | 95 | 5 | `Contract(String payer, double recovered)` _(in BuildingsStacks.Contract)_ |  |
@@ -111,40 +111,40 @@
 | 559 | 5 | `public void restoreLots(java.util.List<Lot> saved)` | Puts a save's lots back, front first, after the site's count (BuildingManager.restoreLots()): none, or empty, restores none. |
 | 569 | 5 | `public double pointsOnSite()` | The points every building on site takes, before any progress: the loose at the template's points, each lot at its fitout's. |
 | 576 | 13 | `public double pointsOfFirst(long k)` | ...and the first k of them, front first: what the site owes before its k-th building finishes, progress aside. |
-| 598 | 1 | `public double getAbroadClaim()` |  |
-| 599 | 1 | `public void setAbroadClaim(double claim)` |  |
-| 608 | 1 | `private void claimAfresh()` | New work on a site that owed nothing starts with no claim on his book (REV-FC2, the third review): what its orders before claimed was the work of a site that has finished, or stopped, and a load reads none for it (Bui... |
-| 611 | 3 | `public double owedPoints()` | Points still owed on site: every building's points less the progress made (a foothill's preparation owed reads as more). |
-| 616 | 4 | `private double nextPoints()` | The points the building at the front of the site takes: a loose one's the template's, else the first lot's. |
-| 622 | 14 | `private void finishFront(long k)` | Takes k finished buildings off the front, the loose first, and counts what they come without. |
-| 638 | 3 | `public long getLastFinishedLoose()` | Of the buildings the most recent advanceConstruction() call finished, those with no lot: their pieces are decided at the finish. |
-| 643 | 3 | `public java.util.Map<String, Long> getLastFinishedWithout()` | ...and of those it finished in lots, how many came without each piece, by id: unmodifiable, empty when every one came with all. |
-| 652 | 4 | `void bindHousing(java.util.function.LongPredicate guard, java.util.function.Consumer<BuildingsStacks> changed)` | Inventory hooks protect conveyed titles; stacks remain physical authority. |
-| 657 | 8 | `public void addQuantity(long n)` |  |
-| 666 | 3 | `public void advanceConstruction(double constructionOutput)` |  |
-| 680 | 149 | `public void advanceConstruction(double homeOutput, double abroadOutput, double abroadOwed, double abroadMaterials)` | The month's work on a site with part of it handed to the foreign crews (FC2b): {@code homeOutput} is what the city's crews' rule gives it, {@code abroadOutput} what the foreign crews build on it, {@code abroadOwed} th... |
-| 839 | 3 | `public long getLastFinished()` | How many finished in the most recent advanceConstruction() call. |
-| 844 | 3 | `public double getLastApplied()` | Points the most recent advanceConstruction() call put into buildings. |
-| 849 | 3 | `public double getLastAbroadApplied()` | ...of which the foreign crews' part on a site handed them (FC2b), per the last advanceConstruction() call. |
-| 854 | 3 | `public double getLastAbroadMaterials()` | The units the abroad part drew (FC2b), per the last advanceConstruction() call: part of getMaterialsDue(). |
-| 864 | 7 | `public double clearBankedProgress()` | Drops progress past what the stack owes - all of it with nothing on site - and returns how many points that was. |
-| 873 | 3 | `public long getTotalJobs(JobType type)` | getters |
-| 877 | 3 | `public long getQuantity()` |  |
-| 882 | 9 | `public void removeQuantity(long amount)` | Scraps finished buildings. |
-| 892 | 3 | `public long getUnderConstruction()` |  |
-| 896 | 3 | `public String getName()` |  |
-| 900 | 3 | `public double getConstructionProgress()` |  |
-| 904 | 6 | `public void increaseQuantity(long amount)` |  |
-| 911 | 3 | `public BuildingsTemplate getBuilding()` |  |
-| 915 | 6 | `public boolean getIfUnderConstruction()` |  |
-| 923 | 3 | `public double getMaterialsOwed()` | Units the sites still have to draw. |
-| 928 | 3 | `public double getMaterialsDue()` | Units this month's work drew on, per the last advanceConstruction() call. |
-| 933 | 3 | `public double getContractValue()` | The builders' contract still on site. |
-| 938 | 3 | `public double getRevenueDue()` | What this month's work earned of it, per the last advanceConstruction() call. |
-| 942 | 3 | `public void setContractValue(double amount)` |  |
-| 947 | 5 | `public void redenominate(double scale)` | A reform: the contract is money. |
-| 954 | 3 | `public void setConstructionProgress(double progress)` | setters |
-| 958 | 4 | `public void setUnderConstruction(long quantity)` |  |
-| 963 | 3 | `public void setMaterialsOwed(double units)` |  |
-| 968 | 3 | `public void deliverMaterials(double units)` | Material that reached the sites without a purchase - the city's yard, on the order day. |
+| 599 | 1 | `public double getAbroadClaim()` |  |
+| 600 | 1 | `public void setAbroadClaim(double claim)` |  |
+| 609 | 1 | `private void claimAfresh()` | New work on a site that owed nothing starts with no claim on his book (REV-FC2, the third review): what its orders before claimed was the work of a site that has finished, or stopped, and a load reads none for it (Bui... |
+| 612 | 3 | `public double owedPoints()` | Points still owed on site: every building's points less the progress made (a foothill's preparation owed reads as more). |
+| 617 | 4 | `private double nextPoints()` | The points the building at the front of the site takes: a loose one's the template's, else the first lot's. |
+| 623 | 14 | `private void finishFront(long k)` | Takes k finished buildings off the front, the loose first, and counts what they come without. |
+| 639 | 3 | `public long getLastFinishedLoose()` | Of the buildings the most recent advanceConstruction() call finished, those with no lot: their pieces are decided at the finish. |
+| 644 | 3 | `public java.util.Map<String, Long> getLastFinishedWithout()` | ...and of those it finished in lots, how many came without each piece, by id: unmodifiable, empty when every one came with all. |
+| 653 | 4 | `void bindHousing(java.util.function.LongPredicate guard, java.util.function.Consumer<BuildingsStacks> changed)` | Inventory hooks protect conveyed titles; stacks remain physical authority. |
+| 658 | 8 | `public void addQuantity(long n)` |  |
+| 667 | 3 | `public void advanceConstruction(double constructionOutput)` |  |
+| 681 | 149 | `public void advanceConstruction(double homeOutput, double abroadOutput, double abroadOwed, double abroadMaterials)` | The month's work on a site with part of it handed to the foreign crews (FC2b): {@code homeOutput} is what the city's crews' rule gives it, {@code abroadOutput} what the foreign crews build on it, {@code abroadOwed} th... |
+| 840 | 3 | `public long getLastFinished()` | How many finished in the most recent advanceConstruction() call. |
+| 845 | 3 | `public double getLastApplied()` | Points the most recent advanceConstruction() call put into buildings. |
+| 850 | 3 | `public double getLastAbroadApplied()` | ...of which the foreign crews' part on a site handed them (FC2b), per the last advanceConstruction() call. |
+| 855 | 3 | `public double getLastAbroadMaterials()` | The units the abroad part drew (FC2b), per the last advanceConstruction() call: part of getMaterialsDue(). |
+| 865 | 7 | `public double clearBankedProgress()` | Drops progress past what the stack owes - all of it with nothing on site - and returns how many points that was. |
+| 874 | 3 | `public long getTotalJobs(JobType type)` | getters |
+| 878 | 3 | `public long getQuantity()` |  |
+| 883 | 9 | `public void removeQuantity(long amount)` | Scraps finished buildings. |
+| 893 | 3 | `public long getUnderConstruction()` |  |
+| 897 | 3 | `public String getName()` |  |
+| 901 | 3 | `public double getConstructionProgress()` |  |
+| 905 | 6 | `public void increaseQuantity(long amount)` |  |
+| 912 | 3 | `public BuildingsTemplate getBuilding()` |  |
+| 916 | 6 | `public boolean getIfUnderConstruction()` |  |
+| 924 | 3 | `public double getMaterialsOwed()` | Units the sites still have to draw. |
+| 929 | 3 | `public double getMaterialsDue()` | Units this month's work drew on, per the last advanceConstruction() call. |
+| 934 | 3 | `public double getContractValue()` | The builders' contract still on site. |
+| 939 | 3 | `public double getRevenueDue()` | What this month's work earned of it, per the last advanceConstruction() call. |
+| 943 | 3 | `public void setContractValue(double amount)` |  |
+| 948 | 5 | `public void redenominate(double scale)` | A reform: the contract is money. |
+| 955 | 3 | `public void setConstructionProgress(double progress)` | setters |
+| 959 | 4 | `public void setUnderConstruction(long quantity)` |  |
+| 964 | 3 | `public void setMaterialsOwed(double units)` |  |
+| 969 | 3 | `public void deliverMaterials(double units)` | Material that reached the sites without a purchase - the city's yard, on the order day. |
 

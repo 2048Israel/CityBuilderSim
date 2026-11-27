@@ -336,6 +336,9 @@ public class Bank {
     private double repaidByHouseholds;
     private double fundingCost;
 
+    /** ...the part of it on the advance the window holds past the tranche (fundToCover(policy, deferred, held)): a month's figure, struck afresh every month and not saved. */
+    private double windowOwedCost;
+
     /**
      * WHAT ITS SPARE CASH EARNS: THE POLICY RATE, AT THE CENTRAL BANK (0.7.0).
      *
@@ -472,6 +475,41 @@ public class Bank {
             interimBySector[i] = interim != null && i < interim.length ? Math.max(0, interim[i]) : 0;
             interimBook += interimBySector[i];
         }
+    }
+
+    /** The held local-money book amounts read by the next startMonth's sheet and opening equity.
+     * The deposit components already have their own save; their held sum also needs carrying. */
+    public record HeldBooks(double deposits, double sectorBook, double cityBook, double householdBook,
+                            double mortgageBook, double interimBook, double bondBook,
+                            double[] loansBySector, double[] interimBySector) {
+        public HeldBooks {
+            loansBySector = loansBySector == null ? null : loansBySector.clone();
+            interimBySector = interimBySector == null ? null : interimBySector.clone();
+        }
+        @Override public double[] loansBySector() { return loansBySector == null ? null : loansBySector.clone(); }
+        @Override public double[] interimBySector() { return interimBySector == null ? null : interimBySector.clone(); }
+    }
+
+    public HeldBooks heldBooksForSave() {
+        return new HeldBooks(deposits, sectorBook, cityBook, householdBook, mortgageBook,
+                interimBook, bondBook, loansBySector, interimBySector);
+    }
+
+    /** Put the held books over the load's final refresh and deposit reconstruction, without settling anything. */
+    public void restoreHeldBooks(HeldBooks saved) {
+        if (saved == null) return;
+        double[] loans = saved.loansBySector(), interim = saved.interimBySector();
+        if (loans == null || loans.length != loansBySector.length
+                || interim == null || interim.length != interimBySector.length) return;
+        deposits = saved.deposits();
+        sectorBook = saved.sectorBook();
+        cityBook = saved.cityBook();
+        householdBook = saved.householdBook();
+        mortgageBook = saved.mortgageBook();
+        interimBook = saved.interimBook();
+        bondBook = saved.bondBook();
+        System.arraycopy(loans, 0, loansBySector, 0, loansBySector.length);
+        System.arraycopy(interim, 0, interimBySector, 0, interimBySector.length);
     }
 
     /** What the sector at this index of Sectors.KEYS owes it outside its insured mortgages and its interim financing. */
@@ -1411,6 +1449,7 @@ public class Bank {
         lentToHouseholds = 0;
         repaidByHouseholds = 0;
         fundingCost = 0;
+        windowOwedCost = 0;
         placementIncome = 0;
         insuranceClaims = 0;
         depositInterestToHouseholds = 0;
@@ -3473,7 +3512,17 @@ public class Bank {
      *
      * Called once, at the end of the month, after every loan has moved.
      */
-    public void fundToCover(double policyAnnual) {
+    public void fundToCover(double policyAnnual) { fundToCover(policyAnnual, 0, 0); }
+
+    /**
+     * ...and the advance the window holds past that tranche, which the last settle asked back and the central bank's reserves could
+     * not take (CentralBank.getWindowDeferred()): owed all the same, and priced at the window's rate with it (RES3; REV-RES3b) -
+     * each dollar once. The part the tranche has grown back into is in the wholesale already: what is priced past it is the
+     * deferred balance no more than the window holds (windowHeld, CentralBank.getAdvancesToBank()) above the tranche. WHY (REV-RES3b's
+     * fourth look, 2026-11-27): the whole deferred balance was added to the tranche, so 80 deferred that new lending took up again
+     * was charged as 160. Nothing is owed past the tranche wherever the reserves took the repayment, and the charge is what it was.
+     */
+    public void fundToCover(double policyAnnual, double windowDeferred, double windowHeld) {
 
         /*
          * WITH NO BRANCHES THERE IS NO BANK, and nothing to charge.
@@ -3525,7 +3574,9 @@ public class Bank {
         double policy = Math.max(0, policyAnnual);
         double wholesaleNow = wholesaleFunding();
         fundingRate = policy + CentralBank.WINDOW_PENALTY;
-        fundingCost = wholesaleNow * fundingRate / 12;
+        double owedPast = Math.min(Math.max(0, windowDeferred), Math.max(0, windowHeld - wholesaleNow));
+        windowOwedCost = owedPast * fundingRate / 12;
+        fundingCost = wholesaleNow * fundingRate / 12 + windowOwedCost;
 
         // ...and the other side of the same position: what is not lent is
         // its reserves, and earns the policy rate at the central bank. Struck
@@ -3746,6 +3797,8 @@ public class Bank {
 
     /** What the window charged this month, paid to the central bank. */
     public double getFundingCost() { return fundingCost; }
+    /** ...of which on the advance the last settle left owed past the tranche, the central bank's reserves short of its repayment. */
+    public double getWindowOwedCost() { return windowOwedCost; }
     /** What its reserves earned at the central bank this month, at the policy rate. See placementIncome. */
     public double getPlacementIncome() { return placementIncome; }
 
@@ -5890,6 +5943,7 @@ public class Bank {
         lentToHouseholds  *= scale;
         repaidByHouseholds *= scale;
         fundingCost       *= scale;
+        windowOwedCost    *= scale;
         placementIncome   *= scale;
         openingEquity     *= scale;
         hotMoneyIn        *= scale;

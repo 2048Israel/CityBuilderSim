@@ -7369,7 +7369,7 @@ public final class GameVersion {
      *     note 11. A city of flat ground is priced by the old expressions.
      *   - Harness: LandClassCheck (new); LandClassRenders, docs/queue/ET3/.
      */
-    public static final String VERSION = "0.9.215";
+    public static final String VERSION = "0.9.216";
 
     /**
      * The save shape.
@@ -8389,7 +8389,13 @@ public final class GameVersion {
      * fitted and draw today's 10,880 kW from June 1997 with no fitting
      * built. The floor rises with the format; no conversion.
      */
-    public static final int SAVE_FORMAT = 66;
+    /* RES3: typed leases, comparable rent/CPI observations and held monetary
+     * inputs cannot be reconstructed from a format-66 city. Missing tariff,
+     * payroll, labour anchors and bank books would change the next month
+     * after load or reform (the sites' raw claims are R1g's abroadClaimById,
+     * at 66). Refuse the old pair; no conversion.
+     */
+    public static final int SAVE_FORMAT = 67;
 
     /**
      * The oldest save format this build loads: a batch that bumps SAVE_FORMAT
@@ -8399,7 +8405,10 @@ public final class GameVersion {
      * (Jerus, 2026-10-10: "old saves do not matter, only once we publish to
      * old saves matter"), when old saves must load again.
      *
-     * 66 since batch R6e-rest (THE DESALINATION PLANT BEFORE THE PRESSURE
+     * 67 since batch RES3 (RES3 above SAVE_FORMAT: an older city holds no
+     * typed leases, class rents or CPI observations, nor its held tariff,
+     * payroll, labour anchors and bank books, and its next month reads them).
+     * 66 from batch R6e-rest (THE DESALINATION PLANT BEFORE THE PRESSURE
      * EXCHANGER above: an older city's Desalination Plant holds no
      * unfitted exchanger and loads as fitted, at today's draw).
      * 65 from batch FC2b (A CONTRACT'S POINTS above: an older save's
@@ -8457,7 +8466,7 @@ public final class GameVersion {
      * land, the old world's ground, the derived paid-in) is past the floor
      * now, and stays for the day old saves must load again.
      */
-    public static final int OLDEST_LOADABLE_FORMAT = 66;
+    public static final int OLDEST_LOADABLE_FORMAT = 67;
 
     /**
      * The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose

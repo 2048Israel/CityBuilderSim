@@ -18,6 +18,26 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.216 — RES3, home choice, typed rents and the 14-form catalogue — 2026-11-25, ready, see docs/queue/RES3-notes.md
+Activates fourteen residential recipes and thirty-two comparable dwelling classes,
+with funded census budgets, retained paid and hosted incumbents, explicit sharing
+and crowding, class rents and actual occupied receipts. The existing builder and
+funding path receive the actual mix, costs and work; the synthetic pipeline is retired.
+Commits historical and present-day quote, budget, availability and paid-build reports.
+Emergency shelter keeps funded demand for separate doors; paid and hosted placements
+clear together. Past the census line, more than two a room, a family lives overcrowded
+as the 1901 census counted it, never doorless, and a family that could pay and finds no
+door standing boards with a housed one, paying its hosts board, as a fifth to a third of
+town households took boarders about 1900; a household beside another family is overcrowded
+only past two persons a room; movers weigh the half share they would take,
+and the incoming forecast is bounded by migration's own draw.
+Feasible orders use the affordable backlog and actual operating returns.
+Rent CPI follows comparable class bills; completed consumer purchases supply reference
+weights, including saved new-car and petrol observations and separate home fuels.
+The fund's Search keeps the rows on show at each Show more and makes only the next forty.
+The bank repays the central bank's window only out of the reserves there are, the rest owed to the next settle and charged the window's rate until it is repaid, so M0 never goes below nothing.
+Contract funding, class flows, wage indices and CPI observations use save format/floor 67.
+
 ### 0.9.215 — AP7, slot 9 at 50x: the maintenance valuation's eligibility read once — 2026-11-26, ready, see docs/queue/AP7-notes.md
 Slot 9 was still slow at 50x after AP6 (Jerus, 2026-11-25: "ok once again, slow down, slot 9"). Whether a city warrants
 its first school or plant was asked again at every count the auto-builder tried and at every date of a works' maintenance

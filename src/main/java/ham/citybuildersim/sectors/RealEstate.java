@@ -10,6 +10,7 @@ import ham.citybuildersim.Good;
 import ham.citybuildersim.NewUnit;
 import ham.citybuildersim.GoodsMarket;
 import ham.citybuildersim.Markets;
+import ham.citybuildersim.MoneyAudit;
 import ham.citybuildersim.PayTier;
 import ham.citybuildersim.Sector;
 import ham.citybuildersim.Trade;
@@ -119,6 +120,8 @@ import java.util.Map;
  * ======================================================================
  */
 public final class RealEstate extends Sector {
+    private final ham.citybuildersim.HousingMarket housingMarket=new ham.citybuildersim.HousingMarket();
+    public ham.citybuildersim.HousingMarket housingMarket() { return housingMarket; }
 
     /** What share of a working household's income rent should take. The affordability yardstick. */
     public static final double TARGET_RENT_BURDEN = .30;
@@ -271,6 +274,7 @@ public final class RealEstate extends Sector {
      * flat that does not exist.
      */
     public void setOccupiedHomes(double occupied) {
+        if(housingMarket.active()){occupiedHomes=housingMarket.occupied();return;}
         double want = Math.max(0, occupied);
         this.occupiedHomes = homes > 0 ? Math.min(want, homes) : want;
     }
@@ -356,7 +360,7 @@ public final class RealEstate extends Sector {
     /* ------------------------------ readers ------------------------------ */
 
     public long getHomes()                    { return homes; }
-    public double getOccupiedHomes()         { return occupiedHomes; }
+    public double getOccupiedHomes()         { return housingMarket.active()?housingMarket.occupied():occupiedHomes; }
     public long getHousehold()                { return household; }
     public double getHouseholdCount()        { return householdCount; }
     public double getMarginalHousingCost()   { return marginalHousingCost; }
@@ -378,8 +382,8 @@ public final class RealEstate extends Sector {
     public double getBilledRentWeight()      { return rBilledStudioWeight + rBilledFamilyWeight; }
     public double getBilledStudioWeight()    { return rBilledStudioWeight; }
     public double getBilledFamilyWeight()    { return rBilledFamilyWeight; }
-    public double getRentPrice()             { return rentPrice; }
-    public double getStudioRentPrice()       { return studioRentPrice; }
+    public double getRentPrice()             { return housingMarket.active()?housingMarket.paidPerCapacity(true):rentPrice; }
+    public double getStudioRentPrice()       { return housingMarket.active()?housingMarket.paidPerCapacity(false):studioRentPrice; }
     public double getRentTarget()            { return lastRentTarget > 0 ? lastRentTarget : rentPrice; }
     public double getStudioRentTarget()      { return lastStudioTarget > 0 ? lastStudioTarget : studioRentPrice; }
     /** Rent billed in the month last sold - the figure the households were charged. */
@@ -539,6 +543,7 @@ public final class RealEstate extends Sector {
      * no drift; a rent at nothing still steps linearly.
      */
     public void repriceRent() {
+        if(housingMarket.active()) { housingMarket.reprice(expectedMonthly); return; }
         double target = rentTarget();
         if (target > 0) {
             lastRentTarget = target;
@@ -553,8 +558,9 @@ public final class RealEstate extends Sector {
         }
     }
 
-    /** What one person of capacity actually cost on average this month - the price index's figure. */
+    /** CPI rent level: like-for-like paid class prices, chained on the preceding month's occupied doors. */
     public double getAverageRentPaid() {
+        if(housingMarket.active())return housingMarket.rentPriceIndex();
         double weight = studioRentWeight + familyRentWeight;
         if (weight <= 0) return rentPrice;
         return (studioRentWeight * studioRentPrice + familyRentWeight * rentPrice) / weight;
@@ -574,6 +580,7 @@ public final class RealEstate extends Sector {
      * recorded, and the load path before the first housing pass.
      */
     public double getRentIncome() {
+        if(housingMarket.active())return housingMarket.receipts();
         double weight = studioRentWeight + familyRentWeight;
         if (weight > 0) return studioRentWeight * studioRentPrice + familyRentWeight * rentPrice;
         if (homes <= 0) return Math.min(household, population) * rentPrice;
@@ -591,6 +598,14 @@ public final class RealEstate extends Sector {
         rBilledFamilyWeight = familyRentWeight;
         double income = getRentIncome();
         rRentIncome = income;
+        if(housingMarket.active()) {
+            for(var c:housingMarket.classes())if(c.occupied>0) {
+                double value=housingMarket.leases().stream().filter(l->l.home().equals(new ham.citybuildersim.HousingInventory.Key(c.recipe,c.dwelling)))
+                        .mapToDouble(ham.citybuildersim.HousingChoice.Lease::bill).sum();
+                bookSale(m.record(key(),Trade.HOUSEHOLDS,c.occupied,value/c.occupied));
+            }
+            housingMarket.sold();return;
+        }
         if (income <= 0) return;
         if (studioRentWeight + familyRentWeight > 0) {
             if (studioRentWeight > 0) bookSale(m.record(key(), Trade.HOUSEHOLDS, studioRentWeight, studioRentPrice));
@@ -681,22 +696,27 @@ public final class RealEstate extends Sector {
         // building more studios cannot answer.
         double familyShortfall = doorsWanted(true);
 
-        if (headShortfall <= 0 && familyShortfall <= 0) {
+        if (headShortfall <= 0 && familyShortfall <= 0 && (!housingMarket.active() || housingMarket.result().unplaced()+housingMarket.result().crowded()+housingMarket.sharingGroups()<=0)) {
             return BusinessInvestment.Decision.no(sector, comingCapacity > 0
                     ? String.format("housing ahead of jobs (%,d now, %,d coming), homes for %,.0f on site",
                             totalJobs, jobsComing, comingCapacity)
                     : String.format("housing ahead of jobs (%,d now, %,d coming)", totalJobs, jobsComing));
         }
 
+        var typedForecast=housingMarket.active()?housingMarket.forecast(game):null;
         BuildingsTemplate best = null;
         double bestScore = 0, bestDoors = 0;
         String blocked = null;
+        String blockedLand = null;
 
         for (BuildingsTemplate t : buildings.getTemplatesBySector(sector)) {
             if (t.getCapacity() <= 0) continue;
 
             // What it would actually let, not what it holds.
             double doors = fillableDoors(t, headShortfall);
+            double typedIncome=typedForecast!=null?typedForecast.income(t,1):0;
+            if(housingMarket.active())doors=typedIncome>0?Math.min(t.getDwellings(),typedIncome/Math.max(1e-30,
+                    housingMarket.meanPerCapacity(t)*t.getCapacity()/t.getDwellings())):0;
             if (doors <= 0) {
                 blocked = "nobody the city has could live in one";
                 continue;
@@ -707,16 +727,27 @@ public final class RealEstate extends Sector {
             // the city would actually fill. Asking both on fillable doors
             // stopped a city building housing entirely.
             double hurdle = game.getEconomyManager().housingBuildHurdle(t);
-            if (hurdle > 0 && t.getCapacity() * price < hurdle) {
+            // A block let to its last door at quotes struck on the hurdle (HousingMarket.unbuiltQuote()) earns the hurdle
+            // itself, to the rounding of the sum of its leases' bills.
+            double tie = housingMarket.active() ? Math.max(MoneyAudit.ULP_STEPS * Math.ulp(hurdle), MoneyAudit.RELATIVE_TOLERANCE * hurdle) : 0;
+            if (hurdle > 0 && (housingMarket.active()?typedIncome:t.getCapacity() * price) < hurdle - tie) {
                 blocked = String.format("rent does not cover a new %s", t.getName());
                 continue;
             }
+            if(plans.plotsAvailableFor(t)<1){
+                if(blockedLand==null)blockedLand=plans.landReason(t);
+                continue;
+            }
 
-            double income = doors * FamilyModel.rentWeightOf(t.homeSize()) * price;
+            double income = housingMarket.active()?typedIncome:doors * FamilyModel.rentWeightOf(t.homeSize()) * price;
             double cost = plans.getCostOf(t, 1);
             if (cost <= 0) continue;
-            double score = income / cost;
-            if (score > bestScore) {
+            // Rank the rent these doors would earn after their own operating
+            // costs, before interest; the lender still judges the financing.
+            double score = (income - game.getEconomyManager().housingCarry(t)) / cost;
+            // Legacy partial-fill NOI ranks eligible positive-gross projects;
+            // it must not add another profitability gate after the full hurdle.
+            if (income > 0 && (best == null || score > bestScore)) {
                 bestScore = score;
                 best = t;
                 bestDoors = doors;
@@ -724,12 +755,17 @@ public final class RealEstate extends Sector {
         }
 
         if (best == null) {
+            if(blockedLand!=null)return BusinessInvestment.Decision.noLand(sector,blockedLand);
+            if(housingMarket.active()&&headShortfall<=0&&familyShortfall<=0)
+                return BusinessInvestment.Decision.no(sector,String.format("housing ahead of jobs (%,d now, %,d coming); %s",
+                        totalJobs,jobsComing,blocked!=null?blocked:"new homes would not cover their costs"));
             return BusinessInvestment.Decision.no(sector, blocked != null ? blocked : "nothing worth building");
         }
 
         // Sized on whichever shortage is the bigger.
         double byHeads = headShortfall;
-        double byDoors = bestDoors * FamilyModel.rentWeightOf(best.homeSize());
+        double byDoors = typedForecast!=null?(double)typedForecast.quantityNeeded(best)*best.getCapacity()
+                :bestDoors * FamilyModel.rentWeightOf(best.homeSize());
         double gap = Math.max(byHeads, byDoors);
         int wanted = best.getCapacity() > 0 ? Math.max(1, (int) Math.ceil(gap / best.getCapacity())) : 1;
         int plots = plans.plotsAvailableFor(best);
@@ -737,6 +773,23 @@ public final class RealEstate extends Sector {
 
         // ...what the shortage needs, on the land there is: no months of the builders' work to fit it in (BA1, above).
         int quantity = Math.min(wanted, plots);
+        if (typedForecast != null) {
+            double hurdle = game.getEconomyManager().housingBuildHurdle(best);
+            int rejected = 0;
+            while (quantity > 1 && typedForecast.income(best, quantity) < hurdle * quantity) {
+                rejected = quantity;
+                quantity = Math.max(1, quantity / 2);
+            }
+            // One project already cleared this forecast/hurdle above. Explore
+            // the last rejected bracket without discarding the accepted lower.
+            // Placement preferences do not imply globally monotone receipts;
+            // every midpoint we accept must clear the actual hurdle itself.
+            while (rejected - quantity > 1) {
+                int midpoint = quantity + (rejected - quantity) / 2;
+                if (typedForecast.income(best, midpoint) >= hurdle * midpoint) quantity = midpoint;
+                else rejected = midpoint;
+            }
+        }
 
         return new BusinessInvestment.Decision(sector, best, quantity,
                 familyShortfall > 0 && headShortfall <= 0
@@ -840,6 +893,7 @@ public final class RealEstate extends Sector {
 
     /** The price the segment this template belongs to is charging. */
     public double priceForSegment(BuildingsTemplate t) {
+        if(housingMarket.active())return housingMarket.meanPerCapacity(t);
         return t.homeSize() <= FamilyModel.STUDIO_MAX_SIZE ? studioRentPrice : rentPrice;
     }
 
@@ -853,6 +907,7 @@ public final class RealEstate extends Sector {
     @Override
     public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans) {
         BuildingsTemplate t = u == null ? null : u.template();
+        if(t!=null&&housingMarket.active())return housingMarket.candidateIncome(game,t,1);
         int units = t.getDwellings() > 0 ? t.getDwellings() : Math.max(1, t.getCapacity() / 4);
         FamilyModel families = plans.families();
         if (families == null) return t.getCapacity() * rentPrice;
@@ -899,11 +954,32 @@ public final class RealEstate extends Sector {
      */
     @Override
     public boolean mayRetire(BuildingsTemplate t) {
+        if(housingMarket.active()&&t!=null&&t.getHousingRecipe()!=null){
+            var standing=buildings.getStack(t);
+            if(standing==null||standing.getQuantity()==0)return false;
+            var inventory=buildings.getHousingInventory();
+            for(var d:t.getHousingRecipe().mix()){
+                var key=new ham.citybuildersim.HousingInventory.Key(t.getId(),d.id());
+                if(inventory.owned(key,ham.citybuildersim.HousingInventory.Owner.REAL_ESTATE)-d.count()
+                        <inventory.occupied(key,ham.citybuildersim.HousingInventory.Owner.REAL_ESTATE))return false;
+            }
+        }
         if (game != null && game.getFamilies() != null) {
             ham.citybuildersim.FamilyModel f = game.getFamilies();
             if (f.getStillUnplaced() > 0 || f.getDoubledUpHouseholds() > 0) return false;
         }
         return hasDoorsToSpare(t);
+    }
+
+    /** Every class of a retired structure must come from actual vacant RE titles. */
+    @Override public long limitSpareRetirement(BuildingsTemplate t,long quantity,double keepAtLeast){
+        if(!housingMarket.active()||t==null||t.getHousingRecipe()==null)return quantity;
+        var inventory=buildings.getHousingInventory();long allowed=quantity;
+        for(var d:t.getHousingRecipe().mix()){
+            var key=new ham.citybuildersim.HousingInventory.Key(t.getId(),d.id());
+            allowed=Math.min(allowed,(long)Math.floor(inventory.vacant(key,ham.citybuildersim.HousingInventory.Owner.REAL_ESTATE)/d.count()));
+        }
+        return Math.max(0,allowed);
     }
 
     @Override
@@ -1007,7 +1083,7 @@ public final class RealEstate extends Sector {
         extras.put("billedFamilyWeight", rBilledFamilyWeight);
         extras.put("rentIncome", rRentIncome);
         extras.put("homes", (double) homes);
-        extras.put("occupiedHomes", occupiedHomes);
+        extras.put("occupiedHomes", getOccupiedHomes());
         extras.put("strandedDebtShare", strandedDebtShare);
         // RN2: the count the share moves against, so a reload's first count moves the share as the live city's does (see setOwnedHousingCapacity()).
         extras.put("ownedCapacity", ownedCapacity);
@@ -1035,6 +1111,7 @@ public final class RealEstate extends Sector {
 
     @Override
     protected void resetExtras() {
+        housingMarket.reset();
         rentPrice = rentFor(wageAnchor);
         studioRentPrice = rentPrice;
         lastRentTarget = lastStudioTarget = 0;
@@ -1053,6 +1130,7 @@ public final class RealEstate extends Sector {
     /** The prices and the per-capacity costs are money; the doors, the weights and the rates are not. */
     @Override
     protected void redenominateExtras(double scale) {
+        housingMarket.redenominate(scale);
         rentPrice *= scale;
         studioRentPrice *= scale;
         lastRentTarget *= scale;

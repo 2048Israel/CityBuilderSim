@@ -837,6 +837,9 @@ public class TreasuryCheck {
         Game bills = founded("treasury-roll-bills");
         Game byHand = founded("treasury-roll-hand");
         for (Game g : new Game[] { same, bills, byHand }) {
+            // The employers need actual homes before workers can arrive and pay the taxes that cause the surplus.
+            quietly(() -> check("fixture: forty starting Houses stand for the rollover town's workers",
+                    g.buildStack(g.getBuildingManager().getTemplateByName("House"), 40, true) == Game.BuildResult.SUCCESS));
             for (String early : new String[] { "Bakery", "Diner", "Boutique" }) {
                 quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName(early), 1, true));
             }
@@ -856,6 +859,11 @@ public class TreasuryCheck {
          */
         for (Game g : three) g.getEconomyManager().getTaxPolicy().setIncomeTaxRate(TaxPolicy.MAX_INCOME_TAX);
         for (Game g : three) for (int i = 0; i < 12; i++) press(g);
+        // A producing town still needs its startup deficit to leave the trailing year. Cause a positive surplus before sizing paper from it.
+        for (int extra = 0; same.surplusOverLastYear() <= 0 && extra < 12; extra++)
+            for (Game g : three) press(g);
+        check("fixture: the producing rollover twins have a positive trailing-year surplus before their first note",
+                java.util.Arrays.stream(three).allMatch(g -> g.surplusOverLastYear() > 0));
         double surplusAtFirst = Math.max(0, same.surplusOverLastYear());
         for (Game g : three) quietly(() -> g.handleTBillLogic(NOTE_IN_SURPLUSES * surplusAtFirst, 3, Game.BUILD_NOTE_GRANULE));
         for (Game g : three) press(g);
@@ -865,8 +873,10 @@ public class TreasuryCheck {
 
         int m = same.getMonth();
         Debt first = paper(same, "NOTE", 3, m - 2, false), second = paper(same, "NOTE", 3, m - 1, false);
-        check("fixture: the first note falls due next month, the second the month after",
+        check(String.format("fixture: the first note falls due next month, the second the month after (surpluses %.9g / %.9g)",
+                        surplusAtFirst, surplusAtSecond),
                 first != null && second != null && first.getRemainingMonths() == 1 && second.getRemainingMonths() == 2);
+        if (first == null || second == null) return;  // The failed fixture has no note whose netting or rollover can be compared.
         /*
          * ...AND THE NETTING A PART OF THE NOTE BY CONSTRUCTION (FS13, 2026-11-20). Rollover.netting() is the least of what is left of the
          * surplus, the cash and what falls due, and the notes are sized from the surplus of two months ago: a surplus that grew past

@@ -1,4 +1,4 @@
-# ForeignChoiceCheck.java - 1,180 lines · 37 methods · 18 constants · harnesses
+# ForeignChoiceCheck.java - 1,198 lines · 37 methods · 20 constants · harnesses
 
 `ham/citybuildersim/ForeignChoiceCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -64,17 +64,17 @@
 
 | line | section |
 |---:|---|
-| 185 | 1. THE ARITHMETIC |
-| 290 | THE DECIDING QUANTITIES |
-| 364 | 2. MOVE OR STAY |
-| 434 | 3. A HALF-BUILT SITE |
-| 501 | 4. A SHARED STACK |
-| 599 | 5. THE CITY'S SITE |
-| 693 | 6. THE MONEY |
-| 778 | 7. THE SAVED CHOICE |
-| 873 | 8. A WAIT AT HOME THAT NEVER ENDS, SAVED |
-| 1001 | 9. A PAVING HANDED ABROAD |
-| 1089 | 10. THE PAYMENT'S TWO REFUSALS |
+| 194 | 1. THE ARITHMETIC |
+| 299 | THE DECIDING QUANTITIES |
+| 380 | 2. MOVE OR STAY |
+| 452 | 3. A HALF-BUILT SITE |
+| 519 | 4. A SHARED STACK |
+| 617 | 5. THE CITY'S SITE |
+| 711 | 6. THE MONEY |
+| 796 | 7. THE SAVED CHOICE |
+| 891 | 8. A WAIT AT HOME THAT NEVER ENDS, SAVED |
+| 1019 | 9. A PAVING HANDED ABROAD |
+| 1107 | 10. THE PAYMENT'S TWO REFUSALS |
 
 ## Constants
 
@@ -84,124 +84,126 @@
 | 91 | `ForeignChoiceCheck.SEARCH_FROM` | `12, SEARCH_STEP = 1` | The months queued at home at which the search for the twins' queue starts, and the step it takes: a month at a time, so the crossing is not stepped over. |
 | 94 | `ForeignChoiceCheck.SEARCH_TO` | `60` | The months queued at home past which the search gives up: a premium past the crews' excess makes every move free, and there is no pair of rates to tell apart. |
 | 97 | `ForeignChoiceCheck.PAYER_CASH_TIMES` | `100` | The landlords hold this many times the cost of their Houses on site in cash, so the extra is never borrowed: the saving is then judged at the loan rate of nothing borrowed. |
-| 100 | `ForeignChoiceCheck.HALF_BUILT_MONTHS` | `3` | Section 3's months worked on a site before it is handed: some of its buildings finished, one part built. |
-| 103 | `ForeignChoiceCheck.CLAIM_SCHOOLS` | `6` | ...and the city's Middle Schools ordered past the threshold in its second case, so that FC2 keeps a claim on the site (REV-FC2). |
-| 106 | `ForeignChoiceCheck.CITY_HOUSES` | `60` | Section 4's Houses the city orders on the landlords' site: a share of it. |
-| 109 | `ForeignChoiceCheck.SCHOOL` | `"Middle School"` | Section 5's site: Middle Schools the city orders when the landlords' Houses are built, and the months queued at home it stands at: long, and under the point where the home premium passes the crews' excess. |
-| 110 | `ForeignChoiceCheck.SCHOOLS` | `2` |  |
-| 111 | `ForeignChoiceCheck.CITY_QUEUE_MONTHS` | `25` |  |
-| 114 | `ForeignChoiceCheck.MOST_MONTHS` | `60` | The most months a site is played for to see its last building opened, and the months a record is followed. |
-| 117 | `ForeignChoiceCheck.BEFORE_THE_SAVE` | `2, AFTER_THE_SAVE = 4` | The months played on before a save (the record half done), and after it, in both twins. |
-| 120 | `ForeignChoiceCheck.PAVINGS` | `2` | Section 9's gravel roads the city orders paved: a pair, whose paving at 25 months queued at home still leaves the crews' excess over the home premium (the extra is something). |
-| 123 | `ForeignChoiceCheck.SHORT_CASH_SHARE` | `0.5` | Section 10(a)'s landlords hold this share of the gross extra they would pay, so that they must borrow the rest. |
-| 126 | `ForeignChoiceCheck.TREASURY_OVER` | `2, TREASURY_UNDER = 0.5` | Section 10(b)'s treasury holds this many times the card's extra when it can pay and this many when it cannot (the city never borrows: Game's government). |
-| 129 | `ForeignChoiceCheck.SCRATCH_SLOT` | `ConstructionTrapCheck.SCRATCH_SLOT` | The slot the saved city is written to, in its own scratch folder. |
-| 187 | `ForeignChoiceCheck.INF` | `Double.POSITIVE_INFINITY` |  |
-| 876 | `ForeignChoiceCheck.RECORD_FIGURES` | `{ "points", "owed", "materials", "pace", "pricePerPoint", "paid", "monthsHome...` | The figures a record keeps as numbers: the ones differ() compares. |
+| 105 | `ForeignChoiceCheck.CROWD_STORES` | `200` | The crowd the town takes in before the landlords' Houses are ordered (RES3): this many Convenience Stores stand, their posts open, and this many people arrive. |
+| 106 | `ForeignChoiceCheck.CROWD_PEOPLE` | `2500` |  |
+| 109 | `ForeignChoiceCheck.HALF_BUILT_MONTHS` | `3` | Section 3's months worked on a site before it is handed: some of its buildings finished, one part built. |
+| 112 | `ForeignChoiceCheck.CLAIM_SCHOOLS` | `6` | ...and the city's Middle Schools ordered past the threshold in its second case, so that FC2 keeps a claim on the site (REV-FC2). |
+| 115 | `ForeignChoiceCheck.CITY_HOUSES` | `60` | Section 4's Houses the city orders on the landlords' site: a share of it. |
+| 118 | `ForeignChoiceCheck.SCHOOL` | `"Middle School"` | Section 5's site: Middle Schools the city orders when the landlords' Houses are built, and the months queued at home it stands at: long, and under the point where the home premium passes the crews' excess. |
+| 119 | `ForeignChoiceCheck.SCHOOLS` | `2` |  |
+| 120 | `ForeignChoiceCheck.CITY_QUEUE_MONTHS` | `25` |  |
+| 123 | `ForeignChoiceCheck.MOST_MONTHS` | `60` | The most months a site is played for to see its last building opened, and the months a record is followed. |
+| 126 | `ForeignChoiceCheck.BEFORE_THE_SAVE` | `2, AFTER_THE_SAVE = 4` | The months played on before a save (the record half done), and after it, in both twins. |
+| 129 | `ForeignChoiceCheck.PAVINGS` | `2` | Section 9's gravel roads the city orders paved: a pair, whose paving at 25 months queued at home still leaves the crews' excess over the home premium (the extra is something). |
+| 132 | `ForeignChoiceCheck.SHORT_CASH_SHARE` | `0.5` | Section 10(a)'s landlords hold this share of the gross extra they would pay, so that they must borrow the rest. |
+| 135 | `ForeignChoiceCheck.TREASURY_OVER` | `2, TREASURY_UNDER = 0.5` | Section 10(b)'s treasury holds this many times the card's extra when it can pay and this many when it cannot (the city never borrows: Game's government). |
+| 138 | `ForeignChoiceCheck.SCRATCH_SLOT` | `ConstructionTrapCheck.SCRATCH_SLOT` | The slot the saved city is written to, in its own scratch folder. |
+| 196 | `ForeignChoiceCheck.INF` | `Double.POSITIVE_INFINITY` |  |
+| 894 | `ForeignChoiceCheck.RECORD_FIGURES` | `{ "points", "owed", "materials", "pace", "pricePerPoint", "paid", "monthsHome...` | The figures a record keeps as numbers: the ones differ() compares. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 132 | `static int checked` | The assertions made here. |
+| 141 | `static int checked` | The assertions made here. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 85 | 1096 | **type** `public class ForeignChoiceCheck` | The choices that use the foreign crews (FC2b): a payer - a business by its own sum, the city from its card - hands its share of one site's remaining work to the foreign crews, who build it on that site at the pace and... |
-| 135 | 5 | `static void check(String label, boolean ok)` | One assertion: the label reads as a sentence; a failing one prints FAIL, and `fails` (ConstructionTrapCheck's) is the exit code. |
-| 142 | 5 | `static void check(String label, boolean ok, String shown)` | ...with what was read, printed whether or not it held. |
-| 149 | 4 | `static void near(String label, double actual, double expected, double tol)` | Two figures within `tol` of each other, absolutely or of the expected, whichever is the larger. |
-| 155 | 3 | `static void exact(String label, double actual, double expected)` | Two figures the same to the bit. |
-| 159 | 25 | `public static void main(String[] args) throws Exception` |  |
+| 85 | 1114 | **type** `public class ForeignChoiceCheck` | The choices that use the foreign crews (FC2b): a payer - a business by its own sum, the city from its card - hands its share of one site's remaining work to the foreign crews, who build it on that site at the pace and... |
+| 144 | 5 | `static void check(String label, boolean ok)` | One assertion: the label reads as a sentence; a failing one prints FAIL, and `fails` (ConstructionTrapCheck's) is the exit code. |
+| 151 | 5 | `static void check(String label, boolean ok, String shown)` | ...with what was read, printed whether or not it held. |
+| 158 | 4 | `static void near(String label, double actual, double expected, double tol)` | Two figures within `tol` of each other, absolutely or of the expected, whichever is the larger. |
+| 164 | 3 | `static void exact(String label, double actual, double expected)` | Two figures the same to the bit. |
+| 168 | 25 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. THE ARITHMETIC (lines 185-289)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 189 | 100 | `static void arithmetic()` |  |
-
-### THE DECIDING QUANTITIES (lines 290-363)
+### 1. THE ARITHMETIC (lines 194-298)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 298 | 2 | **type** `record Verdict(BuildingManager.AbroadTerms terms, double gross, double cost, double perMonth, double rate, ...` | What a business's test reads for its site (Game.investorsHandAbroad()), read the way it reads them and from the model's own getters: the terms a handover would strike, the extra grossed up for the builders' tax and ne... |
-| 301 | 4 | `static BuildingsStacks.Contract contractOf(BuildingsStacks s, String payer)` |  |
-| 306 | 17 | `static Verdict verdict(Game g, BuildingsTemplate t, String payer)` |  |
-| 324 | 1 | `static boolean soonerAbroad(Verdict v)` |  |
-| 332 | 26 | `static Game choiceCity(Path root, String name, int played, long cityHouses)` | A calm city with the landlords' Houses on site, rich in cash, the queue at home made long by standing roads until the landlords' sum can go either way on the exchange rate alone: at the strong D$ the extra they would ... |
-| 360 | 1 | `static double strongRate(Game g)` | The rate a mover is struck at: the first share of the crews' excess the fixture's strong D$ gives. |
-| 362 | 1 | `static String key(Game g, String building)` |  |
+| 198 | 100 | `static void arithmetic()` |  |
 
-### 2. MOVE OR STAY (lines 364-433)
+### THE DECIDING QUANTITIES (lines 299-379)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 366 | 57 | `static void theTwins(Path root)` |  |
-| 425 | 1 | `static double costOnSite(Game g, BuildingsTemplate t, Verdict v)` | The cost of the buildings a verdict's terms stand for, as the landlords' sum read it. |
-| 427 | 6 | `static void printVerdict(String who, Verdict v)` |  |
+| 307 | 2 | **type** `record Verdict(BuildingManager.AbroadTerms terms, double gross, double cost, double perMonth, double rate, ...` | What a business's test reads for its site (Game.investorsHandAbroad()), read the way it reads them and from the model's own getters: the terms a handover would strike, the extra grossed up for the builders' tax and ne... |
+| 310 | 4 | `static BuildingsStacks.Contract contractOf(BuildingsStacks s, String payer)` |  |
+| 315 | 17 | `static Verdict verdict(Game g, BuildingsTemplate t, String payer)` |  |
+| 333 | 1 | `static boolean soonerAbroad(Verdict v)` |  |
+| 341 | 33 | `static Game choiceCity(Path root, String name, int played, long cityHouses)` | A calm city with the landlords' Houses on site, rich in cash, the queue at home made long by standing roads until the landlords' sum can go either way on the exchange rate alone: at the strong D$ the extra they would ... |
+| 376 | 1 | `static double strongRate(Game g)` | The rate a mover is struck at: the first share of the crews' excess the fixture's strong D$ gives. |
+| 378 | 1 | `static String key(Game g, String building)` |  |
 
-### 3. A HALF-BUILT SITE (lines 434-500)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 440 | 40 | `static void halfBuilt(String who, Game g, BuildingsTemplate t, String payer, boolean claimed, Runnable hand)` | One half-built site handed over: the terms read before it (its payer's share of the points owed less FC2's pooled claim, not its points on site; the extra struck on them), the handover made by {@code hand}, and the st... |
-| 481 | 19 | `static void theHalfBuilt(Path root)` |  |
-
-### 4. A SHARED STACK (lines 501-598)
+### 2. MOVE OR STAY (lines 380-451)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 504 | 7 | **type** `record Snap(double value, double units, double allowance, double points)` | One contract's figures. |
-| 505 | 1 | `static Snap of(BuildingsStacks.Contract c)` _(in ForeignChoiceCheck.Snap)_ |  |
-| 506 | 4 | `boolean same(Snap o)` _(in ForeignChoiceCheck.Snap)_ |  |
-| 512 | 4 | `static BuildingsStacks.Contract abroadContractOf(BuildingsStacks s, String payer)` |  |
-| 517 | 81 | `static void theSharedStack(Path root)` |  |
+| 382 | 59 | `static void theTwins(Path root)` |  |
+| 443 | 1 | `static double costOnSite(Game g, BuildingsTemplate t, Verdict v)` | The cost of the buildings a verdict's terms stand for, as the landlords' sum read it. |
+| 445 | 6 | `static void printVerdict(String who, Verdict v)` |  |
 
-### 5. THE CITY'S SITE (lines 599-692)
+### 3. A HALF-BUILT SITE (lines 452-518)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 605 | 12 | `static Game citySite(Path root, String name, long schools, int worked, double queueMonths)` | A calm city whose landlords' Houses are built (nothing else on site), the city's Middle Schools ordered, and the queue at home made long by standing roads to CITY_QUEUE_MONTHS; the city's cash given for the extra. |
-| 618 | 74 | `static void theCitysSite(Path root)` |  |
+| 458 | 40 | `static void halfBuilt(String who, Game g, BuildingsTemplate t, String payer, boolean claimed, Runnable hand)` | One half-built site handed over: the terms read before it (its payer's share of the points owed less FC2's pooled claim, not its points on site; the extra struck on them), the handover made by {@code hand}, and the st... |
+| 499 | 19 | `static void theHalfBuilt(Path root)` |  |
 
-### 6. THE MONEY (lines 693-777)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 699 | 46 | `static void followTheMoney(String who, Game g, String key, double unearnedBefore)` | The money of one handed site, followed from the handover to its end and two months more: the bills as the builders' imports the month after, in the audit's TRADE scope and the accounts; the payment earned as the abroa... |
-| 746 | 1 | `static boolean near2(double actual, double expected, double tol)` |  |
-| 748 | 29 | `static void theMoney(Path root)` |  |
-
-### 7. THE SAVED CHOICE (lines 778-872)
+### 4. A SHARED STACK (lines 519-616)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 781 | 17 | `static List<String> differ(ConstructionControl.Abroad a, ConstructionControl.Abroad b)` | The fields of a record that differ between two, by name; every one compared to the bit. |
-| 799 | 10 | `static boolean sameContracts(java.util.Collection<BuildingsStacks.Contract> a, java.util.Collection<BuildingsStacks.Contract> b)` |  |
-| 810 | 62 | `static void theSave(Path root)` |  |
+| 522 | 7 | **type** `record Snap(double value, double units, double allowance, double points)` | One contract's figures. |
+| 523 | 1 | `static Snap of(BuildingsStacks.Contract c)` _(in ForeignChoiceCheck.Snap)_ |  |
+| 524 | 4 | `boolean same(Snap o)` _(in ForeignChoiceCheck.Snap)_ |  |
+| 530 | 4 | `static BuildingsStacks.Contract abroadContractOf(BuildingsStacks s, String payer)` |  |
+| 535 | 81 | `static void theSharedStack(Path root)` |  |
 
-### 8. A WAIT AT HOME THAT NEVER ENDS, SAVED (lines 873-1000)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 879 | 10 | `static String notFinite(ConstructionControl.Abroad r)` | The first of a record's figures that is not finite, or null when every one is. |
-| 894 | 20 | `static Game savedAndLoaded(Path root, String name, Game live, String slotName, String[] why)` | The city saved to the scratch slot of its own folder and loaded into a fresh Game over that folder, held as the live one is (a hold is a harness lever a save does not carry). |
-| 915 | 85 | `static void theEndlessWait(Path root)` |  |
-
-### 9. A PAVING HANDED ABROAD (lines 1001-1088)
+### 5. THE CITY'S SITE (lines 617-710)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1007 | 17 | `static Game pavingCity(Path root, String name)` | A calm city whose landlords' Houses are built (nothing else on site), PAVINGS Gravel Roads standing and their paving ordered on the Paved Road's site, the queue at home made long by standing Paved Roads to CITY_QUEUE_... |
-| 1025 | 63 | `static void thePaving(Path root)` |  |
+| 623 | 12 | `static Game citySite(Path root, String name, long schools, int worked, double queueMonths)` | A calm city whose landlords' Houses are built (nothing else on site), the city's Middle Schools ordered, and the queue at home made long by standing roads to CITY_QUEUE_MONTHS; the city's cash given for the extra. |
+| 636 | 74 | `static void theCitysSite(Path root)` |  |
 
-### 10. THE PAYMENT'S TWO REFUSALS (lines 1089-1180)
+### 6. THE MONEY (lines 711-795)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1092 | 4 | `static double savingBorrowing(Game g, Verdict v, double borrowed)` | The saving the landlords' months saved are worth at the rate of a loan for the shortfall (Game.judged(): the loan's rate; a bond's cheaper coupon can only raise it). |
-| 1098 | 8 | `static Game shortMover(Path root, String name)` | Section 2's mover at the strong D$, its landlords' cash cut to SHORT_CASH_SHARE of the gross extra they would pay: they must borrow the rest. |
-| 1107 | 73 | `static void thePayment(Path root)` |  |
+| 717 | 46 | `static void followTheMoney(String who, Game g, String key, double unearnedBefore)` | The money of one handed site, followed from the handover to its end and two months more: the bills as the builders' imports the month after, in the audit's TRADE scope and the accounts; the payment earned as the abroa... |
+| 764 | 1 | `static boolean near2(double actual, double expected, double tol)` |  |
+| 766 | 29 | `static void theMoney(Path root)` |  |
+
+### 7. THE SAVED CHOICE (lines 796-890)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 799 | 17 | `static List<String> differ(ConstructionControl.Abroad a, ConstructionControl.Abroad b)` | The fields of a record that differ between two, by name; every one compared to the bit. |
+| 817 | 10 | `static boolean sameContracts(java.util.Collection<BuildingsStacks.Contract> a, java.util.Collection<BuildingsStacks.Contract> b)` |  |
+| 828 | 62 | `static void theSave(Path root)` |  |
+
+### 8. A WAIT AT HOME THAT NEVER ENDS, SAVED (lines 891-1018)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 897 | 10 | `static String notFinite(ConstructionControl.Abroad r)` | The first of a record's figures that is not finite, or null when every one is. |
+| 912 | 20 | `static Game savedAndLoaded(Path root, String name, Game live, String slotName, String[] why)` | The city saved to the scratch slot of its own folder and loaded into a fresh Game over that folder, held as the live one is (a hold is a harness lever a save does not carry). |
+| 933 | 85 | `static void theEndlessWait(Path root)` |  |
+
+### 9. A PAVING HANDED ABROAD (lines 1019-1106)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1025 | 17 | `static Game pavingCity(Path root, String name)` | A calm city whose landlords' Houses are built (nothing else on site), PAVINGS Gravel Roads standing and their paving ordered on the Paved Road's site, the queue at home made long by standing Paved Roads to CITY_QUEUE_... |
+| 1043 | 63 | `static void thePaving(Path root)` |  |
+
+### 10. THE PAYMENT'S TWO REFUSALS (lines 1107-1198)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1110 | 4 | `static double savingBorrowing(Game g, Verdict v, double borrowed)` | The saving the landlords' months saved are worth at the rate of a loan for the shortfall (Game.judged(): the loan's rate; a bond's cheaper coupon can only raise it). |
+| 1116 | 8 | `static Game shortMover(Path root, String name)` | Section 2's mover at the strong D$, its landlords' cash cut to SHORT_CASH_SHARE of the gross extra they would pay: they must borrow the rest. |
+| 1125 | 73 | `static void thePayment(Path root)` |  |
 

@@ -548,6 +548,9 @@ public class HouseholdAccounts {
     private final double[] rowWages     = new double[ROWS];
     private final double[] rowTax       = new double[ROWS];
     private final double[] rowRent      = new double[ROWS];
+    /** Actual typed rents by row in a live city; a bare accounts fixture keeps its pooled input. */
+    private java.util.function.IntToDoubleFunction typedRents = r -> Double.NaN;
+    public void setTypedRents(java.util.function.IntToDoubleFunction rents) { typedRents=rents; }
     private final double[] rowShopping  = new double[ROWS];
     private final double[] rowPeople    = new double[ROWS];
     private final double[] rowHouseholds = new double[ROWS];
@@ -755,7 +758,8 @@ public class HouseholdAccounts {
 
             double share = heads > 0 ? peoplePerRow[r] / heads : 0;
             double doorShare = doors > 0 ? rowDoors[r] / doors : 0;
-            rowRent[r] = rent * doorShare;
+            double typed=typedRents.applyAsDouble(r);
+            rowRent[r] = Double.isFinite(typed)?typed:rent * doorShare;
 
             /*
              * THE SHOP FOLLOWS THE BUDGET, not the headcount.

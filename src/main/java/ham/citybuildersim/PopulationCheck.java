@@ -1122,14 +1122,37 @@ public class PopulationCheck {
          * the target the city filled toward. play() carries this city's own
          * pre-pull draws and pulls from that same calculation; reconcile them
          * below, including its actual affordability effect (REV-MR1).
+         *
+         * RES3: the landlord builds and prices homes, one household to a door, and the standard city's asked
+         * burden at month 120 is under the target (.2449 of .30, 111 households in 200 doors), so its pull is 1
+         * and its reconciliation never sees the affordability effect. The effect is reconciled on a dear twin
+         * (below), played for the purpose: fewer Houses for the same jobs, so the households outnumber the doors.
          */
         double modelTarget = settled[11];
         assertTrue("the played city has both pre-pull draws", settled[12] > 0 && settled[13] > 0);
-        assertTrue("the played city's own affordability pull is below one", settled[16] > 0 && settled[16] < 1);
+        check("the played city's own affordability pull is the one its asked burden names (Migration.affordabilityPull)",
+                settled[16], Migration.affordabilityPull(settled[17]), 1e-9);
         check("the played city's target is its own jobs and homes at their own pulls",
                 modelTarget, settled[12] * settled[14] + settled[13] * settled[15], 1e-9);
-        System.out.printf("   played draws: jobs %.6f x %.9f; homes %.6f x %.9f; affordability %.9f%n",
-                settled[12], settled[14], settled[13], settled[15], settled[16]);
+        System.out.printf("   played draws: jobs %.6f x %.9f; homes %.6f x %.9f; affordability %.9f (burden %.4f)%n",
+                settled[12], settled[14], settled[13], settled[15], settled[16], settled[17]);
+
+        // ...the dear twin: DEAR_HOUSES Houses to the standard city's STANDARD_HOUSES, the same shops and depots, so its households outnumber its doors, the
+        // landlord's asks rise on that pressure (HousingMarket.reprice(): the anchor times the pressure to SCARCITY_ELASTICITY) and a mover weighs them.
+        double[] dear = play(root, "m120-dear", 120, DEAR_HOUSES);
+        assertTrue(String.format("fixture: the dear twin (%d Houses to the standard city's %d) asks more rent than the game says a household should pay: its asked burden %.4f"
+                        + " against TARGET_RENT_BURDEN %.2f, %.1f households asking for %.0f doors",
+                        DEAR_HOUSES, STANDARD_HOUSES, dear[17], ham.citybuildersim.sectors.RealEstate.TARGET_RENT_BURDEN, dear[19], dear[18]),
+                dear[17] > ham.citybuildersim.sectors.RealEstate.TARGET_RENT_BURDEN && dear[19] > dear[18] && dear[18] > 0);
+        assertTrue("the dear twin has both pre-pull draws", dear[12] > 0 && dear[13] > 0);
+        assertTrue("the dear twin's own affordability pull is below one", dear[16] > 0 && dear[16] < 1);
+        check("...and it is the pull its asked burden names (Migration.affordabilityPull)", dear[16], Migration.affordabilityPull(dear[17]), 1e-9);
+        assertTrue("...which cuts the jobs' draw (the rent's pull, never above 1) and the target stands under the draws before the pulls",
+                dear[14] < 1 && dear[11] < dear[12] + dear[13]);
+        check("the dear twin's target is its own jobs and homes at their own pulls, the affordability effect among them",
+                dear[11], dear[12] * dear[14] + dear[13] * dear[15], 1e-9);
+        System.out.printf("   dear twin's draws: jobs %.6f x %.9f; homes %.6f x %.9f; affordability %.9f (burden %.4f)%n",
+                dear[12], dear[14], dear[13], dear[15], dear[16], dear[17]);
 
         System.out.printf("   after 1 month: %,.0f people;  after 120: %,.0f"
                 + "  (raw draw %,.0f; model target %,.0f)%n", oneMonth[0], settled[0], target, modelTarget);
@@ -1336,8 +1359,19 @@ public class PopulationCheck {
         if (fails > 0) System.exit(1);
     }
 
+    /** The Houses the standard played city starts with. */
+    static final int STANDARD_HOUSES = 200;
+
+    /** The Houses the dear twin starts with, the same shops and depots: its households outnumber its doors, so the landlord's asks rise on the pressure. */
+    static final int DEAR_HOUSES = 60;
+
     /** Plays a standard city for a given number of months and reports it. */
     static double[] play(Path root, String name, int months) throws Exception {
+        return play(root, name, months, STANDARD_HOUSES);
+    }
+
+    /** ...with `houses` Houses placed on day one in place of the standard city's. */
+    static double[] play(Path root, String name, int months, int houses) throws Exception {
 
         GameFiles files = new GameFiles(root.resolve(name), root.resolve("no-legacy"));
         Game g = new Game(files);
@@ -1351,7 +1385,7 @@ public class PopulationCheck {
             g.getForeignAccounts().pinRate(g.getForeignAccounts().getRate());
 
             BuildingManager b = g.getBuildingManager();
-            b.addStack(b.getTemplateByName("House"), 200, true);
+            b.addStack(b.getTemplateByName("House"), houses, true);
             b.addStack(b.getTemplateByName("Convenience Store"), 8, true);
             b.addStack(b.getTemplateByName("Construction Depot"), 2, true);
             // GW1: the landlords hold, so the homes stay the two hundred Houses placed above ("a city with 200 houses and eight shops
@@ -1369,6 +1403,13 @@ public class PopulationCheck {
 
         EconomyManager e = g.getEconomyManager();
         PopulationManager p = g.getPopulationManager();
+        // The doors the landlord's classes stand and the households asking for them (HousingMarket.ClassState), over the classes with doors.
+        double doors = 0, asking = 0;
+        for (HousingMarket.ClassState c : g.getSectors().realEstate().housingMarket().classes()) {
+            if (!(c.homes > 0)) continue;
+            doors += c.homes;
+            asking += c.demand;
+        }
         return new double[]{
             p.getPopulation(),
             Math.round(g.getCash() * 10000) / 10000.0,
@@ -1388,7 +1429,11 @@ public class PopulationCheck {
             g.getMigration().getLastHomeDraw(),
             g.getMigration().getLastJobsPull(),
             g.getMigration().getLastHomesPull(),
-            g.getMigration().getLastAffordabilityPull()
+            g.getMigration().getLastAffordabilityPull(),
+            // The rent burden the pull weighed (the asked burden on the typed market), and the doors and the households asking for them.
+            g.getMigration().getRentBurden(),
+            doors,
+            asking
         };
     }
 

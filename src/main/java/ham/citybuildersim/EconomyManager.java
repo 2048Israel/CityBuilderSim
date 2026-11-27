@@ -237,13 +237,9 @@ public class EconomyManager {
      * Every sector's draw, off its own buildings. Billed to the sectors that
      * draw it, water exactly as power is.
      *
-     * EXCEPT THE HOMES. A house draws power and water and nobody is billed
-     * for it - the tenants are not charged for utilities in this model, and
-     * the landlords never were either (the old billing list was four
-     * categories, and RESIDENTIAL was not one of them). Charging the
-     * landlords for 40,000 houses' worth of water would be a rent rise
-     * dressed as a utility bill. A household utility bill is a change to the
-     * household model, not to the sectors, and it is on the list.
+     * Rental homes are billed to Real Estate once, like its other operating
+     * costs. Tenants pay their actual lease bill and no separate utility
+     * invoice. Buildings owned by the city or the bank remain unbilled here.
      */
     public void setElectricityConsumption() {
         for (Sector s : sectors.all()) {
@@ -610,9 +606,9 @@ public class EconomyManager {
     public double housingCarry(BuildingsTemplate t) {
         if (t == null || buildingManager == null) return 0;
         double materials = t.getConstructionMaterials() * Math.max(0, buildingManager.getConstructionMaterialPrice());
-        double structure = t.getCashCost() + materials;
+        double structure = housingStructureValue(t);
         // ...its plot at its zone's price while the landlords' zone holds it (0.7.107, groundPriceFor()).
-        double land = t.getLandSqFt() * groundPriceFor(t);
+        double land = housingLandValue(t);
         double full = structure + land;
         if (full <= 0) return 0;
         double monthlyPropertyRate = taxPolicy.effectiveMonthlyPropertyRate(sectors.realEstate());
@@ -622,8 +618,31 @@ public class EconomyManager {
         // is the structure's book value (BuildingManager) and its plot.
         double repairBase = ownersRepairCost(t, sectors.realEstate().key(),
                 buildingManager.nonMaterialCost(t) + materials);
+        double payroll=0;
+        for(JobType job:JobType.values())if(job.ordinal()<wageRates.length)payroll+=t.getJobs(job)*wageRates[job.ordinal()];
         return repairBase * ham.citybuildersim.sectors.RealEstate.MAINTENANCE_PER_YEAR / 12
-                + full * monthlyPropertyRate;
+                + full * monthlyPropertyRate + payroll
+                + t.getElectricityConsumption()*getPowerPriceFor(t)
+                + t.getWaterConsumption()*getPricePerWaterUnit();
+    }
+
+    /**
+     * A landlord's home's structure at its market value (RES3c, the orchestrator's call on REV-RES3z's block, 2026-11-25): its cash cost
+     * with every material at the market's price, the base housingCarry() strikes the repairs and the property tax on, and with
+     * housingLandValue() the base a landlord's gross yield is struck on (HousingMarket.quote()). WHY: the class asks were struck on the
+     * door, which charges only the materials beyond the builders' yard, so a 1900 city's dated Low-Rise block, whose 141 materials the
+     * yard held, asked a yield on 141 and paid a carry struck on about 233: rent 1.088 a month against carry 1.176, and the lender read
+     * a negative rent (CreditCrunchCheck section 4). A gross yield is on what the property is worth, the base its repairs and tax are on.
+     */
+    public double housingStructureValue(BuildingsTemplate t) {
+        if (t == null || buildingManager == null) return 0;
+        return t.getCashCost() + t.getConstructionMaterials() * Math.max(0, buildingManager.getConstructionMaterialPrice());
+    }
+
+    /** ...and its plot at its zone's price while the landlords' zone holds it (0.7.107, groundPriceFor()). */
+    public double housingLandValue(BuildingsTemplate t) {
+        if (t == null || buildingManager == null) return 0;
+        return t.getLandSqFt() * groundPriceFor(t);
     }
 
     /** The cheapest way to house one more person, land included, per segment. */

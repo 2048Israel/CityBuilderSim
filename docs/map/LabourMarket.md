@@ -1,4 +1,4 @@
-# LabourMarket.java - 1,113 lines · 65 methods · 19 constants · model
+# LabourMarket.java - 1,127 lines · 67 methods · 19 constants · model
 
 `ham/citybuildersim/LabourMarket.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -145,7 +145,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 69 | 1045 | **type** `public class LabourMarket` | What labour costs, and why it costs that. |
+| 69 | 1059 | **type** `public class LabourMarket` | What labour costs, and why it costs that. |
 | 75 | 1 | `public void recordTo(DecisionLog log)` | Wires this to its city's decision log (Game.buildWorld()). |
 | 77 | 3 | `private void decided(String kind, String label)` |  |
 
@@ -260,13 +260,15 @@
 | 964 | 13 | `public void setFloorTie(FloorTie tie, double share)` | Ties the floor (WG1): the tie, and its share of the average wage (held to MIN_TIE_SHARE..MAX_TIE_SHARE; the share means something under AVERAGE_WAGE only). |
 | 983 | 6 | `public void followAverageWage(double averageWage)` | Game's monthly word on the average wage (WG1), the wage bill over the posts filled, before the wages are walked. |
 
-### SAVE AND RESTORE (lines 990-1113)
+### SAVE AND RESTORE (lines 990-1127)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1000 | 31 | `public double[] state()` |  |
-| 1032 | 3 | `private int diagnosticsLength()` |  |
-| 1044 | 41 | `public void restore(double[] saved)` | Refused whole on a length mismatch, never padded - the same rule the health and healthcare arrays follow. |
-| 1096 | 8 | `public void redenominate(double scale)` | Wages and the floor, in the new unit. |
-| 1107 | 5 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
+| 1000 | 35 | `public double[] state()` |  |
+| 1036 | 3 | `private int diagnosticsLength()` |  |
+| 1041 | 1 | `int tieStateOffset()` | Stable tail positions for native-format fixtures, independent of later appended state. |
+| 1042 | 1 | `int averageStateOffset()` |  |
+| 1052 | 47 | `public void restore(double[] saved)` | Refused whole on a length mismatch, never padded - the same rule the health and healthcare arrays follow. |
+| 1110 | 8 | `public void redenominate(double scale)` | Wages and the floor, in the new unit. |
+| 1121 | 5 | `public void seedConstants(double unit)` | Re-seeds the money CONSTANTS at a given unit. |
 

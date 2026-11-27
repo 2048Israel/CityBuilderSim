@@ -466,6 +466,16 @@ public class BuildersFirstCheck {
      */
     static final int FOUNDING_MONTHS = 3;
 
+    /**
+     * The Houses that stand in the new town before its first month (RES3): a door holds one household now, and the
+     * landlords' own plan orders Terraces (277 points for six doors) and then Duplexes, which the builders' month of 86 to 96
+     * points at a fill of 0.14 never gets to - the first months ended with 18 homes, 123 people and the sites getting nothing,
+     * where main's first month built 63 Houses and stood 84 homes and 359 people by the third, the sites at least 50.
+     * Eighty stand here, under the hundred homes the section calls a new town: the town has people for the builders' posts
+     * (214 people at 60 left the sites 2 points a month, 269 at 80 leave them 24).
+     */
+    static final int FOUNDING_HOUSES = 80;
+
     /** The landlords' Houses the fixture puts on site when the founding months are over (FC1): a few months of the town's sites' work, so the twins' comparison has homes to build. */
     static final int LANDLORDS_HOUSES = 10;
 
@@ -479,6 +489,8 @@ public class BuildersFirstCheck {
         Game gated = MortgageCheck.landlordCity(root, "town-gated", true, DEPOTS_STANDING);
         Game ungated = MortgageCheck.landlordCity(root, "town-ungated", true, DEPOTS_STANDING);
         ungated.getBuildingManager().setBuildersCouldStaff(null);
+        // The founding Houses (RES3): the town's people, in both twins, standing before its first month as its depots do.
+        for (Game g : new Game[] { gated, ungated }) quietly(() -> g.buildStack(template(g, "House"), FOUNDING_HOUSES, true));
         BuildingManager bm = gated.getBuildingManager();
         BuildingsTemplate depot = template(gated, DEPOT);
         String key = ConstructionControl.keyOf(depot);
@@ -535,11 +547,12 @@ public class BuildersFirstCheck {
             final long topUp = mostHouses - (s == null ? 0 : s.getUnderConstruction());
             if (topUp <= 0) continue;
             BuildingsTemplate house = template(g, "House");
-            double price = g.quoteBuild(house, topUp).total;
+            double price = g.doorPriceOf(house, topUp);
             quietly(() -> {
                 g.getEconomyManager().setSectorCash(Sectors.REAL_ESTATE,
-                        g.getEconomyManager().getSectorCash(Sectors.REAL_ESTATE) + price);
-                g.buildFor(g.getSectorInvestor(Sectors.REAL_ESTATE), house, topUp);
+                        Math.max(0, g.getEconomyManager().getSectorCash(Sectors.REAL_ESTATE)) + price);
+                assertTrue("fixture: the funded private top-up, including its ground, is placed",
+                        g.buildFor(g.getSectorInvestor(Sectors.REAL_ESTATE), house, topUp));
             });
         }
         assertTrue("fixture: the landlords' Houses on site in both twins, alike",
@@ -558,8 +571,9 @@ public class BuildersFirstCheck {
             BuildingManager.Plan pg = bm.getLastPlan(), pu = ungated.getBuildingManager().getLastPlan();
             if (pg != null && !pg.buildersFirst.isEmpty()) firstG++;
             if (pu != null && !pu.buildersFirst.isEmpty()) firstU++;
-            floorG = Math.min(floorG, gated.getBuildingOutput());
-            floorU = Math.min(floorU, ungated.getBuildingOutput());
+            // Work is the advance just performed, including the foreign crews; getBuildingOutput() is next month's local capacity.
+            floorG = Math.min(floorG, bm.getPointsBuilt());
+            floorU = Math.min(floorU, bu.getPointsBuilt());
         }
         out.printf("  months the depots went first: %d in the town with the test, %d in the twin without it%n", firstG, firstU);
         assertTrue("in the town with the test its depots never went first", firstG == 0);
