@@ -1,4 +1,4 @@
-**Resume here (16:45, 11-27):** pushed: the picture tool (slot copies, or "playtest MONTH"), UiSteadyCheck (33 reds on today's pages, three faults, section 3 below) and audit 1 of 5 (docs/studies/ux1/audit-1-chrome-build.md). Next, in order: picture the playtest city at month 600 and 2,400 (the mid and big cities, section 2) on scratch; audits 2-5 by helper (brief: C:/Users/Jerus/AppData/Local/Temp/cbs-UX1-scratch/audit-brief.md, placeholder STAB must not hit "STABILITY"); the audit summary; the mockups over 003-map (HTML via Edge headless, the game's Palette, IBM Plex, Icons.java paths); the rows UX2+; the ship file with known-reds; --fast; pick; mail.
+**Resume here (16:45, 11-27):** pushed at faff0a482: the picture tool (slot copies or `playtest MONTH`; 122 pages with map-ground; scenes exactly 1920x1080), UiSteadyCheck (3 runs, the same 33 reds, three faults, section 3), audit 1 of 5 (read on the broken slot 2/9 copies: recheck its figures against playtest2400). Pictured on scratch: slot1 and playtest600 (both at 1906x1043, before the undecorated stage: retake). Next, in order: (1) retake slot1, playtest600 and playtest2400 (the 2,400-month growth runs off the FX thread now; about 15 min); (2) audits 2-5 by helper, briefs ready at C:/Users/Jerus/AppData/Local/Temp/cbs-UX1-scratch/audit-[2-5].md, and a recheck of audit 1; (3) the audit summary; (4) the mockups over 121-map-ground (HTML, Edge headless with --user-data-dir on scratch, the Palette, IBM Plex from target/classes/fonts, Icons.java paths); (5) the rows UX2+ (sketch: section 6); (6) the ship file, known-reds scoped -services- -infrastructure- -government-revenue -build-industry; --fast; pick; mail.
 
 # UX1 - the interface rework's study: notes
 
@@ -77,3 +77,17 @@ on this PC.
 
 F1 depends on the screen's scale: at 125% one physical pixel is 0.8 px; the gate box (Monocle, scale 1)
 may show it as 1 px or not at all. The known-reds rows are scoped by page so they cover either.
+
+## 6. The plan's first sketch (16:45, before the audit; the audit confirms or replaces it)
+
+- The frame first: the map as the ground (map-ground), the rail opening a panel beside it, a path line,
+  a "wide" sheet over a dimmed map for statements; at first every page shows in the wide sheet unchanged,
+  so nothing breaks, and each page's own row then moves it into the panel with its depth.
+- The top strip and the alert row (the alerts' model: dismiss, return, grouping; the needs chip, the
+  bank's capital requests and the sectors' holds move there) - a row of its own after the frame.
+- The needs sidebar, and the map's hooks as rows of their own (a district tint for a short need; a card
+  on a building).
+- The icon set (one per building), then the build screen (groups, filters, the city's own and the
+  market's marked) - after BMD1, which changes the Build menu's lab text.
+- One row per page after its in-flight batch: the central bank after CBK3 and CBK2, Policy after HO4,
+  Finances after ASH3; REU1 builds its page to the frame's rules if it starts after the frame.
