@@ -332,7 +332,7 @@ public class Exchange {
        holds at fair value plus half the spread as before; both good for the
        month, withdrawn at the next step and posted again from that month's
        view, as an unfilled sale is. A share the register has at or below
-       minFair adds nothing to the book at fair value, so it makes no excess;
+       the valuation floor adds nothing to the book at fair value, so it makes no excess;
        the desk posts nothing at all in such a company, as before, and holds
        it at its mark until its fair value comes back. A desk that is not
        posting (no capital to trade with) offers nothing, as before.
@@ -650,7 +650,7 @@ public class Exchange {
     /** The register's reckoning of a share, struck at the step: its money past the cushion at face and its earnings capitalised (Equity.fairValue(), EM1). */
     public double fair(int c)        { return fair[c]; }
 
-    /** ...true when that is the exchange's floor (minFair), which a company whose book and record are gone sits at (BO1: the owner family's broke rule). */
+    /** ...true when that is the exchange's valuation floor, which a company whose book and record are gone sits at (BO1: the owner family's broke rule). */
     public boolean atFloor(int c)    { return fair[c] <= valuationFloor(); }
 
     /**
@@ -736,7 +736,7 @@ public class Exchange {
 
     /** The desk's bid capacity in this company now, shares: what its capital carries (Bank.deskCanCarry()), and of its own shares what it holds over target at the pace. */
     public double deskCanBuy(Equity register, int c) {
-        if (dealer == null || !hasDealerCapital(dealer) || register.getShares(c) <= 0 || fair[c] <= minFair) return 0;
+        if (dealer == null || !hasDealerCapital(dealer) || register.getShares(c) <= 0 || atFloor(c)) return 0;
         double bid = fair[c] * (1 - SPREAD / 2);
         return deskCapacity(register, c, bid);
     }
@@ -922,7 +922,7 @@ public class Exchange {
         double[] excess = deskExcess(register);
         java.util.Arrays.fill(lastExcessOffered, 0);
         for (int c = 0; c < n; c++) {
-            if (register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+            if (register.getShares(c) <= 0 || atFloor(c)) continue;
             double bid = fair[c] * (1 - SPREAD / 2), ask = fair[c] * (1 + SPREAD / 2);
             double buy = deskCapacity(register, c, bid);
             // Which limit held the bid (round 3), counted for the playtest.
@@ -951,7 +951,7 @@ public class Exchange {
      * 4): the larger of what is over POSITION_LIMIT in that company and its
      * pro-rata part, by value at fair value, of what the book is over
      * BOOK_LIMIT - both on the bank's equity as it stands. Never more than it
-     * holds; nothing in its own shares or in a share at or below minFair.
+     * holds; nothing in its own shares or in a share at the valuation floor.
      */
     public double[] deskExcess(Equity register) {
         double[] out = new double[n];
@@ -961,7 +961,7 @@ public class Exchange {
         double bookOver = Math.max(0, book - BOOK_LIMIT * equity);
         for (int c = 0; c < n; c++) {
             double held = Math.max(0, register.getDealerShares(c));
-            if (c == Equity.BANK || !(held > 0) || fair[c] <= minFair) continue;
+            if (c == Equity.BANK || !(held > 0) || atFloor(c)) continue;
             double atFair = held * fair[c];
             double overPosition = Math.max(0, atFair - POSITION_LIMIT * equity) / fair[c];
             double overBook = book > 0 ? held * bookOver / book : 0;
@@ -1094,14 +1094,14 @@ public class Exchange {
     /** The month's leavers ask what the dealer's bid at fair value used to pay them. */
     private void postEmigrants() {
         for (int c = 0; c < n; c++) {
-            if (emigrantShares[c] <= OrderBook.DUST || fair[c] <= minFair) continue;
+            if (emigrantShares[c] <= OrderBook.DUST || atFloor(c)) continue;
             double ask = fair[c] * (1 - SPREAD / 2);
             lifeEmigrantsOffered += emigrantShares[c] * ask;
             post(c, EMIGRANTS, OrderBook.Side.SELL, ask, emigrantShares[c]);
         }
         for (int c = 0; c < n; c++) {
             double tagged = register.foreignTaxShares(c);
-            if (!(tagged > 0) || fair[c] <= minFair) continue;
+            if (!(tagged > 0) || atFloor(c)) continue;
             double ask = fair[c] * (1 - SPREAD / 2);
             lifeEmigrantsOffered += tagged * ask;
             post(c, TAX_EMIGRANTS, OrderBook.Side.SELL, ask, tagged);
@@ -1125,7 +1125,7 @@ public class Exchange {
         double hurdle = Math.max(0, worldRate) + Equity.FOREIGN_PREMIUM;
         if (!(hurdle > 0)) return;
         for (int c = 0; c < n; c++) {
-            if (register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+            if (register.getShares(c) <= 0 || atFloor(c)) continue;
             if (register.getMonthsRecorded(c) < Equity.RECORD_MONTHS) continue;
             // ...what a share's business and its money earn it a year (EM1), where the dividend was.
             double inc = (earnings[c] + moneyIncome[c]) / register.getShares(c);
@@ -1158,7 +1158,7 @@ public class Exchange {
      */
     private void postWorldPrice() {
         for (int c = 0; c < n; c++) {
-            if (!register.valuedOnRecord(c) || fair[c] <= minFair) continue;
+            if (!register.valuedOnRecord(c) || atFloor(c)) continue;
             double held = worldHolding(c);
             if (held > OrderBook.DUST && bestBid(c) > fair[c] * (1 + BAND)) {
                 post(c, WORLD, OrderBook.Side.SELL, fair[c] * (1 + BAND), OutwardInvestment.HOME_SPEED * held);
@@ -1297,7 +1297,7 @@ public class Exchange {
             if (c == Equity.BANK || !register.valuedOnRecord(c)) continue;
             // ...a share worth nothing opens no new short, but one already open is still margin-called, recalled and covered (LF1):
             // it had been skipped here, and a short stood for ever at a company that had fallen to nothing.
-            if (fair[c] <= minFair && !(shortShares[c] > OrderBook.DUST)) continue;
+            if (atFloor(c) && !(shortShares[c] > OrderBook.DUST)) continue;
             double s = shortShares[c];
             double q = price(c);
             double lendable = s > OrderBook.DUST ? lendable(c) : 0;
@@ -1308,7 +1308,7 @@ public class Exchange {
             } else if (s > lendable + OrderBook.DUST) {
                 lifeRecalls++;
                 post(c, WORLD_SHORT, OrderBook.Side.BUY, shortCollateral[c] / s, s - lendable);
-            } else if (fair[c] > minFair && q > fair[c] * (1 + SHORT_BAND)) {
+            } else if (!atFloor(c) && q > fair[c] * (1 + SHORT_BAND)) {
                 double want = Math.min(shortRoom(c), FOREIGN_SPEED * (q / fair[c] - 1) * register.getOutstanding(c));
                 if (want > OrderBook.DUST) {
                     lifeShortAsks++;
@@ -1357,7 +1357,7 @@ public class Exchange {
     private void postCompanies() {
         if (companies == null) return;
         for (int c = 0; c < n; c++) {
-            if (c == Equity.BANK || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+            if (c == Equity.BANK || register.getShares(c) <= 0 || atFloor(c)) continue;
             Equity.Regime regime = register.getRegime(c);
             if (regime == Equity.Regime.BAD || regime == Equity.Regime.NEW) continue;
             double assets = companies.assets(c);
@@ -1448,7 +1448,7 @@ public class Exchange {
         if (cell == null || cell.isEmpty()) return;
         String who = CELL + cell.key();
         for (int c = 0; c < n; c++) {
-            if (!(cell.shares[c] > 0) || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+            if (!(cell.shares[c] > 0) || register.getShares(c) <= 0 || atFloor(c)) continue;
             post(c, who, OrderBook.Side.SELL, price(c), OwnerHousehold.OWNER_SELL_A_MONTH * cell.shares[c] * cell.households());
         }
     }
@@ -1516,7 +1516,7 @@ public class Exchange {
         // ...what a share's business and its money earn it a year, where the dividend was; none until the company is valued on its record.
         double[] inc = new double[n];
         for (int c = 0; c < n; c++) {
-            if (register.valuedOnRecord(c) && fair[c] > minFair) inc[c] = (earnings[c] + moneyIncome[c]) / register.getShares(c);
+            if (register.valuedOnRecord(c) && !atFloor(c)) inc[c] = (earnings[c] + moneyIncome[c]) / register.getShares(c);
         }
 
         /* ---- the cells over their target: HOME_SPEED of the cushion's shortfall, pro rata, at the market ---- */
@@ -1528,14 +1528,14 @@ public class Exchange {
             if (!(excess > 1e-12)) continue;
             double worth = 0;
             for (int c = 0; c < n; c++) {
-                if (!(cell.shares[c] > 0) || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+                if (!(cell.shares[c] > 0) || register.getShares(c) <= 0 || atFloor(c)) continue;
                 worth += cell.shares[c] * cell.households() * price(c);
             }
             if (!(worth > 0)) continue;
             double share = Math.min(1, OutwardInvestment.HOME_SPEED * Math.min(excess, worth) / worth);
             String who = CELL + cell.key();
             for (int c = 0; c < n; c++) {
-                if (!(cell.shares[c] > 0) || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+                if (!(cell.shares[c] > 0) || register.getShares(c) <= 0 || atFloor(c)) continue;
                 lifeRebalanceSold += cell.shares[c] * cell.households() * share * price(c);
                 post(c, who, OrderBook.Side.SELL, price(c), cell.shares[c] * cell.households() * share);
             }
@@ -1568,7 +1568,7 @@ public class Exchange {
             if (shortOfCushion(cell) > 1e-12) continue;
             String who = CELL + cell.key();
             for (int c = 0; c < n; c++) {
-                if (!(cell.shares[c] > 0) || !register.valuedOnRecord(c) || fair[c] <= minFair) continue;
+                if (!(cell.shares[c] > 0) || !register.valuedOnRecord(c) || atFloor(c)) continue;
                 double bid = bestBid(c);
                 double quantity = OutwardInvestment.HOME_SPEED * cell.shares[c] * cell.households();
                 // The yardstick a share must beat is the best of the alternatives and of the other shares a cell could buy now.
@@ -1695,7 +1695,7 @@ public class Exchange {
         for (int c = 0; c < n; c++) {
             double mine = register.getCityMarketShares(c);
             double inIssue = register.getShares(c);
-            if (!(mine > 0) || !(inIssue > 0) || fair[c] <= minFair) continue;
+            if (!(mine > 0) || !(inIssue > 0) || atFloor(c)) continue;
             double q = Math.min(mine, TreasuryFund.limitSale(mine, inIssue));
             if (q > OrderBook.DUST) {
                 submit(c, FUND, OrderBook.Side.SELL, limitAsk(c), q);
@@ -1800,7 +1800,7 @@ public class Exchange {
             // while it rebalances it buys no shares.
             for (int c = 0; c < n; c++) {
                 double mine = register.getCityMarketShares(c);
-                if (!(mine > 0) || fair[c] <= minFair) continue;
+                if (!(mine > 0) || atFloor(c)) continue;
                 double early = books[c].resting(FUND, OrderBook.Side.SELL);
                 double rebalance = excess > 0 && held > 0 ? mine * excess / held : 0;
                 // ...and its part of what the withdrawal must raise (C1): the market book pro rata.
@@ -1822,10 +1822,10 @@ public class Exchange {
                 double target = TreasuryFund.EQUITY_WEIGHT * value;
                 double caps = 0;
                 for (int c = 0; c < n; c++) {
-                    if (register.getShares(c) > 0 && fair[c] > minFair) caps += marketCap(register, c);
+                    if (register.getShares(c) > 0 && !atFloor(c)) caps += marketCap(register, c);
                 }
                 for (int c = 0; c < n; c++) {
-                    if (!(caps > 0) || register.getShares(c) <= 0 || fair[c] <= minFair || fundHandSelling(c)) continue;
+                    if (!(caps > 0) || register.getShares(c) <= 0 || atFloor(c) || fundHandSelling(c)) continue;
                     double want = target * marketCap(register, c) / caps;
                     double mine = register.getCityMarketShares(c);
                     // The room under the cap, less the hand's buys waiting for this step (0.7.39): none, the default.
@@ -1857,7 +1857,7 @@ public class Exchange {
     private void postFundHand(TreasuryFund.HandOrder o) {
         int c = o.company();
         String key = c >= 0 && c < n ? FundLedger.shareKey(Equity.COMPANIES[c]) : null;
-        if (c < 0 || c >= n || register.getShares(c) <= 0 || fair[c] <= minFair) {
+        if (c < 0 || c >= n || register.getShares(c) <= 0 || atFloor(c)) {
             fund.noteDropped(o, key, 0, o.limit(), c >= 0 && c < n && register.getShares(c) > 0
                     ? "the company was worth nothing" : "the company was not listed", month);
             return;
@@ -1941,7 +1941,7 @@ public class Exchange {
         if (register == null || fund == null) return Double.POSITIVE_INFINITY;
         double room = 0;
         for (int c = 0; c < n; c++) {
-            if (register.getShares(c) > 0 && fair[c] > minFair) {
+            if (register.getShares(c) > 0 && !atFloor(c)) {
                 room += fundRoom(register, fund, c) * fair[c] * (1 + TreasuryFund.RULE_PREMIUM);
             }
         }
@@ -2000,7 +2000,7 @@ public class Exchange {
         double[] limit = new double[n];
         double worth = 0;
         for (int c = 0; c < n; c++) {
-            if (!(cell.shares[c] > 0) || register.getShares(c) <= 0 || fair[c] <= minFair) continue;
+            if (!(cell.shares[c] > 0) || register.getShares(c) <= 0 || atFloor(c)) continue;
             double d = register.dividendPerShareAnnual(c);
             limit[c] = d > 0 && rate > 0 ? d / rate : fair[c] * (1 - SPREAD / 2);
             worth += cell.shares[c] * cell.households() * limit[c];

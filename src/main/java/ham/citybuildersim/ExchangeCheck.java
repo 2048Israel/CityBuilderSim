@@ -616,11 +616,50 @@ public class ExchangeCheck {
         }
     }
 
+    /** A zero-value mature company stays untradeable when the real-price anchor raises its presentation floor. */
+    static void anchoredFloorCannotTrade() {
+        out.println("\n--- the anchored floor cannot attract orders for a worthless company ---");
+        int company = Equity.indexOf(Sectors.INDUSTRY);
+        HouseholdBalance holders = savers(12, 4);
+        Equity reg = equity();
+        reg.listIfUnlisted(company, 20_000, holders);
+        for (int m = 0; m < Equity.RECORD_MONTHS; m++) reg.recordMonth(company, 0, 0);
+        // Expected prices rise while the venue's nominal money unit stays put.
+        reg.seedConstants(TODAYS_DOLLAR / 2);
+        Exchange ex = exchange();
+        Bank bank = bankWith(100_000);
+        Firms firms = new Firms();
+        double[] book = new double[N];
+        double held = holders.sharesHeld(company);
+        assertTrue("fixture: a mature company has owners, zero earnings and a presentation floor above nominal money",
+                reg.valuedOnRecord(company) && held > 0 && reg.getTrailingIncome(company) == 0
+                        && reg.noValue() > Exchange.MIN_FAIR / TODAYS_DOLLAR);
+        step(ex, reg, holders, bank, firms, book, W, 0, Equity.RECORD_MONTHS);
+        assertTrue("fixture: a live desk sees no book value, spare money or earnings in the company",
+                ex.isOpen() && book[company] == 0 && ex.spareOf(company) == 0 && ex.earningsOf(company) == 0);
+        assertTrue("the worthless company attracts no buy or sell orders, trades or desk capacity",
+                ex.bookOf(company).postedBuy() == 0 && ex.bookOf(company).postedSell() == 0
+                        && !ex.hasTraded(company) && ex.deskCanBuy(reg, company) == 0);
+        close("a household's real waterfall sale raises nothing from the worthless holding",
+                ex.sellForHousehold(reg, bank, holders, couple(holders), 1), 0, 0);
+        close("the household keeps every worthless share", holders.sharesHeld(company), held, 0);
+
+        for (int m = 0; m < Equity.RECORD_MONTHS; m++) reg.recordMonth(company, 100, 0);
+        step(ex, reg, holders, bank, firms, book, W, 0, 2 * Equity.RECORD_MONTHS);
+        assertTrue("actual positive earnings restore the desk's bid and capacity above the floor",
+                ex.fair(company) > reg.noValue() && ex.bestBid(company) > 0 && ex.deskCanBuy(reg, company) > 0);
+        close("the recovered holding really sells through the household waterfall",
+                ex.sellForHousehold(reg, bank, holders, couple(holders), 1), 1, 1e-9);
+        assertTrue("recovery trades real shares from the household into the desk",
+                ex.hasTraded(company) && holders.sharesHeld(company) < held && reg.getDealerShares(company) > 0);
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         rescueSaleChecks();
+        anchoredFloorCannotTrade();
 
         int RETAIL = Equity.indexOf(Sectors.RETAIL);
         int INDUSTRY = Equity.indexOf(Sectors.INDUSTRY);
