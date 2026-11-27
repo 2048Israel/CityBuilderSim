@@ -1,8 +1,8 @@
-# gate of Merge batch/RES3: after RES2: typed home choice/rents and the 14-form/32-class initial catalogue; actual builder/era/occupancy calibration. Back from Pending: Jerus answered its MonetaryCheck premise call (2026-11-23 23:33, by mail: "even reality higher interest rates doesnt always equal liwer inflation"), taken as B: the ordering and noise laws restated; it resumes at the next free lane, 0.9.216
+# gate of Merge batch/AP8: slot 9 at 50x after AP7 (Build 8.7-9.0, Land 7.7-7.9 months a second): the households' bond orders (`OrderBook.submit` 11.3% of the FX thread), the build quote's abroad terms read twice for the same arguments (`abroadOfOrder` 6.0%), private investment (11.7%), `HouseholdBalance.followThePeople` (9.2%); measured before and after, exact (the trace's eight md5s equal). After CBK3, ahead of CBK2 (Jerus's slot 9), 0.9.217
 # date: 2026-11-27
 # earth-2.bin: named
 # nightly: 2026-11-27 03:12 0.9.215 c71984995 4,000 months: OK in 578 s; nightly tier OK; observations: 3 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 1 SLOWER, 1 standing miss(es), 0 first-night miss(es), 1 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-27-c71984995-Kh1HaGNd; SaveSlotCheck | the median due month, 25.4 ms, holds the clock at most CLOCK_MS (25 ms) | previous 22.3, tonight 25.8, budget 25 ms | attribution inconclusive: boundary did not confirm
-# suite: 260 harnesses run in 1705s: 247 passed, 13 failed
+# suite: 248 harnesses run in 1413s: 235 passed, 13 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED

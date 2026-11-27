@@ -411,7 +411,17 @@ public class BondMarket implements BusinessDebtManager.BondBook, BusinessDebtMan
             book.setDust(dust);
             books.put(b.instrument(), book);
         }
+        if (bookProbe != null) book.probe = bookProbe;
         return book;
+    }
+
+    /** A harness's probe on every book this market posts to (AP8; OrderBook.Probe): null in play, where openBook() reads it and nothing more. */
+    private transient OrderBook.Probe bookProbe;
+
+    /** Opens a harness's probe on this market's books, the ones it has and the ones it opens later; null closes it (AP8). */
+    void probeBooks(OrderBook.Probe p) {
+        bookProbe = p;
+        for (OrderBook book : books.values()) book.probe = p;
     }
 
     /* =====================================================================
