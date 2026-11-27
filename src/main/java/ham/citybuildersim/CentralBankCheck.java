@@ -407,6 +407,19 @@ public class CentralBankCheck {
         window.settleWindow(atWindow / 2);
         close("a smaller shortfall is a repayment", window.getRepaidByBank(), atWindow / 2, 1e-9);
 
+        // RES3: a bank pays the window back only out of reserves there are. A central bank that lent 100 and was paid 80 of it in
+        // interest holds 20 of reserves; the bank's shortfall gone, it repays 20, and the 80 it could not stays owed for the next settle.
+        CentralBank spent = new CentralBank();
+        spent.settleWindow(100);
+        spent.chargeWindow(80);
+        spent.settleWindow(0);
+        close("a repayment past the reserves pays what they hold", spent.getRepaidByBank(), 20, 1e-12);
+        close("...and M0 does not go below nothing", spent.m0(), 0, 0);
+        close("...and the rest stays owed at the window", spent.getAdvancesToBank(), 80, 1e-12);
+        spent.payInterestOnReserves(30);
+        spent.settleWindow(0);
+        close("...repaid as reserves come", spent.getAdvancesToBank(), 50, 1e-12);
+
         // A FAILED BANK AT THE WINDOW (0.7.1, decided rather than forgotten):
         // the resolution sets its equity to zero, and it is charged no
         // interest on what it still owes past its deposits - see the note in

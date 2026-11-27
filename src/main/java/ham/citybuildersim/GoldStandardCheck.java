@@ -87,8 +87,8 @@ public class GoldStandardCheck {
         out.printf("%-130s %s%s%n", label, ok ? "OK" : "FAIL", ok ? "" : String.format("  %.17g != %.17g", actual, expected));
     }
 
-    /** Whether a figure is within a share of another: the loops' accumulator. */
-    static boolean within(double actual, double expected, double tol) { return Math.abs(actual - expected) <= tol * Math.abs(expected); }
+    /** Whether a figure is within a share of another: the loops' accumulator. Equal figures are within any share, an infinite cover over no M0 among them (RES3). */
+    static boolean within(double actual, double expected, double tol) { return actual == expected || Math.abs(actual - expected) <= tol * Math.abs(expected); }
 
     /** Runs a piece of work with the game's narration sent nowhere. */
     static void quietly(Runnable work) { CurrencyRegimeCheck.quietly(work); }

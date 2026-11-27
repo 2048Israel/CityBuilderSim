@@ -307,9 +307,14 @@ public final class CentralBank {
         return x;
     }
 
-    /** ...and repaid, which destroys it. */
+    /**
+     * ...and repaid, which destroys it: no more than this bank has made (its reserves), as settleGoldRedeemed() retires, and the rest
+     * left owed here for the next settle. WHY (RES3, 2026-11-26): the repayment was capped only at what was owed, so a month whose
+     * other retirements had spent the reserves took M0 below nothing - GoldStandardCheck's moving-down town at m140-154, reserves
+     * -3.1 to -38.1 with no currency out, the cover over it infinite - and a bank pays back only out of reserves it holds.
+     */
     public double repayFromBank(double x) {
-        double paid = Math.min(Math.max(0, x), advancesToBank);
+        double paid = Math.min(Math.min(Math.max(0, x), advancesToBank), Math.max(0, reserves));
         if (paid <= 0) return 0;
         advancesToBank -= paid;
         repaidByBank += paid;
