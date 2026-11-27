@@ -336,7 +336,7 @@ public class Bank {
     private double repaidByHouseholds;
     private double fundingCost;
 
-    /** ...the part of it on the advance the window holds past the tranche (fundToCover(policy, owed)): a month's figure, struck afresh every month and not saved. */
+    /** ...the part of it on the advance the window holds past the tranche (fundToCover(policy, deferred, held)): a month's figure, struck afresh every month and not saved. */
     private double windowOwedCost;
 
     /**
@@ -3512,14 +3512,17 @@ public class Bank {
      *
      * Called once, at the end of the month, after every loan has moved.
      */
-    public void fundToCover(double policyAnnual) { fundToCover(policyAnnual, 0); }
+    public void fundToCover(double policyAnnual) { fundToCover(policyAnnual, 0, 0); }
 
     /**
      * ...and the advance the window holds past that tranche, which the last settle asked back and the central bank's reserves could
-     * not take (CentralBank.getWindowDeferred()): owed all the same, and priced at the window's rate with it (RES3; REV-RES3b).
-     * Nothing is owed past the tranche wherever the reserves took the repayment, and the charge is what it always was.
+     * not take (CentralBank.getWindowDeferred()): owed all the same, and priced at the window's rate with it (RES3; REV-RES3b) -
+     * each dollar once. The part the tranche has grown back into is in the wholesale already: what is priced past it is the
+     * deferred balance no more than the window holds (windowHeld, CentralBank.getAdvancesToBank()) above the tranche. WHY (REV-RES3b's
+     * fourth look, 2026-11-27): the whole deferred balance was added to the tranche, so 80 deferred that new lending took up again
+     * was charged as 160. Nothing is owed past the tranche wherever the reserves took the repayment, and the charge is what it was.
      */
-    public void fundToCover(double policyAnnual, double windowOwed) {
+    public void fundToCover(double policyAnnual, double windowDeferred, double windowHeld) {
 
         /*
          * WITH NO BRANCHES THERE IS NO BANK, and nothing to charge.
@@ -3571,7 +3574,8 @@ public class Bank {
         double policy = Math.max(0, policyAnnual);
         double wholesaleNow = wholesaleFunding();
         fundingRate = policy + CentralBank.WINDOW_PENALTY;
-        windowOwedCost = Math.max(0, windowOwed) * fundingRate / 12;
+        double owedPast = Math.min(Math.max(0, windowDeferred), Math.max(0, windowHeld - wholesaleNow));
+        windowOwedCost = owedPast * fundingRate / 12;
         fundingCost = wholesaleNow * fundingRate / 12 + windowOwedCost;
 
         // ...and the other side of the same position: what is not lent is

@@ -14654,7 +14654,7 @@ public class Game {
          * by how it is funded now, and the bid went with the rule - see Bank,
          * WHAT TO PAY SAVERS.
          */
-        bank.fundToCover(debtManager.getPolicyRate(), centralBank.getWindowDeferred());
+        bank.fundToCover(debtManager.getPolicyRate(), centralBank.getWindowDeferred(), centralBank.getAdvancesToBank());
 
         /*
          * ...AND THE CENTRAL BANK'S END OF IT (0.7.0), off the bank's own two

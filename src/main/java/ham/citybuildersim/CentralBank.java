@@ -346,7 +346,7 @@ public final class CentralBank {
         }
     }
 
-    /** What the last settle left owed past the bank's funding, the reserves short of it: the next month's charge prices it. */
+    /** What the last settle left owed past the bank's funding, the reserves short of it: the next month's charge prices what the tranche has not grown back into. */
     public double getWindowDeferred() { return windowDeferred; }
 
     /** Interest on reserves: the policy rate on the bank's spare cash, paid in money made for it. */

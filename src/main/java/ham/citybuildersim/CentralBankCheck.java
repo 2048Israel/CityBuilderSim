@@ -433,7 +433,7 @@ public class CentralBankCheck {
         owedAt.settleWindow(100);
         owedAt.chargeWindow(80);
         owedAt.startMonth();
-        owing.fundToCover(.10, owedAt.getWindowDeferred());
+        owing.fundToCover(.10, owedAt.getWindowDeferred(), owedAt.getAdvancesToBank());
         owedAt.payInterestOnReserves(owing.getPlacementIncome());
         owedAt.chargeWindow(owing.getFundingCost());
         owedAt.settleWindow(owing.wholesaleFunding());
@@ -444,7 +444,7 @@ public class CentralBankCheck {
         double windowRate = .10 + CentralBank.WINDOW_PENALTY;
         double poolBefore = owing.getCash() + owedAt.getAdvancesToBank(), m0Before = owedAt.m0();
         owedAt.startMonth();
-        owing.fundToCover(.10, owedAt.getWindowDeferred());
+        owing.fundToCover(.10, owedAt.getWindowDeferred(), owedAt.getAdvancesToBank());
         owedAt.payInterestOnReserves(owing.getPlacementIncome());
         owedAt.chargeWindow(owing.getFundingCost());
         owedAt.settleWindow(owing.wholesaleFunding());
@@ -461,6 +461,44 @@ public class CentralBankCheck {
                 owedAt.getAdvancedToBank() - owedAt.getRepaidByBank() - owedAt.getWindowInterest() + owedAt.getInterestOnReserves()
                         - owing.depositInterest(), MoneyAudit.CENT);
         close("...and M0 by money made less money destroyed", owedAt.m0() - m0Before, owedAt.getIssued() - owedAt.getRetired(), MoneyAudit.CENT);
+
+        // REV-RES3b's fourth look: each dollar the window holds is priced once. The same 80 deferred, and the next month new lending
+        // lifts the bank's tranche to 30, then to 80, into the deferred balance: the window lends only the shortfall at its settle, so
+        // it still holds 80, and the charge is on 80 (0.6833 at 10%), the tranche's 30 and the 50 past it - not 110 or 160.
+        for (double grown : new double[] { 30, 80 }) {
+            CentralBank heldAt = new CentralBank();
+            Bank lending = new Bank();
+            lending.refresh(1, 0, 0, 0, 0, 0);
+            lending.setCash(0);
+            heldAt.settleWindow(100);
+            heldAt.chargeWindow(80);
+            heldAt.startMonth();
+            lending.fundToCover(.10, heldAt.getWindowDeferred(), heldAt.getAdvancesToBank());
+            heldAt.payInterestOnReserves(lending.getPlacementIncome());
+            heldAt.chargeWindow(lending.getFundingCost());
+            heldAt.settleWindow(lending.wholesaleFunding());
+            lending.setCash(-grown);
+            assertTrue("fixture: 80 deferred and the window holding 80, the tranche grows to " + (int) grown + " ("
+                    + heldAt.getWindowDeferred() + " deferred, " + heldAt.getAdvancesToBank() + " held, " + lending.wholesaleFunding() + " wholesale)",
+                    heldAt.getWindowDeferred() == 80 && heldAt.getAdvancesToBank() == 80 && lending.wholesaleFunding() == grown);
+            double lentBefore = lending.getCash() + heldAt.getAdvancesToBank(), m0Was = heldAt.m0();
+            heldAt.startMonth();
+            lending.fundToCover(.10, heldAt.getWindowDeferred(), heldAt.getAdvancesToBank());
+            heldAt.payInterestOnReserves(lending.getPlacementIncome());
+            heldAt.chargeWindow(lending.getFundingCost());
+            heldAt.settleWindow(lending.wholesaleFunding());
+            String at = " (the tranche at " + (int) grown + ")";
+            close("the window's charge is on the 80 it holds, each dollar once" + at, lending.getFundingCost(), 80 * windowRate / 12, 1e-12);
+            close("...the part past the tranche what the tranche has not grown back into" + at, lending.getWindowOwedCost(),
+                    (80 - grown) * windowRate / 12, 1e-12);
+            close("...and the central bank books the same interest" + at, heldAt.getWindowInterest(), lending.getFundingCost(), 0);
+            close("...the deferred balance down by what the tranche took up" + at, heldAt.getWindowDeferred(), 80 - grown, 1e-9);
+            close("...the pool moving by what it declared, to the cent" + at, lending.getCash() + heldAt.getAdvancesToBank() - lentBefore,
+                    heldAt.getAdvancedToBank() - heldAt.getRepaidByBank() - heldAt.getWindowInterest() + heldAt.getInterestOnReserves()
+                            - lending.depositInterest(), MoneyAudit.CENT);
+            close("...and M0 by money made less money destroyed, at or above nothing" + at, heldAt.m0() - m0Was,
+                    heldAt.getIssued() - heldAt.getRetired(), MoneyAudit.CENT);
+        }
 
         // A FAILED BANK AT THE WINDOW (0.7.1, decided rather than forgotten):
         // the resolution sets its equity to zero, and it is charged no
