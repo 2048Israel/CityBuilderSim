@@ -1,6 +1,6 @@
 # HousingMarket.java - 1,153 lines · 89 methods · 1 constants · model
 
-`ham/citybuildersim/HousingMarket.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingMarket.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > One monthly residential quote and clearing, with saved class prices and actual leases.
 > WHY (RES3): pooled rents attributed a cheap flat's demand to a vacant premium

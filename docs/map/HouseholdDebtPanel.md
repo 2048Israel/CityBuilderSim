@@ -1,6 +1,6 @@
 # HouseholdDebtPanel.java - 132 lines · 6 methods · 0 constants · interface
 
-`ham/citybuildersim/ui/HouseholdDebtPanel.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/HouseholdDebtPanel.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > The debt survey on Household money, after HS3's stage page (HC1/HC2).
 

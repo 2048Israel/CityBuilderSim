@@ -1,6 +1,6 @@
 # HousingMarketCheck.java - 2,083 lines · 68 methods · 2 constants · harnesses
 
-`ham/citybuildersim/HousingMarketCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingMarketCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > Integrated quotes, funded sites, rental receipts, budgets and reload evidence.
 > WHY (RES3): a synthetic catalogue quote does not prove an actual funded project

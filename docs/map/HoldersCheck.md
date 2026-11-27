@@ -1,6 +1,6 @@
 # HoldersCheck.java - 3,047 lines · 66 methods · 9 constants · harnesses
 
-`ham/citybuildersim/HoldersCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HoldersCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > Proves who holds the city's own paper (0.7.1): that the households buy it at
 > the settle, are paid on it, sell it back, and are paid when it is bought

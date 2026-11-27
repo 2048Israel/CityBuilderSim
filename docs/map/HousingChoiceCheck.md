@@ -1,6 +1,6 @@
 # HousingChoiceCheck.java - 249 lines · 13 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HousingChoiceCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HousingChoiceCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > Caused cardinality, budget, preference, incumbent and fair-tie findings for typed housing.
 > WHY (RES3): neither a pooled price nor a catalogue table proves who obtains an actual home.

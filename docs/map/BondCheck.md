@@ -1,6 +1,6 @@
 # BondCheck.java - 2,042 lines · 55 methods · 1 constants · harnesses
 
-`ham/citybuildersim/BondCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BondCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it
 > over the bank, who loses what in a default, what the bank charges for

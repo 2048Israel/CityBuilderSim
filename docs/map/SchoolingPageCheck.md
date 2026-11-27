@@ -1,6 +1,6 @@
 # SchoolingPageCheck.java - 48 lines · 1 methods · 0 constants · harnesses
 
-`ham/citybuildersim/SchoolingPageCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/SchoolingPageCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > Compares Wages' actual qualification bars with the pure model (WG3/WS2).
 > WHY. Course costs may invert a ladder; a screen must preserve the figures,

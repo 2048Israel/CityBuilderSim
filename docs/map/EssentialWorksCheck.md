@@ -1,6 +1,6 @@
 # EssentialWorksCheck.java - 1,514 lines · 40 methods · 9 constants · harnesses
 
-`ham/citybuildersim/EssentialWorksCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EssentialWorksCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > Essential works ordered for their unmet service, including their ground (HW1).
 > WHY. Highways waited behind street sites at the twelve-month cap; schools
@@ -17,7 +17,7 @@
 
 **Uses:** [BuildAdvice](BuildAdvice.md) (301), [BuildingsTemplate](BuildingsTemplate.md) (63), [AutoBuilder](AutoBuilder.md) (60), [Game](Game.md) (45), [WorksValue](WorksValue.md) (36), [LandManager](LandManager.md) (17), [UtilitiesHandler](UtilitiesHandler.md) (15), [CityNeeds](CityNeeds.md) (15), [BuildingManager](BuildingManager.md) (14), [Traffic](Traffic.md) (11), [ConstructionControl](ConstructionControl.md) (10), [CityCalendar](CityCalendar.md) (9), [PowerDispatch](PowerDispatch.md) (8), [CareType](CareType.md) (8), [Health](Health.md) (8), [InfrastructureManager](InfrastructureManager.md) (7), [Sector](Sector.md) (5), [BuildingsStacks](BuildingsStacks.md) (5), [EducationType](EducationType.md) (4), [ChildcareCheck](ChildcareCheck.md) (3), [PopulationManager](PopulationManager.md) (3), [JobType](JobType.md) (3), [BuildCard](BuildCard.md) (2), [WageBand](WageBand.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [PowerPlanCheck](PowerPlanCheck.md) (2), [GameFiles](GameFiles.md) (2), [SubstationCheck](SubstationCheck.md) (1), [SafetyType](SafetyType.md) (1), [Crime](Crime.md) (1)... and 7 more
 
-**Used by (7):** [AskProceedsCheck](AskProceedsCheck.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [FarmlandReserveCheck](FarmlandReserveCheck.md), [GapOrderCheck](GapOrderCheck.md), [PowerPlanCheck](PowerPlanCheck.md), [ScaleCheck](ScaleCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
+**Used by (8):** [AskProceedsCheck](AskProceedsCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [FarmlandReserveCheck](FarmlandReserveCheck.md), [GapOrderCheck](GapOrderCheck.md), [PowerPlanCheck](PowerPlanCheck.md), [ScaleCheck](ScaleCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
 ## Constants
 

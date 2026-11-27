@@ -1,6 +1,6 @@
-# ExchangeRateCheck.java - 1,710 lines · 59 methods · 14 constants · harnesses
+# ExchangeRateCheck.java - 1,714 lines · 59 methods · 14 constants · harnesses
 
-`ham/citybuildersim/ExchangeRateCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ExchangeRateCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > Proves the D$ is a float that follows its parity and swings like a real
 > currency (XR1, 2026-10-21): parity is the basket with rent held to a third,
@@ -81,13 +81,13 @@
 | 726 | 6. one seed, one path |
 | 896 | 7. a save mid-swing continues exactly |
 | 954 | 8. in a real city the D$ moves like a float |
-| 1265 | 9. the game survives the spiral |
-| 1372 | 10-14. THE WORLD REACHES THE D$ (WN4, 2026-10-30; ForeignAccounts, THE WORLD REACHES THE D$) |
-| 1407 | 10. no world, main's rate |
-| 1452 | 11. the cycle |
-| 1490 | 12. the risk-off loading |
-| 1586 | 13. the terms of trade |
-| 1641 | 14. the moves add up |
+| 1269 | 9. the game survives the spiral |
+| 1376 | 10-14. THE WORLD REACHES THE D$ (WN4, 2026-10-30; ForeignAccounts, THE WORLD REACHES THE D$) |
+| 1411 | 10. no world, main's rate |
+| 1456 | 11. the cycle |
+| 1494 | 12. the risk-off loading |
+| 1590 | 13. the terms of trade |
+| 1645 | 14. the moves add up |
 
 ## Constants
 
@@ -102,11 +102,11 @@
 | 800 | `ExchangeRateCheck.SAMPLING_SES` | `5` | FS10: standard errors of sampling a bound allows, so that a currency inside the band its dial gives fails it by chance about once in a million. |
 | 803 | `ExchangeRateCheck.SWING_LIMIT` | `6` | ...and the sigmas of a normal draw (and of the market's own spread) a path may not pass: six, a part in a billion a draw. |
 | 1085 | `ExchangeRateCheck.RUN_CHANCE` | `1e-6` | FS10 (section 8): the chance a run one way, in a path whose moves are a coin's at a month, has of passing the bound the section holds it to: a part in a million. |
-| 1185 | `ExchangeRateCheck.GOLD_HELD_VAULT_YEARS` | `2 * ForeignAccounts.INTERVENTION_LINEAR` | FS10 (section 8b): the vault the dated gold peg is held at, in years of GDP: twice INTERVENTION_LINEAR, because the hold's sale in a month is at most INTERVENTION_LINEAR of a year's GDP while the lift it makes stays i... |
-| 1188 | `ExchangeRateCheck.RELEASED_GAP` | `8 * ForeignAccounts.MARKET_SIGMA` | ...the log gap the peg's shadow stands over the peg when August 1914 releases it: eight of the market's monthly swings, more than one month's float news can be. |
-| 1191 | `ExchangeRateCheck.RETURN_NEWS` | `6 * ForeignAccounts.MARKET_SIGMA` | ...and the lift July 1926's vault is bought for is this much past the eve's, six of the market's swings, so that a month's news cannot leave the return's sale short of it. |
-| 1194 | `ExchangeRateCheck.MARKET_SLOT` | `52, SHADOW_SLOT = 78, HELD_SLOT = 79` | ForeignAccounts.toSaveArray()'s slots for the market's level, the log of the last reprice's shadow rate and whether that reprice held the rate away from it (restore() reads them so). |
-| 1655 | `ExchangeRateCheck.FOURTEEN_GOLD_COVER` | `10 * ForeignAccounts.COVER_RATIO` | Gold's cover in section 14's Gold city: ten times the law's, so that 120 months of the hold's sales (the deficit, the risk-off's two spells, the hot money leaving) leave it over a full cover, where doubt asks nothing ... |
+| 1189 | `ExchangeRateCheck.GOLD_HELD_VAULT_YEARS` | `4 * ForeignAccounts.INTERVENTION_LINEAR` | FS10 (section 8b): the vault the dated gold peg is held at, in years of GDP: four times INTERVENTION_LINEAR. |
+| 1192 | `ExchangeRateCheck.RELEASED_GAP` | `8 * ForeignAccounts.MARKET_SIGMA` | ...the log gap the peg's shadow stands over the peg when August 1914 releases it: eight of the market's monthly swings, more than one month's float news can be. |
+| 1195 | `ExchangeRateCheck.RETURN_NEWS` | `6 * ForeignAccounts.MARKET_SIGMA` | ...and the lift July 1926's vault is bought for is this much past the eve's, six of the market's swings, so that a month's news cannot leave the return's sale short of it. |
+| 1198 | `ExchangeRateCheck.MARKET_SLOT` | `52, SHADOW_SLOT = 78, HELD_SLOT = 79` | ForeignAccounts.toSaveArray()'s slots for the market's level, the log of the last reprice's shadow rate and whether that reprice held the rate away from it (restore() reads them so). |
+| 1659 | `ExchangeRateCheck.FOURTEEN_GOLD_COVER` | `10 * ForeignAccounts.COVER_RATIO` | Gold's cover in section 14's Gold city: ten times the law's, so that 120 months of the hold's sales (the deficit, the risk-off's two spells, the hot money leaving) leave it over a full cover, where doubt asks nothing ... |
 
 ## Fields (state)
 
@@ -125,7 +125,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 127 | 1584 | **type** `public class ExchangeRateCheck` | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third, the trend is followed with no lag, the market is a seeded swing of a ... |
+| 127 | 1588 | **type** `public class ExchangeRateCheck` | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third, the trend is followed with no lag, the market is a seeded swing of a ... |
 | 133 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 138 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 149 | 5 | `static void quietly(Runnable work)` | Runs a piece of work with the game's narration sent nowhere. |
@@ -197,7 +197,7 @@
 |---:|---:|---|---|
 | 898 | 55 | `static void aSaveMidSwing()` |  |
 
-### 8. in a real city the D$ moves like a float (lines 954-1264)
+### 8. in a real city the D$ moves like a float (lines 954-1268)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -213,57 +213,57 @@
 | 1100 | 3 | `static int runBound(int months)` | A run of L months one way from a given month has the chance 2^(1-L) in coin-flip moves, so n months have n x 2^(1-L): the L where that is RUN_CHANCE, a run must be shorter. |
 | 1105 | 5 | `static double beyond(double z)` | The chance a standard normal draw is past z in size, either way (Abramowitz and Stegun 7.1.26: the error is under 1.5e-7). |
 | 1111 | 68 | `static void inARealCity()` |  |
-| 1201 | 8 | `static void setTheShadowGap(ForeignAccounts fx, double gap)` | The peg's shadow set to stand this log gap over the rate, through the saved array: the last reprice's shadow, and the market's level moved the same distance (over the gate, which weighs it) so the float's rule - the s... |
-| 1211 | 45 | `static void inThe1900City()` | R1f: the dated peg's release is a hold move, already recorded by the model, not unexplained market noise. |
-| 1258 | 6 | `static void stepQuietly(Tally t, Game g)` | One counted month with the narration sent nowhere (LongPlaytest prints through a stream of its own). |
+| 1205 | 8 | `static void setTheShadowGap(ForeignAccounts fx, double gap)` | The peg's shadow set to stand this log gap over the rate, through the saved array: the last reprice's shadow, and the market's level moved the same distance (over the gate, which weighs it) so the float's rule - the s... |
+| 1215 | 45 | `static void inThe1900City()` | R1f: the dated peg's release is a hold move, already recorded by the model, not unexplained market noise. |
+| 1262 | 6 | `static void stepQuietly(Tally t, Game g)` | One counted month with the narration sent nowhere (LongPlaytest prints through a stream of its own). |
 
-### 9. the game survives the spiral (lines 1265-1371)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1268 | 10 | `static String notANumber(Game g)` | The first figure of the city that is not a number, or null: the rate, the price index, the treasury's cash, GDP, M0 and the vault. |
-| 1280 | 4 | `static boolean auditCloses(Game g)` | The audit closes as it does in the playtest (LongPlaytest.audit(), CurrencyCheck 4): no residual over a cent, or none over a ten-millionth of the money moved. |
-| 1285 | 86 | `static void theGameSurvivesTheSpiral()` |  |
-
-### 10-14. THE WORLD REACHES THE D$ (WN4, 2026-10-30; ForeignAccounts, THE WORLD REACHES THE D$) (lines 1372-1406)
+### 9. the game survives the spiral (lines 1269-1375)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1377 | 5 | `static void monthOf(ForeignAccounts fx, double trade, double gdp)` | One month of this trade against this output, repriced: the world, if any, was handed before. |
-| 1384 | 5 | `static ForeignAccounts settledStill(double trade, double gdp)` | A currency settled on balanced trade, its market quiet and its fundamentals still: sixty months repriced with no world, so a month of nothing moves nothing. |
-| 1391 | 3 | `static double lnMove(ForeignAccounts fx, double trade, double gdp)` | The rate's move this month in logs, the world handed before it. |
-| 1396 | 7 | `static double lnMove(ForeignAccounts fx, double exports, double imports, double gdp)` | ...on this trade each way. |
-| 1405 | 1 | `static boolean bits(double a, double b)` | Both the same double down to its bits (a -0.0 is not a 0.0). |
+| 1272 | 10 | `static String notANumber(Game g)` | The first figure of the city that is not a number, or null: the rate, the price index, the treasury's cash, GDP, M0 and the vault. |
+| 1284 | 4 | `static boolean auditCloses(Game g)` | The audit closes as it does in the playtest (LongPlaytest.audit(), CurrencyCheck 4): no residual over a cent, or none over a ten-millionth of the money moved. |
+| 1289 | 86 | `static void theGameSurvivesTheSpiral()` |  |
 
-### 10. no world, main's rate (lines 1407-1451)
+### 10-14. THE WORLD REACHES THE D$ (WN4, 2026-10-30; ForeignAccounts, THE WORLD REACHES THE D$) (lines 1376-1410)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1409 | 42 | `static void noWorldIsMains()` |  |
+| 1381 | 5 | `static void monthOf(ForeignAccounts fx, double trade, double gdp)` | One month of this trade against this output, repriced: the world, if any, was handed before. |
+| 1388 | 5 | `static ForeignAccounts settledStill(double trade, double gdp)` | A currency settled on balanced trade, its market quiet and its fundamentals still: sixty months repriced with no world, so a month of nothing moves nothing. |
+| 1395 | 3 | `static double lnMove(ForeignAccounts fx, double trade, double gdp)` | The rate's move this month in logs, the world handed before it. |
+| 1400 | 7 | `static double lnMove(ForeignAccounts fx, double exports, double imports, double gdp)` | ...on this trade each way. |
+| 1409 | 1 | `static boolean bits(double a, double b)` | Both the same double down to its bits (a -0.0 is not a 0.0). |
 
-### 11. the cycle (lines 1452-1489)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1454 | 35 | `static void theCycleMovesTheRate()` |  |
-
-### 12. the risk-off loading (lines 1490-1585)
+### 10. no world, main's rate (lines 1411-1455)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1493 | 6 | `static ForeignAccounts withCover(double exports, double imports, double months)` | A currency settled on trade of this much exports and imports with a vault of this many months of the imports, the purchase forgotten as a deal. |
-| 1500 | 85 | `static void theLoadingIsTheTraits()` |  |
+| 1413 | 42 | `static void noWorldIsMains()` |  |
 
-### 13. the terms of trade (lines 1586-1640)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1588 | 52 | `static void theTermsOfTrade()` |  |
-
-### 14. the moves add up (lines 1641-1710)
+### 11. the cycle (lines 1456-1493)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1644 | 6 | `static void world(ForeignAccounts fx, int t)` | The world a section plays month t: the cycle swinging, a risk-off in two spells, hot money coming and going, a January's terms of trade. |
-| 1657 | 53 | `static void theMovesAddUp()` |  |
+| 1458 | 35 | `static void theCycleMovesTheRate()` |  |
+
+### 12. the risk-off loading (lines 1494-1589)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1497 | 6 | `static ForeignAccounts withCover(double exports, double imports, double months)` | A currency settled on trade of this much exports and imports with a vault of this many months of the imports, the purchase forgotten as a deal. |
+| 1504 | 85 | `static void theLoadingIsTheTraits()` |  |
+
+### 13. the terms of trade (lines 1590-1644)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1592 | 52 | `static void theTermsOfTrade()` |  |
+
+### 14. the moves add up (lines 1645-1714)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1648 | 6 | `static void world(ForeignAccounts fx, int t)` | The world a section plays month t: the cycle swinging, a risk-off in two spells, hot money coming and going, a January's terms of trade. |
+| 1661 | 53 | `static void theMovesAddUp()` |  |
 

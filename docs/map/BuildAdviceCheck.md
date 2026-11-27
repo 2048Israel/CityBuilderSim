@@ -1,6 +1,6 @@
-# BuildAdviceCheck.java - 2,174 lines · 66 methods · 2 constants · harnesses
+# BuildAdviceCheck.java - 2,176 lines · 66 methods · 2 constants · harnesses
 
-`ham/citybuildersim/BuildAdviceCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BuildAdviceCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS
 > YOU's list, to the quote, and to the model's own figures, in a played
@@ -64,7 +64,7 @@
 >  11. THE RUN: "Build all three" places the cards' orders in their order,
 > ... (30 more lines in the source)
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (326), [CityNeeds](CityNeeds.md) (113), [Game](Game.md) (83), [BuildingsTemplate](BuildingsTemplate.md) (76), [BuildingType](BuildingType.md) (34), [Ports](Ports.md) (23), [CareType](CareType.md) (18), [JobType](JobType.md) (17), [Crime](Crime.md) (13), [PowerDispatch](PowerDispatch.md) (12), [BuildingManager](BuildingManager.md) (11), [LongPlaytest](LongPlaytest.md) (11), [EducationType](EducationType.md) (10), [GameFiles](GameFiles.md) (9), [SafetyType](SafetyType.md) (9), [UtilitiesHandler](UtilitiesHandler.md) (7), [WageBand](WageBand.md) (7), [AdultStage](AdultStage.md) (7), [Founding](Founding.md) (6), [Observation](Observation.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [AutoBuilder](AutoBuilder.md) (4), [Formats](Formats.md) (3), [StrategicReserve](StrategicReserve.md) (3), [Healthcare](Healthcare.md) (3), [Education](Education.md) (3), [TaxPolicy](TaxPolicy.md) (3), [ResearchCatalog](ResearchCatalog.md) (3), [WorksValue](WorksValue.md) (3), [Sector](Sector.md) (2)... and 18 more
+**Uses:** [BuildAdvice](BuildAdvice.md) (326), [CityNeeds](CityNeeds.md) (113), [Game](Game.md) (83), [BuildingsTemplate](BuildingsTemplate.md) (76), [BuildingType](BuildingType.md) (34), [Ports](Ports.md) (23), [CareType](CareType.md) (18), [JobType](JobType.md) (17), [Crime](Crime.md) (13), [PowerDispatch](PowerDispatch.md) (12), [BuildingManager](BuildingManager.md) (11), [LongPlaytest](LongPlaytest.md) (11), [EducationType](EducationType.md) (10), [GameFiles](GameFiles.md) (9), [SafetyType](SafetyType.md) (9), [UtilitiesHandler](UtilitiesHandler.md) (7), [WageBand](WageBand.md) (7), [AdultStage](AdultStage.md) (7), [Founding](Founding.md) (6), [Observation](Observation.md) (6), [BusinessInvestment](BusinessInvestment.md) (5), [AutoBuilder](AutoBuilder.md) (4), [Formats](Formats.md) (3), [StrategicReserve](StrategicReserve.md) (3), [Healthcare](Healthcare.md) (3), [Education](Education.md) (3), [TaxPolicy](TaxPolicy.md) (3), [ResearchCatalog](ResearchCatalog.md) (3), [WorksValue](WorksValue.md) (3), [Sector](Sector.md) (2)... and 19 more
 
 **Used by (3):** [BuildCardCheck](BuildCardCheck.md), [RoadCheck](RoadCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md)
 
@@ -107,7 +107,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 107 | 2068 | **type** `public class BuildAdviceCheck` | The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS YOU's list, to the quote, and to the model's own figures, in a played city - and the categories it is filed under. |
+| 107 | 2070 | **type** `public class BuildAdviceCheck` | The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS YOU's list, to the quote, and to the model's own figures, in a played city - and the categories it is filed under. |
 | 113 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 118 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 124 | 5 | `static void bits(String label, double actual, double expected)` |  |
@@ -229,20 +229,20 @@
 | 1802 | 4 | `static BuildAdvice.Suggestion powerCard(List<BuildAdvice.Suggestion> advice)` | The card among the suggestions that is for power, or null. |
 | 1808 | 4 | `static void causeDryBulk(Game g, double tonnes)` | Begins the city's Ports month and tells it `tonnes` of iron ore (dry bulk) crossed the boundary inbound, none by sea. |
 
-### 16. WARRANTED() READ ONCE IN A SEARCH (AP7) (lines 1813-2174)
+### 16. WARRANTED() READ ONCE IN A SEARCH (AP7) (lines 1813-2176)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 1819 | 1 | **type** `private record Town(Path root, Game game, BuildAdvice.Measure measure, String schoolName, String clinicName...` | The fixture town of section 16, saved to slot 10 of its scratch folder: the city every writer's own city is loaded from (cityOf()), with what it stands on - the measure, the schools' and the clinics' names, its clinic... |
-| 1835 | 85 | `static void warrantHeld(Path root)` | AP7: BuildAdvice.Warrant reads warranted() at its first ask and holds it for one search or valuation, never between calls. |
-| 1925 | 15 | `static Game cityOf(Town town, String what)` | A city for one writer: the fixture town's save (slot 10) loaded into a Game made for it, so that the first held reading of the measure made in it is the block's warm one. |
-| 1942 | 3 | `static boolean underScratch(Path root, Game g)` | Whether the city's saves are under the harness's own scratch root (never the player's folder). |
-| 1952 | 47 | `static void warrantResearch(Town town)` | 5. |
-| 2004 | 18 | `static void warrantLoad(Town town, long fewer, long more)` | 6. |
-| 2029 | 54 | `static void warrantCounts(Town town)` | The counts, and the run, in a city of its own, under its own probe (BuildAdvice.WarrantProbe). |
-| 2090 | 26 | `static void warrantWriter(String what, Game g, BuildAdvice.Measure m, String plantName, Runnable writer)` | One writer, under a probe of its own on its city: the readings made warm before it, the writer, the fixture's premise (it moved the bare warranted() across the threshold), and after it the readings held and bare, whic... |
-| 2123 | 18 | `static List<Long> readings(BuildAdvice.WarrantProbe p, Game g, BuildAdvice.Measure m, BuildingsTemplate plant, boolean bare)` | The three readings a held warranted() reaches: the Build card the automatic builder reads (one marker for none, else the template, the count and every figure of the card), the count of the plant that keeps the measure... |
-| 2143 | 15 | `static void figures(List<Long> into, Record record)` | Every number a record holds, doubles as their raw bits, the records inside it too. |
-| 2160 | 9 | `static double leastServing(Game g, BuildAdvice.Measure m)` | The smallest unit any known template of the measure builds (BuildAdvice.warranted()'s own reading), infinite when none. |
-| 2171 | 3 | `static BuildAdvice.Suggestion ask(Game g, BuildAdvice.Measure m)` | What the advice offers for a port measure, cash and land to spare. |
+| 1835 | 87 | `static void warrantHeld(Path root)` | AP7: BuildAdvice.Warrant reads warranted() at its first ask and holds it for one search or valuation, never between calls. |
+| 1927 | 15 | `static Game cityOf(Town town, String what)` | A city for one writer: the fixture town's save (slot 10) loaded into a Game made for it, so that the first held reading of the measure made in it is the block's warm one. |
+| 1944 | 3 | `static boolean underScratch(Path root, Game g)` | Whether the city's saves are under the harness's own scratch root (never the player's folder). |
+| 1954 | 47 | `static void warrantResearch(Town town)` | 5. |
+| 2006 | 18 | `static void warrantLoad(Town town, long fewer, long more)` | 6. |
+| 2031 | 54 | `static void warrantCounts(Town town)` | The counts, and the run, in a city of its own, under its own probe (BuildAdvice.WarrantProbe). |
+| 2092 | 26 | `static void warrantWriter(String what, Game g, BuildAdvice.Measure m, String plantName, Runnable writer)` | One writer, under a probe of its own on its city: the readings made warm before it, the writer, the fixture's premise (it moved the bare warranted() across the threshold), and after it the readings held and bare, whic... |
+| 2125 | 18 | `static List<Long> readings(BuildAdvice.WarrantProbe p, Game g, BuildAdvice.Measure m, BuildingsTemplate plant, boolean bare)` | The three readings a held warranted() reaches: the Build card the automatic builder reads (one marker for none, else the template, the count and every figure of the card), the count of the plant that keeps the measure... |
+| 2145 | 15 | `static void figures(List<Long> into, Record record)` | Every number a record holds, doubles as their raw bits, the records inside it too. |
+| 2162 | 9 | `static double leastServing(Game g, BuildAdvice.Measure m)` | The smallest unit any known template of the measure builds (BuildAdvice.warranted()'s own reading), infinite when none. |
+| 2173 | 3 | `static BuildAdvice.Suggestion ask(Game g, BuildAdvice.Measure m)` | What the advice offers for a port measure, cash and land to spare. |
 

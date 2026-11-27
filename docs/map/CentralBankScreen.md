@@ -1,6 +1,6 @@
 # CentralBankScreen.java - 923 lines · 51 methods · 11 constants · interface
 
-`ham/citybuildersim/ui/CentralBankScreen.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/CentralBankScreen.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > The central bank's pages in the Bank tab: its frame - the head "Bank › Central bank", the strip of nine chips - and the
 > nine pages behind them: the Overview; its income statement, its balance sheet and the money it made and destroyed; its

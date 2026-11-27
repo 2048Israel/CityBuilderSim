@@ -1,6 +1,6 @@
 # LandMarket.java - 1,871 lines · 115 methods · 14 constants · model
 
-`ham/citybuildersim/LandMarket.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/LandMarket.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > The land office's window: twenty-four offers standing, six on each side of the city - in each place a rectangle of whole blocks against the city's edge, or none while that side has no room - and what the ground costs.
 > 
@@ -66,7 +66,7 @@
 
 **Uses:** [LandParcel](LandParcel.md) (93), [CityLand](CityLand.md) (46), [World](World.md) (19), [GridOffers](GridOffers.md) (18), [Resource](Resource.md) (13), [LandManager](LandManager.md) (9), [LandSellers](LandSellers.md) (9), [PriceLevel](PriceLevel.md) (6), [LandFactors](LandFactors.md) (4), [Landmasses](Landmasses.md) (4), [LandGrid](LandGrid.md) (2), [SitePreparation](SitePreparation.md) (1), [ForeignAccounts](ForeignAccounts.md) (1)
 
-**Used by (35):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [ER1Check](ER1Check.md), [FarmlandReserveCheck](FarmlandReserveCheck.md), [ForestryCheck](ForestryCheck.md), [Founding](Founding.md), [FundCheck](FundCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [GroundSkipCheck](GroundSkipCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandClassView](LandClassView.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandNationsCheck](LandNationsCheck.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [OilCheck](OilCheck.md), [PowerPlanCheck](PowerPlanCheck.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (36):** [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [ER1Check](ER1Check.md), [FarmlandReserveCheck](FarmlandReserveCheck.md), [ForestryCheck](ForestryCheck.md), [Founding](Founding.md), [FundCheck](FundCheck.md), [Game](Game.md), [GlobeFrame](GlobeFrame.md), [GroundSkipCheck](GroundSkipCheck.md), [LandCheck](LandCheck.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandClassView](LandClassView.md), [LandManager](LandManager.md), [LandMap](LandMap.md), [LandNationsCheck](LandNationsCheck.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [Landmasses](Landmasses.md), [LongPlaytest](LongPlaytest.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiningCheck](MiningCheck.md), [OilCheck](OilCheck.md), [PowerPlanCheck](PowerPlanCheck.md), [QuarryingCheck](QuarryingCheck.md), [ReadPathCheck](ReadPathCheck.md), [ReloadCheck](ReloadCheck.md), [RoadCheck](RoadCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

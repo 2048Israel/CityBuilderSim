@@ -1,6 +1,6 @@
 # Fitout.java - 179 lines · 19 methods · 0 constants · model
 
-`ham/citybuildersim/Fitout.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Fitout.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > One new building's equipment as its order fixes it (R1e): the pieces of its template it comes WITHOUT, chosen when the order
 > is quoted and frozen on site when it is accepted, and what that makes one building's cash cost and construction points - the
