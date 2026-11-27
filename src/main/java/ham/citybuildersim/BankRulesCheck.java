@@ -291,6 +291,109 @@ public final class BankRulesCheck {
         }
     }
 
+    /** Actual capital actions do not forgive debt; new credit and the next rollover use the live cap. */
+    static void rolloverLaw() throws Exception {
+        out.println("--- 3b. capital receipts and tighter dials, before the next funding rollover ---");
+        for (String action : new String[]{"preferred", "resolution", "limit"}) {
+            Path root = TempDirs.create("cbk3-rollover-" + action);
+            Game g = new Game(new GameFiles(root.resolve("data"), root.resolve("no-legacy")));
+            silently(g::run);
+            Bank b = g.getBank();
+            CentralBank cb = g.getCentralBank();
+            // An inherited desk and a loan book: core stable funding covers
+            // the desk, leaving a positive secured advance outside it.
+            double loans = 100_000;
+            b.refresh(1, 0, 0, loans, 0, 0);
+            b.markSecurities(20_000);
+            b.setCash(-1);
+            double ownEquity = action.equals("resolution") ? -1_000 : .95 * b.minimumEquity();
+            // Core stable funds cover more than the loans' RSF but less than
+            // a full household-deposit funding: the non-desk cap really binds.
+            double core = loans * (Bank.LOAN_STABLE_SHARE + Bank.HOUSEHOLD_STABLE_SHARE) / 2;
+            double deposits = Math.max(0, core - Math.max(0, ownEquity)) / Bank.HOUSEHOLD_STABLE_SHARE;
+            b.refresh(1, deposits, 0, loans, 0, 0);
+            b.setCash(b.getCash() + ownEquity - b.equity());
+            b.setForeignFundingRate(.07);
+            b.fundToCover(.05);
+            b.closeMonth();
+            b.resolveIfFailed();
+            cb.settleWindow(b.wholesaleFunding());
+            b.settleForeignFunding(cb.getAdvancesToBank());
+            double owed = cb.getAdvancesToBank(), foreign = b.getForeignWholesale(), need = b.wholesaleFunding();
+            double issued = cb.getIssued(), retired = cb.getRetired(), inventory = b.getSecurities();
+            double cost = b.getFundingCost(), foreignCost = b.getForeignFundingCost(), windowCost = b.getWindowFundingCost(), mix = b.foreignShare();
+            check(action + ": fixture has positive window credit, a desk and an actual charged cost",
+                    owed > 0 && inventory > 0 && cost > 0 && owed <= b.windowFunding() + MoneyAudit.CENT);
+            double paid = 0;
+            if (action.equals("preferred")) {
+                check("preferred: a standing bank really asks for capital", b.wantsPreferred());
+                double size = b.preferredOfferSize();
+                g.setCashForTest(size * 3);
+                g.getFund().noteOffered(g.getMonth());
+                double cash = g.getCash() + b.getCash();
+                boolean[] accepted = {false};
+                silently(() -> accepted[0] = g.acceptPreferredOffer());
+                check("preferred: the real treasury-funded offer is accepted", accepted[0]);
+                check("preferred: the treasury and bank conserve their cash to the cent",
+                        Math.abs(g.getCash() + b.getCash() - cash) <= MoneyAudit.CENT);
+                paid = size;
+            } else if (action.equals("resolution")) {
+                check("resolution: the real button is available on a frozen bank", g.canResolveBank());
+                g.setCashForTest((Math.max(0, -b.equity()) + b.resolutionExitEquity()) * 3);
+                double cash = g.getCash() + b.getCash();
+                double[] rescued = {0};
+                silently(() -> rescued[0] = g.resolveBank());
+                paid = rescued[0];
+                check("resolution: a real rescue conserves treasury and bank cash to the cent",
+                        paid > 0 && !b.isInsolvent() && Math.abs(g.getCash() + b.getCash() - cash) <= MoneyAudit.CENT);
+            } else {
+                b.rules().set(BankRules.Dial.WINDOW_LIMIT, 0);
+            }
+            check(action + ": the receipt or new rule shrinks the next rollover's cap", b.windowFunding() < owed);
+            check(action + ": no shares were bought and no window principal was issued or forgiven",
+                    b.getSecurities() == inventory && cb.getAdvancesToBank() == owed
+                            && cb.getIssued() == issued && cb.getRetired() == retired && b.getForeignWholesale() == foreign);
+            check(action + ": the smaller live cap refuses any additional advance", cb.advanceToBank(1) == 0);
+            check(action + ": stable cash still cannot finance another desk purchase", b.deskCanCarry(inventory, 1, 1) == 0);
+            double in = b.getForeignWholesaleIn(), outflow = b.getForeignWholesaleOut();
+            cb.settleWindow(b.wholesaleFunding());
+            b.settleForeignFunding(cb.getAdvancesToBank());
+            double now = cb.getAdvancesToBank();
+            check(action + ": the actual rollover obeys collateral and excludes the desk",
+                    now <= b.windowFunding() + MoneyAudit.CENT
+                            && now <= b.windowCollateral() * b.rules().get(BankRules.Dial.WINDOW_LIMIT) + MoneyAudit.CENT
+                            && now <= Math.max(0, b.wholesaleFunding() - Math.max(0, b.getSecurities())) + MoneyAudit.CENT);
+            check(action + ": the foreign remainder is settled, not reconstructed from next month's cash",
+                    Math.abs(now + b.getForeignWholesale() - b.wholesaleFunding()) <= MoneyAudit.CENT);
+            check(action + ": retirement and signed foreign principal exactly match the funding need that ended",
+                    Math.abs((cb.getRetired() - retired) + (b.getForeignWholesaleOut() - outflow)
+                            - (b.getForeignWholesaleIn() - in) - (need - b.wholesaleFunding())) <= MoneyAudit.CENT);
+            check(action + ": refinancing does not bill interest twice",
+                    b.getFundingCost() == cost && b.getForeignFundingCost() == foreignCost
+                            && b.getWindowFundingCost() == windowCost && b.foreignShare() == mix);
+            // The monthly predicate remains strict: deliberately bypass the
+            // capacity callback to model a broken lender, and require BOTH
+            // findings on that bad closed balance. Restore all observer state.
+            var previous = new java.util.LinkedHashMap<>(LongPlaytest.findings);
+            int audits = LongPlaytest.bankFundingMonths, bound = LongPlaytest.deskStableBoundMonths;
+            LongPlaytest.findings.clear();
+            cb.setWindowCapacity(() -> Double.POSITIVE_INFINITY);
+            cb.advanceToBank(b.windowCollateral() + 1);
+            LongPlaytest.auditBankFunding(g);
+            check(action + ": a real closed-balance breach still raises both funding findings",
+                    LongPlaytest.findings.containsKey("the window lent beyond eligible collateral after haircuts")
+                            && LongPlaytest.findings.containsKey("the equity desk was funded at the window"));
+            LongPlaytest.findings.clear();
+            LongPlaytest.findings.putAll(previous);
+            LongPlaytest.bankFundingMonths = audits;
+            LongPlaytest.deskStableBoundMonths = bound;
+            cb.setWindowCapacity(b::windowFunding);
+            cb.settleWindow(b.wholesaleFunding());
+            b.settleForeignFunding(cb.getAdvancesToBank());
+            g.awaitSaves();
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         out.println("--- 1. the window lends only against haircutted collateral ---");
         Bank b = new Bank();
@@ -461,6 +564,7 @@ public final class BankRulesCheck {
                             == Double.doubleToLongBits(collateralBook.bankCollateralValue()));
         }
 
+        rolloverLaw();
         coldCallableCollateral();
         coldCallableTreePrefixes();
 
