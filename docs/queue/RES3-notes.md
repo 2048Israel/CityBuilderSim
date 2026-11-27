@@ -917,6 +917,34 @@ reviewer's line.
   - The new towns' people: BuildersFirst stands 80 founding Houses,
     PostwarRecipe's village 250 more, EssentialWorks' professional town
     2,000 a copy (ChildcareCheck.town's overload; 900 the default).
+  - AuctionCheck's drawn step draws the treasury past the advance from the
+    live figures, as AskProceedsCheck.drawn() (reserve 112, advance 698,
+    cost 491: the order had been paid from the proceeds). ER1Check's held
+    city plays out the landlord's 23 homes on site first (nine months),
+    in its premise. YoungBankCheck's loss month falls inside every
+    listing's first year (FOUNDING_MONTHS = RECORD_MONTHS - 2), so the
+    control month is quiet (+22.8k; the fallback re-marked -199.7k).
+  - MaterialsCheck 19, the real world: RES3's town outgrows the founding
+    grid at the spike (7.03M kWh asked of 7.2M), its lone refinery loses
+    on the capped tariff (0.0313 against 0.0066), CY1 sheds it, Copper
+    Refining defaults and is barred from the Rod Mill's credit. The refiner
+    has a till of its own; the Rod Mill's own refusal is read on its year
+    (bestFed names the Smelter, on main too). PopulationCheck reconciles
+    the affordability effect on a dear twin (60 Houses, burden 0.393
+    against 0.30; the standard city is affordable at 0.245).
+    ForeignChoiceCheck's town takes in a crowd that can pay, so a new
+    House earns (unplaced elders and unemployed could not pay the ask).
+  - KeptCheck's grant three and a half posts up: Research.posts() floors
+    grant / cost, and exactly (posts + 3) * cost read 13 for 14.
+  - EssentialWorksCheck, the real world in four sections: the school's
+    demand (162.7 places) under the first-work threshold of 180; the
+    builders' 494 points against main's 723 once the repairs jump; the
+    fixture's written growth capped at reachablePopulation() over the
+    people, 1.82 here against main's 1.198. For REV-RES3b: that cap
+    (BusinessInvestment.java:341) counts beds, 5,500 in both towns, where
+    RES3's migration counts doors (HousingMarket.roomLeft): a ceiling a
+    family grows into, not a forecast, so I left it; a full town of
+    3,021 still reads room for 1.82 times its people.
   - main's Equity.fairValue fallback (Equity.java:1117): past 12 months a
     share with no spare and trailing income at or under zero stands at its
     last offering price, and a dollar of income values it at income over
@@ -943,6 +971,18 @@ reviewer's line.
     construction points a door against a House's 10 and cost less cash a
     door; RealEstate.plan ranks on cash, so a town short of builders orders
     Terraces (BuildersFirst's: 277 points for 6 doors).
+- The ensemble on the final model (RES3-m214-20261126, e97df0102, the
+  merge of 0.9.214 with the unbuilt quote, on the gate box, against
+  0.9.212.md), committed as docs/ensemble/RES3.md in place of m212's:
+  batch verdict PASS, hard criteria 10 of 10, M1 0 audit months and F1 0
+  of 16 runs in each policy, none missing or short; 20 of 25 criteria.
+  The information criterion T2 under 75% of main's in ZERO_HOT (7,096
+  against 21,333), SHOCK (133,110 against 684,858) and HIGH (56,156
+  against 245,141), as in every RES3 ensemble, lower than m212's (8,994,
+  235,618, 103,282); AUTO2 6.49 million against 7.40 (m212 8.18), T1's
+  40,000 people at m628 against m464 (m212 m586). The unbuilt class's
+  quote at its carry and margin builds a new form only where the tenants'
+  budgets pay it: fewer doors built ahead of the people.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
