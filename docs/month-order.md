@@ -95,7 +95,7 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _THE STUDENTS' GRANT, PAID IN THE MONTH IT IS CREDITED (0.7.1)._
 65. **L14450** `payEiBenefits();` → [Game.payEiBenefits](map/Game.md) (L20702)  
    _...AND EI, THE SAME WAY (0.7.3)._
-66. **L14468** `economyManager.setBankTax(bank.chargeTax(bankProfitTaxRate()));` → [EconomyManager.setBankTax](map/EconomyManager.md) (L1790), [Bank.chargeTax](map/Bank.md) (L4159), [Game.bankProfitTaxRate](map/Game.md) (L4973)  
+66. **L14468** `economyManager.setBankTax(bank.chargeTax(bankProfitTaxRate()));` → [EconomyManager.setBankTax](map/EconomyManager.md) (L1790), [Bank.chargeTax](map/Bank.md) (L4163), [Game.bankProfitTaxRate](map/Game.md) (L4973)  
    _THE BANK PAYS ITS PROFIT TAX, on the month that has just finished._
 67. **L14472** `getMarkets().startSellerPricedMonth();` → [Game.getMarkets](map/Game.md) (L3253)  
    _FB3 (FW6-C): the seller-priced goods' markets begin their month here, as the traded goods' do in their clearing: their trades and tally grew for the city's whole life._
@@ -150,22 +150,22 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
    _================================================================= AND THE MONEY THAT LEAVES BECAUSE THE RATE IS BAD._
 104. **L14634** `hotMoney.setRiskOff(worldRiskOffLevel());` → [CapitalFlows.setRiskOff](map/CapitalFlows.md) (L707), [Game.worldRiskOffLevel](map/Game.md) (L2408)  
    _The risk-off the world is in (XR4): handed once here, it holds for the hot money's month below as well._
-105. **L14635** `double carryMoved = hotMoney.carryTakeMonth(` → [CapitalFlows.carryTakeMonth](map/CapitalFlows.md) (L542), [DebtManager.worldRate](map/DebtManager.md) (L866), [DebtManager.countryPremium](map/DebtManager.md) (L1192), [Bank.headroom](map/Bank.md) (L5677)
+105. **L14635** `double carryMoved = hotMoney.carryTakeMonth(` → [CapitalFlows.carryTakeMonth](map/CapitalFlows.md) (L542), [DebtManager.worldRate](map/DebtManager.md) (L866), [DebtManager.countryPremium](map/DebtManager.md) (L1192), [Bank.headroom](map/Bank.md) (L5681)
 106. **L14641** `if (carryMoved > 0)      bank.lendCarry(carryMoved);` → [Bank.lendCarry](map/Bank.md) (L643)
 107. **L14642** `else if (carryMoved < 0) bank.repayCarry(-carryMoved);` → [Bank.repayCarry](map/Bank.md) (L651)
 108. **L14643** `bank.takeCarryInterest(hotMoney.carryInterestOn(carryRate));` → [Bank.takeCarryInterest](map/Bank.md) (L668), [CapitalFlows.carryInterestOn](map/CapitalFlows.md) (L608)
 109. **L14647** `refreshBank();` → [Game.refreshBank](map/Game.md) (L5250)  
    _The book just moved, so the capacity every line below reads has to be the one that includes it - strain, and what funding costs._
-110. **L14657** `bank.fundToCover(debtManager.getPolicyRate(), centralBank.getWindowDeferred());` → [Bank.fundToCover](map/Bank.md) (L3515), [DebtManager.getPolicyRate](map/DebtManager.md) (L77), [CentralBank.getWindowDeferred](map/CentralBank.md) (L350)  
+110. **L14657** `bank.fundToCover(debtManager.getPolicyRate(), centralBank.getWindowDeferred(), centralBank.getAdvancesToBank());` → [Bank.fundToCover](map/Bank.md) (L3515), [DebtManager.getPolicyRate](map/DebtManager.md) (L77), [CentralBank.getWindowDeferred](map/CentralBank.md) (L350), [CentralBank.getAdvancesToBank](map/CentralBank.md) (L886)  
    _WHAT THE WORLD WOULD PAY TO PARK HERE was handed to the bank here as a function until 0.7.7, for the deposit rate's bid for hot money (rule 3, off CapitalFlows.arrivalsAt(), deleted in 0.7.8 with n..._
-111. **L14670** `centralBank.payInterestOnReserves(bank.getPlacementIncome());` → [CentralBank.payInterestOnReserves](map/CentralBank.md) (L353), [Bank.getPlacementIncome](map/Bank.md) (L3799)  
+111. **L14670** `centralBank.payInterestOnReserves(bank.getPlacementIncome());` → [CentralBank.payInterestOnReserves](map/CentralBank.md) (L353), [Bank.getPlacementIncome](map/Bank.md) (L3803)  
    _...AND THE CENTRAL BANK'S END OF IT (0.7.0), off the bank's own two figures so the two cannot disagree: the policy rate on its reserves, paid in money made; the window's interest, paid back and des..._
-112. **L14671** `centralBank.chargeWindow(bank.getFundingCost());` → [CentralBank.chargeWindow](map/CentralBank.md) (L365), [Bank.getFundingCost](map/Bank.md) (L3795)
-113. **L14672** `centralBank.settleWindow(bank.getBranches() > 0 ? bank.wholesaleFunding() : 0);` → [CentralBank.settleWindow](map/CentralBank.md) (L339), [Bank.getBranches](map/Bank.md) (L5328), [Bank.wholesaleFunding](map/Bank.md) (L3495)
+112. **L14671** `centralBank.chargeWindow(bank.getFundingCost());` → [CentralBank.chargeWindow](map/CentralBank.md) (L365), [Bank.getFundingCost](map/Bank.md) (L3799)
+113. **L14672** `centralBank.settleWindow(bank.getBranches() > 0 ? bank.wholesaleFunding() : 0);` → [CentralBank.settleWindow](map/CentralBank.md) (L339), [Bank.getBranches](map/Bank.md) (L5332), [Bank.wholesaleFunding](map/Bank.md) (L3495)
 114. **L14677** `bank.resolveIfFailed();` → [Bank.resolveIfFailed](map/Bank.md) (L1984)  
    _...and if that left it owing more than it owns, it has failed - and waits for the city, which resolves it now if its setting is automatic (0.7.14; resolveIfAutomatic())._
 115. **L14678** `resolveIfAutomatic();` → [Game.resolveIfAutomatic](map/Game.md) (L5545)
-116. **L14682** `bank.closeMonth();` → [Bank.closeMonth](map/Bank.md) (L3959)  
+116. **L14682** `bank.closeMonth();` → [Bank.closeMonth](map/Bank.md) (L3963)  
    _The month is final, so the figure next month's tax is charged on is final too._
 117. **L14686** `centralBank.closeMonth();` → [CentralBank.closeMonth](map/CentralBank.md) (L437)  
    _...and the central bank's: its profit struck, to be remitted at the top of next month, or its loss carried._
@@ -302,13 +302,13 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.MonthOrder` - the top-level st
 11. **L15266** `pushLandByRelief();` → [Game.pushLandByRelief](map/Game.md) (L11392)
 12. **L15276** `pushCostOfFundsToTheDebtMarket();` → [Game.pushCostOfFundsToTheDebtMarket](map/Game.md) (L15695)  
    _THE BANK PRICES THE MONEY, BEFORE ANYTHING IS PRICED OFF IT._
-13. **L15281** `economyManager.getBusinessDebtManager().setLendingOpen(` → [EconomyManager.getBusinessDebtManager](map/EconomyManager.md) (L53), [Bank.getBranches](map/Bank.md) (L5328), [Bank.isInsolvent](map/Bank.md) (L1892)  
+13. **L15281** `economyManager.getBusinessDebtManager().setLendingOpen(` → [EconomyManager.getBusinessDebtManager](map/EconomyManager.md) (L53), [Bank.getBranches](map/Bank.md) (L5332), [Bank.isInsolvent](map/Bank.md) (L1892)  
    _A failed bank lends nothing._
 14. **L15294** `strikeBankBonds();` → [Game.strikeBankBonds](map/Game.md) (L5361)  
    _...its bonds and its book's concentration re-read first (0.7.12), so the rule and the prices below read the book as it stands._
-15. **L15295** `double growth = bank.lendingGrowthLimit();` → [Bank.lendingGrowthLimit](map/Bank.md) (L5071)
-16. **L15296** `boolean keepGoingOnly = bank.lendsOnlyToKeepBorrowersGoing();` → [Bank.lendsOnlyToKeepBorrowersGoing](map/Bank.md) (L5105)
-17. **L15301** `economyManager.getBusinessDebtManager().setCapitalRule(growth, keepGoingOnly, bank.leverageBinds());` → [EconomyManager.getBusinessDebtManager](map/EconomyManager.md) (L53), [Bank.leverageBinds](map/Bank.md) (L4754)  
+15. **L15295** `double growth = bank.lendingGrowthLimit();` → [Bank.lendingGrowthLimit](map/Bank.md) (L5075)
+16. **L15296** `boolean keepGoingOnly = bank.lendsOnlyToKeepBorrowersGoing();` → [Bank.lendsOnlyToKeepBorrowersGoing](map/Bank.md) (L5109)
+17. **L15301** `economyManager.getBusinessDebtManager().setCapitalRule(growth, keepGoingOnly, bank.leverageBinds());` → [EconomyManager.getBusinessDebtManager](map/EconomyManager.md) (L53), [Bank.leverageBinds](map/Bank.md) (L4758)  
    _...the insured mortgages with the rest while the leverage ratio binds (0.7.11, round 2): then a mortgage uses the capital the bank is short of like any loan (BusinessDebtManager, THE LANDLORDS' MOR..._
 18. **L15302** `economyManager.getBusinessDebtManager().setProjectBudget(bank);` → [EconomyManager.getBusinessDebtManager](map/EconomyManager.md) (L53)
 19. **L15303** `householdBalance.setCapitalRule(growth, keepGoingOnly);` → [HouseholdBalance.setCapitalRule](map/HouseholdBalance.md) (L974)

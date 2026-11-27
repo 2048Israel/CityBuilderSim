@@ -1,4 +1,4 @@
-# GoldStandardCheck.java - 1,135 lines · 33 methods · 17 constants · harnesses
+# GoldStandardCheck.java - 1,137 lines · 33 methods · 17 constants · harnesses
 
 `ham/citybuildersim/GoldStandardCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -105,7 +105,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 1082 | **type** `public class GoldStandardCheck` | The gold standard (batch GD3; spec-gold-money 4.3): the D$ on Gold, a mint price that keeps its value when it is entered, the rate held inside the gold points of the centre that moves with gold, the sale paid in gold ... |
+| 54 | 1084 | **type** `public class GoldStandardCheck` | The gold standard (batch GD3; spec-gold-money 4.3): the D$ on Gold, a mint price that keeps its value when it is entered, the rate held inside the gold points of the centre that moves with gold, the sale paid in gold ... |
 | 71 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 77 | 5 | `static void same(String label, double actual, double expected)` | Equal to the bit (and so a -0.0 is not a 0.0). |
 | 84 | 5 | `static void close(String label, double actual, double expected, double tol)` | Equal within a share of the expected. |
@@ -190,9 +190,9 @@
 | 955 | 61 | `static void theGoldsSalesRetireMZero()` |  |
 | 1020 | 67 | `static void theStartOnGoldBox()` |  |
 
-### 15 (lines 1088-1135)
+### 15 (lines 1088-1137)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1092 | 43 | `static void theDatesPassItBy()` |  |
+| 1092 | 45 | `static void theDatesPassItBy()` |  |
 

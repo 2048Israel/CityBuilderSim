@@ -229,7 +229,7 @@
 | 310 | 7 | `public double advanceToBank(double x)` | Money made and lent to the commercial bank at the window. |
 | 324 | 8 | `public double repayFromBank(double x)` | ...and repaid, which destroys it: no more than this bank has made (its reserves), as settleGoldRedeemed() retires, and the rest left owed here for the next settle. |
 | 339 | 9 | `public void settleWindow(double owed)` | Brings the window to what the bank owes past its deposits, once a month at the settle: advances the difference or takes the repayment. |
-| 350 | 1 | `public double getWindowDeferred()` | What the last settle left owed past the bank's funding, the reserves short of it: the next month's charge prices it. |
+| 350 | 1 | `public double getWindowDeferred()` | What the last settle left owed past the bank's funding, the reserves short of it: the next month's charge prices what the tranche has not grown back into. |
 | 353 | 6 | `public double payInterestOnReserves(double x)` | Interest on reserves: the policy rate on the bank's spare cash, paid in money made for it. |
 | 365 | 8 | `public double chargeWindow(double x)` | The window's interest, from the commercial bank: income here, and money destroyed - out of the reserves there are, and what they cannot pay advanced at the window, the bank borrowing its interest (RES3: a deferred adv... |
 
