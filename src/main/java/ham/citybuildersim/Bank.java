@@ -3683,7 +3683,10 @@ public class Bank {
         double activeWindow = Math.min(wholesaleNow, held);
         double owedPast = Math.min(Math.max(0, windowDeferred), Math.max(0, held - activeWindow));
         windowOwedCost = owedPast * windowRate / 12;
-        windowFundingCost = held * windowRate / 12;
+        // Only the opening unpaid receivable bears the past-due rate; today's new invoice is not charged twice.
+        // OC10 4.2 prices unpaid repayment amounts (including interest) at the applicable loan rate plus 500bp.
+        windowFundingCost = held * windowRate / 12
+                + getWindowInterestDue() * (windowRate + CentralBank.WINDOW_ARREARS_PENALTY) / 12;
         foreignFundingCost = foreign * foreignFundingRate / 12;
         fundingCost = windowFundingCost + foreignFundingCost;
         double actualExternal = held + foreign;

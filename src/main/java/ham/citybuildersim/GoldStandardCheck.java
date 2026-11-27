@@ -1132,10 +1132,87 @@ public class GoldStandardCheck {
         assertTrue("...and July 1926, Canada's return, does not peg it: on Gold that month, and on Canada's peg in none (" + canada + ")", atReturn && canada == 0);
         assertTrue("...and every month the cover it shows is over M0 after the last sale's retirement (Game.getGoldBase()), the one the next reprice reads (" + baseRight + " of " + months + ")",
                 baseRight == months);
-        out.printf("   the calendar town left deferred window principal into %d charged months, at most D$%,.2fk; the native gold-redemption case below causes the condition independently%n", owedMonths, mostOwed);
+        int calendarOwed = owedMonths;
+        int[] played = playedWindowArrears(g);
+        owedMonths += played[0]; owedPriced += played[1]; owedClosed += played[2];
+        out.printf("   deferred/charged played months: calendar %d (at most D$%,.2fk), controlled continuation %d%n", calendarOwed, mostOwed, played[0]);
+        assertTrue("fixture: a settle the reserves could not take leaves principal owed into a genuinely charged played month (" + owedMonths + ")", owedMonths > 0);
         assertTrue("every such calendar month accrues each actual window dollar once, with the past-due subset bounded and the central bank booking the window bill (" + owedPriced + " of " + owedMonths + ")", owedPriced == owedMonths);
         assertTrue("...and the audit closed, M0 at or above nothing (" + owedClosed + " of " + owedMonths + ")", owedClosed == owedMonths);
         windowStillOwedAfterGold();
+    }
+
+    /** Continue the already played city after the fixed calendar proof; actual paper, vault, reserve and month operations cause arrears. */
+    static int[] playedWindowArrears(Game g) {
+        out.println("\n--- 15a. a played window bill remains owed, through the full MoneyAudit ---");
+        Bank bank = g.getBank(); CentralBank cb = g.getCentralBank(); ForeignAccounts fx = g.getForeignAccounts();
+        assertTrue("fixture: the calendar city has a standing bank before the controlled continuation", bank.getBranches() > 0 && !bank.isInsolvent());
+        double desired = Math.max(Math.max(1, cb.m0() * .01),
+                24 * cb.getRemittanceDue() / BankRules.Dial.WINDOW_SPREAD.max);
+        double stableGap = bank.requiredStableFunding() - bank.coreStableFunding() - bank.wholesaleFunding();
+        double bankPurchase = bank.cashReserves() + bank.depositsGathered()
+                + Math.max(0, bank.sheet(Bank.Sheet.DESK)) + Math.max(0, stableGap) + desired;
+        double ask = bankPurchase / (1 - HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE)
+                / (1 - Bank.GOVERNMENT_STABLE_SHARE);
+        double cashBefore = g.getCash();
+        quietly(() -> g.handleTBillLogic(ask, 3, 100 * PriceLevel.FACTOR));
+        double raised = Math.max(0, g.getCash() - cashBefore);
+        assertTrue("fixture: the native bill issue actually raised cash before its normal settlement", raised > 0);
+        quietly(() -> g.buyForeignCurrency(raised * .9, "XAU"));
+        play(g, 1); // Native issue settlement establishes the actual carried window/foreign stocks.
+        double held = cb.getAdvancesToBank(), reserves = cb.getReserves();
+        if (fx.sellableReserves("XAU") < reserves) {
+            double goldNeeded = reserves - fx.sellableReserves("XAU") + MoneyAudit.CENT;
+            quietly(() -> g.buyForeignCurrency(goldNeeded, "XAU"));
+        }
+        assertTrue("fixture: native paper settlement created a solvent collateral-backed window claim",
+                held > 0 && !bank.isInsolvent() && held <= bank.windowCreditLimit() + MoneyAudit.CENT);
+        assertTrue("fixture: real gold in the vault can pay the reserve redemption", reserves > 0 && fx.sellableReserves("XAU") >= reserves);
+        double goldBefore = fx.getHolding(ForeignAccounts.GOLD);
+        double rate = fx.getRate(), goldUsd = fx.getMoneyUsd(ForeignAccounts.GOLD);
+        double sold = fx.sellReserves(reserves, "XAU");
+        cb.goldPaidOut(sold);
+        cb.settleGoldRedeemed();
+        close("the reserve retirement has its actual gold-vault leg", goldBefore - fx.getHolding(ForeignAccounts.GOLD), sold / rate / goldUsd, 1e-9);
+        close("the matched gold redemption actually emptied reserves", cb.getReserves(), 0, MoneyAudit.CENT);
+        bank.rules().set(BankRules.Dial.WINDOW_LIMIT, 0);
+        bank.rules().set(BankRules.Dial.WINDOW_SPREAD, BankRules.Dial.WINDOW_SPREAD.max);
+        cb.settleWindow(bank.windowFunding());
+        close("the zero-reserve settle leaves the actual principal deferred", cb.getWindowDeferred(), held, MoneyAudit.CENT);
+        int[] counts = new int[4];
+        int audits = 0;
+        for (int month = 0; month < 2; month++) {
+            double openingHeld = cb.getAdvancesToBank(), openingDeferred = cb.getWindowDeferred();
+            double openingDue = cb.getWindowInterestDue(), openingForeign = bank.getForeignWholesale(), base = cb.m0();
+            quietly(g::toggleNextMonth);
+            double windowRate = Math.max(0, g.getDebtManager().getPolicyRate()) + bank.rules().get(BankRules.Dial.WINDOW_SPREAD);
+            double expected = openingHeld * windowRate / 12
+                    + openingDue * (windowRate + CentralBank.WINDOW_ARREARS_PENALTY) / 12;
+            double invoice = cb.getWindowInterest(), collected = cb.getWindowInterestCollected();
+            boolean charged = openingDeferred > 0 && invoice > 0;
+            if (charged) counts[0]++;
+            if (charged && Math.abs(invoice - expected) <= MoneyAudit.CENT && invoice == bank.getWindowFundingCost()) counts[1]++;
+            MoneyAudit.Result audit = g.getLastMoneyAudit();
+            boolean closed = Math.abs(audit.residual) <= MoneyAudit.CENT && Math.abs(audit.residual) <= MoneyAudit.tolerance(audit.moved()) && cb.m0() >= 0;
+            if (closed) audits++;
+            if (charged && closed) counts[2]++;
+            if (cb.getWindowInterestDue() > 0) counts[3]++;
+            out.printf("   played m%d: H %.12g, deferred %.12g, opening due %.12g, invoice %.12g, collected %.12g, closing due %.12g, audit %+.12g%n",
+                    g.getMonth(), openingHeld, openingDeferred, openingDue, invoice, collected, cb.getWindowInterestDue(), audit.residual);
+            assertTrue("the played invoice uses actual carried stocks and is booked on both banks once", Math.abs(invoice - expected) <= MoneyAudit.CENT && invoice == bank.getWindowFundingCost());
+            close("the foreign bill uses its own actual carried stock", bank.getForeignFundingCost(), openingForeign * bank.getForeignFundingRate() / 12, 1e-9);
+            close("the receivable changes by the actual invoice less collection", cb.getWindowInterestDue() - openingDue, invoice - collected, MoneyAudit.CENT);
+            close("both banks report the same unpaid claim", bank.getWindowInterestDue(), cb.getWindowInterestDue(), 0);
+            if (cb.getWindowInterestDue() > 0) assertTrue("positive played arrears are visible and the bank's displayed liabilities foot", BankRulesCheck.dueLiabilityRowsFoot(bank));
+            assertTrue("a zero window limit issues no unsupported new principal", cb.getAdvancedToBank() == 0);
+            close("the old principal is paid only by its recorded repayment", cb.getAdvancesToBank(), openingHeld - cb.getRepaidByBank(), MoneyAudit.CENT);
+            close("the played base changes by issued less retired money", cb.m0() - base, cb.getIssued() - cb.getRetired(), MoneyAudit.CENT);
+            if (month == 1) assertTrue("a second played month actually charges the opening unpaid receivable", openingDue > 0 && expected > openingHeld * windowRate / 12);
+        }
+        assertTrue("fixture: the controlled continuation has positive played deferred/charged months", counts[0] > 0);
+        assertTrue("fixture: a full played MoneyAudit actually sees an unpaid window bill", counts[3] > 0);
+        assertTrue("both played months close the money audit to the cent", audits == 2);
+        return counts;
     }
 
     /** Cause the RES3 condition by native gold retirement, without changing the calendar town or relying on an incidental default funding path. */

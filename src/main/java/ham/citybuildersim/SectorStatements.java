@@ -1036,6 +1036,7 @@ public final class SectorStatements {
         b.head(BS_LIABILITIES_HEAD, "LIABILITIES");
         sheetLine(b, "Net funding outside settled wholesale", Bank.Sheet.DEPOSIT_FUNDING, now, then);
         sheetLine(b, "Borrowed overnight at the window", Bank.Sheet.WINDOW, now, then);
+        sheetLine(b, "Window interest accrued, still to pay", Bank.Sheet.WINDOW_INTEREST_DUE, now, then);
         sheetLine(b, "Wholesale borrowing abroad", Bank.Sheet.WHOLESALE_ABROAD, now, then);
         sheetLine(b, "Deposits from abroad", Bank.Sheet.FOREIGN_DEPOSITS, now, then);
         sheetLine(b, "Shares the desk has sold short", Bank.Sheet.DESK_SHORT, now, then);

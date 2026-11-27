@@ -27,6 +27,23 @@ public final class BankRulesCheck {
         try { action.run(); } finally { System.setOut(before); }
     }
 
+    /** Add the displayed liability rows themselves; the model's enum list cannot stand in for a missing visible row. */
+    static boolean dueLiabilityRowsFoot(Bank bank) {
+        var table = SectorStatements.bankSheet(bank);
+        var due = table.row(SectorStatements.sheetId(Bank.Sheet.WINDOW_INTEREST_DUE));
+        boolean inside = false;
+        double displayed = 0;
+        for (var row : table.rows()) {
+            if (row.id().equals(SectorStatements.BS_LIABILITIES_HEAD)) { inside = true; continue; }
+            if (row.id().equals(SectorStatements.BS_LIABILITIES)) break;
+            if (inside && row.kind() == SectorStatements.Kind.LINE && row.shown()) displayed += row.now();
+        }
+        return bank.getWindowInterestDue() > 0 && due != null && due.shown()
+                && due.now() == bank.getWindowInterestDue()
+                && Math.abs(displayed - bank.totalLiabilities()) <= MoneyAudit.CENT
+                && Math.abs(table.now(SectorStatements.BS_LIABILITIES) - bank.totalLiabilities()) <= MoneyAudit.CENT;
+    }
+
     record WindowFixture(Bank bank, CentralBank window) { }
 
     /** Native collateral and stable capital; the earlier repayment leaves a real principal claim, not a fresh advance. */
@@ -82,6 +99,8 @@ public final class BankRulesCheck {
                 cb.getWindowInterestDue() == windowBill && bank.getWindowInterestDue() == windowBill
                         && cb.sheet(CentralBank.Sheet.WINDOW_INTEREST_DUE) == windowBill
                         && bank.sheet(Bank.Sheet.WINDOW_INTEREST_DUE) == windowBill);
+        check("positive unpaid interest is a visible bank liability and the displayed rows foot to the model total",
+                dueLiabilityRowsFoot(bank));
         check("accrued interest and foreign expense reduce equity exactly to the cent",
                 Math.abs(bank.equity() - equity + windowBill + foreignBill) <= MoneyAudit.CENT
                         && Math.abs(bank.sheetResidual()) <= MoneyAudit.CENT);
@@ -111,6 +130,54 @@ public final class BankRulesCheck {
                 cb.lastMonth(CentralBank.Line.WINDOW_INTEREST) == windowBill
                         && cb.lastMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) == windowBill
                         && cb.thisMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) == -windowBill);
+    }
+
+    static void windowArrearsLaw() {
+        out.println("--- 3e. opening unpaid window interest bears the past-due rate, charged once ---");
+        WindowFixture fixture = deferredWindow(true);
+        Bank bank = fixture.bank(); CentralBank cb = fixture.window();
+        double held = cb.getAdvancesToBank(), policy = .10;
+        double rate = policy + bank.rules().get(BankRules.Dial.WINDOW_SPREAD);
+        double principalBill = held * rate / 12;
+        bank.setCash(-held);
+        bank.settleForeignFunding(held);
+        bank.fundToCover(policy, cb.getWindowDeferred(), held);
+        bank.payWindowInterest(cb.chargeWindow(bank.getWindowFundingCost()));
+        check("fixture: full collateral and zero reserves leave the first genuine invoice unpaid",
+                cb.getWindowInterestDue() == principalBill && cb.getWindowInterestCollected() == 0
+                        && cb.getAdvancesToBank() == held && cb.getReserves() == 0);
+        bank.startMonth(); cb.startMonth();
+        double openingDue = cb.getWindowInterestDue(), equity = bank.equity();
+        double pool = bank.getCash() + held + bank.getForeignWholesale();
+        double penaltyBill = openingDue * (rate + CentralBank.WINDOW_ARREARS_PENALTY) / 12;
+        bank.fundToCover(policy, cb.getWindowDeferred(), held);
+        bank.payWindowInterest(cb.chargeWindow(bank.getWindowFundingCost()));
+        double invoice = principalBill + penaltyBill;
+        check("only opening arrears add the real past-due charge, on both books exactly once",
+                openingDue > 0 && penaltyBill > 0 && bank.getWindowFundingCost() == invoice
+                        && cb.getWindowInterest() == invoice && cb.getWindowInterestDue() == openingDue + invoice);
+        check("the added arrears expense and both visible liability/asset claims close to the cent",
+                Math.abs(bank.equity() - equity + invoice) <= MoneyAudit.CENT
+                        && bank.getWindowInterestDue() == cb.getWindowInterestDue() && dueLiabilityRowsFoot(bank));
+        for (int settle = 0; settle < 2; settle++) {
+            cb.settleWindow(bank.windowFunding());
+            bank.settleForeignFunding(cb.getAdvancesToBank());
+        }
+        check("neither settle rebills arrears or creates unsecured money to pay them",
+                cb.getWindowInterest() == invoice && bank.getWindowFundingCost() == invoice
+                        && cb.getAdvancesToBank() == held && cb.getAdvancedToBank() == 0
+                        && cb.getIssued() == 0 && cb.getRetired() == 0 && cb.m0() == 0
+                        && Math.abs(bank.getCash() + held + bank.getForeignWholesale() - pool) <= MoneyAudit.CENT);
+        double payoff = cb.getWindowInterestDue();
+        bank.startMonth(); cb.startMonth();
+        cb.payInterestOnReserves(payoff); bank.takeInterest(payoff);
+        bank.payWindowInterest(cb.chargeWindow(0));
+        check("actual later cash pays the old claim once, without another invoice",
+                cb.getWindowInterestDue() == 0 && cb.getWindowInterest() == 0
+                        && cb.getWindowInterestCollected() == payoff && cb.m0() == 0);
+        bank.startMonth(); cb.startMonth();
+        bank.fundToCover(policy, cb.getWindowDeferred(), held);
+        check("paid history earns no further arrears charge at the next opening", bank.getWindowFundingCost() == principalBill);
     }
 
     /** A native format-67 array fixture before CBK3's appended flow, sheet column and receivable stock. */
@@ -188,6 +255,7 @@ public final class BankRulesCheck {
             bank.payWindowInterest(cb.chargeWindow(bank.getWindowFundingCost()));
         }
         if (!(cb.getWindowInterestDue() > 0 && bank.getWindowOwedCost() > 0
+                && bank.getWindowFundingCost() > held * (.10 + bank.rules().get(BankRules.Dial.WINDOW_SPREAD)) / 12
                 && cb.thisMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) > 0
                 && cb.lastMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) > 0)) return false;
         Path root = TempDirs.create("cbk3-window-interest-save");
@@ -810,6 +878,11 @@ public final class BankRulesCheck {
 
         rolloverLaw();
         windowInterestLaw();
+        windowArrearsLaw();
+        int resolutionFails = CentralBankCheck.fails;
+        CentralBankCheck.out = out;
+        CentralBankCheck.resolutionWindowLaw();
+        check("the exact central-bank resolution case enforces Game's raw collateral ceiling", CentralBankCheck.fails == resolutionFails);
         interestCollateralLaw();
         coldCallableCollateral();
         coldCallableTreePrefixes();

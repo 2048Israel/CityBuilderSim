@@ -339,6 +339,41 @@ public class CentralBankCheck {
         return kinds;
     }
 
+    /** The same native resolution/collateral case, also called by the short bank-rules harness. */
+    static void resolutionWindowLaw() {
+    // A FAILED BANK AT THE WINDOW (0.7.1, decided rather than forgotten):
+    // the resolution sets its equity to zero, and it is charged no
+    // interest on what it still owes past its deposits - see the note in
+    // Bank.fundToCover(). The advance stands; the charge does not.
+    Bank failed = new Bank();
+    failed.refresh(1, 100_000, 0, 500_000, 0, 0);
+    failed.injectCapital(50_000);
+    failed.setCash(-600_000);
+    failed.resolveIfFailed();
+    assertTrue("fixture: the bank has failed with a real outstanding loan book",
+            failed.isInsolvent() && failed.getFailures() == 1 && failed.wholesaleFunding() > 0);
+    CentralBank lender = new CentralBank();
+    lender.setWindowCapacity(failed::windowCreditLimit);
+    failed.setSettledWindow(lender::getAdvancesToBank);
+    failed.setWindowInterestDue(lender::getWindowInterestDue);
+    lender.settleWindow(failed.windowFunding());
+    failed.settleForeignFunding(lender.getAdvancesToBank());
+    double foreignOutstanding = failed.getForeignWholesale();
+    failed.setForeignFundingRate(.07);
+    double failedWholesale = failed.wholesaleFunding();
+    failed.fundToCover(.05);
+    close("the existing central-bank standstill charges no window interest", failed.getWindowFundingCost(), 0, 0);
+    close("foreign creditors retain their interest claim in resolution",
+            failed.getForeignFundingCost(), foreignOutstanding * .07 / 12, 1e-9);
+    close("the failed bank's funding quote still records its foreign bill",
+            failed.fundingRate(), foreignOutstanding * .07 / failedWholesale, 1e-12);
+    double limit = failed.windowCreditLimit(), heldBeforeProbe = lender.getAdvancesToBank();
+    assertTrue("fixture: resolution still has positive native collateral capacity to test", limit > heldBeforeProbe);
+    double probe = lender.advanceToBank(2 * limit);
+    close("a resolution draw is clipped at the same raw collateral ceiling Game uses", probe, limit - heldBeforeProbe, 1e-9);
+    assertTrue("resolution does not waive the collateral limit", lender.getAdvancesToBank() <= failed.windowCreditLimit());
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -512,31 +547,7 @@ public class CentralBankCheck {
                     heldAt.getIssued() - heldAt.getRetired(), MoneyAudit.CENT);
         }
 
-        // A FAILED BANK AT THE WINDOW (0.7.1, decided rather than forgotten):
-        // the resolution sets its equity to zero, and it is charged no
-        // interest on what it still owes past its deposits - see the note in
-        // Bank.fundToCover(). The advance stands; the charge does not.
-        Bank failed = new Bank();
-        failed.refresh(1, 100_000, 0, 500_000, 0, 0);
-        failed.injectCapital(50_000);
-        failed.setCash(-600_000);
-        failed.resolveIfFailed();
-        assertTrue("fixture: the bank has failed with a real outstanding loan book",
-                failed.isInsolvent() && failed.getFailures() == 1 && failed.wholesaleFunding() > 0);
-        CentralBank lender = new CentralBank();
-        lender.setWindowCapacity(failed::windowFunding);
-        lender.settleWindow(failed.windowFunding());
-        failed.settleForeignFunding(lender.getAdvancesToBank());
-        double foreignOutstanding = failed.getForeignWholesale();
-        failed.setForeignFundingRate(.07);
-        double failedWholesale = failed.wholesaleFunding();
-        failed.fundToCover(.05);
-        close("the existing central-bank standstill charges no window interest", failed.getWindowFundingCost(), 0, 0);
-        close("foreign creditors retain their interest claim in resolution",
-                failed.getForeignFundingCost(), foreignOutstanding * .07 / 12, 1e-9);
-        close("the failed bank's funding quote still records its foreign bill",
-                failed.fundingRate(), foreignOutstanding * .07 / failedWholesale, 1e-12);
-        assertTrue("resolution does not waive the collateral limit", lender.getAdvancesToBank() <= failed.windowCollateral());
+        resolutionWindowLaw();
 
         /* ================= 4. the city's paper ================= */
         out.println("\n--- 4. the city's note prices at policy + spreads ---");

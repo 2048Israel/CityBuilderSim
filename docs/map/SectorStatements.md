@@ -1,4 +1,4 @@
-# SectorStatements.java - 1,087 lines · 66 methods · 22 constants · model
+# SectorStatements.java - 1,088 lines · 66 methods · 22 constants · model
 
 `ham/citybuildersim/SectorStatements.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -32,9 +32,9 @@
 > Pure: it reads SectorBooks (and the bank, and since 0.7.75 the register
 > for note 10) and changes nothing; nothing in the model reads it.
 
-**Uses:** [Bank](Bank.md) (105), [SectorBooks](SectorBooks.md) (35), [Debt](Debt.md) (10), [BusinessDebtManager](BusinessDebtManager.md) (8), [Equity](Equity.md) (3), [LandManager](LandManager.md) (2)
+**Uses:** [Bank](Bank.md) (106), [SectorBooks](SectorBooks.md) (35), [Debt](Debt.md) (10), [BusinessDebtManager](BusinessDebtManager.md) (8), [Equity](Equity.md) (3), [LandManager](LandManager.md) (2)
 
-**Used by (22):** [BankScreen](BankScreen.md), [BusinessServices](BusinessServices.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CentralBankCheck](CentralBankCheck.md), [CentralBankScreen](CentralBankScreen.md), [CentralBankStatementCheck](CentralBankStatementCheck.md), [CentralBankStatements](CentralBankStatements.md), [Construction](Construction.md), [Freight](Freight.md), [KeptBench](KeptBench.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandClassView](LandClassView.md), [LuxuryRetail](LuxuryRetail.md), [RealEstate](RealEstate.md), [ReloadCheck](ReloadCheck.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [StatementView](StatementView.md)
+**Used by (23):** [BankRulesCheck](BankRulesCheck.md), [BankScreen](BankScreen.md), [BusinessServices](BusinessServices.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CentralBankCheck](CentralBankCheck.md), [CentralBankScreen](CentralBankScreen.md), [CentralBankStatementCheck](CentralBankStatementCheck.md), [CentralBankStatements](CentralBankStatements.md), [Construction](Construction.md), [Freight](Freight.md), [KeptBench](KeptBench.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandClassView](LandClassView.md), [LuxuryRetail](LuxuryRetail.md), [RealEstate](RealEstate.md), [ReloadCheck](ReloadCheck.md), [Restaurants](Restaurants.md), [Retail](Retail.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md), [SectorStatementCheck](SectorStatementCheck.md), [StatementView](StatementView.md)
 
 ## Sections
 
@@ -112,7 +112,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 40 | 1048 | **type** `public final class SectorStatements` | A business's month as formal statements (0.7.74): the income statement classified down through gross and operating profit, the balance sheet in current and long-lived parts, the cash flow in three sections, the statem... |
+| 40 | 1049 | **type** `public final class SectorStatements` | A business's month as formal statements (0.7.74): the income statement classified down through gross and operating profit, the balance sheet in current and long-lived parts, the cash flow in three sections, the statem... |
 | 42 | 1 | `private SectorStatements()` |  |
 
 ### THE FORMATS (spec 4.6) (lines 44-81)
@@ -220,14 +220,14 @@
 | 887 | 4 | `public static double daysOfCash(SectorBooks.SectorMonth m)` | Cash on hand in days of what trading costs it: its cash over a thirtieth of the month's operating costs, interest and tax. |
 | 893 | 4 | `public static double debtYears(Table cash, SectorBooks.SectorMonth m)` | Debt over a year of trading cash: what it owes over twelve months of the operating section, NaN when that is nothing or less. |
 
-### THE BANK (spec 4.5): ITS OWN FORMAT, ON ITS OWN TAB (D9) (lines 898-1087)
+### THE BANK (spec 4.5): ITS OWN FORMAT, ON ITS OWN TAB (D9) (lines 898-1088)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 938 | 1 | `public static String bankId(Bank.Line line)` | A bank line's id on the statement. |
 | 941 | 55 | `public static Table bankIncome(Bank bank)` | The bank's income statement, this month against last. |
 | 1006 | 1 | `public static String sheetId(Bank.Sheet line)` | A sheet line's id on the statement. |
-| 1009 | 66 | `public static Table bankSheet(Bank bank)` | The bank's balance sheet, this month against a year ago - the bank keeps a year of sheets, not last month's. |
-| 1076 | 5 | `private static void sheetLine(Builder b, String label, Bank.Sheet line, java.util.function.ToDoubleFunction<Bank.Sheet> now, ja...` |  |
-| 1083 | 4 | `public static double bankGrossLoans(Bank bank)` | The bank's loans and advances, gross: what its provisions and allowance are read against. |
+| 1009 | 67 | `public static Table bankSheet(Bank bank)` | The bank's balance sheet, this month against a year ago - the bank keeps a year of sheets, not last month's. |
+| 1077 | 5 | `private static void sheetLine(Builder b, String label, Bank.Sheet line, java.util.function.ToDoubleFunction<Bank.Sheet> now, ja...` |  |
+| 1084 | 4 | `public static double bankGrossLoans(Bank bank)` | The bank's loans and advances, gross: what its provisions and allowance are read against. |
 

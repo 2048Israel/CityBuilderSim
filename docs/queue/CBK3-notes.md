@@ -1358,6 +1358,147 @@ only on its recorded source/main commits. Never restamp the format-66 city
 or claim its historical measurement as a format-67 replay. Do not drop the
 marker or announce ready before the required verdicts are complete.
 
+Orchestrator `20261127-100121-529` agrees both remain required. Fresh review
+**REV-CBK3b (Claude)** is reviewing the merge's new money and saves. Let the
+current dry run finish as evidence. The final-model ensemble explicitly waits
+for home, about **19:00**: away from home the box tools would fall back to
+the laptop. Commit/push and end by **11:10**. At about 19:00 receive the review
+verdict, mend if needed, run the final ensemble, then finish readiness. This
+replaces the morning-ready target; a green morning dry run alone is not SHIP.
+
+The pushed dry candidate is `4704e1c4ba7773d28c82780937c8e5d7bdcf7f7e`,
+model/check source `855c34982`, main `858378bae`. The box run is
+`/home/jerus/cbs/runs/cbs-gate-CBK3-bR0BVW8M`; controller log
+`target/CBK3-dry.txt`. Its documented owned-run stop command is
+`sh tools/gate.sh --stop '/home/jerus/cbs/runs/cbs-gate-CBK3-bR0BVW8M'`.
+No ensemble or network-dependent job is to be started away from home.
+
+## REV-CBK3b morning mends and resume (2026-11-27)
+
+Orchestrator `20261127-101034-619` reports **not SHIP**, one P1 and three
+related P2 mends, and orders work now, push by 11:05/end by 11:10, then
+continue around 19:00: mends, second stranger look, final ensemble, dry run,
+ready. Only the marker's later removal means ready.
+
+P1: SectorStatements now draws the existing `WINDOW_INTEREST_DUE` liability.
+The regression starts with genuine positive due and adds the actual displayed
+liability rows, checking both their sum and the table total against the model
+liabilities. An enum-based residual cannot hide a missing visible row. The
+BankScreen explanation now has the row to attach to. New BankRulesCheck passes
+this positive-due footing case.
+
+★ P2 reality: [Fed PSR part III](https://www.federalreserve.gov/frrs/regulations/iii-policy-on-overnight-overdrafts.htm)
+uses primary credit plus 400bp for negative overnight reserve accounts;
+[Operating Circular 10, sections 2 and 4.2](https://www.frbservices.org/wp-content/uploads/082823-operating-circular-10.pdf)
+instead includes unpaid loan interest in the repayment amount and charges
+an unpaid repayment amount at its applicable lending rate plus **500bp**.
+This model keeps a loan-interest receivable, not a negative reserve account,
+so choose the literal OC10 past-due basis. Charge only the authoritative
+**opening** due, once, in Bank's existing invoice; the central bank accrues
+that same invoice and collects cash once. The monthly `/12` convention is an
+aggregate approximation, not a claim of exact Fed daily compounding. Today's
+new invoice earns no arrears charge until the next opening; a paid claim earns
+none. Existing resolution standstill, discretionary collateral gate, atomic
+refinance and foreign-stock pricing are unchanged. No general overdraft
+facility, new player dial or extra independently saved claim is introduced.
+The already saved window/total expenses and signed due-change flow carry the
+charge. Native full-collateral tests prove two-period billing, actual claims,
+equity/pool/M0 cents, no rebill, later payoff and no fee on paid history; these
+pass. The saved-flow regression now requires a genuinely positive arrears
+component, and full SaveFileCheck passes.
+
+P3: restore a positive genuinely played overdue/charged counter. The fixed
+calendar proof retains its founding, horizon and all date/base assertions;
+a controlled continuation uses real native bill issuance and normal month
+settlement, an actual XAU sale paired with the reserve retirement, saved
+window limit zero and two normal played months through MoneyAudit. Native
+15b remains additional coverage. The first continuation failed honestly:
+its issue sizing did not create actual H, so the invoice/due stayed zero.
+The helper identified omitted gathered deposits/household take-up; sizing now
+covers native liquid funding/stable need and grosses up by the household
+share. Successful-priced/closed counters share the same positive charged
+premise, with a separate hard two-month audit count. The corrected played
+case is rerunning; no positive outcome is claimed until its result returns.
+
+P4: the resolution fixture now uses `windowCreditLimit`, exactly Game's raw
+capacity callback, with an actual positive-capacity over-request that must
+clip at the ceiling. Its exact native case is extracted for the short
+BankRulesCheck as well as full CentralBankCheck; all 24 full policy shapes
+remain. A first short reuse exposed an uninitialized harness output stream,
+now initialized by its caller. Its rerun is pending.
+
+The old-candidate dry run **exits 1**, suite 1,921 seconds, on
+`4704e1c4b`/main `858378bae`, with 36 unnamed lines in nine harnesses. Kept
+box run `/home/jerus/cbs/runs/cbs-gate-CBK3-bR0BVW8M`, copied home to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CBK3-bR0BVW8M`; driver
+`target/CBK3-dry.txt` explicitly records `gate exit 1`. The shell's final
+status is not substituted for that verdict. Source has changed for review
+mends, so this failed old run is evidence, **not a reusable gate run**.
+Helper `CBK3-res3` is classifying its lines with source/queued-owner evidence;
+no unproved known-red row or red-ok is added. Local old-source LongPlaytest
+also timed out at 1,740 seconds, last progress m2160, with no logged model
+finding and no completed final-audit verdict. It is not called green.
+
+Resume after home around 19:00: inspect the exact morning named-check results,
+finish any uncaught played-fixture/old-dry mends, mail the new mends commit for
+REV-CBK3b's second look, then run the final-model 80-run ensemble (M1/F1 hard
+stops) and a new valid full dry run before readiness. The 4ff measurements
+remain historical. The marker stays provisional throughout this offline gap.
+
+Morning mends now validate: `--fast` **0**, GoldStandardCheck **0**,
+BankRulesCheck **0** (including the exact extracted resolution/raw-cap case)
+and SaveFileCheck **0**. Logs are `target/CBK3-review-fast.txt`,
+`target/CBK3-review-last-before-offline.txt`,
+`target/CBK3-review-save-bank.txt` and the kept `CBK3-res3-<Name>.log` files.
+The played continuation actually carries H/deferred **5161.42971977**:
+m321 invoices **29.0330421737**, collects **0**, leaves that much due,
+audit **-4.71800376545e-12**; m322 opens with that due, invoices
+**29.3173240450**, collects **58.3503662186**, closes due **0**, audit
+**-1.04591890704e-11**. Calendar incidental count is honestly 0; the same
+city's controlled continuation has **2** positively charged/deferred played
+months. The hard positive premise, unpaid played bill and both full money
+audits all pass. No collector cap, synthetic bank refresh or fictitious vault
+payment causes the result.
+
+The earlier dry's native box LongPlaytest completed **2404 months / 2404
+funding audits**, **0** stable-budget binding months, no findings, every audit
+and reload passed. Its separate raw-cap/desk find counts and exact maximum
+residual were not printed/extracted, so no invented counts or exact zero is
+reported. Box CentralBankCheck also passed all 24 shapes, native 246/246 rule
+samples and save checks. These are old **4704** results, not validation of
+the new arrears charge. The local timeout at m2160 remains separate.
+
+Bounded dry diagnosis (helper report
+`../codex-CBK3-res3/target/CBK3-res3-morning-dry-gold-classification.txt`):
+36 framework lines represent 19 failed assertions, one NPE and 16 exit/count
+lines across nine harnesses. OwnerCheck's owned failure is its stale expected
+snapshot width 31 after the stable-budget counter was appended at cell 31;
+the expected width is now 32, owner cells 29/30 are both checked, and the old
+31-cell prefix must preserve them/default the new counter; old 29-cell
+owner-absent coverage stays. Its named rerun is pending at this record.
+CurrencyRegimeCheck needs an owned law/flow reconciliation: direct purchase
+614.014021780002 versus net M0 difference 610.760367346008 has other net
+flows **-3.253654433994**; equity miss up to .0949, while both audits and
+intrinsic central-bank-keeps-nothing pass 10/10. Retain the direct purchase
+law and reconcile independent differential issued/retired/income/remit/loss/
+vault/edge effects, never loosen cents or pins. Exact attribution is pending.
+FundCheck's new whole-float bid and its dependent pro-rata/band premises plus
+donor secured/free-unit conjunction need native cash/stable/claim inputs;
+the donor's exact failed conjunct is not yet identified. Do not call these
+known main reds merely because HT1-H owns a different existing limit-order red.
+
+CreditCrunch ground is present 104/120 months, missing 16; exact cause/owner
+unresolved. Buyback's five-year issue is null then NPE, quote/refusal/allotment
+unresolved. Holders reload .675335 versus .675317 remains strict-law concern;
+cause unresolved. CapitalGains' second factor stays 1000 with step 0 (first
+10 to 1000, step 100); native second trigger absent, cause unresolved. Kept's
+four-times borrower premise fails and Spending fold retained/fresh widths
+1454/1445 and heights 656/673, 680/697 need actual layout cause. GoldMining
+has 0 mint/24, Gold/offer conjunction false and exports 2588.8773 versus 0;
+FS8 is the verified current queued owner of that mint fixture, but its actual
+regime/offer condition still needs inspection. No speculative known-red rows
+are added for any of these. Shipped FS1/4/16/17 are not queued owners.
+
 ## For the manual
 
 Use the Bank tab to choose the commercial bank or the central bank. The
@@ -1406,3 +1547,8 @@ funding; collecting an older bill does not charge the expense again.
 The next settlement applies the new window rule. A remittance is the central
 bank's realised surplus after its costs and carried losses; no fixed share
 of the treasury's revenue is guaranteed or imposed.
+
+
+### Morning checkpoint, 2026-11-27 11:03 Halifax
+
+OwnerCheck completed with all assertions OK (target/CBK3-review-OwnerCheck.log), including the current 32-cell snapshot and the real legacy 31-cell prefix. The named run reports suite OK. No owned harness or remote gate remains running. The current review mends have fast, GoldStandardCheck, BankRulesCheck, SaveFileCheck and OwnerCheck green; the new full CentralBankCheck and remaining old-dry diagnoses are still owed. The failed 4704e1c4b dry run is evidence only, not a reusable green gate. The marker remains provisional. Resume about19:00: finish the unresolved dry-run findings, obtain REV-CBK3b's second look on the mends, then the final-model80-run ensemble (M1/F1 hard stops) and a newly authorised full dry run. No ready claim is made.
