@@ -10034,9 +10034,15 @@ public class Game {
         return template == null ? 0 : siteMonths(ConstructionControl.keyOf(template));
     }
 
-    /** The month's crews site by site at the builders' output, the plan the construction page reads (ConstructionScreen.sites()); reads, changes nothing. */
+    /**
+     * The month's crews site by site as the month's advance takes them (ASH1): the city's crews at the builders' output and the
+     * foreign contractor's month as last settled (Construction.getForeignPointsThisMonth(), a saved reading), SimulationEngine's
+     * advanceConstruction(siteOutput + foreign.points(), foreign.points(), ...) planned through BuildingManager.plan(output, foreign).
+     * It is not the construction page's (ConstructionScreen.sites()), which reads the city's crews' share alone. Reads, changes nothing.
+     */
     public BuildingManager.Plan sitesPlan() {
-        return buildingManager.plan(getBuildingOutput());
+        double foreign = getSectors().construction().getForeignPointsThisMonth();
+        return buildingManager.plan(getBuildingOutput() + foreign, foreign);
     }
 
     /**
