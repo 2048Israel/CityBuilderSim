@@ -17,7 +17,8 @@ import java.util.Set;
  * the premises that sat on the played town's own figures are caused: the highway
  * forecast's traffic scaled between its two edges (mostCovered()), the streets'
  * share set (SERVED_STREETS), spare care by the people scaled to it (scalePeople()),
- * and the staff-short plant by the workforce set to half the posts.
+ * the staff-short plant by the workforce set to half the posts, and (RES3) the school's
+ * demand and the growth cap by the people scaled to them (capGrowth()).
  */
 public final class EssentialWorksCheck {
     static int fails;
@@ -630,6 +631,35 @@ public final class EssentialWorksCheck {
         pm.restoreWorkforce(workforce);
     }
 
+    /**
+     * The town's people scaled, its workforce held, to where its beds cap its growth at `cap` (BusinessInvestment.growthFactor():
+     * reachablePopulation() over the people, which the written population history reads as the last of it), the history made flat
+     * at the new people for the section to write its own trend over (RES3): a growth cap caused where it was the town's own.
+     */
+    static void capGrowth(Game g, double cap) {
+        scalePeople(g, g.getBusinessInvestment().reachablePopulation() / (cap * g.getPopulationManager().getPopulation()));
+        long scaled = g.getPopulationManager().getPopulation();
+        g.getBusinessInvestment().restorePopulationHistory(java.util.List.of(scaled, scaled));
+    }
+
+    /** The growth cap interimPower()'s town is scaled to (RES3): main's 4,590 people under 5,500 beds, where one household to a door left 3,021 under them (1.82). */
+    static final double INTERIM_GROWTH_CAP = 1.198;
+
+    /** The growth cap earlyWind()'s town is scaled to (RES3): main's town after its years to the Steam Station's retirement, where RES3's (1.60 at the wind's opening) let five Diesel Stations close the gap and five Wind Farms not. */
+    static final double EARLY_WIND_GROWTH_CAP = 1.094;
+
+    /** The cap the model reads off a written population history (BusinessInvestment.growthFactor()): the beds over the history's last, the figure a section's fixture states. */
+    static double growthCap(Game g, java.util.List<Long> history) {
+        return g.getBusinessInvestment().reachablePopulation() / history.get(history.size() - 1);
+    }
+
+    /**
+     * The elementary school's unmet demand over its first-work threshold (BuildAdvice.FIRST_WORK_SHARE of an Elementary School's
+     * places) that fundingPriority()'s ranked town is scaled to (RES3): main's town asked 245 places over the 180 of the threshold,
+     * where RES3's one household to a door asked 163, under it, so the school was no warranted work and care went first.
+     */
+    static final double SCHOOL_DEMAND_OVER_FIRST_WORK = 1.36;
+
     static void fundingPriority(Path root, boolean spareCare) throws Exception {
         out.println(spareCare ? "--- an unfunded school keeps its funding before spare care ---"
                 : "--- current service loss ranks simultaneous essential needs ---");
@@ -648,6 +678,8 @@ public final class EssentialWorksCheck {
             long n = bm.getQuantity(t.getId());
             if (n > 0 && (school.serves(t) || care.serves(t))) quietly(() -> bm.retire(t, n));
         }
+        BuildingsTemplate elementary = bm.getTemplateByName("Elementary School");
+        double firstWork = BuildAdvice.FIRST_WORK_SHARE * BuildAdvice.built(g, school, elementary);
         BuildingsTemplate clinic = bm.getTemplateByName("Walk-in Clinic");
         if (spareCare) {
             double[] base = BuildAdvice.supplyDemand(g, care, Map.of());
@@ -668,6 +700,14 @@ public final class EssentialWorksCheck {
                     spare[0], spare[1], spare[1] * (1 + g.getAutoBuilder().getSlack())),
                     spare[0] >= spare[1] && spare[0] < spare[1] * (1 + g.getAutoBuilder().getSlack()));
         } else {
+            // RES3: the school's work caused. One household to a door left the town's children too few for the first school
+            // (163 places against the threshold's 180), so the school was no warranted work and care, the other shortage, was ordered
+            // first. The town's people are scaled, its workforce held, until the school's demand is the section's own multiple of
+            // the threshold (main's town was 245 against 180).
+            double demand = BuildAdvice.supplyDemand(g, school, Map.of())[1];
+            scalePeople(g, SCHOOL_DEMAND_OVER_FIRST_WORK * firstWork / demand);
+            long scaled = g.getPopulationManager().getPopulation();
+            g.getBusinessInvestment().restorePopulationHistory(java.util.List.of(scaled, scaled));
             double share = BuildAdvice.cover(g, care, Map.of());
             g.getHealth().advanceMonth(share, 1, 0, 1, 1, 1, 1);
             g.getEconomyManager().setHealthRatio(g.getHealth().getWorkRatio());
@@ -677,7 +717,6 @@ public final class EssentialWorksCheck {
         serveGrid(g);
         g.getInfrastructureManager().setLoad(0);
         g.getInfrastructureManager().setBreakdown(new double[Traffic.values().length]);
-        BuildingsTemplate elementary = bm.getTemplateByName("Elementary School");
         double schoolCost = g.quoteBuild(elementary, 1).total;
         BuildAdvice.Suggestion careCard = BuildAdvice.suggestFor(g, null, care, g.getCash(),
                 g.getLandManager().getAvailableSqFt());
@@ -687,6 +726,10 @@ public final class EssentialWorksCheck {
         AutoBuilder ab = g.getAutoBuilder();
         ab.setDebtLimit(0, null);
         ab.setCashAnyway(true, null);
+        double[] schoolNow = BuildAdvice.supplyDemand(g, school, Map.of());
+        check(String.format("fixture: the school's demand, %.1f places, is over the first-work threshold, %.1f (%.0f%% of an Elementary School's %.0f)",
+                        schoolNow[1], firstWork, 100 * BuildAdvice.FIRST_WORK_SHARE, BuildAdvice.built(g, school, elementary)),
+                schoolNow[1] >= firstWork);
         check("fixture: the school is useful and entirely unserved, and the care plan is cheaper",
                 BuildAdvice.warranted(g, school) && BuildAdvice.supplyDemand(g, school, Map.of())[0] == 0
                         && careCard != null && careCost > 0 && careCost < schoolCost);
@@ -888,6 +931,13 @@ public final class EssentialWorksCheck {
     static void interimPower(Path root) {
         out.println("--- pending coal does not hide an earlier forecast power loss ---");
         Game g = town(root, "interim-power");
+        // RES3: the section's two causes caused. It is a January section, its seasonal peaks counted from the town's month; ChildcareCheck.town's
+        // depot loop takes three months more than the play it was written on, so the town reaches it in April and the peaks fall elsewhere: play on
+        // to the next January. And one household to a door left the beds at 1.82 times the people, where the written trend of a quarter a year met
+        // the cap at 1.198 (main's), so growth never reached the seasonal gap the section's control needs: the people scaled to main's cap.
+        int toJanuary = (13 - CityCalendar.monthOfYear(g.getMonth())) % 12;
+        if (toJanuary > 0) quietly(() -> g.simulateMonths(toJanuary));
+        capGrowth(g, INTERIM_GROWTH_CAP);
         g.setCashForTest(1e14);
         quietly(() -> g.buildStack(g.getBuildingManager().getTemplateByName("Construction Depot"), 8, true));
         BuildingsTemplate coal = g.getBuildingManager().getTemplateByName("Coal Power Plant");
@@ -938,6 +988,11 @@ public final class EssentialWorksCheck {
             months.add(g.getMonth() - 12 + i);
         }
         g.getBusinessInvestment().restorePopulationHistory(people);
+        double cap = growthCap(g, people);
+        check(String.format("fixture: the section starts in January (month %d of the year) and the beds cap its growth at %.3f (%.0f beds over %d people), main's %.3f",
+                        CityCalendar.monthOfYear(g.getMonth()), cap, g.getBusinessInvestment().reachablePopulation(), people.get(people.size() - 1),
+                        INTERIM_GROWTH_CAP),
+                CityCalendar.monthOfYear(g.getMonth()) == 1 && Math.abs(cap - INTERIM_GROWTH_CAP) < .01);
         // ...the draw a fifth inside the supply as the advice reads it (PW1: the calm peak over the firm supply).
         powerDrawAt(g, .8);
         serveGrid(g);
@@ -983,6 +1038,10 @@ public final class EssentialWorksCheck {
         int retireYear = g.getBuildingManager().getTemplateByName("Small Steam Station").getUntil() + 1;
         int months = 12 * (retireYear - CityCalendar.yearOf(g.getMonth()));
         quietly(() -> g.simulateMonths(months));
+        // RES3: the growth cap caused. One household to a door left the beds 1.60 times the people at the wind's opening, where the written
+        // trend of a quarter a year met main's 1.094: five Wind Farms did not close the gap, five Diesel Stations did. The people are scaled
+        // to main's cap, their workforce held.
+        capGrowth(g, EARLY_WIND_GROWTH_CAP);
         BuildingManager bm = g.getBuildingManager();
         BuildingsTemplate steam = bm.getTemplateByName("Small Steam Station"), wind = bm.getTemplateByName("Wind Farm");
         BuildingsTemplate diesel = bm.getTemplateByName("Diesel Station"), coal = bm.getTemplateByName("Coal Power Plant");
@@ -1006,6 +1065,10 @@ public final class EssentialWorksCheck {
             historyMonths.add(g.getMonth() - 12 + i);
         }
         g.getBusinessInvestment().restorePopulationHistory(people);
+        double cap = growthCap(g, people);
+        check(String.format("fixture: the beds cap the town's growth at %.3f (%.0f beds over %d people), main's %.3f",
+                        cap, g.getBusinessInvestment().reachablePopulation(), people.get(people.size() - 1), EARLY_WIND_GROWTH_CAP),
+                Math.abs(cap - EARLY_WIND_GROWTH_CAP) < .01);
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         double hi = 4 * u.getProduction(), lo = 0;
         u.setWattsConsumption(hi);
@@ -1208,6 +1271,13 @@ public final class EssentialWorksCheck {
                         && Math.abs(plan.ahead().months() - BuildAdvice.opening(g, finalLead, slack).months()) < 1e-9);
     }
 
+    /**
+     * The Construction Depots overduePending() stands (RES3): one household to a door left the town's builders 494 to 468 points a month
+     * where main's made 723 to 747, and once the repairs of the roads on site jumped (328 to 713 points) they took all of it, so no site
+     * output was left at the last pass (main's 35); 28 depots leave about 100, 24 left 49 and falling, 16 left none.
+     */
+    static final int PENDING_DEPOTS = 28;
+
     static void overduePending(Path root) throws Exception {
         out.println("--- pending capacity keeps its deadline through a real mid-construction save and load ---");
         Game g = town(root, "overdue-pending");
@@ -1224,7 +1294,7 @@ public final class EssentialWorksCheck {
         BuildingsTemplate ahead = bm.getTemplateByName("Oil-Fired Plant");
         g.setCashForTest(1e14);
         g.getLandManager().setOwnedSqFt(g.getLandManager().getAllocatedSqFt() + LandManager.SQ_FT_PER_KM2 * 1_000);
-        quietly(() -> g.buildStack(bm.getTemplateByName("Construction Depot"), 8, true));
+        quietly(() -> g.buildStack(bm.getTemplateByName("Construction Depot"), PENDING_DEPOTS, true));
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         utilities.setWattsConsumption(utilities.getProduction() * 1.2);
@@ -1335,6 +1405,9 @@ public final class EssentialWorksCheck {
         g.autoBuildProbeForTest = null;
         loaded.autoBuildProbeForTest = null;
         check("fixture: later priority work kept operating power short throughout the original deadline", stayedShort[0]);
+        check(String.format("fixture: the %d depots' builders make %d points a month at the last pass against the repairs' %.0f, a site output of %d",
+                        PENDING_DEPOTS, g.getConstructionOutputAtEveryPost(), g.getMaintenancePoints(), g.getBuildingOutputAtEveryPost()),
+                g.getConstructionOutputAtEveryPost() > g.getMaintenancePoints() && g.getBuildingOutputAtEveryPost() > 0);
         check("fixture: the later priority work finished nothing, so the repairs left the builders a site output at the last pass",
                 bm.getStack(later).getQuantity() == 0 && bm.getStack(later).getUnderConstruction() == 1
                         && g.getBuildingOutputAtEveryPost() > 0);
