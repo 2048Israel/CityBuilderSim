@@ -17,7 +17,7 @@ Feasible orders use the affordable backlog and actual operating returns.
 Rent CPI follows comparable class bills; completed consumer purchases supply reference
 weights, including saved new-car and petrol observations and separate home fuels.
 The fund's Search keeps the rows on show at each Show more and makes only the next forty.
-The bank repays the central bank's window only out of the reserves there are, the rest owed to the next settle, so M0 never goes below nothing.
+The bank repays the central bank's window only out of the reserves there are, the rest owed to the next settle and charged the window's rate until it is repaid, so M0 never goes below nothing.
 Contract funding, class flows, wage indices and CPI observations use save format/floor 67.
 ## queued
 | DN1 | A town out of ground builds denser on the plots it holds (the orchestrator's call, 2026-11-25): HousingDoorCheck's 1900-founded replay at m888 has every door of every class full (H120 494, H55 73, H240 62, D90 2,970, T100 144), the landlords holding for land ("needs 743 m2, 13.1 m2 free"; 41 of the 50 months from m850), 48 families of six past the census line and the 291 m2 left held for a 743 m2 building; a town short of ground raises denser forms on its plots, as real towns did | docs/queue/RES3-notes.md |

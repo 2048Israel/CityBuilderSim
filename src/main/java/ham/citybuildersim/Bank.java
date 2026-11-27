@@ -336,6 +336,9 @@ public class Bank {
     private double repaidByHouseholds;
     private double fundingCost;
 
+    /** ...the part of it on the advance the window holds past the tranche (fundToCover(policy, owed)): a month's figure, struck afresh every month and not saved. */
+    private double windowOwedCost;
+
     /**
      * WHAT ITS SPARE CASH EARNS: THE POLICY RATE, AT THE CENTRAL BANK (0.7.0).
      *
@@ -1446,6 +1449,7 @@ public class Bank {
         lentToHouseholds = 0;
         repaidByHouseholds = 0;
         fundingCost = 0;
+        windowOwedCost = 0;
         placementIncome = 0;
         insuranceClaims = 0;
         depositInterestToHouseholds = 0;
@@ -3508,7 +3512,14 @@ public class Bank {
      *
      * Called once, at the end of the month, after every loan has moved.
      */
-    public void fundToCover(double policyAnnual) {
+    public void fundToCover(double policyAnnual) { fundToCover(policyAnnual, 0); }
+
+    /**
+     * ...and the advance the window holds past that tranche, which the last settle asked back and the central bank's reserves could
+     * not take (CentralBank.getWindowDeferred()): owed all the same, and priced at the window's rate with it (RES3; REV-RES3b).
+     * Nothing is owed past the tranche wherever the reserves took the repayment, and the charge is what it always was.
+     */
+    public void fundToCover(double policyAnnual, double windowOwed) {
 
         /*
          * WITH NO BRANCHES THERE IS NO BANK, and nothing to charge.
@@ -3560,7 +3571,8 @@ public class Bank {
         double policy = Math.max(0, policyAnnual);
         double wholesaleNow = wholesaleFunding();
         fundingRate = policy + CentralBank.WINDOW_PENALTY;
-        fundingCost = wholesaleNow * fundingRate / 12;
+        windowOwedCost = Math.max(0, windowOwed) * fundingRate / 12;
+        fundingCost = wholesaleNow * fundingRate / 12 + windowOwedCost;
 
         // ...and the other side of the same position: what is not lent is
         // its reserves, and earns the policy rate at the central bank. Struck
@@ -3781,6 +3793,8 @@ public class Bank {
 
     /** What the window charged this month, paid to the central bank. */
     public double getFundingCost() { return fundingCost; }
+    /** ...of which on the advance the last settle left owed past the tranche, the central bank's reserves short of its repayment. */
+    public double getWindowOwedCost() { return windowOwedCost; }
     /** What its reserves earned at the central bank this month, at the policy rate. See placementIncome. */
     public double getPlacementIncome() { return placementIncome; }
 
@@ -5925,6 +5939,7 @@ public class Bank {
         lentToHouseholds  *= scale;
         repaidByHouseholds *= scale;
         fundingCost       *= scale;
+        windowOwedCost    *= scale;
         placementIncome   *= scale;
         openingEquity     *= scale;
         hotMoneyIn        *= scale;

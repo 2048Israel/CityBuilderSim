@@ -1094,12 +1094,24 @@ public class GoldStandardCheck {
         Game g = founded("fb14-box-1900-dates", Founding.defaults().withUnfitted(true).withGold(true));
         ForeignAccounts fx = g.getForeignAccounts();
         CentralBank cb = g.getCentralBank();
-        int months = 0, onGold = 0, canada = 0, baseRight = 0;
+        int months = 0, onGold = 0, canada = 0, baseRight = 0, owedMonths = 0, owedPriced = 0, owedClosed = 0;
         boolean atSuspension = false, atReturn = false;
-        double lowestCover = Double.POSITIVE_INFINITY;
+        double lowestCover = Double.POSITIVE_INFINITY, mostOwed = 0;
         while (g.getMonth() < PolicyDates.GOLD_RETURN && fx.getRegime() == ON_GOLD) {
+            double owed = cb.getWindowDeferred();
             quietly(g::toggleNextMonth);
             months++;
+            // RES3 (REV-RES3b's P1): a month after a settle the reserves could not take, the advance still owed is charged with
+            // the window's tranche on the bank's book, the central bank books the same interest, and the audit and M0 hold.
+            Bank bank = g.getBank();
+            if (owed > 0 && bank.fundingRate() > 0) {
+                owedMonths++;
+                mostOwed = Math.max(mostOwed, owed);
+                if (within(bank.getWindowOwedCost(), owed * bank.fundingRate() / 12, 1e-12) && bank.getFundingCost() >= bank.getWindowOwedCost()
+                        && cb.getWindowInterest() == bank.getFundingCost()) owedPriced++;
+                MoneyAudit.Result r = g.getLastMoneyAudit();
+                if (Math.abs(r.residual) <= MoneyAudit.tolerance(r.moved()) && cb.m0() >= 0) owedClosed++;
+            }
             if (fx.getRegime() == ON_GOLD) onGold++;
             if (fx.isCanadaGold()) canada++;
             double base = cb.m0() - Math.min(Math.max(0, cb.getGoldRedeemDue()), Math.max(0, cb.getReserves()));
@@ -1115,5 +1127,9 @@ public class GoldStandardCheck {
         assertTrue("...and July 1926, Canada's return, does not peg it: on Gold that month, and on Canada's peg in none (" + canada + ")", atReturn && canada == 0);
         assertTrue("...and every month the cover it shows is over M0 after the last sale's retirement (Game.getGoldBase()), the one the next reprice reads (" + baseRight + " of " + months + ")",
                 baseRight == months);
+        out.printf("   the window held principal its reserves could not repay into %d charged months, at most D$%,.2fk%n", owedMonths, mostOwed);
+        assertTrue("fixture: a settle the reserves could not take left principal owed at the window into a month the bank was charged (" + owedMonths + ")", owedMonths > 0);
+        assertTrue("...and that month the bank paid the window's rate on it, and the central bank booked the same interest (" + owedPriced + " of " + owedMonths + ")", owedPriced == owedMonths);
+        assertTrue("...and the audit closed, M0 at or above nothing (" + owedClosed + " of " + owedMonths + ")", owedClosed == owedMonths);
     }
 }
