@@ -238,7 +238,8 @@ CLAUDE's interface count is55. Post-merge --fast: compile green, zero firm
 Stale findings,209 informational soft. Post-merge BankRulesCheck reproduces every copied-city total above exactly,
 and all three mixed-collateral bit comparisons pass. CentralBankStatementCheck
 passes its played statements, read-only twins and247-slot old/new save paths.
-The complete CentralBankCheck is running on ab69c5418.
+The final full CentralBankCheck is running on ef5c40fa7 after the two
+explicitly aborted diagnostic runs recorded below.
 
 The helper's immutable6ff source review found owned repeated collateral work:
 each bank-held bond's marketValue called curve(), whose key scanned the whole
@@ -365,7 +366,7 @@ The controls start at these values:
 | Countercyclical capital buffer |0%|Adds to the bank's conservation capital target, up to2.5%|
 | Minimum leverage equity |3%|Requires more equity against total exposure, including insured mortgages|
 | Reserve requirement |0%|Keeps more deposit cash out of lending and share purchases|
-| Mortgage loan / cost |85%|A lower cap requires a larger down payment|
+| Mortgage loan / cost, before insurance premium |85%|A lower cap requires a larger down payment|
 | Mortgage debt / annual income |Off|An enabled, lower multiple permits less principal against annual net property rent|
 | Business loan / assets |90%|A lower cap reduces new working-credit room against the business's assets|
 
@@ -436,5 +437,95 @@ identical to6ff36d2d8. No budget, fixed case, shape or horizon is changed.
 
 SaveFileCheck on3a4 completed native exit3, the sole existing REV-HC1 P5 red;
 all new CBK3 and CBK1 save paths pass. The subsequent settlement refactor
-adds no saved state or array slot. Final Monetary/full Central verification
+adds no saved state or array slot. MonetaryCheck on ef5c40fa7 passes; full Central verification
 follows; the final fast build will refresh all indexes before mends.
+
+Additional Part1 observation requested by orchestrator200018-449, from the
+desk chat's scratch m143 (not a new model fixture): CB assets Cr10.9M
+(window9.5M/vault1.4M), M0 9.7M/M2 8.2M; bank capital6.7% against8%,
+trailing12 ROE-124%, NIM-3.73%, loans11.4M/deposits8.2M, savers0%,
+funding8.24%, preferred ask335k. Add the Bank page's own margin, capital,
+ROE and preferred-offer reads to the original/candidate copied-city measure,
+including m143 and m253. Do not reconstruct a monthly flow from an ending
+stock or add repeated offers into a fictitious cumulative request.
+
+## Final per-operation callable work and bank health observation
+
+The normal full Central run on ef5c40fa7 ended at1740s with18/24 strictness
+rows, no preceding assertion failure. Its six remaining rows and subsequent
+rules/save/section22 checks are unexecuted. Native exit4 is INCOMPLETE, not
+an outside-red classification. The complete preserved log/wrapper are
+ target/CBK3-central-ef5-timeout.log and -timeout-wrapper.txt.
+
+* ★ Design choice: within ONE government collateral valuation, prepare the
+  existing tree at the longest eligible bank-held domestic callable horizon
+  and read its volatility once. Preserve original price/sum/holder order and
+  every scalar/foreign/matured branch. The old cold insertion-order traversal
+  could refit progressively longer trees and reread61 history rates per bond.
+  No portfolio/sigma snapshot survives the operation; no new cache/writer is
+  added. Existing treeOn already permits longer trees to price shorter flows.
+
+Helper23 proved prefix independence from CallTree.fit/price source and the
+conditional repeated work, without claiming its share of runtime. Helper24
+supplied166 regression lines, reviewed/adopted: two fresh independent cold
+books, three increasing partial-held callable maxima, future calls with real
+optionality/above-par prices, excluded longer unheld/foreign/matured paper,
+holder mutation between operations, exact ordered sum bits and1 versus3
+volatility reads. Direct longer/shorter fits agree in18 bit comparisons on
+flat/sloped/clipped curves at floor/positive sigma. Every assertion passes;
+no timing threshold, existing law or fixture was reduced. The older same-book
+three-rate test prewarmed its tree, so it alone did not cause this condition.
+All120 copied-city totals and cent/collateral/desk assertions remain EXACTLY
+as6ff36d2d8. Final full Central verification is still due on this last mend.
+
+The new desk-chat health request is measured by the same standalone source,
+tools/CBK3CopiedCityMetricsCheck.java, on both models. The original is rebuilt
+in target/CBK3-original-metrics-352 at352aaf3b2: versus b2f50a9ef the only
+changes are AllChecks, the initial BankRulesCheck and notes, no model source.
+Only its observer class is copied ahead of the FINAL model on the classpath;
+no old Bank/Game class shadows the final model. Both runs use the same
+approved1257 files, fresh TempDirs/GameFiles(no-legacy), original120 months
+and choices. Each audit rejects non-finite values and keeps the native cent
+bound. The old classes compile with --fast; the observer is run by its exact
+name serially, since the proprietary evidence is not a permanent suite fixture.
+
+The monthly observer retains121 records (start plus120 closed months).
+Original totals reproduce10134.551266349/48341.489897126 and six failures;
+final totals reproduce476.704248490/33741.426003542 and three. Every previously
+recorded annual/m143 snapshot, including all21 health/context columns, matches
+exactly before and after: the new reads and callable refactor move no result.
+Logs: target/CBK3-health-before.log, CBK3-health-after.log; comparison:
+target/CBK3-health-comparison.json. Earlier annual-only logs are retained as
+CBK3-health-before-annual.log and CBK3-health-ef5.log and are superseded for
+peak/pending measures.
+
+| Measure | Original m253 | Repaired m253 |
+|---|---:|---:|
+| Remittance / revenue over120 months |20.9644992%|1.4128160%|
+| Risk capital ratio |14.2277376%|19.8427253%|
+| Current-month NIM, annualised |13.4021800%|6.9574495%|
+| Trailing-year NIM |4.8773199%|5.2311302%|
+| Trailing-year ROE |-45.3458474%|11.8520962%|
+| Pending preferred quote at endpoint |0|0|
+| Largest MONTH-END preferred quote (native thousands) |865.057153|574.454324|
+| Months with a pending preferred offer |44|19|
+| Months below8% risk capital |44|19|
+| Further bank failures |6|3|
+
+Both year ratios have12 known months and positive average denominators.
+Quotes are states, not issuance flows: repeated offers are never summed or
+called distinct offers. The display unit is a native thousand; reserve and
+capital percentage ratios are dimensionless. Book means the native bank book,
+not an invented loan-only subtotal. Current-month NIM and year NIM are kept
+separate; a nonpositive average denominator would mark a return unavailable,
+not interpret the getter's zero fallback as recovery.
+
+At m143 the matched original/final replays both already have one failure:
+capital13.485931%/13.050730%, month NIM-1.608550%/+0.257114%, year NIM
+-4.541392%/-3.077471%, year ROE-141.422498%/-151.132970%, preferred0/0.
+Early year ROE has not recovered; the120-month result above shows subsequent
+recovery. These are not the same capital/pending state as the desk chat's
+6.7%/335k screenshot. Its exact actions/runtime checkpoint are not inferred;
+only the matched1257 replay, validated against the retained original results,
+is used as the quantitative control. The screenshot remains separate evidence
+of the losing window-funded book.

@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**260 harness files, 29,617 labelled assertions.** AllChecks runs 260 of them.
+**260 harness files, 29,628 labelled assertions.** AllChecks runs 260 of them.
 
 ## Which harnesses read which class
 
@@ -52,7 +52,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BusinessServices](map/BusinessServices.md) | BusinessServicesCheck, CardCheck, DistressBleedCheck, GdpCheck, LongPlaytest, PrizeCheck |
 | [Buyback](map/Buyback.md) | BuybackCheck, CentralBankCheck, CreditCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, GovernmentViewCheck, HoldersCheck, ReadPathCheck |
 | [CallPartners](map/CallPartners.md) | PartnerCallsCheck |
-| [CallTree](map/CallTree.md) | BuybackCheck, CallCheck |
+| [CallTree](map/CallTree.md) | BankRulesCheck, BuybackCheck, CallCheck |
 | [CameraPath](map/CameraPath.md) | ReplayCheck |
 | [CapChips](map/CapChips.md) | **none** |
 | [CapSetting](map/CapSetting.md) | AuctionCheck |
@@ -397,7 +397,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [WorldMeasures](map/WorldMeasures.md) | LabourCheck, PolicyPreviewCheck, RankingsCheck, WorldMeasuresCheck |
 | [WorldMoneys](map/WorldMoneys.md) | DebtMoneysCheck, ExchangeRateCheck, FB13Check, GlobeCheck, GoldMiningCheck, GoldStandardCheck, InterestAbroadCheck, KeptCheck, PriceLevelCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldMoneysCheck |
 | [YearBook](map/YearBook.md) | CapitalGainsCheck, ChartCheck, ClockCheck, HistoryCheck, InterestAbroadCheck, PowerViewCheck, RankingsCheck, ReadPathCheck, ResearchViewCheck, ScaleCheck, WorldMoneysCheck, YearBookCheck |
-| [YieldCurve](map/YieldCurve.md) | AuctionCheck, CallCheck, CurrencyRegimeCheck, CurveCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
+| [YieldCurve](map/YieldCurve.md) | AuctionCheck, BankRulesCheck, CallCheck, CurrencyRegimeCheck, CurveCheck, DebtMoneysCheck, DeskCheck, FloatLinkCheck, LongPlaytest |
 | [Zoning](map/Zoning.md) | FarmlandReserveCheck, ForestryCheck, KeptCheck, LandCheck, LandClassCheck, LandmassCheck, PolicyOpenCheck, PolicyPreviewCheck, WorksFinanceCheck, ZoningCheck, ZoningViewCheck |
 | [ZoningScreen](map/ZoningScreen.md) | **none** |
 | [ZoningView](map/ZoningView.md) | LandmassCheck, ZoningViewCheck |
@@ -1856,7 +1856,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L718 MoneyAudit closes in every month of every seed at its own tolerance
   - L721 every bank's equity movement is explained by its books, including failures
 
-## BankRulesCheck.java - 39 labelled assertions
+## BankRulesCheck.java - 50 labelled assertions
 
 > The window against collateral and the bank's rules as the player's dials.
 > WHY (CBK3): a capital-only equity desk could be financed without limit at
@@ -1869,45 +1869,58 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L97 evidence window stays within collateral at month
   - L100 evidence desk stays outside window funding at month
   - L103 evidence money audit at month
-- **L119 1. the window lends only against haircutted collateral**
-  - L127 the published loan and government margins determine lending value
-  - L130 government collateral follows market value instead of its carried face
-  - L134 even a direct advance cannot exceed the collateral
-  - L135 a further advance has no room
-  - L138 a repaid shortfall destroys the whole advance
-  - L141 a zero request does not price collateral it cannot borrow against
-  - L144 a positive request still prices and obeys eligible collateral
-- **L149 2. the equity desk has a stable cash budget**
-  - L153 equity adds no eligible collateral
-  - L158 a settlement reads its collateral capacity once and lends inside it
-  - L161 the capped advance issues exactly its actual principal
-  - L165 the desk's whole unsupported inventory is funded abroad
-  - L167 the window is still inside the collateral after refinancing
-  - L168 capital without stable cash cannot buy shares
-  - L171 core deposits cause a positive but finite desk cash budget
-  - L172 the capital rule also respects that cash budget
-  - L174 one fill spends the budget for every later name
-  - L177 hot money cannot replenish the stable desk budget
-- **L179 3. tighter saved rules constrain their own credit door**
-  - L186 a higher capital minimum supports less credit
-  - L187 raising risk capital does not relax the insured-loan leverage target
-  - L193 a capital change reprices concentration weight at once, preserving its absolute add-on
-  - L195 concentration does not let a tighter capital rule reduce required equity
-  - L200 a higher leverage floor leaves less exposure room
-  - L204 the countercyclical buffer requires more retained capital
-  - L208 reserves withhold deposits from lending
-  - L219 a higher window spread raises the cost of genuinely window-funded credit
-  - L225 closing the window removes secured credit without changing collateral
-  - L231 a tighter business loan-to-assets rule leaves less credit and exposure
-  - L236 a tighter loan-to-cost cap refuses the insufficient down payment
-  - L240 a tighter debt-to-income rule refuses excess debt against rent
-  - L246 foreign local-money term funding cannot use a cheap USD short rate
-  - L263 one-read collateral curve keeps each paper's price to the bit at
-- **L268 4. every default is the pre-dial Part 1 rule**
-  - L273 the dial list matches the measured Part 1 rules
-  - L277 the additional mortgage income limit starts off
-- **L280 5. dials and financing survive the real save paths**
-  - L281 new fields round-trip and a save with no fields reads the defaults
+  - L181 fixture: a selected callable has a future call, above-par value and a real option at
+- **L193 cold callable collateral: independent books, one curve/volatility/tree per read**
+  - L208 fixture: two independent cold books have three increasing partial callable maxima at
+  - L215 cold collateral equals the independently priced ordered sum to the bit at
+  - L217 reference reads volatility per selected callable; optimized reads it once at
+  - L219 only the eligible maximum is fitted, not the longer unheld/foreign horizons at
+  - L222 a second invocation reuses the existing tree but reads fresh volatility once at
+  - L229 a new read sees changed bank holdings with the same ordered price arithmetic at
+  - L238 unheld/foreign/matured callables alone cause no volatility read or tree fit at
+- **L246 a longer fitted tree prices each shorter callable prefix to the bit**
+  - L255 fixture: the three curves include flat, genuinely sloped and ceiling-clipped forwards
+  - L269 fixture: the shorter prefix has a future call with real optionality:
+  - L273 independent short fit and longest-tree prefix agree to the bit:
+- **L281 1. the window lends only against haircutted collateral**
+  - L289 the published loan and government margins determine lending value
+  - L292 government collateral follows market value instead of its carried face
+  - L296 even a direct advance cannot exceed the collateral
+  - L297 a further advance has no room
+  - L300 a repaid shortfall destroys the whole advance
+  - L303 a zero request does not price collateral it cannot borrow against
+  - L306 a positive request still prices and obeys eligible collateral
+- **L311 2. the equity desk has a stable cash budget**
+  - L315 equity adds no eligible collateral
+  - L320 a settlement reads its collateral capacity once and lends inside it
+  - L323 the capped advance issues exactly its actual principal
+  - L327 the desk's whole unsupported inventory is funded abroad
+  - L329 the window is still inside the collateral after refinancing
+  - L330 capital without stable cash cannot buy shares
+  - L333 core deposits cause a positive but finite desk cash budget
+  - L334 the capital rule also respects that cash budget
+  - L336 one fill spends the budget for every later name
+  - L339 hot money cannot replenish the stable desk budget
+- **L341 3. tighter saved rules constrain their own credit door**
+  - L348 a higher capital minimum supports less credit
+  - L349 raising risk capital does not relax the insured-loan leverage target
+  - L355 a capital change reprices concentration weight at once, preserving its absolute add-on
+  - L357 concentration does not let a tighter capital rule reduce required equity
+  - L362 a higher leverage floor leaves less exposure room
+  - L366 the countercyclical buffer requires more retained capital
+  - L370 reserves withhold deposits from lending
+  - L381 a higher window spread raises the cost of genuinely window-funded credit
+  - L387 closing the window removes secured credit without changing collateral
+  - L393 a tighter business loan-to-assets rule leaves less credit and exposure
+  - L398 a tighter loan-to-cost cap refuses the insufficient down payment
+  - L402 a tighter debt-to-income rule refuses excess debt against rent
+  - L408 foreign local-money term funding cannot use a cheap USD short rate
+  - L425 one-read collateral curve keeps each paper's price to the bit at
+- **L433 4. every default is the pre-dial Part 1 rule**
+  - L438 the dial list matches the measured Part 1 rules
+  - L442 the additional mortgage income limit starts off
+- **L445 5. dials and financing survive the real save paths**
+  - L446 new fields round-trip and a save with no fields reads the defaults
 
 ## BasketYearCheck.java - 109 labelled assertions
 

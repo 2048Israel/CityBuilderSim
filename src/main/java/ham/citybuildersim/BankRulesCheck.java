@@ -115,6 +115,168 @@ public final class BankRulesCheck {
         g.awaitSaves();
     }
 
+    static boolean coldCollateralSameBits(double a, double b) {
+        return Double.isFinite(a) && Double.isFinite(b)
+                && Double.doubleToLongBits(a) == Double.doubleToLongBits(b);
+    }
+
+    /** Read only the existing cache to prove that excluded horizons were not fitted; no model test API. */
+    static int coldCollateralTreeSteps(DebtManager manager) throws ReflectiveOperationException {
+        java.lang.reflect.Field cache = DebtManager.class.getDeclaredField("treeCache");
+        cache.setAccessible(true);
+        Object entry = cache.get(manager);
+        if (entry == null) return 0;
+        java.lang.reflect.Field tree = entry.getClass().getDeclaredField("tree");
+        tree.setAccessible(true);
+        return ((CallTree) tree.get(entry)).steps();
+    }
+
+    /** Independent pieces in insertion order: three increasing eligible maxima, then excluded longer pieces. */
+    static DebtManager coldCollateralBook(double policy, int[] volatilityReads, boolean eligible) {
+        DebtManager manager = new DebtManager();
+        manager.setGDP(100_000);
+        manager.setTaxRevenue(100_000);
+        manager.setPolicyRate(policy);
+        if (eligible) {
+            // Existing high-coupon paper with genuine FUTURE calls: none can be immediately capped at par.
+            LongTermBond first = LongTermBond.callable(120, 12, 0, .30, 4);
+            first.householdPrincipal = 30;
+            LongTermBond second = LongTermBond.callable(180, 24, 0, .30, 8);
+            second.householdPrincipal = 36;
+            second.centralBankPrincipal = 45;
+            LongTermBond third = LongTermBond.callable(240, 36, 0, .30, 12);
+            third.householdPrincipal = 72;
+            third.centralBankPrincipal = 24;
+            manager.getDebt().add(first);
+            manager.getDebt().add(second);
+            manager.getDebt().add(third);
+        }
+        manager.getDebt().add(new ShortTermTBill(40, 3, 0));
+        manager.getDebt().add(new LongTermBond(60, 18, 0, .06));
+        LongTermBond unheld = LongTermBond.callable(90, 60, 0, .30, 20);
+        unheld.householdPrincipal = unheld.getOustandingPrincipal();
+        manager.getDebt().add(unheld);
+        LongTermBond foreign = LongTermBond.callable(80, 54, 0, .30, 18);
+        foreign.foreign = true;
+        manager.getDebt().add(foreign);
+        manager.getDebt().add(LongTermBond.callable(25, 0, 0, .30, 0));
+        // Set last: both books begin with a genuinely cold tree cache.
+        manager.setRateVolatility(() -> {
+            volatilityReads[0]++;
+            return 4 * CallTree.RATE_VOL_FLOOR;
+        });
+        return manager;
+    }
+
+    /** The old public per-paper valuation path, in its original accumulation order. */
+    static double coldCollateralReference(DebtManager manager, boolean proveOptionality) {
+        double sum = 0;
+        for (Debt paper : manager.getDebt()) {
+            double face = paper.getOustandingPrincipal(), held = paper.bankPrincipal();
+            if (face > 0 && held > 0) {
+                double price = manager.marketValue(paper);
+                if (proveOptionality && paper instanceof LongTermBond bond && bond.isCallable()
+                        && !paper.isForeign() && paper.getRemainingMonths() > 0) {
+                    double straight = manager.curve().pv(manager.pricingFlows(paper));
+                    check("fixture: a selected callable has a future call, above-par value and a real option at "
+                                    + paper.getRemainingMonths() + " months",
+                            bond.monthsToFirstCall() > 0 && bond.monthsToFirstCall() < paper.getRemainingMonths()
+                                    && Double.isFinite(price) && price > face && price < straight);
+                }
+                sum += Math.max(0, price) * Math.min(1, held / face);
+            }
+        }
+        return sum;
+    }
+
+    static void coldCallableCollateral() throws ReflectiveOperationException {
+        out.println("--- cold callable collateral: independent books, one curve/volatility/tree per read ---");
+        for (double policy : new double[]{.01, .05, .15}) {
+            int[] referenceReads = {0}, optimizedReads = {0};
+            DebtManager reference = coldCollateralBook(policy, referenceReads, true);
+            DebtManager optimized = coldCollateralBook(policy, optimizedReads, true);
+            boolean increasing = true;
+            int previous = 0, maxima = 0;
+            for (Debt paper : reference.getDebt()) {
+                if (paper instanceof LongTermBond bond && bond.isCallable() && !paper.isForeign()
+                        && paper.getOustandingPrincipal() > 0 && paper.bankPrincipal() > 0 && paper.getRemainingMonths() > 0) {
+                    increasing &= paper.getRemainingMonths() > previous && paper.bankPrincipal() < paper.getOustandingPrincipal();
+                    previous = paper.getRemainingMonths();
+                    maxima++;
+                }
+            }
+            check("fixture: two independent cold books have three increasing partial callable maxima at " + policy,
+                    reference != optimized && reference.getDebt().get(0) != optimized.getDebt().get(0)
+                            && increasing && maxima == 3 && previous == 36
+                            && coldCollateralTreeSteps(reference) == 0 && coldCollateralTreeSteps(optimized) == 0);
+            double expected = coldCollateralReference(reference, true);
+            // FIRST valuation of the independent optimized book: never prewarm it with separate prices.
+            double actual = optimized.bankCollateralValue();
+            check("cold collateral equals the independently priced ordered sum to the bit at " + policy,
+                    expected > 0 && coldCollateralSameBits(expected, actual));
+            check("reference reads volatility per selected callable; optimized reads it once at " + policy,
+                    referenceReads[0] == 3 && optimizedReads[0] == 1);
+            check("only the eligible maximum is fitted, not the longer unheld/foreign horizons at " + policy,
+                    coldCollateralTreeSteps(reference) == 36 && coldCollateralTreeSteps(optimized) == 36);
+            double again = optimized.bankCollateralValue();
+            check("a second invocation reuses the existing tree but reads fresh volatility once at " + policy,
+                    optimizedReads[0] == 2 && coldCollateralSameBits(actual, again));
+            // A real holder mutation between calls must not leave a held portfolio result/snapshot behind.
+            reference.getDebt().get(1).householdPrincipal += 7;
+            optimized.getDebt().get(1).householdPrincipal += 7;
+            double changedExpected = coldCollateralReference(reference, false);
+            double changedActual = optimized.bankCollateralValue();
+            check("a new read sees changed bank holdings with the same ordered price arithmetic at " + policy,
+                    changedExpected < expected && coldCollateralSameBits(changedExpected, changedActual)
+                            && referenceReads[0] == 6 && optimizedReads[0] == 3);
+
+            int[] excludedReferenceReads = {0}, excludedReads = {0};
+            DebtManager excludedReference = coldCollateralBook(policy, excludedReferenceReads, false);
+            DebtManager excluded = coldCollateralBook(policy, excludedReads, false);
+            double excludedExpected = coldCollateralReference(excludedReference, false);
+            double excludedActual = excluded.bankCollateralValue();
+            check("unheld/foreign/matured callables alone cause no volatility read or tree fit at " + policy,
+                    coldCollateralSameBits(excludedExpected, excludedActual) && excludedReferenceReads[0] == 0
+                            && excludedReads[0] == 0 && coldCollateralTreeSteps(excludedReference) == 0
+                            && coldCollateralTreeSteps(excluded) == 0);
+        }
+    }
+
+    static void coldCallableTreePrefixes() {
+        out.println("--- a longer fitted tree prices each shorter callable prefix to the bit ---");
+        double[] sloped = new double[YieldCurve.HORIZON];
+        for (int t = 0; t < sloped.length; t++) sloped[t] = .025 + .025 * t / (sloped.length - 1);
+        YieldCurve[] curves = {
+            new YieldCurve(YieldCurve.flatPath(.04), 0, 0, .20, m -> 0),
+            new YieldCurve(sloped, .01, 0, .20, m -> 0),
+            new YieldCurve(YieldCurve.flatPath(.04), .05, .04, .06, m -> 0)
+        };
+        String[] names = {"flat", "sloped", "ceiling-clipped"};
+        check("fixture: the three curves include flat, genuinely sloped and ceiling-clipped forwards",
+                curves[0].isFlat() && !curves[1].isFlat() && curves[2].zero(1) == .06
+                        && curves[2].zero(1) < (.04 + .05) + .04);
+        for (int c = 0; c < curves.length; c++) {
+            for (double sigma : new double[]{CallTree.RATE_VOL_FLOOR, 4 * CallTree.RATE_VOL_FLOOR}) {
+                CallTree longest = CallTree.fit(curves[c], sigma, 48);
+                for (int months : new int[]{12, 24, 36}) {
+                    LongTermBond bond = LongTermBond.callable(CallTree.CALL_PRICE, months, 0, .18, months / 3);
+                    double[] flows = bond.remainingCashFlows();
+                    double shortPrice = CallTree.fit(curves[c], sigma, months)
+                            .price(flows, bond.monthsToFirstCall(), bond.getOustandingPrincipal());
+                    double longPrice = longest.price(flows, bond.monthsToFirstCall(), bond.getOustandingPrincipal());
+                    double straight = longest.price(flows, -1, 0);
+                    String label = names[c] + " sigma=" + sigma + " months=" + months;
+                    check("fixture: the shorter prefix has a future call with real optionality: " + label,
+                            bond.monthsToFirstCall() > 0 && bond.monthsToFirstCall() < months
+                                    && Double.isFinite(longPrice) && longPrice > bond.getOustandingPrincipal()
+                                    && longPrice < straight);
+                    check("independent short fit and longest-tree prefix agree to the bit: " + label,
+                            coldCollateralSameBits(shortPrice, longPrice));
+                }
+            }
+        }
+    }
+
     public static void main(String[] args) throws Exception {
         out.println("--- 1. the window lends only against haircutted collateral ---");
         Bank b = new Bank();
@@ -264,6 +426,9 @@ public final class BankRulesCheck {
                     separate > 0 && Double.doubleToLongBits(separate)
                             == Double.doubleToLongBits(collateralBook.bankCollateralValue()));
         }
+
+        coldCallableCollateral();
+        coldCallableTreePrefixes();
 
         out.println("--- 4. every default is the pre-dial Part 1 rule ---");
         BankRules defaults = new BankRules();

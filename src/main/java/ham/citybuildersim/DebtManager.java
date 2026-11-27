@@ -2433,16 +2433,28 @@ public class DebtManager {
 
     /** Current market value of the commercial bank's government collateral, excluding every other holder. */
     public double bankCollateralValue() {
+        int longestCallable = 0;
+        for (Debt paper : getDebt()) {
+            if (paper instanceof LongTermBond bond && bond.isCallable() && !paper.isForeign()
+                    && paper.getOustandingPrincipal() > 0 && paper.bankPrincipal() > 0)
+                longestCallable = Math.max(longestCallable, paper.getRemainingMonths());
+        }
         double value = 0;
         YieldCurve domestic = null;
+        CallTree callable = null;
         for (Debt paper : getDebt()) {
             double face = paper.getOustandingPrincipal();
             double held = paper.bankPrincipal();
             if (face > 0 && held > 0) {
                 // One read, one domestic curve: rebuilding its key scans the whole book.
                 // Nothing is held across trades, policy changes or settlement phases.
-                if (!paper.isForeign() && paper.getRemainingMonths() > 0 && domestic == null) domestic = curve();
-                value += Math.max(0, marketValue(paper, domestic)) * Math.min(1, held / face);
+                if (!paper.isForeign() && paper.getRemainingMonths() > 0 && domestic == null) {
+                    domestic = curve();
+                    // Fit the largest eligible callable once, before pricing shorter
+                    // pieces; treeOn already reuses a longer tree for shorter flows.
+                    if (longestCallable > 0) callable = treeOn(domestic, rateVolatility(), longestCallable);
+                }
+                value += Math.max(0, marketValue(paper, domestic, callable)) * Math.min(1, held / face);
             }
         }
         return value;
@@ -2459,11 +2471,11 @@ public class DebtManager {
      * Nothing left to pay (no months) costs what is owed, as Debt does.
      */
     public double marketValue(Debt paper) {
-        return marketValue(paper, null);
+        return marketValue(paper, null, null);
     }
 
-    /** The same price with a domestic curve already read for this operation. */
-    private double marketValue(Debt paper, YieldCurve domestic) {
+    /** The same price with a domestic curve and callable tree read for this operation. */
+    private double marketValue(Debt paper, YieldCurve domestic, CallTree callable) {
         if (paper == null) return 0;
         if (paper.getRemainingMonths() <= 0) return paper.getOustandingPrincipal();
         // Its own schedule - except a floater's and a linker's, which the market prices on the dial and
@@ -2471,7 +2483,9 @@ public class DebtManager {
         double[] flows = pricingFlows(paper);
         if (paper.isForeign()) return worldCurveAt(paper.getMoney(), foreignRate(paper.getMoney())).pv(flows);
         YieldCurve curve = domestic == null ? curve() : domestic;
-        if (paper instanceof LongTermBond bond && bond.isCallable()) return callableValue(bond, curve, flows);
+        if (paper instanceof LongTermBond bond && bond.isCallable())
+            return callable == null ? callableValue(bond, curve, flows)
+                    : callable.price(flows, bond.monthsToFirstCall(), bond.getOustandingPrincipal());
         return curve.pv(flows);
     }
 
