@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**259 harness files, 29,540 labelled assertions.** AllChecks runs 259 of them.
+**259 harness files, 29,554 labelled assertions.** AllChecks runs 259 of them.
 
 ## Which harnesses read which class
 
@@ -268,7 +268,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [PolicyRates](map/PolicyRates.md) | DebtMoneysCheck, GlobeCheck, InterestAbroadCheck, PartnersCheck, ReadPathCheck, SaveFileCheck |
 | [PolicyScreen](map/PolicyScreen.md) | **none** |
 | [PopulationCohorts](map/PopulationCohorts.md) | ArrivalMixCheck, CardCheck, CausesOfDeathCheck, ChildcareCheck, CrimeCheck, DeathRecordCheck, EducationCheck, EssentialWorksCheck, HealthCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, KeptCheck, LabourCheck, LongPlaytest, MoneyWordsCheck, OutsideCheck, OwnerCheck, PopulationCheck, ReadPathCheck, SaveFileCheck, SchoolingLadderCheck, SicknessCheck, StaffingDrawCheck, WorksFinanceCheck |
-| [PopulationManager](map/PopulationManager.md) | BankCheck, BusinessServicesCheck, ChildcareCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, EssentialWorksCheck, ForeignCrewsCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, NewUnitCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, SchoolingLadderCheck, SchoolingPageCheck, StaffingDrawCheck, StaffingTieCheck, Village1900Check, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
+| [PopulationManager](map/PopulationManager.md) | BankCheck, BuildAdviceCheck, BusinessServicesCheck, ChildcareCheck, ConstructionControlCheck, CrimeCheck, EducationCheck, EssentialWorksCheck, ForeignCrewsCheck, HealthCheck, InvestCheck, LabourCheck, LandlordPortCheck, LongPlaytest, ManufacturingCheck, MaterialsCheck, NewGameCheck, NewUnitCheck, OutsideCheck, OwnerCheck, PolicyPreviewCheck, PopulationCheck, PrizeCheck, SaveFileCheck, ScaleCheck, SchoolingLadderCheck, SchoolingPageCheck, StaffingDrawCheck, StaffingTieCheck, Village1900Check, WageLadderCheck, WantedPostsCheck, YearBookCheck, ZoningCheck |
 | [PortDivision](map/PortDivision.md) | FreightViewCheck, LandlordPortCheck, LongPlaytest, PolicyPreviewCheck |
 | [Ports](map/Ports.md) | BuildAdviceCheck, BuildCardCheck, BuildingDataCheck, CopperMiningCheck, ForestryCheck, FreightViewCheck, GatewayCheck, HaulageCheck, HomeRailCheck, InfrastructureCheck, IslandLinkCheck, LandlordPortCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, PartnerCallsCheck, PolicyPreviewCheck, PortCheck, PublicLicenceCheck, QuarryingCheck, QuayCraneCheck, RailCheck, ReadPathCheck, RefineryCheck, ResearchCheck, SaveFileCheck, TradeBandCheck, WoodProductsCheck |
 | [PowerDispatch](map/PowerDispatch.md) | BuildAdviceCheck, BuildCardCheck, ElectrolyserCheck, EssentialWorksCheck, HydroCheck, NewUnitCheck, PowerDispatchCheck, PowerPlanCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PublicLicenceCheck, ScaleCheck, SubstationCheck, WaterPowerCheck, WorksFinanceCheck |
@@ -300,8 +300,8 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [ReplayGraphs](map/ReplayGraphs.md) | ReplayCheck |
 | [ReplayMode](map/ReplayMode.md) | **none** |
 | [ReplayMoveProbe](map/ReplayMoveProbe.md) | ReplayCheck |
-| [Research](map/Research.md) | DiscoveryCheck, KeptCheck, LandCheck, LicenceFeesCheck, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, PolicyOpenCheck, PolicyPreviewCheck, PrizeCheck, ResearchPreviewCheck, ResearchViewCheck |
-| [ResearchCatalog](map/ResearchCatalog.md) | BuildCardCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HydrogenSteelCheck, KeptCheck, LicenceFeesCheck, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, NewUnitCheck, PolicyOpenCheck, PolicyPreviewCheck, PostwarRecipeCheck, PowerPlanCheck, PowerPlantsCheck, PrizeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, SulphideLeachCheck, WaterPowerCheck |
+| [Research](map/Research.md) | BuildAdviceCheck, DiscoveryCheck, KeptCheck, LandCheck, LicenceFeesCheck, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, PolicyOpenCheck, PolicyPreviewCheck, PrizeCheck, ResearchPreviewCheck, ResearchViewCheck |
+| [ResearchCatalog](map/ResearchCatalog.md) | BuildAdviceCheck, BuildCardCheck, DiscoveryCheck, DriverlessTruckCheck, ElectrolyserCheck, EquipmentCheck, FB13Check, FieldOperatorsCheck, FitoutCheck, FittingCheck, HistoricalLicenceCheck, HistoricalRecipeCheck, HydrogenSteelCheck, KeptCheck, LicenceFeesCheck, MedicineCheck, ModernEngineeringCheck, ModernRowsCheck, NewUnitCheck, PolicyOpenCheck, PolicyPreviewCheck, PostwarRecipeCheck, PowerPlanCheck, PowerPlantsCheck, PrizeCheck, PublicLicenceCheck, RecipeCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck, SulphideLeachCheck, WaterPowerCheck |
 | [ResearchPreview](map/ResearchPreview.md) | KeptCheck, ResearchPreviewCheck, ResearchViewCheck |
 | [ResearchScreen](map/ResearchScreen.md) | **none** |
 | [ResearchView](map/ResearchView.md) | FB13Check, HistoricalRecipeCheck, KeptCheck, ResearchCheck, ResearchPreviewCheck, ResearchViewCheck |
@@ -386,7 +386,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [Where](map/Where.md) | KeptCheck |
 | [WoodProducts](map/WoodProducts.md) | BankFailureCheck, BuildCardCheck, BuildingDataCheck, GdpCheck, IndustryViewCheck, WoodProductsCheck |
 | [WorkingHousehold](map/WorkingHousehold.md) | BankCheck, CapitalGainsCheck, CardCheck, DenominationCheck, HoldersCheck, HouseholdCheck, HouseholdStageCheck, MoneyWordsCheck |
-| [WorksValue](map/WorksValue.md) | AutoBuildCheck, ChildcareCheck, EssentialWorksCheck, LabourCheck, NewUnitCheck, PowerPlanCheck, WorksFinanceCheck |
+| [WorksValue](map/WorksValue.md) | AutoBuildCheck, BuildAdviceCheck, ChildcareCheck, EssentialWorksCheck, LabourCheck, NewUnitCheck, PowerPlanCheck, WorksFinanceCheck |
 | [World](map/World.md) | BridgeCheck, BridgeMapCheck, BuildCardCheck, CoalMiningCheck, CopperMiningCheck, CrossingCheck, EarthCheck, EarthDepositsCheck, EarthFoundingCheck, EarthTerrainCheck, FB13Check, FittingCheck, ForestryCheck, GatewayCheck, GlobeCheck, GridCheck, HydroCheck, InterestAbroadCheck, IslandLinkCheck, IslandNetCheck, IslandRailCheck, JunctionCheck, KeptCheck, LandCheck, LandClassCheck, LandNationsCheck, LandmassCheck, LongPlaytest, MainLineCheck, MapCheck, MiningCheck, NewGameCheck, OilCheck, PartnerCallsCheck, PlanCheck, PortCheck, PowerPlanCheck, PowerPlantsCheck, PriceLevelCheck, QuarryingCheck, QuayRailCheck, RailDrawCheck, ReadPathCheck, ReplayCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, SulphideLeachCheck, TruckRouteCheck, WaterCheck, WellCheck, WorldCheck, ZoningCheck |
 | [WorldChain](map/WorldChain.md) | WorldMarketCheck |
 | [WorldData](map/WorldData.md) | CopperRefiningCheck, DenominationCheck, DeterminismCheck, GlobeCheck, GoldPriceCheck, InterestAbroadCheck, LandNationsCheck, MapCheck, NationsCheck, PartnerCallsCheck, PartnersCheck, PegAnchorCheck, PriceLevelCheck, RankingsCheck, ReadPathCheck, RealDollarCheck, SaveFileCheck, VaultMoneysCheck, WorldDataCheck, WorldMarketCheck, WorldMeasuresCheck, WorldMoneysCheck |
@@ -2599,7 +2599,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L951 ...and what is read back is the map it was written from, the bridges laid on its runs: the same map, the same stamp, every plot of every bridge where it was
   - L953 ...with the highways, the railway and the yards what they were: the runs read from the file are laid with the bridges, not from them
 
-## BuildAdviceCheck.java - 136 labelled assertions
+## BuildAdviceCheck.java - 150 labelled assertions
 
 > The Build overview's advice (0.7.24): BuildAdvice's rule held to NEEDS
 > YOU's list, to the quote, and to the model's own figures, in a played
@@ -2615,154 +2615,169 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 > 
 > ...
 
-- **L287 1. the categories: fourteen, each once; every building in exactly one**
-  - L289 the strip has fourteen categories
-  - L292 ...each named once
-  - L295 five only the city builds, and they come first
-  - L303 \"
-  - L306 the Overview is no category
-  - L314 every BuildingType is in exactly one category
-  - L324 every building in the catalogue (
-  - L326 investors build the market's nine, by BusinessInvestment's own list, and none of the city's five - whose
-  - L340 the tabs are named as the spec has them: Infrastructure and Freight, the Java names ROADS and RAIL kept
-  - L343 ...Infrastructure is the city's, Freight the investors' (the rail's own tab, as Rail was)
-  - L362 Infrastructure holds the five sea terminals - the Tanker Terminal, the Bulk Berth, the Bulk, Container and
-  - L366 ...and the Strategic Reserve (
-  - L370 Industry holds no PORTS and no reserve: what investors build is all it holds
-  - L378 Freight holds the rail rungs, the Rail Depot and the Truck Depot
-  - L379 ...and Vehicles holds the Heavy Truck Plant, Automotive's
-  - L390 inRemit() is false for every sea terminal and for the Strategic Reserve, though Infrastructure holds them now
-  - L392 ...and for every building it answers what it answered: the city's five types, by type
-  - L393 ...the terminals still orderable() on their payback, as they were
-  - L396 measuresOf(ROADS) is the streets, the through traffic and transit, in that order, as it was:
-  - L401 ...the ports stay on portMeasures(), in no ring
-- **L424 2. NEEDS YOU's needs, in its order: at most three, one per need**
-  - L428 fixture: NEEDS YOU lists more than three needs a city-built building answers (
-  - L430 fixture: and something on site answers one of them
-  - L431 the advice has at most MAX_SUGGESTIONS warranted orders
-  - L443 every suggestion is a need NEEDS YOU lists
-  - L444 ...one a city-built building answers
-  - L445 ...in NEEDS YOU's order, reds first
-  - L446 ...one per need
-  - L462 a passed-over need is answered on site, no building helps, or its demand is below the useful-work threshold
-  - L502 fixture: at least one suggestion counted what is on site
-  - L506 fixture: more than one suggestion to add up
-  - L507 the suggestions' quotes, added, are each one's Game.quoteBuild() in their order
-  - L581 fixture: more than one suggestion (
-  - L586 with the cash for the first and half the second, every card is the same building and count as with plenty
-  - L588 fixture: so the first is not on credit and the second is
-  - L598 ...a card is on credit exactly when its quote is more than the cash the ones before left
-  - L599 ...and what is on credit is its quote less that cash, to the bit
-  - L606 with no cash, every card is on credit for its whole quote, its count unchanged
-- **L765 4. before and after: the order built in a twin, the figure the model reads**
-  - L769 fixture: the twin stands where the city does for
-- **L779 4b. every measure: an order of its first building, the twin's figure**
-  - L800 Healthcare, burial plots: 3 Memorial Cemetery - the months of plots left are the model's
-- **L812 5. the staffing weighting: short of a job, the building with fewer of those posts**
-  - L839 fixture: the two have the same posts in all
-  - L840 fixture: and the same price
-  - L861 the one with fewer of the short posts serves more at today's staffing
-  - L863 general care is suggested
-  - L874 ...and its whole plan costs no more than any alternative, including either staffing mix
-- **L904 6. nothing needed, nothing suggested**
-  - L915 fixture: NEEDS YOU lists no need a city-built building answers
-  - L916 ...and the advice suggests nothing
-  - L987 fixture: cards at nothing, as the listing stands and at ten times
-  - L988 every card retains the whole plan's net value and its cost per physical unit, recomputed to the bit
-  - L989 ...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit
-  - L1053 fixture: the Elevated Highway is no candidate for the streets, and of those that keep the road ahead the Paved
-  - L1057 the streets' card has the least complete maintained-service plan at every price of ground
-  - L1149 fixture: the slack and projection add buildings to a listed or fallback card in the same city
-  - L1188 fixture: with no university and its fees paid, more would come than a first one wants
-  - L1189 fixture: ...and its graduates' posts would not fill one
-  - L1191 no UNIVERSITY row
-  - L1192 ...and no university card
-  - L1204 fixture: the offices' posts bring the hires to a first university's
-  - L1206 ...and the UNIVERSITY row is there
-  - L1208 fixture: the rows above held a school with seats and one with none
-  - L1224 the founding's would-be students follow the degree's pay after cost: none without a gain
-  - L1227 the founding gets no university row
-  - L1228 ...and no university card
-  - L1244 controlled return: eligible adults and native affordability are positive
-  - L1247 controlled return: positive native after-cost return for
-  - L1249 controlled return: genuine graduate posts and hires both stay below a class
-  - L1256 fixture: controlled return from the ninth month brings at least a university class by month 36
-  - L1259 no university row there
-  - L1260 ...and no university card
-- **L1285 9b. the 1900 city: no university advice ahead of its class**
-  - L1292 fixture: the historical founding has no first university class
-  - L1299 fixture: degree jobs alone would fill a first university, isolating the missing class
-  - L1302 the 1900 pipeline offers no university row before its class
-  - L1303 the 1900 pipeline offers no university card before its class
-- **L1368 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
-  - L1382 fixture: the rising history is a trend the businesses read
-  - L1420 the run is the cards' orders in their order, two of one building added together
-  - L1424 fixture: the short city has the ground for every card
-  - L1425 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
-  - L1438 fixture: the run placed in turn in a twin
-  - L1439 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
-  - L1451 fixture: with the ground for the first card alone, a card after it is short of land
-  - L1452 fixture: ...and no two cards are one building, so the run's orders are the cards
-  - L1453 ...and the run stops at the first short card, for land
-- **L1471 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
-  - L1494 fixture: the fee turned away half of those the beds could take
-  - L1499 fixture: NEEDS YOU has its row
-  - L1501 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
-  - L1502 ...and reads them served over its people
-  - L1504 ...lower than the beds alone read
-  - L1506 ...the share the month itself applies with the beds short: their cover times the share who could pay
-  - L1508 BUILD'S RING READS THE SAME
-  - L1513 AN ORDER'S AFTER: its staffed places added, the month's priced out held
-  - L1519 NOBODY PRICED OUT, THE BEDS, AS BEFORE
-- **L1535 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast**
-  - L1548 fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller
-  - L1551 fixture: no berth stands or is on site, and the dues dial is at its default
-  - L1557 fixture: the city owns no sea
-  - L1558 fixture: the uncovered dry bulk is the tonnes told
-  - L1560 A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes
-  - L1565 fixture: the city buys an offer that runs out to the sea
-  - L1571 A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one
-  - L1573 ...its card reads the uncovered tonnes now
-  - L1574 ...and the tonnes left with the berth standing
-  - L1575 ...at the price the Build button charges
-  - L1578 JUST UNDER IT: no berth is advised
-  - L1581 PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal
-  - L1585 ...a hair under it, the Bulk Berth again
-  - L1587 ...with the Bulk Terminal passed over, the Bulk Berth
-  - L1593 fixture: half the threshold is no berth's worth at the default dial
-  - L1596 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth
-  - L1598 ...a hair under half, none
-  - L1601 THE DIAL AT 0 - no dues, no payback - NONE however many tonnes
-  - L1604 ...and back at the default the same tonnes advise the Bulk Terminal
-  - L1609 fixture: 2.7 Bulk Terminals' months of uncovered dry bulk pay three back at the default dial
-  - L1611 SL1, 2.7 TERMINALS' MONTHS UNCOVERED: the card offers three Bulk Terminals, one order
-  - L1613 ...at the price the Build button charges for the three
-  - L1614 ...the tonnes left with the three standing, none
-  - L1615 ...the order closes the measure and its ground is the three terminals'
-  - L1623 fixture: two Bulk Berths stand, the trade (5.5 Bulk Berths' month) is under the Bulk Terminal's break-even, and 3.5 Bulk Berths' month of it is uncovered
-  - L1627 SL1, THE TRADE UNDER THE BULK TERMINAL'S BREAK-EVEN: the card offers Bulk Berths, three
-  - L1630 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
-  - L1634 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
-- **L1639 14. power is planned for the peak (PW1; PW3 the year's peak hour): a wind farm adds its credit there, the figure is the peak hour's draw ...**
-  - L1649 fixture: the Wind Farm is wind and the Coal Power Plant is not; both can be staffed; six of the one and a plant of the other stand
-  - L1662 (a) a Wind Farm's power unit per kW of its average is its credit at that share (WIND_PEAK_CREDIT x creditFall()) of a Coal Power Plant's, staffing aside
-  - L1664 ...and built() (the card sets it beside unit()) counts the same firm kW, fully staffed
-  - L1666 ...a Coal Power Plant's built() is its whole average
-  - L1676 (b) power's figure is the draw x PLAN_PEAK_HOUR over the firm supply (the model's production less the wind's average beyond its credit, at its own posts' fill)
-  - L1678 ...which is more than the average's draw over its production, the wind standing counted at its average
-  - L1681 ...and supplyDemand() is the firm supply against the peak hour's draw
-  - L1682 ...the draw the peak hour's, losses in
-  - L1693 fixture: the homes added leave power short of at least five Wind Farms' average
-- **L1721 15. the NEEDS YOU power row is read on the calm peak (PW1): wind farms that cover the average and not the peak are listed and advised**
-  - L1753 fixture: wind farms stand (
-  - L1755 fixture: ...and the CALM PEAK does not: the advice's power figure
-  - L1762 (a) NEEDS YOU lists the POWER row, though the average is clear
-  - L1763 ...on the firm supply against the peak's draw (supplyDemand()), not production against consumption
-  - L1765 ...read as served at the calm peak: \"
-  - L1770 (b) the advice offers a power card:
-  - L1781 fixture: the Coal Power Plants (
-  - L1785 (c) with the figure clear the POWER row is not listed
-  - L1787 ...and the advice offers no power card
+- **L292 1. the categories: fourteen, each once; every building in exactly one**
+  - L294 the strip has fourteen categories
+  - L297 ...each named once
+  - L300 five only the city builds, and they come first
+  - L308 \"
+  - L311 the Overview is no category
+  - L319 every BuildingType is in exactly one category
+  - L329 every building in the catalogue (
+  - L331 investors build the market's nine, by BusinessInvestment's own list, and none of the city's five - whose
+  - L345 the tabs are named as the spec has them: Infrastructure and Freight, the Java names ROADS and RAIL kept
+  - L348 ...Infrastructure is the city's, Freight the investors' (the rail's own tab, as Rail was)
+  - L367 Infrastructure holds the five sea terminals - the Tanker Terminal, the Bulk Berth, the Bulk, Container and
+  - L371 ...and the Strategic Reserve (
+  - L375 Industry holds no PORTS and no reserve: what investors build is all it holds
+  - L383 Freight holds the rail rungs, the Rail Depot and the Truck Depot
+  - L384 ...and Vehicles holds the Heavy Truck Plant, Automotive's
+  - L395 inRemit() is false for every sea terminal and for the Strategic Reserve, though Infrastructure holds them now
+  - L397 ...and for every building it answers what it answered: the city's five types, by type
+  - L398 ...the terminals still orderable() on their payback, as they were
+  - L401 measuresOf(ROADS) is the streets, the through traffic and transit, in that order, as it was:
+  - L406 ...the ports stay on portMeasures(), in no ring
+- **L429 2. NEEDS YOU's needs, in its order: at most three, one per need**
+  - L433 fixture: NEEDS YOU lists more than three needs a city-built building answers (
+  - L435 fixture: and something on site answers one of them
+  - L436 the advice has at most MAX_SUGGESTIONS warranted orders
+  - L448 every suggestion is a need NEEDS YOU lists
+  - L449 ...one a city-built building answers
+  - L450 ...in NEEDS YOU's order, reds first
+  - L451 ...one per need
+  - L467 a passed-over need is answered on site, no building helps, or its demand is below the useful-work threshold
+  - L507 fixture: at least one suggestion counted what is on site
+  - L511 fixture: more than one suggestion to add up
+  - L512 the suggestions' quotes, added, are each one's Game.quoteBuild() in their order
+  - L586 fixture: more than one suggestion (
+  - L591 with the cash for the first and half the second, every card is the same building and count as with plenty
+  - L593 fixture: so the first is not on credit and the second is
+  - L603 ...a card is on credit exactly when its quote is more than the cash the ones before left
+  - L604 ...and what is on credit is its quote less that cash, to the bit
+  - L611 with no cash, every card is on credit for its whole quote, its count unchanged
+- **L770 4. before and after: the order built in a twin, the figure the model reads**
+  - L774 fixture: the twin stands where the city does for
+- **L784 4b. every measure: an order of its first building, the twin's figure**
+  - L805 Healthcare, burial plots: 3 Memorial Cemetery - the months of plots left are the model's
+- **L817 5. the staffing weighting: short of a job, the building with fewer of those posts**
+  - L844 fixture: the two have the same posts in all
+  - L845 fixture: and the same price
+  - L866 the one with fewer of the short posts serves more at today's staffing
+  - L868 general care is suggested
+  - L879 ...and its whole plan costs no more than any alternative, including either staffing mix
+- **L909 6. nothing needed, nothing suggested**
+  - L920 fixture: NEEDS YOU lists no need a city-built building answers
+  - L921 ...and the advice suggests nothing
+  - L992 fixture: cards at nothing, as the listing stands and at ten times
+  - L993 every card retains the whole plan's net value and its cost per physical unit, recomputed to the bit
+  - L994 ...its ground valued on the land the cards before it leave, and short of that by landShort, to the bit
+  - L1058 fixture: the Elevated Highway is no candidate for the streets, and of those that keep the road ahead the Paved
+  - L1062 the streets' card has the least complete maintained-service plan at every price of ground
+  - L1154 fixture: the slack and projection add buildings to a listed or fallback card in the same city
+  - L1193 fixture: with no university and its fees paid, more would come than a first one wants
+  - L1194 fixture: ...and its graduates' posts would not fill one
+  - L1196 no UNIVERSITY row
+  - L1197 ...and no university card
+  - L1209 fixture: the offices' posts bring the hires to a first university's
+  - L1211 ...and the UNIVERSITY row is there
+  - L1213 fixture: the rows above held a school with seats and one with none
+  - L1229 the founding's would-be students follow the degree's pay after cost: none without a gain
+  - L1232 the founding gets no university row
+  - L1233 ...and no university card
+  - L1249 controlled return: eligible adults and native affordability are positive
+  - L1252 controlled return: positive native after-cost return for
+  - L1254 controlled return: genuine graduate posts and hires both stay below a class
+  - L1261 fixture: controlled return from the ninth month brings at least a university class by month 36
+  - L1264 no university row there
+  - L1265 ...and no university card
+- **L1290 9b. the 1900 city: no university advice ahead of its class**
+  - L1297 fixture: the historical founding has no first university class
+  - L1304 fixture: degree jobs alone would fill a first university, isolating the missing class
+  - L1307 the 1900 pipeline offers no university row before its class
+  - L1308 the 1900 pipeline offers no university card before its class
+- **L1373 10. sized to the projection: the businesses' growthFactor() over the wait and the horizon**
+  - L1387 fixture: the rising history is a trend the businesses read
+  - L1425 the run is the cards' orders in their order, two of one building added together
+  - L1429 fixture: the short city has the ground for every card
+  - L1430 ...and the run goes all the way: buildRunAhead() is every order, buildRunStop() SUCCESS
+  - L1443 fixture: the run placed in turn in a twin
+  - L1444 ...charges the header's total, Game.buildRunInvoice() of the run, to the bit
+  - L1456 fixture: with the ground for the first card alone, a card after it is short of land
+  - L1457 fixture: ...and no two cards are one building, so the run's orders are the cards
+  - L1458 ...and the run stops at the first short card, for land
+- **L1476 12. care is the beds less the priced out: NEEDS YOU's row, Build's ring and an order's after**
+  - L1499 fixture: the fee turned away half of those the beds could take
+  - L1504 fixture: NEEDS YOU has its row
+  - L1506 NEEDS YOU'S ROW CARRIES THE BEDS LESS THE PRICED OUT
+  - L1507 ...and reads them served over its people
+  - L1509 ...lower than the beds alone read
+  - L1511 ...the share the month itself applies with the beds short: their cover times the share who could pay
+  - L1513 BUILD'S RING READS THE SAME
+  - L1518 AN ORDER'S AFTER: its staffed places added, the month's priced out held
+  - L1524 NOBODY PRICED OUT, THE BEDS, AS BEFORE
+- **L1540 13. a berth pays back (FR3): the Bulk Berth, the Bulk Terminal, the dues dial, the coast**
+  - L1553 fixture: the Bulk Berth and the Bulk Terminal are dry bulk berths, the Berth the smaller
+  - L1556 fixture: no berth stands or is on site, and the dues dial is at its default
+  - L1562 fixture: the city owns no sea
+  - L1563 fixture: the uncovered dry bulk is the tonnes told
+  - L1565 A CITY WITH NO COAST IS ADVISED NO BERTH, however many tonnes
+  - L1570 fixture: the city buys an offer that runs out to the sea
+  - L1576 A BERTH'S MONTH AT WORTH_A_BERTH: the Bulk Berth is advised, one
+  - L1578 ...its card reads the uncovered tonnes now
+  - L1579 ...and the tonnes left with the berth standing
+  - L1580 ...at the price the Build button charges
+  - L1583 JUST UNDER IT: no berth is advised
+  - L1586 PAST WORTH_A_BERTH OF THE BULK TERMINAL'S MONTH: the largest that pays back, the Bulk Terminal
+  - L1590 ...a hair under it, the Bulk Berth again
+  - L1592 ...with the Bulk Terminal passed over, the Bulk Berth
+  - L1598 fixture: half the threshold is no berth's worth at the default dial
+  - L1601 THE DIAL AT 2, AT HALF THE THRESHOLD: the Bulk Berth
+  - L1603 ...a hair under half, none
+  - L1606 THE DIAL AT 0 - no dues, no payback - NONE however many tonnes
+  - L1609 ...and back at the default the same tonnes advise the Bulk Terminal
+  - L1614 fixture: 2.7 Bulk Terminals' months of uncovered dry bulk pay three back at the default dial
+  - L1616 SL1, 2.7 TERMINALS' MONTHS UNCOVERED: the card offers three Bulk Terminals, one order
+  - L1618 ...at the price the Build button charges for the three
+  - L1619 ...the tonnes left with the three standing, none
+  - L1620 ...the order closes the measure and its ground is the three terminals'
+  - L1628 fixture: two Bulk Berths stand, the trade (5.5 Bulk Berths' month) is under the Bulk Terminal's break-even, and 3.5 Bulk Berths' month of it is uncovered
+  - L1632 SL1, THE TRADE UNDER THE BULK TERMINAL'S BREAK-EVEN: the card offers Bulk Berths, three
+  - L1635 fixture: twelve Bulk Berths stand, the trade is past the Bulk Terminal's break-even, and the same 3.5 Bulk Berths' month is uncovered
+  - L1639 SL1, THE TRADE PAST IT: the same uncovered tonnes make the card ONE Bulk Terminal, which the Bulk Berths kept off the advice for ever
+- **L1644 14. power is planned for the peak (PW1; PW3 the year's peak hour): a wind farm adds its credit there, the figure is the peak hour's draw ...**
+  - L1654 fixture: the Wind Farm is wind and the Coal Power Plant is not; both can be staffed; six of the one and a plant of the other stand
+  - L1667 (a) a Wind Farm's power unit per kW of its average is its credit at that share (WIND_PEAK_CREDIT x creditFall()) of a Coal Power Plant's, staffing aside
+  - L1669 ...and built() (the card sets it beside unit()) counts the same firm kW, fully staffed
+  - L1671 ...a Coal Power Plant's built() is its whole average
+  - L1681 (b) power's figure is the draw x PLAN_PEAK_HOUR over the firm supply (the model's production less the wind's average beyond its credit, at its own posts' fill)
+  - L1683 ...which is more than the average's draw over its production, the wind standing counted at its average
+  - L1686 ...and supplyDemand() is the firm supply against the peak hour's draw
+  - L1687 ...the draw the peak hour's, losses in
+  - L1698 fixture: the homes added leave power short of at least five Wind Farms' average
+- **L1726 15. the NEEDS YOU power row is read on the calm peak (PW1): wind farms that cover the average and not the peak are listed and advised**
+  - L1758 fixture: wind farms stand (
+  - L1760 fixture: ...and the CALM PEAK does not: the advice's power figure
+  - L1767 (a) NEEDS YOU lists the POWER row, though the average is clear
+  - L1768 ...on the firm supply against the peak's draw (supplyDemand()), not production against consumption
+  - L1770 ...read as served at the calm peak: \"
+  - L1775 (b) the advice offers a power card:
+  - L1786 fixture: the Coal Power Plants (
+  - L1790 (c) with the figure clear the POWER row is not listed
+  - L1792 ...and the advice offers no power card
+- **L1835 16. warranted() read once in a search (AP7): after each writer the held answer is the bare reading, to the bit**
+  - L1863 fixture: the city saves under its scratch folder (
+  - L1865 fixture: the town is saved to slot 10 of it, the base of every writer's city
+  - L1878 the people (skilled heads restored across the threshold)
+  - L1889 a build (
+  - L1897 a demolition (
+  - L1908 a template (the
+  - L1913 ...and the template is back on the menu, as the fixture had it
+  - L1975 fixture: the catalogue has a code no building waits on that it brings after month
+  - L1992 a research step (the city finds
+  - L1999 ...and the plant's gate, the city's findings and its draw are as the fixture had them
+  - L2016 fixture: this city saves under its scratch folder (
+  - L2019 fixture: the
+  - L2021 a load (the save of
+  - L2023 ...and the load put back the
 
 ## BuildCardCheck.java - 214 labelled assertions
 
