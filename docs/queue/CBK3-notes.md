@@ -1582,3 +1582,27 @@ equity comparison's worst miss is4.55e-13. Logs:
 `target/CBK3-evening-CurrencyRegimeCheck.txt` and `.log`.
 The full current CentralBankCheck is now running alone, with all24 shapes
 and its post-loop native/save laws; no completion is claimed yet.
+
+FundCheck's owned setup mends (native rerun pending while CentralBankCheck
+uses the single JVM): select two actual holdings above the exchange's native
+valuation floor, and explicitly endow enough stable cash for their aggregate
+full-float bids before retaining the existing capital/position/book tests.
+The old log proves a zero first sale fraction, not which unprinted gate
+bound; the new before/after diagnostics name each holding, floor, bid room,
+cash, equity and stable cash. Keep the full-float, positive pro-rata sale,
+band, due and late-payment assertions and the fixed72-month founding.
+The opening market gift transfers only genuinely free shares and their
+released acquisition basis; tagged shares retain their backing.
+
+★ The independent cap-gift case explicitly establishes a partially encumbered
+nonempty opening donor and its matching government receivable, following
+CapitalGainsCheck's paired opening secured-stock fixture. The old log did
+not establish which donor predicate was absent, so no old runtime operand
+is invented. The new opening stock leaves more free shares than the actual
+gift needs; it neither assesses a new cash flow nor claims an incidental
+m73 inheritance. Snapshots are taken after that opening stock and before
+the measured gift. The unchanged gift assertions require a real positive
+free-unit transfer from the secured donor, untouched tags and claims,
+backing, exact cell/cash/claim snapshots, conserved shares and acquisition
+basis. Per-donor diagnostics expose every actual operand. No production
+lending, tax, purchase, floor or save rule changes for these fixture mends.

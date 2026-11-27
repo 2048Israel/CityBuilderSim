@@ -1193,11 +1193,17 @@ public class FundCheck {
         Equity reg = g.getEquity();
         Exchange ex = g.getExchange();
         Bank bank = g.getBank();
+        double bidCash = 0;
+        for (int c : companies) {
+            if (c < 0 || ex.atFloor(c)) return false;
+            bidCash += Math.max(0, reg.getShares(c) - Math.max(0, reg.getDealerShares(c))) * ex.fair(c) * (1 - Exchange.SPREAD / 2);
+        }
+        bank.setCash(bank.getCash() + Math.max(0, bidCash - bank.stableDeskRoom()));
         for (int i = 0; i < 60; i++) {
             boolean whole = true;
             for (int c : companies) whole &= ex.deskCanBuy(reg, c) >= (reg.getShares(c) - Math.max(0, reg.getDealerShares(c))) * (1 - 1e-12);
             bank.setCash(bank.getCash() + bank.equity());
-            if (whole) return true;
+            if (whole) return bank.stableDeskRoom() >= bidCash;
         }
         return false;
     }
@@ -1217,17 +1223,38 @@ public class FundCheck {
         int k = 0;
         double market = 0;
         for (int c = 0; c < Sectors.KEYS.length && k < 2; c++) {
-            if (c == Equity.BANK || !(reg.getShares(c) > 0) || !(ex.fair(c) > 0)) continue;
-            double take = .05 * reg.getShares(c), households = g.getHouseholdBalance().sharesHeld(c);
+            if (c == Equity.BANK || !(reg.getShares(c) > 0) || ex.atFloor(c)) continue;
+            double take = .05 * reg.getShares(c), households = unencumberedShares(g.getHouseholdBalance(), c);
             if (households < take) continue;
-            double keep = 1 - take / households;
-            for (Household cell : g.getHouseholdBalance().cellsForMarket()) cell.shares[c] *= keep;
-            reg.moveCity(c, take);
-            market += take * ex.price(c);
+            double fraction = take / households, actual = 0, basis = 0;
+            for (Household cell : g.getHouseholdBalance().cellsForMarket()) {
+                if (!(cell.households() > 0)) continue;
+                double held = cell.shares[c];
+                double after = Math.max(cell.taxShares[c], held - Math.max(0, held - cell.taxShares[c]) * fraction);
+                double given = held - after;
+                double cost = FundLedger.basisReleased(cell.basis[c], given, held);
+                cell.shares[c] = after;
+                cell.basis[c] -= cost;
+                actual += given * cell.households();
+                basis += cost * cell.households();
+            }
+            close("the opening market holding receives its full five percent from genuinely free units", actual, take, 1e-9);
+            reg.moveCity(c, actual);
+            g.getFund().getLedger().receivedShareInKind(Equity.COMPANIES[c], actual, basis, g.getMonth());
+            market += actual * ex.price(c);
             two[k++] = c;
         }
         if (k == 2 && ex.price(Equity.BANK) > 0) reg.issueToCityRescue(Equity.BANK, 6 * market / ex.price(Equity.BANK));
         return two;
+    }
+
+    /** Print the native gates, so a missing bid cannot be mistaken for a cash shortage. */
+    static void withdrawalRoom(Game g, int[] companies, String when) {
+        for (int c : companies) if (c >= 0)
+            out.printf("   %s %s: fair %.12g, floor %s, float %.12g, bid room %.12g; bank cash %.12g, equity %.12g, stable cash %.12g%n",
+                    when, Equity.COMPANIES[c], g.getExchange().fair(c), g.getExchange().atFloor(c),
+                    g.getEquity().getShares(c) - Math.max(0, g.getEquity().getDealerShares(c)),
+                    g.getExchange().deskCanBuy(g.getEquity(), c), g.getBank().getCash(), g.getBank().equity(), g.getBank().stableDeskRoom());
     }
 
     /** The factor the step's split or consolidation left on a company's count of shares (Exchange.getSplit()), 1 when it had none: what a count read before the step is multiplied by to be read after it. */
@@ -1318,7 +1345,10 @@ public class FundCheck {
         double rescue0 = over.getEquity().getCityRescueShares(Equity.BANK);
         check("fixture: the desk's bid is every share of both companies that is not its own, before the fund's ask comes to it",
                 giveTheDeskRoom(over, two));
+        withdrawalRoom(over, two, "before withdrawal");
         play(over);
+        withdrawalRoom(over, two, "after withdrawal");
+        check("fixture: both actual withdrawal holdings remain eligible for the native fund ask", !over.getExchange().atFloor(two[0]) && !over.getExchange().atFloor(two[1]));
         // FS13, 2026-11-20: THE RESCUE BOOK IS COUNTED IN THE UNIT THE MONTHS LEAVE (PK1), as section 1 counts what the city took. The exchange splits or
         // consolidates the bank's shares by a power of ten when its price leaves the wage band (Exchange.splitWhatNeedsIt()) and every count on the register
         // moves with it, the rescue book's too; the bank's price here is what the town's own bank earned and what the book's issue diluted it to, so whether
@@ -1613,6 +1643,33 @@ public class FundCheck {
         return free;
     }
 
+    /** A paired opening secured claim, leaving enough genuinely free units for the measured gift. */
+    static boolean causeFreeSecuredDonor(Game g, int company, double take) {
+        HouseholdBalance balance = g.getHouseholdBalance();
+        double spare = unencumberedShares(balance, company) - take;
+        double price = Math.min(g.getExchange().price(company), g.getExchange().fair(company));
+        if (!(spare > 0) || !(price > 0)) return false;
+        for (Household cell : balance.cellsForMarket()) {
+            double count = cell.households();
+            if (!(count >= HouseholdBalance.EMPTY_CELL) || !(cell.shares[company] > cell.taxShares[company])) continue;
+            double tagBefore = cell.taxShares[company], claimBefore = cell.taxClaim[company];
+            double room = Math.min((cell.shares[company] - tagBefore) * count, spare);
+            double tagAfter = tagBefore + room / (4 * count);
+            double claimAfter = claimBefore + (tagAfter - tagBefore) * price / 2;
+            if (!(tagAfter > tagBefore) || !(claimAfter > claimBefore) || !Double.isFinite(claimAfter)) continue;
+            cell.taxShares[company] = tagAfter;
+            cell.taxClaim[company] = claimAfter;
+            double[] secured = balance.securedTaxesToSave();
+            secured[company] += (claimAfter - claimBefore) * count;
+            balance.restoreSecuredTaxes(secured);
+            out.printf("   opening secured donor: households %.12g, held %.12g, tagged %.12g, claim %.12g, free total %.12g, gift %.12g%n",
+                    count, cell.shares[company], tagAfter, claimAfter, unencumberedShares(balance, company), take);
+            close("the opening secured liability has its matching government receivable", balance.getCapitalTaxOutstanding(), balance.securedClaimCounterpart(), MoneyAudit.CENT);
+            return tagAfter < cell.shares[company] && unencumberedShares(balance, company) >= take;
+        }
+        return false;
+    }
+
     static boolean sameBits(double[] before, double[] after) {
         if (before.length != after.length) return false;
         for (int i = 0; i < before.length; i++)
@@ -1658,6 +1715,8 @@ public class FundCheck {
         if (buyer < 0) throw new IllegalStateException("Opening cap fixture has no observed buyback company with enough unencumbered shares");
         double take = limit * reg.getShares(buyer) - reg.getCityMarketShares(buyer);
         HouseholdBalance balance = g.getHouseholdBalance();
+        check("fixture: a paired opening secured claim leaves a nonempty donor's free units available for the actual cap gift",
+                causeFreeSecuredDonor(g, buyer, take));
         Household[] donors = balance.cellsForMarket();
         double free = unencumberedShares(balance, buyer);
         double[] cellsBefore = balance.toCellSaveArray(), expectedCells = cellsBefore.clone();
@@ -1677,7 +1736,7 @@ public class FundCheck {
         double basisMoved = 0;
         double savingsBeforeGift = balance.totalSavings();
         double oldFundCost = g.getFund().getLedger().acbHeld();
-        // RES3: the native m73 opening has live liens. They stay backed; only the donor's free units can leave.
+        // The opening fixture has a real paired lien. It stays backed; only the donor's free units can leave.
         for (int i = 0; i < donors.length; i++) {
             Household cell = donors[i];
             double count = cell.households(), held = cell.shares[buyer], tagged = cell.taxShares[buyer];
@@ -1686,6 +1745,8 @@ public class FundCheck {
             double wanted = Math.min(room, Math.max(0, i == lastFree ? left : left * room / roomLeft));
             sharesLeft[i] = Math.max(tagged, held - Math.min(freeEach, wanted / count));
             given[i] = held - sharesLeft[i]; // the actual representable units removed, not an invented rounding balance
+            if (given[i] > 0) out.printf("   cap donor: households %.12g, held %.12g, tagged %.12g, claim %.12g, free %.12g, given %.12g%n",
+                    count, held, tagged, cell.taxClaim[buyer], freeEach, given[i]);
             basisOut[i] = FundLedger.basisReleased(cell.basis[buyer], given[i], held);
             outgoingFree &= Double.isFinite(count) && Double.isFinite(given[i]) && given[i] >= 0
                     && given[i] <= freeEach && tagged >= 0 && sharesLeft[i] >= tagged
