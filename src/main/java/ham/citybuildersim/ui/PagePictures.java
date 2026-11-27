@@ -13,6 +13,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -136,6 +137,8 @@ public final class PagePictures {
         }
         out.add(new Page("history", () -> ui.pressRail("reports")));
         out.add(new Page("rankings", () -> ui.pressRail("rankings")));
+        // The map alone, the whole window, as Follow's cinematic mode draws it (no header, rail or legend): the ground the mockups are drawn on.
+        out.add(new Page("map-ground", () -> { ui.openMapOn(MiniMapFrame.frame(g.getCityMap())); ui.replayCinematic(true); }));
         for (int i = 0; i < out.size(); i++) {
             Page p = out.get(i);
             out.set(i, new Page(String.format("%03d-%s", i, p.name()), p.open()));
@@ -230,8 +233,9 @@ public final class PagePictures {
         PrintStream real = System.out;
         System.setOut(new PrintStream(OutputStream.nullOutputStream()));
         try {
-            g = fx(() -> LongPlaytest.probeCity(files, null));
-            fx(() -> { LongPlaytest.probePlay(g, toMonth); return null; });
+            // On this thread, before the window exists, as LongPlaytest runs: 2,400 months outlast FollowBench.fx's wait.
+            g = LongPlaytest.probeCity(files, null);
+            LongPlaytest.probePlay(g, toMonth);
         } finally {
             System.setOut(real);
         }
@@ -251,6 +255,7 @@ public final class PagePictures {
         fx(() -> {
             ui = new UserInterface(g);
             stage = new Stage();
+            stage.initStyle(StageStyle.UNDECORATED);    // the scene, not the window and its frame, is 1920x1080
             ui.start(stage);
             stage.setFullScreen(false);
             stage.setMaximized(false);
