@@ -648,8 +648,17 @@ public class ExchangeCheck {
         step(ex, reg, holders, bank, firms, book, W, 0, 2 * Equity.RECORD_MONTHS);
         assertTrue("actual positive earnings restore the desk's bid and capacity above the floor",
                 ex.fair(company) > reg.noValue() && ex.bestBid(company) > 0 && ex.deskCanBuy(reg, company) > 0);
-        close("the recovered holding really sells through the household waterfall",
-                ex.sellForHousehold(reg, bank, holders, couple(holders), 1), 1, 1e-9);
+        double grossShares = couple(holders).households() / ex.bestBid(company);
+        assertTrue("fixture: the resting and live desk capacity cover the recovery sale's gross dollar",
+                ex.bookOf(company).resting(Exchange.DESK, OrderBook.Side.BUY) > grossShares
+                        && ex.deskCanBuy(reg, company) > grossShares);
+        double taxBefore = holders.getCapitalGainsTax();
+        double raised = ex.sellForHousehold(reg, bank, holders, couple(holders), 1);
+        double withheld = holders.getCapitalGainsTax() - taxBefore;
+        assertTrue("the recovered holding really raises net cash and withholds its capital-gains tax",
+                raised > 0 && raised <= 1 && withheld > 0);
+        close("the recovery sale's net cash plus actual tax equals the gross dollar requested",
+                raised + withheld / couple(holders).households(), 1, 1e-9);
         assertTrue("recovery trades real shares from the household into the desk",
                 ex.hasTraded(company) && holders.sharesHeld(company) < held && reg.getDealerShares(company) > 0);
     }

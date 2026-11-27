@@ -374,7 +374,7 @@ public final class BankRulesCheck {
             loosened.rules().set(BankRules.Dial.CAPITAL_MINIMUM, .04);
             check("a 4% risk minimum preserves the leverage target and top (buffer " + conservation + ")",
                     loosened.leverageTarget() >= loosened.leverageMinimum()
-                            && loosened.leverageTop() >= loosened.leverageTarget());
+                            && loosened.leverageTop() > loosened.leverageTarget());
             check("a 4% risk minimum cannot grow an insured bank below the leverage floor (buffer " + conservation + ")",
                     loosened.leverageRatio() > 0 && loosened.leverageRatio() < loosened.leverageMinimum()
                             && loosened.lendingGrowthLimit() == 0 && loosened.projectLeverageHeadroom() == 0);

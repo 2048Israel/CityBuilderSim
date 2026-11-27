@@ -4763,15 +4763,18 @@ public class Bank {
      * ITS OWN LEVERAGE TARGET: scale the leverage minimum by the risk
      * target over the original CAPITAL_RATIO. Loosening the risk minimum
      * cannot loosen the independent leverage floor or its loss buffer:
-     * retain CAPITAL_RATIO plus that buffer as the scaling baseline.
+     * retain CAPITAL_RATIO plus that buffer as the scaling baseline. The
+     * final max also keeps floating-point rounding from slipping below it.
      */
     public double leverageTarget() {
-        return leverageMinimum() * Math.max(capitalTarget(), CAPITAL_RATIO + capitalBuffer()) / CAPITAL_RATIO;
+        return Math.max(leverageMinimum(),
+                leverageMinimum() * Math.max(capitalTarget(), CAPITAL_RATIO + capitalBuffer()) / CAPITAL_RATIO);
     }
 
-    /** ...and the top of its band, with the same independent leverage baseline. */
+    /** ...and the top of its band, retaining its management cushion over that independent baseline. */
     public double leverageTop() {
-        return leverageMinimum() * Math.max(capitalTop(), CAPITAL_RATIO + capitalBuffer()) / CAPITAL_RATIO;
+        return Math.max(leverageMinimum(),
+                leverageMinimum() * Math.max(capitalTop(), CAPITAL_RATIO + capitalBuffer() + MANAGEMENT_CUSHION) / CAPITAL_RATIO);
     }
 
     /**
