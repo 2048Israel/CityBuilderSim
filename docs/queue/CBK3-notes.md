@@ -1606,3 +1606,40 @@ free-unit transfer from the secured donor, untouched tags and claims,
 backing, exact cell/cash/claim snapshots, conserved shares and acquisition
 basis. Per-donor diagnostics expose every actual operand. No production
 lending, tax, purchase, floor or save rule changes for these fixture mends.
+
+The helper's next bounded report identifies three more concrete setups;
+no exact current queued owner covers these reds, so they are mended here.
+
+CreditCrunchCheck: the old run bought only6 plots in all, so its16 missing
+preparations could not have exhausted60 successful native purchases in a
+month. The old log omitted shelf/affordability operands; do not assert a
+particular old cash balance. The setup now refreshes an empty shelf through
+Game.buyLandBlock, reads each changing native parcel quote, and endows the
+cash shortfall only when canAffordParcel is false before the actual purchase.
+It keeps MAX_PLOTS, zoning/terrain/link checks,120/120 ready months and all
+credit/audit laws. Failure diagnostics expose the native quote, cash,
+affordability, purchases and usable ground. Named validation is pending.
+
+BuybackCheck: the old5-year sale's stop1.41% was below the quiet world's2%
+hurdle, making firms and world native bids exactly0 and therefore the issue
+size0. Its null sale precedes the refusal tests and caused the misleading
+NPE. The all-holder fixture now solves only its native policy/curve input,
+inside the existing bounds, for a default-cap rounded issue above the
+minimum and with a real world part. The original savers' share, bank-room
+inverse, actual issue, holder-part, refusal/settle/audit laws remain. Original
+policy/curve, deposit and risk-book inputs are restored after the sale. A
+failed actual sale still fails hard before dereferencing it; it is not
+passed or skipped. No model cap or yield rule changes. Rerun pending.
+
+CapitalGainsCheck: the exact batch cause is the truthful Equity.fairValue
+floor, replacing the inherited below-floor return of lastPrice. In this
+seeded fixture both floor constants equal1e-9; the unified atFloor gate by
+itself is not the cause. After the first100x split, the unchanged1e6 required
+return valued each share below that floor, so demanding another split was
+uncaused. ★ Set the fixture's second native required-return input from its
+actual trailing earnings/share count to value the company at four times the
+native floor. Assert that positive valuation and the real traded quote
+above the wage band before calling the ordinary exchange step. Keep the
+positive second automatic-split premise, both cumulative-factor identities,
+real no-fill, tagged units/basis, nominal claims, collections and saves.
+No historical-price resurrection or direct split is introduced. Rerun pending.

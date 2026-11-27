@@ -476,7 +476,7 @@ public final class CapitalGainsCheck {
         m.exchange.bookOf(0).withdrawAll();
         check("the tagged order really rests with no bid", m.exchange.tradeForCheck(0, Exchange.TAX_EMIGRANTS, OrderBook.Side.SELL, 10, 100).isEmpty());
         double[] books = ExchangeCheck.bookOf(0, 1000);
-        // A very high required return puts fair at the model's floor, so the ordinary world posts no bid.
+        // A very high required return keeps the ordinary world from bidding at the tagged ask.
         double factorBeforeFirst = m.exchange.getSplitFactor(0);
         quietly(() -> ExchangeCheck.step(m.exchange, m.equity, m.balance, m.bank, m.firms, books, 1e6, 0, 2));
         double factorAfterFirst = m.exchange.getSplitFactor(0), firstSplit = m.exchange.getSplit(0);
@@ -495,7 +495,13 @@ public final class CapitalGainsCheck {
         m.equity.followEmigrants(m.balance, m.exchange::shortShares);
         close("the unrelated new departure adds no older tagged units", m.equity.foreignTaxShares(0), 100 * factorAfterFirst / factorBeforeFirst);
         double factorBeforeSecond = m.exchange.getSplitFactor(0);
-        quietly(() -> ExchangeCheck.step(m.exchange, m.equity, m.balance, m.bank, m.firms, books, 1e6, 0, 3));
+        double floor = Math.max(Exchange.MIN_FAIR / ExchangeCheck.TODAYS_DOLLAR, m.equity.noValue());
+        double secondWorldRate = m.equity.getTrailingIncome(0) / (4 * floor * m.equity.getShares(0)) - Equity.FOREIGN_PREMIUM;
+        check("fixture: the second native split has a genuinely above-floor valuation and a quote above the wage band",
+                Double.isFinite(secondWorldRate) && secondWorldRate > 0
+                        && m.equity.fairValue(0, books[0], 0, secondWorldRate) > floor
+                        && m.exchange.price(0) > m.firms.wage * Exchange.SPLIT_AT);
+        quietly(() -> ExchangeCheck.step(m.exchange, m.equity, m.balance, m.bank, m.firms, books, secondWorldRate, 0, 3));
         double factorAfterSecond = m.exchange.getSplitFactor(0), secondSplit = m.exchange.getSplit(0);
         out.println("Observed: second departure step split factor " + factorBeforeSecond + " -> " + factorAfterSecond
                 + ", native step split " + secondSplit + ", tagged units " + m.equity.foreignTaxShares(0));

@@ -326,11 +326,33 @@ public final class CreditCrunchCheck {
      */
     static void standGround(Game g) {
         BuildingsTemplate block = LongPlaytest.template(g, "Low-Rise Apartments");
-        if (block == null) return;
+        if (block == null) { check("fixture: ground preparation has the apartment template", false); return; }
         int plots = 0;
-        while (!ground(g, block, GROUND_BLOCKS) && plots < MAX_PLOTS && g.buyLandBlock()) plots++;
+        while (!ground(g, block, GROUND_BLOCKS) && plots < MAX_PLOTS) {
+            LandParcel offered = g.getLandManager().getMarket().cheapest();
+            if (offered == null) {
+                if (g.buyLandBlock()) { plots++; continue; } // native refresh, and a purchase if already affordable
+                offered = g.getLandManager().getMarket().cheapest();
+            }
+            if (offered == null) break;
+            if (!g.canAffordParcel(offered)) {
+                double cost = offered.localPrice(g.getForeignAccounts().getRate());
+                out.printf("   ground endowment m%d: parcel %s, native price %.12g, cash before %.12g%n",
+                        g.getMonth(), offered.getId(), cost, g.getCash());
+                g.setCashForTest(Math.max(g.getCash(), cost));
+            }
+            if (!g.buyLandBlock()) {
+                out.printf("   ground purchase refused m%d: parcel %s, price %.12g, cash %.12g, affordable %s%n",
+                        g.getMonth(), offered.getId(), offered.localPrice(g.getForeignAccounts().getRate()), g.getCash(), g.canAffordParcel(offered));
+                break;
+            }
+            plots++;
+        }
         groundPlots += plots;
         if (ground(g, block, GROUND_BLOCKS)) groundMonths++;
+        else out.printf("   ground still unavailable m%d: purchases %d/%d, need %.12g, free for use %.12g%n",
+                g.getMonth(), plots, MAX_PLOTS, block.getLandSqFt() * (double) GROUND_BLOCKS,
+                g.getLandManager().freeFor(block.getSector(), Game.groundUse(block)));
     }
 
     /** The seekers' households (FamilyModel.Seeker) past their own ceiling, two to a door up to half the group: no door. */
