@@ -1178,11 +1178,15 @@ public class ExchangeRateCheck {
     }
 
     /**
-     * FS10 (section 8b): the vault the dated gold peg is held at, in years of GDP: twice INTERVENTION_LINEAR, because the hold's sale in a
+     * FS10 (section 8b): the vault the dated gold peg is held at, in years of GDP: four times INTERVENTION_LINEAR. The hold's sale in a
      * month is at most INTERVENTION_LINEAR of a year's GDP while the lift it makes stays inside the linear part of the intervention law
-     * (interventionLocalFor()), and the peg gives way the month its sale would take the vault to nothing.
+     * (interventionLocalFor()), and the peg gives way the month its sale would take the vault to nothing. FS10 held twice that. RES3
+     * (2026-11-26): the 1914 risk-off on a debtor town lifts past the linear part. RES3's quote at a builder's cost (ebe0fdafb) has the
+     * town owe US$1,477k abroad by m130 (271k before), its sensitivity to the risk-off is 0.2095 (-0.0012), and the gap went from 1.38 to
+     * 1.67 in a month. Holding it asked 584.6 of a vault of 584.3, the whole of twice. That is the real world: a debtor on gold runs
+     * through its reserve in a run. So the vault is held at twice that month's sale.
      */
-    static final double GOLD_HELD_VAULT_YEARS = 2 * ForeignAccounts.INTERVENTION_LINEAR;
+    static final double GOLD_HELD_VAULT_YEARS = 4 * ForeignAccounts.INTERVENTION_LINEAR;
 
     /** ...the log gap the peg's shadow stands over the peg when August 1914 releases it: eight of the market's monthly swings, more than one month's float news can be. */
     static final double RELEASED_GAP = 8 * ForeignAccounts.MARKET_SIGMA;
