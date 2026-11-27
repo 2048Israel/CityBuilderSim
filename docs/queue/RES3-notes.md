@@ -1113,7 +1113,7 @@ reviewer's line.
   the advance still owed paid no interest. A discount window charges its
   unpaid balance. Now the settle records what it left owed
   (CentralBank.getWindowDeferred(), a slot appended to the saved array, so
-  an older save reads zero). Bank.fundToCover(policy, owed) prices it at the
+  an older save reads zero). Bank.fundToCover(policy, deferred, held) prices it at the
   window's rate with the wholesale, and chargeWindow lends at the window
   whatever interest the reserves cannot pay, so M0 stays at or above
   nothing. A bank in resolution, or no bank, is charged nothing (0.7.1's
@@ -1127,6 +1127,20 @@ reviewer's line.
   audit closes. With Game passing nothing owed, that line is 0 of 15. A
   floor on the whole charge did not catch it: the town's wholesale
   covered it.
+- REV-RES3b's fourth look, P1 (fd4ae2982): the whole deferred balance was
+  added to the month's wholesale. When new lending lifted the wholesale
+  into it, the window, which lends only a shortfall, still held the same
+  dollars, and they were charged twice: 80 deferred and the wholesale
+  grown to 80 cost 1.3667 at 10%, not 0.6833. Both books took it, so the
+  audit closed. The charge now prices each dollar the window holds once.
+  Past the wholesale it prices the deferred balance, but no more than the
+  window holds above the wholesale (CentralBank.getAdvancesToBank()).
+  CentralBankCheck 3 causes it: 80 deferred, then the wholesale grown to
+  30 and to 80. Both charge 0.6833 on the 80 held, 50 and 0 of it past
+  the wholesale, and both books agree, the pool and M0 to the cent.
+  GoldStandardCheck 15 is restated, because it had asserted the whole
+  deferred balance. The wholesale grew back into it in 5 of the town's 15
+  charged months, and each of the 15 is priced once.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
