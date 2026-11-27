@@ -1,4 +1,4 @@
-# CityNeeds.java - 1,141 lines · 50 methods · 25 constants · model
+# CityNeeds.java - 1,201 lines · 55 methods · 26 constants · model
 
 `ham/citybuildersim/CityNeeds.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -34,28 +34,28 @@
 > Reads the city; changes nothing. Every figure is a getter the screens
 > already read.
 
-**Uses:** [CareType](CareType.md) (48), [EducationType](EducationType.md) (36), [Game](Game.md) (21), [InfrastructureManager](InfrastructureManager.md) (6), [Education](Education.md) (6), [JobType](JobType.md) (6), [BuildAdvice](BuildAdvice.md) (5), [BuildingType](BuildingType.md) (5), [LandManager](LandManager.md) (5), [Formats](Formats.md) (4), [PopulationCohorts](PopulationCohorts.md) (3), [BuildingManager](BuildingManager.md) (3), [DebtManager](DebtManager.md) (3), [PopulationManager](PopulationManager.md) (3), [WageBand](WageBand.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (2), [SafetyType](SafetyType.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [PowerDispatch](PowerDispatch.md) (1), [EconomyManager](EconomyManager.md) (1), [Healthcare](Healthcare.md) (1), [Crime](Crime.md) (1), [FamilyModel](FamilyModel.md) (1), [Bank](Bank.md) (1), [BuildersShort](BuildersShort.md) (1), [Expectations](Expectations.md) (1), [PriceIndex](PriceIndex.md) (1), [Zoning](Zoning.md) (1), [Sectors](Sectors.md) (1)... and 8 more
+**Uses:** [CareType](CareType.md) (49), [EducationType](EducationType.md) (37), [Game](Game.md) (24), [BuildAdvice](BuildAdvice.md) (12), [InfrastructureManager](InfrastructureManager.md) (6), [Education](Education.md) (6), [BuildingManager](BuildingManager.md) (6), [JobType](JobType.md) (6), [LandManager](LandManager.md) (5), [Formats](Formats.md) (4), [BuildingType](BuildingType.md) (4), [PopulationCohorts](PopulationCohorts.md) (3), [DebtManager](DebtManager.md) (3), [PopulationManager](PopulationManager.md) (3), [WageBand](WageBand.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (2), [SafetyType](SafetyType.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [PowerDispatch](PowerDispatch.md) (1), [EconomyManager](EconomyManager.md) (1), [Healthcare](Healthcare.md) (1), [Crime](Crime.md) (1), [FamilyModel](FamilyModel.md) (1), [Bank](Bank.md) (1), [BuildersShort](BuildersShort.md) (1), [Expectations](Expectations.md) (1), [PriceIndex](PriceIndex.md) (1), [Zoning](Zoning.md) (1), [Sectors](Sectors.md) (1)... and 8 more
 
-**Used by (32):** [AskProceedsCheck](AskProceedsCheck.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [NewUnitCheck](NewUnitCheck.md), [PeopleScreen](PeopleScreen.md), [PlaytestFixCheck](PlaytestFixCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [UserInterface](UserInterface.md), [UtilitiesHandler](UtilitiesHandler.md), [WaterCheck](WaterCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (33):** [AskProceedsCheck](AskProceedsCheck.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureManager](InfrastructureManager.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LongPlaytest](LongPlaytest.md), [NewUnitCheck](NewUnitCheck.md), [PeopleScreen](PeopleScreen.md), [PlaytestFixCheck](PlaytestFixCheck.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [ReadPathCheck](ReadPathCheck.md), [RoadCheck](RoadCheck.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TownGridCheck](TownGridCheck.md), [UserInterface](UserInterface.md), [UtilitiesHandler](UtilitiesHandler.md), [WaterCheck](WaterCheck.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
 | line | section |
 |---:|---|
-| 166 | THE LINES. Per condition, not one rule, because the same percentage |
-| 271 | SERVED (0.7.41): ONE RULE FOR EVERY SERVICE GAUGE. Jerus, playing |
-| 418 | THE LIST |
-| 443 | · · the networks |
-| 487 | · · the care |
-| 534 | · · the schools |
-| 551 | · · and the schools above them |
-| 554 | · · the police |
-| 567 | · · the housing |
-| 575 | · · the ground |
-| 598 | · · the money |
-| 638 | · · the promises |
-| 815 | THE PIECES |
-| 1009 | · the student body the city would get and hire (0.7.51) |
+| 185 | THE LINES. Per condition, not one rule, because the same percentage |
+| 290 | SERVED (0.7.41): ONE RULE FOR EVERY SERVICE GAUGE. Jerus, playing |
+| 461 | THE LIST |
+| 488 | · · the networks |
+| 534 | · · the care |
+| 581 | · · the schools |
+| 598 | · · and the schools above them |
+| 601 | · · the police |
+| 614 | · · the housing |
+| 622 | · · the ground |
+| 645 | · · the money |
+| 685 | · · the promises |
+| 862 | THE PIECES |
+| 1069 | · the student body the city would get and hire (0.7.51) |
 
 ## Enum constants
 
@@ -102,115 +102,130 @@
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 151 | `CityNeeds.PLAIN` | `new Words() { @ Override public String people(double count) { return Formats....` | The same four shapes without the toolkit (Formats), for a harness and a log. |
-| 173 | `CityNeeds.NETWORK_YELLOW` | `.75, NETWORK_RED = 1` | A network is listed from three-quarters of its capacity, red once it is over. |
-| 176 | `CityNeeds.POWER_YELLOW` | `1 /(1 + PowerDispatch.RESERVE)` | Power is listed once its firm supply leaves less than the reserve test's margin over the year's peak hour (PW3: 1 / (1 + PowerDispatch.RESERVE)), red once the peak hour is not covered (NETWORK_RED). |
-| 189 | `CityNeeds.HIGHWAY_MIN_FILL` | `.60` | THE HIGHWAYS ARE LISTED (FR7, 2026-10-18) once the through trips with no highway to take them would fill this share of one more highway at free flow: a highway is not built to stand idle, the railway's rule (Freight.M... |
-| 192 | `CityNeeds.HIGHWAY_RED_FILL` | `1.0` | ...and red once those trips would fill a whole highway: a highway's worth of through traffic is on the streets. |
-| 195 | `CityNeeds.GENERAL_YELLOW` | `.80, GENERAL_RED =.50` | General care is watched hardest: it moves the sick rate. |
-| 198 | `CityNeeds.OTHER_CARE_YELLOW` | `.70, OTHER_CARE_RED =.40` | Childcare and senior care kill at the ends of life; a young city legitimately has neither for a while. |
-| 201 | `CityNeeds.PLOTS_WATCHED` | `120` | Burial plots are watched once fewer than this many months are left. |
-| 203 | `CityNeeds.PLOTS_YELLOW` | `24, PLOTS_RED = 6` | ...listed under two years of plots, red under six months. |
-| 206 | `CityNeeds.SCHOOLS_YELLOW` | `.90, SCHOOLS_RED =.60` | The basic ladder's bottleneck, its coverage (read as served since 0.7.41; "taught" until then). |
-| 209 | `CityNeeds.SEATS_YELLOW` | `1.05, SEATS_RED = 2` | A school above the ladder: who would come and be hired (wanted(), 0.7.51; who would come until then) over its seats. |
-| 212 | `CityNeeds.SEATS_FLOOR` | `25` | A class's worth: fewer students than this the city would get and hire (would-be students until 0.7.51) and a school is not a row (measured: 3 would-be law students in a city of 1,650). |
-| 215 | `CityNeeds.CRIME_YELLOW` | `1.2, CRIME_RED = 1.5` | Crime against Canada's rate. |
-| 218 | `CityNeeds.CELLS_YELLOW` | `1, CELLS_RED = 25` | The caught, not held. |
-| 226 | `CityNeeds.SICK_YELLOW` | `.06, SICK_RED =.12` | The sick rate, the share of the workforce off sick (0.7.28): the left panel's OFF SICK lines (SummaryScreen's literals until then), here so the Services screen colours the same figure by the same lines. |
-| 235 | `CityNeeds.FALLS_DUE_MONTHS` | `3` | FALLS DUE (0.7.24): paper due within this many months is red, as the bottom strip drew its maturity chip until it left the frame (its maturity chip, FinancesScreen's until 0.7.32 and its urgency() since: gap <= 3 red,... |
-| 243 | `CityNeeds.FALLS_DUE_SOON_MONTHS` | `12` | ...and paper due within this many months is amber: the strip's other rule (gap <= 12), named in 0.7.32 so the Finances tab's NEXT DUE, its book and its strip colour a maturity by one line. |
-| 253 | `CityNeeds.SERVICE_FELT` | `.12, SERVICE_CONSTRAINED =.25` | DEBT SERVICE, A SHARE OF THE TAKE (0.7.32): what the city pays its lenders against what it collects is comfortable under SERVICE_FELT, felt from there, and constrained past SERVICE_CONSTRAINED - the bands the Finances... |
-| 263 | `CityNeeds.YEAR_WALL` | `.5` | A WALL ON THE LADDER (0.7.32): a calendar year whose payments - coupons and principal - pass this share of a year of revenue is one a city meets by refinancing before it arrives. |
-| 297 | `CityNeeds.SERVED` | `"served", SHORT = "short", TIGHT = "tight", ENOUGH = "enough"` | The gauges' words (0.7.41), the same on every screen: what the figure is, and its verdict's three words. |
-| 300 | `CityNeeds.AT_THE_PEAK_HOUR` | `" at the peak hour"` | What the POWER row's share is read at (PW1; PW3 the year's peak hour): the firm supply against the peak hour's draw, not the month's average, so "48% served at the peak hour". |
-| 324 | `CityNeeds.SERVED_AS_MULTIPLE` | `5` | From this served share up (5 = five times what is asked) a share prints as a multiple, "30×", not a per cent: in a town of 40 a power plant read 13333% served (PT1). |
-| 668 | `CityNeeds.GROUND_YELLOW` | `LandManager.BLOCK_SQ_FT` | Free ground under which NEEDS YOU lists the GROUND row: a block, 100,000 sq ft. |
-| 671 | `CityNeeds.TRUST_RED` | `.5` | Trust in the central bank under which a fall is red in the PRICES row: half - under it, what people expect is more recent prices than the bank's target. |
-| 1012 | `CityNeeds.FIRST_SCHOOL_SHARE` | `BuildAdvice.FIRST_WORK_SHARE` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, Agriculture.FIRST_FA... |
+| 170 | `CityNeeds.PLAIN` | `new Words() { @ Override public String people(double count) { return Formats....` | The same four shapes without the toolkit (Formats), for a harness and a log. |
+| 192 | `CityNeeds.NETWORK_YELLOW` | `.75, NETWORK_RED = 1` | A network is listed from three-quarters of its capacity, red once it is over. |
+| 195 | `CityNeeds.POWER_YELLOW` | `1 /(1 + PowerDispatch.RESERVE)` | Power is listed once its firm supply leaves less than the reserve test's margin over the year's peak hour (PW3: 1 / (1 + PowerDispatch.RESERVE)), red once the peak hour is not covered (NETWORK_RED). |
+| 208 | `CityNeeds.HIGHWAY_MIN_FILL` | `.60` | THE HIGHWAYS ARE LISTED (FR7, 2026-10-18) once the through trips with no highway to take them would fill this share of one more highway at free flow: a highway is not built to stand idle, the railway's rule (Freight.M... |
+| 211 | `CityNeeds.HIGHWAY_RED_FILL` | `1.0` | ...and red once those trips would fill a whole highway: a highway's worth of through traffic is on the streets. |
+| 214 | `CityNeeds.GENERAL_YELLOW` | `.80, GENERAL_RED =.50` | General care is watched hardest: it moves the sick rate. |
+| 217 | `CityNeeds.OTHER_CARE_YELLOW` | `.70, OTHER_CARE_RED =.40` | Childcare and senior care kill at the ends of life; a young city legitimately has neither for a while. |
+| 220 | `CityNeeds.PLOTS_WATCHED` | `120` | Burial plots are watched once fewer than this many months are left. |
+| 222 | `CityNeeds.PLOTS_YELLOW` | `24, PLOTS_RED = 6` | ...listed under two years of plots, red under six months. |
+| 225 | `CityNeeds.SCHOOLS_YELLOW` | `.90, SCHOOLS_RED =.60` | The basic ladder's bottleneck, its coverage (read as served since 0.7.41; "taught" until then). |
+| 228 | `CityNeeds.SEATS_YELLOW` | `1.05, SEATS_RED = 2` | A school above the ladder: who would come and be hired (wanted(), 0.7.51; who would come until then) over its seats. |
+| 231 | `CityNeeds.SEATS_FLOOR` | `25` | A class's worth: fewer students than this the city would get and hire (would-be students until 0.7.51) and a school is not a row (measured: 3 would-be law students in a city of 1,650). |
+| 234 | `CityNeeds.CRIME_YELLOW` | `1.2, CRIME_RED = 1.5` | Crime against Canada's rate. |
+| 237 | `CityNeeds.CELLS_YELLOW` | `1, CELLS_RED = 25` | The caught, not held. |
+| 245 | `CityNeeds.SICK_YELLOW` | `.06, SICK_RED =.12` | The sick rate, the share of the workforce off sick (0.7.28): the left panel's OFF SICK lines (SummaryScreen's literals until then), here so the Services screen colours the same figure by the same lines. |
+| 254 | `CityNeeds.FALLS_DUE_MONTHS` | `3` | FALLS DUE (0.7.24): paper due within this many months is red, as the bottom strip drew its maturity chip until it left the frame (its maturity chip, FinancesScreen's until 0.7.32 and its urgency() since: gap <= 3 red,... |
+| 262 | `CityNeeds.FALLS_DUE_SOON_MONTHS` | `12` | ...and paper due within this many months is amber: the strip's other rule (gap <= 12), named in 0.7.32 so the Finances tab's NEXT DUE, its book and its strip colour a maturity by one line. |
+| 272 | `CityNeeds.SERVICE_FELT` | `.12, SERVICE_CONSTRAINED =.25` | DEBT SERVICE, A SHARE OF THE TAKE (0.7.32): what the city pays its lenders against what it collects is comfortable under SERVICE_FELT, felt from there, and constrained past SERVICE_CONSTRAINED - the bands the Finances... |
+| 282 | `CityNeeds.YEAR_WALL` | `.5` | A WALL ON THE LADDER (0.7.32): a calendar year whose payments - coupons and principal - pass this share of a year of revenue is one a city meets by refinancing before it arrives. |
+| 316 | `CityNeeds.SERVED` | `"served", SHORT = "short", TIGHT = "tight", ENOUGH = "enough"` | The gauges' words (0.7.41), the same on every screen: what the figure is, and its verdict's three words. |
+| 319 | `CityNeeds.AT_THE_PEAK_HOUR` | `" at the peak hour"` | What the POWER row's share is read at (PW1; PW3 the year's peak hour): the firm supply against the peak hour's draw, not the month's average, so "48% served at the peak hour". |
+| 322 | `CityNeeds.BY_THE_WIRES` | `" by the wires"` | What the POWER row adds after AT_THE_PEAK_HOUR when the wires, not the plants, are what serves the least of the peak. |
+| 367 | `CityNeeds.SERVED_AS_MULTIPLE` | `5` | From this served share up (5 = five times what is asked) a share prints as a multiple, "30×", not a per cent: in a town of 40 a power plant read 13333% served (PT1). |
+| 715 | `CityNeeds.GROUND_YELLOW` | `LandManager.BLOCK_SQ_FT` | Free ground under which NEEDS YOU lists the GROUND row: a block, 100,000 sq ft. |
+| 718 | `CityNeeds.TRUST_RED` | `.5` | Trust in the central bank under which a fall is red in the PRICES row: half - under it, what people expect is more recent prices than the bank's target. |
+| 1072 | `CityNeeds.FIRST_SCHOOL_SHARE` | `BuildAdvice.FIRST_WORK_SHARE` | A first school above the ladder is listed once the students it would get and hire fill this share of the smallest that teaches it - the firms' first-plant share (Materials.FIRST_PLANT_UTILISATION, Agriculture.FIRST_FA... |
+
+## Fields (state)
+
+| line | field | says |
+|---:|---|---|
+| 984 | `private final Game game` |  |
+| 985 | `private BuildingManager.Plan plan` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 39 | 1103 | **type** `public final class CityNeeds` | NEEDS YOU, measured: everything with a lever, each against its own line, in the order a city is built - the list the left panel's Summary prints, the header's "Needs you" chip counts, and the Build tab's overview and ... |
+| 39 | 1163 | **type** `public final class CityNeeds` | NEEDS YOU, measured: everything with a lever, each against its own line, in the order a city is built - the list the left panel's Summary prints, the header's "Needs you" chip counts, and the Build tab's overview and ... |
 | 41 | 1 | `private CityNeeds()` |  |
 | 44 | 9 | **type** `public enum Kind` | What a need is about - the measure the Build tab's advice and rings read. |
 | 55 | 6 | **type** `public enum Go` | Where a need's fix is: the screen its row opens. |
-| 87 | 50 | **type** `public record Need(String label, String reading, int level, double near, Kind kind, Go go, CareType care, E...` | One thing being watched. |
-| 93 | 9 | `public boolean cityBuilds()` _(in CityNeeds.Need)_ | A need the city answers with a building of its own (BuildAdvice): roads, care, schools, police, cells, power and water. |
-| 109 | 12 | `public Served served()` _(in CityNeeds.Need)_ | What the row's figure serves, read the one way (0.7.41), for the rows that are a supply against a demand - power, water, the road, care and the schools - or null for the rest. |
-| 127 | 4 | `public int verdictLevel()` _(in CityNeeds.Need)_ | The row's colour on a screen (0.7.41): a served row's verdict, so a gauge and its row read one colour everywhere; any other row's level. |
-| 132 | 4 | `Need withOnSite(String moreReading, long units, double months, int newLevel)` _(in CityNeeds.Need)_ |  |
-| 143 | 6 | **type** `public interface Words` | How the interface writes a figure, passed in so the readings are its own: a headcount, an amount of money in the model's thousands, a short number for a narrow cell, and a build time. |
-| 144 | 1 | `String people(double count)` _(in CityNeeds.Words)_ |  |
-| 145 | 1 | `String money(double thousands)` _(in CityNeeds.Words)_ |  |
-| 146 | 1 | `String shortNumber(double value)` _(in CityNeeds.Words)_ |  |
-| 147 | 1 | `String monthsWait(double months)` _(in CityNeeds.Words)_ |  |
+| 91 | 65 | **type** `public record Need(String label, String reading, int level, double near, Kind kind, Go go, CareType care, E...` | One thing being watched. |
+| 97 | 7 | `public Need(String label, String reading, int level, double near, Kind kind, Go go, CareType care, EducationType school, double...` _(in CityNeeds.Need)_ | A need that reads no wires: every row but a POWER row the wires bind. |
+| 106 | 9 | `public boolean cityBuilds()` _(in CityNeeds.Need)_ | A need the city answers with a building of its own (BuildAdvice): roads, care, schools, police, cells, power and water. |
+| 122 | 12 | `public Served served()` _(in CityNeeds.Need)_ | What the row's figure serves, read the one way (0.7.41), for the rows that are a supply against a demand - power, water, the road, care and the schools - or null for the rest. |
+| 140 | 4 | `public int verdictLevel()` _(in CityNeeds.Need)_ | The row's colour on a screen (0.7.41): a served row's verdict, so a gauge and its row read one colour everywhere; any other row's level. |
+| 145 | 4 | `Need withOnSite(String moreReading, long units, double months, int newLevel)` _(in CityNeeds.Need)_ |  |
+| 151 | 4 | `Need byTheWires()` _(in CityNeeds.Need)_ | The same row read by the wires: powerPeak()'s answer, set on the POWER row after network() has built it. |
+| 162 | 6 | **type** `public interface Words` | How the interface writes a figure, passed in so the readings are its own: a headcount, an amount of money in the model's thousands, a short number for a narrow cell, and a build time. |
+| 163 | 1 | `String people(double count)` _(in CityNeeds.Words)_ |  |
+| 164 | 1 | `String money(double thousands)` _(in CityNeeds.Words)_ |  |
+| 165 | 1 | `String shortNumber(double value)` _(in CityNeeds.Words)_ |  |
+| 166 | 1 | `String monthsWait(double months)` _(in CityNeeds.Words)_ |  |
 
-### THE LINES. Per condition, not one rule, because the same percentage (lines 166-270)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 179 | 1 | `public static double networkYellow(Kind kind)` | A network's yellow line: power's the reserve test's (PW3), water's the quarter in hand. |
-| 266 | 4 | `public static int serviceLevel(double share)` | A debt-service share's band (0.7.32): 0 comfortable, 1 felt, 2 constrained; a share that is not a number is comfortable. |
-
-### SERVED (0.7.41): ONE RULE FOR EVERY SERVICE GAUGE. Jerus, playing (lines 271-417)
+### THE LINES. Per condition, not one rule, because the same percentage (lines 185-289)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 308 | 4 | **type** `public record Served(double share, int level, String word)` | One gauge, read the one way (0.7.41): its share served - supply over demand, unclamped, +∞ when nothing is asked of it - its verdict's level (0 green, 1 amber, 2 red; -1 none, for a gauge no line judges) and its word ... |
-| 310 | 1 | `public boolean enough()` _(in CityNeeds.Served)_ | Green: 100% or more and off NEEDS YOU's list. |
-| 314 | 4 | `public static double servedShare(double supply, double demand)` | Supply over demand, unclamped (0.7.41): nothing asked of it is all of it met, +∞; nothing supplying a demand is nothing, 0. |
-| 332 | 6 | `public static String servedPct(double share)` | A served share as a whole per cent, "62%", or from SERVED_AS_MULTIPLE up as a multiple, "30×", or a dash for one that is not a finite number (nothing asked of it). |
-| 345 | 5 | `public static Served served(double share, double offList, double red)` | The verdict on a served share against two lines in served terms (0.7.41): green past `offList` (strictly, as NEEDS YOU lists a row at its line) and at 100% or more; red at or under `red`; amber between, "short" under ... |
-| 352 | 3 | `public static Served unjudged(double share)` | ...and a share no line judges (transit; a school above the ladder NEEDS YOU does not list, listsSchool()): no colour, no word. |
-| 363 | 17 | `public static double[] servedLines(Kind kind, CareType care)` | A served kind's two lines in served terms (0.7.41), {off the list past this, red at or under this} - NEEDS YOU's own lines turned over where its figure was a load (a network, the road) or a crowd (who would come and b... |
-| 391 | 5 | `public static Served highwayVerdict(double share, double fill)` | The through need's verdict (FR7, 2026-10-18), read from the row's own level: a highway is not built to stand idle, so the through trips the streets carry are enough while they would fill under HIGHWAY_MIN_FILL of one ... |
-| 398 | 4 | `public static Served verdict(Kind kind, CareType care, double share)` | The one verdict on a served share of one of NEEDS YOU's served kinds (0.7.41); null for a kind that is not a supply against a demand (and for the highways, whose verdict is highwayVerdict()'s). |
-| 412 | 5 | `public static String freshLimitLine(UtilitiesHandler utilities)` | THE FRESH WATER LIMIT'S LINE (0.7.59, batch J2): what the Services page says under the water when the city's lakes and river hold its plants back - "fresh water limit: 62% of the plants' nameplate idle · buy lake or r... |
+| 198 | 1 | `public static double networkYellow(Kind kind)` | A network's yellow line: power's the reserve test's (PW3), water's the quarter in hand. |
+| 285 | 4 | `public static int serviceLevel(double share)` | A debt-service share's band (0.7.32): 0 comfortable, 1 felt, 2 constrained; a share that is not a number is comfortable. |
 
-### THE LIST (lines 418-814)
+### SERVED (0.7.41): ONE RULE FOR EVERY SERVICE GAUGE. Jerus, playing (lines 290-460)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 427 | 239 | `public static List<Need> measure(Game game, Words w)` | Everything with a lever, measured against its own line, in the order it is read - the fine ones too, because "next to watch" on a healthy city is the nearest of them. |
-| 687 | 25 | `public static Need prices(Game game)` | PRICES (0.7.45; the UI spec's D2): whether the city still believes the central bank. |
-| 729 | 14 | `public static Need ground(Game game, Words w)` | The GROUND row on its own (0.7.26), as measure() lists it: what the land office's GROUND FREE, Build's LAND FREE and the left panel's land colour themselves by, so the three and NEEDS YOU agree - none of them reads th... |
-| 752 | 18 | `public static String zonesHoldWords(Game game)` | What the zones hold that the homes may not build on, as the GROUND row names it once it is listed (0.7.109, batch Z2; the zoning study's NEEDS YOU line): every zone's held ground but the landlords' own (Real Estate's ... |
-| 777 | 6 | `public static List<Need> biting(List<Need> all)` | NEEDS YOU: what is near a line or past one, red above yellow - and inside a tier the order they were measured in, which is the order a city is built. |
-| 785 | 3 | `public static List<Need> needsYou(Game game)` | NEEDS YOU for this city, in the panel's order. |
-| 794 | 4 | `public static Need worst(List<Need> all, Go go)` | The worst need of those a screen answers: the highest level, and of equals the first in NEEDS YOU's order - the row the panel would list first. |
-| 806 | 8 | `public static Need worstUnlisted(List<Need> all, Go go)` | ...and of the served rows NEEDS YOU does NOT list, the one that is still not enough (0.7.41): general care at 90% is past its line, so not listed, and short of 100% - the worst verdict, of equals the first in order. |
+| 329 | 1 | **type** `public record PowerPeak(double supply, double demand, boolean wires)` | The pair the POWER row reads: supply and demand in kW at the peak hour, and whether they are the wires'. |
+| 337 | 7 | `public static PowerPeak powerPeak(Game game)` | ASH1 finding 1: the POWER row's pair is the lesser of the plants and the wires. |
+| 351 | 4 | **type** `public record Served(double share, int level, String word)` | One gauge, read the one way (0.7.41): its share served - supply over demand, unclamped, +∞ when nothing is asked of it - its verdict's level (0 green, 1 amber, 2 red; -1 none, for a gauge no line judges) and its word ... |
+| 353 | 1 | `public boolean enough()` _(in CityNeeds.Served)_ | Green: 100% or more and off NEEDS YOU's list. |
+| 357 | 4 | `public static double servedShare(double supply, double demand)` | Supply over demand, unclamped (0.7.41): nothing asked of it is all of it met, +∞; nothing supplying a demand is nothing, 0. |
+| 375 | 6 | `public static String servedPct(double share)` | A served share as a whole per cent, "62%", or from SERVED_AS_MULTIPLE up as a multiple, "30×", or a dash for one that is not a finite number (nothing asked of it). |
+| 388 | 5 | `public static Served served(double share, double offList, double red)` | The verdict on a served share against two lines in served terms (0.7.41): green past `offList` (strictly, as NEEDS YOU lists a row at its line) and at 100% or more; red at or under `red`; amber between, "short" under ... |
+| 395 | 3 | `public static Served unjudged(double share)` | ...and a share no line judges (transit; a school above the ladder NEEDS YOU does not list, listsSchool()): no colour, no word. |
+| 406 | 17 | `public static double[] servedLines(Kind kind, CareType care)` | A served kind's two lines in served terms (0.7.41), {off the list past this, red at or under this} - NEEDS YOU's own lines turned over where its figure was a load (a network, the road) or a crowd (who would come and b... |
+| 434 | 5 | `public static Served highwayVerdict(double share, double fill)` | The through need's verdict (FR7, 2026-10-18), read from the row's own level: a highway is not built to stand idle, so the through trips the streets carry are enough while they would fill under HIGHWAY_MIN_FILL of one ... |
+| 441 | 4 | `public static Served verdict(Kind kind, CareType care, double share)` | The one verdict on a served share of one of NEEDS YOU's served kinds (0.7.41); null for a kind that is not a supply against a demand (and for the highways, whose verdict is highwayVerdict()'s). |
+| 455 | 5 | `public static String freshLimitLine(UtilitiesHandler utilities)` | THE FRESH WATER LIMIT'S LINE (0.7.59, batch J2): what the Services page says under the water when the city's lakes and river hold its plants back - "fresh water limit: 62% of the plants' nameplate idle · buy lake or r... |
 
-### THE PIECES (lines 815-1008)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 835 | 3 | `public static double careCover(Game game, CareType care, PopulationCohorts cohorts, double[] staffing)` | How much of the people who need a kind of care the staffed beds less the priced out could take, 0 to 1 (0.7.106; the beds alone until then, Game.careCoverage()'s). |
-| 840 | 3 | `public static double careServed(Game game, CareType care, PopulationCohorts cohorts, double[] staffing)` | ...the same places over the same people, unclamped: what the care rows read as served (0.7.41), and Build's care rings. |
-| 845 | 4 | `static double careHave(Game game, CareType care, double[] staffing)` | The places of a kind of care a row carries as its supply (0.7.41): its staffed beds less the people the fee turned away last month (0.7.106), never under nothing. |
-| 851 | 5 | `public static double taxRaised(Game game)` | What the city raised in tax last month: profit, sales, wages and property (the Policy tab's TAX A MONTH). |
-| 858 | 9 | `public static int pinnedBands(Game game)` | Wage bands pinned to the minimum wage with people spare in them. |
-| 874 | 4 | `public static int level(double value, double yellow, double red, boolean higherWorse)` | A figure's level against two lines, as a row is struck - over() when higher is worse, under() when lower is (0.7.28): for a screen that colours a figure no row lists (the Services screen's OFF SICK) by the same rule, ... |
-| 880 | 7 | `static void over(List<Need> out, String label, String reading, double value, double yellow, double red, Kind kind, Go go, CareT...` | Higher is worse. |
-| 889 | 7 | `static void under(List<Need> out, String label, String reading, double value, double yellow, double red, Kind kind, Go go, Care...` | Lower is worse. |
-| 898 | 5 | `static void flag(List<Need> out, String label, String reading, boolean bad, boolean severe, Kind kind, Go go, double value)` | A thing that is simply true or not. |
-| 912 | 16 | `static void onTheWay(Game game, Words w, List<Need> out, int at, java.util.function.Predicate<BuildingsTemplate> serves)` | ...AND WHAT IS ALREADY ON THE WAY (0.7.20). |
-| 930 | 4 | `static void onTheWay(Game game, Words w, List<Need> out, java.util.function.Predicate<BuildingsTemplate> serves)` | The same, for the need just measured. |
-| 946 | 4 | `static void network(List<Need> out, String label, Kind kind, double demand, double supply, double ratio)` | One network: how much of its capacity is spoken for, and whether it is still meeting demand. |
-| 952 | 19 | `static void network(List<Need> out, String label, Kind kind, double demand, double supply, double ratio, String at)` | ...with the words that say what the share is read at after "served" (POWER: AT_THE_PEAK_HOUR); water's are none. |
-| 992 | 16 | `static void seatsWanted(Game game, Words w, List<Need> out)` | SEATS AGAINST WHO WOULD COME, for the schools above the basic ladder: what the schools hold, and the student body this city would sustain - so a bigger second number means another building fills. |
-
-### the student body the city would get and hire (0.7.51) (lines 1009-1141)
+### THE LIST (lines 461-861)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1015 | 4 | `public static boolean listsSchool(Game game, EducationType type, double want, double seats)` | Whether a school above the ladder is a row: a class's worth wanted (SEATS_FLOOR), and with no seats of its kind yet, FIRST_SCHOOL_SHARE of the smallest school's. |
-| 1021 | 7 | `public static double smallestSchool(Game game, EducationType type)` | The seats of the smallest building that teaches this; 0 when none does. |
-| 1035 | 3 | `public static double wanted(Game game, EducationType type, double months, double k)` | The student body the city would get and hire, `months` from now with its posts grown by k: the smaller of who would come by then (wouldComeAt()) and the posts their degree would fill (hires()). |
-| 1040 | 6 | `public static double wouldComeAt(Game game, EducationType type, double months)` | Who would come `months` from now: wouldCome()'s arithmetic with the feeder's graduates by then added to the band (feederOver()); at 0 it is wouldCome(). |
-| 1054 | 11 | `public static double feederOver(Game game, EducationType type, double months)` | The feeder's graduates over the next `months`: for a college or a university the high schools' diplomas a month at the ladder's saved coverage (Education.schoolLeavers(), advanceMonth()'s flow) times the months; for a... |
-| 1074 | 30 | `public static double hires(Game game, EducationType type, double k)` | The posts this school's graduates would take, as a student body: the posts of the band it qualifies for (a professional school: its licence's posts), standing and on site, grown by k, less the people already qualified... |
-| 1106 | 7 | `public static double wouldCome(Game game, EducationType type)` | The student body a school above the ladder would hold if seats were free: eligible x willing x the enrolment rate, times the course. |
-| 1122 | 19 | `static void fallsDue(Game game, Words w, List<Need> out)` | FALLS DUE (0.7.24). |
+| 470 | 243 | `public static List<Need> measure(Game game, Words w)` | Everything with a lever, measured against its own line, in the order it is read - the fine ones too, because "next to watch" on a healthy city is the nearest of them. |
+| 734 | 25 | `public static Need prices(Game game)` | PRICES (0.7.45; the UI spec's D2): whether the city still believes the central bank. |
+| 776 | 14 | `public static Need ground(Game game, Words w)` | The GROUND row on its own (0.7.26), as measure() lists it: what the land office's GROUND FREE, Build's LAND FREE and the left panel's land colour themselves by, so the three and NEEDS YOU agree - none of them reads th... |
+| 799 | 18 | `public static String zonesHoldWords(Game game)` | What the zones hold that the homes may not build on, as the GROUND row names it once it is listed (0.7.109, batch Z2; the zoning study's NEEDS YOU line): every zone's held ground but the landlords' own (Real Estate's ... |
+| 824 | 6 | `public static List<Need> biting(List<Need> all)` | NEEDS YOU: what is near a line or past one, red above yellow - and inside a tier the order they were measured in, which is the order a city is built. |
+| 832 | 3 | `public static List<Need> needsYou(Game game)` | NEEDS YOU for this city, in the panel's order. |
+| 841 | 4 | `public static Need worst(List<Need> all, Go go)` | The worst need of those a screen answers: the highest level, and of equals the first in NEEDS YOU's order - the row the panel would list first. |
+| 853 | 8 | `public static Need worstUnlisted(List<Need> all, Go go)` | ...and of the served rows NEEDS YOU does NOT list, the one that is still not enough (0.7.41): general care at 90% is past its line, so not listed, and short of 100% - the worst verdict, of equals the first in order. |
+
+### THE PIECES (lines 862-1068)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 882 | 3 | `public static double careCover(Game game, CareType care, PopulationCohorts cohorts, double[] staffing)` | How much of the people who need a kind of care the staffed beds less the priced out could take, 0 to 1 (0.7.106; the beds alone until then, Game.careCoverage()'s). |
+| 887 | 3 | `public static double careServed(Game game, CareType care, PopulationCohorts cohorts, double[] staffing)` | ...the same places over the same people, unclamped: what the care rows read as served (0.7.41), and Build's care rings. |
+| 892 | 4 | `static double careHave(Game game, CareType care, double[] staffing)` | The places of a kind of care a row carries as its supply (0.7.41): its staffed beds less the people the fee turned away last month (0.7.106), never under nothing. |
+| 898 | 5 | `public static double taxRaised(Game game)` | What the city raised in tax last month: profit, sales, wages and property (the Policy tab's TAX A MONTH). |
+| 905 | 9 | `public static int pinnedBands(Game game)` | Wage bands pinned to the minimum wage with people spare in them. |
+| 921 | 4 | `public static int level(double value, double yellow, double red, boolean higherWorse)` | A figure's level against two lines, as a row is struck - over() when higher is worse, under() when lower is (0.7.28): for a screen that colours a figure no row lists (the Services screen's OFF SICK) by the same rule, ... |
+| 927 | 7 | `static void over(List<Need> out, String label, String reading, double value, double yellow, double red, Kind kind, Go go, CareT...` | Higher is worse. |
+| 936 | 7 | `static void under(List<Need> out, String label, String reading, double value, double yellow, double red, Kind kind, Go go, Care...` | Lower is worse. |
+| 945 | 5 | `static void flag(List<Need> out, String label, String reading, boolean bad, boolean severe, Kind kind, Go go, double value)` | A thing that is simply true or not. |
+| 959 | 16 | `static void onTheWay(Game game, Words w, List<Need> out, SitePace pace, int at, java.util.function.Predicate<BuildingsTemplate>...` | ...AND WHAT IS ALREADY ON THE WAY (0.7.20). |
+| 977 | 4 | `static void onTheWay(Game game, Words w, List<Need> out, SitePace pace, java.util.function.Predicate<BuildingsTemplate> serves)` | The same, for the need just measured. |
+| 983 | 11 | **type** `static final class SitePace` | This month's plan of the sites (Game.sitesPlan()), struck the first time a row on the way asks and read by every row after it; made in measure() and gone with it. |
+| 987 | 1 | `SitePace(Game game)` _(in CityNeeds.SitePace)_ |  |
+| 989 | 4 | `BuildingManager.Plan plan()` _(in CityNeeds.SitePace)_ |  |
+| 1006 | 4 | `static void network(List<Need> out, String label, Kind kind, double demand, double supply, double ratio)` | One network: how much of its capacity is spoken for, and whether it is still meeting demand. |
+| 1012 | 19 | `static void network(List<Need> out, String label, Kind kind, double demand, double supply, double ratio, String at)` | ...with the words that say what the share is read at after "served" (POWER: AT_THE_PEAK_HOUR); water's are none. |
+| 1052 | 16 | `static void seatsWanted(Game game, Words w, List<Need> out, SitePace pace)` | SEATS AGAINST WHO WOULD COME, for the schools above the basic ladder: what the schools hold, and the student body this city would sustain - so a bigger second number means another building fills. |
+
+### the student body the city would get and hire (0.7.51) (lines 1069-1201)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1075 | 4 | `public static boolean listsSchool(Game game, EducationType type, double want, double seats)` | Whether a school above the ladder is a row: a class's worth wanted (SEATS_FLOOR), and with no seats of its kind yet, FIRST_SCHOOL_SHARE of the smallest school's. |
+| 1081 | 7 | `public static double smallestSchool(Game game, EducationType type)` | The seats of the smallest building that teaches this; 0 when none does. |
+| 1095 | 3 | `public static double wanted(Game game, EducationType type, double months, double k)` | The student body the city would get and hire, `months` from now with its posts grown by k: the smaller of who would come by then (wouldComeAt()) and the posts their degree would fill (hires()). |
+| 1100 | 6 | `public static double wouldComeAt(Game game, EducationType type, double months)` | Who would come `months` from now: wouldCome()'s arithmetic with the feeder's graduates by then added to the band (feederOver()); at 0 it is wouldCome(). |
+| 1114 | 11 | `public static double feederOver(Game game, EducationType type, double months)` | The feeder's graduates over the next `months`: for a college or a university the high schools' diplomas a month at the ladder's saved coverage (Education.schoolLeavers(), advanceMonth()'s flow) times the months; for a... |
+| 1134 | 30 | `public static double hires(Game game, EducationType type, double k)` | The posts this school's graduates would take, as a student body: the posts of the band it qualifies for (a professional school: its licence's posts), standing and on site, grown by k, less the people already qualified... |
+| 1166 | 7 | `public static double wouldCome(Game game, EducationType type)` | The student body a school above the ladder would hold if seats were free: eligible x willing x the enrolment rate, times the course. |
+| 1182 | 19 | `static void fallsDue(Game game, Words w, List<Need> out)` | FALLS DUE (0.7.24). |
 
