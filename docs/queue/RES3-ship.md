@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — RES3, home choice, typed rents and the 14-form catalogue — 2026-11-25, ready, see docs/queue/RES3-notes.md
 Activates fourteen residential recipes and thirty-two comparable dwelling classes,
