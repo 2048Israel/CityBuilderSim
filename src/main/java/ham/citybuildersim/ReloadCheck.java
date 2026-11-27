@@ -420,10 +420,32 @@ public class ReloadCheck {
             // The played treasury may be insolvent; its advisor then refuses even to borrow. This fixture needs a placed order,
             // so give it the model's wealthy founding cash before the normal ground purchase and order, as the tally is caused above.
             g.setCashForTest(Math.max(g.getCash(), Founding.WEALTHY_CASH));
+            causeGround(g);
             Map<String, Integer> refusedBefore = new LinkedHashMap<>(LongPlaytest.refusals);
             if (!LongPlaytest.build(g, "House", CAUSED_ORDER)) throw new IllegalStateException(refusedBecause(g, CAUSED_ORDER, refusedBefore));
             g.simulateMonths(1);
         } finally { LongPlaytest.out = report; System.setOut(real); }
+    }
+
+    /**
+     * RES3-G2 (2026-11-26): THE CAUSED ORDER'S GROUND. The cash put up above is the founding's, in founding money, and the order buys the
+     * ground it lacks out of it, as the playtest's build does. On the gate box's run of RES3's tip (e63aa2068) the month-1202 city had 1,558
+     * sq ft free against the order's 40,000 and a treasury at that floor, 64,709 against a quote of 20,856, and the order was refused "House: no
+     * land", where the PC's run of the same commit had 176,736 sq ft free and 9.51 million: the two machines' paths part over 1,200 months, and
+     * a city that has used up its ground and cannot pay for more refuses the order, as a real one would. So the treasury is put up by the
+     * price of the offer that covers what the order lacks, and the order meets ground it can buy as it meets the cash for its quote.
+     */
+    private static void causeGround(Game g) {
+        BuildingsTemplate t = LongPlaytest.template(g, "House");
+        if (t == null) return;
+        double shortfall = t.getLandSqFt() * CAUSED_ORDER - g.getLandManager().getAvailableSqFt();
+        if (!(shortfall > 0)) return;
+        LandParcel covers = g.bestOffer(Game.LandNeed.shortfall(shortfall));
+        if (covers == null) {
+            g.getLandManager().updateMarket(g.getPopulationManager().getPopulation());
+            covers = g.bestOffer(Game.LandNeed.shortfall(shortfall));
+        }
+        if (covers != null) g.setCashForTest(g.getCash() + covers.localPrice(g.getForeignAccounts().getRate()));
     }
 
     /**
@@ -438,10 +460,14 @@ public class ReloadCheck {
         LandManager lm = g.getLandManager();
         Map<String, Integer> words = new LinkedHashMap<>();
         LongPlaytest.refusals.forEach((why, n) -> { if (n > before.getOrDefault(why, 0)) words.put(why, n - before.getOrDefault(why, 0)); });
+        double lacks = t.getLandSqFt() * quantity - lm.getAvailableSqFt();
+        LandParcel offer = lacks > 0 ? g.bestOffer(Game.LandNeed.shortfall(lacks)) : null;
+        String offered = !(lacks > 0) ? "none needed" : offer == null ? "none on the market"
+                : offer.localPrice(g.getForeignAccounts().getRate()) + (LandMarket.hasLinkedDry(offer) ? "" : ", none of it dry ground linked to the city");
         return "the caused House order was refused: blocker " + g.blocker(t, quantity, Landmasses.CHOSEN) + ", ground free for it "
                 + lm.freeFor(lm.groundKeyOf(t), Game.groundUse(t)) + " of " + t.getLandSqFt() * quantity + " sq ft wanted (" + lm.getAvailableSqFt()
                 + " free in the city), cash " + g.getCash() + " against a quote of " + g.quoteBuildOn(t, quantity, Landmasses.CHOSEN).total
-                + ", the playtest's words " + words;
+                + ", the offer that covers what it lacks " + offered + ", the playtest's words " + words;
     }
 
     /* ------------------------------ one checkpoint ------------------------------ */
