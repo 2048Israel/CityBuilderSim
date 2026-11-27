@@ -4,7 +4,7 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 657 files, 711,248 lines, 31,123 methods, 6,917 constants. `GameVersion.VERSION` is "0.9.215", `SAVE_FORMAT` 67.
+**The tree:** 657 files, 711,347 lines, 31,126 methods, 6,917 constants. `GameVersion.VERSION` is "0.9.215", `SAVE_FORMAT` 67.
 
 ## model (288 files)
 
@@ -18,7 +18,7 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AuctionTally.java](AuctionTally.md) | 145 | 11 | The city's auctions counted: how many sales the treasury has booked, what they sold and what they asked, how often the stop sat more than a point o... | 4 |
 | [AutoBuilder.java](AutoBuilder.md) | 2,953 | 177 | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and ... | 28 |
 | [BalanceSheet.java](BalanceSheet.md) | 201 | 30 | A simple balance sheet for one business in the city. | 6 |
-| [Bank.java](Bank.md) | 6,977 | 484 | The city's commercial bank: every loan in it, and every default. | 78 |
+| [Bank.java](Bank.md) | 6,992 | 486 | The city's commercial bank: every loan in it, and every default. | 79 |
 | [BoatSchedule.java](BoatSchedule.md) | 1,068 | 62 | The month's ships, as a pure function of time: which calls the city's sea trade makes, when each arrives, and where each boat is at any moment (0.7... | 21 |
 | [BondMarket.java](BondMarket.md) | 2,342 | 194 | The corporate bond market: every bond the city's businesses have issued, who holds each, the order book each trades on, and the rule each participa... | 32 |
 | [BookDesk.java](BookDesk.md) | 184 | 20 | The debt book as a desk: every figure the book page and a line's page draw (CD6, spec-city-debt.md section 7, boards 1 and 2), a pure model of what... | 5 |
@@ -51,7 +51,7 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CareType.java](CareType.md) | 170 | 7 | What a healthcare building actually does. | 41 |
 | [CausesOfDeath.java](CausesOfDeath.md) | 728 | 32 | The causes of death of 1900, and how history and the city take them away. | 10 |
 | [CellSpread.java](CellSpread.md) | 64 | 7 | Closed forms for the amounts among a cell's holders (HC1). | 6 |
-| [CentralBank.java](CentralBank.md) | 1,311 | 121 | The city's central bank: the balance sheet its money is made on, and the one place money is made or destroyed. | 33 |
+| [CentralBank.java](CentralBank.md) | 1,337 | 122 | The city's central bank: the balance sheet its money is made on, and the one place money is made or destroyed. | 33 |
 | [CentralBankStatements.java](CentralBankStatements.md) | 287 | 14 | The central bank's month as formal statements (CBK1): its income statement down to the profit and what the strike did with it, its balance sheet ag... | 2 |
 | [ChartModel.java](ChartModel.md) | 735 | 50 | What a time chart shows, as numbers: the window of months it looks at and how a drag, a wheel, a range button and the overview move it; the ticks o... | 23 |
 | [CityBasket.java](CityBasket.md) | 122 | 2 | What the city eats: the basket per head, struck from the households' own statements, and the file's reference basket for a city that has none yet. | 1 |
@@ -430,7 +430,7 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [CarryTradeCheck.java](CarryTradeCheck.md) | 430 | 5 | The carry trade: the other side of hot money, and the bank's first borrower. | 0 |
 | [CausesOfDeathCheck.java](CausesOfDeathCheck.md) | 1,023 | 30 | Proves the causes of death of 1900 (R0b, slice 1): the model on its own, before the month hands its rates to the cohorts. | 1 |
 | [CementConcreteCheck.java](CementConcreteCheck.md) | 368 | 11 | Cement & Concrete, checked (0.7.131, batch I7; docs/studies/spec-materials.md 2.1, 2.3, 2.12, 4 and 5's I7 row; the study's - materials-chains-rese... | 0 |
-| [CentralBankCheck.java](CentralBankCheck.md) | 2,825 | 55 | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its tw... | 0 |
+| [CentralBankCheck.java](CentralBankCheck.md) | 2,867 | 55 | Proves the central bank's books: that money is made and destroyed on them and nowhere else, every price 0.7.0 hangs off the policy rate, and its tw... | 0 |
 | [CentralBankStatementCheck.java](CentralBankStatementCheck.md) | 537 | 20 | The central bank's own statements (CBK1): CentralBankStatements' income statement, balance sheet and money made and destroyed held to the central b... | 1 |
 | [ChartCheck.java](ChartCheck.md) | 962 | 28 | The charts (0.7.23): the player's decisions as the model records them, and the arithmetic City History's charts are drawn by - the window, the tick... | 0 |
 | [ChartFitCheck.java](ChartFitCheck.md) | 156 | 4 | The full-screen chart's foot is on the screen (FW10): with the legend wrapped to two rows or three, the chart still ends inside the window and the ... | 0 |
@@ -501,7 +501,7 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [GlobeCheck.java](GlobeCheck.md) | 3,499 | 110 | The Earth's map as a globe, its model half (0.7.132, batch E8; docs/studies/spec-globe.md 3 and 4's E8 row): EarthProj's orthographic projection, G... | 1 |
 | [GoldMiningCheck.java](GoldMiningCheck.md) | 268 | 12 | Gold Mining from geological fields through the mill to exports and the mint. | 1 |
 | [GoldPriceCheck.java](GoldPriceCheck.md) | 491 | 23 | Gold's price a month (batch GD1; spec-gold-money 4.1): GoldPrice's statutes, its table, its refusal of a table that is not whole, and the rule afte... | 0 |
-| [GoldStandardCheck.java](GoldStandardCheck.md) | 1,119 | 33 | The gold standard (batch GD3; spec-gold-money 4.3): the D$ on Gold, a mint price that keeps its value when it is entered, the rate held inside the ... | 2 |
+| [GoldStandardCheck.java](GoldStandardCheck.md) | 1,135 | 33 | The gold standard (batch GD3; spec-gold-money 4.3): the D$ on Gold, a mint price that keeps its value when it is entered, the rate held inside the ... | 2 |
 | [GovernmentPlayerCheck.java](GovernmentPlayerCheck.md) | 241 | 15 | The test player's annual wealth policy: both directions, boundaries, caps, the first eligible January and the actual skip/reload path. | 0 |
 | [GovernmentViewCheck.java](GovernmentViewCheck.md) | 403 | 9 | The government's wealth bands and advice, measured without moving its books (GV1). | 0 |
 | [GridCheck.java](GridCheck.md) | 621 | 22 | The block grid (0.7.65, batch M1): the city's owned ground as a quadtree, every plot's owner exact against a raster, and its offers six a side - ap... | 1 |
