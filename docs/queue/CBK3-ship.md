@@ -7,6 +7,7 @@ abroad at a term rate in the city's own money. Nine saved bank controls appear
 on Policy and the central bank's Policy page. Statements separate actual
 window and foreign borrowing, old saved claims remain truthful, and mature
 share valuation no longer revives an old offering price at zero earnings.
+Monthly play audits both funding limits and counts when stable cash binds.
 The copied month-133 city and the ensemble comparison are recorded in the notes.
 ## queued
 | LE1 | Identify borrowers and connected groups before exposing a large-exposure limit | docs/queue/LE1.md |
