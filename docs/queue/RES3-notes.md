@@ -1036,6 +1036,72 @@ reviewer's line.
       world: cheap money does not heat a town held by what its people can
       pay for a home.
     Data and probes: target/res3-c/ens-cmp/ (not in the repository).
+- Dry run 2 (RES3c, 2026-11-26; 634dc7c6e, the merge of 0.9.215, on the
+  gate box): every named red of dry run 1 passed; six new reds, none of
+  them red on main 0.9.215, each found and caused or mended.
+  - BuildAdviceCheck 16 (AP7's): its four-copy town at 900 Houses a copy
+    left the builders unstaffed after the depots; it stands
+    EssentialWorksCheck.PROFESSIONAL_TOWN_HOUSES a copy (97f8291d1).
+  - ReloadCheck 3k, a harness rounding (e63aa2068): closing every home,
+    RealEstate.setOwnedHousingCapacity(0) (main's) sums s + (1 - s) to
+    0.9999999999999999 at RES3's s (0.0467), where main's s rounded up;
+    the fixture puts the count up first, so the share is 1 exactly.
+    Nothing in the model needs an exact 1.
+  - ReloadCheck's caused House order, the real world: on the box the
+    m1202 city had 1,558 sq ft free against 40,000 and a treasury at the
+    founding floor (64,709, founding money), and could not buy ground
+    ("House: no land"). The PC's run of the same commit had 176,736 sq ft
+    and 9.51 million. The two machines' paths part over 1,200 months.
+    The fixture puts the treasury up by the price of the offer that
+    covers the shortfall, and a refusal now names its cause. Green on the
+    box.
+  - GoldStandardCheck, a bug, main's (CentralBank.repayFromBank, from
+    0.7.0): the window's repayment was capped at what was owed and not at
+    the reserves, so in RES3's moving-down town (9a737fd59) at m140-154
+    M0 went to -3.1 to -38.1 and the cover to infinity. A bank pays back
+    only out of reserves it holds. It now repays no more than the
+    reserves, as settleGoldRedeemed() retires, and the rest stays owed to
+    the next settle; CentralBankCheck asserts it (paid 20 of 100, M0 at
+    nothing, 80 owed, then 50). The cap moves nothing where the reserves
+    cover the repayment. The harness's within() counts equal figures as
+    within, so an infinite cover over no M0 compares.
+  - ExchangeRateCheck 8b, the real world: RES3's quote at a builder's
+    cost (ebe0fdafb) has the town owe US$1,477k abroad by m130 (271k
+    before). The 1914 risk-off lifted the gap from 1.38 to 1.67 in a
+    month, past the linear part of the intervention law, and holding it
+    asked 584.6 of a vault of 584.3. GOLD_HELD_VAULT_YEARS is four times
+    INTERVENTION_LINEAR (it was twice).
+  - ForeignCrewsCheck, the real world: material fell and the owners were
+    refunded (an escalation of -10.2185 against +0.6501), which is the
+    design (Construction.recogniseEscalation()). The lower bound now
+    counts the escalation apart, as the upper bound does: 3.9396 past the
+    bill and material, the city's own share of the twin's work (3.9397).
+  - KeptCheck 64, the real world: the ladder on Borrow at home is drawn
+    only while the quote sells. In the played city at m2580-2628 the bank
+    bought 26 of 30bn at m2616, then its capital ratio fell from 0.115 to
+    0.010 and it bid nothing. Households alone bid 2.6-10.7bn against a
+    minimum issue of 4.6-9.1bn and lots of 2-5bn, so 5 of 7 draws were
+    tiny sales, and the ladder stood in one month (6 of 7). Main's city
+    there: households alone bid three times the ask, against a minimum
+    of 74 million and a lot of 50 million. Borrow's
+    Columns are now watched on Borrow's own city (KS1's borrowCity(), its
+    bank's bid caused), with a fixture line that the quote sells in all
+    six months (12 of 12 on the box). The played city's AuctionChart
+    watch stays (6 of 6). On the own city that chart draws again for a
+    face moved in its last digits, a pixel-identical picture: main's,
+    queued as AU1.
+  - For REV, not a red: KeptCheck's played city (probeTodayCity, the
+    advisor's skips) runs hot on RES3. CPI goes from 2.3 to 140,000 by
+    m2400 (about 6% a year; main 1.0 to 940, 3.7%). It has 8,080 people
+    (main 36,728), and its treasury is below nothing for most of
+    m960-2400. Dry run 1's commit, 65a455d39, ran the same (CPI 200,000),
+    so it predates these mends. Its bank funds 29 times its deposits at
+    the window at m2580 (main's city 8.5). One path, and a chaotic one:
+    two RES3 probe runs stood 20,775 and 8,080 people at m2400. The
+    ensemble does not see it: AUTO2's inflation m240-end is 2.77% against
+    the baseline's 2.96%, and every seed ends at its peak population.
+    Probes: target/probe-kept/ and the box's ~/cbs/res3c-kept/ (not in
+    the repository).
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
