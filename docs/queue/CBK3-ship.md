@@ -10,3 +10,4 @@ share valuation no longer revives an old offering price at zero earnings.
 The copied month-133 city and the ensemble comparison are recorded in the notes.
 ## queued
 | LE1 | Identify borrowers and connected groups before exposing a large-exposure limit | docs/queue/LE1.md |
+| BFW1 | Price the bank's own wholesale credit risk and close new market funding in resolution | docs/queue/BFW1.md |
