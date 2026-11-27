@@ -14,3 +14,4 @@ in the notes.
 ## queued
 | LE1 | Identify borrowers and connected groups before exposing a large-exposure limit | docs/queue/LE1.md |
 | BFW1 | Price the bank's own wholesale credit risk and close new market funding in resolution | docs/queue/BFW1.md |
+| BPM1 | Carry and amortize the bank's purchased treasury-bond premiums; stop the inherited immediate premium capital write-down | docs/queue/BPM1.md |
