@@ -1316,6 +1316,48 @@ SaveFileCheck reruns because it borrows that fixture, then the unchanged full
 CentralBankCheck/LongPlaytest sequence follows. Kept lifecycle diagnosis:
 `../codex-CBK3-res3/target/CBK3-res3-repayment-lifecycle-diagnosis.txt`.
 
+The final shared-fixture reruns pass: BankRulesCheck **0**, SaveFileCheck
+**0**, and `--fast` **0** (0 firm/210 soft Stale findings). The full exact
+CentralBankCheck then completes **0**, preserving all 24 housing shapes,
+600-month horizons and every post-loop rule/trust/save assertion. No timeout
+or failed assertion is waived. Its complete log is
+`target/CBK3-res3-CentralBankCheck.log`; the temporary command remains
+`target/cbk3-res3-CentralBankCheck-exact.sh`. This validates committed source
+`855c34982` (RES3 integration `5083cf3ba`, AP8/main `858378bae`). Default
+LongPlaytest is now running as the last named model check.
+
+## Network-window dry-run handoff (2026-11-27)
+
+Orchestrator `20261127-095539-493` explicitly orders the dry run started now
+on the pushed AP8 merge; the full suite may cover unfinished local reruns.
+The laptop goes offline at 11:15 until about 19:00. Ready by 10:45 permits
+the morning gate; otherwise push by 11:05, keep a resume line and end by
+11:10, starting nothing further that needs the network. This supersedes
+waiting for local LongPlaytest before launching the dry run.
+
+Source `855c34982` has `--fast`, BankRulesCheck, exact BankCheck,
+CentralBankCheck (all 24 shapes), BankFailureCheck, MonetaryCheck,
+SaveFileCheck, CentralBankStatementCheck, GoldStandardCheck, MortgageCheck
+and ReadPathCheck green. The AP8 optimization is exact; the Bank model in
+the earlier exact BankCheck is unchanged by it. Local default LongPlaytest
+is still running beyond m1200 when this handoff is written. No completed
+LongPlaytest or final-model ensemble is claimed yet.
+
+`sh tools/pick.sh origin/main HEAD` selects **ALL 262 harnesses** and reports
+review needed for money (Bank, BankRules, CentralBank, CentralBankStatements,
+DebtManager, BankRulesPane and more) and saves (DataSave). Main is still
+`858378bae`. The prior SHIP/80-run result is `4ffbb65b2`; the merged
+actual-stock billing and saved unpaid-interest claim require their own review
+and final-model ensemble before those old figures can be treated as current.
+The provisional marker remains while these obligations are unsettled.
+
+Resume if the network window closes: fetch mail/main after about 19:00;
+inspect the kept dry-run result and local LongPlaytest; finish the review
+and final-model ensemble (M1/F1 are hard stops), then reuse a valid dry run
+only on its recorded source/main commits. Never restamp the format-66 city
+or claim its historical measurement as a format-67 replay. Do not drop the
+marker or announce ready before the required verdicts are complete.
+
 ## For the manual
 
 Use the Bank tab to choose the commercial bank or the central bank. The
