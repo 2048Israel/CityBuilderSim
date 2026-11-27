@@ -37,6 +37,7 @@ public final class BankRulesCheck {
         double loans = fullCollateral ? 1024 : 200 / Math.min(1 - Bank.BUSINESS_COLLATERAL_HAIRCUT, 1 - Bank.LOAN_STABLE_SHARE);
         bank.refresh(1, 0, 0, loans, 0, 0);
         CentralBank window = new CentralBank();
+        window.startMonth(); // Open the setup month: its later filing must be visible as an actual previous month.
         window.setWindowCapacity(bank::windowCreditLimit);
         bank.setSettledWindow(window::getAdvancesToBank);
         bank.setWindowInterestDue(window::getWindowInterestDue);

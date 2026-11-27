@@ -688,6 +688,8 @@ public class MortgageCheck {
                 Bank.LEVERAGE_RATIO_MIN * bank.capitalTarget() / Bank.CAPITAL_RATIO, 1e-15);
         close("...and a business loan what it always did: the target on its whole weight",
                 bank.capitalPerDollar(Bank.RISK_BUSINESS), Bank.RISK_BUSINESS * bank.capitalTarget(), 0);
+        assertTrue("fixture: the played bank's pricing mix has real lagged foreign funding", bank.foreignShare() > 0);
+        int foreignDifferences = 0;
         for (double dial : new double[] { 0, .03, .10, .25 }) {
             double rate = bank.insuredMortgageRate(dial);
             double capital = bank.leverageTarget()
@@ -698,13 +700,17 @@ public class MortgageCheck {
                     rate, bank.fundsTransferPrice(dial, Mortgage.MORTGAGE_TERM_MONTHS) + bank.runningCostRate() + capital, 1e-15);
             Bank.Ladder l = bank.ladder(dial);
             close("...the ladder's rung is it", l.mortgage(), rate, 1e-15);
-            close("...its money is the policy rate, the window's share and the ten-year term premium",
-                    l.mortgageTransferOverPolicy(), CentralBank.WINDOW_PENALTY * bank.windowShare()
+            double foreignDifference = (bank.getForeignFundingRate() - DebtManager.termPremium(Bank.WHOLESALE_TERM_MONTHS)
+                    - Math.max(0, dial)) * bank.foreignShare();
+            if (foreignDifference != 0) foreignDifferences++;
+            close("...its money includes the saved window spread, independent foreign quote and ten-year term premium",
+                    l.mortgageTransferOverPolicy(), bank.rules().get(BankRules.Dial.WINDOW_SPREAD) * bank.windowShare() + foreignDifference
                             + DebtManager.termPremium(Mortgage.MORTGAGE_TERM_MONTHS), 1e-12);
             close("...the capital its own part of the rung", l.mortgageCapital(), capital, 1e-15);
             close("...and over its money the running costs and the capital, no loss", l.mortgageOverTransfer(),
                     l.running() + l.mortgageCapital(), 1e-12);
         }
+        assertTrue("the independent foreign funding contribution is exercised at at least three of the four quoted dials", foreignDifferences >= 3);
         assertTrue("fixture: at the dials under the owners' return the part is a few tenths of a point",
                 bank.capitalCharge(.03, Mortgage.MORTGAGE_TERM_MONTHS, Bank.RISK_INSURED_MORTGAGE) > .001
                         && bank.capitalCharge(.03, Mortgage.MORTGAGE_TERM_MONTHS, Bank.RISK_INSURED_MORTGAGE) < .01);

@@ -110,17 +110,17 @@ public class MonetaryCheck {
     }
     /** The last sale's retained native readings, observed after each completed month, without re-running its demand curve. */
     private record GrocerySale(int month, double demand, double supply, double handOver,
-                               boolean shelfBound, double charged, double clearing, double floor, double nextPrice) {
+                               boolean shelfBound, double charged, double clearing, double floor, double nextPrice, double acquired) {
         static GrocerySale read(Game g) {
             var r = g.getSectors().retail();
             return new GrocerySale(g.getMonth(), r.getDemandAtPrice(), r.getSupplyBaskets(), r.getHandOver(),
-                    r.isShelfBound(), r.getChargedPrice(), r.getClearingPrice(), r.getFloorPrice(), r.getStoreSellPrice());
+                    r.isShelfBound(), r.getChargedPrice(), r.getClearingPrice(), r.getFloorPrice(), r.getStoreSellPrice(), r.getCurrentGrocerySales());
         }
         boolean physicalShortage() {
             return Double.isFinite(demand) && Double.isFinite(supply) && Double.isFinite(handOver)
                     && supply > 0 && supply < demand && supply == handOver && !shelfBound;
         }
-        boolean scarcityPrice() { return clearing > charged && nextPrice > floor && floor > 0; }
+        boolean clearingPressure() { return clearing > charged && charged > 0; }
     }
     /** Flatten the services sub-basket too: changing fee shares must not masquerade as a price response. */
     private record BasketPrices(double[] quantities, double[] prices, int linked, double index) {
@@ -1460,7 +1460,7 @@ public class MonetaryCheck {
         double commonEffect = commonLow - commonHigh;
         double floorEffect = low.inflationAtFloor(quantities, false) - high.inflationAtFloor(quantities, false);
         double scarcityOffset = floorEffect - commonEffect;
-        var physical = high.sales().stream().filter(GrocerySale::physicalShortage).filter(GrocerySale::scarcityPrice).toList();
+        var physical = high.sales().stream().filter(GrocerySale::physicalShortage).filter(GrocerySale::clearingPressure).toList();
         out.printf("   original common headline basket: effect %+.6f points, at grocery floors %+.6f, adverse scarcity offset %+.6f; physical shortage/markup months %s%n",
                 commonEffect * 100, floorEffect * 100, scarcityOffset * 100, physical.stream().map(GrocerySale::month).toList());
         assertTrue("the original highest rate lowers observed headline inflation over the original window", effect > 0);
@@ -1468,12 +1468,21 @@ public class MonetaryCheck {
         assertTrue("the original highest rate also lowers the expected inflation used to strike floors and fees",
                 high.expectedInflation() < low.expectedInflation());
         if (effect < TRANSMISSION_FLOOR) {
+            // The floor is the closing reprice's input, not the completed sale's floor. Sticky catch-up can leave the next
+            // posted price below it. Observe pressure now and realized paid prices through the consecutive-month chain.
+            boolean postedBecomesPaid = true;
+            for (int m = 1; m < high.sales().size(); m++)
+                postedBecomesPaid &= high.sales().get(m - 1).nextPrice() == high.sales().get(m).charged();
+            var closing = high.sales().getLast();
+            assertTrue("the observed grocery reprices become the following sales' charged prices and the closing paid CPI price",
+                    postedBecomesPaid && closing.month() == MEASURED_MONTHS && closing.acquired() > 0
+                            && closing.charged() == high.to().prices()[PriceIndex.GROCERIES]);
             boolean carried = !high.shortWithin().isEmpty()
                     && high.shortWithin().stream().allMatch(m -> physical.stream().anyMatch(s -> s.month() == m))
                     && physical.stream().anyMatch(s -> s.month() == MEASURED_MONTHS);
             assertTrue("the original smaller headline response is carried by measured physical shortages and an adverse grocery scarcity price contribution",
                     carried && commonEffect < TRANSMISSION_FLOOR && scarcityOffset > 0
-                            && high.to().prices()[PriceIndex.GROCERIES] > high.floorTo());
+                            && closing.charged() > high.floorTo());
             for (var s : physical)
                 out.printf("     m%d: demand %.12g > supply %.12g = building handover %.12g; shelf-bound %s, charged %.12g, clearing %.12g, floor %.12g, next price %.12g%n",
                         s.month(), s.demand(), s.supply(), s.handOver(), s.shelfBound(), s.charged(), s.clearing(), s.floor(), s.nextPrice());

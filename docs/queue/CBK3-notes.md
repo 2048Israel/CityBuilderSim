@@ -1078,6 +1078,12 @@ measurements of `4ffbb65b2`, not measurements of the merged model. Actual-stock
 billing moves the model, so a fresh stranger's review/final-model ensemble
 must be settled before treating those records as current validation.
 
+RES3 integration is committed as `5083cf3ba`. Orchestrator
+`20261127-070326-817` clears the dry-run slot once AP8 is merged and the named
+bank checks are green. Main `858378bae` (AP8, 0.9.217) merges without source
+conflicts; the generated map conflicts are regenerated. AP8 is explicitly
+exact and needs no separate remeasurement. Its save format/floor remains 67.
+
 Checks so far: first `--fast` exits 0 (compile 62s, maps regenerated, 0 firm
 and 210 soft Stale findings). Final BankRulesCheck and exact BankCheck exit
 **0**. Logs: `target/CBK3-res3-fast.txt`,
@@ -1092,7 +1098,7 @@ Helper `CBK3-monetary` first located the grocery shortage at the high rate,
 then owns a narrow replay of that same pair to observe the actual supply and
 credit constraints. The flag alone does not prove a legitimate effect. This
 red was owned, not assigned to a known-red row. The diagnosis and law below
-resolve its cause; the revised full harness still awaits validation.
+resolve its cause; the revised full harness now exits **0** on the AP8 merge.
 Initial log: `target/CBK3-res3-MonetaryCheck-first-red.log`.
 
 ### The original monetary pair's physical supply countereffect
@@ -1158,6 +1164,157 @@ Kept reproducer: `../codex-CBK3-monetary/target/phase2/diagnosis.txt`,
 `commands.txt`/`run.sh`. The committed `CBK3-monetary-sale.csv` keeps the
 deciding high-rate sales and the low-rate m70 comparison; the committed
 `CBK3-monetary-basket.json` keeps the price-decomposition operands.
+
+The first revised assertion exposed a check error of my own: it required
+`nextPrice > closingFloor` in every physical shortage month. Native
+`FLOOR_CATCH_UP` can leave the sticky price below its newly raised floor;
+m73, for example, has clearing 0.015730819 above charged 0.008307865 but next
+posted 0.008460538 below closing floor 0.008592221. The physical shortage
+does not imply an instantaneous realized premium. Helper phase3 identified
+the five such months from the unchanged captured source and sale operands,
+without a JVM. Correct the observation: require measured physical shortage
+and clearing pressure in every carrying month, then explicitly assert the
+consecutive chain from next posted price to following charged price, positive
+completed acquisition and closing CPI equal to that charged price. The final
+paid-price premium and adverse basket contribution remain required. This
+changes neither a model operation nor any fixture or bound.
+
+The complete revised MonetaryCheck exits **0** (`target/CBK3-res3-MonetaryCheck.log`),
+including both consecutive-price/paid-CPI and physical-shortage attribution
+assertions, the original basket-floor point and the hard fixed-grid pooled
+headline point. The intermediate attribution red is kept separately as
+`target/CBK3-res3-MonetaryCheck-attribution-red.log`. Full SaveFileCheck also
+exits **0** (`target/CBK3-res3-SaveFileCheck.log`). Remaining integration
+checks continue sequentially; no final-model ensemble is claimed yet.
+BankFailureCheck, CentralBankStatementCheck and ReadPathCheck also exit **0**,
+with retained `target/CBK3-res3-<Name>.log` files. GoldStandardCheck exits **4**
+(one assertion, three framework lines) and MortgageCheck exits **4** (five
+framework lines). Helper `CBK3-res3` is tracing each against the current
+merge, read-only with no JVM, before a model, fixture or law decision. Both
+remain owned. CentralBankCheck and LongPlaytest have not yet been run on this
+merged model; their earlier results are not substituted.
+
+### Gold and mortgage integration checks
+
+Helper `CBK3-res3` located GoldStandardCheck's sole red: its calendar town
+has zero occurrences of previous completed-month deferred window principal
+coinciding with a charged month. It still passes all 318 Gold/calendar/base
+months to July 1926, Canada's peg in none, lowest cover 1.323. The log does
+not establish whether H or D was always zero, so no stronger claim is made.
+Its incidental non-vacuity premise is uncaused under the changed funding
+trace. Two equal-zero monitor assertions alone do not prove the mechanism.
+
+★ Preserve that town's founding, horizon and every calendar/base assertion.
+Cause the deferred-window condition separately by native gold retirement in
+GoldStandardCheck 15b: native loans, haircut collateral and stable funding
+permit an actual draw of 100; a gold payment of 80 is retired at the next
+top; the remaining 20 reserves repay only 20, leaving actual/deferred 80 and
+zero reserves. The next actual need is only 30. Assert the full 80-dollar
+interest invoice and the 50-dollar past-active subset, matching accrual on
+both books, actual secured collection, no forgiven principal or second bill,
+both native principal settles and money/pool closure to the cent. Every
+premise is caused and asserted unconditionally. This avoids moving the
+calendar town or searching for a naturally passing seed. Its incidental
+count remains printed truthfully. The calendar monitor also stops dividing
+total H/F expense by a blended rate as though it were window principal; it
+reads the actual window bill and saved window spread instead. Money destroyed
+remains actual collected cash in MoneyAudit, not the invoice.
+
+MortgageCheck's three numeric failures are its transfer-over-policy
+expectation at 0%, 10% and 25%; the 3% quote cancels the omitted term. All
+four rate decompositions, capital charges, ladder rungs and over-transfer
+assertions pass. Its expectation still describes deposits/window only,
+omitting Part 1's actual independent foreign funding quote. Correct that
+expected operand to include the saved foreign quote less its funding-term
+premium and the quoted policy rate, weighted by the native lagged foreign
+share. Preserve the landlord city, three months, all four dials and exact
+tolerances. Assert that the native foreign share is positive and that at
+least three quoted dials exercise a nonzero contribution. A negative spread
+over a high counterfactual policy quote is not a negative mortgage rate;
+neither the actual rate nor credit rules are clamped to hide it. The callback
+and rules merge is not the cause: these failures use Bank.Ladder directly.
+
+Both are harness mends with no further model/default change. Kept first red
+logs have `-first-red.log` suffixes. Helper reports and source/operand
+diagnoses: `../codex-CBK3-res3/target/CBK3-res3-gold-diagnosis.txt` and
+`CBK3-res3-mortgage-diagnosis.txt`. No helper JVM or fresh baseline was run.
+Revised MortgageCheck and GoldStandardCheck both exit **0**, with their
+current logs at `target/CBK3-res3-<Name>.log`. The added native gold case
+actually exercises all reserve/deferred/bill/collection premises and both
+cent-closure assertions. CentralBankCheck is now running, then default
+LongPlaytest. The older laptop run hit the generic 1,740-second budget (the
+box completed it in 397 seconds), so a 7,200-second exact-class fallback was
+prepared. The current check had already entered the ordinary named batch
+wrapper at 07:58:31 before that preparation; its original wrapper is restored
+and the run continues. The longer command is a separate, unexecuted
+`target/cbk3-res3-CentralBankCheck-exact.sh`. No model assertion, cent
+tolerance or timing-soft setting changes, and no timeout red is passed.
+
+That ordinary CentralBankCheck run stopped at the generic budget and returned
+**4**, reporting six framework red lines. Its partial source/result evidence
+is retained as `target/CBK3-res3-CentralBankCheck-first-red.log`/`.txt`.
+Helper `CBK3-res3` is separating every assertion failure from the timeout,
+read-only with no JVM. The longer exact-class fallback is still unexecuted;
+no green or timeout-only diagnosis is assumed. LongPlaytest has not started.
+
+Helper phase7 found **four actual assertion failures plus the 1,740-second
+timeout**; the sixth framework line is exit 1. No production conservation
+failure was established. The first H/F fixture bills before either liability
+is settled: actual F is zero, so the expected 1,341.666667 foreign bill and
+6.591667% weighted rate cannot hold. It now wires a real central bank,
+settles actual H/F first, asserts both positive stocks, bills/collects once
+and checks per-stock expenses, weighted rate, M0 and the actual funded pool
+to the cent. No residual is invented as a foreign expense.
+
+Its repayment fixture already filed the 20 repayment before returning;
+the check now reads that saved last-month flow, current repayment zero,
+then current repayment 30 after 30 new reserves, preserving H80/D80/R0 and
+H50 after payment. The real bond-issue city draws principal after that
+month's carried-stock bill: a new draw does not imply interest was already
+owed on it. Preserve that city and every existing month; capture actual F
+after the issue and check its exact bill at the already existing following
+play, using that month's saved foreign quote. Positive H/F billing is
+non-vacuous in the explicit native section-3 fixture. Keep the city's draw,
+full split expense, central-bank window income and all audit assertions.
+The pure-window pool equations explicitly subtract collected cash, with
+separate hard assertions that ample collateral collects their whole invoices.
+
+The timeout stopped after 12 of the 24 existing 600-month policy shapes,
+before the remaining shapes and rule/trust/save assertions. None are cut or
+replaced. The exact same full compiled class now runs under the separate
+7,200-second temporary wrapper after `--fast`, then LongPlaytest. These
+are check setup/flow-phase mends, not model/default or tolerance changes.
+Kept report: `../codex-CBK3-res3/target/CBK3-res3-centralbank-first-red-diagnosis.txt`.
+
+The exact-class rerun's actual H/F, weighted rate, pool/M0 and next-existing-
+month foreign bill assertions pass. One early failure remains: previous-month
+repayment is zero, not 20. The helper's prior claim that the shared fixture
+had filed that counter was incomplete. The partial log is kept as
+`target/CBK3-res3-CentralBankCheck-repayment-red.log`; the run was stopped
+early by its own verified JVM PID 23040 (parent 34304, created 08:40:10),
+driver exit 127. It is neither a completed check nor a timeout-only result.
+Helper phase8 now checks the native file/start lifecycle and the smallest
+truthful fixture correction, read-only with no JVM. No repayment amount or
+conservation assertion is waived; LongPlaytest remains unstarted.
+
+Phase8 corrects the precise cause: `CentralBank.startMonth()` **does file**,
+but the public `lastMonth()` returns zero until `knowsLastMonth()` has more
+than one filing. The shared fixture performed its setup before opening an
+initial month. It now calls the native `window.startMonth()` before setup
+transactions, retaining the final paired opening: the initial empty filing
+is followed by the genuine setup repayment 20, publicly known in the next
+month. No private filing call, manual counter, reconstructed flow or
+close/remit operation is added. CentralBankCheck now asserts known history,
+previous 20/current zero/H80/D80/R0, then current 30/H50/D50 with previous 20
+unchanged. Its redundant extra central-bank openings after the helper are
+removed so the paired bank/window opening is the single observation boundary.
+
+Only fixture history gains one initial empty filing; no stock, capital,
+bill, policy or model default changes. BankRulesCheck, including full/limited
+collateral and both positive/negative saved due-change cases, reruns **0**.
+SaveFileCheck reruns because it borrows that fixture, then the unchanged full
+CentralBankCheck/LongPlaytest sequence follows. Kept lifecycle diagnosis:
+`../codex-CBK3-res3/target/CBK3-res3-repayment-lifecycle-diagnosis.txt`.
 
 ## For the manual
 

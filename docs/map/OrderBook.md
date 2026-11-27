@@ -1,4 +1,4 @@
-# OrderBook.java - 470 lines · 54 methods · 1 constants · model
+# OrderBook.java - 552 lines · 58 methods · 1 constants · model
 
 `ham/citybuildersim/OrderBook.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -59,9 +59,9 @@
 
 | line | section |
 |---:|---|
-| 195 | submitting |
-| 316 | withdrawing |
-| 357 | reading |
+| 233 | submitting |
+| 398 | withdrawing |
+| 439 | reading |
 
 ## Enum constants
 
@@ -98,12 +98,16 @@
 | 167 | `private double volume, turnover` |  |
 | 168 | `private int trades, sellsWaited, sellsPosted, buysWaited, buysPosted` |  |
 | 169 | `private double sellQuantityWaited` |  |
+| 191 | `private transient boolean bidsKnown, asksKnown` | ---- each side's known order (AP8, 2026-11-26) ---- Whether a side is known to stand in raw price order - bids never rising, asks never falling, compared as plain doubles - with every order on it older than the next t... |
+| 194 | `transient Probe probe` | A harness's view into rest() (AP8): null in play, where rest() reads this field and nothing more. |
+| 202 | `boolean bare, checked` |  |
+| 203 | `long rested, halved, compared, differed` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 57 | 414 | **type** `public class OrderBook implements Cloneable` | A limit-order book for one instrument: buy and sell orders from named participants, each a price and a quantity, matched by price-time priority. |
+| 57 | 496 | **type** `public class OrderBook implements Cloneable` | A limit-order book for one instrument: buy and sell orders from named participants, each a price and a quantity, matched by price-time priority. |
 | 60 | 1 | **type** `public enum Side` | Which side of the book an order is on. |
 | 79 | 1 | `public void setDust(double dust)` | Sets what this book reads as dust: see above. |
 | 82 | 1 | `public double getDust()` | What this book reads as dust. |
@@ -123,59 +127,64 @@
 | 139 | 1 | `void settle(String buyer, String seller, double quantity, double price)` _(in OrderBook.Clearing)_ | Moves the money and the instrument: `quantity` from the seller to the buyer at `price` a unit. |
 | 149 | 1 | `default boolean mayTrade(String buyer, String seller)` _(in OrderBook.Clearing)_ | Whether these two may trade with each other at all (0.7.14): true unless the market that owns the book says otherwise. |
 | 153 | 1 | **type** `public record Fill(String buyer, String seller, double quantity, double price)` | One trade, as the book reports it back to whoever submitted the order. |
-| 171 | 1 | `OrderBook()` |  |
-| 173 | 1 | `public OrderBook(String instrument)` |  |
-| 181 | 10 | `public OrderBook copy()` | A copy that shares nothing with this book, its resting orders copied too (UP1, 2026-10-22): the autosave's, written while the months go on submitting to the live one. |
-| 193 | 1 | `public String instrument()` | What this book trades. |
+| 201 | 4 | **type** `static final class Probe` | What a harness opens on one book (AP8): bare walks every side from its best order, as before AP8; checked also walks it so and compares where the two stop. |
+| 207 | 1 | `boolean known(Side side)` | Whether this side is in known order (AP8): a harness's reading. |
+| 209 | 1 | `OrderBook()` |  |
+| 211 | 1 | `public OrderBook(String instrument)` |  |
+| 219 | 10 | `public OrderBook copy()` | A copy that shares nothing with this book, its resting orders copied too (UP1, 2026-10-22): the autosave's, written while the months go on submitting to the live one. |
+| 231 | 1 | `public String instrument()` | What this book trades. |
 
-### submitting (lines 195-315)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 205 | 3 | `public List<Fill> submit(String who, Side side, double price, double quantity, int month, Clearing clearing)` | Submits an order: it takes what crosses it on the other side, best first, at each resting order's price, and whatever is left rests at its own limit. |
-| 216 | 65 | `public List<Fill> submit(String who, Side side, double price, double quantity, int month, Clearing clearing, boolean rest)` | ...or, with `rest` false, TAKES what crosses it and rests nothing (immediate-or-cancel): a buyer walking down its list of preferences takes what is on offer at one before trying the next (0.7.12 round 2, Exchange). |
-| 283 | 3 | `private static boolean samePrice(double a, double b)` | BF1: equivalent price calculations can differ by a floating-point step across money units. |
-| 288 | 3 | `private static boolean meets(double bid, double ask)` | A genuine gap does not cross; roundoff at the same price does. |
-| 292 | 9 | `private void recordTrade(double q, double price, int month)` |  |
-| 303 | 12 | `private void rest(Order order)` | Puts an order where its price and arrival say it belongs. |
-
-### withdrawing (lines 316-356)
+### submitting (lines 233-397)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 319 | 11 | `public int withdraw(String who)` | Withdraws every order this participant has resting, on both sides. |
-| 332 | 6 | `public void withdrawAll()` | Withdraws every order on the book: the month's close. |
-| 339 | 4 | `private void noteWithdrawn(Order o)` |  |
-| 345 | 4 | `public void clear()` | Drops every order, uncounted: an instrument that has gone. |
-| 351 | 5 | `public void startMonth()` | Opens the month's record. |
+| 243 | 3 | `public List<Fill> submit(String who, Side side, double price, double quantity, int month, Clearing clearing)` | Submits an order: it takes what crosses it on the other side, best first, at each resting order's price, and whatever is left rests at its own limit. |
+| 254 | 65 | `public List<Fill> submit(String who, Side side, double price, double quantity, int month, Clearing clearing, boolean rest)` | ...or, with `rest` false, TAKES what crosses it and rests nothing (immediate-or-cancel): a buyer walking down its list of preferences takes what is on offer at one before trying the next (0.7.12 round 2, Exchange). |
+| 321 | 3 | `private static boolean samePrice(double a, double b)` | BF1: equivalent price calculations can differ by a floating-point step across money units. |
+| 326 | 3 | `private static boolean meets(double bid, double ask)` | A genuine gap does not cross; roundoff at the same price does. |
+| 330 | 9 | `private void recordTrade(double q, double price, int month)` |  |
+| 341 | 19 | `private void rest(Order order)` | Puts an order where its price and arrival say it belongs. |
+| 369 | 12 | `private int walk(List<Order> side, Order order, int from)` | Where an order rests, walking its side from `from`: before the first order worse than it past the band its roundoff shares (BF1), or before a later one at its very price, or at the end. |
+| 383 | 9 | `private static int firstWorse(List<Order> side, double price, boolean buy)` | On a side in known order, the first order strictly worse than `price`, raw (AP8): the side's halving. |
+| 394 | 3 | `private static boolean inOrder(double a, double b, boolean buy)` | Whether price `a` may stand before `b` on a side in known order: a bid no lower, an ask no higher; never for NaN. |
 
-### reading (lines 357-470)
+### withdrawing (lines 398-438)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 360 | 1 | `public List<Order> bids()` | The resting bids, best first. |
-| 362 | 1 | `public List<Order> asks()` | The resting asks, best first. |
-| 365 | 1 | `public double bestBid()` | The highest bid, or NaN with none. |
-| 367 | 1 | `public double bestAsk()` | The lowest ask, or NaN with none. |
-| 370 | 9 | `public double depth(Side side, double price)` | What is resting at or better than this price on one side: the book's depth there. |
-| 381 | 1 | **type** `public record Level(double price, double quantity, int orders)` | One price level of the depth: a price and everything resting there. |
-| 384 | 12 | `public List<Level> levels(Side side)` | The depth of one side, one row per price, best first. |
-| 398 | 5 | `public double resting(String who, Side side)` | What this participant has resting on one side. |
-| 405 | 1 | `public double lastPrice()` | The price of the last trade, or NaN before the first. |
-| 407 | 1 | `public int lastTradeMonth()` | The month of the last trade, or -1 before the first. |
-| 410 | 1 | `public double postedBuy()` | This month: quantity posted to buy and to sell, and what of it filled. |
-| 411 | 1 | `public double postedSell()` |  |
-| 412 | 1 | `public double filledBuy()` |  |
-| 413 | 1 | `public double filledSell()` |  |
-| 415 | 1 | `public double volume()` | This month's volume in units and its value. |
-| 416 | 1 | `public double turnover()` |  |
-| 417 | 1 | `public int trades()` |  |
-| 419 | 1 | `public int sellsPosted()` | Sell orders posted this month, and those withdrawn at the close still unfilled in whole or part - the sellers who waited - with what they still had to sell. |
-| 420 | 1 | `public int sellsWaited()` |  |
-| 421 | 1 | `public double sellQuantityWaited()` |  |
-| 422 | 1 | `public int buysPosted()` |  |
-| 423 | 1 | `public int buysWaited()` |  |
-| 431 | 8 | `public void split(double k)` | A split (k > 1) or a consolidation (k < 1) of the instrument (0.7.12 round 2, the shares): every quantity resting and the month's in units times k, every price and the last one over it. |
-| 441 | 3 | `public void seedLastPrice(double price)` | Opens a book with a price already on it: a save from before the book, whose dealer's last quote is where the market opens (Exchange.restore()). |
-| 451 | 19 | `public void redenominate(double scale, boolean pricePerUnitOfMoney)` | The book in a reformed currency: for an instrument whose unit is money (a bond's face, pricePerUnitOfMoney) every quantity and the month's volumes times the scale and no price; for one whose unit is not (a share) ever... |
+| 401 | 11 | `public int withdraw(String who)` | Withdraws every order this participant has resting, on both sides. |
+| 414 | 6 | `public void withdrawAll()` | Withdraws every order on the book: the month's close. |
+| 421 | 4 | `private void noteWithdrawn(Order o)` |  |
+| 427 | 4 | `public void clear()` | Drops every order, uncounted: an instrument that has gone. |
+| 433 | 5 | `public void startMonth()` | Opens the month's record. |
+
+### reading (lines 439-552)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 442 | 1 | `public List<Order> bids()` | The resting bids, best first. |
+| 444 | 1 | `public List<Order> asks()` | The resting asks, best first. |
+| 447 | 1 | `public double bestBid()` | The highest bid, or NaN with none. |
+| 449 | 1 | `public double bestAsk()` | The lowest ask, or NaN with none. |
+| 452 | 9 | `public double depth(Side side, double price)` | What is resting at or better than this price on one side: the book's depth there. |
+| 463 | 1 | **type** `public record Level(double price, double quantity, int orders)` | One price level of the depth: a price and everything resting there. |
+| 466 | 12 | `public List<Level> levels(Side side)` | The depth of one side, one row per price, best first. |
+| 480 | 5 | `public double resting(String who, Side side)` | What this participant has resting on one side. |
+| 487 | 1 | `public double lastPrice()` | The price of the last trade, or NaN before the first. |
+| 489 | 1 | `public int lastTradeMonth()` | The month of the last trade, or -1 before the first. |
+| 492 | 1 | `public double postedBuy()` | This month: quantity posted to buy and to sell, and what of it filled. |
+| 493 | 1 | `public double postedSell()` |  |
+| 494 | 1 | `public double filledBuy()` |  |
+| 495 | 1 | `public double filledSell()` |  |
+| 497 | 1 | `public double volume()` | This month's volume in units and its value. |
+| 498 | 1 | `public double turnover()` |  |
+| 499 | 1 | `public int trades()` |  |
+| 501 | 1 | `public int sellsPosted()` | Sell orders posted this month, and those withdrawn at the close still unfilled in whole or part - the sellers who waited - with what they still had to sell. |
+| 502 | 1 | `public int sellsWaited()` |  |
+| 503 | 1 | `public double sellQuantityWaited()` |  |
+| 504 | 1 | `public int buysPosted()` |  |
+| 505 | 1 | `public int buysWaited()` |  |
+| 513 | 8 | `public void split(double k)` | A split (k > 1) or a consolidation (k < 1) of the instrument (0.7.12 round 2, the shares): every quantity resting and the month's in units times k, every price and the last one over it. |
+| 523 | 3 | `public void seedLastPrice(double price)` | Opens a book with a price already on it: a save from before the book, whose dealer's last quote is where the market opens (Exchange.restore()). |
+| 533 | 19 | `public void redenominate(double scale, boolean pricePerUnitOfMoney)` | The book in a reformed currency: for an instrument whose unit is money (a bond's face, pricePerUnitOfMoney) every quantity and the month's volumes times the scale and no price; for one whose unit is not (a share) ever... |
 

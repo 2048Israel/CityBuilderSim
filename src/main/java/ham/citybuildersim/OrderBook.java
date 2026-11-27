@@ -168,6 +168,44 @@ public class OrderBook implements Cloneable {
     private int trades, sellsWaited, sellsPosted, buysWaited, buysPosted;
     private double sellQuantityWaited;
 
+    /*
+     * ---- each side's known order (AP8, 2026-11-26) ----
+     * Whether a side is known to stand in raw price order - bids never
+     * rising, asks never falling, compared as plain doubles - with every
+     * order on it older than the next to arrive. Known, rest() finds where
+     * its walk would start to matter by halving the side: every order before
+     * the first strictly worse one is at least as good and older, so the walk
+     * passes it, and the walk runs as before from there. Known from the
+     * moment a side is empty (the bond market withdraws every order at its
+     * monthly step); a rested order out of raw order - a roundoff improvement
+     * that keeps its arrival priority (BF1's band) - forgets it until that
+     * side is empty again. A fill, a trim or a withdrawal only takes orders
+     * off, which keeps the order; a split or a reform multiplies or divides
+     * every price by one positive factor (a split refuses any other, a
+     * reform's is the ratio of two money units), which keeps it too: a
+     * correctly rounded multiply or divide never reverses two numbers. Not
+     * saved: a loaded side is unknown until it empties.
+     * WHY: slot 9 at 50x (AP7's profile) walked every household bid at one
+     * price for each new one: OrderBook.rest 4.5% of the window's thread.
+     */
+    private transient boolean bidsKnown, asksKnown;
+
+    /** A harness's view into rest() (AP8): null in play, where rest() reads this field and nothing more. */
+    transient Probe probe;
+
+    /**
+     * What a harness opens on one book (AP8): bare walks every side from its
+     * best order, as before AP8; checked also walks it so and compares where
+     * the two stop. The book is one city's and one thread's, so is this.
+     */
+    static final class Probe {
+        boolean bare, checked;
+        long rested, halved, compared, differed;
+    }
+
+    /** Whether this side is in known order (AP8): a harness's reading. */
+    boolean known(Side side) { return side == Side.BUY ? bidsKnown : asksKnown; }
+
     OrderBook() { }
 
     public OrderBook(String instrument) { this.instrument = instrument; }
@@ -301,16 +339,60 @@ public class OrderBook implements Cloneable {
 
     /** Puts an order where its price and arrival say it belongs. */
     private void rest(Order order) {
-        List<Order> side = order.side == Side.BUY ? bids : asks;
-        int i = 0;
+        boolean buy = order.side == Side.BUY;
+        List<Order> side = buy ? bids : asks;
+        if (side.isEmpty()) { if (buy) bidsKnown = true; else asksKnown = true; }
+        boolean known = buy ? bidsKnown : asksKnown;
+        Probe p = probe;
+        boolean halve = known && (p == null || !p.bare);
+        int i = walk(side, order, halve ? firstWorse(side, order.price, buy) : 0);
+        if (p != null) {
+            p.rested++;
+            if (halve) p.halved++;
+            if (p.checked) { p.compared++; if (walk(side, order, 0) != i) p.differed++; }
+        }
+        side.add(i, order);
+        if (known && !((i == 0 || inOrder(side.get(i - 1).price, order.price, buy))
+                && (i + 1 == side.size() || inOrder(order.price, side.get(i + 1).price, buy)))) {
+            if (buy) bidsKnown = false; else asksKnown = false;
+        }
+    }
+
+    /**
+     * Where an order rests, walking its side from `from`: before the first
+     * order worse than it past the band its roundoff shares (BF1), or before
+     * a later one at its very price, or at the end. The rule of 0.7.12; the
+     * price comparison is read before the band since AP8, which is the same
+     * answer (both are plain tests) without the band's arithmetic for every
+     * better order.
+     */
+    private int walk(List<Order> side, Order order, int from) {
+        boolean buy = order.side == Side.BUY;
+        int i = from;
         while (i < side.size()) {
             Order o = side.get(i);
-            boolean worse = !samePrice(o.price, order.price)
-                    && (order.side == Side.BUY ? o.price < order.price : o.price > order.price);
+            boolean worse = (buy ? o.price < order.price : o.price > order.price)
+                    && !samePrice(o.price, order.price);
             if (worse || (o.price == order.price && o.seq > order.seq)) break;
             i++;
         }
-        side.add(i, order);
+        return i;
+    }
+
+    /** On a side in known order, the first order strictly worse than `price`, raw (AP8): the side's halving. */
+    private static int firstWorse(List<Order> side, double price, boolean buy) {
+        int lo = 0, hi = side.size();
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            double q = side.get(mid).price;
+            if (buy ? q < price : q > price) hi = mid; else lo = mid + 1;
+        }
+        return lo;
+    }
+
+    /** Whether price `a` may stand before `b` on a side in known order: a bid no lower, an ask no higher; never for NaN. */
+    private static boolean inOrder(double a, double b, boolean buy) {
+        return buy ? a >= b : a <= b;
     }
 
     /* =========================== withdrawing =========================== */

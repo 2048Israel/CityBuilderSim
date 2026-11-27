@@ -8,7 +8,7 @@
 
 **Uses:** [Bank](Bank.md) (3), [DecisionLog](DecisionLog.md) (3), [CentralBank](CentralBank.md) (1), [Mortgage](Mortgage.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1)
 
-**Used by (7):** [Bank](Bank.md), [BankRulesCheck](BankRulesCheck.md), [BankRulesPane](BankRulesPane.md), [BusinessDebtManager](BusinessDebtManager.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [Mortgage](Mortgage.md)
+**Used by (9):** [Bank](Bank.md), [BankRulesCheck](BankRulesCheck.md), [BankRulesPane](BankRulesPane.md), [BusinessDebtManager](BusinessDebtManager.md), [Game](Game.md), [GoldStandardCheck](GoldStandardCheck.md), [LongPlaytest](LongPlaytest.md), [Mortgage](Mortgage.md), [MortgageCheck](MortgageCheck.md)
 
 ## Enum constants
 
