@@ -1020,7 +1020,12 @@ reviewer's line.
       to look: a quarter of the doors empty beside doubled-up unskilled
       households, the asks near carry and a third over their means (a
       balance question: what the unskilled keep, and how far an empty
-      door's ask falls).
+      door's ask falls). REV-RES3b: vacancy beside doubling-up is real
+      (HUD, Worst Case Housing Needs, 2023); the magnitude, 23.5% of the
+      doors empty, is uncalibrated, not fitted to any measured vacancy
+      rate.
+    - TaxPolicy.java:737's missing students > 0 guard is queued as TG1
+      in docs/queue/RES3-ship.md (its id checked free).
     - H2 ZERO_HOT, PASS to VACUOUS (the one gone from the count): the
       scorer grades it after a burst, a first-half excess of 1% or more
       (m42-162); RES3 gives 0.59% (7 of 16 seeds) against 2.43%. The twin's
