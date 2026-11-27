@@ -44,23 +44,37 @@ public final class BankRulesCheck {
         b.settleForeignFunding(g.getCentralBank().getAdvancesToBank());
         double[] expected = b.fundingToSave();
         double[] dials = b.rules().toSave();
+        // A nonzero, already closed month's observation must cross the same
+        // writer/loader as the bank. ExchangeCheck causes the real limit.
+        Exchange.State exchangeState = g.getExchange().toState();
+        exchangeState.life[31] = 17;
+        exchangeState.last[9] = 3;
+        if (!g.getExchange().restore(exchangeState)) return false;
         boolean[] wrote = {false};
         silently(() -> wrote[0] = g.saveGame(GameFiles.AUTOSAVE_SLOT, "CBK3 scratch").ok);
         if (!wrote[0] || !(b.getForeignWholesale() > 0) || !(b.getForeignFundingCost() > 0)) return false;
         Game loaded = new Game(files);
         silently(() -> loaded.loadGameSave(GameFiles.AUTOSAVE_SLOT));
         boolean ok = java.util.Arrays.equals(expected, loaded.getBank().fundingToSave())
-                && java.util.Arrays.equals(dials, loaded.getBank().rules().toSave());
+                && java.util.Arrays.equals(dials, loaded.getBank().rules().toSave())
+                && loaded.getExchange().getLastDeskBound(Exchange.BOUND_STABLE) == 3
+                && loaded.getExchange().getLifeDeskBound(Exchange.BOUND_STABLE) == 17;
         com.google.gson.JsonObject old = com.google.gson.JsonParser.parseString(
                 Files.readString(files.saveFile(GameFiles.AUTOSAVE_SLOT))).getAsJsonObject();
         old.remove("bankRules");
         old.remove("bankFunding");
+        // A native format-66 prefix has the original 31 life / 9 last cells.
+        com.google.gson.JsonObject oldExchange = old.getAsJsonObject("exchangeState");
+        oldExchange.getAsJsonArray("life").remove(31);
+        oldExchange.getAsJsonArray("last").remove(9);
         Files.writeString(files.saveFile(GameFiles.AUTOSAVE_SLOT), old.toString());
         Game legacy = new Game(files);
         silently(() -> legacy.loadGameSave(GameFiles.AUTOSAVE_SLOT));
         ok &= java.util.Arrays.equals(new BankRules().toSave(), legacy.getBank().rules().toSave())
                 && legacy.getBank().getForeignWholesale() == 0
-                && legacy.getBank().getWindowFundingCost() == legacy.getBank().getFundingCost();
+                && legacy.getBank().getWindowFundingCost() == legacy.getBank().getFundingCost()
+                && legacy.getExchange().getLastDeskBound(Exchange.BOUND_STABLE) == 0
+                && legacy.getExchange().getLifeDeskBound(Exchange.BOUND_STABLE) == 0;
         // A new city resets settings; an absent array never inherits the last city's rule.
         loaded.getBank().rules().restore(null);
         ok &= java.util.Arrays.equals(new BankRules().toSave(), loaded.getBank().rules().toSave());

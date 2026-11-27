@@ -784,6 +784,35 @@ public class ExchangeCheck {
         close("...and the rest of the sale rests on the book", exC.bookOf(RETAIL).resting(Exchange.CELL + couple(capHolders).key(),
                 OrderBook.Side.SELL) - restingC, 100 * 50 / bidC - position, 1e-6);
 
+        // CBK3: an insured loan book leaves equity but consumes all except
+        // $100 of stable cash. Every other desk limit permits a larger bid.
+        HouseholdBalance stableHolders = savers(12, 4);
+        Equity stableReg = equity();
+        stableReg.listIfUnlisted(RETAIL, 100_000, stableHolders);
+        Bank stableBank = bankWith(10_000);
+        stableBank.refresh(1, 0, 0, 10_000, 0, 0);
+        stableBank.setWeightedBook(0, 0, 0);
+        stableBank.setMortgageBook(10_000, 0);
+        stableBank.setCash(100);
+        Exchange stableEx = exchange();
+        step(stableEx, stableReg, stableHolders, stableBank, new Firms(), bookOf(RETAIL, 100_000), W, 0, 1);
+        close("stable cash limits the actual posted desk bid", stableEx.bookOf(RETAIL).resting(DESK, OrderBook.Side.BUY),
+                100 / bidC, 1e-9);
+        assertTrue("the stable cash limit is counted only at the real posting",
+                stableEx.getLastDeskBound(Exchange.BOUND_STABLE) == 1
+                        && stableEx.getLifeDeskBound(Exchange.BOUND_STABLE) == 1);
+        stableEx.deskCanBuy(stableReg, RETAIL);
+        stableBank.deskCanCarry(0, bidC, bidC);
+        assertTrue("previewing capacity does not add a bound event",
+                stableEx.getLastDeskBound(Exchange.BOUND_STABLE) == 1);
+        step(stableEx, stableReg, stableHolders, stableBank, new Firms(), bookOf(RETAIL, 100_000), W, 0, 2);
+        assertTrue("a new month resets the last count and carries its lifetime count",
+                stableEx.getLastDeskBound(Exchange.BOUND_STABLE) == 1
+                        && stableEx.getLifeDeskBound(Exchange.BOUND_STABLE) == 2);
+        stableEx.reset();
+        assertTrue("a new city clears both stable cash counts", stableEx.getLastDeskBound(Exchange.BOUND_STABLE) == 0
+                && stableEx.getLifeDeskBound(Exchange.BOUND_STABLE) == 0);
+
         // The same bank already holding its aggregate cap's worth elsewhere: the book cap binds.
         HouseholdBalance bookHolders = savers(12.0, 4.0);
         Equity regB = equity();

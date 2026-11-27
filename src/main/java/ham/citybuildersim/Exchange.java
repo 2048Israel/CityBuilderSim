@@ -1027,23 +1027,25 @@ public class Exchange {
         return Math.max(0, most);
     }
 
-    /** Which of the desk's limits binds its bid: its capital, POSITION_LIMIT, BOOK_LIMIT, or the company's float. */
-    public static final int BOUND_CAPITAL = 0, BOUND_POSITION = 1, BOUND_BOOK = 2, BOUND_FLOAT = 3;
+    /** Which of the desk's limits binds its bid: capital, position, book, float or stable cash. */
+    public static final int BOUND_CAPITAL = 0, BOUND_POSITION = 1, BOUND_BOOK = 2, BOUND_FLOAT = 3, BOUND_STABLE = 4;
 
     /**
-     * The desk's four limits in another company's shares at this price,
+     * The desk's five limits in another company's shares at this price,
      * shares, in BOUND_ order (round 3): what its capital carries (0.7.8), its
      * room under POSITION_LIMIT in this company and under BOOK_LIMIT over all
-     * of them, both at fair value, and what is not already its own.
+     * of them, both at fair value, what is not already its own, and stable
+     * cash left after reserves and hot deposits. The last is separate from
+     * capital so a posted bid can record when this cash rule actually bites.
      */
     private double[] deskLimits(Equity register, int c, double price) {
         double equity = Math.max(0, dealer.equity());
         double f = fair[c];
-        double carry = dealer.deskCanCarry(markToMarket(register), price, Math.min(price, f));
+        double carry = dealer.deskCapitalCanCarry(markToMarket(register), price, Math.min(price, f));
         double position = f > 0 ? resolvedRoom(POSITION_LIMIT * equity, Math.max(0, register.getDealerShares(c)) * f) / f : 0;
         double book = f > 0 ? resolvedRoom(BOOK_LIMIT * equity, bookAtFair(register)) / f : 0;
         double notMine = Math.max(0, register.getShares(c) - Math.max(0, register.getDealerShares(c)));
-        return new double[] { carry, position, book, notMine };
+        return new double[] { carry, position, book, notMine, price > 0 ? dealer.stableDeskRoom() / price : 0 };
     }
 
     /** Cap less holding, in money: a residue below the sums' resolution buys nothing (RS1, DK1). */
@@ -2118,7 +2120,7 @@ public class Exchange {
     private final double[] lifePostedSellBy = new double[6], lifeFilledSellBy = new double[6];
 
     /** Company-months each of the desk's limits held its bid, in BOUND_ order: the last step's and the city's life (round 3). */
-    private final int[] lastDeskBound = new int[4], lifeDeskBound = new int[4];
+    private final int[] lastDeskBound = new int[5], lifeDeskBound = new int[5];
     public int getLastDeskBound(int which) { return lastDeskBound[which]; }
     public int getLifeDeskBound(int which) { return lifeDeskBound[which]; }
     public double getLifePostedSellBy(int who) { return lifePostedSellBy[who]; }
@@ -2628,9 +2630,9 @@ public class Exchange {
                 // ...and what the cells sold on a share's value (EM1).
                 lifeValueSold,
                 // ...and the owner families as a seller (BO1).
-                lifePostedSellBy[BY_OWNERS], lifeFilledSellBy[BY_OWNERS] };
+                lifePostedSellBy[BY_OWNERS], lifeFilledSellBy[BY_OWNERS], lifeDeskBound[BOUND_STABLE] };
         s.last = new double[] { lastPostedSellValue, lastFilledValue, lastSellsPosted, lastSellsWaited, lastTrades,
-                lastDeskBound[0], lastDeskBound[1], lastDeskBound[2], lastDeskBound[3] };
+                lastDeskBound[0], lastDeskBound[1], lastDeskBound[2], lastDeskBound[3], lastDeskBound[BOUND_STABLE] };
         return s;
     }
 
@@ -2688,11 +2690,13 @@ public class Exchange {
             if (s.life.length >= 28) { lifePostedSellBy[BY_FUND] = s.life[26]; lifeFilledSellBy[BY_FUND] = s.life[27]; }
             if (s.life.length >= 29) lifeValueSold = s.life[28];
             if (s.life.length >= 31) { lifePostedSellBy[BY_OWNERS] = s.life[29]; lifeFilledSellBy[BY_OWNERS] = s.life[30]; }
+            if (s.life.length >= 32) lifeDeskBound[BOUND_STABLE] = (int) Math.round(s.life[31]);
         }
         if (s.last != null && s.last.length >= 5) {
             lastPostedSellValue = s.last[0]; lastFilledValue = s.last[1];
             lastSellsPosted = (int) s.last[2]; lastSellsWaited = (int) s.last[3]; lastTrades = (int) s.last[4];
             if (s.last.length >= 9) for (int k = 0; k < 4; k++) lastDeskBound[k] = (int) Math.round(s.last[5 + k]);
+            if (s.last.length >= 10) lastDeskBound[BOUND_STABLE] = (int) Math.round(s.last[9]);
         }
         return true;
     }

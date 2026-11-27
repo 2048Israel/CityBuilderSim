@@ -1658,6 +1658,12 @@ public class Bank {
      * @return shares; none when it has no capital to spare
      */
     public double deskCanCarry(double inventory, double price, double mark) {
+        double funded = price > 0 ? stableDeskRoom() / price : 0;
+        return Math.min(funded, deskCapitalCanCarry(inventory, price, mark));
+    }
+
+    /** Capital-only share room, kept separate so an actual posting can name the cash limit that binds it. */
+    double deskCapitalCanCarry(double inventory, double price, double mark) {
         double spare = spareOnRisk(inventory);
         if (!(spare > 0)) return 0;
         double perShare = price - mark + capitalTarget() * RISK_EQUITY * Math.max(0, mark);
@@ -1673,11 +1679,7 @@ public class Bank {
         if (!(spareL > 0)) return 0;
         double perShareL = price - mark + leverageTarget() * Math.max(0, mark);
         double onLeverage = perShareL > 0 ? spareL / perShareL : Double.POSITIVE_INFINITY;
-        // CBK3: capital is not cash. A customer market maker cannot finance
-        // new equity inventory overnight. Exclude hot deposits as well: their
-        // cash can leave on demand. Posting and every fill share this check.
-        double funded = price > 0 ? stableDeskRoom() / price : 0;
-        return Math.min(funded, Math.min(onRisk, onLeverage));
+        return Math.min(onRisk, onLeverage);
     }
 
     /** Cash plus core deposits left for customer market-making after hot money leaves. */
