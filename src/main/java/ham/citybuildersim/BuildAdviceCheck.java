@@ -101,6 +101,10 @@ import java.util.Set;
  *      its answer - the people, a build, a demolition, a template off the
  *      menu, a research step, a load - the answer a search holds is the
  *      bare reading's, to the bit, in the card, the count and the valuation.
+ *  17. THE QUOTE'S TERMS ABROAD ARE READ ONCE (AP8): an order's terms
+ *      abroad read twice are equal, and the multiple struck on one reading is
+ *      the six-argument multiple, to the bit, across buildings, counts and
+ *      queues ahead, in a town whose builders have staffed sites.
  *
  * Every fixture causes its condition.
  */
@@ -266,6 +270,7 @@ public class BuildAdviceCheck {
         powerForTheCalmPeak(g);
         powerRowOnTheCalmPeak(g);
         warrantHeld(root);
+        abroadReadOnce(root);
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -2247,5 +2252,59 @@ public class BuildAdviceCheck {
     /** What the advice offers for a port measure, cash and land to spare. */
     static BuildAdvice.Suggestion ask(Game g, BuildAdvice.Measure m) {
         return BuildAdvice.suggestFor(g, null, m, g.getCash(), g.getLandManager().getAvailableSqFt());
+    }
+
+    /* ================= 17. THE QUOTE'S TERMS ABROAD, READ ONCE (AP8) ================= */
+
+    /**
+     * Game.quoteBuild() reads an order's terms abroad once since AP8, for its
+     * multiple and its work abroad, where it read them once inside
+     * orderPriceMultiplier() and once again: the same answer only if a reading
+     * changes nothing the next one reads. In a town of its own, every reading
+     * read twice with the same arguments, and the multiple struck on one
+     * reading against the six-argument multiple as the quote struck it. The
+     * queue ahead is counted in months of the builders' sites, so the town
+     * must have them staffed: ChildcareCheck's town adds depots until it does
+     * (RES3: a door holds one household, and the short city's 900 Houses no
+     * longer staff its builders' sites).
+     */
+    static void abroadReadOnce(Path root) {
+        out.println("\n--- 17. the build quote's terms abroad read once: the multiple and the work abroad from one reading (AP8) ---");
+        ChildcareCheck.quiet = quiet;
+        Game g = ChildcareCheck.town(root, "abroad-once");
+        BuildingManager bm = g.getBuildingManager();
+        BuildingManager.ForeignTerms now = bm.foreignTerms();
+        assertTrue("fixture: the town trades abroad, its builders' sites staffed (" + (now == null ? "no terms" : String.format(Locale.ROOT,
+                "%.1f points a month at the sites", now.sites())) + "), so an order has terms abroad", now != null && now.sites() > 0);
+        if (now == null) return;
+        int read = 0, alike = 0, dearer = 0, abroad = 0;
+        HashSet<Long> multiples = new HashSet<>();
+        for (String name : new String[] { "House", "Convenience Store", "Coal Power Plant", "Water Treatment Plant" }) {
+            BuildingsTemplate t = bm.getTemplateByName(name);
+            double each = t.getConstructionPoints();
+            for (long n : new long[] { 1, 7, 600 }) {
+                for (double monthsAhead : new double[] { 0, 6, 60 }) {
+                    double ahead = monthsAhead * now.sites();
+                    for (double away : new double[] { 0, ahead / 2 }) {
+                        Map<BuildingsTemplate, Double> site = away > 0 ? Map.of(t, 3 * each) : Map.of();
+                        BuildingManager.OrderAbroad first = bm.abroadOfOrder(ahead, away, each, n, t, site);
+                        BuildingManager.OrderAbroad second = bm.abroadOfOrder(ahead, away, each, n, t, site);
+                        double once = bm.orderPriceMultiplier(first, n);
+                        double asQuoted = bm.orderPriceMultiplier(ahead, away, each, n, t, site);
+                        read++;
+                        if (first != null && first.equals(second)
+                                && Double.doubleToRawLongBits(once) == Double.doubleToRawLongBits(asQuoted)) alike++;
+                        if (once > 1) dearer++;
+                        multiples.add(Double.doubleToRawLongBits(once));
+                        if (first != null && first.buildings() > 0) abroad++;
+                    }
+                }
+            }
+        }
+        assertTrue("fixture: the queue ahead moves the multiple, some orders past the threshold and some not (" + multiples.size()
+                + " multiples, " + dearer + " of " + read + " orders dearer), "
+                + abroad + " with buildings handed abroad", dearer > 0 && dearer < read && multiples.size() > 1 && abroad > 0);
+        assertTrue("every reading read again the same to the bit, and its multiple the quote's to the bit: " + alike + " of " + read,
+                alike == read && read == 72);
     }
 }

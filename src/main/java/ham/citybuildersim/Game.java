@@ -9739,8 +9739,9 @@ public class Game {
         Fitout fit = Fitout.of(this, selected);
         // ...its buildings past the threshold at the foreign crews' share for the month they make them run, the order on
         // site in the base a point (REV-FC2; BuildingManager.abroadOfOrder()), and handed to them at that when it is billed.
-        double scarcity = buildingManager.orderPriceMultiplier(ahead.queue(), ahead.abroad(), fit.points(), quantity, selected, ahead.site());
+        // ...read once for both (AP8): the multiple is the one orderPriceMultiplier() strikes on these same terms.
         BuildingManager.OrderAbroad abroad = buildingManager.abroadOfOrder(ahead.queue(), ahead.abroad(), fit.points(), quantity, selected, ahead.site());
+        double scarcity = buildingManager.orderPriceMultiplier(abroad, quantity);
         double prepCost = (prepPoints > 0 ? preparationCost(prepPoints) : 0) * scarcity;
         double sticker = buildingManager.nonMaterialCost(fit) * quantity * scarcity;
         if (prepCost > 0) sticker += prepCost;

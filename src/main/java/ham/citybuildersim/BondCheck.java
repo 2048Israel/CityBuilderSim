@@ -205,6 +205,10 @@ public class BondCheck {
 
         arithmetic();
         Game g = city(root, "market", 24);
+        // 9c (AP8): every order the played months rest from here on, its side's halving checked against the walk.
+        OrderBook.Probe inPlay = new OrderBook.Probe();
+        inPlay.checked = true;
+        g.getBondMarket().probeBooks(inPlay);
         bookbuilding(g);
         theChoice(g);
         /* 7c in a city of its own. GW1 had Construction borrowing there in the young town (owing 111 at m24), so "idle cash and owes nothing" was
@@ -229,6 +233,7 @@ public class BondCheck {
         priceTick();
         if (paperIssued) saveAndLoad(g, root);
         if (paperIssued) maturity(g);
+        knownOrderInPlay(g, inPlay);
 
         assertTrue("every month this harness played closed the audit (" + closedMonths + ")", brokenMonths == 0);
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
@@ -2038,5 +2043,68 @@ public class BondCheck {
         cents("the world's principal leaves on the audit, in the financial account", line(r, "- bonds PrincipalAbroad"), bm.getPrincipalAbroad());
         cents("...the households' arrives in their savings", line(r, "- bonds PrincipalToHouseholds"), bm.getPrincipalToHouseholds());
         assertTrue("...and the month closes", closes(r));
+    }
+
+    /* ================== 9c. THE KNOWN ORDER IN PLAY (AP8) ================== */
+
+    /** The played city's bond market to the bit: every bond's holders and its book, and the households' paper and savings. */
+    static String marketBits(Game g) {
+        BondMarket bm = g.getBondMarket();
+        StringBuilder s = new StringBuilder();
+        for (CorporateBond b : bm.getBonds()) {
+            s.append(b.id()).append(' ');
+            for (double v : new double[] { b.face(), b.households, b.bank, b.world, b.city }) s.append(Double.doubleToRawLongBits(v)).append(' ');
+            s.append(OrderBookCheck.bits(bm.bookOf(b))).append('\n');
+        }
+        s.append(Double.doubleToRawLongBits(g.getHouseholdBalance().totalBonds())).append(' ')
+                .append(Double.doubleToRawLongBits(g.getHouseholdBalance().totalSavings()));
+        return s.toString();
+    }
+
+    /** A copy of the played city from its scratch slot, every book of its market under `probe`. */
+    static Game reloaded(Game g, int slot, OrderBook.Probe probe) {
+        Game[] back = new Game[1];
+        quietly(() -> {
+            back[0] = new Game(g.getGameFiles());
+            back[0].loadGameSave(slot);
+        });
+        back[0].getBondMarket().probeBooks(probe);
+        return back[0];
+    }
+
+    static void knownOrderInPlay(Game g, OrderBook.Probe inPlay) {
+        out.println("\n--- 9c. the known order in play: every rest halved where the walk stops, and the market to the bit against one that walks (AP8) ---");
+        // Every section above played its months on this city: the step's withdrawals, the households', the bank's, the fund's,
+        // the companies' and the world's orders, their fills and trims, the coupons, a load beside it, a maturity.
+        assertTrue("the played months rested " + inPlay.rested + " orders, " + inPlay.halved + " on a side in known order, each "
+                        + "checked against its walk: " + inPlay.differed + " differed",
+                inPlay.rested > 0 && inPlay.halved > 0 && inPlay.compared == inPlay.rested && inPlay.differed == 0);
+        // A load: two copies of the city from one save, one whose books always walk; three months each, to the bit.
+        int slot = 10;
+        quietly(() -> g.saveGame(slot, "known order"));
+        OrderBook.Probe held = new OrderBook.Probe(), walking = new OrderBook.Probe();
+        held.checked = true;
+        walking.bare = true;
+        Game a = reloaded(g, slot, held), b = reloaded(g, slot, walking);
+        assertTrue("fixture: the copies load with orders resting, the same to the bit",
+                a.getLoadFailure() == null && resting(a.getBondMarket()) > 0 && marketBits(a).equals(marketBits(b)));
+        boolean unknown = true;
+        for (CorporateBond x : a.getBondMarket().getBonds()) {
+            OrderBook book = a.getBondMarket().bookOf(x);
+            if (!book.bids().isEmpty() && book.known(OrderBook.Side.BUY)) unknown = false;
+            if (!book.asks().isEmpty() && book.known(OrderBook.Side.SELL)) unknown = false;
+        }
+        assertTrue("...each loaded side with orders on it unknown until it empties", unknown);
+        boolean alike = true;
+        for (int m = 0; m < 3; m++) {
+            play(a);
+            play(b);
+            alike &= marketBits(a).equals(marketBits(b));
+        }
+        assertTrue("three months on: the market to the bit against the walking copy, every month ("
+                        + held.halved + " of " + held.rested + " rests halved, " + walking.halved + " in the walking copy)",
+                alike && held.halved > 0 && walking.halved == 0 && walking.rested == held.rested);
+        assertTrue("...every halving where its walk stops: " + held.compared + " compared, " + held.differed + " differed",
+                held.compared == held.rested && held.differed == 0);
     }
 }

@@ -7107,7 +7107,15 @@ public class BuildingManager {
     /** ...with the points the orders before it in a run put on site, by template (abroadOfOrder()'s six-argument form). */
     public double orderPriceMultiplier(double pointsAhead, double abroadAhead, double pointsEach, long n, BuildingsTemplate of,
                                        java.util.Map<BuildingsTemplate, Double> siteAhead) {
-        OrderAbroad a = abroadOfOrder(pointsAhead, abroadAhead, pointsEach, n, of, siteAhead);
+        return orderPriceMultiplier(abroadOfOrder(pointsAhead, abroadAhead, pointsEach, n, of, siteAhead), n);
+    }
+
+    /**
+     * ...on the order's terms abroad already read (AP8): Game.quoteBuild() reads abroadOfOrder() once for the multiple
+     * and the quote's work abroad, the same arguments, rather than once each (AP7's profile: 6.0% of slot 9's window
+     * thread at 50x). abroadOfOrder() changes nothing it reads, so one reading is the two. None (no foreign trade): 1.
+     */
+    public double orderPriceMultiplier(OrderAbroad a, long n) {
         if (a == null) return 1;
         return BuildersShort.multiplier(a.fromMonths(), a.stepMonths(), n, a.thresholdMonths(), a.share());
     }

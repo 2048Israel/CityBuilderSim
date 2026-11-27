@@ -33,6 +33,12 @@ import java.util.Map;
  *      and the next order after a reload still arrives after them.
  *  10. FLOATING PRICES: a one-step roundoff crosses and keeps time priority,
  *      in both money units; a gap past the model's allowance never crosses.
+ *  12. THE KNOWN ORDER (AP8): a side in known raw price order is halved to
+ *      find where a new order rests, and rests it where walking the side from
+ *      its best order would - warmed, then after each writer of the side (an
+ *      order, a fill, a trim, a cancel, the close, a roundoff out of raw
+ *      order, a split, a reform, a load, the autosave's copy), the book to
+ *      the bit against a twin that always walks.
  *
  * The bond market's own use of the book - its participants, their orders,
  * and a played month's audit closing through the trades - is BondCheck's,
@@ -99,6 +105,7 @@ public class OrderBookCheck {
         theRecord();
         currencyReform();
         saveAndLoad();
+        knownOrder();
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
@@ -349,5 +356,278 @@ public class OrderBookCheck {
         OrderBook none = gson.fromJson("{}", OrderBook.class);
         assertTrue("a book saved with nothing on it loads empty, with no last price",
                 none.bids().isEmpty() && none.asks().isEmpty() && Double.isNaN(none.lastPrice()));
+    }
+
+    /* ======================= 12. THE KNOWN ORDER (AP8) ======================= */
+
+    static final OrderBook.Side BUY = OrderBook.Side.BUY, SELL = OrderBook.Side.SELL;
+
+    /** Every halving checked against its walk, over every twin of section 12. */
+    static long knownRested, knownHalved, knownCompared, knownDiffered;
+
+    /**
+     * Two books fed the same orders (AP8): `held` halves a side in known
+     * order, play's path, under a checked probe that also walks the side from
+     * its best order and compares where the two stop; `bare` always walks, as
+     * every book did before AP8. Each submit's fills, and the two books after
+     * each writer, must agree to the bit.
+     */
+    static final class Twin {
+        OrderBook held, bare;
+        final Ledger heldLedger = new Ledger(), bareLedger = new Ledger();
+        final OrderBook.Probe probe = new OrderBook.Probe(), walking = new OrderBook.Probe();
+        int fillsDiffered;
+
+        Twin(String name) {
+            held = new OrderBook(name);
+            bare = new OrderBook(name);
+            for (int i = 0; i < 12; i++) give("b" + i);
+            for (int i = 0; i < 8; i++) give("s" + i);
+            give("x");
+            give("k");
+            give("j");
+            give("y");
+            probe.checked = true;
+            walking.bare = true;
+            attach();
+        }
+
+        void give(String who) { heldLedger.give(who, 1e6, 1e6); bareLedger.give(who, 1e6, 1e6); }
+
+        void attach() { held.probe = probe; bare.probe = walking; }
+
+        void submit(String who, OrderBook.Side side, double price, double quantity) {
+            String a = fills(held.submit(who, side, price, quantity, 1, heldLedger));
+            String b = fills(bare.submit(who, side, price, quantity, 1, bareLedger));
+            if (!a.equals(b)) fillsDiffered++;
+        }
+
+        void cash(String who, double money) { heldLedger.cash.put(who, money); bareLedger.cash.put(who, money); }
+
+        void withdrawAll() { held.withdrawAll(); bare.withdrawAll(); }
+    }
+
+    static String fills(List<OrderBook.Fill> fills) {
+        StringBuilder s = new StringBuilder();
+        for (OrderBook.Fill f : fills) s.append(f.buyer()).append(" to ").append(f.seller()).append(' ')
+                .append(Double.doubleToRawLongBits(f.quantity())).append(' ')
+                .append(Double.doubleToRawLongBits(f.price())).append(';');
+        return s.toString();
+    }
+
+    /** A book to the bit: every resting order on both sides in its place, and the month's record. */
+    static String bits(OrderBook b) {
+        StringBuilder s = new StringBuilder();
+        for (List<OrderBook.Order> side : List.of(b.bids(), b.asks())) {
+            for (OrderBook.Order o : side) s.append(o.seq()).append(' ').append(o.who()).append(' ').append(o.side())
+                    .append(' ').append(Double.doubleToRawLongBits(o.price()))
+                    .append(' ').append(Double.doubleToRawLongBits(o.quantity()))
+                    .append(' ').append(Double.doubleToRawLongBits(o.submitted())).append(' ').append(o.month()).append(';');
+            s.append('|');
+        }
+        for (double v : new double[] { b.lastPrice(), b.volume(), b.turnover(), b.postedBuy(), b.postedSell(),
+                b.filledBuy(), b.filledSell(), b.sellQuantityWaited() }) s.append(Double.doubleToRawLongBits(v)).append(' ');
+        s.append(b.trades()).append(' ').append(b.buysPosted()).append(' ').append(b.sellsPosted()).append(' ')
+                .append(b.buysWaited()).append(' ').append(b.sellsWaited()).append(' ').append(b.lastTradeMonth());
+        return s.toString();
+    }
+
+    /** The held book against the bare one after a writer: to the bit, every fill alike, every halving where its walk stops. */
+    static void same(String label, Twin t) {
+        knownRested += t.probe.rested;
+        knownHalved += t.probe.halved;
+        knownCompared += t.probe.compared;
+        knownDiffered += t.probe.differed;
+        assertTrue(label + ": the book to the bit against the walking one, " + t.probe.compared + " rests compared",
+                bits(t.held).equals(bits(t.bare)) && t.fillsDiffered == 0 && t.probe.differed == 0
+                        && t.probe.compared == t.probe.rested && t.probe.compared > 0);
+        t.probe.rested = t.probe.halved = t.probe.compared = t.probe.differed = 0;
+        t.fillsDiffered = 0;
+    }
+
+    /**
+     * Both sides warmed the way the households post (AP8's count on slot 9:
+     * two in three of the orders a new bid walked past stood at its very
+     * price): bids in rising runs, in falling runs and many at one price,
+     * asks above them, none crossing.
+     */
+    static Twin warmed(String name) {
+        Twin t = new Twin(name);
+        for (int i = 0; i < 24; i++) t.submit("b" + (i % 12), BUY, cents(90 + i % 6), 1 + i % 3);
+        for (int i = 0; i < 24; i++) t.submit("b" + (i % 12), BUY, cents(95 - i % 6), 1 + i % 2);
+        for (int i = 0; i < 12; i++) t.submit("b" + i, BUY, cents(92), 2);
+        for (int i = 0; i < 24; i++) t.submit("s" + (i % 8), SELL, cents(97 + i % 4), 1 + i % 2);
+        return t;
+    }
+
+    /** A price level as one double however it is reached: n hundredths. */
+    static double cents(int n) { return n / 100.0; }
+
+    /** A few orders after a writer, on both sides, between and past their levels. */
+    static void more(Twin t, double scale) {
+        t.submit("b2", BUY, .925 * scale, 1);
+        t.submit("b3", BUY, .92 * scale, 1);
+        t.submit("b4", BUY, .5 * scale, 1);
+        t.submit("s3", SELL, .985 * scale, 1);
+        t.submit("s4", SELL, .97 * scale, 1);
+        t.submit("s5", SELL, 1.5 * scale, 1);
+    }
+
+    /** Where a participant's first order stands on a side, -1 if it has none. */
+    static int indexOf(List<OrderBook.Order> side, String who) {
+        for (int i = 0; i < side.size(); i++) if (side.get(i).who().equals(who)) return i;
+        return -1;
+    }
+
+    /** The binade's roundoff: a bid just under the edge, then a higher one just over it, within its band (k, j). */
+    static void roundoff(Twin t, double k, double j) {
+        t.submit("k", BUY, k, 1);
+        t.submit("j", BUY, j, 1);
+    }
+
+    static void knownOrder() {
+        out.println("\n--- 12. the known order: a side in raw price order halved, the book to the bit against one that walks (AP8) ---");
+        Twin w = warmed("warm");
+        assertTrue("warmed: both sides in known order, every one of " + w.probe.rested + " rests halved",
+                w.held.known(BUY) && w.held.known(SELL) && w.probe.halved == w.probe.rested && w.probe.rested == 84);
+        same("warmed", w);
+
+        // an order: at the end of its price, a level of its own, past every other; then a roundoff within a level
+        Twin a = warmed("order");
+        more(a, 1);
+        assertTrue("an order: both sides still in known order", a.held.known(BUY) && a.held.known(SELL));
+        same("an order", a);
+        double top = a.bare.bids().get(0).price(), bottom = a.bare.asks().get(0).price();
+        long atTop = a.bare.bids().stream().filter(o -> o.price() == top).count();
+        long atBottom = a.bare.asks().stream().filter(o -> o.price() == bottom).count();
+        a.submit("b6", BUY, Math.nextUp(top), 1);
+        a.submit("s6", SELL, Math.nextDown(bottom), 1);
+        assertTrue("a one-step improvement on the best bid and ask rests behind its whole level (fixture: "
+                        + atTop + " and " + atBottom + " orders there), past the first the halving finds",
+                atTop > 1 && atBottom > 1 && a.bare.bids().get((int) atTop).who().equals("b6")
+                        && a.bare.asks().get((int) atBottom).who().equals("s6"));
+        same("a roundoff within a level", a);
+
+        // a fill: a sell takes the best bids and part of a level, a buy the best asks
+        Twin b = warmed("fill");
+        int bidsBefore = b.held.bids().size(), asksBefore = b.held.asks().size();
+        b.submit("x", SELL, .94, 30);
+        b.submit("x", BUY, .975, 9);
+        assertTrue("a fill: bids and asks taken off the front (fixture: " + b.held.trades() + " trades)",
+                b.held.trades() > 2 && b.held.bids().size() < bidsBefore && b.held.asks().size() < asksBefore);
+        assertTrue("...and both sides still in known order", b.held.known(BUY) && b.held.known(SELL));
+        more(b, 1);
+        same("a fill", b);
+
+        // a trim: b5 bid at the best price and can no longer pay for it
+        Twin c = warmed("trim");
+        long b5Before = c.held.bids().stream().filter(o -> o.who().equals("b5") && o.price() >= .95 - 1e-9).count();
+        c.cash("b5", .5);
+        c.submit("x", SELL, .95, 200);
+        assertTrue("a trim: b5's " + b5Before + " bids at the best price filled as far as its cash, and gone",
+                b5Before > 1 && c.held.bids().stream().noneMatch(o -> o.who().equals("b5") && o.price() >= .95 - 1e-9)
+                        && c.held.known(BUY) && c.held.known(SELL));
+        more(c, 1);
+        same("a trim", c);
+
+        // a cancel
+        Twin d = warmed("cancel");
+        int gone = d.held.withdraw("b7");
+        d.bare.withdraw("b7");
+        d.held.withdraw("s1");
+        d.bare.withdraw("s1");
+        assertTrue("a cancel: b7's " + gone + " bids withdrawn, both sides still in known order",
+                gone > 1 && d.held.known(BUY) && d.held.known(SELL));
+        more(d, 1);
+        same("a cancel", d);
+
+        // the month's close
+        Twin e = warmed("close");
+        e.withdrawAll();
+        more(e, 1);
+        assertTrue("the close: every order withdrawn, and the next ones rest in known order",
+                e.held.bids().size() == 3 && e.held.known(BUY) && e.held.known(SELL));
+        same("the close", e);
+
+        // a roundoff out of raw order at a binade (a half, below every bid and ask of the warm book): the later, higher
+        // bid kept behind the earlier by the band, and the next bid past the earlier one's band - where a halving that
+        // trusted the order would rest it behind both
+        double edge = .5, below = Math.ulp(Math.nextDown(edge)), above = Math.ulp(edge);
+        double k = edge - (MoneyAudit.ULP_STEPS + 6) * below, j = edge + (MoneyAudit.ULP_STEPS / 2 - 4) * above;
+        double x = Math.nextDown(edge);
+        assertTrue("fixture: the higher bid within the earlier's band, the next past it and no higher than the higher, raw",
+                j - k <= MoneyAudit.tolerance(0, j) && x - k > MoneyAudit.tolerance(0, x) && j >= x && k < x);
+        Twin f = warmed("roundoff");
+        roundoff(f, k, j);
+        int at = indexOf(f.held.bids(), "k");
+        assertTrue("a roundoff out of raw order: the higher bid rests behind the earlier, last, and the bids forget their order",
+                at == f.held.bids().size() - 2 && f.held.bids().get(at + 1).who().equals("j")
+                        && !f.held.known(BUY) && f.held.known(SELL));
+        f.submit("y", BUY, x, 1);
+        assertTrue("...so the next bid rests ahead of the one it is past the band of, behind every better one",
+                indexOf(f.bare.bids(), "y") == at && indexOf(f.held.bids(), "y") == at);
+        more(f, 1);
+        same("a roundoff out of raw order", f);
+        f.withdrawAll();
+        f.submit("b1", BUY, .93, 1);
+        assertTrue("...and once the side is empty its order is known again", f.held.known(BUY));
+        same("a roundoff, the side emptied", f);
+
+        // a split, and a consolidation
+        Twin g = warmed("split");
+        g.held.split(2);
+        g.bare.split(2);
+        assertTrue("a split: every price over two, both sides still in known order",
+                g.held.known(BUY) && g.held.known(SELL) && g.held.bids().get(0).price() == cents(95) / 2);
+        more(g, .5);
+        same("a split", g);
+        g.held.split(.5);
+        g.bare.split(.5);
+        more(g, 1);
+        same("a consolidation", g);
+
+        // a reform: a share's prices, then a bond's quantities
+        Twin h = warmed("reform");
+        h.held.redenominate(.37, false);
+        h.bare.redenominate(.37, false);
+        assertTrue("a reform of a share's book: every price times the scale, both sides still in known order",
+                h.held.known(BUY) && h.held.known(SELL) && h.held.bids().get(0).price() == cents(95) * .37);
+        more(h, .37);
+        same("a reform of the prices", h);
+        h.held.redenominate(1000, true);
+        h.bare.redenominate(1000, true);
+        more(h, .37);
+        same("a reform of the quantities", h);
+
+        // a load: in raw order or not, a loaded side is unknown until it empties
+        Gson gson = new Gson();
+        Twin l = warmed("load");
+        roundoff(l, k, j);
+        l.held = gson.fromJson(gson.toJson(l.held), OrderBook.class);
+        l.bare = gson.fromJson(gson.toJson(l.bare), OrderBook.class);
+        l.attach();
+        assertTrue("a load: both sides unknown, the bids out of raw order and the asks in it",
+                !l.held.known(BUY) && !l.held.known(SELL)
+                        && l.held.bids().get(indexOf(l.held.bids(), "k") + 1).who().equals("j"));
+        l.submit("y", BUY, x, 1);
+        more(l, 1);
+        same("a load", l);
+        l.withdrawAll();
+        more(l, 1);
+        assertTrue("...known again once emptied", l.held.known(BUY) && l.held.known(SELL));
+        same("a load, the sides emptied", l);
+
+        // the autosave's copy carries the order it knows
+        Twin m = warmed("copy");
+        OrderBook copy = m.held.copy();
+        assertTrue("the autosave's copy: both sides in known order, as the book's", copy.known(BUY) && copy.known(SELL));
+        m.held = copy;
+        m.attach();
+        more(m, 1);
+        same("the autosave's copy", m);
+
+        assertTrue("every rest of section 12 checked against its walk: " + knownCompared + " compared, "
+                        + knownHalved + " halved, " + knownDiffered + " differed",
+                knownCompared == knownRested && knownHalved > 0 && knownDiffered == 0);
     }
 }
