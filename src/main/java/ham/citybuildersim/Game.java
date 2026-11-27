@@ -10032,6 +10032,28 @@ public class Game {
         return template == null ? 0 : siteMonths(ConstructionControl.keyOf(template));
     }
 
+    /** The month's crews site by site at the builders' output, the plan the construction page reads (ConstructionScreen.sites()); reads, changes nothing. */
+    public BuildingManager.Plan sitesPlan() {
+        return buildingManager.plan(getBuildingOutput());
+    }
+
+    /**
+     * ASH1 finding 8: months a site's points still owed take at the pace this month's plan gives it, not at the rule's wait
+     * (onSiteMonths(): its points over its weight's share with every other site held at its share the whole wait). The month
+     * water-fills (BuildingManager.waterFill()), the small sites taking no more than they owe and the surplus passing on, so
+     * a big site among many small ones does the plan's work and not its weight's share: 17-18 months where the rule read 28.
+     * It is all the site owes over the plan's work on it, and not Plan.owedOf(), which is no more than the month's cap.
+     * A site handed abroad, or one the plan gives no work (no output, or behind the city's order), keeps onSiteMonths().
+     * 0 with nothing of it on site. Reads; changes nothing.
+     */
+    public double onSitePaceMonths(BuildingsTemplate template, BuildingManager.Plan plan) {
+        BuildingsStacks site = template == null ? null : buildingManager.getStack(template);
+        if (site == null || site.getUnderConstruction() <= 0) return 0;
+        String key = ConstructionControl.keyOf(template);
+        if (plan == null || buildingManager.getControl().abroadOf(key) != null || !(plan.workOf(key) > 0)) return onSiteMonths(template);
+        return Math.max(0, site.owedPoints()) / plan.workOf(key);
+    }
+
     /**
      * ONE WAIT FOR A SITE (0.7.22, after the docs pass): months a site on
      * site would take at today's queue - a stack's by its key, or a

@@ -327,11 +327,11 @@ public final class BuildAdvice {
         return out;
     }
 
-    /** The measure a NEEDS YOU row is about, for the rows a city-built building answers; null for the rest. */
+    /** The measure a NEEDS YOU row is about, for the rows a city-built building answers (a POWER row the wires bind: the grid's); null for the rest. */
     public static Measure measureOf(CityNeeds.Need need) {
         if (need == null) return null;
         switch (need.kind()) {
-            case POWER:         return Measure.of(Kind.POWER);
+            case POWER:         return need.wires() ? Measure.of(Kind.GRID) : Measure.of(Kind.POWER);
             case WATER:         return Measure.of(Kind.WATER);
             case ROADS:         return Measure.of(Kind.ROADS);
             case HIGHWAYS:      return Measure.of(Kind.HIGHWAYS);
