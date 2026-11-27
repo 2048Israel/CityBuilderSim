@@ -125,6 +125,14 @@ stuff".
 | AU1 | AuctionChart.set draws again whenever the sale's Auction.Result differs, even where the picture does not (main's, found by RES3's slice H, 2026-11-26): on KeptCheck 64's Borrow city, whose bidders stand still, the face moved only in its last digits (4,313,910,641, then 4,313,910,650, then 4,313,910,642, of 4.3bn) and 3 of 6 months drew a pixel-identical chart again, red on "no month draws it again with nothing changed in it". On the played city the market moves the chart every month, so it is green there. A small fix, drawing again on the figures the chart draws, with its own check: KeptCheck 64's AuctionChart watched on Borrow's own city. | docs/queue/RES3-notes.md |
 | AP9 | Slot 9 at 50x after AP8 (Build 9.3, Land 9.6 months a second in the quieter run): private investment (`Game.runPrivateInvestment` 13.8% of the FX thread, `EquipmentFit.priced` 5.3% under `NewUnit.standingWhile`), `HouseholdBalance.followThePeople` (10.6%; `Household.bondFace` boxes its id, `Integer.valueOf` 4.4%), the bond clearing's `settle` and `capacity` (about 6%); measured before and after, exact (the trace's eight md5s equal) | [AP9](docs/queue/AP9.md) |
 
+### UI
+
+The UI rework's own order (Jerus, 2026-11-27: "there are no queue for UI"): beside the batches above, not after them; the top row is next. The rows sit under Queued so that ship.sh's row handling sees them; a UI ship file's queued rows land at the end of the table above, and the orchestrator moves them here.
+
+| batch | what | brief |
+|---|---|---|
+| UX1 | The interface rework's study (Jerus, 11-27: the map as the ground of every screen, HoI IV-style alerts at the top, a build screen in groups with an icon per building): the picture tool, the stability harness, the audit of every page on two or three cities, mockups over the real map, and the rows UX2 onward | docs/queue/UX1.md |
+
 ## Pending
 
 Not done, and waiting on Jerus.
