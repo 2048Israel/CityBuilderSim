@@ -639,6 +639,155 @@ for the ALL dry-run slot and wait. No final ready marker drop, candidate
 ensemble, dry run or full gate reuse is claimed. All helpers and named jobs
 have ended before this turn boundary.
 
+## Second review SHIP and ensemble (2026-11-27)
+
+Orchestrator `20261127-020736-897` reports REV-CBK3 **SHIP** on
+`4ffbb65b2`: P1 holds for every dial including the zero-buffer ULP floor;
+P2's2404/2404 timing and deliberately broken-lender finding hold; P3 is the
+intended default change (floor firms leave participation and fund weights
+stop using stale prices). The review accepts the copied-city1.95% against
+Fed2021's approximately2.65% reference. It explicitly authorizes the final
+ensemble beside RES3's dry run; RES3 still ships first.
+
+Started the standard box runner at `4ffbb65b29166be07e292a7716659efb36536afd`,
+main `c71984995` already merged, label `CBK3`, all80 policy/seed runs,
+eight at once. No laptop model JVM is running. Box data uses its main-data
+autodiscovery, not Windows-path overrides. The caller is
+`target/cbk3-final-ensemble.sh`, output `target/CBK3-ensemble.txt`; remote root
+`/home/jerus/cbs/tools/4ffbb65b29166be07e292a7716659efb36536afd/target/ensemble/CBK3`.
+`BASELINE=docs/ensemble/CBK3-before.md` supplies the approved augmented replay
+of published0.9.212: old criteria/verdicts are identical to that published
+baseline; the replay adds real remittance/revenue/failure observations. No
+criterion, threshold, seed, policy or input is changed.
+
+Helper `CBK3-metrics`, committed memory50.64% before launch, prepares only
+an untracked existing-data comparator and baseline self-comparison. It uses
+policy/seed/common observed months, summed flows rather than average monthly
+ratios, recorded cumulative failures rather than findings/equity, and exposes
+full versus common horizons and missing data. It runs no JVM, edits no model,
+input or scorer, and returns a bounded report. Final results and the hard
+M1/F1 verdict will be recorded after all runs return.
+
+At 02:31 Halifax, the standard runner yielded to the nightly after finishing
+64 runs (AUTO2, ZERO_SLACK, ZERO_HOT and SHOCK); the 16 HIGH runs remain.
+The caller stays connected and resumes automatically. No priority bypass,
+replacement run or laptop JVM is used. A read-only copy of those completed
+CSVs is kept in `target/CBK3-complete-four-policies/`; this is partial evidence,
+not the runner's final score.
+
+Helper `CBK3-failures` (49.56% committed memory before launch; no JVM or edits)
+diagnosed those completed pairs and ended at 02:56. In the matched windows,
+recorded failure episodes fall from 242 to 201 overall, but 18 pairs increase,
+31 decrease and 15 tie. Two previously failure-free ZERO_HOT seeds now fail:
+seed 4 once at month 176, and seed 6 five times at months 132, 133, 135, 300
+and 312. The SHOCK increases begin before its month-601 shock. Lower pooled
+remittance shares and a lower aggregate episode count do not satisfy the
+brief's no-new-failures aim on those pairs.
+
+The helper traced `resolveIfFailed`, `equity` and `markToMarket`: the failure
+trigger and equity/mark accounting are unchanged from the retained control.
+All 64 candidate runs report clean monthly audits and zero findings. The new
+foreign interest expense and the deliberate removal of worthless firms from
+participation change income and subsequent paths; the observed rate, deposit
+and capital paths diverge before several extra failures. The CSV omits the
+intra-month loss/rescue phase, equity/assets/securities and wholesale costs,
+so this does not assign individual losses or prove each extra episode valid.
+No new accounting or loan-pricing defect was identified. The bank's own
+funding spread and market closure in resolution remain the explicitly queued
+BFW1 limitation. Report: bus `20261127-025627-942`; paired data and diagnostics
+in `target/CBK3-four-policy-comparison.json` and `.md`.
+
+★ Keep the evidence-backed funding and worthless-price corrections, retain
+all paired regressions in the final comparison, and do not invent a credit
+subsidy, remittance cap or weaker audit to hide them. Only the completed
+80-run M1/F1 result decides the ensemble's shipping stop under contract 4;
+the failure-count aim and the diagnostic limits must still be stated plainly.
+
+### Final 80-run verdict
+
+The standard runner resumed at approximately 03:12 and finished at 03:14
+Halifax, exit **0**. All 80 runs are complete, none missing or short; all
+64 pre-switch twins match. **M1 and F1 pass in all five policies, 10/10 hard
+criteria**: zero failed or unread monthly money audits and zero LongPlaytest
+findings. The same cent-level audit law remains active. Overall score is
+**24/26**, exactly the replay and published **0.9.212** score: A1/A2 remain
+informational FAILs and H1 remains retired. All 28 criterion IDs, classes,
+thresholds and verdicts match both baselines; 17 measured readings change.
+No criterion or finding allowance was weakened. This is the ensemble's
+formal PASS, not a claim that no bank failed.
+
+`docs/ensemble/CBK3.md` records the standard output, identical except for the
+two publication headings changed to `{next}`. Its embedded JSON matches
+`target/ensemble/CBK3/summary.json`. The source remains `4ffbb65b2`, main
+`c71984995`, snapshot version 0.9.215, gatebox OpenJDK 21.0.13, named
+`earth-2.bin` and `world-1.bin`; record commits change no model. Raw CSVs,
+snapshot, progress, times, logs and scores are retained locally under
+`target/ensemble/CBK3/` and on the box at the run root above. This is not a
+gate dry run or a reusable full-suite result.
+
+The following shares are **sum of actual remittances / sum of actual budget
+revenue**, pooled over the 16 runs of each policy. They differ from the
+baseline table's median of each run's full-window ratio. Before is the
+approved exact 0.9.212 replay; the published baseline itself had no bank-flow
+columns. Counts include rescued bank-failure episodes, not F1 findings.
+
+| Policy | Before share | After share | Failure episodes before / after | Runs with failures before / after | Maximum episodes before / after |
+|---|---:|---:|---:|---:|---:|
+| AUTO2 | 0.061122288% | 0.024612297% | 80 / 62 | 16 / 15 | 8 / 11 |
+| ZERO_SLACK | 0.194778204% | 0.075479752% | 67 / 48 | 16 / 15 | 8 / 7 |
+| ZERO_HOT | 4.668742325% | 1.732505571% | 45 / 40 | 14 / 15 | 7 / 6 |
+| SHOCK | 5.877349694% | 1.979491676% | 50 / 51 | 16 / 15 | 7 / 10 |
+| HIGH | 2.432930655% | 0.529450037% | 47 / 43 | 16 / 15 | 5 / 7 |
+| All 80 | 0.111123032% | 0.040760984% | 289 / 244 | 78 / 75 | 8 / 11 |
+
+Full and paired common windows agree for every seed: AUTO2 months 2–2400,
+ZERO_SLACK 2–2040, ZERO_HOT 2–402, SHOCK 2–840 and HIGH 2–720. Both models
+have 102,352 observed rows, no gaps or horizon mismatch, complete finite
+required flows and valid cumulative counters. Nonpositive-revenue monthly
+ratios are unavailable (114 before, 143 after); no monthly-ratio averages or
+invented currency conversion are used. These different policy horizons and
+shared prefixes make the per-policy comparisons necessary beside the all-80
+pooled ratio. Denomination and stable-budget-binding counts are not CSV
+fields; no ensemble count is inferred. The completed-month LongPlaytest's
+recorded 0 binding months and the native positive binding fixture remain
+the evidence for that counter.
+
+**The no-new-bank-failures aim is unmet on individual pairs.** There are 23
+increases (+39 episodes), 39 decreases (−84), and 18 ties: net −45. Five
+formerly failed pairs become failure-free, but ZERO_HOT seeds 4 and 6 change
+from 0 to 1 and 0 to 5. Every increase, seed: before→after, is retained here:
+
+| Policy | Increased pairs |
+|---|---|
+| AUTO2 | 10: 7→11; 11: 1→2; 15: 1→2 |
+| ZERO_SLACK | 11: 1→2; 12: 4→5; 15: 1→2 |
+| ZERO_HOT | 2: 2→4; 4: 0→1; 6: 0→5; 10: 4→6; 13: 2→4 |
+| SHOCK | 2: 6→10; 7: 2→3; 10: 2→3; 11: 1→2; 12: 4→5; 13: 2→4; 15: 1→2 |
+| HIGH | 2: 4→7; 7: 2→3; 10: 2→3; 11: 1→2; 12: 4→5 |
+
+The earlier source diagnosis found no new accounting or pricing defect; it
+does not establish the loss mechanism of each added episode. Do not call
+these noise, erase them behind the aggregate improvement, or equate clean
+F1 with no failures. BFW1 remains a concrete funding-model limitation, not
+a proved explanation for these episodes. Contract 4 makes M1/F1 the only
+ensemble hard stops; both hold. Report the unmet aim with the PASS to the
+orchestrator and request the ALL dry-run slot, without starting it.
+
+Helper `CBK3-metrics` resumed at 46.79% committed memory, independently
+cross-checked all 160 CSV hashes, runner output and baseline identity, and
+ended at 03:20 (bus `20261127-032021-107`). Its comparator self-tests and
+baseline-versus-itself proof already passed. Final comparison artifacts are
+`target/CBK3-comparison.json` and `.md`; final runner log is
+`target/CBK3-ensemble.txt`. Both diagnostic helpers and the ensemble caller
+have ended. Ship-file row validation exits 0; the readiness marker stays
+provisional. No final ready claim or dry-run authorization is inferred.
+
+At RES3's later merge, retain BOTH its reserves-capped window repayment and
+its P1 pricing of the advance left owed on the bank and central-bank books.
+Do not erase unpaid debt or retire reserves the bank has not got. The
+ensemble does not authorize a dry run: ask `CBK3 dry run?` after the verdict
+and wait for the orchestrator's slot.
+
 ## For the manual
 
 Use the Bank tab to choose the commercial bank or the central bank. The
