@@ -965,10 +965,13 @@ public class ForeignCrewsCheck {
                 + " (GDP's investment under the import, R1g's month 15)", workOff < billOff);
         ok("fixture: his points drew material, priced into the contracts", material > 0);
         near("on, the sites earn his points at his price: what they earned for them, their material apart, is his bill", earned, bill, 1e-9 * bill);
-        ok("...so the month's work the builders recognise is at least his bill and his points' material: their value added is his margin, nil,"
-                + " not minus their material", work >= bill + material);
-        // REV-R1g3 (P2): ...and at most that, the city's own share of the twin's work and the month's escalation: the material counted once.
+        // RES3 (2026-11-26): the month's escalation is counted apart, as the bound under this one counts it: when material fell the owners are
+        // refunded (Construction.recogniseEscalation(), a refund out of the work recognised), RES3's town's -10.2185 against +0.6501 before it,
+        // so the work was 3.9396 past his bill and material before the refund - the city's own share of the twin's work, 3.9397.
         double share = built / bmOn.getPointsBuilt(), escOn = cOn.getEscalationThisMonth(), escOff = cOff.getEscalationThisMonth();
+        ok("...so the month's work the builders recognise, the month's escalation apart, is at least his bill and his points' material: their"
+                + " value added is his margin, nil, not minus their material", work - escOn >= bill + material);
+        // REV-R1g3 (P2): ...and at most that, the city's own share of the twin's work and the month's escalation: the material counted once.
         double cityOwn = (1 - share) * (workOff - escOff);
         out.printf(Locale.ROOT, "  past his bill and material %,.4f; the city's own share (%,.4f of the points) of the twin's work %,.4f, the escalation %,.4f (the twin's %,.4f)%n",
                 work - bill - material, 1 - share, cityOwn, escOn, escOff);
