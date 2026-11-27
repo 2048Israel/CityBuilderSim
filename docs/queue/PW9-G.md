@@ -58,3 +58,5 @@ comparison; kept native artifacts in `codex-PW9-r2/target/PW9-r2` and
 `codex-PW9-r2-measure/target/PW9-measure`. Queued from PW9's ship file
 on the orchestrator's instruction `20261126-005746-437`;
 no conservation or fixture-red waiver is attached.
+
+ASH1 (queued 2026-11-27, ahead of this row) adds the small grid step a town of a few thousand can take, with its permanent id. PW9-G merges it, orders it with the plants where it serves, and keeps the 100 MW Substation for the loads past it.
