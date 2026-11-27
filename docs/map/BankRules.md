@@ -1,6 +1,6 @@
 # BankRules.java - 73 lines · 10 methods · 3 constants · model
 
-`ham/citybuildersim/BankRules.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BankRules.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > The city's saved banking rules, shared by lenders and both policy pages.
 > WHY (CBK3): the bank's prudential constants were invisible to the player;
@@ -8,7 +8,7 @@
 
 **Uses:** [Bank](Bank.md) (3), [DecisionLog](DecisionLog.md) (3), [CentralBank](CentralBank.md) (1), [Mortgage](Mortgage.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1)
 
-**Used by (6):** [Bank](Bank.md), [BankRulesCheck](BankRulesCheck.md), [BankRulesPane](BankRulesPane.md), [BusinessDebtManager](BusinessDebtManager.md), [Game](Game.md), [Mortgage](Mortgage.md)
+**Used by (7):** [Bank](Bank.md), [BankRulesCheck](BankRulesCheck.md), [BankRulesPane](BankRulesPane.md), [BusinessDebtManager](BusinessDebtManager.md), [Game](Game.md), [LongPlaytest](LongPlaytest.md), [Mortgage](Mortgage.md)
 
 ## Enum constants
 

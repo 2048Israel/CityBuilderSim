@@ -1,4 +1,4 @@
-# Exchange.java - 2,799 lines · 216 methods · 37 constants · model
+# Exchange.java - 2,803 lines · 216 methods · 37 constants · model
 
 `ham/citybuildersim/Exchange.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -66,7 +66,7 @@
 
 **Uses:** [OrderBook](OrderBook.md) (79), [Equity](Equity.md) (66), [TreasuryFund](TreasuryFund.md) (20), [Household](Household.md) (17), [HouseholdBalance](HouseholdBalance.md) (9), [Bank](Bank.md) (8), [OutwardInvestment](OutwardInvestment.md) (5), [OwnerHousehold](OwnerHousehold.md) (5), [BondMarket](BondMarket.md) (3), [PriceLevel](PriceLevel.md) (2), [MoneyAudit](MoneyAudit.md) (2), [FundLedger](FundLedger.md) (1), [SaveCopy](SaveCopy.md) (1)
 
-**Used by (31):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BankScreen](BankScreen.md), [CapitalGainsCheck](CapitalGainsCheck.md), [DataSave](DataSave.md), [Equity](Equity.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PrizeCheck](PrizeCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [ShortSellingCheck](ShortSellingCheck.md), [TreasuryFund](TreasuryFund.md)
+**Used by (32):** [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BankRulesCheck](BankRulesCheck.md), [BankScreen](BankScreen.md), [CapitalGainsCheck](CapitalGainsCheck.md), [DataSave](DataSave.md), [Equity](Equity.md), [EquityCheck](EquityCheck.md), [ExchangeCheck](ExchangeCheck.md), [FundCheck](FundCheck.md), [FundLedger](FundLedger.md), [FundLedgerCheck](FundLedgerCheck.md), [FundScreen](FundScreen.md), [FundView](FundView.md), [Game](Game.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HouseholdBalance](HouseholdBalance.md), [KeptCheck](KeptCheck.md), [LongPlaytest](LongPlaytest.md), [MarketCheck](MarketCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [OwnerCheck](OwnerCheck.md), [PeopleScreen](PeopleScreen.md), [PrizeCheck](PrizeCheck.md), [ReadPathCheck](ReadPathCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorBooks](SectorBooks.md), [SectorScreen](SectorScreen.md), [ShortSellingCheck](ShortSellingCheck.md), [TreasuryFund](TreasuryFund.md)
 
 ## Sections
 
@@ -83,19 +83,19 @@
 | 559 | THE PRICES |
 | 744 | THE MONTH |
 | 918 | · the desk |
-| 1092 | · the emigrants |
-| 1111 | · the world |
-| 1174 | · the shorts (EM2) |
-| 1323 | · the companies |
-| 1385 | · the households |
-| 1430 | · the owner families sell slowly (BO1) |
-| 1655 | · the city's fund (0.7.14) |
-| 1888 | · the cap and the hand's orders (0.7.39) |
-| 1979 | A HOUSEHOLD SHORT OF MONEY SELLS, mid-month, in the waterfall |
-| 2036 | one order, settled |
-| 2329 | SPLITS |
-| 2367 | · reading |
-| 2521 | · saving |
+| 1094 | · the emigrants |
+| 1113 | · the world |
+| 1176 | · the shorts (EM2) |
+| 1325 | · the companies |
+| 1387 | · the households |
+| 1432 | · the owner families sell slowly (BO1) |
+| 1657 | · the city's fund (0.7.14) |
+| 1890 | · the cap and the hand's orders (0.7.39) |
+| 1981 | A HOUSEHOLD SHORT OF MONEY SELLS, mid-month, in the waterfall |
+| 2038 | one order, settled |
+| 2331 | SPLITS |
+| 2369 | · reading |
+| 2523 | · saving |
 
 ## Constants
 
@@ -134,10 +134,10 @@
 | 417 | `Exchange.FUND` | `BondMarket.FUND` | The city's fund, by its rule (0.7.14; TreasuryFund) - the bond market's name, deliberately. |
 | 419 | `Exchange.FUND_HAND` | `BondMarket.FUND_HAND` | ...and by the player's hand: its own name, so the two never trade with each other and the hand's sale can reach the rescue book. |
 | 440 | `Exchange.TAX_EMIGRANTS` | `"tax-emigrants"` | Persistent secured departures use a distinct fill identity, with the existing emigrant counter class (HT1). |
-| 1031 | `Exchange.BOUND_CAPITAL` | `0, BOUND_POSITION = 1, BOUND_BOOK = 2, BOUND_FLOAT = 3` | Which of the desk's limits binds its bid: its capital, POSITION_LIMIT, BOOK_LIMIT, or the company's float. |
-| 2103 | `Exchange.BY_DESK` | `0, BY_WORLD = 1, BY_EMIGRANTS = 2, BY_HOUSEHOLDS = 3, BY_FUND = 4, BY_OWNERS = 5` | Who sells, by class: the desk, the world, the leavers, a household cell, since 0.7.14 the city's fund, and since BO1 the owner families (their own class: a cell that sells on a rule of its own and not the households')... |
-| 2524 | `Exchange.SLOTS_BEFORE_SPLITS` | `3` | Slots per company in the old dealer's array before the split factor joined (the exchange's first night): its quote, fair value and demand. |
-| 2526 | `Exchange.SLOTS` | `SLOTS_BEFORE_SPLITS + 1` | ...and after: the quote, fair value, demand and split factor, four a company - what a save from before 0.7.12 round 2 carries (restore(String[], double[])). |
+| 1031 | `Exchange.BOUND_CAPITAL` | `0, BOUND_POSITION = 1, BOUND_BOOK = 2, BOUND_FLOAT = 3, BOUND_STABLE = 4` | Which of the desk's limits binds its bid: capital, position, book, float or stable cash. |
+| 2105 | `Exchange.BY_DESK` | `0, BY_WORLD = 1, BY_EMIGRANTS = 2, BY_HOUSEHOLDS = 3, BY_FUND = 4, BY_OWNERS = 5` | Who sells, by class: the desk, the world, the leavers, a household cell, since 0.7.14 the city's fund, and since BO1 the owner families (their own class: a cell that sells on a rule of its own and not the households')... |
+| 2526 | `Exchange.SLOTS_BEFORE_SPLITS` | `3` | Slots per company in the old dealer's array before the split factor joined (the exchange's first night): its quote, fair value and demand. |
+| 2528 | `Exchange.SLOTS` | `SLOTS_BEFORE_SPLITS + 1` | ...and after: the quote, fair value, demand and split factor, four a company - what a save from before 0.7.12 round 2 carries (restore(String[], double[])). |
 
 ## Fields (state)
 
@@ -199,31 +199,31 @@
 | 523 | `private double fundBondsValue` | What the fund's bonds are worth at this step, for its 70/30 (BondMarket.valueHeld()). |
 | 974 | `private final double[] lastExcessOffered` | What the desk offered over its caps at the last step, shares (round 4). |
 | 976 | `private double lifeExcessOffered, lifeExcessSold` | ...and over the city's life, at fair value when offered, and what of it sold, at the price paid. |
-| 1416 | `private double lifeRebalanceSold` | What the cells asked to rebalance over the city's life, at the price: for the playtest (round 3). |
-| 1420 | `private double lifeValueSold` | What the cells asked to sell on a share's value over the city's life, at the price (EM1): a bid over value, or a return under the alternatives. |
-| 1620 | `private Household buying` | The cell buying at the step right now, and what it may still spend this month. |
-| 1621 | `private double buyingBudget` |  |
-| 2033 | `private Household selling` | The cell selling in the waterfall right now, whose proceeds go back to its waterfall rather than into its savings. |
-| 2034 | `private double raised` |  |
-| 2118 | `private final double[] lifePostedSellBy` | Over the city's life, by seller class: what was offered for sale and what of it sold, both in shares at the company's price when it happened - so the ratio is a fill rate, as the book's own is, and not a comparison of... |
-| 2121 | `private final int[] lastDeskBound` | Company-months each of the desk's limits held its bid, in BOUND_ order: the last step's and the city's life (round 3). |
-| 2133 | `final int c` |  |
-| 2536 | `String[] keys` |  |
-| 2537 | `List<OrderBook> books` |  |
-| 2538 | `double[] fair, splitFactor, emigrantShares, buybackBudget` |  |
-| 2539 | `double[] taxEmigrantsGross, taxEmigrantsRetained` |  |
-| 2541 | `double[] spare, earnings, moneyIncome` | What fair value was struck on (EM1): each company's spare money, its net income over the last year and what its money earns it, totals. |
-| 2548 | `double[] shortShares, shortCollateral, lentCells, lentFund, feeToCells, feeToFund, shortPays` | The world's short and who lends it (EM2), per company in keys' order: the shares short, the collateral held against them (money), the shares the cells and the fund lend, and the month's lending fee each was paid (mone... |
-| 2550 | `double lifeShortSold, lifeShortSoldValue, lifeShortCovered, lifeShortCoveredValue, lifeLendingFees` | ...and over the city's life: shares sold short and their value, covered and their value, the fees paid, the company-months an ask was posted and a short stood open, the margin calls and the recalls. |
-| 2551 | `int lifeShortAsks, lifeShortMonths, lifeMarginCalls, lifeRecalls` |  |
-| 2552 | `double[] life` |  |
-| 2553 | `double[] last` |  |
+| 1418 | `private double lifeRebalanceSold` | What the cells asked to rebalance over the city's life, at the price: for the playtest (round 3). |
+| 1422 | `private double lifeValueSold` | What the cells asked to sell on a share's value over the city's life, at the price (EM1): a bid over value, or a return under the alternatives. |
+| 1622 | `private Household buying` | The cell buying at the step right now, and what it may still spend this month. |
+| 1623 | `private double buyingBudget` |  |
+| 2035 | `private Household selling` | The cell selling in the waterfall right now, whose proceeds go back to its waterfall rather than into its savings. |
+| 2036 | `private double raised` |  |
+| 2120 | `private final double[] lifePostedSellBy` | Over the city's life, by seller class: what was offered for sale and what of it sold, both in shares at the company's price when it happened - so the ratio is a fill rate, as the book's own is, and not a comparison of... |
+| 2123 | `private final int[] lastDeskBound` | Company-months each of the desk's limits held its bid, in BOUND_ order: the last step's and the city's life (round 3). |
+| 2135 | `final int c` |  |
+| 2538 | `String[] keys` |  |
+| 2539 | `List<OrderBook> books` |  |
+| 2540 | `double[] fair, splitFactor, emigrantShares, buybackBudget` |  |
+| 2541 | `double[] taxEmigrantsGross, taxEmigrantsRetained` |  |
+| 2543 | `double[] spare, earnings, moneyIncome` | What fair value was struck on (EM1): each company's spare money, its net income over the last year and what its money earns it, totals. |
+| 2550 | `double[] shortShares, shortCollateral, lentCells, lentFund, feeToCells, feeToFund, shortPays` | The world's short and who lends it (EM2), per company in keys' order: the shares short, the collateral held against them (money), the shares the cells and the fund lend, and the month's lending fee each was paid (mone... |
+| 2552 | `double lifeShortSold, lifeShortSoldValue, lifeShortCovered, lifeShortCoveredValue, lifeLendingFees` | ...and over the city's life: shares sold short and their value, covered and their value, the fees paid, the company-months an ask was posted and a short stood open, the margin calls and the recalls. |
+| 2553 | `int lifeShortAsks, lifeShortMonths, lifeMarginCalls, lifeRecalls` |  |
+| 2554 | `double[] life` |  |
+| 2555 | `double[] last` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 138 | 2662 | **type** `public class Exchange` | The stock exchange: one order book per company, where every share that changes hands meets its buyer, and the price is the quote: the middle of an uncrossed book (EM2, RS1). |
+| 138 | 2666 | **type** `public class Exchange` | The stock exchange: one order book per company, where every share that changes hands meets its buyer, and the price is the quote: the middle of an uncrossed book (EM2, RS1). |
 
 ### the dials (lines 140-177)
 
@@ -272,7 +272,7 @@
 | 643 | 1 | `public double cityMark(int c)` | WHAT THE CITY'S HOLDING OF A SHARE IS MARKED AT (0.7.48, C4): its quote while that is current, and fair value once the quote is a last trade older than STALE_MARK_MONTHS - a price nobody has paid for a year says nothi... |
 | 646 | 3 | `public boolean markedAtFair(int c)` | ...true when that is fair value: a quote that is the last trade, older than STALE_MARK_MONTHS. |
 | 651 | 1 | `public double fair(int c)` | The register's reckoning of a share, struck at the step: its money past the cushion at face and its earnings capitalised (Equity.fairValue(), EM1). |
-| 654 | 1 | `public boolean atFloor(int c)` | ...true when that is the exchange's floor (minFair), which a company whose book and record are gone sits at (BO1: the owner family's broke rule). |
+| 654 | 1 | `public boolean atFloor(int c)` | ...true when that is the exchange's valuation floor, which a company whose book and record are gone sits at (BO1: the owner family's broke rule). |
 | 661 | 3 | `private double valuationFloor()` | One floor for valuation and worthless-company classification (CBK3). |
 | 666 | 1 | `public double spareOf(int c)` | A company's money past its cushion at the last step, total: its till, its dollars abroad and its bonds, less six months of its costs, never under nothing (EM1). |
 | 668 | 1 | `public double earningsOf(int c)` | ...its net income over the last year, total: what its business earned, after tax (EM1). |
@@ -314,7 +314,7 @@
 | 896 | 5 | `private void handShortPaysToRegister()` | What the short has paid at the dividends over the city's life is the register's (Equity.getLifetimeShortPays()) and is saved here with the rest of the short (EM2): a load reads it into restoredShortPays, and the regis... |
 | 903 | 14 | `private void noteBook(int c, OrderBook b)` | Adds a book's month, as the step closed it, to the market's record. |
 
-### the desk (lines 918-1091)
+### the desk (lines 918-1093)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -327,225 +327,225 @@
 | 988 | 5 | `public double deskExcessOnOffer()` | ...in every company. |
 | 994 | 3 | `private boolean isExcessPrice(int c, double price)` | An ask of the desk's at fair value, not at its ask half a spread over: the excess. |
 | 1013 | 16 | `private double deskCapacity(Equity register, int c, double price)` | What the desk can buy at this price, shares: of another company, what its bank's capital carries at the weight its book gives the desk (Bank.deskCanCarry(), the inventory at the mark) and never more than is not alread... |
-| 1039 | 9 | `private double[] deskLimits(Equity register, int c, double price)` | The desk's four limits in another company's shares at this price, shares, in BOUND_ order (round 3): what its capital carries (0.7.8), its room under POSITION_LIMIT in this company and under BOOK_LIMIT over all of the... |
-| 1050 | 4 | `private static double resolvedRoom(double cap, double held)` | Cap less holding, in money: a residue below the sums' resolution buys nothing (RS1, DK1). |
-| 1056 | 5 | `private double bookAtFair(Equity register)` | What the desk holds of every other company, at fair value: what BOOK_LIMIT reads. |
-| 1063 | 4 | `public double deskPositionShare(Equity register, int c)` | The desk's holding of one company at fair value over the bank's equity, and its whole book's - for the screens and the playtest. |
-| 1067 | 4 | `public double deskBookShare(Equity register)` |  |
-| 1073 | 7 | `private double deskHolding(int c)` | What the desk can sell of this company: what it holds - and of the bank's own, new shares at the pace while the bank is under its target. |
-| 1087 | 4 | `private static boolean ownSharesTrade(Equity register)` | ...AND NEVER ON A RECORD THAT IS NEW OR BAD - the register's own reading of the bank's last twelve months (Equity.getRegime()): a bank in its first year, or losing money in half the months of one, neither buys its own... |
+| 1041 | 9 | `private double[] deskLimits(Equity register, int c, double price)` | The desk's five limits in another company's shares at this price, shares, in BOUND_ order (round 3): what its capital carries (0.7.8), its room under POSITION_LIMIT in this company and under BOOK_LIMIT over all of the... |
+| 1052 | 4 | `private static double resolvedRoom(double cap, double held)` | Cap less holding, in money: a residue below the sums' resolution buys nothing (RS1, DK1). |
+| 1058 | 5 | `private double bookAtFair(Equity register)` | What the desk holds of every other company, at fair value: what BOOK_LIMIT reads. |
+| 1065 | 4 | `public double deskPositionShare(Equity register, int c)` | The desk's holding of one company at fair value over the bank's equity, and its whole book's - for the screens and the playtest. |
+| 1069 | 4 | `public double deskBookShare(Equity register)` |  |
+| 1075 | 7 | `private double deskHolding(int c)` | What the desk can sell of this company: what it holds - and of the bank's own, new shares at the pace while the bank is under its target. |
+| 1089 | 4 | `private static boolean ownSharesTrade(Equity register)` | ...AND NEVER ON A RECORD THAT IS NEW OR BAD - the register's own reading of the bank's last twelve months (Equity.getRegime()): a bank in its first year, or losing money in half the months of one, neither buys its own... |
 
-### the emigrants (lines 1092-1110)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1095 | 15 | `private void postEmigrants()` | The month's leavers ask what the dealer's bid at fair value used to pay them. |
-
-### the world (lines 1111-1173)
+### the emigrants (lines 1094-1112)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1124 | 24 | `private void postWorld(double worldRate)` | The world, on a share's expected return against its rate plus the premium (EM1: it read the dividend's yield before): a bid up to the price that returns the hurdle plus the tolerance - and never over fair value plus h... |
-| 1159 | 9 | `private void postWorldPrice()` | THE WORLD SELLS INTO A BID OVER VALUE (EM1, 2026-10-29): where a bid rests more than BAND over a share's fair value and the world holds some, it sells OutwardInvestment.HOME_SPEED of what it holds at fair value plus B... |
-| 1170 | 3 | `private double worldHolding(int c)` | What the world holds that it can sell: what is held abroad less this month's leavers' shares, which are theirs to sell. |
+| 1097 | 15 | `private void postEmigrants()` | The month's leavers ask what the dealer's bid at fair value used to pay them. |
 
-### the shorts (EM2) (lines 1174-1322)
+### the world (lines 1113-1175)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1177 | 5 | `private double lendable(int c)` | What the city's long holders can lend of a company now, shares: the cells' holding and the fund's market book (never its rescue book). |
-| 1184 | 3 | `private double shortRoom(int c)` | What the world may still sell short of a company, shares: under MAX_SHORT_INTEREST of what is outstanding and under what the lenders have left to lend. |
-| 1194 | 4 | `public static double lendingRate(double utilisation)` | The fee a year on the shares lent, at a utilisation (the shares short over the shares lendable): LENDING_FEE up to HARD_TO_BORROW, rising linearly from there to LENDING_FEE + HARD_TO_BORROW_FEE when all of them are le... |
-| 1214 | 26 | `private void strikeLending()` | THE LENDING BOOK AND ITS FEE, at each step before anybody posts: what is short is lent by the cells and the fund's market book pro rata to what each holds, and the world pays them lendingRate() of it a year, a twelfth... |
-| 1250 | 8 | `private void cancelShortHeld(int c)` | A company with no shares in issue and a short open: every share still held is one the world sold short and nobody issued, so the cells', the desk's, the world's and the fund's market book go for nothing (Equity.cancel... |
-| 1260 | 10 | `private void restrikeLentBook(int c)` | The lending book as the shorts' fills leave it (EM2): what is short, up to what they hold (LF1), lent by the cells and the fund pro rata, none with nothing to lend. |
-| 1294 | 28 | `private void postShorts()` | THE WORLD SELLS SHORT (EM2), in every company valued on its record and worth something, the bank's own never: it reads the quote now, after the others have posted, and the position S it is short, and does the first of... |
+| 1126 | 24 | `private void postWorld(double worldRate)` | The world, on a share's expected return against its rate plus the premium (EM1: it read the dividend's yield before): a bid up to the price that returns the hurdle plus the tolerance - and never over fair value plus h... |
+| 1161 | 9 | `private void postWorldPrice()` | THE WORLD SELLS INTO A BID OVER VALUE (EM1, 2026-10-29): where a bid rests more than BAND over a share's fair value and the world holds some, it sells OutwardInvestment.HOME_SPEED of what it holds at fair value plus B... |
+| 1172 | 3 | `private double worldHolding(int c)` | What the world holds that it can sell: what is held abroad less this month's leavers' shares, which are theirs to sell. |
 
-### the companies (lines 1323-1384)
+### the shorts (EM2) (lines 1176-1324)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1357 | 27 | `private void postCompanies()` | A company past its equity target by OVER_TARGET, with cash past a cushion of its costs, bids for its own shares at fair value plus BUYBACK_TOLERANCE - never more than BUYBACK_PACE of what it is worth a year - and canc... |
+| 1179 | 5 | `private double lendable(int c)` | What the city's long holders can lend of a company now, shares: the cells' holding and the fund's market book (never its rescue book). |
+| 1186 | 3 | `private double shortRoom(int c)` | What the world may still sell short of a company, shares: under MAX_SHORT_INTEREST of what is outstanding and under what the lenders have left to lend. |
+| 1196 | 4 | `public static double lendingRate(double utilisation)` | The fee a year on the shares lent, at a utilisation (the shares short over the shares lendable): LENDING_FEE up to HARD_TO_BORROW, rising linearly from there to LENDING_FEE + HARD_TO_BORROW_FEE when all of them are le... |
+| 1216 | 26 | `private void strikeLending()` | THE LENDING BOOK AND ITS FEE, at each step before anybody posts: what is short is lent by the cells and the fund's market book pro rata to what each holds, and the world pays them lendingRate() of it a year, a twelfth... |
+| 1252 | 8 | `private void cancelShortHeld(int c)` | A company with no shares in issue and a short open: every share still held is one the world sold short and nobody issued, so the cells', the desk's, the world's and the fund's market book go for nothing (Equity.cancel... |
+| 1262 | 10 | `private void restrikeLentBook(int c)` | The lending book as the shorts' fills leave it (EM2): what is short, up to what they hold (LF1), lent by the cells and the fund pro rata, none with nothing to lend. |
+| 1296 | 28 | `private void postShorts()` | THE WORLD SELLS SHORT (EM2), in every company valued on its record and worth something, the bank's own never: it reads the quote now, after the others have posted, and the position S it is short, and does the first of... |
 
-### the households (lines 1385-1429)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1394 | 3 | `boolean mayBuy(Household c)` | Whether a cell's debt-free, unexcluded share may invest, while the cell can invest and is not going short. |
-| 1399 | 5 | `private double buyingShare(Household c)` | The eligible neighbours' cash, with the balance's existing rounding floor (HC1). |
-| 1406 | 1 | `private boolean owes(Household c)` | Whether a cell owes anything (mayBuy()): past the households' rounding floor where the balance is attached, else anything above nothing. |
-| 1409 | 5 | `static double shortOfCushion(Household c)` | How far a cell's savings are under its cushion, every household of it: its excess over its share target (round 3). |
-| 1417 | 1 | `public double getLifeRebalanceSold()` |  |
-| 1421 | 1 | `public double getLifeValueSold()` |  |
-| 1424 | 5 | `double spareOf(Household c)` | What a cell has past its cushion, in all: savings past SHARE_CUSHION_MONTHS of its take-home, every household of it. |
-
-### the owner families sell slowly (BO1) (lines 1430-1654)
+### the companies (lines 1325-1386)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1445 | 10 | `private void postOwners()` | THE OWNER FAMILIES SELL SLOWLY. |
-| 1503 | 115 | `private void postHouseholds(double depositRate, double worldRate, double paperYield)` | THE CELLS REBALANCE THEIR SHARES BY THE BOND RULE (0.7.12 round 3; Jerus: "Yes, same rule"): a cell over its target sells HOME_SPEED of the excess, a cell under it buys OUT_SPEED of the gap, as they do with the busine... |
-| 1633 | 21 | `private int bestBuy(double[] inc, double[] limits, double floor, boolean[] tried, boolean offered)` | The company a buyer would put the next dollar in: the highest expected return over the floor (EM1; the dividend's yield before), at the best ask when `offered` (only a company with an ask it would take, under its limi... |
+| 1359 | 27 | `private void postCompanies()` | A company past its equity target by OVER_TARGET, with cash past a cushion of its costs, bids for its own shares at fair value plus BUYBACK_TOLERANCE - never more than BUYBACK_PACE of what it is worth a year - and canc... |
 
-### the city's fund (0.7.14) (lines 1655-1887)
+### the households (lines 1387-1431)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1691 | 16 | `private void postFundOverLimit()` | THE FUND HOLDS TO ITS 10% (RB1). |
-| 1723 | 5 | `private double limitAsk(int c)` | WHAT THE OVER-LIMIT SALE ASKS (RB3): the market's own price, the book's last trade, held between the desk's bid - fair value less TreasuryFund.RULE_PREMIUM, the price a forced sale meets (A21, the withdrawal's sale in... |
-| 1730 | 1 | `public double getFundLimitAsked()` | The shares the rule asked this month past OWNERSHIP_LIMIT (postFundOverLimit(), RB1): 0 in a month no holding was over it. |
-| 1733 | 1 | `public double getFundLimitAsked(int c)` | ...of one company (RB3): what the rule asked of it this month past OWNERSHIP_LIMIT, 0 if it was not over. |
-| 1784 | 57 | `private void postFund()` | THE CITY'S FUND, BY ITS RULE AND THEN BY THE PLAYER'S HAND (TreasuryFund). |
-| 1843 | 4 | `private void postFundHandSales()` | The hand's asks must be visible when the world and households decide, before they are withdrawn next month (RS1). |
-| 1849 | 6 | `private boolean fundHandSelling(int c)` | A hand sale pauses the rule's buying of that company for this step, even if the sale has filled (RS1). |
-| 1857 | 30 | `private void postFundHand(TreasuryFund.HandOrder o)` | Posts one hand order with its existing price, holding, cap and ledger rules. |
+| 1396 | 3 | `boolean mayBuy(Household c)` | Whether a cell's debt-free, unexcluded share may invest, while the cell can invest and is not going short. |
+| 1401 | 5 | `private double buyingShare(Household c)` | The eligible neighbours' cash, with the balance's existing rounding floor (HC1). |
+| 1408 | 1 | `private boolean owes(Household c)` | Whether a cell owes anything (mayBuy()): past the households' rounding floor where the balance is attached, else anything above nothing. |
+| 1411 | 5 | `static double shortOfCushion(Household c)` | How far a cell's savings are under its cushion, every household of it: its excess over its share target (round 3). |
+| 1419 | 1 | `public double getLifeRebalanceSold()` |  |
+| 1423 | 1 | `public double getLifeValueSold()` |  |
+| 1426 | 5 | `double spareOf(Household c)` | What a cell has past its cushion, in all: savings past SHARE_CUSHION_MONTHS of its take-home, every household of it. |
 
-### the cap and the hand's orders (0.7.39) (lines 1888-1978)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1913 | 12 | `public double handOnOrder(TreasuryFund fund, int c)` | The hand's buys on a company, in shares: those resting on its book, and the waiting orders' money over their price (the price named, or fair value as struck now). |
-| 1927 | 5 | `public double fundRoom(Equity register, TreasuryFund fund, int c)` | The room a buy of the hand's has under the cap, and the rule's bid at the step: the cap less what the fund holds of the company and the hand's buys on order, never under nothing. |
-| 1934 | 4 | `private double ruleRoom(int c)` | ...the most of the rule's bid that may still fill between steps: that room, or no limit with no buy of the hand's on the company. |
-| 1940 | 10 | `public double fundShareRoom()` | The money the rule's share bids could still take under the caps (RB1): the room fundRoom() leaves on every listed company at the bid the rule posts, unlimited when there is no register or fund to read, so nothing is f... |
-| 1957 | 7 | `public double fundCouldHold(Equity register, TreasuryFund fund, int c, double more)` | Everything the fund could hold of a company on its market book were every buy of its on it to fill, with `more` units of a new buy of the hand's among them: what it holds, the hand's buys, and the rule's bid on the bo... |
-| 1966 | 5 | `public double cityValue(Equity register)` | What the city's fund holds of every company, both books, at the price: the fund's shares' mark. |
-| 1973 | 5 | `public double cityMarketValue(Equity register)` | ...its market book alone. |
-
-### A HOUSEHOLD SHORT OF MONEY SELLS, mid-month, in the waterfall (lines 1979-2035)
+### the owner families sell slowly (BO1) (lines 1432-1656)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1995 | 36 | `double sellForHousehold(Equity register, Bank bank, HouseholdBalance households, Household cell, double needPer)` | A cell short of money asks, in each company it holds, the price at which the dividend it gives up yields its own borrowing rate - pro rata by what it holds at that price, for no more than it is short. |
+| 1447 | 10 | `private void postOwners()` | THE OWNER FAMILIES SELL SLOWLY. |
+| 1505 | 115 | `private void postHouseholds(double depositRate, double worldRate, double paperYield)` | THE CELLS REBALANCE THEIR SHARES BY THE BOND RULE (0.7.12 round 3; Jerus: "Yes, same rule"): a cell over its target sells HOME_SPEED of the excess, a cell under it buys OUT_SPEED of the gap, as they do with the busine... |
+| 1635 | 21 | `private int bestBuy(double[] inc, double[] limits, double floor, boolean[] tried, boolean offered)` | The company a buyer would put the next dollar in: the highest expected return over the floor (EM1; the dividend's yield before), at the best ask when `offered` (only a company with an ask it would take, under its limi... |
 
-### one order, settled (lines 2036-2328)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2045 | 3 | `List<OrderBook.Fill> tradeForCheck(int c, String who, OrderBook.Side side, double price, double quantity)` | ONE ORDER ON A COMPANY'S BOOK, SETTLED AGAINST THE CITY, between two steps: for FundLedgerCheck (0.7.39), which causes a seller or a buyer at a price it names and then the fund's order against it, and reads back the f... |
-| 2054 | 5 | `void stampShortRecordForCheck(int c)` | A short's record set to figures a save has to carry back, none of them the same as another's, for SaveFileCheck's fixture (EM2): one company's lending fees this month and the life counters - a margin call, a recall an... |
-| 2061 | 1 | `void splitForCheck()` | ...and the splits the step would make now: for FundLedgerCheck, after it has traded a share past SPLIT_AT. |
-| 2063 | 5 | `private void submit(int c, String who, OrderBook.Side side, double price, double quantity)` |  |
-| 2086 | 12 | `private void post(int c, String who, OrderBook.Side side, double reservation, double quantity)` | A PRICE-TAKER'S ORDER: it takes what is on offer up to its reservation - the most a buyer would pay for the yield it wants, the least a seller would take - at the resting orders' prices, and rests what is left AT THE ... |
-| 2104 | 8 | `private static int classOf(String who)` |  |
-| 2122 | 1 | `public int getLastDeskBound(int which)` |  |
-| 2123 | 1 | `public int getLifeDeskBound(int which)` |  |
-| 2124 | 1 | `public double getLifePostedSellBy(int who)` |  |
-| 2125 | 1 | `public double getLifeFilledSellBy(int who)` |  |
-| 2127 | 3 | `private OrderBook.Clearing clearing(int c)` |  |
-| 2132 | 191 | **type** `private final class Settle implements OrderBook.Clearing` | Where each participant's money and shares are, for one company's book. |
-| 2134 | 1 | `Settle(int c)` _(in Exchange.Settle)_ |  |
-| 2136 | 37 | `public double capacity(String who, OrderBook.Side side, double price)` _(in Exchange.Settle)_ |  |
-| 2182 | 6 | `public boolean mayTrade(String buyer, String seller)` _(in Exchange.Settle)_ | THE FUND NEVER BUYS A NEW ISSUE (0.7.14, Jerus's "new issues only"): the desk's asks in the bank's own shares are new shares the bank issues (deskHolding(), Bank.issuesOwnShares()), so they are passed over for the fun... |
-| 2189 | 133 | `public void settle(String buyer, String seller, double q, double price)` _(in Exchange.Settle)_ |  |
-| 2325 | 3 | `private Household cellOf(String who)` | The cell a participant's name is, or null. |
-
-### SPLITS (lines 2329-2366)
+### the city's fund (0.7.14) (lines 1657-1889)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2339 | 27 | `private void splitWhatNeedsIt()` | A split or a consolidation, by a power of ten, outside the wage band. |
+| 1693 | 16 | `private void postFundOverLimit()` | THE FUND HOLDS TO ITS 10% (RB1). |
+| 1725 | 5 | `private double limitAsk(int c)` | WHAT THE OVER-LIMIT SALE ASKS (RB3): the market's own price, the book's last trade, held between the desk's bid - fair value less TreasuryFund.RULE_PREMIUM, the price a forced sale meets (A21, the withdrawal's sale in... |
+| 1732 | 1 | `public double getFundLimitAsked()` | The shares the rule asked this month past OWNERSHIP_LIMIT (postFundOverLimit(), RB1): 0 in a month no holding was over it. |
+| 1735 | 1 | `public double getFundLimitAsked(int c)` | ...of one company (RB3): what the rule asked of it this month past OWNERSHIP_LIMIT, 0 if it was not over. |
+| 1786 | 57 | `private void postFund()` | THE CITY'S FUND, BY ITS RULE AND THEN BY THE PLAYER'S HAND (TreasuryFund). |
+| 1845 | 4 | `private void postFundHandSales()` | The hand's asks must be visible when the world and households decide, before they are withdrawn next month (RS1). |
+| 1851 | 6 | `private boolean fundHandSelling(int c)` | A hand sale pauses the rule's buying of that company for this step, even if the sale has filled (RS1). |
+| 1859 | 30 | `private void postFundHand(TreasuryFund.HandOrder o)` | Posts one hand order with its existing price, holding, cap and ledger rules. |
 
-### reading (lines 2367-2520)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2369 | 1 | `public double getSoldToHouseholds(int c)` |  |
-| 2370 | 1 | `public double getBoughtFromHouseholds(int c)` |  |
-| 2371 | 1 | `public double getSoldAbroad(int c)` |  |
-| 2372 | 1 | `public double getBoughtFromAbroad(int c)` |  |
-| 2373 | 1 | `public double getEmigrantsPaid(int c)` |  |
-| 2374 | 1 | `public double getBuybackToHouseholds(int c)` |  |
-| 2375 | 1 | `public double getBuybackToDesk(int c)` |  |
-| 2376 | 1 | `public double getBuybackAbroad(int c)` |  |
-| 2378 | 1 | `public double getHouseholdsBoughtAbroad(int c)` | The households' cells bought from the world or from leavers this month (0.7.12 round 2): their savings out, a financial outflow (MoneyAudit's pair since LF1b). |
-| 2380 | 1 | `public double getHouseholdsSoldAbroad(int c)` | ...and sold to the world: a financial inflow into their savings. |
-| 2382 | 1 | `public double getBetweenHouseholds(int c)` | What one cell paid another for shares this month: a transfer inside the households. |
-| 2383 | 1 | `public int getBetweenHouseholdsTrades(int c)` |  |
-| 2385 | 1 | `public double getVolume(int c)` | Shares that changed hands this month. |
-| 2386 | 1 | `public double getLifetimeVolume()` |  |
-| 2388 | 1 | `public double getSplit(int c)` | This month's split factor: 100 for a hundred-for-one, .01 for a consolidation, 0 for none. |
-| 2390 | 1 | `public double getSplitFactor(int c)` | Shares today for one share at the founding. |
-| 2398 | 3 | `static double carriedSplitFactor(double saved)` | A saved split factor as the load carries it (FC2): every positive factor as it was saved, however deep the consolidations went; 1e-12 only for none, a negative or a NaN - the floor the load always put under a factor, ... |
-| 2402 | 1 | `public double pricePerFoundingShare(int c)` | The price per FOUNDING share: continuous through every split. |
-| 2404 | 1 | `public double fairPerFoundingShare(int c)` | ...and the register's reckoning, the same way. |
-| 2406 | 1 | `public double getEmigrantShares(int c)` | This month's leavers' shares still offered. |
-| 2408 | 1 | `public double getBuybackBudget(int c)` | What a company's buyback bid may still spend this month. |
-| 2411 | 1 | `public double deskResting(int c, OrderBook.Side side)` | What the desk has resting, shares, on one side of one company's book. |
-| 2414 | 4 | `public double bestBidOf(int c, String who)` | The best price a participant has resting on a company's book, bid or ask - NaN with none. |
-| 2418 | 4 | `public double bestAskOf(int c, String who)` |  |
-| 2426 | 1 | `public double getLastPostedSellValue()` | At the last step, every book together: the value asked to sell (at the price), the value that filled, the sell orders posted and those that waited, and the trades. |
-| 2427 | 1 | `public double getLastFilledValue()` |  |
-| 2428 | 1 | `public int getLastSellsPosted()` |  |
-| 2429 | 1 | `public int getLastSellsWaited()` |  |
-| 2430 | 1 | `public int getLastTrades()` |  |
-| 2432 | 1 | `public double getLifePostedSellValue()` | ...and over the city's life. |
-| 2433 | 1 | `public double getLifeFilledValue()` |  |
-| 2434 | 1 | `public int getLifeSellsPosted()` |  |
-| 2435 | 1 | `public int getLifeSellsWaited()` |  |
-| 2436 | 1 | `public int getLifeTrades()` |  |
-| 2437 | 1 | `public double getLifeTurnover()` |  |
-| 2438 | 1 | `public double getLifeBetweenHouseholds()` |  |
-| 2440 | 1 | `public double getLifeEmigrantsOffered()` | What leavers offered on the way out, at their ask, and what they were paid, over the city's life. |
-| 2441 | 1 | `public double getLifeEmigrantsPaid()` |  |
-| 2442 | 1 | `public int getLifeBetweenHouseholdsTrades()` |  |
-| 2444 | 1 | `private double sum(double[] a)` |  |
-| 2445 | 1 | `public double getSoldToHouseholds()` |  |
-| 2446 | 1 | `public double getBoughtFromHouseholds()` |  |
-| 2447 | 1 | `public double getSoldAbroad()` |  |
-| 2448 | 1 | `public double getBoughtFromAbroad()` |  |
-| 2449 | 1 | `public double getEmigrantsPaid()` |  |
-| 2450 | 1 | `public double getBuybackToHouseholds()` |  |
-| 2451 | 1 | `public double getBuybackToDesk()` |  |
-| 2452 | 1 | `public double getHouseholdsBoughtAbroad()` |  |
-| 2453 | 1 | `public double getHouseholdsSoldAbroad()` |  |
-| 2454 | 1 | `public double getBetweenHouseholds()` |  |
-| 2455 | 1 | `public int getBetweenHouseholdsTrades()` |  |
-| 2462 | 1 | `public double deskSoldToHouseholds()` | The desk's trading in the city's shares, the bank's own left out (0.7.9): each total less the bank's line, because its own shares are capital since 0.7.8 (Bank.buyBackOwnShares()), not the desk's trading. |
-| 2464 | 1 | `public double deskSoldAbroad()` | ...sold abroad. |
-| 2466 | 1 | `public double deskBoughtFromHouseholds()` | ...bought from the households. |
-| 2468 | 1 | `public double deskBoughtFromAbroad()` | ...and bought from abroad. |
-| 2469 | 1 | `public double getBuybackAbroad()` |  |
-| 2470 | 1 | `public double getVolume()` |  |
-| 2473 | 1 | `public double getFundBoughtFromHouseholds()` | The city's fund with the cells and the world this month (0.7.14): what it paid them and what they paid it - MoneyAudit's four lines. |
-| 2474 | 1 | `public double getFundBoughtAbroad()` |  |
-| 2475 | 1 | `public double getFundSoldToHouseholds()` |  |
-| 2476 | 1 | `public double getFundSoldAbroad()` |  |
-| 2481 | 1 | `public boolean isShortSelling()` | Whether the world sells short at all. |
-| 2483 | 1 | `void setShortSelling(boolean on)` | Switches the world's short selling on or off: for the checks, and -Dplaytest.shorts=off, to see the market without it. |
-| 2485 | 1 | `public double shortShares(int c)` | Shares the world is short of one company, and the collateral held against them. |
-| 2486 | 1 | `public double shortCollateral(int c)` |  |
-| 2488 | 1 | `public double lentByCells(int c)` | ...of those, the shares the households' cells lend and the fund's market book lends: they add to the shares short (lent by none, with none to lend). |
-| 2489 | 1 | `public double lentByFund(int c)` |  |
-| 2491 | 4 | `public double shortInterest(int c)` | The shares the world is short of one company as a share of those outstanding, for the sector screen (EM2): 0 with none short. |
-| 2496 | 4 | `public double lendingRateOf(int c)` | The fee a year the lenders are paid on a company now: lendingRate() at the shares short over those lendable. |
-| 2501 | 1 | `public double lendingFeeToCells(int c)` | What the world paid the cells and the fund this month for the shares lent, money. |
-| 2502 | 1 | `public double lendingFeeToFund(int c)` |  |
-| 2503 | 1 | `public double lendingFeeThisMonth(int c)` |  |
-| 2505 | 1 | `public double getLendingFeeToFund()` | ...and in all companies, for MoneyAudit: the fund's part is cash in a pool, the cells' goes to their savings. |
-| 2506 | 1 | `public double getLendingFeeToCells()` |  |
-| 2508 | 1 | `public double getWorldSharesWiped()` | What a company with no shares in issue wiped of the world's shares this month, and the short it closed there for nothing, money at the quote: MoneyAudit's two valuation lines (LF1c). |
-| 2509 | 1 | `public double getShortClosedForNothing()` |  |
-| 2511 | 1 | `public double getLifeShortSold()` | Over the city's life: shares sold short and what they fetched, shares covered and what that cost, company-months an ask was posted and a short stood open, margin calls and recalls, and the fees paid. |
-| 2512 | 1 | `public double getLifeShortSoldValue()` |  |
-| 2513 | 1 | `public double getLifeShortCovered()` |  |
-| 2514 | 1 | `public double getLifeShortCoveredValue()` |  |
-| 2515 | 1 | `public int getLifeShortAsks()` |  |
-| 2516 | 1 | `public int getLifeShortMonths()` |  |
-| 2517 | 1 | `public int getLifeMarginCalls()` |  |
-| 2518 | 1 | `public int getLifeRecalls()` |  |
-| 2519 | 1 | `public double getLifeLendingFees()` |  |
-
-### saving (lines 2521-2799)
+### the cap and the hand's orders (0.7.39) (lines 1890-1980)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2535 | 56 | **type** `public static final class State implements Cloneable` | The market in a save (0.7.12, round 2), carried by Gson as it stands: every book with the orders resting on it - a cell's bid posted at the step is what the next month's waterfall sells into - fair value and the split... |
-| 2562 | 28 | `State copy()` _(in Exchange.State)_ | A copy that shares nothing with this state (UP1, 2026-10-22): toState() lists the exchange's own books, which the months go on trading into while the autosave is written. |
-| 2592 | 44 | `public State toState()` |  |
-| 2638 | 61 | `public boolean restore(State s)` |  |
-| 2708 | 19 | `public boolean restore(String[] keys, double[] saved)` | A save from before the book (0.7.12 round 1 and earlier): the dealer's array, SLOTS a company - its quote, fair value, the demand it carried and the split factor. |
-| 2729 | 4 | `public void reopen(Bank bank)` | After a load: whether the desk posts is the bank's to say, read off the bank as the next step will. |
-| 2734 | 33 | `public void reset()` |  |
-| 2769 | 30 | `public void redenominate(double scale)` | Prices and the month's cash in the new unit; share counts do not move. |
+| 1915 | 12 | `public double handOnOrder(TreasuryFund fund, int c)` | The hand's buys on a company, in shares: those resting on its book, and the waiting orders' money over their price (the price named, or fair value as struck now). |
+| 1929 | 5 | `public double fundRoom(Equity register, TreasuryFund fund, int c)` | The room a buy of the hand's has under the cap, and the rule's bid at the step: the cap less what the fund holds of the company and the hand's buys on order, never under nothing. |
+| 1936 | 4 | `private double ruleRoom(int c)` | ...the most of the rule's bid that may still fill between steps: that room, or no limit with no buy of the hand's on the company. |
+| 1942 | 10 | `public double fundShareRoom()` | The money the rule's share bids could still take under the caps (RB1): the room fundRoom() leaves on every listed company at the bid the rule posts, unlimited when there is no register or fund to read, so nothing is f... |
+| 1959 | 7 | `public double fundCouldHold(Equity register, TreasuryFund fund, int c, double more)` | Everything the fund could hold of a company on its market book were every buy of its on it to fill, with `more` units of a new buy of the hand's among them: what it holds, the hand's buys, and the rule's bid on the bo... |
+| 1968 | 5 | `public double cityValue(Equity register)` | What the city's fund holds of every company, both books, at the price: the fund's shares' mark. |
+| 1975 | 5 | `public double cityMarketValue(Equity register)` | ...its market book alone. |
+
+### A HOUSEHOLD SHORT OF MONEY SELLS, mid-month, in the waterfall (lines 1981-2037)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1997 | 36 | `double sellForHousehold(Equity register, Bank bank, HouseholdBalance households, Household cell, double needPer)` | A cell short of money asks, in each company it holds, the price at which the dividend it gives up yields its own borrowing rate - pro rata by what it holds at that price, for no more than it is short. |
+
+### one order, settled (lines 2038-2330)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2047 | 3 | `List<OrderBook.Fill> tradeForCheck(int c, String who, OrderBook.Side side, double price, double quantity)` | ONE ORDER ON A COMPANY'S BOOK, SETTLED AGAINST THE CITY, between two steps: for FundLedgerCheck (0.7.39), which causes a seller or a buyer at a price it names and then the fund's order against it, and reads back the f... |
+| 2056 | 5 | `void stampShortRecordForCheck(int c)` | A short's record set to figures a save has to carry back, none of them the same as another's, for SaveFileCheck's fixture (EM2): one company's lending fees this month and the life counters - a margin call, a recall an... |
+| 2063 | 1 | `void splitForCheck()` | ...and the splits the step would make now: for FundLedgerCheck, after it has traded a share past SPLIT_AT. |
+| 2065 | 5 | `private void submit(int c, String who, OrderBook.Side side, double price, double quantity)` |  |
+| 2088 | 12 | `private void post(int c, String who, OrderBook.Side side, double reservation, double quantity)` | A PRICE-TAKER'S ORDER: it takes what is on offer up to its reservation - the most a buyer would pay for the yield it wants, the least a seller would take - at the resting orders' prices, and rests what is left AT THE ... |
+| 2106 | 8 | `private static int classOf(String who)` |  |
+| 2124 | 1 | `public int getLastDeskBound(int which)` |  |
+| 2125 | 1 | `public int getLifeDeskBound(int which)` |  |
+| 2126 | 1 | `public double getLifePostedSellBy(int who)` |  |
+| 2127 | 1 | `public double getLifeFilledSellBy(int who)` |  |
+| 2129 | 3 | `private OrderBook.Clearing clearing(int c)` |  |
+| 2134 | 191 | **type** `private final class Settle implements OrderBook.Clearing` | Where each participant's money and shares are, for one company's book. |
+| 2136 | 1 | `Settle(int c)` _(in Exchange.Settle)_ |  |
+| 2138 | 37 | `public double capacity(String who, OrderBook.Side side, double price)` _(in Exchange.Settle)_ |  |
+| 2184 | 6 | `public boolean mayTrade(String buyer, String seller)` _(in Exchange.Settle)_ | THE FUND NEVER BUYS A NEW ISSUE (0.7.14, Jerus's "new issues only"): the desk's asks in the bank's own shares are new shares the bank issues (deskHolding(), Bank.issuesOwnShares()), so they are passed over for the fun... |
+| 2191 | 133 | `public void settle(String buyer, String seller, double q, double price)` _(in Exchange.Settle)_ |  |
+| 2327 | 3 | `private Household cellOf(String who)` | The cell a participant's name is, or null. |
+
+### SPLITS (lines 2331-2368)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2341 | 27 | `private void splitWhatNeedsIt()` | A split or a consolidation, by a power of ten, outside the wage band. |
+
+### reading (lines 2369-2522)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2371 | 1 | `public double getSoldToHouseholds(int c)` |  |
+| 2372 | 1 | `public double getBoughtFromHouseholds(int c)` |  |
+| 2373 | 1 | `public double getSoldAbroad(int c)` |  |
+| 2374 | 1 | `public double getBoughtFromAbroad(int c)` |  |
+| 2375 | 1 | `public double getEmigrantsPaid(int c)` |  |
+| 2376 | 1 | `public double getBuybackToHouseholds(int c)` |  |
+| 2377 | 1 | `public double getBuybackToDesk(int c)` |  |
+| 2378 | 1 | `public double getBuybackAbroad(int c)` |  |
+| 2380 | 1 | `public double getHouseholdsBoughtAbroad(int c)` | The households' cells bought from the world or from leavers this month (0.7.12 round 2): their savings out, a financial outflow (MoneyAudit's pair since LF1b). |
+| 2382 | 1 | `public double getHouseholdsSoldAbroad(int c)` | ...and sold to the world: a financial inflow into their savings. |
+| 2384 | 1 | `public double getBetweenHouseholds(int c)` | What one cell paid another for shares this month: a transfer inside the households. |
+| 2385 | 1 | `public int getBetweenHouseholdsTrades(int c)` |  |
+| 2387 | 1 | `public double getVolume(int c)` | Shares that changed hands this month. |
+| 2388 | 1 | `public double getLifetimeVolume()` |  |
+| 2390 | 1 | `public double getSplit(int c)` | This month's split factor: 100 for a hundred-for-one, .01 for a consolidation, 0 for none. |
+| 2392 | 1 | `public double getSplitFactor(int c)` | Shares today for one share at the founding. |
+| 2400 | 3 | `static double carriedSplitFactor(double saved)` | A saved split factor as the load carries it (FC2): every positive factor as it was saved, however deep the consolidations went; 1e-12 only for none, a negative or a NaN - the floor the load always put under a factor, ... |
+| 2404 | 1 | `public double pricePerFoundingShare(int c)` | The price per FOUNDING share: continuous through every split. |
+| 2406 | 1 | `public double fairPerFoundingShare(int c)` | ...and the register's reckoning, the same way. |
+| 2408 | 1 | `public double getEmigrantShares(int c)` | This month's leavers' shares still offered. |
+| 2410 | 1 | `public double getBuybackBudget(int c)` | What a company's buyback bid may still spend this month. |
+| 2413 | 1 | `public double deskResting(int c, OrderBook.Side side)` | What the desk has resting, shares, on one side of one company's book. |
+| 2416 | 4 | `public double bestBidOf(int c, String who)` | The best price a participant has resting on a company's book, bid or ask - NaN with none. |
+| 2420 | 4 | `public double bestAskOf(int c, String who)` |  |
+| 2428 | 1 | `public double getLastPostedSellValue()` | At the last step, every book together: the value asked to sell (at the price), the value that filled, the sell orders posted and those that waited, and the trades. |
+| 2429 | 1 | `public double getLastFilledValue()` |  |
+| 2430 | 1 | `public int getLastSellsPosted()` |  |
+| 2431 | 1 | `public int getLastSellsWaited()` |  |
+| 2432 | 1 | `public int getLastTrades()` |  |
+| 2434 | 1 | `public double getLifePostedSellValue()` | ...and over the city's life. |
+| 2435 | 1 | `public double getLifeFilledValue()` |  |
+| 2436 | 1 | `public int getLifeSellsPosted()` |  |
+| 2437 | 1 | `public int getLifeSellsWaited()` |  |
+| 2438 | 1 | `public int getLifeTrades()` |  |
+| 2439 | 1 | `public double getLifeTurnover()` |  |
+| 2440 | 1 | `public double getLifeBetweenHouseholds()` |  |
+| 2442 | 1 | `public double getLifeEmigrantsOffered()` | What leavers offered on the way out, at their ask, and what they were paid, over the city's life. |
+| 2443 | 1 | `public double getLifeEmigrantsPaid()` |  |
+| 2444 | 1 | `public int getLifeBetweenHouseholdsTrades()` |  |
+| 2446 | 1 | `private double sum(double[] a)` |  |
+| 2447 | 1 | `public double getSoldToHouseholds()` |  |
+| 2448 | 1 | `public double getBoughtFromHouseholds()` |  |
+| 2449 | 1 | `public double getSoldAbroad()` |  |
+| 2450 | 1 | `public double getBoughtFromAbroad()` |  |
+| 2451 | 1 | `public double getEmigrantsPaid()` |  |
+| 2452 | 1 | `public double getBuybackToHouseholds()` |  |
+| 2453 | 1 | `public double getBuybackToDesk()` |  |
+| 2454 | 1 | `public double getHouseholdsBoughtAbroad()` |  |
+| 2455 | 1 | `public double getHouseholdsSoldAbroad()` |  |
+| 2456 | 1 | `public double getBetweenHouseholds()` |  |
+| 2457 | 1 | `public int getBetweenHouseholdsTrades()` |  |
+| 2464 | 1 | `public double deskSoldToHouseholds()` | The desk's trading in the city's shares, the bank's own left out (0.7.9): each total less the bank's line, because its own shares are capital since 0.7.8 (Bank.buyBackOwnShares()), not the desk's trading. |
+| 2466 | 1 | `public double deskSoldAbroad()` | ...sold abroad. |
+| 2468 | 1 | `public double deskBoughtFromHouseholds()` | ...bought from the households. |
+| 2470 | 1 | `public double deskBoughtFromAbroad()` | ...and bought from abroad. |
+| 2471 | 1 | `public double getBuybackAbroad()` |  |
+| 2472 | 1 | `public double getVolume()` |  |
+| 2475 | 1 | `public double getFundBoughtFromHouseholds()` | The city's fund with the cells and the world this month (0.7.14): what it paid them and what they paid it - MoneyAudit's four lines. |
+| 2476 | 1 | `public double getFundBoughtAbroad()` |  |
+| 2477 | 1 | `public double getFundSoldToHouseholds()` |  |
+| 2478 | 1 | `public double getFundSoldAbroad()` |  |
+| 2483 | 1 | `public boolean isShortSelling()` | Whether the world sells short at all. |
+| 2485 | 1 | `void setShortSelling(boolean on)` | Switches the world's short selling on or off: for the checks, and -Dplaytest.shorts=off, to see the market without it. |
+| 2487 | 1 | `public double shortShares(int c)` | Shares the world is short of one company, and the collateral held against them. |
+| 2488 | 1 | `public double shortCollateral(int c)` |  |
+| 2490 | 1 | `public double lentByCells(int c)` | ...of those, the shares the households' cells lend and the fund's market book lends: they add to the shares short (lent by none, with none to lend). |
+| 2491 | 1 | `public double lentByFund(int c)` |  |
+| 2493 | 4 | `public double shortInterest(int c)` | The shares the world is short of one company as a share of those outstanding, for the sector screen (EM2): 0 with none short. |
+| 2498 | 4 | `public double lendingRateOf(int c)` | The fee a year the lenders are paid on a company now: lendingRate() at the shares short over those lendable. |
+| 2503 | 1 | `public double lendingFeeToCells(int c)` | What the world paid the cells and the fund this month for the shares lent, money. |
+| 2504 | 1 | `public double lendingFeeToFund(int c)` |  |
+| 2505 | 1 | `public double lendingFeeThisMonth(int c)` |  |
+| 2507 | 1 | `public double getLendingFeeToFund()` | ...and in all companies, for MoneyAudit: the fund's part is cash in a pool, the cells' goes to their savings. |
+| 2508 | 1 | `public double getLendingFeeToCells()` |  |
+| 2510 | 1 | `public double getWorldSharesWiped()` | What a company with no shares in issue wiped of the world's shares this month, and the short it closed there for nothing, money at the quote: MoneyAudit's two valuation lines (LF1c). |
+| 2511 | 1 | `public double getShortClosedForNothing()` |  |
+| 2513 | 1 | `public double getLifeShortSold()` | Over the city's life: shares sold short and what they fetched, shares covered and what that cost, company-months an ask was posted and a short stood open, margin calls and recalls, and the fees paid. |
+| 2514 | 1 | `public double getLifeShortSoldValue()` |  |
+| 2515 | 1 | `public double getLifeShortCovered()` |  |
+| 2516 | 1 | `public double getLifeShortCoveredValue()` |  |
+| 2517 | 1 | `public int getLifeShortAsks()` |  |
+| 2518 | 1 | `public int getLifeShortMonths()` |  |
+| 2519 | 1 | `public int getLifeMarginCalls()` |  |
+| 2520 | 1 | `public int getLifeRecalls()` |  |
+| 2521 | 1 | `public double getLifeLendingFees()` |  |
+
+### saving (lines 2523-2803)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2537 | 56 | **type** `public static final class State implements Cloneable` | The market in a save (0.7.12, round 2), carried by Gson as it stands: every book with the orders resting on it - a cell's bid posted at the step is what the next month's waterfall sells into - fair value and the split... |
+| 2564 | 28 | `State copy()` _(in Exchange.State)_ | A copy that shares nothing with this state (UP1, 2026-10-22): toState() lists the exchange's own books, which the months go on trading into while the autosave is written. |
+| 2594 | 44 | `public State toState()` |  |
+| 2640 | 63 | `public boolean restore(State s)` |  |
+| 2712 | 19 | `public boolean restore(String[] keys, double[] saved)` | A save from before the book (0.7.12 round 1 and earlier): the dealer's array, SLOTS a company - its quote, fair value, the demand it carried and the split factor. |
+| 2733 | 4 | `public void reopen(Bank bank)` | After a load: whether the desk posts is the bank's to say, read off the bank as the next step will. |
+| 2738 | 33 | `public void reset()` |  |
+| 2773 | 30 | `public void redenominate(double scale)` | Prices and the month's cash in the new unit; share counts do not move. |
 
