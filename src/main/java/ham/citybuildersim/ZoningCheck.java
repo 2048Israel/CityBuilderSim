@@ -463,16 +463,26 @@ public class ZoningCheck {
 
     static void theFields(Game g) {
         out.println("\n--- 8. zoned fields do not yield to homes: short of homes, the fields build in their zone alone ---");
-        // Somebody sleeping outside: most of the houses bought out and demolished.
-        BuildingsTemplate house = LongPlaytest.template(g, "House");
-        long houses = g.getBuildingManager().countByName("House");
+        // Somebody sleeping outside: remove most homes of every form, and hold replacement orders for this month.
+        // Removing Houses alone leaves the typed catalogue's other homes available to their displaced tenants.
+        boolean homesWereHeld = g.getBusinessInvestment().isHeld(g.getSectors().realEstate().key());
+        g.getBusinessInvestment().holdSector(g.getSectors().realEstate().key());
         g.setCashForTest(g.getCash() + 10_000_000);
         quietly(() -> {
-            g.buyOutAndDemolish(house, houses * 9 / 10);
+            for (BuildingsTemplate home : g.getBuildingManager().getTemplatesBySector(g.getSectors().realEstate().key())) {
+                long n = g.demolishable(home);
+                if (n <= 0) continue;
+                long remove = n - n / 10;
+                assertTrue("fixture: nine in ten or more " + home.getName() + " bought out for demolition",
+                        g.buyOutAndDemolish(home, remove));
+            }
             g.toggleNextMonth();
         });
-        double outside = g.getFamilies().getStillUnplaced();
-        assertTrue("fixture: nine houses in ten demolished, households sleep outside", outside > 0);
+        // RES3: the old label was "fixture: nine homes in ten demolished across their forms, households sleep outside". Since call A (RES3c, 2026-11-25)
+        // a household with no door boards with a housed family, overcrowded, and is never left doorless (getStillUnplaced() is 0 by design); the model's
+        // fields and HOMES need read the households wanting a home (Game.getHouseholdsWantingAHome()), so the fixture reads and causes that figure.
+        double wanting = g.getHouseholdsWantingAHome();
+        assertTrue("fixture: nine homes in ten demolished across their forms, households want a home, boarding overcrowded", wanting > 0);
         ham.citybuildersim.sectors.Agriculture fields = (ham.citybuildersim.sectors.Agriculture)
                 g.getSectors().byKey(Sectors.AGRICULTURE);
         /*
@@ -517,7 +527,7 @@ public class ZoningCheck {
         assertTrue("zoned, they do not: the homes rule stops nothing, and any order fits in the zone",
                 !zoned.reason.contains("the city is short of homes - ground")
                 && (!zoned.build || zoned.quantity * zoned.template.getLandSqFt() <= held));
-        out.printf("      the fields, zoned while %.0f households sleep outside: %s%n", outside,
+        out.printf("      the fields, zoned while %.0f households want a home: %s%n", wanting,
                 zoned.build ? zoned.quantity + " " + zoned.template.getName() : zoned.reason);
         quietly(() -> g.setZone(Sectors.AGRICULTURE, Zoning.Size.KM2, 1e-4, 0));
         BusinessInvestment.Decision tiny = fields.plan(plans, g);
@@ -525,6 +535,7 @@ public class ZoningCheck {
                 !tiny.build && tiny.reason.contains("zone holds too little"));
         people.restoreWorkforce(workforce);
         quietly(() -> g.removeZone(Sectors.AGRICULTURE));
+        if (!homesWereHeld) plans.releaseSector(g.getSectors().realEstate().key());
     }
 
     /* ============================ 9. SAVED AND RELOADED ============================ */

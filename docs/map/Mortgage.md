@@ -1,4 +1,4 @@
-# Mortgage.java - 587 lines · 45 methods · 11 constants · model
+# Mortgage.java - 606 lines · 47 methods · 11 constants · model
 
 `ham/citybuildersim/Mortgage.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -64,9 +64,9 @@
 > 
 > ... (13 more lines in the source)
 
-**Uses:** [BankRules](BankRules.md) (4), [Bank](Bank.md) (2), [BusinessDebt](BusinessDebt.md) (1), [Formats](Formats.md) (1)
+**Uses:** [BankRules](BankRules.md) (5), [Bank](Bank.md) (2), [BusinessDebt](BusinessDebt.md) (1), [Formats](Formats.md) (1)
 
-**Used by (25):** [Bank](Bank.md), [BankFailureCheck](BankFailureCheck.md), [BankRules](BankRules.md), [BankRulesCheck](BankRulesCheck.md), [BankScreen](BankScreen.md), [BooksCheck](BooksCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessInvestment](BusinessInvestment.md), [CorporateBond](CorporateBond.md), [CreditCheck](CreditCheck.md), [CreditCrunchCheck](CreditCrunchCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HousingDoorCheck](HousingDoorCheck.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [MortgageCheck](MortgageCheck.md), [OrderDoorCheck](OrderDoorCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md)
+**Used by (26):** [Bank](Bank.md), [BankFailureCheck](BankFailureCheck.md), [BankRules](BankRules.md), [BankRulesCheck](BankRulesCheck.md), [BankScreen](BankScreen.md), [BooksCheck](BooksCheck.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BusinessDebtManager](BusinessDebtManager.md), [BusinessInvestment](BusinessInvestment.md), [CorporateBond](CorporateBond.md), [CreditCheck](CreditCheck.md), [CreditCrunchCheck](CreditCrunchCheck.md), [Game](Game.md), [GovernmentScreen](GovernmentScreen.md), [HousingDoorCheck](HousingDoorCheck.md), [HousingMarketCheck](HousingMarketCheck.md), [InvestCheck](InvestCheck.md), [LongPlaytest](LongPlaytest.md), [MortgageCheck](MortgageCheck.md), [OrderDoorCheck](OrderDoorCheck.md), [OrderSearchCheck](OrderSearchCheck.md), [ReadPathCheck](ReadPathCheck.md), [ScaleCheck](ScaleCheck.md), [Sector](Sector.md), [SectorScreen](SectorScreen.md)
 
 ## Sections
 
@@ -74,8 +74,8 @@
 |---:|---|
 | 169 | · the arithmetic |
 | 263 | · the landlord's order |
-| 452 | · the month |
-| 525 | · readings |
+| 471 | · the month |
+| 544 | · readings |
 
 ## Constants
 
@@ -89,9 +89,9 @@
 | 104 | `Mortgage.PREMIUM_SURCHARGE` | `.0025` | The premium's surcharge for each PREMIUM_SURCHARGE_STEP_YEARS of amortization past PREMIUM_BASE_YEARS: 0.25% of the loan (the same schedule), so 0.75% at forty years. |
 | 107 | `Mortgage.PREMIUM_BASE_YEARS` | `25` | The amortization the base premium is struck for, in years: 25; a longer one pays PREMIUM_SURCHARGE a step. |
 | 110 | `Mortgage.PREMIUM_SURCHARGE_STEP_YEARS` | `5` | How many years of amortization past PREMIUM_BASE_YEARS each step of the surcharge covers: five, up to forty. |
-| 403 | `Mortgage.Decision.DOWN_PAYMENT` | `"down payment"` | Trimmed, or refused, because its own funds could not put the down payment on it. |
-| 405 | `Mortgage.Decision.LENDERS_TEST` | `"lender's test"` | ...because its rent would not cover the payment MORTGAGE_DEBT_COVERAGE times. |
-| 406 | `Mortgage.Decision.DEBT_TO_INCOME` | `"debt-to-income limit"` |  |
+| 422 | `Mortgage.Decision.DOWN_PAYMENT` | `"down payment"` | Trimmed, or refused, because its own funds could not put the down payment on it. |
+| 424 | `Mortgage.Decision.LENDERS_TEST` | `"lender's test"` | ...because its rent would not cover the payment MORTGAGE_DEBT_COVERAGE times. |
+| 425 | `Mortgage.Decision.DEBT_TO_INCOME` | `"debt-to-income limit"` |  |
 
 ## Fields (state)
 
@@ -110,7 +110,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 78 | 510 | **type** `public class Mortgage extends BusinessDebt` | An insured mortgage on a new residential building: a level payment every month over a forty-year amortization, at a rate fixed for a ten-year term and renewed at the day's rate when the term ends, insured by the city. |
+| 78 | 529 | **type** `public class Mortgage extends BusinessDebt` | An insured mortgage on a new residential building: a level payment every month over a forty-year amortization, at a rate fixed for a ten-year term and renewed at the day's rate when the term ends, insured by the city. |
 | 142 | 1 | `Mortgage()` | For Gson. |
 | 152 | 16 | `public Mortgage(String sector, double loan, int monthStarted, double annualRate, boolean insured)` | Writes a mortgage: the loan, the premium added to it, a term of MORTGAGE_TERM_MONTHS at this rate, and MORTGAGE_AMORTIZATION_MONTHS to pay it off. |
 
@@ -128,54 +128,56 @@
 | 247 | 4 | `public static double coverage(double netOperatingIncome, double shortfall, double annualRate)` | THE LENDER'S TEST, as a ratio: this net operating income over the monthly payment on the mortgage that covers this shortfall - its principal, the premium added, at this rate over MORTGAGE_AMORTIZATION_MONTHS. |
 | 258 | 4 | `public static double paymentFor(double shortfall, double annualRate)` | The monthly payment the lender's test reads (coverage()): on the mortgage that covers this shortfall - loanFor(), the premium added - at this rate over MORTGAGE_AMORTIZATION_MONTHS. |
 
-### the landlord's order (lines 263-451)
+### the landlord's order (lines 263-470)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 284 | 4 | `public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, doubl...` | WHAT THE LANDLORD CAN BUY ON A MORTGAGE, and why not more: the largest number of these, up to what was asked for (found by halving since 0.7.54: THE LANDLORD'S ORDER IS A RUN FROM ONE), that its own funds buy outright... |
 | 295 | 5 | `public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, doubl...` | ...with the interest on the wait (BA1): the lender's test reads the payment on the shortfall of n grown by {@code carryOf(n)}, what BusinessInvestment.carryOf() reads for an order of n - the cost of the building paid ... |
-| 302 | 22 | `public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, doubl...` | The same product under this city's saved loan-to-cost and debt-to-income rules. |
-| 363 | 28 | **type** `private record Slice(boolean outright, double own, boolean shortOfDown, double coverage, String failedOn)` | One slice of a landlord's order, read as decide()'s count read it: bought outright, or its down payment, and the lender's test. |
-| 364 | 1 | `boolean passes()` _(in Mortgage.Slice)_ |  |
-| 366 | 24 | `static Slice of(long n, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate, java...` _(in Mortgage.Slice)_ |  |
-| 399 | 52 | **type** `public record Decision(long quantity, String trimmedBy, boolean shortOfDown, double ownFundsForOne, double ...` | The order, decided: how many; what trimmed it from what was asked, if anything did (DOWN_PAYMENT or LENDERS_TEST, what the whole order failed on - the first failure a count down from it would meet); and, when not even... |
-| 409 | 1 | `public String refusal(String building)` _(in Mortgage.Decision)_ | The advisor's line when not even one passes: the down payment it needs, or the lender's figure against its own. |
-| 411 | 9 | `public String refusal(String building, double maxLoanToCost)` _(in Mortgage.Decision)_ |  |
-| 426 | 3 | `public String refusal(String building, double testedRate, double insuredRate)` _(in Mortgage.Decision)_ | ...and with the rate the lender read the payment at, against the insured rate the mortgage would be written at (0.7.44): the real rate, when expected inflation took something off it. |
-| 430 | 9 | `public String refusal(String building, double testedRate, double insuredRate, double maxLoanToCost)` _(in Mortgage.Decision)_ |  |
-| 441 | 1 | `public String trimmed(long asked)` _(in Mortgage.Decision)_ | ...and the words for an order cut down from what was asked, or nothing when it was not. |
-| 443 | 7 | `public String trimmed(long asked, double maxLoanToCost)` _(in Mortgage.Decision)_ |  |
+| 302 | 5 | `public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, doubl...` | The same product under this city's saved loan-to-cost and debt-to-income rules. |
+| 314 | 5 | `public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf, double cash, java.util.function.LongT...` | ...with each size the halving tries read at its own rent: {@code noiOf(n)} is one unit's net operating income in an order of n, as a lender reads the rent roll of the project it is shown. |
+| 321 | 22 | `public static Decision decide(long asked, java.util.function.LongToDoubleFunction costOf, double cash, java.util.function.LongT...` | Each slice's own rent roll, under this city's saved mortgage rules. |
+| 382 | 28 | **type** `private record Slice(boolean outright, double own, boolean shortOfDown, double coverage, String failedOn)` | One slice of a landlord's order, read as decide()'s count read it: bought outright, or its down payment, and the lender's test. |
+| 383 | 1 | `boolean passes()` _(in Mortgage.Slice)_ |  |
+| 385 | 24 | `static Slice of(long n, java.util.function.LongToDoubleFunction costOf, double cash, double noiPerUnit, double annualRate, java...` _(in Mortgage.Slice)_ |  |
+| 418 | 52 | **type** `public record Decision(long quantity, String trimmedBy, boolean shortOfDown, double ownFundsForOne, double ...` | The order, decided: how many; what trimmed it from what was asked, if anything did (DOWN_PAYMENT or LENDERS_TEST, what the whole order failed on - the first failure a count down from it would meet); and, when not even... |
+| 428 | 1 | `public String refusal(String building)` _(in Mortgage.Decision)_ | The advisor's line when not even one passes: the down payment it needs, or the lender's figure against its own. |
+| 430 | 9 | `public String refusal(String building, double maxLoanToCost)` _(in Mortgage.Decision)_ |  |
+| 445 | 3 | `public String refusal(String building, double testedRate, double insuredRate)` _(in Mortgage.Decision)_ | ...and with the rate the lender read the payment at, against the insured rate the mortgage would be written at (0.7.44): the real rate, when expected inflation took something off it. |
+| 449 | 9 | `public String refusal(String building, double testedRate, double insuredRate, double maxLoanToCost)` _(in Mortgage.Decision)_ |  |
+| 460 | 1 | `public String trimmed(long asked)` _(in Mortgage.Decision)_ | ...and the words for an order cut down from what was asked, or nothing when it was not. |
+| 462 | 7 | `public String trimmed(long asked, double maxLoanToCost)` _(in Mortgage.Decision)_ |  |
 
-### the month (lines 452-524)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 464 | 19 | `public void processMonth()` | One payment: the interest on what is owed at the fixed rate, which is the income statement's; and the principal, the rest of the level payment, taken off the balance and left for the manager to settle (takePrincipalPa... |
-| 485 | 5 | `public double takePrincipalPaid()` | The principal this month's payment took off the balance, handed over once. |
-| 492 | 3 | `public boolean isTermEnded()` | True once the term that is running has run, with something still to pay. |
-| 497 | 3 | `public boolean isPaidOff()` | True once the amortization is done and nothing is owed. |
-| 508 | 7 | `public void renew(double annualRate)` | RENEWS for another term at the day's rate: MORTGAGE_TERM_MONTHS, or what is left of the amortization if that is shorter. |
-| 517 | 7 | `public double close()` | Closes it: the whole balance falls due, as a loan's does at maturity (a renewal the bank cannot write). |
-
-### readings (lines 525-587)
+### the month (lines 471-543)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 529 | 3 | `public double getMonthlyInterestExpense()` | Interest on what is owed: the balance, not the face - it is paid down. |
-| 534 | 3 | `public double getOutstandingPrincipal()` |  |
-| 540 | 3 | `public int getMaturityMonth()` | The month the term that is running ends - when it renews, not when it is paid off (getPaidOffMonth()). |
-| 546 | 3 | `public boolean isMatured()` | Never matures as a loan does: it renews, or it is paid off, and the manager handles both. |
-| 551 | 3 | `public String getType()` |  |
-| 556 | 3 | `public double getMonthlyPayment()` | The level payment due next month, on what is owed over what is left at the fixed rate. |
-| 561 | 3 | `public int getNextRenewalMonth()` | The month the term that is running ends. |
-| 566 | 3 | `public int getPaidOffMonth()` | The month the last payment falls. |
-| 570 | 1 | `public double getLoan()` |  |
-| 571 | 1 | `public double getPremium()` |  |
-| 572 | 1 | `public int getAmortizationMonths()` |  |
-| 573 | 1 | `public int getAmortizationLeft()` |  |
-| 574 | 1 | `public int getTermMonths()` |  |
-| 575 | 1 | `public int getRenewals()` |  |
-| 576 | 1 | `public boolean isInsured()` |  |
-| 577 | 1 | `public int getMonthStarted()` |  |
-| 581 | 6 | `public void redenominate(double scale)` | The mortgage in the new unit: its balance, its face, the loan and the premium. |
+| 483 | 19 | `public void processMonth()` | One payment: the interest on what is owed at the fixed rate, which is the income statement's; and the principal, the rest of the level payment, taken off the balance and left for the manager to settle (takePrincipalPa... |
+| 504 | 5 | `public double takePrincipalPaid()` | The principal this month's payment took off the balance, handed over once. |
+| 511 | 3 | `public boolean isTermEnded()` | True once the term that is running has run, with something still to pay. |
+| 516 | 3 | `public boolean isPaidOff()` | True once the amortization is done and nothing is owed. |
+| 527 | 7 | `public void renew(double annualRate)` | RENEWS for another term at the day's rate: MORTGAGE_TERM_MONTHS, or what is left of the amortization if that is shorter. |
+| 536 | 7 | `public double close()` | Closes it: the whole balance falls due, as a loan's does at maturity (a renewal the bank cannot write). |
+
+### readings (lines 544-606)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 548 | 3 | `public double getMonthlyInterestExpense()` | Interest on what is owed: the balance, not the face - it is paid down. |
+| 553 | 3 | `public double getOutstandingPrincipal()` |  |
+| 559 | 3 | `public int getMaturityMonth()` | The month the term that is running ends - when it renews, not when it is paid off (getPaidOffMonth()). |
+| 565 | 3 | `public boolean isMatured()` | Never matures as a loan does: it renews, or it is paid off, and the manager handles both. |
+| 570 | 3 | `public String getType()` |  |
+| 575 | 3 | `public double getMonthlyPayment()` | The level payment due next month, on what is owed over what is left at the fixed rate. |
+| 580 | 3 | `public int getNextRenewalMonth()` | The month the term that is running ends. |
+| 585 | 3 | `public int getPaidOffMonth()` | The month the last payment falls. |
+| 589 | 1 | `public double getLoan()` |  |
+| 590 | 1 | `public double getPremium()` |  |
+| 591 | 1 | `public int getAmortizationMonths()` |  |
+| 592 | 1 | `public int getAmortizationLeft()` |  |
+| 593 | 1 | `public int getTermMonths()` |  |
+| 594 | 1 | `public int getRenewals()` |  |
+| 595 | 1 | `public boolean isInsured()` |  |
+| 596 | 1 | `public int getMonthStarted()` |  |
+| 600 | 6 | `public void redenominate(double scale)` | The mortgage in the new unit: its balance, its face, the loan and the premium. |
 

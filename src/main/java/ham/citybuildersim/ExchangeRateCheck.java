@@ -210,18 +210,19 @@ public class ExchangeRateCheck {
     /** The four fees' prices a fixture's basket is fed: all at 1. */
     static final double[] FEES = { 1, 1, 1, 1 };
     /** Spending that puts rent at 60% of the basket (groceries 15, meals 10, luxury 5, services 10 - the fee lines add to it), and spending that puts it at 30%. */
-    static final double[] RENT_HEAVY = { .15, .60, .10, .05, 0 }, RENT_HEAVY_FEES = { .04, .03, .02, .01 };
-    static final double[] RENT_LIGHT = { .30, .30, .20, .05, 0 }, RENT_LIGHT_FEES = { .06, .04, .03, .02 };
+    static final double[] RENT_HEAVY = { .15, .60, .10, .05, 0, 0, 0, 0, 0 }, RENT_HEAVY_FEES = { .04, .03, .02, .01 };
+    static final double[] RENT_LIGHT = { .30, .30, .20, .05, 0, 0, 0, 0, 0 }, RENT_LIGHT_FEES = { .06, .04, .03, .02 };
 
     static void feed(PriceIndex px, double[] prices, double[] spends, double[] feeSpends, int month) {
-        px.takeMonth(prices, spends, FEES, feeSpends, month);
+        px.takeMonth(java.util.Arrays.copyOf(prices, PriceIndex.COMPONENTS),
+                java.util.Arrays.copyOf(spends, PriceIndex.COMPONENTS), FEES, feeSpends, month);
     }
 
     static void parityIsTheCappedBasket() {
         out.println("--- 0. parity is the basket with rent held to a third ---");
 
         PriceIndex px = new PriceIndex();
-        final double[] flat = { 1, 1, 1, 1, 0 };
+        final double[] flat = { 1, 1, 1, 1, 0, 0, 0, 0, 0 };
         int month = 0;
         for (; month < PriceIndex.SETTLING_MONTHS; month++) feed(px, flat, RENT_HEAVY, RENT_HEAVY_FEES, month);
         double rentWeight = px.getWeight(PriceIndex.RENT);
@@ -249,14 +250,14 @@ public class ExchangeRateCheck {
         close("...and parity's weights add to what the basket's do", sum, 1, 1e-12);
 
         // Rent's price doubled.
-        feed(px, new double[] { 1, 2, 1, 1, 0 }, RENT_HEAVY, RENT_HEAVY_FEES, month++);
+        feed(px, new double[] { 1, 2, 1, 1, 0, 0, 0, 0, 0 }, RENT_HEAVY, RENT_HEAVY_FEES, month++);
         close("rent doubled moves parity's level by rent's capped weight", px.getParityLevel(),
                 1 + px.getParityWeight(PriceIndex.RENT) * (2 - 1), 1e-12);
         close("...and the index by rent's whole weight", px.getIndex(), 1 + px.getWeight(PriceIndex.RENT) * (2 - 1), 1e-12);
         assertTrue("...so parity's level is the lower: the cap held rent down", px.getParityLevel() < px.getIndex());
         out.printf("   rent doubled: parity %.6f, the index %.6f%n", px.getParityLevel(), px.getIndex());
         // ...and the others weigh more than they do in the index.
-        feed(px, new double[] { 2, 1, 1, 1, 0 }, RENT_HEAVY, RENT_HEAVY_FEES, month++);
+        feed(px, new double[] { 2, 1, 1, 1, 0, 0, 0, 0, 0 }, RENT_HEAVY, RENT_HEAVY_FEES, month++);
         close("groceries doubled moves parity's level by groceries' scaled-up weight", px.getParityLevel(),
                 1 + px.getParityWeight(PriceIndex.GROCERIES), 1e-12);
         close("...the index by groceries' own", px.getIndex(), 1 + px.getWeight(PriceIndex.GROCERIES), 1e-12);
@@ -264,7 +265,7 @@ public class ExchangeRateCheck {
                 px.getParityLevel() > px.getIndex());
 
         // The next rebasing: rent doubled held until the month before it, and the last year's spending is rent at 30%.
-        final double[] rent2 = { 1, 2, 1, 1, 0 };
+        final double[] rent2 = { 1, 2, 1, 1, 0, 0, 0, 0, 0 };
         int rebase = px.getLinkedMonth() + PriceIndex.REBASE_MONTHS;
         for (; month < rebase; month++) {
             boolean light = month >= rebase - PriceIndex.WEIGHT_MONTHS + 1;
@@ -276,7 +277,7 @@ public class ExchangeRateCheck {
         assertTrue("fixture: the basket in force is still the old one the month before the rebasing",
                 px.getLinkedMonth() < rebase && px.isRentCapped());
         // The rebasing month, with every price moved, so the level it reads is a real test of continuity.
-        final double[] moved = { 1.2, 2.5, 0.9, 1.5, 0 };
+        final double[] moved = { 1.2, 2.5, 0.9, 1.5, 0, 0, 0, 0, 0 };
         feed(px, moved, RENT_LIGHT, RENT_LIGHT_FEES, month++);
         assertTrue("fixture: the basket was struck again this month, on the year's spending", px.getLinkedMonth() == rebase);
         close("...and rent is 30% of the new basket", px.getWeight(PriceIndex.RENT), .30, 1e-12);
@@ -302,7 +303,7 @@ public class ExchangeRateCheck {
         PriceIndex light = new PriceIndex();
         double worst = 0;
         for (int m = 0; m < 60; m++) {
-            double[] prices = { 1 + .004 * m, 1 + .01 * Math.sin(m / 5.0) + .003 * m, 1 + .002 * m, 1 + .006 * m, 0 };
+            double[] prices = { 1 + .004 * m, 1 + .01 * Math.sin(m / 5.0) + .003 * m, 1 + .002 * m, 1 + .006 * m, 0, 0, 0, 0, 0 };
             feed(light, prices, RENT_LIGHT, RENT_LIGHT_FEES, m);
             if (light.isBased()) worst = Math.max(worst, Math.abs(light.getParityLevel() - light.getIndex()));
         }
@@ -1177,11 +1178,15 @@ public class ExchangeRateCheck {
     }
 
     /**
-     * FS10 (section 8b): the vault the dated gold peg is held at, in years of GDP: twice INTERVENTION_LINEAR, because the hold's sale in a
+     * FS10 (section 8b): the vault the dated gold peg is held at, in years of GDP: four times INTERVENTION_LINEAR. The hold's sale in a
      * month is at most INTERVENTION_LINEAR of a year's GDP while the lift it makes stays inside the linear part of the intervention law
-     * (interventionLocalFor()), and the peg gives way the month its sale would take the vault to nothing.
+     * (interventionLocalFor()), and the peg gives way the month its sale would take the vault to nothing. FS10 held twice that. RES3
+     * (2026-11-26): the 1914 risk-off on a debtor town lifts past the linear part. RES3's quote at a builder's cost (ebe0fdafb) has the
+     * town owe US$1,477k abroad by m130 (271k before), its sensitivity to the risk-off is 0.2095 (-0.0012), and the gap went from 1.38 to
+     * 1.67 in a month. Holding it asked 584.6 of a vault of 584.3, the whole of twice. That is the real world: a debtor on gold runs
+     * through its reserve in a run. So the vault is held at twice that month's sale.
      */
-    static final double GOLD_HELD_VAULT_YEARS = 2 * ForeignAccounts.INTERVENTION_LINEAR;
+    static final double GOLD_HELD_VAULT_YEARS = 4 * ForeignAccounts.INTERVENTION_LINEAR;
 
     /** ...the log gap the peg's shadow stands over the peg when August 1914 releases it: eight of the market's monthly swings, more than one month's float news can be. */
     static final double RELEASED_GAP = 8 * ForeignAccounts.MARKET_SIGMA;

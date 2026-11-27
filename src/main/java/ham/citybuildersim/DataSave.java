@@ -99,6 +99,20 @@ public class DataSave implements Cloneable {
 
     /** RES2 bounded title/occupancy/listing cohorts; physical stock stays in buildings[]. */
     private java.util.List<HousingInventory.Holding> housingInventory;
+    private HousingMarket.State housingMarket;
+    public void setHousingMarket(HousingMarket.State state) { housingMarket=state; }
+    public HousingMarket.State getHousingMarket() { return housingMarket; }
+    private Motoring.UsedTrade usedCarTrade;
+    public void setUsedCarTrade(Motoring.UsedTrade state) { usedCarTrade = state; }
+    public Motoring.UsedTrade getUsedCarTrade() { return usedCarTrade; }
+
+    private Motoring.NewTrade newCarTrade;
+    public void setNewCarTrade(Motoring.NewTrade state) { newCarTrade = state; }
+    public Motoring.NewTrade getNewCarTrade() { return newCarTrade; }
+
+    private Motoring.PetrolPrices petrolPrices;
+    public void setPetrolPrices(Motoring.PetrolPrices state) { petrolPrices = state; }
+    public Motoring.PetrolPrices getPetrolPrices() { return petrolPrices; }
     public void setHousingInventory(java.util.List<HousingInventory.Holding> holdings) { housingInventory = holdings; }
     public java.util.List<HousingInventory.Holding> getHousingInventory() { return housingInventory; }
     private int month = 1;
@@ -2057,9 +2071,13 @@ public class DataSave implements Cloneable {
      * a month was played. Null on an older save, which still does, once.
      */
     private double[] bankMonthLines;
+    /** Immutable held book snapshot; its sector arrays are defensively copied by the record. */
+    private Bank.HeldBooks bankHeldBooks;
 
     public void setBankMonthLines(double[] state) { this.bankMonthLines = state; }
     public double[] getBankMonthLines()           { return bankMonthLines; }
+    public void setBankHeldBooks(Bank.HeldBooks state) { bankHeldBooks = state; }
+    public Bank.HeldBooks getBankHeldBooks() { return bankHeldBooks; }
 
     /**
      * The bank's year of statements (0.7.9): the months before the one saved,
@@ -2755,6 +2773,9 @@ public class DataSave implements Cloneable {
      */
     private double[] labour;
 
+    /** The held full-staffing population wage bill by job type, in local money. */
+    private double[] populationWageTotals;
+
     /**
      * The posts per wage band the staffing gate refused this month that the labour market prices as if they were
      * offered (LD1; WantedPosts).
@@ -2807,6 +2828,8 @@ public class DataSave implements Cloneable {
 
     public void setLabour(double[] a)           { this.labour = a; }
     public double[] getLabour()                 { return labour; }
+    public void setPopulationWageTotals(double[] a) { populationWageTotals = a == null ? null : a.clone(); }
+    public double[] getPopulationWageTotals() { return populationWageTotals == null ? null : populationWageTotals.clone(); }
     public void setWantedPosts(double[] a)      { this.wantedPosts = a; }
     public double[] getWantedPosts()            { return wantedPosts; }
     // UP1: a copy, not the live head counts.

@@ -258,8 +258,8 @@ public final class CreditCrunchCheck {
     static long lenderPassed;
     static double lenderNoi = Double.NaN, lenderRate = Double.NaN;
     static double roomAtStart = Double.NaN, roomAfterCut = Double.NaN;
+    static double singleDoorRoom = Double.POSITIVE_INFINITY;
     static long cutHomes;
-    static double lastHomeRoom = Double.NaN;
 
     /** ★ How far over the risk-based requirement the hold puts the leverage requirement: the book may weigh a quarter more by the strike. */
     static final double BINDS_BY = 1.25;
@@ -274,13 +274,43 @@ public final class CreditCrunchCheck {
      * the cash alone, which moves the ratio but not the requirement that binds, held it in the wrong band (FS9).
      */
     static void holdInBand(Bank bank) {
+        holdInBand(bank, 0);
+    }
+
+    /** ...with what the bank pays out of its cash before the rule is struck held in it too, so that the rule finds it HOLD of its band up. */
+    static void holdInBand(Bank bank, double dueBeforeTheRule) {
         double ratio = Bank.LEVERAGE_RATIO_MIN + HOLD * (bank.leverageTarget() - Bank.LEVERAGE_RATIO_MIN);
         double owedAtHome = bank.totalLiabilities() - bank.borrowings() - Math.max(0, bank.getForeignDeposits());
         double book = bank.exposure() - bank.cashReserves();
         double wanted = BINDS_BY * Bank.CAPITAL_RATIO * bank.getWeightedBook() / Bank.LEVERAGE_RATIO_MIN;
         double exposure = Math.max(wanted, Math.max(book, owedAtHome / (1 - ratio)));
-        bank.setCash(exposure - book);
+        bank.setCash(exposure - book + dueBeforeTheRule);
         bank.setForeignDeposits(exposure * (1 - ratio) - owedAtHome);
+    }
+
+    /**
+     * The played month's hold: the bank HOLD of its band up as the month's rule reads it, after the profit tax the month's top
+     * charges from its cash first (Bank.chargeTax(), in the audit window, before startOfMonthUpdate() strikes the rule; Bank.taxAt()
+     * is that bill, at the model's own rate). Returns the leverage ratio the rule is struck on.
+     * WHY (RES3c, 2026-11-25): since call A the overcrowded need homes too, and seed 13's town, before the House's ground was stood
+     * (cutToTheValve()), built 285 homes to 717 in the crunch where it had built 268 to 566; its bank's profit tax grew with its book,
+     * and at m267 it took 37.76 of the equity at the month's top (Bank.taxAt() at the hold read the same 37.76) where the half band
+     * the hold left was 33.49 over the minimum: the rule found the bank under it, lending only to keep borrowers going, in the one
+     * month the fixture says it stood in its band. The header's "equity and exposure hardly move between the hold and that strike"
+     * was the old town's. The town with the House's ground pays no profit tax in the crunch, so this hold is the old one there.
+     */
+    static double holdInBand(Game g) {
+        Bank bank = g.getBank();
+        double due;
+        try {
+            java.lang.reflect.Method rate = Game.class.getDeclaredMethod("bankProfitTaxRate");
+            rate.setAccessible(true);
+            due = bank.taxAt((Double) rate.invoke(g));
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+        holdInBand(bank, due);
+        return (bank.equity() - due) / (bank.exposure() - due);
     }
 
     /** ★ The ground stood before each crunch month, in blocks of Low-Rise Apartments: section 4's order, so the landlords never wait on land. */
@@ -319,25 +349,39 @@ public final class CreditCrunchCheck {
         return r == null ? 0 : r.households();
     }
 
-    /**
-     * The landlords' homes retired, blocks then houses, while what is left still leaves MARGIN households of room. Each
-     * home's room is read off the one retired before it (R1g): Room.households() counts the arrivals' mix, so a home can
-     * take more households' room than its dwellings, and the cut that took its dwellings for its room left 6.4 of the 12
-     * once R1g's builders were paid the contractor's price. lastHomeRoom keeps the last home's room, for the fixture.
-     */
+    /** The landlords' homes retired, larger mixes before single doors, while MARGIN households of room remain. */
     static void cutToTheValve(Game g) {
-        roomAtStart = room(g);
         BuildingManager bm = g.getBuildingManager();
-        for (String name : new String[] { "Low-Rise Apartments", "House" }) {
-            BuildingsTemplate t = LongPlaytest.template(g, name);
-            if (t == null) continue;
-            double each = t.getDwellings();
-            while (bm.getQuantity(t.getId()) > 0 && room(g) - each >= MARGIN) {
+        // The played catalogue can contain only multi-home forms. Stand a paid single door so this fixture can measure
+        // the room quantum of the one-house bound, rather than assuming that a door means one household slot. The
+        // House where the city knows it; R1g's 1900 city does not, so its own single door (a cottage of HOMES_1900).
+        BuildingsTemplate single = null;
+        for (BuildingsTemplate t : bm.getTemplatesBySector(g.getSectors().realEstate().key()))
+            if (t.getDwellings() == 1 && (!g.foundedUnfitted() || t.knownAt(g.getMonth(), g.getResearch()))
+                    && (single == null || "House".equals(t.getName()))) single = t;
+        check("fixture: the city knows a single-door home (" + (single == null ? "none" : single.getName()) + ")", single != null);
+        if (single == null) return;
+        // Its ground, as the player stands it (standGround(): the cheapest plots, Game.buyLandBlock()). WHY (RES3c, 2026-11-25): since
+        // call A the overcrowded need homes too (Game.getHouseholdsWantingAHome()), and seed 13's town had built to its ground by m150
+        // (280 square feet free): the House was refused for no land, and the one house's room went unmeasured.
+        for (int plots = 0; !ground(g, single, 1) && plots < MAX_PLOTS && g.buyLandBlock(); plots++) { }
+        g.setCashForTest(Math.max(g.getCash(), g.quoteBuild(single, 1).total));
+        double withoutIt = room(g);
+        check("fixture: a paid single-door home stands before trimming the capacity buffer",
+                g.buildStack(single, 1, true) == Game.BuildResult.SUCCESS);
+        roomAtStart = room(g);
+        // One house's room: what the door just stood added, and what any single door the cut retires takes away; the
+        // cut need not reach a single door to know it (RES3c: tenure left the 1900 city's cut short of one at m150).
+        singleDoorRoom = roomAtStart > withoutIt ? roomAtStart - withoutIt : Double.POSITIVE_INFINITY;
+        java.util.List<BuildingsTemplate> homes = new java.util.ArrayList<>(bm.getTemplatesBySector(g.getSectors().realEstate().key()));
+        homes.sort(java.util.Comparator.comparingInt(BuildingsTemplate::getDwellings).reversed());
+        for (BuildingsTemplate t : homes) {
+            while (bm.getQuantity(t.getId()) > 0 && room(g) - 2 * t.getDwellings() >= MARGIN) {
                 double before = room(g);
                 if (bm.retire(t, 1) < 1) break;
                 cutHomes += t.getDwellings();
-                each = Math.max(each, before - room(g));
-                lastHomeRoom = each;
+                double removedRoom = before - room(g);
+                if (t.getDwellings() == 1 && removedRoom > 0) singleDoorRoom = Math.min(singleDoorRoom, removedRoom);
             }
         }
         roomAfterCut = room(g);
@@ -386,8 +430,7 @@ public final class CreditCrunchCheck {
                 if (g.getMonth() == FROM) cutToTheValve(g);
                 if (g.getMonth() >= FROM) {
                     standGround(g);
-                    holdInBand(g.getBank());
-                    heldRatio = g.getBank().leverageRatio();
+                    heldRatio = holdInBand(g);
                 }
             });
         } finally {
@@ -397,8 +440,8 @@ public final class CreditCrunchCheck {
 
         out.printf("%nthe ensemble's seed %d, its bank held %.0f%% of the way up its leverage band, months %d-%d%n",
                 SEED, HOLD * 100, FROM + 1, TO);
-        out.printf(Locale.ROOT, "   at m%d the placement had room for %.1f households; %,d homes retired left %.1f, the last one's room %.2f%n",
-                FROM, roomAtStart, cutHomes, roomAfterCut, lastHomeRoom);
+        out.printf(Locale.ROOT, "   at m%d the placement had room for %.1f households; %,d homes retired left %.1f (a one-door trim removed %.9g households of room)%n",
+                FROM, roomAtStart, cutHomes, roomAfterCut, singleDoorRoom);
         for (Month r : months) {
             if (r.month % 6 == 0 || r.unplaced > 1 || r.written > 0 || r.raised > 0)
                 out.printf(Locale.ROOT, "   m%d: %,.0f households, %,d homes, %,.0f doubled up, %.1f with no home;"
@@ -431,8 +474,9 @@ public final class CreditCrunchCheck {
                 groundMonths, TO - FROM, GROUND_BLOCKS, groundPlots);
         check("fixture: every month of the crunch began with ground for GROUND_BLOCKS blocks of Low-Rise Apartments",
                 groundMonths == TO - FROM);
-        check("fixture: the homes cut left the placement room for MARGIN households and less than one home's room more",
-                cutHomes > 0 && roomAfterCut >= MARGIN && roomAfterCut < MARGIN + lastHomeRoom && roomAfterCut < roomAtStart);
+        check("fixture: the homes cut left the placement room for MARGIN households and less than one house more",
+                cutHomes > 0 && Double.isFinite(singleDoorRoom) && roomAfterCut >= MARGIN
+                        && roomAfterCut - MARGIN < singleDoorRoom && roomAfterCut < roomAtStart);
 
         /*
          * ----- the households with no home: bounded by the crunch's first month, and cleared by the owners' homes (R1g, 2026-11-25) -----
@@ -528,6 +572,20 @@ public final class CreditCrunchCheck {
         EconomyManager em = g.getEconomyManager();
         BusinessDebtManager desk = em.getBusinessDebtManager();
         BuildingsTemplate block = LongPlaytest.template(g, "Low-Rise Apartments");
+        // Cause actual replacement demand for this hand order. Standing homes
+        // and funded sites otherwise reserve its prospective tenants first;
+        // a vacancy cannot supply the lender with fictitious occupied proceeds.
+        long replacementDoors=0;
+        for(BuildingsTemplate t:g.getBuildingManager().getTemplatesBySector(RE)){
+            if(t.getHousingRecipe()==null)continue;
+            var stack=g.getBuildingManager().getStack(t);if(stack==null)continue;
+            long n=stack.getQuantity();
+            while(n>0&&!g.getBuildingManager().getHousingInventory().mayRemove(stack,n))n--;
+            long removed=g.getBuildingManager().retire(t,n);
+            replacementDoors+=removed*t.getDwellings();
+            g.getLandManager().release(removed*t.getLandSqFt(),t.getSector(),Game.groundUse(t));
+        }
+        check("fixture: the hand order has actual replacement demand from removed homes",replacementDoors>=ORDER*block.getDwellings());
         int plots = 0;
         while (!ground(g, block, ORDER) && plots < MAX_PLOTS && g.buyLandBlock()) plots++;
         // The yard empty: the order's materials come in at their landed price, over the planner's (the yard short of its materials).

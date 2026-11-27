@@ -2607,6 +2607,7 @@ final class BankScreen {
                     + "The deposit page shows what its branches gather now.";
             case WINDOW -> "Overnight borrowing against eligible loans and government paper after haircuts; no equity inventory.";
             case WHOLESALE_ABROAD -> "Borrowed abroad at the wholesale rate: funding beyond the window or for equity inventory.";
+            case WINDOW_INTEREST_DUE -> "Window interest accrued and still payable to the central bank; paying it does not incur the expense again.";
             case FOREIGN_DEPOSITS -> "Hot money: the world's deposits, which can leave on no notice. The city's own are "
                     + "beside the sheet, below.";
             case DESK_SHORT -> "Shares the desk owes, at their mark.";

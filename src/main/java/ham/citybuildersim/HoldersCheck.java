@@ -597,6 +597,7 @@ public class HoldersCheck {
         json.add("outwardInvestment", sectorsOld);
         for (String k : new String[] {"qeTargetShare", "householdPaperRatio",
                 "buybackToHouseholdsUnsettled", "buybackAbroadUnsettled"}) json.remove(k);
+        json.remove("bankHeldBooks");   // RES3: a save from before the holders never had the bank's held books, so the load derives the book rather than restoring the new save's
         // ...and the central bank's array as 0.7.0 wrote it, without the tail.
         com.google.gson.JsonArray cbArray = json.getAsJsonArray("centralBank");
         com.google.gson.JsonArray cbOld = new com.google.gson.JsonArray();

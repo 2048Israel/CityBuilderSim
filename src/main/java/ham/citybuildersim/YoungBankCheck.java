@@ -106,8 +106,8 @@ public final class YoungBankCheck {
     static PrintStream out = System.out;
     static final PrintStream quiet = new PrintStream(OutputStream.nullOutputStream());
 
-    /** The months the young town is played, with only its lone sector held, before that sector is lent for: the bank has opened its first branch and carries the town's own lending, so its minimum stands a distance under its equity (with no other book the two are one point apart). */
-    static final int FOUNDING_MONTHS = 12;
+    /** The months the young town is played, with only its lone sector held, before that sector is lent for: the bank has opened its first branch and carries the town's own lending, so its minimum stands a distance under its equity (with no other book the two are one point apart), and the loan month and the write-off month after it end the town's first year on record (Equity.RECORD_MONTHS), where the desk's shares are priced on prospects - from the month after, Equity.fairValue() prices a young landlord with no spare and no income at its last price, the desk's holding of its offering collapsed in the write-off month (a re-mark of -$220k on a bank of $850k), and a control month's own movement crossed every margin. */
+    static final int FOUNDING_MONTHS = Equity.RECORD_MONTHS - 2;
 
     /** What the lone plant's loan is, in times the bank's equity as the founding ends: above the whole of it, and small enough that the largest loss sized below (LOSS_PAST_EQUITY of equity) is less than the loan. */
     static final double LOAN_PER_EQUITY = 2;
@@ -195,6 +195,8 @@ public final class YoungBankCheck {
         // The write-off month's start.
         double equity0, weighted0, principal0, interest0, ratio0, cushion0;
         boolean onePlant0;
+        /** Whether any listing is priced on its record as the write-off month begins (Equity.valuedOnRecord()). */
+        boolean onRecord0;
         long people;
         int failures0;
         boolean resolution0;
@@ -252,6 +254,7 @@ public final class YoungBankCheck {
         // ...and the month of interest its claim will carry when the plant closes: the till is sized with it, so the loss lands where it was sized.
         l.interest0 = l.credit.getMonthlyInterest(LONE);
         l.onePlant0 = onePlant(town, LONE);
+        for (int c = 0; c < town.getEquity().keys().length; c++) l.onRecord0 |= town.getEquity().valuedOnRecord(c);
         l.people = (long) town.getPopulationManager().getPopulation();
         l.failures0 = l.bank.getFailures();
         l.resolution0 = l.bank.isInResolution();
@@ -349,6 +352,8 @@ public final class YoungBankCheck {
                 near(control.writtenOff, 0) && cushion - a.loss() > income
                 && b.loss() - cushion > income && equityC - b.loss() > income
                 && c.loss() - equityC > income && a.loss() < cushion);
+        check("fixture: the write-off month begins in every listing's first year on record (Equity.RECORD_MONTHS), in each twin: the desk's shares are priced on prospects, so the control's own month is the bank's income and no re-mark of the desk's holding",
+                !control.onRecord0 && !a.onRecord0 && !b.onRecord0 && !c.onRecord0);
         check("a loss under the bank's cushion over its minimum leaves the ratio at or over Bank.CAPITAL_RATIO, and no spell begins",
                 a.ratio >= Bank.CAPITAL_RATIO && !a.spell);
         check("a loss past the cushion and within equity puts the ratio under Bank.CAPITAL_RATIO, and a spell under Bank.CAPITAL_RATIO begins with the write-off of a sector of one plant",

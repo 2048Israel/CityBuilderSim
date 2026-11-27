@@ -521,6 +521,7 @@ public class Game {
         buildLog = new BuildLog();
         cohorts = new PopulationCohorts();
         families = new FamilyModel();
+        families.setTypedRoom(legacy->getSectors().realEstate().housingMarket().roomLeft(this,legacy));
         families.rememberHouseholds(true);   // see FamilyModel: THE HOUSEHOLDS REMEMBER
         migration = new Migration();
         labourMarket = new LabourMarket();
@@ -565,8 +566,9 @@ public class Game {
         // ...and the central bank, founded fresh rather than reset, reading
         // the vault where ForeignAccounts keeps it. See getCentralBank().
         centralBank = new CentralBank(foreign::getReserves);
-        centralBank.setWindowCapacity(bank::windowFunding);
+        centralBank.setWindowCapacity(bank::windowCreditLimit);
         bank.setSettledWindow(centralBank::getAdvancesToBank);
+        bank.setWindowInterestDue(centralBank::getWindowInterestDue);
         bank.setGovernmentCollateral(debtManager::bankCollateralValue);
         // ...and every dial the player sets writes its change to the city's
         // decision log where it is applied (0.7.23): the taxes and promises,
@@ -590,6 +592,8 @@ public class Game {
         exchange.reset();
         bondMarket.reset();
         priceIndex.reset();
+        motoring.restoreNewTrade(null);
+        motoring.restorePetrolPrices(null);
         // ...and the anchor, seeded at the city's target by its first month (0.7.42).
         expectations.reset();
         /*
@@ -4314,6 +4318,14 @@ public class Game {
      * month's wages with last month's tax.
      */
     private void updateHouseholdAccounts(){
+        households.setTypedRents(row -> {
+            var market=getSectors().realEstate().housingMarket();
+            if(!market.active())return Double.NaN;
+            double total=0;
+            for(Household c:householdBalance.cells())if(c.row()==row)
+                total+=market.rentFor(c.key(),1);
+            return total;
+        });
         syncHouseholdAccounts(true);
     }
 
@@ -7948,18 +7960,23 @@ public class Game {
 
     /** What the lender reads for an order: what n cost, the insured rate and the real rate it is tested at, one's rent net of carrying it, and Mortgage.decide()'s answer. */
     private record LenderReading(java.util.function.LongToDoubleFunction costOf, double insured, double tested, double noi,
-                                 Mortgage.Decision decision) { }
+                                 java.util.function.LongToDoubleFunction noiOf, Mortgage.Decision decision) { }
 
     /** The lender's reading of an order of `quantity` with `cash` in hand - the one call the landlords' order (considerOnMortgage()) and the build card (lenderTest()) both make, so they cannot disagree. */
     private LenderReading lenderReads(BuildingsTemplate t, long quantity, double cash, double perUnitRent) {
+        var residential=getSectors().realEstate();
+        // On the typed market each size the lender is shown is read at its own rent roll (Mortgage.decide(), RES3c).
+        HousingMarket.Forecast forecast=residential.housingMarket().active() && quantity>0?residential.housingMarket().forecast(this):null;
+        if(forecast!=null)perUnitRent=forecast.income(t,quantity)/quantity;
         double insured = economyManager.getBusinessDebtManager().getInsuredMortgageRate();
         double tested = businessInvestment.realTestRate(insured);
         // ...at the door's own price (FB15, HN1-A; A LANDLORD'S ORDER AT THE DOOR'S OWN PRICE): the planner's was 2-5% under it.
         java.util.function.LongToDoubleFunction costOf = n -> doorPriceOf(t, n);
         // ...the shortfall grown over the order's wait (BA1; carryOf() applies the real rate itself, so it is handed the insured one).
         java.util.function.LongToDoubleFunction carryOf = n -> businessInvestment.carryOf(t, n, insured);
-        double noi = perUnitRent - economyManager.housingCarry(t);
-        return new LenderReading(costOf, insured, tested, noi, Mortgage.decide(quantity, costOf, cash, noi, tested, carryOf, bank.rules()));
+        double carry = economyManager.housingCarry(t), noi = perUnitRent - carry, flat = perUnitRent;
+        java.util.function.LongToDoubleFunction noiOf = forecast == null ? n -> flat - carry : n -> forecast.income(t, n) / n - carry;
+        return new LenderReading(costOf, insured, tested, noi, noiOf, Mortgage.decide(quantity, costOf, cash, noiOf, tested, carryOf, bank.rules()));
     }
 
     /**
@@ -8031,7 +8048,7 @@ public class Game {
         LenderReading read = lenderReads(t, decision.quantity, cash, perUnitRent);
         double insured = read.insured(), tested = read.tested(), noi = read.noi();
         Mortgage.Decision d = read.decision();
-        if (orderWatch != null) orderWatch.mortgaged(decision.quantity, read.costOf(), cash, noi, tested, d);
+        if (orderWatch != null) orderWatch.mortgaged(decision.quantity, read.costOf(), read.noiOf(), cash, noi, tested, d);
 
         if (d.quantity() <= 0) {
             (d.shortOfDown() ? heldForDownPayment : refusedByLender).add(decision.sector);
@@ -14646,7 +14663,7 @@ public class Game {
          * WHAT TO PAY SAVERS.
          */
         bank.setForeignFundingRate(debtManager.localWholesaleRate(Bank.WHOLESALE_TERM_MONTHS));
-        bank.fundToCover(debtManager.getPolicyRate());
+        bank.fundToCover(debtManager.getPolicyRate(), centralBank.getWindowDeferred(), centralBank.getAdvancesToBank());
 
         /*
          * ...AND THE CENTRAL BANK'S END OF IT (0.7.0), off the bank's own two
@@ -14660,8 +14677,8 @@ public class Game {
          * closed to it.
          */
         centralBank.payInterestOnReserves(bank.getPlacementIncome());
-        centralBank.chargeWindow(bank.getWindowFundingCost());
-        centralBank.settleWindow(bank.wholesaleFunding());
+        bank.payWindowInterest(centralBank.chargeWindow(bank.getWindowFundingCost()));
+        centralBank.settleWindow(bank.windowFunding());
         bank.settleForeignFunding(centralBank.getAdvancesToBank());
 
         // ...and if that left it owing more than it owns, it has failed - and
@@ -14871,7 +14888,7 @@ public class Game {
 
         // CBK3: trading and hot withdrawals follow the first settle. Refinance
         // their final shortfall inside the audited month, with no second interest bill.
-        centralBank.settleWindow(bank.wholesaleFunding());
+        centralBank.settleWindow(bank.windowFunding());
         bank.settleForeignFunding(centralBank.getAdvancesToBank());
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
@@ -16089,6 +16106,19 @@ public class Game {
 
     public PopulationCohorts getCohorts() { return cohorts; }
     public FamilyModel getFamilies()      { return families; }
+    /**
+     * The households wanting a home of their own: those with no door at all (FamilyModel.getStillUnplaced()) and those
+     * living past the census line, overcrowded (HousingMarket.overcrowded()), and those boarding or lodging with another
+     * family within it (HousingMarket.withinTheLine(), REV-RES3b P1-4: under two persons a room is boarding, not
+     * overcrowding, and still no home of their own), as a player, an advisor and a planner read a town's need of homes. WHY (RES3c, 2026-11-25): since call A nobody past the line is doorless, and the readers of
+     * the doorless alone - the playtest's player, the HOMES need, the fields' guard - read a town of families three to a
+     * door, past two persons a room, as "everybody housed" (HousingDoorCheck's town: none with no door, 36.993 households
+     * overcrowded at m831).
+     */
+    public double getHouseholdsWantingAHome() {
+        var market = getSectors().realEstate().housingMarket();
+        return families.getStillUnplaced() + market.overcrowded() + market.withinTheLine();
+    }
     public HouseholdBalance getHouseholdBalance() { return householdBalance; }
     public Migration getMigration()       { return migration; }
     public Health getHealth()             { return health; }
@@ -16337,9 +16367,12 @@ public class Game {
          * ...and what a flat costs here, which is a PULL rather than a push and
          * so is set in the same place for a different reason. See
          * Migration.affordabilityPull(): the discharged leave, and the people
-         * who would have arrived simply do not.
+         * who would have arrived simply do not. On the typed market a mover
+         * weighs the asking rent, not what doubled-up households pay (RES3,
+         * HousingMarket.askedBurden()).
          */
-        migration.setRentBurden(households.getRentBurden());
+        double askedBurden = getSectors().realEstate().housingMarket().askedBurden(this, households.getDisposableIncome());
+        migration.setRentBurden(Double.isFinite(askedBurden) ? askedBurden : households.getRentBurden());
 
         // ...and what last month's crime says about living here. See
         // Migration.crimePull(): "like dear rent", Jerus.
@@ -16349,6 +16382,7 @@ public class Game {
         // left is asked against (0.7.17): arrivals are bounded by it. See
         // Migration.monthlyNet() and FamilyModel.roomLeft().
         migration.setDoors(buildingManager.homesBySize());
+        getSectors().realEstate().housingMarket().prepareMigration(this);
 
         // ...and, in a city founded the 1900 way, what the world's movers hold this year (R0d; ArrivalMix): the skills the month's
         // arrivals are drawn from. A city founded the default way holds none and draws from WageBand's ceilings alone, as it always did.
@@ -16470,50 +16504,12 @@ public class Game {
         // and left carries their money at this month's census, before the pool.
         householdBalance.setFlows(cohorts);
 
-        // One household, one home - and if there are not enough homes, they
-        // crowd rather than sleep outside. See FamilyModel.squeeze().
-        /*
-         * HOMES HAVE SIZES NOW, so this is a match rather than a count.
-         *
-         * Two passes on purpose. The first says who could not be housed; the
-         * crowding valves then turn some of those singles into flatshares,
-         * which CHANGES what fits where - five adults sharing need one door,
-         * not five - so the second pass is what the landlords actually bill.
-         */
-        long[] stock = buildingManager.homesBySize();
-        double unplaced = families.house(stock);
-        families.squeezeUnplaced(unplaced);
-        families.noteUnplaced(families.house(stock));
-        buildingManager.getHousingInventory().match(families.occupiedBySize());
-
-        // What the landlords can bill, off the match rather than off an
-        // average, and split by which segment the door was in. See
-        // CommercialHandler.getRentIncome() and FamilyModel's TWO SEGMENTS.
-        getSectors().realEstate().setRentWeight(
-                families.studioRentWeight(), families.familyRentWeight());
-
-        // And the advisor prices a new home on who would move into it.
+        // One quote and clearing: suitable affordable moves first, then explicit
+        // emergency crowding and actually placed sharing groups (RES3).
+        families.beginTypedHousing(buildingManager.homesBySize());
         businessInvestment.setFamilies(families);
         businessInvestment.setBank(bank);
-
-        /*
-         * ...and the ones who cannot afford one either.
-         *
-         * squeeze() above is the housing shortage; this is the poverty. A tier
-         * whose single wage does not cover a home and a basket puts that share
-         * of its single adults into flatshares - which is what people actually
-         * do, and it is the response the model had no answer to at all. Before
-         * this, an unskilled single adult short of rent went on being short of
-         * it until the credit ran out and the hunger started.
-         *
-         * Reads LAST month's books, which is the only honest source: this
-         * month's have not been struck yet, and a household decides where to
-         * live on the payslip it has already had.
-         */
-        families.shareByAffordability(households.livingAlonePressure(families));
-        // ...and the people outside the families, with their own kind.
-        families.shareSeekersByAffordability(households.seekerPressure(new double[] {
-                unemployment.getHoused(), families.getSeekers(FamilyModel.Seeker.STUDENT) }));
+        clearTypedHousing();
 
         // EI and the grant are both paid at the top of the month now, where
         // they are credited (0.7.3 and 0.7.1), and what was paid is kept for
@@ -16960,7 +16956,14 @@ public class Game {
 
     {
         householdBalance.setOutsideCensus(this::outsideHouseholds);
+        householdBalance.setMoneyUnitSource(()->getDenomination().getUnit());
         householdBalance.setRentShares(this::rentShareOf);
+        families.setTypedRoom(legacy->getSectors().realEstate().housingMarket().roomLeft(this,legacy));
+        householdBalance.setRentBills(c -> getSectors().realEstate().housingMarket().active()
+                ? getSectors().realEstate().housingMarket().rentFor(c.key(),housingCellCount(c)) : Double.NaN);
+        // ...and a boarder's board in its rent line, its host's in its income, billed as the rent is (RES3, REV-RES3b on 0925f4661).
+        householdBalance.setBoard(b -> getSectors().realEstate().housingMarket().strikeBoard(b),
+                () -> getSectors().realEstate().housingMarket().boardStruck());
         householdBalance.setHousedShares(this::housedShareOf);
         householdBalance.setCarAssetPrice(() -> motoring.getUsedCarPrice() > 0 ? motoring.getUsedCarPrice()
                 : getMarkets().get(Good.CARS).getLocalPrice() * HouseholdBalance.USED_CAR_FLOOR);
@@ -17018,6 +17021,49 @@ public class Game {
         if (c instanceof PrisonerHousehold) return 0;
         if (c.shape() != null) return 1 - families.unhousedShareOf(c.shape());
         return 1;
+    }
+
+    /** The existing stage/shape/tier census, shared by typed housing and its actual bills. */
+    private double housingCellCount(Household c) {
+        if(c.shape()==null)return outsideHouseholds(c);
+        if(c.isRetired())return families.get(c.shape(),PayTier.values()[0])*householdBalance.tierShareOf(c);
+        if(c instanceof WorkingHousehold w)return families.get(w.shape(),w.tier(),w.stage());
+        return families.get(c.shape(),c.tier());
+    }
+
+    /** Once after the raw census; read-only rebuilds never quote or clear. */
+    private void clearTypedHousing() {
+        var market=getSectors().realEstate().housingMarket();
+        java.util.List<HousingChoice.Demand> demand=new java.util.ArrayList<>();
+        double[] netWages=new double[PayTier.values().length];int[] wageKinds=new int[netWages.length];
+        var wageSchedule=populationManager.getWagesPerType();var tax=economyManager.getTaxPolicy();
+        for(JobType job:JobType.values()){
+            int tier=PayTier.of(job).ordinal();
+            netWages[tier]+=wageSchedule[job.ordinal()]*Math.max(0,1-tax.payslipShare(WageBand.of(job)));wageKinds[tier]++;
+        }
+        for(int t=0;t<netWages.length;t++)if(wageKinds[t]>0)netWages[t]/=wageKinds[t];
+        var resources=householdBalance.strikeHousingBudgets(families,households,getSectors().retail().getStoreSellPrice(),
+                c -> market.active()?market.rentFor(c.key(),c.households()):households.rentPerHousehold()*c.rentShare(),
+                c -> c instanceof WorkingHousehold?netWages[c.tier().ordinal()]*c.earningWeight():
+                        c instanceof RetiredHousehold?tax.pensionPerSenior()*c.grownUps():Double.NaN,bank.householdRate(debtManager.getPolicyRate()),spendFactor());
+        for(Household c:householdBalance.cells()) {
+            if(c instanceof OwnerHousehold || c instanceof OrphanHousehold || c instanceof PrisonerHousehold)continue;
+            if(c instanceof UnemployedHousehold u && u.status()==UnemployedHousehold.Status.UNHOUSED)continue;
+            double count=resources.get(c.key()).count();if(count<=0)continue;
+            double budget=resources.get(c.key()).budget();
+            int size=c.shape()==null?Math.max(1,(int)Math.ceil(c.headcount())):c.shape().size();
+            int children=c.shape()==null?(int)Math.ceil(c.getDependants()):c.isRetired()?0:c.shape().dependants();
+            FamilyModel.Seeker seeker=c instanceof StudentHousehold?FamilyModel.Seeker.STUDENT:
+                    c instanceof UnemployedHousehold?FamilyModel.Seeker.UNEMPLOYED:null;
+            double sharing=seeker==null?0:Math.min(count,families.getSeekersSharing(seeker));
+            if(sharing>0)demand.add(new HousingChoice.Demand(c.key()+"#sharing",sharing/5,5+children,children,false,0,false,budget*5));
+            if(count>sharing)demand.add(new HousingChoice.Demand(c.key(),count-sharing,size,children,c.isRetired(),
+                    c.tier()==null?0:c.tier().ordinal(),c instanceof WorkingHousehold w&&w.stage()==AdultStage.YOUNG,budget));
+        }
+        var result=market.clear(this,demand,householdBalance.housingRoute());
+        families.acceptTypedHousing(market.demands(),result,householdBalance.cells(),buildingManager.getHousingInventory());
+        getSectors().realEstate().setRentWeight(families.studioRentWeight(),families.familyRentWeight());
+        getSectors().realEstate().setOccupiedHomes(market.occupied());
     }
 
     /**
@@ -17247,13 +17293,17 @@ public class Game {
     /** Each component's price this month, in PriceIndex's order: the shelf, the average rent paid, a meal, a luxury piece; the services' price is struck by the index from the fees. */
     double[] indexPrices() {
         double[] p = new double[PriceIndex.COMPONENTS];
-        p[PriceIndex.GROCERIES] = getSectors().retail().getStoreSellPrice();
+        ham.citybuildersim.sectors.Retail retail = getSectors().retail();
+        // Markets has finished this month's sale AND repriced the next posted shelf.
+        // Use what was actually charged; with no sale, carry the last saved CPI price.
+        p[PriceIndex.GROCERIES] = retail.getCurrentGrocerySales() > 0
+                ? retail.getChargedPrice() : priceIndex.getComponentPrice(PriceIndex.GROCERIES);
         /*
-         * The AVERAGE actually paid, not the family price. Rent is two prices
-         * now and the cost of living is what households handed over across
-         * both. Continuous with what the index used before the split: the two
-         * prices open equal, so the average opens on the same number the base
-         * was struck at.
+         * Comparable class bills chained on last month's occupied doors. The
+         * first paid month opens at rent per capacity; subsequent changes hold
+         * the class mix fixed, so moving into another form is not inflation.
+         * Receipts and household bills remain the actual unadjusted payments.
+         * A month without a paid observation carries its preceding price.
          */
         p[PriceIndex.RENT]   = getSectors().realEstate().getAverageRentPaid();
         /*
@@ -17269,16 +17319,27 @@ public class Game {
         ham.citybuildersim.sectors.LuxuryRetail counters = getSectors().luxuryRetail();
         p[PriceIndex.MEALS]  = kitchens.getServed() > 0 ? kitchens.getSellPrice() : 0;
         p[PriceIndex.LUXURY] = counters.getServed() > 0 ? counters.getSellPrice() : 0;
+        p[PriceIndex.NEW_CARS] = motoring.getNewCarPrice();
+        p[PriceIndex.PETROL] = motoring.getPetrolPrice();
+        // Use the held HOUSEHOLD quantities, never a market-wide or all-buyer unit count.
+        p[PriceIndex.LAMP_OIL] = homeFuel.getLitres() > 0 ? retail.getCurrentHomeFuelSales(Good.JET) / homeFuel.getLitres() : 0;
+        p[PriceIndex.HOME_COAL] = homeFuel.getTonnes() > 0 ? retail.getCurrentHomeFuelSales(Good.THERMAL_COAL) / homeFuel.getTonnes() : 0;
         return p;
     }
 
-    /** ...what the households spent on each: groceries and rent off the sectors' statements, meals and luxury off their own purchases; the services' is the index's sum of the fee lines. */
+    /** Current completed acquisitions: groceries and billed rent, meals/luxury from actual purchases, plus transport; services retain their existing household billed-fee convention. */
     double[] indexSpends() {
         double[] s = new double[PriceIndex.COMPONENTS];
-        s[PriceIndex.GROCERIES] = getSectors().retail().statement().salesToHouseholds;
-        s[PriceIndex.RENT]      = getSectors().realEstate().statement().salesToHouseholds;
+        ham.citybuildersim.sectors.Retail retail = getSectors().retail();
+        // Read only the current grocery Good, excluding petrol/home fuel without cross-period subtraction.
+        s[PriceIndex.GROCERIES] = retail.getCurrentGrocerySales();
+        s[PriceIndex.RENT]      = getSectors().realEstate().getRentIncomeBilled();
         s[PriceIndex.MEALS]     = householdBalance.getMealSpend();
         s[PriceIndex.LUXURY]    = householdBalance.getLuxurySpend();
+        s[PriceIndex.NEW_CARS]  = motoring.getHouseholdCarSpend();
+        s[PriceIndex.PETROL]    = motoring.getFuelBill();
+        s[PriceIndex.LAMP_OIL]  = retail.getCurrentHomeFuelSales(Good.JET);
+        s[PriceIndex.HOME_COAL] = retail.getCurrentHomeFuelSales(Good.THERMAL_COAL);
         return s;
     }
 
@@ -17659,6 +17720,8 @@ public class Game {
     private double carriedOccupiedHomes = -1;
     /** ...and the studio half of it. See DataSave.getRentWeightStudio(). */
     private double carriedStudioWeight;
+    /** The exact family half already saved in Real Estate's sector extras. */
+    private double carriedFamilyWeight;
     private double carriedRetailCapacity;
     private double carriedRetailWant;
 
@@ -18127,6 +18190,10 @@ public class Game {
         // ...and the equipment each site's orders froze, only where a site has a lot (R1e; none in a city founded the default way).
         dataSave.setLotsById(buildingManager.getLotsById());
         dataSave.setHousingInventory(buildingManager.getHousingInventory().forSave());
+        dataSave.setHousingMarket(getSectors().realEstate().housingMarket().forSave());
+        dataSave.setUsedCarTrade(motoring.usedTradeForSave());
+        dataSave.setNewCarTrade(motoring.newTradeForSave());
+        dataSave.setPetrolPrices(motoring.petrolPricesForSave());
         // ...and the recipes the parts of a stack run, only where one runs other than the default (R1c; none in a city founded the default way).
         dataSave.setRecipeChoices(recipes.forSave());
         // ...and the 1900 home's walk, its months of the households' pay (R1g; none in a city founded the default way).
@@ -18241,6 +18308,7 @@ public class Game {
         dataSave.setBankAllowance(bank.allowanceToSave());
         dataSave.setBankCapitalRecord(bank.capitalRecordToSave());
         dataSave.setBankMonthLines(bank.monthLinesToSave());
+        dataSave.setBankHeldBooks(bank.heldBooksForSave());
         // ...and its year of statements (0.7.9), which last month's column
         // and the last twelve months are read from.
         dataSave.setBankStatementYear(bank.statementYearToSave());
@@ -18389,6 +18457,7 @@ public class Game {
         dataSave.setHealthcare(healthcare.getState());
         dataSave.setHealthcareAccess(healthcare.getAccessState());
         dataSave.setLabour(labourMarket.state());
+        dataSave.setPopulationWageTotals(populationManager.getTotalWagePerType());
         dataSave.setWantedPosts(wantedPosts.state());
         dataSave.setSkilledWorkforce(populationManager.getSkilledHeads());
         dataSave.setLicences(populationManager.getLicensedHeads());
@@ -21327,12 +21396,18 @@ public class Game {
      */
     // The full sequence, not just the match - or stillUnplaced keeps whatever
     // the live path last left in it, which is a figure about a different month.
-    families.noteUnplaced(families.house(buildingManager.homesBySize()));
+    var savedHousing=getSectors().realEstate().housingMarket();
+    if(savedHousing.active())families.acceptTypedHousing(savedHousing.demands(),savedHousing.result(),householdBalance.cells(),buildingManager.getHousingInventory());
+    else families.noteUnplaced(families.house(buildingManager.homesBySize()));
     // ...and the two-pass figure the save carried wins over that one pass,
     // because migration reads it. See FamilyModel.adoptCarriedUnplaced().
     families.adoptCarriedUnplaced();
     families.adoptCarriedDoubling();
-    if (carriedRentWeight > 0) {
+    if (savedHousing.active()) {
+        // Each aggregate is already saved. Subtracting the studio share from
+        // the total can move the family share by an ULP at the load seam.
+        families.restoreRentWeight(carriedRentWeight, carriedStudioWeight, carriedFamilyWeight);
+    } else if (carriedRentWeight > 0) {
         /*
          * BOTH HALVES, RESTORED, not one total re-split.
          *
@@ -22185,6 +22260,7 @@ public class Game {
             handOnExpectations();
             carriedRentWeight = loaded.getRentWeight();
             carriedStudioWeight = loaded.getRentWeightStudio();
+            carriedFamilyWeight = getSectors().realEstate().getFamilyRentWeight();
 
             // The shops' budget constraint came back inside the Retail sector's
             // own state; it is re-applied after the rebuild below all the same,
@@ -22350,6 +22426,7 @@ public class Game {
             buildingManager.restoreAbroadOwed(loaded.getAbroadOwedById());
             buildingManager.restoreAbroadClaims(loaded.getAbroadClaimById());
             buildingManager.getHousingInventory().restore(loaded.getHousingInventory());
+            getSectors().realEstate().housingMarket().restore(loaded.getHousingMarket(),buildingManager);
             // ...and the fittings on site, with them (R1b): a save with none has none.
             fittings.restore(loaded.getFittings());
             // ...and the city's research (R3): its grants, the posts the month struck, the work piled and the finds, with the bill that month paid.
@@ -22851,6 +22928,10 @@ public class Game {
             // counted them: saved apart (DataSave.getOwnerAdults), since the line may have gained or lost a
             // family after the census.
             families.restoreOwnerAdults(restoredFlows.getOwnerAdults());
+            getSectors().realEstate().housingMarket().restore(restoredFlows.getHousingMarket(),buildingManager);
+            motoring.restoreUsedTrade(restoredFlows.getUsedCarTrade());
+            motoring.restoreNewTrade(restoredFlows.getNewCarTrade());
+            motoring.restorePetrolPrices(restoredFlows.getPetrolPrices());
             populationManager.setOwners(families.getOwnerAdults());
             health.restore(restoredFlows.getHealth());
             // ...and the causes of death of 1900 (R0b): a save from before has
@@ -22938,13 +23019,14 @@ public class Game {
          */
         getSectors().retail().setSpendingCapacity(carriedRetailCapacity);
         getSectors().retail().setWantedSpend(carriedRetailWant);
-        if (carriedRentWeight > 0) {
-            // Both halves, and the family one by subtraction so the two always
-            // sum to the figure the landlords were paid. See the note at the
-            // other restore site.
-            double studio = Math.max(0, Math.min(carriedStudioWeight, carriedRentWeight));
-            families.setRentWeight(studio, carriedRentWeight - studio);
-            getSectors().realEstate().setRentWeight(studio, carriedRentWeight - studio);
+        if (getSectors().realEstate().housingMarket().active() || carriedRentWeight > 0) {
+            if (getSectors().realEstate().housingMarket().active()) {
+                families.restoreRentWeight(carriedRentWeight, carriedStudioWeight, carriedFamilyWeight);
+            } else {
+                double studio = Math.max(0, Math.min(carriedStudioWeight, carriedRentWeight));
+                families.setRentWeight(studio, carriedRentWeight - studio);
+            }
+            getSectors().realEstate().setRentWeight(families.studioRentWeight(), families.familyRentWeight());
         }
 
         /*
@@ -23091,6 +23173,12 @@ public class Game {
              * is not restoration when the thing being derived is a flow.
              */
             economyManager.restoreSectorBills(restoredFlows.getSectors());
+            // Keep the actual saved total after restoring its component bills: summing
+            // the individually redenominated bills is a different rounding of that flow.
+            economyManager.setTotalPropertyTax(restoredFlows.getPropertyTaxCharged());
+            // The held population wage bill was scaled as a total by a reform; retain that
+            // exact month rather than the rebuild's product of the scaled schedule.
+            populationManager.restoreTotalWagePerType(restoredFlows.getPopulationWageTotals());
             // The rebuild dispatches a notional month. Standing readers need
             // the saved production's royalty, just as the ledgers need its bill.
             restoreLicenceFees(restoredFlows.getLicenceFees());
@@ -23266,6 +23354,12 @@ public class Game {
         if (restoredFlows != null && restoredFlows.getBankHouseholdDeposits() != null
                 && restoredFlows.getBankSectorDeposits() != null) {
             bank.restoreDeposits(restoredFlows.getBankHouseholdDeposits(), restoredFlows.getBankSectorDeposits());
+        }
+        // The held book amounts and the sites' claims (R1g's abroadClaimById, put back again), over the final rebuild. No new lending,
+        // funding or work is settled here: these are the exact inputs the next month reads.
+        if (restoredFlows != null) {
+            bank.restoreHeldBooks(restoredFlows.getBankHeldBooks());
+            buildingManager.restoreAbroadClaims(restoredFlows.getAbroadClaimById());
         }
         // ...and what had moved each sector's debt so far (FW2, R7), over whatever the rebuild counted.
         if (restoredFlows != null) economyManager.getBusinessDebtManager().restoreMoved(restoredFlows.getCreditMoved());
@@ -23670,6 +23764,8 @@ public class Game {
          */
         getInfrastructureManager().redenominateFuel(scale);
         motoring.restoreFuel(motoring.getFuelBill() * scale, motoring.getFuelImports() * scale, motoring.getFuelLitres());
+        motoring.redenominateUsedTrade(scale);
+        motoring.redenominateCpi(scale);
         // ...and the homes' held lamp oil and coal sale (R0c), a figure in money too; nothing to divide with both shares at 0.
         homeFuel.redenominate(scale);
 

@@ -1605,12 +1605,28 @@ public class FundCheck {
     /** How many months 9e's probe of a copy plays to see which company buys its own shares back (the one the fund is then placed in). */
     static final int PROBE_MONTHS_9E = 24;
 
+    /** Actual free units: a cell's per-household shares less its tagged subset, times its positive count. */
+    static double unencumberedShares(HouseholdBalance balance, int company) {
+        double free = 0;
+        for (Household cell : balance.cellsForMarket()) if (cell.households() > 0)
+            free += Math.max(0, cell.shares[company] - cell.taxShares[company]) * cell.households();
+        return free;
+    }
+
+    static boolean sameBits(double[] before, double[] after) {
+        if (before.length != after.length) return false;
+        for (int i = 0; i < before.length; i++)
+            if (Double.doubleToRawLongBits(before[i]) != Double.doubleToRawLongBits(after[i])) return false;
+        return true;
+    }
+
     /**
      * A REAL RUN AT THE DEFAULT DIAL: THE CAP SALE AND THE IDLE TRANSFER FIRE, AND NO HOLDING PASSES THE FIXED POINT (RB1-R). The cap sale
      * fires only when a buyback lifts a holding the fund has at the limit, and this town's fund is at the limit of the Bank alone, which
      * never buys back. So the fixture places it: a probe of a copy finds the company, not the Bank, that retires the most of its own
-     * shares (Exchange.getBuybackToHouseholds() and the others), and the households hand the fund the shares that make its holding
-     * exactly TreasuryFund.OWNERSHIP_LIMIT of it - a fixture of a holding, not a trade, as holdTwoAndARescueBook() does. Then the city
+     * shares (Exchange.getBuybackToHouseholds() and the others), among companies whose households have enough actual unencumbered
+     * units. The households hand the fund only those free units, pro rata, with their existing average basis; every secured claim
+     * and tagged unit stays with its donor. The holding reaches TreasuryFund.OWNERSHIP_LIMIT - a fixture, not a trade. Then the city
      * pays in four times its rooms, the rule fills them and some cash is idle, and the town plays as itself for MONTHS_9E: the company's
      * buybacks are its own. A buyback cannot outrun the rule's tenth of the excess a month: the most the fund holds of any company is
      * L x s / (s - b) for the fastest b a month can retire (LongPlaytest's fixed point, the buyback filled at the desk's bid, the
@@ -1634,32 +1650,86 @@ public class FundCheck {
         for (int c = 0; c < retired.length; c++) {
             if (c == Equity.BANK || !(reg.getShares(c) > 0) || !(g.getExchange().fair(c) > 0)) continue;
             double take = limit * reg.getShares(c) - reg.getCityMarketShares(c);
-            if (g.getHouseholdBalance().sharesHeld(c) < take) continue;
+            if (!(take > 0) || !(unencumberedShares(g.getHouseholdBalance(), c) >= take)) continue;
             double rate = retired[c] / reg.getShares(c);
             if (rate > mostRetired) { mostRetired = rate; buyer = c; }
         }
-        check("fixture: a company that is not the Bank buys back in the probe, and its households hold what the limit takes", buyer >= 0);
-        if (buyer < 0) return;
+        check("fixture: a company that is not the Bank buys back in the probe, and its households hold enough actual unencumbered shares for the limit", buyer >= 0);
+        if (buyer < 0) throw new IllegalStateException("Opening cap fixture has no observed buyback company with enough unencumbered shares");
         double take = limit * reg.getShares(buyer) - reg.getCityMarketShares(buyer);
-        double households = g.getHouseholdBalance().sharesHeld(buyer);
-        double keep = 1 - take / households;
+        HouseholdBalance balance = g.getHouseholdBalance();
+        Household[] donors = balance.cellsForMarket();
+        double free = unencumberedShares(balance, buyer);
+        double[] cellsBefore = balance.toCellSaveArray(), expectedCells = cellsBefore.clone();
+        double[] claimsBefore = balance.securedTaxesToSave(), taxesBefore = balance.investmentTaxesToSave();
+        double[] cashBefore = {g.getCash(), g.getFund().getCash(), g.getBank().getCash()};
+        double issuedBefore = reg.getShares(buyer);
+        double stockBefore = balance.sharesHeld(buyer) + reg.getCityMarketShares(buyer);
+        double donorBasisBefore = 0;
+        for (Household cell : donors) donorBasisBefore += cell.basis[buyer] * cell.households();
+        double[] sharesLeft = new double[donors.length], basisOut = new double[donors.length];
+        double[] given = new double[donors.length];
+        int lastFree = -1;
+        for (int i = 0; i < donors.length; i++)
+            if (donors[i].households() > 0 && donors[i].shares[buyer] > donors[i].taxShares[buyer]) lastFree = i;
+        double left = take, roomLeft = free, actualTaken = 0;
+        boolean outgoingFree = true, encumberedDonor = false;
         double basisMoved = 0;
-        double savingsBeforeGift = g.getHouseholdBalance().totalSavings();
+        double savingsBeforeGift = balance.totalSavings();
         double oldFundCost = g.getFund().getLedger().acbHeld();
-        boolean unencumbered = true;
-        for (Household cell : g.getHouseholdBalance().cellsForMarket())
-            unencumbered &= cell.taxClaim[buyer] == 0 && cell.taxShares[buyer] == 0;
-        check("fixture: the opening in-kind holding carries no unrelated secured claim", unencumbered);
-        if (!unencumbered) throw new IllegalStateException("Opening cap fixture cannot transfer an assessed holding to the ordinary fund");
-        for (Household cell : g.getHouseholdBalance().cellsForMarket()) {
-            basisMoved += cell.basis[buyer] * (1 - keep) * cell.households();
-            cell.shares[buyer] *= keep;
-            cell.basis[buyer] *= keep;
+        // RES3: the native m73 opening has live liens. They stay backed; only the donor's free units can leave.
+        for (int i = 0; i < donors.length; i++) {
+            Household cell = donors[i];
+            double count = cell.households(), held = cell.shares[buyer], tagged = cell.taxShares[buyer];
+            if (!(count > 0) || !(held > tagged)) continue;
+            double freeEach = Math.max(0, held - tagged), room = freeEach * count;
+            double wanted = Math.min(room, Math.max(0, i == lastFree ? left : left * room / roomLeft));
+            sharesLeft[i] = Math.max(tagged, held - Math.min(freeEach, wanted / count));
+            given[i] = held - sharesLeft[i]; // the actual representable units removed, not an invented rounding balance
+            basisOut[i] = FundLedger.basisReleased(cell.basis[buyer], given[i], held);
+            outgoingFree &= Double.isFinite(count) && Double.isFinite(given[i]) && given[i] >= 0
+                    && given[i] <= freeEach && tagged >= 0 && sharesLeft[i] >= tagged
+                    && Double.isFinite(basisOut[i]) && basisOut[i] >= 0 && basisOut[i] <= cell.basis[buyer];
+            encumberedDonor |= given[i] > 0 && count >= HouseholdBalance.EMPTY_CELL && cell.taxClaim[buyer] > 0 && tagged > 0;
+            actualTaken += given[i] * count;
+            basisMoved += basisOut[i] * count;
+            left -= given[i] * count;
+            roomLeft -= room;
         }
-        reg.moveCity(buyer, take);
-        g.getFund().getLedger().receivedShareInKind(Equity.COMPANIES[buyer], take, basisMoved, g.getMonth());
+        outgoingFree &= Double.isFinite(actualTaken) && Math.abs(actualTaken - take) <= 1e-9;
+        check("fixture: every outgoing unit is actually free, its donor's tagged shares stay fully backed, and the allocation reaches the cap quantity", outgoingFree);
+        if (!outgoingFree) throw new IllegalStateException("Opening cap fixture cannot transfer the required unencumbered units");
+        check("fixture: a nonempty donor with a live secured claim supplies free units while retaining its claim and tagged backing", encumberedDonor);
+        for (int i = 0; i < donors.length; i++) if (given[i] > 0) {
+            Household cell = donors[i];
+            expectedCells[i * HouseholdBalance.CELL_SLOTS + HouseholdBalance.CELL_SLOTS_BEFORE_SHARES + buyer] = sharesLeft[i];
+            expectedCells[i * HouseholdBalance.CELL_SLOTS + HouseholdBalance.CELL_SLOTS_BEFORE_BASIS + buyer] = cell.basis[buyer] - basisOut[i];
+            cell.shares[buyer] = sharesLeft[i];
+            cell.basis[buyer] -= basisOut[i];
+        }
+        reg.moveCity(buyer, actualTaken);
+        g.getFund().getLedger().receivedShareInKind(Equity.COMPANIES[buyer], actualTaken, basisMoved, g.getMonth());
+        check("the opening allocation changes only its donors' selected shares and released basis: every cash, count, debt, card, claim, tag and other cell stock is bit unchanged",
+                sameBits(expectedCells, balance.toCellSaveArray()));
+        check("every government claim, departing claim/tag and investment-tax entry is bit unchanged",
+                sameBits(claimsBefore, balance.securedTaxesToSave()) && sameBits(taxesBefore, balance.investmentTaxesToSave()));
+        check("treasury, fund and bank cash are bit unchanged by the in-kind allocation",
+                sameBits(cashBefore, new double[] {g.getCash(), g.getFund().getCash(), g.getBank().getCash()}));
+        check("the in-kind allocation leaves the company's issued shares bit unchanged",
+                Double.doubleToRawLongBits(issuedBefore) == Double.doubleToRawLongBits(reg.getShares(buyer)));
+        boolean backed = true;
+        double donorBasisAfter = 0;
+        for (Household cell : donors) {
+            if (cell.households() > 0) backed &= cell.shares[buyer] >= cell.taxShares[buyer];
+            donorBasisAfter += cell.basis[buyer] * cell.households();
+        }
+        check("all retained tagged shares still have their donor's actual share backing", backed);
+        close("the donor and fund share stocks are conserved by the actual free-unit transfer",
+                balance.sharesHeld(buyer) + reg.getCityMarketShares(buyer), stockBefore, 1e-9);
+        close("the combined donor and fund acquisition basis is conserved",
+                donorBasisAfter + g.getFund().getLedger().acbHeld(), donorBasisBefore + oldFundCost, 1e-9);
         close("the opening holding moves actual acquisition cost in kind", g.getFund().getLedger().acbHeld() - oldFundCost, basisMoved, 1e-9);
-        close("the opening in-kind allocation does not invent purchase cash", g.getHouseholdBalance().totalSavings(), savingsBeforeGift, 0);
+        close("the opening in-kind allocation does not invent purchase cash", balance.totalSavings(), savingsBeforeGift, 0);
         close("fixture: the fund holds the limit of it, " + Equity.COMPANIES[buyer],
                 reg.getCityMarketShares(buyer) / reg.getShares(buyer), limit, 1e-12);
 

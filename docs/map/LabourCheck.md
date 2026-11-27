@@ -175,6 +175,6 @@
 | 2504 | 17 | `static Game rentTownBuilt()` | The town "rent is a market" is read on (FS16): flats, a hospital, shops, power, water and roads and RENT_TOWN_PEOPLE in them, one month old, so the landlords have struck a rent and priced a home. |
 | 2529 | 7 | `static LabourMarket pricedOn(PopulationManager pm)` | A labour market priced on a hand-fed population manager the way Game.repriceLabour() prices a city's: staffable posts, supply, posts by job and licence holders. |
 | 2544 | 10 | `static Migration arrivalsOnce(LabourMarket market, PopulationManager pm)` | One month's draw by a fresh Migration into a town of ROOM_TOWN people with room, jobs and homes for more, priced by this market and placed against these people (so each band's chance of work is the people's own, not o... |
-| 2561 | 4 | `static double lastAverageOf(LabourMarket m)` | The average wage a market's tie last read: the last value of its state array (WS1; there is no getter for it). |
+| 2561 | 4 | `static double lastAverageOf(LabourMarket m)` | The average wage a market's tie last read, at its saved field position before later tails. |
 | 2566 | 7 | `static void cleanUp(Path root)` |  |
 

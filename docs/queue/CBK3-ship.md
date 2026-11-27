@@ -8,9 +8,9 @@ on Policy and the central bank's Policy page. Statements separate actual
 window and foreign borrowing, old saved claims remain truthful, and mature
 share valuation no longer revives an old offering price at zero earnings.
 Monthly play audits both funding limits and counts when stable cash binds.
-The copied month-133 city's remittance share falls from 20.96% to 1.95%; the
-complete ensemble comparison and its individual failure increases are recorded
-in the notes.
+An unpaid window-interest bill stays owed until it can be collected.
+The copied-city evidence, ensemble comparisons and individual failure increases
+are recorded in the notes.
 ## queued
 | LE1 | Identify borrowers and connected groups before exposing a large-exposure limit | docs/queue/LE1.md |
 | BFW1 | Price the bank's own wholesale credit risk and close new market funding in resolution | docs/queue/BFW1.md |

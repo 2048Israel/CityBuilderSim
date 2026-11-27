@@ -1115,6 +1115,7 @@ public class AutoBuildCheck {
         for (BuildingsTemplate t : k.getBuildingManager().getTemplates()) if (t.getTeaches() == EducationType.ELEMENTARY) school = t;
         BuildingsTemplate sc = school;
         quietly(() -> k.getBuildingManager().retire(sc, k.getBuildingManager().getQuantity(sc.getId())));
+        warrantElementary(k);
         double[] sdk = BuildAdvice.supplyDemand(k, elementary, new LinkedHashMap<>());
         AutoBuilder ak = k.getAutoBuilder();
         assertTrue(String.format("fixture: a town with no elementary school, %,.0f children for it - %.0f%% of one school's %d"
@@ -1145,6 +1146,7 @@ public class AutoBuildCheck {
         Game k2 = repaid(ChildcareCheck.town(root, "school-room"));   // HL1: see repay()
         BuildingsTemplate sc1 = k2.getBuildingManager().getTemplateByName(sc.getName());
         quietly(() -> k2.getBuildingManager().retire(sc1, k2.getBuildingManager().getQuantity(sc1.getId())));
+        warrantElementary(k2);
         withRoom(k2);
         AutoBuilder ak2 = k2.getAutoBuilder();
         ak2.setOn(true, null);
@@ -1159,6 +1161,7 @@ public class AutoBuildCheck {
         Game c = ChildcareCheck.town(root, "school-cash");
         BuildingsTemplate sc2 = c.getBuildingManager().getTemplateByName(sc.getName());
         quietly(() -> c.getBuildingManager().retire(sc2, c.getBuildingManager().getQuantity(sc2.getId())));
+        warrantElementary(c);
         withRoom(c);
         c.setCashForTest(AutoBuilder.reserve(c));
         AutoBuilder ac = c.getAutoBuilder();
@@ -1533,7 +1536,24 @@ public class AutoBuildCheck {
         return copy;
     }
 
-    /** ChildcareCheck's town with its elementary schools retired: its first school one that would not pay back (section 5). */
+    /** Children between the first-work threshold and half a school, so the first-school law is actually reached. */
+    static void warrantElementary(Game g) {
+        double least = g.getBuildingManager().getKnownTemplates().stream()
+                .filter(t -> t.getTeaches() == EducationType.ELEMENTARY && t.getCapacity() > 0)
+                .mapToDouble(BuildingsTemplate::getCapacity).min().orElseThrow();
+        double demand = least * (BuildAdvice.FIRST_WORK_SHARE + .5) / 2;
+        double[] pyramid = g.getCohorts().toSaveArray();
+        pyramid[AgeBand.CHILD.ordinal()] = demand / Education.ELEMENTARY_SHARE;
+        g.getCohorts().restore(PopulationCohorts.saveBands(), pyramid);
+        g.getPopulationManager().setPopulation(Math.round(g.getCohorts().total()));
+        g.getPopulationManager().recomputeWorkforce();
+        BuildAdvice.Measure elementary = BuildAdvice.Measure.school(EducationType.ELEMENTARY);
+        double actual = BuildAdvice.supplyDemand(g, elementary, new LinkedHashMap<>())[1];
+        assertTrue("fixture: the elementary demand warrants a first school and stays below half its places",
+                BuildAdvice.warranted(g, elementary) && actual < .5 * least);
+    }
+
+    /** ChildcareCheck's town with its elementary schools retired and their replacement warranted. */
     static Game noElementary(Path root, String name) {
         Game g = repaid(ChildcareCheck.town(root, name));   // HL1: see repay()
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) {
@@ -1541,6 +1561,7 @@ public class AutoBuildCheck {
             long had = g.getBuildingManager().getQuantity(t.getId());
             if (had > 0) quietly(() -> g.getBuildingManager().retire(t, had));
         }
+        warrantElementary(g);
         return g;
     }
 
@@ -1763,6 +1784,11 @@ public class AutoBuildCheck {
 
         // The limit: at nothing, with the cash at a month's tax, it buys none and borrows nothing; at the most, it borrows for both.
         Game d = noGround(root, "groundlimit0");
+        // A positive central-bank debt, rather than a played-town accident, causes the already-over-zero branch.
+        d.setCashForTest(-AutoBuilder.annualGdp(d));
+        quietly(() -> d.simulateMonths(1));
+        assertTrue("fixture: the zero-limit town owes central-bank advances",
+                d.getCentralBank().getAdvancesToTreasury() > 0);
         AutoBuilder ad = d.getAutoBuilder();
         d.setCashForTest(AutoBuilder.reserve(d));
         ad.setDebtLimit(0, null);
@@ -1951,13 +1977,15 @@ public class AutoBuildCheck {
     }
 
     /**
-     * A town over the debt limit (0.7.81): a twenty-year bond on the funding page for twice a year of its GDP, so the
+     * A town over the debt limit (0.7.81): a twenty-year bond for twice the default limit's years of GDP, so the
      * city's debt is past DEFAULT_DEBT_LIMIT whatever the bond's price, and its cash back where it was - the cash to pay.
      */
     static Game overTheLimit(Game g) {
         double cash = g.getCash();
-        quietly(() -> g.handleLongBondForCash(2 * AutoBuilder.annualGdp(g), Game.BUILD_BOND_YEARS, g.fundingLot("Term")));
+        quietly(() -> g.handleLongBondForCash(2 * AutoBuilder.DEFAULT_DEBT_LIMIT * AutoBuilder.annualGdp(g),
+                Game.BUILD_BOND_YEARS, g.fundingLot("Term")));
         g.setCashForTest(cash);
+        assertTrue("fixture: the funding-page bond actually puts the town over its debt limit", !g.getAutoBuilder().within(g));
         return g;
     }
 
@@ -2010,6 +2038,10 @@ public class AutoBuildCheck {
         // A young city's year (0.7.101): the output it has recorded, not scaled up to a year.
         Game y = new Game(new GameFiles(root.resolve("young"), root.resolve("young-no-legacy")));
         quietly(y::newGame);
+        quietly(() -> {
+            LongPlaytest.villageBuild(y, "House", 40);
+            LongPlaytest.villageBuild(y, "Convenience Store", 3);
+        });
         quietly(() -> y.simulateMonths(3));
         NationalAccounts nay = y.getEconomyManager().getNationalAccounts();
         int monthsY = nay.getMonthsRecorded();
@@ -2173,6 +2205,7 @@ public class AutoBuildCheck {
             }
         });
         g.getAutoBuilder().setOn(true, null);
+        if (retired.kind() == BuildAdvice.Kind.SCHOOL && retired.school() == EducationType.ELEMENTARY) warrantElementary(g);
         g.getEconomyManager().setHealthcare(g.getEconomyManager().getNationalAccounts().getTotalRevenue() * 2, 0);
         g.getEconomyManager().refreshGovernmentAccounts(0, 0, 0, 0);
         return g;

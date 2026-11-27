@@ -985,6 +985,180 @@ manifest parses, `git diff --check` passes for these record edits, and the
 ship/queued-row validator exits 0. Prior model checks and the 80-run
 ensemble are not rerun for these records-only additions.
 
+## RES3 merge and compatible format 67 (2026-11-27, in progress)
+
+Orchestrator `20261127-052130-016` orders main `6bd00e350` merged after RES3
+shipped as 0.9.216, save format/floor 67. Keep its reserve-capped repayment
+and price each actual held window dollar once, then run the named bank
+checks. AP8 gets the box first and is exact: merge it when published, with
+no remeasurement for AP8 itself, before asking for the dry-run slot.
+
+The source conflicts are resolved, preserving RES3's housing/rent changes.
+The mortgage search retains its per-size rent forecast and now passes the
+same saved BankRules through every slice and the live lender-reading path.
+The fund save fixture keeps CBK3's actual valuable lot and sale, and RES3's
+assertion that its actual till is emptied. No played fixture is weakened.
+
+★ The merged funding bill reads actual pre-rollover window and foreign
+principal, prices each at its own rate once, and keeps the deferred-window
+expense a subset, not an additional bill. Principal rollovers still happen
+twice, with only one monthly bill/close and lagged funding-price observation.
+The reserve cap means old issued principal may remain owed after the target
+falls. Monthly funding reads distinguish that recorded deferred claim from
+the active tranche: active principal still meets both collateral and desk
+limits, the deferred amount may not exceed actual debt, and no debt is erased.
+
+A necessary merge finding: RES3's `chargeWindow` advances a reserve shortfall
+then retires its full bill. CBK3's collateral gate can refuse that advance at
+full collateral, so the unchanged combination could take M0 negative. An
+internal issuance bypass would instead lend past collateral. Both are wrong.
+
+★ Keep unpaid interest as a distinct central-bank receivable and matching
+commercial-bank payable. Accrue the full bill once; collect only actual
+reserves, with a new advance still subject to collateral. Only collection
+destroys money and debits bank cash. Later payment reduces cash and payable
+equally, with no second expense. The
+[Fed's January 2026 Financial Accounting Manual, 3.95](https://www.federalreserve.gov/aboutthefed/chapter-1-balance-sheet.htm)
+records accrued uncollected loan interest separately from principal and
+credits earnings when it accrues. This supports retaining the claim without
+pretending an unsecured monetary advance occurred. No loan forgiveness,
+collection from nonexistent reserves or change to the existing remittance
+policy is introduced.
+
+The first reviewed corrections are now implemented: `windowOwedCost` is
+appended to Bank's monthly save lines (old 65-cell prefix defaults to zero),
+and reset clears the old due supplier before computing the next city's
+opening capital. The real-save regression now also covers collection's
+negative due-change flow and its sign under scaling. The nine initial
+BankRulesCheck failures were unfunded/stale-cap fixtures, including a probe
+that issued credit into the live conservation fixture. They now establish
+actual funding first, isolate the raw-collateral probe, use the real desired
+tranche at both rollovers and retain any reserve-capped old claim explicitly.
+BankRulesCheck exits **0**, including both deliberately broken-lender findings.
+The four first exact BankCheck failures were standalone fixtures billing a
+prospective foreign need with no actual foreign principal. They now establish
+native window/foreign funding before the bill, retain the frozen mix and
+assert the actual per-stock expense and full funding identity. Exact BankCheck
+exits **0**; no phantom funding fallback or tolerance change is introduced.
+
+The new due stock is appended to the central-bank save array after RES3's
+deferred principal. Its signed accrual-minus-collection flow is an appended
+Line, saved for current and last month; the balance-sheet row is appended
+too. Reset/scaling and both balance sheets include the claim. The bank
+reads one authoritative supplier, with no duplicate independently saved
+payable. MoneyAudit's monetary debit and the money statement use collected
+interest, while the income statement keeps accrued income/expense. Neither
+the cent tolerance nor the money-conservation law changes.
+
+The live central-bank capacity callback now supplies the collateral ceiling,
+separate from cash need; both Game principal settles explicitly request the
+bank's desk/NSFR-safe window tranche. This lets a due bill use spare good
+collateral, while a fully lent ceiling leaves the bill owed rather than
+inventing reserves. Native regressions cause that full-ceiling, zero-reserve
+case with actual foreign funding, later collection, and no second bill.
+
+★ Accrued interest also encumbers collateral for a discretionary new cash
+advance or a later principal rollover. The
+[Federal Reserve's Operating Circular 10, sections 2 and 6](https://www.frbservices.org/wp-content/uploads/082823-operating-circular-10.pdf)
+includes accrued unpaid interest in the secured obligations. Atomic
+refinancing of that already recorded bill instead uses spare principal
+capacity and immediately collects the same dollars: principal plus interest
+due is unchanged, issuance equals retirement, and no cash becomes available
+for another purchase. Subtracting the same due claim again in that atomic
+operation would count it twice. BankRulesCheck 3d causes both sides: a large
+old due prevents discretionary new cash, while a solvent bank with sufficient
+spare collateral refinances the whole smaller bill. Both pass, with exact
+money and no second expense.
+
+RES3's format/floor 67 stands. A compatible native 67 save with CBK3 keys or
+appended values absent reads defaults; genuine 66 is refused, including the
+original copied month-133 evidence. No restamp, conversion or loader bypass.
+The existing copied-city and 80-run figures above remain truthful historical
+measurements of `4ffbb65b2`, not measurements of the merged model. Actual-stock
+billing moves the model, so a fresh stranger's review/final-model ensemble
+must be settled before treating those records as current validation.
+
+Checks so far: first `--fast` exits 0 (compile 62s, maps regenerated, 0 firm
+and 210 soft Stale findings). Final BankRulesCheck and exact BankCheck exit
+**0**. Logs: `target/CBK3-res3-fast.txt`,
+`target/CBK3-res3-BankRulesCheck.txt`/`.log`,
+`target/CBK3-res3-BankCheck.log`; the initial red logs remain separately kept.
+
+MonetaryCheck exits **4** with one new assertion: the original seed 48213's
+3%/40% held-rate pair lowers inflation by 0.718475 percentage points, below
+the existing one-point floor. The source is unchanged from RES3 main; its
+other grid, slope, sign, timing, supply, rent and basket assertions pass.
+Helper `CBK3-monetary` first located the grocery shortage at the high rate,
+then owns a narrow replay of that same pair to observe the actual supply and
+credit constraints. The flag alone does not prove a legitimate effect. This
+red was owned, not assigned to a known-red row. The diagnosis and law below
+resolve its cause; the revised full harness still awaits validation.
+Initial log: `target/CBK3-res3-MonetaryCheck-first-red.log`.
+
+### The original monetary pair's physical supply countereffect
+
+Helper `CBK3-monetary` replayed only the original 48213, 3%/40% pair over its
+unchanged horizon. Two passively instrumented observations and a clean
+same-pair control return exactly equal complete native summaries, including
+floating-point bits, baskets, expected inflation, plans and the twelve
+original component/rent trace lines. All 660 parent sources and 2,658 compiled
+files remained unchanged. No grid, alternative fixture or passing-pin search.
+
+The first high-rate expansion decision in the window, m64, selects a staffable
+Convenience Store, but its expected monthly profit 0.016504268 is below even
+the least native tested interest hurdle 0.366696558. At m69 the borrower's
+asset/interest reserve clips the restock budget (3.348505158 against orders
+3.414453675); bank equity 973.642658 exceeds its target 71.220755 and minimum
+54.263433, and native credit/growth limits are infinite. This is not a bank
+capital refusal. At 40% every window month has actual window/deferred/due/
+foreign principal and their funding bill/collection all zero.
+
+The first actual shortage is m70. After seven loss months, the ordinary
+spare-capacity retirement rule sells one of five shops: its measured capacity
+895.868675 exceeds 1.25 times demand 661.738417; remaining measured capacity
+716.694940 exceeds its retained headroom 694.825338. The later sale's actual
+operating rate is lower, 0.327350479 (road 0.355029586, staff 0.950847458,
+health 0.969700425). Handover and supply are both 628.512920, below demand
+661.738417, while the shelf holds 1,506.326272 baskets. Every sale m70-84 is
+physically constrained with stock still available. From m73, insufficient
+land also prevents replacement. More restock money cannot fix these sales.
+The two phases are kept distinct; their operating rates are not interchanged.
+
+★ Restate the original one-town magnitude law to admit this proved supply
+countereffect, retaining the observed positive headline response and at least
+`TRANSMISSION_FLOOR` on its same complete physical basket with groceries at
+their observed native floors. The original assertion was
+`inflation[0] - inflation[n - 1] >= TRANSMISSION_FLOOR`. Its replacement also
+requires a smaller response to name actual capacity-limited sales, their
+upward clearing/markup response, the months carrying the closing price and an
+adverse scarcity contribution on the same basket. Native retained sale
+getters are read after every month. A shortage flag alone cannot pass it.
+Add the previously printed-only hard pooled headline effect of at least the
+same one-point floor on fixed paths 16-31. Keep every existing sign, slope,
+14-of-16, median, expectation, saving-plan, timing, paid-rent, supply, basket,
+reload and money guard. No model, seed, horizon, tolerance or policy changes.
+
+The exact common-basket effect is 0.720377970 points; at grocery floors it is
+2.339810930, an adverse scarcity offset of 1.619432960. Expected inflation
+falls 3.986827% to 2.730521%, spending-plan factor 1.023009 to 0.965161. The
+full first run's fixed-grid pooled headline response remains 1.625736 points.
+The supply and demand channels coexist: the
+[Bank of England's 2024 transmission account](https://www.bankofengland.co.uk/quarterly-bulletin/2024/2024/about-a-rate-of-general-interest-how-monetary-policy-transmits)
+describes state-dependent responses and investment costs;
+[ECB Lane, July 2023](https://www.ecb.europa.eu/press/key/date/2023/html/ecb.sp230712~d950906f00.en.html)
+distinguishes firms' cost-of-capital/production response from bank-credit
+amplification. [Core et al., ECB WP 3064](https://www.ecb.europa.eu/pub/pdf/scpwps/ecb.wp3064~4d72f7af90.en.pdf)
+find higher financing costs can sustain firms' prices and weaken disinflation.
+The paper is its authors' research, not ECB policy or a calibration for this
+40% city. The native operands above establish this particular model path.
+
+Kept reproducer: `../codex-CBK3-monetary/target/phase2/diagnosis.txt`,
+`verification.json`, `native-summaries.json`, `calculation.json`, `sale.csv`,
+`bank.csv`, phase JSONLs, six observational patches, hash manifests and
+`commands.txt`/`run.sh`. The committed `CBK3-monetary-sale.csv` keeps the
+deciding high-rate sales and the low-rate m70 comparison; the committed
+`CBK3-monetary-basket.json` keeps the price-decomposition operands.
+
 ## For the manual
 
 Use the Bank tab to choose the commercial bank or the central bank. The
@@ -1027,6 +1201,9 @@ The controls start at these values:
 The mortgage payment-coverage test still applies when the additional income
 multiple is off. New limits guide new credit decisions and funding rollovers;
 opening an older city preserves what it actually owed in the saved month.
+An interest bill that cannot yet be paid remains a liability of the bank
+and a receivable of the central bank. Payment waits for reserves or secured
+funding; collecting an older bill does not charge the expense again.
 The next settlement applies the new window rule. A remittance is the central
 bank's realised surplus after its costs and carried losses; no fixed share
 of the treasury's revenue is guaranteed or imposed.

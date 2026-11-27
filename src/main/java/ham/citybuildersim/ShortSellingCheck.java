@@ -558,6 +558,11 @@ public class ShortSellingCheck {
         double fairCity = cityEx.fair(f);
         cityEx.bookOf(f).withdrawAll();
         city.getFund().receive(10 * cityReg.getShares(f) * fairCity);
+        // The fixture trades between months, as no play does (the fund's own orders go into a month): the
+        // month clears these trades' lines as it opens, and the gains tax they assess goes in a window of its
+        // own, which the month's opening clears too. Filed as pending, it was paid now and lined next month.
+        HouseholdBalance taxBook = city.getHouseholdBalance();
+        taxBook.beginTaxMonth();
         // The fund comes to hold 4% of the company, bought from the cell that holds the most of it...
         double fundBuys = .04 * cityReg.getShares(f);
         String lenderName = Exchange.CELL + lender.key();
@@ -571,6 +576,7 @@ public class ShortSellingCheck {
         cityEx.tradeForCheck(f, Exchange.WORLD_SHORT, OrderBook.Side.SELL, at, want);
         double sold = filled(cityEx.tradeForCheck(f, Exchange.DESK, OrderBook.Side.BUY, at, want));
         cityEx.bookOf(f).withdrawAll();
+        taxBook.closeTaxMonth();
         assertTrue("fixture: the fund holds some of " + Equity.COMPANIES[f] + " and the world is short of it, to a desk with the means to buy",
                 fundGot > 0 && sold > 0 && cityEx.shortShares(f) == sold);
         out.printf("   %s: %,.0f shares in issue, the fund holds %,.0f, short %,.0f (%.2f%% of the shares outstanding)%n", Equity.COMPANIES[f],
@@ -1381,8 +1387,8 @@ public class ShortSellingCheck {
         Exchange ex = city.getExchange();
         HouseholdBalance hb = city.getHouseholdBalance();
         MoneyAudit.Result monthBefore = city.getLastMoneyAudit();
-        // The company the cells hold most of by value, and the ordinary cell holding most of it: it sells half to the world and buys a quarter
-        // back with what it was paid (the town's savers are poor beside what its shares are worth, and the purchase has to show on the outflow).
+        // The company the cells hold most of by value, and the ordinary cell holding most of it: it sells half to the world (RES3: or more, as the
+        // month's flows ask, below) and buys half of that back with what it was paid (the town's savers are poor beside what its shares are worth, and the purchase has to show on the outflow).
         int c = -1;
         double most = 0;
         for (int k = 0; k < Equity.COMPANIES.length; k++) {
@@ -1402,8 +1408,9 @@ public class ShortSellingCheck {
         final Household cell = seller;
         // [0, 1] the month's two figures before the fixture's trades; [2, 3] the shares each filled; [4, 5] the figures' rise; [6, 7] the cell's
         // savings' change at the sale and at the purchase; [8] the world's holding's; [9] the price; [10, 11] the quantities asked; [12] the
-        // capital-gains tax the sale paid (HouseholdBalance.sellShares(): the gain over the basis, taxed as it is realised).
-        double[] seen = new double[13];
+        // capital-gains tax the sale paid (HouseholdBalance.sellShares(): the gain over the basis, taxed as it is realised); [13] the share of its
+        // holding the cell sold (RES3: half, or more when the month's own flows ask it, so the purchase is OVER_THE_MONTH times the larger of them).
+        double[] seen = new double[14];
         city.settleProbeForTest = after -> {
             if (after) return;
             seen[0] = ex.getHouseholdsSoldAbroad();
@@ -1412,7 +1419,14 @@ public class ShortSellingCheck {
             double bid = ex.bestBid(f), ask = ex.bestAsk(f);
             double p = !Double.isNaN(bid) && !Double.isNaN(ask) ? (bid + ask) / 2
                     : !Double.isNaN(bid) ? 1.05 * bid : !Double.isNaN(ask) ? .95 * ask : ex.price(f);
-            double q1 = .5 * cell.shares[f] * cell.households(), q2 = .5 * q1;
+            // RES3: the old size was half the cell's holding, whatever the town's flows: at 0.9.212 the purchase (a quarter of it) was 3.1 times the
+            // month's outflow, not 5. The sale is sized from the month's own measured flows: its half, the purchase, is one multiple more than
+            // OVER_THE_MONTH of the larger of them (the sale then over it twice as far), and never less than the half it always was nor more than the holding.
+            double holding = cell.shares[f] * cell.households();
+            double flow = Math.max(monthBefore.financialIn, monthBefore.financialOut);
+            double fraction = Math.min(1, Math.max(.5, 2 * (OVER_THE_MONTH + 1) * flow / (p * holding)));
+            double q1 = fraction * holding, q2 = .5 * q1;
+            seen[13] = fraction;
             double savings = cell.savings, abroad = reg.getForeignShares(f);
             ex.tradeForCheck(f, Exchange.WORLD, OrderBook.Side.BUY, p, q1);
             double taxed = hb.getCapitalGainsTax();
@@ -1436,7 +1450,9 @@ public class ShortSellingCheck {
         MoneyAudit.Result a = city.getLastMoneyAudit();
         double p = seen[9], q1 = seen[10], q2 = seen[11];
         assertTrue("fixture: no cell had traded a share with the world that month before the fixture's two trades", seen[0] == 0 && seen[1] == 0);
-        close("fixture: a cell sold the world half its " + Equity.COMPANIES[f] + " at $" + String.format("%.4f", p) + ", inside the spread", seen[2], q1, 1e-9 * q1);
+        // RES3: the old label was "fixture: a cell sold the world half its <company> at $<price>, inside the spread"; the sale is now sized from the month's
+        // flows (half the holding or more), so the label says what share of its holding the cell sold.
+        close("fixture: a cell sold the world " + String.format("%.1f%%", 100 * seen[13]) + " of its " + Equity.COMPANIES[f] + " at $" + String.format("%.4f", p) + ", inside the spread", seen[2], q1, 1e-9 * q1);
         close("...and the exchange's sale abroad rose by it, at that price", seen[4], q1 * p, 1e-9 * q1 * p);
         out.printf("   the sale's capital-gains tax $%,.4f%n", seen[12]);
         close("...the money in its savings, less the capital-gains tax on its gain (R1g: the town moved, and the cell sells at a gain)",

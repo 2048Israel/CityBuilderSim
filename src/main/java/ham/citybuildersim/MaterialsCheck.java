@@ -1809,6 +1809,11 @@ public class MaterialsCheck {
         return b.getQuantity(rod.getId()) + b.underConstructionByName(rod.getName());
     }
 
+    /** Whether Copper Refining is barred from borrowing (a default's ban, BusinessDebtManager.restructure()). */
+    static boolean barred(Game g) {
+        return g.getEconomyManager().getBusinessDebtManager().isBorrowingBlocked(Sectors.COPPER_REFINING);
+    }
+
     /** What Copper Refining owes, loans and bonds. */
     static double refiningDebt(Game g) {
         return g.getEconomyManager().getBusinessDebtManager().getPrincipal(Sectors.COPPER_REFINING);
@@ -1852,10 +1857,18 @@ public class MaterialsCheck {
                 calm, String.format("a Rod Mill's best month earns D$%,.1fk against a hurdle of D$%,.1fk or more", worst, lowestHurdle));
 
         // THE SPIKE MONTH: rod pays for one month.
+        // ...with Copper Refining holding D$20,000k to carry its refinery through the year (RES3): the town at the spike outgrows the founding grid, so the
+        // industrial tariff the lone Electrolytic Refinery pays is nearly five times the founding's, it loses through it, stands idle, is sold by the idle rule
+        // in the sixth paying month, and the sector defaults on the loan that built it and is barred from borrowing for a year - and a barred sector is refused
+        // every Rod Mill for want of credit, which is no word of the year. The subject is the year's mean against the month's, so the city, its twin and the
+        // held planner's town are each given the till (the money gate's hurdle is struck on a Rod Mill's whole cost, so the till moves no hurdle).
+        for (Game x : new Game[] { g, twin, h }) x.getEconomyManager().setSectorCash(Sectors.COPPER_REFINING, 20_000);
+        boolean unbarred = true;
         rodMonth(g, true);
         monthAlone(twin, true);
         rodMonth(h, true);
         handWorkers(h);
+        unbarred &= !barred(g) && !barred(twin) && !barred(h);
         SpreadPlanner.Candidate c = candidate(hr.appraise(hp, h), rod);
         SpreadPlanner.Candidate best = SpreadPlanner.best(hr.appraise(hp, h));
         double hurdle = hr.planner().hurdle(hr, hp, h, rod, 1, c.cost());
@@ -1864,37 +1877,62 @@ public class MaterialsCheck {
         report("premise: in the spike month the month alone passes every gate - the planner's best is a Rod Mill - and the town on main's rule orders one",
                 best != null && best.template().getId() == rod.getId() && c.passes() && c.earns() > hurdle && rodMills(twin) > 0,
                 String.format("the month earns D$%,.1fk against a hurdle of D$%,.1fk; its twin has %d Rod Mills", c.earns(), hurdle, rodMills(twin)));
-        report("CY1: its year's mean is under the hurdle, so the plan orders no Rod Mill, and its words give the year: its mean over its last months against the month's",
-                year < hurdle && !(d.build && d.template.getId() == rod.getId()) && d.reason != null && d.reason.contains("its mean over its last " + hr.planner().marginMonths(kind)
-                        + " months"),
+        report("CY1: its year's mean is under the hurdle, so the plan orders no Rod Mill",
+                year < hurdle && !(d.build && d.template.getId() == rod.getId()) && d.reason != null,
                 String.format("mean D$%,.1fk over %d months against D$%,.1fk; \"%s\"", year, hr.planner().marginMonths(kind), hurdle, d.reason));
+        // ...the plan's words name its best-fed candidate, which is the Smelter, not the Rod Mill (the planner exposes no word of a candidate but the best's),
+        // so the Rod Mill's own refusal is read as the plan reads it: its gates asked again on the lesser of its month's earnings and its year's mean.
+        SpreadPlanner.Candidate onYear = SpreadPlanner.judge(rod, SpreadPlanner.lesser(c.earns(), year), c.cost(), c.refusal(SpreadPlanner.Gate.FEED),
+                hr.planner().city(hr, hp, h), c.with());
+        String owns = onYear.refusal(SpreadPlanner.Gate.MONEY);
+        report("...and the Rod Mill's own refusal gives the year, not the month: asked on the lesser of the two it would lose its year's mean a month, though the month alone earns D$"
+                        + String.format("%,.1fk", c.earns()),
+                hr.planner().marginMonths(kind) == n && year < c.earns() && owns != null && owns.contains("would lose " + Currency.writing().write(String.format("%,.1fk", -year)))
+                        && !owns.contains(Currency.writing().write(String.format("%,.1fk", c.earns()))),
+                String.format("over its last %d months: \"%s\"", hr.planner().marginMonths(kind), owns));
         report("...and the city orders none that month, as it had none before", rodMills(g) == 0 && refiningDebt(g) <= refiningDebt(twin),
                 String.format("%d Rod Mills; debt D$%,.0fk against its twin's D$%,.0fk", rodMills(g), refiningDebt(g), refiningDebt(twin)));
 
         // THE OTHER SIDE: rod keeps paying, and the year comes to pass.
         int orderedAt = 0, plansAt = 0, waited = 0, passesAlone = 1;
+        String orderWords = null;
+        double monthThen = Double.NaN, yearThen = Double.NaN;
         boolean underWhileWaiting = year < hurdle;
         for (int k = 2; k <= n; k++) {
             rodMonth(g, true);
+            unbarred &= !barred(g);
             if (orderedAt == 0 && rodMills(g) > 0) orderedAt = k;
             if (plansAt == 0) {
                 rodMonth(h, true);
+                unbarred &= !barred(h);
                 handWorkers(h);
                 c = candidate(hr.appraise(hp, h), rod);
                 hurdle = hr.planner().hurdle(hr, hp, h, rod, 1, c.cost());
                 d = hr.plan(hp, h);
                 year = hr.planner().marginOverYear(kind);
-                if (d.build && d.template.getId() == rod.getId()) plansAt = k;
-                else {
+                if (d.build && d.template.getId() == rod.getId()) {
+                    plansAt = k;
+                    orderWords = d.reason;
+                    monthThen = c.earns();
+                    yearThen = year;
+                } else {
                     waited++;
                     if (c.passes()) passesAlone++;
                     underWhileWaiting &= year < hurdle;
                 }
             }
         }
+        report("fixture: Copper Refining is not barred from borrowing in the spike month or any paying month after it, in the city, its twin or the held town,"
+                        + " so a Rod Mill is refused or ordered on its earnings and not on its sector's credit", unbarred,
+                String.format("barred now: city %s, twin %s, held %s", barred(g), barred(twin), barred(h)));
         report("the order waits for the year: with rod paying on, the city orders its first Rod Mill after the spike month and within TRAILING_MONTHS (" + n + ") paying months",
                 orderedAt > 1 && orderedAt <= n && rodMills(g) > 0, String.format("ordered in paying month %d of %d; %d Rod Mills, debt D$%,.0fk", orderedAt, n,
                         rodMills(g), refiningDebt(g)));
+        report("...and the plan's words for that order give the year: the Rod Mill earns its mean over its last " + n + " months, against the month's",
+                orderWords != null && orderWords.startsWith("a Rod Mill earns " + Currency.writing().write(String.format("%,.1fk", yearThen)))
+                        && orderWords.contains("its mean over its last " + hr.planner().marginMonths(kind) + " months (" + Currency.writing().write(String.format("%,.1fk", monthThen))
+                        + " this month)") && yearThen < monthThen,
+                String.format("\"%s\"", orderWords));
         report("...and the held planner agrees: until the month it plans one, every paying month passes alone and its year's mean sits under the hurdle",
                 plansAt > 1 && plansAt <= n && passesAlone == waited + 1 && underWhileWaiting,
                 String.format("plans one in paying month %d; %d months it declined, each passing alone and with its year under the hurdle", plansAt, waited + 1));

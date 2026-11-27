@@ -24,6 +24,11 @@ public final class CapitalGainsCheck {
         check(label + " (" + got + " / " + want + ")", ok);
     }
 
+    /** RES3: ...for a difference of two large totals, whose own doubles lie farther apart than close()'s floor: the caller names the tolerance, scaled by the totals subtracted. */
+    static void close(String label, double got, double want, double tolerance) {
+        check(label + " (" + got + " / " + want + ", tolerance " + tolerance + ")", Math.abs(got - want) <= tolerance);
+    }
+
     static void quietly(Runnable action) {
         PrintStream before = System.out;
         System.setOut(quiet);
@@ -684,7 +689,9 @@ public final class CapitalGainsCheck {
         check(label + " the native default releases positive actual cost", lostCost > 0);
         close(label + " half the actual defaulted lot cost is released", lostCost, beforeLot.acb() / 2);
         close(label + " default loss is realized on the existing lot", beforeLot.realized() - lot.realized(), lostCost);
-        close(label + " default releases matching aggregate held cost", heldCost - owner.getLedger().acbHeld(), lostCost);
+        // RES3: the old label was " default releases matching aggregate held cost (got / want)", held to close()'s 1e-9 floor; the two totals subtracted are about 2.8e7,
+        // whose doubles lie about 3.7e-9 apart, so the difference is held to the tolerance of heldCost's size (the label now also prints it).
+        close(label + " default releases matching aggregate held cost", heldCost - owner.getLedger().acbHeld(), lostCost, MoneyAudit.tolerance(1e-9, heldCost));
         close(label + " default records matching cost out", lot.acbOut() - beforeLot.acbOut(), lostCost);
         close(label + " default invents no disposal proceeds", lot.proceeds(), beforeLot.proceeds());
         close(label + " default loss enters its exact pending slot", afterLoss.pending[lossSlot] - beforeLoss.pending[lossSlot], lostCost);

@@ -5139,6 +5139,7 @@ public class BuildingManager {
                 .setCapacity((int) (Substations.SUBSTATION_MW * 1000)).setLandSqFt(217800).setRoadLoad(140)
                 .setJobs(JobType.DIPLOMA, 100).setJobs(JobType.COLLEGE_ENGINEERING, 30)
                 .setJobs(JobType.UNIV_HIGHTECH_ENG, 10).setSince(1900).setId(Substations.ID));
+        HousingForms.installFallback(templates);
 
         /* ------------------------------------------------------------------
            THE POWER PLANTS AND THEIR FUELS (PW2, ids 167 to 171; RES3 takes

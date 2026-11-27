@@ -728,7 +728,8 @@ public class DiscoveryCheck {
         check("a template dated by PE11 (the Small Cracking Unit and the Cracking Unit, ids 79 and 80) is known here from the month PE11 was found, and history's reading is not",
                 byId(shipped, 79).knownAt(pe11, r) && !byId(shipped, 79).knownAt(pe11 - 1, r) && !byId(shipped, 79).knownAt(pe11) && byId(shipped, 80).knownAt(pe11, r)
                         && !byId(shipped, 80).knownAt(pe11));
-        check("...and an undated row stays known from the first month", byId(shipped, 0).knownAt(1) && byId(shipped, 0).knownAt(1, r) && byId(shipped, 0).getSinceText().isEmpty());
+        BuildingsTemplate undatedRoad = shipped.stream().filter(t -> t.getName().equals("Gravel Road")).findFirst().orElseThrow();
+        check("...and an undated row stays known from the first month", undatedRoad.knownAt(1) && undatedRoad.knownAt(1, r) && undatedRoad.getSinceText().isEmpty());
 
         check("the pure cores agree: the tractor recipe may be run by the fitted part in month " + pe14 + " with the research and not without it, nor with an empty one",
                 Recipes.canRun(grain, tractorRecipe, true, pe14, r) && !Recipes.canRun(grain, tractorRecipe, true, pe14) && !Recipes.canRun(grain, tractorRecipe, true, pe14, null)

@@ -1,4 +1,4 @@
-# BankScreen.java - 4,832 lines · 184 methods · 27 constants · interface
+# BankScreen.java - 4,833 lines · 184 methods · 27 constants · interface
 
 `ham/citybuildersim/ui/BankScreen.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -94,50 +94,50 @@
 | 2147 | · · the last twelve months |
 | 2168 | · · as ratios |
 | 2313 | BALANCE SHEET (0.7.13) |
-| 2641 | · beside the sheet |
-| 2680 | · its equity in parts |
-| 2748 | · the statement, under details |
-| 2759 | · · what it owns |
-| 2785 | · · what it owes |
-| 2802 | · · what is left |
-| 2834 | · · beside the sheet |
-| 2866 | LENDING |
-| 2931 | · the book |
-| 2981 | · the borrowers |
-| 3206 | · set aside, written off |
-| 3237 | · how the next loan is priced |
-| 3288 | · the tables, under details |
-| 3299 | · · the businesses |
-| 3352 | · · who has stopped paying |
-| 3396 | · · what it lent this month |
-| 3412 | · · how the next loan is priced |
-| 3465 | · · what the book weighs |
-| 3495 | · · what concentration costs (0.7.12) |
-| 3582 | FUNDING |
-| 3707 | · the three cards |
-| 3807 | · the branches |
-| 3930 | · the lines, under details |
-| 3936 | · · what is banked |
-| 3945 | · · what it can lend against (0.7.19) |
-| 3953 | · · what it pays savers |
-| 3971 | · · its account at the central bank |
-| 3987 | · · how it is funded |
-| 3998 | · · what it can carry |
-| 4020 | · · its branches |
-| 4057 | CAPITAL & OWNERS |
-| 4170 | · payout, and how its equity moved |
-| 4255 | · rescues, and the city's preferred |
-| 4323 | · the lines, under details |
-| 4330 | · · its capital |
-| 4344 | · · ...and against everything it has lent (0.7.11, round 2) |
-| 4355 | · · what it does with its profit |
-| 4376 | · · how its equity moved |
-| 4415 | · · its owners |
-| 4421 | · · its rescues |
-| 4442 | · · the city's preferred |
-| 4465 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
-| 4527 | THE BANK ASKS FOR PREFERRED (0.7.14) |
-| 4635 | HISTORY |
+| 2642 | · beside the sheet |
+| 2681 | · its equity in parts |
+| 2749 | · the statement, under details |
+| 2760 | · · what it owns |
+| 2786 | · · what it owes |
+| 2803 | · · what is left |
+| 2835 | · · beside the sheet |
+| 2867 | LENDING |
+| 2932 | · the book |
+| 2982 | · the borrowers |
+| 3207 | · set aside, written off |
+| 3238 | · how the next loan is priced |
+| 3289 | · the tables, under details |
+| 3300 | · · the businesses |
+| 3353 | · · who has stopped paying |
+| 3397 | · · what it lent this month |
+| 3413 | · · how the next loan is priced |
+| 3466 | · · what the book weighs |
+| 3496 | · · what concentration costs (0.7.12) |
+| 3583 | FUNDING |
+| 3708 | · the three cards |
+| 3808 | · the branches |
+| 3931 | · the lines, under details |
+| 3937 | · · what is banked |
+| 3946 | · · what it can lend against (0.7.19) |
+| 3954 | · · what it pays savers |
+| 3972 | · · its account at the central bank |
+| 3988 | · · how it is funded |
+| 3999 | · · what it can carry |
+| 4021 | · · its branches |
+| 4058 | CAPITAL & OWNERS |
+| 4171 | · payout, and how its equity moved |
+| 4256 | · rescues, and the city's preferred |
+| 4324 | · the lines, under details |
+| 4331 | · · its capital |
+| 4345 | · · ...and against everything it has lent (0.7.11, round 2) |
+| 4356 | · · what it does with its profit |
+| 4377 | · · how its equity moved |
+| 4416 | · · its owners |
+| 4422 | · · its rescues |
+| 4443 | · · the city's preferred |
+| 4466 | THE RESCUE, WHEREVER THE PLAYER IS LOOKING. |
+| 4528 | THE BANK ASKS FOR PREFERRED (0.7.14) |
+| 4636 | HISTORY |
 
 ## Constants
 
@@ -163,13 +163,13 @@
 | 1883 | `BankScreen.RATIOS_INFO` | `"The margin is what it charges less what it pays for its money, on everything...` | The ratios' note (Profit 874), behind MARGIN's and COSTS' (i). |
 | 2356 | `BankScreen.OWNS` | `List.of(new SheetPart(Bank.Sheet.BUSINESS_LOANS, "Loans to the businesses", P...` | What it owns, in the bars' order (the spec's section 3): the businesses' loans first, its reserves last; the allowance is the net tick. |
 | 2368 | `BankScreen.OWES` | `List.of(new SheetPart(Bank.Sheet.DEPOSIT_FUNDING, "Net funding outside settle...` | ...and what it owes, then its owners' (equity last). |
-| 2644 | `BankScreen.BESIDE_INFO` | `"Counted for what it can lend and not held on its sheet in full: the families...` | BESIDE THE SHEET's (i) (Balance sheet 1161). |
-| 2956 | `BankScreen.BOOK_INFO` | `"Everything it has lent, by who owes it: the businesses' loans and the bonds ...` | Who-owes-it note (Lending 1225), behind THE BOOK's (i). |
-| 3617 | `BankScreen.LEND_AGAINST_INFO` | `"Savings reach the bank wherever its branches are - online - so it lends " + ...` | What it can lend against (Funding 1681), behind the banked bar's (i). |
-| 4107 | `BankScreen.STAKE_INFO` | `"A resolution makes every share the city's, in its fund's rescue book, which ...` | The city's stake's note (Capital 2002). |
-| 4202 | `BankScreen.MOVED_INFO` | `"Equity moves by what it earned, what it was given and what it paid out, and ...` | The equity's note (Capital 1990): Jerus's rule on a plug. |
-| 4258 | `BankScreen.RESCUES_INFO` | `"When a bank loses more than it owns, the city resolves it: the old owners lo...` | The rescues' note (Capital 2027). |
-| 4484 | `BankScreen.RESCUE_INFO` | `"Its owners lose everything: the households' shares and the world's pass to t...` | The rescue's note (Rescue 2119). |
+| 2645 | `BankScreen.BESIDE_INFO` | `"Counted for what it can lend and not held on its sheet in full: the families...` | BESIDE THE SHEET's (i) (Balance sheet 1161). |
+| 2957 | `BankScreen.BOOK_INFO` | `"Everything it has lent, by who owes it: the businesses' loans and the bonds ...` | Who-owes-it note (Lending 1225), behind THE BOOK's (i). |
+| 3618 | `BankScreen.LEND_AGAINST_INFO` | `"Savings reach the bank wherever its branches are - online - so it lends " + ...` | What it can lend against (Funding 1681), behind the banked bar's (i). |
+| 4108 | `BankScreen.STAKE_INFO` | `"A resolution makes every share the city's, in its fund's rescue book, which ...` | The city's stake's note (Capital 2002). |
+| 4203 | `BankScreen.MOVED_INFO` | `"Equity moves by what it earned, what it was given and what it paid out, and ...` | The equity's note (Capital 1990): Jerus's rule on a plug. |
+| 4259 | `BankScreen.RESCUES_INFO` | `"When a bank loses more than it owns, the city resolves it: the old owners lo...` | The rescues' note (Capital 2027). |
+| 4485 | `BankScreen.RESCUE_INFO` | `"Its owners lose everything: the households' shares and the world's pass to t...` | The rescue's note (Rescue 2119). |
 
 ## Fields (state)
 
@@ -193,7 +193,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 92 | 4741 | **type** `final class BankScreen` | The bank tab: whether the city's bank is healthy and what it charges, on an Overview - its state in a sentence, its capital in its band, eight figures and the ladder of its rates drawn in their parts - with its profit... |
+| 92 | 4742 | **type** `final class BankScreen` | The bank tab: whether the city's bank is healthy and what it charges, on an Overview - its state in a sentence, its capital in its band, eight figures and the ladder of its rates drawn in their parts - with its profit... |
 | 97 | 4 | `BankScreen(UserInterface ui)` |  |
 | 109 | 3 | `void forget()` | Every node is made new at the next draw - the History charts with them: another city opened (UserInterface.anotherCity()). |
 
@@ -394,7 +394,7 @@
 | 2203 | 4 | `void year(VBox column, Bank bank, String label, Bank.Line which, boolean out)` | One line of the year, negated for money going out. |
 | 2217 | 95 | `VBox deskDetail(Bank bank)` | THE TRADING DESK, opened (2026-09-18, and so it foots). |
 
-### BALANCE SHEET (0.7.13) (lines 2313-2640)
+### BALANCE SHEET (0.7.13) (lines 2313-2641)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -409,175 +409,175 @@
 | 2506 | 39 | `Node legendRow(Bank bank, SheetPart p, boolean known)` | One line of the key: its swatch, its name with its sentence behind an (i), its figure now and its move on a year ago; the loans and the interim financing open by sector in place. |
 | 2547 | 11 | `Node legendTotal(String label, double now, double then, boolean known)` | A total under a column of the key. |
 | 2560 | 21 | `VBox bySector(Bank bank, Bank.Sheet line, boolean known)` | The loans or the interim financing by sector, this month and a year ago - null for a line that does not open. |
-| 2583 | 57 | `String sheetSaid(Bank bank, Bank.Sheet line)` | Each line's sentence (the statement's said()s, Balance sheet 1029-1130): the key's (i)s and the statement's openings. |
+| 2583 | 58 | `String sheetSaid(Bank bank, Bank.Sheet line)` | Each line's sentence (the statement's said()s, Balance sheet 1029-1130): the key's (i)s and the statement's openings. |
 
-### beside the sheet (lines 2641-2679)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2650 | 29 | `VBox besideTheSheet(Bank bank)` | BESIDE THE SHEET: the city's own deposits as one bar, what it has lent on them, and how big they are against the sheet. |
-
-### its equity in parts (lines 2680-2747)
+### beside the sheet (lines 2642-2680)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2683 | 57 | `VBox equityParts(Bank bank)` | ITS EQUITY IN PARTS: the city's preferred, paid in and retained, now and a year ago, on one scale; a part below nothing drawn leftward in the spent grey. |
-| 2742 | 5 | `private static Pieces.RankBar rank(double amount, double pos, double neg, String colour)` | A bar of the equity's parts on the card's one scale, kept: told its figures. |
+| 2651 | 29 | `VBox besideTheSheet(Bank bank)` | BESIDE THE SHEET: the city's own deposits as one bar, what it has lent on them, and how big they are against the sheet. |
 
-### the statement, under details (lines 2748-2865)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2751 | 100 | `VBox sheetStatement(Bank bank)` | The balance sheet as the page printed it until 0.7.33, verbatim (the spec's B1-B7, D15). |
-| 2853 | 3 | `VBox sheetLine(Bank bank, String label, Bank.Sheet line, boolean known, VBox detail)` | One line of the balance sheet, this month and a year ago, opening into its detail. |
-| 2857 | 3 | `VBox sheetLine(Bank bank, String label, Bank.Sheet line, boolean known, VBox detail, String word)` |  |
-| 2862 | 3 | `static VBox said(String text)` | A line's detail that is a sentence. |
-
-### LENDING (lines 2866-2930)
+### its equity in parts (lines 2681-2748)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2884 | 20 | `void lendingPage(VBox page)` |  |
-| 2906 | 7 | `String stanceInfo(Bank bank)` | The capital-lets-it-lend note (Lending 1449), behind the stance chip's (i). |
-| 2915 | 15 | `HBox stanceRow(Bank bank)` | What its capital lets it lend: Bank.lendingStance() as a chip and its line, and the growth it allows when it is finite. |
+| 2684 | 57 | `VBox equityParts(Bank bank)` | ITS EQUITY IN PARTS: the city's preferred, paid in and retained, now and a year ago, on one scale; a part below nothing drawn leftward in the spent grey. |
+| 2743 | 5 | `private static Pieces.RankBar rank(double amount, double pos, double neg, String colour)` | A bar of the equity's parts on the card's one scale, kept: told its figures. |
 
-### the book (lines 2931-2980)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2934 | 1 | **type** `record BookPart(String name, double amount, String colour)` | One borrower's part of the book (pure). |
-| 2937 | 17 | `List<BookPart> bookParts()` | THE BOOK by borrower (pure): the sheet's loan lines, the bonds among them, so they foot to Bank.getBook() (B3). |
-| 2962 | 18 | `VBox bookCard(Bank bank)` |  |
-
-### the borrowers (lines 2981-3205)
+### the statement, under details (lines 2749-2866)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2984 | 3 | **type** `record Borrower(String key, boolean shut, int blockedMonths, double rate, double spread, double owesBank, d...` | One business as its card shows it (pure: the probe reads them). |
-| 2989 | 21 | `List<Borrower> borrowers()` | The businesses the old table listed (Lending 1243): owing, shut out, set aside against, or written off this month. |
-| 3012 | 20 | `static String borrowersInfo()` | The businesses' note (Lending 1280): its short line on the section's head, and the whole behind its (i). |
-| 3034 | 32 | `VBox borrowersSection(Bank bank)` | THE BORROWERS: a card a business, then the landlords, the families and the carry trade, three to a row. |
-| 3068 | 63 | `VBox borrowerCard(Borrower b)` | One business as a card: its rate over prime, what it owes the bank and of its bonds, its leverage on its scale, its default rate, its chips; a click opens its Cash & debt page. |
-| 3133 | 36 | `VBox landlordsCard(Bank bank)` | THE LANDLORDS: their insured mortgages (Lending 1309-1344), part of what the businesses owe. |
-| 3171 | 20 | `VBox familiesCard(Bank bank)` | THE FAMILIES: their credit lines (Lending 1347-1369), shown while they owe or something is set aside. |
-| 3193 | 12 | `VBox carryCard(Bank bank)` | THE CARRY TRADE: what foreigners have borrowed here to hold abroad (the Overview's rung, Balance sheet's line). |
+| 2752 | 100 | `VBox sheetStatement(Bank bank)` | The balance sheet as the page printed it until 0.7.33, verbatim (the spec's B1-B7, D15). |
+| 2854 | 3 | `VBox sheetLine(Bank bank, String label, Bank.Sheet line, boolean known, VBox detail)` | One line of the balance sheet, this month and a year ago, opening into its detail. |
+| 2858 | 3 | `VBox sheetLine(Bank bank, String label, Bank.Sheet line, boolean known, VBox detail, String word)` |  |
+| 2863 | 3 | `static VBox said(String text)` | A line's detail that is a sentence. |
 
-### set aside, written off (lines 3206-3236)
+### LENDING (lines 2867-2931)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3208 | 16 | `VBox setAsideCard(Bank bank)` |  |
-| 3225 | 11 | `VBox writtenOffCard(Bank bank)` |  |
+| 2885 | 20 | `void lendingPage(VBox page)` |  |
+| 2907 | 7 | `String stanceInfo(Bank bank)` | The capital-lets-it-lend note (Lending 1449), behind the stance chip's (i). |
+| 2916 | 15 | `HBox stanceRow(Bank bank)` | What its capital lets it lend: Bank.lendingStance() as a chip and its line, and the growth it allows when it is finite. |
 
-### how the next loan is priced (lines 3237-3287)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3240 | 20 | `String pricingInfo(Bank bank)` | Prime's note and the quotes' note (Lending 1470, 1515), behind HOW THE NEXT LOAN IS PRICED's (i). |
-| 3262 | 25 | `VBox pricingCard(Bank bank)` | HOW THE NEXT LOAN IS PRICED: prime as its four parts, each named, then a row a borrower. |
-
-### the tables, under details (lines 3288-3581)
+### the book (lines 2932-2981)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3295 | 235 | `VBox lendingTables(Bank bank)` | The old page's tables and lines, verbatim (the spec's N2, N6, N7, N9, N11; D15), with B9's fix - the businesses' first column is what each owes THE BANK - and B2's: no green or amber on what is not a verdict. |
-| 3532 | 12 | `static String bookName(Bank.Book book)` | What the weight table calls each book. |
-| 3546 | 35 | `VBox bondsHeld(Bank bank)` | THE BUSINESSES' BONDS IT HOLDS (0.7.12), verbatim, under their own fold - the Overview's bond rungs open it. |
+| 2935 | 1 | **type** `record BookPart(String name, double amount, String colour)` | One borrower's part of the book (pure). |
+| 2938 | 17 | `List<BookPart> bookParts()` | THE BOOK by borrower (pure): the sheet's loan lines, the bonds among them, so they foot to Bank.getBook() (B3). |
+| 2963 | 18 | `VBox bookCard(Bank bank)` |  |
 
-### FUNDING (lines 3582-3706)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3600 | 15 | `void fundingPage(VBox page)` |  |
-| 3622 | 2 | **type** `record FundingBars(List<Segment> banked, List<Tick> bankedTicks, List<Segment> funds, String bankedWords, S...` | The two bars worked out without drawing them (pure: the probe reads them). |
-| 3626 | 38 | `FundingBars fundingBars()` | WHAT THE CITY HAS BANKED and WHAT FUNDS ITS BOOK (pure), each on its own scale. |
-| 3666 | 28 | `VBox fundingHero(Bank bank, Bank.Ladder l)` | The hero: the two bars, each with its words at the left and its key under it. |
-| 3696 | 10 | `static HBox fundingRow(String words, Node bar)` | One of the hero's rows: its words in a column at the left, the bar taking the rest. |
-
-### the three cards (lines 3707-3806)
+### the borrowers (lines 2982-3206)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3710 | 6 | `static String saversShareInfo()` | What savers are paid's note (Funding 1712). |
-| 3718 | 21 | `VBox saversCard(Bank bank, Bank.Ladder l)` | SAVERS: the policy rate, the share its funding asks it to pass on, the rate it chose and what it paid - a ladder of four - and what that paid this month. |
-| 3741 | 5 | `static VBox saversStep(String what, String figure, String under)` | One step of the savers' ladder: its words over its figure. |
-| 3748 | 15 | `VBox centralBankCard(Bank bank, Bank.Ladder l)` | THE CENTRAL BANK: its reserves there and what they earned, and what it borrowed overnight and what that cost - red while it borrows. |
-| 3765 | 32 | `VBox canCarryCard(Bank bank)` | WHAT IT CAN CARRY: what its capital carries and what its deposits carry on one scale, the tighter marked BINDS, its weighed book against them, and how full that is. |
-| 3799 | 7 | `static VBox carryLine(String words, double amount, double scale, boolean binds, List<Tick> ticks)` | One of what it can carry's two bars: its words, the bar on the card's scale with the book's weight ticked, and BINDS on the tighter. |
+| 2985 | 3 | **type** `record Borrower(String key, boolean shut, int blockedMonths, double rate, double spread, double owesBank, d...` | One business as its card shows it (pure: the probe reads them). |
+| 2990 | 21 | `List<Borrower> borrowers()` | The businesses the old table listed (Lending 1243): owing, shut out, set aside against, or written off this month. |
+| 3013 | 20 | `static String borrowersInfo()` | The businesses' note (Lending 1280): its short line on the section's head, and the whole behind its (i). |
+| 3035 | 32 | `VBox borrowersSection(Bank bank)` | THE BORROWERS: a card a business, then the landlords, the families and the carry trade, three to a row. |
+| 3069 | 63 | `VBox borrowerCard(Borrower b)` | One business as a card: its rate over prime, what it owes the bank and of its bonds, its leverage on its scale, its default rate, its chips; a click opens its Cash & debt page. |
+| 3134 | 36 | `VBox landlordsCard(Bank bank)` | THE LANDLORDS: their insured mortgages (Lending 1309-1344), part of what the businesses owe. |
+| 3172 | 20 | `VBox familiesCard(Bank bank)` | THE FAMILIES: their credit lines (Lending 1347-1369), shown while they owe or something is set aside. |
+| 3194 | 12 | `VBox carryCard(Bank bank)` | THE CARRY TRADE: what foreigners have borrowed here to hold abroad (the Overview's rung, Balance sheet's line). |
 
-### the branches (lines 3807-3929)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3810 | 1 | **type** `record Verdict(String words, String tone, boolean build)` | The branch verdict worked out without drawing it (pure: the probe reads it, BankCheck asserts the planner it reads). |
-| 3819 | 8 | `Verdict branchVerdict()` | WOULD ANOTHER ONE PAY? |
-| 3829 | 14 | `String branchesInfo()` | The branches' notes (Funding 1801, 1848): a branch's cost, and the test run the other way. |
-| 3851 | 68 | `VBox branchesCard(Bank bank)` | ITS BRANCHES, BY THEIR CUSTOMERS (0.7.19) as a card: the customers a branch against what one serves as a ring; a branch's fees against what one past the first costs; the two questions, the investors' verdict, whether ... |
-| 3921 | 8 | `static HBox question(String words, boolean yes)` | One of the branch questions: a tick or a cross, and the words. |
-
-### the lines, under details (lines 3930-4056)
+### set aside, written off (lines 3207-3237)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3933 | 123 | `VBox fundingLines(Bank bank, Bank.Ladder l)` | The Funding page's lines as it printed them until 0.7.33, verbatim (the spec's F1-F7), with B2's colours and B6's verdict. |
+| 3209 | 16 | `VBox setAsideCard(Bank bank)` |  |
+| 3226 | 11 | `VBox writtenOffCard(Bank bank)` |  |
 
-### CAPITAL & OWNERS (lines 4057-4169)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4073 | 32 | `void capitalPage(VBox page)` |  |
-| 4113 | 4 | `static String bandInfo()` | The band's note (Capital 1896). |
-| 4119 | 8 | `static String leverageInfo(Bank bank)` | The leverage measure's note (Capital 1910). |
-| 4129 | 25 | `Gauge measureGauge(boolean leverage)` | One of the two gauges, worked out without drawing it (pure: the probe reads them): the risk-weighted ratio, or the leverage ratio when `leverage`. |
-| 4156 | 13 | `VBox gaugeCard(Bank bank, boolean leverage)` | A gauge's card: its caption with BINDS on the larger requirement, the ratio, the bar in its band, the key, what it is of, and why the target is where it is. |
-
-### payout, and how its equity moved (lines 4170-4254)
+### how the next loan is priced (lines 3238-3288)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4173 | 7 | `static String payoutInfo()` | The payout rule (Capital 1948). |
-| 4182 | 18 | `VBox payoutCard(Bank bank)` | PAYOUT: its decision; last month's profit after tax with what it paid and bought back on it; what it held over its target and the top; the year's. |
-| 4206 | 30 | `List<Step> equitySteps()` | HOW ITS EQUITY MOVED, worked out without drawing it (pure): each cause as a step, at nothing left off, "Not accounted for" always. |
-| 4237 | 17 | `VBox equityMovedCard(Bank bank)` |  |
+| 3241 | 20 | `String pricingInfo(Bank bank)` | Prime's note and the quotes' note (Lending 1470, 1515), behind HOW THE NEXT LOAN IS PRICED's (i). |
+| 3263 | 25 | `VBox pricingCard(Bank bank)` | HOW THE NEXT LOAN IS PRICED: prime as its four parts, each named, then a row a borrower. |
 
-### rescues, and the city's preferred (lines 4255-4322)
+### the tables, under details (lines 3289-3582)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4263 | 22 | `VBox rescuesCard(Bank bank)` |  |
-| 4287 | 6 | `Label bankDecisionChip()` | The bank's first decision this month, in the order they were made - a rescue, the preferred offer - as a chip (the spec's section 5), or null. |
-| 4295 | 5 | `static boolean preferredHasHistory(Bank bank)` | Whether the city's preferred has any history to show. |
-| 4302 | 7 | `static String preferredInfo()` | The preferred's note (Capital 2046). |
-| 4310 | 12 | `VBox preferredCard(Bank bank)` |  |
+| 3296 | 235 | `VBox lendingTables(Bank bank)` | The old page's tables and lines, verbatim (the spec's N2, N6, N7, N9, N11; D15), with B9's fix - the businesses' first column is what each owes THE BANK - and B2's: no green or amber on what is not a verdict. |
+| 3533 | 12 | `static String bookName(Bank.Book book)` | What the weight table calls each book. |
+| 3547 | 35 | `VBox bondsHeld(Bank bank)` | THE BUSINESSES' BONDS IT HOLDS (0.7.12), verbatim, under their own fold - the Overview's bond rungs open it. |
 
-### the lines, under details (lines 4323-4464)
+### FUNDING (lines 3583-3707)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4326 | 132 | `VBox capitalLines(Bank bank)` | The Capital & owners page's lines as it printed them until 0.7.33, verbatim (the spec's C1-C8), with B2's colours. |
-| 4460 | 4 | `void moved(VBox column, String label, double amount)` | One cause of the equity's movement, printed only when it moved it - plain since 0.7.33 (B2: it was green in and amber out). |
+| 3601 | 15 | `void fundingPage(VBox page)` |  |
+| 3623 | 2 | **type** `record FundingBars(List<Segment> banked, List<Tick> bankedTicks, List<Segment> funds, String bankedWords, S...` | The two bars worked out without drawing them (pure: the probe reads them). |
+| 3627 | 38 | `FundingBars fundingBars()` | WHAT THE CITY HAS BANKED and WHAT FUNDS ITS BOOK (pure), each on its own scale. |
+| 3667 | 28 | `VBox fundingHero(Bank bank, Bank.Ladder l)` | The hero: the two bars, each with its words at the left and its key under it. |
+| 3697 | 10 | `static HBox fundingRow(String words, Node bar)` | One of the hero's rows: its words in a column at the left, the bar taking the rest. |
 
-### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 4465-4526)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 4490 | 31 | `VBox bankRescue()` |  |
-| 4523 | 3 | `static VBox rescueFigure(String caption, String value, String tone)` | One of the rescue's four figures: its caption over it. |
-
-### THE BANK ASKS FOR PREFERRED (0.7.14) (lines 4527-4634)
+### the three cards (lines 3708-3807)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4541 | 93 | `VBox preferredOffer()` |  |
+| 3711 | 6 | `static String saversShareInfo()` | What savers are paid's note (Funding 1712). |
+| 3719 | 21 | `VBox saversCard(Bank bank, Bank.Ladder l)` | SAVERS: the policy rate, the share its funding asks it to pass on, the rate it chose and what it paid - a ladder of four - and what that paid this month. |
+| 3742 | 5 | `static VBox saversStep(String what, String figure, String under)` | One step of the savers' ladder: its words over its figure. |
+| 3749 | 15 | `VBox centralBankCard(Bank bank, Bank.Ladder l)` | THE CENTRAL BANK: its reserves there and what they earned, and what it borrowed overnight and what that cost - red while it borrows. |
+| 3766 | 32 | `VBox canCarryCard(Bank bank)` | WHAT IT CAN CARRY: what its capital carries and what its deposits carry on one scale, the tighter marked BINDS, its weighed book against them, and how full that is. |
+| 3800 | 7 | `static VBox carryLine(String words, double amount, double scale, boolean binds, List<Tick> ticks)` | One of what it can carry's two bars: its words, the bar on the card's scale with the book's weight ticked, and BINDS on the tighter. |
 
-### HISTORY (lines 4635-4832)
+### the branches (lines 3808-3930)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4665 | 111 | `void historyPage(VBox page)` |  |
-| 4778 | 4 | `TimeChart.Line percentLine(HistorySave h, String key, String name, String colour)` | A line of a History series in per cent, read out as a rate. |
-| 4784 | 4 | `TimeChart.Line moneyLine(HistorySave h, String key, String name, String colour)` | ...in money. |
-| 4790 | 6 | `static TimeChart.Line flatLine(HistorySave h, String key, String name, double level, String colour, String unit)` | A reference line at one level for every month: what its owners want, the 100% line. |
-| 4802 | 9 | `TimeChart chart(HistorySave h, List<TimeChart.Line> lines, String unit, List<YearBook.Band> bands, List<ChartModel.Flag> flags,...` | One of the charts, on the tab's window (it follows `leader` when there is one), without controls. |
-| 4813 | 18 | `VBox smallCard(String title, String info, String unit, TimeChart leader, HistorySave h, List<YearBook.Band> bands, List<TimeCha...` | A small chart's card: its title and (i), the chart following the rates' window, its key, and its statistics as chips - made in the card's own scope, which is keyed by its title. |
+| 3811 | 1 | **type** `record Verdict(String words, String tone, boolean build)` | The branch verdict worked out without drawing it (pure: the probe reads it, BankCheck asserts the planner it reads). |
+| 3820 | 8 | `Verdict branchVerdict()` | WOULD ANOTHER ONE PAY? |
+| 3830 | 14 | `String branchesInfo()` | The branches' notes (Funding 1801, 1848): a branch's cost, and the test run the other way. |
+| 3852 | 68 | `VBox branchesCard(Bank bank)` | ITS BRANCHES, BY THEIR CUSTOMERS (0.7.19) as a card: the customers a branch against what one serves as a ring; a branch's fees against what one past the first costs; the two questions, the investors' verdict, whether ... |
+| 3922 | 8 | `static HBox question(String words, boolean yes)` | One of the branch questions: a tick or a cross, and the words. |
+
+### the lines, under details (lines 3931-4057)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3934 | 123 | `VBox fundingLines(Bank bank, Bank.Ladder l)` | The Funding page's lines as it printed them until 0.7.33, verbatim (the spec's F1-F7), with B2's colours and B6's verdict. |
+
+### CAPITAL & OWNERS (lines 4058-4170)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4074 | 32 | `void capitalPage(VBox page)` |  |
+| 4114 | 4 | `static String bandInfo()` | The band's note (Capital 1896). |
+| 4120 | 8 | `static String leverageInfo(Bank bank)` | The leverage measure's note (Capital 1910). |
+| 4130 | 25 | `Gauge measureGauge(boolean leverage)` | One of the two gauges, worked out without drawing it (pure: the probe reads them): the risk-weighted ratio, or the leverage ratio when `leverage`. |
+| 4157 | 13 | `VBox gaugeCard(Bank bank, boolean leverage)` | A gauge's card: its caption with BINDS on the larger requirement, the ratio, the bar in its band, the key, what it is of, and why the target is where it is. |
+
+### payout, and how its equity moved (lines 4171-4255)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4174 | 7 | `static String payoutInfo()` | The payout rule (Capital 1948). |
+| 4183 | 18 | `VBox payoutCard(Bank bank)` | PAYOUT: its decision; last month's profit after tax with what it paid and bought back on it; what it held over its target and the top; the year's. |
+| 4207 | 30 | `List<Step> equitySteps()` | HOW ITS EQUITY MOVED, worked out without drawing it (pure): each cause as a step, at nothing left off, "Not accounted for" always. |
+| 4238 | 17 | `VBox equityMovedCard(Bank bank)` |  |
+
+### rescues, and the city's preferred (lines 4256-4323)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4264 | 22 | `VBox rescuesCard(Bank bank)` |  |
+| 4288 | 6 | `Label bankDecisionChip()` | The bank's first decision this month, in the order they were made - a rescue, the preferred offer - as a chip (the spec's section 5), or null. |
+| 4296 | 5 | `static boolean preferredHasHistory(Bank bank)` | Whether the city's preferred has any history to show. |
+| 4303 | 7 | `static String preferredInfo()` | The preferred's note (Capital 2046). |
+| 4311 | 12 | `VBox preferredCard(Bank bank)` |  |
+
+### the lines, under details (lines 4324-4465)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4327 | 132 | `VBox capitalLines(Bank bank)` | The Capital & owners page's lines as it printed them until 0.7.33, verbatim (the spec's C1-C8), with B2's colours. |
+| 4461 | 4 | `void moved(VBox column, String label, double amount)` | One cause of the equity's movement, printed only when it moved it - plain since 0.7.33 (B2: it was green in and amber out). |
+
+### THE RESCUE, WHEREVER THE PLAYER IS LOOKING. (lines 4466-4527)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4491 | 31 | `VBox bankRescue()` |  |
+| 4524 | 3 | `static VBox rescueFigure(String caption, String value, String tone)` | One of the rescue's four figures: its caption over it. |
+
+### THE BANK ASKS FOR PREFERRED (0.7.14) (lines 4528-4635)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4542 | 93 | `VBox preferredOffer()` |  |
+
+### HISTORY (lines 4636-4833)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4666 | 111 | `void historyPage(VBox page)` |  |
+| 4779 | 4 | `TimeChart.Line percentLine(HistorySave h, String key, String name, String colour)` | A line of a History series in per cent, read out as a rate. |
+| 4785 | 4 | `TimeChart.Line moneyLine(HistorySave h, String key, String name, String colour)` | ...in money. |
+| 4791 | 6 | `static TimeChart.Line flatLine(HistorySave h, String key, String name, double level, String colour, String unit)` | A reference line at one level for every month: what its owners want, the 100% line. |
+| 4803 | 9 | `TimeChart chart(HistorySave h, List<TimeChart.Line> lines, String unit, List<YearBook.Band> bands, List<ChartModel.Flag> flags,...` | One of the charts, on the tab's window (it follows `leader` when there is one), without controls. |
+| 4814 | 18 | `VBox smallCard(String title, String info, String unit, TimeChart leader, HistorySave h, List<YearBook.Band> bands, List<TimeCha...` | A small chart's card: its title and (i), the chart following the rates' window, its key, and its statistics as chips - made in the card's own scope, which is keyed by its title. |
 

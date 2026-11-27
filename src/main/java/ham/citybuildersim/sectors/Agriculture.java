@@ -395,10 +395,14 @@ public final class Agriculture extends Sector {
          * already: building on it takes nothing a landlord could have. So
          * while somebody sleeps outside the fields may still break ground -
          * in their zone, as far as it holds, and nowhere else.
+         *
+         * Since call A (RES3c, 2026-11-25) nobody past the census line sleeps
+         * outside: the household it has no room for lives overcrowded, and the
+         * city is as short of homes for it (Game.getHouseholdsWantingAHome()).
          */
         double zonedForFields = 0;
         if (game != null && game.getFamilies() != null
-                && game.getFamilies().getStillUnplaced() > 0) {
+                && game.getHouseholdsWantingAHome() > 0) {
             zonedForFields = game.getLandManager().heldBy(key());
             if (!(zonedForFields > 0)) {
                 return BusinessInvestment.Decision.no(key(),

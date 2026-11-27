@@ -346,6 +346,9 @@ public class Bank {
     private double repaidByHouseholds;
     private double fundingCost;
 
+    /** The part on the actual advance still held past the active tranche, saved with the month's statement lines. */
+    private double windowOwedCost;
+
     /**
      * WHAT ITS SPARE CASH EARNS: THE POLICY RATE, AT THE CENTRAL BANK (0.7.0).
      *
@@ -482,6 +485,41 @@ public class Bank {
             interimBySector[i] = interim != null && i < interim.length ? Math.max(0, interim[i]) : 0;
             interimBook += interimBySector[i];
         }
+    }
+
+    /** The held local-money book amounts read by the next startMonth's sheet and opening equity.
+     * The deposit components already have their own save; their held sum also needs carrying. */
+    public record HeldBooks(double deposits, double sectorBook, double cityBook, double householdBook,
+                            double mortgageBook, double interimBook, double bondBook,
+                            double[] loansBySector, double[] interimBySector) {
+        public HeldBooks {
+            loansBySector = loansBySector == null ? null : loansBySector.clone();
+            interimBySector = interimBySector == null ? null : interimBySector.clone();
+        }
+        @Override public double[] loansBySector() { return loansBySector == null ? null : loansBySector.clone(); }
+        @Override public double[] interimBySector() { return interimBySector == null ? null : interimBySector.clone(); }
+    }
+
+    public HeldBooks heldBooksForSave() {
+        return new HeldBooks(deposits, sectorBook, cityBook, householdBook, mortgageBook,
+                interimBook, bondBook, loansBySector, interimBySector);
+    }
+
+    /** Put the held books over the load's final refresh and deposit reconstruction, without settling anything. */
+    public void restoreHeldBooks(HeldBooks saved) {
+        if (saved == null) return;
+        double[] loans = saved.loansBySector(), interim = saved.interimBySector();
+        if (loans == null || loans.length != loansBySector.length
+                || interim == null || interim.length != interimBySector.length) return;
+        deposits = saved.deposits();
+        sectorBook = saved.sectorBook();
+        cityBook = saved.cityBook();
+        householdBook = saved.householdBook();
+        mortgageBook = saved.mortgageBook();
+        interimBook = saved.interimBook();
+        bondBook = saved.bondBook();
+        System.arraycopy(loans, 0, loansBySector, 0, loansBySector.length);
+        System.arraycopy(interim, 0, interimBySector, 0, interimBySector.length);
     }
 
     /** What the sector at this index of Sectors.KEYS owes it outside its insured mortgages and its interim financing. */
@@ -1277,11 +1315,11 @@ public class Bank {
         lastRunningCost = carried > 0 ? costs / costFilled * 12 / carried : 0;
 
         double owed = borrowings();
-        double window = branches > 0 && owed > 0 ? windowFunding() : 0;
+        double window = branches > 0 && owed > 0 ? Math.min(wholesaleFunding(), Math.max(0, getWindowOutstanding())) : 0;
         lastWindowShare = branches <= 0 ? 1
                 : owed > 0 ? Math.min(1, window / owed) : 0;
         lastForeignShare = branches > 0 && owed > 0
-                ? Math.min(1 - lastWindowShare, Math.max(0, wholesaleFunding() - window) / owed) : 0;
+                ? Math.min(1 - lastWindowShare, Math.min(Math.max(0, wholesaleFunding() - window), foreignWholesale) / owed) : 0;
     }
 
     /** The record, for the save: the count, then the two cost rings. */
@@ -1425,6 +1463,7 @@ public class Bank {
         lentToHouseholds = 0;
         repaidByHouseholds = 0;
         fundingCost = 0;
+        windowOwedCost = 0;
         placementIncome = 0;
         insuranceClaims = 0;
         depositInterestToHouseholds = 0;
@@ -3455,6 +3494,13 @@ public class Bank {
     public void setSettledWindow(java.util.function.DoubleSupplier outstanding) { settledWindow = outstanding; }
     public double getWindowOutstanding() { return settledWindow == null ? windowFunding() : settledWindow.getAsDouble(); }
 
+    private java.util.function.DoubleSupplier windowInterestDue;
+    public void setWindowInterestDue(java.util.function.DoubleSupplier due) { windowInterestDue = due; }
+    public double getWindowInterestDue() { return windowInterestDue == null ? 0 : Math.max(0, windowInterestDue.getAsDouble()); }
+
+    /** Cash collected by the window; its expense was already accrued by fundToCover(). */
+    public void payWindowInterest(double paid) { if (paid > 0) cash -= paid; }
+
     private double foreignWholesale, foreignWholesaleIn, foreignWholesaleOut;
     private double foreignFundingCost, windowFundingCost;
     private double foreignFundingRate = DebtManager.WORLD_BASE_RATE;
@@ -3485,6 +3531,9 @@ public class Bank {
         if (requested == 0) return 0;
         return Math.min(windowCollateral() * rules.get(BankRules.Dial.WINDOW_LIMIT), requested);
     }
+
+    /** The ceiling on total issued principal, separate from the current funding request. */
+    public double windowCreditLimit() { return windowCollateral() * rules.get(BankRules.Dial.WINDOW_LIMIT); }
 
     /** NSFR approximation by book: the equity desk is wholly stable-funded, with no overnight allowance. */
     public double requiredStableFunding() {
@@ -3562,6 +3611,22 @@ public class Bank {
      * Called once, at the end of the month, after every loan has moved.
      */
     public void fundToCover(double policyAnnual) {
+        fundToCover(policyAnnual, 0, getWindowOutstanding());
+        // Immediate-payment form for a bank used without a central-bank collection ledger.
+        // Game uses the explicit overload and pays only what the central bank actually collects.
+        payWindowInterest(getWindowFundingCost());
+    }
+
+    /**
+     * ...and the advance the window holds past that tranche, which the last settle asked back and the central bank's reserves could
+     * not take (CentralBank.getWindowDeferred()): owed all the same, and priced at the window's rate with it (RES3; REV-RES3b) -
+     * each dollar once. The part the tranche has grown back into is in the wholesale already: what is priced past it is the
+     * deferred balance no more than the window holds (windowHeld, CentralBank.getAdvancesToBank()) above the tranche. WHY (REV-RES3b's
+     * fourth look, 2026-11-27): the whole deferred balance was added to the tranche, so 80 deferred that new lending took up again
+     * was charged as 160. Nothing is owed past the tranche wherever the reserves took the repayment, and the charge is what it was.
+     */
+    public void fundToCover(double policyAnnual, double windowDeferred, double windowHeld) {
+        windowOwedCost = 0;
 
         /*
          * WITH NO BRANCHES THERE IS NO BANK, and nothing to charge.
@@ -3613,12 +3678,17 @@ public class Bank {
         // spread; foreign term funding pays its independent local-money quote.
         double policy = Math.max(0, policyAnnual);
         double wholesaleNow = wholesaleFunding();
-        double secured = Math.min(wholesaleNow, windowFunding());
-        windowFundingCost = secured * (policy + rules.get(BankRules.Dial.WINDOW_SPREAD)) / 12;
-        foreignFundingCost = (wholesaleNow - secured) * foreignFundingRate / 12;
+        double held = Math.max(0, windowHeld), foreign = Math.max(0, foreignWholesale);
+        double windowRate = policy + rules.get(BankRules.Dial.WINDOW_SPREAD);
+        double activeWindow = Math.min(wholesaleNow, held);
+        double owedPast = Math.min(Math.max(0, windowDeferred), Math.max(0, held - activeWindow));
+        windowOwedCost = owedPast * windowRate / 12;
+        windowFundingCost = held * windowRate / 12;
+        foreignFundingCost = foreign * foreignFundingRate / 12;
         fundingCost = windowFundingCost + foreignFundingCost;
-        fundingRate = wholesaleNow > 0 ? fundingCost * 12 / wholesaleNow
-                : policy + rules.get(BankRules.Dial.WINDOW_SPREAD);
+        double actualExternal = held + foreign;
+        fundingRate = actualExternal > 0
+                ? (held * windowRate + foreign * foreignFundingRate) / actualExternal : windowRate;
 
         // ...and the other side of the same position: what is not lent is
         // its reserves, and earns the policy rate at the central bank. Struck
@@ -3686,10 +3756,9 @@ public class Bank {
                                                  - depositInterestToSectors;
         cash -= onDeposits;
 
-        // Both external funding costs are paid once. Game books only the
-        // secured portion at the central bank; the foreign bill leaves the
-        // country through MoneyAudit. Deposit interest was paid above.
-        cash -= fundingCost;
+        // Foreign interest is paid abroad. Game settles the accrued window
+        // bill against actual reserves, with any unpaid part still a payable.
+        cash -= foreignFundingCost;
         cash += placementIncome;
     }
 
@@ -3836,6 +3905,8 @@ public class Bank {
 
     /** What the window charged this month, paid to the central bank. */
     public double getFundingCost() { return fundingCost; }
+    /** ...of which on the advance the last settle left owed past the tranche, the central bank's reserves short of its repayment. */
+    public double getWindowOwedCost() { return windowOwedCost; }
     /** What its reserves earned at the central bank this month, at the policy rate. See placementIncome. */
     public double getPlacementIncome() { return placementIncome; }
 
@@ -3903,7 +3974,7 @@ public class Bank {
      * is interest it earns over the paper's life, not the day it settles.
      */
     public double totalLiabilities() {
-        return borrowings() + Math.max(0, foreignDeposits) + shortSecurities() + unearnedDiscount;
+        return borrowings() + Math.max(0, foreignDeposits) + shortSecurities() + unearnedDiscount + getWindowInterestDue();
     }
 
     /**
@@ -5324,11 +5395,12 @@ public class Bank {
                 // 0.7.19's: the branches' operating cost inside upkeep, and the customers.
                 operatingCost, customers,
                 // BK1's: the bank's share of a reopened line's discount, re-struck.
-                discountRestruck };
+                discountRestruck, windowOwedCost };
     }
 
     /** ...and back. Nothing on an older save, whose Profit page reads zero for a month as it always did. */
     public void restoreMonthLines(double[] v) {
+        windowOwedCost = 0;
         if (v == null || v.length < 44) return;
         int i = 0;
         interestEarned = v[i++]; internalInterest = v[i++]; writeOffs = v[i++]; payroll = v[i++]; upkeep = v[i++];
@@ -5364,7 +5436,8 @@ public class Bank {
         operatingCost = v.length > i ? v[i++] : 0;
         customers = v.length > i ? v[i++] : 0;
         // ...and BK1's; an older save's month re-struck nothing.
-        discountRestruck = v.length > i ? v[i] : 0;
+        discountRestruck = v.length > i ? v[i++] : 0;
+        windowOwedCost = v.length > i ? v[i] : 0;
     }
 
     /* ------------------------------- reading ------------------------------- */
@@ -5823,7 +5896,7 @@ public class Bank {
     public void setCash(double value) { this.cash = value; }
 
     public void reset() {
-        settledWindow = governmentCollateral = null;
+        settledWindow = governmentCollateral = windowInterestDue = null;
         rules.reset();
         restoreFunding(null);
         foreignFundingRate = DebtManager.WORLD_BASE_RATE;
@@ -5994,6 +6067,7 @@ public class Bank {
         lentToHouseholds  *= scale;
         repaidByHouseholds *= scale;
         fundingCost       *= scale;
+        windowOwedCost    *= scale;
         placementIncome   *= scale;
         openingEquity     *= scale;
         hotMoneyIn        *= scale;
@@ -6458,7 +6532,7 @@ public class Bank {
         PAID_IN, RETAINED,
         /** The city's preferred at par (0.7.14): equity's third part, beside paid in and retained. */
         PREFERRED,
-        WHOLESALE_ABROAD
+        WHOLESALE_ABROAD, WINDOW_INTEREST_DUE
     }
 
     /** The asset lines, in the page's order: they sum to totalAssets(). */
@@ -6467,7 +6541,7 @@ public class Bank {
 
     /** ...and the liability lines: they sum to totalLiabilities(). */
     public static final Sheet[] SHEET_LIABILITIES = { Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS,
-            Sheet.DESK_SHORT, Sheet.UNEARNED_DISCOUNT, Sheet.WHOLESALE_ABROAD };
+            Sheet.DESK_SHORT, Sheet.UNEARNED_DISCOUNT, Sheet.WHOLESALE_ABROAD, Sheet.WINDOW_INTEREST_DUE };
 
     /**
      * A line of its balance sheet as it stands: its reserves at the central
@@ -6506,6 +6580,7 @@ public class Bank {
             case FOREIGN_DEPOSITS   -> Math.max(0, foreignDeposits);
             case DESK_SHORT         -> shortSecurities();
             case UNEARNED_DISCOUNT  -> unearnedDiscount;
+            case WINDOW_INTEREST_DUE -> getWindowInterestDue();
             case LIABILITIES        -> totalLiabilities();
             case EQUITY             -> equity();
             case HOUSEHOLD_DEPOSITS -> householdDeposits;

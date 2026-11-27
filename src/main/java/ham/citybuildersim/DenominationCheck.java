@@ -64,6 +64,32 @@ public class DenominationCheck {
     static int fails = 0;
     static PrintStream out;
     static PrintStream quiet;
+    /** Optional readers used only by the bounded held-stock finding. */
+    static java.util.function.Consumer<Game> emptyScanObserver;
+    static java.util.function.BiConsumer<Game,Game> tp1WaitObserver;
+
+    /** A closed trade caused by an insolvent seller and a liquid buyer, as in CarCheck. */
+    static Motoring.UsedTrade usedTradeFixture() {
+        HouseholdBalance market = new HouseholdBalance();
+        Household seller = market.cell(FamilyStructure.COUPLE, PayTier.UNSKILLED);
+        seller.households = 1000;
+        seller.disposable = 4;
+        seller.afterFixed = 1;
+        seller.subsistence = 3;
+        seller.debt = HouseholdBalance.CREDIT_LIMIT_MONTHS * seller.disposable;
+        seller.cars = 1;
+        Household buyer = market.cell(FamilyStructure.COUPLE, PayTier.SKILLED);
+        buyer.households = 1000;
+        buyer.disposable = 10;
+        buyer.afterFixed = 8;
+        buyer.subsistence = 3;
+        buyer.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * buyer.disposable
+                + 100 * HouseholdBalance.USED_CAR_FLOOR * HouseholdBalance.CAR_DEPOSIT * HouseholdBalance.CAR_ADOPTION * 1.5;
+        market.wearOutCars();
+        double traded = market.clearUsedCars(100, 1);
+        return new Motoring.UsedTrade(traded, market.getUsedCarsOffered(),
+                market.getUsedCarSpend(), market.getUsedCarsFinanced(), market.getUsedCarPrice());
+    }
 
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
@@ -198,6 +224,29 @@ public class DenominationCheck {
                 g.buildStack(network, 1, true);
             }
             g.simulateMonths(120);
+            if(buses){
+                // Opening fixture assets: an existing fleet and its funded fuel
+                // buffer. The next native month must really strike and settle fuel.
+                Household buyer=g.getHouseholdBalance().cells().stream()
+                        .filter(c->c instanceof WorkingHousehold&&!c.isEmpty()&&c.disposable()>0)
+                        .max(java.util.Comparator.comparingDouble(Household::disposable)).orElseThrow();
+                double perHousehold=HouseholdBalance.SHARE_CUSHION_MONTHS*Math.max(buyer.disposable(),buyer.subsistence)
+                        +TaxPolicy.JOURNEYS_A_MONTH*Motoring.journeyFuel(g);
+                double transfer=perHousehold*buyer.households();
+                assertTrue("fixture: the treasury funds the driver's fuel buffer",g.getCash()>=transfer);
+                g.getGovernmentInvestor().spend(transfer);buyer.savings+=perHousehold;
+                buyer.cars=1;
+                // First strike the fleet's fuel; then carry that bill into the
+                // households' settlement on the following native press.
+                for(int phase=0;phase<2;phase++){
+                    g.simulateMonths(1);
+                    var pools=g.getLastMoneyAudit();
+                    assertTrue("fixture: the funded driver month conserves the money pools",Math.abs(pools.residual)
+                            <=MoneyAudit.tolerance(Math.abs(pools.before)+Math.abs(pools.after)+pools.inflows+pools.outflows));
+                    assertTrue("fixture: the funded driver month conserves household money",
+                            LongPlaytest.MoneyFixtures.householdsClose(g.getLastHouseholdsAudit()));
+                }
+            }
         });
         return g;
     }
@@ -255,6 +304,14 @@ public class DenominationCheck {
                 : "no world-1.bin here: the terms of trade and the trade by partner do not run"));
 
         double factor = 100;
+        // The played twins need not offer a used car this month. Put the same
+        // actual closed trade through their restore port before reforming one.
+        Motoring.UsedTrade usedFixture = usedTradeFixture();
+        out.println("   caused closed used-car trade: " + usedFixture);
+        assertTrue("fixture: a seller and buyer actually traded a financed used car",
+                usedFixture.traded() > 0 && usedFixture.spend() > 0 && usedFixture.credit() > 0);
+        plain.getMotoring().restoreUsedTrade(usedFixture);
+        lopped.getMotoring().restoreUsedTrade(usedFixture);
 
         /*
          * The button is gated on the price level and this fixture's has not
@@ -272,6 +329,14 @@ public class DenominationCheck {
         close("the shelf price divided",
                 shelf(lopped), shelf(plain) / factor, 1e-9);
         close("rent divided", rent(lopped), rent(plain) / factor, 1e-9);
+        Motoring.UsedTrade usedBefore = plain.getMotoring().usedTradeForSave();
+        Motoring.UsedTrade usedAfter = lopped.getMotoring().usedTradeForSave();
+        assertTrue("the used-car market has a positive mark to divide", usedBefore.price() > 0);
+        close("used-car trade count is unchanged", usedAfter.traded(), usedBefore.traded(), 1e-9);
+        close("used-car offered count is unchanged", usedAfter.offered(), usedBefore.offered(), 1e-9);
+        close("used-car spending divided", usedAfter.spend(), usedBefore.spend() / factor, 1e-9);
+        close("used-car credit divided", usedAfter.credit(), usedBefore.credit() / factor, 1e-9);
+        close("used-car asset mark divided", usedAfter.price(), usedBefore.price() / factor, 1e-9);
         close("the minimum wage divided",
                 lopped.getLabourMarket().getMinimumWage(),
                 plain.getLabourMarket().getMinimumWage() / factor, 1e-9);
@@ -516,25 +581,22 @@ public class DenominationCheck {
                 lopped.getPriceIndex().getIndex());
         sameCity(plain, lopped, factor, 1e-9);
 
-        /* ============ 3a. AND NO CELL UNDER HALF A HOUSEHOLD HOLDS ANYTHING ============
+        /* ============ 3a. POSITIONS HAVE FINANCIAL OWNERS ============
 
-           What parted these two cities at month 166 once the currency's rate
-           pull went to four (0.7.2), and on the pristine 0.7.1 tree held money
-           from month 127 on: a household cell the census leaves at 1e-15 of a
-           household, still holding savings and still being paid. Whether a
-           count lands on 1e-15 or on exactly nothing is the fifteenth decimal,
-           which is precisely what a reform by a hundred moves - so the twins
-           paid different ghosts. HouseholdBalance.EMPTY_CELL now empties such
-           a cell where its count is written (HouseholdCheck has the fixture);
-           this is the same claim on a real city, reformed and not, every
-           month: no cell under the line holds anything.
+           Every strictly positive fractional household owns its claims. The
+           optional-action EMPTY_CELL threshold does not erase ownership.
+           Keep scanning native raw stocks in both cities after every month;
+           the forbidden holder is genuinely absent/nonpositive. Separate
+           caused cases prove zero-owner cleanup, positive retention, actual
+           paid credits and every weighted stock's conservation and scale.
            ================================================================= */
-        out.println("\n--- ...and no cell under half a household holds anything, reformed or not ---");
-        assertTrue("right after the reform, in either city", emptyHeldAfterReform == 0);
-        out.printf("   %d looks (both cities, after the reform and after every month): a cell under half a household in %d; %,d cells emptied of something%n",
+        FinancialOwnerFinding.run();
+        out.println("\n--- no raw stock without a financial owner, reformed or not ---");
+        assertTrue("right after the reform, no absent household holds a position", emptyHeldAfterReform == 0);
+        out.printf("   %d looks (both cities, after the reform and after every month): a positive cell under half a household in %d; %,d cells emptied of something%n",
                 looks, looksWithEmpty, cellsFolded);
         assertTrue("fixture: the census left cells under half a household", looksWithEmpty > 0);
-        assertTrue("...and after no month did one hold anything", emptyHolding == 0);
+        assertTrue("...and after no month did an absent household hold a position", emptyHolding == 0);
 
         /* ============ 4. AND NO MONEY WAS MADE OR LOST ============
 
@@ -608,6 +670,8 @@ public class DenominationCheck {
         double fuelStruck = reformed.getInfrastructureManager().getFuelPerJourney();
         double fuelBill = reformed.getMotoring().getFuelBill();
         double fuelPaid = reformed.getHouseholdFuel();
+        out.printf(java.util.Locale.ROOT,"   native driver fixture: cars %.9g, drivers %.9g; fuel struck %.9g, billed %.9g, paid %.9g%n",
+                reformed.getInfrastructureManager().getCarOwnership(),reformed.getInfrastructureManager().getDrivers(),fuelStruck,fuelBill,fuelPaid);
         assertTrue("fixture: the bus town's drivers burn fuel, struck, billed and paid",
                 fuelStruck > 0 && fuelBill > 0 && fuelPaid > 0);
         assertTrue("fixture: the reform by a thousand goes through", force(reformed, thousand));
@@ -1079,7 +1143,11 @@ public class DenominationCheck {
         sameCity(plain, lopped, factor, 1e-9);
 
         // 6. On until prices have moved: the floor is the index's, in both money, and the reformed city still draws what the plain one does.
-        for (int m = 0; m < 12 && tradeOf(plain).snapshot().minLane() <= TradeLanes.minLane(1, 1) * (1 + 1e-9); m++) monthOn(plain, lopped);
+        for (int m = 0; m < 12 && tradeOf(plain).snapshot().minLane() <= TradeLanes.minLane(1, 1) * (1 + 1e-9); m++) {
+            if (tp1WaitObserver != null) tp1WaitObserver.accept(plain, lopped);
+            monthOn(plain, lopped);
+        }
+        if (tp1WaitObserver != null) tp1WaitObserver.accept(plain, lopped);
         cardAndLanes("with prices moved", plain, lopped, 1 / factor, true);
     }
 
@@ -1198,7 +1266,7 @@ public class DenominationCheck {
 
     /* ------------------------------ helpers ------------------------------ */
 
-    /** Cells under half a household holding something, counted over every scan. */
+    /** Genuinely absent/nonpositive household counts holding raw stocks, over every scan. */
     static int emptyHolding = 0;
     /** ...and the same, as it stood right after the reform. */
     static int emptyHeldAfterReform = -1;
@@ -1208,23 +1276,122 @@ public class DenominationCheck {
     static void stepBoth(Game a, Game b, int months) {
         for (int m = 0; m < months; m++) {
             quietly(() -> { a.simulateMonths(1); b.simulateMonths(1); });
+            if (Boolean.getBoolean("denom.trace")) housingTrace(a, b);
             scanEmpty(a);
             scanEmpty(b);
             cellsFolded += a.getHouseholdBalance().getCellsFolded() + b.getHouseholdBalance().getCellsFolded();
         }
     }
 
-    /** One look at a city: whether any cell is under half a household, and any of them holding something. */
+    static boolean housingParted, housingAsksParted, exchangeParted, exchangeBookParted, exchangeQuoteParted;
+    static boolean offeringParted;
+    static String[] previousPlainInputs=new String[Equity.COMPANIES.length],previousReformedInputs=new String[Equity.COMPANIES.length];
+    static String offeringInputs(Game city,int company,double factor){
+        String sector=Equity.COMPANIES[company];var register=city.getEquity();var market=city.getExchange();
+        return String.format(java.util.Locale.ROOT,"m%d %s cash %.17g debt %.17g shares %.17g offered %.17g raised %.17g income %.17g spare %.17g fair %.17g quote %.17g | %s",
+                city.getMonth(),sector,city.getEconomyManager().getSectorCash(sector)*factor,
+                city.getEconomyManager().getBusinessDebtManager().getPrincipal(sector)*factor,register.getShares(company),
+                register.getOfferedThisMonth(company)*factor,register.getRaisedThisMonth(company)*factor,
+                register.getTrailingIncome(company)*factor,market.spareOf(company)*factor,market.fair(company)*factor,market.price(company)*factor,city.getLastInvestment(sector));
+    }
+    /** First differing cell/class allocation, beside the existing money trace. */
+    static void housingTrace(Game a, Game b) {
+        var left = a.getSectors().realEstate().housingMarket();
+        var right = b.getSectors().realEstate().housingMarket();
+        double factor = b.getDenomination().getUnit() / a.getDenomination().getUnit();
+        double askGap = 0, countGap = 0, budgetGap = 0;
+        for(int company=0;company<Equity.COMPANIES.length;company++){
+            String plain=offeringInputs(a,company,1),reformed=offeringInputs(b,company,factor);
+            double p=a.getEquity().getOfferedThisMonth(company),r=b.getEquity().getOfferedThisMonth(company)*factor;
+            if(!offeringParted&&Math.abs(p-r)>1e-8*Math.max(1,Math.abs(p))){
+                offeringParted=true;out.println("   first offering split:");
+                out.println("      previous plain "+previousPlainInputs[company]);out.println("      previous reformed "+previousReformedInputs[company]);
+                out.println("      current plain "+plain);out.println("      current reformed "+reformed);
+            }
+            previousPlainInputs[company]=plain;previousReformedInputs[company]=reformed;
+        }
+        if(!exchangeQuoteParted)for(int company=0;company<Equity.COMPANIES.length;company++){
+            double p=a.getExchange().price(company),r=b.getExchange().price(company)*factor;
+            if(Math.abs(p-r)>1e-8*Math.max(1e-300,Math.abs(p))){
+                exchangeQuoteParted=true;
+                out.printf("   first exchange quote split m%d %s quote %.17g / %.17g; fair %.17g / %.17g; spare %.17g / %.17g; offered %.17g / %.17g%n",
+                        a.getMonth(),Equity.COMPANIES[company],p,r,a.getExchange().fair(company),b.getExchange().fair(company)*factor,
+                        a.getExchange().spareOf(company),b.getExchange().spareOf(company)*factor,
+                        a.getEquity().getOfferedThisMonth(company),b.getEquity().getOfferedThisMonth(company)*factor);
+                for(Game city:new Game[]{a,b}){
+                    double unit=city==a?1:factor;var book=city.getExchange().bookOf(company);
+                    for(var side:java.util.List.of(book.bids(),book.asks()))for(var order:side)
+                        out.printf("      %s %s %s price %.17g quantity %.17g submitted %.17g%n",city==a?"plain":"reformed",order.who(),order.side(),order.price()*unit,order.quantity(),order.submitted());
+                }
+                break;
+            }
+        }
+        if (!exchangeBookParted) for(int company=0;company<Equity.COMPANIES.length;company++) {
+            var plainBook=a.getExchange().bookOf(company);var reformedBook=b.getExchange().bookOf(company);
+            double p=plainBook.lastPrice(),r=reformedBook.lastPrice()*factor;
+            if((plainBook.volume()==0)!=(reformedBook.volume()==0)
+                    ||Double.isFinite(p)&&Double.isFinite(r)&&Math.abs(p-r)>1e-8*Math.max(1e-300,Math.abs(p))){
+                exchangeBookParted=true;
+                out.printf("   first native exchange book split m%d %s price %.17g / %.17g; volume %.17g / %.17g; turnover %.17g / %.17g%n",
+                        a.getMonth(),Equity.COMPANIES[company],p,r,plainBook.volume(),reformedBook.volume(),plainBook.turnover(),reformedBook.turnover()*factor);
+            }
+        }
+        if (!exchangeParted) for (int company=0;company<Equity.COMPANIES.length;company++) {
+            double plainPrice=a.getEquity().getLastPrice(company),reformedPrice=b.getEquity().getLastPrice(company)*factor;
+            if(Math.abs(plainPrice-reformedPrice)>1e-9*Math.max(1e-300,Math.abs(plainPrice))){
+                exchangeParted=true;
+                out.printf("   first exchange price split m%d %s price %.17g / %.17g; volume %.17g / %.17g%n",a.getMonth(),Equity.COMPANIES[company],plainPrice,reformedPrice,
+                        a.getExchange().getVolume(company),b.getExchange().getVolume(company));
+            }
+        }
+        for (var row : left.classes()) for (var other : right.classes())
+            if (row.recipe == other.recipe && row.dwelling.equals(other.dwelling))
+                askGap = Math.max(askGap, Math.abs(row.ask - other.ask * factor) / Math.max(1e-300, row.ask));
+        for (var row : left.demands()) for (var other : right.demands()) if (row.key().equals(other.key()))
+            budgetGap = Math.max(budgetGap, Math.abs(row.budget() - other.budget() * factor) / Math.max(1e-300, row.budget()));
+        var counts = new java.util.TreeMap<String, Double>();
+        for (var lease : left.leases()) counts.merge(lease.cell() + "/" + lease.home(), lease.households(), Double::sum);
+        for (var lease : right.leases()) counts.merge(lease.cell() + "/" + lease.home(), -lease.households(), Double::sum);
+        for (double difference : counts.values()) countGap = Math.max(countGap, Math.abs(difference));
+        out.printf("   housing m%d ask %.3g budget %.3g count %.3g | %s || %s%n", a.getMonth(), askGap, budgetGap, countGap,
+                a.getLastInvestment("Real Estate"), b.getLastInvestment("Real Estate"));
+        if (!housingAsksParted && askGap > 1e-8) {
+            housingAsksParted = true;
+            for (var row : left.classes()) for (var other : right.classes())
+                if (row.recipe == other.recipe && row.dwelling.equals(other.dwelling)
+                        && Math.abs(row.ask-other.ask*factor)>1e-8*Math.max(1e-300,row.ask))
+                    out.printf("      class %d/%s ask %.12g / %.12g; target %.12g / %.12g; capital %.12g / %.12g; homes %.12g / %.12g; pressure quantity %.12g / %.12g%n",
+                            row.recipe,row.dwelling,row.ask,other.ask*factor,row.target,other.target*factor,row.capital,other.capital*factor,row.homes,other.homes,row.demand,other.demand);
+        }
+        if (!housingParted && countGap > 1e-8) {
+            housingParted = true;
+            for (var row : counts.entrySet()) if (Math.abs(row.getValue()) > 1e-8) out.printf("      flow %s plain-minus-reformed %.12g%n", row.getKey(), row.getValue());
+            var changed=left.demands().stream().filter(d->counts.entrySet().stream().anyMatch(e->e.getKey().startsWith(d.key()+"/")&&Math.abs(e.getValue())>1e-8)).toList();
+            for(Game city:new Game[]{a,b})for(var d:city.getSectors().realEstate().housingMarket().demands())
+                if(changed.stream().anyMatch(c->c.size()==d.size()&&c.children()==d.children()&&c.tier()==d.tier()&&c.young()==d.young()&&c.retired()==d.retired())){
+                    double unit=city==a?1:factor;
+                    out.printf("      %s demand %s count %.17g budget %.17g%n",city==a?"plain":"reformed",d.key(),d.count(),d.budget()*unit);
+                    for(var c:city.getSectors().realEstate().housingMarket().classes())if(c.homes>0){
+                        var form=HousingForms.of(c.recipe);var home=form.recipe().mix().stream().filter(h->h.id().equals(c.dwelling)).findFirst().orElseThrow();
+                        var offer=new HousingChoice.Offer(c.key(),c.homes,home.capacity(),home.bedrooms(),home.area(),home.quality(),form.garden(),form.stepFree(),c.ask,0);
+                        out.printf("         %s ask %.17g affordable %s suitable %s score %.17g%n",c.key(),c.ask*unit,HousingChoice.affordable(d,offer),HousingChoice.suitable(d,offer,false),HousingChoice.score(d,offer));
+                    }
+                }
+        }
+    }
+
+    /** Financial absence differs from the optional-action threshold; keep its contrasting positive census. */
     static void scanEmpty(Game g) {
         HouseholdBalance hb = g.getHouseholdBalance();
         boolean any = false;
         for (Household c : hb.cells()) {
-            if (!c.isEmpty()) continue;
-            if (c.households() > 0) any = true;
+            if (c.households() > 0 && c.households() < HouseholdBalance.EMPTY_CELL) any = true;
+            if (c.households() > 0) continue;
             if (hb.holdsAnything(c)) emptyHolding++;
         }
         looks++;
         if (any) looksWithEmpty++;
+        if (emptyScanObserver != null) emptyScanObserver.accept(g);
     }
 
     /** Reforms regardless of the price-level gate, which is tested separately. */

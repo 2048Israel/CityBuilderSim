@@ -1,4 +1,4 @@
-# DiscoveryCheck.java - 1,380 lines · 44 methods · 4 constants · harnesses
+# DiscoveryCheck.java - 1,381 lines · 44 methods · 4 constants · harnesses
 
 `ham/citybuildersim/DiscoveryCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -58,7 +58,7 @@
 >  20. THE CITY'S OWN PAYROLL at a new floor counts the research posts (PolicyPreview.cityPayrollAt()), and the landlords' credit check counts every
 >      post the city offers, the research posts' jobs included (RealEstate.latentHeadShortfall()), as plan() does.
 
-**Uses:** [Research](Research.md) (218), [Recipes](Recipes.md) (36), [JobType](JobType.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (25), [Game](Game.md) (23), [EquipmentFit](EquipmentFit.md) (17), [TreasuryLine](TreasuryLine.md) (11), [Notice](Notice.md) (9), [EducationType](EducationType.md) (8), [PolicyPreview](PolicyPreview.md) (6), [PayTier](PayTier.md) (5), [Recipe](Recipe.md) (5), [Equipment](Equipment.md) (5), [EconomyManager](EconomyManager.md) (5), [MoneyAudit](MoneyAudit.md) (5), [PolicyDates](PolicyDates.md) (5), [BuildingType](BuildingType.md) (4), [GameFiles](GameFiles.md) (3), [EquipmentCheck](EquipmentCheck.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [PriceLevel](PriceLevel.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [FittingCheck](FittingCheck.md) (2), [Founding](Founding.md) (2), [BuildingManager](BuildingManager.md) (2), [Good](Good.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [NationalAccounts](NationalAccounts.md) (1)... and 4 more
+**Uses:** [Research](Research.md) (218), [Recipes](Recipes.md) (36), [JobType](JobType.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (26), [Game](Game.md) (23), [EquipmentFit](EquipmentFit.md) (17), [TreasuryLine](TreasuryLine.md) (11), [Notice](Notice.md) (9), [EducationType](EducationType.md) (8), [PolicyPreview](PolicyPreview.md) (6), [PayTier](PayTier.md) (5), [Recipe](Recipe.md) (5), [Equipment](Equipment.md) (5), [EconomyManager](EconomyManager.md) (5), [MoneyAudit](MoneyAudit.md) (5), [PolicyDates](PolicyDates.md) (5), [BuildingType](BuildingType.md) (4), [GameFiles](GameFiles.md) (3), [EquipmentCheck](EquipmentCheck.md) (3), [ResearchCatalog](ResearchCatalog.md) (2), [PriceLevel](PriceLevel.md) (2), [BuildingCatalog](BuildingCatalog.md) (2), [BusinessInvestment](BusinessInvestment.md) (2), [FittingCheck](FittingCheck.md) (2), [Founding](Founding.md) (2), [BuildingManager](BuildingManager.md) (2), [Good](Good.md) (1), [MaterialsCheck](MaterialsCheck.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [NationalAccounts](NationalAccounts.md) (1)... and 4 more
 
 **Used by (6):** [DriverlessTruckCheck](DriverlessTruckCheck.md), [FieldOperatorsCheck](FieldOperatorsCheck.md), [ModernRowsCheck](ModernRowsCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PrizeCheck](PrizeCheck.md), [ResearchViewCheck](ResearchViewCheck.md)
 
@@ -75,18 +75,18 @@
 | 502 | 6. the hidden size |
 | 537 | 7. no researchers: history's dates |
 | 576 | 8. a find, 9. known in this city |
-| 781 | 10. reproducible |
-| 834 | 11. a new game clears it |
-| 870 | R3 SLICE B: THE RESEARCH IN THE CITY'S MONTH (sections 12 to 18). A city founded the 1900 way, a University (and a La... |
-| 948 | 12. the posts are jobs the labour market sees |
-| 998 | 13. the bill |
-| 1059 | 14. a city founded the default way |
-| 1110 | 15. the inbox |
-| 1162 | 16. a law find opens no lever |
-| 1181 | 17. the save |
-| 1244 | 18. a reform of the money |
-| 1274 | 19. a school ordered demolished (R3b) |
-| 1305 | 20. the city's own payroll and the heads it houses (R3b) |
+| 782 | 10. reproducible |
+| 835 | 11. a new game clears it |
+| 871 | R3 SLICE B: THE RESEARCH IN THE CITY'S MONTH (sections 12 to 18). A city founded the 1900 way, a University (and a La... |
+| 949 | 12. the posts are jobs the labour market sees |
+| 999 | 13. the bill |
+| 1060 | 14. a city founded the default way |
+| 1111 | 15. the inbox |
+| 1163 | 16. a law find opens no lever |
+| 1182 | 17. the save |
+| 1245 | 18. a reform of the money |
+| 1275 | 19. a school ordered demolished (R3b) |
+| 1306 | 20. the city's own payroll and the heads it houses (R3b) |
 
 ## Constants
 
@@ -109,7 +109,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 76 | 1305 | **type** `public class DiscoveryCheck` | The city finds discoveries of its own, and a discovery found here is known here from the month it was found (R3, slice A: Research, and the seam in Recipe, Equipment, BuildingsTemplate, Recipes and EquipmentFit; docs/... |
+| 76 | 1306 | **type** `public class DiscoveryCheck` | The city finds discoveries of its own, and a discovery found here is known here from the month it was found (R3, slice A: Research, and the seam in Recipe, Equipment, BuildingsTemplate, Recipes and EquipmentFit; docs/... |
 | 81 | 4 | `static void check(String label, boolean ok)` |  |
 | 87 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure. |
 | 92 | 3 | `static void near(String label, double actual, double expected, double tolerance)` |  |
@@ -172,92 +172,92 @@
 |---:|---:|---|---|
 | 539 | 36 | `static void sectionSeven()` |  |
 
-### 8. a find, 9. known in this city (lines 576-780)
+### 8. a find, 9. known in this city (lines 576-781)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 579 | 1 | **type** `record Run(Research research, List<String> faults)` | One field staffed with a great many researchers from month 1 to the month after history's last: the Research, and everything that went wrong. |
 | 581 | 35 | `static Run run(long seed, Field field, double people)` |  |
 | 618 | 9 | `static Set<String> carried(List<BuildingsTemplate> shipped, boolean recipes, boolean equipment, boolean buildings)` | Whether a code is carried as a "since" by a recipe, a piece of equipment or a building of the shipped file. |
-| 628 | 152 | `static void sectionEightAndNine()` |  |
+| 628 | 153 | `static void sectionEightAndNine()` |  |
 
-### 10. reproducible (lines 781-833)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 783 | 50 | `static void sectionTen()` |  |
-
-### 11. a new game clears it (lines 834-869)
+### 10. reproducible (lines 782-834)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 836 | 33 | `static void sectionEleven()` |  |
+| 784 | 50 | `static void sectionTen()` |  |
 
-### R3 SLICE B: THE RESEARCH IN THE CITY'S MONTH (sections 12 to 18). A city founded the 1900 way, a University (and a La... (lines 870-947)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 876 | 3 | `static void play(Game g, int months)` | One press of the clock, quietly (the player's button: the auto-builder's pass first). |
-| 881 | 12 | `static Game cityWithSchools(String label, boolean the1900Way, boolean lawSchool)` | A village (FittingCheck.village) with a University standing, and a Law School if asked, and the staff handed; founded the 1900 way or the default way. |
-| 895 | 9 | `static EnumMap<Field, Double> roomOf(Game g)` | The posts the standing schools have room for in each field, written from each stack's template and quantity (Research.staffByField(), Research.room()). |
-| 906 | 5 | `static List<Notice> noticesKeyed(Game g, String prefix)` | The notices in a city's inbox whose key starts as given, in the order raised. |
-| 913 | 3 | `static boolean same(long[] a, long[] b)` | Whether two long arrays are equal, entry by entry. |
-| 918 | 4 | `static boolean noPosts(Research r)` | Whether a research holds no post in any field (it may hold work piled and finds: the faculty of a school research with no grant at all). |
-| 924 | 5 | `static long[] plus(long[] buildings, long[] posts)` | The buildings' jobs plus the research posts' of a field, by JobType ordinal: what the labour market is to see. |
-| 931 | 8 | `static double[] billOf(Research research, double[] wages, double[] fill)` | The money bill of a research the way the model prices it: the sums of Research.payroll() and Research.bill() over the fields at the wages and fill. |
-| 941 | 6 | `static void pileJustUnder(Game g, Entry e)` | Sets a pile just under the size of an entry in a city's research (and keeps the rest), so that one month of researchers in its field finds it. |
-
-### 12. the posts are jobs the labour market sees (lines 948-997)
+### 11. a new game clears it (lines 835-870)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 950 | 47 | `static void sectionTwelve()` |  |
+| 837 | 33 | `static void sectionEleven()` |  |
 
-### 13. the bill (lines 998-1058)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1000 | 58 | `static void sectionThirteen()` |  |
-
-### 14. a city founded the default way (lines 1059-1109)
+### R3 SLICE B: THE RESEARCH IN THE CITY'S MONTH (sections 12 to 18). A city founded the 1900 way, a University (and a La... (lines 871-948)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1061 | 48 | `static void sectionFourteen()` |  |
+| 877 | 3 | `static void play(Game g, int months)` | One press of the clock, quietly (the player's button: the auto-builder's pass first). |
+| 882 | 12 | `static Game cityWithSchools(String label, boolean the1900Way, boolean lawSchool)` | A village (FittingCheck.village) with a University standing, and a Law School if asked, and the staff handed; founded the 1900 way or the default way. |
+| 896 | 9 | `static EnumMap<Field, Double> roomOf(Game g)` | The posts the standing schools have room for in each field, written from each stack's template and quantity (Research.staffByField(), Research.room()). |
+| 907 | 5 | `static List<Notice> noticesKeyed(Game g, String prefix)` | The notices in a city's inbox whose key starts as given, in the order raised. |
+| 914 | 3 | `static boolean same(long[] a, long[] b)` | Whether two long arrays are equal, entry by entry. |
+| 919 | 4 | `static boolean noPosts(Research r)` | Whether a research holds no post in any field (it may hold work piled and finds: the faculty of a school research with no grant at all). |
+| 925 | 5 | `static long[] plus(long[] buildings, long[] posts)` | The buildings' jobs plus the research posts' of a field, by JobType ordinal: what the labour market is to see. |
+| 932 | 8 | `static double[] billOf(Research research, double[] wages, double[] fill)` | The money bill of a research the way the model prices it: the sums of Research.payroll() and Research.bill() over the fields at the wages and fill. |
+| 942 | 6 | `static void pileJustUnder(Game g, Entry e)` | Sets a pile just under the size of an entry in a city's research (and keeps the rest), so that one month of researchers in its field finds it. |
 
-### 15. the inbox (lines 1110-1161)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1112 | 49 | `static void sectionFifteen()` |  |
-
-### 16. a law find opens no lever (lines 1162-1180)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1164 | 16 | `static void sectionSixteen()` |  |
-
-### 17. the save (lines 1181-1243)
+### 12. the posts are jobs the labour market sees (lines 949-998)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1183 | 60 | `static void sectionSeventeen() throws Exception` |  |
+| 951 | 47 | `static void sectionTwelve()` |  |
 
-### 18. a reform of the money (lines 1244-1273)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1246 | 27 | `static void sectionEighteen()` |  |
-
-### 19. a school ordered demolished (R3b) (lines 1274-1304)
+### 13. the bill (lines 999-1059)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1276 | 28 | `static void sectionNineteen()` |  |
+| 1001 | 58 | `static void sectionThirteen()` |  |
 
-### 20. the city's own payroll and the heads it houses (R3b) (lines 1305-1380)
+### 14. a city founded the default way (lines 1060-1110)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1307 | 73 | `static void sectionTwenty()` |  |
+| 1062 | 48 | `static void sectionFourteen()` |  |
+
+### 15. the inbox (lines 1111-1162)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1113 | 49 | `static void sectionFifteen()` |  |
+
+### 16. a law find opens no lever (lines 1163-1181)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1165 | 16 | `static void sectionSixteen()` |  |
+
+### 17. the save (lines 1182-1244)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1184 | 60 | `static void sectionSeventeen() throws Exception` |  |
+
+### 18. a reform of the money (lines 1245-1274)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1247 | 27 | `static void sectionEighteen()` |  |
+
+### 19. a school ordered demolished (R3b) (lines 1275-1305)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1277 | 28 | `static void sectionNineteen()` |  |
+
+### 20. the city's own payroll and the heads it houses (R3b) (lines 1306-1381)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1308 | 73 | `static void sectionTwenty()` |  |
 

@@ -50,6 +50,9 @@ public class LongPlaytest {
     /** The run's length: 2,400 months at the gate, 4,000 nightly (GT1, 2026-11-02: what 2026-11-01 found showed between months 1,100 and 1,800), or -Dplaytest.months=N for a look at one mechanic (a trace of its own, not the baseline). */
     static final int TARGET_MONTHS = Integer.getInteger("playtest.months", 2400);
 
+    /** The industrial city's students' grant, a share of the course's tuition: half, under TaxPolicy's TUITION_SHARE ceiling. */
+    static final double INDUSTRIAL_TUITION_GRANT = 0.5;
+
     /* ===================================================================
        FINDINGS
 
@@ -1547,10 +1550,20 @@ public class LongPlaytest {
         Bank bank = g.getBank();
         bankFundingMonths++;
         if (g.getExchange().getLastDeskBound(Exchange.BOUND_STABLE) > 0) deskStableBoundMonths++;
-        double window = cb.getAdvancesToBank();
+        double held = cb.getAdvancesToBank(), deferred = cb.getWindowDeferred();
+        // RES3's reserve cap can leave already-issued principal owed after a target falls.
+        // That debt is neither forgiven nor a new loan; the current funded tranche must still fit both limits.
+        double window = Math.max(0, held - deferred);
         double collateral = bank.windowCollateral() * bank.rules().get(BankRules.Dial.WINDOW_LIMIT);
         double nonDeskFunding = Math.max(0, bank.wholesaleFunding() - Math.max(0, bank.getSecurities()));
         finite(month, "window collateral", collateral);
+        finite(month, "window principal", held);
+        finite(month, "deferred window principal", deferred);
+        finite(month, "unpaid window interest", cb.getWindowInterestDue());
+        if (deferred < -MoneyAudit.CENT || deferred > held + MoneyAudit.CENT) {
+            flag(month, "deferred window principal exceeds the debt still owed",
+                    String.format("held $%,.9f, deferred $%,.9f", held, deferred));
+        }
         if (window > collateral + MoneyAudit.CENT) {
             flag(month, "the window lent beyond eligible collateral after haircuts",
                     String.format("window $%,.9f, collateral $%,.9f", window, collateral));
@@ -1771,12 +1784,31 @@ public class LongPlaytest {
          * Counting doors answers neither question. FamilyModel now reports what
          * both valves failed to place, which is the thing this flag is about.
          */
+        // The trim to the standing stock (HousingMarket.holdToStock()): past the packing resolution a pass placed doors no
+        // house has, held to the stock rather than thrown partway through the month (REV-RES3b P1-3), so read here.
+        double pastTheStock = g.getSectors().realEstate().housingMarket().pastTheStock();
+        if (pastTheStock > 0) {
+            flag(month, "housing placed past the standing stock",
+                    String.format("%.3g door-equivalents held to the homes standing", pastTheStock), pastTheStock);
+        }
         double homeless = g.getFamilies().getStillUnplaced();
         if (homeless > 1) {
             flag(month, "households with no home",
                     String.format("%.3f households nowhere, %d homes of %d sizes",
                             homeless, b.getTotalHomes(), b.homesBySize().length - 1),
                     homeless);
+            if (Boolean.getBoolean("playtest.housingTrace")) {
+                var market = g.getSectors().realEstate().housingMarket();
+                var room = g.getFamilies().roomLeft(b.homesBySize());
+                var match = market.result();
+                out.printf("  housing m%d: kept %.3f normal %.3f crowded %.3f poor %.3f supply %.3f; arrivals %.3f / prior room %.3f; remaining room %.3f households, %.3f people%n", month,
+                        match.kept(), match.suitable(), match.crowded(), match.unaffordable(), match.noSuitable(),
+                        g.getMigration().getLastArrivals(), g.getMigration().getLastRoom(), room == null ? -1 : room.households(), room == null ? -1 : room.people());
+                for (var d : market.demands()) {
+                    double taken = market.leases().stream().filter(lease -> lease.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+                    if (d.count() - taken > FamilyModel.packingRounding(d.count())) out.printf("    missing %s: %.6f / %.6f, size %d children %d budget %.12f%n", d.key(), d.count() - taken, d.count(), d.size(), d.children(), d.budget());
+                }
+            }
         }
 
         /*
@@ -3946,10 +3978,16 @@ public class LongPlaytest {
          * and FoodProcessingCheck's fixture city went from month 98 to month
          * 185 with ten times the price level. The failure to react to is the
          * one the run flags: somebody with nowhere at all.
+         *
+         * ...AND THE OVERCROWDED ARE IN IT (RES3c, 2026-11-25). Since call A a
+         * household the census line has no room for lives past it rather than
+         * nowhere (HousingMarket.overcrowding()): that is past both valves, the
+         * failure the 1891 census counted, not a flat shared within the line,
+         * and a player reads it as homes wanting (Game.getHouseholdsWantingAHome()).
          */
         double homesShort = population - b.getTotalHouseCapacity();
         FamilyModel fam = g.getFamilies();
-        double doorsShort = fam.getStillUnplaced();
+        double doorsShort = g.getHouseholdsWantingAHome();
         if (homesShort > -4 || doorsShort > 0) {
             /*
              * Priced on the output the people it houses would produce, less a
@@ -5170,53 +5208,81 @@ public class LongPlaytest {
         }
     }
 
-    /** Every district planned through the map's own chain, then each one's boxes decoded (CL3Probe's way: tile k, x = b & 31, y = (b >> 5) & 31, type = b >>> BOX_TYPE_SHIFT), the packed ones left out. */
+    /**
+     * Every district planned through the map's own chain, each one's boxes decoded (CL3Probe's way: tile k, x = b & 31,
+     * y = (b >> 5) & 31, type = b >>> BOX_TYPE_SHIFT), the packed ones left out. A district is read as soon as a job
+     * leaves its plan current, so none is planned again only to be read.
+     * WHY: the map keeps the last PLANS_KEPT districts drawn; read after the whole city was planned, every district
+     * before them was planned a second time to be read, with the month before's snapshot and most of this one's held,
+     * and at the dry run's m2389 (RES3, 188 districts, 10.8 million people) one of those plans ran the 2 GB heap out in
+     * DistrictPlan's overflow log. Read when current, a plan is the one the city draws: nothing the model reads moves
+     * while the snapshot is made. What no job left current (an edge district whose band's packing came after its plan
+     * had left the cache) is read last, through drawnOf(), as before.
+     */
     static Map<Long, LayoutSnap> layoutSnapshot(CityMap m) {
         List<CityMap.District> ds = new ArrayList<>(m.districts());
-        for (CityMap.District d : ds) {
-            if (m.planned(d)) continue;
-            for (CityMap.Job j : m.planJobs(d)) {
-                j.run();
-                m.adopt(j);
-            }
-        }
-        m.packed();
         int nt = m.types().length;
         Map<Long, LayoutSnap> out = new java.util.HashMap<>();
+        java.util.Set<CityMap.District> unread = new java.util.LinkedHashSet<>(ds);
         for (CityMap.District d : ds) {
-            CityMap.Drawn dr = m.drawnOf(d);
-            if (dr == null) continue;
-            int total = 0;
-            for (int[] bx : dr.boxes) if (bx != null) total += bx.length;
-            long[] keys = new long[total];
-            int n = 0;
-            LayoutSnap s = new LayoutSnap();
-            s.byType = new int[nt];
-            for (int k = 0; k < CityMap.TILES; k++) {
-                int[] bx = dr.boxes[k];
-                if (bx == null) continue;
-                long tx = (long) (k % CityMap.TILES_A_SIDE) * World.TILE, ty = (long) (k / CityMap.TILES_A_SIDE) * World.TILE;
-                for (int b : bx) {
-                    if ((b & CityMap.PACKED_BIT) != 0) continue;
-                    int type = b >>> CityMap.BOX_TYPE_SHIFT;
-                    keys[n++] = ((((long) type << 40) | ((tx + (b & 31)) << 20) | (ty + ((b >> 5) & 31))) << 10) | (((b >> 10) & 31) << 5) | ((b >> 15) & 31);
-                    if (type < nt) s.byType[type]++;
+            if (!unread.contains(d)) continue;
+            if (!m.planned(d)) {
+                for (CityMap.Job j : m.planJobs(d)) {
+                    j.run();
+                    m.adopt(j);
+                    layoutReadCurrent(m, unread, nt, out);
                 }
             }
-            java.util.Arrays.sort(keys, 0, n);
-            s.boxes = new long[n];
-            s.dims = new int[n];
-            for (int i = 0; i < n; i++) {
-                s.boxes[i] = keys[i] >> 10;
-                s.dims[i] = (int) (keys[i] & 1023);
-            }
-            s.carryIn = m.carried(d)[0];
-            s.carryLog = m.carriedLog(d);
-            s.counted = new int[nt];
-            for (int t = 0; t < nt; t++) s.counted[t] = d.count(t);
-            out.put(layoutKey(d), s);
+            layoutReadCurrent(m, unread, nt, out);
         }
+        m.packed();
+        for (CityMap.District d : unread) layoutRead(m, d, nt, out);
         return out;
+    }
+
+    /** Reads every district not yet read whose plan is current, while the map still has it drawn. */
+    private static void layoutReadCurrent(CityMap m, java.util.Set<CityMap.District> unread, int nt, Map<Long, LayoutSnap> out) {
+        for (java.util.Iterator<CityMap.District> it = unread.iterator(); it.hasNext(); ) {
+            CityMap.District d = it.next();
+            if (!m.planned(d)) continue;
+            layoutRead(m, d, nt, out);
+            it.remove();
+        }
+    }
+
+    /** One district's snapshot, by layoutKey(): its plan as drawnOf() gives it (planned here if it is not current). */
+    private static void layoutRead(CityMap m, CityMap.District d, int nt, Map<Long, LayoutSnap> out) {
+        CityMap.Drawn dr = m.drawnOf(d);
+        if (dr == null) return;
+        int total = 0;
+        for (int[] bx : dr.boxes) if (bx != null) total += bx.length;
+        long[] keys = new long[total];
+        int n = 0;
+        LayoutSnap s = new LayoutSnap();
+        s.byType = new int[nt];
+        for (int k = 0; k < CityMap.TILES; k++) {
+            int[] bx = dr.boxes[k];
+            if (bx == null) continue;
+            long tx = (long) (k % CityMap.TILES_A_SIDE) * World.TILE, ty = (long) (k / CityMap.TILES_A_SIDE) * World.TILE;
+            for (int b : bx) {
+                if ((b & CityMap.PACKED_BIT) != 0) continue;
+                int type = b >>> CityMap.BOX_TYPE_SHIFT;
+                keys[n++] = ((((long) type << 40) | ((tx + (b & 31)) << 20) | (ty + ((b >> 5) & 31))) << 10) | (((b >> 10) & 31) << 5) | ((b >> 15) & 31);
+                if (type < nt) s.byType[type]++;
+            }
+        }
+        java.util.Arrays.sort(keys, 0, n);
+        s.boxes = new long[n];
+        s.dims = new int[n];
+        for (int i = 0; i < n; i++) {
+            s.boxes[i] = keys[i] >> 10;
+            s.dims[i] = (int) (keys[i] & 1023);
+        }
+        s.carryIn = m.carried(d)[0];
+        s.carryLog = m.carriedLog(d);
+        s.counted = new int[nt];
+        for (int t = 0; t < nt; t++) s.counted[t] = d.count(t);
+        out.put(layoutKey(d), s);
     }
 
     /**
@@ -6277,10 +6343,14 @@ public class LongPlaytest {
     /** Harness-only first-district census, enabled with -Dcbs.pw5.firstDistrict=true. */
     private static boolean pw5DistrictReported;
 
+    /** Optional harness-only passive reader; default null, no model seam. */
+    static java.util.function.BiConsumer<Game,Boolean> passiveObserver;
+
     private static void run(Game g, int months, boolean playGovernmentPolicy) {
         for (int i = 0; i < months; i++) {
 
             int before = g.getMonth();
+            if (passiveObserver != null) passiveObserver.accept(g, true);
             AutoBuilder works = g.getAutoBuilder();
             boolean worksOn = works.isOn(), worksOver = !works.within(g);
             int worksOrders = works.getOrders();
@@ -6425,6 +6495,7 @@ public class LongPlaytest {
             countTheCurve(g);
             audit(g);
             countWorks(g, worksOn, worksOver, worksOrders);
+            if (passiveObserver != null) passiveObserver.accept(g, false);
             traceMonth(g);
             traceGroundMonth(g);
             if (monthObserved != null) monthObserved.accept(g);
@@ -7257,6 +7328,7 @@ public class LongPlaytest {
             if (WAGES) log.add(wageEra(g));
 
         } catch (Throwable t) {
+            if (passiveObserver != null) throw new IllegalStateException("passive observation stopped", t);
             System.setOut(out);
             out.println("\n!!! THREW at month " + g.getMonth() + ": " + t);
             for (StackTraceElement s : t.getStackTrace()) {
@@ -9400,6 +9472,15 @@ public class LongPlaytest {
                whatever the assertion count says.
                ================================================================= */
             g.buildStack(t(g, "Bus Network"), 3, false);
+            /*
+             * AND A GRANT ON TUITION, SO THE ROWS' OWN LINE HAS A CAUSE (RES3c, 2026-11-26). Since RES3 every cell with
+             * a household in it settles its row's share (0894946a7), and HouseholdBalance's UnsettledIncome arises only
+             * where a row is handed take-home with no household in it. Play has one: a TUITION_SHARE grant is struck on
+             * the student body's tuition once education has enrolled the month's intake, after the census rebuilt the
+             * families, so in the month of the new college's first intake the students' row is paid with no student
+             * household yet counted (m137 here, the whole row's 0.48). Section 13's count of the own lines reads it.
+             */
+            g.getEconomyManager().getTaxPolicy().setGrant(TaxPolicy.GrantBasis.TUITION_SHARE, INDUSTRIAL_TUITION_GRANT);
 
             worst = play("with mines, mills, a cemetery, a college and a bus, 240 months", g, 240, verbose);
             // ...the longest this file plays: the households' books over it are section 13's.
@@ -10046,6 +10127,9 @@ public class LongPlaytest {
              * its first bond, for a shortfall of $20.82 against little bond room, was $0.80 (the record 0.0731): every cell halved left D
              * 0.0366 and its coupon 0.000033, under a cent, so the orphaned line could not be seen. Chosen by its coupon, the bond is
              * Retail's (due m129, the record 5.41, 1 of 59 cells halved), on any path that issues one.
+             * RES3c, 2026-11-26: ...and of an issuer with money in its till. On RES3's path the soonest so chosen was Industry's (due
+             * m127), whose till was empty from before m121: its backstop wrote every Industry bond to nothing at m123, so the bond
+             * never matured; every bond of an issuer with cash matured in its month (Construction's, Real Estate's, Restaurants').
              */
             final String bondLine = "- households BondFaceOrphaned";
             Game bondTown = foundingCity(GameFiles.scratch("moneycheck-bonds"));
@@ -10058,6 +10142,8 @@ public class LongPlaytest {
             for (CorporateBond b : bondMarket.getBonds()) {
                 if (!(b.households() > 0) || !(gBooks.bondFaceHeld(b.id) > 0)) continue;
                 if (!(b.households() / 2 * b.coupon / CorporateBond.COUPONS_A_YEAR > reach)) continue;
+                // ...whose issuer can pay it: a till with nothing in it is the one the backstop writes to nothing before its maturity.
+                if (!(bondTown.getEconomyManager().getSectorCash(b.issuer()) > 0)) continue;
                 if (soonest == null || b.maturityMonth() < soonest.maturityMonth()) soonest = b;
             }
             assertTrue("fixture: the bond town's households hold a corporate bond whose coupon on half its record clears twice the visible line", soonest != null);

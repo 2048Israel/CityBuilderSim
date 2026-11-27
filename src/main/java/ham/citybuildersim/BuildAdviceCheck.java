@@ -1835,7 +1835,9 @@ public class BuildAdviceCheck {
     static void warrantHeld(Path root) {
         out.println("\n--- 16. warranted() read once in a search (AP7): after each writer the held answer is the bare reading, to the bit ---");
         ChildcareCheck.quiet = quiet;
-        Game g = ChildcareCheck.town(root, "warrant-held", 4);
+        // Four copies with the doors their posts need (RES3: a door holds one household, so 900 Houses a copy leave the builders' posts
+        // unstaffed after the repairs, as EssentialWorksCheck.professionalDemand's four copies found).
+        Game g = ChildcareCheck.town(root, "warrant-held", 4, EssentialWorksCheck.PROFESSIONAL_TOWN_HOUSES);
         EducationType type = EducationType.MEDICAL;
         BuildAdvice.Measure m = BuildAdvice.Measure.school(type);
         String schoolName = "Medical School", clinicName = "Community Health Centre";

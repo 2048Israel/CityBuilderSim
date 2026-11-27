@@ -134,6 +134,19 @@ public final class CentralBank {
     /** Advances to the commercial bank at the window: what its funding past its deposits owes here. */
     private double advancesToBank;
 
+    /**
+     * What the last settle asked the bank to repay and the reserves could not take (repayFromBank()): owed here past what its
+     * funding needs, and priced at the window's rate in the next month (Bank.fundToCover()). WHY (RES3; REV-RES3b, 2026-11-27):
+     * the repayment's cap left up to the whole advance owed after the bank's wholesale fell to nothing, and the month's charge
+     * priced only the wholesale, so the advance still owed paid no interest; a discount window charges its unpaid balance.
+     */
+    private double windowDeferred;
+
+    /** Accrued window interest not yet collected: a receivable, never an unsecured monetary advance. */
+    private double windowInterestDue;
+    /** The month's signed accrual less collection, saved separately from the closing receivable. */
+    private double windowInterestDueChange;
+
     /** Advances to the treasury: its overdraft, funded by money this bank made. */
     private double advancesToTreasury;
 
@@ -275,6 +288,7 @@ public final class CentralBank {
         advancedToBank = repaidByBank = 0;
         advancedToTreasury = repaidByTreasury = 0;
         interestOnReserves = windowInterest = advancesInterest = 0;
+        windowInterestDueChange = 0;
         remitted = 0;
         boughtPaper = soldPaper = paperCoupons = paperRedeemed = boughtBack = paperGains = 0;
         boughtFromHouseholds = boughtFromWorld = 0;
@@ -309,7 +323,7 @@ public final class CentralBank {
 
     /** Money made and lent to the commercial bank, capped by its remaining eligible collateral. */
     public double advanceToBank(double x) {
-        x = Math.min(x, Math.max(0, getWindowCapacity() - advancesToBank));
+        x = Math.min(x, Math.max(0, getWindowCapacity() - advancesToBank - windowInterestDue));
         return issueWindowAdvance(x);
     }
 
@@ -322,9 +336,14 @@ public final class CentralBank {
         return x;
     }
 
-    /** ...and repaid, which destroys it. */
+    /**
+     * ...and repaid, which destroys it: no more than this bank has made (its reserves), as settleGoldRedeemed() retires, and the rest
+     * left owed here for the next settle. WHY (RES3, 2026-11-26): the repayment was capped only at what was owed, so a month whose
+     * other retirements had spent the reserves took M0 below nothing - GoldStandardCheck's moving-down town at m140-154, reserves
+     * -3.1 to -38.1 with no currency out, the cover over it infinite - and a bank pays back only out of reserves it holds.
+     */
     public double repayFromBank(double x) {
-        double paid = Math.min(Math.max(0, x), advancesToBank);
+        double paid = Math.min(Math.min(Math.max(0, x), advancesToBank), Math.max(0, reserves));
         if (paid <= 0) return 0;
         advancesToBank -= paid;
         repaidByBank += paid;
@@ -339,10 +358,18 @@ public final class CentralBank {
      * side has always shed its wholesale tranche before its deposit one.
      */
     public void settleWindow(double owed) {
-        double target = Math.min(Math.max(0, owed), getWindowCapacity());
+        double target = Math.max(0, owed);
+        if (target > 0) target = Math.min(target, Math.max(0, getWindowCapacity() - windowInterestDue));
+        windowDeferred = 0;
         if (target > advancesToBank) issueWindowAdvance(target - advancesToBank);
-        else if (target < advancesToBank) repayFromBank(advancesToBank - target);
+        else if (target < advancesToBank) {
+            double asked = advancesToBank - target;
+            windowDeferred = asked - repayFromBank(asked);
+        }
     }
+
+    /** What the last settle left owed past the bank's funding, the reserves short of it: the next month's charge prices what the tranche has not grown back into. */
+    public double getWindowDeferred() { return windowDeferred; }
 
     /** Interest on reserves: the policy rate on the bank's spare cash, paid in money made for it. */
     public double payInterestOnReserves(double x) {
@@ -352,12 +379,32 @@ public final class CentralBank {
         return x;
     }
 
-    /** The window's interest, from the commercial bank: income here, and money destroyed. */
+    /**
+     * Accrues the window's bill and collects what reserves can pay, including older unpaid interest. Any advance to fund the
+     * payment still needs collateral. The rest remains a receivable and the bank's payable; only collection destroys money.
+     * WHY (CBK3 merging RES3): issuing through an internal bypass broke the collateral ceiling, while retiring the full bill
+     * after a refused advance made M0 negative. Neither an unpaid bill nor a missing reserve may be erased.
+     */
     public double chargeWindow(double x) {
-        if (!(x > 0)) return 0;
-        windowInterest += x;
-        retire(x);
-        return x;
+        double bill = x > 0 ? x : 0;
+        windowInterest += bill;
+        windowInterestDue += bill;
+        double paid = Math.min(windowInterestDue, Math.max(0, reserves));
+        windowInterestDue -= paid;
+        if (paid > 0) retire(paid);
+        if (windowInterestDue > 0) {
+            // Reclassify an existing receivable as issued principal, immediately collected.
+            // Principal still fits raw collateral; total exposure is unchanged, with no cash available for another purchase.
+            double refinanced = Math.min(windowInterestDue, Math.max(0, getWindowCapacity() - advancesToBank));
+            if (refinanced > 0) {
+                windowInterestDue -= refinanced;
+                issueWindowAdvance(refinanced);
+                retire(refinanced);
+                paid += refinanced;
+            }
+        }
+        windowInterestDueChange += bill - paid;
+        return paid;
     }
 
     /* ============================ THE TREASURY ============================ */
@@ -881,7 +928,7 @@ public final class CentralBank {
     public double getCurrency()           { return currency; }
 
     public double totalAssets() {
-        return advancesToBank + advancesToTreasury + paperHeld + redemptionDue + getVault();
+        return advancesToBank + advancesToTreasury + paperHeld + redemptionDue + getVault() + windowInterestDue;
     }
 
     /** M0: everything this bank owes, which is every dollar it has made and not taken back. */
@@ -916,6 +963,9 @@ public final class CentralBank {
     public double getRepaidByTreasury()   { return repaidByTreasury; }
     public double getInterestOnReserves() { return interestOnReserves; }
     public double getWindowInterest()     { return windowInterest; }
+    public double getWindowInterestDue()  { return windowInterestDue; }
+    /** Cash received this month: the accrued bill less the saved change in what remains uncollected. */
+    public double getWindowInterestCollected() { return Math.max(0, windowInterest - windowInterestDueChange); }
     public double getAdvancesInterest()   { return advancesInterest; }
     /** The remittance paid to the treasury this month. */
     public double getRemitted()           { return remitted; }
@@ -983,13 +1033,14 @@ public final class CentralBank {
         ADVANCED_TO_BANK, ADVANCED_TO_TREASURY, BOUGHT_PAPER, BOUGHT_FROM_BANK, BOUGHT_FROM_HOUSEHOLDS, BOUGHT_FROM_WORLD,
         BOUGHT_AT_ISSUE, PAR_AT_ISSUE, DOLLARS_BOUGHT, GOLD_MINTED,
         REPAID_BY_BANK, REPAID_BY_TREASURY, SOLD_PAPER, PAPER_REDEEMED, BOUGHT_BACK, GOLD_REDEEMED,
-        DEFENDED, ISSUED, RETIRED, M0_AT_START
+        DEFENDED, ISSUED, RETIRED, M0_AT_START,
+        WINDOW_INTEREST_DUE_CHANGE
     }
 
     /** ...and a line of its balance sheet, as they read it: this month's and a year ago's (yearAgo()). */
     public enum Sheet {
         WINDOW, TREASURY, PAPER, REDEMPTION_DUE, VAULT, ASSETS, RESERVES, CURRENCY, LIABILITIES, EQUITY,
-        LOSS_CARRIED, REMITTANCE_DUE
+        LOSS_CARRIED, REMITTANCE_DUE, WINDOW_INTEREST_DUE
     }
 
     private static final Line[] LINES = Line.values();
@@ -1059,6 +1110,7 @@ public final class CentralBank {
             case ISSUED                 -> issued;
             case RETIRED                -> retired;
             case M0_AT_START            -> m0AtStart;
+            case WINDOW_INTEREST_DUE_CHANGE -> windowInterestDueChange;
         };
     }
 
@@ -1095,6 +1147,7 @@ public final class CentralBank {
             case ISSUED                 -> issued = v;
             case RETIRED                -> retired = v;
             case M0_AT_START            -> m0AtStart = v;
+            case WINDOW_INTEREST_DUE_CHANGE -> windowInterestDueChange = v;
         }
     }
 
@@ -1125,6 +1178,7 @@ public final class CentralBank {
     public double sheet(Sheet line) {
         return switch (line) {
             case WINDOW         -> advancesToBank;
+            case WINDOW_INTEREST_DUE -> windowInterestDue;
             case TREASURY       -> advancesToTreasury;
             case PAPER          -> paperHeld;
             case REDEMPTION_DUE -> redemptionDue;
@@ -1168,7 +1222,7 @@ public final class CentralBank {
      * two dials, the holdings and the ceiling, are under keys of their own.
      */
     public double[] toSaveArray() {
-        double[] out = new double[13 + REVENUE_MONTHS + 15 + 3 + 2 * LINES.length + SHEET_MONTHS * SHEETS.length];
+        double[] out = new double[13 + REVENUE_MONTHS + 15 + 3 + 2 * LINES.length + SHEET_MONTHS * SHEETS.length + 2];
         int i = 0;
         out[i++] = advancesToBank;
         out[i++] = advancesToTreasury;
@@ -1207,6 +1261,8 @@ public final class CentralBank {
         out[i++] = SHEETS.length;
         for (double[] row : sheetRing) for (Sheet s : SHEETS) out[i++] = row[s.ordinal()];
         out[i++] = sheetsFiled;
+        out[i++] = windowDeferred;
+        out[i++] = windowInterestDue;
         return out;
     }
 
@@ -1261,11 +1317,16 @@ public final class CentralBank {
                 for (int k = 0; k < n && i < saved.length; k++, i++) if (k < SHEETS.length) sheetRing[r][k] = saved[i];
             if (i < saved.length) sheetsFiled = Math.max(0, (int) saved[i++]);
         }
+        // ...and RES3's: an older save left nothing owed past the bank's funding (its repayment had no cap).
+        if (i < saved.length) windowDeferred = Math.max(0, saved[i++]);
+        if (i < saved.length) windowInterestDue = Math.max(0, saved[i++]);
     }
 
     /** An empty bank: nothing lent, nothing made. */
     public void reset() {
         advancesToBank = advancesToTreasury = paperHeld = 0;
+        windowDeferred = 0;
+        windowInterestDue = 0;
         reserves = currency = 0;
         lossCarried = remittanceDue = 0;
         printedLifetime = issuedLifetime = retiredLifetime = remittedLifetime = 0;
@@ -1291,6 +1352,9 @@ public final class CentralBank {
      */
     public void redenominate(double scale) {
         advancesToBank *= scale;  advancesToTreasury *= scale;  paperHeld *= scale;
+        windowDeferred *= scale;
+        windowInterestDue *= scale;
+        windowInterestDueChange *= scale;
         reserves *= scale;  currency *= scale;
         lossCarried *= scale;  remittanceDue *= scale;
         printedLifetime *= scale;  issuedLifetime *= scale;

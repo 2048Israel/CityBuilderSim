@@ -450,6 +450,29 @@ public class OutsideCheck {
             check("...and it happens once", college.getLastGraduated(), 0, 0);
         }
 
+        /*
+         * ----- the typed market's tenant past EI is evicted as main's (RES3, 2026-11-25) -----
+         * The typed market bills only a door a household funds, so a household past EI with nothing saved
+         * owes no rent at all; main's test read rentDue > 0 as "holds a home" and never struck it. The cause:
+         * forty past EI with nothing saved, a bill of a half each they cannot pay, and no door they fund.
+         */
+        {
+            HouseholdBalance typed = new HouseholdBalance();
+            typed.setOutsideCensus(c -> c instanceof UnemployedHousehold u
+                    ? switch (u.status()) { case ON_EI -> 50; case OFF_EI -> 40; case UNHOUSED -> 0; } : 0);
+            typed.setRentShares(c -> 1);
+            typed.setRentBills(c -> 0);
+            int R = HouseholdBalance.ROWS;
+            double[] pay = new double[R], fees = new double[R];
+            pay[HouseholdAccounts.UNEMPLOYED] = 50 * 1.9;
+            fees[HouseholdAccounts.UNEMPLOYED] = 90 * .5;
+            typed.advanceMonth((s, tier) -> 0, pay, 1.0, fees, new double[R], .3, .05, 1);
+            UnemployedHousehold off = typed.unemployed(UnemployedHousehold.Status.OFF_EI);
+            assertTrue("fixture: the household past EI owes no rent on the typed market and cannot pay its other bills",
+                    off.unfunded() > 0);
+            check("...and is evicted all the same, every one of the forty (RES3)", typed.getEvicted(), 40, 1e-9);
+        }
+
         /* ============ 6. health ============ */
         System.out.println("\n--- the unhoused and the orphans ---");
         {

@@ -419,6 +419,83 @@ public class CentralBankCheck {
         window.settleWindow(atWindow / 2);
         close("a smaller secured shortfall is a repayment", window.getRepaidByBank(), atWindow / 2, 1e-9);
 
+        // RES3: a bank pays the window back only out of reserves there are. A central bank that lent 100 and was paid 80 of it in
+        // interest holds 20 of reserves; the bank's shortfall gone, it repays 20, and the 80 it could not stays owed for the next settle.
+        CentralBank spent = BankRulesCheck.deferredWindow().window();
+        close("a repayment past the reserves pays what they hold", spent.getRepaidByBank(), 20, 1e-12);
+        close("...and M0 does not go below nothing", spent.m0(), 0, 0);
+        close("...and the rest stays owed at the window", spent.getAdvancesToBank(), 80, 1e-12);
+        spent.payInterestOnReserves(30);
+        spent.settleWindow(0);
+        close("...repaid as reserves come", spent.getAdvancesToBank(), 50, 1e-12);
+        close("a settle the reserves took whole leaves nothing deferred", window.getWindowDeferred(), 0, 0);
+
+        // RES3 (REV-RES3b's P1): the advance a settle left owed is priced the next month on both books. A bank with no deposits
+        // owed the window 100 and its funding came back; the central bank, its reserves spent to 20, took 20 and deferred 80. The
+        // month after, in Game's order, the bank is charged the window's rate on the 80 - 0.6833 at 10% - and the central bank books
+        // the same interest out of reserves it does not have, so lends it at the window: the deferred 80 stands, the interest is
+        // owed in the bank's own tranche, and its pool and M0 move by what they declared, to the cent.
+        BankRulesCheck.WindowFixture owedFixture = BankRulesCheck.deferredWindow();
+        CentralBank owedAt = owedFixture.window();
+        Bank owing = owedFixture.bank();
+        assertTrue("fixture: real collateral, 80 deferred and no reserves before the next bill",
+                owedAt.getAdvancesToBank() == 80 && owedAt.getWindowDeferred() == 80 && owedAt.getReserves() == 0
+                        && owing.windowCreditLimit() >= 80 && owing.windowFunding() == 0);
+        double windowRate = .10 + CentralBank.WINDOW_PENALTY;
+        double poolBefore = owing.getCash() + owedAt.getAdvancesToBank(), m0Before = owedAt.m0();
+        owedAt.startMonth();
+        owing.fundToCover(.10, owedAt.getWindowDeferred(), owedAt.getAdvancesToBank());
+        owedAt.payInterestOnReserves(owing.getPlacementIncome());
+        owing.payWindowInterest(owedAt.chargeWindow(owing.getWindowFundingCost()));
+        owedAt.settleWindow(owing.windowFunding());
+        double poolMoved = owing.getCash() + owedAt.getAdvancesToBank() - poolBefore;
+        out.printf("   the month after: charged %.4f at %.2f%%, the window lent %.4f, %.4f deferred, M0 %.4f%n", owing.getFundingCost(),
+                windowRate * 100, owedAt.getAdvancedToBank(), owedAt.getWindowDeferred(), owedAt.m0());
+        close("the month after, the bank is charged the window's rate on the advance still owed (80 at 10% is 0.6833)",
+                owing.getFundingCost(), 80 * windowRate / 12, 1e-12);
+        close("...all of it on the advance owed past its tranche", owing.getWindowOwedCost(), owing.getFundingCost(), 0);
+        close("...and the central bank books the same interest", owedAt.getWindowInterest(), owing.getFundingCost(), 0);
+        close("...out of reserves it lends at the window where it has none, so M0 does not go below nothing", owedAt.m0(), 0, MoneyAudit.CENT);
+        close("...the interest owed in the bank's own tranche, and the 80 still deferred", owedAt.getWindowDeferred(), 80, 1e-9);
+        close("the bank's pool, its cash and what it owes the window, moves by what it declared, to the cent", poolMoved,
+                owedAt.getAdvancedToBank() - owedAt.getRepaidByBank() - owedAt.getWindowInterest() + owedAt.getInterestOnReserves()
+                        - owing.depositInterest(), MoneyAudit.CENT);
+        close("...and M0 by money made less money destroyed", owedAt.m0() - m0Before, owedAt.getIssued() - owedAt.getRetired(), MoneyAudit.CENT);
+
+        // REV-RES3b's fourth look: each dollar the window holds is priced once. The same 80 deferred, and the next month new lending
+        // lifts the bank's tranche to 30, then to 80, into the deferred balance: the window lends only the shortfall at its settle, so
+        // it still holds 80, and the charge is on 80 (0.6833 at 10%), the tranche's 30 and the 50 past it - not 110 or 160.
+        for (double grown : new double[] { 30, 80 }) {
+            BankRulesCheck.WindowFixture heldFixture = BankRulesCheck.deferredWindow();
+            CentralBank heldAt = heldFixture.window();
+            Bank lending = heldFixture.bank();
+            lending.setCash(-grown);
+            assertTrue("fixture: 80 deferred and the window holding 80, the tranche grows to " + (int) grown + " ("
+                    + heldAt.getWindowDeferred() + " deferred, " + heldAt.getAdvancesToBank() + " held, " + lending.wholesaleFunding() + " wholesale)",
+                    heldAt.getWindowDeferred() == 80 && heldAt.getAdvancesToBank() == 80 && lending.wholesaleFunding() == grown);
+            double lentBefore = lending.getCash() + heldAt.getAdvancesToBank(), m0Was = heldAt.m0();
+            heldAt.startMonth();
+            lending.fundToCover(.10, heldAt.getWindowDeferred(), heldAt.getAdvancesToBank());
+            heldAt.payInterestOnReserves(lending.getPlacementIncome());
+            lending.payWindowInterest(heldAt.chargeWindow(lending.getWindowFundingCost()));
+            heldAt.settleWindow(lending.windowFunding());
+            String at = " (the tranche at " + (int) grown + ")";
+            close("the window's charge is on the 80 it holds, each dollar once" + at, lending.getFundingCost(), 80 * windowRate / 12, 1e-12);
+            close("...the part past the tranche what the tranche has not grown back into" + at, lending.getWindowOwedCost(),
+                    (80 - grown) * windowRate / 12, 1e-12);
+            close("...and the central bank books the same interest" + at, heldAt.getWindowInterest(), lending.getFundingCost(), 0);
+            close("...the deferred balance down by what the tranche took up" + at, heldAt.getWindowDeferred(), 80 - grown, 1e-9);
+            close("...the pool moving by what it declared, to the cent" + at, lending.getCash() + heldAt.getAdvancesToBank() - lentBefore,
+                    heldAt.getAdvancedToBank() - heldAt.getRepaidByBank() - heldAt.getWindowInterest() + heldAt.getInterestOnReserves()
+                            - lending.depositInterest(), MoneyAudit.CENT);
+            close("...and M0 by money made less money destroyed, at or above nothing" + at, heldAt.m0() - m0Was,
+                    heldAt.getIssued() - heldAt.getRetired(), MoneyAudit.CENT);
+        }
+
+        // A FAILED BANK AT THE WINDOW (0.7.1, decided rather than forgotten):
+        // the resolution sets its equity to zero, and it is charged no
+        // interest on what it still owes past its deposits - see the note in
+        // Bank.fundToCover(). The advance stands; the charge does not.
         Bank failed = new Bank();
         failed.refresh(1, 100_000, 0, 500_000, 0, 0);
         failed.injectCapital(50_000);

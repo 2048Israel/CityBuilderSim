@@ -2720,6 +2720,8 @@ public class KeptCheck {
         KeptBench.Page cards = fx(() -> bench.build("Build, " + cat, cat, java.util.Map.of()));
         Object[] press = fx(() -> {
             bench.home(cards);
+            // WHY: an unpicked ring follows the worst need after a month; keep this reset on its original Childcare card.
+            bench.buildRing(cat, BuildAdvice.measuresOf(cat).indexOf(BuildAdvice.Measure.care(CareType.CHILDCARE)));
             bench.drawKept(cards);
             bench.passes();
             List<String> names = bench.buildCardNames();
@@ -2742,6 +2744,12 @@ public class KeptCheck {
             // ...cleared by the card's own ↺, outside a draw: the bar goes and the next draw is a page built new.
             bench.drawKept(cards);
             String beforeClear = bench.buildCount(0) + " × " + names.get(0);
+            List<String> resetNames = bench.buildCardNames();
+            long held = bench.buildOrdered(names.get(0));
+            check("fixture: reset retains the same first building with positive held order (" + names.get(0)
+                    + ", current " + resetNames + ", held " + held + ", shown " + bench.buildCount(0) + ")",
+                    !resetNames.isEmpty() && names.get(0).equals(resetNames.get(0)) && held > 0
+                            && Long.toString(held).equals(bench.buildCount(0)));
             boolean cleared = bench.buildStep(0, "↺");
             boolean barGone = !bench.buildBarShows(word) && !bench.buildBarShows(beforeClear);
             bench.drawKept(cards);
@@ -5063,6 +5071,77 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
             return 2;
         });
     }
+    /** The Show more presses and then the months section 63 watches the longest issuer's expanded search over (RES3). */
+    static final int SHOW_MORE_PRESSES = 2, SHOW_MORE_MONTHS = 3;
+
+    /**
+     * Section 63 (RES3): Show more on the longest issuer's search hands back every row on show and makes only the next SEARCH_ROWS,
+     * and over SHOW_MORE_MONTHS months the expanded rows stay the same nodes, as many as the presses showed, while the lots the fund
+     * closes on the issuer's matured bonds lengthen its search. WHY: refilled outside a draw, every press made every row on show new,
+     * and pressing through RES3's longest issuer ran KeptCheck out of heap (RES3-notes.md).
+     */
+    static void searchShowMoreBounded(Game g, KeptBench bench, KeptBench.Page tab, int rows) throws Exception {
+        System.out.println("\n--- 63: Show more keeps the rows on show and makes only its own, month after month (RES3) ---");
+        fx(() -> {
+            bench.fundPage("Search");
+            bench.fundSearch("", "Bonds");
+            bench.drawKept(tab);
+            String issuer = null;
+            int matches = 0;
+            for (String name : FundView.search(g, "", "Bonds").stream().map(FundView.Hit::issuer).filter(java.util.Objects::nonNull).distinct().toList()) {
+                int count = FundView.search(g, name, "Bonds").size();
+                if (count > matches) {
+                    issuer = name;
+                    matches = count;
+                }
+            }
+            int shown = (SHOW_MORE_PRESSES + 1) * rows;
+            check("fixture: the longest issuer's search runs past " + shown + " rows, SHOW_MORE_PRESSES + 1 Search pages (" + issuer + ", " + matches + " matches)",
+                    matches > shown);
+            if (matches <= shown) return null;
+            final String named = issuer;
+            bench.fundSearch(named, "Bonds");
+            bench.drawKept(tab);
+            boolean same = true, next = true;
+            StringBuilder said = new StringBuilder();
+            for (int press = 1; press <= SHOW_MORE_PRESSES; press++) {
+                List<javafx.scene.layout.HBox> before = fundResultRows(bench);
+                String more = bench.chipWith(s -> s.startsWith("Show more · "));
+                if (more == null || !bench.pressChip(more)) {
+                    same = next = false;
+                    said.append("press ").append(press).append(": Show more is absent");
+                    break;
+                }
+                List<javafx.scene.layout.HBox> after = fundResultRows(bench);
+                for (int i = 0; i < before.size(); i++) same &= i < after.size() && before.get(i) == after.get(i);
+                next &= before.size() == press * rows && after.size() == Math.min((press + 1) * rows, FundView.search(g, named, "Bonds").size());
+                said.append("press ").append(press).append(": ").append(before.size()).append(" rows, then ").append(after.size()).append("; ");
+            }
+            check("each Show more hands back every row on show, the same nodes (" + said + ")", same);
+            check("...and adds only the next SEARCH_ROWS rows", next);
+            List<javafx.scene.layout.HBox> expanded = fundResultRows(bench);
+            boolean kept = true, bounded = true;
+            StringBuilder months = new StringBuilder();
+            int start = FundView.search(g, named, "Bonds").size(), grown = start;
+            for (int m = 0; m < SHOW_MORE_MONTHS; m++) {
+                month(g);
+                bench.drawKept(tab);
+                List<javafx.scene.layout.HBox> now = fundResultRows(bench);
+                int all = FundView.search(g, named, "Bonds").size();
+                grown = all;
+                bounded &= now.size() == Math.min(shown, all);
+                for (int i = 0; i < expanded.size(); i++) kept &= i < now.size() && expanded.get(i) == now.get(i);
+                months.append("m").append(g.getMonth()).append(" ").append(now.size()).append(" of ").append(all).append("; ");
+            }
+            // REV-RES3z: the bound below is only a bound if the list it holds back grew while it held.
+            check("fixture: the issuer's search grew over the SHOW_MORE_MONTHS months (" + start + " to " + grown + ")", grown > start);
+            check("a month's redraw shows the rows the presses showed, however long the issuer's search grows (" + months + ")", bounded);
+            check("...the same row nodes month after month", kept);
+            check("...and the expanded search equals a page built new", againstNew(bench, tab, true) == null);
+            return null;
+        });
+    }
+
     /** Section 63 opens and shuts the paging controls and each older year, kept against a page built new. */
     static void fundLists(Game g, KeptBench bench, KeptBench.Page tab) throws Exception {
         System.out.println("\n--- 63: the fund's Search pages and Activity years (FP1) ---");
@@ -5131,6 +5210,7 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
             return null;
         }));
         pageReshapedCaused(g, bench, tab, 63, choices);
+        searchShowMoreBounded(g, bench, tab, rows);
         fx(() -> {
             int month = g.getMonth();
             bench.fundPage("Search");
@@ -5243,13 +5323,22 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
 
     /**
      * A place a picture is seen: its label, the page, the hand that sets the page for it after the page's home, and what
-     * the player does on the page in each month it is watched, after the month and before the draw (null: nothing).
+     * the player does on the page in each month it is watched, after the month and before the draw (null: nothing). A spot with a
+     * city of its own (null: the played city) is censused and watched on that city and its bench, which its page was built on, and only
+     * the kinds of picture it names (null: every kind found) are watched there.
      */
-    record Spot(String label, KeptBench.Page page, Hand setup, MonthHand month) {
+    record Spot(String label, KeptBench.Page page, Hand setup, MonthHand month, OwnCity own, java.util.Set<String> kinds) {
+        Spot(String label, KeptBench.Page page, Hand setup, MonthHand month) {
+            this(label, page, setup, month, null, null);
+        }
+
         Spot(String label, KeptBench.Page page, Hand setup) {
-            this(label, page, setup, null);
+            this(label, page, setup, null, null, null);
         }
     }
+
+    /** A city a spot is watched on of its own (RES3, 2026-11-26): its game and bench, and whether its Borrow quote sold in each month watched. */
+    record OwnCity(Game game, KeptBench bench, List<Boolean> sold) { }
 
     /** What the player does on a page in a month of the watch (the first month is 1). */
     interface MonthHand {
@@ -5314,6 +5403,34 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
             spots.add(new Spot("Close it now", fx(() -> bench.finances("Close it now", "The book", "Every piece")), closeOf(piece),
                     (b, m) -> { if (m % 2 == 1) b.financesTyped(2, MOST_TO_PAY[m / 2 % 2]); }));
         }
+        // Borrow at home's ladder is censused and watched on Borrow's own city (KS1's borrowCity), its bidders caused. WHY (RES3, dry run 2,
+        // 2026-11-26): the page's second Columns is the ladder this would build, drawn only while the quote is not empty, and on the played
+        // city at m2580-2628 the bank bought 26 of the 30bn at m2616, then its capital ratio fell from 0.115 to 0.010 and it bid nothing; the
+        // households alone bid 2.6-10.7bn against a minimum issue of 4.6-9.1bn and issue lots of 2-5bn, so every sale was short and under the
+        // minimum, a tiny sale (Game.isTinySale), and the quote was empty in 5 of 7 draws, the ladder standing in one month only (m2627, 10.8bn
+        // sold) and the redraw after it dropping the Columns: six of seven pictures handed back, under nine in ten. That is the real world, a
+        // bank under its capital floor stops buying and a thin household market cannot fund a ten-year issue, so the fixture causes its
+        // premise: no ask could, since in three of those months the households' bids sat under one lot, and Borrow's own city bids a finite
+        // bank bid of twice its cash that clears the ask. The ask is a sixth of that city's cash, or four times its minimum issue, and the
+        // quote is struck in every month watched (the month hand below), asserted by moneyPictures after the watches. Only the Columns are
+        // watched here, for the AuctionChart needs no sale and stays on the played city below, where the market moves it every month: on a
+        // city whose bidders stand still its Result's face moved in the last digits with the lot (4,313,910,641 then 4,313,910,650 then
+        // 4,313,910,642 of 4.3bn), a move no pixel shows, and the chart drew itself again with nothing changed in 3 of 6 months (slice H's run).
+        Game own = fx(KeptCheck::borrowCity);
+        KeptBench ownBench = fx(() -> new KeptBench(own));
+        double ownAsk = fx(() -> Math.max(own.minimumIssueSize() * 4, own.getCash() / 6));
+        OwnCity ownCity = new OwnCity(own, ownBench, new ArrayList<>());
+        spots.add(new Spot("Borrow at home on Borrow's own city (KS1), asking for a sixth of its cash", fx(() -> ownBench.finances("Borrow at home", "Borrow", "At home")), b -> {
+            b.financesBorrow("Term", 10, moneys.get(0), ownAsk, false, false);
+            // The ladder this would build is drawn only while the quote is not empty, and at the tail's cap a month's bids can all
+            // stand above it (FB6: seven of ten handed back, the card there in four months of six): the player takes what fills it.
+            b.financesCap(true, 0);
+            return null;
+        }, (b, m) -> {
+            // The quote the page strikes (FinancesScreen.borrowPage, at home, a Term bond not asked callable), on the page's own cap.
+            DebtQuote quote = own.quoteDebt("Term", ownAsk, 10, BondMarket.issueLot(own, "Term", null), b.borrowCap());
+            ownCity.sold().add(!quote.isEmpty());
+        }, ownCity, java.util.Set.of("Columns")));
         spots.add(new Spot("Borrow at home, asking for a sixth of the cash", fx(() -> bench.finances("Borrow at home", "Borrow", "At home")), b -> {
             b.financesBorrow("Term", 10, moneys.get(0), ask, false, false);
             // The ladder this would build is drawn only while the quote is not empty, and at the tail's cap a month's bids can all
@@ -5346,21 +5463,23 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
         List<Spot> spots = pictureSpots(g, bench, piece);
         java.util.Map<String, List<Spot>> seen = new java.util.LinkedHashMap<>();
         for (Spot s : spots) {
+            // A spot with a city of its own is seen on that city's bench (its page was built on it).
+            KeptBench seenOn = s.own() != null ? s.own().bench() : bench;
             java.util.Map<String, Integer> found = fx(() -> {
-                bench.home(s.page());
-                s.setup().on(bench);
-                bench.drawKept(s.page());
-                bench.passes();
-                bench.settle();
+                seenOn.home(s.page());
+                s.setup().on(seenOn);
+                seenOn.drawKept(s.page());
+                seenOn.passes();
+                seenOn.settle();
                 java.util.Map<String, Integer> m = new java.util.LinkedHashMap<>();
                 for (String kind : KeptBench.pictureKinds()) {
-                    int c = bench.pictures(kind).size();
+                    int c = seenOn.pictures(kind).size();
                     if (c > 0) m.put(kind, c);
                 }
                 return m;
             });
             System.out.println("  " + s.label() + ": " + (found.isEmpty() ? "no picture" : found.toString()));
-            for (String kind : found.keySet()) seen.computeIfAbsent(kind, k -> new ArrayList<>()).add(s);
+            for (String kind : found.keySet()) if (s.kinds() == null || s.kinds().contains(kind)) seen.computeIfAbsent(kind, k -> new ArrayList<>()).add(s);
         }
         for (String kind : KeptBench.pictureKinds()) {
             List<Spot> at = seen.getOrDefault(kind, List.of());
@@ -5376,8 +5495,27 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
                     if (live != null) spot = new Spot(spot.label(), spot.page(),
                             kind.equals("PathChart") ? lineOf(live) : closeOf(live), spot.month());
                 }
-                pictureKept(g, bench, spot, kind);
+                if (spot.own() == null) {
+                    pictureKept(g, bench, spot, kind);
+                } else {
+                    // The watch plays months on the spot's own city, so the played city plays as many after it: the sections after this one
+                    // keep the stretch they have always had (as section 60 does for Borrow's city).
+                    Game city = spot.own().game();
+                    int from = fx(city::getMonth);
+                    pictureKept(city, spot.own().bench(), spot, kind);
+                    fx(() -> {
+                        for (int m = from; m < city.getMonth(); m++) month(g);
+                        return null;
+                    });
+                }
             }
+        }
+        for (Spot s : spots) {
+            if (s.own() == null) continue;
+            // The ladder's premise, asserted: the quote Borrow's page strikes sold in every month of every watch of this spot (not an empty one).
+            int months = s.own().sold().size(), sold = (int) s.own().sold().stream().filter(b -> b).count();
+            check("fixture: " + s.label() + ": the quote sells in every month of the watch (" + sold + " of " + months + " months)", months > 0 && sold == months);
+            fx(() -> { s.own().bench().financesCapDefault(); return null; });
         }
         fx(() -> { bench.financesCapDefault(); return null; });
     }
@@ -7655,6 +7793,63 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
         check(what + ": each month hands back nine in ten of the nodes, or more", handed / months >= HANDED_BACK);
     }
 
+    /** A real founding before the catalogue opens business in month 18 and medicine in month 66. */
+    static void researchFundingNoReach() throws Exception {
+        Currency writing = Currency.writing();
+        double factor = PriceLevel.FACTOR;
+        try {
+            Game town = fx(() -> {
+                ResearchViewCheck.ensureQuiet();
+                Game early = ResearchViewCheck.foundedVillage("kept-research-no-reach");
+                ResearchViewCheck.quietly(() -> {
+                    early.buildStack(ResearchViewCheck.template(early, "University"), 2, true);
+                    early.buildStack(ResearchViewCheck.template(early, "Institute of Technology"), 1, true);
+                    early.buildStack(ResearchViewCheck.template(early, "Medical School"), 1, true);
+                    MaterialsCheck.handWorkers(early);
+                });
+                return early;
+            });
+            KeptBench bench = fx(() -> new KeptBench(town));
+            KeptBench.Page page = fx(() -> {
+                bench.clock(false, null);
+                bench.speed(0);
+                return bench.policy("Policy, Research's Funding before the first month", "Research", "Funding");
+            });
+            ResearchView.Overview ov = fx(() -> ResearchView.overview(town));
+            ResearchPreview.Result asIs = fx(() -> ResearchView.preview(town, ResearchView.Staged.none()));
+            List<String> sig = shownWith(bench, page, null);
+            List<ResearchView.SchoolRow> schools = ResearchView.schoolRows(town);
+            boolean supported = schools.size() == 3
+                    && schools.get(0).kind() == EducationType.UNIVERSITY && schools.get(0).count() == 2
+                    && schools.get(1).kind() == EducationType.MEDICAL && schools.get(1).count() == 1
+                    && schools.get(2).kind() == EducationType.ENGINEERING && schools.get(2).count() == 1;
+            check("fixture: the actual standing schools are two Universities, one Medical School and one Institute of Technology", supported, schools.toString());
+            boolean caused = supported && town.getMonth() == 1 && town.foundedUnfitted();
+            boolean reads = true;
+            String facts = "month=" + town.getMonth();
+            for (ResearchView.FieldReach row : ov.fields()) {
+                ResearchCatalog.Field f = row.field();
+                ResearchView.Card card = ResearchView.card(town, f, ResearchView.Staged.none(), row, asIs, asIs);
+                List<String> open = town.getResearch().openProblems(f, town.getMonth()).stream().map(e -> e.code()).toList();
+                facts += "; " + f + " researching=" + card.researching() + " room=" + card.roomPosts() + " open=" + open;
+                caused &= card.researching() && card.roomPosts() > 0 && row.inReach() == open.size()
+                        && (f == ResearchCatalog.Field.ENGINEERING ? !open.isEmpty() : open.isEmpty());
+                reads &= has(sig, label(KeptBench.researchSay(card)));
+            }
+            check("fixture: real month-one schools have room in every field, engineering open and medicine/business/law waiting (" + facts + ")", caused);
+            check("the early Funding cards choose the sentences from the real model's reads", reads, facts);
+            check("...and the sentence the model's reads choose: nothing in reach for medicine, business and law (their problems wait on ideas nobody has), the problems in reach for engineering",
+                    has(sig, "Nothing in medicine is in reach") && has(sig, "Nothing in business is in reach") && has(sig, "Nothing in law is in reach")
+                            && ov.fields().get(0).inReach() > 0);
+            String difference = fx(() -> againstNew(bench, page));
+            check("the early Funding sentences on the kept page equal a page built new", difference == null, difference);
+        } finally {
+            Currency.use(writing);
+        }
+        check("the early Funding fixture leaves the formatters' money and PriceLevel.FACTOR unchanged",
+                Currency.writing() == writing && Double.doubleToLongBits(PriceLevel.FACTOR) == Double.doubleToLongBits(factor));
+    }
+
     /** Sections 99-101 (R3b): Research Overview/Funding in default and funded 1900 cities equal fresh; model reads, staged/held/applied dials are checked. */
     static void researchFunding(Game g, KeptBench defaultBench) throws Exception {
         System.out.printf("%n=== Policy > Research's Overview and Funding (R3b): the default city at month %d, and a city founded the 1900 way with schools, grants and a lab ===%n", g.getMonth());
@@ -7663,6 +7858,8 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
         researchDefaultWay(g, defaultBench);
         t = tookWith("a city founded the default way (99)", t, c);
         c = checks;
+        // WHY (R3b): the shared town reaches month 130 here; its original aging windows remain below.
+        researchFundingNoReach();
         Game town = fx(KeptCheck::researchFundingTown);
         KeptBench bench = fx(() -> new KeptBench(town));
         fx(() -> {
@@ -7893,14 +8090,15 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
             boolean ok = has(sig, label(fieldWord(f))) && has(sig, label(row.schoolsWords())) && has(sig, label(room)) && has(sig, label(prize))
                     && has(sig, label(Money.people(card.researchersNow()))) && has(sig, label(Math.round(card.grantPostsNow()) + " of " + card.roomPosts()))
                     && has(sig, label(Money.money(card.billNow()))) && has(sig, label(card.findsNowWords())) && has(sig, label(KeptBench.researchSay(card)));
+            System.out.printf("  Funding premise month=%d field=%s researching=%s room=%d inReach=%d open=%s sentence=%s shown=%s%n",
+                    town.getMonth(), f, card.researching(), card.roomPosts(), row.inReach(),
+                    town.getResearch().openProblems(f, town.getMonth()).stream().map(e -> e.code()).toList(),
+                    KeptBench.researchSay(card), has(sig, label(KeptBench.researchSay(card))));
             if (!ok) off += f + "; ";
             cards &= ok;
         }
         check("each card shows its field and schools, the room and what a post costs, where labs come, and the rows at the dials in force: the researchers, the posts of the room, the bill and what it would find first - the model's reads",
                 cards, off);
-        check("...and the sentence the model's reads choose: nothing in reach for medicine, business and law (their problems wait on ideas nobody has), the problems in reach for engineering",
-                has(sig, "Nothing in medicine is in reach") && has(sig, "Nothing in business is in reach") && has(sig, "Nothing in law is in reach")
-                        && ov.fields().get(0).inReach() > 0);
         ResearchView.Funding engFu = ResearchView.funding(town, eng);
         check("medicine's prize in force is in its \"A find pays out\" row (" + Money.money(town.getResearch().prize(med)) + ")",
                 has(sig, label("A find pays out")) && has(sig, label(Money.money(town.getResearch().prize(med)))));
@@ -7909,7 +8107,9 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
         // The dials staged: the rows before and after, the tray and its budget, the sentence for each case.
         double cost = engFu.postCost();
         int posts = engFu.grantPosts();
-        double more = (posts + 3) * cost, past = engFu.grantToFillRoom() + 3 * cost, lowPrize = engFu.labThreshold() / 2;
+        // Three posts up is staged in the middle of the third post (RES3c, 2026-11-26): Research.posts() floors grant / cost, so a grant of
+        // exactly (posts + 3) * cost sits on the floor's edge, and at RES3's wages the quotient's last bit read 13 posts for 14.
+        double more = (posts + 3.5) * cost, past = engFu.grantToFillRoom() + 3 * cost, lowPrize = engFu.labThreshold() / 2;
         check("fixture: engineering has a threshold for a lab (" + engFu.labThreshold() + ") and room for more posts than it has (" + posts + " of " + engFu.roomPosts() + ")",
                 engFu.labThreshold() > 0 && engFu.roomPosts() > posts + 3);
         Hand stageMore = b -> { b.policyStage(KeptBench.researchGrantKey(eng), more); return null; };

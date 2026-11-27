@@ -1445,8 +1445,9 @@ public final class MoneyAudit {
          * other lines above. Read off the central bank's counter, which Game
          * books from the bank's own figure in the same breath.
          */
+        // Uncollected accrued interest is a receivable/payable, not destroyed money.
         out += debit.apply("- centralbank WindowInterest",
-                cb.getWindowInterest(), Scope.MONEY);
+                cb.getWindowInterestCollected(), Scope.MONEY);
         // ...and the mirror: what its reserves earned at the central bank, at
         // the policy rate, in money made to pay it. See Bank.placementIncome.
         // Placed abroad at the world's rate, and declared as foreign income,

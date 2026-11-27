@@ -129,16 +129,19 @@ public class WaterCheck {
         check("water payroll", uh.getWaterPayroll(), waterCrew);
         check("combined payroll", uh.getUtilityPayroll(), waterCrew);
 
-        // Only commercial + industrial are invoiced: 5 stores * 6 + 2 mills * 60
-        double billed = 5 * 6 + 2 * 60;
+        // Every sector's building draw is invoiced, including the landlords' homes.
+        double billed = 5 * 6 + 2 * 60 + 40000 * house.getWaterConsumption();
         check("billed draw", uh.getBilledWaterDraw(), billed);
         check("unbilled draw", uh.getUnbilledWaterDraw(), uh.getWaterConsumption() - billed);
-        // ...and of the rest, what the homes draw (0.7.28): the Services screen
-        // splits the unbilled buildings into the homes and the city's own.
-        check("the homes' water: the houses' own draw", uh.getHomesWaterDraw(), 40000 * house.getWaterConsumption());
+        // The Services partition must not count billed residential buildings twice.
+        check("billed rental homes add no unbilled home water", uh.getHomesWaterDraw(), 0);
         check("...the city's own: the water plant's",
                 uh.getBuildingWaterDraw() - billed - uh.getHomesWaterDraw(), plant.getWaterConsumption());
-        check("the homes' power: the houses' own draw", uh.getHomesElectricityDraw(), 40000 * house.getElectricityConsumption());
+        check("billed rental homes add no unbilled home power", uh.getHomesElectricityDraw(), 0);
+        check("billed power includes rental homes once", uh.getBilledElectricityDraw(),
+                40000 * house.getElectricityConsumption() + 5 * store.getElectricityConsumption() + 2 * mill.getElectricityConsumption());
+        check("the water categories partition total draw once", billed + uh.getHomesWaterDraw()
+                + uh.getResidentWaterDraw() + plant.getWaterConsumption(), uh.getWaterConsumption());
 
         double expectedWaterRev = billed * uh.getWaterRatio() * .05 * PriceLevel.FACTOR;   // the default water price, today's figure priced at the founding's level (EP1)
         check("water revenue (billed only)", uh.getWaterRevenue(), expectedWaterRev);

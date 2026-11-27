@@ -601,7 +601,18 @@ public class BankCheck {
         priced.takeInterest(3_000);
         priced.payRunning(400, 100);
         priced.writeOff(700);
-        priced.fundToCover(.03);
+        CentralBank pricedWindow = new CentralBank();
+        pricedWindow.setWindowCapacity(priced::windowCreditLimit);
+        priced.setSettledWindow(pricedWindow::getAdvancesToBank);
+        priced.setWindowInterestDue(pricedWindow::getWindowInterestDue);
+        pricedWindow.settleWindow(priced.windowFunding());
+        priced.settleForeignFunding(pricedWindow.getAdvancesToBank());
+        assertTrue("fixture: both external creditors actually funded the priced bank",
+                pricedWindow.getAdvancesToBank() > 0 && priced.getForeignWholesale() > 0);
+        priced.fundToCover(.03, pricedWindow.getWindowDeferred(), pricedWindow.getAdvancesToBank());
+        priced.payWindowInterest(pricedWindow.chargeWindow(priced.getWindowFundingCost()));
+        pricedWindow.settleWindow(priced.windowFunding());
+        priced.settleForeignFunding(pricedWindow.getAdvancesToBank());
         priced.closeMonth();
         double dial = .03;
         int term = Bank.PRIME_TERM_MONTHS;
@@ -617,9 +628,9 @@ public class BankCheck {
                         + (priced.getForeignFundingRate() - DebtManager.termPremium(Bank.WHOLESALE_TERM_MONTHS) - dial)
                         * priced.foreignShare() + DebtManager.termPremium(term), 1e-15);
         close("the window share counts only the secured overnight tranche",
-                priced.windowShare(), priced.windowFunding() / priced.borrowings(), 1e-12);
+                priced.windowShare(), Math.min(priced.wholesaleFunding(), pricedWindow.getAdvancesToBank()) / priced.borrowings(), 1e-12);
         close("the foreign share counts the residual term tranche",
-                priced.foreignShare(), (priced.wholesaleFunding() - priced.windowFunding()) / priced.borrowings(), 1e-12);
+                priced.foreignShare(), priced.getForeignWholesale() / priced.borrowings(), 1e-12);
         close("the two external shares reconcile with deposit funding",
                 priced.windowShare() + priced.foreignShare() + priced.depositFunding() / priced.borrowings(), 1, 1e-12);
         double carried = Math.max(priced.getBook(),
@@ -863,11 +874,19 @@ public class BankCheck {
         atWindow.refresh(1, 100_000, 0, 500_000, 0, 0);
         atWindow.startMonth();
         atWindow.lend(500_000);
+        CentralBank billingWindow = new CentralBank();
+        billingWindow.setWindowCapacity(atWindow::windowCreditLimit);
+        atWindow.setSettledWindow(billingWindow::getAdvancesToBank);
+        atWindow.setWindowInterestDue(billingWindow::getWindowInterestDue);
+        billingWindow.settleWindow(atWindow.windowFunding());
+        atWindow.settleForeignFunding(billingWindow.getAdvancesToBank());
         double wholesaleOwed = atWindow.wholesaleFunding();
-        double owedTheWindow = atWindow.windowFunding();
-        double owedAbroad = wholesaleOwed - owedTheWindow;
-        atWindow.fundToCover(.04);
+        double owedTheWindow = billingWindow.getAdvancesToBank();
+        double owedAbroad = atWindow.getForeignWholesale();
+        atWindow.fundToCover(.04, billingWindow.getWindowDeferred(), owedTheWindow);
+        atWindow.payWindowInterest(billingWindow.chargeWindow(atWindow.getWindowFundingCost()));
         assertTrue("fixture: it really uses both the window and term wholesale funding", owedTheWindow > 0 && owedAbroad > 0);
+        close("the actual creditors funded the whole external tranche", owedTheWindow + owedAbroad, wholesaleOwed, MoneyAudit.CENT);
         close("the window's rate is the dial plus its penalty",
                 atWindow.getWindowFundingCost() * 12 / owedTheWindow, .04 + CentralBank.WINDOW_PENALTY, 1e-15);
         close("the window bill is charged only on its secured tranche",

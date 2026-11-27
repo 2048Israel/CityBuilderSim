@@ -1,4 +1,4 @@
-# ChildcareCheck.java - 641 lines · 22 methods · 7 constants · harnesses
+# ChildcareCheck.java - 658 lines · 23 methods · 8 constants · harnesses
 
 `ham/citybuildersim/ChildcareCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > no month played, its lack placed by hand (the people's pyramid, their workforce and a year's history), for sections 2
 > ... (3 more lines in the source)
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (36), [CareType](CareType.md) (29), [Game](Game.md) (25), [BuildingsTemplate](BuildingsTemplate.md) (23), [AgeBand](AgeBand.md) (17), [CityNeeds](CityNeeds.md) (15), [GameFiles](GameFiles.md) (9), [PopulationCohorts](PopulationCohorts.md) (9), [JobType](JobType.md) (6), [BuildingManager](BuildingManager.md) (6), [BuildingVisual](BuildingVisual.md) (6), [Founding](Founding.md) (5), [LongPlaytest](LongPlaytest.md) (5), [Healthcare](Healthcare.md) (4), [BuildingType](BuildingType.md) (4), [Health](Health.md) (4), [BuildCard](BuildCard.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [WorksValue](WorksValue.md) (2), [Sector](Sector.md) (1), [PopulationManager](PopulationManager.md) (1), [HistorySave](HistorySave.md) (1), [TempDirs](TempDirs.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (36), [CareType](CareType.md) (29), [Game](Game.md) (27), [BuildingsTemplate](BuildingsTemplate.md) (23), [AgeBand](AgeBand.md) (17), [CityNeeds](CityNeeds.md) (15), [GameFiles](GameFiles.md) (9), [PopulationCohorts](PopulationCohorts.md) (9), [JobType](JobType.md) (6), [Founding](Founding.md) (6), [BuildingManager](BuildingManager.md) (6), [BuildingVisual](BuildingVisual.md) (6), [LongPlaytest](LongPlaytest.md) (5), [Healthcare](Healthcare.md) (4), [BuildingType](BuildingType.md) (4), [Health](Health.md) (4), [BuildCard](BuildCard.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [WorksValue](WorksValue.md) (2), [Sector](Sector.md) (1), [PopulationManager](PopulationManager.md) (1), [HistorySave](HistorySave.md) (1), [TempDirs](TempDirs.md) (1)
 
 **Used by (7):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
@@ -72,12 +72,12 @@
 
 | line | section |
 |---:|---|
-| 313 | · 1 |
-| 362 | · 2 |
-| 462 | · 3 |
-| 513 | · 4 |
-| 555 | · 5 |
-| 572 | · 6 |
+| 330 | · 1 |
+| 379 | · 2 |
+| 479 | · 3 |
+| 530 | · 4 |
+| 572 | · 5 |
+| 589 | · 6 |
 
 ## Constants
 
@@ -90,6 +90,7 @@
 | 101 | `ChildcareCheck.HUNDREDS_LARGES` | `2.5` | ...and one short of hundreds: two and a half, past the one it asks. |
 | 104 | `ChildcareCheck.GROWING` | `1.3` | ...whose population grew by this much over the year before (founding()'s history), so its projection grows. |
 | 107 | `ChildcareCheck.CHILDCARE` | `BuildAdvice.Measure.care(CareType.CHILDCARE)` | The advice's measure for childcare, which the sections here read the need, the site and the card through. |
+| 172 | `ChildcareCheck.TOWN_HOUSES` | `900` | The Houses a copy of the town stands with (a door holds one household since RES3, so a town of more posts than people has more of them: see the overload below). |
 
 ## Fields (state)
 
@@ -103,7 +104,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 82 | 560 | **type** `public class ChildcareCheck` | Childcare resized (0.7.71, batch N2): the three childcare centres, the build advice's size that fits the need (BuildAdvice, THE SIZE THAT FITS THE NEED), a city's old daycares kept as their ids' new centres, and the t... |
+| 82 | 577 | **type** `public class ChildcareCheck` | Childcare resized (0.7.71, batch N2): the three childcare centres, the build advice's size that fits the need (BuildAdvice, THE SIZE THAT FITS THE NEED), a city's old daycares kept as their ids' new centres, and the t... |
 | 109 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 114 | 5 | `static void bits(String label, double actual, double expected)` |  |
 | 120 | 5 | `static void quietly(Runnable r)` |  |
@@ -111,50 +112,51 @@
 | 131 | 5 | `static BuildingsTemplate template(Game g, String name)` |  |
 | 137 | 5 | `static int staff(BuildingsTemplate t)` |  |
 | 152 | 3 | `static Game town(Path root, String name)` | The fixture: BuildAdviceCheck's short city with no daycare of its own - nine hundred houses, its schools, college, university and four medical schools for the posts that bring the people, every sector held - played th... |
-| 167 | 38 | `static Game town(Path root, String name, int k)` | ...with every building `k` times over: at k 4 a city of thousands of children (calibrated: scratch-n2/h/cc-3.txt). |
-| 216 | 34 | `static Game founding(Path root, String name, double larges, double growth)` | FS15: sections 2's and 4's city, its lack caused. |
-| 252 | 5 | `static long peopleWanting(double places)` | The people of a settled pyramid (equilibriumShare()) who want `places` of childcare at CareType's weights. |
-| 258 | 3 | `static CityNeeds.Need need(Game g)` |  |
-| 262 | 5 | `static BuildAdvice.Suggestion advice(Game g)` |  |
-| 269 | 4 | `static double lacks(Game g, BuildAdvice.Ahead p)` | The places the need lacks at a suggestion's own projection: its demand less what is on site. |
-| 285 | 1 | **type** `record Weighed(BuildingsTemplate t, long count, boolean closes, double per, double net)` | One centre weighed as suggestFor() weighs it: the advice's own card with the other two centres left out (its skip), so its count at the demand its own order opens to, whether it closes the need, and its plan's figure. |
-| 287 | 8 | `static Weighed weigh(Game g, BuildingsTemplate t)` |  |
-| 296 | 16 | `public static void main(String[] args) throws Exception` |  |
+| 167 | 3 | `static Game town(Path root, String name, int k)` | ...with every building `k` times over: at k 4 a city of thousands of children (calibrated: scratch-n2/h/cc-3.txt). |
+| 178 | 44 | `static Game town(Path root, String name, int k, int houses)` | ...with `houses` Houses in each copy: the town's other buildings are the same, so a caller whose staffed site output needs more people for the same posts (EssentialWorksCheck.professionalDemand, at four copies) asks f... |
+| 233 | 34 | `static Game founding(Path root, String name, double larges, double growth)` | FS15: sections 2's and 4's city, its lack caused. |
+| 269 | 5 | `static long peopleWanting(double places)` | The people of a settled pyramid (equilibriumShare()) who want `places` of childcare at CareType's weights. |
+| 275 | 3 | `static CityNeeds.Need need(Game g)` |  |
+| 279 | 5 | `static BuildAdvice.Suggestion advice(Game g)` |  |
+| 286 | 4 | `static double lacks(Game g, BuildAdvice.Ahead p)` | The places the need lacks at a suggestion's own projection: its demand less what is on site. |
+| 302 | 1 | **type** `record Weighed(BuildingsTemplate t, long count, boolean closes, double per, double net)` | One centre weighed as suggestFor() weighs it: the advice's own card with the other two centres left out (its skip), so its count at the demand its own order opens to, whether it closes the need, and its plan's figure. |
+| 304 | 8 | `static Weighed weigh(Game g, BuildingsTemplate t)` |  |
+| 313 | 16 | `public static void main(String[] args) throws Exception` |  |
 
-### 1 (lines 313-361)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 315 | 46 | `static void threeCentres(Path root)` |  |
-
-### 2 (lines 362-461)
+### 1 (lines 330-378)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 364 | 70 | `static void sizeThatFits(Path root)` |  |
-| 440 | 21 | `static void theLeast(Game g, BuildAdvice.Suggestion s, String when)` | The suggestion is the centre whose order over its life over the places it will fill is the least (0.7.101; its order over the places lacking until then), one that closes the need before one that cannot (the advice's t... |
+| 332 | 46 | `static void threeCentres(Path root)` |  |
 
-### 3 (lines 462-512)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 464 | 48 | `static void keepTheirType(Path root) throws Exception` |  |
-
-### 4 (lines 513-554)
+### 2 (lines 379-478)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 515 | 39 | `static void thePlayer(Path root)` |  |
+| 381 | 70 | `static void sizeThatFits(Path root)` |  |
+| 457 | 21 | `static void theLeast(Game g, BuildAdvice.Suggestion s, String when)` | The suggestion is the centre whose order over its life over the places it will fill is the least (0.7.101; its order over the places lacking until then), one that closes the need before one that cannot (the advice's t... |
 
-### 5 (lines 555-571)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 557 | 14 | `static void theMap(Path root)` |  |
-
-### 6 (lines 572-641)
+### 3 (lines 479-529)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 574 | 67 | `static void realDemand(Path root)` |  |
+| 481 | 48 | `static void keepTheirType(Path root) throws Exception` |  |
+
+### 4 (lines 530-571)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 532 | 39 | `static void thePlayer(Path root)` |  |
+
+### 5 (lines 572-588)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 574 | 14 | `static void theMap(Path root)` |  |
+
+### 6 (lines 589-658)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 591 | 67 | `static void realDemand(Path root)` |  |
 

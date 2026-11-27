@@ -225,10 +225,24 @@
    "sector": "Real Estate",
    "capacity": 6,
    "dwellings": 1,
-      "housing": {"form": "House", "sharedParking": 0, "mix": [
-        {"id": "legacy", "count": 1, "capacity": 6, "area": 120, "bedrooms": 3, "quality": 1, "privateParking": 0, "includedParking": 0, "costWeight": 120}
-      ]},
-   "cashCost": 266,
+   "housing": {
+    "form": "C02",
+    "sharedParking": 0,
+    "mix": [
+     {
+      "id": "H120",
+      "count": 1,
+      "capacity": 6,
+      "area": 120,
+      "bedrooms": 3,
+      "quality": 1,
+      "privateParking": 1.0,
+      "includedParking": 0,
+      "costWeight": 846000.0
+     }
+    ]
+   },
+   "cashCost": 266.0,
    "constructionPoints": 10,
    "constructionMaterials": 10,
    "electricity": 1,
@@ -237,7 +251,8 @@
    "roadLoad": 2,
    "makes": {
     "HOUSING": 1
-   }
+   },
+   "since": 1900
   },
   {
    "id": 1,
@@ -246,21 +261,36 @@
    "sector": "Real Estate",
    "capacity": 160,
    "dwellings": 80,
-      "housing": {"form": "Studio Apartments", "sharedParking": 0, "mix": [
-        {"id": "legacy", "count": 80, "capacity": 2, "area": 40, "bedrooms": 0, "quality": 1, "privateParking": 0, "includedParking": 0, "costWeight": 40}
-      ]},
-   "cashCost": 8628,
-   "constructionPoints": 680,
-   "constructionMaterials": 320,
+   "housing": {
+    "form": "C06",
+    "sharedParking": 20,
+    "mix": [
+     {
+      "id": "S",
+      "count": 80,
+      "capacity": 2,
+      "area": 40,
+      "bedrooms": 0,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 196725.0
+     }
+    ]
+   },
+   "cashCost": 8692.0,
+   "constructionPoints": 700,
+   "constructionMaterials": 322,
    "electricity": 8,
    "water": 2,
-   "jobs": {
-    "DIPLOMA": 2
-   },
    "land": 25000,
    "roadLoad": 35,
    "makes": {
     "HOUSING": 80
+   },
+   "since": 1900,
+   "jobs": {
+    "DIPLOMA": 2
    }
   },
   {
@@ -270,21 +300,36 @@
    "sector": "Real Estate",
    "capacity": 252,
    "dwellings": 63,
-      "housing": {"form": "Low-Rise Apartments", "sharedParking": 0, "mix": [
-        {"id": "legacy", "count": 63, "capacity": 4, "area": 80, "bedrooms": 2, "quality": 1, "privateParking": 0, "includedParking": 0, "costWeight": 80}
-      ]},
-   "cashCost": 10196,
-   "constructionPoints": 2400,
-   "constructionMaterials": 377,
+   "housing": {
+    "form": "C08",
+    "sharedParking": 32,
+    "mix": [
+     {
+      "id": "F",
+      "count": 63,
+      "capacity": 4,
+      "area": 75,
+      "bedrooms": 2,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 319714.28571428574
+     }
+    ]
+   },
+   "cashCost": 10284.0,
+   "constructionPoints": 2432,
+   "constructionMaterials": 381,
    "electricity": 25,
    "water": 6,
-   "jobs": {
-    "DIPLOMA": 2
-   },
    "land": 60000,
    "roadLoad": 100,
    "makes": {
     "HOUSING": 63
+   },
+   "since": 1900,
+   "jobs": {
+    "DIPLOMA": 2
    }
   },
   {
@@ -5932,7 +5977,7 @@
       "MACHINERY": 26200
      },
      "work": 0,
-      "lifeMonths": 110
+     "lifeMonths": 110
     }
    ]
   },
@@ -5952,6 +5997,621 @@
     "UNIV_HIGHTECH_ENG": 10
    },
    "since": 1900
+  },
+  {
+   "id": 156,
+   "name": "Compact house",
+   "category": "RESIDENTIAL",
+   "sector": "Real Estate",
+   "capacity": 2,
+   "dwellings": 1,
+   "housing": {
+    "form": "C01",
+    "sharedParking": 0,
+    "mix": [
+     {
+      "id": "H55",
+      "count": 1,
+      "capacity": 2,
+      "area": 55,
+      "bedrooms": 1,
+      "quality": 1,
+      "privateParking": 1.0,
+      "includedParking": 0,
+      "costWeight": 439845.07275132276
+     }
+    ]
+   },
+   "cashCost": 149.84507275132276,
+   "constructionPoints": 5,
+   "constructionMaterials": 5,
+   "electricity": 1,
+   "water": 0.09166666666666666,
+   "land": 4000,
+   "roadLoad": 2,
+   "makes": {
+    "HOUSING": 1
+   },
+   "since": 1900
+  },
+  {
+   "id": 157,
+   "name": "Large house",
+   "category": "RESIDENTIAL",
+   "sector": "Real Estate",
+   "capacity": 6,
+   "dwellings": 1,
+   "housing": {
+    "form": "C03",
+    "sharedParking": 0,
+    "mix": [
+     {
+      "id": "H240",
+      "count": 1,
+      "capacity": 6,
+      "area": 240,
+      "bedrooms": 4,
+      "quality": 1.25,
+      "privateParking": 2.0,
+      "includedParking": 0,
+      "costWeight": 1586505.9523809524
+     }
+    ]
+   },
+   "cashCost": 626.5059523809523,
+   "constructionPoints": 24,
+   "constructionMaterials": 20,
+   "electricity": 3,
+   "water": 0.4,
+   "land": 12000,
+   "roadLoad": 2,
+   "makes": {
+    "HOUSING": 1
+   },
+   "since": 1900
+  },
+  {
+   "id": 158,
+   "name": "Duplex",
+   "category": "RESIDENTIAL",
+   "sector": "Real Estate",
+   "capacity": 8,
+   "dwellings": 2,
+   "housing": {
+    "form": "C04",
+    "sharedParking": 0,
+    "mix": [
+     {
+      "id": "D90",
+      "count": 2,
+      "capacity": 4,
+      "area": 90,
+      "bedrooms": 2,
+      "quality": 1,
+      "privateParking": 1.0,
+      "includedParking": 0,
+      "costWeight": 557370.6349206349
+     }
+    ]
+   },
+   "cashCost": 344.7412698412698,
+   "constructionPoints": 86,
+   "constructionMaterials": 15,
+   "electricity": 1,
+   "water": 0.22857142857142856,
+   "land": 10000,
+   "roadLoad": 3,
+   "makes": {
+    "HOUSING": 2
+   },
+   "since": 1900
+  },
+  {
+   "id": 159,
+   "name": "Terrace",
+   "category": "RESIDENTIAL",
+   "sector": "Real Estate",
+   "capacity": 36,
+   "dwellings": 6,
+   "housing": {
+    "form": "C05",
+    "sharedParking": 0,
+    "mix": [
+     {
+      "id": "T100",
+      "count": 6,
+      "capacity": 6,
+      "area": 100,
+      "bedrooms": 3,
+      "quality": 1,
+      "privateParking": 1.0,
+      "includedParking": 0,
+      "costWeight": 460152.99823633156
+     }
+    ]
+   },
+   "cashCost": 1068.9179894179892,
+   "constructionPoints": 277,
+   "constructionMaterials": 44,
+   "electricity": 4,
+   "water": 0.7619047619047619,
+   "land": 18000,
+   "roadLoad": 14,
+   "makes": {
+    "HOUSING": 6
+   },
+   "since": 1900
+  },
+  {
+   "id": 160,
+   "name": "Mixed walk-up",
+   "category": "RESIDENTIAL",
+   "sector": "Real Estate",
+   "capacity": 88,
+   "dwellings": 24,
+   "housing": {
+    "form": "C07",
+    "sharedParking": 12,
+    "mix": [
+     {
+      "id": "S",
+      "count": 8,
+      "capacity": 2,
+      "area": 40,
+      "bedrooms": 0,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 209832.77299674888
+     },
+     {
+      "id": "F",
+      "count": 12,
+      "capacity": 4,
+      "area": 75,
+      "bedrooms": 2,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 325773.25492445973
+     },
+     {
+      "id": "L",
+      "count": 4,
+      "capacity": 6,
+      "area": 110,
+      "bedrooms": 3,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 464213.73685217055
+     }
+    ]
+   },
+   "cashCost": 3824.79619047619,
+   "constructionPoints": 890,
+   "constructionMaterials": 140,
+   "electricity": 9,
+   "water": 2.107936507936508,
+   "land": 22000,
+   "roadLoad": 35,
+   "makes": {
+    "HOUSING": 24
+   },
+   "since": 1900,
+   "jobs": {
+    "DIPLOMA": 1
+   }
+  },
+  {
+   "id": 161,
+   "name": "Mixed mid-rise",
+   "category": "RESIDENTIAL",
+   "sector": "Real Estate",
+   "capacity": 240,
+   "dwellings": 64,
+   "housing": {
+    "form": "C09",
+    "sharedParking": 32,
+    "mix": [
+     {
+      "id": "S",
+      "count": 16,
+      "capacity": 2,
+      "area": 40,
+      "bedrooms": 0,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 193573.13819356653
+     },
+     {
+      "id": "F",
+      "count": 40,
+      "capacity": 4,
+      "area": 75,
+      "bedrooms": 2,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 295286.43966849276
+     },
+     {
+      "id": "L",
+      "count": 8,
+      "capacity": 6,
+      "area": 110,
+      "bedrooms": 3,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 419499.74114341906
+     }
+    ]
+   },
+   "cashCost": 10296.625726984128,
+   "constructionPoints": 2402,
+   "constructionMaterials": 376,
+   "electricity": 26,
+   "water": 5.73968253968254,
+   "land": 24000,
+   "roadLoad": 96,
+   "makes": {
+    "HOUSING": 64
+   },
+   "since": 1900,
+   "jobs": {
+    "DIPLOMA": 2
+   }
+  },
+  {
+   "id": 162,
+   "name": "Mixed tower",
+   "category": "RESIDENTIAL",
+   "sector": "Real Estate",
+   "capacity": 576,
+   "dwellings": 160,
+   "housing": {
+    "form": "C10",
+    "sharedParking": 80,
+    "mix": [
+     {
+      "id": "S",
+      "count": 48,
+      "capacity": 2,
+      "area": 40,
+      "bedrooms": 0,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 225822.29584992788
+     },
+     {
+      "id": "F",
+      "count": 96,
+      "capacity": 4,
+      "area": 75,
+      "bedrooms": 2,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 355753.61027417035
+     },
+     {
+      "id": "L",
+      "count": 12,
+      "capacity": 6,
+      "area": 110,
+      "bedrooms": 3,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 555684.9246984129
+     },
+     {
+      "id": "P140",
+      "count": 4,
+      "capacity": 6,
+      "area": 140,
+      "bedrooms": 3,
+      "quality": 1.4,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 781877.733887446
+     }
+    ]
+   },
+   "cashCost": 30997.54681904763,
+   "constructionPoints": 7768,
+   "constructionMaterials": 1255,
+   "electricity": 69,
+   "water": 13.968253968253968,
+   "land": 24000,
+   "roadLoad": 230,
+   "makes": {
+    "HOUSING": 160
+   },
+   "since": 1931,
+   "jobs": {
+    "DIPLOMA": 6
+   }
+  },
+  {
+   "id": 163,
+   "name": "Large apartment block",
+   "category": "RESIDENTIAL",
+   "sector": "Real Estate",
+   "capacity": 1248,
+   "dwellings": 360,
+   "housing": {
+    "form": "C11",
+    "sharedParking": 180,
+    "mix": [
+     {
+      "id": "S",
+      "count": 120,
+      "capacity": 2,
+      "area": 40,
+      "bedrooms": 0,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 195480.69457739106
+     },
+     {
+      "id": "F",
+      "count": 216,
+      "capacity": 4,
+      "area": 75,
+      "bedrooms": 2,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 298863.10788816377
+     },
+     {
+      "id": "L",
+      "count": 24,
+      "capacity": 6,
+      "area": 110,
+      "bedrooms": 3,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 424745.5211989365
+     }
+    ]
+   },
+   "cashCost": 56756.00716190477,
+   "constructionPoints": 12957,
+   "constructionMaterials": 2025,
+   "electricity": 135,
+   "water": 30.01904761904762,
+   "land": 100000,
+   "roadLoad": 499,
+   "makes": {
+    "HOUSING": 360
+   },
+   "since": 1900,
+   "jobs": {
+    "DIPLOMA": 12
+   }
+  },
+  {
+   "id": 164,
+   "name": "Large high-rise",
+   "category": "RESIDENTIAL",
+   "sector": "Real Estate",
+   "capacity": 1456,
+   "dwellings": 400,
+   "housing": {
+    "form": "C12",
+    "sharedParking": 240,
+    "mix": [
+     {
+      "id": "S",
+      "count": 120,
+      "capacity": 2,
+      "area": 40,
+      "bedrooms": 0,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 253728.87836786974
+     },
+     {
+      "id": "F",
+      "count": 232,
+      "capacity": 4,
+      "area": 75,
+      "bedrooms": 2,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 408078.4524953114
+     },
+     {
+      "id": "L",
+      "count": 44,
+      "capacity": 6,
+      "area": 110,
+      "bedrooms": 3,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 639428.0266227529
+     },
+     {
+      "id": "P180",
+      "count": 4,
+      "capacity": 6,
+      "area": 180,
+      "bedrooms": 3,
+      "quality": 1.5,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 1132664.3177347789
+     }
+    ]
+   },
+   "cashCost": 87945.15682539683,
+   "constructionPoints": 23336,
+   "constructionMaterials": 3769,
+   "electricity": 199,
+   "water": 35.25079365079365,
+   "land": 40000,
+   "roadLoad": 582,
+   "makes": {
+    "HOUSING": 400
+   },
+   "since": 1931,
+   "jobs": {
+    "DIPLOMA": 14
+   }
+  },
+  {
+   "id": 165,
+   "name": "Very tall tower",
+   "category": "RESIDENTIAL",
+   "sector": "Real Estate",
+   "capacity": 2880,
+   "dwellings": 800,
+   "housing": {
+    "form": "C13",
+    "sharedParking": 480,
+    "mix": [
+     {
+      "id": "S",
+      "count": 240,
+      "capacity": 2,
+      "area": 40,
+      "bedrooms": 0,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 295860.11563807237
+     },
+     {
+      "id": "F",
+      "count": 480,
+      "capacity": 4,
+      "area": 75,
+      "bedrooms": 2,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 0,
+      "costWeight": 487074.5223769412
+     },
+     {
+      "id": "L",
+      "count": 76,
+      "capacity": 6,
+      "area": 110,
+      "bedrooms": 3,
+      "quality": 1,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 769288.9291158101
+     },
+     {
+      "id": "P360",
+      "count": 4,
+      "capacity": 6,
+      "area": 360,
+      "bedrooms": 4,
+      "quality": 1.6,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 2577995.262964873
+     }
+    ]
+   },
+   "cashCost": 205984.1381587302,
+   "constructionPoints": 57073,
+   "constructionMaterials": 9172,
+   "electricity": 503,
+   "water": 70.34920634920636,
+   "land": 50000,
+   "roadLoad": 1152,
+   "makes": {
+    "HOUSING": 800
+   },
+   "since": 1969,
+   "jobs": {
+    "DIPLOMA": 28
+   }
+  },
+  {
+   "id": 166,
+   "name": "Large-home luxury tower",
+   "category": "RESIDENTIAL",
+   "sector": "Real Estate",
+   "capacity": 720,
+   "dwellings": 120,
+   "housing": {
+    "form": "C14",
+    "sharedParking": 120,
+    "mix": [
+     {
+      "id": "A",
+      "count": 61,
+      "capacity": 6,
+      "area": 160,
+      "bedrooms": 3,
+      "quality": 1.25,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 876426.2327617226
+     },
+     {
+      "id": "V",
+      "count": 48,
+      "capacity": 6,
+      "area": 240,
+      "bedrooms": 4,
+      "quality": 1.4,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 1314789.5237457585
+     },
+     {
+      "id": "X",
+      "count": 8,
+      "capacity": 6,
+      "area": 600,
+      "bedrooms": 5,
+      "quality": 1.6,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 3312029.2855548724
+     },
+     {
+      "id": "P600",
+      "count": 3,
+      "capacity": 6,
+      "area": 600,
+      "bedrooms": 5,
+      "quality": 1.75,
+      "privateParking": 0.0,
+      "includedParking": 1,
+      "costWeight": 3496566.428412015
+     }
+    ]
+   },
+   "cashCost": 85385.83090793651,
+   "constructionPoints": 23249,
+   "constructionMaterials": 3704,
+   "electricity": 263,
+   "water": 35.403174603174605,
+   "land": 30000,
+   "roadLoad": 288,
+   "makes": {
+    "HOUSING": 120
+   },
+   "since": 1931,
+   "jobs": {
+    "DIPLOMA": 12
+   }
   },
   {
    "id": 167,

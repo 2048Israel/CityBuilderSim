@@ -30,6 +30,9 @@ public class StudentHousehold extends Household {
 
     /** A loan that covers anything is the plan's to count on; large, not infinite, so the arithmetic stays finite. */
     private static final double UNLIMITED = 1e15;
+    /** Derived city context, also supplied after a load; no independent saved monetary stock. */
+    private java.util.function.DoubleSupplier moneyUnit = () -> 1;
+    void setMoneyUnitSource(java.util.function.DoubleSupplier source){moneyUnit=source==null?()->1:source;}
 
     public StudentHousehold() {
         super(null);
@@ -57,5 +60,5 @@ public class StudentHousehold extends Household {
         return still;
     }
 
-    @Override protected double planningRoom() { return studentLoansOpen ? UNLIMITED : 0; }
+    @Override protected double planningRoom() { return studentLoansOpen ? UNLIMITED/moneyUnit.getAsDouble() : 0; }
 }

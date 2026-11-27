@@ -27,6 +27,221 @@ public final class BankRulesCheck {
         try { action.run(); } finally { System.setOut(before); }
     }
 
+    record WindowFixture(Bank bank, CentralBank window) { }
+
+    /** Native collateral and stable capital; the earlier repayment leaves a real principal claim, not a fresh advance. */
+    static WindowFixture deferredWindow() { return deferredWindow(false); }
+
+    static WindowFixture deferredWindow(boolean fullCollateral) {
+        Bank bank = new Bank();
+        double loans = fullCollateral ? 1024 : 200 / Math.min(1 - Bank.BUSINESS_COLLATERAL_HAIRCUT, 1 - Bank.LOAN_STABLE_SHARE);
+        bank.refresh(1, 0, 0, loans, 0, 0);
+        CentralBank window = new CentralBank();
+        window.setWindowCapacity(bank::windowCreditLimit);
+        bank.setSettledWindow(window::getAdvancesToBank);
+        bank.setWindowInterestDue(window::getWindowInterestDue);
+        double held = fullCollateral ? Math.scalb(bank.windowCollateral(), -3) : 80;
+        bank.setCash(-(held + 20));
+        window.settleWindow(bank.windowFunding());
+        window.chargeWindow(held);
+        // The bank's funding returned before this observation; the central bank has only 20 reserves left to take back.
+        bank.setCash(0);
+        window.settleWindow(0);
+        if (fullCollateral) bank.rules().set(BankRules.Dial.WINDOW_LIMIT, .125);
+        bank.startMonth(); window.startMonth();
+        return new WindowFixture(bank, window);
+    }
+
+    static void windowInterestLaw() {
+        out.println("--- 3c. interest owed at a full collateral ceiling, collected only once ---");
+        WindowFixture fixture = deferredWindow(true);
+        Bank bank = fixture.bank(); CentralBank cb = fixture.window();
+        double held = cb.getAdvancesToBank(), foreign = 30, policy = .10;
+        bank.setCash(-(held + foreign));
+        bank.setForeignFundingRate(.07);
+        bank.settleForeignFunding(held);
+        bank.startMonth();
+        check("fixture: native collateral is fully lent, with zero reserves and a real foreign remainder",
+                held > 0 && cb.getReserves() == 0 && cb.getWindowDeferred() == held
+                        && bank.windowCreditLimit() == held && bank.windowFunding() == held
+                        && bank.getForeignWholesale() == foreign);
+        double equity = bank.equity(), pool = bank.getCash() + held + bank.getForeignWholesale();
+        double windowBill = held * (policy + bank.rules().get(BankRules.Dial.WINDOW_SPREAD)) / 12;
+        double foreignBill = foreign * bank.getForeignFundingRate() / 12;
+        bank.fundToCover(policy, cb.getWindowDeferred(), held);
+        double paid = cb.chargeWindow(bank.getWindowFundingCost());
+        bank.payWindowInterest(paid);
+        check("the actual window principal and foreign stock each incur their own bill once",
+                bank.getWindowFundingCost() == windowBill && bank.getForeignFundingCost() == foreignBill
+                        && bank.getFundingCost() == windowBill + foreignBill && cb.getWindowInterest() == windowBill);
+        check("no advance past full collateral, no negative M0 and no invented cash collection",
+                paid == 0 && cb.getWindowInterestCollected() == 0 && cb.getAdvancedToBank() == 0
+                        && cb.getIssued() == 0 && cb.getRetired() == 0 && cb.m0() == 0 && cb.getAdvancesToBank() == held);
+        check("the whole unpaid bill survives as a receivable and the same bank payable",
+                cb.getWindowInterestDue() == windowBill && bank.getWindowInterestDue() == windowBill
+                        && cb.sheet(CentralBank.Sheet.WINDOW_INTEREST_DUE) == windowBill
+                        && bank.sheet(Bank.Sheet.WINDOW_INTEREST_DUE) == windowBill);
+        check("accrued interest and foreign expense reduce equity exactly to the cent",
+                Math.abs(bank.equity() - equity + windowBill + foreignBill) <= MoneyAudit.CENT
+                        && Math.abs(bank.sheetResidual()) <= MoneyAudit.CENT);
+        double foreignIn = bank.getForeignWholesaleIn(), foreignOut = bank.getForeignWholesaleOut();
+        for (int settle = 0; settle < 2; settle++) {
+            cb.settleWindow(bank.windowFunding());
+            bank.settleForeignFunding(cb.getAdvancesToBank());
+        }
+        double declared = cb.getAdvancedToBank() - cb.getRepaidByBank() - cb.getWindowInterestCollected()
+                + cb.getInterestOnReserves() + bank.getForeignWholesaleIn() - foreignIn
+                - bank.getForeignWholesaleOut() + foreignOut - foreignBill - bank.depositInterest();
+        check("both principal settles conserve the gross pool with foreign flows to the cent",
+                Math.abs(bank.getCash() + cb.getAdvancesToBank() + bank.getForeignWholesale() - pool - declared) <= MoneyAudit.CENT);
+        check("neither later settle bills, forgives or collects the interest again",
+                bank.getFundingCost() == windowBill + foreignBill && cb.getWindowInterest() == windowBill
+                        && cb.getWindowInterestDue() == windowBill && cb.getAdvancesToBank() == held);
+        cb.startMonth(); bank.startMonth();
+        cb.payInterestOnReserves(windowBill); bank.takeInterest(windowBill);
+        double beforePayment = bank.equity();
+        bank.payWindowInterest(cb.chargeWindow(0));
+        check("later cash collects the old bill without another expense or an unsecured advance",
+                cb.getWindowInterestDue() == 0 && cb.getWindowInterest() == 0
+                        && cb.getWindowInterestCollected() == windowBill && bank.getFundingCost() == 0
+                        && cb.getAdvancedToBank() == 0 && cb.m0() == 0
+                        && Math.abs(bank.equity() - beforePayment) <= MoneyAudit.CENT);
+        check("collection and accrual remain distinct in the saved last-month flow",
+                cb.lastMonth(CentralBank.Line.WINDOW_INTEREST) == windowBill
+                        && cb.lastMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) == windowBill
+                        && cb.thisMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) == -windowBill);
+    }
+
+    /** A native format-67 array fixture before CBK3's appended flow, sheet column and receivable stock. */
+    static double[] withoutWindowInterestDue(double[] saved) {
+        java.util.ArrayList<Double> old = new java.util.ArrayList<>();
+        int prefix = 13 + CentralBank.REVENUE_MONTHS + 14, i = 0;
+        while (i < prefix) old.add(saved[i++]);
+        int lines = (int) saved[i++]; old.add((double) (lines - 1));
+        for (int block = 0; block < 2; block++)
+            for (int k = 0; k < lines; k++, i++) if (k < lines - 1) old.add(saved[i]);
+        old.add(saved[i++]); // months filed
+        int sheets = (int) saved[i++]; old.add((double) (sheets - 1));
+        for (int r = 0; r < CentralBank.SHEET_MONTHS; r++)
+            for (int k = 0; k < sheets; k++, i++) if (k < sheets - 1) old.add(saved[i]);
+        old.add(saved[i++]); // sheets filed
+        old.add(saved[i++]); // RES3's deferred principal
+        return old.stream().mapToDouble(Double::doubleValue).toArray();
+    }
+
+    static void interestCollateralLaw() {
+        out.println("--- 3d. old interest encumbers new cash credit; collection is an atomic reclassification ---");
+        WindowFixture fixture = deferredWindow();
+        Bank bank = fixture.bank(); CentralBank cb = fixture.window();
+        bank.rules().set(BankRules.Dial.WINDOW_LIMIT, 0);
+        for (int month = 0; month < 45; month++) {
+            bank.startMonth(); cb.startMonth();
+            bank.fundToCover(.10, cb.getWindowDeferred(), cb.getAdvancesToBank());
+            bank.payWindowInterest(cb.chargeWindow(bank.getWindowFundingCost()));
+        }
+        bank.startMonth(); cb.startMonth();
+        double held = cb.getAdvancesToBank(), due = cb.getWindowInterestDue();
+        double ceiling = held + due / 2;
+        bank.rules().set(BankRules.Dial.WINDOW_LIMIT, ceiling / bank.windowCollateral());
+        ceiling = bank.windowCreditLimit();
+        bank.setCash(-2 * ceiling);
+        check("fixture: recovered collateral cannot cover both the old principal and accrued interest",
+                held > 0 && due > 0 && cb.getReserves() == 0 && held < ceiling && held + due > ceiling
+                        && bank.windowFunding() > held && bank.equity() > 0);
+        double exposure = held + due;
+        check("unpaid interest prevents an additional unsupported cash advance", cb.advanceToBank(due) == 0);
+        cb.settleWindow(bank.windowFunding());
+        check("the late principal settle cannot bypass the same outstanding-interest guard",
+                cb.getAdvancesToBank() == held && cb.getWindowInterestDue() == due && cb.getAdvancedToBank() == 0);
+        double equity = bank.equity();
+        double paid = cb.chargeWindow(0); bank.payWindowInterest(paid);
+        check("atomic collection refinances only within raw principal collateral, without increasing total exposure",
+                paid > 0 && cb.getAdvancesToBank() <= ceiling + MoneyAudit.CENT
+                        && Math.abs(cb.getAdvancesToBank() + cb.getWindowInterestDue() - exposure) <= MoneyAudit.CENT
+                        && cb.getIssued() == cb.getRetired() && cb.m0() == 0
+                        && cb.getWindowInterest() == 0 && bank.getFundingCost() == 0
+                        && Math.abs(bank.equity() - equity) <= MoneyAudit.CENT);
+        WindowFixture sound = deferredWindow();
+        Bank solvent = sound.bank(); CentralBank lender = sound.window();
+        double principal = lender.getAdvancesToBank();
+        solvent.rules().set(BankRules.Dial.WINDOW_LIMIT, (principal + 1) / solvent.windowCollateral());
+        solvent.fundToCover(.10, lender.getWindowDeferred(), principal);
+        double bill = solvent.getWindowFundingCost();
+        double collected = lender.chargeWindow(bill); solvent.payWindowInterest(collected);
+        check("a sound bank with adequate spare collateral can refinance its whole interest bill",
+                solvent.equity() > 0 && bill > 0 && bill < 1 && collected == bill
+                        && lender.getWindowInterestDue() == 0 && lender.getAdvancesToBank() == principal + bill
+                        && lender.getAdvancesToBank() <= solvent.windowCreditLimit() && lender.m0() == 0
+                        && lender.getIssued() == lender.getRetired());
+    }
+
+    static boolean windowInterestSaveChecks() throws Exception {
+        WindowFixture fixture = deferredWindow();
+        Bank bank = fixture.bank(); CentralBank cb = fixture.window();
+        double held = cb.getAdvancesToBank();
+        bank.rules().set(BankRules.Dial.WINDOW_LIMIT, 0);
+        bank.setCash(-30); bank.settleForeignFunding(held);
+        for (int month = 0; month < 2; month++) {
+            bank.startMonth(); cb.startMonth();
+            bank.fundToCover(.10, cb.getWindowDeferred(), held);
+            bank.payWindowInterest(cb.chargeWindow(bank.getWindowFundingCost()));
+        }
+        if (!(cb.getWindowInterestDue() > 0 && bank.getWindowOwedCost() > 0
+                && cb.thisMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) > 0
+                && cb.lastMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) > 0)) return false;
+        Path root = TempDirs.create("cbk3-window-interest-save");
+        GameFiles files = new GameFiles(root.resolve("data"), root.resolve("no-legacy"));
+        Game game = new Game(files); silently(game::run);
+        game.getCentralBank().restore(cb.toSaveArray());
+        game.getBank().restoreMonthLines(bank.monthLinesToSave());
+        game.getBank().restoreFunding(bank.fundingToSave());
+        game.getBank().rules().restore(bank.rules().toSave());
+        double[] expected = game.getCentralBank().toSaveArray();
+        double payable = game.getBank().getWindowInterestDue();
+        boolean[] wrote = {false};
+        silently(() -> wrote[0] = game.saveGame(GameFiles.AUTOSAVE_SLOT, "CBK3 unpaid window interest").ok);
+        Game loaded = new Game(files); silently(() -> loaded.loadGameSave(GameFiles.AUTOSAVE_SLOT));
+        boolean ok = wrote[0] && payable > 0 && loaded.getBank().getWindowInterestDue() == payable
+                && loaded.getBank().getWindowOwedCost() == bank.getWindowOwedCost()
+                && java.util.Arrays.equals(expected, loaded.getCentralBank().toSaveArray());
+        Bank prefix = new Bank(); prefix.restoreMonthLines(bank.monthLinesToSave());
+        prefix.redenominate(.5);
+        ok &= prefix.getWindowOwedCost() == bank.getWindowOwedCost() * .5;
+        prefix.restoreMonthLines(java.util.Arrays.copyOf(bank.monthLinesToSave(), 65));
+        ok &= prefix.getWindowOwedCost() == 0;
+        CentralBank scaled = new CentralBank(); scaled.restore(expected); scaled.redenominate(.5);
+        ok &= scaled.getWindowInterestDue() == payable * .5
+                && scaled.thisMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE)
+                == cb.thisMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) * .5;
+        scaled.reset(); ok &= scaled.getWindowInterestDue() == 0
+                && scaled.thisMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) == 0;
+        cb.startMonth(); bank.startMonth();
+        cb.payInterestOnReserves(payable); bank.takeInterest(payable);
+        bank.payWindowInterest(cb.chargeWindow(0));
+        game.getCentralBank().restore(cb.toSaveArray());
+        game.getBank().restoreMonthLines(bank.monthLinesToSave());
+        game.getBank().restoreFunding(bank.fundingToSave());
+        silently(() -> wrote[0] = game.saveGame(GameFiles.AUTOSAVE_SLOT, "CBK3 collected old window interest").ok);
+        Game collected = new Game(files); silently(() -> collected.loadGameSave(GameFiles.AUTOSAVE_SLOT));
+        ok &= wrote[0] && collected.getCentralBank().getWindowInterestDue() == 0
+                && collected.getCentralBank().getWindowInterestCollected() == payable
+                && collected.getCentralBank().thisMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) == -payable
+                && collected.getCentralBank().lastMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) > 0;
+        scaled.restore(cb.toSaveArray()); scaled.redenominate(.5);
+        ok &= scaled.thisMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) == -payable * .5;
+        loaded.getBank().reset();
+        ok &= loaded.getBank().getWindowInterestDue() == 0 && loaded.getBank().getOpeningEquity() == 0
+                && loaded.getBank().retainedOpening() == 0;
+        CentralBank paid = new CentralBank(); paid.setWindowCapacity(() -> 100);
+        paid.startMonth(); paid.settleWindow(100); paid.chargeWindow(1); paid.startMonth(); paid.chargeWindow(2);
+        CentralBank compatible = new CentralBank(); compatible.restore(withoutWindowInterestDue(paid.toSaveArray()));
+        ok &= compatible.getWindowInterestDue() == 0 && compatible.getWindowInterestCollected() == 2
+                && compatible.lastMonth(CentralBank.Line.WINDOW_INTEREST) == 1
+                && compatible.lastMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE) == 0;
+        game.awaitSaves(); loaded.awaitSaves(); collected.awaitSaves();
+        return ok;
+    }
+
     /** Real writer and loader, including an otherwise identical save with the new keys absent. */
     static boolean saveChecks() throws Exception {
         Path root = TempDirs.create("cbk3-save");
@@ -39,7 +254,10 @@ public final class BankRulesCheck {
         b.refresh(1, 1, 0, 20, 0, 0);
         b.setCash(-30);
         b.setForeignFundingRate(.08);
-        b.fundToCover(.05);
+        g.getCentralBank().settleWindow(b.windowFunding());
+        b.settleForeignFunding(g.getCentralBank().getAdvancesToBank());
+        b.fundToCover(.05, g.getCentralBank().getWindowDeferred(), g.getCentralBank().getAdvancesToBank());
+        b.payWindowInterest(g.getCentralBank().chargeWindow(b.getWindowFundingCost()));
         g.getCentralBank().settleWindow(b.windowFunding());
         b.settleForeignFunding(g.getCentralBank().getAdvancesToBank());
         double[] expected = b.fundingToSave();
@@ -61,9 +279,11 @@ public final class BankRulesCheck {
                 && loaded.getExchange().getLifeDeskBound(Exchange.BOUND_STABLE) == 17;
         com.google.gson.JsonObject old = com.google.gson.JsonParser.parseString(
                 Files.readString(files.saveFile(GameFiles.AUTOSAVE_SLOT))).getAsJsonObject();
+        check("bank rules are written on the current compatible save format",
+                old.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT);
         old.remove("bankRules");
         old.remove("bankFunding");
-        // A native format-66 prefix has the original 31 life / 9 last cells.
+        // A compatible pre-CBK3 save has the original 31 life / 9 last cells.
         com.google.gson.JsonObject oldExchange = old.getAsJsonObject("exchangeState");
         oldExchange.getAsJsonArray("life").remove(31);
         oldExchange.getAsJsonArray("last").remove(9);
@@ -314,10 +534,13 @@ public final class BankRulesCheck {
             b.refresh(1, deposits, 0, loans, 0, 0);
             b.setCash(b.getCash() + ownEquity - b.equity());
             b.setForeignFundingRate(.07);
-            b.fundToCover(.05);
+            cb.settleWindow(b.windowFunding());
+            b.settleForeignFunding(cb.getAdvancesToBank());
+            b.fundToCover(.05, cb.getWindowDeferred(), cb.getAdvancesToBank());
+            b.payWindowInterest(cb.chargeWindow(b.getWindowFundingCost()));
             b.closeMonth();
             b.resolveIfFailed();
-            cb.settleWindow(b.wholesaleFunding());
+            cb.settleWindow(b.windowFunding());
             b.settleForeignFunding(cb.getAdvancesToBank());
             double owed = cb.getAdvancesToBank(), foreign = b.getForeignWholesale(), need = b.wholesaleFunding();
             double issued = cb.getIssued(), retired = cb.getRetired(), inventory = b.getSecurities();
@@ -353,21 +576,30 @@ public final class BankRulesCheck {
             check(action + ": no shares were bought and no window principal was issued or forgiven",
                     b.getSecurities() == inventory && cb.getAdvancesToBank() == owed
                             && cb.getIssued() == issued && cb.getRetired() == retired && b.getForeignWholesale() == foreign);
-            check(action + ": the smaller live cap refuses any additional advance", cb.advanceToBank(1) == 0);
+            CentralBank probe = new CentralBank(); probe.restore(cb.toSaveArray());
+            probe.setWindowCapacity(b::windowCreditLimit);
+            double headroom = Math.max(0, b.windowCreditLimit() - owed);
+            double testedAdvance = probe.advanceToBank(headroom + 1);
+            check(action + ": new credit cannot pass the actual remaining collateral",
+                    testedAdvance == headroom && probe.getAdvancesToBank() <= Math.max(owed, b.windowCreditLimit()) + MoneyAudit.CENT);
             check(action + ": stable cash still cannot finance another desk purchase", b.deskCanCarry(inventory, 1, 1) == 0);
             double in = b.getForeignWholesaleIn(), outflow = b.getForeignWholesaleOut();
-            cb.settleWindow(b.wholesaleFunding());
+            double beforeRollover = b.getCash() + owed + foreign;
+            cb.settleWindow(b.windowFunding());
             b.settleForeignFunding(cb.getAdvancesToBank());
-            double now = cb.getAdvancesToBank();
+            double now = cb.getAdvancesToBank(), active = Math.max(0, now - cb.getWindowDeferred());
             check(action + ": the actual rollover obeys collateral and excludes the desk",
-                    now <= b.windowFunding() + MoneyAudit.CENT
-                            && now <= b.windowCollateral() * b.rules().get(BankRules.Dial.WINDOW_LIMIT) + MoneyAudit.CENT
-                            && now <= Math.max(0, b.wholesaleFunding() - Math.max(0, b.getSecurities())) + MoneyAudit.CENT);
+                    active <= b.windowFunding() + MoneyAudit.CENT
+                            && active <= b.windowCreditLimit() + MoneyAudit.CENT
+                            && active <= Math.max(0, b.wholesaleFunding() - Math.max(0, b.getSecurities())) + MoneyAudit.CENT
+                            && cb.getWindowDeferred() <= now + MoneyAudit.CENT);
             check(action + ": the foreign remainder is settled, not reconstructed from next month's cash",
-                    Math.abs(now + b.getForeignWholesale() - b.wholesaleFunding()) <= MoneyAudit.CENT);
-            check(action + ": retirement and signed foreign principal exactly match the funding need that ended",
-                    Math.abs((cb.getRetired() - retired) + (b.getForeignWholesaleOut() - outflow)
-                            - (b.getForeignWholesaleIn() - in) - (need - b.wholesaleFunding())) <= MoneyAudit.CENT);
+                    Math.abs(b.getForeignWholesale() - Math.max(0, b.wholesaleFunding() - now)) <= MoneyAudit.CENT
+                            && Math.max(0, now - b.wholesaleFunding()) <= cb.getWindowDeferred() + MoneyAudit.CENT);
+            check(action + ": retirement and signed foreign principal conserve the actual gross funding pool",
+                    Math.abs(b.getCash() + now + b.getForeignWholesale() - beforeRollover
+                            - (cb.getIssued() - issued) + (cb.getRetired() - retired)
+                            - (b.getForeignWholesaleIn() - in) + (b.getForeignWholesaleOut() - outflow)) <= MoneyAudit.CENT);
             check(action + ": refinancing does not bill interest twice",
                     b.getFundingCost() == cost && b.getForeignFundingCost() == foreignCost
                             && b.getWindowFundingCost() == windowCost && b.foreignShare() == mix);
@@ -387,8 +619,8 @@ public final class BankRulesCheck {
             LongPlaytest.findings.putAll(previous);
             LongPlaytest.bankFundingMonths = audits;
             LongPlaytest.deskStableBoundMonths = bound;
-            cb.setWindowCapacity(b::windowFunding);
-            cb.settleWindow(b.wholesaleFunding());
+            cb.setWindowCapacity(b::windowCreditLimit);
+            cb.settleWindow(b.windowFunding());
             b.settleForeignFunding(cb.getAdvancesToBank());
             g.awaitSaves();
         }
@@ -538,6 +770,17 @@ public final class BankRulesCheck {
         mortgage.set(BankRules.Dial.MORTGAGE_DTI, 2);
         check("a tighter debt-to-income rule refuses excess debt against rent",
                 Mortgage.decide(1, n -> n * 100, 20, 2, .05, n -> 1, mortgage).quantity() == 0);
+        mortgage.reset();
+        java.util.function.LongToDoubleFunction rentRoll = n -> n == 1 ? 2 : 1;
+        check("the typed rent-roll path grants a mortgage under the default rules",
+                Mortgage.decide(1, n -> n * 100, 20, rentRoll, .05, n -> 1, mortgage).quantity() == normal);
+        mortgage.set(BankRules.Dial.MORTGAGE_LTC, .70);
+        check("the typed rent-roll path applies the saved down-payment cap",
+                Mortgage.decide(1, n -> n * 100, 20, rentRoll, .05, n -> 1, mortgage).quantity() == 0);
+        mortgage.reset();
+        mortgage.set(BankRules.Dial.MORTGAGE_DTI, 2);
+        check("the typed rent-roll path applies the saved income cap",
+                Mortgage.decide(1, n -> n * 100, 20, rentRoll, .05, n -> 1, mortgage).quantity() == 0);
 
         DebtManager quotes = new DebtManager();
         quotes.setPolicyRate(.15);
@@ -565,6 +808,8 @@ public final class BankRulesCheck {
         }
 
         rolloverLaw();
+        windowInterestLaw();
+        interestCollateralLaw();
         coldCallableCollateral();
         coldCallableTreePrefixes();
 
@@ -582,6 +827,7 @@ public final class BankRulesCheck {
 
         out.println("--- 5. dials and financing survive the real save paths ---");
         check("new fields round-trip and a save with no fields reads the defaults", saveChecks());
+        check("unpaid window interest and current/last flows round-trip, reset, scale and default on compatible saves", windowInterestSaveChecks());
 
         String source = System.getProperty("cbs.cbk3.evidence", "");
         if (!source.isBlank()) evidence(Path.of(source));

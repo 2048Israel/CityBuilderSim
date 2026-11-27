@@ -398,7 +398,8 @@ public class PolicyOpenCheck {
         DiscoveryCheck.play(start, 1);
         DataSave saved = start.prepareSaveForChecks(0, "policy-open-law").data();
         String json = new Gson().toJson(saved);
-        String moved = json.replaceFirst("\"month\": *\\d+", "\"month\":" + month);
+        saved.setMonth(month);
+        String moved = new Gson().toJson(saved);
         Files.createDirectories(start.getGameFiles().saveFile(0).getParent());
         Files.writeString(start.getGameFiles().saveFile(0), moved, StandardCharsets.UTF_8);
         Game g = new Game(start.getGameFiles());
