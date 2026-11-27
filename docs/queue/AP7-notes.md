@@ -26,10 +26,12 @@ premise for `NewUnit.heldWhile`), so the answer cannot move. AP6's JFR: `warrant
 - A warrant asked about another city or measure reads afresh (never happens; a guard, not a cache key).
 - Paving (`weighPaving`) and the auto-builder's own single calls (`AutoBuilder` 506/580, `lacksNow`) are unchanged:
   one read each already. `count()`'s own `supplyDemand` readings, the quotes and the search order are untouched.
-- Harness hooks: `warrantChecked` (each held answer also read afresh and compared: `WARRANT_COMPARED`/`WARRANT_DIFFERED`),
-  `warrantBare` (every ask read afresh, the original behaviour), counters `WARRANT_ASKED`/`WARRANT_READ`. All atomic or
-  volatile: the review line names threading (section 4). The warrant itself is a local of one call on one thread;
-  nothing held is shared between threads or calls.
+- Harness hooks (since REV-AP7, section 8): a `BuildAdvice.WarrantProbe`, opened by a harness with `probe(game)` for one
+  city on its own thread (a `ThreadLocal`), closed by try-with-resources. A Warrant takes it when it is made, only once a
+  harness has opened one in the JVM (`probed`, a plain static); another city or thread never sees it. Plain fields: `bare`
+  (every ask read afresh, the original behaviour), `checked` (each held answer also read afresh and compared), counts
+  `asked`, `read`, `compared`, `differed`. In play an ask reads one plain final field more, never an atomic or a volatile.
+  The warrant itself is a local of one call on one thread; nothing held is shared between threads or calls.
 - No broad catalogue cache: `getKnownTemplates` falls from 6.98% to 0.94% of FX without one (section 6).
 
 ## 3. The proof: BuildAdviceCheck 16 (a slice wrote it; reviewed, restructured once)
@@ -45,7 +47,9 @@ template (the school's `setUntil` off the menu), a research step, a load (slot 1
 The research step is on POWER: in a city founded the default way research gates only power plants (Game's templateKnown),
 so the Small Steam Station is gated with code E1 and the city's own finding (`Research.restore`) brings it back.
 Counts on a warranted city: one `count()` asks its warrant 10 times and reads `warranted()` once; one valuation asks it
-100 times and reads it once. Three auto-builder passes with `warrantChecked`: 7,395 held answers compared, 0 differed.
+100 times and reads it once. A probe is its city's and its thread's (REV-AP7): another city read on its thread counts 0 on
+it, and its city read on another thread, with it set bare, holds its answer there (10 asks, 1 reading) and counts 0 on it.
+Three auto-builder passes, every held answer compared: 7,395 compared, 0 differed.
 ★ The first version shared one city across the blocks; a kept-for-the-city's-life mutation then left the demolition,
 research and load blocks green (they flip back to the answer first kept). Restructured so every block is red under it.
 
@@ -63,7 +67,8 @@ Mutation trials (`mutations/run.sh` in the evidence; source restored after each,
 `./batch-check.sh --fast` green (Stale 0 firm). On the final model, one per call: `BuildAdviceCheck` exit 0;
 `AutoBuildCheck` exit 3, only main's recorded FS12 care-fee red (`docs/notes/known-reds.txt`, as in AP5/AP6);
 `LabourCheck`, `MonthPostsCheck`, `BondCheck` exit 0. `sh tools/pick.sh origin/main HEAD`: 40 of 259 harnesses, not
-ALL, so no dry run is owed; review line "needed - threading: +AtomicLong, +volatile in BuildAdvice.java".
+ALL, so no dry run is owed; review line "needed - threading: +AtomicLong, +volatile in BuildAdvice.java" (since REV-AP7,
+"+new ThreadLocal": section 8).
 
 The default `LongPlaytest`, `-Dplaytest.trace`, `-Xmx4g`, explicit Earth/world, one JVM each, both exit 0:
 
@@ -136,4 +141,49 @@ Read once offline: pair 2's AP7 recording `ap7-ui/ui-4866.jfr`, 66.68 s, 3,712 F
 `C:/Users/Jerus/AppData/Local/Temp/cbs-AP7-evidence/`: `scratchpad/original` (the slot copy), `measure.sh`, `trace.sh`,
 `main-classes` (482dbfab2), `ap7a-classes` (af7c79979), `ap7-classes` (6ea01c424), the four headless logs, the four
 window logs and their JFRs, `main-trace/` and `ap7a-trace/`, `mutations/` (script, diffs, logs), `after-profile/`
-(reader and `profile.txt`). No player's slot was opened or written. No dry run (pick not ALL).
+(reader and `profile.txt`); since REV-AP7 `ap7r-classes` (8eab54613), `ap7r-trace/`, `main3-ui*` and `ap7r-ui*`.
+No player's slot was opened or written. No dry run (pick not ALL).
+
+## 8. REV-AP7: the mend of P1 (8eab54613)
+
+P1, `BuildAdvice.java:1357`: every held ask incremented the JVM-wide `WARRANT_ASKED` and read the volatile switches, a
+synchronised write inside the loops AP7 speeds, and one harness's switches reached every Game in the JVM. Mended:
+
+- **Play pays one plain field read per ask**: `Warrant.of` reads its own final `probe` field (null in play) and nothing
+  else new. No atomic, no volatile remains in the warrant; the `AtomicLong`s and `volatile` switches are gone.
+- **The counters and switches live in a `WarrantProbe`** a harness opens for one city on its own thread
+  (`BuildAdvice.probe(game)`, a `ThreadLocal`, closed by try-with-resources). A Warrant takes it when it is made, and only
+  after a harness has opened one in the JVM (`probed`, a plain static, never set in play), so a Warrant made in play reads
+  that one plain field once. A Warrant of another city, or made on another thread, never sees the probe.
+- The held answer's logic is the same code in play and under a probe (the probe only counts, compares, or reads bare), so
+  the harness proves the path play runs. The pick's review line is now "threading: +new ThreadLocal in BuildAdvice.java".
+
+Re-shown on the mend:
+
+- `BuildAdviceCheck` exit 0, the same counts as before (10 asks with 1 read, 100 with 1, 7,395 compared and 0 differed),
+  and a new line: a probe is its city's and its thread's (another city read on its thread counts 0 on it; its city read on
+  another thread, with it set bare, holds its answer there, 10 asks and 1 reading, and counts 0 on it).
+- The mutations, `mutations/run.sh` unchanged on the mended source (the first results in `mutations/before-rev/`):
+
+  | trial | reds | writer blocks red |
+  |---|---:|---:|
+  | M1: every warrant kept for the city's life | 11 | 6 of 6 |
+  | M2: `count()`'s own warrant | 9 | 6 of 6 |
+  | M3: relief's warrant (`WorksValue`) | 11 | 6 of 6 |
+  | M4: `suggestionFor()`'s warrant | 10 | 6 of 6 |
+
+  M2's ninth red is the new isolation line: a kept warrant carries this thread's probe to the other thread.
+- The default trace on the mend's classes (`ap7r-classes`, 8eab54613): all eight md5s equal main's (section 4's table).
+- `./batch-check.sh --fast` green.
+- One adjacent 50x pair, main 482dbfab2 then the mend (`main3-ui`, `ap7r-ui`), months a second; frame p50/p95 ms:
+
+  | screen | main (3) | AP7 mended (3) |
+  |---|---|---|
+  | Build | 8.5; 107/154 | 9.2; 74/142 |
+  | Land | 7.1; 133/294 | 9.3; 87/137 |
+  | People | 9.8; 88/124 | 9.9; 22/111 |
+  | Services | 9.8; 78/123 | 9.9; 13/93 |
+  | Sectors | 9.8; 32/93 | 9.7; 17/91 |
+  | the other eight | 9.8 to 10.0 | 9.8 to 10.0 |
+
+  Every p95 still fails its budget on both sides (13 of 13). Build and Land are still below 10, so AP8 stands.
