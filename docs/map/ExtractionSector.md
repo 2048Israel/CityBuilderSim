@@ -1,6 +1,6 @@
 # ExtractionSector.java - 668 lines · 42 methods · 0 constants · sectors
 
-`ham/citybuildersim/sectors/ExtractionSector.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/ExtractionSector.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > A sector that digs or cuts one resource out of the ground the city owns:
 > the template every extraction industry of the materials chains extends

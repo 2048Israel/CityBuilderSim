@@ -1288,8 +1288,13 @@ public final class BuildAdvice {
 
     /** Automatic works (HW1): every essential service meets the whole demand, including highways, police and professional schools. */
     public static boolean maintained(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p) {
+        return maintained(game, m, added, p, null);
+    }
+
+    /** ...with warranted() read through the search's or valuation's own Warrant (AP7): null reads it afresh, as above. */
+    static boolean maintained(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p, Warrant warrant) {
         if (!AutoBuilder.essential(m)) return ahead(game, m, added, p);
-        if (!warranted(game, m)) return true;
+        if (!(warrant != null ? warrant.of(game, m) : warranted(game, m))) return true;
         double[] sd = supplyDemand(game, m, added, p);
         return !(sd[1] > 0) || sd[0] >= sd[1];
     }
@@ -1325,6 +1330,98 @@ public final class BuildAdvice {
         }
         return !Double.isFinite(least) || demand >= FIRST_WORK_SHARE * least;
     }
+
+    /* ----- warranted() read once in one search (AP7, 2026-11-26) ----- */
+
+    /**
+     * warranted() for one city and measure, read at its first ask and held for one search or valuation: suggestionFor()'s reading,
+     * one count(), one power plan, one WorksValue relief. Nothing in the city changes inside one (suggestFor() reads and quotes; R1g),
+     * and a new one reads afresh, so no writer between two has anything to raise. WHY (AP7, slot 9 at 50x): maintained() read it
+     * afresh at every count count() tried and at every date of the maintenance horizon WorksValue steps through, each a walk of the
+     * known templates (each one's research asked) and the measure's demand today, where the answer cannot move: AP6's final JFR, 488
+     * of 3,696 samples of the clock's thread, 357 of them in WorksValue.relief().
+     */
+    static final class Warrant {
+        private final Game game;
+        private final Measure m;
+        /** The probe a harness had open on this city and thread when this was made (WarrantProbe); in play, always none. */
+        private final WarrantProbe probe;
+        private byte answer = -1;   // -1 unread, 0 not warranted, 1 warranted
+
+        Warrant(Game game, Measure m) {
+            this.game = game;
+            this.m = m;
+            this.probe = probed ? WarrantProbe.open(game) : null;
+        }
+
+        /** The answer for this city and measure; another city or measure (never asked so) reads it afresh. Play adds one plain field read. */
+        boolean of(Game g, Measure measure) {
+            if (g != game || !m.equals(measure)) return warranted(g, measure);
+            WarrantProbe p = probe;
+            if (p != null && p.bare) return warranted(game, m);
+            if (answer < 0) {
+                if (p != null) p.read++;
+                answer = (byte) (warranted(game, m) ? 1 : 0);
+            }
+            boolean held = answer == 1;
+            if (p != null) p.asked(held, this);
+            return held;
+        }
+    }
+
+    /**
+     * A harness's window on the Warrants made for one city on one thread (REV-AP7): opened by probe(), it counts their asks and readings,
+     * and can make them read every ask afresh (bare, the original behaviour) or read each held answer afresh as well and count those that
+     * differ (checked). WHY: AP7 first counted in JVM-wide atomics and read volatile switches at every ask, a synchronised write inside
+     * the very loops it speeds and shared by every Game in the JVM. A probe is a plain object one thread holds for one city: a Warrant
+     * takes it when it is made, only once a harness has opened one in the JVM (probed), and another city or thread never sees it.
+     */
+    static final class WarrantProbe implements AutoCloseable {
+        final Game game;
+        /** Every ask read afresh, nothing held (the original behaviour). */
+        boolean bare;
+        /** Every held answer also read afresh and compared. */
+        boolean checked;
+        /** Asks answered from a held reading, the readings made, the held answers read afresh and compared, and those that differed. */
+        long asked, read, compared, differed;
+
+        private WarrantProbe(Game game) {
+            this.game = game;
+        }
+
+        private void asked(boolean held, Warrant w) {
+            asked++;
+            if (checked) {
+                compared++;
+                if (held != warranted(w.game, w.m)) differed++;
+            }
+        }
+
+        /** The probe this thread has open on this city, or none. */
+        private static WarrantProbe open(Game game) {
+            WarrantProbe p = PROBES.get();
+            return p != null && p.game == game ? p : null;
+        }
+
+        /** Closed, Warrants made after it on this thread take none; those made while it was open keep it. */
+        @Override
+        public void close() {
+            if (PROBES.get() == this) PROBES.remove();
+        }
+    }
+
+    /** Opens a probe on this city for the calling thread, in place of any it had: only Warrants made for this city on this thread see it. */
+    static WarrantProbe probe(Game game) {
+        WarrantProbe p = new WarrantProbe(game);
+        PROBES.set(p);
+        probed = true;
+        return p;
+    }
+
+    /** Each thread's open probe, if a harness opened one on it. */
+    private static final ThreadLocal<WarrantProbe> PROBES = new ThreadLocal<>();
+    /** Whether a harness has opened a probe in this JVM; play never does, so a Warrant made in play reads only this plain field. */
+    private static boolean probed;
 
     /**
      * What `sqFt` of ground is worth to the city with `landLeft` free: the
@@ -1518,7 +1615,9 @@ public final class BuildAdvice {
     /** suggestFor()'s reading itself. */
     private static Suggestion suggestionFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                             double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving, boolean maintain) {
-        if (AutoBuilder.essential(m) && !warranted(game, m)) return null;
+        // AP7: warranted() read once for the whole reading, which changes nothing in the city (Warrant).
+        Warrant warrant = new Warrant(game, m);
+        if (AutoBuilder.essential(m) && !warrant.of(game, m)) return null;
         // A berth (FR3): the terminal that pays back, if any (A BERTH THAT PAYS BACK, below) - not ranked like a service.
         if (m.kind() == Kind.PORT) return portSuggestion(game, m, cashLeft, landLeft, skip);
         Map<BuildingsTemplate, Long> site = maintain ? game.getAutoBuilder().pendingCapacity(game, m) : onSite(game, m);
@@ -1567,7 +1666,7 @@ public final class BuildAdvice {
             long[] found;
             Map<BuildingsTemplate, Long> at = site;
             if (power) {
-                PowerPlan plan = powerPlan(game, m, t, dates, slack, maintain);
+                PowerPlan plan = powerPlan(game, m, t, dates, slack, maintain, warrant);
                 if (plan == null) continue;
                 n = plan.count();
                 lead = plan.lead();
@@ -1575,19 +1674,19 @@ public final class BuildAdvice {
                 p = plan.binding().ahead();
                 found = new long[] {n, plan.closes() ? 1 : 0};
             } else {
-                long[] today = count(game, m, site, one, new Ahead(0, 1, slack), most, maintain);
+                long[] today = count(game, m, site, one, new Ahead(0, 1, slack), most, maintain, warrant);
                 if (today[0] <= 0 && !full) continue;
                 n = Math.max(1, today[0]);
                 while (true) {
                     lead = game.quoteBuild(t, n).months;
                     p = opening(game, lead, slack);
-                    found = count(game, m, at, one, p, most, maintain);
+                    found = count(game, m, at, one, p, most, maintain, warrant);
                     if (!full || found[0] <= n) break;
                     n = found[0];
                 }
             }
             // ...and a plant whose whole dated requirement the site already covers is not a reserve order (the spread may still weigh it).
-            if (power && (full ? maintained(game, m, at, p) : ahead(game, m, at, p))) continue;
+            if (power && (full ? maintained(game, m, at, p, warrant) : ahead(game, m, at, p))) continue;
             if (found[0] <= 0) {
                 if (!full || found[1] != 1) continue;
                 found = new long[] {1, 1};
@@ -1659,7 +1758,7 @@ public final class BuildAdvice {
             List<Weighed> due = new ArrayList<>(weighed);
             weighed.clear();
             for (Weighed w : due)
-                if (timely(game, m, w, opened.get(w.t()), late.contains(w.t()), dates, firmRows, maintain, landLeft)) weighed.add(w);
+                if (timely(game, m, w, opened.get(w.t()), late.contains(w.t()), dates, firmRows, maintain, landLeft, warrant)) weighed.add(w);
         }
         // ...and the city's gravel roads, paved (0.7.70): no ground to fit.
         Weighed paving = m.kind() == Kind.ROADS && !noPaving ? weighPaving(game, m, site, landLeft, slack, maintain, cashLeft) : null;
@@ -1678,7 +1777,7 @@ public final class BuildAdvice {
         // Plan the chosen work before its actual order can open. A cheaper small
         // alternative can wait for its own lead, while a coal-sized plan starts earlier. (Power's candidates were each
         // tested at their own opening above.)
-        if (full && !power && maintained(game, m, site, opening(game, best.lead(), slack))) return null;
+        if (full && !power && maintained(game, m, site, opening(game, best.lead(), slack), warrant)) return null;
         if (power) RESERVE_ORDERS.incrementAndGet();
         Weighed next = weighed.size() > 1 ? weighed.get(1) : null;
         return suggestion(game, need, m, site, before, whenOnSite, best, next, cashLeft, landLeft);
@@ -1885,7 +1984,8 @@ public final class BuildAdvice {
     private record PowerPlan(long count, double lead, PowerRequirement binding, boolean closes) { }
 
     private static List<PowerRequirement> powerRequirements(Game game, Measure m, BuildingsTemplate t,
-                                                             WorksValue.PowerDates dates, double lead, double slack, boolean maintain) {
+                                                             WorksValue.PowerDates dates, double lead, double slack, boolean maintain,
+                                                             Warrant warrant) {
         double from = Double.isNaN(lead) ? 0 : Math.max(0, lead);
         int peak = dates.nextPeak(from);
         List<PowerRequirement> tests = new ArrayList<>();
@@ -1897,15 +1997,16 @@ public final class BuildAdvice {
                     * PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth() + (int) month),
                             game.getServicesManager().getUtilitiesHandler().latitude()) / PowerDispatch.PLAN_PEAK_HOUR;
             Ahead p = new Ahead(month, game.getBusinessInvestment().growthFactor(month), month == peak ? slack : 0, factor);
-            long[] n = powerCovered(game, m, at, p, maintain) ? new long[] {0, 1}
-                    : count(game, m, at, Map.of(t, 1L), p, most, maintain);
+            long[] n = powerCovered(game, m, at, p, maintain, warrant) ? new long[] {0, 1}
+                    : count(game, m, at, Map.of(t, 1L), p, most, maintain, warrant);
             tests.add(new PowerRequirement(at, p, n));
         }
         return tests;
     }
 
-    private static boolean powerCovered(Game game, Measure m, Map<BuildingsTemplate, Long> at, Ahead p, boolean maintain) {
-        return maintain ? maintained(game, m, at, p) : ahead(game, m, at, p);
+    private static boolean powerCovered(Game game, Measure m, Map<BuildingsTemplate, Long> at, Ahead p, boolean maintain,
+                                        Warrant warrant) {
+        return maintain ? maintained(game, m, at, p, warrant) : ahead(game, m, at, p);
     }
 
     /**
@@ -1914,7 +2015,7 @@ public final class BuildAdvice {
      * wins. Falling farm credit is checked again at the actual quoted count over every date, never inferred from a maximum.
      */
     private static PowerPlan powerPlan(Game game, Measure m, BuildingsTemplate t, WorksValue.PowerDates dates,
-                                       double slack, boolean maintain) {
+                                       double slack, boolean maintain, Warrant warrant) {
         java.util.SortedSet<Long> pending = new java.util.TreeSet<>();
         java.util.Set<Long> seen = new java.util.HashSet<>();
         pending.add(1L);
@@ -1925,7 +2026,7 @@ public final class BuildAdvice {
             if (n < 1 || n > MOST || !seen.add(n)) continue;
             double lead = game.quoteBuild(t, n).months;
             if (Double.isInfinite(lead) || lead > Integer.MAX_VALUE - game.getMonth() - 12.0) continue;
-            List<PowerRequirement> tests = powerRequirements(game, m, t, dates, lead, slack, maintain);
+            List<PowerRequirement> tests = powerRequirements(game, m, t, dates, lead, slack, maintain, warrant);
             PowerRequirement binding = null;
             double worst = Double.NEGATIVE_INFINITY;
             long most = MOST, largest = 0;
@@ -1936,9 +2037,9 @@ public final class BuildAdvice {
                 most = Math.min(most, reserveMost(game, t, test.at()));
                 double[] sd = supplyDemand(game, m, test.at(), test.ahead());
                 double gap = sd[1] - sd[0];
-                need |= !powerCovered(game, m, test.at(), test.ahead(), maintain);
+                need |= !powerCovered(game, m, test.at(), test.ahead(), maintain, warrant);
                 allCanClose &= test.count()[1] == 1;
-                closes &= powerCovered(game, m, plus(test.at(), t, n), test.ahead(), maintain);
+                closes &= powerCovered(game, m, plus(test.at(), t, n), test.ahead(), maintain, warrant);
                 if (binding == null || required > largest || required == largest && gap > worst) {
                     binding = test;
                     largest = required;
@@ -1975,7 +2076,7 @@ public final class BuildAdvice {
      */
     private static boolean timely(Game game, Measure m, Weighed d, Map<BuildingsTemplate, Long> at, boolean late,
                                   WorksValue.PowerDates dates, Map<BuildingsTemplate, Integer> firm,
-                                  boolean maintain, double landLeft) {
+                                  boolean maintain, double landLeft, Warrant warrant) {
         for (Map.Entry<BuildingsTemplate, Integer> row : firm.entrySet()) {
             BuildingsTemplate u = row.getKey();
             Game.BuildQuote first = game.quoteBuild(u, 1);
@@ -1989,7 +2090,7 @@ public final class BuildAdvice {
             if (u == d.t() || !(one < d.lead())) continue;
             double monthly = Double.isNaN(one) ? 0 : Math.ceil(Math.max(0, one));
             if (late && !seasonalShort(game, m, dates.openBy(monthly), monthly)) return false;
-            long[] c = count(game, m, at, plus(new LinkedHashMap<>(), u, 1), d.ahead(), reserveMost(game, u, at), maintain);
+            long[] c = count(game, m, at, plus(new LinkedHashMap<>(), u, 1), d.ahead(), reserveMost(game, u, at), maintain, warrant);
             if (c[0] <= 0 || c[1] != 1) continue;
             double soon = row.getValue() + game.quoteBuild(u, c[0]).months;
             if (!(soon < d.lead())) continue;
@@ -2131,10 +2232,17 @@ public final class BuildAdvice {
     /** Count full staffed service for automatic essential works; other advice retains its own figure (HW1). */
     static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> step,
                                Ahead p, long most, boolean maintain) {
+        return count(game, m, site, step, p, most, maintain, null);
+    }
+
+    /** ...with warranted() read through the caller's Warrant (AP7), or through one of its own for this search when null. */
+    static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> step,
+                               Ahead p, long most, boolean maintain, Warrant warrant) {
         if (most < 1) return new long[] {0, 0};
         Ahead at = p == null ? NOW : p;
         boolean full = maintain && AutoBuilder.essential(m);
-        java.util.function.Predicate<Map<BuildingsTemplate, Long>> done = full ? a -> maintained(game, m, a, at)
+        Warrant held = !full ? null : warrant != null ? warrant : new Warrant(game, m);
+        java.util.function.Predicate<Map<BuildingsTemplate, Long>> done = full ? a -> maintained(game, m, a, at, held)
                 : p == null ? a -> clear(m, figure(game, m, a)) : a -> ahead(game, m, a, at);
         java.util.function.ToDoubleFunction<Map<BuildingsTemplate, Long>> reading = a -> {
             if (!full) return figure(game, m, a, at);

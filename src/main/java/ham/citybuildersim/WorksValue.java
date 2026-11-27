@@ -237,6 +237,8 @@ public final class WorksValue {
         double expectedInflation = Math.max(-.99, g.getBusinessInvestment().getExpectedInflation());
         double couponDiscount = (1 + rate) * (1 + expectedInflation / 12) - 1;
         Map<Double, Financing> creditQuotes = new java.util.HashMap<>();
+        // AP7: the measure's warranted() read once for this valuation, which changes nothing in the city (BuildAdvice.Warrant).
+        BuildAdvice.Warrant warrant = maintenance != null ? new BuildAdvice.Warrant(g, m) : null;
         if (maintenance != null) {
             double cash = g.getAutoBuilder().spendableForMeasure(g, m) - (g.getCash() - maintenance.cashLeft());
             double gap = Math.max(0, maintenance.initialCashCost() - cash);
@@ -264,10 +266,10 @@ public final class WorksValue {
                 BuildingsTemplate t = maintenance.template();
                 with = BuildAdvice.plus(with, Map.of(t, futureUnits));
                 BuildAdvice.Ahead target = new BuildAdvice.Ahead(months, at.k(), g.getAutoBuilder().getSlack());
-                if (!BuildAdvice.maintained(g, m, with, target)) {
+                if (!BuildAdvice.maintained(g, m, with, target, warrant)) {
                     long most = t.isHydro() ? Math.max(0, g.hydroSlotsFree(t) - maintenance.count() - futureUnits)
                             : BuildAdvice.MOST;
-                    long[] extra = BuildAdvice.count(g, m, with, Map.of(t, 1L), target, most, true);
+                    long[] extra = BuildAdvice.count(g, m, with, Map.of(t, 1L), target, most, true, warrant);
                     if (extra[0] > 0) {
                         double cashCost = g.quoteBuild(t, extra[0]).total;
                         double area = t.getLandSqFt() * (double) extra[0];

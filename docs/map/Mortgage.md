@@ -1,6 +1,6 @@
 # Mortgage.java - 587 lines · 45 methods · 11 constants · model
 
-`ham/citybuildersim/Mortgage.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Mortgage.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > An insured mortgage on a new residential building: a level payment every
 > month over a forty-year amortization, at a rate fixed for a ten-year term

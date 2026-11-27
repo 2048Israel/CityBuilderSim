@@ -1,6 +1,6 @@
 # ER1Check.java - 332 lines · 12 methods · 1 constants · harnesses
 
-`ham/citybuildersim/ER1Check.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ER1Check.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > The growth hold when a full city's treasury cannot buy a whole land offer, and its repair: the offer funded on the
 > land office's bond while a sector waits on ground (FB11).

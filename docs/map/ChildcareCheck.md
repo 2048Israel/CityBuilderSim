@@ -1,6 +1,6 @@
 # ChildcareCheck.java - 641 lines · 22 methods · 7 constants · harnesses
 
-`ham/citybuildersim/ChildcareCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ChildcareCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > Childcare resized (0.7.71, batch N2): the three childcare centres, the
 > build advice's size that fits the need (BuildAdvice, THE SIZE THAT FITS
@@ -66,7 +66,7 @@
 
 **Uses:** [BuildAdvice](BuildAdvice.md) (36), [CareType](CareType.md) (29), [Game](Game.md) (25), [BuildingsTemplate](BuildingsTemplate.md) (23), [AgeBand](AgeBand.md) (17), [CityNeeds](CityNeeds.md) (15), [GameFiles](GameFiles.md) (9), [PopulationCohorts](PopulationCohorts.md) (9), [JobType](JobType.md) (6), [BuildingManager](BuildingManager.md) (6), [BuildingVisual](BuildingVisual.md) (6), [Founding](Founding.md) (5), [LongPlaytest](LongPlaytest.md) (5), [Healthcare](Healthcare.md) (4), [BuildingType](BuildingType.md) (4), [Health](Health.md) (4), [BuildCard](BuildCard.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [WorksValue](WorksValue.md) (2), [Sector](Sector.md) (1), [PopulationManager](PopulationManager.md) (1), [HistorySave](HistorySave.md) (1), [TempDirs](TempDirs.md) (1)
 
-**Used by (6):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [SaveFileCheck](SaveFileCheck.md)
+**Used by (7):** [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [HydroCheck](HydroCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
 ## Sections
 

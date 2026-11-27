@@ -1,6 +1,6 @@
 # RetiredHousehold.java - 78 lines · 11 methods · 0 constants · model
 
-`ham/citybuildersim/RetiredHousehold.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RetiredHousehold.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > A household with nobody of working age in it: a senior or an elder, alone or
 > as a couple, at the pay tier its people retired from.
