@@ -151,7 +151,16 @@ public final class BankRulesCheck {
         double before = b.windowCollateral();
         b.markSecurities(600);
         check("equity adds no eligible collateral", b.windowCollateral() == before);
+        int[] capacityReads = {0};
+        cb.setWindowCapacity(() -> { capacityReads[0]++; return b.windowFunding(); });
+        double claimBefore = cb.getAdvancesToBank(), issuedBefore = cb.getIssued();
         cb.settleWindow(b.wholesaleFunding());
+        check("a settlement reads its collateral capacity once and lends inside it",
+                capacityReads[0] == 1 && cb.getAdvancesToBank() > claimBefore
+                        && cb.getAdvancesToBank() <= b.windowFunding());
+        check("the capped advance issues exactly its actual principal",
+                Math.abs((cb.getIssued() - issuedBefore)
+                        - (cb.getAdvancesToBank() - claimBefore)) <= MoneyAudit.CENT);
         b.settleForeignFunding(cb.getAdvancesToBank());
         check("the desk's whole unsupported inventory is funded abroad",
                 b.getForeignWholesale() >= Math.min(b.wholesaleFunding(), b.getSecurities()));

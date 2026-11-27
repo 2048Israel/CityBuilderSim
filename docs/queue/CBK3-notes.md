@@ -413,3 +413,28 @@ months green. It again reproduces remittance476.704248490,
 revenue33741.426003542,1.4128160%, three failures and worst audit
 1.95086613530e-10 exactly. The three mixed government-collateral prices are
 bit-identical. The skipped zero-demand reader changes no measured outcome.
+
+The3a4 Central run was stopped at19:56 after three strictness rows, no prior
+assertion red, to remove the remaining owned repeated collateral reads.
+Only verified PID28844 (parent29616, named runner created19:51:15) was ended.
+Its partial log/wrapper are target/CBK3-central-3a4-stopped.log and
+CBK3-central-3a4-wrapper-stopped.txt. Both aborted runs have wrapper exit-1;
+neither supplies a complete harness verdict or a known-red exemption.
+
+Game now requests gross wholesale need; CentralBank independently applies
+its existing callback's eligible window cap. Since cap<=gross, this gives
+the identical capped target. A positive settle posts the already-capped
+difference through the same private posting body; public direct advances
+still enforce remaining capacity. One operation prices capacity once.
+There is no saved or held snapshot, new public API or intervening writer.
+Helper21 checked exact finite arithmetic, callback purity, both allowed
+posting callers and old-claim rollover; it recommends this bounded refactor.
+Arbitrary stateful callbacks/concurrent mutation/NaN inputs are outside that
+identity's premise. The new harness verifies one callback and exact actual
+principal issued; both pass. All120 copied-city totals and audits remain
+identical to6ff36d2d8. No budget, fixed case, shape or horizon is changed.
+
+SaveFileCheck on3a4 completed native exit3, the sole existing REV-HC1 P5 red;
+all new CBK3 and CBK1 save paths pass. The subsequent settlement refactor
+adds no saved state or array slot. Final Monetary/full Central verification
+follows; the final fast build will refresh all indexes before mends.

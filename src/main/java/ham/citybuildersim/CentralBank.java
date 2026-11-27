@@ -310,6 +310,11 @@ public final class CentralBank {
     /** Money made and lent to the commercial bank, capped by its remaining eligible collateral. */
     public double advanceToBank(double x) {
         x = Math.min(x, Math.max(0, getWindowCapacity() - advancesToBank));
+        return issueWindowAdvance(x);
+    }
+
+    /** Posts an amount already capped in this operation; no economic mutation intervenes. */
+    private double issueWindowAdvance(double x) {
         if (!(x > 0)) return 0;
         advancesToBank += x;
         advancedToBank += x;
@@ -335,7 +340,7 @@ public final class CentralBank {
      */
     public void settleWindow(double owed) {
         double target = Math.min(Math.max(0, owed), getWindowCapacity());
-        if (target > advancesToBank) advanceToBank(target - advancesToBank);
+        if (target > advancesToBank) issueWindowAdvance(target - advancesToBank);
         else if (target < advancesToBank) repayFromBank(advancesToBank - target);
     }
 

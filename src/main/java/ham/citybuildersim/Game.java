@@ -14661,7 +14661,7 @@ public class Game {
          */
         centralBank.payInterestOnReserves(bank.getPlacementIncome());
         centralBank.chargeWindow(bank.getWindowFundingCost());
-        centralBank.settleWindow(bank.windowFunding());
+        centralBank.settleWindow(bank.wholesaleFunding());
         bank.settleForeignFunding(centralBank.getAdvancesToBank());
 
         // ...and if that left it owing more than it owns, it has failed - and
@@ -14871,7 +14871,7 @@ public class Game {
 
         // CBK3: trading and hot withdrawals follow the first settle. Refinance
         // their final shortfall inside the audited month, with no second interest bill.
-        centralBank.settleWindow(bank.windowFunding());
+        centralBank.settleWindow(bank.wholesaleFunding());
         bank.settleForeignFunding(centralBank.getAdvancesToBank());
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
