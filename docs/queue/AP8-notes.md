@@ -69,11 +69,12 @@ the bit), 556 of 557 rests halved, 0 differed. BondCheck 9b (AP6's deferred fold
 
 **BuildAdviceCheck 17**, the quote: House, Convenience Store, Coal Power Plant, Water Treatment Plant; 1, 7 and 600
 buildings; 0, 6 and 60 months of queue ahead, with and without work already away: 72 readings, each read twice
-(`.equals`) and its one-reading multiple equal to the six-argument one to the raw bit, 72 of 72; fixture: 39 distinct
-multiples, every one of the 72 dearer than 1 (the harness's short city queues past the threshold already), 72 with
-buildings handed abroad. ★ The fixture line first asked for some orders not dearer; the city queues past the threshold
-at every queue length, so it was restated as "the queue ahead moves the multiple" (more than one distinct multiple),
-which is what the reading needs to prove, not a premise moved to get green.
+(`.equals`) and its one-reading multiple equal to the six-argument one to the raw bit, 72 of 72. Since the merge of
+RES3 (section 8) the section reads a town of its own, `ChildcareCheck.town` (it adds depots until the builders' sites
+are staffed): 44.0 points a month at the sites, 47 distinct multiples, 60 of the 72 orders dearer and 12 not, 58 with
+buildings handed abroad. ★ On `30e99ac31` it read the harness's short city, where all 72 were dearer (39 multiples), so
+the fixture was first restated from "some orders dearer, some not" to "more than one multiple"; on its own town it asks
+for both again.
 
 ## 4. Checks
 
@@ -177,3 +178,28 @@ id on every read), the bond clearing's `settle` and `capacity` (with `cellOf`) a
 `ap8a-classes` (the first AP8 build), `ap8-classes` (38097bb27), `main-trace/`, `ap8a-trace/`, `ap8-trace/`,
 `main-months.txt`, `main-ui*`, `main-profile/`, `mutations/` (`run.sh`, each mutant's diff and logs, `obc-runs.txt`),
 `probe-*` (the first probe run). No player's slot was opened or written.
+
+## 8. The merge of RES3 (0.9.216, format 67)
+
+REV-AP8 (Codex): SHIP on `8d1ceae19`, no mends. Main moved to `6bd00e350` (RES3) and was merged at `f8e410d52`; only
+generated docs conflicted, taken from main and regenerated. The trace again on both, the new main's classes built from
+`git archive 6bd00e350` (`main3-classes`) and the merge's (`ap8m-classes`): all eight equal.
+
+| trace | main `6bd00e350` = AP8 `f8e410d52` |
+|---|---|
+| t-bank.csv | 6ede455267023c0721bbc430e5d85c6e |
+| t-bonds.csv | 31d688038b45d088318307ab47345251 |
+| t-borrow.csv | ad17225a89ac4910256628b34f9e707b |
+| t-build.csv | 6cff5eaf4b95e1170e9cf4698b1fcaf4 |
+| t-house.csv | 66a37acc01890e7c405dff9c6eacebd6 |
+| t-labour.csv | f000ef90f546b8ed4658e078784bfed0 |
+| t-month.csv | 9de355db849f31706f8b4dc4c93dbdcb |
+| t-pop.csv | 86d0749981733a5339b1dc2e1a33a91b |
+
+On the merge `OrderBookCheck` and `BondCheck` are green (9c: 4,925 rests in the played months, all halved, 0 differed;
+three months after the load, 747 of 747 halved, 0 differed). `BuildAdviceCheck` 17's first fixture went red: RES3 gives
+a door one household, so the short city's 900 Houses no longer staff its builders' sites (`sites()` 0, the queue ahead
+measured in months of them collapsed to none). RES3 moved section 16 to a town with the doors its posts need for the
+same reason; real builders without crews have no sites, so the check, not the model, moved: section 17 now reads its
+own `ChildcareCheck.town` (`0455473d6`, harness only), and is green, its fixture asking for orders on both sides of the
+threshold again (section 3). `--fast` green. AP9's id checked free again on `6bd00e350`.
