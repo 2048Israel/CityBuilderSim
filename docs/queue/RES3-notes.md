@@ -1102,6 +1102,31 @@ reviewer's line.
     the baseline's 2.96%, and every seed ends at its peak population.
     Probes: target/probe-kept/ and the box's ~/cbs/res3c-kept/ (not in
     the repository).
+- Dry run 3 (RES3c, 2026-11-27; e78f05f49, the box): gate exit 0, the
+  suite known red only (14 harnesses, main's: CarCheck through
+  SectorFlowCheck), the three timing assertions soft. Dry run 2's six
+  reds are green.
+- REV-RES3b's third look, P1 (CentralBank.repayFromBank's cap, 48f1a5f83):
+  with the repayment capped at the reserves, the advance it could not take
+  stayed owed after the bank's wholesale fell to nothing. The next month's
+  charge priced only the wholesale (Game passed that to chargeWindow), so
+  the advance still owed paid no interest. A discount window charges its
+  unpaid balance. Now the settle records what it left owed
+  (CentralBank.getWindowDeferred(), a slot appended to the saved array, so
+  an older save reads zero). Bank.fundToCover(policy, owed) prices it at the
+  window's rate with the wholesale, and chargeWindow lends at the window
+  whatever interest the reserves cannot pay, so M0 stays at or above
+  nothing. A bank in resolution, or no bank, is charged nothing (0.7.1's
+  decision). Where the reserves took the repayment, nothing is owed and the
+  charge is unchanged. CentralBankCheck 3 causes it on both books: 80
+  deferred, then 0.6833 at 10% charged by the bank and booked by the
+  central bank, M0 at nothing, the pool and M0 to the cent.
+  GoldStandardCheck 15's 1900 town defers in 15 charged months (at most
+  D$38.13k). In each, Bank.getWindowOwedCost() is the owed advance at the
+  window's rate, the central bank books the bank's whole charge, and the
+  audit closes. With Game passing nothing owed, that line is 0 of 15. A
+  floor on the whole charge did not catch it: the town's wholesale
+  covered it.
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains
