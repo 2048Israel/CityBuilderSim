@@ -2,7 +2,7 @@
 
 Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,906 constants in 657 files.**
+**6,915 constants in 657 files.**
 
 ## model (3107 constants)
 
@@ -6114,7 +6114,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2281 constants)
+## harnesses (2290 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6794,6 +6794,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 32 | `ER1Check.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Suppresses the game's month narration while the fixture runs. |
+| 97 | `ER1Check.HOMES_PLAYOUT_MONTHS` | `36` | The most months the homes the landlord left on site are played out for before the hold is tried: three years, over any home's build time. |
 
 ### EarthCheck.java ([map](map/EarthCheck.md))
 
@@ -6970,11 +6971,15 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 24 | `EssentialWorksCheck.out` | `System.out` |  |
-| 25 | `EssentialWorksCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 26 | `EssentialWorksCheck.HIGHWAYS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS)` |  |
-| 359 | `EssentialWorksCheck.PROFESSIONAL_TOWN_HOUSES` | `2_000` | The Houses each copy of the professional-demand town stands with (RES3): a door holds one household, so the 900 of a copy hold 2,900 people and 1,100 workers for about 3,000 posts, and the builders... |
-| 575 | `EssentialWorksCheck.SERVED_STREETS` | `.5` | The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). |
+| 25 | `EssentialWorksCheck.out` | `System.out` |  |
+| 26 | `EssentialWorksCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
+| 27 | `EssentialWorksCheck.HIGHWAYS` | `BuildAdvice.Measure.of(BuildAdvice.Kind.HIGHWAYS)` |  |
+| 360 | `EssentialWorksCheck.PROFESSIONAL_TOWN_HOUSES` | `2_000` | The Houses each copy of the professional-demand town stands with (RES3): a door holds one household, so the 900 of a copy hold 2,900 people and 1,100 workers for about 3,000 posts, and the builders... |
+| 576 | `EssentialWorksCheck.SERVED_STREETS` | `.5` | The share of their traffic currentLossPriority()'s streets serve: under full, over power's quarter (FS15). |
+| 646 | `EssentialWorksCheck.INTERIM_GROWTH_CAP` | `1.198` | The growth cap interimPower()'s town is scaled to (RES3): main's 4,590 people under 5,500 beds, where one household to a door left 3,021 under them (1.82). |
+| 649 | `EssentialWorksCheck.EARLY_WIND_GROWTH_CAP` | `1.094` | The growth cap earlyWind()'s town is scaled to (RES3): main's town after its years to the Steam Station's retirement, where RES3's (1.60 at the wind's opening) let five Diesel Stations close the ga... |
+| 661 | `EssentialWorksCheck.SCHOOL_DEMAND_OVER_FIRST_WORK` | `1.36` | The elementary school's unmet demand over its first-work threshold (BuildAdvice.FIRST_WORK_SHARE of an Elementary School's places) that fundingPriority()'s ranked town is scaled to (RES3): main's t... |
+| 1279 | `EssentialWorksCheck.PENDING_DEPOTS` | `28` | The Construction Depots overduePending() stands (RES3): one household to a door left the town's builders 494 to 468 points a month where main's made 723 to 747, and once the repairs of the roads on... |
 
 ### ExchangeCheck.java ([map](map/ExchangeCheck.md))
 
@@ -7109,20 +7114,22 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 91 | `ForeignChoiceCheck.SEARCH_FROM` | `12, SEARCH_STEP = 1` | The months queued at home at which the search for the twins' queue starts, and the step it takes: a month at a time, so the crossing is not stepped over. |
 | 94 | `ForeignChoiceCheck.SEARCH_TO` | `60` | The months queued at home past which the search gives up: a premium past the crews' excess makes every move free, and there is no pair of rates to tell apart. |
 | 97 | `ForeignChoiceCheck.PAYER_CASH_TIMES` | `100` | The landlords hold this many times the cost of their Houses on site in cash, so the extra is never borrowed: the saving is then judged at the loan rate of nothing borrowed. |
-| 100 | `ForeignChoiceCheck.HALF_BUILT_MONTHS` | `3` | Section 3's months worked on a site before it is handed: some of its buildings finished, one part built. |
-| 103 | `ForeignChoiceCheck.CLAIM_SCHOOLS` | `6` | ...and the city's Middle Schools ordered past the threshold in its second case, so that FC2 keeps a claim on the site (REV-FC2). |
-| 106 | `ForeignChoiceCheck.CITY_HOUSES` | `60` | Section 4's Houses the city orders on the landlords' site: a share of it. |
-| 109 | `ForeignChoiceCheck.SCHOOL` | `"Middle School"` | Section 5's site: Middle Schools the city orders when the landlords' Houses are built, and the months queued at home it stands at: long, and under the point where the home premium passes the crews'... |
-| 110 | `ForeignChoiceCheck.SCHOOLS` | `2` |  |
-| 111 | `ForeignChoiceCheck.CITY_QUEUE_MONTHS` | `25` |  |
-| 114 | `ForeignChoiceCheck.MOST_MONTHS` | `60` | The most months a site is played for to see its last building opened, and the months a record is followed. |
-| 117 | `ForeignChoiceCheck.BEFORE_THE_SAVE` | `2, AFTER_THE_SAVE = 4` | The months played on before a save (the record half done), and after it, in both twins. |
-| 120 | `ForeignChoiceCheck.PAVINGS` | `2` | Section 9's gravel roads the city orders paved: a pair, whose paving at 25 months queued at home still leaves the crews' excess over the home premium (the extra is something). |
-| 123 | `ForeignChoiceCheck.SHORT_CASH_SHARE` | `0.5` | Section 10(a)'s landlords hold this share of the gross extra they would pay, so that they must borrow the rest. |
-| 126 | `ForeignChoiceCheck.TREASURY_OVER` | `2, TREASURY_UNDER = 0.5` | Section 10(b)'s treasury holds this many times the card's extra when it can pay and this many when it cannot (the city never borrows: Game's government). |
-| 129 | `ForeignChoiceCheck.SCRATCH_SLOT` | `ConstructionTrapCheck.SCRATCH_SLOT` | The slot the saved city is written to, in its own scratch folder. |
-| 187 | `ForeignChoiceCheck.INF` | `Double.POSITIVE_INFINITY` |  |
-| 876 | `ForeignChoiceCheck.RECORD_FIGURES` | `{ "points", "owed", "materials", "pace", "pricePerPoint", "paid", "monthsHome", "months...` | The figures a record keeps as numbers: the ones differ() compares. |
+| 105 | `ForeignChoiceCheck.CROWD_STORES` | `200` | The crowd the town takes in before the landlords' Houses are ordered (RES3): this many Convenience Stores stand, their posts open, and this many people arrive. |
+| 106 | `ForeignChoiceCheck.CROWD_PEOPLE` | `2500` |  |
+| 109 | `ForeignChoiceCheck.HALF_BUILT_MONTHS` | `3` | Section 3's months worked on a site before it is handed: some of its buildings finished, one part built. |
+| 112 | `ForeignChoiceCheck.CLAIM_SCHOOLS` | `6` | ...and the city's Middle Schools ordered past the threshold in its second case, so that FC2 keeps a claim on the site (REV-FC2). |
+| 115 | `ForeignChoiceCheck.CITY_HOUSES` | `60` | Section 4's Houses the city orders on the landlords' site: a share of it. |
+| 118 | `ForeignChoiceCheck.SCHOOL` | `"Middle School"` | Section 5's site: Middle Schools the city orders when the landlords' Houses are built, and the months queued at home it stands at: long, and under the point where the home premium passes the crews'... |
+| 119 | `ForeignChoiceCheck.SCHOOLS` | `2` |  |
+| 120 | `ForeignChoiceCheck.CITY_QUEUE_MONTHS` | `25` |  |
+| 123 | `ForeignChoiceCheck.MOST_MONTHS` | `60` | The most months a site is played for to see its last building opened, and the months a record is followed. |
+| 126 | `ForeignChoiceCheck.BEFORE_THE_SAVE` | `2, AFTER_THE_SAVE = 4` | The months played on before a save (the record half done), and after it, in both twins. |
+| 129 | `ForeignChoiceCheck.PAVINGS` | `2` | Section 9's gravel roads the city orders paved: a pair, whose paving at 25 months queued at home still leaves the crews' excess over the home premium (the extra is something). |
+| 132 | `ForeignChoiceCheck.SHORT_CASH_SHARE` | `0.5` | Section 10(a)'s landlords hold this share of the gross extra they would pay, so that they must borrow the rest. |
+| 135 | `ForeignChoiceCheck.TREASURY_OVER` | `2, TREASURY_UNDER = 0.5` | Section 10(b)'s treasury holds this many times the card's extra when it can pay and this many when it cannot (the city never borrows: Game's government). |
+| 138 | `ForeignChoiceCheck.SCRATCH_SLOT` | `ConstructionTrapCheck.SCRATCH_SLOT` | The slot the saved city is written to, in its own scratch folder. |
+| 196 | `ForeignChoiceCheck.INF` | `Double.POSITIVE_INFINITY` |  |
+| 894 | `ForeignChoiceCheck.RECORD_FIGURES` | `{ "points", "owed", "materials", "pace", "pricePerPoint", "paid", "monthsHome", "months...` | The figures a record keeps as numbers: the ones differ() compares. |
 
 ### ForeignCrewsCheck.java ([map](map/ForeignCrewsCheck.md))
 
@@ -7697,10 +7704,10 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5350 | `KeptCheck.PAPER_LASTS` | `60` | The months a piece of paper 66's boxes and 67's book row are drawn on must still run: 66 lands a dozen months, 67 fewer. |
 | 5466 | `KeptCheck.DESK_KINDS` | `java.util.Set.of("CurveChart", "DeskCurve", "DeskBars", "PathChart", "BuybackLadder")` | The kinds of picture the bond desk draws, from the curve and the book (WG1-R). |
 | 6046 | `KeptCheck.TRADE_FOLDS_THAT_ADD` | `java.util.Set.of("month:ledger", "reserves:eight")` | The folds the Trade sections open that have to add to their page in any city that trades: the month's ledger and the eight moneys over the years. |
-| 8456 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
-| 9222 | `KeptCheck.RANKINGS_READ_GUARD_MS` | `600_000` | How long a read of the saved cities is waited on before it is called hung (KRW1, FS5, the study's FS1-C): ten minutes, ten times the minute it had to land in. |
-| 9334 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
-| 9936 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck's objects leave at least a quarter of its suite heap for the next pages (KP2c): the live heap after release, less the render targets the software renderer keeps on it (FS5, GB5's s... |
+| 8458 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
+| 9224 | `KeptCheck.RANKINGS_READ_GUARD_MS` | `600_000` | How long a read of the saved cities is waited on before it is called hung (KRW1, FS5, the study's FS1-C): ten minutes, ten times the minute it had to land in. |
+| 9336 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
+| 9938 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck's objects leave at least a quarter of its suite heap for the next pages (KP2c): the live heap after release, less the render targets the software renderer keeps on it (FS5, GB5's s... |
 
 ### KeptTimingCheck.java ([map](map/KeptTimingCheck.md))
 
@@ -8234,8 +8241,8 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 1302 | `MaterialsCheck.MINE_TYPES` | `{ Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE, Deposit.FieldType.MAGNETITE }` | ...the type of field each stands on, and the sites it takes (the study's 1.3, 2.4: twenty sites for a large mine, one for a small). |
 | 1304 | `MaterialsCheck.MINE_SITES` | `{ 20, 1, 20 }` | ...and the sites each takes. |
 | 1579 | `MaterialsCheck.FC2_CYCLE` | `{ 54, - 83, - 33 }` | What FC2's seed 1 appraised one more Rod Mill at, a month at a time (D$k): +54k, -83k and -33k, over and over, against a hurdle of 45k. |
-| 2051 | `MaterialsCheck.TROUGH_SCALE` | `.5` | Rod's prices in the trough of the cycle of section 22: half the literal, so the last Rod Mill loses money on every tonne of its feed. |
-| 2054 | `MaterialsCheck.PEAK_SCALE` | `1.3` | ...and in its peak: 1.3 times the literal, which pays the last Rod Mill a little. |
+| 2089 | `MaterialsCheck.TROUGH_SCALE` | `.5` | Rod's prices in the trough of the cycle of section 22: half the literal, so the last Rod Mill loses money on every tonne of its feed. |
+| 2092 | `MaterialsCheck.PEAK_SCALE` | `1.3` | ...and in its peak: 1.3 times the literal, which pays the last Rod Mill a little. |
 
 ### MedicineCheck.java ([map](map/MedicineCheck.md))
 
@@ -8617,6 +8624,8 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 40 | `PopulationCheck.ADULT_MIX` | `PopulationCohorts.equilibriumShare(AgeBand.ADULT)` | The adult share these fixtures run at. |
+| 1363 | `PopulationCheck.STANDARD_HOUSES` | `200` | The Houses the standard played city starts with. |
+| 1366 | `PopulationCheck.DEAR_HOUSES` | `60` | The Houses the dear twin starts with, the same shops and depots: its households outnumber its doors, so the landlord's asks rise on the pressure. |
 
 ### PortCheck.java ([map](map/PortCheck.md))
 
@@ -9507,7 +9516,7 @@ Generated 2026-11-26 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 107 | `YoungBankCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 110 | `YoungBankCheck.FOUNDING_MONTHS` | `12` | The months the young town is played, with only its lone sector held, before that sector is lent for: the bank has opened its first branch and carries the town's own lending, so its minimum stands a... |
+| 110 | `YoungBankCheck.FOUNDING_MONTHS` | `Equity.RECORD_MONTHS - 2` | The months the young town is played, with only its lone sector held, before that sector is lent for: the bank has opened its first branch and carries the town's own lending, so its minimum stands a... |
 | 113 | `YoungBankCheck.LOAN_PER_EQUITY` | `2` | What the lone plant's loan is, in times the bank's equity as the founding ends: above the whole of it, and small enough that the largest loss sized below (LOSS_PAST_EQUITY of equity) is less than t... |
 | 116 | `YoungBankCheck.LOSS_UNDER_CUSHION` | `.5` | Side (a)'s loss, in times the cushion the control's close leaves over Bank.CAPITAL_RATIO: under it. |
 | 119 | `YoungBankCheck.LOSS_PAST_EQUITY` | `1.5` | Side (c)'s loss, in times the control's equity at its close: past all of it. |

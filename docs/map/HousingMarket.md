@@ -8,7 +8,7 @@
 
 **Uses:** [HousingChoice](HousingChoice.md) (197), [HousingInventory](HousingInventory.md) (43), [FamilyModel](FamilyModel.md) (43), [Game](Game.md) (16), [HouseholdBalance](HouseholdBalance.md) (9), [BuildingsTemplate](BuildingsTemplate.md) (8), [Household](Household.md) (7), [RealEstate](RealEstate.md) (7), [WorkingHousehold](WorkingHousehold.md) (6), [HousingForms](HousingForms.md) (6), [PayTier](PayTier.md) (5), [HousingRecipe](HousingRecipe.md) (5), [JobType](JobType.md) (4), [FamilyStructure](FamilyStructure.md) (4), [AgeBand](AgeBand.md) (3), [MoneyAudit](MoneyAudit.md) (3), [Sectors](Sectors.md) (1), [StudentHousehold](StudentHousehold.md) (1), [UnemployedHousehold](UnemployedHousehold.md) (1), [WageBand](WageBand.md) (1), [AdultStage](AdultStage.md) (1), [Retail](Retail.md) (1), [BuildingManager](BuildingManager.md) (1)
 
-**Used by (8):** [DataSave](DataSave.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HousingChoiceCheck](HousingChoiceCheck.md), [HousingMarketCheck](HousingMarketCheck.md), [MonetaryCheck](MonetaryCheck.md), [RealEstate](RealEstate.md), [Village1900Check](Village1900Check.md)
+**Used by (9):** [DataSave](DataSave.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HousingChoiceCheck](HousingChoiceCheck.md), [HousingMarketCheck](HousingMarketCheck.md), [MonetaryCheck](MonetaryCheck.md), [PopulationCheck](PopulationCheck.md), [RealEstate](RealEstate.md), [Village1900Check](Village1900Check.md)
 
 ## Sections
 

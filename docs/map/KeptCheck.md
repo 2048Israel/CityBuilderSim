@@ -1,4 +1,4 @@
-# KeptCheck.java - 10,309 lines · 263 methods · 36 constants · harnesses
+# KeptCheck.java - 10,311 lines · 263 methods · 36 constants · harnesses
 
 `ham/citybuildersim/KeptCheck.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -92,11 +92,11 @@
 | 7198 | · the count-up (79) |
 | 7478 | · the hover (80) and the cost (81) |
 | 7619 | POLICY > RESEARCH'S OVERVIEW AND FUNDING (R3b, slice B), sections 99 to 101: the two pages, the hub's Research card, ... |
-| 8237 | THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of ... |
-| 8543 | HOUSEHOLD MONEY AND THE RANKINGS TAB (KP7), sections 82 to 90: the last two screens on the rail kept - each page draw... |
-| 8858 | · a slider greyed while held (91) |
-| 8972 | THE KEPT SCREENS' COST SWEEP (KP2b), section 92: a style, a text, a graphic, a padding or a width set again on a node... |
-| 9329 | THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 |
+| 8239 | THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of ... |
+| 8545 | HOUSEHOLD MONEY AND THE RANKINGS TAB (KP7), sections 82 to 90: the last two screens on the rail kept - each page draw... |
+| 8860 | · a slider greyed while held (91) |
+| 8974 | THE KEPT SCREENS' COST SWEEP (KP2b), section 92: a style, a text, a graphic, a padding or a width set again on a node... |
+| 9331 | THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 |
 
 ## Constants
 
@@ -134,10 +134,10 @@
 | 5350 | `KeptCheck.PAPER_LASTS` | `60` | The months a piece of paper 66's boxes and 67's book row are drawn on must still run: 66 lands a dozen months, 67 fewer. |
 | 5466 | `KeptCheck.DESK_KINDS` | `java.util.Set.of("CurveChart", "DeskCurve", "DeskBars", "PathChart", "Buyback...` | The kinds of picture the bond desk draws, from the curve and the book (WG1-R). |
 | 6046 | `KeptCheck.TRADE_FOLDS_THAT_ADD` | `java.util.Set.of("month:ledger", "reserves:eight")` | The folds the Trade sections open that have to add to their page in any city that trades: the month's ledger and the eight moneys over the years. |
-| 8456 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
-| 9222 | `KeptCheck.RANKINGS_READ_GUARD_MS` | `600_000` | How long a read of the saved cities is waited on before it is called hung (KRW1, FS5, the study's FS1-C): ten minutes, ten times the minute it had to land in. |
-| 9334 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
-| 9936 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck's objects leave at least a quarter of its suite heap for the next pages (KP2c): the live heap after release, less the render targets the software renderer keeps on it (FS5, GB5's star 5: the box's Mon... |
+| 8458 | `KeptCheck.CLOCK_MONTHS` | `3` | The months landed, each followed by the clock's redraw, on every screen in section 88. |
+| 9224 | `KeptCheck.RANKINGS_READ_GUARD_MS` | `600_000` | How long a read of the saved cities is waited on before it is called hung (KRW1, FS5, the study's FS1-C): ten minutes, ten times the minute it had to land in. |
+| 9336 | `KeptCheck.SITE_COUNTS` | `{ 0, 1, 3 }` | The sites a state puts the city in: none, one (the tab says "1 site"), three (it says "3 sites"). |
+| 9938 | `KeptCheck.KEPT_HEAP_SHARE` | `.75` | A full KeptCheck's objects leave at least a quarter of its suite heap for the next pages (KP2c): the live heap after release, less the render targets the software renderer keeps on it (FS5, GB5's star 5: the box's Mon... |
 
 ## Fields (state)
 
@@ -164,15 +164,15 @@
 | 6932 | `int heardText, heardStyle, control, arrowsBefore, arrowsDragged, arrowsMid` |  |
 | 6933 | `double shown, valueNow, thumb, cityAt, cityMid, cityAfter, cityBack, step, min` |  |
 | 6934 | `Double stagedAt` |  |
-| 8862 | `String none, differs, dropped, reading` |  |
-| 8863 | `boolean heldPressed, heldGreyed, changingGreyed, sameBar, heldAfter` |  |
-| 8864 | `double value, want, back, city` |  |
+| 8864 | `String none, differs, dropped, reading` |  |
+| 8865 | `boolean heldPressed, heldGreyed, changingGreyed, sameBar, heldAfter` |  |
+| 8866 | `double value, want, back, city` |  |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 97 | 10213 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
+| 97 | 10215 | **type** `public class KeptCheck` | The People page kept between redraws (study UP4, docs/studies/spec-screens-in-place.md): each month's redraw run over last month's nodes ends exactly where a page built new would, and costs a fraction of it. |
 | 101 | 5 | `static void check(String label, boolean ok)` |  |
 | 108 | 4 | `static void check(String label, boolean ok, String found)` | The same, with what was found printed under a failure (R3b, sections 99 to 101). |
 | 122 | 5 | `static<T> T fx(Callable<T> c) throws Exception` |  |
@@ -493,7 +493,7 @@
 | 7533 | 55 | `static void kp6Tips(Game g, KeptBench bench) throws Exception` | Section 80: surviving nodes on all three screens (including Trade river) keep the same Tooltip across a month; Kept.tip updates its words/delay. |
 | 7590 | 28 | `static void screensKP6(Game g, KeptBench bench) throws Exception` | Sections 69 to 80: Government, Trade & the World and Policy kept (81, their cost, is KeptTimingCheck's since FS4). |
 
-### POLICY > RESEARCH'S OVERVIEW AND FUNDING (R3b, slice B), sections 99 to 101: the two pages, the hub's Research card, ... (lines 7619-8236)
+### POLICY > RESEARCH'S OVERVIEW AND FUNDING (R3b, slice B), sections 99 to 101: the two pages, the hub's Research card, ... (lines 7619-8238)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -509,69 +509,69 @@
 | 7796 | 25 | `static void researchFunding(Game g, KeptBench defaultBench) throws Exception` | Sections 99-101 (R3b): Research Overview/Funding in default and funded 1900 cities equal fresh; model reads, staged/held/applied dials are checked. |
 | 7823 | 99 | `static void researchDefaultWay(Game g, KeptBench defaultBench) throws Exception` | Section 99, the first part: in a city founded the default way. |
 | 7924 | 81 | `static void researchOverview(Game town, KeptBench bench) throws Exception` | Section 99, the second part: the Overview and the hub's Research card in the 1900 town. |
-| 8007 | 157 | `static void researchFundingPage(Game town, KeptBench bench) throws Exception` | Section 100: the Funding page in the 1900 town. |
-| 8166 | 70 | `static void researchSchoolsAndBooks(Game town, KeptBench bench) throws Exception` | Section 101: the schools' research posts on Services, the research line on Government's Spending list, and the wage floor's payroll. |
+| 8007 | 159 | `static void researchFundingPage(Game town, KeptBench bench) throws Exception` | Section 100: the Funding page in the 1900 town. |
+| 8168 | 70 | `static void researchSchoolsAndBooks(Game town, KeptBench bench) throws Exception` | Section 101: the schools' research posts on Services, the research line on Government's Spending list, and the wage floor's payroll. |
 
-### THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of ... (lines 8237-8542)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 8242 | 8 | `static boolean has(List<String> signature, String...words)` | Whether some line of a signature has all of these words in it. |
-| 8252 | 3 | `static String label(String text)` | A label's line in a signature: `Label "text"`. |
-| 8257 | 194 | `static void researchFound(Game g, KeptBench defaultBench) throws Exception` | Section 95 (R5): default quiet Found card versus researchTown finds/recipe/equipment/template/charts, kept and reshaped; pure timeline stacking/ticks/flags/colours/decisions. |
-| 8453 | 1 | **type** `private record RailScreen(String label, String name, java.util.function.Consumer<KeptBench> show)` | A rail screen the clock is held to in section 88: how it is called here, the name its show method gives the window, and the call that shows it. |
-| 8459 | 83 | `static void kp7Clock(Game g, KeptBench bench) throws Exception` | Section 88: prove rebuiltInPlace counts old redraws but not arrivals; all real rail screens retain tops, screen name and handed-back nodes through CLOCK_MONTHS. |
-
-### HOUSEHOLD MONEY AND THE RANKINGS TAB (KP7), sections 82 to 90: the last two screens on the rail kept - each page draw... (lines 8543-8857)
+### THE RESEARCH AREA (R5, slice B1), section 95: the Found page kept, and what City History's flags and the stacking of ... (lines 8239-8544)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 8550 | 57 | `static void kp7Household(Game g, KeptBench bench) throws Exception` | Sections 82 to 84: Household money kept, shown as a page built new shows it, and kept right through what reshapes it. |
-| 8609 | 97 | `static void kp7Rankings(Game g, KeptBench bench) throws Exception` | Sections 85 to 87: the Rankings tab kept, shown as a page built new shows it, and kept right through what reshapes it - to the pixel, since its table is painted. |
-| 8712 | 57 | `static int[] tipsAcrossMonth(Game g, KeptBench bench, KeptBench.Page page) throws Exception` | KHT1/FS5: hold FamilyModel and ledger cell counts across one month so grid cells stay open. |
-| 8771 | 25 | `static void kp7Hover(Game g, KeptBench bench) throws Exception` | Section 89: Household doors/cells and Rankings rows retain identity/hover while still and clear on exit; surviving tooltips keep identity across open cells/drawers/measures. |
-| 8798 | 40 | `static void kp7Tips(Game g, KeptBench bench) throws Exception` | Section 89's last part: the tooltips are kept on Household money and the Rankings tab. |
-| 8840 | 17 | `static void screensKP7(Game g, KeptBench bench) throws Exception` | Sections 82 to 89: Household money and the Rankings tab kept, and the clock never rebuilding a rail screen (88); 90, their cost, is KeptTimingCheck's since FS4. |
+| 8244 | 8 | `static boolean has(List<String> signature, String...words)` | Whether some line of a signature has all of these words in it. |
+| 8254 | 3 | `static String label(String text)` | A label's line in a signature: `Label "text"`. |
+| 8259 | 194 | `static void researchFound(Game g, KeptBench defaultBench) throws Exception` | Section 95 (R5): default quiet Found card versus researchTown finds/recipe/equipment/template/charts, kept and reshaped; pure timeline stacking/ticks/flags/colours/decisions. |
+| 8455 | 1 | **type** `private record RailScreen(String label, String name, java.util.function.Consumer<KeptBench> show)` | A rail screen the clock is held to in section 88: how it is called here, the name its show method gives the window, and the call that shows it. |
+| 8461 | 83 | `static void kp7Clock(Game g, KeptBench bench) throws Exception` | Section 88: prove rebuiltInPlace counts old redraws but not arrivals; all real rail screens retain tops, screen name and handed-back nodes through CLOCK_MONTHS. |
 
-### a slider greyed while held (91) (lines 8858-8971)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 8861 | 5 | **type** `static final class Greyed` | What one greying of a held slider did, for greyedWhileHeld to judge. |
-| 8868 | 61 | `static void greyedWhileHeld(Game g, KeptBench bench) throws Exception` | Section 91 (KP2b/KP2c): disabled policy-rate dial releases at scene (pressed/dragged), clears held/valueChanging, follows a new staged value and returns when dropped. |
-| 8931 | 33 | `static void doorsStyledOnce(Game g, KeptBench bench) throws Exception` | Section 91 (KP2b): Policy hub/tax door cards set whole hand style once per draw; unchanged redraw fires no style changes, manual mutation proves the counter. |
-| 8966 | 5 | `private static Notice add(Game g, String key, String title)` | A notice raised now, unread, in the inbox. |
-
-### THE KEPT SCREENS' COST SWEEP (KP2b), section 92: a style, a text, a graphic, a padding or a width set again on a node... (lines 8972-9328)
+### HOUSEHOLD MONEY AND THE RANKINGS TAB (KP7), sections 82 to 90: the last two screens on the rail kept - each page draw... (lines 8545-8859)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 8982 | 20 | `static void nothingSet(KeptBench bench, KeptBench.Page page, String name, Hand hand) throws Exception` | A page home, a hand on it, drawn and laid out, drawn once more with a listener on every style, text, graphic, padding and width on it (KeptBench.redrawSets), no month between: how many of them the second draw wrote, a... |
-| 9003 | 3 | `static void nothingSet(KeptBench bench, KeptBench.Page page, String name) throws Exception` |  |
-| 9008 | 15 | `static List<Debt> piecesOnTheBooks(Game g, KeptBench bench) throws Exception` | The pieces on the books, or a real sale settled through the model; a refusal leaves the nonempty premise hard red. |
-| 9028 | 7 | `static void letGo(KeptBench bench, java.util.function.Consumer<KeptBench> forget) throws Exception` | Section 92 lets one tab's pages go before it opens the next (KP2b): the tab forgotten, as another city opened leaves it, and the pages built new released (KeptBench.release). |
-| 9037 | 127 | `static void kp2bSets(Game g, KeptBench bench) throws Exception` | Section 92: the pages the sweep mended, each redrawn with nothing new in the city. |
-| 9166 | 34 | `static void kp2bHouseholdMoney(Game g, KeptBench bench) throws Exception` | Section 92 on Household money (KP7, taken into KP2b): the page as it opens, each view, every cell of the grid opened, the statement and the books stacked under the grid. |
-| 9205 | 11 | `static int rankingsSavedCities(KeptBench bench) throws Exception` | The city saved into slot 10 of the harness's own folder and read back, so that the Rankings tab has a saved city on its board: section 87 does it, and does nothing here where it has run. |
-| 9229 | 9 | `static boolean rankingsReadAwaited(KeptBench bench) throws Exception` | The Rankings tab's read of the saved cities waited on to its own end: the screen's worker hands its answer to the FX thread, which clears its reading flag and keeps the snapshot (rankingsReadLanded), asked between sle... |
-| 9245 | 24 | `static void kp2bRowsPicture(Game g, KeptBench bench) throws Exception` | Section 93: the Rankings table's picture (KP2b), the one node on the page that paints its rows. |
-| 9275 | 53 | `static void kp2bRankings(Game g, KeptBench bench) throws Exception` | Section 92 on the Rankings tab (KP7, taken into KP2b): the page as it opens, each board, money, prices and conversion, some measures (every tenth, the last and the first no real place is ranked on), each filter, Aroun... |
+| 8552 | 57 | `static void kp7Household(Game g, KeptBench bench) throws Exception` | Sections 82 to 84: Household money kept, shown as a page built new shows it, and kept right through what reshapes it. |
+| 8611 | 97 | `static void kp7Rankings(Game g, KeptBench bench) throws Exception` | Sections 85 to 87: the Rankings tab kept, shown as a page built new shows it, and kept right through what reshapes it - to the pixel, since its table is painted. |
+| 8714 | 57 | `static int[] tipsAcrossMonth(Game g, KeptBench bench, KeptBench.Page page) throws Exception` | KHT1/FS5: hold FamilyModel and ledger cell counts across one month so grid cells stay open. |
+| 8773 | 25 | `static void kp7Hover(Game g, KeptBench bench) throws Exception` | Section 89: Household doors/cells and Rankings rows retain identity/hover while still and clear on exit; surviving tooltips keep identity across open cells/drawers/measures. |
+| 8800 | 40 | `static void kp7Tips(Game g, KeptBench bench) throws Exception` | Section 89's last part: the tooltips are kept on Household money and the Rankings tab. |
+| 8842 | 17 | `static void screensKP7(Game g, KeptBench bench) throws Exception` | Sections 82 to 89: Household money and the Rankings tab kept, and the clock never rebuilding a rail screen (88); 90, their cost, is KeptTimingCheck's since FS4. |
 
-### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 9329-10309)
+### a slider greyed while held (91) (lines 8860-8973)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9341 | 4 | `static void putSitesOn(BuildingManager buildings, int n)` | Puts the played city's building stacks in a state with this many sites on (the stacks' own setter, the one a loaded save uses): the first n stacks under construction, the rest not, so the tab's count and its tooltip a... |
-| 9347 | 4 | `static boolean cityIsScratch(Game g)` | Whether the scratch city's folder is under this JVM's TempDirs folder: then a click that saves the prefs writes nothing of the player's. |
-| 9353 | 220 | `static void up7Frame(Game g, KeptBench bench) throws Exception` | Section 94 (UP7): real drawer bar/construction tab kept and fresh across pin/fold/screen/site states, with spoil/redraw/hover/tooltips/clicks. |
-| 9575 | 17 | `static ClockPace paceFor(double rung, boolean short_)` | A pace on a clock moved by hand, run past a full window: at pace, or short of the rung (a rung of 50 by months of 120 ms as ClockCheck's falls, the rest by a city that runs at two fifths of it). |
-| 9594 | 4 | `static void drawHeader(KeptBench bench) throws Exception` | The header drawn kept and laid out, as the clock's redraw leaves it. |
-| 9600 | 183 | `static void up7Speed(Game g, KeptBench bench) throws Exception` | Section 98 (UP7): real header pace at/short of every rung uses speed-only amber or rung colour, fixed unclipped width, stationary neighbours and one changed write. |
-| 9785 | 9 | `static boolean onceEach(KeptBench.Sets s)` | Whether a draw wrote the reading's words once and its style once, and nothing else. |
-| 9796 | 134 | `static void fb2Repairs(Game g, KeptBench bench) throws Exception` | Section 103 (FB2): cause KL1 quote, KS1-UI header/bar, BF1-K Partners/Search and KS1-Gov recurring-line regressions independently of the played city path. |
-| 9939 | 60 | `private static void rendererCacheControls(KeptBench bench) throws Exception` | Return this diagnostic frame before the final GC, so its roots cannot inflate the heap reading. |
-| 10001 | 93 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
-| 10095 | 12 | `public static void main(String[] args) throws Exception` |  |
-| 10117 | 12 | `static Game playedCity(GameFiles files) throws Exception` | KeptCheck's city, Danzik: LongPlaytest's probe city, today's (probeTodayCity(); R1g: the playtest founds the 1900 city since, and this one's sections assert what a city founded the default way has, every discovery kno... |
-| 10131 | 178 | `static void mainSections(Game g, KeptBench bench) throws Exception` | Every section, in order, on the played city. |
+| 8863 | 5 | **type** `static final class Greyed` | What one greying of a held slider did, for greyedWhileHeld to judge. |
+| 8870 | 61 | `static void greyedWhileHeld(Game g, KeptBench bench) throws Exception` | Section 91 (KP2b/KP2c): disabled policy-rate dial releases at scene (pressed/dragged), clears held/valueChanging, follows a new staged value and returns when dropped. |
+| 8933 | 33 | `static void doorsStyledOnce(Game g, KeptBench bench) throws Exception` | Section 91 (KP2b): Policy hub/tax door cards set whole hand style once per draw; unchanged redraw fires no style changes, manual mutation proves the counter. |
+| 8968 | 5 | `private static Notice add(Game g, String key, String title)` | A notice raised now, unread, in the inbox. |
+
+### THE KEPT SCREENS' COST SWEEP (KP2b), section 92: a style, a text, a graphic, a padding or a width set again on a node... (lines 8974-9330)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 8984 | 20 | `static void nothingSet(KeptBench bench, KeptBench.Page page, String name, Hand hand) throws Exception` | A page home, a hand on it, drawn and laid out, drawn once more with a listener on every style, text, graphic, padding and width on it (KeptBench.redrawSets), no month between: how many of them the second draw wrote, a... |
+| 9005 | 3 | `static void nothingSet(KeptBench bench, KeptBench.Page page, String name) throws Exception` |  |
+| 9010 | 15 | `static List<Debt> piecesOnTheBooks(Game g, KeptBench bench) throws Exception` | The pieces on the books, or a real sale settled through the model; a refusal leaves the nonempty premise hard red. |
+| 9030 | 7 | `static void letGo(KeptBench bench, java.util.function.Consumer<KeptBench> forget) throws Exception` | Section 92 lets one tab's pages go before it opens the next (KP2b): the tab forgotten, as another city opened leaves it, and the pages built new released (KeptBench.release). |
+| 9039 | 127 | `static void kp2bSets(Game g, KeptBench bench) throws Exception` | Section 92: the pages the sweep mended, each redrawn with nothing new in the city. |
+| 9168 | 34 | `static void kp2bHouseholdMoney(Game g, KeptBench bench) throws Exception` | Section 92 on Household money (KP7, taken into KP2b): the page as it opens, each view, every cell of the grid opened, the statement and the books stacked under the grid. |
+| 9207 | 11 | `static int rankingsSavedCities(KeptBench bench) throws Exception` | The city saved into slot 10 of the harness's own folder and read back, so that the Rankings tab has a saved city on its board: section 87 does it, and does nothing here where it has run. |
+| 9231 | 9 | `static boolean rankingsReadAwaited(KeptBench bench) throws Exception` | The Rankings tab's read of the saved cities waited on to its own end: the screen's worker hands its answer to the FX thread, which clears its reading flag and keeps the snapshot (rankingsReadLanded), asked between sle... |
+| 9247 | 24 | `static void kp2bRowsPicture(Game g, KeptBench bench) throws Exception` | Section 93: the Rankings table's picture (KP2b), the one node on the page that paints its rows. |
+| 9277 | 53 | `static void kp2bRankings(Game g, KeptBench bench) throws Exception` | Section 92 on the Rankings tab (KP7, taken into KP2b): the page as it opens, each board, money, prices and conversion, some measures (every tenth, the last and the first no real place is ranked on), each filter, Aroun... |
+
+### THE DRAWER'S BAR, THE CONSTRUCTION TAB AND THE SPEED'S READING (UP7): sections 94 and 98 (lines 9331-10311)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 9343 | 4 | `static void putSitesOn(BuildingManager buildings, int n)` | Puts the played city's building stacks in a state with this many sites on (the stacks' own setter, the one a loaded save uses): the first n stacks under construction, the rest not, so the tab's count and its tooltip a... |
+| 9349 | 4 | `static boolean cityIsScratch(Game g)` | Whether the scratch city's folder is under this JVM's TempDirs folder: then a click that saves the prefs writes nothing of the player's. |
+| 9355 | 220 | `static void up7Frame(Game g, KeptBench bench) throws Exception` | Section 94 (UP7): real drawer bar/construction tab kept and fresh across pin/fold/screen/site states, with spoil/redraw/hover/tooltips/clicks. |
+| 9577 | 17 | `static ClockPace paceFor(double rung, boolean short_)` | A pace on a clock moved by hand, run past a full window: at pace, or short of the rung (a rung of 50 by months of 120 ms as ClockCheck's falls, the rest by a city that runs at two fifths of it). |
+| 9596 | 4 | `static void drawHeader(KeptBench bench) throws Exception` | The header drawn kept and laid out, as the clock's redraw leaves it. |
+| 9602 | 183 | `static void up7Speed(Game g, KeptBench bench) throws Exception` | Section 98 (UP7): real header pace at/short of every rung uses speed-only amber or rung colour, fixed unclipped width, stationary neighbours and one changed write. |
+| 9787 | 9 | `static boolean onceEach(KeptBench.Sets s)` | Whether a draw wrote the reading's words once and its style once, and nothing else. |
+| 9798 | 134 | `static void fb2Repairs(Game g, KeptBench bench) throws Exception` | Section 103 (FB2): cause KL1 quote, KS1-UI header/bar, BF1-K Partners/Search and KS1-Gov recurring-line regressions independently of the played city path. |
+| 9941 | 60 | `private static void rendererCacheControls(KeptBench bench) throws Exception` | Return this diagnostic frame before the final GC, so its roots cannot inflate the heap reading. |
+| 10003 | 93 | `static void kp2cMends(Game g, KeptBench bench) throws Exception` | Section 102: the kept sweep's remaining draw, drag and retention conditions, each caused here. |
+| 10097 | 12 | `public static void main(String[] args) throws Exception` |  |
+| 10119 | 12 | `static Game playedCity(GameFiles files) throws Exception` | KeptCheck's city, Danzik: LongPlaytest's probe city, today's (probeTodayCity(); R1g: the playtest founds the 1900 city since, and this one's sections assert what a city founded the default way has, every discovery kno... |
+| 10133 | 178 | `static void mainSections(Game g, KeptBench bench) throws Exception` | Every section, in order, on the played city. |
 

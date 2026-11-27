@@ -967,6 +967,18 @@ reviewer's line.
     so two all-zero windows compared as N against R. A harness premise; it
     returns when a rare money event first falls after the parting in one
     twin alone. Read from the compared window if it does.
+  - The reruns at the tip (e67beb891, the PC, frozen classes; slice F's
+    EssentialWorksCheck at 8fca48595, 137 OK): green - HealthCheck,
+    BondCheck, MaterialsCheck, AuctionCheck, PostwarRecipeCheck, ER1Check,
+    ShortSellingCheck, ForeignDebtCheck, BuildersFirstCheck, ZoningCheck,
+    YoungBankCheck, PopulationCheck, HousingCheck, CurveCheck,
+    CapitalGainsCheck, ForeignChoiceCheck, HousingMarketCheck,
+    HousingChoiceCheck, ChildcareCheck, AskProceedsCheck,
+    CentralBankCheck, SaveFileCheck, BankCheck, PriceLevelCheck;
+    LongPlaytest all passed (2,400 months). Known only: HoldersCheck's four
+    and HousingDoorCheck's MC1 line (gate.txt), SaveSlotCheck's 7c median
+    due month (main's timing red, SOFT; 39.1 ms on the box). KeptCheck and
+    RoadCheck in the dry run.
   - For Jerus, a design note, not a red: RES3's new classes take 43 to 46
     construction points a door against a House's 10 and cost less cash a
     door; RealEstate.plan ranks on cash, so a town short of builders orders
@@ -983,6 +995,42 @@ reviewer's line.
   40,000 people at m628 against m464 (m212 m586). The unbuilt class's
   quote at its carry and margin builds a new form only where the tenants'
   budgets pay it: fewer doors built ahead of the people.
+  - 20/25 against 0.9.212's 24/26 (the orchestrator's ask, for
+    REV-RES3b): four criteria pass there and not here, one cause. All 64
+    policy runs match their AUTO2 twin exactly until the policy switches
+    on, so every gap is AUTO2's founding: level at m60 (727 people against
+    712), apart from m120-180 (2,006 against 4,340 at m180), 0.21 of the
+    baseline at m600, 0.79 at m1800, 0.88 at m2400. Arrivals are capped by
+    the room people can afford (8 to 40 a month against 45 to 150); the
+    jobs' draw is the same (about 250 waiting at m120 in both).
+    Unskilled households keep 0.008-0.009 after necessities against the
+    cheapest vacant ask of 0.0116-0.0127, asks at or under carry, so at
+    m240 235 of them live two to a door, 141 lodge and 312 jobless are
+    hosted while 147 of 626 doors stand empty; skilled households (0.15)
+    each pay a door, and building waits on them (seed 0's stock 626 doors
+    m210-300). The baseline puts a household on each door whatever the rent.
+    - T2 ZERO_HOT (7,096 against 21,333), SHOCK (133,110 against 684,858),
+      HIGH (56,156 against 245,141): the short runs, ending m402, m840 and
+      m720, inside the founding's lag; each final over its own twin is
+      the baseline's kind (1.12/0.94, 0.97/1.15, 0.75/0.66). AUTO2 and
+      ZERO_SLACK end past the catch-up and pass. T1's m628 against m464 is
+      the same lag. Real world: a household that cannot pay a door's cost
+      neither moves in alone nor gets one built, and none that can pay
+      waits while rents would cover a builder. For REV-RES3b, the one place
+      to look: a quarter of the doors empty beside doubled-up unskilled
+      households, the asks near carry and a third over their means (a
+      balance question: what the unskilled keep, and how far an empty
+      door's ask falls).
+    - H2 ZERO_HOT, PASS to VACUOUS (the one gone from the count): the
+      scorer grades it after a burst, a first-half excess of 1% or more
+      (m42-162); RES3 gives 0.59% (7 of 16 seeds) against 2.43%. The twin's
+      founding rate is lower (4.71% on 3.12% inflation, against 6.78% on
+      4.68%), the held rate reaches 0 later (m125 against m102), so the cut
+      is 1.8 points against 4.4, and rent rises 0.9 points over the twin
+      against 3.4. The figure H2 would grade, +0.15%, would pass. Real
+      world: cheap money does not heat a town held by what its people can
+      pay for a home.
+    Data and probes: target/res3-c/ens-cmp/ (not in the repository).
 
 The passive default observer's counting fix, 4a5f516cb, requires 600 completed
 post-audit steps and audit rows, clock 1 to 601. Its measurement window remains

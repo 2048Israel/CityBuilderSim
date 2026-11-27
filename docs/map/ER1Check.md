@@ -1,4 +1,4 @@
-# ER1Check.java - 332 lines · 12 methods · 1 constants · harnesses
+# ER1Check.java - 345 lines · 12 methods · 2 constants · harnesses
 
 `ham/citybuildersim/ER1Check.java` - generated 2026-11-26 by CodeMap; line numbers are as of that run.
 
@@ -30,6 +30,7 @@
 | line | constant | value | says |
 |---:|---|---|---|
 | 32 | `ER1Check.QUIET` | `new PrintStream(OutputStream.nullOutputStream())` | Suppresses the game's month narration while the fixture runs. |
+| 97 | `ER1Check.HOMES_PLAYOUT_MONTHS` | `36` | The most months the homes the landlord left on site are played out for before the hold is tried: three years, over any home's build time. |
 
 ## Fields (state)
 
@@ -42,7 +43,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 28 | 305 | **type** `public class ER1Check` | The growth hold when a full city's treasury cannot buy a whole land offer, and its repair: the offer funded on the land office's bond while a sector waits on ground (FB11). |
+| 28 | 318 | **type** `public class ER1Check` | The growth hold when a full city's treasury cannot buy a whole land offer, and its repair: the offer funded on the land office's bond while a sector waits on ground (FB11). |
 | 34 | 4 | `static void check(String label, boolean ok)` |  |
 | 39 | 5 | `static void quietly(Runnable action)` |  |
 | 45 | 4 | `static long posts(BuildingManager buildings)` |  |
@@ -52,7 +53,7 @@
 | 75 | 3 | `static double gap(Game g, LandParcel offer)` | The part of the best offer for room a look's cash share cannot pay: its local price less a tenth of the cash. |
 | 80 | 4 | `static boolean auditClosed(Game g)` | Whether the last month's money audit closed, by the ensemble's rule (tools/ensemble, auditResidual()): no residual past a cent and a part in ten million, no drift past a cent. |
 | 85 | 10 | `public static void main(String[] args) throws Exception` |  |
-| 97 | 121 | `static void held()` | The holds: nothing waiting on ground, then a city past its own test for borrowing; then the cash restored. |
-| 220 | 68 | `static void funded()` | The repair: the same full city, its own test willing to lend, buys the demanded ground on the funding page's bond. |
-| 290 | 42 | `static void overdrawn()` | An overdrawn treasury (REV-FB11): the funded look's bond covers the overdraft with the offer, as buyWhole()'s Game.landCashGap() counts it, and buys the offer. |
+| 100 | 131 | `static void held()` | The holds: nothing waiting on ground, then a city past its own test for borrowing; then the cash restored. |
+| 233 | 68 | `static void funded()` | The repair: the same full city, its own test willing to lend, buys the demanded ground on the funding page's bond. |
+| 303 | 42 | `static void overdrawn()` | An overdrawn treasury (REV-FB11): the funded look's bond covers the overdraft with the offer, as buyWhole()'s Game.landCashGap() counts it, and buys the offer. |
 
