@@ -1,0 +1,12 @@
+<!-- readiness: provisional -->
+## changelog
+### {next} — CBK3, the window against collateral and the bank's rules as dials — 2026-11-26, ready, see docs/queue/CBK3-notes.md
+The window lends against eligible loans and government paper after haircuts;
+the share desk needs stable cash, and excess wholesale funding is borrowed
+abroad at a term rate in the city's own money. Nine saved bank controls appear
+on Policy and the central bank's Policy page. Statements separate actual
+window and foreign borrowing, old saved claims remain truthful, and mature
+share valuation no longer revives an old offering price at zero earnings.
+The copied month-133 city and the ensemble comparison are recorded in the notes.
+## queued
+| LE1 | Identify borrowers and connected groups before exposing a large-exposure limit | docs/queue/LE1.md |
