@@ -5323,13 +5323,22 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
 
     /**
      * A place a picture is seen: its label, the page, the hand that sets the page for it after the page's home, and what
-     * the player does on the page in each month it is watched, after the month and before the draw (null: nothing).
+     * the player does on the page in each month it is watched, after the month and before the draw (null: nothing). A spot with a
+     * city of its own (null: the played city) is censused and watched on that city and its bench, which its page was built on, and only
+     * the kinds of picture it names (null: every kind found) are watched there.
      */
-    record Spot(String label, KeptBench.Page page, Hand setup, MonthHand month) {
+    record Spot(String label, KeptBench.Page page, Hand setup, MonthHand month, OwnCity own, java.util.Set<String> kinds) {
+        Spot(String label, KeptBench.Page page, Hand setup, MonthHand month) {
+            this(label, page, setup, month, null, null);
+        }
+
         Spot(String label, KeptBench.Page page, Hand setup) {
-            this(label, page, setup, null);
+            this(label, page, setup, null, null, null);
         }
     }
+
+    /** A city a spot is watched on of its own (RES3, 2026-11-26): its game and bench, and whether its Borrow quote sold in each month watched. */
+    record OwnCity(Game game, KeptBench bench, List<Boolean> sold) { }
 
     /** What the player does on a page in a month of the watch (the first month is 1). */
     interface MonthHand {
@@ -5394,6 +5403,34 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
             spots.add(new Spot("Close it now", fx(() -> bench.finances("Close it now", "The book", "Every piece")), closeOf(piece),
                     (b, m) -> { if (m % 2 == 1) b.financesTyped(2, MOST_TO_PAY[m / 2 % 2]); }));
         }
+        // Borrow at home's ladder is censused and watched on Borrow's own city (KS1's borrowCity), its bidders caused. WHY (RES3, dry run 2,
+        // 2026-11-26): the page's second Columns is the ladder this would build, drawn only while the quote is not empty, and on the played
+        // city at m2580-2628 the bank bought 26 of the 30bn at m2616, then its capital ratio fell from 0.115 to 0.010 and it bid nothing; the
+        // households alone bid 2.6-10.7bn against a minimum issue of 4.6-9.1bn and issue lots of 2-5bn, so every sale was short and under the
+        // minimum, a tiny sale (Game.isTinySale), and the quote was empty in 5 of 7 draws, the ladder standing in one month only (m2627, 10.8bn
+        // sold) and the redraw after it dropping the Columns: six of seven pictures handed back, under nine in ten. That is the real world, a
+        // bank under its capital floor stops buying and a thin household market cannot fund a ten-year issue, so the fixture causes its
+        // premise: no ask could, since in three of those months the households' bids sat under one lot, and Borrow's own city bids a finite
+        // bank bid of twice its cash that clears the ask. The ask is a sixth of that city's cash, or four times its minimum issue, and the
+        // quote is struck in every month watched (the month hand below), asserted by moneyPictures after the watches. Only the Columns are
+        // watched here, for the AuctionChart needs no sale and stays on the played city below, where the market moves it every month: on a
+        // city whose bidders stand still its Result's face moved in the last digits with the lot (4,313,910,641 then 4,313,910,650 then
+        // 4,313,910,642 of 4.3bn), a move no pixel shows, and the chart drew itself again with nothing changed in 3 of 6 months (slice H's run).
+        Game own = fx(KeptCheck::borrowCity);
+        KeptBench ownBench = fx(() -> new KeptBench(own));
+        double ownAsk = fx(() -> Math.max(own.minimumIssueSize() * 4, own.getCash() / 6));
+        OwnCity ownCity = new OwnCity(own, ownBench, new ArrayList<>());
+        spots.add(new Spot("Borrow at home on Borrow's own city (KS1), asking for a sixth of its cash", fx(() -> ownBench.finances("Borrow at home", "Borrow", "At home")), b -> {
+            b.financesBorrow("Term", 10, moneys.get(0), ownAsk, false, false);
+            // The ladder this would build is drawn only while the quote is not empty, and at the tail's cap a month's bids can all
+            // stand above it (FB6: seven of ten handed back, the card there in four months of six): the player takes what fills it.
+            b.financesCap(true, 0);
+            return null;
+        }, (b, m) -> {
+            // The quote the page strikes (FinancesScreen.borrowPage, at home, a Term bond not asked callable), on the page's own cap.
+            DebtQuote quote = own.quoteDebt("Term", ownAsk, 10, BondMarket.issueLot(own, "Term", null), b.borrowCap());
+            ownCity.sold().add(!quote.isEmpty());
+        }, ownCity, java.util.Set.of("Columns")));
         spots.add(new Spot("Borrow at home, asking for a sixth of the cash", fx(() -> bench.finances("Borrow at home", "Borrow", "At home")), b -> {
             b.financesBorrow("Term", 10, moneys.get(0), ask, false, false);
             // The ladder this would build is drawn only while the quote is not empty, and at the tail's cap a month's bids can all
@@ -5426,21 +5463,23 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
         List<Spot> spots = pictureSpots(g, bench, piece);
         java.util.Map<String, List<Spot>> seen = new java.util.LinkedHashMap<>();
         for (Spot s : spots) {
+            // A spot with a city of its own is seen on that city's bench (its page was built on it).
+            KeptBench seenOn = s.own() != null ? s.own().bench() : bench;
             java.util.Map<String, Integer> found = fx(() -> {
-                bench.home(s.page());
-                s.setup().on(bench);
-                bench.drawKept(s.page());
-                bench.passes();
-                bench.settle();
+                seenOn.home(s.page());
+                s.setup().on(seenOn);
+                seenOn.drawKept(s.page());
+                seenOn.passes();
+                seenOn.settle();
                 java.util.Map<String, Integer> m = new java.util.LinkedHashMap<>();
                 for (String kind : KeptBench.pictureKinds()) {
-                    int c = bench.pictures(kind).size();
+                    int c = seenOn.pictures(kind).size();
                     if (c > 0) m.put(kind, c);
                 }
                 return m;
             });
             System.out.println("  " + s.label() + ": " + (found.isEmpty() ? "no picture" : found.toString()));
-            for (String kind : found.keySet()) seen.computeIfAbsent(kind, k -> new ArrayList<>()).add(s);
+            for (String kind : found.keySet()) if (s.kinds() == null || s.kinds().contains(kind)) seen.computeIfAbsent(kind, k -> new ArrayList<>()).add(s);
         }
         for (String kind : KeptBench.pictureKinds()) {
             List<Spot> at = seen.getOrDefault(kind, List.of());
@@ -5456,8 +5495,27 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
                     if (live != null) spot = new Spot(spot.label(), spot.page(),
                             kind.equals("PathChart") ? lineOf(live) : closeOf(live), spot.month());
                 }
-                pictureKept(g, bench, spot, kind);
+                if (spot.own() == null) {
+                    pictureKept(g, bench, spot, kind);
+                } else {
+                    // The watch plays months on the spot's own city, so the played city plays as many after it: the sections after this one
+                    // keep the stretch they have always had (as section 60 does for Borrow's city).
+                    Game city = spot.own().game();
+                    int from = fx(city::getMonth);
+                    pictureKept(city, spot.own().bench(), spot, kind);
+                    fx(() -> {
+                        for (int m = from; m < city.getMonth(); m++) month(g);
+                        return null;
+                    });
+                }
             }
+        }
+        for (Spot s : spots) {
+            if (s.own() == null) continue;
+            // The ladder's premise, asserted: the quote Borrow's page strikes sold in every month of every watch of this spot (not an empty one).
+            int months = s.own().sold().size(), sold = (int) s.own().sold().stream().filter(b -> b).count();
+            check("fixture: " + s.label() + ": the quote sells in every month of the watch (" + sold + " of " + months + " months)", months > 0 && sold == months);
+            fx(() -> { s.own().bench().financesCapDefault(); return null; });
         }
         fx(() -> { bench.financesCapDefault(); return null; });
     }
