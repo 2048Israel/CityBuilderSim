@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — AP7, slot 9 at 50x: the maintenance valuation's eligibility read once — 2026-11-26, ready, see docs/queue/AP7-notes.md
 Slot 9 was still slow at 50x after AP6 (Jerus, 2026-11-25: "ok once again, slow down, slot 9"). Whether a city warrants
