@@ -4,7 +4,7 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 652 files, 704,760 lines, 30,817 methods, 6,888 constants. `GameVersion.VERSION` is "0.9.215", `SAVE_FORMAT` 66.
+**The tree:** 652 files, 704,987 lines, 30,821 methods, 6,888 constants. `GameVersion.VERSION` is "0.9.215", `SAVE_FORMAT` 66.
 
 ## model (283 files)
 
@@ -403,7 +403,7 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AutoBuildCheck.java](AutoBuildCheck.md) | 2,191 | 50 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 2 |
 | [BankCheck.java](BankCheck.md) | 5,169 | 36 | The commercial bank, and the families it discharges. | 3 |
 | [BankFailureCheck.java](BankFailureCheck.md) | 735 | 23 | The hands-off bank's failures, caused separately and counted across Random cities. | 0 |
-| [BankRulesCheck.java](BankRulesCheck.md) | 487 | 11 | The window against collateral and the bank's rules as the player's dials. | 1 |
+| [BankRulesCheck.java](BankRulesCheck.md) | 591 | 12 | The window against collateral and the bank's rules as the player's dials. | 1 |
 | [BasketYearCheck.java](BasketYearCheck.md) | 807 | 37 | The household's basket by year (R0e slice 1): the year's basket in a city founded the 1900 way, today's in every other. | 0 |
 | [BondCheck.java](BondCheck.md) | 2,028 | 54 | Corporate bonds (0.7.12): the bond, how it is sold, when a sector takes it over the bank, who loses what in a default, what the bank charges for co... | 2 |
 | [BooksCheck.java](BooksCheck.md) | 299 | 3 | Verifies a sector's income statement and balance sheet, off the template. | 0 |
@@ -470,7 +470,7 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [EquipmentCheck.java](EquipmentCheck.md) | 1,200 | 46 | Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece would ea... | 20 |
 | [EquityCheck.java](EquityCheck.md) | 595 | 10 | Verifies the share register: who buys, at what price, what they are paid, and that a month with owners in it still adds up. | 0 |
 | [EssentialWorksCheck.java](EssentialWorksCheck.md) | 1,433 | 38 | Essential works ordered for their unmet service, including their ground (HW1). | 7 |
-| [ExchangeCheck.java](ExchangeCheck.md) | 1,686 | 41 | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what ... | 7 |
+| [ExchangeCheck.java](ExchangeCheck.md) | 1,727 | 41 | Verifies the exchange on the order book (0.7.12 round 2): what the desk posts and what it is not obliged to take, who trades with whom and at what ... | 8 |
 | [ExchangeRateCheck.java](ExchangeRateCheck.md) | 1,709 | 59 | Proves the D$ is a float that follows its parity and swings like a real currency (XR1, 2026-10-21): parity is the basket with rent held to a third,... | 2 |
 | [ExpectationsCheck.java](ExpectationsCheck.md) | 563 | 21 | Proves the anchor (Expectations, 0.7.42): credibility won on target and lost to a miss nobody leans against, expected inflation and its floor, the ... | 0 |
 | [FB13Check.java](FB13Check.md) | 600 | 13 | FB13's three texts, each asked of the model that says it: the island's words (AL1-W), the Government screen's coupons abroad (CD9-G) and the build ... | 0 |
@@ -541,7 +541,7 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [LandlordPortCheck.java](LandlordPortCheck.md) | 822 | 33 | The landlord port, held to FR3's brief (docs/queue/FR3.md): the city builds and keeps the sea terminals and Freight's Ports division works them. | 1 |
 | [LandmassCheck.java](LandmassCheck.md) | 3,487 | 101 | The city's ground counted by landmass, and the island rule, checked (ET5; the ET5 design): a landmass is read from the Earth's data at every plot, ... | 7 |
 | [LicenceFeesCheck.java](LicenceFeesCheck.md) | 546 | 15 | Licence fees leave a running firm's money and enter this month's current account. | 4 |
-| [LongPlaytest.java](LongPlaytest.md) | 10,188 | 194 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 82 |
+| [LongPlaytest.java](LongPlaytest.md) | 10,209 | 195 | A city played for 2,400 months at the gate and 4,000 once a night on main (tools/nightly.sh), the way a person plays. | 83 |
 | [LuxuryRetailCheck.java](LuxuryRetailCheck.md) | 249 | 10 | What a luxury shop's post sells: its payroll over its margin at BEA's mark (LX1, 2026-11-17). | 0 |
 | [MainLineCheck.java](MainLineCheck.md) | 2,032 | 67 | The main line is the railway's run from its gateway to the freight station, the yard nearest the gate arm's end, and it is drawn double where the c... | 2 |
 | [ManufacturingCheck.java](ManufacturingCheck.md) | 779 | 11 | The ninth sector: what the city makes out of its own steel, and ships. | 0 |
@@ -612,7 +612,7 @@ Generated 2026-11-27 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [RoadCheck.java](RoadCheck.md) | 1,209 | 35 | The roads over their lives, and a gravel road paved (0.7.70, batch N1): BuildAdvice's A ROAD OVER ITS LIFE and ConstructionControl's F, held to the... | 1 |
 | [RobustnessCheck.java](RobustnessCheck.md) | 432 | 5 | What the game does when something is already broken. | 0 |
 | [RunWorksCheck.java](RunWorksCheck.md) | 1,310 | 40 | Highways and rail on the slopes (ET4, slices A and B; docs/studies/spec-earth2-terrain.md 4.3, decision D10): a highway's or a railway line's groun... | 2 |
-| [SaveFileCheck.java](SaveFileCheck.md) | 5,164 | 42 | Verifies where saves go and how they are written. | 13 |
+| [SaveFileCheck.java](SaveFileCheck.md) | 5,225 | 44 | Verifies where saves go and how they are written. | 13 |
 | [SaveSlotCheck.java](SaveSlotCheck.md) | 2,001 | 53 | Verifies the slot system: ten saves plus an autosave, the version stamp, and the labels the menu is drawn from. | 1 |
 | [ScaleCheck.java](ScaleCheck.md) | 2,313 | 68 | A city past 2^31 people (0.7.53): its counts read back whole, its posts, doors and household places add up to the last one, and a save gives them a... | 2 |
 | [SchoolingLadderCheck.java](SchoolingLadderCheck.md) | 229 | 7 | Hand-summed monthly cash ledgers for every after-cost qualification (WG3). | 2 |
