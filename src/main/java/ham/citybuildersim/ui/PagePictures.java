@@ -3,6 +3,7 @@ package ham.citybuildersim.ui;
 import ham.citybuildersim.Game;
 import ham.citybuildersim.GameFiles;
 import ham.citybuildersim.GamePrefs;
+import ham.citybuildersim.LongPlaytest;
 import ham.citybuildersim.MiniMapFrame;
 import ham.citybuildersim.Sector;
 import javafx.scene.Node;
@@ -16,6 +17,8 @@ import javafx.stage.Stage;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
@@ -40,7 +43,8 @@ import java.util.concurrent.Callable;
  *        -Dcbs.earth=C:/.../data/earth-2.bin -Dcbs.world=C:/.../data/world-1.bin \
  *        ham.citybuildersim.ui.PagePictures FOLDER SLOT MONTHS OUT [PREFIX...]
  * </pre>
- * FOLDER holds a copy of slot-NN.json, slot-NN-history.json and slot-NN-map.bin (copied there by hand, never
+ * FOLDER "playtest" grows the playtest's city to month SLOT instead (openPlaytest), then plays MONTHS more.
+ * Otherwise FOLDER holds a copy of slot-NN.json, slot-NN-history.json and slot-NN-map.bin (copied there by hand, never
  * the saves folder itself); the tool copies them again into a {@link GameFiles#scratch} folder and loads that,
  * so neither the player's slots nor FOLDER is written. It plays MONTHS months (0 for the city as saved),
  * then writes OUT/NN-page.png for every page of {@link #pages}, and OUT/NN-page-whole.png beside it where the
@@ -206,13 +210,45 @@ public final class PagePictures {
         Files.copy(folder.resolve(stem + "-history.json"), files.historyFile(slot), StandardCopyOption.REPLACE_EXISTING);
         Path map = folder.resolve(stem + "-map.bin");
         if (Files.exists(map)) Files.copy(map, files.mapFile(slot), StandardCopyOption.REPLACE_EXISTING);
+        prefsFor(files);
+        fx(() -> {
+            g = new Game(files);
+            g.loadGame(slot);
+            return null;
+        });
+        openWindow();
+    }
+
+    /**
+     * ...or, with FOLDER "playtest", the playtest's city (LongPlaytest.probeCity, the city UiProbe and the
+     * nightly grow) played to a month: a mid or a big city when no slot of today's format holds one (UX1: his
+     * slots 2 and 9 were format 66, and a copy patched to load drew 0 people).
+     */
+    static void openPlaytest(int toMonth) throws Exception {
+        GameFiles files = GameFiles.scratch("pictures");
+        prefsFor(files);
+        PrintStream real = System.out;
+        System.setOut(new PrintStream(OutputStream.nullOutputStream()));
+        try {
+            g = fx(() -> LongPlaytest.probeCity(files, null));
+            fx(() -> { LongPlaytest.probePlay(g, toMonth); return null; });
+        } finally {
+            System.setOut(real);
+        }
+        openWindow();
+    }
+
+    /** The window reads its preferences from the city's folder: not full-screen. */
+    private static void prefsFor(GameFiles files) {
         GamePrefs prefs = GamePrefs.load(files);
         prefs.setFullScreen(false);
         prefs.save(files);
         System.out.println("scratch " + files.getDirectory());
+    }
+
+    /** The game's own window on the city {@link #g}, at 1920x1080. */
+    private static void openWindow() throws Exception {
         fx(() -> {
-            g = new Game(files);
-            g.loadGame(slot);
             ui = new UserInterface(g);
             stage = new Stage();
             ui.start(stage);
@@ -280,14 +316,16 @@ public final class PagePictures {
             System.out.println("PagePictures: JavaFX cannot start here (" + cannot + ").");
             System.exit(1);
         }
-        Path folder = Path.of(args[0]);
-        int slot = Integer.parseInt(args[1]);
+        boolean playtest = args[0].equals("playtest");
+        Path folder = playtest ? null : Path.of(args[0]);
+        int slot = playtest ? 0 : Integer.parseInt(args[1]);
         int months = Integer.parseInt(args[2]);
         File dir = new File(args[3]);
         dir.mkdirs();
         List<String> only = List.of(args).subList(4, args.length);
         try {
-            openCopy(folder, slot);
+            if (playtest) openPlaytest(Integer.parseInt(args[1]));
+            else openCopy(folder, slot);
             System.out.println("loaded month " + fx(() -> g.getMonth()));
             for (int i = 0; i < months; i++) fx(() -> { g.toggleNextMonth(); return null; });
             fx(() -> { ui.redraw(); return null; });

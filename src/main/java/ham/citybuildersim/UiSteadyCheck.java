@@ -72,7 +72,7 @@ public class UiSteadyCheck {
             t.printStackTrace(out);
             fails++;
         }
-        out.println(fails == 0 ? "UiSteadyCheck: all OK" : "UiSteadyCheck: " + fails + " FAIL");
+        out.println(fails == 0 ? "UiSteadyCheck: all OK" : "UiSteadyCheck: " + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
     }
 

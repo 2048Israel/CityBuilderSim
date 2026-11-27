@@ -1,4 +1,4 @@
-**Resume here (16:10, 11-27):** the picture tool works (three cities pictured on scratch); UiSteadyCheck written and first run on today's pages; next: the audit (helpers, page by page), the mockups over the real map, the rows UX2 onward, the ship file.
+**Resume here (16:45, 11-27):** pushed: the picture tool (slot copies, or "playtest MONTH"), UiSteadyCheck (33 reds on today's pages, three faults, section 3 below) and audit 1 of 5 (docs/studies/ux1/audit-1-chrome-build.md). Next, in order: picture the playtest city at month 600 and 2,400 (the mid and big cities, section 2) on scratch; audits 2-5 by helper (brief: C:/Users/Jerus/AppData/Local/Temp/cbs-UX1-scratch/audit-brief.md, placeholder STAB must not hit "STABILITY"); the audit summary; the mockups over 003-map (HTML via Edge headless, the game's Palette, IBM Plex, Icons.java paths); the rows UX2+; the ship file with known-reds; --fast; pick; mail.
 
 # UX1 - the interface rework's study: notes
 
@@ -30,17 +30,50 @@ ensemble, no stranger's review. Brief: docs/queue/UX1.md (Jerus's words, 11-27).
 
 ## 2. The cities
 
-| slot | city | month | people | format | how it was loaded |
-|---|---|---|---|---|---|
-| 1 | "Halifax" (Rotterdam), 1909 | 114 | 1,888 | 67 | as saved: the young town |
-| 2 | Ashbourne | 241 | 7,998 | 66 | patched to 67 on the scratch copy, pictures only |
-| 9 | "Claude Optimization" (dojha) | 6,680 | 50.2 M | 66 | patched to 67 on the scratch copy, pictures only |
+| city | month | people | format | how it was loaded |
+|---|---|---|---|---|
+| slot 1, "Halifax" (Rotterdam), 1909 | 114 (+1 played) | 1,888 | 67 | a copy, as saved: the young town |
+| the playtest's city, mid | 600 | (at the run) | - | `PagePictures playtest 600 1` |
+| the playtest's city, big | 2,400 | (at the run) | - | `PagePictures playtest 2400 1` |
 
-★ Slots 2 and 9 are format 66, and today's floor is 67 (RES3: typed leases and held monetary inputs a
-66 city lacks). The study needs a town, a mid city and a big one, and these are his; so the scratch copy's
-`saveFormat` word was set to 67 and the copy loaded, played one month and pictured. The figures on their
-pages may differ from what a true 67 city would show (slot 2's load logs one caught
-`Unknown housing class Key[recipe=0, dwelling=legacy]`); the layout, which is what the study reads, does
-not. Nothing of this is in the tree. His saves folder was only read (cp to scratch).
+★ His slot 2 (Ashbourne, m241, 8,000 people) and slot 9 (m6,680, 50 M) are format 66; today's floor is 67
+(RES3). A scratch copy with its `saveFormat` word set to 67 loads and plays, but draws a broken city:
+audit 1 found Ashbourne's header at 0 people and slot 9's at 36,732, with every staffing at 0% (the RES3
+fields a 66 save lacks). Pictures of a broken city would mislead the audit, so both were dropped. The
+mid and big cities are the playtest's own city (`LongPlaytest.probeCity`, the city UiProbe and the
+nightly grow), played to two ages by the tool's `playtest` source. Audit 1 (the chrome and Build) was
+read on the broken copies' layouts and slot 1; its figures from slots 2 and 9 are not used, only the
+layouts (the Industry page's 74 cards are the catalogue's, not the city's).
 
-The full set of pictures: `C:\Users\Jerus\AppData\Local\Temp\cbs-UX1-scratch\pics\slot1`, `slot2`, `slot9`.
+His saves folder was only read (`cp` to `C:\Users\Jerus\AppData\Local\Temp\cbs-UX1-scratch\slots`).
+Every picture is on scratch: `C:\Users\Jerus\AppData\Local\Temp\cbs-UX1-scratch\pics\<city>`.
+
+## 3. The stability harness - UiSteadyCheck
+
+`UiSteadyCheck` (root package, as AllChecks runs harnesses) with `ui.SteadyBench` (the real window,
+measured). It founds the playtest's young town (`LongPlaytest.probeTodayCity`, month 19), opens the
+game's window at 1920x1080 on a stage drawn transparent and off screen (FollowBench's way), and walks
+the picture tool's 121 pages. Sections, as RestaurantsCheck numbers what it has to prove:
+
+0. the measure sees a fault: on a scene of its own, a still redraw shows nothing; a node replaced, a
+   box made taller, the scroller moved and the page grown are each seen (5 assertions, green);
+1. an unchanged redraw moves no node (to half a pixel) and no scroller, on every page;
+2. an unchanged redraw makes no node new and lets none go (the same node objects after as before);
+3. three unchanged redraws grow nothing: the page's content and the window's root;
+4. the page's scroller set a third down, a month played and redrawn as the clock does, stays at its pixel.
+
+Its own faults, mended: the first run measured the Sectors books' dial arc and waterfall mid-animation
+(arrival animations up to 1.1 s), so a page now waits `ARRIVE_MS` (1.5 s) after it opens; a scroller
+whose page a month made shorter than its place is held when it stands at its new end. About 4 minutes
+on this PC.
+
+**What it found on today's pages (33 reds, three faults):**
+
+| fault | pages | sections | owner |
+|---|---|---|---|
+| F1. The page breathes: its height flips by one physical pixel (0.8 px at 125% scaling) on every redraw, with the empty toast corner moving with it | Services' 18 pages, Infrastructure's Roads and Transit | 1 (12 pages), 3 (19) | the frame row (the page's foot and the toast room are the frame's) |
+| F2. A line rebuilt: "Capital gains: assessed ..." on Government's Revenue is a new Label at every redraw (Kept's first rule) | Government > Revenue | 2 | the Government page's row |
+| F3. The place held as a fraction: a month that grows the page by 1.8 px moves the view 0.6 px on Build > Industry's 12,186 px; a page that grows by 300 px above the view would move it 100 px | Build > Industry | 4 | the build screen's row |
+
+F1 depends on the screen's scale: at 125% one physical pixel is 0.8 px; the gate box (Monocle, scale 1)
+may show it as 1 px or not at all. The known-reds rows are scoped by page so they cover either.
