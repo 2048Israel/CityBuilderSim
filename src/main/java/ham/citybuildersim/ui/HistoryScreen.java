@@ -206,7 +206,7 @@ final class HistoryScreen {
      */
     record Trace(String key, String label, String group, String unit) { }
 
-    static final Trace[] TRACES = withTheCrime(withTheHouseholds(withTheSectors(withTheMarket(new Trace[] {
+    static final Trace[] TRACES = withTheCpi(withTheCrime(withTheHouseholds(withTheSectors(withTheMarket(new Trace[] {
         // GDP is a rolling year since GY1 (the key "gdp" kept, so a pin or a door that names it draws the year); the month is "gdpMonth".
         new Trace("gdp",            "GDP (yr)",           "MONEY",      "money"),
         new Trace("gdpPerCapita",   "GDP per capita (yr)","MONEY",      "money"),
@@ -420,7 +420,31 @@ final class HistoryScreen {
         new Trace("mealTargetMargin",   "Meals: margin aimed at",  "SECTORS", "ratio"),
         new Trace("luxuryMargin",       "Luxury: margin charged",  "SECTORS", "ratio"),
         new Trace("luxuryTargetMargin", "Luxury: margin aimed at", "SECTORS", "ratio"),
-    }))));
+    })))));
+
+    /** Keep every existing trace/key/order; append recorded CPI parts missing from the old catalogue. */
+    static Trace[] withTheCpi(Trace[] fixed) {
+        List<Trace> all = new java.util.ArrayList<>(java.util.Arrays.asList(fixed));
+        java.util.Set<String> keys = new java.util.HashSet<>();
+        for (Trace trace : fixed) keys.add(trace.key());
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+            String key = HistorySave.indexKey(k);
+            if (keys.add(key)) all.add(new Trace(key, "Index: " + PriceIndex.COMPONENT_NAMES[k], "PRICES", "index"));
+        }
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) {
+            String key = HistorySave.weightKey(k);
+            if (keys.add(key)) all.add(new Trace(key, "Basket weight: " + PriceIndex.COMPONENT_NAMES[k], "PRICES", "percent"));
+        }
+        return all.toArray(Trace[]::new);
+    }
+
+    /** The existing basket preset keeps its price-level key, then each component in authoritative order. */
+    static String[] basketSeries() {
+        String[] keys = new String[1 + PriceIndex.COMPONENTS];
+        keys[0] = "priceIndex";
+        for (int k = 0; k < PriceIndex.COMPONENTS; k++) keys[k + 1] = HistorySave.indexKey(k);
+        return keys;
+    }
 
     /** One series per reason for crime, added to CRIME. See HistorySave.crimeKey(). */
     static Trace[] withTheCrime(Trace[] fixed) {
@@ -609,9 +633,7 @@ final class HistoryScreen {
         new Preset("What people expect", "inflation, what people expect it to be, and how far they trust the bank",
                 new String[] {"inflation", "expectedInflation", "credibility"}),
         new Preset("The basket", "the price level, and each part of the basket's own",
-                new String[] {"priceIndex", HistorySave.indexKey(PriceIndex.GROCERIES), HistorySave.indexKey(PriceIndex.RENT),
-                              HistorySave.indexKey(PriceIndex.MEALS), HistorySave.indexKey(PriceIndex.LUXURY),
-                              HistorySave.indexKey(PriceIndex.SERVICES)}),
+                basketSeries()),
         new Preset("Groceries", "the shelf, its floor, and who went without",
                 new String[] {"shelfPrice", "shelfFloor", "hunger"}),
         new Preset("The world", "the city's edge, in both directions",

@@ -4191,6 +4191,7 @@ public abstract class Sector {
         s.propertyTax = propertyTaxExpense;
         s.maintenance = maintenanceExpense;
         s.taxRate = taxRate;
+        s.payrollPerType = wages.clone();
         // ...and the ratios its month was run at (0.7.63; SectorState.energyRatio).
         s.energyRatio = ratioToSave(energyRatio);
         s.waterRatio = ratioToSave(waterRatio);
@@ -4315,6 +4316,10 @@ public abstract class Sector {
         propertyTaxExpense = Math.max(0, s.propertyTax);
         maintenanceExpense = Math.max(0, s.maintenance);
         taxRate = Math.max(0, s.taxRate);
+        // Restore the held bill after the rebuild: scaling wage-times-posts and
+        // multiplying a scaled wage by posts need not round to the same bit.
+        if (s.payrollPerType != null && s.payrollPerType.length == wages.length)
+            System.arraycopy(s.payrollPerType, 0, wages, 0, wages.length);
         // ...and the ratios the month was run at, over the services' next-month
         // figures the rebuild set (0.7.63; SectorState.energyRatio). An older save
         // has none and keeps the rebuild's.

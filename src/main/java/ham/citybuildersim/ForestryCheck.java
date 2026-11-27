@@ -655,6 +655,8 @@ public class ForestryCheck {
         BuildingManager b = g.getBuildingManager();
         // Built ground lies on bare ground first, less the bare ground zones hold for others (Z7): a zone for the fields holding
         // every free bare square foot, a Logging Camp and a Woodlot put up on what is left - open forest - clear it.
+        for (Sector sector : g.getSectors().all()) g.getBusinessInvestment().holdSector(sector.key());
+        g.getBusinessInvestment().holdBranches();
         MaterialsCheck.handWorkers(g);
         quietly(() -> g.simulateMonths(2));
         double bareFree = Math.max(0, land.getBareSqFt() + land.getForestClearedSqFt() - land.getAllocatedSqFt());
@@ -692,6 +694,9 @@ public class ForestryCheck {
         quietly(() -> g.saveGame(10, "forestrycheck-played"));
         Game twin = new Game(files);
         quietly(() -> twin.loadGameSave(10));
+        // Investment holds are harness controls, not saved city state: the continuation twins receive the same controls.
+        for (Sector sector : twin.getSectors().all()) twin.getBusinessInvestment().holdSector(sector.key());
+        twin.getBusinessInvestment().holdBranches();
         Forestry tf = twin.getSectors().forestry();
         assertTrue("saved and reloaded: the crews' cut and the forest the same", tf.getCutThisMonth() == cutBefore
                 && twin.getLandManager().getRemaining(F) == land.getRemaining(F)

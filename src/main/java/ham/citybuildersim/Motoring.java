@@ -60,8 +60,97 @@ public final class Motoring {
     private double householdCarImports;
     private double householdCarCredit;
 
+    /** Last actual seller bill per new car, local money/car; zero before the first purchase. */
+    private double newCarPrice;
+
+    /** Closed-month new-car flow: physical cars, local money paid/imported/advanced, local money/car. Loan fees are separate. */
+    public record NewTrade(double units, double spend, double imports, double credit, double price) {}
+
+    public NewTrade newTradeForSave() {
+        return new NewTrade(householdCarsBought, householdCarSpend, householdCarImports, householdCarCredit, newCarPrice);
+    }
+
+    public void restoreNewTrade(NewTrade saved) {
+        if (saved == null) saved = new NewTrade(0, 0, 0, 0, 0);
+        for (double value : new double[] { saved.units(), saved.spend(), saved.imports(), saved.credit(), saved.price() })
+            if (!Double.isFinite(value) || value < 0) throw new IllegalArgumentException("Invalid saved new-car trade");
+        householdCarsBought = saved.units();
+        householdCarSpend = saved.spend();
+        householdCarImports = saved.imports();
+        householdCarCredit = saved.credit();
+        newCarPrice = saved.price();
+    }
+
+    /** Last observed channel quantities in litres, tax-inclusive prices and comparable level in local money/litre. */
+    public record PetrolPrices(double pumpLitres, double queueLitres, double pumpPrice, double queuePrice, double price) {}
+    private PetrolPrices petrolPrices = new PetrolPrices(0, 0, 0, 0, 0);
+
+    public PetrolPrices petrolPricesForSave() { return petrolPrices; }
+
+    public void restorePetrolPrices(PetrolPrices saved) {
+        if (saved == null) saved = new PetrolPrices(0, 0, 0, 0, 0);
+        for (double value : new double[] { saved.pumpLitres(), saved.queueLitres(), saved.pumpPrice(), saved.queuePrice(), saved.price() })
+            if (!Double.isFinite(value) || value < 0) throw new IllegalArgumentException("Invalid saved petrol prices");
+        petrolPrices = saved;
+    }
+
+    /** Actual paid new-car price, carried through months with no sale. Pure. */
+    public double getNewCarPrice() { return newCarPrice; }
+
+    /** Comparable petrol price, carried through months with no sale. Pure. */
+    public double getPetrolPrice() { return petrolPrices.price(); }
+
+    /**
+     * Record once at the existing fuel sale. Both channel prices include sales tax and duty.
+     * The first sale anchors in local money/litre; later price changes hold the preceding
+     * observed channel litres fixed, so a switch into the queue is not price inflation.
+     * No sale keeps the last observation, including its quantities for the next comparison.
+     */
+    void notePetrolPrices(double pumpLitres, double queueLitres, double pumpPrice, double queuePrice, double bill) {
+        if (!(pumpLitres + queueLitres > 0)) return;
+        if (!(pumpPrice > 0) || !(queuePrice > 0) || !Double.isFinite(pumpPrice) || !Double.isFinite(queuePrice))
+            throw new IllegalArgumentException("Unpriced petrol sale");
+        PetrolPrices previous = petrolPrices;
+        double before = previous.pumpLitres() * previous.pumpPrice() + previous.queueLitres() * previous.queuePrice();
+        double now = previous.pumpLitres() * pumpPrice + previous.queueLitres() * queuePrice;
+        double price = before > 0 ? previous.price() * now / before : bill / (pumpLitres + queueLitres);
+        restorePetrolPrices(new PetrolPrices(pumpLitres, queueLitres, pumpPrice, queuePrice, price));
+    }
+
+    /** All money fields scale; physical cars/litres and the resulting price relatives do not. */
+    public void redenominateCpi(double scale) {
+        restoreNewTrade(new NewTrade(householdCarsBought, householdCarSpend * scale,
+                householdCarImports * scale, householdCarCredit * scale, newCarPrice * scale));
+        PetrolPrices p = petrolPrices;
+        restorePetrolPrices(new PetrolPrices(p.pumpLitres(), p.queueLitres(), p.pumpPrice() * scale,
+                p.queuePrice() * scale, p.price() * scale));
+    }
+
     /** The second-hand market's month: offered, traded, what it cost and what a lender found. */
     private double usedCarsTraded, usedCarsOffered, usedCarSpend, usedCarCredit, usedCarPrice;
+
+    /** The closed month's trades and asset mark, which cannot be rebuilt from its closing fleet. */
+    public record UsedTrade(double traded, double offered, double spend, double credit, double price) {}
+
+    public UsedTrade usedTradeForSave() {
+        return new UsedTrade(usedCarsTraded, usedCarsOffered, usedCarSpend, usedCarCredit, usedCarPrice);
+    }
+
+    public void restoreUsedTrade(UsedTrade saved) {
+        if (saved == null) return;
+        for (double value : new double[] { saved.traded(), saved.offered(), saved.spend(), saved.credit(), saved.price() })
+            if (!Double.isFinite(value) || value < 0) throw new IllegalArgumentException("Invalid saved used-car trade");
+        usedCarsTraded = saved.traded();
+        usedCarsOffered = saved.offered();
+        usedCarSpend = saved.spend();
+        usedCarCredit = saved.credit();
+        usedCarPrice = saved.price();
+    }
+
+    public void redenominateUsedTrade(double scale) {
+        restoreUsedTrade(new UsedTrade(usedCarsTraded, usedCarsOffered,
+                usedCarSpend * scale, usedCarCredit * scale, usedCarPrice * scale));
+    }
 
     /* ==================== THE FUEL, AND THE BUYER WEIGHS THE FARE (0.7.49) ====================
      *
@@ -203,6 +292,8 @@ public final class Motoring {
         fuelLitres = sale.litres();
         fuelBill = sale.bill();
         fuelImports = 0;
+        ham.citybuildersim.sectors.Retail retail = game.getSectors().retail();
+        notePetrolPrices(retail.getPumpLitres(), retail.getQueueLitres(), retail.getPumpPrice(), retail.getQueuePrice(), fuelBill);
     }
     public double getPrefersTransit() { return prefersTransit; }
     public double getOwnershipCeiling() { return ownershipCeiling; }
@@ -357,6 +448,7 @@ public final class Motoring {
                     // ...each household's want read at the price the draw was sized at, so the cars
                     // placed are the cars drawn, every one paid for (OE1: AUTO2 seed 6 m655 drew 26, placed 25).
                     householdCarSpend = householdBalance.takeCars(took.units(), paid, perCar, ceiling);
+                    if (householdCarsBought > 0 && householdCarSpend > 0) newCarPrice = householdCarSpend / householdCarsBought;
                     /*
                      * ...AND THE IMPORT HALF IS STRUCK FROM WHAT THEY PAID (CI1, 2026-11-22). The spend is
                      * takeCars()' sum of the cells' cars at cost / units, and the draw's importCost() is

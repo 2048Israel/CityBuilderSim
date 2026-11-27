@@ -1169,19 +1169,15 @@ public class HouseholdCheck {
                 street.getSavings(U));
         check("...and the row totals survive the seeding", seeded.totalSavings(), street.totalSavings());
 
-        /* ============ A CELL UNDER HALF A HOUSEHOLD IS EMPTY (0.7.2) ============
+        /* ============ POSITIVE FRACTIONAL HOUSEHOLDS OWN THEIR POSITIONS ============
 
-           The census can leave a cell 1e-15 of a household, and the payments
-           used to ask "households > 0" - so the ghost was paid, and a reformed
-           city parted from its twin on which cell happened to be one
-           (DenominationCheck). A cell under HouseholdBalance.EMPTY_CELL is now
-           emptied where its count is written, and what it held goes to the
-           cells that are not empty - its own row first, then the city, pro
-           rata to what each holds. The fixtures PUT a position in a
-           cell and drop the cell under the line; the claim is that it then
-           holds nothing and the city's households hold everything they held.
+           RES3: weighted fractional households are actual owners and recipients.
+           Their stocks survive both a direct fold and a shrinking census, with
+           the original aggregate conservation checks kept below. EMPTY_CELL
+           still bounds optional cell-weighted credits, whose old dust guard
+           remains separately caused at the end. Exact zero has no owner.
            ======================================================================== */
-        System.out.println("\n--- a cell under half a household is empty, and what it held stays ---");
+        System.out.println("\n--- positive fractional owners retain their positions, and every stock stays ---");
 
         HouseholdBalance folding = new HouseholdBalance();
         Household ghost  = folding.cell(FamilyStructure.SINGLE_ADULT, PayTier.UNSKILLED);
@@ -1203,22 +1199,21 @@ public class HouseholdCheck {
         assertTrue("fixture: a cell of .3 households holds a position",
                 ghost.isEmpty() && folding.holdsAnything(ghost));
         int foldedCells = folding.foldEmptyCells();
-        assertTrue("the cell under half a household holds nothing", !folding.holdsAnything(ghost));
+        assertTrue("the positive fractional household retains its position", folding.holdsAnything(ghost));
         check("...and its count stands: the census's, not ours to round", ghost.households(), .3);
-        check("one cell had something to fold", foldedCells, 1);
+        check("no positive owner is folded", foldedCells, 0);
         for (int k = 0; k < stockNames.length; k++) {
             check("...and the households hold all their " + stockNames[k],
                     across(folding, stockOf.get(k)), heldBefore[k]);
         }
-        check("into its own row first: the unskilled couples hold the single's savings",
-                poorer.savings, 4 * (1 + 3.0 / 400));
+        check("the fractional single keeps its own savings", ghost.savings, 10);
+        check("the couples receive none of another positive owner's savings", poorer.savings, 4);
         check("...and the skilled couples, a row away, none of it", richer.savings, 6);
-        check("a stock nobody in the row held goes by the row's households",
-                poorer.abroad, .3 * 3 / 100);
+        check("the fractional single keeps its own foreign holdings", ghost.abroad, 3);
+        check("a neighbour receives none of those foreign holdings", poorer.abroad, 0);
         check("...and none of it across the row's edge", richer.abroad, 0);
         /*
-         * ...AND A ROW WITH NOBODY LEFT IN IT FOLDS INTO THE CITY: a senior
-         * professional single at .2 of a household, alone in its row.
+         * A senior professional at .2 still owns its savings, alone in its row.
          */
         Household lone = folding.cell(FamilyStructure.SINGLE_ADULT, PayTier.SENIOR_PROFESSIONAL);
         lone.households = .2;
@@ -1226,17 +1221,16 @@ public class HouseholdCheck {
         double savedBefore = across(folding, c -> c.savings);
         double poorerHad = poorer.savings;
         folding.foldEmptyCells();
-        assertTrue("a cell alone in its row is emptied too", !folding.holdsAnything(lone));
-        check("...into the city, every saver's savings up by 1 in 703",
-                richer.savings, 6 * (1 + 1.0 / 703));
-        check("...the unskilled couples' too", poorer.savings, poorerHad * (1 + 1.0 / 703));
+        assertTrue("a positive owner alone in its row retains its position", folding.holdsAnything(lone));
+        check("...and the skilled couples receive none of it", richer.savings, 6);
+        check("...the unskilled couples receive none either", poorer.savings, poorerHad);
         check("...and the households hold all their savings", across(folding, c -> c.savings), savedBefore);
 
         /*
          * ...AND THROUGH A MONTH, where it happens: a census that drops a cell
          * holding shares and dollars from a hundred households to .3. The 99.7
          * who went took their positions with them - nobody grew, so nobody
-         * claimed them - and what the .3 still held is the couples' now.
+         * claimed them - and the .3 keeps what it still held.
          */
         HouseholdBalance monthly = new HouseholdBalance();
         double[][] folk = new double[FamilyStructure.values().length][PayTier.values().length];
@@ -1258,12 +1252,13 @@ public class HouseholdCheck {
         folk[single][U] = .3;
         wages[U] = 200.3 * 3.0;
         monthly.advanceMonth(folkCensus, wages, .50, noFees, noShopping, .20, .05, 1);
-        assertTrue("a cell the census leaves at .3 of a household holds nothing after the month",
-                !monthly.holdsAnything(thinning));
-        check("...and the month counted it", monthly.getCellsFolded(), 1);
+        assertTrue("a cell the census leaves at .3 retains its own position after settlement",
+                monthly.holdsAnything(thinning) && thinning.disposable() > 0);
+        check("...and no positive owner was folded", monthly.getCellsFolded(), 0);
         check("the shares: the households' now, plus what left with the 99.7",
                 monthly.sharesHeld(retail) + monthly.getSharesTakenAway(retail), sharesIn);
-        check("...and the .3's are the couples'", couples.shares(retail) * 100, .3 * 10);
+        check("...and the .3 still holds its own shares", thinning.shares(retail) * .3, .3 * 10);
+        check("...and the couples receive none of them", couples.shares(retail) * 100, 0);
         check("the dollars abroad the same way",
                 monthly.totalAbroadUsd() + monthly.getAbroadTakenAway(), abroadIn);
 
@@ -1275,6 +1270,7 @@ public class HouseholdCheck {
          * couples alike, all of it now goes to the couples.
          */
         thinning.households = 1e-15;
+        double thinningHad = thinning.totalSavings();
         double[] offenders = new double[monthly.cellCount()];
         offenders[monthly.cells().indexOf(thinning)] = 1;
         offenders[monthly.cells().indexOf(couples)] = 1;
@@ -1282,7 +1278,14 @@ public class HouseholdCheck {
         check("the proceeds are all credited", monthly.creditByWeight(10, offenders), 10);
         check("...all of them to the households who are there",
                 couples.totalSavings() - couplesHad, 10);
-        assertTrue("...and none to a cell of 1e-15 households", !monthly.holdsAnything(thinning));
+        check("...and no optional proceeds are credited to the 1e-15 cell", thinning.totalSavings(), thinningHad);
+
+        Household zero = folding.cell(FamilyStructure.SINGLE_ADULT, PayTier.SKILLED);
+        zero.households = 0;zero.savings = 10;zero.debt = 2;zero.studentDebt = 4;
+        double zeroBefore = across(folding, c -> c.savings);
+        folding.foldEmptyCells();
+        assertTrue("an exact-zero cell holds no position", !folding.holdsAnything(zero));
+        check("clearing exact zero changes no aggregate cash", across(folding, c -> c.savings), zeroBefore);
 
         /* ============ AND WHEN THEY CANNOT AFFORD A HOME, THEY SHARE ============
 

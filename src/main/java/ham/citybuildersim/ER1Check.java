@@ -93,6 +93,9 @@ public class ER1Check {
         System.exit(fails == 0 ? 0 : 1);
     }
 
+    /** The most months the homes the landlord left on site are played out for before the hold is tried: three years, over any home's build time. */
+    static final int HOMES_PLAYOUT_MONTHS = 36;
+
     /** The holds: nothing waiting on ground, then a city past its own test for borrowing; then the cash restored. */
     static void held() {
         // ...its first PLANNING_HORIZON months played with the ground free, so that no sector has waited on ground and the city
@@ -127,6 +130,15 @@ public class ER1Check {
                 && land.getOwnedSqFt() == owned && debt.getAllPrincipal() == principal);
 
         out.println("--- a full city past its own test for borrowing holds jobs while its land buyer has no cash ---");
+        // RES3: the landlord orders homes, a door to a household, and the months above leave some on its sites; finished inside the
+        // looks below they move cash and ground that the hold is about. So they are played out first, the ground all consumed so that
+        // none is ordered after them.
+        int homesAt = (int) buildings.getHomesUnderConstruction(), played = 0;
+        while (played < HOMES_PLAYOUT_MONTHS && buildings.getHomesUnderConstruction() > 0) {
+            quietly(() -> g.simulateMonths(1));
+            played++;
+        }
+        out.printf("   homes on site %d, played out in %d months, %d left%n", homesAt, played, buildings.getHomesUnderConstruction());
         // The city borrows on the funding page's own bond until the player's test refuses any more, then as much again: its
         // revenue does not double inside the planning horizon, so no look in it is lent to.
         double lot = Math.max(g.fundingLot("Term"), 12 * Math.max(1, g.getEconomyManager().getTaxIncome()));
@@ -151,7 +163,8 @@ public class ER1Check {
         owned = land.getOwnedSqFt();
         long jobs = posts(buildings);
         long coming = buildings.getJobsUnderConstruction();
-        check("premise: the city has jobs and no inherited jobs on site", jobs > 0 && coming == 0);
+        check("premise: the city has jobs and no inherited jobs or homes on site",
+                jobs > 0 && coming == 0 && buildings.getHomesUnderConstruction() == 0);
         int looks = 0, refused = 0, demanded = 0;
         shortBefore = LongPlaytest.groundAheadShort;
         fundedBefore = LongPlaytest.groundAheadFunded;

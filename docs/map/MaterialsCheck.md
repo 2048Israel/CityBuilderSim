@@ -1,4 +1,4 @@
-# MaterialsCheck.java - 2,290 lines · 45 methods · 30 constants · harnesses
+# MaterialsCheck.java - 2,328 lines · 46 methods · 30 constants · harnesses
 
 `ham/citybuildersim/MaterialsCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      estimate.
 > ... (88 more lines in the source)
 
-**Uses:** [Good](Good.md) (218), [SpreadPlanner](SpreadPlanner.md) (184), [BuildingsTemplate](BuildingsTemplate.md) (57), [Game](Game.md) (56), [OldMetal](OldMetal.md) (45), [Sectors](Sectors.md) (40), [HeavyIndustry](HeavyIndustry.md) (38), [BuildingManager](BuildingManager.md) (34), [Sector](Sector.md) (33), [ProcessingSector](ProcessingSector.md) (31), [BusinessInvestment](BusinessInvestment.md) (25), [Mining](Mining.md) (22), [GameFiles](GameFiles.md) (21), [Resource](Resource.md) (20), [CopperRefining](CopperRefining.md) (18), [Deposit](Deposit.md) (12), [Trade](Trade.md) (11), [GameVersion](GameVersion.md) (11), [MoneyAudit](MoneyAudit.md) (8), [BuildingType](BuildingType.md) (8), [Markets](Markets.md) (8), [GoodsMarket](GoodsMarket.md) (8), [UtilitiesHandler](UtilitiesHandler.md) (8), [PriceLevel](PriceLevel.md) (8), [JobType](JobType.md) (8), [PriceLevelCheck](PriceLevelCheck.md) (7), [CopperRefiningCheck](CopperRefiningCheck.md) (7), [LandManager](LandManager.md) (5), [Statement](Statement.md) (4), [PayTier](PayTier.md) (4)... and 15 more
+**Uses:** [Good](Good.md) (218), [SpreadPlanner](SpreadPlanner.md) (189), [Game](Game.md) (59), [BuildingsTemplate](BuildingsTemplate.md) (57), [OldMetal](OldMetal.md) (45), [Sectors](Sectors.md) (42), [HeavyIndustry](HeavyIndustry.md) (38), [BuildingManager](BuildingManager.md) (34), [Sector](Sector.md) (33), [ProcessingSector](ProcessingSector.md) (31), [BusinessInvestment](BusinessInvestment.md) (25), [Mining](Mining.md) (22), [GameFiles](GameFiles.md) (21), [Resource](Resource.md) (20), [CopperRefining](CopperRefining.md) (18), [Deposit](Deposit.md) (12), [Trade](Trade.md) (11), [GameVersion](GameVersion.md) (11), [MoneyAudit](MoneyAudit.md) (8), [BuildingType](BuildingType.md) (8), [Markets](Markets.md) (8), [GoodsMarket](GoodsMarket.md) (8), [UtilitiesHandler](UtilitiesHandler.md) (8), [PriceLevel](PriceLevel.md) (8), [JobType](JobType.md) (8), [PriceLevelCheck](PriceLevelCheck.md) (7), [CopperRefiningCheck](CopperRefiningCheck.md) (7), [LandManager](LandManager.md) (5), [Statement](Statement.md) (4), [PayTier](PayTier.md) (4)... and 16 more
 
 **Used by (30):** [BuildCardCheck](BuildCardCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CoalMiningCheck](CoalMiningCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefiningCheck](CopperRefiningCheck.md), [DiscoveryCheck](DiscoveryCheck.md), [EquipmentCheck](EquipmentCheck.md), [FittingCheck](FittingCheck.md), [ForestryCheck](ForestryCheck.md), [Forms1900Check](Forms1900Check.md), [GoldMiningCheck](GoldMiningCheck.md), [GroundInputCheck](GroundInputCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [IndustryViewCheck](IndustryViewCheck.md), [KeptCheck](KeptCheck.md), [LicenceFeesCheck](LicenceFeesCheck.md), [MedicineCheck](MedicineCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [NewUnitCheck](NewUnitCheck.md), [PolicyOpenCheck](PolicyOpenCheck.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PrizeCheck](PrizeCheck.md), [QuarryingCheck](QuarryingCheck.md), [ResearchCheck](ResearchCheck.md), [ResearchViewCheck](ResearchViewCheck.md), [StaffingDrawCheck](StaffingDrawCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [ZoningCheck](ZoningCheck.md)
 
@@ -91,11 +91,11 @@
 | 1454 | 17. the dig and the retirement by type |
 | 1576 | 18. a kind's year (CY1) |
 | 1784 | the copper town the next sections play |
-| 1823 | 19. a one-month spike orders no works (CY1) |
-| 1903 | 20. a three-month cycle whose year does not pay builds nothing at its peaks (CY1) |
-| 1963 | 21. a feed-short works orders no mill (CY1) |
-| 2042 | 22. an idle works is shed over its year (CY1) |
-| 2208 | 23. the planner weighs a works' own power as it is paid |
+| 1828 | 19. a one-month spike orders no works (CY1) |
+| 1941 | 20. a three-month cycle whose year does not pay builds nothing at its peaks (CY1) |
+| 2001 | 21. a feed-short works orders no mill (CY1) |
+| 2080 | 22. an idle works is shed over its year (CY1) |
+| 2246 | 23. the planner weighs a works' own power as it is paid |
 
 ## Constants
 
@@ -129,8 +129,8 @@
 | 1302 | `MaterialsCheck.MINE_TYPES` | `{ Deposit.FieldType.HEMATITE, Deposit.FieldType.MAGNETITE, Deposit.FieldType....` | ...the type of field each stands on, and the sites it takes (the study's 1.3, 2.4: twenty sites for a large mine, one for a small). |
 | 1304 | `MaterialsCheck.MINE_SITES` | `{ 20, 1, 20 }` | ...and the sites each takes. |
 | 1579 | `MaterialsCheck.FC2_CYCLE` | `{ 54, - 83, - 33 }` | What FC2's seed 1 appraised one more Rod Mill at, a month at a time (D$k): +54k, -83k and -33k, over and over, against a hurdle of 45k. |
-| 2051 | `MaterialsCheck.TROUGH_SCALE` | `.5` | Rod's prices in the trough of the cycle of section 22: half the literal, so the last Rod Mill loses money on every tonne of its feed. |
-| 2054 | `MaterialsCheck.PEAK_SCALE` | `1.3` | ...and in its peak: 1.3 times the literal, which pays the last Rod Mill a little. |
+| 2089 | `MaterialsCheck.TROUGH_SCALE` | `.5` | Rod's prices in the trough of the cycle of section 22: half the literal, so the last Rod Mill loses money on every tonne of its feed. |
+| 2092 | `MaterialsCheck.PEAK_SCALE` | `1.3` | ...and in its peak: 1.3 times the literal, which pays the last Rod Mill a little. |
 
 ## Fields (state)
 
@@ -143,7 +143,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 170 | 2121 | **type** `public class MaterialsCheck` | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and iron's sections as its batches came (I3 to I5) - coal, stone and co... |
+| 170 | 2159 | **type** `public class MaterialsCheck` | The materials chains, checked: the shared machinery every chain stands on (0.7.112, batch I2; docs/studies/spec-materials.md 2.1, 2.5-2.8 and 4), and iron's sections as its batches came (I3 to I5) - coal, stone and co... |
 | 178 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 183 | 4 | `static void report(String label, boolean ok, String detail)` |  |
 | 188 | 5 | `static void quietly(Runnable r)` |  |
@@ -268,7 +268,7 @@
 |---:|---:|---|---|
 | 1581 | 202 | `static void trailingYear()` |  |
 
-### the copper town the next sections play (lines 1784-1822)
+### the copper town the next sections play (lines 1784-1827)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -276,38 +276,39 @@
 | 1792 | 6 | `static void rodMonth(Game g, boolean pays)` | One real month with rod's world prices paying a mill or not (CopperRefiningCheck.rodPays(), rodUnpaid()), the hands hired first so the staffing gate refuses no one. |
 | 1800 | 4 | `static void monthAlone(Game g, boolean pays)` | ...with the planner's year emptied first, so that month's plan weighs the month alone: the town on main's rule (to CY1). |
 | 1806 | 5 | `static long rodMills(Game g)` | Rod Mills standing and under construction. |
-| 1813 | 3 | `static double refiningDebt(Game g)` | What Copper Refining owes, loans and bonds. |
-| 1818 | 4 | `static SpreadPlanner.Candidate candidate(List<SpreadPlanner.Candidate> all, BuildingsTemplate t)` | The candidate for one template in an appraisal; null for none. |
+| 1813 | 3 | `static boolean barred(Game g)` | Whether Copper Refining is barred from borrowing (a default's ban, BusinessDebtManager.restructure()). |
+| 1818 | 3 | `static double refiningDebt(Game g)` | What Copper Refining owes, loans and bonds. |
+| 1823 | 4 | `static SpreadPlanner.Candidate candidate(List<SpreadPlanner.Candidate> all, BuildingsTemplate t)` | The candidate for one template in an appraisal; null for none. |
 
-### 19. a one-month spike orders no works (CY1) (lines 1823-1902)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1825 | 77 | `static void spikeMonth()` |  |
-
-### 20. a three-month cycle whose year does not pay builds nothing at its peaks (CY1) (lines 1903-1962)
+### 19. a one-month spike orders no works (CY1) (lines 1828-1940)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1905 | 57 | `static void threeMonthCycle()` |  |
+| 1830 | 110 | `static void spikeMonth()` |  |
 
-### 21. a feed-short works orders no mill (CY1) (lines 1963-2041)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1965 | 76 | `static void feedShortWorks()` |  |
-
-### 22. an idle works is shed over its year (CY1) (lines 2042-2207)
+### 20. a three-month cycle whose year does not pay builds nothing at its peaks (CY1) (lines 1941-2000)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2045 | 4 | `static void rodAt(Game g, double scale)` | Rod's world prices, import and export, at `scale` times the literal: a month that pays the last Rod Mill something or loses it more. |
-| 2056 | 82 | `static void idleOverYear()` |  |
-| 2145 | 62 | `static void idleLagsItsYear(int idleMonths)` | REV-CY1: the month a kind's last works PAID while its year's mean still lagged below nothing. |
+| 1943 | 57 | `static void threeMonthCycle()` |  |
 
-### 23. the planner weighs a works' own power as it is paid (lines 2208-2290)
+### 21. a feed-short works orders no mill (CY1) (lines 2001-2079)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2210 | 80 | `static void ownPowerPlanned()` |  |
+| 2003 | 76 | `static void feedShortWorks()` |  |
+
+### 22. an idle works is shed over its year (CY1) (lines 2080-2245)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2083 | 4 | `static void rodAt(Game g, double scale)` | Rod's world prices, import and export, at `scale` times the literal: a month that pays the last Rod Mill something or loses it more. |
+| 2094 | 82 | `static void idleOverYear()` |  |
+| 2183 | 62 | `static void idleLagsItsYear(int idleMonths)` | REV-CY1: the month a kind's last works PAID while its year's mean still lagged below nothing. |
+
+### 23. the planner weighs a works' own power as it is paid (lines 2246-2328)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2248 | 80 | `static void ownPowerPlanned()` |  |
 

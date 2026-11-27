@@ -659,6 +659,177 @@ public class HouseholdBalance {
      * Game off the housing match; everybody pays a whole door by default.
      */
     private ToDoubleFunction<Household> rentShares = c -> 1;
+    /** RES3 actual class bill per household; NaN retains the bare-model pooled-rent API. */
+    private ToDoubleFunction<Household> rentBills = c -> Double.NaN;
+    public void setRentBills(ToDoubleFunction<Household> bills) { rentBills=bills; }
+    /**
+     * RES3: the board the last clearing's boarders owe their hosts, struck once the stock has followed the people, on
+     * the census the leases were struck on (REV-RES3b on 19fcb37f0), and billed the rents' own way (REV-RES3b on
+     * 0925f4661): each boarder cell's billed in its rent line, each host cell's credited in full as the month's income,
+     * both by cell, and a departed boarder's on the rents' own line (unsettled, getUnsettledRent()). The load path
+     * re-plans on the month's as struck (struck, saved by the market), as it does on the rest of the settled month.
+     */
+    public record BoardStrike(java.util.Map<String,Double> billed, java.util.Map<String,Double> received, double unsettled) {
+        public static final BoardStrike NONE = new BoardStrike(java.util.Map.of(), java.util.Map.of(), 0);
+        double out(Household c) { return c.households > 0 ? billed.getOrDefault(c.key(), 0.0) / c.households : 0; }
+        double in(Household c) { return c.households > 0 ? received.getOrDefault(c.key(), 0.0) / c.households : 0; }
+    }
+    private java.util.function.Function<HouseholdBalance,BoardStrike> board = b -> BoardStrike.NONE;
+    private java.util.function.Supplier<BoardStrike> boardStruck = () -> BoardStrike.NONE;
+    public void setBoard(java.util.function.Function<HouseholdBalance,BoardStrike> strike, java.util.function.Supplier<BoardStrike> struck) {
+        this.board=strike; this.boardStruck=struck;
+    }
+    /** The student's large finite treasury allowance is money too, and follows the city's unit. */
+    public void setMoneyUnitSource(java.util.function.DoubleSupplier source){for(Household c:cells)if(c instanceof StudentHousehold s)s.setMoneyUnitSource(source);}
+    private double rentBill(Household c,double pooled) {
+        double typed=rentBills.applyAsDouble(c);
+        return Double.isFinite(typed)?Math.max(0,typed):pooled*Math.max(0,rentShares.applyAsDouble(c));
+    }
+    public record HousingResources(double count,double budget) { }
+    /** An incoming worker starts without the city's existing household debts; all recurring fees and food still have a payer. */
+    public double incomingHousingBudget(Household c,double netWage,HouseholdAccounts accounts,double foodPrice) {
+        return incomingHousingBudget(c,netWage,accounts,foodPrice,spendFactor);
+    }
+    public double incomingHousingBudget(Household c,double netWage,HouseholdAccounts accounts,double foodPrice,double plannedFactor) {
+        int r=c.row();double people=accounts.getRowPeople(r);
+        double fees=accounts.getRowHealthcare(r)+accounts.getRowTuition(r)+accounts.getRowFares(r)+accounts.getRowFuel(r)+accounts.getRowHomeFuel(r);
+        return housingBid(Math.max(0,netWage*c.earningWeight()-(people>0?fees*c.headcount()/people:0)-accountFee-c.baskets()*Math.max(0,foodPrice)),0,plannedFactor);
+    }
+    /** Saving changes an additional housing bid, while a funded current lease remains committed and cash is the ceiling. */
+    private static double housingBid(double resources,double committedRent,double factor){
+        if(!Double.isFinite(factor)||factor>=1||factor<=0)return resources;
+        double committed=Math.min(resources,Math.max(0,committedRent));
+        return committed+factor*Math.max(0,resources-committed);
+    }
+    /** Quotes the staged census against paid source income and recurring fees without moving live stocks. */
+    public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
+                                                                     ToDoubleFunction<Household> chargedRent) {
+        return strikeHousingBudgets(families,accounts,foodPrice,chargedRent,c->Double.NaN);
+    }
+    /** Current scheduled wages/pensions precede the later cash strike; old row totals describe last month's people. */
+    public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
+                                                                     ToDoubleFunction<Household> chargedRent,ToDoubleFunction<Household> currentIncome) {
+        return strikeHousingBudgets(families,accounts,foodPrice,chargedRent,currentIncome,Double.NaN);
+    }
+    /** Live housing reserves the opening card balance's contractual bill at the bank's current price. */
+    public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
+                                                                     ToDoubleFunction<Household> chargedRent,ToDoubleFunction<Household> currentIncome,double cardFundingRate) {
+        return strikeHousingBudgets(families,accounts,foodPrice,chargedRent,currentIncome,cardFundingRate,spendFactor);
+    }
+    /** Housing bids read this month's ex-ante saving response before the later household cash strike. */
+    public java.util.Map<String,HousingResources> strikeHousingBudgets(FamilyModel families,HouseholdAccounts accounts,double foodPrice,
+                                                                     ToDoubleFunction<Household> chargedRent,ToDoubleFunction<Household> currentIncome,double cardFundingRate,double plannedFactor) {
+        double[] fresh=takeCensus(families),income=new double[ROWS],fees=new double[ROWS];
+        for(int r=0;r<ROWS;r++){
+            income[r]=accounts.getRowDisposable(r);
+            fees[r]=accounts.getRowHealthcare(r)+accounts.getRowTuition(r)+accounts.getRowFares(r)
+                    +accounts.getRowFuel(r)+accounts.getRowHomeFuel(r);
+        }
+        double[] sourceWeight=new double[ROWS],freshWeight=new double[ROWS];
+        for(int i=0;i<cells.length;i++){
+            Household c=cells[i];
+            sourceWeight[c.row()]+=c.households()*c.earningWeight();
+            freshWeight[c.row()]+=fresh[i]*c.earningWeight();
+        }
+        double[] bills=splitByPeople(fresh,fees);
+        Household[] housingCells=housingCensusCells(families,fresh);
+        java.util.Map<String,HousingResources> result=new java.util.LinkedHashMap<>();
+        // ...a boarder's board is the housing rent it now is (RES3, REV-RES3b on d713bb421): the settlement billed it in the
+        // rent line (afterFixed), so it is taken back with the landlord's bill, not left a fixed expense beside the rent.
+        BoardStrike boarded=boardStruck.get();
+        for(int i=0;i<cells.length;i++){
+            Household c=housingCells[i],live=cells[i];
+            double liveRent=chargedRent.applyAsDouble(live)+boarded.out(live);
+            double committedRent=Math.min(liveRent,chargedRent.applyAsDouble(c)+boarded.out(c));
+            double scheduled=currentIncome.applyAsDouble(c);
+            // An opening paid pool cannot concentrate on fewer recipients or fund extra arrivals.
+            double paidIncome=sourceWeight[c.row()]>0?income[c.row()]*c.earningWeight()
+                    /Math.max(sourceWeight[c.row()],freshWeight[c.row()]):0;
+            double recurringIncome=Double.isFinite(scheduled)?Math.max(0,scheduled):paidIncome;
+            double actualFixed=Math.max(0,live.disposable()-live.afterFixed()-liveRent);
+            double cardService=Double.isFinite(cardFundingRate)?c.cardMinimumAt(cardFundingRate,recurringIncome):c.interest()+c.minimumPrincipal();
+            // Recurring service fees keep the billed source's per-head rate through a census change.
+            double sourceHeads=accounts.getRowPeople(c.row());
+            double recurringFees=sourceHeads>0?fees[c.row()]*c.headcount()/sourceHeads:bills[i];
+            double projected=recurringFees+Math.max(0,accountFee)+cardService
+                    +c.studentInterestAt(studentLoanRate)+Math.min(c.studentDebt(),c.studentRepayment());
+            double budget=Math.max(0,recurringIncome-Math.max(actualFixed,projected)-c.baskets()*Math.max(0,foodPrice)
+                    +c.savings()/HousingMarket.SAVINGS_MONTHS);
+            budget=housingBid(budget,committedRent,plannedFactor);
+            // The existing student facility funds housing shortfalls too, while open.
+            // It is settled as treasury lending in the normal household strike.
+            if(c instanceof StudentHousehold)budget+=Math.max(0,cells[i].planningRoom());
+            result.put(c.key(),new HousingResources(fresh[i],budget));
+        }
+        return result;
+    }
+
+    /** A derived census quote: route actual saved stocks on a detached ledger, never arrivals' future cash. */
+    Household[] housingCensusCells(FamilyModel families,double[] fresh) {
+        HouseholdBalance projected=new HouseholdBalance();
+        if(!projected.restoreCells(cellKeys(),toCellSaveArray(),Equity.COMPANIES))
+            throw new IllegalStateException("Cannot project housing census stocks");
+        projected.restoreBondsByCell(bondsByCellToSave());
+        projected.restoreFlows(flowsToSave());
+        projected.restoreInvestmentTaxes(investmentTaxesToSave());
+        projected.restoreSecuredTaxes(securedTaxesToSave());
+        projected.investmentPolicy=investmentPolicy;
+        projected.investmentPrice=investmentPrice;
+        projected.localPerUsd=localPerUsd;
+        projected.paperRatio=paperRatio;
+        projected.bondRatio=bondRatio;
+        projected.minMove=minMove;
+        projected.graduating=graduating;
+        projected.studentLoanRate=studentLoanRate;
+        for(int i=0;i<cells.length;i++)projected.cells[i].dependants=cells[i].dependants;
+        // Counterparties and receipts deliberately stay detached: this is a quote,
+        // not a tax payment, security trade, inheritance booking or a cash settlement.
+        Plan plan=projected.planFlows(families,false);
+        housingRoute=projected.route(fresh,plan);
+        projected.followThePeople(fresh,new double[cells.length],plan,true);
+        return projected.cells;
+    }
+
+    /* ----- the doors follow the people (RES3c, 2026-11-25) ----- */
+    /**
+     * Who changes cell this month, for the typed market's leases (HousingMarket.carry()): each cell's households
+     * coming into the month (before), and the households it sends to each other cell (moved).
+     */
+    public record HousingRoute(java.util.Map<String,Double> before,java.util.Map<String,java.util.Map<String,Double>> moved) {
+        public static final HousingRoute NONE=new HousingRoute(java.util.Map.of(),java.util.Map.of());
+    }
+    /** The route the last housing quote struck (strikeHousingBudgets()): a quote's, not saved, struck again each month. */
+    private HousingRoute housingRoute=HousingRoute.NONE;
+    public HousingRoute housingRoute(){return housingRoute;}
+    /**
+     * The month's moves between cells as the money takes them: the flows' own (ageing on, retiring, a partner's
+     * death), then the census's net change routed as SecurityRoute routes a stock with every household weighing one,
+     * within the stock group first and then across the city. Leavers, estates and a loss no cell gains go nowhere.
+     */
+    private HousingRoute route(double[] fresh,Plan plan){
+        int n=cells.length;double[] after=new double[n],arriving=new double[n],delta=new double[n];
+        java.util.Map<String,Double> before=new java.util.TreeMap<>();
+        java.util.Map<String,java.util.Map<String,Double>> moved=new java.util.TreeMap<>();
+        for(int i=0;i<n;i++){after[i]=cells[i].households;before.put(cells[i].key(),cells[i].households);}
+        for(Move m:plan.moves){after[m.from]-=m.out;if(m.to<0)continue;arriving[m.to]+=m.in;
+            double h=Math.min(m.out,m.in);
+            if(m.to!=m.from&&h>0)moved.computeIfAbsent(cells[m.from].key(),k->new java.util.TreeMap<>()).merge(cells[m.to].key(),h,Double::sum);}
+        double[] loss=new double[Household.STOCK_GROUPS],gain=new double[Household.STOCK_GROUPS];
+        for(int i=0;i<n;i++){after[i]=Math.max(0,after[i])+arriving[i];delta[i]=fresh[i]-after[i];
+            if(delta[i]<0)loss[cells[i].stockGroup()]-=delta[i];else if(delta[i]>0)gain[cells[i].stockGroup()]+=delta[i];}
+        double[] lossLeft=new double[n],gainLeft=new double[n];
+        for(int i=0;i<n;i++){int r=cells[i].stockGroup();double row=Math.min(loss[r],gain[r]);
+            if(delta[i]<0){double sent=row>0?-delta[i]*row/loss[r]:0;lossLeft[i]=-delta[i]-sent;
+                if(sent>0)for(int j=0;j<n;j++)if(delta[j]>0&&cells[j].stockGroup()==r)
+                    moved.computeIfAbsent(cells[i].key(),k->new java.util.TreeMap<>()).merge(cells[j].key(),sent*delta[j]/gain[r],Double::sum);}
+            else if(delta[i]>0)gainLeft[i]=delta[i]*(row>0?1-row/gain[r]:1);}
+        double cityLoss=0,cityGain=0;for(int i=0;i<n;i++){cityLoss+=lossLeft[i];cityGain+=gainLeft[i];}
+        double city=Math.min(cityLoss,cityGain);
+        if(city>0)for(int i=0;i<n;i++)if(lossLeft[i]>0){double sent=lossLeft[i]*city/cityLoss;
+            for(int j=0;j<n;j++)if(gainLeft[j]>0)
+                moved.computeIfAbsent(cells[i].key(),k->new java.util.TreeMap<>()).merge(cells[j].key(),sent*gainLeft[j]/cityGain,Double::sum);}
+        return new HousingRoute(before,moved);
+    }
 
     public void setRentShares(ToDoubleFunction<Household> shares) {
         this.rentShares = shares == null ? c -> 1 : shares;
@@ -829,9 +1000,9 @@ public class HouseholdBalance {
         this.housedShares = shares == null ? c -> 0 : shares;
     }
 
-    /** The fee one household of this cell is charged, when the cell holds this many: nothing in a cell too empty to strike, which is paid nothing and pays nothing. */
+    /** The fee one household is charged: every positive weighted household pays for its housed share. */
     private double accountFeeFor(Household c, double households) {
-        if (households < EMPTY_CELL || accountFee <= 0) return 0;
+        if (!(households > 0) || accountFee <= 0) return 0;
         return accountFee * Math.max(0, Math.min(1, housedShares.applyAsDouble(c)));
     }
 
@@ -879,13 +1050,13 @@ public class HouseholdBalance {
      */
     /** Bills the sellers booked in full and a household could not fund (Household.settle, unfunded), summed over the households: money the shops were paid that no savings held. */
     private double lastUnfunded;
-    /** Income the rows were handed that went to a cell too small to settle (isEmpty()): the row's take-home less what the settled cells were given. */
+    /** Row take-home with no positive recipient weight: the row total less what actual households settled. */
     private double lastUnsettledIncome;
     /** ...the fees the row was billed for treatment and tuition that no settled cell was charged. */
     private double lastUnsettledFees;
     /** ...the row's shopping that no settled cell paid: the sellers booked the sale, the cell that was to pay it was skipped. */
     private double lastUnsettledShopping;
-    /** ...the rent of the cells too small to settle: the landlords booked it, no household was charged it. */
+    /** Rent booked without a positive household recipient; retained as an explicit reconciliation guard. */
     private double lastUnsettledRent;
     /** Savings left in a pool nobody is handed: a shrinking cell with no grown-ups releases its savings to a stock group that has none to claim them (moveStock, the savings stock only). */
     private double lastCensusStranded;
@@ -1389,6 +1560,9 @@ public class HouseholdBalance {
 
         /* ---- the stock belongs to the people, not to the cells ---- */
         followThePeople(fresh, buffer, plan);
+        // ...the board, on the census the clearing struck its leases on, billed with the rents (RES3, HousingMarket.strikeBoard()).
+        BoardStrike boarded = board.apply(this);
+        lastUnsettledRent += boarded.unsettled();
 
         /* ---- and every household's month ---- */
         plannedSpend = 0;
@@ -1396,11 +1570,10 @@ public class HouseholdBalance {
         double settledIncome = 0, settledFees = 0, settledShopping = 0;
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.isEmpty()) {
-                // Too few to strike - the position stands, carried for the
-                // month the cell fills, and the working is blank.
-                // ...and its share of the rent is the landlords' sale, charged to nobody (HL1: UnsettledRent).
-                lastUnsettledRent += rentPerHousehold * Math.max(0, rentShares.applyAsDouble(c)) * c.households;
+            if (!(c.households > 0)) {
+                // Exact zero has no recipient. Positive fractional households
+                // received their weighted income and owe their actual bills.
+                lastUnsettledRent += rentBill(c,rentPerHousehold) * c.households;
                 c.clearWorking();
                 continue;
             }
@@ -1408,12 +1581,14 @@ public class HouseholdBalance {
                     : rowShopping[c.row()] * shopWeight[i] / rowShopWeight[c.row()] / c.households;
 
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
-            double rentDue = rentPerHousehold * c.rentShare;
+            // ...and a boarder's board, the second part of its rent line, owed its hosts (RES3).
+            double rentDue = rentBill(c,rentPerHousehold) + boarded.out(c);
             c.studentLoanRate = studentLoanRate;
             // ...and the bank's account fee with the other fixed bills (0.7.7).
             double accountDue = accountFeeFor(c, c.households);
             double feesDue = feesPer[i] + accountDue;
-            c.settle(disposablePer[i], rentDue, feesDue, spentPer,
+            // ...a host's board, its boarders' rent lines, credited in full as the month's income, as a landlord books a rent (RES3).
+            c.settle(disposablePer[i] + boarded.in(c), rentDue, feesDue, spentPer,
                     foodPricePerHead, riskFreeAnnual, liquidity, localPerUsd);
             c.accountFee = accountDue;
             // HL1 (2026-11-11): the bills a household could not fund (the sellers booked them in full), and what this cell was handed of the rows' totals.
@@ -1429,8 +1604,18 @@ public class HouseholdBalance {
              * the share of the households who could not pay them - a level
              * struck from the month, not a rate typed in. Unemployment moves
              * them next month.
+             *
+             * ...AND ON THE TYPED MARKET, THE DOOR IT COULD NOT FUND (RES3,
+             * 2026-11-25). Main's rentDue > 0 reads "holds a home": every
+             * housed cell pays a pooled share. The typed market bills only a
+             * door a household funds, so a household past EI whose savings
+             * are gone owes none (a guest, or nobody's tenant) and was never
+             * struck: on the 1900 city 250 such households piled up past EI
+             * by m270 (main 8.9) and unemployment stood at 27% (main 12.5%).
+             * The clearing has already refused it the door, so the unfunded
+             * test alone strikes it, and Unemployment moves it as main's.
              */
-            if (c.canBeEvicted() && c.unfunded > 0 && rentDue > 0) {
+            if (c.canBeEvicted() && c.unfunded > 0 && (rentDue > 0 || Double.isFinite(rentBills.applyAsDouble(c)))) {
                 double bills = rentDue + feesDue + c.interest;
                 c.evicted = c.households * Math.min(1, c.unfunded / bills);
                 lastEvicted += c.evicted;
@@ -1462,10 +1647,9 @@ public class HouseholdBalance {
         /*
          * WHAT THE ROWS WERE HANDED THAT NO CELL TOOK (HL1, 2026-11-11). The
          * pools paid the rows' take-home and billed their fees and their
-         * shopping in full; a cell too small to settle (isEmpty()) was still
-         * given a share by the splits, and a row with no weight hands nothing
-         * to anybody. The difference is money the households' books never
-         * saw - measured here, not mended (HL2). The account fee is not in it:
+         * shopping in full. Every positive household settles its share; a row
+         * with no recipient weight hands nothing to anybody. The difference
+         * remains explicit in the household identity. The account fee is not in it:
          * it is charged and booked for settled cells alike.
          */
         lastUnsettledIncome += sumOfRows(rowDisposable) - settledIncome;
@@ -1973,6 +2157,10 @@ public class HouseholdBalance {
      * @param plan   the month's flows (planFlows()), carried before the pool
      */
     private void followThePeople(double[] fresh, double[] buffer, Plan plan) {
+        followThePeople(fresh,buffer,plan,false);
+    }
+
+    private void followThePeople(double[] fresh, double[] buffer, Plan plan, boolean quote) {
         int[] named = new int[3];
         java.util.List<Stock> stocks = stocks(named);
         final int loanSlot = named[0];
@@ -1983,7 +2171,7 @@ public class HouseholdBalance {
         // The month's flows carry their money first (HS1, MONEY FOLLOWS
         // PEOPLE); the pool moves what they left, from the households after them.
         double[] flowLeft = new double[stocks.size()];
-        double[] before = carryTheFlows(plan, stocks, flowLeft, loanSlot);
+        double[] before = carryTheFlows(plan, stocks, flowLeft, loanSlot,quote);
         double[] beforeLoans = carryGraduatesLoans(before);
 
         /*
@@ -2088,54 +2276,35 @@ public class HouseholdBalance {
             cells[i].households = fresh[i];
             if (fresh[i] <= 0) cells[i].clearAll();
         }
-        // ...and a cell the census left under half a household is emptied
-        // into the rest. See A CELL UNDER HALF A HOUSEHOLD IS EMPTY, below.
+        // Clear only cells with no remaining owner; positive fractions retain their positions.
         foldEmptyCells(stocks);
     }
 
     /* =====================================================================
-       A CELL UNDER HALF A HOUSEHOLD IS EMPTY (0.7.2)
+       POSITIVE WEIGHTED HOUSEHOLDS OWN THEIR POSITIONS (RES3)
 
-       The census hands every cell a count, and a count is a real number: a
-       shape that has all but gone from a tier comes back as 1e-13 of a
-       household, or 1e-16, and whether it lands there or on exactly nothing
-       is floating-point noise. The month already treated such a cell as too
-       few to strike (the clear at a half), but the payments did not: the
-       deposit interest, the theft's proceeds, the tender and the dividends
-       all asked "households > 0", so a cell of 1e-15 households was paid -
-       and creditByWeight() paid it a whole cell's share, divided by that
-       count. On the pristine 0.7.1 tree, after a reform, such cells held
-       savings from month 127 on. Which cell is a ghost differs between two
-       runs of one city at the fifteenth decimal, so a reformed city and its
-       twin parted company on it (DenominationCheck, month 166, 2026-09-22).
-       Households are outside the audit, and nothing else could see it.
+       Income and actual bills use count-weighted recipients, including quarters
+       and halves. Folding a positive owner's savings, cards or student loans
+       before settlement transferred its position to a neighbour while leaving
+       its income and lease in place. Preserve those owners on both the month
+       and load/replan paths; the census pool above already moves the exact
+       released and claimed positions when their counts actually change.
 
-       So one threshold, EMPTY_CELL, and one test, Household.isEmpty(), at
-       every site that writes a count or pays a cell. A cell that falls under
-       it is emptied where the count is written, and what it held - savings,
-       debt, shares, dollars abroad, student loans, cars, the city's paper -
-       is folded into the cells that are not empty, so the household ledger
-       conserves. WHERE IT GOES is where the census pool sends a leaver's
-       money: its own stock group first (Household.stockGroup() - the row, the
-       out of work with the unskilled), then the city; within either, pro rata
-       to what each cell already holds of it, and by households where nobody
-       does. The group comes first because the city-wide pro rata alone
-       would be regressive: an unskilled cell's last savings would go mostly to
-       the professionals, who hold most of the savings, every month a small
-       cell dipped under the line. Nothing is carried for the cell: the month it
-       fills again it fills from the pool, like any other cell that grows. Its
-       count stands - the census's, not ours to round.
+       EMPTY_CELL still bounds the separate eligibility paths. In particular,
+       creditByWeight must not divide a whole cell-weight payment by a dust
+       count (DenominationCheck, 0.7.2). That optional credit guard does not
+       erase a positive recipient's existing assets, liabilities or supplied bills.
        ===================================================================== */
 
-    /** Fewer households than this in a cell and it is empty: it holds nothing and is paid nothing. */
+    /** Minimum cohort for the existing optional eligibility paths; actual positive financial recipients still settle. */
     public static final double EMPTY_CELL = .5;
 
-    /** Cells the census left under EMPTY_CELL this month that still held something, and were emptied. */
+    /** Ownerless cells whose remaining positions were cleared. */
     private int lastCellsFolded;
 
     /**
-     * Empties every cell under EMPTY_CELL into the cells that are not. See
-     * the banner above; for the load path and the harnesses.
+     * Clears ownerless positions while preserving every positive weighted owner.
+     * Kept on both the month and load paths and directly exercised by the harnesses.
      *
      * @return how many cells held something to fold
      */
@@ -2147,7 +2316,7 @@ public class HouseholdBalance {
         for (Household d : cells) if (!d.isEmpty()) { anyLive = true; break; }
         if (!anyLive) return 0;             // nobody left to hold it: it stays where it is
         for (Household c : cells) {
-            if (!c.isEmpty()) continue;
+            if (c.households > 0) continue;
             boolean held = false;
             for (int company = 0; company < Equity.COMPANIES.length; company++) {
                 double[] amount = security(c, company); boolean any = false;
@@ -2220,13 +2389,13 @@ public class HouseholdBalance {
     /** spread()'s reads of the cells' holdings, one array kept rather than one a call. */
     private double[] spreadHad = new double[0];
 
-    /** True when the cell holds any stock at all, which an empty cell must not. For the harnesses. */
+    /** True when the cell holds any stock at all, including a positive fractional owner. For the harnesses. */
     boolean holdsAnything(Household c) {
         for (Stock s : stocks(null)) if (s.get(c) != 0) return true;
         return false;
     }
 
-    /** Cells emptied this month that still held something when the census left them under EMPTY_CELL. */
+    /** Ownerless cells whose remaining weighted positions were folded this month. */
     public int getCellsFolded() { return lastCellsFolded; }
 
     /* =====================================================================
@@ -2653,7 +2822,7 @@ public class HouseholdBalance {
      *
      * @return every cell's households after the flows: the pool's "before"
      */
-    private double[] carryTheFlows(Plan plan, java.util.List<Stock> stocks, double[] left, int loanSlot) {
+    private double[] carryTheFlows(Plan plan, java.util.List<Stock> stocks, double[] left, int loanSlot, boolean quote) {
         int n = cells.length, k = stocks.size();
         double[] b = new double[n];
         for (int i = 0; i < n; i++) b[i] = cells[i].households;
@@ -2743,7 +2912,7 @@ public class HouseholdBalance {
             if (estate[slot] != null) {
                 int heirs = slot % heirSlots - 1;
                 passOn(estate[slot], PayTier.values()[slot / heirSlots],
-                        heirs < 0 ? null : AdultStage.values()[heirs], b, stocks, left);
+                        heirs < 0 ? null : AdultStage.values()[heirs], b, stocks, left,quote);
             }
         }
         return b;
@@ -2755,7 +2924,7 @@ public class HouseholdBalance {
      * with none, the city's; with none at all (no heir after the flows), out
      * with the leavers.
      */
-    private void passOn(double[] e, PayTier tier, AdultStage heirs, double[] b, java.util.List<Stock> stocks, double[] left) {
+    private void passOn(double[] e, PayTier tier, AdultStage heirs, double[] b, java.util.List<Stock> stocks, double[] left, boolean quote) {
         for (int pass = heirs == null ? 1 : 0; pass < 3; pass++) {
             double weight = 0;
             for (int i = 0; i < cells.length; i++) {
@@ -2776,6 +2945,8 @@ public class HouseholdBalance {
             lastEstatePassed += e[0];
             return;
         }
+        // A quote excludes the same no-heir property from household resources without booking its treasury transfer.
+        if(quote)return;
         if (custody == null) throw new IllegalStateException("No receiving owner for an unclaimed estate");
         double[] units = new double[Equity.COMPANIES.length], basis = units.clone(), claims = units.clone();
         java.util.Map<Integer, Double> bonds = new java.util.LinkedHashMap<>();
@@ -3741,7 +3912,7 @@ public class HouseholdBalance {
      * nothing, or no price.
      */
     public double groceryDemandOf(Household c, double price) {
-        if (c.isEmpty() || !(price > 0) || !(c.need > 0)) return 0;
+        if (!(c.households > 0) || !(price > 0) || !(c.need > 0)) return 0;
         double appetite = satiationPrice > 0
                 ? Math.min(1, Math.pow(satiationPrice / price,
                         ham.citybuildersim.sectors.Retail.GROCERY_ELASTICITY))
@@ -3759,7 +3930,7 @@ public class HouseholdBalance {
     /** The baskets the city's households need, one a head: what the demand is a share of. */
     public double groceriesNeeded() {
         double total = 0;
-        for (Household c : cells) if (!c.isEmpty()) total += c.need * c.households;
+        for (Household c : cells) if (c.households > 0) total += c.need * c.households;
         return total;
     }
 
@@ -3786,7 +3957,7 @@ public class HouseholdBalance {
         for (Household c : cells) {
             c.groceriesGot = groceryDemandOf(c, pAlloc) * scale;
             c.groceriesAsked = groceryDemandOf(c, pCharged);
-            c.groceriesNeed = c.isEmpty() ? 0 : c.need;
+            c.groceriesNeed = c.households > 0 ? c.need : 0;
             c.assistance = 0;
             if (!(c.voucher > 0) || !(c.groceriesGot > 0) || !(pCharged > 0)) continue;
             double aid = Math.min(c.voucher, c.groceriesGot * pCharged);
@@ -3866,7 +4037,7 @@ public class HouseholdBalance {
         double[] need = new double[ROWS], asked = new double[ROWS], got = new double[ROWS];
         double[] households = new double[ROWS], eligible = new double[ROWS], aided = new double[ROWS];
         for (Household c : cells) {
-            if (c.isEmpty()) continue;
+            if (!(c.households > 0)) continue;
             int r = c.row();
             need[r] += c.groceriesNeed * c.households;
             asked[r] += c.groceriesAsked * c.households;
@@ -4740,7 +4911,7 @@ public class HouseholdBalance {
 
     /** Pro rata to the paper held: what a dollar of face in the households' book is spread as, cell by cell. */
     private double paperWeight(Household c, double total) {
-        return total > 0 && !c.isEmpty() ? c.paper * c.households / total : 0;
+        return total > 0 && c.households > 0 ? c.paper * c.households / total : 0;
     }
 
     /** A coupon on the households' share, into savings and the month's investment income, pro rata to the paper. Untaxed, as the foreign coupon is. */
@@ -4961,7 +5132,7 @@ public class HouseholdBalance {
             double v = e.getValue() == null ? 0 : e.getValue();
             if (!(v > 0)) continue;
             Household c = cellByKey(e.getKey());
-            if (c == null || c.isEmpty()) { orphaned += v; continue; }
+            if (c == null || !(c.households > 0)) { orphaned += v; continue; }
             double each = v / c.households;
             c.savings += each;
             c.investmentIncome += each;
@@ -5188,7 +5359,7 @@ public class HouseholdBalance {
     /** Bills the sellers booked in full and the households could not fund, this month, summed over the households (HL1: an open fault, named for HL2). */
     public double getUnfunded()          { return lastUnfunded; }
 
-    /** Income the month's rows were handed that went to cells too small to settle (HL1: an open fault, named for HL2). */
+    /** Income the month's rows were handed with no positive recipient weight (HL1 reconciliation). */
     public double getUnsettledIncome()   { return lastUnsettledIncome; }
 
     /** Fees the month's rows were billed that no settled cell was charged (HL1: an open fault, named for HL2). */
@@ -5197,7 +5368,7 @@ public class HouseholdBalance {
     /** Shopping the month's rows were billed for that no settled cell paid (HL1: an open fault, named for HL2). */
     public double getUnsettledShopping() { return lastUnsettledShopping; }
 
-    /** Rent of the cells too small to settle, which the landlords booked and no household was charged (HL1: an open fault, named for HL2). */
+    /** Rent booked without a positive household recipient (HL1 reconciliation). */
     public double getUnsettledRent()     { return lastUnsettledRent; }
 
     /** Savings the census left in a pool nobody is handed (HL1: an open fault, named for HL2). */
@@ -5330,19 +5501,19 @@ public class HouseholdBalance {
         double[] disposablePer = splitIncome(fresh, rowDisposable);
         double[] feesPer = splitByPeople(fresh, rowFees);
 
-        // Every count first, then the fold, then the plan - the month's own
-        // order (followThePeople() before the strike). On a city saved by this
-        // build the fold finds nothing; on an older save it empties the ghosts.
+        // Restore the same positive owners and positions the monthly settlement used.
         for (int i = 0; i < cells.length; i++) cells[i].households = fresh[i];
         foldEmptyCells();
 
         plannedSpend = 0;
+        // ...the board as the settled month struck it, saved (RES3): a host's income and a boarder's rent line.
+        BoardStrike boarded = boardStruck.get();
         for (int i = 0; i < cells.length; i++) {
             Household c = cells[i];
-            if (c.isEmpty()) { c.clearWorking(); continue; }
+            if (!(c.households > 0)) { c.clearWorking(); continue; }
             c.rentShare = Math.max(0, rentShares.applyAsDouble(c));
             c.studentLoanRate = studentLoanRate;
-            c.restrike(disposablePer[i], rentPerHousehold * c.rentShare,
+            c.restrike(disposablePer[i] + boarded.in(c), rentBill(c,rentPerHousehold) + boarded.out(c),
                     feesPer[i] + accountFeeFor(c, c.households),
                     foodPricePerHead, riskFreeAnnual);
             c.voucher = foodAssistanceFor(c, foodPricePerHead);
@@ -5445,7 +5616,7 @@ public class HouseholdBalance {
         double base = totalSavings();
         if (base <= 0) return;
         for (Household c : cells) {
-            if (c.savings <= 0 || c.isEmpty()) continue;
+            if (c.savings <= 0 || !(c.households > 0)) continue;
             double share = c.totalSavings() / base;
             c.depositIncome = total * share / c.households;
             c.savings += c.depositIncome;
@@ -5667,7 +5838,7 @@ public class HouseholdBalance {
         if (!(perShare > 0)) return 0;
         double paid = 0;
         for (Household c : cells) {
-            if (c.isEmpty() || c.shares[company] <= 0) continue;
+            if (!(c.households > 0) || c.shares[company] <= 0) continue; // a fractional cell keeps its shares, so it is paid at home (REV-RES3z)
             double each = c.shares[company] * perShare;
             double tax = each * investmentPolicy.dividendTaxRate(investmentWageRate(c), Equity.COMPANIES[company]);
             receiveInvestmentTax(false, tax * c.households);
@@ -5698,7 +5869,7 @@ public class HouseholdBalance {
         if (!(perShare > 0)) return 0;
         double paid = 0;
         for (Household c : cells) {
-            if (c.isEmpty() || c.shares[company] <= 0) continue;
+            if (!(c.households > 0) || c.shares[company] <= 0) continue; // ...and so is its lending fee (REV-RES3z)
             double each = c.shares[company] * perShare;
             double retained = collectClaim(c, company, each * c.taxShares[company] / c.shares[company]);
             c.savings += each - retained;

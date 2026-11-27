@@ -622,6 +622,10 @@ public class CurveCheck {
         struckAtTheTarget = Math.abs(dm.getStruckInflation() - target) < 1e-12 && dm.getStruckExpected() == target;
         dm.takeTheDial(expectedToSettleAt(dm));   // the control: the dial at where the market expects it to settle, no gap held
         spanBeforeTheHold = dm.curveRate(120) - dm.curveRate(1);
+        // RES3: the bank funds its whole book from its own cash, so it borrows nothing and its money costs nothing, and the floor is the dial, as
+        // the bare city's is (bare()). The played bank borrowed at the window by month 38 and its cost of funds lifted the floor over the dial (the
+        // 1-month read 1.72 under a dial of 1.00, the 10-year 1.71 points over it, under the 2 asked): the bank's floor, where the steepness is the hold's.
+        g.getBank().injectCapital(g.getBank().borrowings() + g.getBank().getBook());
         dm.takeTheDial(expectedToSettleAt(dm) - STEEP_GAP);
         pressQuietly(g);
         g.setCashForTest(STEEP_CASH);   // after the press, which has moved it by a month's flows

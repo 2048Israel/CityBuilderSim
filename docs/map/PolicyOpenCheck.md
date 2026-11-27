@@ -1,4 +1,4 @@
-# PolicyOpenCheck.java - 425 lines · 15 methods · 7 constants · harnesses
+# PolicyOpenCheck.java - 426 lines · 15 methods · 7 constants · harnesses
 
 `ham/citybuildersim/PolicyOpenCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -73,14 +73,14 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 55 | 371 | **type** `public class PolicyOpenCheck` | Every Policy lever is open from the city's first month, in every city, and nothing opens one later (OP1, 2026-11-19). |
+| 55 | 372 | **type** `public class PolicyOpenCheck` | Every Policy lever is open from the city's first month, in every city, and nothing opens one later (OP1, 2026-11-19). |
 | 61 | 4 | `static void check(String label, boolean ok)` |  |
 | 66 | 3 | `static void check(String label, boolean ok, String detail)` |  |
 | 71 | 4 | `static void quietly(Runnable r)` | Runs a city's work with its printing silenced. |
 | 77 | 1 | **type** `record Row(Lever lever, int year, int month, boolean monthKnown, String entry)` | One row of research-1900.md 7.1: the year and month Canada first had the lever (monthKnown false: the study gives the year only). |
 | 109 | 3 | `static int monthOf(int year, int monthOfYear)` | The game month of a real calendar month, worked out here and not by PolicyDates. |
 
-### the dials (lines 113-425)
+### the dials (lines 113-426)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -94,5 +94,5 @@
 | 197 | 5 | `static Game city(String label, boolean the1900Way)` | A city founded on Founding.defaults(), the 1900 way if asked, on scratch files. |
 | 204 | 6 | `static Set<String> declared(Class<?> c)` | The names a class declares, methods and fields. |
 | 211 | 175 | `public static void main(String[] args) throws Exception` |  |
-| 391 | 34 | `static void lawFind() throws Exception` | Section 5's city: DiscoveryCheck's 1900 village with a University and a Law School, saved in its second month and carried by its file to the month before the wage tax's law (PL3) is open to the law faculty, then a pil... |
+| 391 | 35 | `static void lawFind() throws Exception` | Section 5's city: DiscoveryCheck's 1900 village with a University and a Law School, saved in its second month and carried by its file to the month before the wage tax's law (PL3) is open to the law faculty, then a pil... |
 

@@ -1292,7 +1292,7 @@ public class FamilyModel implements HouseholdBalance.Census {
      * single adult CAN take a family door when the studios run out and
      * house() really does let them; the no runs one way only.
      *
-     * Zero before house() has ever been called, which is the old behaviour and
+     * Zero before a housing pass has supplied a door census, the old behaviour and
      * the right one: with no door census there is nothing to say.
      */
     private double doorsThatCannotHelp() {
@@ -1314,7 +1314,8 @@ public class FamilyModel implements HouseholdBalance.Census {
     }
 
     /**
-     * The door census house() was last handed. Kept only so the crowding floor
+     * The latest door census from house() or the typed clearing/load projection.
+     * Kept only so the crowding floor
      * can tell a studio from a family door - see doorsThatCannotHelp().
      */
     private long[] lastHomesBySize;
@@ -1483,6 +1484,13 @@ public class FamilyModel implements HouseholdBalance.Census {
         this.studioRentWeight = Math.max(0, studio);
         this.familyRentWeight = Math.max(0, family);
         this.rentWeight = this.studioRentWeight + this.familyRentWeight;
+    }
+
+    /** Restore the three saved aggregates without changing their accumulation rounding. */
+    void restoreRentWeight(double total, double studio, double family) {
+        rentWeight = Math.max(0, total);
+        studioRentWeight = Math.max(0, studio);
+        familyRentWeight = Math.max(0, family);
     }
     public double getCrowdedHouseholds(){ return crowdedHouseholds; }
     public double getRefusedByStudio()  { return refusedByStudio; }
@@ -1693,6 +1701,71 @@ public class FamilyModel implements HouseholdBalance.Census {
 
     /** Actual lets by door size; BO1-H's owner-family seekers belong in the match. */
     public double[] occupiedBySize() { return occupiedBySize.clone(); }
+
+    /** Starts the single typed housing pass; the existing bare-model valves remain available to their fixtures. */
+    public void beginTypedHousing(long[] homes){lastHomesBySize=homes.clone();pricedOutShares=0;}
+
+    /** Only unplaced singles enter a newly funded sharing group; financial stocks move by the existing census path. */
+    public double shareForTypedHousing(Household source,double groups){
+        double moving=5*groups;
+        if(source instanceof WorkingHousehold w&&w.shape()==FamilyStructure.SINGLE_ADULT){
+            double available=get(w.shape(),w.tier(),w.stage());
+            if(moving>available+packingRounding(available))throw new IllegalArgumentException("Housing sharing exceeds singles");
+            moving=Math.min(moving,available);int t=w.tier().ordinal(),s=FamilyStructure.SINGLE_ADULT.ordinal(),h=FamilyStructure.SHARED_ADULTS.ordinal();
+            households[s][t]-=moving;households[h][t]+=moving/5;
+            if(w.stage()==AdultStage.YOUNG){young[s][t]-=moving;young[h][t]+=moving/5;}
+            pricedOutShares+=moving/5;return moving/5;
+        }
+        Seeker seeker=source instanceof StudentHousehold?Seeker.STUDENT:source instanceof UnemployedHousehold?Seeker.UNEMPLOYED:null;
+        if(seeker==null)return 0;int g=seeker.ordinal();double available=Math.max(0,seekers[g]-seekersSharing[g]);
+        if(moving>available+packingRounding(available))throw new IllegalArgumentException("Housing sharing exceeds seekers");
+        moving=Math.min(moving,available);seekersSharing[g]+=moving;return moving/5;
+    }
+
+    /** RES3 projects the single typed clearing into the existing crowding and rent readers. */
+    public void acceptTypedHousing(java.util.List<HousingChoice.Demand> demand,HousingChoice.Result result,
+                                   java.util.List<Household> cells,HousingInventory inventory) {
+        // The load rebuild comes here without beginTypedHousing: migration
+        // must read this city's physical door census, including on an in-place load.
+        lastHomesBySize=inventory.homesBySize();
+        java.util.Map<String,Household> byKey=new java.util.HashMap<>();
+        for(Household c:cells)byKey.put(c.key(),c);
+        java.util.Arrays.fill(unplacedByShape,0);java.util.Arrays.fill(seekersUnplaced,0);
+        java.util.Arrays.fill(seekersUnplacedHomes,0);
+        doubledUp=0;java.util.Arrays.fill(seekersDoubled,0);
+        for(var d:demand){
+            double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+            double left=result.unplaced()>0?Math.max(0,d.count()-placed):0;boolean sharing=d.key().endsWith("#sharing");
+            Household c=byKey.get(sharing?d.key().substring(0,d.key().length()-8):d.key());
+            if(c==null)continue;
+            double guests=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(l->l.households()-l.count()).sum();
+            if(c instanceof StudentHousehold)seekersDoubled[Seeker.STUDENT.ordinal()]+=guests*(sharing?5:1);
+            else if(c instanceof UnemployedHousehold)seekersDoubled[Seeker.UNEMPLOYED.ordinal()]+=guests*(sharing?5:1);
+            else doubledUp+=guests;
+            if(c instanceof StudentHousehold){seekersUnplaced[Seeker.STUDENT.ordinal()]+=left*(sharing?5:1);seekersUnplacedHomes[Seeker.STUDENT.ordinal()]+=left;}
+            else if(c instanceof UnemployedHousehold){seekersUnplaced[Seeker.UNEMPLOYED.ordinal()]+=left*(sharing?5:1);seekersUnplacedHomes[Seeker.UNEMPLOYED.ordinal()]+=left;}
+            else if(c.shape()!=null)unplacedByShape[c.shape().ordinal()]+=left;
+        }
+        occupiedBySize=new double[lastHomesBySize.length];rentWeight=studioRentWeight=familyRentWeight=0;
+        for(var stock:inventory.stock()){
+            double homes=result.leases().stream().filter(l->l.home().equals(stock.key())).mapToDouble(HousingChoice.Lease::count).sum();
+            bill(stock.dwelling().capacity(),homes);
+        }
+        crowdedHouseholds=result.crowded();
+        refusedByStudio=0;
+        double compactFree=0;
+        for(var stock:inventory.stock())if(stock.dwelling().capacity()<=STUDIO_MAX_SIZE)
+            compactFree+=inventory.vacant(stock.key(),HousingInventory.Owner.REAL_ESTATE);
+        for(var d:demand)if(result.unplaced()>0&&d.children()>0){
+            double placed=result.leases().stream().filter(l->l.cell().equals(d.key())).mapToDouble(HousingChoice.Lease::households).sum();
+            refusedByStudio+=Math.min(compactFree,Math.max(0,d.count()-placed));
+        }
+        // These guests already have actual doors and divided bills. The legacy
+        // noteUnplaced valve would infer another, unfunded round of doubling.
+        stillUnplaced=result.unplaced();
+        System.arraycopy(unplacedByShape,0,unhousedByShape,0,unplacedByShape.length);
+        System.arraycopy(seekersUnplaced,0,seekersUnhoused,0,seekersUnplaced.length);
+    }
 
     private void bill(int unitSize, double homes) {
         occupiedBySize[unitSize] += homes;
@@ -1995,6 +2068,9 @@ public class FamilyModel implements HouseholdBalance.Census {
      * Touches nothing. Null before the model has any households, or with no
      * census to match against.
      */
+    private java.util.function.Function<Room,Room> typedRoom;
+    /** Derived city context; bare fixtures keep the size-only projection. No prices or assignments are struck here. */
+    public void setTypedRoom(java.util.function.Function<Room,Room> projection){typedRoom=projection;}
     public Room roomLeft(long[] homesBySize) {
         double households = totalHouseholds();
         if (homesBySize == null || homesBySize.length < 2 || households <= 0) return null;
@@ -2019,8 +2095,10 @@ public class FamilyModel implements HouseholdBalance.Census {
         }
         people += getOrphansTotal();
 
-        return new Room(familyDoors, studios, doubling, seeking, Math.max(0, seeking - left[0]),
+        Room legacy=new Room(familyDoors, studios, doubling, seeking, Math.max(0, seeking - left[0]),
                 withChild / households, people / households);
+        Room actual=typedRoom==null?null:typedRoom.apply(legacy);
+        return actual==null?legacy:actual;
     }
 
     /* =====================================================================

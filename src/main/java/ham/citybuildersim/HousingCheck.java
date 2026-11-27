@@ -679,6 +679,7 @@ public class HousingCheck {
 
         Game staffed = new Game(GameFiles.scratch("housing-landlords-staff"));
         staffed.run();
+        legacyHousingMenu(staffed);
         ham.citybuildersim.sectors.RealEstate landlords = staffed.getSectors().realEstate();
         staffed.getGovernmentInvestor().spend(-4_000_000);
         staffed.getLandManager().setOwnedSqFt(staffed.getLandManager().getOwnedSqFt() + 200_000_000L);
@@ -745,7 +746,16 @@ public class HousingCheck {
 
         /* ---- the plan, the card ---- */
         staffed.getBusinessInvestment().releaseSector(landlords.key());
-        BusinessInvestment.Decision ordered = landlords.plan(staffed.getBusinessInvestment(), staffed);
+        // RES3 may prefer a zero-staff House. This premise must offer only
+        // the blocks whose posts the city cannot fill; restore the menu after.
+        java.util.Set<Integer> staffingMenu=new java.util.HashSet<>();
+        for(var t:staffed.getBuildingManager().getKnownTemplates())staffingMenu.add(t.getId());
+        staffed.getBuildingManager().setTemplateKnown(t->staffingMenu.contains(t.getId())&&t.getId()!=house.getId());
+        assertTrue("fixture: every offered home for this staffing decision has posts",
+                staffed.getBuildingManager().getTemplatesBySector(landlords.key()).stream().allMatch(t->t.getTotalJobs()>0));
+        BusinessInvestment.Decision ordered;
+        try{ordered=landlords.plan(staffed.getBusinessInvestment(), staffed);}
+        finally{staffed.getBuildingManager().setTemplateKnown(t->staffingMenu.contains(t.getId()));}
         System.out.println("   " + ordered.reason
                 + (ordered.template == null ? "" : " -> " + ordered.quantity + " x " + ordered.template.getName()));
         assertTrue("the landlords still order a home the city could not staff",
@@ -802,6 +812,7 @@ public class HousingCheck {
         System.out.println("\n--- homes keep headroom over demand ---");
         Game g = new Game(GameFiles.scratch("housing-headroom"));
         g.run();
+        legacyHousingMenu(g);
         BuildingManager built = g.getBuildingManager();
         built.clearStacks();
         BuildingsTemplate house = template(g, "House");
@@ -890,6 +901,15 @@ public class HousingCheck {
             if (t.getName().equals(name)) return t;
         }
         throw new IllegalStateException("no template named " + name);
+    }
+
+    /** These controlled HD1/RN1-H fixtures retain their original three-form choice set. */
+    static void legacyHousingMenu(Game g) {
+        var b=g.getBuildingManager();
+        java.util.Set<Integer> known=new java.util.HashSet<>();
+        for(var t:b.getKnownTemplates())known.add(t.getId());
+        b.setTemplateKnown(t -> known.contains(t.getId())&&(t.getCategory()!=BuildingType.RESIDENTIAL
+                ||t.getId()==0||t.getId()==1||t.getId()==6));
     }
 
     /**

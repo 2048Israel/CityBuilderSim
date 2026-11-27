@@ -323,6 +323,8 @@ public class Migration {
     private double rentBurden;
 
     public void setRentBurden(double burden) { this.rentBurden = Math.max(0, burden); }
+    /** The rent burden the pull last weighed: the asking rent's on the typed market (HousingMarket.askedBurden()), else the paid. */
+    public double getRentBurden() { return rentBurden; }
 
     public double getLastAffordabilityPull() { return lastAffordabilityPull; }
 
@@ -585,6 +587,8 @@ public class Migration {
     /* ------------------------------- reading ------------------------------- */
 
     public double getLastTarget()         { return lastTarget; }
+    /** Whether a month's draw has been read: before the town's first month getLastTarget() is no reading but its 0. */
+    public boolean hasDrawn()             { return monthsRecorded > 0; }
     /** What senior care multiplied the homes' draw by (since WG2 the jobs' draw is not lifted by it). 1 when there is none. */
     public double getLastSeniorPull()     { return lastSeniorPull; }
     public double getLastArrivals()       { return lastArrivals; }

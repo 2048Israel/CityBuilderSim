@@ -221,6 +221,22 @@ public final class HousingInventory {
         coalesce();
     }
 
+    /** Typed version of the monthly match, preserving conveyed occupants and listing subsets. */
+    public void matchClasses(Map<Key,Double> occupied) {
+        List<Stock> rows=stock();
+        for(var e:occupied.entrySet()) {
+            quantity(e.getValue());stock(e.getKey());
+            if(e.getValue()>owned(e.getKey(),Owner.REAL_ESTATE))
+                throw new IllegalArgumentException("Typed occupancy exceeds owned homes: "+e.getKey()+" matched="+e.getValue()+" owned="+owned(e.getKey(),Owner.REAL_ESTATE));
+        }
+        for(Stock s:rows){Holding h=writable(s.key(),Owner.REAL_ESTATE);
+            h.occupied=occupied.getOrDefault(s.key(),0.0);
+            h.listedOccupied=Math.min(h.listedOccupied,h.occupied);
+            h.listedVacant=Math.min(h.listedVacant,vacant(s.key(),Owner.REAL_ESTATE));
+        }
+        coalesce();
+    }
+
     /** Physical removal cannot destroy a title already conveyed to another owner. */
     boolean mayRemove(BuildingsStacks stack, long amount) {
         HousingRecipe r = stack.getBuilding().getHousingRecipe();

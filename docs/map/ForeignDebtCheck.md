@@ -1,4 +1,4 @@
-# ForeignDebtCheck.java - 1,087 lines · 15 methods · 3 constants · harnesses
+# ForeignDebtCheck.java - 1,095 lines · 15 methods · 3 constants · harnesses
 
 `ham/citybuildersim/ForeignDebtCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -74,7 +74,7 @@
 | 576 | · 7. across a reload |
 | 714 | 8. the world's paper on the world's curve (0.7.2) |
 | 798 | 9. the ladder, by the calendar year it is paid in (0.7.32) |
-| 980 | 10. the test player takes the cheaper money by the quote for the sale (CC1-S) |
+| 988 | 10. the test player takes the cheaper money by the quote for the sale (CC1-S) |
 
 ## Constants
 
@@ -96,7 +96,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 62 | 1026 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
+| 62 | 1034 | **type** `public class ForeignDebtCheck` | Borrowing in somebody else's money. |
 | 68 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 73 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 83 | 6 | `static BuildingsTemplate template(Game game, String name)` |  |
@@ -114,17 +114,17 @@
 |---:|---:|---|---|
 | 715 | 82 | `static void theWorldsCurve(Path dir) throws Exception` |  |
 
-### 9. the ladder, by the calendar year it is paid in (0.7.32) (lines 798-979)
+### 9. the ladder, by the calendar year it is paid in (0.7.32) (lines 798-987)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 812 | 167 | `static void theLadder(Path dir) throws Exception` | WHAT THE FINANCES TAB DRAWS THE DEBT FROM. |
+| 812 | 175 | `static void theLadder(Path dir) throws Exception` | WHAT THE FINANCES TAB DRAWS THE DEBT FROM. |
 
-### 10. the test player takes the cheaper money by the quote for the sale (CC1-S) (lines 980-1087)
+### 10. the test player takes the cheaper money by the quote for the sale (CC1-S) (lines 988-1095)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1001 | 71 | `static void theCheaperMoney(Path dir) throws Exception` | The long playtest's build borrows abroad only when the quote for the sale is the cheaper. |
-| 1074 | 4 | `private static double[] books(Game g)` | What quoting must leave alone: cash, the debts at home and abroad, and the two rates. |
-| 1080 | 7 | `private static void quotes(String state, Game g, double small, double big)` | Both sales' quotes, abroad (the 20-year dollar bond, as the build asks it) and at home. |
+| 1009 | 71 | `static void theCheaperMoney(Path dir) throws Exception` | The long playtest's build borrows abroad only when the quote for the sale is the cheaper. |
+| 1082 | 4 | `private static double[] books(Game g)` | What quoting must leave alone: cash, the debts at home and abroad, and the two rates. |
+| 1088 | 7 | `private static void quotes(String state, Game g, double small, double big)` | Both sales' quotes, abroad (the 20-year dollar bond, as the build asks it) and at home. |
 

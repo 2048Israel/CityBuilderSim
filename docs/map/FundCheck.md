@@ -1,4 +1,4 @@
-# FundCheck.java - 1,978 lines · 37 methods · 4 constants · harnesses
+# FundCheck.java - 2,048 lines · 39 methods · 4 constants · harnesses
 
 `ham/citybuildersim/FundCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      at the step, pro rata - since 0.7.102 asked at the desk's bid (A21),
 > ... (40 more lines in the source)
 
-**Uses:** [TreasuryFund](TreasuryFund.md) (125), [Equity](Equity.md) (85), [Game](Game.md) (84), [Bank](Bank.md) (48), [Exchange](Exchange.md) (41), [OrderBook](OrderBook.md) (28), [Founding](Founding.md) (17), [PriceLevel](PriceLevel.md) (16), [Household](Household.md) (13), [ShortSellingCheck](ShortSellingCheck.md) (10), [MoneyAudit](MoneyAudit.md) (7), [GameFiles](GameFiles.md) (5), [LongTermBond](LongTermBond.md) (5), [CityLand](CityLand.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Sectors](Sectors.md) (4), [LandMarket](LandMarket.md) (4), [FundLedger](FundLedger.md) (3), [CorporateBond](CorporateBond.md) (3), [BondMarket](BondMarket.md) (3), [LandManager](LandManager.md) (3), [TreasuryLine](TreasuryLine.md) (3), [CentralBank](CentralBank.md) (2), [JobType](JobType.md) (2), [HouseholdBalance](HouseholdBalance.md) (2), [FundView](FundView.md) (2), [PolicyPreview](PolicyPreview.md) (2), [NationalAccounts](NationalAccounts.md) (2), [WorldEconomy](WorldEconomy.md) (2), [Debt](Debt.md) (2)... and 4 more
+**Uses:** [TreasuryFund](TreasuryFund.md) (125), [Equity](Equity.md) (85), [Game](Game.md) (84), [Bank](Bank.md) (48), [Exchange](Exchange.md) (41), [OrderBook](OrderBook.md) (28), [Household](Household.md) (17), [Founding](Founding.md) (17), [PriceLevel](PriceLevel.md) (16), [ShortSellingCheck](ShortSellingCheck.md) (10), [HouseholdBalance](HouseholdBalance.md) (9), [MoneyAudit](MoneyAudit.md) (7), [GameFiles](GameFiles.md) (5), [LongTermBond](LongTermBond.md) (5), [CityLand](CityLand.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Sectors](Sectors.md) (4), [FundLedger](FundLedger.md) (4), [LandMarket](LandMarket.md) (4), [CorporateBond](CorporateBond.md) (3), [BondMarket](BondMarket.md) (3), [LandManager](LandManager.md) (3), [TreasuryLine](TreasuryLine.md) (3), [CentralBank](CentralBank.md) (2), [JobType](JobType.md) (2), [FundView](FundView.md) (2), [PolicyPreview](PolicyPreview.md) (2), [NationalAccounts](NationalAccounts.md) (2), [WorldEconomy](WorldEconomy.md) (2), [Debt](Debt.md) (2)... and 4 more
 
 **Used by (1):** [FundLedgerCheck](FundLedgerCheck.md)
 
@@ -86,10 +86,10 @@
 | 1399 | 9c. the idle cash (RB1) |
 | 1509 | 9d. the idle cash after last month's toRaise (RB1-R) |
 | 1595 | 9e. a real run at the default dial (RB1-R) |
-| 1714 | 10. the hand |
-| 1785 | 11. the save |
-| 1842 | 12. Insane |
-| 1906 | 13. Insane, never borrowing (0.7.15) |
+| 1784 | 10. the hand |
+| 1855 | 11. the save |
+| 1912 | 12. Insane |
+| 1976 | 13. Insane, never borrowing (0.7.15) |
 
 ## Constants
 
@@ -114,7 +114,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 110 | 1869 | **type** `public class FundCheck` | Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). |
+| 110 | 1939 | **type** `public class FundCheck` | Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). |
 | 116 | 4 | `static void check(String label, boolean ok)` |  |
 | 121 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 131 | 4 | `static void quietly(Runnable r)` |  |
@@ -208,33 +208,35 @@
 |---:|---:|---|---|
 | 1521 | 73 | `static void theIdleCashAfterToRaise()` | THE CASH THE TOP OF THE MONTH PAYS LAST MONTH'S toRaise FROM IS NOT IDLE (RB1-R). |
 
-### 9e. a real run at the default dial (RB1-R) (lines 1595-1713)
+### 9e. a real run at the default dial (RB1-R) (lines 1595-1783)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1619 | 94 | `static void theRealRun()` | A REAL RUN AT THE DEFAULT DIAL: THE CAP SALE AND THE IDLE TRANSFER FIRE, AND NO HOLDING PASSES THE FIXED POINT (RB1-R). |
+| 1609 | 6 | `static double unencumberedShares(HouseholdBalance balance, int company)` | Actual free units: a cell's per-household shares less its tagged subset, times its positive count. |
+| 1616 | 6 | `static boolean sameBits(double[] before, double[] after)` |  |
+| 1635 | 148 | `static void theRealRun()` | A REAL RUN AT THE DEFAULT DIAL: THE CAP SALE AND THE IDLE TRANSFER FIRE, AND NO HOLDING PASSES THE FIXED POINT (RB1-R). |
 
-### 10. the hand (lines 1714-1784)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1716 | 68 | `static void theHand()` |  |
-
-### 11. the save (lines 1785-1841)
+### 10. the hand (lines 1784-1854)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1787 | 54 | `static void theSave()` |  |
+| 1786 | 68 | `static void theHand()` |  |
 
-### 12. Insane (lines 1842-1905)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1844 | 61 | `static void insane()` |  |
-
-### 13. Insane, never borrowing (0.7.15) (lines 1906-1978)
+### 11. the save (lines 1855-1911)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1916 | 62 | `static void insaneOnAdvances()` | Jerus, asked whether play should work before the city borrows: "Play works from day one. |
+| 1857 | 54 | `static void theSave()` |  |
+
+### 12. Insane (lines 1912-1975)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1914 | 61 | `static void insane()` |  |
+
+### 13. Insane, never borrowing (0.7.15) (lines 1976-2048)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1986 | 62 | `static void insaneOnAdvances()` | Jerus, asked whether play should work before the city borrows: "Play works from day one. |
 

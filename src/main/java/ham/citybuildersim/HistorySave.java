@@ -711,11 +711,19 @@ public class HistorySave {
     private List<Double> indexMeals = new ArrayList<>();
     private List<Double> indexLuxury = new ArrayList<>();
     private List<Double> indexServices = new ArrayList<>();
+    private List<Double> indexNewCars = new ArrayList<>();
+    private List<Double> indexPetrol = new ArrayList<>();
+    private List<Double> indexLampOil = new ArrayList<>();
+    private List<Double> indexHomeCoal = new ArrayList<>();
     private List<Double> weightGroceries = new ArrayList<>();
     private List<Double> weightRent = new ArrayList<>();
     private List<Double> weightMeals = new ArrayList<>();
     private List<Double> weightLuxury = new ArrayList<>();
     private List<Double> weightServices = new ArrayList<>();
+    private List<Double> weightNewCars = new ArrayList<>();
+    private List<Double> weightPetrol = new ArrayList<>();
+    private List<Double> weightLampOil = new ArrayList<>();
+    private List<Double> weightHomeCoal = new ArrayList<>();
     private List<Double> basketLinkedAt = new ArrayList<>();
     private List<Double> shelfPrice = new ArrayList<>();
     private List<Double> shelfFloor = new ArrayList<>();
@@ -735,11 +743,17 @@ public class HistorySave {
     /** ...and its weight in the basket in force: "weightGroceries" and so on. */
     public static String weightKey(int component) { return "weight" + capitalised(PriceIndex.COMPONENT_NAMES[component]); }
 
-    private static String capitalised(String s) { return s.isEmpty() ? s : Character.toUpperCase(s.charAt(0)) + s.substring(1); }
+    private static String capitalised(String s) {
+        StringBuilder key = new StringBuilder();
+        for (String word : s.split(" ")) {
+            if (!word.isEmpty()) key.append(Character.toUpperCase(word.charAt(0))).append(word.substring(1));
+        }
+        return key.toString();
+    }
 
     /** The component lists in COMPONENTS order, for the recording and the reform. */
-    private List<List<Double>> indexLists()  { return java.util.List.of(indexGroceries, indexRent, indexMeals, indexLuxury, indexServices); }
-    private List<List<Double>> weightLists() { return java.util.List.of(weightGroceries, weightRent, weightMeals, weightLuxury, weightServices); }
+    private List<List<Double>> indexLists()  { return java.util.List.of(indexGroceries, indexRent, indexMeals, indexLuxury, indexServices, indexNewCars, indexPetrol, indexLampOil, indexHomeCoal); }
+    private List<List<Double>> weightLists() { return java.util.List.of(weightGroceries, weightRent, weightMeals, weightLuxury, weightServices, weightNewCars, weightPetrol, weightLampOil, weightHomeCoal); }
 
     /* ==================================================================
        RECORDING
@@ -1260,11 +1274,19 @@ public class HistorySave {
         indexMeals = copy(loaded.indexMeals);
         indexLuxury = copy(loaded.indexLuxury);
         indexServices = copy(loaded.indexServices);
+        indexNewCars = copy(loaded.indexNewCars);
+        indexPetrol = copy(loaded.indexPetrol);
+        indexLampOil = copy(loaded.indexLampOil);
+        indexHomeCoal = copy(loaded.indexHomeCoal);
         weightGroceries = copy(loaded.weightGroceries);
         weightRent = copy(loaded.weightRent);
         weightMeals = copy(loaded.weightMeals);
         weightLuxury = copy(loaded.weightLuxury);
         weightServices = copy(loaded.weightServices);
+        weightNewCars = copy(loaded.weightNewCars);
+        weightPetrol = copy(loaded.weightPetrol);
+        weightLampOil = copy(loaded.weightLampOil);
+        weightHomeCoal = copy(loaded.weightHomeCoal);
         basketLinkedAt = copy(loaded.basketLinkedAt);
         shelfPrice = copy(loaded.shelfPrice);
         shelfFloor = copy(loaded.shelfFloor);

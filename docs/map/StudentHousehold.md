@@ -1,4 +1,4 @@
-# StudentHousehold.java - 61 lines · 10 methods · 1 constants · model
+# StudentHousehold.java - 64 lines · 11 methods · 1 constants · model
 
 `ham/citybuildersim/StudentHousehold.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -29,7 +29,7 @@
 
 **Uses:** [Household](Household.md) (1), [PayTier](PayTier.md) (1)
 
-**Used by (6):** [EducationCheck](EducationCheck.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md)
+**Used by (9):** [EducationCheck](EducationCheck.md), [FamilyModel](FamilyModel.md), [Game](Game.md), [HouseholdBalance](HouseholdBalance.md), [HouseholdCheck](HouseholdCheck.md), [HousingMarket](HousingMarket.md), [HousingMarketCheck](HousingMarketCheck.md), [Offending](Offending.md), [OutsideCheck](OutsideCheck.md)
 
 ## Constants
 
@@ -37,19 +37,26 @@
 |---:|---|---|---|
 | 32 | `StudentHousehold.UNLIMITED` | `1e15` | A loan that covers anything is the plan's to count on; large, not infinite, so the arithmetic stays finite. |
 
+## Fields (state)
+
+| line | field | says |
+|---:|---|---|
+| 34 | `private java.util.function.DoubleSupplier moneyUnit` | Derived city context, also supplied after a load; no independent saved monetary stock. |
+
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 29 | 33 | **type** `public class StudentHousehold extends Household` | Full-time students, as one ledger. |
-| 34 | 3 | `public StudentHousehold()` |  |
-| 38 | 1 | `public PayTier tier()` |  |
-| 39 | 1 | `public int row()` |  |
-| 40 | 1 | `public boolean isRetired()` |  |
-| 41 | 1 | `public int grownUps()` |  |
-| 42 | 1 | `public int size()` |  |
-| 44 | 1 | `public String label()` |  |
-| 45 | 1 | `public String key()` |  |
-| 53 | 6 | `protected double fundShortfall(double still, double disposablePer)` | The student loan: whatever is still short, from the treasury, at no interest while they study. |
-| 60 | 1 | `protected double planningRoom()` |  |
+| 29 | 36 | **type** `public class StudentHousehold extends Household` | Full-time students, as one ledger. |
+| 35 | 1 | `void setMoneyUnitSource(java.util.function.DoubleSupplier source)` |  |
+| 37 | 3 | `public StudentHousehold()` |  |
+| 41 | 1 | `public PayTier tier()` |  |
+| 42 | 1 | `public int row()` |  |
+| 43 | 1 | `public boolean isRetired()` |  |
+| 44 | 1 | `public int grownUps()` |  |
+| 45 | 1 | `public int size()` |  |
+| 47 | 1 | `public String label()` |  |
+| 48 | 1 | `public String key()` |  |
+| 56 | 6 | `protected double fundShortfall(double still, double disposablePer)` | The student loan: whatever is still short, from the treasury, at no interest while they study. |
+| 63 | 1 | `protected double planningRoom()` |  |
 

@@ -1803,10 +1803,39 @@ public class LandmassCheck {
        6. DEMOLITION
        ===================================================================== */
 
+    /** A demolition's fixed queue: later private orders cannot consume the work its deadline counts. */
+    static City demolitionCity(Fixtures f, String label, boolean homeShore) {
+        City c = portCity(f, label, homeShore);
+        // A fixed queue also needs crews for the terminals' repairs. Let homes and builders establish the workers first;
+        // other private works and branches stay held, and the extra linked ground gives those homes somewhere to stand.
+        if (!homeShore) c.buy(f.homeSalt);
+        for (Sector sector : c.g.getSectors().all()) {
+            if (!sector.key().equals(Sectors.REAL_ESTATE) && !sector.key().equals(Sectors.CONSTRUCTION))
+                c.g.getBusinessInvestment().holdSector(sector.key());
+        }
+        c.g.getBusinessInvestment().holdBranches();
+        BuildingsTemplate terminal = tpl(c, "General Cargo Terminal"), depot = tpl(c, "Construction Depot");
+        double terminalRepairs = 3 * terminal.getConstructionPoints() * terminal.repairsPerYear() / 12;
+        for (int month = 0; month < STALL_MONTHS; month++) {
+            c.g.setCashForTest(Founding.WEALTHY_CASH);
+            check("fixture: a paid depot stands to staff the demolition city's future repair load",
+                    order(c, depot, 1, true, Landmasses.RULE) == Game.BuildResult.SUCCESS);
+            quietly(() -> c.g.simulateMonths(1));
+            if (c.g.getBuildingOutputAtEveryPost() > terminalRepairs) break;
+        }
+        check("fixture: staffed site output covers all three terminals' future repairs with work left for demolition",
+                c.g.getBuildingOutputAtEveryPost() > terminalRepairs);
+        for (Sector sector : c.g.getSectors().all()) c.g.getBusinessInvestment().holdSector(sector.key());
+        check("fixture: every private sector and bank branch is held before the demolition's fixed-queue wait",
+                c.g.getSectors().all().stream().allMatch(s -> c.g.getBusinessInvestment().isHeld(s.key()))
+                        && c.g.getBusinessInvestment().areBranchesHeld());
+        return c;
+    }
+
     static void demolition(Fixtures f) {
         out.println("\n--- 6. demolition: the port that links an island cannot be demolished; an island's port keeps its ground until its demolition is done ---");
         if (!f.ok) { check("fixtures were found", false); return; }
-        City c = portCity(f, "landmass-demolish", true);
+        City c = demolitionCity(f, "landmass-demolish", true);
         Game g = c.g;
         LandManager lm = c.lm;
         Landmasses lms = c.books();
@@ -1847,7 +1876,7 @@ public class LandmassCheck {
         report("the demolition finishes: the ground is released and the island's room returns by exactly one terminal's land; nothing is leaving", done
                 && near(lms.portRoomSqFt(648), room0 + land) && lm.landmassState() != null && lm.landmassState().leaving.isEmpty() && lms.portsOn(648)[general] == 1, down.says(done));
         // A lone terminal on an island no port links: demolished, it keeps the island's unlinked ground until the demolition is done.
-        City u = portCity(f, "landmass-demolish-lone", false);
+        City u = demolitionCity(f, "landmass-demolish-lone", false);
         Landmasses lu = u.books();
         BuildingsTemplate gcU = tpl(u, "General Cargo Terminal");
         report("premise: a lone terminal stands on the island, which it links nothing", orderOn(u, gcU, 1, true, 648) == Game.BuildResult.SUCCESS && !lu.linked(648) && near(lu.unlinkedPortsSqFt(), land), stateOf(u));
@@ -1858,12 +1887,12 @@ public class LandmassCheck {
         Wait downU = untilStood(u, () -> u.g.getBuildingManager().getControl().demolitions().isEmpty());
         boolean doneU = u.g.getBuildingManager().getControl().demolitions().isEmpty();
         report("...when it is done the terminal's ground is released from the island: the unlinked terminals hold none, the built ground the linked view takes off is none, the room is whole again and"
-                        + " the whole island is unbuilt (the investors built on at home meanwhile, so the allocated ground itself is not the terminal's to read)",
+                        + " the whole island is unbuilt",
                 doneU && lu.unlinkedPortsSqFt() == 0 && near(u.lm.getAllocatedSqFt(), u.lm.getLinkedAllocatedSqFt()) && near(lu.portRoomSqFt(648), roomU + land)
                         && near(u.lm.getUnlinkedFreeSqFt(), lu.rows().get(1).dryPlots() * SQ_FT_PER_PLOT),
                 String.format("allocated %,.0f -> %,.0f; ", alloc, u.lm.getAllocatedSqFt()) + downU.says(doneU));
         // A shell demolished likewise.
-        City h = portCity(f, "landmass-demolish-shell", false);
+        City h = demolitionCity(f, "landmass-demolish-shell", false);
         Landmasses lh = h.books();
         BuildingsTemplate gcH = tpl(h, "General Cargo Terminal");
         check("an island terminal ordered and stopped is a shell on the island, holding its ground", orderOn(h, gcH, 1, false, 648) == Game.BuildResult.SUCCESS && h.g.cancelSite(ConstructionControl.keyOf(gcH), true));

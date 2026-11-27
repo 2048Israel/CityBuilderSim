@@ -54,6 +54,15 @@ adds its line here, not in `CLAUDE.md`.
         GapOrderCheck.java         OG1: a planner orders to the gap, not one a month - the builders' target
                                    the work a typical month sends them (a median, their own depots left out,
                                    saved), bounded by CEILING; several depots and six Bottling Plants ordered
+        HousingForms.java          RES3's fixed fourteen forms and thirty-two dwelling/form classes, with
+                                   geometry, parking, build inputs and partitions of the actual project quote
+        HousingChoice.java         bounded cell/class matching: valid incumbents, compatible affordable
+                                   placements before soft preferences, equivalent ties split pro rata
+        HousingMarket.java         one monthly quote and clearing, explicit emergency sharing, class asks
+                                   and actual trades, saved flows, and one-count attainable builder income
+        HousingChoiceCheck.java, HousingMarketCheck.java
+                                   caused choice, rent, budget, construction and native continuation proofs;
+                                   actual historical/present-day catalogue report and integrated profiles
         ForeignChoiceCheck.java    FC2b: a payer hands a site's remaining work to the foreign crews - a business when its extra is under its saving, the city from its card; a half-built site, a shared stack, the money booked once, saved and loaded
         sectors/                   twenty-four sector classes, RefineryFlow (0.7.80: the refinery's units, the
                                    flow through them) and SpreadPlanner (0.7.82: what a processing sector

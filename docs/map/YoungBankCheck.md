@@ -1,4 +1,4 @@
-# YoungBankCheck.java - 423 lines · 14 methods · 9 constants · harnesses
+# YoungBankCheck.java - 428 lines · 14 methods · 9 constants · harnesses
 
 `ham/citybuildersim/YoungBankCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -64,14 +64,14 @@
 >  - (a) a loss of LOSS_UNDER_CUSHION of that cushion;
 > ... (35 more lines in the source)
 
-**Uses:** [Game](Game.md) (11), [BankCheck](BankCheck.md) (11), [Bank](Bank.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (6), [Sector](Sector.md) (3), [JobType](JobType.md) (2), [Sectors](Sectors.md) (1), [BuildingManager](BuildingManager.md) (1), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [TreasuryFund](TreasuryFund.md) (1), [NewUnit](NewUnit.md) (1), [BusinessInvestment](BusinessInvestment.md) (1)
+**Uses:** [Game](Game.md) (11), [BankCheck](BankCheck.md) (11), [Bank](Bank.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (6), [Sector](Sector.md) (3), [JobType](JobType.md) (2), [Equity](Equity.md) (1), [Sectors](Sectors.md) (1), [BuildingManager](BuildingManager.md) (1), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [BusinessDebtManager](BusinessDebtManager.md) (1), [TreasuryFund](TreasuryFund.md) (1), [NewUnit](NewUnit.md) (1), [BusinessInvestment](BusinessInvestment.md) (1)
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 107 | `YoungBankCheck.quiet` | `new PrintStream(OutputStream.nullOutputStream())` |  |
-| 110 | `YoungBankCheck.FOUNDING_MONTHS` | `12` | The months the young town is played, with only its lone sector held, before that sector is lent for: the bank has opened its first branch and carries the town's own lending, so its minimum stands a distance under its ... |
+| 110 | `YoungBankCheck.FOUNDING_MONTHS` | `Equity.RECORD_MONTHS - 2` | The months the young town is played, with only its lone sector held, before that sector is lent for: the bank has opened its first branch and carries the town's own lending, so its minimum stands a distance under its ... |
 | 113 | `YoungBankCheck.LOAN_PER_EQUITY` | `2` | What the lone plant's loan is, in times the bank's equity as the founding ends: above the whole of it, and small enough that the largest loss sized below (LOSS_PAST_EQUITY of equity) is less than the loan. |
 | 116 | `YoungBankCheck.LOSS_UNDER_CUSHION` | `.5` | Side (a)'s loss, in times the cushion the control's close leaves over Bank.CAPITAL_RATIO: under it. |
 | 119 | `YoungBankCheck.LOSS_PAST_EQUITY` | `1.5` | Side (c)'s loss, in times the control's equity at its close: past all of it. |
@@ -94,41 +94,42 @@
 | 194 | `double loan, till` |  |
 | 196 | `double equity0, weighted0, principal0, interest0, ratio0, cushion0` | The write-off month's start. |
 | 197 | `boolean onePlant0` |  |
-| 198 | `long people` |  |
-| 199 | `int failures0` |  |
-| 200 | `boolean resolution0` |  |
-| 201 | `final java.util.Map<String, Double> last` |  |
-| 202 | `final java.util.Map<String, Boolean> wasOnePlant` |  |
-| 204 | `double equity, weighted, ratio, writtenOff, principal` | Its close. |
-| 205 | `boolean resolution, spell, lone` |  |
-| 206 | `int failures` |  |
-| 207 | `String cause` |  |
-| 208 | `double most` |  |
-| 289 | `final String sector` |  |
-| 290 | `final BuildingsTemplate building` |  |
-| 291 | `final int month` |  |
-| 292 | `final double weighed, own` |  |
-| 293 | `final java.util.List<Double> ran` |  |
+| 199 | `boolean onRecord0` | Whether any listing is priced on its record as the write-off month begins (Equity.valuedOnRecord()). |
+| 200 | `long people` |  |
+| 201 | `int failures0` |  |
+| 202 | `boolean resolution0` |  |
+| 203 | `final java.util.Map<String, Double> last` |  |
+| 204 | `final java.util.Map<String, Boolean> wasOnePlant` |  |
+| 206 | `double equity, weighted, ratio, writtenOff, principal` | Its close. |
+| 207 | `boolean resolution, spell, lone` |  |
+| 208 | `int failures` |  |
+| 209 | `String cause` |  |
+| 210 | `double most` |  |
+| 292 | `final String sector` |  |
+| 293 | `final BuildingsTemplate building` |  |
+| 294 | `final int month` |  |
+| 295 | `final double weighed, own` |  |
+| 296 | `final java.util.List<Double> ran` |  |
 
 ## Methods, in file order
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 103 | 321 | **type** `public final class YoungBankCheck` | A young town's bank against the lone plant it lends for, and the first plant that plant is weighed as: the harness of DQ1, "young towns borrow ahead of their people and default", and since OE1 of the first plants they... |
+| 103 | 326 | **type** `public final class YoungBankCheck` | A young town's bank against the lone plant it lends for, and the first plant that plant is weighed as: the harness of DQ1, "young towns borrow ahead of their people and default", and since OE1 of the first plants they... |
 | 133 | 4 | `static void check(String label, boolean ok)` |  |
 | 139 | 4 | `static void quietly(Runnable r)` | `r` with the model's own printing muted. |
 | 144 | 3 | `static boolean near(double a, double b)` |  |
 | 149 | 8 | `static boolean onePlant(Game g, String sector)` | A sector of one plant at most, standing or on site: one borrower, whose failure empties it. |
 | 162 | 23 | `static Game young(String label, boolean holdAll, int months)` | BankCheck 19's young town (0.7.x, GW1) founded: the same buildStack list, every sector free to order but the ones held, and `months` played. |
-| 187 | 39 | **type** `static final class Lone` | One twin of the lone plant's founding: its readings as the write-off month begins and as it closes. |
-| 210 | 6 | `Lone(String label)` _(in YoungBankCheck.Lone)_ |  |
-| 218 | 1 | `double loss()` _(in YoungBankCheck.Lone)_ | The loss the month's default judgment wrote off at the lone sector's name: what the sector's till did not pay of its claim. |
-| 221 | 4 | `String spellLine()` _(in YoungBankCheck.Lone)_ | The spell line, as the first form of this harness printed it. |
-| 233 | 53 | `static Lone lone(String label, java.util.function.ToDoubleFunction<Lone> tillOf)` | A twin: the founding played, the lone sector given its plant and its loan, a month played so the loan stands on the bank's book, and then the plant closed with the sector's till at what `tillOf` reads off the twin's s... |
-| 288 | 18 | **type** `static final class First` | A first plant: the rates it was weighed at when the month began, and the rates it ran at. |
-| 295 | 7 | `First(String sector, BuildingsTemplate building, int month, double weighed, double own)` _(in YoungBankCheck.First)_ |  |
-| 303 | 1 | `double run()` _(in YoungBankCheck.First)_ |  |
-| 304 | 1 | `boolean counted()` _(in YoungBankCheck.First)_ |  |
-| 307 | 1 | `static String k(double v)` |  |
-| 309 | 114 | `public static void main(String[] args) throws Exception` |  |
+| 187 | 41 | **type** `static final class Lone` | One twin of the lone plant's founding: its readings as the write-off month begins and as it closes. |
+| 212 | 6 | `Lone(String label)` _(in YoungBankCheck.Lone)_ |  |
+| 220 | 1 | `double loss()` _(in YoungBankCheck.Lone)_ | The loss the month's default judgment wrote off at the lone sector's name: what the sector's till did not pay of its claim. |
+| 223 | 4 | `String spellLine()` _(in YoungBankCheck.Lone)_ | The spell line, as the first form of this harness printed it. |
+| 235 | 54 | `static Lone lone(String label, java.util.function.ToDoubleFunction<Lone> tillOf)` | A twin: the founding played, the lone sector given its plant and its loan, a month played so the loan stands on the bank's book, and then the plant closed with the sector's till at what `tillOf` reads off the twin's s... |
+| 291 | 18 | **type** `static final class First` | A first plant: the rates it was weighed at when the month began, and the rates it ran at. |
+| 298 | 7 | `First(String sector, BuildingsTemplate building, int month, double weighed, double own)` _(in YoungBankCheck.First)_ |  |
+| 306 | 1 | `double run()` _(in YoungBankCheck.First)_ |  |
+| 307 | 1 | `boolean counted()` _(in YoungBankCheck.First)_ |  |
+| 310 | 1 | `static String k(double v)` |  |
+| 312 | 116 | `public static void main(String[] args) throws Exception` |  |
 

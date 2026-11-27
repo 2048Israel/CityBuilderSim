@@ -62,36 +62,41 @@ public class PriceIndex {
 
        Groceries and rent until 0.7.43: two prices, and neither of them read
        anybody's money, while the two that did - a meal out and a piece over
-       a luxury counter - were not in the index at all. Five components now,
+       a luxury counter - were not in the index at all. Nine components now,
        each priced every month against its price at the link:
 
            index = link x sum over k of weight_k x price_k / base_k
 
        the shelf price, the average rent actually paid, a meal
        (Restaurants.getSellPrice()), a luxury piece (LuxuryRetail
-       .getSellPrice()), and the services a household is billed for - a fee
+       .getSellPrice()), the services a household is billed for - a fee
        index of its own over the clinic's fee for a general visit, the
        tuition for a seat, the fare for a ride and the bank's account fee,
        each weighted by its share of what the households paid in fees. A
-       component with no price this month holds its last one.
+       component with no price this month holds its last one. New cars use the
+       actual seller bill per car; petrol uses tax-inclusive pump/queue prices
+       compared at the preceding observed channel litres. Lamp oil and home coal
+       use their separate actual tax-inclusive bills per litre and tonne.
+       These are saved flows; no mixed-unit home-fuel average is used.
 
-       THE WEIGHTS are the trailing twelve months of what the households
-       spent on each (groceries and rent off the sectors' statements, meals
-       and luxury off the households' purchases, the fee lines off their
-       books), and luxury's is capped at LUXURY_WEIGHT_CAP with the rest
-       spread pro rata over the others: honest weights made one research
-       city's index 63% a watch, which is an import at the exchange rate
-       times a margin, and not a cost of living.
+       THE WEIGHTS are the trailing twelve months of actual household
+       expenditure, including the full seller value of financed new cars and
+       petrol once, separately from groceries. No luxury share is truncated.
+       Source: U.S. Bureau of Labor Statistics, CPI calculation, expenditure
+       reference weights: https://www.bls.gov/opub/hom/cpi/calculation.htm
+       BLS public-domain material, credited here (https://www.bls.gov/bls/linksite.htm).
+       This expenditure principle supplies no numerical target or link cadence:
+       the city's existing REBASE_MONTHS and fixed quantities remain in force.
        ====================================================================== */
 
     /** The components, in the order every array here keeps them. */
-    public static final int GROCERIES = 0, RENT = 1, MEALS = 2, LUXURY = 3, SERVICES = 4;
+    public static final int GROCERIES = 0, RENT = 1, MEALS = 2, LUXURY = 3, SERVICES = 4, NEW_CARS = 5, PETROL = 6, LAMP_OIL = 7, HOME_COAL = 8;
 
     /** How many there are. */
-    public static final int COMPONENTS = 5;
+    public static final int COMPONENTS = 9;
 
     /** Their names, for the year book and the screens. */
-    public static final String[] COMPONENT_NAMES = { "groceries", "rent", "meals", "luxury", "services" };
+    public static final String[] COMPONENT_NAMES = { "groceries", "rent", "meals", "luxury", "services", "new cars", "petrol", "lamp oil", "home coal" };
 
     /** The fee lines inside SERVICES, in the order the fee arrays here keep them. */
     public static final int HEALTH_FEE = 0, TUITION = 1, FARE = 2, ACCOUNT_FEE = 3;
@@ -105,7 +110,8 @@ public class PriceIndex {
     /** Months between one basket and the next: ten years. */
     public static final int REBASE_MONTHS = 120;
 
-    /** The most of the basket luxury may be, the excess spread pro rata over the rest: 15%. */
+    /** Historical display API only; no expenditure cap is applied. Retained for existing screen callers. */
+    @Deprecated
     public static final double LUXURY_WEIGHT_CAP = .15;
 
     private int shoppingMonths;
@@ -119,7 +125,7 @@ public class PriceIndex {
     private final double[] base = new double[COMPONENTS];
     private final double[] weight = new double[COMPONENTS];
     private final double[] last = new double[COMPONENTS];
-    private final double[] relative = { 1, 1, 1, 1, 1 };
+    private final double[] relative = { 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
     /** The level the basket was linked at - 1 for a city's first - and the month it was. */
     private double link = 1;
@@ -134,7 +140,7 @@ public class PriceIndex {
      * across every link (getComponentLevel()). Bookkeeping for City History's
      * lines - nothing in the index reads it.
      */
-    private final double[] componentLink = { 1, 1, 1, 1, 1 };
+    private final double[] componentLink = { 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
     /**
      * The most of the basket rent may be in the level the currency's parity is
@@ -210,8 +216,8 @@ public class PriceIndex {
      */
     public void takeMonth(double shelfPrice, double rentPrice,
                           double foodSpend, double rentSpend, int month) {
-        takeMonth(new double[] { shelfPrice, rentPrice, 0, 0, 0 },
-                new double[] { foodSpend, rentSpend, 0, 0, 0 },
+        takeMonth(new double[] { shelfPrice, rentPrice, 0, 0, 0, 0, 0, 0, 0 },
+                new double[] { foodSpend, rentSpend, 0, 0, 0, 0, 0, 0, 0 },
                 new double[FEE_LINES], new double[FEE_LINES], month);
     }
 
@@ -348,7 +354,7 @@ public class PriceIndex {
 
     /**
      * The weights of the basket in force with rent held to RENT_CAP (XR1): rent
-     * at the cap and every other weight scaled so the five add to what they did
+     * at the cap and every other weight scaled so the components add to what they did
      * - when rent weighs more than the cap and the others weigh something;
      * otherwise the weights as they stand.
      */
@@ -388,7 +394,7 @@ public class PriceIndex {
 
     /**
      * Strikes a new basket: the weights from the trailing year's spending
-     * (this month's alone with no year yet), luxury's capped, each component
+     * (this month's alone with no year yet), each component
      * based at its price now - and the link, the level the basket opens at.
      */
     private void relink(int month, double level) {
@@ -445,12 +451,8 @@ public class PriceIndex {
             if (k != SERVICES && !(last[k] > MIN_BASE)) spend[k] = 0;
             spend[k] = Math.max(0, spend[k]);
         }
-        double others = 0;
-        for (int k = 0; k < COMPONENTS; k++) if (k != LUXURY) others += spend[k];
-        if (spend[LUXURY] > LUXURY_WEIGHT_CAP / (1 - LUXURY_WEIGHT_CAP) * others) {
-            spend[LUXURY] = LUXURY_WEIGHT_CAP / (1 - LUXURY_WEIGHT_CAP) * others;
-        }
-        double total = others + spend[LUXURY];
+        double total = 0;
+        for (double amount : spend) total += amount;
         for (int k = 0; k < COMPONENTS; k++) {
             weight[k] = total > MIN_BASE ? spend[k] / total : (k == GROCERIES ? 1 : 0);
             base[k] = k == SERVICES ? 1 : last[k];
@@ -499,6 +501,9 @@ public class PriceIndex {
     /** One component's price at the link (the services' fee index: 1). */
     public double getBase(int component) { return base[component]; }
 
+    /** The price used in the current relative, for comparisons at a common physical basket. Pure. */
+    public double getComponentPrice(int component) { return component == SERVICES ? feeLevel() : last[component]; }
+
     /** The level the basket in force was linked at: 1 for a city's first basket. */
     public double getLink() { return link; }
 
@@ -523,7 +528,13 @@ public class PriceIndex {
     /** One fee line's share of the services price (FEE_LINES order). */
     public double getFeeShare(int line) { return feeShare[line]; }
 
-    /** True on a save from before 0.7.43 until its first month links the five-component basket. */
+    /** One fee's price at the link, for comparisons with the same quantities across baskets. Pure. */
+    public double getFeeBase(int line) { return feeBase[line]; }
+
+    /** One fee's latest price used by the index. Pure. */
+    public double getFeePrice(int line) { return feeLast[line]; }
+
+    /** True on a save from before 0.7.43 until its first month links the current basket. */
     public boolean isLinkPending() { return linkPending; }
 
     /**
@@ -534,8 +545,8 @@ public class PriceIndex {
      */
     public double getComponentLevel(int component) { return componentLink[component] * relative[component]; }
 
-    /** True when the basket in force had luxury's weight held at LUXURY_WEIGHT_CAP - what the households spent on it was more (0.7.45). Pure. */
-    public boolean isLuxuryCapped() { return weight[LUXURY] > 0 && weight[LUXURY] >= LUXURY_WEIGHT_CAP * (1 - 1e-9); }
+    /** Historical display API: actual reference expenditures are never capped. Pure. */
+    public boolean isLuxuryCapped() { return false; }
 
     /**
      * Inflation over the last twelve months.
@@ -579,10 +590,10 @@ public class PriceIndex {
     public static final double CHAIN_MARKER = 743;
 
     /** The chained basket's slots behind the marker as 0.7.43 wrote them: the link, its month, the pending flag, the bases, weights and last prices, the fee lines', and the trailing year. */
-    private static final int CHAIN_TAIL_0743 = 4 + COMPONENTS * 3 + FEE_LINES * 3 + 1 + WEIGHT_MONTHS * (COMPONENTS + FEE_LINES);
+    static final int CHAIN_TAIL_0743 = 4 + COMPONENTS * 3 + FEE_LINES * 3 + 1 + WEIGHT_MONTHS * (COMPONENTS + FEE_LINES);
 
     public double[] toSaveArray() {
-        int tail = CHAIN_TAIL_0743 + COMPONENTS + 1;
+        int tail = CHAIN_TAIL_0743 + COMPONENTS + 1 + COMPONENTS;
         double[] out = new double[SLOTS_BEFORE_CHAIN + tail];
         out[0] = based ? 1 : 0;
         out[1] = baseFood;
@@ -626,6 +637,9 @@ public class PriceIndex {
         for (int k = 0; k < COMPONENTS; k++) out[i++] = componentLink[k];
         // ...and the capped level's link (XR1), after those.
         out[i++] = parityLink;
+        // Ratios stay fixed through a reform; redividing the scaled prices can
+        // change their last bit and therefore the parity the next month reads.
+        for (int k = 0; k < COMPONENTS; k++) out[i++] = relative[k];
         return out;
     }
 
@@ -649,7 +663,7 @@ public class PriceIndex {
         /*
          * THE CHAINED BASKET (0.7.43), or - on an older save, which has no
          * marker - the two-component basket it carried, linked on the first
-         * month it plays (linkPending): the five components priced from then
+         * month it plays (linkPending): the components priced from then
          * on, the level unbroken.
          */
         restoreChain(saved);
@@ -679,7 +693,8 @@ public class PriceIndex {
     /** The chained basket behind the marker, or a link pending on an older save; the array is read whole or not at all. */
     private void restoreChain(double[] saved) {
         clearChain();
-        boolean withParity = saved.length == SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 + COMPONENTS + 1;
+        boolean withRelatives = saved.length == SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 + COMPONENTS + 1 + COMPONENTS;
+        boolean withParity = withRelatives || saved.length == SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 + COMPONENTS + 1;
         boolean withLevels = withParity || saved.length == SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 + COMPONENTS;
         if ((saved.length != SLOTS_BEFORE_CHAIN + CHAIN_TAIL_0743 && !withLevels)
                 || saved[SLOTS_BEFORE_CHAIN] != CHAIN_MARKER) {
@@ -707,11 +722,11 @@ public class PriceIndex {
         // level runs on from the level of the link (the rent cap binds from then).
         double capped = withParity ? saved[i++] : link;
         parityLink = capped > 0 && Double.isFinite(capped) ? capped : link;
-        // The relatives are this month's and are struck by the next; on the
-        // basket in force they read as last struck.
+        // Carry the held ratios exactly, including through a reform.
+        // Arrays without them retain the existing reconstruction.
         for (int k = 0; k < COMPONENTS; k++) {
             double price = k == SERVICES ? feeLevel() : last[k];
-            relative[k] = base[k] > MIN_BASE ? price / base[k] : 1;
+            relative[k] = withRelatives ? saved[i++] : base[k] > MIN_BASE ? price / base[k] : 1;
         }
     }
 
@@ -755,7 +770,7 @@ public class PriceIndex {
      * a hundredfold step in the city's inflation rate on the month of the
      * reform, which is the one number a currency reform must never touch.
      *
-     * Every base and last price in money moves (0.7.43): the four components'
+     * Every base and last price in money moves (0.7.43): the monetary components'
      * and the four fee lines'. The services' base is its fee index, 1 - a
      * ratio, which stays; the spending behind the weights is money and moves
      * with them, which leaves every weight it strikes where it was.

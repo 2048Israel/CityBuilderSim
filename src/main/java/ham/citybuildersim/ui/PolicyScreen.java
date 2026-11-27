@@ -3940,8 +3940,11 @@ final class PolicyScreen {
 
     /* ----------------------------- THE BASKET (0.7.45) ----------------------------- */
 
-    /** The basket's five parts' colours, groceries to services: the money ramp, then the rest - areas, not verdicts. */
-    static final String[] BASKET_RAMP = {Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST, Palette.TEXT_SPENT};
+    /** The basket's colours in PriceIndex order: groceries through services, then new cars, petrol, lamp oil and home coal. */
+    static final String[] BASKET_RAMP = {
+        Palette.MONEY_DARK, Palette.MONEY, Palette.MONEY_LIGHT, Palette.RAMP_REST, Palette.TEXT_SPENT,
+        Palette.BUSINESS_DARK, Palette.BUSINESS_LIGHT, Palette.BUILDING_DARK, Palette.BUILDING_LIGHT
+    };
 
     /** One part of the basket: its name, its weight, its colour and what its key says. */
     record BasketPart(String name, double weight, String colour, String words) { }
@@ -3982,7 +3985,7 @@ final class PolicyScreen {
     String basketWords() {
         PriceIndex px = ui.game.getPriceIndex();
         if (!px.isBased()) return "no basket yet: it is fixed after " + PriceIndex.SETTLING_MONTHS + " months of real shopping";
-        if (px.isLinkPending()) return "basket linked next month: the five-part basket opens where this save's left off";
+        if (px.isLinkPending()) return "basket linked next month: the current basket opens where this save's left off";
         return String.format("a basket of m%,d", px.getLinkedMonth());
     }
 

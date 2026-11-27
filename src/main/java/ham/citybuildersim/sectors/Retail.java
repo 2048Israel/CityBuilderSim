@@ -312,6 +312,22 @@ public final class Retail extends Sector {
     /** The price a basket was charged at the last sale: the shelf price before the bottom of the month repriced it - today's shelf price on a save from before 0.7.45. */
     public double getChargedPrice() { return chargedPrice > 0 ? chargedPrice : storeSellPrice; }
 
+    /** Current completed grocery acquisition bill only, already saved in the pending sales ledger. Pure. */
+    public double getCurrentGrocerySales() {
+        // GROCERIES is sold only to HOUSEHOLDS here; petrol and home fuels have separate Good lines.
+        var sold = pending().sold.get(Good.GROCERIES);
+        return sold == null ? 0 : sold.atHome;
+    }
+
+    /** Current actual household lamp-oil/coal bill, including sales tax, without petrol's duty. Pure. */
+    public double getCurrentHomeFuelSales(Good good) {
+        if (good != Good.JET && good != Good.THERMAL_COAL) throw new IllegalArgumentException("Not a household home fuel");
+        // Retail/its recipes make only GROCERIES. These goods are sold only by
+        // sellHomeFuel's HOUSEHOLDS trades, never the generic industrial maker pass.
+        var sold = pending().sold.get(good);
+        return sold == null ? 0 : sold.atHome;
+    }
+
     /**
      * The baskets the shops expect to sell next month, as the last sale reads
      * it: what the households asked for at the shelf price, up to what the

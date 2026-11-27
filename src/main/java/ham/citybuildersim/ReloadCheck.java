@@ -149,6 +149,9 @@ public class ReloadCheck {
     /** The share of Real Estate's count of the places it owns that the harness takes off by hand on the caused point (RN2): a share of its debt then a closed home's, and the month on's count, the portfolio's, moves the count back up by it. */
     static final double CAUSED_CLOSED = .05;
 
+    /** How many times the harness puts Real Estate's count up before it closes every home (RES3-G): above 2^54, so a share of at most one is left under half the last bit below 1 and closing the places then makes it exactly 1. */
+    static final double CLOSED_DILUTION = 1e17;
+
     /** The name of the caused point's city, which the by-hand fixtures look it up by (FS17). */
     static final String CAUSED_CITY = "Danzik, caused";
 
@@ -417,9 +420,54 @@ public class ReloadCheck {
             // The played treasury may be insolvent; its advisor then refuses even to borrow. This fixture needs a placed order,
             // so give it the model's wealthy founding cash before the normal ground purchase and order, as the tally is caused above.
             g.setCashForTest(Math.max(g.getCash(), Founding.WEALTHY_CASH));
-            if (!LongPlaytest.build(g, "House", CAUSED_ORDER)) throw new IllegalStateException("the caused House order was refused");
+            causeGround(g);
+            Map<String, Integer> refusedBefore = new LinkedHashMap<>(LongPlaytest.refusals);
+            if (!LongPlaytest.build(g, "House", CAUSED_ORDER)) throw new IllegalStateException(refusedBecause(g, CAUSED_ORDER, refusedBefore));
             g.simulateMonths(1);
         } finally { LongPlaytest.out = report; System.setOut(real); }
+    }
+
+    /**
+     * RES3-G2 (2026-11-26): THE CAUSED ORDER'S GROUND. The cash put up above is the founding's, in founding money, and the order buys the
+     * ground it lacks out of it, as the playtest's build does. On the gate box's run of RES3's tip (e63aa2068) the month-1202 city had 1,558
+     * sq ft free against the order's 40,000 and a treasury at that floor, 64,709 against a quote of 20,856, and the order was refused "House: no
+     * land", where the PC's run of the same commit had 176,736 sq ft free and 9.51 million: the two machines' paths part over 1,200 months, and
+     * a city that has used up its ground and cannot pay for more refuses the order, as a real one would. So the treasury is put up by the
+     * price of the offer that covers what the order lacks, and the order meets ground it can buy as it meets the cash for its quote.
+     */
+    private static void causeGround(Game g) {
+        BuildingsTemplate t = LongPlaytest.template(g, "House");
+        if (t == null) return;
+        double shortfall = t.getLandSqFt() * CAUSED_ORDER - g.getLandManager().getAvailableSqFt();
+        if (!(shortfall > 0)) return;
+        LandParcel covers = g.bestOffer(Game.LandNeed.shortfall(shortfall));
+        if (covers == null) {
+            g.getLandManager().updateMarket(g.getPopulationManager().getPopulation());
+            covers = g.bestOffer(Game.LandNeed.shortfall(shortfall));
+        }
+        if (covers != null) g.setCashForTest(g.getCash() + covers.localPrice(g.getForeignAccounts().getRate()));
+    }
+
+    /**
+     * RES3-G: what the caused order met, in the exception's words, so that a refusal names its cause (the gate box refused it at month 1202, in a
+     * city the PC's run of the same commit does not reach, and the exception said only "refused"): the build result's pre-checks (Game.blocker(), null
+     * for none), the ground free for the House against the order's and the city's free ground, the cash against the quote, and the words the playtest
+     * gave the refusal (LongPlaytest.refusal(): "House: no land", "House: no money") since {@code before}.
+     */
+    private static String refusedBecause(Game g, long quantity, Map<String, Integer> before) {
+        BuildingsTemplate t = LongPlaytest.template(g, "House");
+        if (t == null) return "the caused House order was refused: the city has no House template";
+        LandManager lm = g.getLandManager();
+        Map<String, Integer> words = new LinkedHashMap<>();
+        LongPlaytest.refusals.forEach((why, n) -> { if (n > before.getOrDefault(why, 0)) words.put(why, n - before.getOrDefault(why, 0)); });
+        double lacks = t.getLandSqFt() * quantity - lm.getAvailableSqFt();
+        LandParcel offer = lacks > 0 ? g.bestOffer(Game.LandNeed.shortfall(lacks)) : null;
+        String offered = !(lacks > 0) ? "none needed" : offer == null ? "none on the market"
+                : offer.localPrice(g.getForeignAccounts().getRate()) + (LandMarket.hasLinkedDry(offer) ? "" : ", none of it dry ground linked to the city");
+        return "the caused House order was refused: blocker " + g.blocker(t, quantity, Landmasses.CHOSEN) + ", ground free for it "
+                + lm.freeFor(lm.groundKeyOf(t), Game.groundUse(t)) + " of " + t.getLandSqFt() * quantity + " sq ft wanted (" + lm.getAvailableSqFt()
+                + " free in the city), cash " + g.getCash() + " against a quote of " + g.quoteBuildOn(t, quantity, Landmasses.CHOSEN).total
+                + ", the offer that covers what it lacks " + offered + ", the playtest's words " + words;
     }
 
     /* ------------------------------ one checkpoint ------------------------------ */
@@ -866,6 +914,19 @@ public class ReloadCheck {
                 "landlords counting no place while they own some, their share whole", "landlords whose count moved in the month on, their share with it");
     }
 
+    /**
+     * RES3-G: EVERY HOME CLOSED, THE SHARE WHOLE TO THE LAST BIT. RealEstate.setOwnedHousingCapacity(0) takes the share to s + (1 - s) x (all of the
+     * count / all of it), which is 1 only where fl(1 - s) is exact or rounds up. At this point s is the caused point's closed share as the month on
+     * diluted it, 0.046694061505832454 at RES3's tip, and the sum came to 0.9999999999999999: every home closed and the count none, but "their
+     * share whole" read as == 1 was 0 (3k red twice: the live city's line and this point's). ReloadCheck is green on main (0.9.215), where the same
+     * sum must have rounded up. The count put up first by CLOSED_DILUTION (the call the month makes: capacity up dilutes the share by places) leaves a share under half
+     * the last bit below 1, and the count of none then takes it to 1 exactly, as it does from a share of none.
+     */
+    static void closeEveryHome(RealEstate landlord) {
+        landlord.setOwnedHousingCapacity(landlord.getOwnedHousingCapacity() * CLOSED_DILUTION);
+        landlord.setOwnedHousingCapacity(0);
+    }
+
     /** The caused point (FS17): the city after its last checkpoint, with the causes set by hand, or null. */
     static Point causedPoint(List<Point> points) { return pointOf(points, CAUSED_CITY); }
 
@@ -883,7 +944,7 @@ public class ReloadCheck {
         boolean ok = caused != null;
         StringBuilder detail = new StringBuilder();
         for (String key : keys) {
-            int n = ok ? which.apply(caused).saw.getOrDefault(key, 0) : 0;
+            int n = caused != null ? which.apply(caused).saw.getOrDefault(key, 0) : 0;   // RES3-G: each figure as it stands, not a 0 for every one after the first that failed
             ok &= n > 0;
             detail.append(detail.length() == 0 ? "" : ", ").append(n).append(' ').append(key);
         }
@@ -1043,7 +1104,7 @@ public class ReloadCheck {
         System.out.printf("  autosaved at month %d, loaded from the autosave and compared (%.0f s)%n", autosaved.month, (System.nanoTime() - a0) / 1e9);
         // REV-FB16: ...and last, Real Estate counting no place (every home closed, the share whole) while it owns the portfolio's places, reloaded.
         long z0 = System.nanoTime();
-        g.getSectors().realEstate().setOwnedHousingCapacity(0);
+        closeEveryHome(g.getSectors().realEstate());
         points.add(reload(files, g, CLOSED_CITY));
         System.out.printf("  Real Estate's count set to none, saved, reloaded and compared at month %d (%.0f s)%n", points.get(points.size() - 1).month, (System.nanoTime() - z0) / 1e9);
         Point earth = null;

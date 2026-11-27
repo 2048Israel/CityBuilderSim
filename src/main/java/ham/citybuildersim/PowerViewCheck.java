@@ -177,16 +177,21 @@ public final class PowerViewCheck {
         c.u.setFuelPrice(null); u.setFuelPrice(null);
         c.g.getBuildingManager().getTemplateByName("House").setElectricityConsumption(
                 (int) loaded.getBuildingManager().getTemplateByName("House").getElectricityConsumption());
+        // RES3 bills the building-side residential draw. Align that future cached
+        // sector input too, after replacing this fixture's unsaved template override.
+        c.g.getEconomyManager().setElectricityConsumption();
         c.u.setWattsConsumption(u.getConsumption());
         boolean future = c.u.getConsumption() == u.getConsumption()
                 && c.g.getBuildingManager().getTemplates().stream().allMatch(t ->
                         c.g.getBuildingManager().getQuantity(t.getId()) == loaded.getBuildingManager().getQuantity(t.getId()))
+                && c.g.getSectors().all().stream().allMatch(s->s.electricity==loaded.getSectors().byKey(s.key()).electricity)
                 && month.equals(JSON.toJson(c.u.getLatestMonth())) && rows.equals(JSON.toJson(c.u.getLatestRows()));
         PowerPriceCheck.Step live = PowerPriceCheck.run(c);
         PowerPriceCheck.Step back = PowerPriceCheck.run(new PowerPriceCheck.City("pending-back", loaded, false));
         boolean next = JSON.toJson(c.u.getStruckBook()).equals(JSON.toJson(u.getStruckBook()));
         boolean nativeBills = live.bills.equals(back.bills) && near(live.charges, live.bills.values().stream().mapToDouble(Double::doubleValue).sum())
                 && near(back.charges, back.bills.values().stream().mapToDouble(Double::doubleValue).sum());
+        if(!nativeBills)System.out.println("  native bill mismatch: live="+live.bills+", loaded="+back.bills+", charges="+live.charges+"/"+back.charges);
         boolean nativeFuel = near(live.localUnits + live.importedUnits, live.book.fuel.getOrDefault(Good.THERMAL_COAL.name(), 0.0))
                 && near(back.localUnits + back.importedUnits, back.book.fuel.getOrDefault(Good.THERMAL_COAL.name(), 0.0))
                 && near(live.fuelLocal + live.fuelImported, live.localCost + live.importedCost)

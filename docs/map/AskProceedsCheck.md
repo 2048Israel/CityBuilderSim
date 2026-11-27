@@ -33,6 +33,8 @@
 
 **Uses:** [AutoBuilder](AutoBuilder.md) (80), [Game](Game.md) (25), [BuildAdvice](BuildAdvice.md) (22), [EssentialWorksCheck](EssentialWorksCheck.md) (9), [MoneyAudit](MoneyAudit.md) (7), [AuctionCheck](AuctionCheck.md) (7), [Auction](Auction.md) (6), [DebtQuote](DebtQuote.md) (4), [CityNeeds](CityNeeds.md) (3), [WorksFinanceCheck](WorksFinanceCheck.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [TimeSkipReport](TimeSkipReport.md) (1), [TempDirs](TempDirs.md) (1)
 
+**Used by (1):** [AuctionCheck](AuctionCheck.md)
+
 ## Constants
 
 | line | constant | value | says |

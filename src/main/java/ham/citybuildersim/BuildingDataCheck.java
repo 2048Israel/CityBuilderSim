@@ -840,6 +840,7 @@ public class BuildingDataCheck {
         years.put(ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH, 2025);   // FE2
         years.put(ham.citybuildersim.sectors.HeavyIndustry.HYDROGEN_WORKS, 2028);   // FE4, the Hydrogen Steel Works: a projection
         years.put(Substations.ID, 1900);   // PW5: the district grid is available at founding.
+        for (HousingForms.Form form : HousingForms.ALL) years.put(form.id(),form.since());
         years.put(9, 1900);     // PW2: the Coal Power Plant, a kind before the start (a 325 MW unit first ran in 1960, Eddystone)
         years.put(167, 1900);   // PW2: the Oil-Fired Plant
         years.put(168, 1910);   // PW2: the Diesel Station
@@ -847,7 +848,7 @@ public class BuildingDataCheck {
         years.put(170, 1970);   // PW2: the Biomass Plant, with the Wood Pellet Mill
         years.put(171, 1982);   // PW2: the Solar Farm (Lugo, 1 MW)
         years.put(172, 1900);   // PW9: a small reciprocating steam station (Peabody's 850 kW, 1892)
-        assertTrue("the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
+        assertTrue("RES3's fourteen forms and the seven rows of batch I4 are dated, research-design.md's years - the Pelletising Plant 1955 (E4, Silver Bay), the"
                         + " Oxygen Steel Shop 1900 since R2 (its Bessemer and open-hearth recipes are its 1900 ways, E1 dates its oxygen-converter recipe"
                         + " and not the building; it was 1952, Linz), the Large Mini-Mill 1969 (E13) and the other four 1900, the start year,"
                         + " as standing before it - and batch I5's three: the Large Open-Pit Mine 1900, the two magnetite works 1955 (E4,"

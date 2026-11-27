@@ -819,9 +819,11 @@ public class EquipmentCheck {
         check("...it is nothing at the price of coal where the two cost the same, more above it and less below",
                 Math.abs(EquipmentFit.steamGain(bakery, coalEven, power)) <= 1e-9 && EquipmentFit.steamGain(bakery, coalEven * 1.01, power) > 0
                         && EquipmentFit.steamGain(bakery, coalEven * 0.99, power) < 0);
-        BuildingsTemplate house = bm.getTemplateByName("House");
-        check("...a building no utility bills (a House) burns no coal and draws no billed power: it adds nothing at any price",
-                EquipmentFit.steamCoalTonnes(house) == 0 && EquipmentFit.steamGain(house, 5, 5) == 0);
+        BuildingsTemplate unbilled = bm.getTemplateByName("Gravel Road");
+        check("fixture: the city's Gravel Road draws power but has no utility invoice",
+                unbilled.getElectricityConsumption() > 0 && !BuildingsTemplate.isBilledForUtilities(unbilled));
+        check("...an unbilled building burns no steam coal and draws no billed power: it adds nothing at any price",
+                EquipmentFit.steamCoalTonnes(unbilled) == 0 && EquipmentFit.steamGain(unbilled, 5, 5) == 0);
 
         // Step 1, the carts: tonnes at the teams' price less the trucks'.
         double room = 100;

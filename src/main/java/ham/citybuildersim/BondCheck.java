@@ -744,21 +744,32 @@ public class BondCheck {
 
     /* ============================ 5c. CAN'T PAY MEANS DEFAULT ============================ */
 
+    /**
+     * Whether a sector's assets stand in plant (land and buildings), which no waterfall sells: the section's three sectors are each
+     * short past what the waterfall raises, so each must have something under its assets to stay above nothing. Since RES3 the
+     * landlord pays its homes' utilities and holds no bond, so the heaviest holder was Manufacturing - a till of $13.8k and $8.7k
+     * abroad, no plant - and the short took its whole assets (-$636): the backstop wrote it off whole, forgave its overdraft and
+     * lent it no interim loan, where the section asserts the slice, a default and the lender lending after the write-down.
+     */
+    static boolean standsInPlant(EconomyManager em, String sector) {
+        return em.sector(sector).getBalanceSheet().getNonCurrentAssets() > 0;
+    }
+
     /** The company holding the most of the other sectors' bonds, or null if none holds any (5c's Y, and what it is handed). */
-    static String heaviestHolder(BusinessDebtManager credit, BondMarket bm) {
+    static String heaviestHolder(BusinessDebtManager credit, BondMarket bm, EconomyManager em) {
         String y = null;
         for (String s : Sectors.KEYS) {
-            if (s.equals(ISSUER) || !(credit.getAssets(s) > 0) || !(bm.faceHeldBy(s) > 0)) continue;
+            if (s.equals(ISSUER) || !(credit.getAssets(s) > 0) || !(bm.faceHeldBy(s) > 0) || !standsInPlant(em, s)) continue;
             if (y == null || bm.faceHeldBy(s) > bm.faceHeldBy(y)) y = s;
         }
         return y;
     }
 
     /** The largest sector, by its assets, that owes under the shortfall desk's ceiling and is not y, the issuer or barred (5c's W). */
-    static String widestUnderTheCeiling(BusinessDebtManager credit, String y) {
+    static String widestUnderTheCeiling(BusinessDebtManager credit, String y, EconomyManager em) {
         String w = null;
         for (String s : Sectors.KEYS) {
-            if (s.equals(y) || s.equals(ISSUER) || !(credit.getAssets(s) > 0) || credit.isBorrowingBlocked(s)) continue;
+            if (s.equals(y) || s.equals(ISSUER) || !(credit.getAssets(s) > 0) || credit.isBorrowingBlocked(s) || !standsInPlant(em, s)) continue;
             if (credit.getPrincipal(s) < credit.getAssets(s) * BusinessDebtManager.MAX_LOAN_TO_ASSETS
                     && (w == null || credit.getAssets(s) > credit.getAssets(w))) w = s;
         }
@@ -794,15 +805,15 @@ public class BondCheck {
          * and the section's own months then settle no escalation in its till. (Waiting after the claims below, instead, measured: Retail
          * no longer held the bonds it was to sell when the month came, and sold $0.)
          */
-        String y0 = heaviestHolder(credit, bm);
-        String w0 = widestUnderTheCeiling(credit, y0 == null ? Sectors.RETAIL : y0);
+        String y0 = heaviestHolder(credit, bm, em);
+        String w0 = widestUnderTheCeiling(credit, y0 == null ? Sectors.RETAIL : y0, em);
         if (w0 != null) {
             g.getBusinessInvestment().holdSector(w0);
             for (int wait = 0; wait < 60 && g.getBuildingManager().getUnderConstructionBySector(w0) > 0; wait++) play(g);
         }
         // The company holding the most of the other sectors' bonds (Retail if none does), handed half the
         // world's holding between months - a claim, no money moved.
-        String y = heaviestHolder(credit, bm);
+        String y = heaviestHolder(credit, bm, em);
         {
             if (y == null) y = Sectors.RETAIL;
             for (CorporateBond b : bm.getBonds()) {
@@ -837,7 +848,7 @@ public class BondCheck {
         credit.issueLoan(Y, Math.max(0, 1.6 * credit.getAssets(Y) - credit.getPrincipal(Y)), g.getMonth());
         // ...and a sector over the shortfall desk's ceiling and under the
         // line: 1.2 times what it owns, the same way.
-        final String W = widestUnderTheCeiling(credit, Y);
+        final String W = widestUnderTheCeiling(credit, Y, em);
         // FS14: the sector is over the ceiling by the claim taken on here, not by what the months did to it: asserted once taken on.
         if (W != null) {
             g.getBusinessInvestment().holdSector(W);
@@ -872,9 +883,12 @@ public class BondCheck {
         // money last month, a reading of the played months. Now it is the least levered of those the desk may lend to, and its
         // till is set short by a hundredth of what it owns (what the assertion reads) and a quarter of its room under the ceiling
         // on top of it, which no month's takings refill: the month does not pay the short, by the size of the short.
+        // ...and one the waterfall has nothing to raise from before the desk is asked (RES3: the waited months left Manufacturing,
+        // the least levered, a plant, $8.9k abroad and some bonds, so its short was raised by the waterfall and the desk lent it nothing).
         String z = null;
         for (String s : Sectors.KEYS) {
-            if (s.equals(Y) || s.equals(W) || s.equals(ISSUER) || !(credit.getAssets(s) > 0) || credit.isBorrowingBlocked(s)) continue;
+            if (s.equals(Y) || s.equals(W) || s.equals(ISSUER) || !(credit.getAssets(s) > 0) || credit.isBorrowingBlocked(s) || !standsInPlant(em, s)
+                    || em.getForeignAssets(s) > 0 || bm.faceHeldBy(s) > 0) continue;
             if (z == null || credit.getPrincipal(s) / credit.getAssets(s) < credit.getPrincipal(z) / credit.getAssets(z)) z = s;
         }
         if (!fixture("fixture: the played city has a healthy loss-making shortfall borrower", z != null)) return;

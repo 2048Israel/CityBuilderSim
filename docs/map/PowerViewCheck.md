@@ -1,4 +1,4 @@
-# PowerViewCheck.java - 372 lines · 14 methods · 1 constants · harnesses
+# PowerViewCheck.java - 377 lines · 14 methods · 1 constants · harnesses
 
 `ham/citybuildersim/PowerViewCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -26,7 +26,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 14 | 359 | **type** `public final class PowerViewCheck` | Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves. |
+| 14 | 364 | **type** `public final class PowerViewCheck` | Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves. |
 | 17 | 4 | `static void check(String label, boolean ok)` |  |
 | 21 | 1 | `static boolean near(double a, double b)` |  |
 | 22 | 3 | `static BuildingsTemplate row(String name)` |  |
@@ -37,8 +37,8 @@
 | 75 | 28 | `static void dispatchCases()` |  |
 | 104 | 19 | `static void meritMoves()` |  |
 | 124 | 25 | `static boolean saveChecks()` |  |
-| 150 | 63 | `static boolean pendingSaveChecks()` |  |
-| 214 | 67 | `static void timingPurityAndFold()` |  |
-| 283 | 80 | `static void rowLeaveRejoinHistory()` | Fixed native months cause departure and rejoin; synthetic tail aging only puts that actual history through its yearly fold. |
-| 364 | 8 | `public static void main(String[] args)` |  |
+| 150 | 68 | `static boolean pendingSaveChecks()` |  |
+| 219 | 67 | `static void timingPurityAndFold()` |  |
+| 288 | 80 | `static void rowLeaveRejoinHistory()` | Fixed native months cause departure and rejoin; synthetic tail aging only puts that actual history through its yearly fold. |
+| 369 | 8 | `public static void main(String[] args)` |  |
 

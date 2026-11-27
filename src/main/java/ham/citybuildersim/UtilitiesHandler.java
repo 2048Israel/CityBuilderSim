@@ -391,10 +391,11 @@ public class UtilitiesHandler {
     }
 
     /**
-     * What the homes draw, power and water (0.7.28): the residential
-     * buildings' own draw, set beside the billed draws by ServicesManager,
-     * so the Services screen can say who the unbilled draw is - the homes,
-     * or the city's own buildings (in the 2,400-month playtest city the
+     * What unbilled homes draw, power and water: residential buildings not
+     * already invoiced to a sector. Real Estate's rental homes are in the
+     * billed category. ServicesManager sets this remaining draw so the
+     * Services screen can split the unbilled buildings between homes
+     * and the city's own buildings (in the 2,400-month playtest city the
      * water plants alone draw more power than every home). A read; nothing
      * is billed by it, and it is not saved - the month recomputes it from
      * the standing stock, as it does the billed draws.
@@ -903,6 +904,8 @@ public class UtilitiesHandler {
         public Substations.Costs pendingGridCosts;
         /** What the water's books paid the power's this month for the works' power, and the update the next strike prices it on (PW1-W); absent in older saves. */
         public double waterPowerPaid;
+        /** The held tariff in local money per water unit, excluding the struck power charge. */
+        public double waterTariff;
         public WaterDraw pendingWater;
     }
 
@@ -915,7 +918,7 @@ public class UtilitiesHandler {
         s.fuelPaidMonth = fuelPaidMonth;
         s.pendingMonth = latest.copy(); s.pendingDispatch = latestRecord;
         s.pendingGridCosts = latestGridCosts;
-        s.waterPowerPaid = waterPowerPaid; s.pendingWater = latestWater;
+        s.waterPowerPaid = waterPowerPaid; s.waterTariff = pricePerWaterUnit; s.pendingWater = latestWater;
         return s;
     }
 
@@ -974,6 +977,7 @@ public class UtilitiesHandler {
         pendingLoadedWater = s == null ? null : s.pendingWater;
         waterPowerPaid = s == null ? 0 : s.waterPowerPaid;
         if (s == null) { fuelLocal = fuelImported = upkeepPaid = 0; paidDispatchMonth = fuelPaidMonth = -1; return; }
+        pricePerWaterUnit = s.waterTariff;
         setFuelPaid(s.fuelLocal, s.fuelImported, s.upkeepPaid, s.fuelImportedByGood);
         paidDispatchMonth = s.paidDispatchMonth;
         fuelPaidMonth = s.fuelPaidMonth;

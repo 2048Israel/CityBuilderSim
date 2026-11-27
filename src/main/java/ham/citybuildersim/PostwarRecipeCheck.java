@@ -832,6 +832,13 @@ public final class PostwarRecipeCheck {
 
     }
 
+    /**
+     * The Houses stood beside the village's 400 for section 13's crews (RES3): a door holds one household, so the village's
+     * 400 Houses hold 1,534 people where main's held 2,139, and the builders' fill (0.19) leaves the kiln 20 to 60 points a month
+     * - 842 of its 4,616 still owed after 120 months. 250 more (650 doors, about 2,500 people) is more than the 160 that make up main's people.
+     */
+    static final int OLD_PLANT_MORE_HOUSES = 250;
+
     static void oldPlantRefits() throws Exception {
         out.println("--- 13. a Cement Plant standing before PE4 refits the long kiln on its works' order and earns PE4's royalty ---");
         Game game = HistoricalLicenceCheck.town("R2e-PE4-old-plant-refit", true);
@@ -839,10 +846,13 @@ public final class PostwarRecipeCheck {
         int found = ResearchCatalog.knownFrom("PE4");
         at(game, found - 1);
         BuildingsTemplate cement = HistoricalLicenceCheck.stand(game, "Cement Plant", 1);
+        Game.BuildResult[] homes = new Game.BuildResult[1];
         silent(() -> {
             game.buildStack(game.getBuildingManager().getTemplateByName("Construction Depot"), 4, true);
+            homes[0] = game.buildStack(game.getBuildingManager().getTemplateByName("House"), OLD_PLANT_MORE_HOUSES, true);
             MaterialsCheck.handWorkers(game);
         });
+        check("fixture: the village's more Houses stand, so the crews that fit the kiln have people", homes[0] == Game.BuildResult.SUCCESS, String.valueOf(homes[0]));
         BuildingsStacks stack = game.getBuildingManager().getStack(cement);
         Equipment longKiln = cement.getEquipment("long-kiln");
         // A plant finished before June 1902 has its rotary kiln and neither later piece.

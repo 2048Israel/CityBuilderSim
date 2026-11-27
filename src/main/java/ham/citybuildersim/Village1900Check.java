@@ -13,11 +13,15 @@ import java.io.PrintStream;
  *
  *   1. THE TWO CITIES: one founding, the playtest's (LongPlaytest.founding()), one of them founded the 1900 way, both founded and played the
  *      way LongPlaytest.main() does it (its switches, the village by hand, the advisor at the run's stops, the automatic works)
- *   2. THE RENT: 1901's wages pay for today's homes, so the 1900 village's households pay well over TARGET_RENT_BURDEN of their
- *      take-home in rent, the affordability pull cuts its draw below today's twin's, and the rent is what binds: without the pull the
- *      city the village's jobs and homes would support is over UNPULLED times its people, and with it the room the village has to grow
- *      (the target over its people, less one) is under today's twin's; today's twin pays under DEAR_RENT times the target, the line
- *      the village is over (0.331 at month 60 on 0.9.174, 0.232 on 0.9.159)
+ *   2. THE RENT: 1901's wages pay for today's homes, so the 1900 village's homes ask a household alone well over TARGET_RENT_BURDEN of
+ *      its households' take-home in rent (HousingMarket.aloneBurden(); RES3: on the typed market doubled-up households pay little or
+ *      nothing, so the paid burden is not what a mover reads), and today's twin's ask under DEAR_RENT times the target, the line the
+ *      village is over (0.331 at month 60 on 0.9.174, 0.232 on 0.9.159). So the village doubles up as 1900's households did, two
+ *      households to a door on paid half shares, a larger share of them than today's twin's, and a mover there weighs a half share's
+ *      ask (HousingMarket.askedBurden(), the orchestrator's call of 2026-11-25), under a household alone's. The affordability pull still
+ *      cuts its draw below today's twin's, and the rent is what binds: the pull strikes more off the city the village's jobs and homes
+ *      would support than the room it leaves the village to grow, and that room (the target over its people, less one) is under today's
+ *      twin's
  *   3. THE SKILLS: posts drawn for today's diploma-holders meet 1901's workers, who mostly hold none: the 1900 village's diploma posts
  *      outnumber its diploma workers many times over while today's twin's are covered, and the exporters' first plant (the
  *      Fabrication Shop, whose 1900 recipe asks several times today's diploma crew) meets it at the gate month in the diploma band:
@@ -33,7 +37,7 @@ import java.io.PrintStream;
  *
  *   5. THE 1900 HOME (Recipes.HOMES_1900): each of the 1900 village's homes is built at the scale it stands at (Recipes.datedScale();
  *      homeScale() with the walk off) of today's twin's (the cash cost as the catalogue states it, the materials and the points; the land not
- *      moved), its households pay under the stalled village's rent, at most DEAR_RENT times the target, and it draws more of
+ *      moved), its households are asked under the stalled village's rent, at most DEAR_RENT times the target, and it draws more of
  *      the arrivals at the end of the five years than the stalled village does (with the home off the two are one village)
  *   6. THE APPRENTICES (PopulationManager.APPRENTICES_1900): the five years' apprentices are the teens who came of age times the year's
  *      trade share (ArrivalMix.tradeShareAt()), there being no school, and the village holds more diploma workers than the stalled one
@@ -76,10 +80,7 @@ public class Village1900Check {
     /** The last months the arrivals are summed over: the sixth year's first months, when the 1900 village has all but stopped drawing anybody. */
     static final int QUIET_MONTHS = 5;
 
-    /** The least multiple of its people the 1900 village's jobs and homes would support before any pull is struck (Migration.getLastDrawBeforePulls()): two, so its room is not what holds it. */
-    static final double UNPULLED = 2;
-
-    /** How many times TARGET_RENT_BURDEN the 1900 village's households pay at the least: one and a half (R1g measured 2.0 at month 60). */
+    /** How many times TARGET_RENT_BURDEN the 1900 village's households are asked at the least, a household alone: one and a half (R1g measured 2.0 at month 60). */
     static final double DEAR_RENT = 1.5;
 
     /** How many times its diploma workers the 1900 village's diploma posts number at the least: two (R1g measured 2.4 at month 60). */
@@ -153,17 +154,37 @@ public class Village1900Check {
     static void rent(Seen y1900, Seen today) {
         out.println("\n--- 2. the rent: 1901's wages pay for today's homes ---");
         double target = ham.citybuildersim.sectors.RealEstate.TARGET_RENT_BURDEN;
-        double b1900 = y1900.g.getHouseholds().getRentBurden(), bToday = today.g.getHouseholds().getRentBurden();
         Migration m1900 = y1900.g.getMigration(), mToday = today.g.getMigration();
-        out.printf("   rent as a share of take-home: 1900 %.3f, today %.3f (the target %.2f)%n", b1900, bToday, target);
+        double b1900 = m1900.getRentBurden(), bToday = mToday.getRentBurden();
+        out.printf("   rent asked as a share of take-home, the burden the pull weighs: 1900 %.3f, today %.3f (the target %.2f); paid: 1900 %.3f, today %.3f%n",
+                b1900, bToday, target, y1900.g.getHouseholds().getRentBurden(), today.g.getHouseholds().getRentBurden());
         out.printf("   affordability pull: 1900 %.3f, today %.3f; the city the conditions support: 1900 %.0f for %d, today %.0f for %d%n",
                 m1900.getLastAffordabilityPull(), mToday.getLastAffordabilityPull(),
                 m1900.getLastTarget(), y1900.g.getPopulationManager().getPopulation(),
                 mToday.getLastTarget(), today.g.getPopulationManager().getPopulation());
-        check("the 1900 village's households pay over " + DEAR_RENT + " times TARGET_RENT_BURDEN of their take-home in rent",
-                b1900 > DEAR_RENT * target, String.format("%.3f", b1900));
-        check("today's twin's households pay under " + DEAR_RENT + " times TARGET_RENT_BURDEN, the line the 1900 village's are over",
+        // RES3 (the orchestrator's calls of 2026-11-25): a household that fits two to a share weighs a paid half share's ask, so the
+        // burden the pull weighs is a shared door's where the households double up. The village's homes are as dear as R1g found them,
+        // asked of a household alone; its households meet it as 1900's did, two households to a door (RES3-notes, "What they did"):
+        // the 1901 census of England and Wales counted 7.04 million families or separate occupiers in 6.26 million inhabited houses,
+        // about 1.12 to a house (the General Report and its county tables, visionofbritain.org.uk, EW1901GEN and EW1901COU).
+        HousingMarket market1900 = y1900.g.getSectors().realEstate().housingMarket();
+        HousingMarket marketToday = today.g.getSectors().realEstate().housingMarket();
+        double alone1900 = market1900.aloneBurden(y1900.g, y1900.g.getHouseholds().getDisposableIncome());
+        double aloneToday = marketToday.aloneBurden(today.g, today.g.getHouseholds().getDisposableIncome());
+        double[] shared1900 = halfShares(market1900), sharedToday = halfShares(marketToday);
+        out.printf("   a household alone is asked: 1900 %.3f, today %.3f; households in half shares: 1900 %.1f of %.1f, today %.1f of %.1f%n",
+                alone1900, aloneToday, shared1900[0], shared1900[1], sharedToday[0], sharedToday[1]);
+        check("the 1900 village's homes ask a household alone over " + DEAR_RENT + " times TARGET_RENT_BURDEN of its households' take-home in rent",
+                alone1900 > DEAR_RENT * target, String.format("%.3f", alone1900));
+        check("today's twin's homes ask a household alone under " + DEAR_RENT + " times TARGET_RENT_BURDEN, the line the 1900 village's are over",
+                aloneToday < DEAR_RENT * target, String.format("%.3f", aloneToday));
+        check("today's twin's homes ask under " + DEAR_RENT + " times TARGET_RENT_BURDEN, the line the 1900 village's are over",
                 bToday < DEAR_RENT * target, String.format("%.3f", bToday));
+        check("so the 1900 village doubles up: a larger share of its households pay half shares, two households to a door, than today's twin's",
+                shared1900[0] * sharedToday[1] > sharedToday[0] * shared1900[1],
+                String.format("%.3f against %.3f", shared1900[0] / shared1900[1], sharedToday[0] / sharedToday[1]));
+        check("...and a mover there weighs a half share's ask, under what a household alone is asked", b1900 < alone1900,
+                String.format("%.3f against %.3f", b1900, alone1900));
         check("so the affordability pull cuts the 1900 village's draw, as Migration.affordabilityPull() strikes it",
                 m1900.getLastAffordabilityPull() < 1 && m1900.getLastAffordabilityPull() < mToday.getLastAffordabilityPull(),
                 String.format("%.3f against %.3f", m1900.getLastAffordabilityPull(), mToday.getLastAffordabilityPull()));
@@ -172,12 +193,22 @@ public class Village1900Check {
         double room1900 = m1900.getLastTarget() / pop1900 - 1, roomToday = mToday.getLastTarget() / popToday - 1;
         out.printf("   the city the jobs and homes would support before the pulls: 1900 %.0f for %d, today %.0f for %d; the room left to grow (the target over the people, less one): 1900 %.3f, today %.3f%n",
                 bare1900, pop1900, bareToday, popToday, room1900, roomToday);
-        check("the rent is what binds: before the pulls, the city the 1900 village's jobs and homes would support is over "
-                + UNPULLED + " times its people", bare1900 > UNPULLED * pop1900, String.format("%.0f for %d", bare1900, pop1900));
+        // RES3: doubled up, the village grows nearer what its jobs and homes would support (1.50 times its people at month 60, where
+        // R1g's measured over two), so the rent binds as what the pull strikes off that support against the room it leaves.
+        double struck1900 = bare1900 - m1900.getLastTarget(), roomLeft1900 = m1900.getLastTarget() - pop1900;
+        check("the rent is what binds: the pull strikes more off the city the 1900 village's jobs and homes would support than the room it leaves the village to grow",
+                struck1900 > 0 && struck1900 > roomLeft1900, String.format("%.0f struck, %.0f left (%.0f for %d)", struck1900, roomLeft1900, bare1900, pop1900));
         check("...so the room it leaves the village to grow (the target over its people, less one) is under today's twin's",
                 room1900 < roomToday, String.format("%.3f against %.3f", room1900, roomToday));
         check("while today's twin's supports more than its people", mToday.getLastTarget() > today.g.getPopulationManager().getPopulation(),
                 String.format("%.0f for %d", mToday.getLastTarget(), today.g.getPopulationManager().getPopulation()));
+    }
+
+    /** The households in paid half shares and all the households the market's leases hold. */
+    static double[] halfShares(HousingMarket market) {
+        double half = 0, all = 0;
+        for (HousingChoice.Lease l : market.leases()) { half += l.funding().half(); all += l.funding().households(); }
+        return new double[] {half, all};
     }
 
     /* ---------------------------------------------------------------- 3 */
@@ -261,11 +292,11 @@ public class Village1900Check {
         check("the city knows the home is dated", home.g.getRecipes().datedHome(h) && !stalled.g.getRecipes().datedHome(
                 stalled.g.getBuildingManager().getTemplateByName(HOUSE)));
         double target = ham.citybuildersim.sectors.RealEstate.TARGET_RENT_BURDEN;
-        double bHome = home.g.getHouseholds().getRentBurden(), bStalled = stalled.g.getHouseholds().getRentBurden();
-        out.printf("   at month %d: rent as a share of take-home %.3f (stalled %.3f, today %.3f), pull %.3f, %d people (stalled %d), arrivals in the last %d months %.1f%n",
-                MONTHS, bHome, bStalled, today.g.getHouseholds().getRentBurden(), home.g.getMigration().getLastAffordabilityPull(),
+        double bHome = home.g.getMigration().getRentBurden(), bStalled = stalled.g.getMigration().getRentBurden();
+        out.printf("   at month %d: rent asked as a share of take-home %.3f (stalled %.3f, today %.3f; paid %.3f), pull %.3f, %d people (stalled %d), arrivals in the last %d months %.1f%n",
+                MONTHS, bHome, bStalled, today.g.getMigration().getRentBurden(), home.g.getHouseholds().getRentBurden(), home.g.getMigration().getLastAffordabilityPull(),
                 home.g.getPopulationManager().getPopulation(), stalled.g.getPopulationManager().getPopulation(), QUIET_MONTHS, home.arrivalsLate);
-        check("the 1900 home's households pay at most " + DEAR_RENT + " times TARGET_RENT_BURDEN, under the stalled village's",
+        check("the 1900 home's homes ask at most " + DEAR_RENT + " times TARGET_RENT_BURDEN, under the stalled village's",
                 bHome <= DEAR_RENT * target && bHome < bStalled, String.format("%.3f against %.3f", bHome, bStalled));
         check("and it draws more arrivals at the end of the five years than the stalled village",
                 home.arrivalsLate > stalled.arrivalsLate, String.format("%.1f against %.1f (today's twin %.1f)", home.arrivalsLate, stalled.arrivalsLate, today.arrivalsLate));

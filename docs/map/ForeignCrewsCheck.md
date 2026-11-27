@@ -1,4 +1,4 @@
-# ForeignCrewsCheck.java - 1,041 lines · 31 methods · 18 constants · harnesses
+# ForeignCrewsCheck.java - 1,044 lines · 31 methods · 18 constants · harnesses
 
 `ham/citybuildersim/ForeignCrewsCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -78,7 +78,7 @@
 | 430 | 6. A 240-MONTH BACKLOG |
 | 577 | 7. THE BUILDING THE THRESHOLD FALLS IN |
 | 872 | 9. HIS WORK EARNED AT HIS PRICE (R1g) |
-| 984 | 8. A CURRENCY REFORM |
+| 987 | 8. A CURRENCY REFORM |
 
 ## Constants
 
@@ -113,7 +113,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 86 | 956 | **type** `public class ForeignCrewsCheck` | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at and the city's own inflation; the handover of the queue past it; the ... |
+| 86 | 959 | **type** `public class ForeignCrewsCheck` | The foreign crews always on offer (FC2): the threshold past which the city's orders go abroad, read at the exchange rate the city's money stands at and the city's own inflation; the handover of the queue past it; the ... |
 | 146 | 1 | `static void ok(String label, boolean cond)` |  |
 | 148 | 1 | `static void near(String label, double actual, double expected, double tol)` |  |
 | 150 | 1 | `static void exact(String label, double actual, double expected)` |  |
@@ -180,7 +180,7 @@
 | 840 | 25 | `static void partsAbroadOwedOnSite(Game g)` | REV-FC2, the third review (P2-2): a works on foothill ground, split at the threshold, hands him its pad's preparation in the share its building's points are (Game.abroadWork()); the preparation is owed on its site wit... |
 | 866 | 5 | `static double sum(java.util.Map<Integer, Double> m)` |  |
 
-### 9. HIS WORK EARNED AT HIS PRICE (R1g) (lines 872-983)
+### 9. HIS WORK EARNED AT HIS PRICE (R1g) (lines 872-986)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -188,12 +188,12 @@
 | 898 | 16 | `static Game dearOrder(Path root, String name)` | A calm city played on until its landlords' Houses have finished, with the city's CHEAP ordered at home, as many as go under the threshold, then one PLANT, its points past the threshold handed him as it is billed at wh... |
 | 916 | 5 | `static double held(BuildingManager bm)` | What the sites' contracts still hold, over every site on the city: what their payers paid for work not yet earned. |
 | 923 | 4 | `static double heldOn(Game g, String name)` | What one template's site's contracts still hold; 0 with none on site. |
-| 928 | 55 | `static void hisPrice(Path root)` |  |
+| 928 | 58 | `static void hisPrice(Path root)` |  |
 
-### 8. A CURRENCY REFORM (lines 984-1041)
+### 8. A CURRENCY REFORM (lines 987-1044)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 986 | 20 | `static void theReform(Game a)` |  |
-| 1008 | 33 | `static void afterTheFirstMonth(Game a, Game off)` | The city's workers after a's first month and the twin's, which had no foreign crews. |
+| 989 | 20 | `static void theReform(Game a)` |  |
+| 1011 | 33 | `static void afterTheFirstMonth(Game a, Game off)` | The city's workers after a's first month and the twin's, which had no foreign crews. |
 
