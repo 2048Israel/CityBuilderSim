@@ -2763,21 +2763,21 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L1786 fixture: the Coal Power Plants (
   - L1790 (c) with the figure clear the POWER row is not listed
   - L1792 ...and the advice offers no power card
-- **L1835 16. warranted() read once in a search (AP7): after each writer the held answer is the bare reading, to the bit**
-  - L1863 fixture: the city saves under its scratch folder (
-  - L1865 fixture: the town is saved to slot 10 of it, the base of every writer's city
+- **L1836 16. warranted() read once in a search (AP7): after each writer the held answer is the bare reading, to the bit**
+  - L1864 fixture: the city saves under its scratch folder (
+  - L1866 fixture: the town is saved to slot 10 of it, the base of every writer's city
   - L1878 the people (skilled heads restored across the threshold)
   - L1889 a build (
   - L1897 a demolition (
   - L1908 a template (the
   - L1913 ...and the template is back on the menu, as the fixture had it
-  - L1975 fixture: the catalogue has a code no building waits on that it brings after month
-  - L1992 a research step (the city finds
-  - L1999 ...and the plant's gate, the city's findings and its draw are as the fixture had them
-  - L2016 fixture: this city saves under its scratch folder (
-  - L2019 fixture: the
-  - L2021 a load (the save of
-  - L2023 ...and the load put back the
+  - L1971 fixture: the catalogue has a code no building waits on that it brings after month
+  - L1988 a research step (the city finds
+  - L1995 ...and the plant's gate, the city's findings and its draw are as the fixture had them
+  - L2012 fixture: this city saves under its scratch folder (
+  - L2015 fixture: the
+  - L2017 a load (the save of
+  - L2019 ...and the load put back the
 
 ## BuildCardCheck.java - 214 labelled assertions
 

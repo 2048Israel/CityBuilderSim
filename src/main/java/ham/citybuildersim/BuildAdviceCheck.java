@@ -1824,7 +1824,8 @@ public class BuildAdviceCheck {
      * and each writer of the answer moves it across the first-work threshold (BuildAdvice.FIRST_WORK_SHARE of the smallest school): the
      * people, a build, a demolition, a template off the menu, a research step, a load. Before each the three readings (the card, the count,
      * the valuation) are made once held (warm); after it they are made held and made bare (every ask read afresh, the original behaviour),
-     * and must be the same to the bit, the held answers having also been read afresh and compared (WARRANT_COMPARED, WARRANT_DIFFERED).
+     * and must be the same to the bit, the held answers having also been read afresh and compared, each block
+     * under a probe of its own on its city (BuildAdvice.WarrantProbe, REV-AP7).
      * EACH WRITER RUNS ON A CITY OF ITS OWN (cityOf()): the town saved once and loaded into a Game made for the block, its set-up made
      * before the warm reading, so the warm reading is that city's first held reading of the measure. An answer kept past one search, for a
      * city's whole life, would be the warm reading's, and no writer's block could flip back to it unseen.
@@ -1867,59 +1868,54 @@ public class BuildAdviceCheck {
         // The set-ups, from the demand each clinic makes: fewer clinics than the first work needs, and enough more to cross it.
         double per = demand / clinics;
         long fewer = (long) Math.floor(first * .8 / per), more = (long) Math.ceil(first * .4 / per);
-        try {
-            // 1. THE PEOPLE: the doctors the city has, restored from under the first work to over it.
-            {
-                Game h = cityOf(town, "the people");
-                double ready = h.getEducation().willingShare(type, h.getLabourMarket()) * Education.ENROLMENT_RATE * type.months();
-                double[] heads = new double[WageBand.values().length];
-                heads[band] = first * .9 / ready;
-                h.getPopulationManager().restoreSkilledHeads(heads);
-                warrantWriter("the people (skilled heads restored across the threshold)", h, m, schoolName, () -> {
-                    double[] over = new double[WageBand.values().length];
-                    over[band] = first * 1.1 / ready;
-                    h.getPopulationManager().restoreSkilledHeads(over);
-                });
-            }
-            // 2. A BUILD: clinics fewer than the first work needs, then enough more finished to cross it.
-            {
-                Game h = cityOf(town, "a build");
-                BuildingsTemplate c = h.getBuildingManager().getTemplateByName(clinicName);
-                quietly(() -> h.getBuildingManager().retire(c, clinics - fewer));
-                warrantWriter("a build (" + more + " more Community Health Centres finished)", h, m, schoolName,
-                        () -> h.buildStack(c, more, true));
-            }
-            // 3. A DEMOLITION: a city of the clinics that cross it (warranted), and the same clinics taken back.
-            {
-                Game h = cityOf(town, "a demolition");
-                BuildingsTemplate c = h.getBuildingManager().getTemplateByName(clinicName);
-                quietly(() -> h.getBuildingManager().retire(c, clinics - fewer - more));
-                warrantWriter("a demolition (" + more + " Community Health Centres retired)", h, m, schoolName,
-                        () -> h.getBuildingManager().retire(c, more));
-            }
-            // 4. A TEMPLATE: the only school taken off the menu by its last year, so no school is left to be the first work's measure.
-            {
-                Game h = cityOf(town, "a template");
-                BuildingsTemplate c = h.getBuildingManager().getTemplateByName(clinicName);
-                quietly(() -> h.getBuildingManager().retire(c, clinics - fewer));
-                BuildingsTemplate school = h.getBuildingManager().getTemplateByName(schoolName);
-                int wasUntil = school.getUntil(), past = CityCalendar.yearOf(h.getMonth()) - 1;
-                try {
-                    warrantWriter("a template (the " + schoolName + " off the menu from " + (past + 1) + ")", h, m, schoolName,
-                            () -> school.setUntil(past));
-                } finally {
-                    school.setUntil(wasUntil);
-                }
-                assertTrue("...and the template is back on the menu, as the fixture had it", school.getUntil() == wasUntil
-                        && h.getBuildingManager().isTemplateKnown(school) && !BuildAdvice.warranted(h, m));
-            }
-            warrantResearch(town);
-            warrantLoad(town, fewer, more);
-            warrantCounts(town);
-        } finally {
-            BuildAdvice.warrantChecked = false;
-            BuildAdvice.warrantBare = false;
+        // 1. THE PEOPLE: the doctors the city has, restored from under the first work to over it.
+        {
+            Game h = cityOf(town, "the people");
+            double ready = h.getEducation().willingShare(type, h.getLabourMarket()) * Education.ENROLMENT_RATE * type.months();
+            double[] heads = new double[WageBand.values().length];
+            heads[band] = first * .9 / ready;
+            h.getPopulationManager().restoreSkilledHeads(heads);
+            warrantWriter("the people (skilled heads restored across the threshold)", h, m, schoolName, () -> {
+                double[] over = new double[WageBand.values().length];
+                over[band] = first * 1.1 / ready;
+                h.getPopulationManager().restoreSkilledHeads(over);
+            });
         }
+        // 2. A BUILD: clinics fewer than the first work needs, then enough more finished to cross it.
+        {
+            Game h = cityOf(town, "a build");
+            BuildingsTemplate c = h.getBuildingManager().getTemplateByName(clinicName);
+            quietly(() -> h.getBuildingManager().retire(c, clinics - fewer));
+            warrantWriter("a build (" + more + " more Community Health Centres finished)", h, m, schoolName,
+                    () -> h.buildStack(c, more, true));
+        }
+        // 3. A DEMOLITION: a city of the clinics that cross it (warranted), and the same clinics taken back.
+        {
+            Game h = cityOf(town, "a demolition");
+            BuildingsTemplate c = h.getBuildingManager().getTemplateByName(clinicName);
+            quietly(() -> h.getBuildingManager().retire(c, clinics - fewer - more));
+            warrantWriter("a demolition (" + more + " Community Health Centres retired)", h, m, schoolName,
+                    () -> h.getBuildingManager().retire(c, more));
+        }
+        // 4. A TEMPLATE: the only school taken off the menu by its last year, so no school is left to be the first work's measure.
+        {
+            Game h = cityOf(town, "a template");
+            BuildingsTemplate c = h.getBuildingManager().getTemplateByName(clinicName);
+            quietly(() -> h.getBuildingManager().retire(c, clinics - fewer));
+            BuildingsTemplate school = h.getBuildingManager().getTemplateByName(schoolName);
+            int wasUntil = school.getUntil(), past = CityCalendar.yearOf(h.getMonth()) - 1;
+            try {
+                warrantWriter("a template (the " + schoolName + " off the menu from " + (past + 1) + ")", h, m, schoolName,
+                        () -> school.setUntil(past));
+            } finally {
+                school.setUntil(wasUntil);
+            }
+            assertTrue("...and the template is back on the menu, as the fixture had it", school.getUntil() == wasUntil
+                    && h.getBuildingManager().isTemplateKnown(school) && !BuildAdvice.warranted(h, m));
+        }
+        warrantResearch(town);
+        warrantLoad(town, fewer, more);
+        warrantCounts(town);
     }
 
     /**
@@ -2025,9 +2021,10 @@ public class BuildAdviceCheck {
     }
 
     /**
-     * The counts, and the run, in a city of its own. One count() search asks the held warrant many times and reads it once; one valuation
-     * reads it once as well (its own relief warrant, its count()s handed it); and three passes of the automatic builder with every held
-     * answer also read afresh never differ.
+     * The counts, and the run, in a city of its own, under its own probe (BuildAdvice.WarrantProbe). One count() search asks the held
+     * warrant many times and reads it once; one valuation reads it once as well (its own relief warrant, its count()s handed it); the
+     * probe is its city's and its thread's alone; and three passes of the automatic builder with every held answer also read afresh never
+     * differ.
      */
     static void warrantCounts(Town town) {
         Game g = cityOf(town, "the counts and the run");
@@ -2037,73 +2034,95 @@ public class BuildAdviceCheck {
         double demand = BuildAdvice.supplyDemand(g, m, Map.of())[1], seats = BuildAdvice.built(g, m, school);
         assertTrue(String.format("fixture: the city is on its %,d clinics, warranted, with doctor vacancies of %.1f, over two schools of %.1f seats",
                 bm.getQuantity(bm.getTemplateByName(town.clinicName()).getId()), demand, seats), BuildAdvice.warranted(g, m) && demand > 2 * seats);
-        BuildAdvice.warrantBare = false;
-        BuildAdvice.warrantChecked = false;
-        long asked = BuildAdvice.WARRANT_ASKED.get(), read = BuildAdvice.WARRANT_READ.get();
-        long[] n = BuildAdvice.count(g, m, Map.of(), Map.of(school, 1L), g.getAutoBuilder().target(), BuildAdvice.MOST, true);
-        long searchAsked = BuildAdvice.WARRANT_ASKED.get() - asked, searchRead = BuildAdvice.WARRANT_READ.get() - read;
-        assertTrue(String.format("one count() search of %,d schools asks its warrant %,d times and reads warranted() %d time",
-                n[0], searchAsked, searchRead), n[0] > 1 && searchAsked > 1 && searchRead == 1);
-        Map<BuildingsTemplate, Long> site = g.getAutoBuilder().pendingCapacity(g, m);
-        asked = BuildAdvice.WARRANT_ASKED.get();
-        read = BuildAdvice.WARRANT_READ.get();
-        WorksValue.Value value = WorksValue.of(g, m, site, school, n[0], g.getLandManager().getAvailableSqFt(), g.getCash());
-        long valueAsked = BuildAdvice.WARRANT_ASKED.get() - asked, valueRead = BuildAdvice.WARRANT_READ.get() - read;
-        assertTrue(String.format("one valuation of %,d schools asks its warrant %,d times and reads warranted() %d time (used %.1f)",
-                n[0], valueAsked, valueRead, value.used()), valueAsked >= 1 && valueRead == 1);
-        AutoBuilder ab = g.getAutoBuilder();
-        ab.setOn(true, null);
-        long compared = BuildAdvice.WARRANT_COMPARED.get(), differed = BuildAdvice.WARRANT_DIFFERED.get();
-        BuildAdvice.warrantChecked = true;
-        for (int pass = 0; pass < 3; pass++) quietly(() -> ab.pass(g));
-        BuildAdvice.warrantChecked = false;
-        long comparedNow = BuildAdvice.WARRANT_COMPARED.get() - compared, differedNow = BuildAdvice.WARRANT_DIFFERED.get() - differed;
-        assertTrue(String.format("three passes of the automatic builder compared %,d held answers afresh and %,d differed", comparedNow, differedNow),
-                comparedNow > 0 && differedNow == 0);
-        ab.setOn(false, null);
+        try (BuildAdvice.WarrantProbe p = BuildAdvice.probe(g)) {
+            long[] n = BuildAdvice.count(g, m, Map.of(), Map.of(school, 1L), g.getAutoBuilder().target(), BuildAdvice.MOST, true);
+            assertTrue(String.format("one count() search of %,d schools asks its warrant %,d times and reads warranted() %d time",
+                    n[0], p.asked, p.read), n[0] > 1 && p.asked > 1 && p.read == 1);
+            Map<BuildingsTemplate, Long> site = g.getAutoBuilder().pendingCapacity(g, m);
+            long asked = p.asked, read = p.read;
+            WorksValue.Value value = WorksValue.of(g, m, site, school, n[0], g.getLandManager().getAvailableSqFt(), g.getCash());
+            assertTrue(String.format("one valuation of %,d schools asks its warrant %,d times and reads warranted() %d time (used %.1f)",
+                    n[0], p.asked - asked, p.read - read, value.used()), p.asked - asked >= 1 && p.read - read == 1);
+            // REV-AP7: the probe is this city's on this thread. Comparing, it counts nothing of the town's own city read on this thread;
+            // set to read every ask afresh, it reaches nothing of this city read on another thread, which holds its answer there.
+            p.checked = true;
+            long mine = p.asked + p.read + p.compared;
+            Game other = town.game();
+            BuildAdvice.count(other, m, Map.of(), Map.of(other.getBuildingManager().getTemplateByName(town.schoolName()), 1L),
+                    other.getAutoBuilder().target(), BuildAdvice.MOST, true);
+            long otherCity = p.asked + p.read + p.compared - mine;
+            p.bare = true;
+            long[] theirs = {-1, -1};
+            Thread elsewhere = new Thread(() -> {
+                try (BuildAdvice.WarrantProbe q = BuildAdvice.probe(g)) {
+                    BuildAdvice.count(g, m, Map.of(), Map.of(school, 1L), g.getAutoBuilder().target(), BuildAdvice.MOST, true);
+                    theirs[0] = q.asked;
+                    theirs[1] = q.read;
+                }
+            }, "warrant-probe-elsewhere");
+            elsewhere.start();
+            try {
+                elsewhere.join();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            long otherThread = p.asked + p.read + p.compared - mine - otherCity;
+            p.bare = false;
+            assertTrue(String.format("a probe is its city's and its thread's: another city read here counts %d on it; this city read on another"
+                    + " thread, with this probe set bare, held its answer there (%,d asks, %d reading) and counts %d here", otherCity, theirs[0],
+                    theirs[1], otherThread), otherCity == 0 && otherThread == 0 && theirs[0] > 1 && theirs[1] == 1);
+            AutoBuilder ab = g.getAutoBuilder();
+            ab.setOn(true, null);
+            long compared = p.compared, differed = p.differed;
+            for (int pass = 0; pass < 3; pass++) quietly(() -> ab.pass(g));
+            assertTrue(String.format("three passes of the automatic builder compared %,d held answers afresh and %,d differed",
+                    p.compared - compared, p.differed - differed), p.compared - compared > 0 && p.differed - differed == 0);
+            ab.setOn(false, null);
+        }
     }
 
     /**
-     * One writer: the readings made warm before it, the writer, the fixture's premise (it moved the bare warranted() across the threshold),
-     * and after it the readings held and bare, which must be the same to the bit, the held answers read afresh and compared and none
-     * different. The plant is fetched by name after the writer, a load having built the city's templates again.
+     * One writer, under a probe of its own on its city: the readings made warm before it, the writer, the fixture's premise (it moved the
+     * bare warranted() across the threshold), and after it the readings held and bare, which must be the same to the bit, the held answers
+     * read afresh and compared and none different. The plant is fetched by name after the writer, a load having built the city's templates
+     * again; a load reads into the same Game, so the probe stays its city's.
      */
     static void warrantWriter(String what, Game g, BuildAdvice.Measure m, String plantName, Runnable writer) {
-        boolean before = BuildAdvice.warranted(g, m);
-        double demandBefore = BuildAdvice.supplyDemand(g, m, Map.of())[1], firstBefore = BuildAdvice.FIRST_WORK_SHARE * leastServing(g, m);
-        readings(g, m, g.getBuildingManager().getTemplateByName(plantName), false);
-        quietly(writer);
-        boolean after = BuildAdvice.warranted(g, m);
-        double demandAfter = BuildAdvice.supplyDemand(g, m, Map.of())[1], firstAfter = BuildAdvice.FIRST_WORK_SHARE * leastServing(g, m);
-        assertTrue(String.format("fixture: %s moves warranted() %s -> %s (demand %.1f against the first work %.1f, then %.1f against %.1f)",
-                what, before, after, demandBefore, firstBefore, demandAfter, firstAfter), before != after);
-        BuildingsTemplate plant = g.getBuildingManager().getTemplateByName(plantName);
-        long compared = BuildAdvice.WARRANT_COMPARED.get(), differed = BuildAdvice.WARRANT_DIFFERED.get();
-        List<Long> held = readings(g, m, plant, false);
-        long comparedNow = BuildAdvice.WARRANT_COMPARED.get() - compared, differedNow = BuildAdvice.WARRANT_DIFFERED.get() - differed;
-        List<Long> bare = readings(g, m, plant, true);
-        BuildAdvice.warrantBare = false;
-        BuildAdvice.warrantChecked = false;
-        boolean same = held.equals(bare);
-        if (!same) {
-            int i = 0;
-            while (i < Math.min(held.size(), bare.size()) && held.get(i).equals(bare.get(i))) i++;
-            out.printf("      the first difference is figure %d of %d held and %d bare%n", i, held.size(), bare.size());
+        try (BuildAdvice.WarrantProbe p = BuildAdvice.probe(g)) {
+            boolean before = BuildAdvice.warranted(g, m);
+            double demandBefore = BuildAdvice.supplyDemand(g, m, Map.of())[1], firstBefore = BuildAdvice.FIRST_WORK_SHARE * leastServing(g, m);
+            readings(p, g, m, g.getBuildingManager().getTemplateByName(plantName), false);
+            quietly(writer);
+            boolean after = BuildAdvice.warranted(g, m);
+            double demandAfter = BuildAdvice.supplyDemand(g, m, Map.of())[1], firstAfter = BuildAdvice.FIRST_WORK_SHARE * leastServing(g, m);
+            assertTrue(String.format("fixture: %s moves warranted() %s -> %s (demand %.1f against the first work %.1f, then %.1f against %.1f)",
+                    what, before, after, demandBefore, firstBefore, demandAfter, firstAfter), before != after);
+            BuildingsTemplate plant = g.getBuildingManager().getTemplateByName(plantName);
+            long compared = p.compared, differed = p.differed;
+            List<Long> held = readings(p, g, m, plant, false);
+            long comparedNow = p.compared - compared, differedNow = p.differed - differed;
+            List<Long> bare = readings(p, g, m, plant, true);
+            boolean same = held.equals(bare);
+            if (!same) {
+                int i = 0;
+                while (i < Math.min(held.size(), bare.size()) && held.get(i).equals(bare.get(i))) i++;
+                out.printf("      the first difference is figure %d of %d held and %d bare%n", i, held.size(), bare.size());
+            }
+            assertTrue(what + ": the held reading is the bare one, to the bit (" + held.size() + " figures)", same);
+            assertTrue(String.format("%s: the held answer was read afresh %,d times and differed %,d", what, comparedNow, differedNow),
+                    comparedNow > 0 && differedNow == 0);
         }
-        assertTrue(what + ": the held reading is the bare one, to the bit (" + held.size() + " figures)", same);
-        assertTrue(String.format("%s: the held answer was read afresh %,d times and differed %,d", what, comparedNow, differedNow),
-                comparedNow > 0 && differedNow == 0);
     }
 
     /**
      * The three readings a held warranted() reaches: the Build card the automatic builder reads (one marker for none, else the template, the
      * count and every figure of the card), the count of the plant that keeps the measure maintained, and the maintained-service valuation of
-     * one of it at the pending site. `bare` reads every ask afresh (warrantBare, the original behaviour); otherwise every held answer is also
-     * read afresh and compared (warrantChecked).
+     * one of it at the pending site. `bare` sets the city's probe to read every ask afresh (the original behaviour); otherwise every held
+     * answer is also read afresh and compared.
      */
-    static List<Long> readings(Game g, BuildAdvice.Measure m, BuildingsTemplate plant, boolean bare) {
-        BuildAdvice.warrantBare = bare;
-        BuildAdvice.warrantChecked = !bare;
+    static List<Long> readings(BuildAdvice.WarrantProbe p, Game g, BuildAdvice.Measure m, BuildingsTemplate plant, boolean bare) {
+        p.bare = bare;
+        p.checked = !bare;
         double cash = g.getCash(), land = g.getLandManager().getAvailableSqFt();
         List<Long> r = new ArrayList<>();
         BuildAdvice.Suggestion card = BuildAdvice.suggestFor(g, null, m, cash, land, g.getAutoBuilder().getSlack(), Set.of(), false, true);

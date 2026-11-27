@@ -1344,38 +1344,84 @@ public final class BuildAdvice {
     static final class Warrant {
         private final Game game;
         private final Measure m;
+        /** The probe a harness had open on this city and thread when this was made (WarrantProbe); in play, always none. */
+        private final WarrantProbe probe;
         private byte answer = -1;   // -1 unread, 0 not warranted, 1 warranted
 
         Warrant(Game game, Measure m) {
             this.game = game;
             this.m = m;
+            this.probe = probed ? WarrantProbe.open(game) : null;
         }
 
-        /** The answer for this city and measure; another city or measure (never asked so) reads it afresh. */
+        /** The answer for this city and measure; another city or measure (never asked so) reads it afresh. Play adds one plain field read. */
         boolean of(Game g, Measure measure) {
-            if (g != game || !m.equals(measure) || warrantBare) return warranted(g, measure);
-            WARRANT_ASKED.incrementAndGet();
+            if (g != game || !m.equals(measure)) return warranted(g, measure);
+            WarrantProbe p = probe;
+            if (p != null && p.bare) return warranted(game, m);
             if (answer < 0) {
-                WARRANT_READ.incrementAndGet();
+                if (p != null) p.read++;
                 answer = (byte) (warranted(game, m) ? 1 : 0);
             }
             boolean held = answer == 1;
-            if (warrantChecked) {
-                WARRANT_COMPARED.incrementAndGet();
-                if (held != warranted(game, m)) WARRANT_DIFFERED.incrementAndGet();
-            }
+            if (p != null) p.asked(held, this);
             return held;
         }
     }
 
-    /** Asks of a Warrant, and the readings it made (BuildAdviceCheck 16's counts, never a time). */
-    static final java.util.concurrent.atomic.AtomicLong WARRANT_ASKED = new java.util.concurrent.atomic.AtomicLong(),
-            WARRANT_READ = new java.util.concurrent.atomic.AtomicLong();
-    /** Held answers read afresh and compared while warrantChecked was set, and those that differed. */
-    static final java.util.concurrent.atomic.AtomicLong WARRANT_COMPARED = new java.util.concurrent.atomic.AtomicLong(),
-            WARRANT_DIFFERED = new java.util.concurrent.atomic.AtomicLong();
-    /** Set by a harness: every held answer is also read afresh and compared (warrantChecked), or only read afresh (warrantBare). */
-    static volatile boolean warrantChecked, warrantBare;
+    /**
+     * A harness's window on the Warrants made for one city on one thread (REV-AP7): opened by probe(), it counts their asks and readings,
+     * and can make them read every ask afresh (bare, the original behaviour) or read each held answer afresh as well and count those that
+     * differ (checked). WHY: AP7 first counted in JVM-wide atomics and read volatile switches at every ask, a synchronised write inside
+     * the very loops it speeds and shared by every Game in the JVM. A probe is a plain object one thread holds for one city: a Warrant
+     * takes it when it is made, only once a harness has opened one in the JVM (probed), and another city or thread never sees it.
+     */
+    static final class WarrantProbe implements AutoCloseable {
+        final Game game;
+        /** Every ask read afresh, nothing held (the original behaviour). */
+        boolean bare;
+        /** Every held answer also read afresh and compared. */
+        boolean checked;
+        /** Asks answered from a held reading, the readings made, the held answers read afresh and compared, and those that differed. */
+        long asked, read, compared, differed;
+
+        private WarrantProbe(Game game) {
+            this.game = game;
+        }
+
+        private void asked(boolean held, Warrant w) {
+            asked++;
+            if (checked) {
+                compared++;
+                if (held != warranted(w.game, w.m)) differed++;
+            }
+        }
+
+        /** The probe this thread has open on this city, or none. */
+        private static WarrantProbe open(Game game) {
+            WarrantProbe p = PROBES.get();
+            return p != null && p.game == game ? p : null;
+        }
+
+        /** Closed, Warrants made after it on this thread take none; those made while it was open keep it. */
+        @Override
+        public void close() {
+            if (PROBES.get() == this) PROBES.remove();
+        }
+    }
+
+    /** Opens a probe on this city for the calling thread, in place of any it had: only Warrants made for this city on this thread see it. */
+    static WarrantProbe probe(Game game) {
+        WarrantProbe p = new WarrantProbe(game);
+        PROBES.set(p);
+        probed = true;
+        return p;
+    }
+
+    /** Each thread's open probe, if a harness opened one on it. */
+    private static final ThreadLocal<WarrantProbe> PROBES = new ThreadLocal<>();
+    /** Whether a harness has opened a probe in this JVM; play never does, so a Warrant made in play reads only this plain field. */
+    private static boolean probed;
 
     /**
      * What `sqFt` of ground is worth to the city with `landLeft` free: the
