@@ -1,11 +1,12 @@
 # ASH1 - power for a small town: notes
 
-**Resume here (2026-11-27 10:30, before the 11:15 network window):** the model and the harness are
-done and pushed (8377ac418). Next: merge origin/main; `./batch-check.sh --fast`; the named harnesses
-one at a time on the tip (BuildingDataCheck, BuildAdviceCheck, AutoBuildCheck, LabourCheck,
-SubstationCheck, PowerPlantsCheck, PowerPlanCheck, PowerPriceCheck, EssentialWorksCheck,
-BuildCardCheck, NewUnitCheck, SaveFileCheck, TownGridCheck); regenerate the maps; finish these
-notes and the ship file (provisional marker); mail "ASH1 mends at <commit>". No run is in flight.
+**Resume here (2026-11-27 10:45, before the 11:15 network window):** the model and the harness are
+done; origin/main (AP8, 0.9.217) merged at af0455e50 and pushed; `--fast` green there, and on that
+tip TownGridCheck, BuildAdviceCheck, SubstationCheck, BuildingDataCheck, LabourCheck,
+AutoBuildCheck, PowerPlantsCheck, PowerPlanCheck and EssentialWorksCheck all exit 0. Next: on the
+tip, BuildCardCheck, NewUnitCheck, SaveFileCheck, PowerPriceCheck one at a time (merge origin/main
+first if it moved); regenerate the maps; the ship file (provisional marker); mail "ASH1 mends at
+<commit>" with the pick (ALL) and the review line. No run is in flight.
 
 Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-findings.md`), brief
 `docs/queue/ASH1.md`. Each condition is caused on fixtures of the batch's own; his save was never read.
