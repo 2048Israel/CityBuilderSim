@@ -782,6 +782,11 @@ baseline-versus-itself proof already passed. Final comparison artifacts are
 have ended. Ship-file row validation exits 0; the readiness marker stays
 provisional. No final ready claim or dry-run authorization is inferred.
 
+After scoring, merged main `c52ad5136`: its only addition since `c71984995`
+is the nightly's HA1 timing record in `docs/queue/HA1.md`. No model, data,
+scorer or ensemble input changes; the measured source remains `4ffbb65b2`.
+RES3 has not shipped at this merge.
+
 At RES3's later merge, retain BOTH its reserves-capped window repayment and
 its P1 pricing of the advance left owed on the bank and central-bank books.
 Do not erase unpaid debt or retire reserves the bank has not got. The

@@ -114,3 +114,5 @@ The order, the tier and the soft skip add to `AllChecks`, `pick.sh`,
 machinery: the hand list's history comment, the CB1-L row, and whatever the
 tier makes redundant in `ship.sh`'s FULL rule. The notes give
 `git diff --numstat origin/main` over those files.
+
+HA1-CLOCK, a new reading (the nightly, 2026-11-27 03:12, 0.9.215 at c71984995, the gate box, loaded=0): SaveSlotCheck "the median due month ... holds the clock at most CLOCK_MS (25 ms)" took 25.8 ms, where the previous night (0.9.212, 3bf83d20e) took 22.3. Its attribution was inconclusive (the boundary did not confirm), and 0.9.213-0.9.215 (AP6, CBK1, AP7) lie between. Re-measure on the quiet box as above, then decide between a mend and the budget.
