@@ -900,8 +900,8 @@ public class CentralBankCheck {
         theSplitFloor();
         theRolloverAtIssue();
         theSurplusPaysEveryone();
-        howStrict();
         theParRolledIntoAHeldLine();
+        howStrict();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);

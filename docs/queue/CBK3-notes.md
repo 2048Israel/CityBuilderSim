@@ -529,3 +529,16 @@ recovery. These are not the same capital/pending state as the desk chat's
 only the matched1257 replay, validated against the retained original results,
 is used as the quantitative control. The screenshot remains separate evidence
 of the losing window-funded book.
+
+Final BankCheck exact run on7d92c82c6 passes. Helper25 source review proves
+section22 owns its60-month town, held-line/par branches and scratch saves;
+howStrict neither uses nor updates its cumulative audit counters. Its call
+now runs before howStrict, retaining every fixture/assertion/month and the
+same counters. This moves independent conservation/save coverage earlier;
+it does NOT make a cutoff green. Section21 still has mandatory assertions
+and saved-rule/default checks after its table and must finish in full.
+The call swap adds/removes one line, changing no test budget or predicate.
+The attempted baseline population comparison is unavailable: retained842
+Ensemble AUTO2seed12 and strict40/3/21 differ in fitted founding, market seed,
+player/works and advise cadence. No population drift is attributed to CBK3
+from that mismatched comparison, and no FS10 timeout exemption is claimed.
