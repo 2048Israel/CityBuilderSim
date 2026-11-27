@@ -793,6 +793,198 @@ Do not erase unpaid debt or retire reserves the bank has not got. The
 ensemble does not authorize a dry run: ask `CBK3 dry run?` after the verdict
 and wait for the orchestrator's slot.
 
+## Solvency replay requested while RES3 mends (2026-11-27)
+
+Orchestrator `20261127-032425-506` acknowledges the PASS and unmet aim, keeps
+the dry run after RES3's ship, and explicitly authorizes four sequential
+laptop replays: ZERO_HOT seeds 6 and 4, current main against CBK3. The question
+is whether good collateral liquidity was refused to a solvent bank, rather
+than whether its ratio looks healthy after a rescue. A CBK3 liquidity defect
+must be mended here; insolvency or a demonstrated BFW1 defect must be recorded
+with evidence. Any model mend moving the default trace requires a new ensemble.
+
+★ Use main `c52ad5136` and the measured CBK3 model `4ffbb65b2`, the original
+402-month policy horizons and actions, scratch instrumentation at the actual
+failure/funding phases, and common-column equality against the retained CSVs
+to check that observation does not perturb the model. Delegate the trace to
+`CBK3-failures` in its own worktree, with a separate control worktree; committed
+memory was 50.49% before dispatch. The helper alone owns the replay slot, one
+compiler or model JVM at a time; the parent runs none. No save slots or live
+saves, production changes, fixtures or scorer changes are authorized for the
+diagnosis. Parent keeps the defect decision and records.
+
+Reality checked again on 2026-11-27:
+
+- The [Fed's primary-credit guidance](https://www.federalreserve.gov/monetarypolicy/discountrate.htm)
+  provides ready liquidity for generally sound institutions with pledged
+  collateral, and does not restrict how primary-credit proceeds are used.
+- [Governor Bowman's Bagehot discussion, 2024-04-03](https://www.federalreserve.gov/newsevents/speech/bowman20240403a.htm)
+  distinguishes secured liquidity support to solvent institutions from the
+  resolution of failed banks. A funding ceiling is not a reason to deny a
+  sound institution liquidity that its good collateral supports.
+- The [Fed's collateral valuation policy](https://www.frbdiscountwindow.org/pages/collateral/collateral_valuation)
+  still makes assigned collateral value determine borrowing capacity and
+  applies valuation margins. Bagehot is not authority to drop the haircut
+  ceiling or make the equity desk eligible.
+- [RBA Governor Stevens, 2008-04-15](https://www.rba.gov.au/speeches/2008/sp-gov-150408.html)
+  cautions that an excessive penalty which makes the asset/funding interest
+  spread negative can hasten insolvency. Therefore the trace must identify
+  the loss and expense that cross zero, not merely repeat the negative-equity
+  failure trigger. Opening solvency, funding available, actual bills and
+  pre-rescue marks/provisions all matter.
+
+Column clarification from the helper (`20261127-033616-871`): the existing
+ensemble column `cb_advances` reads `getAdvancesToTreasury`, not
+`getAdvancesToBank`. Its phase-1 values must not be treated as bank-window
+claims. The remittance/failure comparison is unaffected. The phase replay
+reads the actual bank claim, collateral capacity and foreign settlement
+explicitly; no bank-funding conclusion is inferred from that CSV column.
+
+### Replay result and limits
+
+All four authorized laptop JVMs ended, sequentially, at the full month-402
+horizon: main `c52ad5136` has no failure in either seed; CBK3 `4ffbb65b2`
+has five in seed 6 and one in seed 4. The observer wraps bank/funding/mark
+mutations and reads the pre-rescue state; it does not change a policy,
+price, fixture or model mutation. The driver uses `TempDirs.create` and a
+private `GameFiles` pair, with the required C:/ earth/world settings and
+`cbs.parallel=1`. Parent reviewed the patch/probe: wrappers preserve the
+original bodies, reflection reads values and writes only diagnostic output.
+No production patch was taken from the helper.
+
+Both candidate runs and control seed 4 match **all 401 × 81 common retained
+CSV cells exactly**. Control seed 6 matches every cell through month 342;
+585 cells differ in 58 later months beginning at 343, initially in a
+cumulative flow by about 2e-13 and later spreading to other observations.
+The local JVM is 21.0.4+8 versus the retained box's 21.0.13, and main differs
+from the older retained source. No attribution to JVM, source or observation
+is established, and full control-6 neutrality is not claimed. Its entire
+failure-relevant prefix is exact, and the four replays reproduce 0→5 and
+0→1. No tolerance or observation was changed to hide the late drift.
+
+**No uncovered rollover or liquidity refusal is demonstrated.** All 2,406
+scheduled funding snapshots cover wholesale need exactly: 802 per candidate
+seed, 401 per control seed. Existing claims can differ from current need
+between settles; those are still debts, not evidence of a refused advance.
+At the six pre-rescue calls, the bank is below zero book equity and its
+capital growth/headroom is zero. The collateral ceiling is above each
+current window request. New borrowing is not denied against available
+collateral at a positive-equity funding close.
+
+Figures below are native money units rounded to six decimals. The committed
+[full-precision event CSV](CBK3-failure-trace.csv) retains assets/liabilities,
+funding and deposit operands, stable funding/desk capacity and equity bridges.
+Control equity is read at the matching failure-call ordinal, not after the
+candidate's rescue.
+
+| Seed / month | Control equity | Candidate equity before rescue | Minimum equity | Window request / eligible collateral | Foreign principal | Stable desk room |
+|---|---:|---:|---:|---:|---:|---:|
+| 6 / 132 | 3532.802798 | −111.132177 | 817.658289 | 0 / 4879.131474 | 2524.069665 | 0 |
+| 6 / 133 | 3538.118193 | −1592.828771 | 421.399438 | 0 / 2027.588222 | 963.266299 | 0 |
+| 6 / 135 | 3149.520322 | −125.078031 | 272.668882 | 0 / 2034.639813 | 0 | 2130.918047 |
+| 6 / 300 | 8727.454124 | −551.278877 | 5947.821952 | 13910.918206 / 35044.496572 | 46595.469645 | 0 |
+| 6 / 312 | 10171.663183 | −10660.351470 | 5453.178437 | 25445.906003 / 25980.028625 | 40078.946421 | 0 |
+| 4 / 176 | 4210.914986 | −130.714052 | 1632.356563 | 11486.795467 / 28769.666880 | 14940.968042 | 0 |
+
+The loss sequence explains more than the failure trigger:
+
+- **6 / 132:** securities mark −445.314946 takes equity 363.164622 to
+  −82.150324; subsequent operations leave −111.132177. The 17.960846
+  funding bill left positive 363.138865 before the mark.
+- **6 / 133:** net provisions 2847.125874, including Wood Products writeoff
+  2879.852311, dominate net income −2819.319278 against opening equity
+  1226.490506. Equity is already −1586.164497 before funding; its 6.664275
+  bill deepens the deficit to −1592.828771.
+- **6 / 135:** mark −448.546761 takes positive 330.183980 to −118.362781;
+  the final pre-rescue figure is −125.078031. Wholesale need and its bill
+  are both **zero**. This failure cannot be a denied funding rollover.
+- **6 / 300:** opening equity 8905.458074 meets net provisions 8636.183005
+  (Wood Products writeoff 8722.811932). Funding 552.876824 leaves positive
+  231.495331; a later mark −841.242433 crosses 290.111456 to −551.130977,
+  ending −551.278877 before rescue. Adding back the whole funding bill on
+  this fixed path gives +1.597948, but foreign interest alone still leaves
+  −119.087550. Funding is contributory; this arithmetic is not a replay
+  counterfactual and does not prove a BFW1 or CBK3 pricing cause.
+- **6 / 312:** net provisions 18095.427074, including Copper Refining
+  writeoff 18490.243080, overwhelm opening equity 7718.999356. Equity is
+  already −9921.284721 before funding; the 739.066749 bill deepens it to
+  −10660.351470. This is an asset-loss insolvency in the measured book.
+- **4 / 176:** opening 1684.624935 + net income −85.317169 + a retained
+  `discountRestruck` loss −1730.021818 = −130.714052 (bridge residual
+  about 7.7e-12). No dividend, buyback or preferred outflow explains it.
+  A final securities mark −183.256804 crosses 53.066644 to −130.190161;
+  the funding bill 8.576881 had left positive 81.579278 before later trading.
+  The large discount entry has the inherited accounting limitation below;
+  it must not be certified as an economic loss from its field name.
+
+Deposits and the desk differ substantially between the two paths. For
+example, seed 4's household deposit book at the matched call is 396.483843
+versus control 11060.232307. Those levels do not establish the timing or
+cause of a deposit run. The complete phase/deposit operands are retained;
+despite these differences, every scheduled funding need is met. The desk
+has no stable room in five cases, but seed 6 / 135 has 2130.918047 and still
+fails from its existing securities mark with no funding need. Capital, desk
+and deposit constraints must not be substituted for the actual loss bridge.
+
+### Inherited premium accounting: BPM1 queued
+
+The helper localized seed 4's −1730.021818 entry to the primary-settlement
+interval, event sequence 155685→155686. The asset is **domestic treasury
+paper**, separate from the equity desk. `Debt.reopen` records signed face
+minus proceeds until settlement. `Debt.settled` then floors the bank's own
+unearned discount at zero. `Game.restrikeBankDiscount` recognizes
+delta(bank face) − bank cash paid − delta(bank unearned discount), so a
+premium beyond the bank's own remaining discount becomes an immediate
+retained loss. The later cash/book refresh realizes the balance-sheet change.
+The related issue/settle/re-strike method bodies are identical in candidate,
+current main and the retained source. BK2 notes, call ★1, explicitly chose
+the floor while leaving premium carrying to its own batch.
+
+The [OCC's August 2026 accounting guidance, 1A question 16](https://www.occ.treas.gov/publications-and-resources/publications/banker-education/files/pub-bank-accounting-advisory-series.pdf)
+requires premium amortization as a yield adjustment, with applicable
+call/prepayment exceptions. Purchase above par is not itself a demonstrated
+economic loss of that premium. The trace does not record individual auction
+line/coupon/yield/face/cash operands, so it cannot prove overpayment or
+certify this bank's economic solvency after correcting its carrying basis.
+It proves book insolvency, full rollover funding and an inherited accounting
+concern; it does **not** prove six sound banks or six valid economic failures.
+
+★ Queue **BPM1**, id checked free (exit 0), in the ship file with its own
+brief: carry and amortize purchased premiums, cause the above-par fixture,
+retain the conservation coverage, and check the saved meaning. This is
+main's existing bond-cost basis, distinct from BFW1's credit spread/market
+closure and from a CBK3 refusal of good collateral liquidity. Do not add a
+funding subsidy or change a collateral/price/audit fixture here to conceal
+the loss. No CBK3 model mend is supported by these six funding/loss bridges;
+the production model and the final ensemble remain `4ffbb65b2`. Other
+paired failure increases remain untraced, not certified by these two seeds.
+
+Kept evidence, paths relative to this worktree's root:
+
+- `R = ../codex-CBK3-failures/target/phase2`: `failure-bridges.csv`,
+  `paired-prefail.csv`/`.json`, `proof-and-summary.json`,
+  `premium-source-evidence.json`, `seed4-first-discount-booking.json`,
+  `diagnosis.txt`, `commands.log`, `replay.sh`, `manifest.json`,
+  `instrumentation.patch`, `CBK3FailureProbe.java` and `Ensemble.java`.
+- `S = ../codex-CBK3-failure-control/target/phase2`: the control patch;
+  the exact commands for both models are in R. Both R/S retain
+  `ZERO_HOT-{6,4}.csv`, `.log`, `.csv.jvm.txt`,
+  `.diagnosis.json`, `.funding-coverage.csv` and full `.csv.events.csv.gz`.
+  R's `event-archives.json` verifies decompressed byte hashes.
+- [The committed manifest](CBK3-failure-trace-manifest.json) records both
+  source commits, probe/driver hashes and patch hashes. Parent verified the
+  patch SHA256s, `e32bc6fd…a8c1b77` and `19bac4e2…e75056d`; the committed
+  six-event CSV changes line endings to repository LF only.
+
+Helper's bounded report is bus `20261127-040212-759`; all replay jobs ended,
+the analysis turn ended at 04:02 and its final acknowledgment at 04:03.
+No JVM remains. Report the finding in a few lines and wait for the
+orchestrator's dry-run go after RES3; no new go is inferred. The event CSV
+was checked equal to the measured source except LF normalization, the
+manifest parses, `git diff --check` passes for these record edits, and the
+ship/queued-row validator exits 0. Prior model checks and the 80-run
+ensemble are not rerun for these records-only additions.
+
 ## For the manual
 
 Use the Bank tab to choose the commercial bank or the central bank. The
