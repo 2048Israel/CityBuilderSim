@@ -2,7 +2,7 @@
 
 Generated 2026-11-27 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**262 harness files, 30,681 labelled assertions.** AllChecks runs 262 of them.
+**262 harness files, 30,682 labelled assertions.** AllChecks runs 262 of them.
 
 ## Which harnesses read which class
 
@@ -7594,7 +7594,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1084 ...and the push moves it as it moves the unreformed one, a thousandth the size
   - L1088 a city founded in the new unit carries the guards in it
 
-## CurrencyRegimeCheck.java - 350 labelled assertions
+## CurrencyRegimeCheck.java - 351 labelled assertions
 
 > Proves the D$'s four regimes - Float, Lean against falls (the default), Band
 > and Peg to the US$ - hold the currency where they say and cost what they
@@ -7791,195 +7791,196 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1513 the treasury's city: its cash paid it, as much as its room allowed (
   - L1515 ...getBoughtThisMonth() includes it: the treasury's city bought what the central bank's did, and the bill besides (
   - L1518 ...the treasury's cash is lower than the central bank's city's by what it paid
-  - L1520 ...and the central bank's city's M0 is higher by it (the treasury's money left the city, the central bank's was made)
-  - L1522 the audit closes in both, the settlement month (residuals
-  - L1545 equity after the settlement, less the purchase not yet paid for, differs between the cities by what the treasury paid, to the cent: the central bank's own
-  - L1547 the audit closes in both, every month of it
-  - L1554 fixture: the central bank's city paid for dollars in new money (lifetime
-  - L1557 fixture: the identity was held to in
-  - L1559 equity less the vault plus what the bank paid for the vault's dollars is the remittance due less the loss carried, in both cities, every month (
-  - L1562 ...and the old statement, without the term, misses in the central bank's city by exactly what it paid in new money: the term is what closes it
-  - L1564 ...the miss without it is a real one, not rounding (
-- **L1598 10. saved and loaded mid-peg**
-  - L1610 purchase save
-  - L1611 fixture: a pegged city with a purchase owed, a doubt share struck and the rate held away from its shadow
-  - L1617 saved to its scratch folder
-  - L1622 the loaded city keeps the regime, the payer, the peg, the shadow, the doubt, what is owed and who owes it, to the bit
-  - L1624 ...and the hot money's doubt, the vault and the dial
-  - L1644 the next 12 months of rate, vault, M0, cash and credibility equal the twin that never saved (within SaveFileCheck's replay tolerance, 1e-9)
-  - L1645 ...and the regime is the same every month, the break (if any) in the same month
-  - L1646 ...to the bit
-  - L1656 fixture: a band mid-crawl, the rate held away from the shadow, with a purchase owed by the treasury
-  - L1668 fixture: a peg that broke by doubt eight months ago, its overshoot still fading
-  - L1677 restore(toSaveArray()) keeps every regime field of
-  - L1678 ...and the regime's state it cannot be asked: the market, the draws, the seed
-  - L1695 ...and each plays 24 months on exactly as the one it was saved from: rate, vault and every regime field to the bit (the fade of a break, the crawl of a band)
-  - L1700 fixture: the regimes are slots 71 on, the array longer than 94
-  - L1703 an array cut at slot 70, as an older save wrote it, restores as Lean with nothing owed, held or broken
-  - L1706 ...its band is the default width, unset
-  - L1707 ...and the rate it had is the saved one
-  - L1708 ...and the vault is the saved vault, in dollars
-  - L1711 fixture: the band's edges have dealt and it carries a support (getHoldFelt()
-  - L1713 slot 147 is the hold's support, and restore() reads it back to the bit
-  - L1716 an array cut at slot 146, as XR4 wrote it, restores with no support (a hold just entered) and the rest of the regime as saved
-  - L1723 a support that is not a number reads as none
-- **L1729 11. a real run, counted**
-  - L1737 fixture: the city is pegged and its edge's dollars are paid by the default payer, the central bank, in new money
-  - L1774 every figure of the city is a number every month, and the audit closes every month (
-  - L1776 fixture: the city was pegged for some months (
-  - L1777 every month the peg held the rate was the peg to the digit, and a month that held did not break
-  - L1778 the peg broke at most once, and the count agrees with the model's
-  - L1780 a break month is the last pegged month: it began pegged and ended on Float, nothing was pegged after it, and the months pegged are the months to the break
-  - L1783 what was counted is consistent: the months held and the month that broke are the months pegged, and the vault sold or bought in no more of them than held
-  - L1785 ...a month the peg broke sold and bought nothing (its break let the rate go)
-  - L1788 the central bank keeps nothing, restated, in every one of the
-  - L1790 the vault bought dollars at the peg (in
-- **L1803 12. the hot money's month crosses a save**
-  - L1824 hot-money save
-  - L1825 fixture: a pegged city held two months past its repeg, hot money leaving on doubt this month and a doubt struck for the next
-  - L1831 fixture: the month it is saved in had hot money arrive, depart, and leave on doubt, and the doubt left is part of what departed
-  - L1833 saved to its scratch folder
-  - L1838 the loaded city reads the month's arrived as the live one does, to the bit
-  - L1839 ...the month's departed
-  - L1840 ...the month's doubtDeparted
-  - L1841 ...the net flow, which is the first two
-  - L1842 ...the doubt's lifetime
-  - L1843 ...the stock
-  - L1846 fixture: the figure Policy draws is a sum of money (US$
-  - L1847 the figure Policy draws for the doubt's departure, in US$, is the loaded city's as the live one's
-  - L1848 ...and the regime's state is as the live city's, to the bit (the doubt that acts next month is saved with it)
-  - L1859 a month on, rate, vault, defence, the seven moves, M0, cash and credibility are equal to the bit in both cities
-  - L1860 ...and so are the hot money's arrived, departed, doubtDeparted and its stock
-  - L1863 ...and the audit closes in both (residuals
-- **L1870 13. leaving a peg takes its doubt with it**
-  - L1877 fixture: the peg held the month and the reprice struck a doubt (BREAK_GAP is
-  - L1884 fixture: a copy restored from the save is pegged with the same doubt (
-  - L1886 leaving the peg for
-  - L1891 setRegime(PEG) on a peg is no change: the doubt is kept
-  - L1896 leaving the peg and entering it again before any month does not revive the doubt (the new peg is at the rate of the day)
-  - L1902 fixture: section 12 left a saved city to load twins from
-  - L1910 loaded doubt twin
-  - L1911 fixture: the twins are loaded alike - both pegged, the same doubt struck (
-  - L1917 the twin that left the peg between two presses has no doubt to hand the hot money; the one that stayed has it still
-  - L1924 the twin that stayed pegged saw hot money leave on doubt that month (the condition is caused:
-  - L1925 the twin that left the peg saw none leave on doubt: getDoubtDeparted() is 0 that month
-  - L1926 ...and the audit closes in both (residuals
-- **L1933 14. a peg pays the pressure, not the month's balance**
-  - L1949 fixture: the month is a SURPLUS and the shadow is WEAK, over the peg (
-  - L1951 the vault FELL: it sold and bought nothing, where a peg that met the month's balance would have bought the surplus
-  - L1953 ...exactly what the lift takes: interventionLocalFor(the log of the peg over the free rate, a year's GDP) over the rate
-  - L1954 ...and the vault is lower by exactly that
-  - L1955 ...which is not the surplus (US$
-  - L1956 ...the rate is the peg to the digit
-  - L1957 ...the hold is the lift, a sale's, negative: getHoldFelt() is the log of the peg over the shadow
-  - L1958 ...and it is below 0
-  - L1964 fixture: the month is a DEFICIT and the shadow is STRONG, under the peg (
-  - L1965 the vault BOUGHT: it bought and sold nothing, where a peg that met the month's balance would have sold the deficit
-  - L1967 ...exactly what the lift takes
-  - L1968 ...the vault is higher by exactly that
-  - L1969 ...and what is owed for it is that purchase at the month's rate
-  - L1970 ...a purchase never breaks a peg: still a peg, the rate the peg to the digit, the hold above 0 (a purchase's)
-  - L1989 a weak gap held a year of surplus months: the peg holds every month and the vault falls every month - it sold in
-  - L1991 ...each month's sale is the lift's (the first the gap, each after it what the support's fading takes, less a gap that is closing), to a millionth of a dollar
-  - L1992 ...and the vault's total fall is the sum of the model's figures
-  - L1993 ...the first month paid the whole gap, and every month after it paid less (
-  - L2000 fixture: the lift (
-  - L2002 a gap past INTERVENTION_LINEAR of a year's output: the vault sold interventionLocalFor()'s dollars, on the bounded (logarithmic) branch
-  - L2003 ...which is more than the linear rule would ask for that lift (US$
-  - L2012 a devaluation is a purchase: the peg moved 25% weaker on balanced trade, the vault bought the lift and sold nothing, the rate the new peg to the digit
-  - L2014 ...exactly interventionLocalFor()'s dollars
-  - L2017 repeg() keeps the hold's support: the revaluation back to the old peg leaves getHoldFelt() as it was, to the bit
-  - L2019 a revaluation is a sale: the vault sold the lift back to the old peg - the support's fading and the rest of the way - and bought nothing, the rate the old pe...
-  - L2021 ...exactly interventionLocalFor()'s dollars
-  - L2032 fixture: a currency with no GDP, pegged, its shadow over the peg (
-  - L2034 with no GDP interventionLocalFor() is 0: the hold holds the rate and deals nothing - the peg to the digit, the vault where it was, nothing sold or bought, no...
-- **L2042 15. a band's edges pay the pressure**
-  - L2050 fixture: the month is a SURPLUS (US$
-  - L2052 the weak edge sells in a surplus month - the vault sold and bought nothing, where a band that met the month's balance would have held the edge for nothing
-  - L2054 ...exactly what the lift to the edge takes
-  - L2055 ...and the rate is the weak edge exactly
-  - L2056 ...the hold is the lift, a sale's: the log of the edge over the shadow
-  - L2062 fixture: the month is a DEFICIT (US$
-  - L2064 the strong edge buys in a deficit month - the vault bought and sold nothing, where a band that met the month's balance would have bought nothing
-  - L2066 ...exactly what the lift to the edge takes
-  - L2067 ...what is owed for it is that purchase at the month's rate
-  - L2068 ...and the rate is the strong edge exactly
-  - L2075 fixture: the pulse took the rate to the weak edge and sold (US$
-  - L2079 fixture: INTERVENTION_HALF_LIFE is a whole number of months
-  - L2092 inside the band,
-  - L2093 ...the rate is the shadow times exp(getHoldFelt()), every month
-  - L2094 ...nothing is dealt inside: sold, bought and the vault are where they were, every month (
-  - L2095 ...and the hold is exactly what the support faded to, every month, to the bit (
-  - L2096 ...INTERVENTION_HALF_LIFE months on, half the support is left
-  - L2108 fixture: the sale the weak edge needs (US$
-  - L2110 under its floor the band gives way for the month - nothing sold, the vault where it was, the regime still Band, no break
-  - L2112 ...the rate stands where it would with nothing dealt: the shadow, the floating twin's rate
-  - L2113 ...past the edge it was to hold, and the hold is 0: it dealt nothing to show for
-- **L2127 16. the overshoot both ways**
-  - L2162 fixture: a peg broke by doubt with the shadow on the
-  - L2168 the
-  - L2170 ...on the
-  - L2172 the floating twin's rate is the shadow the peg broke from
-  - L2173 ...so the break left the peg's rate off it by OVERSHOOT of the gap, in logs
-  - L2174 fixture: the gap was
-  - L2176 nothing is dealt in the month of the break and the hold goes with the peg: the vault is where it was, getHoldFelt() is 0, Float after it
-  - L2179 fixture: MARKET_HALF_LIFE is a whole number of months
-  - L2183 MARKET_HALF_LIFE months on, half the overshoot is gone, on the
-  - L2187 ...and another MARKET_HALF_LIFE on, a quarter of it is left
-  - L2188 ...and the peg's market path is the floating twin's, every month of it (
-- **L2217 17. the tied path prices the curve**
-  - L2230 fixture: three managers on the same dial (
-  - L2232 fixture: the inflation rule is not the dial (the rule at today's inflation
-  - L2234 untied - the source off, or none handed - every path is the rule's to the bit: the curve's expected dial 600 months out, the floater's path, the long yields,...
-  - L2241 tied (the switch on): isTied() says so
-  - L2242 ruleNow() is the dial when tied: the market expects the dial to stay where the US's rate keeps it
-  - L2243 settledDial() is the dial when tied
-  - L2246 the floater's expected path is flat at the dial, every month (
-  - L2252 the curve's expected dial is the floor's premium over the dial closing on the dial (DRIFT_MONTHS), every month for fifty years, not on the rule
-  - L2253 ...it starts at the floor, to the bit
-  - L2258 the long yields are the curve on the tied path, not the rule's: the 10-year and the 30-year differ from the untied manager's by more than a point
-  - L2260 ...the dial expected over 30 years is nearer the dial than the rule's path put it (
-  - L2261 ...and the long yield is still the curve taken apart: the dial expected, the credit spread, the term premium less the compression
-  - L2275 the US's rate up
-  - L2277 ...where the untied manager's 30-year, the rule's path under a dial that moved the same, hardly moves (
-  - L2278 ...ruleNow() and settledDial() follow the dial
-  - L2282 untied again, a manager that was tied prices the rule's path to the bit - the caches' keys carry the tie - exactly as the one never handed a source on the sa...
-  - L2289 in a city the manager is tied under a peg and under nothing else: Lean no, Peg yes, Band no, Float no
-  - L2293 fixture: the city is pegged and has struck its expectations
-  - L2294 a pegged city: ruleNow() is the dial the peg ties
-  - L2295 ...and settledDial() is
-  - L2297 left for Lean, the same city's rule is the inflation rule again: ruleNow() is advisedPolicyRate() at the inflation the month struck
-- **L2331 18. a thin vault's months are what the hold does**
-  - L2348 fixture: a pegged currency with a GDP and a floor, the vault deep (cover
-  - L2350 the projection over a vault above its first month's cost is 1 + (headroom - first month) / each month after it, from the harness's own sums
-  - L2354 ...asking is pure: the vault, the rate and the hold are where they were, to the bit
-  - L2370 the shadow stood at the steady gap over the peg every month, and the peg held (the fixture)
-  - L2371 ...the cover stayed over THIN_COVER (
-  - L2372 the first month's sale is the projection's first month: interventionLocalFor(the gap) over the rate, to a millionth of a dollar
-  - L2373 ...and each month after it sold the projection's each-month figure, to a millionth of a dollar (
-  - L2378 a vault whose headroom is half the first month's cost holds half a month
-  - L2380 ...and one whose headroom is exactly the first month's cost holds exactly one
-  - L2382 ...and one with the first month and one more month's cost holds two
-  - L2387 fixture: the first vault is at its floor to the dollar, the second under it
-  - L2389 a vault at its floor holds 0 months
-  - L2390 ...and one already under it, 0
-  - L2395 with no GDP the interventions' rule has nothing to weigh a deal against: the months are infinite
-  - L2397 ...and with no gap there is nothing to hold: infinite, at a gap of 0 and at a gap the other way
-  - L2413 fixture: THIN_COVER months of imports is more than the floor and the first month's cost together (so a month opened over THIN_COVER can always pay), and the ...
-  - L2434 fixture: the run held the rate every month until the break, which came by the vault (not by doubt: the market is quiet)
-  - L2436 the months held are at most the projection struck at entry (
-  - L2438 ...and at least the months before the cover fell under THIN_COVER (
-  - L2439 ...the first
-  - L2441 ...and the projection is not the whole story for a vault that falls under THIN_COVER: it held fewer months than projected (
-- **L2447 19. a deep repeg cannot buy years of output in a month (XR7)**
-  - L2456 the audit's tolerance at the old exponential bill is still its cent floor
-  - L2457 fixture: holding
-  - L2459 the deep repeg breaks at the purchase limit before buying or owing anything
-  - L2461 the purchase-limit break leaves the dollar vault whole
-  - L2464 the appended purchase-limit cause crosses a save without moving prior cause ordinals
-  - L2466 its strong-side landing uses the same signed overshoot
-  - L2474 the purchase bound brackets the inverse at
-  - L2481 a band beyond the purchase limit gives way for the month without a purchase
+  - L1524 ...the direct new-money purchase differs by exactly what the treasury paid
+  - L1525 ...M0 differs by that payment plus the independently recorded other net issue in the two cities
+  - L1529 the audit closes in both, the settlement month (residuals
+  - L1552 settled equity, net of the actual vault, retained income, gold and subsequent purchase differences, differs by the treasury's payments, to the cent
+  - L1554 the audit closes in both, every month of it
+  - L1560 fixture: the central bank's city paid for dollars in new money (lifetime
+  - L1563 fixture: the identity was held to in
+  - L1565 equity less the vault plus what the bank paid for the vault's dollars is the remittance due less the loss carried, in both cities, every month (
+  - L1568 ...and the old statement, without the term, misses in the central bank's city by exactly what it paid in new money: the term is what closes it
+  - L1570 ...the miss without it is a real one, not rounding (
+- **L1616 10. saved and loaded mid-peg**
+  - L1628 purchase save
+  - L1629 fixture: a pegged city with a purchase owed, a doubt share struck and the rate held away from its shadow
+  - L1635 saved to its scratch folder
+  - L1640 the loaded city keeps the regime, the payer, the peg, the shadow, the doubt, what is owed and who owes it, to the bit
+  - L1642 ...and the hot money's doubt, the vault and the dial
+  - L1662 the next 12 months of rate, vault, M0, cash and credibility equal the twin that never saved (within SaveFileCheck's replay tolerance, 1e-9)
+  - L1663 ...and the regime is the same every month, the break (if any) in the same month
+  - L1664 ...to the bit
+  - L1674 fixture: a band mid-crawl, the rate held away from the shadow, with a purchase owed by the treasury
+  - L1686 fixture: a peg that broke by doubt eight months ago, its overshoot still fading
+  - L1695 restore(toSaveArray()) keeps every regime field of
+  - L1696 ...and the regime's state it cannot be asked: the market, the draws, the seed
+  - L1713 ...and each plays 24 months on exactly as the one it was saved from: rate, vault and every regime field to the bit (the fade of a break, the crawl of a band)
+  - L1718 fixture: the regimes are slots 71 on, the array longer than 94
+  - L1721 an array cut at slot 70, as an older save wrote it, restores as Lean with nothing owed, held or broken
+  - L1724 ...its band is the default width, unset
+  - L1725 ...and the rate it had is the saved one
+  - L1726 ...and the vault is the saved vault, in dollars
+  - L1729 fixture: the band's edges have dealt and it carries a support (getHoldFelt()
+  - L1731 slot 147 is the hold's support, and restore() reads it back to the bit
+  - L1734 an array cut at slot 146, as XR4 wrote it, restores with no support (a hold just entered) and the rest of the regime as saved
+  - L1741 a support that is not a number reads as none
+- **L1747 11. a real run, counted**
+  - L1755 fixture: the city is pegged and its edge's dollars are paid by the default payer, the central bank, in new money
+  - L1792 every figure of the city is a number every month, and the audit closes every month (
+  - L1794 fixture: the city was pegged for some months (
+  - L1795 every month the peg held the rate was the peg to the digit, and a month that held did not break
+  - L1796 the peg broke at most once, and the count agrees with the model's
+  - L1798 a break month is the last pegged month: it began pegged and ended on Float, nothing was pegged after it, and the months pegged are the months to the break
+  - L1801 what was counted is consistent: the months held and the month that broke are the months pegged, and the vault sold or bought in no more of them than held
+  - L1803 ...a month the peg broke sold and bought nothing (its break let the rate go)
+  - L1806 the central bank keeps nothing, restated, in every one of the
+  - L1808 the vault bought dollars at the peg (in
+- **L1821 12. the hot money's month crosses a save**
+  - L1842 hot-money save
+  - L1843 fixture: a pegged city held two months past its repeg, hot money leaving on doubt this month and a doubt struck for the next
+  - L1849 fixture: the month it is saved in had hot money arrive, depart, and leave on doubt, and the doubt left is part of what departed
+  - L1851 saved to its scratch folder
+  - L1856 the loaded city reads the month's arrived as the live one does, to the bit
+  - L1857 ...the month's departed
+  - L1858 ...the month's doubtDeparted
+  - L1859 ...the net flow, which is the first two
+  - L1860 ...the doubt's lifetime
+  - L1861 ...the stock
+  - L1864 fixture: the figure Policy draws is a sum of money (US$
+  - L1865 the figure Policy draws for the doubt's departure, in US$, is the loaded city's as the live one's
+  - L1866 ...and the regime's state is as the live city's, to the bit (the doubt that acts next month is saved with it)
+  - L1877 a month on, rate, vault, defence, the seven moves, M0, cash and credibility are equal to the bit in both cities
+  - L1878 ...and so are the hot money's arrived, departed, doubtDeparted and its stock
+  - L1881 ...and the audit closes in both (residuals
+- **L1888 13. leaving a peg takes its doubt with it**
+  - L1895 fixture: the peg held the month and the reprice struck a doubt (BREAK_GAP is
+  - L1902 fixture: a copy restored from the save is pegged with the same doubt (
+  - L1904 leaving the peg for
+  - L1909 setRegime(PEG) on a peg is no change: the doubt is kept
+  - L1914 leaving the peg and entering it again before any month does not revive the doubt (the new peg is at the rate of the day)
+  - L1920 fixture: section 12 left a saved city to load twins from
+  - L1928 loaded doubt twin
+  - L1929 fixture: the twins are loaded alike - both pegged, the same doubt struck (
+  - L1935 the twin that left the peg between two presses has no doubt to hand the hot money; the one that stayed has it still
+  - L1942 the twin that stayed pegged saw hot money leave on doubt that month (the condition is caused:
+  - L1943 the twin that left the peg saw none leave on doubt: getDoubtDeparted() is 0 that month
+  - L1944 ...and the audit closes in both (residuals
+- **L1951 14. a peg pays the pressure, not the month's balance**
+  - L1967 fixture: the month is a SURPLUS and the shadow is WEAK, over the peg (
+  - L1969 the vault FELL: it sold and bought nothing, where a peg that met the month's balance would have bought the surplus
+  - L1971 ...exactly what the lift takes: interventionLocalFor(the log of the peg over the free rate, a year's GDP) over the rate
+  - L1972 ...and the vault is lower by exactly that
+  - L1973 ...which is not the surplus (US$
+  - L1974 ...the rate is the peg to the digit
+  - L1975 ...the hold is the lift, a sale's, negative: getHoldFelt() is the log of the peg over the shadow
+  - L1976 ...and it is below 0
+  - L1982 fixture: the month is a DEFICIT and the shadow is STRONG, under the peg (
+  - L1983 the vault BOUGHT: it bought and sold nothing, where a peg that met the month's balance would have sold the deficit
+  - L1985 ...exactly what the lift takes
+  - L1986 ...the vault is higher by exactly that
+  - L1987 ...and what is owed for it is that purchase at the month's rate
+  - L1988 ...a purchase never breaks a peg: still a peg, the rate the peg to the digit, the hold above 0 (a purchase's)
+  - L2007 a weak gap held a year of surplus months: the peg holds every month and the vault falls every month - it sold in
+  - L2009 ...each month's sale is the lift's (the first the gap, each after it what the support's fading takes, less a gap that is closing), to a millionth of a dollar
+  - L2010 ...and the vault's total fall is the sum of the model's figures
+  - L2011 ...the first month paid the whole gap, and every month after it paid less (
+  - L2018 fixture: the lift (
+  - L2020 a gap past INTERVENTION_LINEAR of a year's output: the vault sold interventionLocalFor()'s dollars, on the bounded (logarithmic) branch
+  - L2021 ...which is more than the linear rule would ask for that lift (US$
+  - L2030 a devaluation is a purchase: the peg moved 25% weaker on balanced trade, the vault bought the lift and sold nothing, the rate the new peg to the digit
+  - L2032 ...exactly interventionLocalFor()'s dollars
+  - L2035 repeg() keeps the hold's support: the revaluation back to the old peg leaves getHoldFelt() as it was, to the bit
+  - L2037 a revaluation is a sale: the vault sold the lift back to the old peg - the support's fading and the rest of the way - and bought nothing, the rate the old pe...
+  - L2039 ...exactly interventionLocalFor()'s dollars
+  - L2050 fixture: a currency with no GDP, pegged, its shadow over the peg (
+  - L2052 with no GDP interventionLocalFor() is 0: the hold holds the rate and deals nothing - the peg to the digit, the vault where it was, nothing sold or bought, no...
+- **L2060 15. a band's edges pay the pressure**
+  - L2068 fixture: the month is a SURPLUS (US$
+  - L2070 the weak edge sells in a surplus month - the vault sold and bought nothing, where a band that met the month's balance would have held the edge for nothing
+  - L2072 ...exactly what the lift to the edge takes
+  - L2073 ...and the rate is the weak edge exactly
+  - L2074 ...the hold is the lift, a sale's: the log of the edge over the shadow
+  - L2080 fixture: the month is a DEFICIT (US$
+  - L2082 the strong edge buys in a deficit month - the vault bought and sold nothing, where a band that met the month's balance would have bought nothing
+  - L2084 ...exactly what the lift to the edge takes
+  - L2085 ...what is owed for it is that purchase at the month's rate
+  - L2086 ...and the rate is the strong edge exactly
+  - L2093 fixture: the pulse took the rate to the weak edge and sold (US$
+  - L2097 fixture: INTERVENTION_HALF_LIFE is a whole number of months
+  - L2110 inside the band,
+  - L2111 ...the rate is the shadow times exp(getHoldFelt()), every month
+  - L2112 ...nothing is dealt inside: sold, bought and the vault are where they were, every month (
+  - L2113 ...and the hold is exactly what the support faded to, every month, to the bit (
+  - L2114 ...INTERVENTION_HALF_LIFE months on, half the support is left
+  - L2126 fixture: the sale the weak edge needs (US$
+  - L2128 under its floor the band gives way for the month - nothing sold, the vault where it was, the regime still Band, no break
+  - L2130 ...the rate stands where it would with nothing dealt: the shadow, the floating twin's rate
+  - L2131 ...past the edge it was to hold, and the hold is 0: it dealt nothing to show for
+- **L2145 16. the overshoot both ways**
+  - L2180 fixture: a peg broke by doubt with the shadow on the
+  - L2186 the
+  - L2188 ...on the
+  - L2190 the floating twin's rate is the shadow the peg broke from
+  - L2191 ...so the break left the peg's rate off it by OVERSHOOT of the gap, in logs
+  - L2192 fixture: the gap was
+  - L2194 nothing is dealt in the month of the break and the hold goes with the peg: the vault is where it was, getHoldFelt() is 0, Float after it
+  - L2197 fixture: MARKET_HALF_LIFE is a whole number of months
+  - L2201 MARKET_HALF_LIFE months on, half the overshoot is gone, on the
+  - L2205 ...and another MARKET_HALF_LIFE on, a quarter of it is left
+  - L2206 ...and the peg's market path is the floating twin's, every month of it (
+- **L2235 17. the tied path prices the curve**
+  - L2248 fixture: three managers on the same dial (
+  - L2250 fixture: the inflation rule is not the dial (the rule at today's inflation
+  - L2252 untied - the source off, or none handed - every path is the rule's to the bit: the curve's expected dial 600 months out, the floater's path, the long yields,...
+  - L2259 tied (the switch on): isTied() says so
+  - L2260 ruleNow() is the dial when tied: the market expects the dial to stay where the US's rate keeps it
+  - L2261 settledDial() is the dial when tied
+  - L2264 the floater's expected path is flat at the dial, every month (
+  - L2270 the curve's expected dial is the floor's premium over the dial closing on the dial (DRIFT_MONTHS), every month for fifty years, not on the rule
+  - L2271 ...it starts at the floor, to the bit
+  - L2276 the long yields are the curve on the tied path, not the rule's: the 10-year and the 30-year differ from the untied manager's by more than a point
+  - L2278 ...the dial expected over 30 years is nearer the dial than the rule's path put it (
+  - L2279 ...and the long yield is still the curve taken apart: the dial expected, the credit spread, the term premium less the compression
+  - L2293 the US's rate up
+  - L2295 ...where the untied manager's 30-year, the rule's path under a dial that moved the same, hardly moves (
+  - L2296 ...ruleNow() and settledDial() follow the dial
+  - L2300 untied again, a manager that was tied prices the rule's path to the bit - the caches' keys carry the tie - exactly as the one never handed a source on the sa...
+  - L2307 in a city the manager is tied under a peg and under nothing else: Lean no, Peg yes, Band no, Float no
+  - L2311 fixture: the city is pegged and has struck its expectations
+  - L2312 a pegged city: ruleNow() is the dial the peg ties
+  - L2313 ...and settledDial() is
+  - L2315 left for Lean, the same city's rule is the inflation rule again: ruleNow() is advisedPolicyRate() at the inflation the month struck
+- **L2349 18. a thin vault's months are what the hold does**
+  - L2366 fixture: a pegged currency with a GDP and a floor, the vault deep (cover
+  - L2368 the projection over a vault above its first month's cost is 1 + (headroom - first month) / each month after it, from the harness's own sums
+  - L2372 ...asking is pure: the vault, the rate and the hold are where they were, to the bit
+  - L2388 the shadow stood at the steady gap over the peg every month, and the peg held (the fixture)
+  - L2389 ...the cover stayed over THIN_COVER (
+  - L2390 the first month's sale is the projection's first month: interventionLocalFor(the gap) over the rate, to a millionth of a dollar
+  - L2391 ...and each month after it sold the projection's each-month figure, to a millionth of a dollar (
+  - L2396 a vault whose headroom is half the first month's cost holds half a month
+  - L2398 ...and one whose headroom is exactly the first month's cost holds exactly one
+  - L2400 ...and one with the first month and one more month's cost holds two
+  - L2405 fixture: the first vault is at its floor to the dollar, the second under it
+  - L2407 a vault at its floor holds 0 months
+  - L2408 ...and one already under it, 0
+  - L2413 with no GDP the interventions' rule has nothing to weigh a deal against: the months are infinite
+  - L2415 ...and with no gap there is nothing to hold: infinite, at a gap of 0 and at a gap the other way
+  - L2431 fixture: THIN_COVER months of imports is more than the floor and the first month's cost together (so a month opened over THIN_COVER can always pay), and the ...
+  - L2452 fixture: the run held the rate every month until the break, which came by the vault (not by doubt: the market is quiet)
+  - L2454 the months held are at most the projection struck at entry (
+  - L2456 ...and at least the months before the cover fell under THIN_COVER (
+  - L2457 ...the first
+  - L2459 ...and the projection is not the whole story for a vault that falls under THIN_COVER: it held fewer months than projected (
+- **L2465 19. a deep repeg cannot buy years of output in a month (XR7)**
+  - L2474 the audit's tolerance at the old exponential bill is still its cent floor
+  - L2475 fixture: holding
+  - L2477 the deep repeg breaks at the purchase limit before buying or owing anything
+  - L2479 the purchase-limit break leaves the dollar vault whole
+  - L2482 the appended purchase-limit cause crosses a save without moving prior cause ordinals
+  - L2484 its strong-side landing uses the same signed overshoot
+  - L2492 the purchase bound brackets the inverse at
+  - L2499 a band beyond the purchase limit gives way for the month without a purchase
 
 ## CurveCheck.java - 85 labelled assertions
 

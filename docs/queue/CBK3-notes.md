@@ -1552,3 +1552,33 @@ of the treasury's revenue is guaranteed or imposed.
 ### Morning checkpoint, 2026-11-27 11:03 Halifax
 
 OwnerCheck completed with all assertions OK (target/CBK3-review-OwnerCheck.log), including the current 32-cell snapshot and the real legacy 31-cell prefix. The named run reports suite OK. No owned harness or remote gate remains running. The current review mends have fast, GoldStandardCheck, BankRulesCheck, SaveFileCheck and OwnerCheck green; the new full CentralBankCheck and remaining old-dry diagnoses are still owed. The failed 4704e1c4b dry run is evidence only, not a reusable green gate. The marker remains provisional. Resume about19:00: finish the unresolved dry-run findings, obtain REV-CBK3b's second look on the mends, then the final-model80-run ensemble (M1/F1 hard stops) and a newly authorised full dry run. No ready claim is made.
+
+## Evening resume, 2026-11-27
+
+Resumed on orchestrator `20261127-184011-044`. Main's intervening
+`ecac4f4bd` only queues the UX1 study; merged it without changing the model.
+The morning checkpoint is `0119a4307`. The helper's bounded classification
+of the old dry run remains the inventory; no unproved failure is assigned a
+queued owner. One helper resumes for FundCheck's exact native premises.
+
+★ CurrencyRegimeCheck's payer comparison now distinguishes the purchase
+from the other flows the two played cities actually produce after choosing
+different payers. It retains the independently equal owed bill, treasury
+payment and central-bank direct issue assertions, and checks the direct
+issue difference against the treasury's payment to MoneyAudit.CENT. The
+cross-city M0 difference includes independently recorded non-purchase issue
+less retirement. The four-month equity comparison nets the actual vault,
+unpaid edge, remittance/loss, gold retirement and subsequent total purchase
+differences, retaining the original positive purchase and every monthly
+money audit. This restates the existing central bank balance-sheet identity;
+it neither assumes equal funding income after the cities diverge nor changes
+a cent bound or the model. The native named rerun is in progress.
+
+CurrencyRegimeCheck completes **exit0**, including both payer reconciliations,
+the actual settlement and every existing save/money law. Its old unexplained
+base gap is now independently accounted: direct issue614.014021780, other
+net issue-3.25365443399, actual M0 gap610.760367346; the four-month
+equity comparison's worst miss is4.55e-13. Logs:
+`target/CBK3-evening-CurrencyRegimeCheck.txt` and `.log`.
+The full current CentralBankCheck is now running alone, with all24 shapes
+and its post-loop native/save laws; no completion is claimed yet.
