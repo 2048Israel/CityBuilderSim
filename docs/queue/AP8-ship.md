@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — AP8, slot 9 at 50x: the households' bond orders and the build quote — 2026-11-27, ready, see docs/queue/AP8-notes.md
 Slot 9 was still short of 10 months a second at 50x after AP7. Each household bid the bond market posted walked every
