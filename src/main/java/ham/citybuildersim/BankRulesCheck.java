@@ -347,6 +347,26 @@ public final class BankRulesCheck {
         capital.rules().set(BankRules.Dial.CAPITAL_MINIMUM, .16);
         check("a higher capital minimum supports less credit", capital.capacity() < capacity);
         check("raising risk capital does not relax the insured-loan leverage target", capital.leverageTarget() >= insuredTarget);
+        // A looser risk rule leaves the independent leverage floor in force,
+        // both before L8 and with its conservation buffer. The old scaling
+        // put the target below this 2.7%-capitalised insured mortgage bank.
+        for (boolean conservation : new boolean[]{false, true}) {
+            Bank loosened = new Bank();
+            loosened.refresh(1, 100_000, 0, 100_000, 0, 0);
+            loosened.setWeightedBook(0, 0, 0);
+            loosened.setMortgageBook(100_000, 0);
+            loosened.setCash(-97_300);
+            loosened.hearCapitalRule(conservation);
+            loosened.rules().set(BankRules.Dial.CAPITAL_MINIMUM, .04);
+            check("a 4% risk minimum preserves the leverage target and top (buffer " + conservation + ")",
+                    loosened.leverageTarget() >= loosened.leverageMinimum()
+                            && loosened.leverageTop() >= loosened.leverageTarget());
+            check("a 4% risk minimum cannot grow an insured bank below the leverage floor (buffer " + conservation + ")",
+                    loosened.leverageRatio() > 0 && loosened.leverageRatio() < loosened.leverageMinimum()
+                            && loosened.lendingGrowthLimit() == 0 && loosened.projectLeverageHeadroom() == 0);
+            check("insured credit still carries at least the leverage minimum (buffer " + conservation + ")",
+                    loosened.capitalPerDollar(Bank.RISK_INSURED_MORTGAGE) >= loosened.leverageMinimum());
+        }
         Bank concentrated = new Bank();
         concentrated.refresh(1, 100_000, 0, 20_000, 0, 0);
         concentrated.setConcentration(java.util.Map.of(Sectors.RETAIL, new Bank.Exposure(20_000, .04, .45)));

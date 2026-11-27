@@ -4758,18 +4758,19 @@ public class Bank {
     }
 
     /**
-     * ITS OWN LEVERAGE TARGET: LEVERAGE_RATIO_MIN scaled by the buffer it
-     * chose on the risk side - LEVERAGE_RATIO_MIN x capitalTarget() /
-     * CAPITAL_RATIO. Derived, not a new number. A bank that holds twice
-     * the risk-based minimum as its target holds twice the leverage minimum
-     * too. The two requirements then keep the same proportion between
-     * minimum and target, so whichever binds at the minimum binds at the
-     * target and at the top of the band as well.
+     * ITS OWN LEVERAGE TARGET: scale the leverage minimum by the risk
+     * target over the original CAPITAL_RATIO. Loosening the risk minimum
+     * cannot loosen the independent leverage floor or its loss buffer:
+     * retain CAPITAL_RATIO plus that buffer as the scaling baseline.
      */
-    public double leverageTarget() { return leverageMinimum() * capitalTarget() / CAPITAL_RATIO; }
+    public double leverageTarget() {
+        return leverageMinimum() * Math.max(capitalTarget(), CAPITAL_RATIO + capitalBuffer()) / CAPITAL_RATIO;
+    }
 
-    /** ...and the top of its band on the same measure: LEVERAGE_RATIO_MIN x capitalTop() / CAPITAL_RATIO. */
-    public double leverageTop() { return leverageMinimum() * capitalTop() / CAPITAL_RATIO; }
+    /** ...and the top of its band, with the same independent leverage baseline. */
+    public double leverageTop() {
+        return leverageMinimum() * Math.max(capitalTop(), CAPITAL_RATIO + capitalBuffer()) / CAPITAL_RATIO;
+    }
 
     /**
      * THE MINIMUM THE CITY REQUIRES, IN MONEY: the larger of the risk-based
