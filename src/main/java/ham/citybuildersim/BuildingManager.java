@@ -5139,6 +5139,12 @@ public class BuildingManager {
                 .setCapacity((int) (Substations.SUBSTATION_MW * 1000)).setLandSqFt(217800).setRoadLoad(140)
                 .setJobs(JobType.DIPLOMA, 100).setJobs(JobType.COLLEGE_ENGINEERING, 30)
                 .setJobs(JobType.UNIV_HIGHTECH_ENG, 10).setSince(1900).setId(Substations.ID));
+        // ASH1: a city distribution substation of a few MW, the Substation's cost, land and crew at 5% per MW (1924 Portland and Midwest cases).
+        templates.add(new BuildingsTemplate("Distribution Substation", BuildingType.ELECTRICITY)
+                .setCashCost(13200).setConstructionPoints(6600).setConstructionMaterials(489)
+                .setCapacity((int) (Substations.DISTRIBUTION_MW * 1000)).setLandSqFt(10890).setRoadLoad(7)
+                .setJobs(JobType.DIPLOMA, 5).setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setSince(1900).setId(Substations.DISTRIBUTION_ID));
         HousingForms.installFallback(templates);
 
         /* ------------------------------------------------------------------

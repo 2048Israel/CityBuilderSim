@@ -682,7 +682,7 @@ public class BuildAdviceCheck {
         switch (m.kind()) {
             case GRID: {
                 UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
-                double carry = Math.max(u.getFoundingGridKw(), bm.getQuantity(Substations.ID) * Substations.SUBSTATION_MW * 1000);
+                double carry = Substations.carryKw(u.getFoundingGridKw(), bm.getQuantity(Substations.ID), bm.getQuantity(Substations.DISTRIBUTION_ID));
                 double season = PowerDispatch.season(CityCalendar.monthOfYear(twin.getMonth()));
                 return u.getConsumption() * season * PowerDispatch.PLAN_PEAK / carry;
             }
@@ -798,6 +798,19 @@ public class BuildAdviceCheck {
                         advised, read, m.kind() == BuildAdvice.Kind.CELLS ? 1e-6 : 1e-9);
             }
         }
+        // ...the grid's second unit, ASH1's Distribution Substation: it extends the network that stands by its own few MW, the Substation (above) replacing it.
+        BuildAdvice.Measure wires = BuildAdvice.Measure.of(BuildAdvice.Kind.GRID);
+        BuildingsTemplate small = template(g, "Distribution Substation");
+        Map<BuildingsTemplate, Long> smalls = BuildAdvice.plus(BuildAdvice.onSite(g, wires), small, 3);
+        close("Utilities, Power grid: 3 Distribution Substation - the advice's figure is the model's",
+                BuildAdvice.figure(g, wires, smalls), builtAndRead(twin(g), wires, smalls), 1e-9);
+        close("Utilities, Power grid: 3 Distribution Substation carry 3 x DISTRIBUTION_MW more than what stands",
+                BuildAdvice.supplyDemand(g, wires, smalls)[0] - BuildAdvice.supplyDemand(g, wires, BuildAdvice.onSite(g, wires))[0],
+                3 * Substations.DISTRIBUTION_MW * 1000, 1e-9);
+        close("Utilities, Power grid: one Distribution Substation is DISTRIBUTION_MW of kW a unit",
+                BuildAdvice.unit(g, wires, small), Substations.DISTRIBUTION_MW * 1000, 1e-9);
+        close("Utilities, Power grid: one Substation is still SUBSTATION_MW of kW a unit",
+                BuildAdvice.unit(g, wires, template(g, "Substation")), Substations.SUBSTATION_MW * 1000, 1e-9);
         // ...and the burial plots, which have a NEEDS YOU row and no ring of their own.
         BuildAdvice.Measure plots = BuildAdvice.Measure.of(BuildAdvice.Kind.PLOTS);
         BuildingsTemplate cemetery = template(g, "Memorial Cemetery");
