@@ -114,11 +114,25 @@ public final class SubstationCheck {
         OUT.println("--- the substations' own costs, struck once ---");
         Game g = city("costs", 1);
         BuildingsTemplate t = g.getBuildingManager().getTemplateByName("Substation");
+        // ASH1 finding 9: the grid unit's posts are offered at the share of the carry the last dispatch used; the founding town used a thousandth of it, so
+        // the load is put on the wires first, and the dispatch below captures its costs at that share.
+        dispatch(g, CARRY * .9);
+        double used = g.getServicesManager().getUtilitiesHandler().getWiresUsed();
         UtilitiesHandler u = dispatch(g, CARRY * .9);
         UtilitiesHandler.Book book = u.getStruckBook();
         JsonObject costs = costs(book);
         double value = t == null ? 0 : g.getEconomyManager().withBuildersTax(g.getBuildingManager().structureCost(t));
-        double payroll = t == null ? 0 : BuildCard.runningCost(g, t) - t.getUpkeep();
+        // The card's crew is every post; the grid unit's payroll is struck on the posts offered at that share (the model's rounding, postsOffered), each at the wage and fill.
+        double fullPayroll = t == null ? 0 : BuildCard.runningCost(g, t) - t.getUpkeep();
+        double payroll = 0;
+        if (t != null) {
+            double[] wage = g.getPopulationManager().getWagesPerType(), fill = g.getPopulationManager().getJobFillRate();
+            for (JobType j : JobType.values())
+                payroll += BuildingManager.postsOffered(g.getBuildingManager().getQuantity(Substations.ID) * t.getJobs(j), used) * wage[j.ordinal()] * fill[j.ordinal()];
+        }
+        OUT.printf("   the wires used %.6f of the carry; crew paid %.6f of the card's %.6f; the book's payroll %.6f%n", used, payroll, fullPayroll, number(costs, "payroll"));
+        check("a town drawing 90% of the Substation's carry pays its crew on the posts offered at that share, fewer than the card's every post",
+                used > .8 && used < 1 && payroll > 0 && payroll < fullPayroll && near(number(costs, "payroll"), payroll));
         // Independent worked study figure: $440.004M at 4% over 40 years costs $1,852,544.78305859 a month.
         // Pin the coefficient rather than repeating production's annuity expression or reading its rate/life dials.
         double capital = value / (440004 * PriceLevel.FACTOR) * (1852.5447830585897 * PriceLevel.FACTOR);
@@ -246,18 +260,71 @@ public final class SubstationCheck {
     static void saved() throws Exception {
         OUT.println("--- closing costs survive the load rebuild ---");
         Game g = city("save", 1);
+        // ASH1 finding 9: the grid units' posts follow the wires' load. A district Substation and two distribution substations stand, and a load of half
+        // their carry is put on the wires as the month's closing dispatch, which the save carries as the half-blocks and the carry they ran against.
+        BuildingManager gb = g.getBuildingManager();
+        gb.addStack(gb.getTemplate(Substations.DISTRIBUTION_ID), 2, true);
         quietly(() -> g.simulateMonths(2));
-        String pending = JSON.toJson(g.getServicesManager().getUtilitiesHandler().toPowerState());
+        UtilitiesHandler x = g.getServicesManager().getUtilitiesHandler();
+        x.setWattsConsumption(Substations.carryKw(x.getFoundingGridKw(), 1, 2) * .5 / PowerDispatch.PLAN_PEAK);
+        // ...dispatched twice: the first puts the load on the wires, and the second captures the grid units' crew at the share it used.
+        quietly(x::updateEnergyRatio); quietly(x::updateEnergyRatio);
+        String pending = JSON.toJson(x.toPowerState());
         boolean written = g.saveGame(10, "PW5 closing grid").ok;
         Game back = new Game(g.getGameFiles()); quietly(() -> back.loadGameSave(10));
         String restored = JSON.toJson(back.getServicesManager().getUtilitiesHandler().toPowerState());
         check("DataSave retains both the struck cost book and pending costs through the derived-services rebuild", written && pending.equals(restored));
+        UtilitiesHandler y = back.getServicesManager().getUtilitiesHandler();
+        BuildingManager bb = back.getBuildingManager();
+        double used = x.getWiresUsed();
+        boolean sameOffer = true, someWithheld = false, someOffered = false;
+        for (JobType j : JobType.values()) {
+            long every = gb.getQuantity(Substations.ID) * gb.getTemplate(Substations.ID).getJobs(j)
+                    + gb.getQuantity(Substations.DISTRIBUTION_ID) * gb.getTemplate(Substations.DISTRIBUTION_ID).getJobs(j);
+            sameOffer &= gb.getGridPostsOffered(j) == bb.getGridPostsOffered(j);
+            someWithheld |= gb.getGridPostsOffered(j) < every;
+            someOffered |= gb.getGridPostsOffered(j) > 0;
+        }
+        double crew = x.toPowerState().pendingGridCosts.payroll(), crewLoaded = y.toPowerState().pendingGridCosts.payroll();
+        OUT.printf("   the wires used %.6f of the carry (loaded %.6f); the grid units' crew captured %.6f (loaded %.6f)%n", used, y.getWiresUsed(), crew, crewLoaded);
+        check("a loaded city's grid units offer the same posts per job type, read the same share of the wires used and keep the same captured crew, to the bit",
+                sameOffer && Double.doubleToRawLongBits(used) == Double.doubleToRawLongBits(y.getWiresUsed())
+                && Double.doubleToRawLongBits(crew) == Double.doubleToRawLongBits(crewLoaded));
+        check("...of wires partly used: a share of the carry between none and all, some of the grid units' posts withheld and some offered",
+                used > 0 && used < 1 && someWithheld && someOffered && crew > 0);
         quietly(() -> { g.simulateMonths(1); back.simulateMonths(1); });
-        UtilitiesHandler x = g.getServicesManager().getUtilitiesHandler(), y = back.getServicesManager().getUtilitiesHandler();
         check("the first post-load strike bills exactly the same grid costs as the uninterrupted city", JSON.toJson(x.getStruckBook()).equals(JSON.toJson(y.getStruckBook())));
+        check("...and the crew Substations.costs() pays the month after the load is the uninterrupted city's, to the bit, at the same share of the wires used",                Double.doubleToRawLongBits(Substations.costs(g).payroll()) == Double.doubleToRawLongBits(Substations.costs(back).payroll())                && Double.doubleToRawLongBits(x.getWiresUsed()) == Double.doubleToRawLongBits(y.getWiresUsed()));
         check("a native format-60 city and history are refused without changing either file or a running twin", SaveFileCheck.nativeCard60Refusal());
         check("a native format-61 city and history are refused without changing either file or a running twin", SaveFileCheck.nativeGrid61Refusal(false));
         check("a native shipped format-62 city and history are refused without changing either file or a running twin", SaveFileCheck.nativeGrid62Refusal(false));
+    }
+
+    /**
+     * ASH1 finding 9: the grid units' raw posts are held for a pass with the sectors' (BuildingManager.HeldPosts.grid), keyed on the same
+     * count of edits, so a stack that gains a Substation inside a scope is offered at the share at once, as the bare reading offers it.
+     * The fixture puts a load on the wires, reads the posts held, adds a unit through the stack, and reads them again.
+     */
+    static void heldGridPosts() {
+        OUT.println("--- the grid units' posts held for a pass follow the stack ---");
+        Game g = city("held-grid", 1);
+        BuildingManager bm = g.getBuildingManager();
+        UtilitiesHandler u = dispatch(g, CARRY * .5);
+        BuildingsStacks stack = bm.getStack(bm.getTemplate(Substations.ID));
+        long before, after, bare, withheld, bareWithheld;
+        try (WorksValue.Scope scope = WorksValue.hold(g)) {
+            before = bm.getGridPostsOffered(JobType.DIPLOMA);
+            bm.getPostsWithheld(JobType.DIPLOMA);
+            stack.addQuantity(1);
+            after = bm.getGridPostsOffered(JobType.DIPLOMA);
+            withheld = bm.getPostsWithheld(JobType.DIPLOMA);
+            bare = WorksValue.bareWhile(() -> bm.getGridPostsOffered(JobType.DIPLOMA));
+            bareWithheld = WorksValue.bareWhile(() -> bm.getPostsWithheld(JobType.DIPLOMA));
+        }
+        OUT.printf("   the wires used %.6f; diploma posts offered %d before, %d after a second Substation (bare %d); withheld %d (bare %d)%n",
+                u.getWiresUsed(), before, after, bare, withheld, bareWithheld);
+        check("a Substation added inside a pass's scope is read at once in the grid's offered posts and its withheld, the same as the bare reading",
+                before > 0 && after > before && after == bare && withheld == bareWithheld);
     }
 
     record WireFinding(long districts, double peak, double cents, double energyCents,
@@ -404,6 +471,7 @@ public final class SubstationCheck {
         carry(); tariff(); workedTariff(); order(); reform(); smallTownFinding();
         historicalTownFinding();
         bondTownWires();
+        heldGridPosts();
         if (args.length == 0) saved();
         OUT.println("SubstationCheck: " + fails + " failures");
         if (fails > 0) System.exit(1);

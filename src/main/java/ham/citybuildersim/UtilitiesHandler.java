@@ -711,6 +711,28 @@ public class UtilitiesHandler {
 
     public PowerDispatch.Month getLatestMonth() { return latest; }
 
+    /**
+     * The share of the wires' carry the last dispatch's peak half-block used: its highest half-block load over the carry it ran against,
+     * at most 1 (ASH1 finding 9: a 100 MW Substation in a 12 MW town took 140 posts and carried nothing more for them; real distribution
+     * utilities' line crews, troublemen and meter readers scale with the load and the customers served, US Census of Electrical Industries
+     * 1917, BLS Bulletin 944, 1948). The grid units offer their posts at this share (BuildingManager.setGridShare()). 1 before any dispatch,
+     * with no grid costs (a bare fixture) or with a carry that is zero or infinite. It reads only the last dispatch (`latest`, `latestGridCosts`),
+     * which the save carries (PowerState.pendingMonth, pendingGridCosts), so no new saved field. A load puts them back only after its own
+     * derived-services rebuild (restorePendingPower()), and that rebuild reads the posts through this share: until then it reads the saved
+     * month's, the one restorePendingPower() is about to put back, so the loaded city's wages, fill and crew are the saved city's.
+     */
+    public double getWiresUsed() {
+        boolean loading = pendingLoadedMonth != null && pendingLoadedRecord != null;
+        Substations.Costs costs = loading ? pendingLoadedGridCosts : latestGridCosts;
+        PowerDispatch.Month month = loading ? pendingLoadedMonth : latest;
+        if (costs == null || month == null) return 1;
+        double carry = costs.carryKw();
+        if (!(carry > 0) || Double.isInfinite(carry)) return 1;
+        double peak = 0;
+        for (double load : month.load) peak = Math.max(peak, load);
+        return Math.min(1, peak / carry);
+    }
+
     public List<PowerDispatch.Row> getLatestRows() { return latestRows; }
 
     /** A month's price and what it was made of: what the bills and the screens read. Public fields, for the save. */

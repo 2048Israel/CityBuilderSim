@@ -67,8 +67,9 @@ public final class Substations {
             double unitValue = n[i] * game.getEconomyManager().withBuildersTax(bm.structureCost(t));
             value += unitValue;
             repairs += unitValue * t.repairsPerYear() / 12;
-            for (JobType j : JobType.values()) payroll += n[i] * t.getJobs(j) * wages[j.ordinal()] * fill[j.ordinal()];
         }
+        // The grid units' posts offered at the load the wires carry (ASH1 finding 9), the same whole numbers the utility payroll and the labour market take.
+        for (JobType j : JobType.values()) payroll += bm.getGridPostsOffered(j) * wages[j.ordinal()] * fill[j.ordinal()];
         // The founding grid's existing 10 MW includes its wires. The district Substations replace that free starter network.
         double carry = carryKw(u.getFoundingGridKw(), n[0], n[1]);
         return new Costs(n[0] + n[1], carry, value * annuity / 12, repairs, payroll);

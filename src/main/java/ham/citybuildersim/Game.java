@@ -392,6 +392,8 @@ public class Game {
         ham.citybuildersim.sectors.Freight carrier = economyManager.getSectors().freight();
         buildingManager.setOfferedShareByType((key, type) -> key.equals(builders.key()) ? builders.getPostsOfferedShare()
                 : key.equals(carrier.key()) ? carrier.haulage().offeredShare(type) : 1);
+        // ...and the grid units offer their posts at the share of the wires' carry the last dispatch's peak half-block used (ASH1 finding 9; BuildingManager, THE GRID UNITS' POSTS).
+        buildingManager.setGridShare(() -> servicesManager.getUtilitiesHandler().getWiresUsed());
         // ...and a farm run on horses pays for the hands past its buildings' posts, which the labour market is offered too (R0c; BuildingManager.setPostsPast()).
         buildingManager.setPostsPast(() -> economyManager.getSectors().postsPastBuildings());
         // ...and what their crews cost a point, today and at founding, which
