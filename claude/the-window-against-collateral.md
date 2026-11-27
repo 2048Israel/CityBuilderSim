@@ -57,11 +57,11 @@ The sources, choices, save paths and exact checks are in
 through its artifact publication route; its generated repository copies are
 not edited by this batch.
 
-The matched city's bank also recovers. Over the120-month comparison, months
-below its8% risk-capital minimum, with a preferred offer pending, fall from44
-to19; the largest month-end quote falls from about Cr865k to Cr574k. At the
-end its risk-capital ratio is19.84% rather than14.23%, trailing-year NIM5.23%
-rather than4.88%, and trailing-year ROE+11.85% rather than-45.35%. The early
+The matched city's bank also recovers. Over the 120-month comparison, months
+below its 8% risk-capital minimum, with a preferred offer pending, fall from 44
+to 19; the largest month-end quote falls from about Cr865k to Cr574k. At the
+end its risk-capital ratio is 19.84% rather than 14.23%, trailing-year NIM 5.23%
+rather than 4.88%, and trailing-year ROE +11.85% rather than -45.35%. The early
 year return still reflects the inherited trouble; no immediate recovery is
-claimed. These are the bank's own stored-year measures, with12 months and
+claimed. These are the bank's own stored-year measures, with 12 months and
 positive average denominators, on the same copied city and unchanged choices.
