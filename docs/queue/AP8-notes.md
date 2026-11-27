@@ -198,7 +198,7 @@ generated docs conflicted, taken from main and regenerated. The trace again on b
 
 On the merge `OrderBookCheck` and `BondCheck` are green (9c: 4,925 rests in the played months, all halved, 0 differed;
 three months after the load, 747 of 747 halved, 0 differed). `BuildAdviceCheck` 17's first fixture went red: RES3 gives
-a door one household, so the short city's 900 Houses no longer staff its builders' sites (`sites()` 0, the queue ahead
+a door one household, so the short city's 900 Houses no longer staff its builders' sites (`sites()` not above 0, the queue ahead
 measured in months of them collapsed to none). RES3 moved section 16 to a town with the doors its posts need for the
 same reason; real builders without crews have no sites, so the check, not the model, moved: section 17 now reads its
 own `ChildcareCheck.town` (`0455473d6`, harness only), and is green, its fixture asking for orders on both sides of the
