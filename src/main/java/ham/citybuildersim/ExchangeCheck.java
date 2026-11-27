@@ -644,6 +644,47 @@ public class ExchangeCheck {
                 ex.sellForHousehold(reg, bank, holders, couple(holders), 1), 0, 0);
         close("the household keeps every worthless share", holders.sharesHeld(company), held, 0);
 
+        // A separate real market lot preserves the household fixture's never-traded premise above.
+        Equity fallen = equity();
+        fallen.offer(company, 1_000, 0, null, W);
+        Exchange fundMarket = exchange();
+        TreasuryFund fund = new TreasuryFund();
+        fundMarket.attachFund(fund);
+        Firms fallenFirms = new Firms();
+        double[] fallenBook = bookOf(company, 1_000);
+        step(fundMarket, fallen, null, null, fallenFirms, fallenBook, W, 0, 1);
+        double lot = fallen.getShares(company) * TreasuryFund.OWNERSHIP_LIMIT / 2;
+        double paidForLot = lot * fundMarket.fair(company);
+        // An opening treasury budget pays in by hand; the actual fill transfers all of it to the world.
+        fund.notePaidInByHand(paidForLot);
+        fundMarket.tradeForCheck(company, Exchange.WORLD, OrderBook.Side.SELL, fundMarket.fair(company), lot);
+        double bought = 0;
+        for (OrderBook.Fill f : fundMarket.tradeForCheck(company, Exchange.FUND, OrderBook.Side.BUY, fundMarket.fair(company), lot))
+            if (f.buyer().equals(Exchange.FUND) && f.seller().equals(Exchange.WORLD)) bought += f.quantity();
+        close("fixture: the fund's real market lot was settled from the world", bought, lot, 1e-9);
+        close("the fund's opening budget is conserved as its cash plus the actual payment abroad",
+                fund.getCash() + fundMarket.getFundBoughtAbroad(), paidForLot, 1e-9);
+        fund.setWithdrawal(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP);
+        close("fixture: its fully invested fund pays nothing and must sell for its withdrawal",
+                fund.payTransfer(fundMarket.cityValue(fallen), 1900), 0, 0);
+        double owed = fund.getToRaise();
+        for (int m = 0; m < Equity.RECORD_MONTHS; m++) fallen.recordMonth(company, 0, 0);
+        fallen.seedConstants(TODAYS_DOLLAR / 2);
+        fallenBook[company] = 0;
+        step(fundMarket, fallen, null, null, fallenFirms, fallenBook, W, 0, Equity.RECORD_MONTHS);
+        assertTrue("fixture: the fund still holds its lot and owes a withdrawal when genuine mature value falls to the raised floor",
+                owed > 0 && fallen.valuedOnRecord(company) && fallen.getTrailingIncome(company) == 0
+                        && fundMarket.spareOf(company) == 0 && fallenBook[company] == 0 && fundMarket.atFloor(company)
+                        && fallen.noValue() > Exchange.MIN_FAIR / TODAYS_DOLLAR && fallen.getCityMarketShares(company) == lot);
+        close("the withdrawal cannot produce a FUND ask from a worthless market lot",
+                fundMarket.bookOf(company).resting(Exchange.FUND, OrderBook.Side.SELL), 0, 0);
+        assertTrue("even an arriving world buyer cannot fill that fund withdrawal",
+                fundMarket.tradeForCheck(company, Exchange.WORLD, OrderBook.Side.BUY, paidForLot / lot, lot).isEmpty());
+        close("the worthless fund lot raises no cash", fund.getCash(), 0, 0);
+        close("the world pays no proceeds for that worthless fund lot", fundMarket.getFundSoldAbroad(), 0, 0);
+        close("the refused withdrawal keeps its entire unpaid amount", fund.getToRaise(), owed, 0);
+        close("the refused withdrawal keeps the fund's entire real market lot", fallen.getCityMarketShares(company), lot, 0);
+
         for (int m = 0; m < Equity.RECORD_MONTHS; m++) reg.recordMonth(company, 100, 0);
         step(ex, reg, holders, bank, firms, book, W, 0, 2 * Equity.RECORD_MONTHS);
         assertTrue("actual positive earnings restore the desk's bid and capacity above the floor",
