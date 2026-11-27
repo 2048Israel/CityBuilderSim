@@ -5,7 +5,7 @@ done; origin/main (AP8, 0.9.217) merged at af0455e50 and pushed; `--fast` green 
 tip TownGridCheck, BuildAdviceCheck, SubstationCheck, BuildingDataCheck, LabourCheck,
 AutoBuildCheck, PowerPlantsCheck, PowerPlanCheck and EssentialWorksCheck all exit 0. Next: on the
 tip, BuildCardCheck, NewUnitCheck, SaveFileCheck, PowerPriceCheck one at a time (merge origin/main
-first if it moved); regenerate the maps; the ship file (provisional marker); mail "ASH1 mends at
+first if it moved); regenerate the maps; the ship file is pushed provisional (793c51999); mail "ASH1 mends at
 <commit>" with the pick (ALL) and the review line. No run is in flight.
 
 Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-findings.md`), brief
