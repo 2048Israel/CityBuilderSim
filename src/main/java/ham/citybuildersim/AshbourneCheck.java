@@ -20,9 +20,11 @@ import java.util.Set;
  *
  *   2. FINDING 12 - THE YEN BOND BOUGHT BACK AT 27.37 (no mend: the price is the yen curve's; the yen RATE is the stand-in
  *      century's, which EP1b retires). The piece is booked in yen, valued on the yen's curve at the yen's rate plus the country
- *      premium once, its flows and its principal convert at one rate (so a move of the D$ does not move its price per 100), and
- *      the level of that price is the rate's alone: 13% (the stand-in's January 1917) prices a 3.5% bond of 312 months where
- *      Ashbourne saw it, 5.11% (the Bank of Japan's discount rate of 1917) prices it over 60.
+ *      premium once, and its flows and its principal convert at one rate (so a move of the D$ does not move its price per 100).
+ *      Ashbourne's own piece (Y72M, 3.5%, sold at month 157, 312 months left at 205), at the stand-in's 13% and the premium its
+ *      owing and exports give (0.1594%, worked by hand from its save), is priced by the production buyback at what Ashbourne
+ *      paid, 27.37, inside the half-cent a quarter of a basis point of premium would miss; at the Bank of Japan's 5.11% of 1917
+ *      the same piece is worth over 60.
  *
  *   3. FINDING 11 - THE LOAD FELL WHILE THE TOWN GREW (real: two Lime Kilns closed; the load is the buildings' draw, one unit).
  *      The city's draw is the sum of its buildings' powerBought(), in kW in both months; and the struck price on the founding grid
@@ -194,25 +196,40 @@ public class AshbourneCheck {
 
     /* ============== 2. finding 12: the yen bond bought back at 27.37 ============== */
 
-    /** A bond of this face paying this coupon a year, monthly, for this many months and the face with the last: the shape Debt.remainingCashFlows() returns. */
-    static double[] bullet(double face, double couponAYear, int months) {
-        double[] flows = new double[months];
-        for (int m = 0; m < months; m++) flows[m] = face * couponAYear / 12;
-        flows[months - 1] += face;
-        return flows;
-    }
-
     /** The D$ keeps this much of its worth in US$ in the fall section 2 moves it by (DebtMoneysCheck.KEEPS's, 30% rather than 10%). */
     static final double KEEPS_30 = 0.70;
 
-    /** Ashbourne's yen policy rate in January 1917, the stand-in century's (worldMoney.policyJPY in its history). */
+    /** Ashbourne's yen policy rate in January 1917, the stand-in century's (worldMoney.policyJPY in its history, month 205). */
     static final double STAND_IN_YEN = .13;
 
     /** The Bank of Japan's discount rate of 1917, 1.4 sen a day (the US: New York Fed 3.75% in 1917, FRED M13009USM156NNBR). */
     static final double BOJ_1917 = .0511;
 
-    /** What Ashbourne's buyback paid, per 100 (docs/queue/ASH-findings.md, 12). */
-    static final double ASHBOURNE_PER_100 = 27.37;
+    /** Ashbourne's yen piece, as its save's log has it ("Borrowed Y72.0M abroad: 30-year term bond", month 157): the face in thousands of yen, the coupon a year. */
+    static final double ASH_FACE_YEN = 72_000, ASH_COUPON = .035;
+
+    /** ...sold at month 157 for 360 months, and bought back whole at month 205, with 312 months left. */
+    static final int ASH_SOLD = 157, ASH_TERM = 360, ASH_BOUGHT_BACK = 205;
+
+    /** What the buyback took and paid, Cr thousands, its own line: "Bought back Cr 992,435 of TERM paper for Cr 271,652 (27.37 per 100 on average, stop 27.37)". */
+    static final double ASH_OWED = 992.435, ASH_PAID = 271.652;
+
+    /**
+     * Ashbourne's trailing month of exports at month 205, Cr thousands: ForeignAccounts' trailing mean (COVER_WINDOW) rebuilt
+     * from its history's exportsAbroad, the rebuild giving the saved figure at month 241 (1774.4850) to 0.0005.
+     */
+    static final double ASH_EXPORTS = 1087.3017;
+
+    /**
+     * Ashbourne's country premium at month 205, worked by hand from those figures, independently of the price (its save's
+     * foreignStanding is [0, -1]: never a default, no scar): MAX_COUNTRY_PREMIUM .16 x (SOLVENCY_WEIGHT .6 x (992.435 /
+     * (12 x 1087.3017)) / FULL_STRESS_EXPORT_YEARS 8 + SERVICE_WEIGHT .4 x (12 months of 3.5%/12 on 992.435 / (12 x
+     * 1087.3017)) / FULL_STRESS_SERVICE_SHARE .25) = .16 x (.0095078 + ... ) = .16 x .0099642.
+     */
+    static final double ASH_PREMIUM = .0015943;
+
+    /** The record rounds the price to the cent of a point; a basis point of premium moves this piece 0.0225, so a premium a quarter of a basis point wrong is outside. */
+    static final double PER_100_TOLERANCE = .005;
 
     static void section2() {
         out.println("--- 2. finding 12: the yen bond is the yen curve's, and its level is the rate's ---");
@@ -224,35 +241,6 @@ public class AshbourneCheck {
         DebtMoneysCheck.open(w);
         assertTrue("fixture: the world's moneys, the yen offered, and nothing owed abroad (the premium is nothing)",
                 w.getWorldMoneys() != null && dm.offers("JPY") && dm.getForeignPrincipal() == 0 && dm.countryPremium() == 0);
-
-        /* THE LEVEL IS THE RATE'S: 100 yen, 3.5% a year, 312 months, bullet, priced on the yen's curve at the rate. */
-        double[] flows = bullet(100, .035, 312);
-        double[] books = new LongTermBond(100, 312, 0, .035).remainingCashFlows();
-        boolean sameShape = books.length == flows.length;
-        for (int i = 0; sameShape && i < flows.length; i++) sameShape = Math.abs(books[i] - flows[i]) <= 1e-12 * Math.max(1, flows[i]);
-        assertTrue("the flows built here are the shape a piece of the books returns", sameShape);
-
-        double[] handed = new double[WorldMoneys.EIGHT.size()];
-        for (int i = 0; i < handed.length; i++) handed[i] = dm.worldRate(WorldMoneys.EIGHT.get(i));
-        double standing = handed[WorldMoneys.EIGHT.indexOf("JPY")];
-        double[] standIn = handed.clone(), boj = handed.clone();
-        standIn[WorldMoneys.EIGHT.indexOf("JPY")] = STAND_IN_YEN;
-        boj[WorldMoneys.EIGHT.indexOf("JPY")] = BOJ_1917;
-        double premium = dm.countryPremium();
-        dm.setMoneyRates(standIn);
-        double at13 = dm.worldCurveAt("JPY", dm.foreignRate("JPY")).pv(flows);
-        dm.setMoneyRates(boj);
-        double at511 = dm.worldCurveAt("JPY", dm.foreignRate("JPY")).pv(flows);
-        dm.setMoneyRates(handed);
-        out.printf("   100 yen, 3.5%%, 312 months, premium %.4f: %.2f at the stand-in's %.2f%%, %.2f at the Bank of Japan's %.2f%% (Ashbourne's buyback: %.2f)%n",
-                premium, at13, 100 * STAND_IN_YEN, at511, 100 * BOJ_1917, ASHBOURNE_PER_100);
-        if (premium == 0) {
-            assertTrue("at the stand-in's 13% the price is Ashbourne's 27.37, to within 3 points", Math.abs(at13 - ASHBOURNE_PER_100) <= 3);
-        } else {
-            assertTrue("at the stand-in's 13% and the premium the price is under 35", at13 < 35);
-        }
-        assertTrue("at the Bank of Japan's 5.11% the same bond is worth over 60", at511 > 60);
-        assertTrue("...so the per-100 is the rate's, and nothing in the conversion", at13 < ASHBOURNE_PER_100 + 3 && at511 > at13 + 30);
 
         /* THE SALE: a 30-year bond in yen. */
         Set<Debt> had = new HashSet<>(DebtMoneysCheck.foreignPieces(w));
@@ -301,6 +289,60 @@ public class AshbourneCheck {
                 jan1917, Nations.FIRST_YEAR, jan1917 + 1, PolicyRates.TABLE_FIRST_MONTH);
         assertTrue("Ashbourne's month 205 is January 1917, and it is before PolicyRates' table start: the rate is the stand-in's",
                 jan1917 + 1 == 205 && jan1917 < PolicyRates.TABLE_FIRST_MONTH);
+
+        rebuilt();
+    }
+
+    /** Ashbourne's buyback, rebuilt on a town of its own: its piece, its premium, its rate, priced by the production quote. */
+    static void rebuilt() {
+        Game w = DebtMoneysCheck.town("ashbourne-1917", false);
+        DebtManager dm = w.getDebtManager();
+        DebtMoneysCheck.open(w);
+        assertTrue("fixture: a second town, the yen offered, nothing owed abroad and never a default",
+                dm.offers("JPY") && dm.getForeignPrincipal() == 0 && dm.getDefaultScar() == 0);
+
+        /* The rate: the stand-in century's 13% for the yen, handed as Game hands the eight. */
+        double[] rates = new double[WorldMoneys.EIGHT.size()];
+        for (int i = 0; i < rates.length; i++) rates[i] = dm.worldRate(WorldMoneys.EIGHT.get(i));
+        rates[WorldMoneys.EIGHT.indexOf("JPY")] = STAND_IN_YEN;
+        dm.setMoneyRates(rates);
+
+        /* The piece: booked as a sale books it, then 48 of its own months to month 205. */
+        Debt piece = dm.addLongTermBond(ASH_FACE_YEN, ASH_TERM, ASH_SOLD, ASH_COUPON, "JPY");
+        quietly(() -> { for (int m = ASH_SOLD; m < ASH_BOUGHT_BACK; m++) piece.processMonth(w); });
+        double owed = piece.getOustandingPrincipal();
+        assertTrue("the piece is Ashbourne's at month 205: in yen, 312 months left, the whole face owed",
+                piece.isForeign() && "JPY".equals(piece.getMoney()) && piece.getRemainingMonths() == 312
+                        && piece.getRemainingMonths() == ASH_TERM - (ASH_BOUGHT_BACK - ASH_SOLD)
+                        && Math.abs(owed - ASH_FACE_YEN * piece.getExchangeRate()) <= 1e-9 * owed);
+
+        /* The premium: Ashbourne's exports against Ashbourne's owing, at this town's cross (the premium reads their ratio alone). */
+        dm.setTrade(ASH_EXPORTS * owed / ASH_OWED, w.getForeignAccounts().importCover());
+        double premium = dm.countryPremium();
+        close("the country premium the model gives Ashbourne's owing and exports is the one worked by hand, 0.1594%", premium, ASH_PREMIUM, 1e-7);
+        close("...and the yen's rate is the stand-in's 13% plus it, once", dm.foreignRate("JPY"), STAND_IN_YEN + premium, 1e-15);
+
+        /* The buyback, at rest and whole: the production quote, at that rate. */
+        Buyback.Result quote = w.quoteBuybackAtRest(piece, owed, Double.NaN);
+        double paid = 100 * ASH_PAID / ASH_OWED;
+        double[] flows = dm.pricingFlows(piece);
+        double noPremium = dm.worldCurveAt("JPY", STAND_IN_YEN).pv(flows) / owed * 100;
+        double bpMore = dm.worldCurveAt("JPY", STAND_IN_YEN + premium + .0001).pv(flows) / owed * 100;
+        /* The Bank of Japan's 5.11% handed as the yen's rate (the curve is floored at the money's handed rate), then the stand-in's again. */
+        double[] boj = rates.clone();
+        boj[WorldMoneys.EIGHT.indexOf("JPY")] = BOJ_1917;
+        dm.setMoneyRates(boj);
+        double atBoj = dm.marketValue(piece) / owed * 100;
+        dm.setMoneyRates(rates);
+        out.printf("   Ashbourne's piece rebuilt: Y%,.0fk at %.1f%%, %d months left, premium %.4f%%: the buyback quotes %.4f per 100; Ashbourne paid %.4f (%,.3f / %,.3f)%n",
+                ASH_FACE_YEN, 100 * ASH_COUPON, piece.getRemainingMonths(), 100 * premium, quote.averagePer100(), paid, ASH_PAID, ASH_OWED);
+        out.printf("   with no premium %.4f, with a basis point more %.4f; at the Bank of Japan's %.2f%% and the premium %.2f%n",
+                noPremium, bpMore, 100 * BOJ_1917, atBoj);
+        close("the production buyback prices Ashbourne's piece at what Ashbourne paid", quote.averagePer100(), paid, PER_100_TOLERANCE);
+        close("...its fair per 100 being DebtManager.marketValue's over the principal", quote.fairPer100(), dm.marketValue(piece) / owed * 100, 1e-12);
+        assertTrue("...and the tolerance tells a wrong premium: none at all, or one basis point more, falls outside it",
+                Math.abs(noPremium - paid) > PER_100_TOLERANCE && Math.abs(bpMore - paid) > PER_100_TOLERANCE);
+        assertTrue("at the Bank of Japan's 5.11% and the same premium the piece is worth over 60: the level is the rate's", atBoj > 60);
     }
 
     /* ============== 3. finding 11: the load fell while the town grew ============== */
