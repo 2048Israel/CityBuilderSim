@@ -149,4 +149,6 @@ Not this batch's to write. For when an edition comes:
 
 ## Logs kept
 
-target/named1.txt, target/hgfinal.txt, target/HungerCheck-mutated.log, target/HG1-ens.txt and target/ensemble/HG1/, in this worktree. No dry run yet.
+target/named1.txt, target/hgfinal.txt, target/HungerCheck-mutated.log, target/HG1-ens.txt and target/ensemble/HG1/, in this worktree.
+
+The first dry run (box run cbs-gate-HG1-xSgI3JNV, 18:08 UTC) stopped at the records before the suite: "{next} remains in added source". Four of HG1's own comment labels (Sector's banner, Retail, PriceIndex, CityNeeds) carried it; they now read "(HG1, 2026-11-28)" (comments only, --fast green), and the dry run ran again.

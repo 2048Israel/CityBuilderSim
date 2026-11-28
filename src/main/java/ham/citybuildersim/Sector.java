@@ -594,7 +594,7 @@ public abstract class Sector {
      * keep: at 40% three seeds of 16 shrank by a third. Counting the draw asks it.
      */
 
-    /* ----- A BUILDING THE TOWN GOES WITHOUT IS STAFFED AT THE FILL (HG1, {next}, 2026-11-28) -----
+    /* ----- A BUILDING THE TOWN GOES WITHOUT IS STAFFED AT THE FILL (HG1, 2026-11-28) -----
      * For a building its sector says so of (staffedAtTheFill(): a shop, while the shops hand over fewer baskets than the
      * households need), the gate also reads the share of the building's posts the city's fill would staff once
      * they join the posts already offered (shareAtTheFill(): PopulationManager.fillByBand() over the posts with

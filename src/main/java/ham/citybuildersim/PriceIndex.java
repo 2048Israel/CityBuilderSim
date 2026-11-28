@@ -286,7 +286,7 @@ public class PriceIndex {
              * nobody has bought yet - no kitchens, no counters - is in it at
              * nothing until the next basket.
              *
-             * THE OTHER HALF NEED NOT BE GROCERIES (HG1, {next}, 2026-11-28).
+             * THE OTHER HALF NEED NOT BE GROCERIES (HG1, 2026-11-28).
              * Jerus's 1900 city had no shop for 79 months, so no month had
              * both halves and the index never based: the rule read no
              * inflation and the header said "rate in ~37 mo" for ever. The

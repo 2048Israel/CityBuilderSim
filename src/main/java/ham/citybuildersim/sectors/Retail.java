@@ -782,7 +782,7 @@ public final class Retail extends Sector {
     }
 
     /**
-     * A SHOP THE TOWN GOES SHORT OF IS STAFFED AT THE FILL (HG1, {next}; Sector.staffedAtTheFill()): a shop (a
+     * A SHOP THE TOWN GOES SHORT OF IS STAFFED AT THE FILL (HG1, 2026-11-28; Sector.staffedAtTheFill()): a shop (a
      * building with coverage; never a station) while the shops standing and on site hand over fewer baskets, at the
      * rate plan() weighs them at, than the households need (HouseholdBalance.groceriesNeeded(), a basket a head).
      * Jerus's 1900 city was held out of every shop by the spare-worker test for 79 months, 97.5% hungry.

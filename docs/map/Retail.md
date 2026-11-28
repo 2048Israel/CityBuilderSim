@@ -204,7 +204,7 @@
 |---:|---:|---|---|
 | 720 | 57 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | THE SUPPLY ANSWER TO A SHORTAGE (0.7.43; spec-inflation.md 4.3). |
 | 779 | 4 | `private double handOverRate()` | The operating rate a new shop is planned at: the sector's own, or full with none yet (see the note above plan()). |
-| 791 | 3 | `protected boolean staffedAtTheFill(BuildingsTemplate t)` | A SHOP THE TOWN GOES SHORT OF IS STAFFED AT THE FILL (HG1, {next}; Sector.staffedAtTheFill()): a shop (a building with coverage; never a station) while the shops standing and on site hand over fewer baskets, at the ra... |
+| 791 | 3 | `protected boolean staffedAtTheFill(BuildingsTemplate t)` | A SHOP THE TOWN GOES SHORT OF IS STAFFED AT THE FILL (HG1, 2026-11-28; Sector.staffedAtTheFill()): a shop (a building with coverage; never a station) while the shops standing and on site hand over fewer baskets, at th... |
 | 796 | 5 | `public boolean townGoesShort()` | Whether the shops standing and on site, at the rate plan() weighs them at, hand over fewer baskets than the households need (HG1). |
 | 823 | 6 | `public double estimatedMonthlyProfit(NewUnit u, BusinessInvestment plans)` | What a store would clear a month: the baskets it can hand over at the operating rate, at the shelf price over the food (0.7.43; every covered customer until then), less its staff at today's wages (0.7.106) - and a Fil... |
 | 832 | 3 | `public boolean mayRetire(BuildingsTemplate t)` | A Filling Station is not sold by the shops' rules (0.7.83, star O6): it serves the drivers' litres, not the baskets they measure. |

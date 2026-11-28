@@ -774,7 +774,7 @@ public final class CityNeeds {
     }
 
     /**
-     * FOOD (HG1, {next}, 2026-11-28): the share of the people going short of food (HouseholdBalance.getHungerRate())
+     * FOOD (HG1, 2026-11-28): the share of the people going short of food (HouseholdBalance.getHungerRate())
      * against HUNGER_YELLOW and HUNGER_RED. Its door is the larger half: the shops (Build › Shops) when the shelves
      * left the people short, the food promise (Policy › Promises › Food) when they could not pay for a basket.
      * WHY: Jerus's 1900 city went 97.5% hungry for want of a shop, and the header said "Nothing needs you": no row

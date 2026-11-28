@@ -192,7 +192,7 @@
 |---:|---:|---|---|
 | 483 | 246 | `public static List<Need> measure(Game game, Words w)` | Everything with a lever, measured against its own line, in the order it is read - the fine ones too, because "next to watch" on a healthy city is the nearest of them. |
 | 750 | 25 | `public static Need prices(Game game)` | PRICES (0.7.45; the UI spec's D2): whether the city still believes the central bank. |
-| 783 | 14 | `public static Need food(Game game)` | FOOD (HG1, {next}, 2026-11-28): the share of the people going short of food (HouseholdBalance.getHungerRate()) against HUNGER_YELLOW and HUNGER_RED. |
+| 783 | 14 | `public static Need food(Game game)` | FOOD (HG1, 2026-11-28): the share of the people going short of food (HouseholdBalance.getHungerRate()) against HUNGER_YELLOW and HUNGER_RED. |
 | 814 | 14 | `public static Need ground(Game game, Words w)` | The GROUND row on its own (0.7.26), as measure() lists it: what the land office's GROUND FREE, Build's LAND FREE and the left panel's land colour themselves by, so the three and NEEDS YOU agree - none of them reads th... |
 | 837 | 18 | `public static String zonesHoldWords(Game game)` | What the zones hold that the homes may not build on, as the GROUND row names it once it is listed (0.7.109, batch Z2; the zoning study's NEEDS YOU line): every zone's held ground but the landlords' own (Real Estate's ... |
 | 862 | 6 | `public static List<Need> biting(List<Need> all)` | NEEDS YOU: what is near a line or past one, red above yellow - and inside a tier the order they were measured in, which is the order a city is built. |
