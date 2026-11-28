@@ -1298,13 +1298,7 @@ public final class EssentialWorksCheck {
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         utilities.setWattsConsumption(utilities.getProduction() * 1.2);
-        // PW9-G: no plant is ordered past what its wires carry by its opening (AutoBuilder.wiresCarry()). This section isolates power's pending
-        // deadline, so standing wires carry the town's whole forecast; on the founding wires alone, behind the diesels' queue, the Oil-Fired Plant
-        // was held for wires that could not open by its date. Their repairs (three Substations, a third of the town's) are the isolation's, not
-        // the work FC2's lines below are about, and this town cannot staff depots for them: those lines count the builders' surplus without them.
-        double repairsBefore = g.getMaintenancePoints();
-        serveGrid(g);
-        double wiresRepairs = g.getMaintenancePoints() - repairsBefore;
+        check("fixture: the wires' law is held off for this section (AutoBuilder.wiresOffForTest, main())", AutoBuilder.wiresOffForTest);
         // ...Diesel Stations pending twice what covers it (PW1 queued a hundred Wind Farms' firm kW): the advice's own count for this
         // shortage at the builder's slack (BuildAdvice.count()), twice over, so the pending site covers each candidate's later
         // opening through the deadline (a quarter more did not: five more were ordered two months on, the planner's own reading).
@@ -1412,14 +1406,12 @@ public final class EssentialWorksCheck {
         g.autoBuildProbeForTest = null;
         loaded.autoBuildProbeForTest = null;
         check("fixture: later priority work kept operating power short throughout the original deadline", stayedShort[0]);
-        // ...the repairs less the isolating wires' (PW9-G, above): FC2's question is the work that finishes, not the wires this section stands.
-        double repairs = g.getMaintenancePoints() - wiresRepairs;
-        check(String.format("fixture: the %d depots' builders make %d points a month at the last pass against the repairs' %.0f (the isolating wires' %.0f besides), a site output of %d",
-                        PENDING_DEPOTS, g.getConstructionOutputAtEveryPost(), repairs, wiresRepairs, g.getBuildingOutputAtEveryPost()),
-                g.getConstructionOutputAtEveryPost() > repairs);
-        check("fixture: the later priority work finished nothing, so the repairs left the builders a surplus at the last pass, the isolating wires' aside",
+        check(String.format("fixture: the %d depots' builders make %d points a month at the last pass against the repairs' %.0f, a site output of %d",
+                        PENDING_DEPOTS, g.getConstructionOutputAtEveryPost(), g.getMaintenancePoints(), g.getBuildingOutputAtEveryPost()),
+                g.getConstructionOutputAtEveryPost() > g.getMaintenancePoints() && g.getBuildingOutputAtEveryPost() > 0);
+        check("fixture: the later priority work finished nothing, so the repairs left the builders a site output at the last pass",
                 bm.getStack(later).getQuantity() == 0 && bm.getStack(later).getUnderConstruction() == 1
-                        && g.getConstructionOutputAtEveryPost() > repairs);
+                        && g.getBuildingOutputAtEveryPost() > 0);
         check("the persistent post-checkpoint industrial load causes a further real power order (" + originalOrders + ")",
                 originalOrders.stream().anyMatch(o -> o.split("\\|")[1].equals(power.label())));
         check("...and the plant it orders is the one that opens before the diesels (" + ahead.getName() + ": " + originalOrders + ")",
@@ -1510,7 +1502,17 @@ public final class EssentialWorksCheck {
         filledPostCosts(root);
         cappedCare(root);
         adviceParity(root);
-        overduePending(root);
+        // PW9-G (REV-PW9-G 6): this section's question is power's pending deadline through a save and a load, and FC2's site output at its
+        // last pass; the wires' law is PowerWiresCheck's. On the founding wires the law held its Oil-Fired Plant for wires that could not open
+        // by its date, and wired for the town's forecast (serveGrid()) it stood three Substations, whose 333 points of repairs took the whole
+        // site output its FC2 lines stand on, the 28 depots' builders capped by their staff at about 876 points. So the law is held off here,
+        // and the section runs as on 0.9.218.
+        AutoBuilder.wiresOffForTest = true;
+        try {
+            overduePending(root);
+        } finally {
+            AutoBuilder.wiresOffForTest = false;
+        }
         interimPower(root);
         earlyWind(root);
         waterAtCap(root);

@@ -7500,6 +7500,27 @@ public class BuildingManager {
     }
 
     /**
+     * The soonest the first `units` on t's site can open with part of the site handed to the foreign crews (FC2b, G. ABROAD;
+     * REV-PW9-G 5): the city's crews build no more of a site than it owes less the part abroad (homeOwedOf()), so the points of
+     * those units past that wait for the foreign crews, at the pace struck at the handover (advanceConstruction()) - the rule
+     * Game.sitePaceMonths() reads for the whole site (REV-ASH1 4). Infinite where they are owed and the pace is nothing; 0 for a
+     * site with none handed, or units the city's part covers. A floor for the crews' quotes (siteUnitMonths(),
+     * siteUnitMonthsAfter()), which time all of a site's points at the city's crews' share.
+     */
+    public double abroadUnitFloor(BuildingsTemplate t, long units) {
+        BuildingsStacks s = t == null ? null : getStack(t);
+        if (s == null || s.getUnderConstruction() <= 0 || units <= 0) return 0;
+        ConstructionControl.Abroad rec = control.abroadOf(ConstructionControl.keyOf(t));
+        if (rec == null) return 0;
+        double owed = Math.max(0, s.pointsOnSite() - s.getConstructionProgress());
+        double abroad = Math.min(owed, Math.max(0, rec.owed));
+        double points = Math.max(0, s.pointsOfFirst(Math.min(units, s.getUnderConstruction())) - s.getConstructionProgress());
+        double past = points - (owed - abroad);
+        if (!(past > 1e-9)) return 0;
+        return rec.pace > 0 ? past / rec.pace : Double.POSITIVE_INFINITY;
+    }
+
+    /**
      * Months n buildings of t would take if the city ordered them now: with
      * no order set and no rush on t's site, waitFor() exactly - the quote's
      * wait since 0.7.17; otherwise as the hand times it, the order joining

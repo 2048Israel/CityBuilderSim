@@ -795,24 +795,40 @@ public final class BuildAdvice {
         return most;
     }
 
+    /** The wires' carry and the peak they serve at p in a season: the grid's supplyDemand() at gridSeason(), and a single month's at its own (gridInMonth()). */
+    private static double[] gridSupplyDemand(Game game, Map<BuildingsTemplate, Long> added, Ahead p, double season) {
+        BuildingManager bm = game.getBuildingManager();
+        UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
+        long nSub = bm.getQuantity(Substations.ID), nDist = bm.getQuantity(Substations.DISTRIBUTION_ID);
+        double draw = p.scale() * u.getConsumption() + WorksValue.pendingPowerLoad(game, p.months());
+        for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
+            if (e.getKey().getId() == Substations.ID) nSub += e.getValue();
+            if (e.getKey().getId() == Substations.DISTRIBUTION_ID) nDist += e.getValue();
+            draw += e.getValue() * adding(game, e.getKey(), e.getValue()).getElectricityConsumption();
+        }
+        double supply = Substations.carryKw(u.getFoundingGridKw(), nSub, nDist);
+        return new double[] {supply, Substations.peak(draw, season)};
+    }
+
+    /**
+     * The wires' carry and peak in the one month p's months fall in (PW9-G, REV-PW9-G 2): its season alone, as the dispatch
+     * serves that month, where supplyDemand() plans for the highest over the months an order serves (gridSeason()). The wires'
+     * law reads a plant's months before its date so, each against the plan's own load for that month (powerAheadAt()).
+     */
+    static double[] gridInMonth(Game game, Map<BuildingsTemplate, Long> added, Ahead p) {
+        double lat = game.getServicesManager().getUtilitiesHandler().latitude();
+        int month = game.getMonth() + (int) Math.floor(Math.max(0, p.months()) + 1e-9);
+        return gridSupplyDemand(game, added, p, PowerDispatch.season(CityCalendar.monthOfYear(month), lat));
+    }
+
     /** ...against the demand `p` says (0.7.51), as figure() reads it: the supply side unchanged. */
     public static double[] supplyDemand(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p) {
         double[] fill = game.getPopulationManager().getJobFillRate();
         BuildingManager bm = game.getBuildingManager();
         double k = p.scale();
         switch (m.kind()) {
-            case GRID: {
-                UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
-                long nSub = bm.getQuantity(Substations.ID), nDist = bm.getQuantity(Substations.DISTRIBUTION_ID);
-                double draw = k * u.getConsumption() + WorksValue.pendingPowerLoad(game, p.months());
-                for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
-                    if (e.getKey().getId() == Substations.ID) nSub += e.getValue();
-                    if (e.getKey().getId() == Substations.DISTRIBUTION_ID) nDist += e.getValue();
-                    draw += e.getValue() * adding(game, e.getKey(), e.getValue()).getElectricityConsumption();
-                }
-                double supply = Substations.carryKw(u.getFoundingGridKw(), nSub, nDist);
-                return new double[] {supply, Substations.peak(draw, gridSeason(game, p))};
-            }
+            case GRID:
+                return gridSupplyDemand(game, added, p, gridSeason(game, p));
             case POWER:
                 return powerSupplyDemand(game, added, p);
             case WATER: {
@@ -2030,15 +2046,24 @@ public final class BuildAdvice {
         for (double month : dates.frontier(from)) most = Math.min(most, reserveMost(game, t, dates.openBy(month)));
         for (double month : dates.frontier(from)) {
             Map<BuildingsTemplate, Long> at = dates.openBy(month);
-            double factor = month == peak ? 1 : PowerDispatch.PLAN_PEAK
-                    * PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth() + (int) month),
-                            game.getServicesManager().getUtilitiesHandler().latitude()) / PowerDispatch.PLAN_PEAK_HOUR;
-            Ahead p = new Ahead(month, game.getBusinessInvestment().growthFactor(month), month == peak ? slack : 0, factor);
+            Ahead p = powerAheadAt(game, month, peak, slack);
             long[] n = powerCovered(game, m, at, p, maintain, warrant) ? new long[] {0, 1}
                     : count(game, m, at, Map.of(t, 1L), p, most, maintain, warrant);
             tests.add(new PowerRequirement(at, p, n));
         }
         return tests;
+    }
+
+    /**
+     * The power plan's requirement at one month of its frontier (PW3): its growth, the slack at its peak alone, and off the peak
+     * the month's own peak block in the plan's peak hour (the power factor). The wires' law reads each month of a plant's frontier
+     * by it (AutoBuilder.wiresCarry(), REV-PW9-G 2).
+     */
+    static Ahead powerAheadAt(Game game, double month, int peak, double slack) {
+        double factor = month == peak ? 1 : PowerDispatch.PLAN_PEAK
+                * PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth() + (int) month),
+                        game.getServicesManager().getUtilitiesHandler().latitude()) / PowerDispatch.PLAN_PEAK_HOUR;
+        return new Ahead(month, game.getBusinessInvestment().growthFactor(month), month == peak ? slack : 0, factor);
     }
 
     private static boolean powerCovered(Game game, Measure m, Map<BuildingsTemplate, Long> at, Ahead p, boolean maintain,

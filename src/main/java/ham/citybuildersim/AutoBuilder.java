@@ -1327,6 +1327,9 @@ public final class AutoBuilder {
             List<CityNeeds.Need> all = CityNeeds.measure(game, CityNeeds.PLAIN);
             List<BuildAdvice.Measure> kept = remit(game, all);
             for (BuildAdvice.Measure m : kept) rememberPending(game, m, false);
+            // The wires' promises past their month, or with no wires left on site, keep nothing (REV-PW9-G 3).
+            wiresDue.headSet((double) game.getMonth(), false).clear();
+            if (BuildAdvice.units(BuildAdvice.onSite(game, GRID)) == 0) wiresDue.clear();
             // Invalid asks are withdrawn first. Lower-priority asks can release cash for an unfunded current shortage.
             for (OpenAsk a : new ArrayList<>(asks)) {
                 BuildAdvice.Measure measure = kept.stream().filter(m -> askFor(m) == a).findFirst().orElse(null);
@@ -1400,13 +1403,21 @@ public final class AutoBuilder {
        suggestion's ahead(): the plants standing and on site that open by then short of it) whose wires are short of that
        load there first orders the wires, through the grid's own step and every gate it has - the builders, a protected
        completion, the ground and the money - sized at the plant's date and demand; then no more of the plant is ordered
-       than the wires will carry: the plants' served share at that date held to the wires', each measure's own figure
+       than the wires will carry: the plants' served share held to the wires', each measure's own figure
        (BuildAdvice.supplyDemand(): the plants against the year's peak hour, the wires against the peak block of their
-       season), the last whole unit past it allowed. The wires are counted as the plants are, by the units their site
-       opens by that date, with the plant's own points on the same crews (WorksValue.openByAfter()): counted whole, a unit
-       the builders would open months after the plant carried it, and read before the plant, each plant slowed the wires
-       it was matched to (PowerWiresCheck 3, a town of two depots: 30 small steam opened six months before their wires). An order the plants on site already serve the load for (the spread's
-       cheaper power) needs no wires: the wires carry the same load whichever plant runs.
+       season), the last whole unit past it allowed. It is held so at every month the plant stands from its commissioning
+       (its quote) to its date, each month's own load (the plan's frontier, BuildAdvice.powerAheadAt()): read at the date
+       alone, wires that opened between the two were counted, and the plant stood behind wires short of the months before
+       (REV-PW9-G 2). The wires are counted as the plants are, by the units their site opens by each month, with the plant's
+       own points on the same crews (WorksValue.openByAfter()), and a site being cancelled not at all (REV-PW9-G 7): counted
+       whole, a unit the builders would open months after the plant carried it, and read before the plant, each plant
+       slowed the wires it was matched to (PowerWiresCheck 3, a town of two depots: 30 small steam opened six months
+       before their wires). An order the plants on site already serve a month's load for (the spread's cheaper power)
+       needs no wires that month: the wires carry the same load whichever plant runs. A funded ask's order is cut so too
+       when it is placed (reoffer(), REV-PW9-G 1). Once ordered, the wires a plant relied on keep their opening by its
+       commissioning (wiresDue): no later automatic order but the grid's own, or one for a measure short now other than
+       power, may put them past it (crewLimit(), REV-PW9-G 3), as an interconnection's in-service milestone is coupled
+       to the generator's commercial operation (FERC Order 2003-A).
        WHY: REV-PW9 P1-b. The modern-equipment city stood 31 small steam stations, 21 MW offered, behind the founding
        10 MW while their Substation waited on the College's protected completion: native dispatch m127 generated
        7.2 GWh against 9.9 GWh asked, the steam nothing. On 0.9.218 (ASH1's 5 MW units) the same city ordered a 21 MW
@@ -1416,12 +1427,17 @@ public final class AutoBuilder {
     /** The grid's measure: the wires the plants' power runs on (PW9-G). */
     private static final BuildAdvice.Measure GRID = BuildAdvice.Measure.of(BuildAdvice.Kind.GRID);
 
+    /** The service a crew hold names for the wires' promise (wiresDue; crewHolds, the inbox's and the card's words). */
+    static final String WIRES_DUE = "the wires Power's plants were ordered with";
+
     /** While the wires a plant takes with it are stepped (PW9-G): the plant's date and demand, which the grid's suggestion is sized at; null otherwise. Set and cleared inside one step, never saved. */
     private BuildAdvice.Ahead wiresAt;
     /** Whether this power step has stepped its wires already: once a step, whichever plant in the ranking asked (never saved). */
     private boolean wiresStepped;
     /** A harness's door (PowerWiresCheck's before and after): true, no plant waits for its wires and none are ordered with it, as on 0.9.218. Never saved, never set outside a harness. */
     static boolean wiresOffForTest;
+    /** The months by which the wires a pending plant relied on must open: each a placed plant's first month needing wires on site (Wires.due()), kept from its order to the month past it (REV-PW9-G 3). Saved. */
+    private final java.util.TreeSet<Double> wiresDue = new java.util.TreeSet<>();
 
     /** A measure's supply over its demand at p, with these buildings standing as well: infinite where nothing is asked. */
     static double servedAt(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site, BuildAdvice.Ahead p) {
@@ -1429,51 +1445,179 @@ public final class AutoBuilder {
         return sd[1] > 0 ? sd[0] / sd[1] : Double.POSITIVE_INFINITY;
     }
 
-    /** How many of n of a power suggestion the wires will carry at its date, the wires short of its load there ordered first (THE WIRES WITH THE POWER). */
+    /** A measure's pending capacity less the sites the player is cancelling (REV-PW9-G 7): a cancelled site is left a shell and carries nothing. */
+    private Map<BuildingsTemplate, Long> building(Game game, BuildAdvice.Measure m) {
+        Map<BuildingsTemplate, Long> site = pendingCapacity(game, m);
+        ConstructionControl control = game.getBuildingManager().getControl();
+        Map<BuildingsTemplate, Long> kept = null;
+        for (BuildingsTemplate t : site.keySet()) {
+            if (!control.isCancelling(ConstructionControl.keyOf(t))) continue;
+            if (kept == null) kept = new LinkedHashMap<>(site);
+            kept.remove(t);
+        }
+        return kept == null ? site : kept;
+    }
+
+    /** How many of n of a power suggestion the wires will carry at every month it stands to its date, the wires short of its load ordered first (THE WIRES WITH THE POWER). */
     private long wiresCarry(Game game, List<CityNeeds.Need> all, List<BuildAdvice.Measure> kept, BuildAdvice.Suggestion s, long n) {
         BuildAdvice.Ahead p = s.ahead();
         if (p == null || n < 1 || wiresAt != null || wiresOffForTest) return n;
-        BuildAdvice.Measure power = s.measure();
-        Map<BuildingsTemplate, Long> at = WorksValue.openBy(game, pendingCapacity(game, power), p.months());
-        if (!(servedAt(game, power, at, p) < 1)) return n;
-        // The wires at the plant's date and demand: its months, its growth and its slack (the grid reads no power factor).
-        BuildAdvice.Ahead load = new BuildAdvice.Ahead(p.months(), p.k(), p.slack());
-        if (wiresWith(game, s, 0, load) < 1 && !wiresStepped) {
+        Wires w = new Wires(game, s);
+        if (!w.bound(n)) return n;
+        if (!wiresStepped && w.shortOfWires(n)) {
             wiresStepped = true;
-            wiresAt = load;
+            // The wires at the plant's date and demand: its months, its growth and its slack (the grid reads no power factor).
+            wiresAt = new BuildAdvice.Ahead(p.months(), p.k(), p.slack());
             try {
                 step(game, all, kept, GRID);
             } finally {
                 wiresAt = null;
             }
+            w = new Wires(game, s);                       // ...with the wires just ordered on site
         }
-        if (wiresAllow(game, s, at, load, n)) return n;
+        if (w.allows(n)) return n;
         long lo = 0, hi = n;                              // lo units allowed, hi not
         while (hi - lo > 1) {
             long mid = lo + (hi - lo) / 2;
-            if (wiresAllow(game, s, at, load, mid)) lo = mid; else hi = mid;
+            if (w.allows(mid)) lo = mid; else hi = mid;
         }
         return lo;
     }
 
     /**
-     * Whether the wires allow the m-th unit of a power suggestion (THE WIRES WITH THE POWER): with m units on the crews the
-     * wires that open by its date still carry all the load there, or with m - 1 the plants still serve less of it than the
-     * wires carry (the unit that reaches the wires' share allowed). Both fall as m grows - the plants' share rises, and each
-     * unit's points slow the wires on the same crews - so the units allowed are the first ones.
+     * One power suggestion's wires, read at each month it would stand (THE WIRES WITH THE POWER): the plants' and the wires'
+     * sites read once, each month's figures once. A count's months run from its commissioning, the quote of that many
+     * (wait(): the date the plan counts the order from), to the suggestion's date; at each the plants read the plan's load
+     * there (BuildAdvice.powerAheadAt(): the month's own peak block, the slack at the date alone) and the wires the same
+     * load with no power factor.
      */
-    private boolean wiresAllow(Game game, BuildAdvice.Suggestion s, Map<BuildingsTemplate, Long> at, BuildAdvice.Ahead load, long m) {
-        if (m < 1) return true;
-        if (!(wiresWith(game, s, m, load) < 1)) return true;
-        return servedAt(game, s.measure(), BuildAdvice.plus(at, s.template(), m - 1), s.ahead()) < wiresWith(game, s, m - 1, load);
+    private final class Wires {
+        private final Game game;
+        private final BuildAdvice.Suggestion s;
+        private final BuildAdvice.Ahead p;
+        private final Map<BuildingsTemplate, Long> plants, grid;
+        private final Map<Double, Map<BuildingsTemplate, Long>> plantsAt = new HashMap<>();
+        private final Map<Long, List<Double>> dates = new HashMap<>();
+        private final Map<Long, Double> points = new HashMap<>();
+
+        Wires(Game game, BuildAdvice.Suggestion s) {
+            this.game = game;
+            this.s = s;
+            this.p = s.ahead();
+            plants = building(game, s.measure());
+            grid = building(game, GRID);
+        }
+
+        /** The months m of the plant stand to its date: from the whole month an order of m opens by, to the date - at most the year before it, as the plan's frontier runs (WorksValue.frontier()). */
+        List<Double> dates(long m) {
+            return dates.computeIfAbsent(m, c -> {
+                List<Double> d = new ArrayList<>();
+                double lead = AutoBuilder.wait(game, s, Math.max(1, c));
+                if (Double.isFinite(lead))
+                    for (double month = Math.max(Math.ceil(lead), Math.floor(p.months()) - 11); month < p.months(); month++) d.add(month);
+                d.add(p.months());
+                return d;
+            });
+        }
+
+        BuildAdvice.Ahead power(double d) {
+            return d == p.months() ? p : BuildAdvice.powerAheadAt(game, d, Integer.MIN_VALUE, 0);
+        }
+
+        BuildAdvice.Ahead load(double d) {
+            BuildAdvice.Ahead a = power(d);
+            return new BuildAdvice.Ahead(a.months(), a.k(), a.slack());
+        }
+
+        Map<BuildingsTemplate, Long> at(double d) {
+            return plantsAt.computeIfAbsent(d, month -> WorksValue.openBy(game, plants, month));
+        }
+
+        /** Whether the plants on site already serve the month's load: the order adds nothing the wires must carry then. */
+        boolean exempt(double d) { return !(servedAt(game, s.measure(), at(d), power(d)) < 1); }
+
+        /** The wires' served share at month d with m of the plant on the crews (none: the queue as it stands). */
+        double wires(long m, double d) {
+            double work = m < 1 ? 0 : points.computeIfAbsent(m, c -> orderPoints(game, s, c));
+            return carried(WorksValue.openByAfter(game, grid, d, s.template(), m, work), d);
+        }
+
+        /** The wires' served share at month d with these units open: at the date, the grid's plan (supplyDemand()); before it, the month's own season, as the plants read the month's own peak block (BuildAdvice.gridInMonth()). */
+        double carried(Map<BuildingsTemplate, Long> open, double d) {
+            if (d == p.months()) return servedAt(game, GRID, open, load(d));
+            double[] sd = BuildAdvice.gridInMonth(game, open, load(d));
+            return sd[1] > 0 ? sd[0] / sd[1] : Double.POSITIVE_INFINITY;
+        }
+
+        /** Whether the law binds n at any month: the plants on site short of one. */
+        boolean bound(long n) {
+            for (double d : dates(n)) if (!exempt(d)) return true;
+            return false;
+        }
+
+        /** Whether the wires on site fall short at a month the law binds n: the cue to order them with it. */
+        boolean shortOfWires(long n) {
+            for (double d : dates(n)) if (!exempt(d) && wires(0, d) < 1) return true;
+            return false;
+        }
+
+        /**
+         * Whether the wires allow the m-th unit at every month it stands: with m units on the crews the wires that open by then
+         * still carry all the load there, or with m - 1 the plants still serve less of it than the wires carry (the unit that
+         * reaches the wires' share allowed).
+         */
+        boolean allows(long m) {
+            if (m < 1) return true;
+            for (double d : dates(m)) {
+                if (exempt(d) || !(wires(m, d) < 1)) continue;
+                if (!(servedAt(game, s.measure(), BuildAdvice.plus(at(d), s.template(), m - 1), power(d)) < wires(m - 1, d))) return false;
+            }
+            return true;
+        }
+
+        /** The first month n of the plant relies on wires on site: bound there, and the standing wires short of its load; NaN for none. */
+        double due(long n) {
+            if (BuildAdvice.units(grid) == 0) return Double.NaN;
+            for (double d : dates(n)) if (!exempt(d) && carried(Map.of(), d) < 1) return d;
+            return Double.NaN;
+        }
     }
 
-    /** The wires' served share at `load` with m of a power suggestion on the crews: the units on site the builders open by then, each slowed by the order's points (WorksValue.openByAfter()). */
-    private double wiresWith(Game game, BuildAdvice.Suggestion s, long m, BuildAdvice.Ahead load) {
-        Map<BuildingsTemplate, Long> site = pendingCapacity(game, GRID);
-        Map<BuildingsTemplate, Long> open = m < 1 ? WorksValue.openBy(game, site, load.months())
-                : WorksValue.openByAfter(game, site, load.months(), s.template(), m, orderPoints(game, s, m));
-        return servedAt(game, GRID, open, load);
+    /** The month, from now, by which n of a suggestion about to be placed needs the wires on site open (Wires.due()); NaN where it is not power's or the law does not bind it. */
+    private double wiresDueFor(Game game, BuildAdvice.Suggestion s, long n) {
+        if (s.measure().kind() != BuildAdvice.Kind.POWER || s.ahead() == null || n < 1 || wiresAt != null || wiresOffForTest)
+            return Double.NaN;
+        return new Wires(game, s).due(n);
+    }
+
+    /** Keeps the wires a placed plant relied on open by its month (REV-PW9-G 3): `months` from now, NaN for none. */
+    private void promiseWires(Game game, double months) {
+        if (Double.isFinite(months)) wiresDue.add(game.getMonth() + months);
+    }
+
+    /** The wires' promises kept (REV-PW9-G 3): the months, absolute, by which the wires pending plants relied on must open. */
+    public java.util.SortedSet<Double> wiresDue() { return java.util.Collections.unmodifiableSortedSet(wiresDue); }
+
+    /** Whether the wires' promise binds an order of this measure: one is kept, and the order is not the grid's own, nor one for a measure short now other than power. */
+    private boolean wiresBind(BuildAdvice.Measure measure, boolean lacked) {
+        return !wiresDue.isEmpty() && !wiresOffForTest && measure.kind() != BuildAdvice.Kind.GRID
+                && (!lacked || measure.kind() == BuildAdvice.Kind.POWER);
+    }
+
+    /** Whether `count` of a suggestion would put a unit of the wires a plant relied on past the month it is due by (wiresDue): fewer of a kind open by then with it on the crews than without. */
+    private boolean wiresDelayed(Game game, BuildAdvice.Suggestion suggestion, long count) {
+        Map<BuildingsTemplate, Long> grid = building(game, GRID);
+        if (BuildAdvice.units(grid) == 0) return false;
+        double points = orderPoints(game, suggestion, count);
+        for (double due : wiresDue) {
+            double months = due - game.getMonth();
+            if (months < 0) continue;
+            Map<BuildingsTemplate, Long> before = WorksValue.openByAfter(game, grid, months, null, 0, 0);
+            Map<BuildingsTemplate, Long> after = WorksValue.openByAfter(game, grid, months, suggestion.template(), count, points);
+            for (Map.Entry<BuildingsTemplate, Long> e : before.entrySet())
+                if (after.getOrDefault(e.getKey(), 0L) < e.getValue()) return true;
+        }
+        return false;
     }
 
     /** The construction points an order of `count` of a suggestion puts on the crews: its buildings at the points their equipment takes and its works (R1e). */
@@ -1486,7 +1630,12 @@ public final class AutoBuilder {
     private record CrewLimit(long count, String service) { }
 
     private static String crewWords(BuildAdvice.Measure measure, String service) {
-        return measure.label() + " waits to preserve " + service + "'s quoted first completion.";
+        return measure.label() + " waits to preserve " + preserved(service) + ".";
+    }
+
+    /** What a crew hold keeps: a measure's quoted first completion, or the opening of the wires a plant was ordered with (WIRES_DUE). */
+    private static String preserved(String service) {
+        return WIRES_DUE.equals(service) ? "the opening of " + service : service + "'s quoted first completion";
     }
 
     private CrewLimit crewLimit(Game game, List<BuildAdvice.Measure> kept, BuildAdvice.Measure measure,
@@ -1494,25 +1643,30 @@ public final class AutoBuilder {
         // PW3, 2026-11-24: "short now" is BuildAdvice.lacksNow(), not !maintained(NOW): power's plan is the year's peak hour (1.631 of the mean)
         // and the month's dispatch serves the peak block of its highest month (1.507), so a city whose firm supply lay between the two read power as short, and every
         // other essential order "waited to preserve Power's quoted first completion" (roads, schools and care held 12 months, power fully served).
-        if (pendingUntil.isEmpty() || essential(measure)
-                && BuildAdvice.lacksNow(game, measure))
-            return new CrewLimit(wanted, null);
-        String blocked = pendingDelay(game, kept, measure, suggestion, wanted);
+        boolean lacked = essential(measure) && BuildAdvice.lacksNow(game, measure);
+        boolean promises = !pendingUntil.isEmpty() && !lacked;
+        // ...and the wires a plant was ordered with (REV-PW9-G 3), which bind power's own orders when it is short as well: a plant
+        // that put its predecessor's wires past its opening would leave both behind them.
+        boolean wires = wiresBind(measure, lacked);
+        if (!promises && !wires) return new CrewLimit(wanted, null);
+        String blocked = pendingDelay(game, kept, measure, suggestion, wanted, promises, wires);
         if (blocked == null) return new CrewLimit(wanted, null);
         long lo = 0, hi = wanted;
         while (hi - lo > 1) {
             long mid = lo + (hi - lo) / 2;
-            if (pendingDelay(game, kept, measure, suggestion, mid) == null) lo = mid;
+            if (pendingDelay(game, kept, measure, suggestion, mid, promises, wires) == null) lo = mid;
             else hi = mid;
         }
         return new CrewLimit(lo, blocked);
     }
 
     private String pendingDelay(Game game, List<BuildAdvice.Measure> kept, BuildAdvice.Measure measure,
-                                 BuildAdvice.Suggestion suggestion, long count) {
+                                 BuildAdvice.Suggestion suggestion, long count, boolean promises, boolean wires) {
         BuildingManager manager = game.getBuildingManager();
         double output = game.getBuildingOutputAtEveryPost();
         if (!(output > 0)) return null;
+        if (wires && wiresDelayed(game, suggestion, count)) return WIRES_DUE;
+        if (!promises) return null;
         BuildingsTemplate additional = suggestion.template();
         double points = Double.NaN;
         for (BuildAdvice.Measure current : kept) {
@@ -1722,7 +1876,9 @@ public final class AutoBuilder {
                 if (weighed != null) weighed = payback(game, m, s, n);
             }
 
-            place(game, m, s, name, wanted, n, cut, ground, first, weighed, null);
+            // ...the wires the plant relies on kept open by its month once it is placed (REV-PW9-G 3), read before it joins the site.
+            double wiresNeeded = wiresDueFor(game, s, n);
+            if (place(game, m, s, name, wanted, n, cut, ground, first, weighed, null)) promiseWires(game, wiresNeeded);
             return;
         }
     }
@@ -1873,7 +2029,7 @@ public final class AutoBuilder {
                 + String.join(", ", places) + ", " + money(landCost) + ")";
         String why = m.label() + " " + before + ", " + after + " once what is on site opens"
                 + (cut == Cut.BUILDERS && crewHolds.containsKey(m.label())
-                        ? "; " + n + " ordered to preserve " + crewHolds.get(m.label()) + "'s quoted first completion"
+                        ? "; " + n + " ordered to preserve " + preserved(crewHolds.get(m.label()))
                         : cutWords(cut, wanted, n)) + land + (raised > 0 && overdraft > 0 ? "; the bond also cleared the treasury's "
                 + DecisionLog.money(overdraft) + " overdraft, as Build's funding page does" : "")
                 + (under > 0 ? "; paid from its ask's proceeds, which the month's bills had drawn on: the treasury is overdrawn by " + DecisionLog.money(under)
@@ -2772,10 +2928,28 @@ public final class AutoBuilder {
             return;
         }
         long askedCount = n;
+        Cut cut = Cut.NONE;
+        // THE WIRES WITH THE POWER (REV-PW9-G 1): a plant whose bond has raised its cost is placed no further past its wires than one
+        // the step orders, the wires short of it ordered first; until they carry it, its ask stays open and keeps what it raised.
+        if (m.kind() == BuildAdvice.Kind.POWER) {
+            wiresStepped = false;
+            long carried = wiresCarry(game, all, kept, c, n);
+            if (carried < n) {
+                n = carried;
+                cut = Cut.WIRES;
+                if (n == 0) {
+                    hold(m, c, Cut.WIRES, askedCount, m.label() + ": the ask for " + askedCount + " " + a.building() + " has "
+                            + money(a.raised) + " raised; the plants standing and on site already serve all the load the wires"
+                            + " will carry by its opening, and the wires to carry more could not be ordered with it.", null);
+                    return;
+                }
+            }
+        }
         CrewLimit crews = crewLimit(game, kept, m, c, n);
         if (crews.count() < n) {
             crewHolds.put(m.label(), crews.service());
             n = crews.count();
+            cut = Cut.BUILDERS;
             if (n == 0) {
                 hold(m, c, Cut.BUILDERS, askedCount, crewWords(m, crews.service()), null);
                 return;
@@ -2810,8 +2984,9 @@ public final class AutoBuilder {
             }
         }
         if (covered(game, a)) {
-            if (place(game, m, c, a.building(), askedCount, n,
-                    n < askedCount ? Cut.BUILDERS : Cut.NONE, ground, null, null, a)) {
+            double wiresNeeded = wiresDueFor(game, c, n);
+            if (place(game, m, c, a.building(), askedCount, n, cut, ground, null, null, a)) {
+                promiseWires(game, wiresNeeded);
                 asks.remove(a);
                 asked.add(String.format("Automatic building placed its order for %d %s (%s) after %d month%s: the %s its ask"
                         + " raised and the spendable cash covered it.", n, a.building(), m.label(),
@@ -2931,6 +3106,8 @@ public final class AutoBuilder {
         public List<PaybackHold> paybackHolds;
         /** Original first-completion dates for pending capacity, by service label (HW1). */
         public Map<String, Double> pendingUntil;
+        /** The months by which the wires pending plants relied on must open (PW9-G, REV-PW9-G 3): a save from before has none, and no wires are kept for a plant it ordered. */
+        public List<Double> wiresDue;
         /** Last-pass essential funding reasons for the advice cards. */
         public Map<String, String> fundingHolds;
         /** Reserve plans limited by an essential construction promise. */
@@ -2941,6 +3118,7 @@ public final class AutoBuilder {
         State s = new State();
         s.on = on;
         s.pendingUntil = new LinkedHashMap<>(pendingUntil);
+        s.wiresDue = new ArrayList<>(wiresDue);
         s.fundingHolds = new LinkedHashMap<>(fundingHolds);
         s.crewHolds = new LinkedHashMap<>(crewHolds);
         s.slack = slack;
@@ -2998,6 +3176,7 @@ public final class AutoBuilder {
     /** Puts a saved state back; null - a save from before 0.7.73 - is off, at the defaults, with nothing done; one from 0.7.73 to 0.7.80 keeps its switch and margin and reads the default limit, "Build from cash anyway" off; one from 0.7.81 to 0.7.100 at the old default, 60%, reads the new one (0.7.101), and any other limit stands on the new steps. */
     public void restore(State s) {
         pendingUntil.clear();
+        wiresDue.clear();
         log.clear();
         held.clear();
         paybackHolds.clear();
@@ -3024,6 +3203,8 @@ public final class AutoBuilder {
             if (e.getKey() != null && e.getValue() != null && Double.isFinite(e.getValue()) && e.getValue() >= 0)
                 pendingUntil.put(e.getKey(), e.getValue());
         }
+        if (s.wiresDue != null) for (Double due : s.wiresDue)
+            if (due != null && Double.isFinite(due) && due >= 0) wiresDue.add(due);
         on = s.on;
         if (on && s.fundingHolds != null) for (Map.Entry<String, String> e : s.fundingHolds.entrySet())
             if (e.getKey() != null && e.getValue() != null) fundingHolds.put(e.getKey(), e.getValue());

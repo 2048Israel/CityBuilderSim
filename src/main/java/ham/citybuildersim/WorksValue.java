@@ -545,24 +545,32 @@ public final class WorksValue {
 
     /**
      * ...with one more order on the same crews (PW9-G): the units of a site its queue opens by `months` from now once `count`
-     * of `additional`, `points` of work, shares the builders (BuildingManager.siteUnitMonthsAfter()). The wires a plant is
-     * matched to are read so, since the plant's own points slow them (PowerWiresCheck 3). A rushed site's later units read
-     * the queue as it stands.
+     * of `additional`, `points` of work, shares the builders (BuildingManager.siteUnitMonthsAfter()); with none (count 0), the
+     * queue as it stands. The wires a plant is matched to are read so, since the plant's own points slow them (PowerWiresCheck 3).
+     * A rushed site's later units read the same quote, the order on the crews (REV-PW9-G 4: read from the queue as it stood, a
+     * unit the plant's points held past the date was counted open by it). A site with part of it handed to the foreign crews
+     * opens no unit before their part of it can be built (BuildingManager.abroadUnitFloor(), REV-PW9-G 5), and each of its
+     * units is read so, since that floor does not keep the crews' even interval.
      */
     public static Map<BuildingsTemplate, Long> openByAfter(Game g, Map<BuildingsTemplate, Long> site, double months,
                                                            BuildingsTemplate additional, long count, double points) {
-        if (site.isEmpty() || additional == null || count <= 0) return openBy(g, site, months);
-        Map<BuildingsTemplate, PendingWork> schedule = new LinkedHashMap<>();
+        if (site.isEmpty()) return site;
         BuildingManager bm = g.getBuildingManager();
         double output = g.getBuildingOutputAtEveryPost();
+        boolean added = additional != null && count > 0;
+        java.util.function.ToDoubleBiFunction<BuildingsTemplate, Long> quote = (t, units) -> Math.max(added
+                ? bm.siteUnitMonthsAfter(t, units, output, additional, count, points) : bm.siteUnitMonths(t, units, output),
+                bm.abroadUnitFloor(t, units));
+        Map<BuildingsTemplate, PendingWork> schedule = new LinkedHashMap<>();
         for (Map.Entry<BuildingsTemplate, Long> e : site.entrySet()) {
             BuildingsTemplate t = e.getKey();
-            double first = bm.siteUnitMonthsAfter(t, 1, output, additional, count, points);
-            double second = e.getValue() > 1 ? bm.siteUnitMonthsAfter(t, 2, output, additional, count, points) : first;
+            String key = ConstructionControl.keyOf(t);
+            double first = quote.applyAsDouble(t, 1L);
+            double second = e.getValue() > 1 ? quote.applyAsDouble(t, 2L) : first;
             schedule.put(t, new PendingWork(e.getValue(), first, second - first,
-                    bm.getControl().isRushed(ConstructionControl.keyOf(t))));
+                    bm.getControl().isRushed(key) || bm.getControl().abroadOf(key) != null));
         }
-        return completedAt(g, schedule, Double.isFinite(months) ? Math.max(0, months) : 0);
+        return completedAt(g, schedule, Double.isFinite(months) ? Math.max(0, months) : 0, quote);
     }
 
     /** Read-only generation schedule and native monthly planning dates; pending loads retain their existing held reader. */
@@ -579,27 +587,41 @@ public final class WorksValue {
         }
 
         /** The next native highest-load calendar month at or after this monthly commissioning. */
-        int nextPeak(double from) {
-            int first = (int) Math.ceil(from), best = first;
-            double latitude = game.getServicesManager().getUtilitiesHandler().latitude();
-            for (int month = first + 1; month < first + 12; month++)
-                if (PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth() + month), latitude)
-                        > PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth() + best), latitude)) best = month;
-            return best;
-        }
+        int nextPeak(double from) { return WorksValue.nextPeak(game, from); }
 
         /** Construction runs before dispatch: both generation and new load use the same completed whole month. */
-        java.util.SortedSet<Double> frontier(double from) {
-            java.util.SortedSet<Double> dates = new java.util.TreeSet<>();
-            int first = (int) Math.ceil(from), peak = nextPeak(from);
-            for (int month = first; month <= peak; month++) dates.add((double) month);
-            return dates;
-        }
+        java.util.SortedSet<Double> frontier(double from) { return WorksValue.frontier(game, from); }
+    }
+
+    /** The next native highest-load calendar month at or after a commissioning `from` months on (PowerDates; the wires' law reads the plan's frontier so, PW9-G). */
+    static int nextPeak(Game game, double from) {
+        int first = (int) Math.ceil(from), best = first;
+        double latitude = game.getServicesManager().getUtilitiesHandler().latitude();
+        for (int month = first + 1; month < first + 12; month++)
+            if (PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth() + month), latitude)
+                    > PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth() + best), latitude)) best = month;
+        return best;
+    }
+
+    /** The whole months from a commissioning `from` months on to its next peak: the power plan's dated requirements (PowerDates). */
+    static java.util.SortedSet<Double> frontier(Game game, double from) {
+        java.util.SortedSet<Double> dates = new java.util.TreeSet<>();
+        int first = (int) Math.ceil(from), peak = nextPeak(game, from);
+        for (int month = first; month <= peak; month++) dates.add((double) month);
+        return dates;
     }
 
     /** Quote-completed units at this date. Priority delay precedes the first unit in full. */
     private static Map<BuildingsTemplate, Long> completedAt(Game g,
             Map<BuildingsTemplate, PendingWork> schedule, double months) {
+        BuildingManager bm = g.getBuildingManager();
+        double output = g.getBuildingOutputAtEveryPost();
+        return completedAt(g, schedule, months, (t, units) -> bm.siteUnitMonths(t, units, output));
+    }
+
+    /** ...a searched site's units (a rushed one's, or one in part abroad) each opening at `quote`, as openByAfter() reads it. */
+    private static Map<BuildingsTemplate, Long> completedAt(Game g, Map<BuildingsTemplate, PendingWork> schedule, double months,
+            java.util.function.ToDoubleBiFunction<BuildingsTemplate, Long> quote) {
         Map<BuildingsTemplate, Long> ready = new LinkedHashMap<>();
         for (Map.Entry<BuildingsTemplate, PendingWork> e : schedule.entrySet()) {
             BuildingsTemplate t = e.getKey();
@@ -614,8 +636,8 @@ public final class WorksValue {
                     long lo = 0, hi = p.units() + 1;
                     while (hi - lo > 1) {
                         long mid = lo + (hi - lo) / 2;
-                        double quote = g.getBuildingManager().siteUnitMonths(t, mid, g.getBuildingOutputAtEveryPost());
-                        if (Double.isFinite(quote) && quote <= months) lo = mid;
+                        double at = quote.applyAsDouble(t, mid);
+                        if (Double.isFinite(at) && at <= months) lo = mid;
                         else hi = mid;
                     }
                     finished = lo;
