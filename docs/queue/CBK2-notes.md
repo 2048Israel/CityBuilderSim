@@ -180,3 +180,111 @@ Monetary financing and credibility, the calibration's cases:
     the share at 100%, the serial's first slice, refinanced at auction, is
     19 years of GDP. Section 6's twins roll that slice alike before the
     share opens, so the share meets only the treasury's own sales.
+
+## Checks
+
+**CentralBankPaceCheck (new): all passed, 22 s.** It plays 78 months, every
+one held to the money audit; the worst residual is 0.000000 (a cent is
+0.000259). Each section is caused on its own copy of one town:
+CentralBankCheck 19's five-year serial, held by the households, the bank and
+the central bank at a .4 dial, saved the month before its first slice.
+
+1. The pace both ways. A set pace moves the book by exactly pace × the term
+   paper, up and down. Auto's step is the QE_SPEED rule to the bit in all
+   three of its arms. When the dial is nearer than the step, the book moves
+   only to the dial.
+2. The runoff's caps. Runoff only sells nothing. What runs off is the least
+   of its par falling due, its excess over the dial and the pace.
+3. Sales at market. PAPER_GAINS is SOLD_PAPER less the face, exactly, with
+   the paper at, under and over face. The price per face is the curve's to
+   `CURVE_DRIFT` (3e-4), the drift measured between the window and the probe;
+   a sale at face would be off by 5e-2.
+4. Auction purchases. The take is the share of the face the market bought,
+   at each piece's own price and pro rata over two pieces. The dial's room
+   binds exactly, and nothing is taken at or over the dial. The MADE lines
+   sum to `getIssued()`.
+5. The law off. At a share of .5 nothing is taken, and the rollover is
+   exactly its own par. With the law on and a share of 0, nothing either.
+6. Credibility, unit by unit to the bit:
+   - the strength's line;
+   - one month at half and at the full cost;
+   - fifty years bounded both ways;
+   - the cases (Indonesia's 3% free; Argentina's nine points at KMIN;
+     three months of Ghana's 7.2% over half the premium; a year of it under
+     a quarter of the trust above KMIN);
+   - `takeMonth` adding the premium to the bit.
+
+   The twin towns are described in design call 7. Their lending stock
+   turned to the bit every month, and stopped, it is forgotten a twelfth a
+   month.
+7. Defaults and saves. The defaults are the rules before CBK2. Every rule,
+   both lifetimes, the stock, the auction lines and the premium come back
+   from a save to the bit. The saved city and the one it was saved from play
+   their next month to the bit. A save stripped to before CBK2 reads the
+   defaults and plays to the bit as the same save with them.
+8. The money audit over every month played.
+
+**Run here, one JVM at a time:**
+- `--fast` is green, with Stale at 0 firm findings after CLAUDE.md's
+  interface count went to fifty-eight (`ui/HoldingsRulesPane`).
+- Exit 0: ExpectationsCheck, BankRulesCheck, CentralBankStatementCheck,
+  SaveFileCheck, ReadPathCheck, and KeptCheck (28 min).
+- HoldersCheck exits 3: main's known red only.
+
+**The pick** (`sh tools/pick.sh origin/main HEAD`) is ALL, 265 harnesses
+("AllChecks.java runs the suite"). The review line is "needed - money:
+CentralBank.java, CentralBankStatements.java, Debt.java, Expectations.java,
+ui/CentralBankScreen.java; saves: DataSave.java".
+
+**The default playtest does not move.** The default `LongPlaytest` ran with
+`-Dplaytest.trace`, `-Xmx4g` and both data files named, one JVM each. Main
+ffd07ee15 was built apart from `git archive` (1,974 s); CBK2 ran at
+e054864e1's model (2,057 s). Both exited 0, and all eight files are
+identical:
+
+| trace file | md5, main ffd07ee15 and CBK2 |
+|---|---|
+| t-bank.csv | 06f5e52b70d26ef718312f43827c0685 |
+| t-bonds.csv | 9ed120b19e0ecc1a62296b4012df94ea |
+| t-borrow.csv | c87d567686deb691c85ac53ad23e47f7 |
+| t-build.csv | b1ba2dcf969de44591c5d2db138f015b |
+| t-house.csv | e1d7a1b4b241ce0b4520ddc7bcbde827 |
+| t-labour.csv | 723a0c4e3f825fc49b464163adeb89e3 |
+| t-month.csv | 6f7a0008b9e310c37226e4d86ffd262c |
+| t-pop.csv | 2243deb50f586248f10ef60abac81404 |
+
+## For the manual
+
+(For the page's next edition; `docs/manual.*` is not this batch's.)
+
+**The holdings' rules** (Policy › Bank rules, and the central bank's own
+Policy page). The holdings dial is a cap: the share of the city's term paper
+the central bank may hold. Four rules say how it gets there.
+
+- **Pace.** Auto moves the book a quarter of the way to the dial a month, as
+  it always has. A set pace moves it by that share of the term paper a month,
+  up or down, until it reaches the dial. The Fed bought $120B a month in 2020
+  and capped its runoff at $60B a month in 2022.
+- **Shrinking the book.** *Runoff and sales at market*: paper over the dial
+  that falls due is not rolled, and the bank sells the rest of the month's
+  step to the commercial bank at its market value. A gain or a loss on the
+  sale lands in the bank's profit, so in its remittance to the treasury. With
+  a set pace, runoff and sales together stay within it. *Runoff only*: it
+  sells nothing, and lets no more run off than the pace.
+- **Direct purchases.** *Not allowed* (the default) is the law at the Fed,
+  the ECB and the Bank of Japan: the bank buys at the treasury's auctions only
+  to replace its own maturing paper. *Allowed* opens the auction share.
+- **Auction share.** Under the law, the bank bids this share of each new term
+  issue, on top of what the market buys, at the auction's own price and never
+  past the dial. The Bank of Canada takes at least 13% of every bond auction.
+  The money it pays is new money, and the money statement shows it as "Paper
+  bought from the treasury at auction".
+
+**What leaning on it costs.** Up to 3% of a year's GDP a year costs nothing:
+Indonesia lent its treasury about that in 2020 and stayed believed. Past it,
+people trust the bank less each month. They expect more inflation, by up to
+nine points at 7% of GDP a year (Argentina 2020), and the D$ weakens with
+it (Ghana 2022: the cedi lost 30%). When the bank stops, the lending is
+forgotten over about a year, but trust comes back only as it always does:
+by holding the target, over years. The page shows what the bank has lent
+lately and what that adds to the inflation people expect.
