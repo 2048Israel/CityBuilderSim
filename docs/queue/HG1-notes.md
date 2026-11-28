@@ -31,3 +31,108 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   expected sale is 0, and no shop ever asked the bank. Neither is the cause.
 - **Why harness cities base their index**: they are founded the default way, whose arrivals hold the diploma
   ("universal high school", Migration.composeArrivals()), so the diploma band has spare workers and a shop passes.
+- **Without the batch his city would have got a shop on its own at about month 92**, once its unemployment rose
+  enough to free the diploma band (scratch HgProbe on the pre-mend classes). A young 1900 city escapes the old gate
+  at about month 22 the same way (HungerCheck's Trap, the hunt on the mutated classes below).
+
+## 2. What was built
+
+- **A shop the town goes short of is staffed at the fill** (`Sector`, banner "A BUILDING THE TOWN GOES WITHOUT IS
+  STAFFED AT THE FILL"; `Retail.staffedAtTheFill`, `Retail.townGoesShort`). For such a template the gate reads
+  the larger of its ordinary share and `Sector.shareAtTheFill`: the template's posts joined to the city's posts,
+  each band filled by `PopulationManager.fillByBand`, the share of its posts that fill. Only Retail overrides the
+  hook, only for a template with coverage (a shop, not its Filling Station), and only while its shops, standing and
+  on site, hand over fewer baskets than the households need (`groceriesNeeded()`). Everything else keeps the 80%.
+- **The index bases without groceries** (`PriceIndex.takeMonth`, comment "THE OTHER HALF NEED NOT BE GROCERIES").
+  A shopping month is rent priced and paid, and either groceries bought at a shelf price or any outside good bought
+  at a price (`goodsBought`: meals, luxury, new cars, petrol, lamp oil, home coal). It is never the city's own fees
+  (SERVICES), which would close the BOTH HALVES loop again. Groceries join a basket based without them after a
+  whole year of sales (`groceriesJoin`): the basket relinks at the level it stood at, so the level never jumps.
+- **FOOD on NEEDS YOU** (`CityNeeds.food`, `Kind.FOOD`, `Go.SHOPS`, `Go.FOOD_PROMISE`, `HUNGER_YELLOW` .04,
+  `HUNGER_RED` .20). The row reads the households' hunger. Its door is Build > Shops when the shelves are the
+  larger half (short of stock at least priced out), else Policy > Promises > Food. `SummaryScreen.goTo` and
+  `BuildScreen.goOf` map the doors.
+- **HungerCheck** (in AllChecks): five sections, one per check in the brief except his city (below).
+- **No saved field, no format bump**: the index's new rule reads only what it already saves.
+- **No held-figure writer**: the mend reads `fillByBand` and the posts, and Retail's order goes through
+  `addStack`, which already raises the held posts, the vacancy and the Warrant.
+
+## 3. The calls
+
+- ★ **Staff a shop at the fill, not lower the 80%.** "THE SHARE STAYS AT 80%" (GW0/GW1: lowering it built what
+  cities could not keep). The fill is the city's. A new employer hires from other employers too: job-to-job moves
+  were nearly two-fifths of US new jobs 1994-2003 (Fallick & Fleischman, FEDS 2004-34,
+  https://www.federalreserve.gov/pubs/feds/2004/200434/200434abs.html). So a shop's posts fill at its tier's rate
+  like everyone's. Recommendation taken: only for the building the town goes without, and only while it does.
+- ★ **Only Retail, only shops.** The hook takes the template, so Retail's Filling Station keeps its ordinary gate.
+  Other sectors whose absence starves the town (none found) could override it later.
+- ★ **The basing reads rent and any bought outside good, never fees.** The brief's BOTH HALVES: the base needs a
+  real outside price. Groceries keep their place: a city that buys them bases on them as before (HungerCheck 4e).
+- ★ **Groceries join after a whole year of sales**: WEIGHT_MONTHS of them, at their share of the trailing year. A
+  month without a sale holds the join off. The relink is chained, so the level carries over.
+- ★ **FOOD's lines.** Listed from 4%: USDA ERS, very low food security, 4.1% of US households in 2019 (ERR-275,
+  https://ers.usda.gov/publications/99281). Red from 20%: the famine line, IPC Phase 5, a fifth of households with
+  an extreme lack of food (https://www.unicefusa.org/stories/what-is-famine). The reading says which half.
+- ★ **The priced-out half stays.** On his copy, after the shelves fill, 8-22% stay hungry because they cannot pay.
+  They are the people with no income in a 1900 city with no promise made: the model's poverty, not a shelf. FOOD
+  reads it yellow (red at m94, 22%) with the food promise's door, which is the lever. Not mended here: it is his
+  to decide by playing.
+- **No change to 40806e6f8 or CBK3**: neither is involved (section 1).
+
+## 4. The checks and their results
+
+- **His city** (scratch HgFinal on the final classes, his copy in hg1-scratch, 48 months, `target/hgfinal.txt`):
+  - A shop was ordered at once and stood at m81; the shelves were full by m84 (short of stock 0.896 -> 0.000,
+    and 0.000 to m127).
+  - Hunger went 0.975 -> 0.113 at m84, then 8-22% after (priced out, above).
+  - The index counts down from m80 (37 -> 0), bases at m103, and gives its first rate at m116 (-0.3%, then
+    +0.5-0.8%). The rule's rate moves off 2.00% (to 0, then 0.8-1.2%).
+  - FOOD reads red with Build > Shops to m83, then yellow with the food promise; NEEDS YOU lists it every month.
+  - The money audit's residual stays under 1.2e-11 every month.
+- **HungerCheck** green (target/checks/HungerCheck.log):
+  1. The trap caused: a 1900 city at month 16, diploma spare -5.39, ordinary share 0.738, Retail's 0.809. The
+     station is not lifted, and the gate is ordinary once the shops cover.
+  2. Played: ordered +1, standing +3, stocked +3, sold +4, short of stock under 4% at +5 (bound 12).
+  3. The screens: red with Build > Shops; red with the food promise at a 20x shelf price; a fed default city at
+     level 0 and not listed; every one of 75 months watched follows the thresholds.
+  4. The index, (a)-(e).
+  5. The money audit, every month played.
+- **Red without the mends** (a mutation, reverted: Retail's hook false, the basing back to groceries only, no join,
+  no FOOD row; `target/HungerCheck-mutated.log`): 29 FAIL, in sections 1 (4), 2 (1), 3 (5) and 4 (19). Section 5
+  stays green, as it should. Without the mend the hunt finds month 22, where the band has freed itself (spare
+  +1.54, ordinary 0.840), so the trap's premises fail.
+- **Named harnesses green, one JVM at a time** (`target/named1.txt`, exit 0): StaffingDrawCheck,
+  StaffingTieCheck, GroceryCheck, SupplierCreditCheck, Forms1900Check, ExpectationsCheck, BuildAdviceCheck and
+  HungerCheck. `--fast`: Stale 0 firm findings.
+- **The pick is ALL** (AllChecks changed): the whole suite runs in the dry run.
+- **The ensemble** is owed, since the default trace can move (Retail's gate in tight-labour months; basing on
+  meals before groceries). It runs after the review's SHIP, and its verdict goes here.
+
+## 5. Where it meets other batches
+
+- **ASH3, section 4 (finding 6)**: "Retail held back a Small Grocery Store it could staff at only 61% (2 college
+  posts at an 11% fill)". With HG1, while the town goes short, that store is read at the fill and passes. ASH3's
+  other half (Retail weighing every format, and a short shelf raising its price) is not built here.
+- **ASH4** (HouseholdBalance.cushion, Household.everyday): HG1 reads only `groceriesNeeded()` and the hunger
+  getters, so no conflict is expected on merge.
+
+## 6. Left over
+
+- **The founding year goes hungry** (queued as HG2). In HungerCheck's default-founded city nearly the whole town
+  goes hungry from about month 4 until its first shop sells, at about month 15-17. FOOD now says so, red, with
+  Build > Shops. Its cause was not traced here; it is not the staffing gate (the default arrivals hold the
+  diploma). It is pre-existing on main.
+- **The FOOD reading at level 0** can say "2% go hungry, the shops cannot serve them". That is true, and the row
+  is not listed.
+
+## For the manual
+
+Not this batch's to write. For when an edition comes:
+- NEEDS YOU has a FOOD row, listed from 4% of the people going hungry and red from 20%. It says whether the shops
+  cannot serve them (Build > Shops) or they cannot pay (Policy > Promises > Food).
+- The inflation tile's "rate in ~N mo" now counts down in a city whose shops sell no groceries, on rent and what
+  else the city buys. Groceries join the basket after a year of sales.
+
+## Logs kept
+
+target/named1.txt, target/hgfinal.txt and target/HungerCheck-mutated.log, in this worktree. No dry run yet.
