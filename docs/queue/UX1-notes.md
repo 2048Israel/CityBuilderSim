@@ -245,3 +245,7 @@ and money's one format and sign. Not this batch's: `docs/manual.*` is untouched.
 His part is the four picks, P1 to P4 (section 5; the pictures in `docs/studies/ux1/`). The rows are
 written to the recommendations (P1 A, P2 A, P3 A, P4 A); a pick of an alternative changes UX2 (P1), UX4
 (P2), UX3 (P3) or UX7 (P4), and nothing waits on him.
+
+## His picks (2026-11-27, about 22:00, through the desk chat)
+
+"yes all four": P1 A, P2 A, P3 A and P4 A. The rows as written stand. His new piece, the bottom console, is UX14. Its shell and the clock at its centre went into UX2's brief.

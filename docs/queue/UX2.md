@@ -65,6 +65,14 @@ so it merges main as each ships. REU1's Real Estate page, if it lands after this
 every page and takes its narrow form by the page rows' rule. UX3 to UX8 start after it; the
 page rows after it.
 
+## The bottom console (Jerus, 2026-11-27, 22:00-22:15, through the desk chat)
+
+- **His picks.** He took all four of UX1's picks, every one A: P1, P2, P3 and P4. The rows as written stand.
+- **His new piece:** "something could and should be in the bottom no? like something semi round occupying 60% of the bottom".
+  - It is UX14's, whole: the shell and the two wings, quick build and money and debt.
+  - Leave the bottom centre clear for it, and keep the zoom buttons where UX14 can sit beside them.
+- **The clock stays in the top strip** ("yes clock stays at the top"). Item 2 stands as written.
+
 ## Not this batch's
 
 The alerts (UX3), the needs (UX4), the map's card and tints (UX5), the icons (UX6), the build screen (UX7),
