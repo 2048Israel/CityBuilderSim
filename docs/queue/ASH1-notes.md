@@ -1,10 +1,8 @@
 # ASH1 - power for a small town: notes
 
-**Resume here (2026-11-28 00:30):** REV-ASH1's P1s mended over three looks (the grid share held for the month
-and saved; one months-left getter on every screen; the panel's and the page's stalled words on the month's whole
-plan, `Game.siteLeft`, the foreign crews' work on a site handed abroad counted in it and its months); next:
-"mends at" for its fourth look; on its SHIP, merge origin/main and the ensemble on the gate box. No run is in
-flight.
+**Resume here (2026-11-28 05:40):** REV-ASH1 said SHIP on its fourth look at c46b355e3. origin/main (UX1)
+merged at 7913b708f; the ensemble on it PASS (below, `docs/ensemble/ASH1.md`). Next: "ASH1 dry run?" asked, and
+on the go the dry run (`sh tools/gate.sh ASH1 --dry-run`), then the marker dropped and ready. No run is in flight.
 
 Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-findings.md`), brief
 `docs/queue/ASH1.md`. Each condition is caused on fixtures of the batch's own; his save was never read.
@@ -145,6 +143,18 @@ Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-finding
   AutoBuildCheck, PriceLevelCheck, BuildCardCheck, AskProceedsCheck, HydroCheck, WorksFinanceCheck,
   PowerViewCheck, LabourCheck, MaterialsCheck, ElectrolyserCheck, SaveFileCheck, ReadPathCheck,
   BooksCheck, TownGridCheck; RoadCheck exit 3 (main's known reds only).
+
+## The ensemble
+
+80 of 80 runs on the gate box at 7913b708f (the merged tip, 0.9.217), label ASH1, scored against
+`docs/ensemble/0.9.216.md`; committed as `docs/ensemble/ASH1.md`. **PASS, the hard criteria 10 of 10:** M1, the
+money audit, failed in 0 months in every policy, and F1, LongPlaytest's findings, 0 of 16 runs in every policy.
+Beside the baseline (info): AUTO2's final population 8.18M against 6.49M, its 40,000 people at m605 against m628
+(16 of 16); A1 2.95% inflation (9 of 16 in band, FAIL as the baseline's 11 of 16 was), A2's longest hot spell 16
+months against 15 (FAIL as the baseline), A3, S1, K1 and K2 PASS as the baseline; H1 retired. T2's final
+population went FAIL to PASS in ZERO_HOT (6,191 against 7,096, within 75%), SHOCK (177,650 against 133,110) and
+HIGH (74,812 against 56,156). The trace moves, as it should: the grid's posts follow the load and a small town's
+wires grow in 5 MW steps.
 
 ## For the manual
 
