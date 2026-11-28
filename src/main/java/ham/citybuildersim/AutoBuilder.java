@@ -1604,20 +1604,33 @@ public final class AutoBuilder {
                 && (!lacked || measure.kind() == BuildAdvice.Kind.POWER);
     }
 
-    /** Whether `count` of a suggestion would put a unit of the wires a plant relied on past the month it is due by (wiresDue): fewer of a kind open by then with it on the crews than without. */
+    /**
+     * Whether `count` of a suggestion would open the wires a plant relied on later than they are due (wiresDue), as the crew
+     * guard keeps a lacked measure's quoted first completion (pendingDelay()): the grid's soonest first unit on site, read with
+     * the order on the crews, opens later than without it, and then past the earliest due - so a unit the queue already reads
+     * late is held from opening later still.
+     * WHY (REV-PW9-G's second look, PowerWiresCheck 9): c9168e6fe compared the units open by each due with and without the
+     * order, which protected nothing once the queue's own reading had the unit past it: both counts were none, and a plant
+     * order that slowed it further was placed.
+     */
     private boolean wiresDelayed(Game game, BuildAdvice.Suggestion suggestion, long count) {
         Map<BuildingsTemplate, Long> grid = building(game, GRID);
-        if (BuildAdvice.units(grid) == 0) return false;
+        if (BuildAdvice.units(grid) == 0 || wiresDue.isEmpty()) return false;
+        BuildingManager bm = game.getBuildingManager();
+        double output = game.getBuildingOutputAtEveryPost();
         double points = orderPoints(game, suggestion, count);
-        for (double due : wiresDue) {
-            double months = due - game.getMonth();
-            if (months < 0) continue;
-            Map<BuildingsTemplate, Long> before = WorksValue.openByAfter(game, grid, months, null, 0, 0);
-            Map<BuildingsTemplate, Long> after = WorksValue.openByAfter(game, grid, months, suggestion.template(), count, points);
-            for (Map.Entry<BuildingsTemplate, Long> e : before.entrySet())
-                if (after.getOrDefault(e.getKey(), 0L) < e.getValue()) return true;
+        double before = Double.POSITIVE_INFINITY, after = Double.POSITIVE_INFINITY;
+        for (Map.Entry<BuildingsTemplate, Long> e : grid.entrySet()) {
+            if (e.getValue() <= 0) continue;
+            BuildingsTemplate t = e.getKey();
+            double floor = bm.abroadUnitFloor(t, 1);
+            double old = Math.max(bm.siteUnitMonths(t, 1, output), floor);
+            double proposed = Math.max(bm.siteUnitMonthsAfter(t, 1, output, suggestion.template(), count, points), floor);
+            if (Double.isFinite(old)) before = Math.min(before, old);
+            if (!Double.isNaN(proposed)) after = Math.min(after, proposed);
         }
-        return false;
+        return Double.isFinite(before) && after > before + 1e-9
+                && game.getMonth() + Math.ceil(after - 1e-9) > wiresDue.first();
     }
 
     /** The construction points an order of `count` of a suggestion puts on the crews: its buildings at the points their equipment takes and its works (R1e). */
