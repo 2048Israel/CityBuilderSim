@@ -1,6 +1,6 @@
 # PW9-G — wires ready with the power: notes
 
-**Resume here (2026-11-28):** the mend is 2043a414a + 61db49b7e, the harness 56e6aec80; the neighbours rerun on it (target/h-loop2.txt), then the g2 measurement, `--fast`, the maps, the ship file.
+**Resume here (2026-11-28):** the mend is 2043a414a + 61db49b7e, the harness 56e6aec80; the fixture restatements 3fd0da7e5; g2 measured; then the merge of main (CBK3), `--fast`, the maps, the ship file.
 The measuring observer is `target/PW9-G-measure/observer.patch` (+ `PW9GMeasureCheck.java`), never committed:
 `git apply` it, run `-Dpw9g.main=true ... ./batch-check.sh PW9GMeasureCheck`, then `git checkout` it away.
 
@@ -87,6 +87,25 @@ already reach the wires' share, held whole with the WIRES line, and the next tem
 - **A harness's door:** `AutoBuilder.wiresOffForTest` (static, never saved), so PowerWiresCheck runs one fixture with
   the law on and off.
 
+### The final model (g2, 3fd0da7e5, the same observer)
+
+| | default 1900, m2-440: main | g2 | modern equipment, m2-180: main | g2 |
+|---|---|---|---|---|
+| months below 95% current energy | 0 | 0 | 0 (min .99683) | 0 (min 1.0) |
+| dispatches wire-bound | 0 | 0 | 1, 0.029 GWh unserved | 0, nothing unserved |
+| grid orders (pass: units) | 173 1@224, 6@343, 1@355, 1@380, 1@385 | 173 1@224, 1@355, 1@381 (25 MW) | 173 1@90, 1@138, 1@175 | 173 1@77 (open m103), 1@127 with the Diesel (open m170), 1@169 |
+| generator orders | Diesel 1@224, 2@339, 1@384 | Diesel 1@224 | Steam 18, Diesel 1@134 (open m168) | Steam 12 (77-131), Diesel 1@127 (open m163) |
+| asked / delivered GWh | 1,316.16 / 1,250.35 | 1,246.52 / 1,184.19 | 591.78 / 562.17 | 588.07 / 558.66 |
+| generator / grid spend | $7.783M / $11.219M | $2.020M / $3.151M | $5.397M / $4.067M + $40.9k | $4.059M + $7.0k land / $3.926M |
+| population at the end | 14,656 | 13,080 | 10,734 | 10,296 |
+| POWER passes cut (BUILDERS / WIRES) | - | 0 / 0 | - | 20 / 17 |
+
+The 1900 city is g1's to the person: its one Diesel's wires are standing when it is ordered. In the modern city the
+wires' opening is now read behind the builders' queue, so 17 power passes were cut for the wires: 12 steam against
+g1's 17, $1.25M less on plants than g1 and $1.34M less than main, with no energy short in any month. Its population
+ends 4% under main's and 7% under g1's. Power was served in full every month, so that is the path and not the power:
+the ensemble judges it.
+
 ### The crews: the law on against off (PowerWiresCheck 3, 16 native months, two depots)
 
 | | 3(a) plants short of the wires' share: on | off | 3(b) plants at it: on | off |
@@ -149,6 +168,16 @@ default trace moves, and the ensemble is this batch's.
 - **SubstationCheck** "the same order machinery": the fixture's edge was this month's season. It is now the season
   `gridSeason` reads at the unit's own opening, and the grid is read there. The law it asserts, the least units that
   cover the peak, is unchanged.
+- **SubstationCheck**'s 100 MW case (no distribution unit on the menu) also keeps power plants off it. Read at its
+  opening, the edge leaves the grid not lacked now. The town's power (8% served) was ordered in the first pass, and
+  its quoted completion held the long Substation order at the crew guard: "Power grid waits to preserve Power's quoted
+  first completion". That is the existing law, so the case is the grid's step alone.
+- **EssentialWorksCheck** "pending capacity keeps its deadline through a real mid-construction save and load": a
+  100+ MW town on the founding 10 MW, behind 34 pending diesels. Counted by their opening, the wires ordered with the
+  Oil-Fired Plant could not open by its date, so the plant was held. That is the law, and the section isolates power's
+  deadline, so it now gets `serveGrid` (three Substations). This town cannot staff depots for their repairs (333
+  points). FC2's two fixture lines therefore count the builders' surplus over the repairs without the isolating wires'
+  (875 against 720, as before), and print them. Every PW3 assertion in the section is green, as it was.
 - **WorksFinanceCheck** "an early street cannot cover a later highway's saved promise": its 290 MW town stood on
   the founding 10 MW, so the wind reserve was held for the wires before the crew guard it isolates was asked. It now
   gets `EssentialWorksCheck.serveGrid`, as that file's isolated orders do, with a fixture line of its own.
