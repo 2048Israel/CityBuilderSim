@@ -1643,3 +1643,27 @@ above the wage band before calling the ordinary exchange step. Keep the
 positive second automatic-split premise, both cumulative-factor identities,
 real no-fill, tagged units/basis, nominal claims, collections and saves.
 No historical-price resurrection or direct split is introduced. Rerun pending.
+
+HoldersCheck's new continuation mismatch is actual foreign paper FACE, not
+a changed market mark: every stock, lifetime and individual piece already
+round-tripped exactly. The live fixture pins FX at1; its loaded twin did
+not reapply that deliberately unsaved fixture control. Reapply the same
+live rate after load and assert both pins/rates equal before continuing.
+Every strict face, coupon, save and audit comparison remains. No saved
+model field or tolerance changes. Native rerun pending.
+
+GoldMiningCheck's old positive payment proved settlement of the prior offer,
+not the regime or current offer: the old log omitted those operands. Its
+billion-unit opening XAU endowment also remained a pending FX deal, a concrete
+setup hazard that could break Gold lawfully. ★ Use the existing
+ForeignAccounts.forgetDealing helper for this opening HOLDING before entering
+Gold, preserving the actual vault and books. Require actual cover/entry and
+positive native accepted ounces/price, then print each current regime/event,
+cover, pending deal, local/export output, accepted offer and prior payment.
+Retain the fixed24-month run and positive mint firing count; strengthen its
+24 audits with the cent bound as well as the original relative bound. The
+intentional Float transition must begin with a positive accepted offer;
+0=0 cannot prove payment. Preserve all settlement/metal/export/save laws.
+The exact old break branch remains unproved until the new operands run;
+no speculative known-red row is added, though FS8 currently owns this
+industry fixture class. No production gold or monetary rule changes.

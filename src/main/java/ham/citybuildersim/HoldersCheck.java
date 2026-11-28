@@ -1628,8 +1628,12 @@ public class HoldersCheck {
             twinBox[0].quietTheWorldForTheD();   // EP1: as the live city
             twinBox[0].holdCausesOfDeathOff();   // R0b call 7: as the live city; the hold is not saved
             twinBox[0].loadGameSave(3);
+            twinBox[0].getForeignAccounts().pinRate(city.getForeignAccounts().getRate()); // the live fixture's unsaved control
         });
         Game twin = twinBox[0];
+        assertTrue("fixture: live and reloaded cities have the same unsaved FX pin and exact rate before continuation",
+                city.getForeignAccounts().isPinned() && twin.getForeignAccounts().isPinned()
+                        && Double.compare(city.getForeignAccounts().getRate(), twin.getForeignAccounts().getRate()) == 0);
         close("the book came back exactly", twin.getCapitalFlows().getPaper(), hot.getPaper(), 0);
         close("...and what it paid and was paid for it since founding", twin.getCapitalFlows().getLifetimePaperBought()
                 + twin.getCapitalFlows().getLifetimePaperSold(), hot.getLifetimePaperBought() + hot.getLifetimePaperSold(), 0);
