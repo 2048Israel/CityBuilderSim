@@ -4,7 +4,8 @@
 From Jerus's Ashbourne findings 5, 12, 11 and 16, each caused on a fixture in AshbourneCheck. Finding 5 was a bug: the
 households keep three months in the bank before they buy shares or paper, and the owner families, who take home nothing
 but dividends, kept none, so a 30-year city bond took 91% of Ashbourne's deposits in three months. The cushion is now three
-months of take-home or of spending, the greater (HouseholdBalance.cushion), on every path that reads savings past it.
+months of take-home or of everyday spending, the greater (HouseholdBalance.cushion), on every path that reads savings
+past it; everyday spending leaves out what a fortune asks for, so a cushion grows with spending and never with wealth.
 Finding 12 is real in the model: the yen piece is priced on the yen curve, unchanged by the D$, and 1917's yen rate is the
 stand-in century's 13% where the Bank of Japan's was 5.11%, which EP1b's real rates mend. Finding 11 is real: two Lime Kilns
 closed, and with one block of the month fewer over the 10 MW wires the scarcity price fell 78.5% for 12.9% less load.
@@ -15,3 +16,4 @@ queued as HF1, which keeps the out-of-work adults in their households.
 ## queued
 | HF1 | The families keep their out-of-work adults: a lost job leaves the household standing, and HouseholdMemoryCheck's re-forming pace holds only for real formation | [HF1](docs/queue/HF1.md) |
 | PL1 | A building's power draw follows its output or staffing: an idle works draws its standing share, the orchestrator's call on Ashbourne's finding 11 (real load follows output) | [PL1](docs/queue/PL1.md) |
+| PH1 | A rounding residue in Unemployment.reconcile becomes a cell of 2^-43 households that survives and hands its hunger to the next month's arrivals: DenominationCheck's twins part within a year on ASH4's path | [PH1](docs/queue/PH1.md) |

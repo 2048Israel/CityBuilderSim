@@ -23,14 +23,55 @@ was never written.
 - **In his save** (month 241, the copy): the owner cell, 6 households, holds Cr 7.23M of the households' Cr 10.29M of
   deposits (70%), Cr 1,204k each, with a take-home of 0 and a planned spend of Cr 75.1k a month. The take-home
   cushions of every cell come to Cr 0.78M (7.6% of deposits): about the Cr 0.94M Ashbourne kept at month 196.
-- **The mend** (★1): `HouseholdBalance.cushion(c)` is `SHARE_CUSHION_MONTHS` of the larger of take-home and planned
-  spending (`c.planned`), and all nine paths read it (seven in `HouseholdBalance`, two in `Exchange`). On the save's
-  cells the cushions come to Cr 2.20M (21% of deposits) instead of Cr 0.78M. A saver's cushion is what it was.
+- **The mend** (★1): `HouseholdBalance.cushion(c)` is `SHARE_CUSHION_MONTHS` of the larger of take-home and everyday
+  spending (`c.everyday`, the plan's basket and what income adds to it, without the wealth term), and all nine paths
+  read it (seven in `HouseholdBalance`, two in `Exchange`). A saver's cushion is what it was. The first mend read the
+  whole plan (`c.planned`), and on the save's cells its cushions came to Cr 2.20M (21% of deposits) instead of
+  Cr 0.78M. A format-66 save holds no everyday figure, so the mended total on the save is not measured. On the
+  fixture town the owners' cushion is three months of 29.43 a month, against 39.23 for the whole plan.
 - **What is left, for Jerus (★2):** the owners still put about 90% of their balance into one big issue. The cushion
   is now 3 months of their spending, and D32's rule (Jerus, 2026-10-20: a fifth of an issue per point of spread over
   the deposit rate, up to the issue, out of the spare) takes all the rest when the issue is large against the spare.
-  On the fixture town the owners held 86.7% of deposits and paid 96.5% of the households' part. A share-of-wealth
+  On the fixture town the owners held 88.1% of deposits and paid 97.1% of the households' part. A share-of-wealth
   limit on one issue would be a change to D32, and so his call. It is not made here.
+
+### Finding 5's mend and the city's growth: a defect of the first mend, mended (REV-ASH4's second look)
+
+- **What the second look found.** The first ensemble passed, but growth fell. AUTO2's median population at month
+  720 went from 93,798 to 50,364 over its 16 seeds, and HIGH's final population fell too.
+- **The noise first.** Three null draws are main (`39fcbee71`) with `SHARE_CUSHION_MONTHS` moved by 1e-9
+  (3.000000001, 3.000000002, 2.999999999). Each ran AUTO2's 16 seeds to month 720, paired seed by seed with ASH1's
+  baseline runs. The scripts are in `target/ash/growth/` (`paired.py`, `geo.py`), not in the tree. A butterfly
+  moves this city's growth a long way: the medians at month 720 are 73,330, 97,555 and 84,934 against 93,798, and
+  single seeds range from 0.23 to 2.96 times main.
+- **The first mend was outside all three nulls.**
+  - The climb from 3,000 to 10,000 people took a median 21 months longer; the nulls moved it by +4.5, -10.5 and +6.5.
+  - The per-seed geometric mean of population was x0.93, 0.81, 0.78 and 0.82 at months 360, 480, 600 and 720.
+    At the first three it was under every null; the nulls' lowest were 1.04, 0.95 and 0.92.
+- **The cause: the cushion read the plan's wealth term.**
+  - `planned` is `min(want, spendable)`, and `want` carries `spendFactor * WEALTH_SPENT_A_MONTH * net worth`. The
+    code's own comment in `Household.plan` calls this the grocer's want the shops refuse: "AND THE FORTUNE ALSO ASKS
+    FOR WATCHES", a fortune asking its grocer for months of food nobody eats.
+  - Three months of that is a cushion that grows with the fortune. On the fixture town the owners' whole plan is
+    39.23 a month against 29.43 of everyday spending, so the first mend's cushion was a third larger than three months
+    of what they spend, and every unit of wealth they gained raised it further.
+  - It held back, from shares, the city's paper and money abroad, savings the real law counts as spare. This is the
+    first kind of defect the review named: a cushion figure that is not spending.
+  - The mend is ★1's `everyday`. AshbourneCheck holds the real law on the production `plan()`.
+- **One seed, month by month** (seed 14, main against the first mend, the first helper's probe in
+  `target/ash/growth/out/`). The first mend led until month 180, then main took off and it stalled: 2,160 homes
+  against 4,334 at month 240. Throughout, the cushion was 3-11% of the households' savings. One seed's path is its own
+  chaos, and it showed no single channel. The channel by which the larger cushion slowed the climb (the shares, the
+  city's paper, or the money abroad that it held back) was not isolated.
+- **After the mend** (ASH4b, the ensemble below, the same 16 seeds):
+  - The take-off is inside the nulls: to 3,000 people -2.5 months, to 10,000 -7.0, to 40,000 +2.5 (the nulls' ranges
+    are -7.5 to +4.0, -10.5 to +6.5 and -11.0 to +11.5).
+  - The geometric mean is x1.04, 0.94, 0.84 and 0.89 at months 360, 480, 600 and 720, against the nulls' 1.04-1.21,
+    0.95-1.06, 0.92-1.04 and 0.78-1.11. That is inside at 360 and 720, and 1 and 8 points under the nulls' lowest at
+    480 and 600. AUTO2's median at month 720 is 70,579.
+  - **What is left is not resolved.** Three nulls cannot place an effect of 5-10%. The owners now keep three months
+    of their spending where they kept nothing, and by the real law a buffer slows them a little. Whether that is the
+    residue at months 480-600 is not established.
 
 ### Finding 12, the yen bond bought back at 27.37: real in the model; the rate is the stand-in century's (EP1b)
 
@@ -114,28 +155,47 @@ was never written.
   - in `HouseholdBalance`, seven: `wantOf` (shares), `takeCars`, `luxuryBudgetOf`, `mealBudgetOf`, `investAbroad`,
     `spareFor` (the city's paper and the businesses' bonds through `bondSpare`) and `offeringWant`;
   - in `Exchange`, two: `shortOfCushion` and `spareOf`.
+- `Household.everyday`, new (REV-ASH4's third look): the plan's everyday spending, struck by `plan()` beside `planned`,
+  zeroed by `clearWorking()`, scaled by `scale()`, and nowhere else written. `cushion()` reads it where the first mend
+  read `planned`. It is saved as one more cell slot (`CELL_SLOTS_BEFORE_EVERYDAY`, then `CELL_SLOTS`), like
+  `planned`, so the month after a load reads the cushion an unbroken run does. An older save is read at its own
+  width, without a format bump, and reads 0 until the month plans: for one month the cushion is the take-home alone,
+  which is the rule the save was written under.
 - `AshbourneCheck`, new, in `AllChecks.HARNESSES`, with four sections, one per finding (below).
 - `CarCheck`'s fixtures that set "the cushion and two cars" read `HouseholdBalance.cushion(c)`, so the premise holds
   under the mend. Its three reds are main's known reds (HT1-H) before and after, unchanged.
 - `docs/queue/HF1.md`, the brief for finding 16's mend.
+- `BusinessServicesCheck`'s register of a cell's slots gains the everyday slot.
+- `docs/queue/PH1.md`, the brief for main's phantom cell, which parts DenominationCheck's twins on this path
+  (section 4).
 - **The held figures (AP5-AP8):** the mend adds no writer of anything they hold (the labour figures, the posts, the
-  warrant, the order book's order, the build quote's abroad terms). It adds a read of `c.planned` to the spare, and
-  every spare is computed fresh on each call: `spareForPaper`, `bondSpare`, `Exchange.spareOf` and `shortOfCushion`.
+  warrant, the order book's order, the build quote's abroad terms). It adds a read of `c.everyday` to the spare,
+  and every spare is computed fresh on each call: `spareForPaper`, `bondSpare`, `Exchange.spareOf` and
+  `shortOfCushion`. `everyday`'s only writers are `plan()`, `clearWorking()`, `scale()` and the load.
   The auction's `Bidders` takes one snapshot per quote, with no writer between.
 
 ## 3. The calls
 
-- ★1 **The cushion is three months of take-home or of planned spending, whichever is greater, on every path.** A
+- ★1 **The cushion is three months of take-home or of everyday spending, whichever is greater, on every path.** A
   transaction balance pays the months ahead's outgoings (Baumol-Tobin: money held in proportion to spending).
   - Why the greater: it never lowers a saver's cushion. A household that spends less than it takes home keeps the old
     cushion, so the change falls only on those who spend more than they take home: the owner families, the retired
     with no pension, and a family drawing on its wealth.
   - Why every path: one balance, one cushion. A share path that still saw the owners' whole balance as spare would be
     the same defect on another path.
-  - `c.planned` over `c.want`: planned is what the cell will spend after its means. The two were equal in every
-    Ashbourne cell.
+  - **Everyday spending, not the whole plan** (REV-ASH4's third look; finding 5's growth loss, below). The plan's
+    `want` and `planned` carry a wealth term, `WEALTH_SPENT_A_MONTH` of net worth, which the code's own comment calls
+    the grocer's want the shops refuse ("AND THE FORTUNE ALSO ASKS FOR WATCHES"). A cushion of three months of it grows
+    with the fortune. The real law is a buffer stock measured in spending: the Fed's SHED counts emergency savings as
+    "three months of expenses" (55% of US adults had them in 2025, *Economic Well-Being of U.S. Households in 2025*),
+    and Carroll's buffer-stock household (QJE 1997) holds a target ratio of wealth to its permanent income and spends
+    everything past it. So `everyday` is `subsistence + spendFactor * fromIncome`, capped by what the cell can spend,
+    struck in `plan()` beside `planned`.
 - ★2 **D32's appetite is left as it is**, for Jerus (pending row ASH4-A).
 - ★3 **Finding 16 is queued, not mended** (HF1): it moves his 2026-09-11 design and four subsystems.
+- **PH1 is queued, not mended:** DenominationCheck's twins part on the mend's path from a fault of main's (section
+  4), already passed by name by DK1's rows. A mend here would move the whole fixture's path and the default trace
+  again, outside this batch's findings.
 - **Finding 12 gets no new row:** EP1b owns the century's rates.
 - **Finding 11 is real.** The fixed draw per building is not its cause; it is queued as PL1, the orchestrator's call (BP1-C, 11-28).
 - **AshbourneCheck numbers its sections 1-4 in the brief's order** (5, 12, 11, 16), each titled with its finding.
@@ -144,16 +204,23 @@ was never written.
 
 ## 4. The checks
 
-- **AshbourneCheck: 57 assertions, all OK.**
-  - Section 1: the lineup town at month 61 has 5 owner households, savings 1,197.05 each (thousands), take-home 0,
-    planned 36.27, cushion 108.80; 116 of 141 cells take home at least what they plan, so their cushions are unchanged. An ask of 4 times
-    the spare allots the households face 5,639k for 5,573k, and the production settle takes all of it. The owners'
-    savings fall 1,197.05 -> 121.48, above their cushion. No cell pays out of its cushion. The cells' payments equal
-    the settle's figure to the cent, and the next month's money audit residual is 0.
+- **AshbourneCheck: 65 assertions, all OK.**
+  - Section 1: the lineup town at month 61 has 5 owner households, savings 1,356.96 each (thousands), take-home 0,
+    everyday spending 29.43 (the whole plan 39.23), cushion 88.29. 116 of 141 cells take home at least what they
+    spend every month, so their cushions are unchanged. What the mend keeps back, 444.84k of 7,698.91k of deposits
+    (5.8%), is within three months of the spending take-home does not cover (446.61k). Re-planned through `plan()` at
+    twice their savings, the owners' plan rises 38.79 -> 43.25 and their everyday spending and cushion do not move
+    (28.89, 86.68); their spare grows by all of the wealth added; twice the everyday spending is twice the cushion.
+    Under the first mend's cushion (`planned`) five of these go red. An ask of 4 times the spare allots the
+    households face 6,532k for 6,414k, and the production settle takes all of it. The owners' savings fall
+    1,356.96 -> 111.27, above their cushion. No cell pays out of its cushion. The cells' payments equal the settle's
+    figure to the cent, and the next month's money audit residual is 0.
   - Section 2: the yen piece's fair per 100 is 98.7023 three ways, to 1e-12. With the D$ 30% weaker, the principal
     moves x1.4286 (the cross) and the price at the same rate does not move. Ashbourne's own piece, rebuilt (section 1
-    above, finding 12), is quoted 27.3723 by the production buyback against the 27.3723 it paid, inside a half-cent that
-    no premium (27.7352) and a basis point more (27.3498) both miss. Month 205 is before `PolicyRates.TABLE_FIRST_MONTH`
+    above, finding 12), is quoted 27.3723 by the production buyback against the 27.3723 it paid: the gap is 0.000016
+    of a point, inside an absolute half-cent that no premium (0.3629 off) and a basis point more (0.0224 off) both miss.
+    (REV-ASH4's second look: the first tolerance went through `close()`, relative above 1, so it was 0.137 at 27.37 and
+    let the basis point through.) Month 205 is before `PolicyRates.TABLE_FIRST_MONTH`
     (1200). (REV-ASH4's first P1: the first version priced synthetic flows with no premium, inside 3 points.)
   - Section 3: two kilns draw 2 x 690 kW. Without the kilns, and with 61 more houses, the draw moves by exactly
     -1,319 kW. Ashbourne's 9,354 and 8,146 kW leave two blocks and one over the 10 MW wires, so the price falls 78.5%
@@ -162,45 +229,75 @@ was never written.
     The households seeking a door rise. Nobody is lost: the families' and the outside adults add up to the cohorts',
     to 1e-6.
 - **`./batch-check.sh --fast`: green.**
-- **The cushion's readers, in one run, one at a time** (`-Dcbs.parallel=1`): AshbourneCheck, AuctionCheck,
-  HoldersCheck, FundCheck, ExchangeCheck, EquityCheck, CarCheck, CardCheck, BasketYearCheck, DenominationCheck,
-  FloatLinkCheck, MarketCheck, OwnerCheck, CapitalGainsCheck, ShortSellingCheck and LongPlaytest.
-  - The verdict is exit 3: known reds only, in DenominationCheck (DK1), HoldersCheck (HT1-H) and CarCheck (HT1-H).
-  - LongPlaytest: "All checks passed" over 2,400 months, the money audit included.
+- **The cushion's readers and the cell's width, after the mend, one at a time** (each harness's own `main`, at
+  `618d894be` plus BusinessServicesCheck's register): SaveFileCheck, HouseholdCheck, RestaurantsCheck,
+  BusinessServicesCheck, HoldersCheck, BondCheck, AuctionCheck, CarCheck, CardCheck, ExchangeCheck, EquityCheck,
+  OwnerCheck, FundCheck, MarketCheck, CapitalGainsCheck, ShortSellingCheck, FloatLinkCheck, BasketYearCheck,
+  DenominationCheck and LongPlaytest. The logs are in `target/ash/h/`.
+  - All green but for known reds. HoldersCheck has 3 and CarCheck 3, all exact lines in `docs/notes/gate.txt`
+    (HT1-H). DenominationCheck has 15, every one passed by name by DK1's rows in `docs/notes/known-reds.txt`.
+  - BusinessServicesCheck's register of a cell's slots, which counts them by hand, gains the everyday slot (+1). It
+    was red at the width before and is green after.
+  - LongPlaytest: "All checks passed" over 2,400 months, the money audit included (1,869 s).
+- **DenominationCheck on the mend's path: main's fault, traced, queued as PH1.**
+  - On main (`39fcbee71`'s classes) its reformed twin stays the same city for a year. Its 8 reds are a decade on,
+    population among them, and known-reds.txt's DK1 rows pass them.
+  - On the branch the twins part within the year: 7 reds 1e-7 to 6e-6 apart a year on, and about 1% a decade on.
+  - A helper's probe stepped both twins month by month over 10,397 figures: every cell's savings, everyday spending,
+    plan, cushion, shares and basis, the share desk's fills and prices, and the city's cash, output and bank.
+  - **Where they part.** Everything holds within 3.4e-13 through month +5. Then `Unemployment.reconcile`
+    (`Unemployment.java:398-399`, `else if (total < pool) offEi += pool - total`, an exact comparison of two equal
+    sums) leaves one ULP, 1.137e-13 adults, in one twin's off-EI group.
+  - **How it grows.** The census makes a cell of 2^-43 households of it. `followThePeople` clears a cell only at or
+    below zero (`HouseholdBalance.java:2276-2277`), so the phantom survives. In month +7, 102.9 households come off EI
+    into that cell, and the settle's hunger count (`HouseholdBalance.java:1487-1492`) counts them at the phantom's
+    per-household outcome: 11.24 more people hungry in one twin. The work ratio, every sector, Retail's price and
+    the treasury follow.
+  - **Proof.** Setting that one residue back to 0 keeps every figure within 3e-15 through month +12.
+  - **Not the batch's code.** The reform scales `everyday` (`Household.redenominate`, then `scale()`); every cell's
+    everyday spending and cushion match the twin's with no gap right after it; and `plan()` strikes `everyday` again
+    each month. The cushion changed only the path: 596 adults in the pool at the reform, against main's 379. On main
+    the same 2^-43 residues appear at months +2 and +3, in both twins alike.
+  - The mend is main's: queued as PH1 (`docs/queue/PH1.md`). It is not this batch's, because it moves the whole
+    fixture's path and the default trace.
 - **The default trace moves.** The default `LongPlaytest` with `-Dplaytest.trace` ran on main `22b6eb96f` (classes built
-  on scratch from `git archive`) and on the branch's model (`306552e27`; the model is unchanged since). All eight files
-  differ, from the first year: in month 6 the households' savings 22.327 -> 22.337, and in month 10 the city's cash and
-  its tax. Both runs end with "All checks passed". So the 80-run ensemble is run (below).
+  on scratch from `git archive`) and on the first mend (`306552e27`). All eight files differ from the first year: in
+  month 6 the households' savings go 22.327 -> 22.337, and in month 10 the city's cash and its tax move. So the
+  80-run ensemble is run. The mend (`618d894be`, merged with ASH1, whose own ensemble shipped at 0.9.218) differs
+  from both. Its main column would be `39fcbee71`, and that was not traced: the ensemble was run on the mend
+  regardless. All three runs end with "All checks passed".
 
-  | trace | main `22b6eb96f` | ASH4 |
-  |---|---|---|
-  | t-bank.csv | 6ede455267023c0721bbc430e5d85c6e | daa9ee239e3f0bd946531935e1e115be |
-  | t-bonds.csv | 31d688038b45d088318307ab47345251 | 9f2e5abd2d2ab8ed7f1e4d961d2ff6e6 |
-  | t-borrow.csv | ad17225a89ac4910256628b34f9e707b | f5b6a2d7fdc18f852065ef6763f2501d |
-  | t-build.csv | 6cff5eaf4b95e1170e9cf4698b1fcaf4 | e69975157218e13b06d5d193e38d2ef4 |
-  | t-house.csv | 66a37acc01890e7c405dff9c6eacebd6 | d630b9d45d638eb08536654c9af7d294 |
-  | t-labour.csv | f000ef90f546b8ed4658e078784bfed0 | 12da256991ec5c2795438d7515e382d3 |
-  | t-month.csv | 9de355db849f31706f8b4dc4c93dbdcb | 0901c85a74055af1ec2657c9253c6d95 |
-  | t-pop.csv | 86d0749981733a5339b1dc2e1a33a91b | d5b52aca8eb6abbba2085141f82025c8 |
+  | trace | main `22b6eb96f` | the first mend | the mend `618d894be` |
+  |---|---|---|---|
+  | t-bank.csv | 6ede455267023c0721bbc430e5d85c6e | daa9ee239e3f0bd946531935e1e115be | fdcdf1b9f20dca7809d8cba7500d0114 |
+  | t-bonds.csv | 31d688038b45d088318307ab47345251 | 9f2e5abd2d2ab8ed7f1e4d961d2ff6e6 | a9807e29fc10ee0eed791bb6ed09e417 |
+  | t-borrow.csv | ad17225a89ac4910256628b34f9e707b | f5b6a2d7fdc18f852065ef6763f2501d | 8bc613daeacba7ffb36bb7b313cc09e0 |
+  | t-build.csv | 6cff5eaf4b95e1170e9cf4698b1fcaf4 | e69975157218e13b06d5d193e38d2ef4 | e07ca5ef1f2bd12204ba39d1f320d634 |
+  | t-house.csv | 66a37acc01890e7c405dff9c6eacebd6 | d630b9d45d638eb08536654c9af7d294 | 4f54435f8d9984023bcf0e3aa5b90782 |
+  | t-labour.csv | f000ef90f546b8ed4658e078784bfed0 | 12da256991ec5c2795438d7515e382d3 | 2d1d9c51c7666685f50f978d96ff0251 |
+  | t-month.csv | 9de355db849f31706f8b4dc4c93dbdcb | 0901c85a74055af1ec2657c9253c6d95 | f4dfee819ac674b51e81327b0961697e |
+  | t-pop.csv | 86d0749981733a5339b1dc2e1a33a91b | d5b52aca8eb6abbba2085141f82025c8 | d31cb019cfacb876c43042add822c11a |
 
-- **On ASH1's main** (merged at `caed78d5e`; ASH1 `39fcbee71` changed the POWER row, the grid step and the grid's posts),
-  AshbourneCheck has 57 OK. Finding 11 measures the same: draws 4,257 -> 5,637 -> 4,318 kW, and Ashbourne's two
+- **On ASH1's main, under the first mend** (merged at `caed78d5e`; ASH1 `39fcbee71` changed the POWER row, the grid
+  step and the grid's posts), AshbourneCheck had 57 OK. Finding 11 measures the same: draws 4,257 -> 5,637 -> 4,318 kW, and Ashbourne's two
   draws leave 2 and 1 blocks over the wires, the price -78.5%. Finding 5 measures the same: the owners held 86.7% and
   paid 96.5%. The buyback quotes 27.3723. CBK3 has not shipped; finding 5 is measured again on its main when it does.
 
-- **The ensemble: PASS** (`docs/ensemble/ASH4.md`). It ran on the gate box at `caed78d5e`, the merged tip with ASH1:
-  80 of 80 runs in 31.9 min, scored here against the newest baseline, `docs/ensemble/0.9.218.md` (ASH1's).
+- **The ensemble: PASS** (`docs/ensemble/ASH4.md`, label ASH4b). It ran on the gate box at `618d894be`, the
+  mend, and yielded to CBK3's dry run partway through: 80 of 80 runs. It was scored here against the newest baseline,
+  `docs/ensemble/0.9.218.md` (ASH1's).
   - **Hard criteria, 10 of 10:** M1 is 0 months of failed money audit in every policy, and F1 is 0 of 16 runs with a
-    LongPlaytest finding in every policy. 21 of 25 criteria pass.
-  - **Two changed verdicts, both info and both in HIGH:**
-    - T2, final population: the median is 39,690 [26,505 to 495,129] against 74,812 [22,414 to 168,964]. The row was
-      FAIL in 0.9.216's own scoring (56,156) and PASS in 0.9.218's, so HIGH's population swings by a factor of two
-      between models and its range spans nearly 19 times.
-    - R2, unemployment minus its twin: 0.43% [-0.20% to 3.00%] against 1.46%, under the +0.50% line.
-    - Neither stops a ship. Not traced: the cushion's effect on HIGH was not separated from HIGH's own swing, which
-      reached a factor of two between earlier models.
-  - **Unchanged elsewhere:** AUTO2, ZERO_SLACK, ZERO_HOT and SHOCK keep their verdicts. Their final populations are
-    within 25% of the baseline (AUTO2 7.56M against 8.18M).
+    LongPlaytest finding in every policy. 22 of 25 criteria pass.
+  - **One changed verdict, info:** HIGH's T2, final population, is 50,097 [28,732 to 155,024] against 74,812
+    [22,414 to 168,964], under the 75% line (56,109). The first mend had 39,690. The row was FAIL in 0.9.216's own
+    scoring (56,156) and PASS in 0.9.218's, so HIGH's final population swings by a third between neighbouring models.
+    HIGH has no null draws here, so its move is not placed. It does not stop a ship.
+  - HIGH's R2, which changed under the first mend, is PASS again: 0.72% against 1.46%. AUTO2's A1 and A2 are FAIL in
+    the baseline as here.
+  - **Final populations elsewhere:** AUTO2 6.82M against 8.18M, ZERO_SLACK 4.82M against 5.26M, ZERO_HOT 7,058
+    against 6,191, SHOCK 147,116 against 177,650. All pass T2.
+  - **The first mend's ensemble** (`caed78d5e`, label ASH4, 31.9 min) also passed, 10 of 10 hard. Its growth loss is
+    the section above. Its baseline file is replaced by this one.
 
 ## 5. For Jerus
 
@@ -215,8 +312,9 @@ was never written.
 
 Not this batch's (no edition). When the next edition comes:
 
-- **The cushion:** "Households keep three months of what they take home, or of what they spend if that is more,
+- **The cushion:** "Households keep three months of what they take home, or of what they spend every month if that is more,
   before they buy shares, the city's paper or a business's bonds, send money abroad, or pay cash for a car or a night
-  out. The owner families, who live on dividends, keep three months of their spending."
+  out. The owner families, who live on dividends, keep three months of their everyday spending; what their fortune
+  buys besides is not counted, so a richer family keeps the same cushion and invests the rest."
 - **The yen bond and the other foreign moneys:** foreign paper is priced on its own money's curve. In the years before
   2000 that curve is the stand-in century's rule, until EP1b.

@@ -1,4 +1,4 @@
-# Household.java - 1,601 lines · 139 methods · 12 constants · model
+# Household.java - 1,610 lines · 139 methods · 12 constants · model
 
 `ham/citybuildersim/Household.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -70,16 +70,16 @@
 | 446 | WHO CAN AFFORD THE CLINIC (2026-09-19) |
 | 488 | GROCERIES AT A PRICE (0.7.43; the project's spec-inflation.md 2.6) |
 | 586 | · last month's working, per household |
-| 681 | · what differs |
-| 747 | · reading |
-| 754 | A SHAPE IS NOT ALWAYS THE CENSUS (2026-09-15) |
-| 924 | · the month |
-| 959 | · · what the lender charges this one |
-| 970 | · · the bills, in order |
-| 980 | · · settle what they actually spent |
-| 1211 | · AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) |
-| 1239 | · AND THE FORTUNE ALSO ASKS FOR WATCHES (2026-09-17) |
-| 1274 | · AND WHAT IT WOULD SPEND EATING OUT (2026-09-18) |
+| 689 | · what differs |
+| 755 | · reading |
+| 762 | A SHAPE IS NOT ALWAYS THE CENSUS (2026-09-15) |
+| 932 | · the month |
+| 967 | · · what the lender charges this one |
+| 978 | · · the bills, in order |
+| 988 | · · settle what they actually spent |
+| 1219 | · AND WHAT IT SPENDS ANSWERS THE REAL RATE (0.7.3) |
+| 1247 | · AND THE FORTUNE ALSO ASKS FOR WATCHES (2026-09-17) |
+| 1282 | · AND WHAT IT WOULD SPEND EATING OUT (2026-09-18) |
 
 ## Constants
 
@@ -96,7 +96,7 @@
 | 97 | `Household.ROWS_BEFORE_PRISON` | `RETIRED_ROW + 4` | The rows a save from before the prisons carries (pinned: ROWS has moved on). |
 | 99 | `Household.ROWS_BEFORE_OWNER` | `RETIRED_ROW + 5` | The rows a save from before the owner families carries. |
 | 108 | `Household.STUDENT_LOAN_MONTHS` | `114` | How long a graduate takes to repay a student loan, in months: nine and a half years, the Canada Student Loan standard term (Alberta Student Aid's repayment page; the six-month grace is not modelled). |
-| 1346 | `Household.SHORT_ROUNDING` | `1e-12` | The share of a month's gap under which what is still short after savings, the paper, the money abroad, the bonds and the shares is the subtractions' rounding, and nothing is borrowed for it (settle(), A HAIR STILL SHO... |
+| 1355 | `Household.SHORT_ROUNDING` | `1e-12` | The share of a month's gap under which what is still short after savings, the paper, the money abroad, the bonds and the shares is the subtractions' rounding, and nothing is borrowed for it (settle(), A HAIR STILL SHO... |
 
 ## Fields (state)
 
@@ -151,28 +151,29 @@
 | 603 | `double banked` |  |
 | 604 | `double want` |  |
 | 605 | `double planned` |  |
-| 606 | `double rate` |  |
-| 607 | `double subsistence` |  |
-| 610 | `double bankrupt` | Households of this cell discharged this month - a count, not money. |
-| 613 | `double seizedSavings` | Savings the month's bankrupt share repaid the bank with, per household of the cell (HL1): part of `repaid`, nothing in a month nobody discharges. |
-| 616 | `double sold` | Shares sold this month to cover the shop, per household, in cash. |
-| 619 | `double paperSold, paperIncome` | The city's paper sold this month - to cover the shop or because the spread went - and its coupons and principal received, per household, in cash (0.7.1). |
-| 622 | `double bondsSold, bondIncome` | Its bonds sold this month - in the waterfall or at the market's step - and their coupons and principal received, per household, in cash (0.7.12). |
-| 625 | `double studentBorrowed, studentRepaid` | Student loan drawn this month, and repaid (principal), per household. |
-| 628 | `double studentInterest` | Interest charged on the student loan this month, per household: paid with the instalment, and the treasury's. |
-| 631 | `double studentLoanRate` | The annual rate the treasury charges a graduate on the loan: the city's one policy, told to every cell by HouseholdBalance before it settles. |
-| 637 | `boolean studentLoansOpen` | Whether the treasury makes student loans yet (R0): told to every cell with the rate, true for a cell no city holds. |
-| 640 | `double evicted` | Households of this cell that lost their home this month - a count, not money. |
-| 643 | `double accountFee` | The bank's account fee this household paid this month, with its other fixed bills (0.7.7); nothing without a home. |
-| 646 | `double loanFee` | The bank's fee on what it borrowed this month, added to what it owes rather than paid (0.7.7): Bank.LOAN_FEE of the credit drawn and the cars financed. |
-| 649 | `double rentShare` | What one of these households paid of a door's rent this month: 1 alone, a fifth sharing, 0 with no door. |
-| 780 | `double dependants` | Dependants who live in one of these households but are not its shape. |
+| 613 | `double everyday` | The plan's everyday spending, per household: the basket and what income adds to it, without the wealth term `want` carries for the grocer (a want the shops cannot fill: AND THE FORTUNE ALSO ASKS FOR WATCHES), capped b... |
+| 614 | `double rate` |  |
+| 615 | `double subsistence` |  |
+| 618 | `double bankrupt` | Households of this cell discharged this month - a count, not money. |
+| 621 | `double seizedSavings` | Savings the month's bankrupt share repaid the bank with, per household of the cell (HL1): part of `repaid`, nothing in a month nobody discharges. |
+| 624 | `double sold` | Shares sold this month to cover the shop, per household, in cash. |
+| 627 | `double paperSold, paperIncome` | The city's paper sold this month - to cover the shop or because the spread went - and its coupons and principal received, per household, in cash (0.7.1). |
+| 630 | `double bondsSold, bondIncome` | Its bonds sold this month - in the waterfall or at the market's step - and their coupons and principal received, per household, in cash (0.7.12). |
+| 633 | `double studentBorrowed, studentRepaid` | Student loan drawn this month, and repaid (principal), per household. |
+| 636 | `double studentInterest` | Interest charged on the student loan this month, per household: paid with the instalment, and the treasury's. |
+| 639 | `double studentLoanRate` | The annual rate the treasury charges a graduate on the loan: the city's one policy, told to every cell by HouseholdBalance before it settles. |
+| 645 | `boolean studentLoansOpen` | Whether the treasury makes student loans yet (R0): told to every cell with the rate, true for a cell no city holds. |
+| 648 | `double evicted` | Households of this cell that lost their home this month - a count, not money. |
+| 651 | `double accountFee` | The bank's account fee this household paid this month, with its other fixed bills (0.7.7); nothing without a home. |
+| 654 | `double loanFee` | The bank's fee on what it borrowed this month, added to what it owes rather than paid (0.7.7): Bank.LOAN_FEE of the credit drawn and the cars financed. |
+| 657 | `double rentShare` | What one of these households paid of a door's rent this month: 1 alone, a fifth sharing, 0 with no door. |
+| 788 | `double dependants` | Dependants who live in one of these households but are not its shape. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 59 | 1543 | **type** `public abstract class Household` | Every household of one shape at one pay tier, as one ledger. |
+| 59 | 1552 | **type** `public abstract class Household` | Every household of one shape at one pay tier, as one ledger. |
 
 ### THE LOAN'S RATE (2026-09-21) (lines 110-146)
 
@@ -218,138 +219,138 @@
 | 542 | 1 | `public double careSkipped()` |  |
 | 556 | 11 | `double affordCare(double fullBill, double paidBill)` | Decides how much of its care bill this household pays, after the month is settled and the plan is struck - the rule in the banner above. |
 
-### last month's working, per household (lines 586-680)
+### last month's working, per household (lines 586-688)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 652 | 24 | **type** `interface Liquidity` | Somewhere a household short of money can sell shares before it borrows. |
-| 654 | 1 | `double sell(Household cell, double needPer)` _(in Household.Liquidity)_ |  |
-| 663 | 1 | `default double sellPaper(Household cell, double needPer)` _(in Household.Liquidity)_ | ...and the city's paper, first (0.7.1): sold to the bank's desk at the households' book ratio for exactly what is short, or everything held if that is less. |
-| 674 | 1 | `default double sellBonds(Household cell, double needPer)` _(in Household.Liquidity)_ | ...and the bonds (0.7.12), after the paper and the dollars abroad: asked on each bond's order book at the price that makes the buyer's yield this household's borrowing rate, and filled only by what rests there at that... |
-| 677 | 3 | `protected Household(FamilyStructure shape)` |  |
+| 660 | 24 | **type** `interface Liquidity` | Somewhere a household short of money can sell shares before it borrows. |
+| 662 | 1 | `double sell(Household cell, double needPer)` _(in Household.Liquidity)_ |  |
+| 671 | 1 | `default double sellPaper(Household cell, double needPer)` _(in Household.Liquidity)_ | ...and the city's paper, first (0.7.1): sold to the bank's desk at the households' book ratio for exactly what is short, or everything held if that is less. |
+| 682 | 1 | `default double sellBonds(Household cell, double needPer)` _(in Household.Liquidity)_ | ...and the bonds (0.7.12), after the paper and the dollars abroad: asked on each bond's order book at the price that makes the buyer's yield this household's borrowing rate, and filled only by what rests there at that... |
+| 685 | 3 | `protected Household(FamilyStructure shape)` |  |
 
-### what differs (lines 681-746)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 684 | 1 | `public abstract PayTier tier()` | The pay tier, or null for a household with no earner. |
-| 687 | 1 | `public abstract int row()` | The row this cell sums into: the tier's index, or RETIRED_ROW. |
-| 689 | 1 | `public abstract boolean isRetired()` |  |
-| 701 | 1 | `public abstract int grownUps()` | Who in the household carries the money: the earners, or the pensioners. |
-| 708 | 1 | `public double earningWeight()` | Who in the household the row's INCOME is split by. |
-| 711 | 1 | `public boolean canBeEvicted()` | True for a cell whose households lose their home when they cannot pay for it. |
-| 718 | 1 | `public int stockGroup()` | The row whose people this cell's people most often ARE, for the money to follow them: its own row, for everybody but the out of work. |
-| 725 | 1 | `protected double baskets()` | Baskets of food one of these households has to buy: one a head, for everybody but a prisoner, whom the city feeds (the prisons' upkeep). |
-| 731 | 1 | `protected boolean debtFrozen()` | True when the debt is frozen: no interest charged, nothing discharged, nothing borrowed. |
-| 738 | 1 | `public boolean canInvest()` | True when the household decides what to do with its savings - shares, paper abroad, an offering. |
-| 745 | 1 | `public boolean tradesShares()` | True when the household buys and sells shares by the households' rules: at an offering and on the exchange. |
-
-### reading (lines 747-753)
+### what differs (lines 689-754)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 749 | 1 | `public FamilyStructure shape()` |  |
-| 752 | 1 | `public int size()` | People in one of these households, as its SHAPE declares them. |
+| 692 | 1 | `public abstract PayTier tier()` | The pay tier, or null for a household with no earner. |
+| 695 | 1 | `public abstract int row()` | The row this cell sums into: the tier's index, or RETIRED_ROW. |
+| 697 | 1 | `public abstract boolean isRetired()` |  |
+| 709 | 1 | `public abstract int grownUps()` | Who in the household carries the money: the earners, or the pensioners. |
+| 716 | 1 | `public double earningWeight()` | Who in the household the row's INCOME is split by. |
+| 719 | 1 | `public boolean canBeEvicted()` | True for a cell whose households lose their home when they cannot pay for it. |
+| 726 | 1 | `public int stockGroup()` | The row whose people this cell's people most often ARE, for the money to follow them: its own row, for everybody but the out of work. |
+| 733 | 1 | `protected double baskets()` | Baskets of food one of these households has to buy: one a head, for everybody but a prisoner, whom the city feeds (the prisons' upkeep). |
+| 739 | 1 | `protected boolean debtFrozen()` | True when the debt is frozen: no interest charged, nothing discharged, nothing borrowed. |
+| 746 | 1 | `public boolean canInvest()` | True when the household decides what to do with its savings - shares, paper abroad, an offering. |
+| 753 | 1 | `public boolean tradesShares()` | True when the household buys and sells shares by the households' rules: at an offering and on the exchange. |
 
-### A SHAPE IS NOT ALWAYS THE CENSUS (2026-09-15) (lines 754-923)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 783 | 1 | `public double headcount()` | People in one of these households, counting anybody who came with them. |
-| 786 | 1 | `public double getDependants()` | ...of whom this many live here without being its shape's own. |
-| 788 | 4 | `public String label()` |  |
-| 794 | 3 | `public String key()` | "COUPLE_TEEN:SKILLED", or the shape alone for the retired. |
-| 798 | 1 | `public double households()` |  |
-| 800 | 1 | `public boolean isEmpty()` | Under HouseholdBalance.EMPTY_CELL households: too few to strike, to hold anything or to be paid. |
-| 802 | 1 | `public double people()` | People in the whole cell - its households times what each of them holds. |
-| 804 | 1 | `public double studentDebt()` |  |
-| 805 | 1 | `public double studentBorrowed()` |  |
-| 806 | 1 | `public double studentRepaid()` |  |
-| 808 | 1 | `public double studentInterest()` | The month's interest on the student loan, per household - paid on top of studentRepaid(). |
-| 809 | 1 | `public double totalStudentDebt()` |  |
-| 810 | 1 | `public double evicted()` |  |
-| 811 | 1 | `public double rentShare()` |  |
-| 814 | 1 | `public double savings()` | Per household. |
-| 815 | 1 | `public double debt()` |  |
-| 816 | 1 | `public int lockout()` |  |
-| 819 | 1 | `public double shares(int company)` | Shares held in this company, per household. |
-| 820 | 1 | `public double totalShares(int company)` |  |
-| 823 | 1 | `public double dividends()` | This month's dividends, per household. |
-| 826 | 1 | `public double abroad()` | Dollars held abroad, per household. |
-| 828 | 1 | `public double paper()` | The city's paper held, per household, at face (0.7.1). |
-| 830 | 1 | `public double paperSold()` | ...sold this month, and its coupons and principal received, per household, in cash. |
-| 831 | 1 | `public double paperIncome()` |  |
-| 833 | 1 | `public double bonds()` | Its bonds, per household, at face, all together (0.7.12; the cell's own since round 2 - see bonds). |
-| 834 | 1 | `public double bondsSold()` |  |
-| 835 | 1 | `public double bondIncome()` |  |
-| 836 | 1 | `public double cars()` |  |
-| 838 | 1 | `public double totalCars()` | Every car this cell's households own between them. |
-| 840 | 1 | `public double abroadValue(double localPerUsd)` | ...worth this much at home, per household, at a rate. |
-| 841 | 1 | `public double sentAbroad()` |  |
-| 842 | 1 | `public double broughtHome()` |  |
-| 843 | 1 | `public double foreignInterest()` |  |
-| 846 | 1 | `public double sold()` | Shares sold this month to cover the shop, per household, in cash. |
-| 847 | 1 | `public boolean isLockedOut()` |  |
-| 848 | 1 | `public double disposable()` |  |
-| 849 | 1 | `public double afterFixed()` |  |
-| 850 | 1 | `public double interest()` |  |
-| 851 | 1 | `public double drawn()` |  |
-| 852 | 1 | `public double unfunded()` |  |
-| 853 | 1 | `public double borrowed()` |  |
-| 855 | 1 | `public double loanFee()` | The bank's fee on this month's borrowing, added to the debt (0.7.7). |
-| 857 | 1 | `public double accountFee()` | The bank's account fee this month (0.7.7). |
-| 858 | 1 | `public double repaid()` |  |
-| 859 | 1 | `public double banked()` |  |
-| 860 | 1 | `public double want()` |  |
-| 861 | 1 | `public double planned()` |  |
-| 862 | 1 | `public double rate()` |  |
-| 863 | 1 | `public double subsistence()` |  |
-| 866 | 1 | `public double luxuryWant()` | What this household would put over a luxury counter this month. |
-| 869 | 1 | `public double carsSold()` | Cars this cell sold second-hand this month, in total. |
-| 870 | 1 | `public double bankrupt()` |  |
-| 871 | 1 | `public double seizedSavings()` |  |
-| 874 | 1 | `public boolean isCutOff()` | True when the bank has stopped lending to this cell - ceiling or lockout. |
-| 902 | 1 | `public boolean isGoingShort()` | Whether this household planned to spend less than it wanted to. |
-| 905 | 1 | `public double totalSavings()` | The cell's totals: the per-household figure times the households. |
-| 906 | 1 | `public double totalAbroad()` |  |
-| 907 | 1 | `public double totalPaper()` |  |
-| 908 | 1 | `public double totalBonds()` |  |
-| 909 | 1 | `public double totalDebt()` |  |
-| 910 | 1 | `public double totalInterest()` |  |
-| 911 | 1 | `public double totalBorrowed()` |  |
-| 912 | 1 | `public double totalAccountFees()` |  |
-| 913 | 1 | `public double totalLoanFees()` |  |
-| 914 | 1 | `public double totalRepaid()` |  |
-| 915 | 1 | `public double totalPlanned()` |  |
-| 916 | 1 | `public double totalWant()` |  |
-| 922 | 1 | `public double netWorth()` | Net worth of one of these households: what it has less what it owes. |
-
-### the month (lines 924-1601)
+### reading (lines 755-761)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 943 | 4 | `void settle(double disposablePer, double rentPerHome, double feesPer, double spentPer, double foodPricePerHead, double riskFree...` | Settles a month: the bills in order, the shop against what was actually spent, and savings, then credit, then going without. |
-| 952 | 186 | `void settle(double disposablePer, double rentPerHome, double feesPer, double spentPer, double foodPricePerHead, double riskFree...` |  |
-| 1144 | 3 | `double plan(double localPerUsd)` | Plans the next month, without settling one. |
-| 1152 | 3 | `double plan(double localPerUsd, double paperRatio)` | (0.7.1): the households' book at the curve over its face |
-| 1163 | 3 | `double plan(double localPerUsd, double paperRatio, double spendFactor)` | household plans (0.7.3): HouseholdBalance .spendFactor() on the month's real deposit rate, 1 at no real return - see AND WHAT IT SPENDS ANSWERS THE REAL RATE below |
-| 1174 | 157 | `double plan(double localPerUsd, double paperRatio, double spendFactor, double bondRatio)` | this month (0.7.12): every cell's holdings together at the bonds' value over their face - in the net worth the wealth term reads, and not in what can be spent, because a bond sells only when somebody buys it |
-| 1333 | 11 | `void restrike(double disposablePer, double rentPerHome, double feesPer, double foodPricePerHead, double riskFreeAnnual)` | Re-strikes the fixed part of the month for the plan alone: the load path. |
-| 1356 | 6 | `protected double fundShortfall(double still, double disposablePer)` | What is still short after savings, the city's paper, the paper abroad and the shares: the revolving credit line, up to its ceiling. |
-| 1364 | 47 | `private double fundCardShortfall(double still, double disposablePer)` | The bank's card draw, distinct from the student's tuition/living loan. |
-| 1419 | 1 | `protected double planningRoom()` | What the plan may count on borrowing: the credit room, less the fee drawing it would add (0.7.7), for everyone but a student. |
-| 1422 | 4 | `public double capitalRoom()` | What the bank's capital lets this cell draw this month, per household: up to its capitalCeiling. |
-| 1428 | 3 | `public double lendableRoom(double disposablePer)` | What the bank will actually lend one of these this month: its credit room, and no more than its capital allows (0.7.8). |
-| 1433 | 3 | `public double monthsOwed()` | Months of income this household owes - and with a debt and no income at all, past any credit ceiling. |
-| 1438 | 4 | `public double lossAllowance()` | What the bank sets aside against this cell's debt, in total (0.7.8): Bank.cardAllowance() on its late balances - a year's loss on a frozen debt, which nothing discharges while it is frozen. |
-| 1444 | 1 | `public double debtInTrouble()` | This cell's debt, in total, behind on its card minimums; nothing when it is not. |
-| 1447 | 1 | `protected double studentRepayment()` | The month's student-loan instalment (principal), per household. |
-| 1450 | 1 | `protected double studentInterestDue()` | The month's interest on the student loan at the city's rate, per household. |
-| 1457 | 1 | `public double studentInterestAt(double annualRate)` | What a month's interest on the loan would be at an annual rate - the same figure studentInterestDue() charges, for a screen previewing a rate the city has not set. |
-| 1460 | 6 | `public double creditRoom(double disposablePer)` | What the bank will still lend one of these: the ceiling less what is owed, or nothing. |
-| 1474 | 23 | `double chargeOff()` | A share of late balances charges off after allowing for monthly cures. |
-| 1499 | 13 | `void clearWorking()` | Nothing to strike: the working is blank, the position stands. |
-| 1514 | 14 | `void clearAll()` | The cell is empty: no position either. |
-| 1530 | 64 | `void redenominate(double scale)` | Everything in money, in the new unit. |
-| 1596 | 5 | `public String toString()` |  |
+| 757 | 1 | `public FamilyStructure shape()` |  |
+| 760 | 1 | `public int size()` | People in one of these households, as its SHAPE declares them. |
+
+### A SHAPE IS NOT ALWAYS THE CENSUS (2026-09-15) (lines 762-931)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 791 | 1 | `public double headcount()` | People in one of these households, counting anybody who came with them. |
+| 794 | 1 | `public double getDependants()` | ...of whom this many live here without being its shape's own. |
+| 796 | 4 | `public String label()` |  |
+| 802 | 3 | `public String key()` | "COUPLE_TEEN:SKILLED", or the shape alone for the retired. |
+| 806 | 1 | `public double households()` |  |
+| 808 | 1 | `public boolean isEmpty()` | Under HouseholdBalance.EMPTY_CELL households: too few to strike, to hold anything or to be paid. |
+| 810 | 1 | `public double people()` | People in the whole cell - its households times what each of them holds. |
+| 812 | 1 | `public double studentDebt()` |  |
+| 813 | 1 | `public double studentBorrowed()` |  |
+| 814 | 1 | `public double studentRepaid()` |  |
+| 816 | 1 | `public double studentInterest()` | The month's interest on the student loan, per household - paid on top of studentRepaid(). |
+| 817 | 1 | `public double totalStudentDebt()` |  |
+| 818 | 1 | `public double evicted()` |  |
+| 819 | 1 | `public double rentShare()` |  |
+| 822 | 1 | `public double savings()` | Per household. |
+| 823 | 1 | `public double debt()` |  |
+| 824 | 1 | `public int lockout()` |  |
+| 827 | 1 | `public double shares(int company)` | Shares held in this company, per household. |
+| 828 | 1 | `public double totalShares(int company)` |  |
+| 831 | 1 | `public double dividends()` | This month's dividends, per household. |
+| 834 | 1 | `public double abroad()` | Dollars held abroad, per household. |
+| 836 | 1 | `public double paper()` | The city's paper held, per household, at face (0.7.1). |
+| 838 | 1 | `public double paperSold()` | ...sold this month, and its coupons and principal received, per household, in cash. |
+| 839 | 1 | `public double paperIncome()` |  |
+| 841 | 1 | `public double bonds()` | Its bonds, per household, at face, all together (0.7.12; the cell's own since round 2 - see bonds). |
+| 842 | 1 | `public double bondsSold()` |  |
+| 843 | 1 | `public double bondIncome()` |  |
+| 844 | 1 | `public double cars()` |  |
+| 846 | 1 | `public double totalCars()` | Every car this cell's households own between them. |
+| 848 | 1 | `public double abroadValue(double localPerUsd)` | ...worth this much at home, per household, at a rate. |
+| 849 | 1 | `public double sentAbroad()` |  |
+| 850 | 1 | `public double broughtHome()` |  |
+| 851 | 1 | `public double foreignInterest()` |  |
+| 854 | 1 | `public double sold()` | Shares sold this month to cover the shop, per household, in cash. |
+| 855 | 1 | `public boolean isLockedOut()` |  |
+| 856 | 1 | `public double disposable()` |  |
+| 857 | 1 | `public double afterFixed()` |  |
+| 858 | 1 | `public double interest()` |  |
+| 859 | 1 | `public double drawn()` |  |
+| 860 | 1 | `public double unfunded()` |  |
+| 861 | 1 | `public double borrowed()` |  |
+| 863 | 1 | `public double loanFee()` | The bank's fee on this month's borrowing, added to the debt (0.7.7). |
+| 865 | 1 | `public double accountFee()` | The bank's account fee this month (0.7.7). |
+| 866 | 1 | `public double repaid()` |  |
+| 867 | 1 | `public double banked()` |  |
+| 868 | 1 | `public double want()` |  |
+| 869 | 1 | `public double planned()` |  |
+| 870 | 1 | `public double rate()` |  |
+| 871 | 1 | `public double subsistence()` |  |
+| 874 | 1 | `public double luxuryWant()` | What this household would put over a luxury counter this month. |
+| 877 | 1 | `public double carsSold()` | Cars this cell sold second-hand this month, in total. |
+| 878 | 1 | `public double bankrupt()` |  |
+| 879 | 1 | `public double seizedSavings()` |  |
+| 882 | 1 | `public boolean isCutOff()` | True when the bank has stopped lending to this cell - ceiling or lockout. |
+| 910 | 1 | `public boolean isGoingShort()` | Whether this household planned to spend less than it wanted to. |
+| 913 | 1 | `public double totalSavings()` | The cell's totals: the per-household figure times the households. |
+| 914 | 1 | `public double totalAbroad()` |  |
+| 915 | 1 | `public double totalPaper()` |  |
+| 916 | 1 | `public double totalBonds()` |  |
+| 917 | 1 | `public double totalDebt()` |  |
+| 918 | 1 | `public double totalInterest()` |  |
+| 919 | 1 | `public double totalBorrowed()` |  |
+| 920 | 1 | `public double totalAccountFees()` |  |
+| 921 | 1 | `public double totalLoanFees()` |  |
+| 922 | 1 | `public double totalRepaid()` |  |
+| 923 | 1 | `public double totalPlanned()` |  |
+| 924 | 1 | `public double totalWant()` |  |
+| 930 | 1 | `public double netWorth()` | Net worth of one of these households: what it has less what it owes. |
+
+### the month (lines 932-1610)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 951 | 4 | `void settle(double disposablePer, double rentPerHome, double feesPer, double spentPer, double foodPricePerHead, double riskFree...` | Settles a month: the bills in order, the shop against what was actually spent, and savings, then credit, then going without. |
+| 960 | 186 | `void settle(double disposablePer, double rentPerHome, double feesPer, double spentPer, double foodPricePerHead, double riskFree...` |  |
+| 1152 | 3 | `double plan(double localPerUsd)` | Plans the next month, without settling one. |
+| 1160 | 3 | `double plan(double localPerUsd, double paperRatio)` | (0.7.1): the households' book at the curve over its face |
+| 1171 | 3 | `double plan(double localPerUsd, double paperRatio, double spendFactor)` | household plans (0.7.3): HouseholdBalance .spendFactor() on the month's real deposit rate, 1 at no real return - see AND WHAT IT SPENDS ANSWERS THE REAL RATE below |
+| 1182 | 158 | `double plan(double localPerUsd, double paperRatio, double spendFactor, double bondRatio)` | this month (0.7.12): every cell's holdings together at the bonds' value over their face - in the net worth the wealth term reads, and not in what can be spent, because a bond sells only when somebody buys it |
+| 1342 | 11 | `void restrike(double disposablePer, double rentPerHome, double feesPer, double foodPricePerHead, double riskFreeAnnual)` | Re-strikes the fixed part of the month for the plan alone: the load path. |
+| 1365 | 6 | `protected double fundShortfall(double still, double disposablePer)` | What is still short after savings, the city's paper, the paper abroad and the shares: the revolving credit line, up to its ceiling. |
+| 1373 | 47 | `private double fundCardShortfall(double still, double disposablePer)` | The bank's card draw, distinct from the student's tuition/living loan. |
+| 1428 | 1 | `protected double planningRoom()` | What the plan may count on borrowing: the credit room, less the fee drawing it would add (0.7.7), for everyone but a student. |
+| 1431 | 4 | `public double capitalRoom()` | What the bank's capital lets this cell draw this month, per household: up to its capitalCeiling. |
+| 1437 | 3 | `public double lendableRoom(double disposablePer)` | What the bank will actually lend one of these this month: its credit room, and no more than its capital allows (0.7.8). |
+| 1442 | 3 | `public double monthsOwed()` | Months of income this household owes - and with a debt and no income at all, past any credit ceiling. |
+| 1447 | 4 | `public double lossAllowance()` | What the bank sets aside against this cell's debt, in total (0.7.8): Bank.cardAllowance() on its late balances - a year's loss on a frozen debt, which nothing discharges while it is frozen. |
+| 1453 | 1 | `public double debtInTrouble()` | This cell's debt, in total, behind on its card minimums; nothing when it is not. |
+| 1456 | 1 | `protected double studentRepayment()` | The month's student-loan instalment (principal), per household. |
+| 1459 | 1 | `protected double studentInterestDue()` | The month's interest on the student loan at the city's rate, per household. |
+| 1466 | 1 | `public double studentInterestAt(double annualRate)` | What a month's interest on the loan would be at an annual rate - the same figure studentInterestDue() charges, for a screen previewing a rate the city has not set. |
+| 1469 | 6 | `public double creditRoom(double disposablePer)` | What the bank will still lend one of these: the ceiling less what is owed, or nothing. |
+| 1483 | 23 | `double chargeOff()` | A share of late balances charges off after allowing for monthly cures. |
+| 1508 | 13 | `void clearWorking()` | Nothing to strike: the working is blank, the position stands. |
+| 1523 | 14 | `void clearAll()` | The cell is empty: no position either. |
+| 1539 | 64 | `void redenominate(double scale)` | Everything in money, in the new unit. |
+| 1605 | 5 | `public String toString()` |  |
 

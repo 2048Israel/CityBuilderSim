@@ -4,7 +4,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 662 files, 714,485 lines, 31,268 methods, 6,948 constants. `GameVersion.VERSION` is "0.9.218", `SAVE_FORMAT` 67.
+**The tree:** 662 files, 714,578 lines, 31,269 methods, 6,949 constants. `GameVersion.VERSION` is "0.9.218", `SAVE_FORMAT` 67.
 
 ## model (288 files)
 
@@ -135,9 +135,9 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [HistoryGrapher.java](HistoryGrapher.md) | 115 | 1 |  | 1 |
 | [HistorySave.java](HistorySave.md) | 2,587 | 96 | Every month the city has ever lived, one number at a time. | 61 |
 | [HomeFuel.java](HomeFuel.md) | 171 | 20 | The homes' lamp oil and coal: what the households that light with a lamp and heat with a stove ask of the shops each month, as two shares of the ho... | 4 |
-| [Household.java](Household.md) | 1,601 | 139 | Every household of one shape at one pay tier, as one ledger. | 65 |
+| [Household.java](Household.md) | 1,610 | 139 | Every household of one shape at one pay tier, as one ledger. | 65 |
 | [HouseholdAccounts.java](HouseholdAccounts.md) | 1,462 | 111 | The city's residents, treated as one household. | 22 |
-| [HouseholdBalance.java](HouseholdBalance.md) | 6,652 | 394 | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. | 80 |
+| [HouseholdBalance.java](HouseholdBalance.md) | 6,664 | 394 | The households' balance sheet: what they have saved, what they owe, and what happens in the month they cannot cover the shop. | 80 |
 | [HousingChoice.java](HousingChoice.md) | 456 | 31 | A bounded household-cell to dwelling-class allocation, retaining valid leases first. | 11 |
 | [HousingForms.java](HousingForms.md) | 112 | 11 | The fourteen fixed forms, geometry and capital partitions of the RES1 catalogue. | 7 |
 | [HousingInventory.java](HousingInventory.md) | 304 | 34 | Aggregate housing titles, occupants and listings over the physical stacks. | 13 |
@@ -404,7 +404,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [AgricultureCheck.java](AgricultureCheck.md) | 463 | 7 | The ground under the loaf. | 0 |
 | [AllChecks.java](AllChecks.md) | 601 | 29 | Runs every harness, one JVM each, and says which failed. | 7 |
 | [ArrivalMixCheck.java](ArrivalMixCheck.md) | 398 | 21 | The skill mix of the arrivals by year (R0d slice 2): the year's mix in a city founded the 1900 way, and WageBand's ceilings in every other city. | 0 |
-| [AshbourneCheck.java](AshbourneCheck.md) | 522 | 17 | Four findings from Jerus's Ashbourne (slot 2, months 193-241), each caused on a fixture of this harness's own (ASH4; docs/queue/ASH-findings.md, do... | 0 |
+| [AshbourneCheck.java](AshbourneCheck.md) | 594 | 18 | Four findings from Jerus's Ashbourne (slot 2, months 193-241), each caused on a fixture of this harness's own (ASH4; docs/queue/ASH-findings.md, do... | 0 |
 | [AskProceedsCheck.java](AskProceedsCheck.md) | 562 | 29 | The bond proceeds an open ask has raised pay its works, as a fenced fund pays them: the treasury holds them outside the operating reserve, the orde... | 1 |
 | [AuctionCheck.java](AuctionCheck.md) | 1,897 | 46 | The city's paper sold at auction: one clearing yield, and what it costs. | 2 |
 | [AutoBuildCheck.java](AutoBuildCheck.md) | 2,224 | 51 | Automatic building (0.7.73, batch N4): AutoBuilder's month held to its rules, in a city it builds for decades and in fixtures that cause each of th... | 2 |

@@ -2,7 +2,7 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**264 harness files, 30,585 labelled assertions.** AllChecks runs 264 of them.
+**264 harness files, 30,593 labelled assertions.** AllChecks runs 264 of them.
 
 ## Which harnesses read which class
 
@@ -548,7 +548,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L393 a city founded the default way holds no mix in any of its 24 months
   - L394 ...and the same village founded the default way draws a smaller share of its arrivals without a diploma
 
-## AshbourneCheck.java - 57 labelled assertions
+## AshbourneCheck.java - 65 labelled assertions
 
 > Four findings from Jerus's Ashbourne (slot 2, months 193-241), each caused on a fixture of this harness's own (ASH4;
 > docs/queue/ASH-findings.md, docs/queue/ASH4-notes.md).
@@ -565,66 +565,74 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 > ...
 
 - **L118 1. finding 5: the owners' deposits are not spare, whatever they take home**
-  - L125 fixture: owner families, who take home nothing and plan to spend something
+  - L125 fixture: owner families, who take home nothing and spend something every month
   - L127 fixture: and hold more than their cushion
-  - L129 the owners' cushion is the months' cushion of what they plan to spend
+  - L129 the owners' cushion is the months' cushion of their everyday spending
   - L142 fixture: there are savers to hold the old rule against
   - L143 a saver's cushion is what it was: the months' cushion of its take-home, exactly
   - L144 no cell's cushion is under the months' cushion of its take-home
-  - L151 take-home alone would have left the owners no cushion at all
-  - L152 fixture: the owners may buy paper, and have something spare
-  - L153 their spare for a bond is at most what is past the cushion, in all
-  - L164 fixture: the 30-year bond is on the books
-  - L168 the households were allotted face
-  - L169 ...for no more than their spare
-  - L186 no cell paid out of its cushion: each ends at least at the lesser of what it held and its cushion
-  - L187 the owners paid something
-  - L188 ...and kept at least their cushion
-  - L189 what the cells paid, in all, is what the settlement took, to the cent
-  - L194 the month's money audit closes to the cent
-- **L235 2. finding 12: the yen bond is the yen curve's, and its level is the rate's**
-  - L242 fixture: the world's moneys, the yen offered, and nothing owed abroad (the premium is nothing)
-  - L249 fixture: the piece is on the books, foreign, in yen
-  - L255 the yen's rate is its bank's plus the country premium, once
-  - L262 the buyback's fair per 100 is the market value over the principal
-  - L263 ...and the yen curve at the yen's rate pricing the flows
-  - L264 ...which the world's offer is paid at, the whole piece
-  - L279 the D$ moved by the fall the fixture meant
-  - L280 the principal in D$ moved by the cross's ratio
-  - L281 ...which is the piece's own rate's
-  - L282 the fair per 100 at the same rate did not move: flows and principal convert at one rate
-  - L283 ...and what the price did move by is the premium's alone
-  - L290 Ashbourne's month 205 is January 1917, and it is before PolicyRates' table start: the rate is the stand-in's
-  - L301 fixture: a second town, the yen offered, nothing owed abroad and never a default
-  - L314 the piece is Ashbourne's at month 205: in yen, 312 months left, the whole face owed
-  - L322 the country premium the model gives Ashbourne's owing and exports is the one worked by hand, 0.1594%
-  - L323 ...and the yen's rate is the stand-in's 13% plus it, once
-  - L341 the production buyback prices Ashbourne's piece at what Ashbourne paid
-  - L342 ...its fair per 100 being DebtManager.marketValue's over the principal
-  - L343 ...and the tolerance tells a wrong premium: none at all, or one basis point more, falls outside it
-  - L345 at the Bank of Japan's 5.11% and the same premium the piece is worth over 60: the level is the rate's
-- **L369 3. finding 11: the load follows the buildings, and the price follows the wires**
-  - L395 fixture: the kilns stood and were taken down, and the houses rose by 19%
-  - L396 two kilns standing draw two kilns' powerBought
-  - L397 the draw moved by the kilns lost and the houses gained, each at its own powerBought
-  - L399 the load follows the buildings, in kW in both months: it fell while the houses rose
-  - L406 fixture: the founding grid is the 10,000 kW the wires carry
-  - L412 every block's load is under the wires, and the price is 0
-  - L432 with no block over the wires the price is 0; with the peak, the shoulder or the base over it is positive
-  - L434 ...and higher the more blocks are over
-  - L435 the price is the scarcity price: VOLL on the half-blocks the wires leave unserved, 0 on the rest
-  - L442 month 193's draw leaves two blocks over the wires and month 205's one
-  - L444 ...so the price fell by a good deal more than the load did
-- **L477 4. finding 16: a lost job is a household split, at full pace**
-  - L503 fixture: the same people every month
-  - L504 ...and the jobs fell 16% at month 12
-  - L505 the condition: the households fall at least 5% in the month the jobs go
-  - L509 the whole move came in the one month: months 13-19 move the households under 0.1% a month (no pace)
-  - L510 ...and when the jobs return the households rise at least 5% in the one month
-  - L512 the households looking for a door ROSE in month 12: a lost job is a household split,
-  - L517 nobody is lost in month 12: the families' adults and the outside adults are the cohorts'
-  - L518 ...in every month of the run (the worst, relative)
-  - L519 ...and the adults outside the families rose by the laid-off at month 12: they left the families the month the jobs went
+  - L160 what the mend keeps back is at most three months of the spending take-home does not cover
+  - L168 take-home alone would have left the owners no cushion at all
+  - L169 fixture: the owners may buy paper, and have something spare
+  - L170 their spare for a bond is at most what is past the cushion, in all
+  - L181 fixture: the 30-year bond is on the books
+  - L185 the households were allotted face
+  - L186 ...for no more than their spare
+  - L203 no cell paid out of its cushion: each ends at least at the lesser of what it held and its cushion
+  - L204 the owners paid something
+  - L205 ...and kept at least their cushion
+  - L206 what the cells paid, in all, is what the settlement took, to the cent
+  - L211 the month's money audit closes to the cent
+  - L248 fixture: at twice the wealth the plan asks for more, its wealth term
+  - L249 ...while what they spend every month stays where it was
+  - L250 doubling the owners' wealth leaves their cushion where it was
+  - L251 fixture: they hold more than their cushion
+  - L252 ...and the spare grows by all of the wealth added: it is what is past a cushion that did not move
+  - L257 doubling what they spend every month doubles their cushion
+- **L303 2. finding 12: the yen bond is the yen curve's, and its level is the rate's**
+  - L310 fixture: the world's moneys, the yen offered, and nothing owed abroad (the premium is nothing)
+  - L317 fixture: the piece is on the books, foreign, in yen
+  - L323 the yen's rate is its bank's plus the country premium, once
+  - L330 the buyback's fair per 100 is the market value over the principal
+  - L331 ...and the yen curve at the yen's rate pricing the flows
+  - L332 ...which the world's offer is paid at, the whole piece
+  - L347 the D$ moved by the fall the fixture meant
+  - L348 the principal in D$ moved by the cross's ratio
+  - L349 ...which is the piece's own rate's
+  - L350 the fair per 100 at the same rate did not move: flows and principal convert at one rate
+  - L351 ...and what the price did move by is the premium's alone
+  - L358 Ashbourne's month 205 is January 1917, and it is before PolicyRates' table start: the rate is the stand-in's
+  - L369 fixture: a second town, the yen offered, nothing owed abroad and never a default
+  - L382 the piece is Ashbourne's at month 205: in yen, 312 months left, the whole face owed
+  - L390 the country premium the model gives Ashbourne's owing and exports is the one worked by hand, 0.1594%
+  - L391 ...and the yen's rate is the stand-in's 13% plus it, once
+  - L413 the production buyback prices Ashbourne's piece at what Ashbourne paid, within 0.005 of a point
+  - L414 ...its fair per 100 being DebtManager.marketValue's over the principal
+  - L415 a premium of nothing misprices it outside that tolerance (27.7352)
+  - L416 ...and so does a basis point more (27.3498)
+  - L417 at the Bank of Japan's 5.11% and the same premium the piece is worth over 60: the level is the rate's
+- **L441 3. finding 11: the load follows the buildings, and the price follows the wires**
+  - L467 fixture: the kilns stood and were taken down, and the houses rose by 19%
+  - L468 two kilns standing draw two kilns' powerBought
+  - L469 the draw moved by the kilns lost and the houses gained, each at its own powerBought
+  - L471 the load follows the buildings, in kW in both months: it fell while the houses rose
+  - L478 fixture: the founding grid is the 10,000 kW the wires carry
+  - L484 every block's load is under the wires, and the price is 0
+  - L504 with no block over the wires the price is 0; with the peak, the shoulder or the base over it is positive
+  - L506 ...and higher the more blocks are over
+  - L507 the price is the scarcity price: VOLL on the half-blocks the wires leave unserved, 0 on the rest
+  - L514 month 193's draw leaves two blocks over the wires and month 205's one
+  - L516 ...so the price fell by a good deal more than the load did
+- **L549 4. finding 16: a lost job is a household split, at full pace**
+  - L575 fixture: the same people every month
+  - L576 ...and the jobs fell 16% at month 12
+  - L577 the condition: the households fall at least 5% in the month the jobs go
+  - L581 the whole move came in the one month: months 13-19 move the households under 0.1% a month (no pace)
+  - L582 ...and when the jobs return the households rise at least 5% in the one month
+  - L584 the households looking for a door ROSE in month 12: a lost job is a household split,
+  - L589 nobody is lost in month 12: the families' adults and the outside adults are the cohorts'
+  - L590 ...in every month of the run (the worst, relative)
+  - L591 ...and the adults outside the families rose by the laid-off at month 12: they left the families the month the jobs went
 
 ## AskProceedsCheck.java - 39 labelled assertions
 
