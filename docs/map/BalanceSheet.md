@@ -1,6 +1,6 @@
 # BalanceSheet.java - 201 lines · 30 methods · 0 constants · model
 
-`ham/citybuildersim/BalanceSheet.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BalanceSheet.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > A simple balance sheet for one business in the city.
 > 

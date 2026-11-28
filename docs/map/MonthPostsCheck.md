@@ -1,6 +1,6 @@
 # MonthPostsCheck.java - 23 lines · 2 methods · 0 constants · harnesses
 
-`ham/citybuildersim/MonthPostsCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/MonthPostsCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > Proves the labour figures held for a pass and across a month survive every
 > writer, with the original walks compared as raw bits (AP5/AP6).

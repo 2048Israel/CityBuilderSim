@@ -1,6 +1,6 @@
 # FB13Check.java - 600 lines · 13 methods · 2 constants · harnesses
 
-`ham/citybuildersim/FB13Check.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/FB13Check.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > FB13's three texts, each asked of the model that says it: the island's words (AL1-W), the Government screen's coupons abroad (CD9-G) and the
 > build card's licence line (R5-L). Not part of the game.

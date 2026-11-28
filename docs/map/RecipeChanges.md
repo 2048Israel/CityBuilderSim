@@ -1,6 +1,6 @@
 # RecipeChanges.java - 627 lines · 47 methods · 1 constants · model
 
-`ham/citybuildersim/RecipeChanges.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/RecipeChanges.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > Composes independent discovery changes on the selected process recipe.
 > 

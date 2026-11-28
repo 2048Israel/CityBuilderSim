@@ -54,7 +54,8 @@ public class AllChecks {
         "HousingInventoryCheck", "HousingChoiceCheck", "HousingMarketCheck",
         "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck", "ER1Check", "PostwarRecipeCheck", "ModernEngineeringCheck", "ModernRowsCheck", "YoungBankCheck", "NewUnitCheck", "FitoutCheck", "FB13Check", "GroundSkipCheck",
         "ForeignChoiceCheck",
-        "SchoolingLadderCheck", "SchoolingPageCheck", "CentralBankStatementCheck"
+        "SchoolingLadderCheck", "SchoolingPageCheck", "CentralBankStatementCheck",
+        "UiSteadyCheck"
     };
 
     /** How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. */
@@ -88,7 +89,7 @@ public class AllChecks {
     static final int CPU_SAMPLES = 3;
 
     /** GB5: the harnesses that start the JavaFX toolkit (ui.FollowBench.startJavaFx; TimingCheck 10 keeps the list whole). */
-    static final List<String> DISPLAY = List.of("ChartFitCheck", "KeptCheck", "KeptTimingCheck", "MapCheck", "MoneyWordsCheck", "NewUnitCheck", "ReplayCheck", "StepsCheck", "ToastCheck");
+    static final List<String> DISPLAY = List.of("ChartFitCheck", "KeptCheck", "KeptTimingCheck", "MapCheck", "MoneyWordsCheck", "NewUnitCheck", "ReplayCheck", "StepsCheck", "ToastCheck", "UiSteadyCheck");
 
     /** Longest first when no previous run's seconds can be read (HA1, 2026-11-12 medians). */
     static final List<String> LONGEST_FIRST = List.of("KeptCheck", "KeptTimingCheck", "CentralBankCheck", "MapCheck", "GlobeCheck", "ShortSellingCheck", "LandmassCheck", "LongPlaytest", "CopperRefiningCheck", "EarthTerrainCheck");

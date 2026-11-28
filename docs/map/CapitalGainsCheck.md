@@ -1,6 +1,6 @@
 # CapitalGainsCheck.java - 1,038 lines · 34 methods · 2 constants · harnesses
 
-`ham/citybuildersim/CapitalGainsCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CapitalGainsCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > Household average-cost stocks and investment taxes, through the real fills, census and city (HT1).
 > WHY: the fund already tracked average cost, but a household sale previously lost its acquisition cost.

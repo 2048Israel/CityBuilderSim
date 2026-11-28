@@ -1,6 +1,6 @@
 # GamePrefs.java - 282 lines · 31 methods · 3 constants · model
 
-`ham/citybuildersim/GamePrefs.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GamePrefs.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > How the player likes the window, kept between runs.
 > 
@@ -25,7 +25,7 @@
 
 **Uses:** [GameFiles](GameFiles.md) (3), [GameLog](GameLog.md) (2)
 
-**Used by (8):** [FollowBench](FollowBench.md), [HistoryScreen](HistoryScreen.md), [MapCheck](MapCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TruckRouteCheck](TruckRouteCheck.md), [UiProbe](UiProbe.md), [UserInterface](UserInterface.md)
+**Used by (10):** [FollowBench](FollowBench.md), [HistoryScreen](HistoryScreen.md), [MapCheck](MapCheck.md), [PagePictures](PagePictures.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TruckRouteCheck](TruckRouteCheck.md), [UiProbe](UiProbe.md), [UiSteadyCheck](UiSteadyCheck.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

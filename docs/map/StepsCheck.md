@@ -1,6 +1,6 @@
 # StepsCheck.java - 212 lines · 7 methods · 0 constants · harnesses
 
-`ham/citybuildersim/StepsCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/StepsCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > Magnitude controls follow the figure and bond lots follow the month's money.
 > 

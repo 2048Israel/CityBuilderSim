@@ -1,6 +1,6 @@
 # HistoricalLicenceCheck.java - 602 lines · 22 methods · 0 constants · harnesses
 
-`ham/citybuildersim/HistoricalLicenceCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HistoricalLicenceCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > R2d's independent discoveries meet R2c's captured patent service.
 > WHY (R2d): a net fitting estimate could charge for a patent whose real

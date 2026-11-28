@@ -1,0 +1,61 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>UX1 mockup 1: the frame</title>
+<link rel="stylesheet" href="lib/frame.css"><script src="lib/icons.js"></script><script src="lib/frame.js"></script></head>
+<body><script>
+frame({ on: 'services', needsOn: 'Health', alerts: [['ROADS', 'bad', 1], ['STAFF', 'bad', 1], ['COIN', 'warn', 1], ['HEALTH', 'warn', 2]] });
+
+const care = (ic, name, shown, share, col, line, sub, staff) => `
+  <div class="card"><div class="row">${ring(share, 50, col, shown)}
+    <div style="flex:1"><div class="row" style="gap:6px">${icon(ic, 15, AREA.people)}<b style="font-weight:600">${name}</b>
+      <span style="flex:1"></span><span class="btn build" style="height:24px">${icon('BUILD', 13)} Build for it ›</span></div>
+      <div style="margin:3px 0 5px">${line}</div>
+      <div class="bar"><i style="width:${staff * 100}%;background:${AREA.people}"></i></div>
+      <div class="small" style="margin-top:4px">${sub}</div></div></div></div>`;
+
+document.body.insertAdjacentHTML('beforeend', `
+<div class="panel">
+  <div class="path"><div class="back"><svg width="15" height="15" viewBox="0 0 24 24" class="i" stroke="#e6edf3"><path d="M15 18l-6-6 6-6"/></svg></div>
+    <span class="crumb">Services</span><span class="sep">›</span><span class="crumb here">Health</span>
+    <span class="grow"></span><span class="btn">${icon('EXPAND', 14)} Wide</span><span class="btn">${icon('CLOSE', 14)}</span></div>
+  <div class="subtabs" style="--c:${AREA.people}"><div class="on">Overview</div><div>General care</div><div>Childcare</div><div>Senior care</div><div>Death care</div><div>Books</div></div>
+  <div class="body">
+    <div class="figs">
+      <div><div class="k" style="color:${AREA.people}">Off sick</div><div class="v good">3.1%</div><div class="s">31 workers<br>▲ 0.01 pts</div></div>
+      <div><div class="k" style="color:${AREA.people}">Least served</div><div class="v warn">90%</div><div class="s">senior care,<br>short</div></div>
+      <div><div class="k" style="color:${AREA.building}">Ground left</div><div class="v">1,136 mo</div><div class="s">before the<br>plots run out</div></div>
+      <div><div class="k" style="color:${AREA.money}">The bill</div><div class="v">−$8,736</div><div class="s">a month,<br>$371 back in fees</div></div></div>
+    <div class="h">Where the sick rate comes from <span>a part opens where it is fixed</span></div>
+    <div class="card"><div class="row" style="gap:3px;height:16px">
+      <i style="flex:93;height:16px;background:#5f7189;border-radius:3px 0 0 3px"></i><i style="flex:2;height:16px;background:#d6b98c"></i><i style="flex:3;height:16px;background:#1fa595;border-radius:0 3px 3px 0"></i></div>
+      <div class="small" style="margin-top:6px">the floor <span class="mono">3.0 pts</span> · no home <span class="mono">0.05</span> · violence <span class="mono">0.07</span> · no doctor, hunger, outbreak: none</div></div>
+    <div class="h">The care the city runs <span>doctors are the scarcest: 0% of their posts filled</span></div>
+    ${care('HEALTH', 'General care', '99%', .99, '#e3b341', '<span class="mono">77%</span> of the sick get better <span class="small">(77% if everyone)</span>', 'served, short · 7,321 staffed of 13,200 built · 1,888 to serve', .55)}
+    ${care('CHILD', 'Childcare', '95%', .95, '#e3b341', '<span class="mono">×0.036</span> infant deaths <span class="small">(×0.025 if everyone)</span>', 'served, short · 125 staffed of 129 built · 132 places needed', .97)}
+    ${care('CANE', 'Senior care', '90%', .90, '#e3b341', '<span class="mono">+27.1%</span> on the homes’ draw <span class="small">(+30% if everyone)</span>', 'served, short · 84 staffed of 84 built · 93 places needed', .9)}
+    ${care('DEATH', 'Death care', '100%', 1, '#3fb950', '<span class="mono">1,136 months</span> of ground', '2 died · 101 used of 2,500 plots', .04)}
+    <div class="h">What people die of <span>the last twelve months</span></div>
+    <div class="card row" style="justify-content:space-between"><div class="small">pneumonia 6 · tuberculosis 3 · typhoid 1 · summer diarrhoea 1<br>7 causes in a table of 5 columns</div>
+      <span class="btn">${icon('EXPAND', 14)} Open wide</span></div>
+  </div></div>
+
+<div class="pin" style="left:925px;top:281px;background:${AREA.building}"></div>
+<div class="mapcard" style="left:905px;top:166px">
+  <div class="row" style="gap:8px">${icon('HEALTH', 18, AREA.building)}<b style="font-weight:600">Clinic</b><span class="small">· the city’s, built 1906</span></div>
+  <div class="small" style="margin:5px 0">General care for 1,888 people · 61 of 110 posts filled</div>
+  <div class="bar"><i style="width:55%;background:${AREA.people}"></i></div>
+  <div class="row" style="margin-top:7px;justify-content:space-between"><span class="small">−$2,940 a month</span><span class="link">Open in Health ›</span></div></div>
+
+
+${outline(1, 1, 1918, 52)}${num(1610, 58, 1)}
+${note(1420, 86, '<b>1 · The top strip.</b> One band, 52 px: the clock, the six figures, building, rating, inbox. Today’s header is 84 px of cards.')}
+${outline(646, 58, 192, 46)}${num(842, 70, 2)}
+${note(870, 64, '<b>2 · The alert row (P3 A ★).</b> A mark per kind, beside the panel. Hover tells, left click opens it in the panel, right click dismisses.')}
+${outline(78, 54, 562, 1024)}${num(600, 1040, 3)}
+${note(660, 980, '<b>3 · The panel (P1 A ★).</b> 560 px beside the rail, the map beside it. The path line steps back; <i>Wide</i> lays the page or one table over the dimmed map (mockup 3).')}
+${outline(1795, 59, 118, 404)}${num(1770, 470, 4)}
+${note(1540, 500, '<b>4 · The needs (P2 A ★).</b> A small circle and a word each, by area; the ring is how far the need is met. A click opens its page in the panel.')}
+${num(1212, 176, 5)}
+${note(1240, 172, '<b>5 · A card on a building.</b> Whose it is (the city’s or the market’s), what it does, its staff, the way to its page.')}
+${note(1330, 1030, '<b>UX1 mockup 1 · the frame, recommended.</b> The young town, slot 1, July 1909: Services › Health.', 'pick')}
+`);
+</script></body></html>

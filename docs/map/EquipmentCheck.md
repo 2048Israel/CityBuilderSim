@@ -1,6 +1,6 @@
 # EquipmentCheck.java - 1,202 lines · 46 methods · 4 constants · harnesses
 
-`ham/citybuildersim/EquipmentCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/EquipmentCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > Equipment as data, the count of buildings still without it on each stack, R0c's 1900 forms set from that count, and (slice B) what a piece
 > would earn and cost and whether it pays, read on demand.

@@ -1,0 +1,88 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>UX1 mockup 5: a bottom drawer (alternative)</title>
+<link rel="stylesheet" href="lib/frame.css"><script src="lib/icons.js"></script><script src="lib/frame.js"></script>
+<style>
+  .zoom { bottom: 442px; }
+  .drawer { position: absolute; left: var(--rail); right: 0; top: 650px; bottom: 0; z-index: 16; background: rgba(16, 25, 36, .975);
+    border-top: 1px solid var(--control-edge); box-shadow: 0 -10px 28px rgba(0,0,0,.45); display: flex; flex-direction: column; }
+  .grip { position: absolute; left: 50%; top: 5px; width: 54px; height: 4px; margin-left: -27px; border-radius: 2px; background: var(--control-edge); }
+  .drawer .path { height: 48px; padding-top: 6px; }
+  .drawer .subtabs { border-bottom: 0; padding: 0 0 0 18px; margin-bottom: -1px; }
+  .drawer .subtabs div { padding: 13px 10px 11px; }
+  .dbody { position: relative; flex: 1; overflow: hidden; padding: 10px 16px 0; display: grid; grid-template-columns: 1fr 520px; grid-template-rows: auto 1fr; gap: 10px 14px; }
+  .tiles { grid-column: 1 / 3; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--raised); border: 1px solid var(--edge); border-radius: 9px; }
+  .tiles > div { padding: 7px 14px; border-left: 1px solid var(--edge); }
+  .tiles > div:first-child { border-left: 0; }
+  .tiles .k { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; color: var(--business); }
+  .tiles .v { font-family: PlexMono; font-size: 17px; font-weight: 500; margin: 1px 0; }
+  .tiles .s { font-size: 11px; color: var(--soft); }
+  .warns .w { display: flex; gap: 9px; align-items: flex-start; padding: 7px 0; border-top: 1px solid var(--edge); }
+  .warns .w:first-of-type { border-top: 0; padding-top: 2px; }
+  .warns .w b { font-weight: 600; font-size: 12.5px; display: block; }
+  .warns .w .grow { flex: 1; }
+  .fade { position: absolute; left: 0; right: 0; bottom: 0; height: 46px; background: linear-gradient(rgba(16,25,36,0), rgba(16,25,36,.98) 70%);
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; font-size: 11.5px; color: var(--soft); }
+  .sbar { position: absolute; right: 4px; top: 102px; width: 5px; height: 300px; border-radius: 3px; background: #1a2839; }
+  .sbar i { position: absolute; left: 0; right: 0; top: 0; height: 128px; border-radius: 3px; background: var(--control-edge); }
+  svg text { font-family: PlexMono; font-size: 11px; fill: var(--soft); }
+  svg text.w { font-family: Plex; font-size: 11.5px; fill: var(--soft); }
+  svg text.v { fill: var(--text); font-size: 11.5px; }
+</style></head>
+<body><script>
+frame({ ground: 'town', figures: TOWN, on: 'trade', alertsLeft: 92,
+  alerts: [['ROADS', 'bad', 1], ['STAFF', 'bad', 1], ['COIN', 'warn', 1], ['HEALTH', 'warn', 2]] });
+
+// the month across the edge (slot 1, July 1909), R$ thousands: [label, from, to, kind]
+const steps = [['Sold abroad', 0, 70, 'flow'], ['Bought abroad', 70, -24, 'flow'], ['Trade balance', 0, -24, 'sub'], ['Income, net', -24, -57, 'flow'],
+  ['Current account', 0, -57, 'sub'], ['Capital in', -57, -56.5, 'flow'], ['Capital out', -56.5, -93.5, 'flow'], ['The month', 0, -93, 'end']];
+const lab = ['+R$70k', '−R$94k', '−R$24k', '−R$33k', '−R$57k', '+R$531', '−R$37k', '−R$93k'];
+const W = 1210, zero = 24 + 70 * .9, k = .9, slot = (W - 70) / steps.length, bw = 74;
+const col = (s, i) => s[3] === 'sub' ? '#5f7189' : s[3] === 'end' ? '#8090a6' : s[2] >= s[1] ? '#a78bfa' : i === 1 ? '#7c5ce0' : '#5aa9ff';
+const wf = `<svg width="${W}" height="222">
+  <line x1="56" x2="${W}" y1="${zero}" y2="${zero}" stroke="#33475f"/>
+  <text x="48" y="${zero + 4}" text-anchor="end">0</text>
+  ${[50, -50].map(v => `<line x1="56" x2="${W}" y1="${zero - v * k}" y2="${zero - v * k}" stroke="#1f2d3f" stroke-dasharray="3 4"/><text x="48" y="${zero - v * k + 4}" text-anchor="end">${v > 0 ? '+' : '−'}R$50k</text>`).join('')}
+  ${steps.map((s, i) => {
+    const x = 70 + i * slot + (slot - bw) / 2, yA = zero - Math.max(s[1], s[2]) * k, h = Math.max(Math.abs(s[2] - s[1]) * k, 3);
+    const up = s[2] >= s[1] && s[3] === 'flow';
+    const ly = up ? yA - 6 : yA + h + 14;
+    const next = i < steps.length - 1 ? `<line x1="${x + bw}" x2="${x + slot}" y1="${zero - s[2] * k}" y2="${zero - s[2] * k}" stroke="#5f7189" stroke-dasharray="2 3"/>` : '';
+    return `<rect x="${x}" y="${yA}" width="${bw}" height="${h}" rx="3" fill="${col(s, i)}"/>${next}
+      <text class="v" x="${x + bw / 2}" y="${ly}" text-anchor="middle">${lab[i]}</text>
+      <text class="w" x="${x + bw / 2}" y="212" text-anchor="middle" style="${s[3] !== 'flow' ? 'fill:#e6edf3;font-weight:600' : ''}">${s[0]}</text>`;
+  }).join('')}</svg>`;
+
+const warn = (st, t, line, link) => `<div class="w">${icon('ALERT', 16, st === 'bad' ? '#f85149' : '#e3b341')}<div class="grow"><b>${t}</b><span class="small">${line}</span></div><span class="link" style="white-space:nowrap">${link} ›</span></div>`;
+
+document.body.insertAdjacentHTML('beforeend', `
+<div class="drawer"><div class="grip"></div>
+  <div class="path"><div class="back"><svg width="15" height="15" viewBox="0 0 24 24" class="i" stroke="#e6edf3"><path d="M15 18l-6-6 6-6"/></svg></div>
+    <span class="crumb">Trade</span><span class="sep">›</span><span class="crumb here">The month</span>
+    <div class="subtabs" style="--c:${AREA.business}"><div>Overview</div><div class="on">The month</div><div>What we trade</div><div>Partners</div><div>The currency</div><div>The reserves</div></div>
+    <span class="grow"></span><span class="btn">${icon('REPORTS', 14)} Over the years</span><span class="btn">${icon('EXPAND', 14)} Full height</span><span class="btn">${icon('CLOSE', 14)}</span></div>
+  <div class="dbody">
+    <div class="tiles">
+      <div><div class="k">Sold abroad</div><div class="v">R$70k</div><div class="s">R$69k a month on average, to 1 nation</div></div>
+      <div><div class="k">Bought abroad</div><div class="v">R$94k</div><div class="s">R$127k a month on average, from 2 nations</div></div>
+      <div><div class="k">The month</div><div class="v bad">−R$93k</div><div class="s">current −R$57k · financial −R$36k</div></div>
+      <div><div class="k">The currency</div><div class="v warn">R$1.4075 <span style="font-size:12px">per US$</span></div><div class="s">33.5% weaker than parity · 2.359% stronger this month</div></div>
+      <div><div class="k">In the vault</div><div class="v bad">US$0</div><div class="s">R$0 · none of imports</div></div></div>
+    <div class="card" style="padding:9px 12px 4px">
+      <div class="h">The month across the edge <span>the eight steps of the month, side by side</span></div>${wf}</div>
+    <div class="card warns" style="padding:9px 12px">
+      <div class="h" style="margin-bottom:6px">What needs you <span>3 serious, 1 to watch</span></div>
+      ${warn('bad', 'The money is leaving', 'the currency fell 29% in a year; 0% of the money that can leave is backed', 'The money that can leave')}
+      ${warn('bad', 'Under 3 months of import cover', 'the vault holds R$0 against R$127k a month of imports', 'Buy reserves')}
+      ${warn('bad', 'The hot money is barely backed', 'R$11k parked here against R$0 in the vault: 0% cover', 'The money that can leave')}
+      ${warn('warn', 'The city owes the world more than it holds', 'R$142k of dollar paper against R$0 of reserves', 'The dollar debt')}</div>
+    <div class="fade">${icon('INFO', 13, '#9fb0c3')}&nbsp; below: what the city holds abroad against what the world holds here · scroll, or <b style="color:var(--text);font-weight:500">&nbsp;Full height</b></div>
+    <div class="sbar"><i></i></div>
+  </div></div>
+
+${outline(80, 646, 1836, 430)}${num(82, 636, 1)}
+${note(118, 556, '<b>1 · The drawer.</b> Across the bottom, from the rail to the right edge, 430 px tall; its top edge drags. A wide page lays out wide: five figures in a row, the month’s eight steps side by side, the warnings beside them.')}
+${note(1330, 466, '<b>2 · The trade-off.</b> Wide tables fit; long pages do not. The page is cut at 430 px (its holdings are below), and the map keeps 600 px of height: the town’s top half, its south under the drawer.')}
+${num(1304, 472, 2)}
+${note(1330, 566, '<b>UX1 mockup 5 · a bottom drawer · P1 C, alternative.</b> The young town, July 1909: Trade › The month. Wide tables fit, long pages do not; the map keeps 600 px of height.', 'pick')}
+`);
+</script></body></html>

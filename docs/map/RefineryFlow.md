@@ -1,6 +1,6 @@
 # RefineryFlow.java - 431 lines · 38 methods · 6 constants · sectors
 
-`ham/citybuildersim/sectors/RefineryFlow.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/sectors/RefineryFlow.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > The refinery as a campus of units, and a month's flow through them (0.7.80,
 > batch O4; docs/studies/spec-oil.md 2.3): the crude units' run cut into its

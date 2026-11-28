@@ -1,6 +1,6 @@
 # OrderDoorCheck.java - 579 lines · 23 methods · 12 constants · harnesses
 
-`ham/citybuildersim/OrderDoorCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/OrderDoorCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > An order at the door (FB15, 2026-11-20): a landlord's order sized, and its
 > owners asked, at the price buildFor() charges; a project's order the lender

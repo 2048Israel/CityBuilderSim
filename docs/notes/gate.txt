@@ -1,8 +1,8 @@
-# gate of Merge batch/AP8: slot 9 at 50x after AP7 (Build 8.7-9.0, Land 7.7-7.9 months a second): the households' bond orders (`OrderBook.submit` 11.3% of the FX thread), the build quote's abroad terms read twice for the same arguments (`abroadOfOrder` 6.0%), private investment (11.7%), `HouseholdBalance.followThePeople` (9.2%); measured before and after, exact (the trace's eight md5s equal). After CBK3, ahead of CBK2 (Jerus's slot 9), 0.9.217
-# date: 2026-11-27
+# gate of Merge batch/UX1: the interface rework's study (Jerus, 11-27: the map as the ground of every screen, HoI IV-style alerts at the top, a build screen in groups with an icon per building): the picture tool, the stability harness, the audit of every page on two or three cities, mockups over the real map, and the rows UX2 onward, 0.9.217
+# date: 2026-11-28
 # earth-2.bin: named
 # nightly: 2026-11-27 03:12 0.9.215 c71984995 4,000 months: OK in 578 s; nightly tier OK; observations: 3 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 1 SLOWER, 1 standing miss(es), 0 first-night miss(es), 1 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-27-c71984995-Kh1HaGNd; SaveSlotCheck | the median due month, 25.4 ms, holds the clock at most CLOCK_MS (25 ms) | previous 22.3, tonight 25.8, budget 25 ms | attribution inconclusive: boundary did not confirm
-# suite: 248 harnesses run in 1413s: 235 passed, 13 failed
+# suite: 247 harnesses run in 1476s: 233 passed, 14 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -59,3 +59,7 @@ OilCheck | 1 FAILED
 GroundSkipCheck | exit 1
 GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 48 month(s) FAIL
 GroundSkipCheck | 1 FAILED
+UiSteadyCheck | exit 1
+UiSteadyCheck | 2. 054-government-revenue: an unchanged redraw makes no node new and lets none go (532 nodes)    FAIL  2 made, 2 lost: Label "Capital gains: assessed ..." in Column; LabeledText in Label
+UiSteadyCheck | 4. 012-build-industry: a month keeps the page's scroller at its pixel                            FAIL  3950.7 px before, 3951.4 after, of 11869.0
+UiSteadyCheck | UiSteadyCheck: 2 FAILED

@@ -1,6 +1,6 @@
 # KeptBench.java - 6,504 lines · 645 methods · 14 constants · interface
 
-`ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > The game's kept screens on scenes of their own, without a stage, for KeptCheck and KeptTimingCheck.
 > Each Page draws the real screen code from its retained pool or an empty pool. The methods below
@@ -15,7 +15,7 @@
 
 **Uses:** [Kept](Kept.md) (149), [Pieces](Pieces.md) (57), [FinancesScreen](FinancesScreen.md) (49), [Game](Game.md) (40), [Palette](Palette.md) (36), [FundScreen](FundScreen.md) (33), [BuildingsTemplate](BuildingsTemplate.md) (32), [BuildScreen](BuildScreen.md) (31), [SectorScreen](SectorScreen.md) (28), [UserInterface](UserInterface.md) (25), [RankingsScreen](RankingsScreen.md) (23), [BuildAdvice](BuildAdvice.md) (21), [TradeScreen](TradeScreen.md) (19), [TimeChart](TimeChart.md) (17), [FreightView](FreightView.md) (17), [Auction](Auction.md) (16), [Rankings](Rankings.md) (15), [ResearchScreen](ResearchScreen.md) (13), [PolicyScreen](PolicyScreen.md) (12), [Buyback](Buyback.md) (12), [GovernmentScreen](GovernmentScreen.md) (10), [BankScreen](BankScreen.md) (9), [PartnersView](PartnersView.md) (9), [WorldMeasures](WorldMeasures.md) (9), [PartnersPage](PartnersPage.md) (8), [HistoryScreen](HistoryScreen.md) (7), [ServicesScreen](ServicesScreen.md) (6), [DebtQuote](DebtQuote.md) (6), [Sector](Sector.md) (5), [SavedCities](SavedCities.md) (5)... and 45 more
 
-**Used by (6):** [KeptCheck](KeptCheck.md), [KeptTimingCheck](KeptTimingCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [NewUnitCheck](NewUnitCheck.md), [ShortSellingCheck](ShortSellingCheck.md), [StepsCheck](StepsCheck.md)
+**Used by (7):** [KeptCheck](KeptCheck.md), [KeptTimingCheck](KeptTimingCheck.md), [MoneyWordsCheck](MoneyWordsCheck.md), [NewUnitCheck](NewUnitCheck.md), [PagePictures](PagePictures.md), [ShortSellingCheck](ShortSellingCheck.md), [StepsCheck](StepsCheck.md)
 
 ## Sections
 
