@@ -35,12 +35,12 @@ was never written.
   - The first mend read the whole plan (`c.planned`). On the save's cells its cushions came to Cr 2.20M (21% of
     deposits) instead of Cr 0.78M.
   - A format-66 save holds no outgoings figure, so the mended total on the save is not measured.
-  - On the fixture town the owners pay no bills of their own. Their cushion is three months of 20.28 a month, against
-    27.46 for the whole plan.
-- **What is left, for Jerus (★2):** the owners still put about 90% of their balance into one big issue. The cushion
+  - On the fixture town the owners pay no bills of their own. Their cushion is three months of 46.89 a month, against
+    63.62 for the whole plan (the merged tip, section 4).
+- **What is left, for Jerus (★2):** the owners still put about 94% of their balance into one big issue. The cushion
   is now 3 months of their spending, and D32's rule (Jerus, 2026-10-20: a fifth of an issue per point of spread over
   the deposit rate, up to the issue, out of the spare) takes all the rest when the issue is large against the spare.
-  On the fixture town the owners held 88.1% of deposits and paid 97.1% of the households' part. A share-of-wealth
+  On the fixture town the owners held 82.8% of deposits and paid 96.1% of the households' part. A share-of-wealth
   limit on one issue would be a change to D32, and so his call. It is not made here.
 
 ### Finding 5's mend and the city's growth: a defect of the first mend, mended (REV-ASH4's second look)
@@ -283,32 +283,34 @@ was never written.
 
 ## 4. The checks
 
-- **AshbourneCheck: 81 assertions, all OK** (at `e91b8dfe8`; the spending cushion moves the town's sixty months, so
-  every figure differs from the bills' run).
-  - Section 1: the lineup town at month 61 has 5 owner households, savings 824.10 each (thousands), take-home 0,
-    no bills of their own, outgoings 20.28 a month (the whole plan 27.46), cushion 60.83.
+- **AshbourneCheck: 81 assertions, all OK** at the merged tip (`a5bd4d878`, main 0.9.219 with CBK3). At `e91b8dfe8`,
+  before the merge, it was 81 OK too, on figures CBK3's bank moves: there the owners were 5 households at 824.10.
+  - Section 1: the lineup town at month 61 has 2 owner households, savings 2,792.74 each (thousands), take-home 0,
+    no bills of their own, outgoings 46.89 a month (the whole plan 63.62), cushion 140.66.
     - 116 of 141 cells take home at least what they pay out every month, so their cushions are unchanged. No cell's
       cushion is under three months of its bills.
-    - What the mend keeps back, 310.46k of 5,101.98k of deposits (6.1%), is within three months of the outgoings
-      take-home does not cover (321.09k).
-    - Re-planned through `plan()` at twice their savings, the owners' plan rises 26.98 -> 29.69, while their outgoings
-      and cushion do not move (19.72, 59.17). Their spare grows by all of the wealth added, and twice the outgoings is
+    - What the mend keeps back, 285.03k of 6,742.26k of deposits (4.2%), is within three months of the outgoings
+      take-home does not cover (308.38k).
+    - Re-planned through `plan()` at twice their savings, the owners' plan rises 62.84 -> 72.01, while their outgoings
+      and cushion do not move (45.92, 137.77). Their spare grows by all of the wealth added, and twice the outgoings is
       twice the cushion. Under the first mend's cushion (`planned`) five of these go red.
     - Struck again through the production `restrike()` and `plan()` as a family with no take-home and no investment
-      income, paying a rent of 20.28: bills 20.28, groceries 0.02, cushion 60.89, exactly three months of both. Twice
-      the rent adds 60.83, three months of the raise. What it may put into a bond leaves three months of its bills.
+      income, paying a rent of 46.89: bills 46.89, groceries 0.02, cushion 140.72, exactly three months of both. Twice
+      the rent adds 140.66, three months of the raise. What it may put into a bond leaves three months of its bills.
       Under the third look's outgoings (the basket alone) five of these go red.
     - **What is spent keeps main's rule** (`spendingKeepsTheOldRule`). The cell whose outgoings pass its take-home by
-      the most is the owners'. Held at savings of 30.41, halfway between its two cushions (0 and 60.83):
-      - its luxury budget is 35.93 and its meal budget 17.97, each `min(want, savings past three months of
+      the most is the owners'. Held at savings of 70.33, halfway between its two cushions (0 and 140.66):
+      - its luxury budget is 33.47 and its meal budget 16.73, each `min(want, savings past three months of
         take-home)` to the bit, and what it may put into a bond is 0;
-      - it wants 5 cars at 7.6037, as many as with its outgoings set to nothing (the cushion then take-home's, exactly);
-      - `takeCars` gives each household 0.2941 of a car, paid in cash to the bit, nothing lent.
-      - With the four sites on `cushion()` again, four lines go red: the luxuries and meals read 0, no car is wanted.
-        With only the car's cash line on it, the car is lent (4.27) and that line goes red.
-    - An ask of 4 times the spare allots the households face 4,018k for 3,959k, and the production settle takes all
-      of it. The owners' savings fall 824.10 -> 72.11, above their cushion. No cell pays out of its cushion, the
-      cells' payments equal the settle's figure to the cent, and the next month's money audit residual is 0.
+      - it wants 2 cars at 17.5824, as many as with its outgoings set to nothing (the cushion then take-home's, exactly);
+      - `takeCars` gives each household 0.1333 of a car, paid in cash to the bit (2.3443), nothing lent.
+      - Red by mutation (at `e91b8dfe8`): with the four sites on `cushion()` again, four lines go red: the luxuries
+        and meals read 0, no car is wanted. With only the car's cash line on it, the car is lent (4.27) and that line
+        goes red.
+    - An ask of 4 times the spare allots the households face 5,520k for 5,476k, and the production settle takes all
+      of it. The owners' savings fall 2,792.74 -> 161.72, above their cushion: they held 82.8% of the households'
+      deposits and paid 96.1% of what the households paid. No cell pays out of its cushion, the cells' payments equal
+      the settle's figure to the cent, and the next month's money audit residual is 0.
   - Section 2: the yen piece's fair per 100 is 98.7023 three ways, to 1e-12. With the D$ 30% weaker, the principal
     moves x1.4286 (the cross) and the price at the same rate does not move. Ashbourne's own piece, rebuilt (section 1
     above, finding 12), is quoted 27.3723 by the production buyback against the 27.3723 it paid: the gap is 0.000016
@@ -316,26 +318,26 @@ was never written.
     (REV-ASH4's second look: the first tolerance went through `close()`, relative above 1, so it was 0.137 at 27.37 and
     let the basis point through.) Month 205 is before `PolicyRates.TABLE_FIRST_MONTH`
     (1200). (REV-ASH4's first P1: the first version priced synthetic flows with no premium, inside 3 points.)
-  - Section 3: two kilns draw 2 x 690 kW. Without the kilns, and with 66 more houses, the draw moves by exactly
-    -1,314 kW. Ashbourne's 9,354 and 8,146 kW leave two blocks and one over the 10 MW wires, so the price falls 78.5%
+  - Section 3: two kilns draw 2 x 690 kW (the town 6,083 kW, 7,463 kW with them). Without the kilns, and with 96
+    more houses, the draw moves by exactly -1,284 kW. Ashbourne's 9,354 and 8,146 kW leave two blocks and one over the 10 MW wires, so the price falls 78.5%
     while the load falls 12.9%.
   - Section 4: the families move -7.75% in the layoff month, under 0.1% a month after, and +7.72% when the jobs return.
     The households seeking a door rise. Nobody is lost: the families' and the outside adults add up to the cohorts',
     to 1e-6.
-- **SaveFileCheck's two ASH4 sections** (REV-ASH4's fourth look; the whole harness exit 0).
+- **SaveFileCheck's two ASH4 sections** (REV-ASH4's fourth look; the whole harness exit 0 at the merged tip).
   - **Across a save, with a settlement pending.** AshbourneCheck's town sells a 30-year bond between the presses at
     four times the households' spare, and is saved with the households' allotment not yet settled, then loaded.
-    - All 141 cells' outgoings and cushions cross to the bit. The owners have 29.2761 of outgoings on a take-home of
-      0, and a cushion of 87.8284.
+    - All 141 cells' outgoings and cushions cross to the bit. The owners have 46.8863 of outgoings on a take-home of
+      0, and a cushion of 140.6588.
     - The allotment (cash and face) and the households' spare for paper match the live city's to the bit.
-    - The production settlement takes 6,226.3020k in both, and every cell's savings after it match to the bit.
-    - The same save loaded blind to the slot (every cell's outgoings struck out) makes the owners pay 1,204.06 each
-      against 1,202.03.
+    - The production settlement takes 5,476.3225k in both, and every cell's savings after it match to the bit.
+    - The same save loaded blind to the slot (every cell's outgoings struck out) makes the owners pay 2,635.04 each
+      against 2,631.02.
   - **A save of this format from before the slot.** Today's save is rewritten with each cell's last slot dropped,
     the width a format-67 save written before ASH4 has, and loaded.
     - Every other position of every cell is where the full-width load puts it, to the bit.
     - Its cells read no outgoings, so every cell's cushion is three months of its take-home, the rule it was written
-      under: the owners' is 0 against today's 87.83.
+      under: the owners' is 0 against today's 140.66.
     - The month after, the plan strikes the outgoings again, and the money audit closes.
     - The fixture is built from today's save rather than one written by main's build, so it differs from today's save
       in the cells' width alone. The width is what the cells' loader (`restoreCells`) reads. Main's other fields are
@@ -344,19 +346,19 @@ was never written.
     spare and both settlement parities.
   - SaveFileCheck's full city also carries every cell's outgoings and cushion across its save.
 - **`./batch-check.sh --fast`: green.**
-- **The cushion's readers and the cell's width, after the bills, one at a time** (each harness's own `main`, at
-  `c3e284b1f`; SaveFileCheck and AshbourneCheck above): SaveFileCheck, HouseholdCheck, RestaurantsCheck,
-  BusinessServicesCheck, HoldersCheck, BondCheck, AuctionCheck, CarCheck, CardCheck, ExchangeCheck, EquityCheck,
+- **The cushion's readers and the cell's width, on the merged tip, one at a time** (each harness's own `main`, at
+  `a5bd4d878`; SaveFileCheck and AshbourneCheck above): BankRulesCheck, CarCheck, LuxuryRetailCheck, RestaurantsCheck,
+  HouseholdCheck, BusinessServicesCheck, HoldersCheck, BondCheck, AuctionCheck, CardCheck, ExchangeCheck, EquityCheck,
   OwnerCheck, FundCheck, MarketCheck, CapitalGainsCheck, ShortSellingCheck, FloatLinkCheck, BasketYearCheck,
-  DenominationCheck and LongPlaytest. The logs are in `target/ash/h/`.
-  - All green but for known reds. HoldersCheck has 3 and CarCheck 3, all exact lines in `docs/notes/gate.txt`
-    (HT1-H). DenominationCheck has 8, all a decade on, every one passed by name by DK1's rows in
-    `docs/notes/known-reds.txt`. Its year-later section is green on this path, population included (the third
-    look's path had 15, seven of them a year on: below).
+  DenominationCheck and LongPlaytest. The logs are in `target/ash/h3/`; the bills' run (`c3e284b1f`) is in
+  `target/ash/h/`.
+  - All green but for known reds. HoldersCheck has 4, CarCheck 1 and FundCheck 1, every one HT1-H's row in
+    `docs/notes/known-reds.txt`. DenominationCheck has 16, 7 a year on and 9 a decade on, every one passed by name
+    by DK1's rows (below). `./batch-check.sh` on the four: exit 3, known reds only.
   - BusinessServicesCheck's register of a cell's slots, which counts them by hand, gains the everyday slot (+1). It
     was red at the width before and is green after.
-  - LongPlaytest: "All checks passed" over 2,400 months, the money audit included, and no finding (1,572 s; the
-    third look's 1,869 s).
+  - LongPlaytest: "All checks passed" over 2,400 months, the money audit included, and no finding (1,940 s; the
+    spending fix's 1,464 s before the merge).
 - **DenominationCheck on the mend's path: main's fault, traced, queued as PH1.**
   - On main (`39fcbee71`'s classes) its reformed twin stays the same city for a year. Its 8 reds are a decade on,
     population among them, and known-reds.txt's DK1 rows pass them.
@@ -380,6 +382,10 @@ was never written.
     fixture's path and the default trace.
   - On the bills' path (`c3e284b1f`) the twins stay the same city for the year again. The fault is still main's,
     and any path may meet it, so PH1 stays queued.
+  - On the merged tip (`a5bd4d878`) they part within the year again: 7 reds a year on, 9 a decade on. Main 0.9.219's
+    own run (its classes built on scratch) is green a year on, with 9 reds a decade on. So the year's parting is on
+    this batch's path, as on the third look's. It was not traced again. Every label is a DK1 part in
+    `docs/notes/known-reds.txt`, and PH1 owns the class.
 - **The default trace moves.** The default `LongPlaytest` with `-Dplaytest.trace` ran on main `22b6eb96f` (classes built
   on scratch from `git archive`) and on the first mend (`306552e27`). All eight files differ from the first year: in
   month 6 the households' savings go 22.327 -> 22.337, and in month 10 the city's cash and its tax move. So the
@@ -419,7 +425,8 @@ was never written.
 - **On ASH1's main, under the first mend** (merged at `caed78d5e`; ASH1 `39fcbee71` changed the POWER row, the grid
   step and the grid's posts), AshbourneCheck had 57 OK. Finding 11 measures the same: draws 4,257 -> 5,637 -> 4,318 kW, and Ashbourne's two
   draws leave 2 and 1 blocks over the wires, the price -78.5%. Finding 5 measures the same: the owners held 86.7% and
-  paid 96.5%. The buyback quotes 27.3723. CBK3 has not shipped; finding 5 is measured again on its main when it does.
+  paid 96.5%. The buyback quotes 27.3723. On CBK3's main (merged at `a5bd4d878`) finding 5 was measured again: the
+  owners held 82.8% and paid 96.1%, and the buyback still quotes 27.3723 (above).
 
 - **The ensemble on the spending fix: PASS, hard 10 of 10** (`docs/ensemble/ASH4.md`, label ASH4d). It ran on the
   gate box at `e91b8dfe8`, 80 of 80 runs in 32.3 min, and was scored here against `docs/ensemble/0.9.218.md`.
@@ -481,7 +488,7 @@ was never written.
 ## 5. For Jerus
 
 - **ASH4-A, D32's appetite** (finding 5, what is left). With the cushion mended, an owner family keeps 3 months of
-  its spending. One large city issue still takes the rest of its balance: on the fixture, 90% of the owners' deposits,
+  its spending. One large city issue still takes the rest of its balance: on the fixture, 94% of the owners' deposits,
   because the households bid a fifth of the issue per point of spread, up to their spare. Real portfolios do not put
   most of their liquid wealth into one 30-year issue in a month. Capping the share of a household's wealth in one
   issue would change your D32 (2026-10-20, "no half-of-the-issue cap"). Not done.
