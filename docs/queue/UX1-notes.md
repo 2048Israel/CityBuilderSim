@@ -1,4 +1,4 @@
-**Resume here (11-27, evening):** the study is written: the tool, the harness, the audit (five areas), ten mockups, the rows UX2-UX13 with briefs, the pictures in docs/studies/ux1/. Left, in order: the ship file and `sh tools/known-reds.sh UX1 docs/queue/UX1-ship.md`; `./batch-check.sh --fast` and UiSteadyCheck alone; the pictures' mail to desk-chat and the orchestrator; `sh tools/pick.sh origin/main HEAD` (ALL: AllChecks changed); mail "UX1 dry run?" and end the turn; then the prompt's end order.
+**Resume here (11-27, 21:00):** the study is final and pushed; --fast green, UiSteadyCheck known reds only (exit 3), the pick ALL; the pictures' mail sent (20:48). Waiting for the orchestrator's go on "UX1 dry run?". On the go: merge origin/main if it moved; `sh tools/gate.sh UX1 --dry-run --no-tag > target/UX1-dry.txt 2>&1` in the background (timeout 7200000), `sh tools/wait.sh --line target/UX1-dry.txt 'gate +exit [0-9]|^exit [0-9]' --for 9` until it ends; then the gate-run marker, ready.
 
 # UX1 - the interface rework's study: notes
 
@@ -73,15 +73,16 @@ KnownReds counts. About 4 minutes on this PC; three runs gave the same 33 reds.
 
 | fault | pages | sections | owner |
 |---|---|---|---|
-| F1. The page breathes: its height flips by one physical pixel (0.8 px at 125% scaling) on every redraw, the empty toast corner moving with it | Services' 18 pages; Infrastructure's Roads and Transit | 1 (12 pages), 3 (19) | UX9 ★ |
+| F1. The page breathes: its height flips by one physical pixel (0.8 px at 125% scaling) on every redraw, the empty toast corner moving with it | Services' 18 pages; Infrastructure's Roads and Transit (Freight on a fourth run) | 1 (12 pages), 3 (19) | UX9 ★ |
 | F2. A line rebuilt: "Capital gains: assessed ..." on Government's Revenue is a new Label at every redraw (Kept's first rule), and it is a developer's check line shown to the player (audit 3) | Government > Revenue | 2 | UX10 |
 | F3. The place held as a fraction: a month that grows Build > Industry's 12,186 px by 1.8 px moves the view 0.6 px; a page that grew 300 px above the view would move it 100 px | Build > Industry | 4 | UX7 |
 
 ★ F1's owner is the page row, not the frame: every page sits in the same frame and only these breathe,
 so the cause is in their content (a fractional height snapped two ways). At the gate box's scale 1 it may
 show as 1 px or not at all; the known-reds rows are scoped by page, so they cover either. The rows are in
-the ship file: `-services-`, `-infrastructure-roads`, `-infrastructure-transit` (UX9),
-`-government-revenue` (UX10), `-build-industry` (UX7).
+the ship file: `-services-` and `-infrastructure-` (UX9), `-government-revenue` (UX10),
+`-build-industry` (UX7). Infrastructure's row is the screen's, not two pages': three runs showed F1 on
+Roads and Transit, a fourth (the batch check's) on Freight as well, the same fault on another of its pages.
 
 ## 4. The audit
 
@@ -204,7 +205,16 @@ the five audits and a README. The full set, 122 pages a city, stays on scratch (
 ## 8. The checks
 
 - UiSteadyCheck alone: 33 reds on three runs, all F1-F3 (section 3), each covered by a ship-file row.
-- (to fill: `./batch-check.sh --fast`, `sh tools/known-reds.sh`, the pick, the dry run.)
+- `./batch-check.sh --fast`: green (after the interface's count in CLAUDE.md went to 56 and the helpers'
+  mockups to LF); `sh tools/known-reds.sh UX1 docs/queue/UX1-ship.md`: exit 0.
+- `./batch-check.sh UiSteadyCheck`: exit 3, known reds only (32 FAILED: pages that move 12, rebuild 1,
+  grow 18, lose their place 1, of 122). The run before it showed F1 on Infrastructure > Freight as well,
+  so Infrastructure's row is the screen's (section 3).
+- `sh tools/pick.sh origin/main HEAD`: ALL (AllChecks changed). Its review line says "needed - threading:
+  ui/UserInterface.java (UI-wide)": the change there is two package accessors beside `replayGoTab`
+  (`railKeys()`, `pressRail(key)`, the rail's own `goHome`), no thread and no timer; the brief says no
+  stranger's review, so none was run, and the dry-run mail says so.
+- The dry run: (to fill.)
 
 ## 9. The calls
 

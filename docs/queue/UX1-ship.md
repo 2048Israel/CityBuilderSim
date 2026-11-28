@@ -17,7 +17,6 @@ The study for Jerus's interface rework: the map as the ground of every screen, g
 | UX13 | After UX2, UX3, UX8 and HO4: Policy, History and Rankings in the panel, the alarms where the player looks, drawings that hold, one way to each area, tables an eye can follow | docs/queue/UX13.md |
 ## known-reds
 UiSteadyCheck | -services- | UX9 | 2026-11-27 | F1: every Services page's height flips by one physical pixel on each unchanged redraw (0.8 px at 125%), the toast corner moving with it; the cause is in the pages' content (UX1-notes 3)
-UiSteadyCheck | -infrastructure-roads | UX9 | 2026-11-27 | F1 on Infrastructure > Roads: the page breathes by one physical pixel on each unchanged redraw (UX1-notes 3)
-UiSteadyCheck | -infrastructure-transit | UX9 | 2026-11-27 | F1 on Infrastructure > Transit: the page breathes by one physical pixel on each unchanged redraw (UX1-notes 3)
+UiSteadyCheck | -infrastructure- | UX9 | 2026-11-27 | F1 on Infrastructure's pages: a page breathes by one physical pixel on an unchanged redraw (Roads and Transit on three runs, Freight on a fourth: the same fault, which page shows it varies) (UX1-notes 3)
 UiSteadyCheck | -government-revenue | UX10 | 2026-11-27 | F2: the "Capital gains: assessed ..." line is a new Label at every redraw, a developer's check line shown to the player (UX1-notes 3)
 UiSteadyCheck | -build-industry | UX7 | 2026-11-27 | F3: a month moves Build > Industry's scroller 0.6 px because its place is held as a fraction of a page that grew (UX1-notes 3)
