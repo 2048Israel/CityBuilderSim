@@ -154,12 +154,19 @@ public final class GoldMiningCheck {
         out.println("--- 5. the mint makes reserves at home ---");
         ForeignAccounts fa = g.getForeignAccounts();
         fa.buyReserves(1_000_000_000, "XAU");
+        fa.forgetDealing(); // an opening vault holding, not a purchase whose FX shock is under test
         fa.setRegime(ForeignAccounts.Regime.GOLD);
+        assertTrue("fixture: Gold is entered with actual cover and no pending endowment deal",
+                fa.getRegime() == ForeignAccounts.Regime.GOLD && fa.goldCover(g.getCentralBank().m0()) >= ForeignAccounts.COVER_RATIO
+                        && fa.getDealtSinceReprice() == 0);
         quietly(() -> g.simulateMonths(1));
+        mintState(g, "accepted offer");
         SectorState offer = g.getSectors().goldMining().toState();
         double ounces = offer.extras.get("mintOunces"), payment = offer.extras.get("mintPayment");
+        assertTrue("fixture: the native Gold month accepted positive fine ounces and a positive unpaid price", ounces > 0 && payment > 0);
         close("the accepted offer is valued at M", payment, ounces * fa.getMintPrice() / 1000);
         quietly(() -> g.simulateMonths(1));
+        mintState(g, "offer paid");
         GoldMining mine = g.getSectors().goldMining();
         Sector.Output o = mine.outputRow(Good.GOLD);
         assertTrue("Gold stayed in force and the mint took fine ounces", fa.getRegime() == ForeignAccounts.Regime.GOLD
@@ -236,15 +243,21 @@ public final class GoldMiningCheck {
     static void played(Game g) {
         out.println("--- 7. the mint operates through real months ---");
         int minted = 0, audits = 0;
+        double worstResidual = 0;
         for (int i = 0; i < 24; i++) {
             quietly(() -> g.simulateMonths(1));
+            mintState(g, "played mint");
             if (g.getCentralBank().getGoldMinted() > 0) minted++;
             MoneyAudit.Result a = g.getLastMoneyAudit();
-            if (a != null && a.relative() < 1e-4) audits++;
+            if (a != null) worstResidual = Math.max(worstResidual, Math.abs(a.residual));
+            if (a != null && a.relative() < 1e-4 && Math.abs(a.residual) <= MoneyAudit.CENT) audits++;
         }
         assertTrue("the mechanic fired in the played run (" + minted + " mint months)", minted > 0);
         assertTrue("all twenty-four money audits close", audits == 24);
+        out.printf("   twenty-four mint months: positive payments %d, cent audits %d, worst residual %.12g%n", minted, audits, worstResidual);
         double owed = g.getSectors().goldMining().toState().extras.get("mintPayment");
+        assertTrue("fixture: leaving Gold has a genuinely positive already accepted offer to settle",
+                g.getForeignAccounts().getRegime() == ForeignAccounts.Regime.GOLD && owed > 0);
         g.getForeignAccounts().setRegime(ForeignAccounts.Regime.FLOAT);
         quietly(() -> g.simulateMonths(1));
         close("leaving Gold still pays the already accepted offer", g.getCentralBank().getGoldMinted(), owed);
@@ -252,6 +265,18 @@ public final class GoldMiningCheck {
         assertTrue("the transition's money audit closes", a != null && a.relative() < 1e-4);
         quietly(() -> g.simulateMonths(1));
         close("after that settlement Float makes no mint payment", g.getCentralBank().getGoldMinted(), 0);
+    }
+
+    /** Expose current regime and current offer separately from the prior offer's payment. */
+    static void mintState(Game g, String phase) {
+        ForeignAccounts fa = g.getForeignAccounts();
+        GoldMining mine = g.getSectors().goldMining();
+        Sector.Output o = mine.outputRow(Good.GOLD);
+        SectorState state = mine.toState();
+        out.printf("   %s m%d: regime %s, event %s, cover %.12g, pending deal %.12g, local %.12g, exported %.12g, accepted ounces %.12g, due %.12g, paid %.12g%n",
+                phase, g.getMonth(), fa.getRegime(), fa.getGoldEvent(), fa.goldCover(g.getCentralBank().m0()), fa.getDealtSinceReprice(),
+                o == null ? Double.NaN : o.soldLocal, o == null ? Double.NaN : o.exported,
+                state.extras.get("mintOunces"), state.extras.get("mintPayment"), g.getCentralBank().getGoldMinted());
     }
 
     public static void main(String[] args) throws Exception {

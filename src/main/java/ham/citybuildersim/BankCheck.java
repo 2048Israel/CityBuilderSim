@@ -601,7 +601,18 @@ public class BankCheck {
         priced.takeInterest(3_000);
         priced.payRunning(400, 100);
         priced.writeOff(700);
-        priced.fundToCover(.03);
+        CentralBank pricedWindow = new CentralBank();
+        pricedWindow.setWindowCapacity(priced::windowCreditLimit);
+        priced.setSettledWindow(pricedWindow::getAdvancesToBank);
+        priced.setWindowInterestDue(pricedWindow::getWindowInterestDue);
+        pricedWindow.settleWindow(priced.windowFunding());
+        priced.settleForeignFunding(pricedWindow.getAdvancesToBank());
+        assertTrue("fixture: both external creditors actually funded the priced bank",
+                pricedWindow.getAdvancesToBank() > 0 && priced.getForeignWholesale() > 0);
+        priced.fundToCover(.03, pricedWindow.getWindowDeferred(), pricedWindow.getAdvancesToBank());
+        priced.payWindowInterest(pricedWindow.chargeWindow(priced.getWindowFundingCost()));
+        pricedWindow.settleWindow(priced.windowFunding());
+        priced.settleForeignFunding(pricedWindow.getAdvancesToBank());
         priced.closeMonth();
         double dial = .03;
         int term = Bank.PRIME_TERM_MONTHS;
@@ -612,10 +623,16 @@ public class BankCheck {
                 priced.capitalCharge(dial, term, Bank.RISK_BUSINESS) * 100, priced.prime(dial) * 100,
                 priced.windowShare());
         assertTrue("fixture: part of its money is the window's", priced.windowShare() > 0 && priced.windowShare() < 1);
-        close("the funds-transfer price: the dial, the window's penalty on its share, the curve's term premium",
-                ftp, dial + CentralBank.WINDOW_PENALTY * priced.windowShare() + DebtManager.termPremium(term), 1e-15);
-        close("...the window's share is what it owes the window over all it borrowed",
-                priced.windowShare(), priced.wholesaleFunding() / priced.borrowings(), 1e-12);
+        close("the funds-transfer price: deposits, window and foreign money, with one loan-term premium",
+                ftp, dial + CentralBank.WINDOW_PENALTY * priced.windowShare()
+                        + (priced.getForeignFundingRate() - DebtManager.termPremium(Bank.WHOLESALE_TERM_MONTHS) - dial)
+                        * priced.foreignShare() + DebtManager.termPremium(term), 1e-15);
+        close("the window share counts only the secured overnight tranche",
+                priced.windowShare(), Math.min(priced.wholesaleFunding(), pricedWindow.getAdvancesToBank()) / priced.borrowings(), 1e-12);
+        close("the foreign share counts the residual term tranche",
+                priced.foreignShare(), priced.getForeignWholesale() / priced.borrowings(), 1e-12);
+        close("the two external shares reconcile with deposit funding",
+                priced.windowShare() + priced.foreignShare() + priced.depositFunding() / priced.borrowings(), 1, 1e-12);
         double carried = Math.max(priced.getBook(),
                 Math.max(priced.equity(), Bank.PAID_IN_PER_BRANCH) / priced.capitalTarget());
         close("the running costs: a year of payroll and upkeep over the book, or over what its capital carries",
@@ -857,13 +874,28 @@ public class BankCheck {
         atWindow.refresh(1, 100_000, 0, 500_000, 0, 0);
         atWindow.startMonth();
         atWindow.lend(500_000);
-        double owedTheWindow = atWindow.wholesaleFunding();
-        atWindow.fundToCover(.04);
-        assertTrue("fixture: it really is borrowing at the window", owedTheWindow > 0);
+        CentralBank billingWindow = new CentralBank();
+        billingWindow.setWindowCapacity(atWindow::windowCreditLimit);
+        atWindow.setSettledWindow(billingWindow::getAdvancesToBank);
+        atWindow.setWindowInterestDue(billingWindow::getWindowInterestDue);
+        billingWindow.settleWindow(atWindow.windowFunding());
+        atWindow.settleForeignFunding(billingWindow.getAdvancesToBank());
+        double wholesaleOwed = atWindow.wholesaleFunding();
+        double owedTheWindow = billingWindow.getAdvancesToBank();
+        double owedAbroad = atWindow.getForeignWholesale();
+        atWindow.fundToCover(.04, billingWindow.getWindowDeferred(), owedTheWindow);
+        atWindow.payWindowInterest(billingWindow.chargeWindow(atWindow.getWindowFundingCost()));
+        assertTrue("fixture: it really uses both the window and term wholesale funding", owedTheWindow > 0 && owedAbroad > 0);
+        close("the actual creditors funded the whole external tranche", owedTheWindow + owedAbroad, wholesaleOwed, MoneyAudit.CENT);
         close("the window's rate is the dial plus its penalty",
-                atWindow.fundingRate(), .04 + CentralBank.WINDOW_PENALTY, 1e-15);
-        close("...charged on what the bank owes the window, a month of it",
-                atWindow.getFundingCost(), owedTheWindow * (.04 + CentralBank.WINDOW_PENALTY) / 12, 1e-9);
+                atWindow.getWindowFundingCost() * 12 / owedTheWindow, .04 + CentralBank.WINDOW_PENALTY, 1e-15);
+        close("the window bill is charged only on its secured tranche",
+                atWindow.getWindowFundingCost(), owedTheWindow * (.04 + CentralBank.WINDOW_PENALTY) / 12, 1e-9);
+        close("the foreign bill is charged on its own term tranche",
+                atWindow.getForeignFundingCost(), owedAbroad * atWindow.getForeignFundingRate() / 12, 1e-9);
+        close("the all-in funding rate reconciles both actual bills",
+                atWindow.fundingRate(), (owedTheWindow * (.04 + CentralBank.WINDOW_PENALTY)
+                        + owedAbroad * atWindow.getForeignFundingRate()) / wholesaleOwed, 1e-15);
         close("...and the penalty is a quarter of a point: the Bank of Canada's Bank Rate is its target plus 25 basis points",
                 CentralBank.WINDOW_PENALTY, .0025, 1e-15);
 
@@ -2188,8 +2220,9 @@ public class BankCheck {
         failed.startMonth();
         failed.resolveIfFailed();
         failed.closeMonth();
-        close("a failed bank prices off the window: its money is all the window's",
-                failed.windowShare(), 1, 0);
+        close("failure does not turn deposit-funded borrowing into overnight money",
+                failed.windowShare(), 0, 0);
+        close("the failed fixture's deposits cover all of its borrowing", failed.wholesaleFunding(), 0, 0);
         close("...and its prime is the four parts on it, not a premium on every rate",
                 failed.prime(.03), failed.fundsTransferPrice(.03, Bank.PRIME_TERM_MONTHS)
                         + failed.runningCostRate() + failed.expectedLossRate()

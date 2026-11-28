@@ -1188,9 +1188,9 @@ final class BankScreen {
                 lent && ratio > scale ? " (past the end of this scale)" : "",
                 share1(bank.bindingMinimum()), share1(bank.bindingTarget()), share1(bank.bindingTop()),
                 bank.getWeightedBook() > 0 ? share1(bank.capitalRatio()) : "nothing weighed",
-                share1(Bank.CAPITAL_RATIO),
+                share1(bank.capitalMinimum()),
                 bank.exposure() > 0 ? share1(bank.leverageRatio()) : "nothing lent",
-                share1(Bank.LEVERAGE_RATIO_MIN));
+                share1(bank.leverageMinimum()));
     }
 
     /** The gauge's words, worked out without drawing it (pure: the probe reads them). */
@@ -1430,15 +1430,18 @@ final class BankScreen {
 
         String window = bank.windowShare() > 0
                 ? String.format(", and the central bank's %s penalty on the %.0f%% it borrows there",
-                        points(CentralBank.WINDOW_PENALTY), bank.windowShare() * 100) : "";
+                        points(bank.windowSpread()), bank.windowShare() * 100) : "";
+        String wholesale = bank.foreignShare() > 0
+                ? String.format(", and foreign term funding priced at %s on its %.0f%% share",
+                        ratePerYear(bank.getForeignFundingRate()), bank.foreignShare() * 100) : "";
         out.add(Rung.of(Icons.BANK, Palette.LADDER[1], "What a loan's money costs it",
                         List.of(ghost(Math.max(0, l.policy()), Palette.LADDER[1], "the policy rate\n" + ratePerYear(l.policy())),
                                 seg(Math.max(0, l.transferOverPolicy()), Palette.LADDER[1],
-                                        "the term premium" + (bank.windowShare() > 0 ? " and the window's penalty" : "")
+                                        "the funding mix and loan term"
                                         + "\n" + points(l.transferOverPolicy()))),
                         l.transfer(), pts(l.transferOverPolicy()) + " on policy")
                 .info(points(l.transferOverPolicy()) + " on the policy rate: the term premium on a "
-                        + Bank.PRIME_TERM_MONTHS + "-month loan" + window + ". The funds-transfer price: what a dollar "
+                        + Bank.PRIME_TERM_MONTHS + "-month loan" + window + wholesale + ". The loan's term premium is counted once. The funds-transfer price: what a dollar "
                         + "lent for a business loan's term costs the bank - not what its deposits cost it, which is the "
                         + "deposit side's margin.")
                 .go(() -> open("Lending", PRICING)));
@@ -1539,8 +1542,8 @@ final class BankScreen {
                         points(l.mortgage() - l.policy()), Mortgage.MORTGAGE_TERM_MONTHS / 12,
                         points(DebtManager.termPremium(Mortgage.MORTGAGE_TERM_MONTHS)),
                         bank.windowShare() > 0 ? String.format(", the window's penalty on its share %s",
-                                points(CentralBank.WINDOW_PENALTY * bank.windowShare())) : "",
-                        points(l.mortgageRunning()), share1(Bank.LEVERAGE_RATIO_MIN), points(l.mortgageCapital()),
+                                points(bank.windowSpread() * bank.windowShare())) : "",
+                        points(l.mortgageRunning()), share1(bank.leverageMinimum()), points(l.mortgageCapital()),
                         points(l.overPrime(l.mortgage()))))
                 .go(() -> open("Lending", LANDLORDS)));
 
@@ -1647,7 +1650,7 @@ final class BankScreen {
                         troubled > 0 ? Palette.WARN : Palette.TEXT_HEAD, "bankWriteOffs"),
                 new PageCard("Funding", Icons.BANK, "deposits, the central bank, and its branches",
                         m(bank.getDeposits()) + " deposited",
-                        bank.wholesaleFunding() > 0 ? m(bank.wholesaleFunding()) + " borrowed from the central bank"
+                        bank.wholesaleFunding() > 0 ? m(bank.wholesaleFunding()) + " of wholesale funding (window and abroad)"
                                 : "nothing borrowed from the central bank",
                         bank.wholesaleFunding() > 0 ? Palette.WARN : Palette.TEXT_HEAD, "bankDeposits"),
                 new PageCard("Capital & owners", Icons.STAFF, "its capital against its target, its payout, its shares",
@@ -1762,6 +1765,8 @@ final class BankScreen {
         step(steps, nothing, "Paid to savers", -v.applyAsDouble(Bank.Line.SAVERS), Icons.POPULATION, null, null);
         step(steps, nothing, "The window", -v.applyAsDouble(Bank.Line.WINDOW), Icons.BANK, null,
                 "Paid for borrowing overnight from the central bank.");
+        step(steps, nothing, "Wholesale abroad", -v.applyAsDouble(Bank.Line.WHOLESALE_ABROAD), Icons.BANK, null,
+                "Interest paid on the residual foreign wholesale funding.");
         total(steps, "Net interest", v.applyAsDouble(Bank.Line.NET_INTEREST));
 
         List<Slice> kinds = new ArrayList<>();
@@ -2069,6 +2074,7 @@ final class BankScreen {
         column.getChildren().add(line(bank, "Paid to savers", Bank.Line.SAVERS, known, true));
         column.getChildren().add(line(bank, "Paid for borrowing overnight from the central bank",
                 Bank.Line.WINDOW, known, true));
+        column.getChildren().add(line(bank, "Paid for wholesale borrowing abroad", Bank.Line.WHOLESALE_ABROAD, known, true));
         column.getChildren().add(total(bank, "Net interest income", Bank.Line.NET_INTEREST, known));
 
         VBox fees = Kept.column(0);
@@ -2360,8 +2366,9 @@ final class BankScreen {
 
     /** ...and what it owes, then its owners' (equity last). */
     static final List<SheetPart> OWES = List.of(
-            new SheetPart(Bank.Sheet.DEPOSIT_FUNDING, "Lent past its own cash, on its deposits", Palette.LADDER[1], false),
+            new SheetPart(Bank.Sheet.DEPOSIT_FUNDING, "Net funding outside settled wholesale", Palette.LADDER[1], false),
             new SheetPart(Bank.Sheet.WINDOW, "Borrowed at the central bank's window", Palette.MONEY_DARK, false),
+            new SheetPart(Bank.Sheet.WHOLESALE_ABROAD, "Wholesale borrowing abroad", Palette.MONEY_DARK, false),
             new SheetPart(Bank.Sheet.FOREIGN_DEPOSITS, "Deposits from abroad", Palette.RAMP_REST, false),
             new SheetPart(Bank.Sheet.DESK_SHORT, "Shares the desk has sold short", Palette.RAMP_REST, true),
             new SheetPart(Bank.Sheet.UNEARNED_DISCOUNT, "The discount on the city's paper, not yet earned",
@@ -2594,10 +2601,13 @@ final class BankScreen {
                     + "in trouble.";
             case DESK -> "Other companies' shares the desk holds, at the quote. Its own shares are not among them: "
                     + "bought back, they are cancelled.";
-            case DEPOSIT_FUNDING -> "What it has lent past its own cash, as far as the deposits its branches gather cover "
-                    + "it: the city's savings, lent back out - the cheap tranche of its funding.";
-            case WINDOW -> "The rest of what it has lent past its own cash, borrowed overnight at the policy rate plus the "
-                    + "window's penalty.";
+            case DEPOSIT_FUNDING -> "Its cash shortfall less the window and term borrowing actually settled. "
+                    + "Normally funded by the deposits its branches gather. An older saved month's settlement can differ "
+                    + "from today's deposit books; this allocation preserves that month's actual borrowing. "
+                    + "The deposit page shows what its branches gather now.";
+            case WINDOW -> "Overnight borrowing against eligible loans and government paper after haircuts; no equity inventory.";
+            case WHOLESALE_ABROAD -> "Borrowed abroad at the wholesale rate: funding beyond the window or for equity inventory.";
+            case WINDOW_INTEREST_DUE -> "Window interest accrued and still payable to the central bank; paying it does not incur the expense again.";
             case FOREIGN_DEPOSITS -> "Hot money: the world's deposits, which can leave on no notice. The city's own are "
                     + "beside the sheet, below.";
             case DESK_SHORT -> "Shares the desk owes, at their mark.";
@@ -2775,10 +2785,12 @@ final class BankScreen {
 
         /* ------------------------------ what it owes ------------------------------ */
         column.getChildren().add(subHead("What it owes"));
-        column.getChildren().add(sheetLine(bank, "Lent past its own cash, on its deposits",
+        column.getChildren().add(sheetLine(bank, "Net funding outside settled wholesale",
                 Bank.Sheet.DEPOSIT_FUNDING, known, said(sheetSaid(bank, Bank.Sheet.DEPOSIT_FUNDING))));
         column.getChildren().add(sheetLine(bank, "Borrowed at the central bank's window", Bank.Sheet.WINDOW, known,
                 said(sheetSaid(bank, Bank.Sheet.WINDOW))));
+        column.getChildren().add(sheetLine(bank, "Wholesale borrowing abroad", Bank.Sheet.WHOLESALE_ABROAD, known,
+                said(sheetSaid(bank, Bank.Sheet.WHOLESALE_ABROAD))));
         column.getChildren().add(sheetLine(bank, "Deposits from abroad", Bank.Sheet.FOREIGN_DEPOSITS, known,
                 said(sheetSaid(bank, Bank.Sheet.FOREIGN_DEPOSITS))));
         column.getChildren().add(sheetLine(bank, "Shares the desk has sold short", Bank.Sheet.DESK_SHORT, known,
@@ -2897,7 +2909,7 @@ final class BankScreen {
                 + "borrower's new lending - a building, a new mortgage - may grow its debt a little each month, more the "
                 + "nearer the target; under the minimum, none. Whatever its capital, while it stands it honours a "
                 + "business's working-capital line: the cover of a short month, up to %.0f%% of what the business owns.",
-                share1(bank.capitalTarget()), share1(Bank.CAPITAL_RATIO), BusinessDebtManager.MAX_LOAN_TO_ASSETS * 100);
+                share1(bank.capitalTarget()), share1(bank.capitalMinimum()), bank.businessLoanToAssets() * 100);
     }
 
     /** What its capital lets it lend: Bank.lendingStance() as a chip and its line, and the growth it allows when it is finite. */
@@ -3130,7 +3142,7 @@ final class BankScreen {
                 + "net rent must cover the payment %.2f times. The city insures it, for a premium of %.2f%% "
                 + "of the loan, so when a landlord's debt is written down the city pays the bank what came "
                 + "off its mortgages: the bank weighs them at nothing and sets nothing aside against them.",
-                (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100, Mortgage.MORTGAGE_MAX_LOAN_TO_COST * 100,
+                (1 - bank.mortgageLoanToCost()) * 100, bank.mortgageLoanToCost() * 100,
                 Mortgage.MORTGAGE_AMORTIZATION_MONTHS / 12, Mortgage.MORTGAGE_TERM_MONTHS / 12,
                 Mortgage.MORTGAGE_DEBT_COVERAGE, Mortgage.premiumRate() * 100);
         VBox c = card(cardHead(Icons.BUILD, Palette.BUILDING, "THE LANDLORDS", info, null));
@@ -3631,19 +3643,24 @@ final class BankScreen {
                     "what it has lent past its own cash on them\n" + mFull(bank.depositFunding())));
         }
         double equity = bank.equity(), foreign = bank.getForeignDeposits();
-        double funded = Math.max(0, equity) + bank.depositFunding() + foreign + bank.wholesaleFunding();
+        double savers = bank.sheet(Bank.Sheet.DEPOSIT_FUNDING);
+        double termAbroad = bank.sheet(Bank.Sheet.WHOLESALE_ABROAD);
+        double funded = Math.max(0, equity) + Math.max(0, savers) + foreign + bank.getWindowOutstanding() + termAbroad;
         List<Segment> funds = new ArrayList<>();
         if (equity > 0) funds.add(seg(equity, Palette.MONEY, "its capital", partTip("its own capital", equity, funded)));
-        if (bank.depositFunding() > 0) funds.add(seg(bank.depositFunding(), Palette.LADDER[1], "savers",
-                partTip("savers' deposits it has lent out", bank.depositFunding(), funded)));
+        if (savers > 0) funds.add(seg(savers, Palette.LADDER[1], "savers",
+                partTip("savers' deposits it has lent out", savers, funded)));
         if (foreign > 0) funds.add(seg(foreign, Palette.RAMP_REST, partTip("money from abroad", foreign, funded)));
-        if (bank.wholesaleFunding() > 0) funds.add(seg(bank.wholesaleFunding(), Palette.MONEY_DARK, "the window",
-                partTip("the central bank, overnight", bank.wholesaleFunding(), funded)));
+        if (bank.getWindowOutstanding() > 0) funds.add(seg(bank.getWindowOutstanding(), Palette.MONEY_DARK, "the window",
+                partTip("the central bank, overnight", bank.getWindowOutstanding(), funded)));
+        if (termAbroad > 0) funds.add(seg(termAbroad, Palette.RAMP_REST, "wholesale abroad",
+                partTip("term wholesale borrowing abroad", termAbroad, funded)));
         return new FundingBars(banked, ticks, funds,
                 "The city has banked " + m(deposits) + " with it",
                 "What funds its book: " + m(equity) + " of its own"
-                        + (bank.depositFunding() > 0 ? ", " + m(bank.depositFunding()) + " of savers'" : "")
-                        + (bank.wholesaleFunding() > 0 ? ", " + m(bank.wholesaleFunding()) + " from the window" : ""));
+                        + (savers > 0 ? ", " + m(savers) + " of savers'" : "")
+                        + (bank.getWindowOutstanding() > 0 ? ", " + m(bank.getWindowOutstanding()) + " from the window" : "")
+                        + (termAbroad > 0 ? ", " + m(termAbroad) + " wholesale abroad" : ""));
     }
 
     /** The hero: the two bars, each with its words at the left and its key under it. */
@@ -3669,8 +3686,10 @@ final class BankScreen {
                 swatch(Palette.LADDER[1], "savers' deposits", false),
                 bank.getForeignDeposits() > 0 ? Kept.scope("abroad 2", () ->
                         swatch(Palette.RAMP_REST, "money from abroad", false)) : null,
-                bank.wholesaleFunding() > 0 ? Kept.scope("window", () ->
-                        swatch(Palette.MONEY_DARK, "the central bank, overnight", false)) : null));
+                bank.getWindowOutstanding() > 0 ? Kept.scope("window", () ->
+                        swatch(Palette.MONEY_DARK, "the central bank, overnight", false)) : null,
+                bank.sheet(Bank.Sheet.WHOLESALE_ABROAD) > 0 ? Kept.scope("wholesale", () ->
+                        swatch(Palette.RAMP_REST, "wholesale borrowing abroad", false)) : null));
         return c;
     }
 
@@ -3729,17 +3748,18 @@ final class BankScreen {
     /** THE CENTRAL BANK: its reserves there and what they earned, and what it borrowed overnight and what that cost - red while it borrows. */
     VBox centralBankCard(Bank bank, Bank.Ladder l) {
         return card(cardHead(Icons.BANK, Palette.MONEY, "THE CENTRAL BANK", String.format(
-                        "\"The window\" is borrowing overnight from the central bank. It lends a bank whatever it "
-                        + "needs, at the policy rate plus a %s penalty - so what stops a bank lending more is what that "
-                        + "money costs, which is in every loan's rate, and its capital, not the money.",
-                        points(CentralBank.WINDOW_PENALTY)), null),
+                        "The window lends overnight against eligible loans and government paper after haircuts, "
+                        + "at the policy rate plus a %s spread. Equity inventory and the stable-funding gap "
+                        + "require term wholesale funding abroad.",
+                        points(bank.windowSpread())), null),
                 cardLine("Reserves held there", mFull(bank.cashReserves()), null),
                 cardLine("...earning the policy rate", ratePerYear(l.policy()), null),
                 cardLine("...which paid it this month", mFull(bank.getPlacementIncome()), null),
-                cardLine("Borrowed overnight", mFull(bank.wholesaleFunding()),
-                        bank.wholesaleFunding() > 0 ? Palette.BAD : null),
+                cardLine("Borrowed overnight", mFull(bank.getWindowOutstanding()),
+                        bank.getWindowOutstanding() > 0 ? Palette.BAD : null),
                 cardLine("...at the window's rate", ratePerYear(l.window()), null),
-                cardLine("...which cost it this month", mFull(bank.getFundingCost()), null));
+                cardLine("...which cost it this month", mFull(bank.getWindowFundingCost()), null),
+                cardLine("Eligible collateral, after haircuts", mFull(bank.windowCollateral()), null));
     }
 
     /** WHAT IT CAN CARRY: what its capital carries and what its deposits carry on one scale, the tighter marked BINDS, its weighed book against them, and how full that is. */
@@ -3752,7 +3772,7 @@ final class BankScreen {
                         + "is its equity at the minimum (%s of what it weighs, or %s of everything it has lent when the "
                         + "leverage ratio binds); what its deposits carry is what it gathered, lent %.0f times over. The "
                         + "tighter of the two is what it can carry, and its book - weighed for risk and term - is set "
-                        + "against it.", share1(Bank.CAPITAL_RATIO), share1(Bank.LEVERAGE_RATIO_MIN), Bank.LEVERAGE), null),
+                        + "against it.", share1(bank.capitalMinimum()), share1(bank.leverageMinimum()), Bank.LEVERAGE), null),
                 carryLine("its capital carries", cap, scale, capitalBinds, weighs),
                 carryLine("its deposits carry", dep, scale, !capitalBinds, weighs));
         if (bank.isInsolvent()) {
@@ -3918,7 +3938,9 @@ final class BankScreen {
         column.getChildren().add(statementHead("What the city has banked with it"));
         column.getChildren().add(statementLine("The families' savings", moneyFull(bank.getHouseholdDeposits())));
         column.getChildren().add(statementLine("The businesses' cash in credit", moneyFull(bank.getSectorDeposits())));
-        column.getChildren().add(statementLine("Money from abroad", moneyFull(bank.getForeignDeposits())));
+        column.getChildren().add(statementLine("Deposits from abroad", moneyFull(bank.getForeignDeposits())));
+        column.getChildren().add(statementLine("Term wholesale borrowing abroad", moneyFull(bank.sheet(Bank.Sheet.WHOLESALE_ABROAD))));
+        column.getChildren().add(statementLine("...interest paid this month", moneyFull(bank.getForeignFundingCost())));
         column.getChildren().add(statementTotal("Deposits", moneyFull(bank.getDeposits()), Palette.TEXT_HEAD));
 
         /* ---------------------------- what it can lend against (0.7.19) ---------------------------- */
@@ -3953,29 +3975,32 @@ final class BankScreen {
         column.getChildren().add(statementLine("...earning the policy rate", ratePerYear(l.policy())));
         column.getChildren().add(statementLine("...which paid it this month", moneyFull(bank.getPlacementIncome())));
         column.getChildren().add(statementLine("Borrowed overnight from the central bank",
-                moneyFull(bank.wholesaleFunding()), bank.wholesaleFunding() > 0 ? Palette.BAD : Palette.TEXT_SPENT));
+                moneyFull(bank.getWindowOutstanding()), bank.getWindowOutstanding() > 0 ? Palette.BAD : Palette.TEXT_SPENT));
         column.getChildren().add(statementLine("...at the window's rate", ratePerYear(l.window())));
-        column.getChildren().add(statementLine("...which cost it this month", moneyFull(bank.getFundingCost())));
+        column.getChildren().add(statementLine("...which cost it this month", moneyFull(bank.getWindowFundingCost())));
+        column.getChildren().add(statementLine("Eligible collateral, after haircuts", moneyFull(bank.windowCollateral())));
         column.getChildren().add(statementNote(String.format(
-                "\"The window\" is borrowing overnight from the central bank. It lends a bank whatever it "
-                + "needs, at the policy rate plus a %.2f-point penalty - so what stops a bank lending more "
-                + "is what that money costs, which is in every loan's rate, and its capital, not the money.",
-                CentralBank.WINDOW_PENALTY * 100)));
+                "The window lends overnight against eligible loans and government paper after haircuts, "
+                + "at the policy rate plus a %.2f-point spread. Equity inventory and the stable-funding gap "
+                + "require term wholesale funding abroad.",
+                bank.windowSpread() * 100)));
 
         /* ---------------------------- how it is funded ---------------------------- */
         column.getChildren().add(statementHead("How its lending is funded"));
         column.getChildren().add(statementLine("Its own capital", moneyFull(bank.equity()),
                 bank.equity() < 0 ? Palette.BAD : null));
         column.getChildren().add(statementLine("Savers' deposits it has lent out", moneyFull(bank.depositFunding())));
-        column.getChildren().add(statementLine("Money from abroad", moneyFull(bank.getForeignDeposits())));
+        column.getChildren().add(statementLine("Deposits from abroad", moneyFull(bank.getForeignDeposits())));
+        column.getChildren().add(statementLine("Term wholesale borrowing abroad", moneyFull(bank.sheet(Bank.Sheet.WHOLESALE_ABROAD))));
+        column.getChildren().add(statementLine("...interest paid this month", moneyFull(bank.getForeignFundingCost())));
         column.getChildren().add(statementLine("Borrowed overnight from the central bank",
-                moneyFull(bank.wholesaleFunding()), bank.wholesaleFunding() > 0 ? Palette.BAD : null));
+                moneyFull(bank.getWindowOutstanding()), bank.getWindowOutstanding() > 0 ? Palette.BAD : null));
 
         /* ---------------------------- what it can carry ---------------------------- */
         column.getChildren().add(statementHead("What it can carry"));
         column.getChildren().add(statementLine(bank.leverageBinds()
-                ? String.format("What its capital carries, weighed, at the %s leverage minimum", share1(Bank.LEVERAGE_RATIO_MIN))
-                : String.format("What its capital carries, at the %s minimum", share1(Bank.CAPITAL_RATIO)),
+                ? String.format("What its capital carries, weighed, at the %s leverage minimum", share1(bank.leverageMinimum()))
+                : String.format("What its capital carries, at the %s minimum", share1(bank.capitalMinimum())),
                 moneyFull(bank.capitalLimit())));
         column.getChildren().add(statementLine(String.format("What its deposits carry, lent %.0f times over",
                 Bank.LEVERAGE), moneyFull(bank.fundingLimit())));
@@ -4095,7 +4120,7 @@ final class BankScreen {
     static String leverageInfo(Bank bank) {
         return String.format("The backstop to the risk weights: equity of at least %s of everything the bank has lent, "
                 + "whatever it weighs - an insured mortgage, which weighs nothing, included. Its own target and band on it "
-                + "keep the proportion it chose on the risk side. %s", share1(Bank.LEVERAGE_RATIO_MIN),
+                + "keep the proportion it chose on the risk side. %s", share1(bank.leverageMinimum()),
                 bank.leverageBinds()
                         ? "It is the larger requirement now: what the bank lends is what its capital is short against."
                         : "The risk-weighted requirement is the larger now.");
@@ -4110,10 +4135,10 @@ final class BankScreen {
             return new Gauge("LEVERAGE", bank.isInsolvent() ? "failed" : lent ? share1(bank.leverageRatio()) : "nothing lent",
                     binds ? stanceTone(bank) : Palette.TEXT_HEAD,
                     "equity " + m(bank.equity()) + " of " + m(bank.exposure()) + " lent, whatever it weighs",
-                    "minimum " + share1(Bank.LEVERAGE_RATIO_MIN) + " · its target " + share1(bank.leverageTarget())
+                    "minimum " + share1(bank.leverageMinimum()) + " · its target " + share1(bank.leverageTarget())
                             + " · top of its band " + share1(bank.leverageTop()),
                     null, bank.isInsolvent() || !lent ? Double.NaN : bank.leverageRatio(),
-                    Bank.LEVERAGE_RATIO_MIN, bank.leverageTarget(), bank.leverageTop());
+                    bank.leverageMinimum(), bank.leverageTarget(), bank.leverageTop());
         }
         boolean lent = bank.getWeightedBook() > 0;
         String reason = bank.targetReason();
@@ -4121,11 +4146,11 @@ final class BankScreen {
         return new Gauge("RISK-WEIGHTED", bank.isInsolvent() ? "failed" : lent ? share1(bank.capitalRatio()) : "nothing lent",
                 binds ? stanceTone(bank) : Palette.TEXT_HEAD,
                 "equity " + m(bank.equity()) + " of a weighted book of " + m(bank.getWeightedBook()),
-                "minimum " + share1(Bank.CAPITAL_RATIO) + " · its target " + share1(bank.capitalTarget())
+                "minimum " + share1(bank.capitalMinimum()) + " · its target " + share1(bank.capitalTarget())
                         + " · top of its band " + share1(bank.capitalTop()),
                 "It chose " + (cut > 0 ? reason.substring(0, cut) : reason) + ".",
                 bank.isInsolvent() || !lent ? Double.NaN : bank.capitalRatio(),
-                Bank.CAPITAL_RATIO, bank.capitalTarget(), bank.capitalTop());
+                bank.capitalMinimum(), bank.capitalTarget(), bank.capitalTop());
     }
 
     /** A gauge's card: its caption with BINDS on the larger requirement, the ratio, the bar in its band, the key, what it is of, and why the target is where it is. */
@@ -4311,7 +4336,7 @@ final class BankScreen {
         column.getChildren().add(statementTotal("Capital ratio",
                 bank.isInsolvent() ? "failed" : lent ? share1(bank.capitalRatio()) : "nothing lent",
                 stanceTone(bank)));
-        column.getChildren().add(statementLine("The minimum the city requires", share1(Bank.CAPITAL_RATIO)));
+        column.getChildren().add(statementLine("The minimum the city requires", share1(bank.capitalMinimum())));
         column.getChildren().add(statementLine("Its own target", share1(bank.capitalTarget()), Palette.TEXT_HEAD));
         column.getChildren().add(statementNote("It chose " + bank.targetReason() + "."));
         column.getChildren().add(statementLine("The top of its band", share1(bank.capitalTop())));
@@ -4323,7 +4348,7 @@ final class BankScreen {
         column.getChildren().add(statementTotal("Leverage ratio",
                 bank.isInsolvent() ? "failed" : bank.exposure() > 0 ? share1(bank.leverageRatio()) : "nothing lent",
                 bank.leverageBinds() ? stanceTone(bank) : Palette.TEXT_HEAD));
-        column.getChildren().add(statementLine("The minimum, Basel III's", share1(Bank.LEVERAGE_RATIO_MIN)));
+        column.getChildren().add(statementLine("The minimum, Basel III's", share1(bank.leverageMinimum())));
         column.getChildren().add(statementLine("Its own target on it", share1(bank.leverageTarget()), Palette.TEXT_HEAD));
         column.getChildren().add(statementLine("The top of its band on it", share1(bank.leverageTop())));
         column.getChildren().add(statementNote(leverageInfo(bank)));
@@ -4673,7 +4698,7 @@ final class BankScreen {
         String targetKey = leverageDrawn ? "bankLeverageTarget" : "bankCapitalTarget";
         int capitalMonths = h.monthsRecorded(ratioKey);
         int underTarget = h.monthsUnder(ratioKey, targetKey);
-        int underMinimum = h.monthsUnder(ratioKey, leverageDrawn ? Bank.LEVERAGE_RATIO_MIN : Bank.CAPITAL_RATIO);
+        int underMinimum = h.monthsUnder(ratioKey, leverageDrawn ? bank.leverageMinimum() : bank.capitalMinimum());
         java.util.function.Supplier<List<Node>> capitalChips = () -> {
             List<Node> chips = new ArrayList<>(List.of(
                     chip("under its target " + underTarget + " of " + capitalMonths + " months",

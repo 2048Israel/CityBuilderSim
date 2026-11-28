@@ -1517,38 +1517,44 @@ public class CurrencyRegimeCheck {
                 Math.abs((trFx.getBoughtThisMonth() - cbFx.getBoughtThisMonth()) - paid) <= 1e-6 * Math.max(1, paid));
         close("...the treasury's cash is lower than the central bank's city's by what it paid", cb.getCash() - tr.getCash() - (cashCb - cashTr), paid,
                 1e-3 * Math.max(1, paid));
-        close("...and the central bank's city's M0 is higher by it (the treasury's money left the city, the central bank's was made)",
-                cb.getCentralBank().m0() - tr.getCentralBank().m0(), paid, 1e-3 * Math.max(1, paid));
+        CentralBank cbBank = cb.getCentralBank(), trBank = tr.getCentralBank();
+        double directIssueGap = cbBank.getDollarsBought() - trBank.getDollarsBought();
+        double otherIssueGap = (cbBank.getIssued() - cbBank.getDollarsBought() - cbBank.getRetired())
+                - (trBank.getIssued() - trBank.getDollarsBought() - trBank.getRetired());
+        close("...the direct new-money purchase differs by exactly what the treasury paid", directIssueGap, paid, MoneyAudit.CENT);
+        close("...M0 differs by that payment plus the independently recorded other net issue in the two cities",
+                cbBank.m0() - trBank.m0(), paid + otherIssueGap, MoneyAudit.CENT);
+        out.printf("   payer M0 reconciliation: direct issue gap %.12g, other net issue gap %.12g, actual base gap %.12g%n",
+                directIssueGap, otherIssueGap, cbBank.m0() - trBank.m0());
         assertTrue("the audit closes in both, the settlement month (residuals " + String.format("%.4f and %.4f", cb.getLastMoneyAudit().residual, tr.getLastMoneyAudit().residual) + ")",
                 ExchangeRateCheck.auditCloses(cb) && ExchangeRateCheck.auditCloses(tr)
                         && Math.abs(cb.getLastMoneyAudit().residual) <= MoneyAudit.CENT && Math.abs(tr.getLastMoneyAudit().residual) <= MoneyAudit.CENT);
 
-        // The central bank's equity, once settled, is unmoved by the purchase: the treasury's city, which paid out of cash, keeps the
-        // dollars in its equity by what it paid; the central bank's, which made the money, does not. Three more months of it.
+        // Changing the payer also changes bank funding, interest and the subsequent city's purchases. Attribute those actual flows
+        // rather than treating the twins as an otherwise unchanged counterfactual. Every direct purchase still pays its own bill once.
         double paidSoFar = paid;
+        double purchaseGap = cbBank.getDollarsBought() + billPaid(cb) - trBank.getDollarsBought() - paid;
         int closes = 0, months = 3;
-        double worstIdentity = 0, gap = 0;
+        double gap = payerEquityGap(cb, tr, purchaseGap);
+        double worstIdentity = Math.abs(gap - paidSoFar);
         for (int i = 0; i < months; i++) {
             play(cb, 1);
             play(tr, 1);
             tallyKept(keptTally, cb, tr);
             paidSoFar += billPaid(tr);
-            // Equity reads the vault, which already holds the month's purchase before M0 has caught up: the purchase not yet paid for is taken out.
-            double settledCb = cb.getCentralBank().equity() - cbFx.getEdgeOwedLocal();
-            double settledTr = tr.getCentralBank().equity() - trFx.getEdgeOwedLocal();
-            gap = settledTr - settledCb;
+            purchaseGap += cbBank.getDollarsBought() + billPaid(cb) - trBank.getDollarsBought() - billPaid(tr);
+            gap = payerEquityGap(cb, tr, purchaseGap);
             worstIdentity = Math.max(worstIdentity, Math.abs(gap - paidSoFar));
             if (ExchangeRateCheck.auditCloses(cb) && ExchangeRateCheck.auditCloses(tr)) closes++;
         }
-        out.printf("   four months of purchases: the treasury paid %,.2fk in all; the equity gap between the cities, less what the central bank's still owes for, is %,.2fk"
+        out.printf("   four months of purchases: the treasury paid %,.2fk in all; the equity gap after the other recorded stock and flow differences is %,.2fk"
                 + " (the worst miss %.2e)%n", paidSoFar, gap, worstIdentity);
-        assertTrue("equity after the settlement, less the purchase not yet paid for, differs between the cities by what the treasury paid, to the cent: the central bank's own"
-                + " equity is unmoved by the purchases it paid for in new money", worstIdentity < .01);
+        assertTrue("settled equity, net of the actual vault, retained income, gold and subsequent purchase differences, differs by the treasury's payments, to the cent",
+                worstIdentity <= MoneyAudit.CENT);
         assertTrue("the audit closes in both, every month of it", closes == months);
 
         // The central bank keeps nothing (FX8): equity less the vault, plus what it paid in new money for the vault's dollars, is the
         // remittance not yet paid less the loss carried, in both cities, in every month this section played.
-        CentralBank cbBank = cb.getCentralBank(), trBank = tr.getCentralBank();
         out.printf("   the central bank keeps nothing: %d city-months held to it, %d missed; paid in new money for the vault's dollars, lifetime: US$%,.2fk"
                 + " in the central bank's city, %,.2fk in the treasury's%n", keptTally[0], keptTally[1], cbBank.getDollarsBoughtLifetime(), trBank.getDollarsBoughtLifetime());
         assertTrue("fixture: the central bank's city paid for dollars in new money (lifetime " + String.format("%,.2fk", cbBank.getDollarsBoughtLifetime()) + "), or the term proves nothing",
@@ -1562,6 +1568,18 @@ public class CurrencyRegimeCheck {
         close("...and the old statement, without the term, misses in the central bank's city by exactly what it paid in new money: the term is what closes it", without,
                 -cbBank.getDollarsBoughtLifetime(), Math.max(.01, 1e-9 * cbBank.m0()));
         assertTrue("...the miss without it is a real one, not rounding (" + String.format("%,.2fk", without) + ")", Math.abs(without) > .01);
+    }
+
+    /** The payer's equity effect, after independently measured non-payment differences between the played cities. */
+    static double payerEquityGap(Game cb, Game tr, double purchaseGap) {
+        CentralBank c = cb.getCentralBank(), t = tr.getCentralBank();
+        double settledGap = (t.equity() - tr.getForeignAccounts().getEdgeOwedLocal())
+                - (c.equity() - cb.getForeignAccounts().getEdgeOwedLocal());
+        double settledVaultGap = (t.getVault() - tr.getForeignAccounts().getEdgeOwedLocal())
+                - (c.getVault() - cb.getForeignAccounts().getEdgeOwedLocal());
+        double retainedGap = (t.getRemittanceDue() - t.getLossCarried()) - (c.getRemittanceDue() - c.getLossCarried());
+        double goldGap = t.getGoldRedeemedLifetime() - c.getGoldRedeemedLifetime();
+        return settledGap - settledVaultGap - retainedGap - goldGap - purchaseGap;
     }
 
     /** The central bank keeps nothing, as FX8 states it: equity less the vault, plus what it paid in new money for the vault's dollars, less the remittance due plus the loss carried. 0 when it keeps nothing. */

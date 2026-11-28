@@ -275,11 +275,10 @@ public final class YearBook {
         rate(m, "bankPrime", "what a sound business pays the bank - its four costs added up - a fraction a year");
         rate(m, "bankDepositRate", "what the bank paid its savers, a fraction a year");
         rate(m, "bankStrain", "the weighted book over capacity - the tighter of what its capital and its gathered deposits carry - clamped at 10; past 1 it is over one of them, which cost every borrower a premium until 0.7.7 and costs nobody one now");
-        rate(m, "bankCapitalRatio", "the bank's equity over its risk-weighted book, clamped at 10 - the city requires 0.08");
-        rate(m, "bankCapitalTarget", "the capital ratio the bank chooses to hold: the 0.08 minimum and a buffer for the worst year it has seen");
+        rate(m, "bankCapitalRatio", "the bank's equity over its risk-weighted book, clamped at 10; the minimum is the saved capital rule");
+        rate(m, "bankCapitalTarget", "the capital ratio the bank chooses to hold: the saved minimum and a buffer for losses and prudential rules");
         rate(m, "bankReturnOnEquity", "the bank's month of net income over the equity it opened with, a year");
-        rate(m, "bankLeverageRatio", "the bank's equity over everything on its sheet, clamped at 10 - the city requires "
-                + Bank.LEVERAGE_RATIO_MIN + " (recorded since 0.7.46)");
+        rate(m, "bankLeverageRatio", "the bank's equity over everything on its sheet, clamped at 10; the floor is the saved leverage rule (recorded since 0.7.46)");
         rate(m, "bankLeverageTarget", "the leverage ratio the bank chooses to hold: the minimum scaled by its capital target's buffer (recorded since 0.7.46)");
         rate(m, "crimeRate", "crimes per 100,000 people a year - Canada is 5,585");
         rate(m, "policeCoverage", "staffed officers against full coverage, which is 360 per 100,000");

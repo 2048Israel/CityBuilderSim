@@ -131,6 +131,17 @@ public class Ensemble {
        does not have.
        ===================================================================== */
 
+    /** CBK3 observations: getter reads only, shared with the default-trace observer proof. */
+    static void fundingColumns(Map<String, Object> columns, Game g) {
+        double remitted = Adapter.num(g, "getCentralBank.getRemitted");
+        double revenue = Adapter.num(g, "getEconomyManager.getNationalAccounts.getTotalRevenue");
+        columns.put("cb_remitted", remitted);
+        columns.put("budget_revenue", revenue);
+        columns.put("cb_remittance_share", revenue > 0 ? remitted / revenue : Double.NaN);
+        columns.put("bank_failures", Adapter.num(g, "getBank.getFailures"));
+        columns.put("cb_remitted_cum", Adapter.num(g, "getCentralBank.getRemittedLifetime"));
+    }
+
     static double peakPop;
 
     static LinkedHashMap<String, Object> columns(Game g, String phase, int flagsNew, String newNames) {
@@ -189,6 +200,7 @@ public class Ensemble {
         }
         c.put("cb_advances", Adapter.num(g, "getCentralBank.getAdvancesToTreasury"));
         c.put("bank_capital_ratio", Adapter.num(g, "getBank.capitalRatio"));
+        fundingColumns(c, g);
         // QR1: in-ban backstops are a subset of forgiveness; retirement receipts are gross cash, before debt repayment.
         c.put("overdraft_forgiven_cum", LongPlaytest.forgivenTotal(g.getEconomyManager()));
         c.put("backstop_in_ban_cum", LongPlaytest.backstopInBanSum);

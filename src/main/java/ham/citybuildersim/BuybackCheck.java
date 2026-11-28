@@ -523,12 +523,30 @@ public class BuybackCheck {
         final double rounding = 100 * PriceLevel.FACTOR;
         worldWantsPaper(city);
         Bank bank = city.getBank();
-        double fair = city.quoteLongBond(rounding, years, rounding, Auction.Cap.DEFAULT, callable).auction().ask().fair();
-        double stop = fair + Auction.MAX_TAIL / 2;
         double depositWas = bank.depositRate(), weightedWas = bank.getWeightedBook();
-        bank.setDepositRate(stop - HOUSEHOLDS_SHARE / HouseholdBalance.HOUSEHOLD_PAPER_APPETITE);
+        DebtManager ledger = city.getDebtManager();
+        double policyWas = ledger.getPolicyRate();
+        double target = 2 * Math.max(rounding, city.minimumIssueSize());
+        double[] terms = allHolderTerms(city, years, rounding, callable);
+        if (!allHolderDemand(terms, target)) {
+            double lo = policyWas, hi = DebtManager.MAX_POLICY_RATE;
+            for (int i = 0; i < 80; i++) {
+                double mid = (lo + hi) / 2;
+                ledger.setPolicyRate(mid);
+                city.strikeTheCurve();
+                terms = allHolderTerms(city, years, rounding, callable);
+                if (allHolderDemand(terms, target)) hi = mid; else lo = mid;
+            }
+            ledger.setPolicyRate(hi);
+            city.strikeTheCurve();
+            terms = allHolderTerms(city, years, rounding, callable);
+        }
+        double fair = terms[0], stop = terms[1], face = terms[2];
         Auction.Bidders bids = city.auctionBidders(years * 12, 0);
-        double face = (Auction.worldAt(stop, bids) + Auction.firmsAt(stop, bids)) / (1 - HOUSEHOLDS_SHARE - BANK_SHARE);
+        out.printf("   all-holder demand inputs: policy %.12g (was %.12g), fair %.12g, stop %.12g, minimum %.12g, world %.12g, firms %.12g%n",
+                ledger.getPolicyRate(), policyWas, fair, stop, city.minimumIssueSize(), Auction.worldAt(stop, bids), Auction.firmsAt(stop, bids));
+        check("fixture: the native default-cap stop funds a rounded issue above the minimum with a real world part", allHolderDemand(terms, target));
+        if (!allHolderDemand(terms, target)) throw new IllegalStateException("No native all-holder demand within the policy bounds");
         double ballast = roomTo(city, years * 12, BANK_SHARE * face);
         out.printf("   a %d-year line sold to every holder: D$%,.1fk asked, to clear at %.4f (fair %.4f), the savers' rate %.4f, the bank's room D$%,.1fk, the world bids D$%,.1fk%n",
                 years, face, stop, fair, bank.depositRate(), city.auctionBidders(years * 12, face).bankRoomFace(), Auction.worldAt(stop, bids));
@@ -538,7 +556,24 @@ public class BuybackCheck {
         });
         bank.setDepositRate(depositWas);
         bank.setWeightedBook(0, ballast - (bank.getWeightedBook() - weightedWas), 0);
+        ledger.setPolicyRate(policyWas);
+        city.strikeTheCurve();
         return unsettledPiece(city.getDebtManager());
+    }
+
+    /** Native demand at the fixture's half-tail stop; the savers' spread causes their original quarter share. */
+    static double[] allHolderTerms(Game city, int years, double rounding, boolean callable) {
+        double fair = city.quoteLongBond(rounding, years, rounding, Auction.Cap.DEFAULT, callable).auction().ask().fair();
+        double stop = fair + Auction.MAX_TAIL / 2;
+        city.getBank().setDepositRate(stop - HOUSEHOLDS_SHARE / HouseholdBalance.HOUSEHOLD_PAPER_APPETITE);
+        Auction.Bidders bids = city.auctionBidders(years * 12, 0);
+        double world = Auction.worldAt(stop, bids);
+        double face = (world + Auction.firmsAt(stop, bids)) / (1 - HOUSEHOLDS_SHARE - BANK_SHARE);
+        return new double[] {fair, stop, face, world};
+    }
+
+    static boolean allHolderDemand(double[] terms, double minimum) {
+        return Double.isFinite(terms[2]) && terms[2] >= minimum && terms[3] >= A_PART * terms[2];
     }
 
     /** The households, the bank and the world each hold at least A_PART of the line. */
@@ -947,6 +982,7 @@ public class BuybackCheck {
         Debt bond = sellToAllHolders(city, 5, false);
         check("fixture: the treasury sold a five-year line", bond != null);
         check("fixture: ...unsettled", bond != null && bond.unsettledFace() > 0);
+        if (bond == null) throw new IllegalStateException("The native five-year sale did not create the unsettled line");
         double[] unsettled = snapshot(city, bond);
         double unsettledPrincipal = bond.getOustandingPrincipal();
         Buyback.Result part = city.buyBack(bond, unsettledPrincipal / 2, Double.NaN);

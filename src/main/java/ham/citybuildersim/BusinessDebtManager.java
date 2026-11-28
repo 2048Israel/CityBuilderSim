@@ -112,7 +112,7 @@ public class BusinessDebtManager {
        has why the spread was never made dearer (the 12% measurement): the
        shortfall borrower paid the extra interest by borrowing it.
        That does not bite here: under the shortfall desk's ceiling
-       (MAX_LOAN_TO_ASSETS, 0.9) the curve charges at most 0.11 points over
+       (rules.get(BankRules.Dial.BUSINESS_LTA), 0.9) the curve charges at most 0.11 points over
        prime - less than the old line's 5.4 there - and past it the desk lends
        only the month's interest, and nothing past the default point. What
        the curve charges past the ceiling is the projects', and a project is
@@ -215,6 +215,10 @@ public class BusinessDebtManager {
      * different question of the same line - see canFundProject().
      */
     public static final double MAX_LOAN_TO_ASSETS = 0.9;
+
+    private BankRules rules = new BankRules();
+    public void setRules(BankRules rules) { this.rules = java.util.Objects.requireNonNull(rules); }
+    public BankRules rules() { return rules; }
 
     /**
      * What the backstop leaves a restructured sector owing, as a multiple of
@@ -1597,7 +1601,7 @@ public class BusinessDebtManager {
 
            The first version of this test stopped AT the insolvency line, which
            turned out to be the same mistake one notch up - see the note on
-           MAX_LOAN_TO_ASSETS. The ceiling now sits below the line, and it is
+           rules.get(BankRules.Dial.BUSINESS_LTA). The ceiling now sits below the line, and it is
            read through borrowingRoom() so the investment desk reads the same
            one.
 
@@ -1676,7 +1680,7 @@ public class BusinessDebtManager {
         double bondRaised = 0;
         if (bondDesk != null) {
             double want = Math.max(0, (-cash + buffer) / (1 - Bank.LOAN_FEE));
-            double bondRoom = bondCeilingRoom(sector, MAX_LOAN_TO_ASSETS);
+            double bondRoom = bondCeilingRoom(sector, rules.get(BankRules.Dial.BUSINESS_LTA));
             double loanRoom = Math.min(want, room);
             double loanRate = priceSector(sector, Math.max(loanRoom, 0), 0);
             Plan plan = bondDesk.plan(sector, want, loanRate, loanRoom, bondRoom, 0, month);
@@ -1950,7 +1954,7 @@ public class BusinessDebtManager {
      * room is canFundProject()'s and projectLoanRoom()'s, which still read it.
      */
     public double borrowingRoom(String sector) {
-        return ceilingRoom(sector, MAX_LOAN_TO_ASSETS);
+        return ceilingRoom(sector, rules.get(BankRules.Dial.BUSINESS_LTA));
     }
 
     /* =====================================================================
@@ -2007,7 +2011,7 @@ public class BusinessDebtManager {
         if (pastDefaultPoint(sector, cash)) return 0;
         double assets = Math.max(0, getAssets(sector));
         double owed = Math.max(0, getPrincipal(sector) - Math.max(0, due));
-        double room = Math.max(0, assets * MAX_LOAN_TO_ASSETS - owed);
+        double room = Math.max(0, assets * rules.get(BankRules.Dial.BUSINESS_LTA) - owed);
         double reserve = Math.min(Math.max(0, getMonthlyInterest(sector)) / (1 - Bank.LOAN_FEE),
                 Math.max(0, assets * INSOLVENCY_TRIGGER - owed));
         double most = Math.max(room, reserve);
@@ -2080,7 +2084,7 @@ public class BusinessDebtManager {
        Jerus, 2026-09-24: "Mortgages", on "CMHC (Canada)" terms, "Insured by
        the city". A residential building is bought with a Mortgage: the
        landlord puts at least 15% of the cost from its own funds, the lender
-       advances the rest - at most Mortgage.MORTGAGE_MAX_LOAN_TO_COST of the
+       advances the rest - at most rules.get(BankRules.Dial.MORTGAGE_LTC) of the
        cost - with CMHC's premium added to it and paid to the treasury, at
        the insured rate, paid down over Mortgage.MORTGAGE_AMORTIZATION_MONTHS
        and renewed every Mortgage.MORTGAGE_TERM_MONTHS. The lender's test is
@@ -2191,7 +2195,7 @@ public class BusinessDebtManager {
         if (!lendingOpen) { mortgageRefusal = MORTGAGE_BANK_SHUT; return false; }
         if (isBorrowingBlocked(sector)) { mortgageRefusal = MORTGAGE_BANNED; return false; }
         double loan = Mortgage.loanFor(shortfall);
-        if (loan > Mortgage.MORTGAGE_MAX_LOAN_TO_COST * cost * (1 + 1e-9)) {
+        if (loan > rules.get(BankRules.Dial.MORTGAGE_LTC) * cost * (1 + 1e-9)) {
             mortgageRefusal = MORTGAGE_DOWN_PAYMENT;
             return false;
         }
@@ -2248,7 +2252,7 @@ public class BusinessDebtManager {
      * the door's, so a bank with room for the door's loan read short).
      */
     public double ownersAskOnMortgage(String sector, double cost, double held) {
-        double down = Mortgage.ownFundsFor(cost);
+        double down = Mortgage.ownFundsFor(cost, rules.get(BankRules.Dial.MORTGAGE_LTC));
         if (mortgageShortOfCapital(sector, cost - Math.max(held, down))) return cost - held;
         return Math.min(down, down - held);
     }
@@ -2545,7 +2549,7 @@ public class BusinessDebtManager {
 
        EVERY DOOR THE RULE READ, AND ITS GROUP:
          WORKING CAPITAL - no longer rationed; still held to the ceiling
-         (MAX_LOAN_TO_ASSETS), the default point on the quarter, the ban,
+         (rules.get(BankRules.Dial.BUSINESS_LTA)), the default point on the quarter, the ban,
          and a bank that stands (lendingOpen):
            the shortfall desk's cover of a short month (coverShortfall(),
              borrowingRoom());
@@ -3245,7 +3249,7 @@ public class BusinessDebtManager {
        WHY THE LENDER SAID NO is kept (getShortReason(), getCannotPayReason()):
        the sector past the default point, banned after a restructure, the
        bank shut (failed, in resolution), or the shortfall desk's own ceiling
-       (MAX_LOAN_TO_ASSETS: over it and under the default point it lends the
+       (rules.get(BankRules.Dial.BUSINESS_LTA): over it and under the default point it lends the
        interest reserve and no more) - and a till that went short after the
        credit settle, when nobody was asked. Round 4 had the bank's capital
        rule among them, rationing a short month as growth; since round 5 it
@@ -3318,7 +3322,7 @@ public class BusinessDebtManager {
        its debt restated for what the slice just wrote off, before the loan
        and after it - the same before-and-after reading NOTHING PAST THE
        DEFAULT POINT asks of every loan. It is NOT held to the shortfall
-       desk's ceiling (MAX_LOAN_TO_ASSETS), nor to the bank's capital rule,
+       desk's ceiling (rules.get(BankRules.Dial.BUSINESS_LTA)), nor to the bank's capital rule,
        nor to the ban a backstop gave the sector: its rank is the reason a
        lender makes it, and a firm in restructuring is what it is made for.
        Jerus's refusals are two, and only two: a sector still past the line

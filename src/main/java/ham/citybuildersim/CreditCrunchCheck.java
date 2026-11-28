@@ -326,11 +326,33 @@ public final class CreditCrunchCheck {
      */
     static void standGround(Game g) {
         BuildingsTemplate block = LongPlaytest.template(g, "Low-Rise Apartments");
-        if (block == null) return;
+        if (block == null) { check("fixture: ground preparation has the apartment template", false); return; }
         int plots = 0;
-        while (!ground(g, block, GROUND_BLOCKS) && plots < MAX_PLOTS && g.buyLandBlock()) plots++;
+        while (!ground(g, block, GROUND_BLOCKS) && plots < MAX_PLOTS) {
+            LandParcel offered = g.getLandManager().getMarket().cheapest();
+            if (offered == null) {
+                if (g.buyLandBlock()) { plots++; continue; } // native refresh, and a purchase if already affordable
+                offered = g.getLandManager().getMarket().cheapest();
+            }
+            if (offered == null) break;
+            if (!g.canAffordParcel(offered)) {
+                double cost = offered.localPrice(g.getForeignAccounts().getRate());
+                out.printf("   ground endowment m%d: parcel %s, native price %.12g, cash before %.12g%n",
+                        g.getMonth(), offered.getId(), cost, g.getCash());
+                g.setCashForTest(Math.max(g.getCash(), cost));
+            }
+            if (!g.buyLandBlock()) {
+                out.printf("   ground purchase refused m%d: parcel %s, price %.12g, cash %.12g, affordable %s%n",
+                        g.getMonth(), offered.getId(), offered.localPrice(g.getForeignAccounts().getRate()), g.getCash(), g.canAffordParcel(offered));
+                break;
+            }
+            plots++;
+        }
         groundPlots += plots;
         if (ground(g, block, GROUND_BLOCKS)) groundMonths++;
+        else out.printf("   ground still unavailable m%d: purchases %d/%d, need %.12g, free for use %.12g%n",
+                g.getMonth(), plots, MAX_PLOTS, block.getLandSqFt() * (double) GROUND_BLOCKS,
+                g.getLandManager().freeFor(block.getSector(), Game.groundUse(block)));
     }
 
     /** The seekers' households (FamilyModel.Seeker) past their own ceiling, two to a door up to half the group: no door. */
@@ -594,7 +616,19 @@ public final class CreditCrunchCheck {
         java.lang.reflect.Method refreshLand = Game.class.getDeclaredMethod("refreshLand");
         refreshLand.setAccessible(true);
         refreshLand.invoke(g);
+        // Cause the issue quote from this fixture's changed homes, land, yard and till,
+        // through the real market's participants and settlement, once, without another month.
+        // Do not put the till or any holding back after its trades.
+        em.setSectorCash(RE, TILL * door(g, block, 1));
+        int marketMonth = g.getMonth();
+        java.lang.reflect.Method market = Game.class.getDeclaredMethod("tradeShares");
+        market.setAccessible(true);
+        market.invoke(g);
+        ownersBuyBankCapital(g);
+        check("fixture: the native market preparation keeps the hand order at the same played month", g.getMonth() == marketMonth);
         Bank bank = g.getBank();
+        // The real market can change the desk's mark and the bank's capital: cause and
+        // strike the original band on that actual resulting book, not on a stale snapshot.
         holdInBand(bank);
         strikeTheRule(g);
         double playedRate = desk.getInsuredMortgageRate(), playedPolicy = g.getDebtManager().getPolicyRate();
@@ -606,13 +640,34 @@ public final class CreditCrunchCheck {
         out.printf(Locale.ROOT, "   the bank held at leverage %.4f of %.4f (minimum %.4f); the rule struck: insured %s, growth %.4f, %s%n",
                 bank.leverageRatio(), bank.leverageTarget(), Bank.LEVERAGE_RATIO_MIN,
                 desk.isInsuredRationed() ? "rationed" : "free", growth, desk.isKeepGoingOnly() ? "keeping borrowers going" : "lending in its band");
-        em.setSectorCash(RE, TILL * door(g, block, 1));
         double whole = door(g, block, ORDER), held = em.getSectorCash(RE) + em.getForeignAssets(RE);
         double asked = desk.ownersAskOnMortgage(RE, whole, held), raisedBefore = em.getEquityRaised(RE);
         double plan = g.getBusinessInvestment().getCostOf(block, ORDER);
         int company = Equity.indexOf(RE);
         boolean groundForAll = ground(g, block, ORDER), quote = company >= 0 && g.getExchange().quoteSupportsIssue(company);
         double offeredBefore = company >= 0 ? g.getEquity().getOfferedThisMonth(company) : 0;
+        out.printf(Locale.ROOT, "   issue quote m%d: price %.17g, fair %.17g, native threshold %.17g, supported %s%n",
+                g.getMonth(), g.getExchange().price(company), g.getExchange().fair(company),
+                g.getExchange().fair(company) * (1 - Exchange.BUYBACK_TOLERANCE), quote);
+        check("fixture: the prepared native quote supports the actual positive issue asked on this six-block order", quote && asked > 0);
+        // A shortage on six is insufficient: the first mortgage-bearing slice after
+        // a positive issue must still fail for capital. Read both native allowances.
+        double firstMore = door(g, block, 2);
+        double homeMeans = g.getHouseholdBalance().offeringMeans();
+        double raisedHomeBefore = g.getEquity().getRaisedHomeThisMonth(company);
+        double raisedAbroadBefore = g.getEquity().getRaisedAbroadThisMonth(company);
+        java.lang.reflect.Method insuredRoom = BusinessDebtManager.class.getDeclaredMethod("insuredProjectRoom");
+        insuredRoom.setAccessible(true);
+        double sectorRoom = desk.capitalRoom(RE), sharedRoom = (double) insuredRoom.invoke(desk);
+        double effectiveRoom = Math.min(sectorRoom, sharedRoom);
+        double raiseBoundary = firstMore - held - shortfallFor(effectiveRoom);
+        double homeOnlyGap = Math.max(0, firstMore - held - homeMeans);
+        boolean stillShortAfterHome = desk.mortgageShortOfCapital(RE, homeOnlyGap);
+        out.printf(Locale.ROOT, "   smallest mortgage slice: cost2=%.17g held=%.17g homeMeans=%.17g sectorPrincipal=%.17g sectorRoom=%.17g insuredRoom=%.17g capitalRaiseBoundary=%.17g homeOnlyGap=%.17g principal=%.17g capitalShort=%s%n",
+                firstMore, held, homeMeans, desk.getLoanPrincipal(RE), sectorRoom, sharedRoom, raiseBoundary,
+                homeOnlyGap, Mortgage.loanFor(homeOnlyGap) * (1 + Mortgage.premiumRate()), stillShortAfterHome);
+        check("fixture: after the native household issue means the next slice still lacks mortgage capital",
+                held >= door(g, block, 1) && firstMore > held && homeMeans > 0 && stillShortAfterHome);
         askedThisMonth = 0;
         shortThisMonth = false;
         lenderCost = Double.NaN;
@@ -627,6 +682,13 @@ public final class CreditCrunchCheck {
                 investor.invoke(g, RE));
         double raised = em.getEquityRaised(RE) - raisedBefore;
         double offered = company >= 0 ? g.getEquity().getOfferedThisMonth(company) - offeredBefore : 0;
+        double homeRaised = g.getEquity().getRaisedHomeThisMonth(company) - raisedHomeBefore;
+        double abroadRaised = g.getEquity().getRaisedAbroadThisMonth(company) - raisedAbroadBefore;
+        out.printf(Locale.ROOT, "   actual smallest-slice funding: homeRaised=%.17g abroadRaised=%.17g heldPlusRaised=%.17g cost2=%.17g gap2=%.17g principal2=%.17g PREsectorRoom=%.17g PREinsuredRoom=%.17g PREraiseBoundary=%.17g%n",
+                homeRaised, abroadRaised, held + raised, firstMore, Math.max(0, firstMore - held - raised),
+                Mortgage.loanFor(Math.max(0, firstMore - held - raised)) * (1 + Mortgage.premiumRate()), sectorRoom, sharedRoom, raiseBoundary);
+        check("fixture: the native partial issue stays within the measured household budget",
+                abroadRaised == 0 && homeRaised > 0 && homeRaised <= homeMeans + 1e-9 * homeMeans);
         String line = g.getLastInvestment(RE);
         out.printf(Locale.ROOT, "   m%d: %d %s at %.1f at the door, %.1f planned, the till %.1f (%d plots bought); the lender read %.1f;"
                         + " the owners were offered %.1f of the %.1f it lacked and put in %.1f; the door asked for %d%s%n     \"%s\"%n",
@@ -651,6 +713,46 @@ public final class CreditCrunchCheck {
         check("the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys",
                 line != null && line.startsWith("Built ") && line.contains("(trimmed from " + ORDER + " - the bank is short of capital"));
         check("...and is not left marked as held for the bank's capital (REV-HN1-1)", !desk.wasMortgageRefusedForCapital(RE));
+    }
+
+    /** Owners commit one native offering budget to bank shares before the landlords ask; cash, shares and basis all settle. */
+    static void ownersBuyBankCapital(Game g) throws Exception {
+        double priorMeans = g.getHouseholdBalance().offeringMeans();
+        double priorPooled = MoneyAudit.pooled(g);
+        double priorSavings = g.getHouseholdBalance().totalSavings();
+        double priorHome = g.getEquity().getRaisedHomeThisMonth(Equity.BANK);
+        double priorAbroad = g.getEquity().getRaisedAbroadThisMonth(Equity.BANK);
+        double priorShares = g.getEquity().getShares(Equity.BANK);
+        double priorHeld = g.getHouseholdBalance().sharesHeld(Equity.BANK);
+        double priorBasis = g.getHouseholdBalance().cells().stream().mapToDouble(c -> c.basis[Equity.BANK] * c.households).sum();
+        check("fixture: the prior bank offer issues new shares in a listed bank at its native traded price",
+                priorShares > 0 && g.getExchange().hasTraded(Equity.BANK));
+        double priorBankCash = g.getBank().cashReserves();
+        java.lang.reflect.Method capitalise = Game.class.getDeclaredMethod("capitaliseBank", double.class);
+        capitalise.setAccessible(true);
+        double bankRaised = (double) capitalise.invoke(g, priorMeans);
+        double homePaid = g.getEquity().getRaisedHomeThisMonth(Equity.BANK) - priorHome;
+        double abroadPaid = g.getEquity().getRaisedAbroadThisMonth(Equity.BANK) - priorAbroad;
+        double issued = g.getEquity().getShares(Equity.BANK) - priorShares;
+        double bought = g.getHouseholdBalance().sharesHeld(Equity.BANK) - priorHeld;
+        double basisAdded = g.getHouseholdBalance().cells().stream().mapToDouble(c -> c.basis[Equity.BANK] * c.households).sum() - priorBasis;
+        double remainingMeans = g.getHouseholdBalance().offeringMeans();
+        double pooledDelta = MoneyAudit.pooled(g) - priorPooled;
+        double savingsDelta = g.getHouseholdBalance().totalSavings() - priorSavings;
+        out.printf(Locale.ROOT, "   prior native bank offer: means=%.17g homePaid=%.17g abroadPaid=%.17g received=%.17g remainingMeans=%.17g pooledDelta=%.17g savingsDelta=%.17g residual=%.17g%n",
+                priorMeans, homePaid, abroadPaid, bankRaised, remainingMeans, pooledDelta, savingsDelta, pooledDelta + savingsDelta);
+        check("fixture: one actual household-funded bank offer issues shares and credits the bank's cash",
+                priorMeans > 0 && Math.abs(homePaid - priorMeans) < 1e-9 * priorMeans && abroadPaid == 0
+                && Math.abs(bankRaised - homePaid) < 1e-9 * priorMeans
+                && bought > 0 && Math.abs(issued - bought) < 1e-9 * Math.max(1, issued)
+                && Double.isFinite(basisAdded) && Math.round((basisAdded - homePaid) / MoneyAudit.CENT) == 0
+                && Math.round((g.getBank().cashReserves() - priorBankCash - homePaid) / MoneyAudit.CENT) == 0);
+        check("fixture: that native capital purchase transfers the owners' savings to the bank, conserving money to the cent",
+                Double.isFinite(pooledDelta) && Double.isFinite(savingsDelta)
+                && Math.round((pooledDelta - homePaid) / MoneyAudit.CENT) == 0
+                && Math.round((savingsDelta + homePaid) / MoneyAudit.CENT) == 0
+                && Math.round((pooledDelta + savingsDelta) / MoneyAudit.CENT) == 0);
+        check("fixture: the subscribing owners retain a positive smaller offering budget", remainingMeans > 0 && remainingMeans < priorMeans);
     }
 
     /** The desks' capital rule struck from the bank as it stands, by the calls Game.startOfMonthUpdate() makes (strikeBankBonds() is its own). */

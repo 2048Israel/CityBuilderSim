@@ -616,11 +616,100 @@ public class ExchangeCheck {
         }
     }
 
+    /** A zero-value mature company stays untradeable when the real-price anchor raises its presentation floor. */
+    static void anchoredFloorCannotTrade() {
+        out.println("\n--- the anchored floor cannot attract orders for a worthless company ---");
+        int company = Equity.indexOf(Sectors.INDUSTRY);
+        HouseholdBalance holders = savers(12, 4);
+        Equity reg = equity();
+        reg.listIfUnlisted(company, 20_000, holders);
+        for (int m = 0; m < Equity.RECORD_MONTHS; m++) reg.recordMonth(company, 0, 0);
+        // Expected prices rise while the venue's nominal money unit stays put.
+        reg.seedConstants(TODAYS_DOLLAR / 2);
+        Exchange ex = exchange();
+        Bank bank = bankWith(100_000);
+        Firms firms = new Firms();
+        double[] book = new double[N];
+        double held = holders.sharesHeld(company);
+        assertTrue("fixture: a mature company has owners, zero earnings and a presentation floor above nominal money",
+                reg.valuedOnRecord(company) && held > 0 && reg.getTrailingIncome(company) == 0
+                        && reg.noValue() > Exchange.MIN_FAIR / TODAYS_DOLLAR);
+        step(ex, reg, holders, bank, firms, book, W, 0, Equity.RECORD_MONTHS);
+        assertTrue("fixture: a live desk sees no book value, spare money or earnings in the company",
+                ex.isOpen() && book[company] == 0 && ex.spareOf(company) == 0 && ex.earningsOf(company) == 0);
+        assertTrue("the worthless company attracts no buy or sell orders, trades or desk capacity",
+                ex.bookOf(company).postedBuy() == 0 && ex.bookOf(company).postedSell() == 0
+                        && !ex.hasTraded(company) && ex.deskCanBuy(reg, company) == 0);
+        close("a household's real waterfall sale raises nothing from the worthless holding",
+                ex.sellForHousehold(reg, bank, holders, couple(holders), 1), 0, 0);
+        close("the household keeps every worthless share", holders.sharesHeld(company), held, 0);
+
+        // A separate real market lot preserves the household fixture's never-traded premise above.
+        Equity fallen = equity();
+        fallen.offer(company, 1_000, 0, null, W);
+        Exchange fundMarket = exchange();
+        TreasuryFund fund = new TreasuryFund();
+        fundMarket.attachFund(fund);
+        Firms fallenFirms = new Firms();
+        double[] fallenBook = bookOf(company, 1_000);
+        step(fundMarket, fallen, null, null, fallenFirms, fallenBook, W, 0, 1);
+        double lot = fallen.getShares(company) * TreasuryFund.OWNERSHIP_LIMIT / 2;
+        double paidForLot = lot * fundMarket.fair(company);
+        // An opening treasury budget pays in by hand; the actual fill transfers all of it to the world.
+        fund.notePaidInByHand(paidForLot);
+        fundMarket.tradeForCheck(company, Exchange.WORLD, OrderBook.Side.SELL, fundMarket.fair(company), lot);
+        double bought = 0;
+        for (OrderBook.Fill f : fundMarket.tradeForCheck(company, Exchange.FUND, OrderBook.Side.BUY, fundMarket.fair(company), lot))
+            if (f.buyer().equals(Exchange.FUND) && f.seller().equals(Exchange.WORLD)) bought += f.quantity();
+        close("fixture: the fund's real market lot was settled from the world", bought, lot, 1e-9);
+        close("the fund's opening budget is conserved as its cash plus the actual payment abroad",
+                fund.getCash() + fundMarket.getFundBoughtAbroad(), paidForLot, 1e-9);
+        fund.setWithdrawal(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP);
+        close("fixture: its fully invested fund pays nothing and must sell for its withdrawal",
+                fund.payTransfer(fundMarket.cityValue(fallen), 1900), 0, 0);
+        double owed = fund.getToRaise();
+        for (int m = 0; m < Equity.RECORD_MONTHS; m++) fallen.recordMonth(company, 0, 0);
+        fallen.seedConstants(TODAYS_DOLLAR / 2);
+        fallenBook[company] = 0;
+        step(fundMarket, fallen, null, null, fallenFirms, fallenBook, W, 0, Equity.RECORD_MONTHS);
+        assertTrue("fixture: the fund still holds its lot and owes a withdrawal when genuine mature value falls to the raised floor",
+                owed > 0 && fallen.valuedOnRecord(company) && fallen.getTrailingIncome(company) == 0
+                        && fundMarket.spareOf(company) == 0 && fallenBook[company] == 0 && fundMarket.atFloor(company)
+                        && fallen.noValue() > Exchange.MIN_FAIR / TODAYS_DOLLAR && fallen.getCityMarketShares(company) == lot);
+        close("the withdrawal cannot produce a FUND ask from a worthless market lot",
+                fundMarket.bookOf(company).resting(Exchange.FUND, OrderBook.Side.SELL), 0, 0);
+        assertTrue("even an arriving world buyer cannot fill that fund withdrawal",
+                fundMarket.tradeForCheck(company, Exchange.WORLD, OrderBook.Side.BUY, paidForLot / lot, lot).isEmpty());
+        close("the worthless fund lot raises no cash", fund.getCash(), 0, 0);
+        close("the world pays no proceeds for that worthless fund lot", fundMarket.getFundSoldAbroad(), 0, 0);
+        close("the refused withdrawal keeps its entire unpaid amount", fund.getToRaise(), owed, 0);
+        close("the refused withdrawal keeps the fund's entire real market lot", fallen.getCityMarketShares(company), lot, 0);
+
+        for (int m = 0; m < Equity.RECORD_MONTHS; m++) reg.recordMonth(company, 100, 0);
+        step(ex, reg, holders, bank, firms, book, W, 0, 2 * Equity.RECORD_MONTHS);
+        assertTrue("actual positive earnings restore the desk's bid and capacity above the floor",
+                ex.fair(company) > reg.noValue() && ex.bestBid(company) > 0 && ex.deskCanBuy(reg, company) > 0);
+        double grossShares = couple(holders).households() / ex.bestBid(company);
+        assertTrue("fixture: the resting and live desk capacity cover the recovery sale's gross dollar",
+                ex.bookOf(company).resting(Exchange.DESK, OrderBook.Side.BUY) > grossShares
+                        && ex.deskCanBuy(reg, company) > grossShares);
+        double taxBefore = holders.getCapitalGainsTax();
+        double raised = ex.sellForHousehold(reg, bank, holders, couple(holders), 1);
+        double withheld = holders.getCapitalGainsTax() - taxBefore;
+        assertTrue("the recovered holding really raises net cash and withholds its capital-gains tax",
+                raised > 0 && raised <= 1 && withheld > 0);
+        close("the recovery sale's net cash plus actual tax equals the gross dollar requested",
+                raised + withheld / couple(holders).households(), 1, 1e-9);
+        assertTrue("recovery trades real shares from the household into the desk",
+                ex.hasTraded(company) && holders.sharesHeld(company) < held && reg.getDealerShares(company) > 0);
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
         quiet = new PrintStream(new OutputStream() { @Override public void write(int b) { } });
         rescueSaleChecks();
+        anchoredFloorCannotTrade();
 
         int RETAIL = Equity.indexOf(Sectors.RETAIL);
         int INDUSTRY = Equity.indexOf(Sectors.INDUSTRY);
@@ -744,6 +833,35 @@ public class ExchangeCheck {
                 position, 1e-9);
         close("...and the rest of the sale rests on the book", exC.bookOf(RETAIL).resting(Exchange.CELL + couple(capHolders).key(),
                 OrderBook.Side.SELL) - restingC, 100 * 50 / bidC - position, 1e-6);
+
+        // CBK3: an insured loan book leaves equity but consumes all except
+        // $100 of stable cash. Every other desk limit permits a larger bid.
+        HouseholdBalance stableHolders = savers(12, 4);
+        Equity stableReg = equity();
+        stableReg.listIfUnlisted(RETAIL, 100_000, stableHolders);
+        Bank stableBank = bankWith(10_000);
+        stableBank.refresh(1, 0, 0, 10_000, 0, 0);
+        stableBank.setWeightedBook(0, 0, 0);
+        stableBank.setMortgageBook(10_000, 0);
+        stableBank.setCash(100);
+        Exchange stableEx = exchange();
+        step(stableEx, stableReg, stableHolders, stableBank, new Firms(), bookOf(RETAIL, 100_000), W, 0, 1);
+        close("stable cash limits the actual posted desk bid", stableEx.bookOf(RETAIL).resting(DESK, OrderBook.Side.BUY),
+                100 / bidC, 1e-9);
+        assertTrue("the stable cash limit is counted only at the real posting",
+                stableEx.getLastDeskBound(Exchange.BOUND_STABLE) == 1
+                        && stableEx.getLifeDeskBound(Exchange.BOUND_STABLE) == 1);
+        stableEx.deskCanBuy(stableReg, RETAIL);
+        stableBank.deskCanCarry(0, bidC, bidC);
+        assertTrue("previewing capacity does not add a bound event",
+                stableEx.getLastDeskBound(Exchange.BOUND_STABLE) == 1);
+        step(stableEx, stableReg, stableHolders, stableBank, new Firms(), bookOf(RETAIL, 100_000), W, 0, 2);
+        assertTrue("a new month resets the last count and carries its lifetime count",
+                stableEx.getLastDeskBound(Exchange.BOUND_STABLE) == 1
+                        && stableEx.getLifeDeskBound(Exchange.BOUND_STABLE) == 2);
+        stableEx.reset();
+        assertTrue("a new city clears both stable cash counts", stableEx.getLastDeskBound(Exchange.BOUND_STABLE) == 0
+                && stableEx.getLifeDeskBound(Exchange.BOUND_STABLE) == 0);
 
         // The same bank already holding its aggregate cap's worth elsewhere: the book cap binds.
         HouseholdBalance bookHolders = savers(12.0, 4.0);
