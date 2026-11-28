@@ -2391,3 +2391,27 @@ No ALL pick/suite is run on the laptop. The next action is a provisional
 mends handoff for review and a fresh authorized box gate, not ready and not
 reuse of VRJmGJS3. The accepted final-model ensemble is not repeated for
 this harness-only repair.
+
+## REV-CBK3c SHIP and renewed dry authorization, 2026-11-28
+
+Orchestrator mail20261128-094343-311 reports Claude REV-CBK3c **SHIP** on
+3e938553b. The review confirms all42 original labels identical and8 added,
+the original law retained, and native cash conserved to the cent. The
+post-ASH1 source merge landed both sides automatically; the fixture failure
+is path dependence on the combined economic run, not a dropped merge leg.
+
+The review's non-P1 qualification is explicit: holdInBand's setCash rebases
+the bank after the native subscription. The additional bought capital is
+therefore overwritten in the fixture stock; that prior native purchase
+serves to commit the owners' liquid means, **not** to retain extra bank
+lending capacity. Its matched cash/share/basis transfer is checked before
+that synthetic rebase. The residual means116.66385 stand about11% below
+the130.81628 subscription boundary; the native next-slice capital-short
+assertion pins the condition, rather than relying on this margin alone.
+
+The same mail grants the box's dry-run slot and subsequent readiness on a
+green result. Fresh origin/main remains39fcbee71, already fully merged;
+there is no new source merge or model change, no repeated ensemble or
+long named checks. Only this requested review clarification is committed
+and pushed before the fresh authorized dry. The provisional marker stays
+until its actual completed verdict and final records are checked.
