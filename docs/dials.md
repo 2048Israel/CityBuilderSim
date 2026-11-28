@@ -2,7 +2,7 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,953 constants in 664 files.**
+**6,968 constants in 665 files.**
 
 ## model (3127 constants)
 
@@ -6155,7 +6155,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2302 constants)
+## harnesses (2317 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -7595,6 +7595,26 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 16 | `HousingMarketCheck.JSON` | `new Gson()` |  |
 | 18 | `HousingMarketCheck.SECTOR_ENDOWMENT` | `2_000_000 * PriceLevel.FACTOR` | Two billion present-day dollars of fixture equity, before the first audit opens. |
+
+### HungerCheck.java ([map](map/HungerCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 70 | `HungerCheck.THE_1900_WAY` | `Founding.defaults().withUnfitted(true)` |  |
+| 71 | `HungerCheck.CONVENIENCE` | `"Convenience Store", STATION = "Filling Station"` |  |
+| 72 | `HungerCheck.DIPLOMA` | `WageBand.DIPLOMA.ordinal()` |  |
+| 75 | `HungerCheck.HUNT_BOUND` | `36` | The most months a city founded the 1900 way is played for the first month the city's fill would staff a shop. |
+| 77 | `HungerCheck.PLAYED_BOUND` | `12` | The months section 2 gives the town to stand a shop, stock it, sell baskets and be fed. |
+| 79 | `HungerCheck.COVER_BOUND` | `50` | The most Convenience Stores section 1 stands to cover the households' need. |
+| 81 | `HungerCheck.FED_BOUND` | `40` | The most months a default city is played for a month with a shop selling and nobody hungry. |
+| 83 | `HungerCheck.PRICE_UP` | `20` | The shelf price section 3 multiplies, and the months it plays for the people to be priced out. |
+| 84 | `HungerCheck.PRICED_MONTHS` | `2` |  |
+| 180 | `HungerCheck.playedAudit` | `new Audit(), otherAudit = new Audit()` |  |
+| 181 | `HungerCheck.watch` | `new FoodWatch()` |  |
+| 382 | `HungerCheck.LEAD` | `5` |  |
+| 383 | `HungerCheck.RENT_PRICE` | `100, RENT_SPEND = 1000, MEAL_PRICE = 20, MEAL_SPEND = 1000, SHELF_PRICE = 2, SHELF_SPEN...` |  |
+| 384 | `HungerCheck.GOOD_PRICE` | `50, GOOD_SPEND = 1000, FEE_PRICE = 10, FEE_SPEND = 100` |  |
+| 385 | `HungerCheck.RENT_DRIFT` | `.005, MEAL_DRIFT =.003, MEAL_RISE =.01, SHELF_STEP =.10` |  |
 
 ### HydroCheck.java ([map](map/HydroCheck.md))
 
