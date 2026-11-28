@@ -145,6 +145,10 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
 - **On the limit's mend** (d9a09ead9, one JVM at a time): HungerCheck green; FoodProcessingCheck green;
   GroundSkipCheck known red only (main's LP-G2 line); Village1900Check (0.451) and CreditCrunchCheck (its m270
   premise) only the two lines named with HT1-H, as before the mend. `--fast`: Stale 0 firm findings.
+- **Main merged** after the ensemble: origin/main c93cf08ae (CBK2, 0.9.220) at 341ffe001. AllChecks conflicted
+  (both new harnesses kept, CentralBankPaceCheck and HungerCheck); the generated docs were regenerated. HungerCheck
+  green on the merge; `--fast` Stale 0 firm findings. CBK2 committed no ensemble baseline, so 0.9.219.md stays
+  the newest HG1c was scored against.
 - **The pick is ALL** (AllChecks changed): the whole suite runs in the dry run.
 - **The ensemble**, owed because the default trace can move (Retail's gate in tight-labour months; basing on
   meals before groceries). It ran after REV-HG1's SHIP, on the gate box: label HG1, classes of bcc373d55, 80 of 80
