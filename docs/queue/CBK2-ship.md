@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-CBK2-TYQt3HUv -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — CBK2, QE and QT at the player's pace — 2026-11-28, ready, see docs/queue/CBK2-notes.md

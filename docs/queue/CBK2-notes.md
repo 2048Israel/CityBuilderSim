@@ -328,3 +328,10 @@ REV-CBK2 says SHIP on db748b00e. The orchestrator: the trace does not move
 (all eight md5s are main's), so no ensemble is owed. The dry run waits for
 the box's slot, which HG1's dry run holds; on the go, merge origin/main,
 then the dry run, then ready.
+
+## The dry run (2026-11-28)
+
+On the go, origin/main was merged (bbdb5fc08, records only: QUEUE.md and
+HG1's brief) at 5653283f0. `sh tools/gate.sh CBK2 --dry-run` ran on the box
+(`/home/jerus/cbs/runs/cbs-gate-CBK2-TYQt3HUv`) and exited 0. Its suite finished in 1,529 s with exit 3, main's
+known reds only. Its gate-run line is on the ship file's first line.
