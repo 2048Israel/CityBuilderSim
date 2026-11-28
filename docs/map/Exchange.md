@@ -376,7 +376,7 @@
 | 1400 | 5 | `static double shortOfCushion(Household c)` | How far a cell's savings are under its cushion, every household of it: its excess over its share target (round 3). |
 | 1408 | 1 | `public double getLifeRebalanceSold()` |  |
 | 1412 | 1 | `public double getLifeValueSold()` |  |
-| 1415 | 5 | `double spareOf(Household c)` | What a cell has past its cushion, in all: savings past SHARE_CUSHION_MONTHS of its take-home, every household of it. |
+| 1415 | 5 | `double spareOf(Household c)` | What a cell has past its cushion, in all: savings past HouseholdBalance.cushion(), every household of it. |
 
 ### the owner families sell slowly (BO1) (lines 1421-1645)
 
