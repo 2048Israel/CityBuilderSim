@@ -33,8 +33,8 @@ import static ham.citybuildersim.ui.Pieces.*;
  * you yourself destroy buildings". Built to the mockups he saw
  * (Construction.dc.html, Demolish.dc.html); every figure the mockups left
  * in brackets is the model's, read through its public getters: the plan
- * the month will apply (BuildingManager.plan()), each site's time at
- * today's queue (siteMonths()), and the quotes (Game.quoteDemolition(),
+ * the month will apply (BuildingManager.plan()), each site's months left at
+ * its pace (Game.sitePaceMonths(), ASH1), and the quotes (Game.quoteDemolition(),
  * quoteBuyOut(), quoteRestart()). The rules and their sources are
  * ConstructionControl's; the page says them in a line and an (i). Since
  * 0.7.129, while the dead wait and the city's death care is served first
@@ -304,6 +304,8 @@ final class ConstructionScreen {
         ConstructionControl control = bm.getControl();
         double output = g.getBuildingOutput();
         BuildingManager.Plan plan = bm.plan(output);
+        // ...and the month's plan as the advance takes it, for the months left (Game.sitesPlan(), sitePaceMonths()), struck once for every row.
+        BuildingManager.Plan pace = g.sitesPlan();
         double atEveryPost = g.getBuildingOutputAtEveryPost();
 
         VBox table = Kept.column(0);
@@ -333,11 +335,11 @@ final class ConstructionScreen {
         int rank = 0;
         for (String key : cityOrder) {
             final int at = ++rank;
-            table.getChildren().add(Kept.scope("site:" + key, () -> siteRow(key, at, cityOrder.size(), plan, output, atEveryPost)));
+            table.getChildren().add(Kept.scope("site:" + key, () -> siteRow(key, at, cityOrder.size(), plan, pace, output, atEveryPost)));
         }
         for (String key : bm.siteKeysOnSite()) {
             if (cityOrder.contains(key)) continue;
-            table.getChildren().add(Kept.scope("site:" + key, () -> siteRow(key, 0, 0, plan, output, atEveryPost)));
+            table.getChildren().add(Kept.scope("site:" + key, () -> siteRow(key, 0, 0, plan, pace, output, atEveryPost)));
         }
         for (ConstructionControl.Shell shell : control.shells()) {
             table.getChildren().add(Kept.scope("shell:" + shell.templateId, () -> shellRow(shell)));
@@ -420,7 +422,7 @@ final class ConstructionScreen {
      * Kept (KP3): the row is drawn in the scope its caller keys by the site, each cell in a scope of its own and each
      * part that comes and goes (an arrow's number, the payers, the overtime line, the hand's buttons) in one of its own.
      */
-    private Node siteRow(String key, int rank, int ranks, BuildingManager.Plan plan, double output, double atEveryPost) {
+    private Node siteRow(String key, int rank, int ranks, BuildingManager.Plan plan, BuildingManager.Plan pace, double output, double atEveryPost) {
         Game g = ui.game;
         BuildingManager bm = g.getBuildingManager();
         ConstructionControl control = bm.getControl();
@@ -506,10 +508,11 @@ final class ConstructionScreen {
         double share = plan.shareOf(key), work = plan.workOf(key);
         ConstructionControl.Overtime overtime = plan.overtimeOf(key);
         String crewsText = output > 0 ? String.format("%.1f%% of crews", share / output * 100) : "no crews";
-        // The one wait every screen reads (Game.siteMonths(), after the docs
-        // pass): the right panel, a build card and the Needs-you line give this
-        // site the same months; a site the order starves says so in its status.
-        double months = g.siteMonths(key);
+        // The one months-left every screen reads (Game.sitePaceMonths(), ASH1: the
+        // site's pace at the month's plan, the rule's wait where it gives none):
+        // the right panel, a build card and the Needs-you line give this site the
+        // same months; a site the order starves says so in its status.
+        double months = g.sitePaceMonths(key, pace);
         String left = demolition != null && demolition.closing ? "closes, then " + monthsWait(months)
                 : monthsWait(months);
         VBox crewsBox = Kept.scope("crews", () -> {
@@ -704,8 +707,9 @@ final class ConstructionScreen {
         List<Double> months = new ArrayList<>();
         List<String> colours = new ArrayList<>();
         double longest = 0;
+        BuildingManager.Plan pace = g.sitesPlan();
         for (String k : keys) {
-            double m = g.siteMonths(k);
+            double m = g.sitePaceMonths(k, pace);
             names.add(bm.nameOfSite(k));
             months.add(m);
             colours.add(bm.isCitySite(k) ? Palette.MONEY : Palette.BUSINESS);

@@ -1,4 +1,4 @@
-# BuildingManager.java - 9,902 lines · 330 methods · 7 constants · model
+# BuildingManager.java - 9,904 lines · 330 methods · 7 constants · model
 
 `ham/citybuildersim/BuildingManager.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -77,9 +77,9 @@
 | 8203 | · THE POSTS HELD FOR ONE PASS (AP5, 2026-11-26) |
 | 8256 | · THE MONTH'S SECTOR WALKS (AP6, 2026-11-26) |
 | 8361 | · THE GRID UNITS' POSTS (ASH1 finding 9, 2026-11-27) |
-| 8562 | BY SECTOR (2026-09-11, the sector template) |
-| 9127 | THE SAME TWO SUMS, NARROWED TO ONE SERVICE. |
-| 9550 | · Construction state for the save, keyed by template id. |
+| 8564 | BY SECTOR (2026-09-11, the sector template) |
+| 9129 | THE SAME TWO SUMS, NARROWED TO ONE SERVICE. |
+| 9552 | · Construction state for the save, keyed by template id. |
 
 ## Constants
 
@@ -90,8 +90,8 @@
 | 6410 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
 | 6592 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
 | 8216 | `BuildingManager.POSTS_EDITS` | `new java.util.concurrent.atomic.AtomicLong()` | Raised after every change to the stacks' posts or the list of stacks, in any city (AP5): transient, never saved. |
-| 8511 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 9864 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 8513 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
+| 9866 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ## Fields (state)
 
@@ -154,21 +154,21 @@
 | 8229 | `final java.util.Map<String, long[]> bySector` | Each owning sector's posts of each job type, by ordinal. |
 | 8231 | `final java.util.Map<String, List<BuildingsStacks>> stacksOf` | Each owning sector's stacks, in the list's order. |
 | 8263 | `private transient volatile HeldPosts monthPosts` | Owned by the manager (not a thread's map, which could retain a discarded city through stack callbacks). |
-| 8372 | `private java.util.function.DoubleSupplier gridShare` | The share of the grid units' posts the wires call for: handed in by Game; null offers every post. |
-| 8635 | `private java.util.function.Function<BuildingsTemplate, NewUnit> newUnits` | WHAT IS ON SITE, AS IT WILL OPEN (QN1, 2026-11-19). |
-| 9648 | `public int templateId` |  |
-| 9649 | `public String payer` |  |
-| 9650 | `public boolean creditable` |  |
-| 9652 | `public Double recovered` | The share of the tax on it the payer gets back; absent from a save written before the rebates, which read it off creditable. |
-| 9653 | `public double value, units, allowance` |  |
-| 9655 | `public double points` | The points of work its orders put on site still owed (FC2b); absent from an older save, which reads none. |
-| 9657 | `public boolean abroad` | Whether it is a contract handed to the foreign crews (FC2b; BuildingsStacks.getAbroadContracts()), not a home one. |
+| 8374 | `private java.util.function.DoubleSupplier gridShare` | The share of the grid units' posts the wires call for: handed in by Game; null offers every post. |
+| 8637 | `private java.util.function.Function<BuildingsTemplate, NewUnit> newUnits` | WHAT IS ON SITE, AS IT WILL OPEN (QN1, 2026-11-19). |
+| 9650 | `public int templateId` |  |
+| 9651 | `public String payer` |  |
+| 9652 | `public boolean creditable` |  |
+| 9654 | `public Double recovered` | The share of the tax on it the payer gets back; absent from a save written before the rebates, which read it off creditable. |
+| 9655 | `public double value, units, allowance` |  |
+| 9657 | `public double points` | The points of work its orders put on site still owed (FC2b); absent from an older save, which reads none. |
+| 9659 | `public boolean abroad` | Whether it is a contract handed to the foreign crews (FC2b; BuildingsStacks.getAbroadContracts()), not a home one. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 19 | 9884 | **type** `public class BuildingManager` | The city's buildings: the catalogue of templates, the stacks standing and on site with the contracts the builders are working to and who placed them, the yard's material, and what the work costs today (nonMaterialCost... |
+| 19 | 9886 | **type** `public class BuildingManager` | The city's buildings: the catalogue of templates, the stacks standing and on site with the contracts the builders are working to and who placed them, the yard's material, and what the work costs today (nonMaterialCost... |
 
 ### THE LABOUR IN A PRICE KEEPS UP WITH WAGES (0.7.19) (lines 78-315)
 
@@ -453,134 +453,134 @@
 | 8306 | 27 | `public long getPostsWithheld(JobType type)` | The posts of a job type the sectors are not offering this month (0.7.17): the builders' laid-off crews. |
 | 8338 | 22 | `public long getPostsWithheld(String sector, JobType type)` | The posts of a job type one sector does not offer this month: getPostsWithheld(type) for that sector alone (IC1). |
 
-### THE GRID UNITS' POSTS (ASH1 finding 9, 2026-11-27) (lines 8361-8561)
+### THE GRID UNITS' POSTS (ASH1 finding 9, 2026-11-27) (lines 8361-8563)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 8375 | 3 | `public void setGridShare(java.util.function.DoubleSupplier share)` | The hook for the share of the wires' carry the last dispatch used (ASH1); null offers every post of the grid units. |
-| 8380 | 5 | `private double gridShareNow()` | The share of the grid units' posts offered this month: 1 without the hook or for a reading that is not a share. |
-| 8387 | 3 | `private static boolean isGridSector(String sector)` | The posts of the grid units' sector are the city's: a building nobody in the private sector owns. |
-| 8392 | 3 | `private long gridWithheld(long posts)` | The posts of a job type the grid units are not offering this month, from their whole count. |
-| 8397 | 9 | `private long gridPosts(JobType type)` | Every post of a job type the grid units have, offered or not: the held stack sum in a pass, the walk of the stacks otherwise. |
-| 8408 | 3 | `public long getGridPostsOffered(JobType type)` | The posts of a job type the grid units offer this month, at the share of the wires' carry used: what their payroll is struck on (Substations.costs()). |
-| 8413 | 5 | `public long getPostsWithheld()` | getPostsWithheld() over every job type. |
-| 8434 | 3 | `public long getTotalHomes()` | How many separate HOMES the city has, each holding one household. |
-| 8445 | 3 | `public long[] homesBySize()` | The city's finished homes, counted by how big a household each one takes. |
-| 8450 | 3 | `public long getHomesUnderConstruction()` | Homes that will exist once everything on site is finished. |
-| 8455 | 1 | `public long getFoundingEndowments()` | How many founding endowments the city holds: 1 for a founded city, K for a harness's copy K times over (FW9; see the field). |
-| 8458 | 1 | `public void setFoundingEndowments(long endowments)` | The load's (and ScaleCheck's) way to hold K endowments: the city's hundred places and its founding care and police, K times over. |
-| 8461 | 3 | `public long getTotalHouseCapacity()` | The household places: the founding hundred (per endowment, FW9) and every residential building's. |
-| 8472 | 3 | `public long getTotalStoreCoverage()` | Commercial Methods |
-| 8477 | 3 | `public long getTotalStoreCapacity()` | Shelf room across the shops, in units. |
-| 8525 | 6 | `public long getTotalConstructionCapacity()` | The nameplate of the builders' yards and depots, and nothing else since PT1-M4 (2026-10-23): the municipal works department's free 400 points are retired, and the city founds with a Builders' Yard instead (Game.foundi... |
-| 8538 | 3 | `public int getConstructionMaterialsProduction()` | THE YARD'S OWN OUTPUT, and only that, since the sector template. |
-| 8554 | 3 | `public long getFoodProduction()` | Kilograms of bakery goods the city's own ovens turn out a month. |
-| 8558 | 3 | `public long getFoodCapacity()` |  |
+| 8377 | 3 | `public void setGridShare(java.util.function.DoubleSupplier share)` | The hook for the share of the wires' carry the last dispatch used (ASH1); null offers every post of the grid units. |
+| 8382 | 5 | `private double gridShareNow()` | The share of the grid units' posts offered this month: 1 without the hook or for a reading that is not a share. |
+| 8389 | 3 | `private static boolean isGridSector(String sector)` | The posts of the grid units' sector are the city's: a building nobody in the private sector owns. |
+| 8394 | 3 | `private long gridWithheld(long posts)` | The posts of a job type the grid units are not offering this month, from their whole count. |
+| 8399 | 9 | `private long gridPosts(JobType type)` | Every post of a job type the grid units have, offered or not: the held stack sum in a pass, the walk of the stacks otherwise. |
+| 8410 | 3 | `public long getGridPostsOffered(JobType type)` | The posts of a job type the grid units offer this month, at the share of the wires' carry used: what their payroll is struck on (Substations.costs()). |
+| 8415 | 5 | `public long getPostsWithheld()` | getPostsWithheld() over every job type. |
+| 8436 | 3 | `public long getTotalHomes()` | How many separate HOMES the city has, each holding one household. |
+| 8447 | 3 | `public long[] homesBySize()` | The city's finished homes, counted by how big a household each one takes. |
+| 8452 | 3 | `public long getHomesUnderConstruction()` | Homes that will exist once everything on site is finished. |
+| 8457 | 1 | `public long getFoundingEndowments()` | How many founding endowments the city holds: 1 for a founded city, K for a harness's copy K times over (FW9; see the field). |
+| 8460 | 1 | `public void setFoundingEndowments(long endowments)` | The load's (and ScaleCheck's) way to hold K endowments: the city's hundred places and its founding care and police, K times over. |
+| 8463 | 3 | `public long getTotalHouseCapacity()` | The household places: the founding hundred (per endowment, FW9) and every residential building's. |
+| 8474 | 3 | `public long getTotalStoreCoverage()` | Commercial Methods |
+| 8479 | 3 | `public long getTotalStoreCapacity()` | Shelf room across the shops, in units. |
+| 8527 | 6 | `public long getTotalConstructionCapacity()` | The nameplate of the builders' yards and depots, and nothing else since PT1-M4 (2026-10-23): the municipal works department's free 400 points are retired, and the city founds with a Builders' Yard instead (Game.foundi... |
+| 8540 | 3 | `public int getConstructionMaterialsProduction()` | THE YARD'S OWN OUTPUT, and only that, since the sector template. |
+| 8556 | 3 | `public long getFoodProduction()` | Kilograms of bakery goods the city's own ovens turn out a month. |
+| 8560 | 3 | `public long getFoodCapacity()` |  |
 
-### BY SECTOR (2026-09-11, the sector template) (lines 8562-9126)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 8572 | 7 | `public double totalBySector(String sector, ToDoubleFunction<BuildingsTemplate> getter)` | Finished buildings only: quantity times the getter, over the sector's stacks. |
-| 8581 | 9 | `double totalBySectorDrawn(String sector, ToDoubleFunction<BuildingsTemplate> getter)` | The ungrouped sum, in the original list order (AP6): the bare figure held readings are checked against. |
-| 8595 | 9 | `public List<BuildingsStacks> getSectorStacks(String sector)` | A sector's own stacks, in the city's list order; immutable grouping, live stacks (AP6). |
-| 8609 | 7 | `public long standingWhere(java.util.function.Predicate<BuildingsTemplate> which)` | How many finished buildings, in every sector, have a template this accepts (FR7): Freight counts the bulk works a spur could be laid into. |
-| 8618 | 9 | `public double underConstructionBySector(String sector, ToDoubleFunction<BuildingsTemplate> getter)` | Buildings on site only - what is coming. |
-| 8638 | 3 | `public void setNewUnits(java.util.function.Function<BuildingsTemplate, NewUnit> resolve)` | Game hands in how a new building of a template is resolved (NewUnit.of()); null puts back the template as it stands. |
-| 8643 | 1 | `public NewUnit newUnit(BuildingsTemplate t)` | One new building of `t` as it would open now (NewUnit.of()); null for none. |
-| 8646 | 9 | `public double underConstructionOfNew(String sector, java.util.function.ToDoubleFunction<NewUnit> getter)` | Buildings on site only, each read as the new building it will open as (QN1): a sector's posts, output and input to come. |
-| 8657 | 7 | `public long getUnderConstructionBySector(String sector)` | Orders on site for a sector, in buildings. |
-| 8670 | 3 | `public double postsOnSite(String sector, JobType job)` | The posts of one tier that a sector's buildings under construction will offer when they open: buildings on site times the jobs of that tier each will open with (BA1; QN1, newUnit()). |
-| 8681 | 9 | `public long[] getJobArrayBySector(String sector)` | The posts a sector's finished buildings offer, per tier: the buildings it OPERATES (BuildingsTemplate.getOperator()), which are its own and, for Freight, the city's sea terminals (FR3, the landlord port, docs/queue /F... |
-| 8692 | 9 | `public long[] getOwnedJobArrayBySector(String sector)` | ...the posts of the buildings the sector OWNS (the old reading, before the ports' crews moved): its depots' and its track's, not the berths' crews it works for the city (FR3). |
-| 8703 | 9 | `public long[] getCrewArrayBySector(String sector)` | ...and the posts it works but does not own, per tier: the crews of the city's berths for Freight (FR3), none for any other sector. |
-| 8714 | 9 | `public long[] getCrewArrayByCargo(Ports.Cargo kind)` | The posts of the city's sea terminals that handle one kind of cargo, per tier (FR3): the crews of that kind's berths, for the Ports division's per-kind figures. |
-| 8725 | 9 | `public double getLandSqFtBySector(String sector)` | Square feet a sector holds, standing and on site - the plot is occupied the day it is bought. |
-| 8739 | 9 | `public double getWorksLandSqFtBySector(String sector, java.util.function.Predicate<BuildingsTemplate> works)` | ...the part of it that works stand on (ET3: `works` is Game.standsAnywhere()), which the books attribute to the steep ground first (EconomyManager.landByReliefOf()); getLandSqFtBySector() less this is its buildings'. |
-| 8750 | 10 | `public double getBuildingsValueBySector(String sector)` | Finished and unfinished together, at cash plus materials at market - what the sector's buildings are worth. |
-| 8767 | 9 | `public double getBuildingMaterialsBySector(String sector)` | The construction materials in a sector's buildings, finished and on site, in units (0.7.75, the sector statements' R6): what getBuildingsValueBySector() prices at today's materials, so a move in that price moves the s... |
-| 8778 | 11 | `public long getCapacityInPortfolioBySector(String sector)` | People a sector's buildings hold, sites included. |
-| 8791 | 5 | `public List<BuildingsTemplate> getTemplatesBySector(String sector)` | Every template a sector may build now: unknown buildings never reach any sector's planner (R2b). |
-| 8798 | 5 | `public java.util.Set<String> sectorsNamed()` | Every sector name any template answers to, for the catalogue check. |
-| 8815 | 13 | `public double getTotalByCategoryDouble(BuildingType category, ToDoubleFunction<BuildingsTemplate> getter)` | Universal methods |
-| 8829 | 13 | `public long getTotalByCategoryInteger(BuildingType category, ToIntFunction<BuildingsTemplate> getter)` |  |
-| 8843 | 12 | `public double getTotalDouble(ToDoubleFunction<BuildingsTemplate> getter)` |  |
-| 8869 | 9 | `public long getCapacityInPortfolio(BuildingType category)` | People a category's buildings hold, plus those its SITES will hold. |
-| 8886 | 10 | `public double getLandSqFtByCategory(BuildingType category)` | Square feet of lot held by one category, standing and under construction. |
-| 8898 | 9 | `public double getWorksLandSqFtByCategory(BuildingType category, java.util.function.Predicate<BuildingsTemplate> works)` | ...the part of a category's land that works stand on (ET3: `works` is Game.standsAnywhere()); getLandSqFtByCategory() less this is its buildings'. |
-| 8925 | 16 | `public double getCareCapacity(CareType care)` | How many people the city's finished buildings of one care type have room for. |
-| 8962 | 26 | `public double getStaffedCareCapacity(CareType care, double[] jobFillRate)` | The same capacity, discounted by how much of it is actually staffed. |
-| 9001 | 24 | `public double[] getStaffedEducationPlaces(double[] jobFillRate)` | School places, discounted by how much of the teaching staff turned up. |
-| 9038 | 20 | `public double getStaffedSafetyCapacity(SafetyType safety, double[] jobFillRate)` | Officers or cells, discounted by how much of the staff turned up. |
-| 9060 | 10 | `public double getSafetyCapacity(SafetyType safety)` | ...and without the discount: what the buildings would hold, the founding constabulary included (one for each founding endowment, FW9). |
-| 9072 | 10 | `public double getSafetyPayroll(SafetyType safety, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the police, or just the prisons. |
-| 9084 | 9 | `public double getSafetyUpkeep(SafetyType safety)` | ...and their upkeep. |
-| 9095 | 10 | `public double[] getBuiltEducationPlaces()` | Places without the staffing discount - what the buildings would seat. |
-| 9114 | 12 | `public double getCategoryPayroll(BuildingType category, double[] wagePerType, double[] jobFillRate)` | The healthcare service's wage bill, with the fill rate applied. |
-
-### THE SAME TWO SUMS, NARROWED TO ONE SERVICE. (lines 9127-9549)
+### BY SECTOR (2026-09-11, the sector template) (lines 8564-9128)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9142 | 10 | `public double getCarePayroll(CareType care, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the buildings providing one kind of care. |
-| 9154 | 9 | `public double getCareUpkeep(CareType care)` | ...and what those same buildings cost to keep standing. |
-| 9165 | 11 | `public double getSchoolPayroll(EducationType teaches, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the schools teaching one course. |
-| 9178 | 9 | `public double getSchoolUpkeep(EducationType teaches)` | ...and their upkeep. |
-| 9189 | 12 | `private static double jobBill(BuildingsTemplate t, double[] wagePerType, double[] jobFillRate)` | One building's monthly wage bill, with the fill rate applied per post. |
-| 9203 | 3 | `public double getUpkeepByCategory(BuildingType category)` | What the standing buildings of one category cost to run each month. |
-| 9219 | 5 | `public double getBookValueByCategory(BuildingType category)` | Gross book value of everything standing in a category: cash paid plus the materials it consumed, valued at market. |
-| 9226 | 4 | `public double getBookValueBySector(String sector)` | The same, for the buildings one sector owns - finished ones only. |
-| 9238 | 9 | `public double getPortBookValueByCargo(Ports.Cargo kind)` | What the terminals of one kind of cargo standing are worth on the books (FR3, docs/queue/FR3.md 2, port dues): each PORTS building with a berth of this kind at its cash cost plus its materials at market, as getBookVal... |
-| 9267 | 10 | `public double getWorkInProgressByCategory(BuildingType category)` | What a category has PAID FOR and not yet got: buildings on site, at the same valuation the finished ones carry. |
-| 9279 | 3 | `public double getBuildingsValueByCategory(BuildingType category)` | Finished and unfinished together - what the sector's buildings are worth. |
-| 9291 | 10 | `public long[] getJobArrayByName(String name)` | The same array, for one named building rather than a whole category. |
-| 9302 | 22 | `public long[] getJobArrayPerCategory(BuildingType category)` |  |
-| 9328 | 3 | `public long getConstructionMaterials()` | --------------------------------------------------------------------------- |
-| 9332 | 4 | `public int getStackIndex(BuildingsTemplate template)` |  |
-| 9337 | 8 | `public BuildingsTemplate getTemplate(int i)` |  |
-| 9347 | 8 | `public long getQuantity(int i)` | How many of template id {@code i} are finished and standing. |
-| 9356 | 3 | `public int getTemplateCount()` |  |
-| 9360 | 9 | `public double[] getConstructionProgress()` |  |
-| 9378 | 27 | `public double getTotalLandFootprint()` | Every square foot the city has committed to buildings - standing and on site both, since a half-built plant is occupying its plot. |
-| 9412 | 16 | `public double getWorksLandFootprint(java.util.function.Predicate<BuildingsTemplate> works)` | The part of getTotalLandFootprint() that the buildings `works` picks stand on (ET2): the same sum, over the standing and on site, the stopped shells and the demolitions on site, of those templates alone - the ground L... |
-| 9447 | 18 | `public long retire(BuildingsTemplate template, long quantity)` | Scraps finished buildings. |
-| 9467 | 3 | `public int getStackCount()` | How many stacks exist, for callers checking a save's arrays line up. |
-| 9475 | 3 | `public List<BuildingsStacks> getStacksView()` | Every stack, in the order the month shares the crews out over them (R1; EquipmentForms): a read-only view of the live list, so a caller that adds a stack while walking it is walking a changed list. |
-| 9484 | 7 | `public java.util.Map<Integer, java.util.Map<String, Long>> getUnfittedById()` | The buildings each stack lacks a piece of equipment on, by template id and then by the piece's id, for the save (R1; BuildingsStacks' unfitted counts): only the templates with any, so a city with none unfitted writes ... |
-| 9497 | 13 | `public void restoreUnfitted(java.util.Map<Integer, java.util.Map<String, Long>> byId)` | ...and back onto the stacks the load path has put up (R1): each template's counts, clamped to what stands. |
-| 9516 | 8 | `public java.util.Map<Integer, List<BuildingsStacks.Lot>> getLotsById()` | The equipment each site's orders froze, by template id (R1e; BuildingsStacks' lots), for the save: only the sites with a lot, so a city founded the default way writes none and an old save, which has none, reads every ... |
-| 9530 | 9 | `public void restoreLots(java.util.Map<Integer, List<BuildingsStacks.Lot>> byId)` | ...and back onto the sites the load path has put up (R1e), after their counts (restoreConstruction()): each lot clamped to what is on site, a piece the template no longer carries dropped (Fitout.without()); a template... |
-| 9540 | 9 | `public long[] getUnderConstructionArray()` |  |
+| 8574 | 7 | `public double totalBySector(String sector, ToDoubleFunction<BuildingsTemplate> getter)` | Finished buildings only: quantity times the getter, over the sector's stacks. |
+| 8583 | 9 | `double totalBySectorDrawn(String sector, ToDoubleFunction<BuildingsTemplate> getter)` | The ungrouped sum, in the original list order (AP6): the bare figure held readings are checked against. |
+| 8597 | 9 | `public List<BuildingsStacks> getSectorStacks(String sector)` | A sector's own stacks, in the city's list order; immutable grouping, live stacks (AP6). |
+| 8611 | 7 | `public long standingWhere(java.util.function.Predicate<BuildingsTemplate> which)` | How many finished buildings, in every sector, have a template this accepts (FR7): Freight counts the bulk works a spur could be laid into. |
+| 8620 | 9 | `public double underConstructionBySector(String sector, ToDoubleFunction<BuildingsTemplate> getter)` | Buildings on site only - what is coming. |
+| 8640 | 3 | `public void setNewUnits(java.util.function.Function<BuildingsTemplate, NewUnit> resolve)` | Game hands in how a new building of a template is resolved (NewUnit.of()); null puts back the template as it stands. |
+| 8645 | 1 | `public NewUnit newUnit(BuildingsTemplate t)` | One new building of `t` as it would open now (NewUnit.of()); null for none. |
+| 8648 | 9 | `public double underConstructionOfNew(String sector, java.util.function.ToDoubleFunction<NewUnit> getter)` | Buildings on site only, each read as the new building it will open as (QN1): a sector's posts, output and input to come. |
+| 8659 | 7 | `public long getUnderConstructionBySector(String sector)` | Orders on site for a sector, in buildings. |
+| 8672 | 3 | `public double postsOnSite(String sector, JobType job)` | The posts of one tier that a sector's buildings under construction will offer when they open: buildings on site times the jobs of that tier each will open with (BA1; QN1, newUnit()). |
+| 8683 | 9 | `public long[] getJobArrayBySector(String sector)` | The posts a sector's finished buildings offer, per tier: the buildings it OPERATES (BuildingsTemplate.getOperator()), which are its own and, for Freight, the city's sea terminals (FR3, the landlord port, docs/queue /F... |
+| 8694 | 9 | `public long[] getOwnedJobArrayBySector(String sector)` | ...the posts of the buildings the sector OWNS (the old reading, before the ports' crews moved): its depots' and its track's, not the berths' crews it works for the city (FR3). |
+| 8705 | 9 | `public long[] getCrewArrayBySector(String sector)` | ...and the posts it works but does not own, per tier: the crews of the city's berths for Freight (FR3), none for any other sector. |
+| 8716 | 9 | `public long[] getCrewArrayByCargo(Ports.Cargo kind)` | The posts of the city's sea terminals that handle one kind of cargo, per tier (FR3): the crews of that kind's berths, for the Ports division's per-kind figures. |
+| 8727 | 9 | `public double getLandSqFtBySector(String sector)` | Square feet a sector holds, standing and on site - the plot is occupied the day it is bought. |
+| 8741 | 9 | `public double getWorksLandSqFtBySector(String sector, java.util.function.Predicate<BuildingsTemplate> works)` | ...the part of it that works stand on (ET3: `works` is Game.standsAnywhere()), which the books attribute to the steep ground first (EconomyManager.landByReliefOf()); getLandSqFtBySector() less this is its buildings'. |
+| 8752 | 10 | `public double getBuildingsValueBySector(String sector)` | Finished and unfinished together, at cash plus materials at market - what the sector's buildings are worth. |
+| 8769 | 9 | `public double getBuildingMaterialsBySector(String sector)` | The construction materials in a sector's buildings, finished and on site, in units (0.7.75, the sector statements' R6): what getBuildingsValueBySector() prices at today's materials, so a move in that price moves the s... |
+| 8780 | 11 | `public long getCapacityInPortfolioBySector(String sector)` | People a sector's buildings hold, sites included. |
+| 8793 | 5 | `public List<BuildingsTemplate> getTemplatesBySector(String sector)` | Every template a sector may build now: unknown buildings never reach any sector's planner (R2b). |
+| 8800 | 5 | `public java.util.Set<String> sectorsNamed()` | Every sector name any template answers to, for the catalogue check. |
+| 8817 | 13 | `public double getTotalByCategoryDouble(BuildingType category, ToDoubleFunction<BuildingsTemplate> getter)` | Universal methods |
+| 8831 | 13 | `public long getTotalByCategoryInteger(BuildingType category, ToIntFunction<BuildingsTemplate> getter)` |  |
+| 8845 | 12 | `public double getTotalDouble(ToDoubleFunction<BuildingsTemplate> getter)` |  |
+| 8871 | 9 | `public long getCapacityInPortfolio(BuildingType category)` | People a category's buildings hold, plus those its SITES will hold. |
+| 8888 | 10 | `public double getLandSqFtByCategory(BuildingType category)` | Square feet of lot held by one category, standing and under construction. |
+| 8900 | 9 | `public double getWorksLandSqFtByCategory(BuildingType category, java.util.function.Predicate<BuildingsTemplate> works)` | ...the part of a category's land that works stand on (ET3: `works` is Game.standsAnywhere()); getLandSqFtByCategory() less this is its buildings'. |
+| 8927 | 16 | `public double getCareCapacity(CareType care)` | How many people the city's finished buildings of one care type have room for. |
+| 8964 | 26 | `public double getStaffedCareCapacity(CareType care, double[] jobFillRate)` | The same capacity, discounted by how much of it is actually staffed. |
+| 9003 | 24 | `public double[] getStaffedEducationPlaces(double[] jobFillRate)` | School places, discounted by how much of the teaching staff turned up. |
+| 9040 | 20 | `public double getStaffedSafetyCapacity(SafetyType safety, double[] jobFillRate)` | Officers or cells, discounted by how much of the staff turned up. |
+| 9062 | 10 | `public double getSafetyCapacity(SafetyType safety)` | ...and without the discount: what the buildings would hold, the founding constabulary included (one for each founding endowment, FW9). |
+| 9074 | 10 | `public double getSafetyPayroll(SafetyType safety, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the police, or just the prisons. |
+| 9086 | 9 | `public double getSafetyUpkeep(SafetyType safety)` | ...and their upkeep. |
+| 9097 | 10 | `public double[] getBuiltEducationPlaces()` | Places without the staffing discount - what the buildings would seat. |
+| 9116 | 12 | `public double getCategoryPayroll(BuildingType category, double[] wagePerType, double[] jobFillRate)` | The healthcare service's wage bill, with the fill rate applied. |
 
-### Construction state for the save, keyed by template id. (lines 9550-9902)
+### THE SAME TWO SUMS, NARROWED TO ONE SERVICE. (lines 9129-9551)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 9574 | 7 | `public int getMaxTemplateId()` | The highest id in the catalogue, not the number of templates. |
-| 9582 | 10 | `public double[] getConstructionProgressById()` |  |
-| 9593 | 10 | `public long[] getUnderConstructionById()` |  |
-| 9605 | 10 | `public double[] getMaterialsOwedById()` | Material the sites still have to draw, by template id. |
-| 9617 | 4 | `public void deliverToSites(BuildingsTemplate template, double units)` | Material delivered to a template's sites from the yard: off what they owe. |
-| 9623 | 4 | `public void bookContract(BuildingsTemplate template, double amount)` | The builders' price for an order, on the stack it was placed on. |
-| 9629 | 7 | `public void bookContract(BuildingsTemplate template, String payer, double recovered, double amount, double units, double allowa...` | ...and who placed it, with the material units it will draw beyond the yard and the allowance priced in for them (0.7.19), and the share of the tax on it the payer gets back (EconomyManager.taxRecoveredShare()). |
-| 9641 | 4 | `public void noteContractPoints(BuildingsTemplate t, String payer, double points)` | The points an order of {@code payer}'s put on site (FC2b), booked after its contract (bookContract()): what a payer's share of a shared site is read by (BuildingsStacks.homePointsShare()). |
-| 9647 | 12 | **type** `public static final class ContractRecord` | One payer's contract on one template's sites, as the save carries it (0.7.19). |
-| 9661 | 32 | `public java.util.List<ContractRecord> getContractRecords()` | Every payer's contract on site, for the save. |
-| 9695 | 10 | `public void restoreContractRecords(java.util.List<ContractRecord> records)` | ...and back onto the stacks the load path has put up. |
-| 9714 | 15 | `public void inferContracts(java.util.function.Function<BuildingsTemplate, String> payerOf, java.util.function.ToDoubleBiFunctio...` | Every stack's contract read as one payer's, for a save from before the payers were kept (0.7.19; Game, OLD CONTRACTS): the whole contract left, the material its sites still owe, and an allowance of the contract less t... |
-| 9731 | 10 | `public void spreadContracts(double unearned)` | One order book, spread over the sites by the points they still owe. |
-| 9743 | 10 | `public double[] getContractValueById()` | The builders' contracts still on site, by template id. |
-| 9755 | 5 | `public double getMaterialsOwed()` | ...and in total, for the screens. |
-| 9768 | 13 | `public boolean restoreConstruction(int templateId, long underConstruction, double progress, double materialsOwed, double contra...` | Puts a template's in-progress work back onto its stack. |
-| 9782 | 9 | `public void setConstructionProgress(double[] progress)` |  |
-| 9792 | 9 | `public void setUnderConstructionArray(int[] progress)` |  |
-| 9802 | 3 | `public void setConstructionMaterials(long constructionMaterials)` |  |
-| 9806 | 5 | `public void clearStacks()` |  |
-| 9837 | 3 | `public void handleConstructionMaterials(long required)` | Takes the order's materials out of the yard, importing whatever is short. |
-| 9848 | 5 | `public long takeFromYard(long required)` | Takes what the yard has, up to what was asked. |
-| 9854 | 9 | `public BuildingsStacks getStack(BuildingsTemplate template)` |  |
-| 9866 | 4 | `static { ... }` |  |
-| 9871 | 7 | `public void resetBuildingManager()` |  |
-| 9881 | 12 | `public void redenominate(double scale)` | Every template's price, and the materials the city is holding, in the new unit. |
-| 9896 | 5 | `public void seedConstants(double unit)` | Re-seeds every template's price at a given unit - since 0.7.42 the unit over the expected price level, every month (Game.restrikeMoneyConstants()). |
+| 9144 | 10 | `public double getCarePayroll(CareType care, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the buildings providing one kind of care. |
+| 9156 | 9 | `public double getCareUpkeep(CareType care)` | ...and what those same buildings cost to keep standing. |
+| 9167 | 11 | `public double getSchoolPayroll(EducationType teaches, double[] wagePerType, double[] jobFillRate)` | The wage bill of just the schools teaching one course. |
+| 9180 | 9 | `public double getSchoolUpkeep(EducationType teaches)` | ...and their upkeep. |
+| 9191 | 12 | `private static double jobBill(BuildingsTemplate t, double[] wagePerType, double[] jobFillRate)` | One building's monthly wage bill, with the fill rate applied per post. |
+| 9205 | 3 | `public double getUpkeepByCategory(BuildingType category)` | What the standing buildings of one category cost to run each month. |
+| 9221 | 5 | `public double getBookValueByCategory(BuildingType category)` | Gross book value of everything standing in a category: cash paid plus the materials it consumed, valued at market. |
+| 9228 | 4 | `public double getBookValueBySector(String sector)` | The same, for the buildings one sector owns - finished ones only. |
+| 9240 | 9 | `public double getPortBookValueByCargo(Ports.Cargo kind)` | What the terminals of one kind of cargo standing are worth on the books (FR3, docs/queue/FR3.md 2, port dues): each PORTS building with a berth of this kind at its cash cost plus its materials at market, as getBookVal... |
+| 9269 | 10 | `public double getWorkInProgressByCategory(BuildingType category)` | What a category has PAID FOR and not yet got: buildings on site, at the same valuation the finished ones carry. |
+| 9281 | 3 | `public double getBuildingsValueByCategory(BuildingType category)` | Finished and unfinished together - what the sector's buildings are worth. |
+| 9293 | 10 | `public long[] getJobArrayByName(String name)` | The same array, for one named building rather than a whole category. |
+| 9304 | 22 | `public long[] getJobArrayPerCategory(BuildingType category)` |  |
+| 9330 | 3 | `public long getConstructionMaterials()` | --------------------------------------------------------------------------- |
+| 9334 | 4 | `public int getStackIndex(BuildingsTemplate template)` |  |
+| 9339 | 8 | `public BuildingsTemplate getTemplate(int i)` |  |
+| 9349 | 8 | `public long getQuantity(int i)` | How many of template id {@code i} are finished and standing. |
+| 9358 | 3 | `public int getTemplateCount()` |  |
+| 9362 | 9 | `public double[] getConstructionProgress()` |  |
+| 9380 | 27 | `public double getTotalLandFootprint()` | Every square foot the city has committed to buildings - standing and on site both, since a half-built plant is occupying its plot. |
+| 9414 | 16 | `public double getWorksLandFootprint(java.util.function.Predicate<BuildingsTemplate> works)` | The part of getTotalLandFootprint() that the buildings `works` picks stand on (ET2): the same sum, over the standing and on site, the stopped shells and the demolitions on site, of those templates alone - the ground L... |
+| 9449 | 18 | `public long retire(BuildingsTemplate template, long quantity)` | Scraps finished buildings. |
+| 9469 | 3 | `public int getStackCount()` | How many stacks exist, for callers checking a save's arrays line up. |
+| 9477 | 3 | `public List<BuildingsStacks> getStacksView()` | Every stack, in the order the month shares the crews out over them (R1; EquipmentForms): a read-only view of the live list, so a caller that adds a stack while walking it is walking a changed list. |
+| 9486 | 7 | `public java.util.Map<Integer, java.util.Map<String, Long>> getUnfittedById()` | The buildings each stack lacks a piece of equipment on, by template id and then by the piece's id, for the save (R1; BuildingsStacks' unfitted counts): only the templates with any, so a city with none unfitted writes ... |
+| 9499 | 13 | `public void restoreUnfitted(java.util.Map<Integer, java.util.Map<String, Long>> byId)` | ...and back onto the stacks the load path has put up (R1): each template's counts, clamped to what stands. |
+| 9518 | 8 | `public java.util.Map<Integer, List<BuildingsStacks.Lot>> getLotsById()` | The equipment each site's orders froze, by template id (R1e; BuildingsStacks' lots), for the save: only the sites with a lot, so a city founded the default way writes none and an old save, which has none, reads every ... |
+| 9532 | 9 | `public void restoreLots(java.util.Map<Integer, List<BuildingsStacks.Lot>> byId)` | ...and back onto the sites the load path has put up (R1e), after their counts (restoreConstruction()): each lot clamped to what is on site, a piece the template no longer carries dropped (Fitout.without()); a template... |
+| 9542 | 9 | `public long[] getUnderConstructionArray()` |  |
+
+### Construction state for the save, keyed by template id. (lines 9552-9904)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 9576 | 7 | `public int getMaxTemplateId()` | The highest id in the catalogue, not the number of templates. |
+| 9584 | 10 | `public double[] getConstructionProgressById()` |  |
+| 9595 | 10 | `public long[] getUnderConstructionById()` |  |
+| 9607 | 10 | `public double[] getMaterialsOwedById()` | Material the sites still have to draw, by template id. |
+| 9619 | 4 | `public void deliverToSites(BuildingsTemplate template, double units)` | Material delivered to a template's sites from the yard: off what they owe. |
+| 9625 | 4 | `public void bookContract(BuildingsTemplate template, double amount)` | The builders' price for an order, on the stack it was placed on. |
+| 9631 | 7 | `public void bookContract(BuildingsTemplate template, String payer, double recovered, double amount, double units, double allowa...` | ...and who placed it, with the material units it will draw beyond the yard and the allowance priced in for them (0.7.19), and the share of the tax on it the payer gets back (EconomyManager.taxRecoveredShare()). |
+| 9643 | 4 | `public void noteContractPoints(BuildingsTemplate t, String payer, double points)` | The points an order of {@code payer}'s put on site (FC2b), booked after its contract (bookContract()): what a payer's share of a shared site is read by (BuildingsStacks.homePointsShare()). |
+| 9649 | 12 | **type** `public static final class ContractRecord` | One payer's contract on one template's sites, as the save carries it (0.7.19). |
+| 9663 | 32 | `public java.util.List<ContractRecord> getContractRecords()` | Every payer's contract on site, for the save. |
+| 9697 | 10 | `public void restoreContractRecords(java.util.List<ContractRecord> records)` | ...and back onto the stacks the load path has put up. |
+| 9716 | 15 | `public void inferContracts(java.util.function.Function<BuildingsTemplate, String> payerOf, java.util.function.ToDoubleBiFunctio...` | Every stack's contract read as one payer's, for a save from before the payers were kept (0.7.19; Game, OLD CONTRACTS): the whole contract left, the material its sites still owe, and an allowance of the contract less t... |
+| 9733 | 10 | `public void spreadContracts(double unearned)` | One order book, spread over the sites by the points they still owe. |
+| 9745 | 10 | `public double[] getContractValueById()` | The builders' contracts still on site, by template id. |
+| 9757 | 5 | `public double getMaterialsOwed()` | ...and in total, for the screens. |
+| 9770 | 13 | `public boolean restoreConstruction(int templateId, long underConstruction, double progress, double materialsOwed, double contra...` | Puts a template's in-progress work back onto its stack. |
+| 9784 | 9 | `public void setConstructionProgress(double[] progress)` |  |
+| 9794 | 9 | `public void setUnderConstructionArray(int[] progress)` |  |
+| 9804 | 3 | `public void setConstructionMaterials(long constructionMaterials)` |  |
+| 9808 | 5 | `public void clearStacks()` |  |
+| 9839 | 3 | `public void handleConstructionMaterials(long required)` | Takes the order's materials out of the yard, importing whatever is short. |
+| 9850 | 5 | `public long takeFromYard(long required)` | Takes what the yard has, up to what was asked. |
+| 9856 | 9 | `public BuildingsStacks getStack(BuildingsTemplate template)` |  |
+| 9868 | 4 | `static { ... }` |  |
+| 9873 | 7 | `public void resetBuildingManager()` |  |
+| 9883 | 12 | `public void redenominate(double scale)` | Every template's price, and the materials the city is holding, in the new unit. |
+| 9898 | 5 | `public void seedConstants(double unit)` | Re-seeds every template's price at a given unit - since 0.7.42 the unit over the expected price level, every month (Game.restrikeMoneyConstants()). |
 

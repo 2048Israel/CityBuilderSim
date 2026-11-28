@@ -392,8 +392,9 @@ public class Game {
         ham.citybuildersim.sectors.Freight carrier = economyManager.getSectors().freight();
         buildingManager.setOfferedShareByType((key, type) -> key.equals(builders.key()) ? builders.getPostsOfferedShare()
                 : key.equals(carrier.key()) ? carrier.haulage().offeredShare(type) : 1);
-        // ...and the grid units offer their posts at the share of the wires' carry the last dispatch's peak half-block used (ASH1 finding 9; BuildingManager, THE GRID UNITS' POSTS).
-        buildingManager.setGridShare(() -> servicesManager.getUtilitiesHandler().getWiresUsed());
+        // ...and the grid units offer their posts at the share of the wires' carry the last dispatch's peak half-block used, struck as the month began
+        // (ASH1 finding 9, REV-ASH1 1; BuildingManager, THE GRID UNITS' POSTS; UtilitiesHandler.getWiresShare()).
+        buildingManager.setGridShare(() -> servicesManager.getUtilitiesHandler().getWiresShare());
         // ...and a farm run on horses pays for the hands past its buildings' posts, which the labour market is offered too (R0c; BuildingManager.setPostsPast()).
         buildingManager.setPostsPast(() -> economyManager.getSectors().postsPastBuildings());
         // ...and what their crews cost a point, today and at founding, which
@@ -870,6 +871,8 @@ public class Game {
      * (Founding.problem()), which the screen never lets through.
      */
     public void newGame(Founding choices){
+        // A new city offers every grid post until its first month strikes the share of the wires it uses (ASH1; UtilitiesHandler.getWiresShare()).
+        servicesManager.getUtilitiesHandler().foundWiresShare();
 
         // Rebuild rather than reset. See buildWorld() for the twenty-three
         // fields the old reset was missing and why the list itself was the bug.
@@ -10048,27 +10051,42 @@ public class Game {
 
     /**
      * ASH1 finding 8: months a site's points still owed take at the pace this month's plan gives it, not at the rule's wait
-     * (onSiteMonths(): its points over its weight's share with every other site held at its share the whole wait). The month
+     * (siteMonths(): its points over its weight's share with every other site held at its share the whole wait). The month
      * water-fills (BuildingManager.waterFill()), the small sites taking no more than they owe and the surplus passing on, so
      * a big site among many small ones does the plan's work and not its weight's share: 17-18 months where the rule read 28.
-     * It is all the site owes over the plan's work on it, and not Plan.owedOf(), which is no more than the month's cap.
-     * A site handed abroad, or one the plan gives no work (no output, or behind the city's order), keeps onSiteMonths().
-     * 0 with nothing of it on site. Reads; changes nothing.
+     * It is all the site owes (a stack's BuildingsStacks.owedPoints(), a demolition's Demolition.owed()) over the plan's work on
+     * it, and not Plan.owedOf(), which is no more than the month's cap. THE ONE MONTHS-LEFT EVERY SCREEN READS (REV-ASH1 2): the
+     * overview's NEEDS YOU row (CityNeeds), a build card's "N on site" (BuildCard.Figures.siteMonths()), the construction page's
+     * site rows and chart, the right panel, the build screen's ring and the oil view; the quotes, the planners and the abroad
+     * terms keep the rule's wait (siteMonths(), quoteCityMonths()). A site handed abroad, or one the plan gives no work (no
+     * output, or behind the city's order), keeps siteMonths(). 0 with nothing on site. Reads; changes nothing.
      */
-    public double onSitePaceMonths(BuildingsTemplate template, BuildingManager.Plan plan) {
-        BuildingsStacks site = template == null ? null : buildingManager.getStack(template);
-        if (site == null || site.getUnderConstruction() <= 0) return 0;
-        String key = ConstructionControl.keyOf(template);
-        if (plan == null || buildingManager.getControl().abroadOf(key) != null || !(plan.workOf(key) > 0)) return onSiteMonths(template);
-        return Math.max(0, site.owedPoints()) / plan.workOf(key);
+    public double sitePaceMonths(String key, BuildingManager.Plan plan) {
+        ConstructionControl.Demolition d = buildingManager.getControl().demolitionOf(key);
+        BuildingsStacks site = d == null ? buildingManager.stackOfKey(key) : null;
+        if (d == null && (site == null || site.getUnderConstruction() <= 0)) return 0;
+        if (plan == null || buildingManager.getControl().abroadOf(key) != null || !(plan.workOf(key) > 0)) return siteMonths(key);
+        return Math.max(0, d != null ? d.owed() : site.owedPoints()) / plan.workOf(key);
     }
+
+    /** ...at this month's plan of the sites (sitesPlan()); a reader of many sites strikes the plan once and passes it. */
+    public double sitePaceMonths(String key) { return sitePaceMonths(key, sitesPlan()); }
+
+    /** ...a building's site, by its key; 0 for none. */
+    public double onSitePaceMonths(BuildingsTemplate template, BuildingManager.Plan plan) {
+        return template == null ? 0 : sitePaceMonths(ConstructionControl.keyOf(template), plan);
+    }
+
+    /** ...at this month's plan of the sites. */
+    public double onSitePaceMonths(BuildingsTemplate template) { return onSitePaceMonths(template, sitesPlan()); }
 
     /**
      * ONE WAIT FOR A SITE (0.7.22, after the docs pass): months a site on
      * site would take at today's queue - a stack's by its key, or a
      * demolition's - at the output the quote reads. The construction page,
-     * the right panel, a build card's "N on site" and the Needs-you line all
-     * read it (through onSiteMonths() for a building), so a city site the
+     * the right panel, a build card's "N on site" and the Needs-you line
+     * read it where the month's plan gives the site no work (sitePaceMonths(),
+     * ASH1: they read the site's pace otherwise), so a city site the
      * player's order starves reads the same everywhere. With no order set
      * and no rush on it, waitOnSite()'s wait, to the bit. NaN when there is
      * no site output; 0 with nothing of it on site. Reads. See
@@ -14275,6 +14293,10 @@ public class Game {
         // refreshJobs()); nothing between here and the count reads them, and closeDemolished() reads no research. None while no grant is set and no
         // post is held.
         strikeResearchPosts();
+        // ...and the grid units' posts beside them (ASH1, REV-ASH1 1): the share of the wires' carry they are offered at for the month, struck from the last
+        // dispatch before the posts are counted and held to the next month's (UtilitiesHandler.strikeWiresShare()), so the month's own dispatch, at its end,
+        // moves no post the month has counted and paid, and a reload counts them at the share the month did (it is saved).
+        servicesManager.getUtilitiesHandler().strikeWiresShare();
         // The bank's clock, for its preferred's anniversaries, and the fund's
         // month (0.7.14).
         bank.setMonth(month);

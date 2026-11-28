@@ -5502,11 +5502,13 @@ public class UserInterface extends Application {
 
         // This month's crews, site by site, as the month will apply them (0.7.22).
         BuildingManager.Plan sitePlan = buildingManager.plan(forSites);
+        // ...and the month's plan as the advance takes it, for each site's months left at its pace (Game.sitesPlan(), sitePaceMonths(), ASH1), struck once.
+        BuildingManager.Plan pacePlan = game.sitesPlan();
 
         for (BuildingsStacks site : sites) {
             // Keyed by the building it shows: a site that finishes takes its nodes with it, the others keep theirs.
             list.getChildren().add(Kept.scope("site:" + ConstructionControl.keyOf(site.getBuilding()),
-                    () -> siteRow(site, sitePlan, forSites)));
+                    () -> siteRow(site, sitePlan, pacePlan, forSites)));
         }
 
         // ...and the player's own hand on the queue, in a line (0.7.22): the
@@ -5533,7 +5535,7 @@ public class UserInterface extends Application {
     }
 
     /** One site's row: its name, its bar, and its months. */
-    private VBox siteRow(BuildingsStacks site, BuildingManager.Plan sitePlan, int forSites) {
+    private VBox siteRow(BuildingsStacks site, BuildingManager.Plan sitePlan, BuildingManager.Plan pacePlan, int forSites) {
         {
 
             long remaining = site.getUnderConstruction();
@@ -5568,7 +5570,7 @@ public class UserInterface extends Application {
             String eta;
             double perSite = sitePlan.shareOf(siteKey);
             if (perSite <= 0 && sitePlan.ruleOf(siteKey) > 0) {
-                double monthsLeft = game.onSiteMonths(site.getBuilding());
+                double monthsLeft = game.onSitePaceMonths(site.getBuilding(), pacePlan);
                 eta = "waiting for crews, "
                         + (Double.isNaN(monthsLeft) ? "stalled" : atTodaysQueue(monthsLeft));
             } else if (perSite <= 0) {
@@ -5590,7 +5592,7 @@ public class UserInterface extends Application {
                  * with an order set or a rush on, the order's and the
                  * overtime's.
                  */
-                double monthsLeft = game.onSiteMonths(site.getBuilding());
+                double monthsLeft = game.onSitePaceMonths(site.getBuilding(), pacePlan);
                 eta = Double.isNaN(monthsLeft) ? "stalled - no output" : atTodaysQueue(monthsLeft);
             }
 

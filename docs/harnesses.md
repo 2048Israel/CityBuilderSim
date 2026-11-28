@@ -2,7 +2,7 @@
 
 Generated 2026-11-27 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**262 harness files, 30,501 labelled assertions.** AllChecks runs 262 of them.
+**262 harness files, 30,505 labelled assertions.** AllChecks runs 262 of them.
 
 ## Which harnesses read which class
 
@@ -32,7 +32,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [BridgeWorks](map/BridgeWorks.md) | BridgeCheck, BuildCardCheck, FB13Check, PriceLevelCheck, SaveSlotCheck |
 | [Bridges](map/Bridges.md) | BridgeCheck, FB13Check, IslandLinkCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck |
 | [BuildAdvice](map/BuildAdvice.md) | AskProceedsCheck, AuctionCheck, AutoBuildCheck, BridgeCheck, BuildAdviceCheck, BuildCardCheck, BuildMenuCheck, ChildcareCheck, ER1Check, EquipmentCheck, EssentialWorksCheck, FB13Check, FarmlandReserveCheck, ForeignChoiceCheck, GroundSkipCheck, HistoricalLicenceCheck, HydroCheck, InvestCheck, IslandLinkCheck, KeptCheck, KeptTimingCheck, LandCheck, LandmassCheck, LongPlaytest, NewUnitCheck, PowerPlanCheck, PowerPlantsCheck, PowerViewCheck, PublicLicenceCheck, ReadPathCheck, ResearchCheck, RoadCheck, SectorFlowCheck, StepsCheck, SubstationCheck, TownGridCheck, WaterCheck, WorksFinanceCheck |
-| [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, BuildingStackCheck, ChildcareCheck, ConstructionControlCheck, EssentialWorksCheck, HistoricalRecipeCheck, HousingCheck, HydroCheck, LandmassCheck, LongPlaytest, NewUnitCheck, OilCheck, PortCheck, PowerPlantsCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, StaffingDrawCheck, SubstationCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
+| [BuildCard](map/BuildCard.md) | BridgeCheck, BuildCardCheck, BuildingStackCheck, ChildcareCheck, ConstructionControlCheck, EssentialWorksCheck, HistoricalRecipeCheck, HousingCheck, HydroCheck, LandmassCheck, LongPlaytest, NewUnitCheck, OilCheck, PortCheck, PowerPlantsCheck, ReadPathCheck, RoadCheck, RunWorksCheck, SectorFlowCheck, SectorStatementCheck, StaffingDrawCheck, SubstationCheck, TownGridCheck, WaterCheck, WellCheck, WorksFinanceCheck, ZoningViewCheck |
 | [BuildLog](map/BuildLog.md) | CalendarCheck, SaveSlotCheck |
 | [BuildScreen](map/BuildScreen.md) | MoneyWordsCheck |
 | [BuildersShort](map/BuildersShort.md) | ConstructionTrapCheck, FitoutCheck, ForeignChoiceCheck, ForeignCrewsCheck, GapOrderCheck, InvestCheck, SaveFileCheck |
@@ -34970,7 +34970,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L201 the fund press moves a leading unit or its tenth
   - L204 the actual fund has exactly two positive magnitude steps
 
-## SubstationCheck.java - 28 labelled assertions
+## SubstationCheck.java - 31 labelled assertions
 
 > Substations at both sides of their carry, the order that keeps the peak covered, and their costs in the bills (PW5).
 > WHY. A flat wires charge and unlimited wires passed PW1's price checks. These fixtures change real city stock,
@@ -34981,37 +34981,40 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L99 a short grid conserves each half's energy, stops generation before burning fuel, and reports the cap price
   - L103 a city without substations carries only its existing free 10 MW starter grid
 - **L114 the substations' own costs, struck once**
-  - L134 a town drawing 90% of the Substation's carry pays its crew on the posts offered at that share, fewer than the card's every post
-  - L141 the bill's wires recover this substation's capital, repairs and filled posts over twelve months' delivered kWh
-  - L149 changing the substation's cost changes the next bill; the previously struck book keeps its price
-- **L154 currency reform preserves the wires' breakdown**
-  - L170 currency reform scales saved transmission, distribution, costs and tariffs exactly once, keeping physical energy and carry
-- **L176 independent worked study tariff**
-  - L189 the study's $440.004M grid recovers $1,852,544.78305859 capital and $366,670 repairs a month
-  - L196 51.3M delivered kWh bills the worked $31.1468741481907 commerce and $9.88748025755129 industry wires per kW-month
-- **L226 the same order machinery as the roads**
-  - L230 peak growth orders the least distribution substations that cover it, counts its site once, and does not order below the edge
-  - L231 a catalogue without the distribution substation orders the 100 MW Substation at the edge, counts its site once, and does not order below it
-  - L255 a catalogue without the distribution substation orders the 100 MW Substation at the edge, counts its site once, and does not order below it
-- **L261 closing costs survive the load rebuild**
-  - L276 DataSave retains both the struck cost book and pending costs through the derived-services rebuild
-  - L290 a loaded city's grid units offer the same posts per job type, read the same share of the wires used and keep the same captured crew, to the bit
-  - L293 ...of wires partly used: a share of the carry between none and all, some of the grid units' posts withheld and some offered
-  - L296 the first post-load strike bills exactly the same grid costs as the uninterrupted city
-  - L297 ...and the crew Substations.costs() pays the month after the load is the uninterrupted city's, to the bit, at the same share of the wires used
-  - L298 a native format-60 city and history are refused without changing either file or a running twin
-  - L299 a native format-61 city and history are refused without changing either file or a running twin
-  - L300 a native shipped format-62 city and history are refused without changing either file or a running twin
-- **L309 the grid units' posts held for a pass follow the stack**
-  - L326 a Substation added inside a pass's scope is read at once in the grid's offered posts and its withheld, the same as the bare reading
-- **L356 PW5-F1: low-utilization wires and the honest works fixture**
-  - L367 PW5-F1: the ordinary works fixture uses one district and native world quotes, with its original coal chain working
-  - L370 PW5-F1: a whole underused district costs more per kWh than main's flat wires; its capital is not prorated to the load
-  - L373 PW5-F1: three unnecessary districts price the coal mines out of their home market; flat wires restore the same-stock chain
-  - L395 PW5-F1: RailCheck's m37 squeeze is missing carry and VOLL, not a whole-substation charge; physical wires restore supply and trade
-  - L449 the shared historical town's measured peak fits its free founding wires and GRID needs no district
-  - L458 PW5-F1: the explicitly priced district adds the study's whole 110 repair points and a wires price to a town below its carry
-  - L467 the money audit's hand-built bond town carries its billed and closing peaks after its full warmup
+  - L135 a town drawing 90% of the Substation's carry pays its crew on the posts offered at that share, fewer than the card's every post
+  - L142 the bill's wires recover this substation's capital, repairs and filled posts over twelve months' delivered kWh
+  - L150 changing the substation's cost changes the next bill; the previously struck book keeps its price
+- **L155 currency reform preserves the wires' breakdown**
+  - L171 currency reform scales saved transmission, distribution, costs and tariffs exactly once, keeping physical energy and carry
+- **L177 independent worked study tariff**
+  - L190 the study's $440.004M grid recovers $1,852,544.78305859 capital and $366,670 repairs a month
+  - L197 51.3M delivered kWh bills the worked $31.1468741481907 commerce and $9.88748025755129 industry wires per kW-month
+- **L227 the same order machinery as the roads**
+  - L231 peak growth orders the least distribution substations that cover it, counts its site once, and does not order below the edge
+  - L232 a catalogue without the distribution substation orders the 100 MW Substation at the edge, counts its site once, and does not order below it
+  - L256 a catalogue without the distribution substation orders the 100 MW Substation at the edge, counts its site once, and does not order below it
+- **L262 closing costs survive the load rebuild**
+  - L278 fixture: the month counted its grid posts at the share struck from the load between the presses, part of the carry, and closed on another
+  - L285 DataSave retains both the struck cost book and pending costs through the derived-services rebuild
+  - L297 a loaded city counts its grid posts at the share the month counted them at, not its closing dispatch's: the share, the grid's posts offered and withheld per ...
+  - L300 ...and pays them the same: the electricity posts paid, the utility payroll, the wage bill and Substations.costs()' payroll, to the bit
+  - L302 ...with the closing dispatch's share and its captured crew kept beside it, to the bit
+  - L304 ...of wires partly used: some of the grid units' posts withheld and some offered, and a crew paid
+  - L307 the first post-load strike bills exactly the same grid costs as the uninterrupted city
+  - L310 ...and the month after the load strikes the same share from the same closing dispatch, and counts and pays the same posts, to the bit
+  - L312 a native format-60 city and history are refused without changing either file or a running twin
+  - L313 a native format-61 city and history are refused without changing either file or a running twin
+  - L314 a native shipped format-62 city and history are refused without changing either file or a running twin
+- **L347 the grid units' posts held for a pass follow the stack**
+  - L365 a Substation added inside a pass's scope is read at once in the grid's offered posts and its withheld, the same as the bare reading
+- **L395 PW5-F1: low-utilization wires and the honest works fixture**
+  - L406 PW5-F1: the ordinary works fixture uses one district and native world quotes, with its original coal chain working
+  - L409 PW5-F1: a whole underused district costs more per kWh than main's flat wires; its capital is not prorated to the load
+  - L412 PW5-F1: three unnecessary districts price the coal mines out of their home market; flat wires restore the same-stock chain
+  - L434 PW5-F1: RailCheck's m37 squeeze is missing carry and VOLL, not a whole-substation charge; physical wires restore supply and trade
+  - L488 the shared historical town's measured peak fits its free founding wires and GRID needs no district
+  - L497 PW5-F1: the explicitly priced district adds the study's whole 110 repair points and a wires price to a town below its carry
+  - L506 the money audit's hand-built bond town carries its billed and closing peaks after its full warmup
 
 ## SulphideLeachCheck.java - 32 labelled assertions
 
@@ -35363,7 +35366,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L378 UserInterface makes a ToastRoom of its scroller, its page and its stack of toasts
   - L380 ...and keeps what it is told in pageScrollAt, the field the rebuild restores the player's place from
 
-## TownGridCheck.java - 32 labelled assertions
+## TownGridCheck.java - 33 labelled assertions
 
 > Power for a small town (batch ASH1).
 > 
@@ -35399,23 +35402,24 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L273 ...and the carry never runs more than a unit (
   - L277 once the orders have opened (none on site) the carry covers the peak of the year's highest month
 - **L283 3. the grid units' posts follow the load**
-  - L325 a draw past the carry (
-  - L328 as the draw rises the share of the wires used rises with it, every month, until the carry is all used
-  - L329 the grid units' offered posts rise with it, each job type at postsOffered(its posts, the share used), and fewer than every post while the load is light
-  - L330 the labour market's posts (getTotalJobs) differ from every post by exactly the grid's withheld, in every job type and every month
-  - L331 Substations.costs().payroll() and the struck book's are paid on the posts offered, each at its wage and fill, and the whole crew's once the carry is used
-- **L343 4. the months on the way are the site's pace**
-  - L384 fixture: his month as last settled is
-  - L395 fixture: the site's pace is under the rule's wait by a month or more (
-  - L398 the POWER row reads the wires and has the Substation on the way:
-  - L399 ...its months equal the site's owed points over the points the month's plan gives it (
-  - L402 the pace reading includes his points: the plan gives the site more with them (
-  - L405 with him off the plan is the city's crews' alone, to the bit (
-  - L413 the month's advance is the reading's pace within the change of his month,
-  - L415 ...and nearer the reading with his points (
-  - L418 the month then advances the site by exactly the points the plan gave it, so the reading is the site's real pace
-- **L425 5. the money audit stays exact over section 2's months**
-  - L428 every one of section 2's
+  - L326 a draw past the carry (
+  - L329 as the draw rises the share of the wires used rises with it, every month, until the carry is all used
+  - L330 the grid units' offered posts rise with it, each job type at postsOffered(its posts, the share used), and fewer than every post while the load is light
+  - L331 the labour market's posts (getTotalJobs) differ from every post by exactly the grid's withheld, in every job type and every month
+  - L332 Substations.costs().payroll() and the struck book's are paid on the posts offered, each at its wage and fill, and the whole crew's once the carry is used
+- **L344 4. the months on the way are the site's pace**
+  - L385 fixture: his month as last settled is
+  - L396 fixture: the site's pace is under the rule's wait by a month or more (
+  - L399 the POWER row reads the wires and has the Substation on the way:
+  - L400 ...its months equal the site's owed points over the points the month's plan gives it (
+  - L408 ...and every screen reads that one figure, to the bit: the build card's \"1 on site\", the construction page's and the right panel's, the overview's, none of...
+  - L413 the pace reading includes his points: the plan gives the site more with them (
+  - L416 with him off the plan is the city's crews' alone, to the bit (
+  - L424 the month's advance is the reading's pace within the change of his month,
+  - L426 ...and nearer the reading with his points (
+  - L429 the month then advances the site by exactly the points the plan gave it, so the reading is the site's real pace
+- **L436 5. the money audit stays exact over section 2's months**
+  - L439 every one of section 2's
 
 ## TradeBandCheck.java - 41 labelled assertions
 

@@ -294,10 +294,11 @@ public final class TownGridCheck {
         long[] every = new long[JobType.values().length];
         for (JobType j : JobType.values()) every[j.ordinal()] = bm.getQuantity(Substations.ID) * district.getJobs(j) + bm.getQuantity(Substations.DISTRIBUTION_ID) * unit.getJobs(j);
         for (double share : asked) {
-            // Two dispatches: the first puts the load on the wires and the second captures the grid units' crew at the share it used.
+            // Two dispatches: the first puts the load on the wires, the share is struck from it as a month's turn strikes it (Game.nextMonth(),
+            // UtilitiesHandler.strikeWiresShare()), and the second captures the grid units' crew at that share.
+            SubstationCheck.dispatch(g, share * carry).strikeWiresShare();
             SubstationCheck.dispatch(g, share * carry);
-            SubstationCheck.dispatch(g, share * carry);
-            double used = u.getWiresUsed();
+            double used = u.getWiresShare();
             double wage = 0, full = 0;
             double[] wages = g.getPopulationManager().getWagesPerType(), fill = g.getPopulationManager().getJobFillRate();
             boolean growing = true, past = true;
@@ -398,6 +399,16 @@ public final class TownGridCheck {
         check("the POWER row reads the wires and has the Substation on the way: " + (row == null ? null : row.reading()), row != null && row.wires() && row.onSite() == 1);
         check("...its months equal the site's owed points over the points the month's plan gives it (" + String.format("%.2f", pace) + ")",
                 row != null && near(row.onSiteMonths(), pace, 1e-9) && near(g.onSitePaceMonths(big, plan), pace, 1e-9));
+        // REV-ASH1 2: one months-left on every screen. The build card's figure (BuildCard.Figures.siteMonths()), the construction page's site row and
+        // chart (Game.sitePaceMonths(key, the page's struck plan)) and the right panel's (Game.onSitePaceMonths(t, its struck plan)) read the one getter.
+        BuildCard.Figures card = BuildCard.of(g, big, GRID);
+        double page = g.sitePaceMonths(key, g.sitesPlan()), panel = g.onSitePaceMonths(big, g.sitesPlan());
+        OUT.printf("   the months left: the overview %.6f, the build card %.6f, the construction page %.6f, the right panel %.6f; the rule's wait %.6f%n",
+                row == null ? Double.NaN : row.onSiteMonths(), card.siteMonths(), page, panel, rule);
+        check("...and every screen reads that one figure, to the bit: the build card's \"1 on site\", the construction page's and the right panel's, the overview's, none of them the rule's wait",
+                row != null && card.onSite() == 1 && Double.doubleToRawLongBits(card.siteMonths()) == Double.doubleToRawLongBits(row.onSiteMonths())
+                && Double.doubleToRawLongBits(page) == Double.doubleToRawLongBits(row.onSiteMonths()) && Double.doubleToRawLongBits(panel) == Double.doubleToRawLongBits(page)
+                && Math.abs(page - rule) >= 1);
         if (contractorOn) {
             check("the pace reading includes his points: the plan gives the site more with them (" + String.format("%.0f", work) + ") than the city's crews' alone (" + String.format("%.0f", alone)
                     + "), and the months on the way are fewer (" + String.format("%.2f", pace) + " against " + String.format("%.2f", owed / alone) + ")", work > alone && pace < owed / alone);

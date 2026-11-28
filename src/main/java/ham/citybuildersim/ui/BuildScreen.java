@@ -4278,8 +4278,9 @@ public final class BuildScreen {
         java.util.Map<BuildingsTemplate, Long> site = BuildAdvice.onSite(game, m);
         long units = BuildAdvice.units(site);
         double soonest = Double.NaN;
+        BuildingManager.Plan pace = site.isEmpty() ? null : game.sitesPlan();
         for (BuildingsTemplate t : site.keySet()) {
-            double months = game.onSiteMonths(t);
+            double months = game.onSitePaceMonths(t, pace);
             if (!Double.isNaN(months) && !(months >= soonest)) soonest = months;
         }
         String onSite = units > 0 ? formatter.format(units) + " on site · " + monthsWait(soonest) : "nothing on site";

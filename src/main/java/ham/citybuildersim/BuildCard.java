@@ -105,7 +105,7 @@ public final class BuildCard {
      *                   tonnes in the ground}; otherwise empty
      * @param owned      how many stand (BuildingManager.getQuantity())
      * @param onSite     how many are on site, for anyone's order
-     * @param siteMonths ...and their wait at today's queue (Game.onSiteMonths()); 0 with none
+     * @param siteMonths ...and their months left at the site's pace (Game.onSitePaceMonths(), ASH1); 0 with none
      * @param landFree   the land free, for the needs line's share of it: since 0.7.109 the ground its sector may
      *                   build on (LandManager.freeFor(); getAvailableSqFt() until then, the same with no zone)
      * @param newUnit    one new building of `template` as it would open now (NewUnit.of(), resolved once for the card): the
@@ -572,7 +572,7 @@ public final class BuildCard {
         long owned = bm.getQuantity(t.getId());
         BuildingsStacks stack = bm.getStack(t);
         long onSite = stack == null ? 0 : stack.getUnderConstruction();
-        double siteMonths = onSite > 0 ? game.onSiteMonths(t) : 0;
+        double siteMonths = onSite > 0 ? game.onSitePaceMonths(t) : 0;
 
         if (kind == Kind.CITY) {
             BuildAdvice.Measure on = m != null && m.serves(t) ? m : cityMeasure(t);
@@ -1175,7 +1175,7 @@ public final class BuildCard {
      * @param theirs    an order on this building's site paid by investors, with value left on it
      * @param yoursToo  ...and the city's order on it as well
      * @param onSite    what is on site of it, for anyone's order
-     * @param months    the wait at today's queue (Game.onSiteMonths())
+     * @param months    the months left at the site's pace (Game.onSitePaceMonths(), ASH1)
      * @param word      the sector's word for the month, unshortened; "" until a month has run since
      *                  the city was founded or loaded (it is not saved)
      * @param own       the first gate this building fails now, or null
@@ -1215,7 +1215,7 @@ public final class BuildCard {
         String word = game.getLastInvestment(slot);
         double estimate = game.getBusinessInvestment().estimatedMonthlyProfit(owner.key(), t);
         return new Investors(t.getName(), slot, owner, theirs, theirs && yours, onSite,
-                onSite > 0 ? game.onSiteMonths(t) : 0, word == null ? "" : word, gate(game, nu, owner, estimate), estimate,
+                onSite > 0 ? game.onSitePaceMonths(t) : 0, word == null ? "" : word, gate(game, nu, owner, estimate), estimate,
                 weighed(game, nu));
     }
 

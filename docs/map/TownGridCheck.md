@@ -1,4 +1,4 @@
-# TownGridCheck.java - 440 lines · 19 methods · 6 constants · harnesses
+# TownGridCheck.java - 451 lines · 19 methods · 6 constants · harnesses
 
 `ham/citybuildersim/TownGridCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -29,7 +29,7 @@
 > 
 > Every fixture CAUSES its condition rather than waiting for it, and asserts against the model's own constants and getters.
 
-**Uses:** [CityNeeds](CityNeeds.md) (32), [Substations](Substations.md) (24), [Game](Game.md) (19), [BuildAdvice](BuildAdvice.md) (15), [BuildingManager](BuildingManager.md) (15), [JobType](JobType.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (9), [AutoBuilder](AutoBuilder.md) (3), [MoneyAudit](MoneyAudit.md) (3), [SubstationCheck](SubstationCheck.md) (2), [GameFiles](GameFiles.md) (1), [PriceLevel](PriceLevel.md) (1), [PowerDispatch](PowerDispatch.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [BuildingType](BuildingType.md) (1), [CareType](CareType.md) (1), [Construction](Construction.md) (1), [ConstructionControl](ConstructionControl.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
+**Uses:** [CityNeeds](CityNeeds.md) (32), [Substations](Substations.md) (24), [Game](Game.md) (19), [BuildAdvice](BuildAdvice.md) (15), [BuildingManager](BuildingManager.md) (15), [JobType](JobType.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (9), [AutoBuilder](AutoBuilder.md) (3), [MoneyAudit](MoneyAudit.md) (3), [SubstationCheck](SubstationCheck.md) (2), [BuildCard](BuildCard.md) (2), [GameFiles](GameFiles.md) (1), [PriceLevel](PriceLevel.md) (1), [PowerDispatch](PowerDispatch.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [BuildingType](BuildingType.md) (1), [CareType](CareType.md) (1), [Construction](Construction.md) (1), [ConstructionControl](ConstructionControl.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
 
 ## Sections
 
@@ -38,8 +38,8 @@
 | 125 | 1 |
 | 187 | 2 |
 | 280 | 3 |
-| 334 | 4 |
-| 422 | 5 |
+| 335 | 4 |
+| 433 | 5 |
 
 ## Constants
 
@@ -49,8 +49,8 @@
 | 45 | `TownGridCheck.GRID` | `BuildAdvice.Measure.of(BuildAdvice.Kind.GRID), POWER = BuildAdvice.Measure.of...` |  |
 | 192 | `TownGridCheck.GROWTH` | `new ArrayList<>()` |  |
 | 197 | `TownGridCheck.FIRST_WORKS` | `4, WORKS_A_MONTH = 3, GROWING_MONTHS = 8, SETTLING_MONTHS = 24, MOST_MONTHS =...` | Stock added a month: the town's water works. |
-| 337 | `TownGridCheck.NEARLY_DONE` | `.99` | The share of its points a small site has built when the big one is ordered: it owes the least of its month, however large its weight on the crews (BuildingManager.siteShares()). |
-| 340 | `TownGridCheck.PACE_WARM_MONTHS` | `36, PACE_CREWS = 30_000, SMALL_SITES = 36` | The months the town lives before section 4's site is ordered, and the output its crews are raised to at founding: a town whose labour, builders and population hold the figures a month keeps. |
+| 338 | `TownGridCheck.NEARLY_DONE` | `.99` | The share of its points a small site has built when the big one is ordered: it owes the least of its month, however large its weight on the crews (BuildingManager.siteShares()). |
+| 341 | `TownGridCheck.PACE_WARM_MONTHS` | `36, PACE_CREWS = 30_000, SMALL_SITES = 36` | The months the town lives before section 4's site is ordered, and the output its crews are raised to at founding: a town whose labour, builders and population hold the figures a month keeps. |
 
 ## Fields (state)
 
@@ -64,7 +64,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 404 | **type** `public final class TownGridCheck` | Power for a small town (batch ASH1). |
+| 37 | 415 | **type** `public final class TownGridCheck` | Power for a small town (batch ASH1). |
 | 41 | 1 | `static void check(String label, boolean ok)` |  |
 | 42 | 1 | `static boolean near(double a, double b, double relative)` |  |
 | 43 | 1 | `static void quietly(Runnable work)` |  |
@@ -91,23 +91,23 @@
 | 190 | 1 | **type** `record Month(int month, double peak, double carry, long standing, long onSite, long ordered, double need, d...` | One month of the growing town: what the pass saw and ordered, and what the month's money audit left. |
 | 199 | 80 | `static void growth()` |  |
 
-### 3 (lines 280-333)
+### 3 (lines 280-334)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 282 | 51 | `static void posts()` |  |
+| 282 | 52 | `static void posts()` |  |
 
-### 4 (lines 334-421)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 342 | 18 | `static void pace()` |  |
-| 361 | 60 | `static void pace(Game g, boolean contractorOn)` |  |
-
-### 5 (lines 422-440)
+### 4 (lines 335-432)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 424 | 6 | `static void money()` |  |
-| 431 | 9 | `public static void main(String[] args)` |  |
+| 343 | 18 | `static void pace()` |  |
+| 362 | 70 | `static void pace(Game g, boolean contractorOn)` |  |
+
+### 5 (lines 433-451)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 435 | 6 | `static void money()` |  |
+| 442 | 9 | `public static void main(String[] args)` |  |
 

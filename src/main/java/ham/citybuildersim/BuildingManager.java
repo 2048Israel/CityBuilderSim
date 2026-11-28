@@ -8363,10 +8363,12 @@ public class BuildingManager {
        a 100 MW Substation in a 12 MW town took about 9% of its diploma holders and carried nothing more for them. A distribution
        utility's line crews, troublemen and meter readers scale with the load and the customers served (US Census of Electrical
        Industries 1917; BLS Bulletin 944, 1948), so the grid units offer their posts at the share of the carry the last dispatch's peak
-       half-block used (UtilitiesHandler.getWiresUsed(), handed in by Game), rounded once on the stacks' sum as a sector's share is
+       half-block used, struck as the month begins and saved (UtilitiesHandler.getWiresShare(), handed in by Game: the month counts
+       and pays its posts before its own dispatch, REV-ASH1 1), rounded once on the stacks' sum as a sector's share is
        (postsOffered()). The rest are withheld like the builders' laid-off crews: the labour market (getTotalJobs()), the utility payroll
        (getJobArrayPerCategory()) and Substations.costs() (getGridPostsOffered()) take the posts offered. The carry does not depend on
-       staffing. The raw stack sums are held with the sectors' (HeldPosts.grid); the share is read live, never held. ----- */
+       staffing. The raw stack sums are held with the sectors' (HeldPosts.grid); the share is read live (it moves once a month, before
+       any pass), never held. ----- */
 
     /** The share of the grid units' posts the wires call for: handed in by Game; null offers every post. */
     private java.util.function.DoubleSupplier gridShare;

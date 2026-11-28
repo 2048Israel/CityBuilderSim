@@ -1,9 +1,8 @@
 # ASH1 - power for a small town: notes
 
-**Resume here (2026-11-27 19:50):** built and checked; origin/main (UX1's queue row) merged, `--fast` green,
-BuildCardCheck, NewUnitCheck, SaveFileCheck and PowerPriceCheck exit 0 on the tip, the maps
-regenerated. Next: the stranger's review on "mends at"; on its SHIP, merge origin/main and the
-ensemble on the gate box. No run is in flight.
+**Resume here (2026-11-27 21:00):** REV-ASH1's two P1s mended (the grid share held for the month and saved;
+one months-left getter on every screen); next: "mends at" again for its second look; on its SHIP, merge
+origin/main and the ensemble on the gate box. No run is in flight.
 
 Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-findings.md`), brief
 `docs/queue/ASH1.md`. Each condition is caused on fixtures of the batch's own; his save was never read.
@@ -26,14 +25,18 @@ Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-finding
    `BuildAdvice.unit`/`supplyDemand` (GRID) read both units; the advice picks by its 20-year plan
    value, so a small town is advised and built 5 MW steps.
 3. **The posts follow the load** (finding 9): the grid units offer their posts at the share of the
-   wires' carry the last dispatch's peak half-block used (`UtilitiesHandler.getWiresUsed()`,
-   `BuildingManager` banner THE GRID UNITS' POSTS); the rest are withheld like the builders' laid-off
-   crews, so the labour market (`getTotalJobs`), the utility payroll (`getJobArrayPerCategory`) and
+   wires' carry the last dispatch's peak half-block used (`UtilitiesHandler.getWiresUsed()`), struck
+   as the month begins, before its posts are counted, and held to the next month's
+   (`strikeWiresShare()`, `getWiresShare()`, saved as `PowerState.wiresShare`; `BuildingManager`
+   banner THE GRID UNITS' POSTS); the rest are withheld like the builders' laid-off crews, so the
+   labour market (`getTotalJobs`), the utility payroll (`getJobArrayPerCategory`) and
    `Substations.costs()` (`getGridPostsOffered`) take only the posts offered. The carry does not
    depend on staffing.
-4. **The months on the way at the site's pace** (finding 8): `Game.onSitePaceMonths(t, plan)`, the
-   site's owed points over the points `Game.sitesPlan()` gives it (the month's plan at the builders'
-   output plus the foreign contractor's month as last settled, as `advanceConstruction` takes them).
+4. **The months left at the site's pace** (finding 8): `Game.sitePaceMonths(key, plan)`, the site's
+   owed points over the points `Game.sitesPlan()` gives it (the month's plan at the builders' output
+   plus the foreign contractor's month as last settled, as `advanceConstruction` takes them), and
+   every screen's months left reads it: the overview's row, the build card's "N on site", the
+   construction page's rows and chart, the right panel, the build screen's ring, the oil view.
 5. **Found in building, mended:** with 5 MW units the auto-builder's grid orders are many small
    units the builders open in turn, and `AutoBuilder.pendingCapacity`'s two drop-whole rules (HW1)
    ordered every unit still on site again: 27 units, 145 MW against a 45.6 MW peak. For GRID alone:
@@ -62,19 +65,22 @@ Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-finding
   "continuously attended" before WWII; automatic substations from 1914 on railways, 1922 on city AC),
   so the posts are not dropped, they follow the load. No floor. The grid's raw posts are held with the
   sectors' sums in AP5's `HeldPosts` (raised by the existing writers); the share is read live, never
-  held, so it needs no raise of its own. No saved field: the share reads the saved dispatch, and
-  while a load is staged it reads the saved month (the load's own rebuild runs before
-  `restorePendingPower`).
-- ★ **The pace, not the rule's wait, on the overview only.** The rule's wait (`ruleWait`) holds every
-  other site at its weight share for the whole wait; the month water-fills, so a big site among many
-  small capped ones does more than its weight share (TownGridCheck 4: pace 146.6 months, the rule's
-  wait 162.9). The brief said the construction card uses the pace; it does not (the card and the
-  construction page read `Game.siteMonths`, the rule's wait; only the page's "% of crews" reads the
-  plan). Changing `ruleWait` would move every quote, the investors' months ahead and the abroad terms,
-  held to the bit by ConstructionControlCheck, BuildCardCheck, NewUnitCheck, BuildersFirstCheck and
-  DeathCareFirstCheck; so the overview's months-left reads the pace, and the other screens keep the
-  rule's wait. A site the plan gives no work (behind the city's order) or one handed abroad keeps the
-  rule's wait.
+  held by a pass, so it needs no raise of its own.
+- **The share struck once a month and saved** (REV-ASH1 1). The month counts and pays its posts
+  (`SimulationEngine.updatePopulation`, `updateServices`) before its own dispatch, so the share it
+  uses is the one struck as it began, from the dispatch before (`Game.nextMonth`, beside the research
+  posts); a reload counts them at that share, not the closing dispatch's. One new saved field,
+  `PowerState.wiresShare`, no format bump: absent in an older save, it loads as 1, every post
+  offered, as that save's month offered them. A new city founds at 1.
+- ★ **The pace on every screen's months left; the rule's wait in the quotes.** The rule's wait
+  (`ruleWait`) holds every other site at its weight share for the whole wait; the month water-fills,
+  so a big site among many small capped ones does more than its weight share (TownGridCheck 4: pace
+  138.9 months, the rule's wait 155.1). Every months-left on show reads `Game.sitePaceMonths` (REV-ASH1
+  2: the overview alone did at first, and the card and the page read the rule's). `Game.siteMonths` and
+  `onSiteMonths` stay the rule's wait, as do the quotes, the investors' months ahead and the abroad
+  terms, which ConstructionControlCheck, BuildersFirstCheck, DeathCareFirstCheck and EssentialWorksCheck
+  hold to the bit: a quote is an order not yet on site, which the month's plan cannot price. A site
+  the plan gives no work (behind the city's order) or one handed abroad reads the rule's wait.
 - ★ **The advice prices a new grid unit at every post** (`WorksValue`, `BuildCard`): the share over a
   20-year plan is unknown, so every post is the bound; it only favours the small unit further.
 - **Mended, not left to PW9-G:** the over-ordering is the auto-builder's handling of the small unit
@@ -88,12 +94,20 @@ Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-finding
   posts following the load, the labour market and the payroll on the offered posts; 4 the months at
   the site's pace (the rule's wait 16 months longer; the month's real advance equal to the plan's work
   to 1e-9 with the contractor off, and within his month's change with him on: 4,962 planned against
-  4,755 advanced, the crews alone 901); 5 the money audit over section 2's 34 months, worst residual
-  2.6e-8 against a cent.
+  4,755 advanced, the crews alone 901), and the overview, the build card, the construction page and
+  the right panel reading the one figure to the bit; 5 the money audit over section 2's months,
+  worst residual 5.7e-8 against a cent.
+- **SubstationCheck's save section** (REV-ASH1 1): a load of 44% of the carry between the presses, a
+  month struck on it that closes at 0.09%; live against reloaded, the share, the grid's posts offered
+  and withheld per job type, the labour market's posts and fill, the electricity posts paid, the
+  utility payroll, the wage bill and `Substations.costs()`' payroll equal to the bit, and again the
+  month after.
 - Mutations, each red then restored: `powerPeak` the plants alone (section 1, 8 labels); the grid
   share 1 (section 3, 3 labels); `onSitePaceMonths` the rule's wait (section 4); the grid's exemption
   from rule (1) removed (section 2: 27 units, 145 MW). AP5's raise removed in
-  `BuildingsStacks.addQuantity`: LabourCheck red (6) and SubstationCheck's held-grid line red.
+  `BuildingsStacks.addQuantity`: LabourCheck red (6) and SubstationCheck's held-grid line red. The
+  grid share read live again (`getWiresUsed`, not `getWiresShare`): SubstationCheck's save section red
+  (4 labels). The build card on `onSiteMonths`: TownGridCheck 4's one-figure label red (both cases).
 - Restated to the real law: SubstationCheck's order (both units known: the least Distribution
   Substations that cover the peak, never a 100 MW unit; PW5's one Substation where the small unit is
   off the menu); its tariff's payroll (the posts offered at the dispatch's share); BuildAdviceCheck's
@@ -113,4 +127,6 @@ Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-finding
   grid's carry (the Substation replaces the founding 10 MW, each distribution substation adds 5 MW),
   and the grid's posts offered at the share of the carry the peak uses.
 - Overview: the POWER row reads the lesser of the plants and the wires, "by the wires" when the wires
-  bind, and its card then offers the wires; "on the way" months are at the site's pace.
+  bind, and its card then offers the wires.
+- Construction: a site's months left, on every screen, are at its pace this month (its points owed
+  over the month's work on it); a quote for a new order keeps the queue's wait.

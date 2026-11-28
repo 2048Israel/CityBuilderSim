@@ -499,7 +499,7 @@ public class BuildCardCheck {
                 BuildingsStacks st = g.getBuildingManager().getStack(t);
                 long site = st == null ? 0 : st.getUnderConstruction();
                 head &= f.owned() == g.getBuildingManager().getQuantity(t.getId()) && f.onSite() == site
-                        && f.siteMonths() == (site > 0 ? g.onSiteMonths(t) : 0)
+                        && f.siteMonths() == (site > 0 ? g.onSitePaceMonths(t) : 0)
                         && f.landFree() == g.getLandManager().getAvailableSqFt();
                 double scale = f.kind() == BuildCard.Kind.MEALS || f.kind() == BuildCard.Kind.PUMP
                         || f.kind() == BuildCard.Kind.TANKS || f.kind() == BuildCard.Kind.BERTHS ? 1000 : 1;
@@ -780,7 +780,7 @@ public class BuildCardCheck {
         BuildCard.Investors b = BuildCard.investors(g, store), d = BuildCard.investors(g, grocery);
         assertTrue("the department store reads \"Investors are building\", with the three on site and their wait",
                 b.theirs() && !b.yoursToo() && b.onSite() == 3
-                && Double.doubleToLongBits(b.months()) == Double.doubleToLongBits(g.onSiteMonths(store)));
+                && Double.doubleToLongBits(b.months()) == Double.doubleToLongBits(g.onSitePaceMonths(store)));
         assertTrue("...and says no \"this one:\" while they are, whatever its gate", !b.showOwn());
         assertTrue("the city's own two grocery stores on site are not an investors' order", !d.theirs() && d.onSite() == 2);
         quietly(() -> g.buildStack(store, 1, false));
@@ -1136,7 +1136,7 @@ public class BuildCardCheck {
                 + theirSites + ", the stores among them) and the longest wait, the city's order among them",
                 lux.theirs() && lux.kind() == BuildCard.WordKind.BUILDING && lux.yoursToo()
                 && lux.onSite() == theirSites && theirSites >= onSite(g.getBuildingManager(), store)
-                && Double.doubleToLongBits(lux.months()) == Double.doubleToLongBits(wait) && wait >= g.onSiteMonths(store)
+                && Double.doubleToLongBits(lux.months()) == Double.doubleToLongBits(wait) && wait >= g.onSitePaceMonths(store)
                 && lux.line().theirs() && lux.line().own() == null && !lux.line().showOwn());
         BuildCard.SectorInvestors mines = BuildCard.sectorInvestors(g, g.getSectors().mining());
         assertTrue("...and a sector with nothing on site does not: " + mines.kind() + ", " + mines.word(),
