@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-UX1-U11kbFXX -->
 <!-- readiness: provisional -->
 ## changelog
 ### UX1 — the interface rework's study — 2026-11-27, ready, see docs/queue/UX1-notes.md

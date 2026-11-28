@@ -1,4 +1,4 @@
-**Resume here (11-27, 21:00):** the study is final and pushed; --fast green, UiSteadyCheck known reds only (exit 3), the pick ALL; the pictures' mail sent (20:48). Waiting for the orchestrator's go on "UX1 dry run?". On the go: merge origin/main if it moved; `sh tools/gate.sh UX1 --dry-run --no-tag > target/UX1-dry.txt 2>&1` in the background (timeout 7200000), `sh tools/wait.sh --line target/UX1-dry.txt 'gate +exit [0-9]|^exit [0-9]' --for 9` until it ends; then the gate-run marker, ready.
+**Resume here (11-28, 01:35):** the dry run gave exit 0 (section 8); the gate-run marker is on the ship file's first line and the provisional marker dropped in its own commit; mailed "UX1 ready". Nothing left but the orchestrator's gate.
 
 # UX1 - the interface rework's study: notes
 
@@ -214,7 +214,7 @@ the five audits and a README. The full set, 122 pages a city, stays on scratch (
   ui/UserInterface.java (UI-wide)": the change there is two package accessors beside `replayGoTab`
   (`railKeys()`, `pressRail(key)`, the rail's own `goHome`), no thread and no timer; the brief says no
   stranger's review, so none was run, and the dry-run mail says so.
-- The dry run: (to fill.)
+- The dry run (`sh tools/gate.sh UX1 --dry-run --no-tag`, on the gate box, on d765c2cbe over main ecac4f4bd): exit 0. The suite in 1,494 s, exit 3, known red only: main's thirteen (gate.txt) and UiSteadyCheck by this ship file's four rows; no new red at the box's scale 1. Run /home/jerus/cbs/runs/cbs-gate-UX1-U11kbFXX.
 
 ## 9. The calls
 
