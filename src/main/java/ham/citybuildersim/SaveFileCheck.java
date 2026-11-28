@@ -65,6 +65,7 @@ public class SaveFileCheck {
     }
 
     public static void main(String[] args) throws Exception {
+        outgoingsChecks();
         assertTrue("HT1 basis, loss, policy and tax flows cross both loaders", CapitalGainsCheck.saveChecks());
         System.out.println("--- XR7: support already bought under a peg crosses the save ---");
         assertTrue("nonzero hold support crosses DataSave JSON and Game's loader without billing the whole gap again", CurrencyRegimeCheck.savedHoldSupportChecks());
@@ -2518,16 +2519,20 @@ public class SaveFileCheck {
          * read between presses by the food assistance's means test. A reload
          * struck it again from the moment of loading, which is not the month's.
          */
-        int cellsStruck = 0, cellsKept = 0;
+        int cellsStruck = 0, cellsKept = 0, outgoingsKept = 0;
         for (Household c : full.getHouseholdBalance().cells()) {
             if (c.households() < .5) continue;
             cellsStruck++;
             Household again = back.getHouseholdBalance().cellByKey(c.key());
             if (again != null && Double.compare(again.afterFixed(), c.afterFixed()) == 0) cellsKept++;
+            // ASH4: and its month's outgoings, which its cushion keeps three months of (outgoingsChecks()).
+            if (again != null && Double.compare(again.everyday, c.everyday) == 0
+                    && Double.compare(HouseholdBalance.cushion(again), HouseholdBalance.cushion(c)) == 0) outgoingsKept++;
         }
         assertTrue("fixture: the city's households had incomes after their fixed bills", cellsStruck > 0);
         assertTrue("each cell's income after its fixed bills crosses a save (" + cellsStruck + " cells)",
                 cellsKept == cellsStruck);
+        assertTrue("...and its month's outgoings and its cushion, to the bit (ASH4)", outgoingsKept == cellsStruck);
 
         /* ============ 13b. a bond in the saved history (HD1, 2026-10-29) ============
 
@@ -4500,6 +4505,115 @@ public class SaveFileCheck {
         boolean whole = back.getMarket().getListing().size() == from.getListing().size() && !from.getListing().isEmpty();
         for (LandParcel p : back.getMarket().getListing()) whole &= p.getSellers().isEmpty();
         return whole && back.getMarket().getOffersSellersState() == null;
+    }
+
+    /* ============ ASH4: each cell's outgoings cross a save (REV-ASH4's fourth look) ============
+
+       Household.everyday, the month's outgoings (its bills, then its everyday spending) that the cushion keeps three
+       months of, is saved as one more cell slot after HouseholdBalance.CELL_SLOTS_BEFORE_EVERYDAY. The fixture is
+       AshbourneCheck's town with paper sold between the presses and not yet settled, saved and loaded. The owner
+       families' outgoings, above a take-home of nothing, cross to the bit, and the settlement pending at the save
+       takes from every cell what the live city's takes. A load blind to the slot would not: the owners' cushion would
+       be their take-home's, nothing, and they would pay more of it. And a save of this format written before the
+       slot, at the old width, loads with every other position where a full load puts it and with the cushion it was
+       written under, three months of take-home, until the month plans.
+       ======================================================================== */
+    static void outgoingsChecks() throws Exception {
+        System.out.println("--- ASH4: each cell's outgoings cross a save, and the settlement pending at it pays as the live city's ---");
+        Game live = quietlyGet(() -> AshbourneCheck.town("savefile-outgoings"));
+        GameFiles files = live.getGameFiles();
+        HouseholdBalance hb = live.getHouseholdBalance();
+        OwnerHousehold owners = hb.owners();
+        double ask = 4 * hb.spareForPaper();
+        quietly(() -> live.handleLongBondLogic(ask, 30, 100 * PriceLevel.FACTOR));
+        Debt line = live.getDebtManager().benchmarkLine(30);
+        assertTrue("fixture: paper sold between the presses, the households' part allotted and not yet settled",
+                line != null && line.allotHouseholdsCash() > 0 && line.getSettleDue() > 0);
+        assertTrue("fixture: owner families whose outgoings are above their take-home",
+                owners.households > 0 && owners.everyday > 0 && owners.everyday > Math.max(0, owners.disposable));
+        assertTrue("the city with its sale pending saved", quietlyGet(() -> live.saveGame(4, "outgoings")).ok);
+        Game back = new Game(files);
+        quietly(() -> back.loadGameSave(4));
+        assertTrue("...and loaded", back.getLoadFailure() == null && back.getMonth() == live.getMonth());
+        HouseholdBalance hbBack = back.getHouseholdBalance();
+        double[] backCells = hbBack.toCellSaveArray();
+
+        int cells = 0, outgoings = 0, cushions = 0;
+        for (Household c : hb.cells()) {
+            cells++;
+            Household again = hbBack.cellByKey(c.key());
+            if (again != null && Double.compare(again.everyday, c.everyday) == 0) outgoings++;
+            if (again != null && Double.compare(HouseholdBalance.cushion(again), HouseholdBalance.cushion(c)) == 0) cushions++;
+        }
+        OwnerHousehold ownersBack = hbBack.owners();
+        System.out.printf("   %d cells; the owners' outgoings %,.4f live, %,.4f loaded (take-home %,.4f); cushion %,.4f, %,.4f%n",
+                cells, owners.everyday, ownersBack.everyday, owners.disposable,
+                HouseholdBalance.cushion(owners), HouseholdBalance.cushion(ownersBack));
+        assertTrue("every cell's month's outgoings cross the save to the bit (" + cells + " cells)", outgoings == cells);
+        assertTrue("...and so every cell's cushion", cushions == cells);
+        Debt lineBack = back.getDebtManager().benchmarkLine(30);
+        assertTrue("the households' allotment pending at the save crosses it, cash and face, to the bit",
+                lineBack != null && Double.compare(lineBack.allotHouseholdsCash(), line.allotHouseholdsCash()) == 0
+                        && Double.compare(lineBack.allotHouseholdsFace(), line.allotHouseholdsFace()) == 0);
+        assertTrue("...and the households' spare for paper is the live city's, to the bit",
+                Double.compare(hbBack.spareForPaper(), hb.spareForPaper()) == 0);
+
+        // A load blind to the slot: the same save, every cell's outgoings struck out as a loader without it would leave them.
+        Game blind = new Game(files);
+        quietly(() -> blind.loadGameSave(4));
+        for (Household c : blind.getHouseholdBalance().cells()) c.everyday = 0;
+        double ownersBefore = owners.savings;
+        double paidLive = AshbourneCheck.settle(live), paidBack = AshbourneCheck.settle(back), paidBlind = AshbourneCheck.settle(blind);
+        int sameSavings = 0;
+        for (Household c : hb.cells()) {
+            Household again = hbBack.cellByKey(c.key());
+            if (again != null && Double.compare(again.savings, c.savings) == 0) sameSavings++;
+        }
+        double ownersPaid = ownersBefore - owners.savings, ownersPaidBlind = ownersBefore - blind.getHouseholdBalance().owners().savings;
+        System.out.printf("   the settlement: live %,.4fk, loaded %,.4fk, blind to the slot %,.4fk; the owners paid %,.4f each, blind %,.4f%n",
+                paidLive, paidBack, paidBlind, ownersPaid, ownersPaidBlind);
+        assertTrue("fixture: the settlement took something from the owners", ownersPaid > 0);
+        assertTrue("the pending settlement takes what the live city's takes, to the bit", Double.compare(paidBack, paidLive) == 0);
+        assertTrue("...from every cell what the live city's takes, to the bit", sameSavings == cells);
+        assertTrue("a load blind to the slot would take more of it from the owners: the check can fail", ownersPaidBlind > ownersPaid);
+
+        System.out.println("--- ASH4: a save of this format from before the slot loads at its own width, with the cushion it was written under ---");
+        com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(Files.readString(files.saveFile(4))).getAsJsonObject();
+        com.google.gson.JsonArray today = json.getAsJsonArray("householdCells");
+        int keys = json.getAsJsonArray("householdCellKeys").size(), width = HouseholdBalance.CELL_SLOTS;
+        assertTrue("fixture: the save is this build's format at today's width, the outgoings its cells' last slot",
+                json.get("saveFormat").getAsInt() == GameVersion.SAVE_FORMAT && today.size() == keys * width + 3
+                        && HouseholdBalance.CELL_SLOTS_BEFORE_EVERYDAY == width - 1);
+        com.google.gson.JsonArray before = new com.google.gson.JsonArray();
+        for (int k = 0; k < keys; k++) for (int j = 0; j < width - 1; j++) before.add(today.get(k * width + j));
+        for (int j = 0; j < 3; j++) before.add(today.get(keys * width + j));
+        json.add("householdCells", before);
+        Files.writeString(files.saveFile(5), new com.google.gson.GsonBuilder().serializeSpecialFloatingPointValues().create().toJson(json));
+        Files.copy(files.historyFile(4), files.historyFile(5), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        Game old = new Game(files);
+        quietly(() -> old.loadGameSave(5));
+        assertTrue("the save at the old width loads", old.getLoadFailure() == null && old.getMonth() == live.getMonth());
+        HouseholdBalance hbOld = old.getHouseholdBalance();
+        double[] oldCells = hbOld.toCellSaveArray();
+        boolean positions = oldCells.length == backCells.length
+                && java.util.Arrays.equals(hbOld.cellKeys(), hbBack.cellKeys());
+        for (int k = 0; positions && k < keys; k++)
+            for (int j = 0; j < width - 1; j++) positions &= Double.compare(oldCells[k * width + j], backCells[k * width + j]) == 0;
+        for (int j = 0; positions && j < 3; j++) positions &= Double.compare(oldCells[keys * width + j], backCells[keys * width + j]) == 0;
+        assertTrue("every other position of every cell is where the full-width load puts it, to the bit", positions);
+        boolean nothing = true, former = true;
+        for (Household c : hbOld.cells()) {
+            nothing &= c.everyday == 0;
+            former &= Double.compare(HouseholdBalance.cushion(c), HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) == 0;
+        }
+        System.out.printf("   the owners' cushion at the old width %,.4f (take-home %,.4f), at today's %,.4f%n",
+                HouseholdBalance.cushion(hbOld.owners()), hbOld.owners().disposable, HouseholdBalance.cushion(ownersBack));
+        assertTrue("its cells read no outgoings until the month plans", nothing);
+        assertTrue("...so every cell's cushion is the one the save was written under, three months of take-home, to the bit", former);
+        assertTrue("fixture: which for the owners is less than today's", HouseholdBalance.cushion(hbOld.owners()) < HouseholdBalance.cushion(ownersBack));
+        quietly(() -> old.simulateMonths(1));
+        assertTrue("...and the month after the load plans them again: the owners' outgoings are struck, and the money audit closes",
+                hbOld.owners().everyday > 0 && Math.abs(old.getLastMoneyAudit().residual) <= MoneyAudit.CENT);
     }
 
     /** Runs a piece of the city with the game's narration off. */

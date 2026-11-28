@@ -604,11 +604,13 @@ public abstract class Household {
     double want;
     double planned;
     /**
-     * The plan's everyday spending, per household: the basket and what income adds to it, without the wealth term `want`
-     * carries for the grocer (a want the shops cannot fill: AND THE FORTUNE ALSO ASKS FOR WATCHES), capped by what it can
-     * spend. Struck by plan(); what HouseholdBalance.cushion() keeps three months of. WHY (ASH4, REV-ASH4's third look):
-     * the cushion read `planned`, whose wealth term grows with the fortune, so a rich household's cushion grew with what
-     * it held - three months of a grocery bill nobody pays - and a city's take-off waited on it.
+     * The month's outgoings, per household: its recurring bills (bills()) and its everyday spending - the basket and what
+     * income adds to it, without the wealth term `want` carries for the grocer (a want the shops cannot fill: AND THE
+     * FORTUNE ALSO ASKS FOR WATCHES), capped by what it can spend after the bills. Struck by plan(); what
+     * HouseholdBalance.cushion() keeps three months of. WHY (ASH4): the cushion read `planned`, whose wealth term grows
+     * with the fortune, so a rich household's cushion grew with what it held - three months of a grocery bill nobody pays
+     * - and a city's take-off waited on it (REV-ASH4's third look); and the basket alone left out the rent, so a family
+     * with no income kept three months of groceries and a bond could take next month's rent (its fourth look).
      */
     double everyday;
     double rate;
@@ -855,6 +857,12 @@ public abstract class Household {
     public boolean isLockedOut(){ return shutOut > 0; }
     public double disposable()  { return disposable; }
     public double afterFixed()  { return afterFixed; }
+    /**
+     * The month's recurring bills, per household: what settle() (or restrike()) took off its take-home before anything
+     * was spent - the rent, the fees, the card's interest and the minimum paid on it, the student loan's interest and
+     * instalment. The cushion keeps three months of them (everyday).
+     */
+    public double bills()       { return Math.max(0, disposable - afterFixed); }
     public double interest()    { return interest; }
     public double drawn()       { return drawn; }
     public double unfunded()    { return unfunded; }
@@ -1327,7 +1335,7 @@ public abstract class Household {
                 + abroad * Math.max(0, localPerUsd) + paper * Math.max(0, paperRatio)
                 + planningRoom();
         planned = Math.min(want, spendable);
-        everyday = Math.min(subsistence + spendFactor * fromIncome, spendable);
+        everyday = bills() + Math.min(subsistence + spendFactor * fromIncome, spendable);
         /*
          * ...AND WHAT IT TAKES TO THE GROCER (0.7.43): the baskets it eats and
          * the money it could put to them - everything the plan can fund, and

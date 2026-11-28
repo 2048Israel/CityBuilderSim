@@ -2060,7 +2060,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 97 | `Household.ROWS_BEFORE_PRISON` | `RETIRED_ROW + 4` | The rows a save from before the prisons carries (pinned: ROWS has moved on). |
 | 99 | `Household.ROWS_BEFORE_OWNER` | `RETIRED_ROW + 5` | The rows a save from before the owner families carries. |
 | 108 | `Household.STUDENT_LOAN_MONTHS` | `114` | How long a graduate takes to repay a student loan, in months: nine and a half years, the Canada Student Loan standard term (Alberta Student Aid's repayment page; the six-month grace is not modelled). |
-| 1355 | `Household.SHORT_ROUNDING` | `1e-12` | The share of a month's gap under which what is still short after savings, the paper, the money abroad, the bonds and the shares is the subtractions' rounding, and nothing is borrowed for it (settle... |
+| 1363 | `Household.SHORT_ROUNDING` | `1e-12` | The share of a month's gap under which what is still short after savings, the paper, the money abroad, the bonds and the shares is the subtractions' rounding, and nothing is borrowed for it (settle... |
 
 ### HouseholdAccounts.java ([map](map/HouseholdAccounts.md))
 
@@ -2122,25 +2122,25 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 4585 | `HouseholdBalance.MIN_MOVE` | `PriceLevel.atFounding(1e-12)` |  |
 | 4797 | `HouseholdBalance.HOUSEHOLD_PAPER_APPETITE` | `20` | The share of an issue the households take, per unit of spread between its yield and the deposit rate: 20 - a fifth of an issue for each point. |
 | 4800 | `HouseholdBalance.MAX_HOUSEHOLD_PAPER_SHARE` | `.5` | ...and, for a BUSINESS issue, never more than this share of one: half, because a bond market with no bank in it is no longer the bank's market (BondMarket). |
-| 5720 | `HouseholdBalance.SHARE_CUSHION_MONTHS` | `3` | Months of take-home, or of everyday spending where that is more (cushion()), a household keeps in the bank before it buys a share. |
-| 5747 | `HouseholdBalance.SHARE_OF_EXCESS` | `.30` | The share of what is past the cushion it puts into one offering. |
-| 6104 | `HouseholdBalance.CELL_SLOTS_BEFORE_SHARES` | `8` | Figures carried per cell before the shares were appended (2026-09-10, evening). |
-| 6107 | `HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD` | `CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length` | ...and before the dollars abroad were (2026-09-11). |
-| 6110 | `HouseholdBalance.CELL_SLOTS_BEFORE_STUDENT_DEBT` | `CELL_SLOTS_BEFORE_ABROAD + 1` | ...and before the student loans were (2026-09-11, afternoon). |
-| 6113 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARS` | `CELL_SLOTS_BEFORE_STUDENT_DEBT + 1` | ...and before the cars were (2026-09-16). |
-| 6116 | `HouseholdBalance.CELL_SLOTS_BEFORE_INVESTMENT_INCOME` | `CELL_SLOTS_BEFORE_CARS + 1` | ...and before the month's investment income was (2026-09-17). |
-| 6126 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEALS` | `CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1` | ...and the dinners, appended 2026-09-18. |
-| 6136 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARE` | `CELL_SLOTS_BEFORE_MEALS + 1` | ...and the share of the cell's people who paid for care, appended 2026-09-19. |
-| 6145 | `HouseholdBalance.CELL_SLOTS_BEFORE_PAPER` | `CELL_SLOTS_BEFORE_CARE + 1` | ...and the city's paper, appended 2026-09-22 (0.7.1). |
-| 6157 | `HouseholdBalance.CELL_SLOTS_BEFORE_BONDS` | `CELL_SLOTS_BEFORE_PAPER + 1` | ...and the cell's bonds at face, all together, appended 0.7.12: since round 2 the sum of what it holds bond by bond (saved under its own key, householdBondsByCell), and in a round-1 save its claim ... |
-| 6171 | `HouseholdBalance.CELL_SLOTS_BEFORE_GROCERIES` | `CELL_SLOTS_BEFORE_BONDS + 1` | ...and the last sale's groceries, appended 0.7.43: the baskets each household got, the baskets it asked for at the price, the baskets it needed, and the food assistance paid on them - written at th... |
-| 6179 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEANS_INCOME` | `CELL_SLOTS_BEFORE_GROCERIES + 4` | ...and the investment income the food assistance means test reads, smoothed over MEANS_INCOME_MONTHS, appended 0.7.45. |
-| 6189 | `HouseholdBalance.CELL_SLOTS_BEFORE_AFTER_FIXED` | `CELL_SLOTS_BEFORE_MEANS_INCOME + 1` | ...and before each cell's income after its fixed bills was carried (A4). |
-| 6192 | `HouseholdBalance.CELL_SLOTS_BEFORE_BASIS` | `CELL_SLOTS_BEFORE_AFTER_FIXED + 1` | Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month'... |
-| 6194 | `HouseholdBalance.CELL_SLOTS_BEFORE_SECURED_TAX` | `CELL_SLOTS_BEFORE_BASIS + Equity.COMPANIES.length + 2` | Basis by company, loss carry and the current month's taxable gains appended by HT1. |
-| 6196 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARDS` | `CELL_SLOTS_BEFORE_SECURED_TAX + 2 * Equity.COMPANIES.length` | The tagged units and limited claims, appended after the basis checkpoint. |
-| 6198 | `HouseholdBalance.CELL_SLOTS_BEFORE_EVERYDAY` | `CELL_SLOTS_BEFORE_CARDS + 16` | Four card stocks, ten settled figures and two pending departure positions (HC1). |
-| 6200 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_EVERYDAY + 1` | The plan's everyday spending, the cushion's measure of spending (ASH4); an older save reads it as nothing until the month plans. |
+| 5720 | `HouseholdBalance.SHARE_CUSHION_MONTHS` | `3` | Months of take-home, or of the month's outgoings where they are more (cushion()), a household keeps in the bank before it buys a share. |
+| 5753 | `HouseholdBalance.SHARE_OF_EXCESS` | `.30` | The share of what is past the cushion it puts into one offering. |
+| 6110 | `HouseholdBalance.CELL_SLOTS_BEFORE_SHARES` | `8` | Figures carried per cell before the shares were appended (2026-09-10, evening). |
+| 6113 | `HouseholdBalance.CELL_SLOTS_BEFORE_ABROAD` | `CELL_SLOTS_BEFORE_SHARES + Equity.COMPANIES.length` | ...and before the dollars abroad were (2026-09-11). |
+| 6116 | `HouseholdBalance.CELL_SLOTS_BEFORE_STUDENT_DEBT` | `CELL_SLOTS_BEFORE_ABROAD + 1` | ...and before the student loans were (2026-09-11, afternoon). |
+| 6119 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARS` | `CELL_SLOTS_BEFORE_STUDENT_DEBT + 1` | ...and before the cars were (2026-09-16). |
+| 6122 | `HouseholdBalance.CELL_SLOTS_BEFORE_INVESTMENT_INCOME` | `CELL_SLOTS_BEFORE_CARS + 1` | ...and before the month's investment income was (2026-09-17). |
+| 6132 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEALS` | `CELL_SLOTS_BEFORE_INVESTMENT_INCOME + 1` | ...and the dinners, appended 2026-09-18. |
+| 6142 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARE` | `CELL_SLOTS_BEFORE_MEALS + 1` | ...and the share of the cell's people who paid for care, appended 2026-09-19. |
+| 6151 | `HouseholdBalance.CELL_SLOTS_BEFORE_PAPER` | `CELL_SLOTS_BEFORE_CARE + 1` | ...and the city's paper, appended 2026-09-22 (0.7.1). |
+| 6163 | `HouseholdBalance.CELL_SLOTS_BEFORE_BONDS` | `CELL_SLOTS_BEFORE_PAPER + 1` | ...and the cell's bonds at face, all together, appended 0.7.12: since round 2 the sum of what it holds bond by bond (saved under its own key, householdBondsByCell), and in a round-1 save its claim ... |
+| 6177 | `HouseholdBalance.CELL_SLOTS_BEFORE_GROCERIES` | `CELL_SLOTS_BEFORE_BONDS + 1` | ...and the last sale's groceries, appended 0.7.43: the baskets each household got, the baskets it asked for at the price, the baskets it needed, and the food assistance paid on them - written at th... |
+| 6185 | `HouseholdBalance.CELL_SLOTS_BEFORE_MEANS_INCOME` | `CELL_SLOTS_BEFORE_GROCERIES + 4` | ...and the investment income the food assistance means test reads, smoothed over MEANS_INCOME_MONTHS, appended 0.7.45. |
+| 6195 | `HouseholdBalance.CELL_SLOTS_BEFORE_AFTER_FIXED` | `CELL_SLOTS_BEFORE_MEANS_INCOME + 1` | ...and before each cell's income after its fixed bills was carried (A4). |
+| 6198 | `HouseholdBalance.CELL_SLOTS_BEFORE_BASIS` | `CELL_SLOTS_BEFORE_AFTER_FIXED + 1` | Figures carried per cell, in the order toCellSaveArray() writes them: the eight, a share count per company, the dollars abroad, the student loan, the cars, the month's investment income, the month'... |
+| 6200 | `HouseholdBalance.CELL_SLOTS_BEFORE_SECURED_TAX` | `CELL_SLOTS_BEFORE_BASIS + Equity.COMPANIES.length + 2` | Basis by company, loss carry and the current month's taxable gains appended by HT1. |
+| 6202 | `HouseholdBalance.CELL_SLOTS_BEFORE_CARDS` | `CELL_SLOTS_BEFORE_SECURED_TAX + 2 * Equity.COMPANIES.length` | The tagged units and limited claims, appended after the basis checkpoint. |
+| 6204 | `HouseholdBalance.CELL_SLOTS_BEFORE_EVERYDAY` | `CELL_SLOTS_BEFORE_CARDS + 16` | Four card stocks, ten settled figures and two pending departure positions (HC1). |
+| 6206 | `HouseholdBalance.CELL_SLOTS` | `CELL_SLOTS_BEFORE_EVERYDAY + 1` | The plan's everyday spending, the cushion's measure of spending (ASH4); an older save reads it as nothing until the month plans. |
 
 ### HousingChoice.java ([map](map/HousingChoice.md))
 
@@ -6191,19 +6191,19 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 268 | `AshbourneCheck.KEEPS_30` | `0.70` | The D$ keeps this much of its worth in US$ in the fall section 2 moves it by (DebtMoneysCheck.KEEPS's, 30% rather than 10%). |
-| 271 | `AshbourneCheck.STAND_IN_YEN` | `.13` | Ashbourne's yen policy rate in January 1917, the stand-in century's (worldMoney.policyJPY in its history, month 205). |
-| 274 | `AshbourneCheck.BOJ_1917` | `.0511` | The Bank of Japan's discount rate of 1917, 1.4 sen a day (the US: New York Fed 3.75% in 1917, FRED M13009USM156NNBR). |
-| 277 | `AshbourneCheck.ASH_FACE_YEN` | `72_000, ASH_COUPON =.035` | Ashbourne's yen piece, as its save's log has it ("Borrowed Y72.0M abroad: 30-year term bond", month 157): the face in thousands of yen, the coupon a year. |
-| 280 | `AshbourneCheck.ASH_SOLD` | `157, ASH_TERM = 360, ASH_BOUGHT_BACK = 205` | ...sold at month 157 for 360 months, and bought back whole at month 205, with 312 months left. |
-| 283 | `AshbourneCheck.ASH_OWED` | `992.435, ASH_PAID = 271.652` | What the buyback took and paid, Cr thousands, its own line: "Bought back Cr 992,435 of TERM paper for Cr 271,652 (27.37 per 100 on average, stop 27.37)". |
-| 289 | `AshbourneCheck.ASH_EXPORTS` | `1087.3017` | Ashbourne's trailing month of exports at month 205, Cr thousands: ForeignAccounts' trailing mean (COVER_WINDOW) rebuilt from its history's exportsAbroad, the rebuild giving the saved figure at mont... |
-| 297 | `AshbourneCheck.ASH_PREMIUM` | `.0015943` | Ashbourne's country premium at month 205, worked by hand from those figures, independently of the price (its save's foreignStanding is [0, -1]: never a default, no scar): MAX_COUNTRY_PREMIUM .16 x ... |
-| 300 | `AshbourneCheck.PER_100_TOLERANCE` | `.005` | The record rounds the price to the cent of a point; a basis point of premium moves this piece 0.0225, so a premium a quarter of a basis point wrong is outside. |
-| 423 | `AshbourneCheck.DRAW_193` | `9_354` | The draw Ashbourne's dispatch read in month 193, kW: its underlying draw before the losses and the season. |
-| 426 | `AshbourneCheck.DRAW_205` | `8_146` | ...and in month 205, after the two Lime Kilns closed. |
-| 543 | `AshbourneCheck.END` | `12, BACK = 20, MONTHS = 24` | The month the boom ends, the months the jobs stay gone and the month they are back. |
-| 546 | `AshbourneCheck.LAID` | `400` | Adults of the town out of work the months the boom is off: 400 unskilled jobs gone, 16% of the town's 2,500. |
+| 333 | `AshbourneCheck.KEEPS_30` | `0.70` | The D$ keeps this much of its worth in US$ in the fall section 2 moves it by (DebtMoneysCheck.KEEPS's, 30% rather than 10%). |
+| 336 | `AshbourneCheck.STAND_IN_YEN` | `.13` | Ashbourne's yen policy rate in January 1917, the stand-in century's (worldMoney.policyJPY in its history, month 205). |
+| 339 | `AshbourneCheck.BOJ_1917` | `.0511` | The Bank of Japan's discount rate of 1917, 1.4 sen a day (the US: New York Fed 3.75% in 1917, FRED M13009USM156NNBR). |
+| 342 | `AshbourneCheck.ASH_FACE_YEN` | `72_000, ASH_COUPON =.035` | Ashbourne's yen piece, as its save's log has it ("Borrowed Y72.0M abroad: 30-year term bond", month 157): the face in thousands of yen, the coupon a year. |
+| 345 | `AshbourneCheck.ASH_SOLD` | `157, ASH_TERM = 360, ASH_BOUGHT_BACK = 205` | ...sold at month 157 for 360 months, and bought back whole at month 205, with 312 months left. |
+| 348 | `AshbourneCheck.ASH_OWED` | `992.435, ASH_PAID = 271.652` | What the buyback took and paid, Cr thousands, its own line: "Bought back Cr 992,435 of TERM paper for Cr 271,652 (27.37 per 100 on average, stop 27.37)". |
+| 354 | `AshbourneCheck.ASH_EXPORTS` | `1087.3017` | Ashbourne's trailing month of exports at month 205, Cr thousands: ForeignAccounts' trailing mean (COVER_WINDOW) rebuilt from its history's exportsAbroad, the rebuild giving the saved figure at mont... |
+| 362 | `AshbourneCheck.ASH_PREMIUM` | `.0015943` | Ashbourne's country premium at month 205, worked by hand from those figures, independently of the price (its save's foreignStanding is [0, -1]: never a default, no scar): MAX_COUNTRY_PREMIUM .16 x ... |
+| 365 | `AshbourneCheck.PER_100_TOLERANCE` | `.005` | The record rounds the price to the cent of a point; a basis point of premium moves this piece 0.0225, so a premium a quarter of a basis point wrong is outside. |
+| 488 | `AshbourneCheck.DRAW_193` | `9_354` | The draw Ashbourne's dispatch read in month 193, kW: its underlying draw before the losses and the season. |
+| 491 | `AshbourneCheck.DRAW_205` | `8_146` | ...and in month 205, after the two Lime Kilns closed. |
+| 608 | `AshbourneCheck.END` | `12, BACK = 20, MONTHS = 24` | The month the boom ends, the months the jobs stay gone and the month they are back. |
+| 611 | `AshbourneCheck.LAID` | `400` | Adults of the town out of work the months the boom is off: 400 unskilled jobs gone, 16% of the town's 2,500. |
 
 ### AskProceedsCheck.java ([map](map/AskProceedsCheck.md))
 
@@ -9039,7 +9039,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | line | constant | value | says |
 |---:|---|---|---|
 | 33 | `SaveFileCheck.OTHER_PATH` | `Nations.DEFAULT_PATH = = Nations.Path.RANDOM ? Nations.Path.HISTORICAL : Nations.Path.R...` | The path a fixture founds on to be off the default, whichever Nations.DEFAULT_PATH is (WN3: the default became Random, Jerus 2026-10-29). |
-| 4493 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
+| 4498 | `SaveFileCheck.REAL_OUT` | `System.out` | The console, as the harness found it: where quietly() puts the narration back. |
 
 ### SaveSlotCheck.java ([map](map/SaveSlotCheck.md))
 

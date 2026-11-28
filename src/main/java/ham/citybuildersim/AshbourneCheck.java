@@ -41,8 +41,9 @@ import java.util.Set;
 public class AshbourneCheck {
 
     static int fails = 0;
-    static PrintStream out;
-    static PrintStream quiet;
+    static PrintStream out = System.out;
+    /** Where the town is played; set here, so another harness may borrow town() (SaveFileCheck). */
+    static PrintStream quiet = new PrintStream(OutputStream.nullOutputStream());
 
     static void assertTrue(String label, boolean ok) {
         if (!ok) fails++;
@@ -69,7 +70,12 @@ public class AshbourneCheck {
 
     /** AuctionCheck's lineup city, this harness's own copy: given the money and the ground, a bank and three hundred houses, sixty months played. */
     static Game town() {
-        Game city = new Game(GameFiles.scratch("ashbournecheck"));
+        return town("ashbournecheck");
+    }
+
+    /** ...on a scratch folder of the caller's (SaveFileCheck's ASH4 section saves it). */
+    static Game town(String scratch) {
+        Game city = new Game(GameFiles.scratch(scratch));
         quietly(() -> {
             city.run();
             city.setCashForTest(Founding.WEALTHY_CASH);
@@ -119,8 +125,8 @@ public class AshbourneCheck {
         HouseholdBalance hb = g.getHouseholdBalance();
         OwnerHousehold owners = hb.owners();
         double cushion = HouseholdBalance.cushion(owners);
-        out.printf("   m%d: owners %,.2f households, savings %,.2f each, disposable %,.2f, everyday %,.2f (the plan %,.2f), cushion %,.2f%n",
-                g.getMonth(), owners.households, owners.savings, owners.disposable, owners.everyday, owners.planned, cushion);
+        out.printf("   m%d: owners %,.2f households, savings %,.2f each, disposable %,.2f, outgoings %,.2f (bills %,.2f; the plan %,.2f), cushion %,.2f%n",
+                g.getMonth(), owners.households, owners.savings, owners.disposable, owners.everyday, owners.bills(), owners.planned, cushion);
 
         assertTrue("fixture: owner families, who take home nothing and spend something every month",
                 owners.households > 0 && owners.disposable == 0 && owners.everyday > 0);
@@ -129,10 +135,11 @@ public class AshbourneCheck {
         close("the owners' cushion is the months' cushion of their everyday spending", cushion,
                 HouseholdBalance.SHARE_CUSHION_MONTHS * owners.everyday, 0);
         int savers = 0;
-        boolean saversAsBefore = true, neverLess = true;
+        boolean saversAsBefore = true, neverLess = true, billsKept = true;
         for (Household c : hb.cellsForMarket()) {
             double takeHome = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             neverLess &= HouseholdBalance.cushion(c) >= takeHome;
+            billsKept &= HouseholdBalance.cushion(c) >= HouseholdBalance.SHARE_CUSHION_MONTHS * c.bills() * (1 - 1e-12);
             if (c.disposable >= c.everyday) {
                 savers++;
                 saversAsBefore &= HouseholdBalance.cushion(c) == takeHome;
@@ -142,6 +149,7 @@ public class AshbourneCheck {
         assertTrue("fixture: there are savers to hold the old rule against", savers > 0);
         assertTrue("a saver's cushion is what it was: the months' cushion of its take-home, exactly", saversAsBefore);
         assertTrue("no cell's cushion is under the months' cushion of its take-home", neverLess);
+        assertTrue("...nor under three months of its bills, the rent first", billsKept);
 
         /* THE REAL LAW, A BUFFER STOCK (REV-ASH4's third look): what a household keeps back is a matter of what it spends,
            never of what it holds (the Fed's SHED measures emergency savings as "three months of expenses": 55% of US adults
@@ -159,6 +167,7 @@ public class AshbourneCheck {
                 held, depositsNow, 100 * held / depositsNow, uncovered);
         assertTrue("what the mend keeps back is at most three months of the spending take-home does not cover", held <= uncovered + 1e-9 * depositsNow);
         wealthAndSpending(hb, owners);
+        billsInTheCushion(hb, owners);
 
         double takeHomeAlone = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, owners.disposable);
         double spare = hb.bondSpare(owners);
@@ -211,6 +220,37 @@ public class AshbourneCheck {
         assertTrue("the month's money audit closes to the cent", Math.abs(audit.residual) <= MoneyAudit.CENT);
     }
 
+    /** Every double a household holds, to be put back after a fixture strikes it again (putBack()). */
+    static java.util.Map<java.lang.reflect.Field, Object> keep(Household c) throws Exception {
+        java.util.Map<java.lang.reflect.Field, Object> kept = new java.util.HashMap<>();
+        for (Class<?> k = c.getClass(); k != Object.class; k = k.getSuperclass())
+            for (java.lang.reflect.Field f : k.getDeclaredFields()) {
+                if (java.lang.reflect.Modifier.isStatic(f.getModifiers()) || f.getType() != double.class) continue;
+                f.setAccessible(true);
+                kept.put(f, f.get(c));
+            }
+        return kept;
+    }
+
+    /** ...put back, and checked put back, so nothing past the fixture reads a re-struck household. */
+    static void putBack(Household c, java.util.Map<java.lang.reflect.Field, Object> kept) throws Exception {
+        for (java.util.Map.Entry<java.lang.reflect.Field, Object> e : kept.entrySet()) e.getKey().set(c, e.getValue());
+        for (java.util.Map.Entry<java.lang.reflect.Field, Object> e : kept.entrySet())
+            if (!e.getValue().equals(e.getKey().get(c))) throw new IllegalStateException("not put back: " + e.getKey().getName());
+    }
+
+    /** The month's own inputs to Household.plan(), HouseholdBalance's private fields, in plan()'s order. */
+    static double[] planInputs(HouseholdBalance hb) throws Exception {
+        double[] at = new double[4];
+        String[] inputs = {"localPerUsd", "paperRatio", "spendFactor", "bondRatio"};
+        for (int k = 0; k < 4; k++) {
+            java.lang.reflect.Field f = HouseholdBalance.class.getDeclaredField(inputs[k]);
+            f.setAccessible(true);
+            at[k] = f.getDouble(hb);
+        }
+        return at;
+    }
+
     /**
      * The real law on the production plan: the owners re-planned through Household.plan() at the month's own inputs
      * (HouseholdBalance's, private), once at their savings and once at twice them. Twice the wealth is a bigger wealth term,
@@ -221,20 +261,8 @@ public class AshbourneCheck {
      * 3,000 to 10,000 people waited a median 21 months longer for it (ASH4-notes.md, REV-ASH4's third look).
      */
     static void wealthAndSpending(HouseholdBalance hb, OwnerHousehold owners) throws Exception {
-        java.util.Map<java.lang.reflect.Field, Object> kept = new java.util.HashMap<>();
-        for (Class<?> k = owners.getClass(); k != Object.class; k = k.getSuperclass())
-            for (java.lang.reflect.Field f : k.getDeclaredFields()) {
-                if (java.lang.reflect.Modifier.isStatic(f.getModifiers()) || f.getType() != double.class) continue;
-                f.setAccessible(true);
-                kept.put(f, f.get(owners));
-            }
-        double[] at = new double[4];
-        String[] inputs = {"localPerUsd", "paperRatio", "spendFactor", "bondRatio"};
-        for (int k = 0; k < 4; k++) {
-            java.lang.reflect.Field f = HouseholdBalance.class.getDeclaredField(inputs[k]);
-            f.setAccessible(true);
-            at[k] = f.getDouble(hb);
-        }
+        java.util.Map<java.lang.reflect.Field, Object> kept = keep(owners);
+        double[] at = planInputs(hb);
         try {
             double saved = owners.savings;
             owners.plan(at[0], at[1], at[2], at[3]);
@@ -256,10 +284,47 @@ public class AshbourneCheck {
             owners.everyday = 2 * everyday;
             close("doubling what they spend every month doubles their cushion", HouseholdBalance.cushion(owners), 2 * cushion, 1e-12);
         } finally {
-            for (java.util.Map.Entry<java.lang.reflect.Field, Object> e : kept.entrySet()) e.getKey().set(owners, e.getValue());
+            putBack(owners, kept);
         }
-        for (java.util.Map.Entry<java.lang.reflect.Field, Object> e : kept.entrySet())
-            if (!e.getValue().equals(e.getKey().get(owners))) throw new IllegalStateException("not put back: " + e.getKey().getName());
+    }
+
+    /**
+     * The cushion keeps the bills first (REV-ASH4's fourth look). The owners struck again through the production restrike()
+     * and plan() as a family with no take-home and no investment income - a pensionless retiree's case - paying a rent as
+     * large as what they spent every month, and then twice it. Their cushion is three months of their bills and their
+     * groceries, the raise raises it by three months of the raise, and what they may put into a bond leaves three months
+     * of the bills in the bank. WHY: the third look's everyday spending was the basket alone, so this family kept three
+     * months of groceries, a bond could take next month's rent, and a higher rent could lower the reserve.
+     */
+    static void billsInTheCushion(HouseholdBalance hb, OwnerHousehold owners) throws Exception {
+        java.util.Map<java.lang.reflect.Field, Object> kept = keep(owners);
+        double[] at = planInputs(hb);
+        try {
+            double months = HouseholdBalance.SHARE_CUSHION_MONTHS;
+            double foodPerHead = owners.subsistence / owners.baskets(), rent = owners.everyday, riskFree = .04;
+            owners.investmentIncome = 0;
+            owners.restrike(0, rent, 0, foodPerHead, riskFree);
+            owners.plan(at[0], at[1], at[2], at[3]);
+            double bills = owners.bills(), groceries = Math.min(owners.subsistence, owners.spendable);
+            double cushion = HouseholdBalance.cushion(owners), spare = hb.bondSpare(owners) / owners.households;
+            out.printf("   no take-home, no investment income, a rent of %,.2f: bills %,.2f, groceries %,.2f, cushion %,.2f; savings %,.2f, spare for a bond %,.2f%n",
+                    rent, bills, groceries, cushion, owners.savings, spare);
+            assertTrue("fixture: a family with no take-home and no investment income, paying a rent",
+                    owners.disposable == 0 && owners.investmentIncome == 0 && bills >= rent && rent > 0);
+            assertTrue("fixture: and holding more than its cushion", owners.savings > cushion && spare > 0);
+            close("its cushion is three months of its bills and its groceries", cushion, months * (bills + groceries), 1e-12);
+            assertTrue("...so three months of its rent are in it, past three months of groceries",
+                    cushion - months * groceries >= months * rent * (1 - 1e-12));
+            assertTrue("what it may put into a bond leaves three months of its bills in the bank",
+                    owners.savings - spare >= months * bills * (1 - 1e-12));
+            owners.restrike(0, 2 * rent, 0, foodPerHead, riskFree);
+            owners.plan(at[0], at[1], at[2], at[3]);
+            double cushionDear = HouseholdBalance.cushion(owners);
+            out.printf("   at twice the rent: bills %,.2f, cushion %,.2f%n", owners.bills(), cushionDear);
+            close("twice the rent raises the cushion by three months of the raise", cushionDear - cushion, months * rent, 1e-9);
+        } finally {
+            putBack(owners, kept);
+        }
     }
 
     /* ============== 2. finding 12: the yen bond bought back at 27.37 ============== */

@@ -5716,12 +5716,12 @@ public class HouseholdBalance {
        buy more because they have more past the cushion.
        ===================================================================== */
 
-    /** Months of take-home, or of everyday spending where that is more (cushion()), a household keeps in the bank before it buys a share. */
+    /** Months of take-home, or of the month's outgoings where they are more (cushion()), a household keeps in the bank before it buys a share. */
     public static final double SHARE_CUSHION_MONTHS = 3;
 
     /**
-     * The cushion itself, per household: SHARE_CUSHION_MONTHS of the larger of its take-home and its everyday spending
-     * (Household.everyday: the basket and what income adds to it, the wealth term apart). Every path that reads
+     * The cushion itself, per household: SHARE_CUSHION_MONTHS of the larger of its take-home and its month's outgoings
+     * (Household.everyday: its recurring bills, then the basket and what income adds to it, the wealth term apart). Every path that reads
      * "savings past the cushion" reads this one: a share, the city's paper and a business's bonds, money sent abroad,
      * an offering, a car paid in cash, the meals and the luxuries, and the shares sold to refill it (Exchange).
      *
@@ -5738,6 +5738,12 @@ public class HouseholdBalance {
      * median 21 months longer, outside three null draws (+4.5, -10.5, +6.5). A buffer stock is months of expenses (the
      * Fed's SHED: "three months of expenses"; Carroll, QJE 1997): it moves with what a household spends, never with
      * what it holds.
+     *
+     * AND THE RENT FIRST (its fourth look): the basket alone left out the bills settle() takes before anything is spent,
+     * so a family with no take-home and no investment income kept three months of groceries, a bond could take next
+     * month's rent, and a higher rent could lower the reserve. Expenses are the rent and the bills before they are food
+     * (SHED's "expenses"; an emergency fund's essentials: housing and utilities, then food): the cushion is never less
+     * than three months of Household.bills().
      */
     public static double cushion(Household c) {
         return SHARE_CUSHION_MONTHS * Math.max(0, Math.max(c.disposable, c.everyday));
