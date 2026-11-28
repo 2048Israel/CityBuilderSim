@@ -108,8 +108,19 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   StaffingTieCheck, GroceryCheck, SupplierCreditCheck, Forms1900Check, ExpectationsCheck, BuildAdviceCheck and
   HungerCheck. `--fast`: Stale 0 firm findings.
 - **The pick is ALL** (AllChecks changed): the whole suite runs in the dry run.
-- **The ensemble** is owed, since the default trace can move (Retail's gate in tight-labour months; basing on
-  meals before groceries). It runs after the review's SHIP, and its verdict goes here.
+- **The ensemble**, owed because the default trace can move (Retail's gate in tight-labour months; basing on
+  meals before groceries). It ran after REV-HG1's SHIP, on the gate box: label HG1, classes of bcc373d55, 80 of 80
+  runs, queued behind ASH4d's (the orchestrator's call), scored against `docs/ensemble/0.9.219.md`, committed as
+  `docs/ensemble/HG1.md`. **Batch verdict PASS: hard 10 of 10** (M1 0 months, F1 0 of 16 in every policy),
+  24 of 26 criteria. The changed verdicts are all information:
+  - AUTO2 A1 (inflation m240-end): FAIL -> PASS, median 2.93% (2.90%), 12 of 16 in band.
+  - ZERO_HOT H2 (inflation after the autopilot's return, minus the twin): VACUOUS -> PASS, median -0.37%.
+  - HIGH R2 (unemployment minus the twin): PASS -> FAIL, median +0.30 points against +0.50 (it was +0.52).
+  - T2 final population, ZERO_HOT, SHOCK and HIGH: FAIL -> PASS. Medians: 17,232 (13,698); 208,032 (197,311);
+    79,502 (86,550).
+  HIGH R2 is the one info row to go red: high rates raise unemployment over the twin a little less (0.30 points
+  against 0.52), within the baseline's spread (-0.94 to 7.00). The run is kept in `target/ensemble/HG1/` here and
+  on the box.
 
 ## 5. Where it meets other batches
 
@@ -138,4 +149,4 @@ Not this batch's to write. For when an edition comes:
 
 ## Logs kept
 
-target/named1.txt, target/hgfinal.txt and target/HungerCheck-mutated.log, in this worktree. No dry run yet.
+target/named1.txt, target/hgfinal.txt, target/HungerCheck-mutated.log, target/HG1-ens.txt and target/ensemble/HG1/, in this worktree. No dry run yet.
