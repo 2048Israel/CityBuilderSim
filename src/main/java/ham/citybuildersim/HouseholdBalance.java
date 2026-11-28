@@ -5716,14 +5716,14 @@ public class HouseholdBalance {
        buy more because they have more past the cushion.
        ===================================================================== */
 
-    /** Months of take-home, or of spending where that is more (cushion()), a household keeps in the bank before it buys a share. */
+    /** Months of take-home, or of everyday spending where that is more (cushion()), a household keeps in the bank before it buys a share. */
     public static final double SHARE_CUSHION_MONTHS = 3;
 
     /**
-     * The cushion itself, per household: SHARE_CUSHION_MONTHS of the larger of its take-home and what it planned to
-     * spend. Every path that reads "savings past the cushion" reads this one: a share, the city's paper and a
-     * business's bonds, money sent abroad, an offering, a car paid in cash, the meals and the luxuries, and the
-     * shares sold to refill it (Exchange).
+     * The cushion itself, per household: SHARE_CUSHION_MONTHS of the larger of its take-home and its everyday spending
+     * (Household.everyday: the basket and what income adds to it, the wealth term apart). Every path that reads
+     * "savings past the cushion" reads this one: a share, the city's paper and a business's bonds, money sent abroad,
+     * an offering, a car paid in cash, the meals and the luxuries, and the shares sold to refill it (Exchange).
      *
      * WHY (ASH4, Jerus's Ashbourne finding 5): it was take-home alone, and take-home is wages, a pension or a benefit
      * (splitIncome), so a family that lives on its dividends - the owner families, whose earning weight is nothing -
@@ -5731,9 +5731,16 @@ public class HouseholdBalance {
      * owner families held 70% of the households' deposits, and one 30-year city bond took 91% of the deposits in
      * three months. A transaction balance pays the months ahead's outgoings, so when a household spends more than it
      * takes home, its cushion is sized on what it spends; a saver's is what it always was.
+     *
+     * AND NOT ON WHAT IT HOLDS (REV-ASH4's third look): the first mend read `planned`, and `planned` carries the grocer's
+     * wealth term (a want the shops refuse: Household.plan()), so a fortune's cushion grew with the fortune - a buffer of
+     * three months of a bill nobody pays. Over the 80-run ensemble a city's climb from 3,000 people to 10,000 took a
+     * median 21 months longer, outside three null draws (+4.5, -10.5, +6.5). A buffer stock is months of expenses (the
+     * Fed's SHED: "three months of expenses"; Carroll, QJE 1997): it moves with what a household spends, never with
+     * what it holds.
      */
     public static double cushion(Household c) {
-        return SHARE_CUSHION_MONTHS * Math.max(0, Math.max(c.disposable, c.planned));
+        return SHARE_CUSHION_MONTHS * Math.max(0, Math.max(c.disposable, c.everyday));
     }
 
     /** The share of what is past the cushion it puts into one offering. */
@@ -6188,7 +6195,9 @@ public class HouseholdBalance {
     /** The tagged units and limited claims, appended after the basis checkpoint. */
     public static final int CELL_SLOTS_BEFORE_CARDS = CELL_SLOTS_BEFORE_SECURED_TAX + 2 * Equity.COMPANIES.length;
     /** Four card stocks, ten settled figures and two pending departure positions (HC1). */
-    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_CARDS + 16;
+    public static final int CELL_SLOTS_BEFORE_EVERYDAY = CELL_SLOTS_BEFORE_CARDS + 16;
+    /** The plan's everyday spending, the cushion's measure of spending (ASH4); an older save reads it as nothing until the month plans. */
+    public static final int CELL_SLOTS = CELL_SLOTS_BEFORE_EVERYDAY + 1;
 
     /** The name of every cell, in the order toCellSaveArray() writes them. */
     public double totalEmergencyBills() {
@@ -6268,6 +6277,7 @@ public class HouseholdBalance {
             out[i++] = c.studentRepaid; out[i++] = c.studentInterest;
             out[i++] = c.rate;
             out[i++] = c.bankruptcyLeaving; out[i++] = c.bankruptcyCash;
+            out[i++] = c.everyday;
         }
         out[i++] = plannedSpend;
         out[i++] = hungryPeople;
@@ -6330,11 +6340,12 @@ public class HouseholdBalance {
         final int wasBeforeBasis   = wasBeforeAfterFixed + 1;
         final int wasBeforeSecured = wasBeforeBasis + savedShares + 2;
         final int wasBeforeCards   = wasBeforeSecured + 2 * savedShares;
-        final int wasFull          = wasBeforeCards + 16;
+        final int wasBeforeEveryday = wasBeforeCards + 16;
+        final int wasFull          = wasBeforeEveryday + 1;
 
         int slots = (saved.length - 3) / keys.length;
         if (saved.length != keys.length * slots + 3
-                || (slots != wasFull && slots != wasBeforeCards && slots != wasBeforeSecured && slots != wasBeforeBasis && slots != wasBeforeAfterFixed
+                || (slots != wasFull && slots != wasBeforeEveryday && slots != wasBeforeCards && slots != wasBeforeSecured && slots != wasBeforeBasis && slots != wasBeforeAfterFixed
                     && slots != wasBeforeMeans && slots != wasBeforeGroceries
                     && slots != wasBeforeBonds && slots != wasBeforePaper
                     && slots != wasBeforeCare && slots != wasBeforeMeals
@@ -6443,7 +6454,7 @@ public class HouseholdBalance {
                 for (int k = 0; k < savedShares; k++) { double value = saved[i++]; if (shareSlot[k] >= 0) c.taxShares[shareSlot[k]] = value; }
                 for (int k = 0; k < savedShares; k++) { double value = saved[i++]; if (shareSlot[k] >= 0) c.taxClaim[shareSlot[k]] = value; }
             }
-            if (slots >= wasFull) {
+            if (slots >= wasBeforeEveryday) {
                 c.revolving = saved[i++]; c.lateDebt = saved[i++]; c.lateShare = saved[i++]; c.shutOut = saved[i++];
                 c.minimumPaid = saved[i++]; c.emergencyBill = saved[i++]; c.cardWrittenOff = saved[i++];
                 c.disposable = saved[i++]; c.bankrupt = saved[i++];
@@ -6453,6 +6464,7 @@ public class HouseholdBalance {
                 c.rate = saved[i++];
                 c.bankruptcyLeaving = saved[i++]; c.bankruptcyCash = saved[i++];
             }
+            c.everyday = slots >= wasFull ? saved[i++] : 0;
         }
         plannedSpend = saved[i++];
         hungryPeople = saved[i++];

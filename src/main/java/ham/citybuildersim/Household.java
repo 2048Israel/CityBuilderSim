@@ -603,6 +603,14 @@ public abstract class Household {
     double banked;
     double want;
     double planned;
+    /**
+     * The plan's everyday spending, per household: the basket and what income adds to it, without the wealth term `want`
+     * carries for the grocer (a want the shops cannot fill: AND THE FORTUNE ALSO ASKS FOR WATCHES), capped by what it can
+     * spend. Struck by plan(); what HouseholdBalance.cushion() keeps three months of. WHY (ASH4, REV-ASH4's third look):
+     * the cushion read `planned`, whose wealth term grows with the fortune, so a rich household's cushion grew with what
+     * it held - three months of a grocery bill nobody pays - and a city's take-off waited on it.
+     */
+    double everyday;
     double rate;
     double subsistence;
 
@@ -1319,6 +1327,7 @@ public abstract class Household {
                 + abroad * Math.max(0, localPerUsd) + paper * Math.max(0, paperRatio)
                 + planningRoom();
         planned = Math.min(want, spendable);
+        everyday = Math.min(subsistence + spendFactor * fromIncome, spendable);
         /*
          * ...AND WHAT IT TAKES TO THE GROCER (0.7.43): the baskets it eats and
          * the money it could put to them - everything the plan can fund, and
@@ -1499,7 +1508,7 @@ public abstract class Household {
     void clearWorking() {
         minimumPaid = emergencyBill = cardWrittenOff = minimumDue = depositIncome = 0;
         disposable = 0; afterFixed = 0; interest = 0; drawn = 0; unfunded = 0;
-        borrowed = 0; repaid = 0; banked = 0; want = 0; planned = 0; rate = 0;
+        borrowed = 0; repaid = 0; banked = 0; want = 0; planned = 0; everyday = 0; rate = 0;
         subsistence = 0; bankrupt = 0; seizedSavings = 0; dividends = 0; sold = 0; carsSold = 0;
         luxuryWant = 0; mealWant = 0; spendable = 0; careSkipped = 0;
         paperSold = 0; paperIncome = 0;
@@ -1564,7 +1573,7 @@ public abstract class Household {
         disposable *= scale;  afterFixed *= scale;  interest *= scale;
         drawn *= scale;  unfunded *= scale;  borrowed *= scale;  repaid *= scale;  seizedSavings *= scale;
         accountFee *= scale;  loanFee *= scale;
-        banked *= scale;  want *= scale;  planned *= scale;  subsistence *= scale;
+        banked *= scale;  want *= scale;  planned *= scale;  everyday *= scale;  subsistence *= scale;
         // Money, so it belongs on this line the day it is written. See the
         // note on investmentIncome above.
         luxuryWant *= scale;  mealWant *= scale;

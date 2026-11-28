@@ -119,29 +119,46 @@ public class AshbourneCheck {
         HouseholdBalance hb = g.getHouseholdBalance();
         OwnerHousehold owners = hb.owners();
         double cushion = HouseholdBalance.cushion(owners);
-        out.printf("   m%d: owners %,.2f households, savings %,.2f each, disposable %,.2f, planned %,.2f, cushion %,.2f%n",
-                g.getMonth(), owners.households, owners.savings, owners.disposable, owners.planned, cushion);
+        out.printf("   m%d: owners %,.2f households, savings %,.2f each, disposable %,.2f, everyday %,.2f (the plan %,.2f), cushion %,.2f%n",
+                g.getMonth(), owners.households, owners.savings, owners.disposable, owners.everyday, owners.planned, cushion);
 
-        assertTrue("fixture: owner families, who take home nothing and plan to spend something",
-                owners.households > 0 && owners.disposable == 0 && owners.planned > 0);
+        assertTrue("fixture: owner families, who take home nothing and spend something every month",
+                owners.households > 0 && owners.disposable == 0 && owners.everyday > 0);
         assertTrue("fixture: and hold more than their cushion", owners.savings > cushion);
 
-        close("the owners' cushion is the months' cushion of what they plan to spend", cushion,
-                HouseholdBalance.SHARE_CUSHION_MONTHS * owners.planned, 0);
+        close("the owners' cushion is the months' cushion of their everyday spending", cushion,
+                HouseholdBalance.SHARE_CUSHION_MONTHS * owners.everyday, 0);
         int savers = 0;
         boolean saversAsBefore = true, neverLess = true;
         for (Household c : hb.cellsForMarket()) {
             double takeHome = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
             neverLess &= HouseholdBalance.cushion(c) >= takeHome;
-            if (c.disposable >= c.planned) {
+            if (c.disposable >= c.everyday) {
                 savers++;
                 saversAsBefore &= HouseholdBalance.cushion(c) == takeHome;
             }
         }
-        out.printf("   %d of %d cells take home at least what they plan to spend%n", savers, hb.cellsForMarket().length);
+        out.printf("   %d of %d cells take home at least what they spend every month%n", savers, hb.cellsForMarket().length);
         assertTrue("fixture: there are savers to hold the old rule against", savers > 0);
         assertTrue("a saver's cushion is what it was: the months' cushion of its take-home, exactly", saversAsBefore);
         assertTrue("no cell's cushion is under the months' cushion of its take-home", neverLess);
+
+        /* THE REAL LAW, A BUFFER STOCK (REV-ASH4's third look): what a household keeps back is a matter of what it spends,
+           never of what it holds (the Fed's SHED measures emergency savings as "three months of expenses": 55% of US adults
+           held them in 2025; Carroll, QJE 1997, the buffer-stock household), and every unit of wealth past it is spare.
+           So what the mend keeps back is bounded by three months of the spending take-home does not cover, and grows with
+           nothing else: no saving is kept for good, and none is counted twice. */
+        double held = 0, uncovered = 0, depositsNow = 0;
+        for (Household c : hb.cellsForMarket()) {
+            double before = Math.min(c.savings, HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable));
+            held += (Math.min(c.savings, HouseholdBalance.cushion(c)) - before) * c.households;
+            uncovered += HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.everyday - Math.max(0, c.disposable)) * c.households;
+            depositsNow += c.savings * c.households;
+        }
+        out.printf("   the mend keeps back %,.2fk of the households' %,.2fk deposits (%.1f%%); three months of the spending take-home does not cover: %,.2fk%n",
+                held, depositsNow, 100 * held / depositsNow, uncovered);
+        assertTrue("what the mend keeps back is at most three months of the spending take-home does not cover", held <= uncovered + 1e-9 * depositsNow);
+        wealthAndSpending(hb, owners);
 
         double takeHomeAlone = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, owners.disposable);
         double spare = hb.bondSpare(owners);
@@ -192,6 +209,57 @@ public class AshbourneCheck {
         MoneyAudit.Result audit = g.getLastMoneyAudit();
         out.printf("   the month after: moved %,.0fk, residual %,.6fk%n", audit.moved(), audit.residual);
         assertTrue("the month's money audit closes to the cent", Math.abs(audit.residual) <= MoneyAudit.CENT);
+    }
+
+    /**
+     * The real law on the production plan: the owners re-planned through Household.plan() at the month's own inputs
+     * (HouseholdBalance's, private), once at their savings and once at twice them. Twice the wealth is a bigger wealth term,
+     * which the plan carries (`planned`, the grocer's want the shops refuse) and the everyday spending does not, so the
+     * cushion does not move and the spare takes all of the wealth added; what they spend every month moves the cushion one
+     * for one. Every double the plan writes is put back after, so nothing past this reads a re-planned household.
+     * WHY: the first mend read `planned`, so a rich household's cushion grew with its fortune, and a city's take-off from
+     * 3,000 to 10,000 people waited a median 21 months longer for it (ASH4-notes.md, REV-ASH4's third look).
+     */
+    static void wealthAndSpending(HouseholdBalance hb, OwnerHousehold owners) throws Exception {
+        java.util.Map<java.lang.reflect.Field, Object> kept = new java.util.HashMap<>();
+        for (Class<?> k = owners.getClass(); k != Object.class; k = k.getSuperclass())
+            for (java.lang.reflect.Field f : k.getDeclaredFields()) {
+                if (java.lang.reflect.Modifier.isStatic(f.getModifiers()) || f.getType() != double.class) continue;
+                f.setAccessible(true);
+                kept.put(f, f.get(owners));
+            }
+        double[] at = new double[4];
+        String[] inputs = {"localPerUsd", "paperRatio", "spendFactor", "bondRatio"};
+        for (int k = 0; k < 4; k++) {
+            java.lang.reflect.Field f = HouseholdBalance.class.getDeclaredField(inputs[k]);
+            f.setAccessible(true);
+            at[k] = f.getDouble(hb);
+        }
+        try {
+            double saved = owners.savings;
+            owners.plan(at[0], at[1], at[2], at[3]);
+            double planned = owners.planned, everyday = owners.everyday, cushion = HouseholdBalance.cushion(owners), spare = hb.bondSpare(owners);
+            owners.savings = 2 * saved;
+            owners.plan(at[0], at[1], at[2], at[3]);
+            double plannedRich = owners.planned, everydayRich = owners.everyday;
+            double cushionRich = HouseholdBalance.cushion(owners), spareRich = hb.bondSpare(owners);
+            out.printf("   re-planned at %,.2f and at twice it: the plan %,.2f -> %,.2f, everyday %,.2f -> %,.2f, cushion %,.2f -> %,.2f%n",
+                    saved, planned, plannedRich, everyday, everydayRich, cushion, cushionRich);
+            assertTrue("fixture: at twice the wealth the plan asks for more, its wealth term", plannedRich > planned);
+            close("...while what they spend every month stays where it was", everydayRich, everyday, 0);
+            close("doubling the owners' wealth leaves their cushion where it was", cushionRich, cushion, 0);
+            assertTrue("fixture: they hold more than their cushion", saved > cushion && spare > 0);
+            close("...and the spare grows by all of the wealth added: it is what is past a cushion that did not move",
+                    spareRich / spare, (2 * saved - cushion) / (saved - cushion), 1e-12);
+            owners.savings = saved;
+            owners.plan(at[0], at[1], at[2], at[3]);
+            owners.everyday = 2 * everyday;
+            close("doubling what they spend every month doubles their cushion", HouseholdBalance.cushion(owners), 2 * cushion, 1e-12);
+        } finally {
+            for (java.util.Map.Entry<java.lang.reflect.Field, Object> e : kept.entrySet()) e.getKey().set(owners, e.getValue());
+        }
+        for (java.util.Map.Entry<java.lang.reflect.Field, Object> e : kept.entrySet())
+            if (!e.getValue().equals(e.getKey().get(owners))) throw new IllegalStateException("not put back: " + e.getKey().getName());
     }
 
     /* ============== 2. finding 12: the yen bond bought back at 27.37 ============== */
@@ -338,10 +406,14 @@ public class AshbourneCheck {
                 ASH_FACE_YEN, 100 * ASH_COUPON, piece.getRemainingMonths(), 100 * premium, quote.averagePer100(), paid, ASH_PAID, ASH_OWED);
         out.printf("   with no premium %.4f, with a basis point more %.4f; at the Bank of Japan's %.2f%% and the premium %.2f%n",
                 noPremium, bpMore, 100 * BOJ_1917, atBoj);
-        close("the production buyback prices Ashbourne's piece at what Ashbourne paid", quote.averagePer100(), paid, PER_100_TOLERANCE);
+        /* Absolute, in points of the price: close()'s tolerance turns relative above 1 (REV-ASH4: .005 became 0.137 at 27.37). */
+        double gap = Math.abs(quote.averagePer100() - paid);
+        out.printf("   the gaps to what Ashbourne paid, in points: the quote %.6f, no premium %.6f, a basis point more %.6f (tolerance %.3f)%n",
+                gap, Math.abs(noPremium - paid), Math.abs(bpMore - paid), PER_100_TOLERANCE);
+        assertTrue("the production buyback prices Ashbourne's piece at what Ashbourne paid, within 0.005 of a point", gap <= PER_100_TOLERANCE);
         close("...its fair per 100 being DebtManager.marketValue's over the principal", quote.fairPer100(), dm.marketValue(piece) / owed * 100, 1e-12);
-        assertTrue("...and the tolerance tells a wrong premium: none at all, or one basis point more, falls outside it",
-                Math.abs(noPremium - paid) > PER_100_TOLERANCE && Math.abs(bpMore - paid) > PER_100_TOLERANCE);
+        assertTrue("a premium of nothing misprices it outside that tolerance (27.7352)", Math.abs(noPremium - paid) > PER_100_TOLERANCE);
+        assertTrue("...and so does a basis point more (27.3498)", Math.abs(bpMore - paid) > PER_100_TOLERANCE);
         assertTrue("at the Bank of Japan's 5.11% and the same premium the piece is worth over 60: the level is the rate's", atBoj > 60);
     }
 
