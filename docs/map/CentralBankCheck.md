@@ -66,7 +66,7 @@
 
 **Uses:** [DebtManager](DebtManager.md) (130), [Game](Game.md) (102), [Debt](Debt.md) (77), [CentralBank](CentralBank.md) (44), [LongPlaytest](LongPlaytest.md) (29), [PriceLevel](PriceLevel.md) (24), [GameFiles](GameFiles.md) (21), [Bank](Bank.md) (20), [Rollover](Rollover.md) (15), [MoneyAudit](MoneyAudit.md) (14), [TreasuryLine](TreasuryLine.md) (9), [Expectations](Expectations.md) (8), [PriceIndex](PriceIndex.md) (6), [HouseholdBalance](HouseholdBalance.md) (5), [BankRulesCheck](BankRulesCheck.md) (5), [MediumTermBond](MediumTermBond.md) (5), [TreasuryJournal](TreasuryJournal.md) (4), [SectorBooks](SectorBooks.md) (3), [SectorStatements](SectorStatements.md) (3), [BuildingsTemplate](BuildingsTemplate.md) (2), [Household](Household.md) (2), [ShortTermTBill](ShortTermTBill.md) (2), [LongTermBond](LongTermBond.md) (2), [WorldEconomy](WorldEconomy.md) (2), [PolicyPreview](PolicyPreview.md) (2), [TreasuryFund](TreasuryFund.md) (2), [Buyback](Buyback.md) (1), [Sector](Sector.md) (1), [Founding](Founding.md) (1), [Equity](Equity.md) (1)... and 2 more
 
-**Used by (1):** [BankRulesCheck](BankRulesCheck.md)
+**Used by (2):** [BankRulesCheck](BankRulesCheck.md), [CentralBankPaceCheck](CentralBankPaceCheck.md)
 
 ## Sections
 

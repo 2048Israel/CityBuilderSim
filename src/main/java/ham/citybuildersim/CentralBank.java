@@ -97,7 +97,19 @@ public final class CentralBank {
     private transient DecisionLog decisions;
 
     /** Wires this to its city's decision log (Game.buildWorld()). */
-    public void recordTo(DecisionLog log) { decisions = log; }
+    public void recordTo(DecisionLog log) { decisions = log; holdingsRules.recordTo(log); }
+
+    /**
+     * Its rules for the holdings (CBK2): the pace, how the book shrinks, the
+     * auction share and the law on direct purchases. Saved under their own
+     * key (DataSave.holdingsRules), not in toSaveArray(), and so left alone by
+     * reset() and restore(): the load path restores them after the balance
+     * sheet, and a city founds a fresh bank with the defaults.
+     */
+    private final HoldingsRules holdingsRules = new HoldingsRules();
+
+    /** The holdings' rules (CBK2). */
+    public HoldingsRules holdingsRules() { return holdingsRules; }
 
     private void decided(String kind, String label) {
         if (decisions != null) decisions.record(kind, label);
@@ -233,6 +245,8 @@ public final class CentralBank {
     private double boughtFromWorld;
     /** ...and what it paid the treasury at issue, and the par it took, rolling its own maturing paper (0.7.15, round 2): money made into the treasury's cash. */
     private double boughtAtIssue, parAtIssue;
+    /** ...and what it paid the treasury for its auction share (CBK2): new paper past its own rollover, under the law on direct purchases, and its par. A month's. */
+    private double boughtAtAuction, parAtAuction;
     /** The defence's month (0.7.2): the local price of the vault's dollars sold at this month's reprice - equity spent, not money destroyed. */
     private double defendedThisMonth;
     /** The mirror of the defence (XR2): the local price of the dollars it bought for the vault this month at the strong edge of a band or a peg, in money made and paid abroad for them. */
@@ -257,6 +271,17 @@ public final class CentralBank {
     private double boughtFromHouseholdsLifetime;
     /** ...and what it paid at issue for its own maturing paper rolled, and the par, since founding (0.7.15, round 2). Appended to the save; zero on an old one. */
     private double boughtAtIssueLifetime, parAtIssueLifetime;
+    /** ...and what it paid for its auction share, and the par, since founding (CBK2). Appended to the save; zero on an old one. */
+    private double boughtAtAuctionLifetime, parAtAuctionLifetime;
+    /**
+     * WHAT IT HAS LENT THE TREASURY AT AUCTION LATELY (CBK2): its auction
+     * share's payments, each month's added and the whole falling a
+     * FINANCING_MONTHS-th a month - about the last year's, the measure the
+     * real cases are sized in (a share of a year's GDP). Expectations reads it
+     * (financed()). Appended to the save; zero on an old one, which bought
+     * nothing past its rollover.
+     */
+    private double financedLately;
     /** Spent defending the currency since founding (0.7.2): the vault's dollars at the rates they were sold at. Appended to the save; zero on an old one. */
     private double defendedLifetime;
     /** ...and what it paid, in money made, for the dollars it bought for the vault since founding (XR2). Appended to the save; zero on an old one. */
@@ -295,6 +320,7 @@ public final class CentralBank {
         boughtPaper = soldPaper = paperCoupons = paperRedeemed = boughtBack = paperGains = 0;
         boughtFromHouseholds = boughtFromWorld = 0;
         boughtAtIssue = parAtIssue = 0;
+        boughtAtAuction = parAtAuction = 0;
         defendedThisMonth = 0;
         dollarsBought = 0;
         goldRedeemed = 0;
@@ -590,6 +616,27 @@ public final class CentralBank {
     }
 
     /**
+     * Its auction share (CBK2): this much face of the city's new term paper,
+     * past its own rollover, for this price - the auction's own on each unit
+     * of face - paid to the treasury in money made for it, under the law on
+     * direct purchases (HoldingsRules). The purchase buyAtIssue() makes, and
+     * so MoneyAudit's: "+ centralbank BoughtPaper", money made (the money
+     * statement's ISSUED), arriving in the treasury's pool and declared
+     * nowhere else. Counted apart from the rollover, for the statements, the
+     * screens and what it has lent the treasury lately (financedLately).
+     */
+    public double buyAtAuction(double price, double face) {
+        double paid = buyPaper(price, face);
+        if (paid > 0) {
+            boughtAtAuction += paid;
+            parAtAuction += face;
+            boughtAtAuctionLifetime += paid;
+            parAtAuctionLifetime += face;
+        }
+        return paid;
+    }
+
+    /**
      * Its add-on at issue (0.7.15, round 2): this much face of the city's new
      * paper for this price - the issue's own price on each unit of face -
      * paid to the treasury in money made for it. The same purchase as
@@ -691,13 +738,32 @@ public final class CentralBank {
 
     /**
      * The most the book may move this month, at face, against this much term
-     * paper outstanding: QE_SPEED of the larger of the dial, the setting
-     * before it and the share it actually holds.
+     * paper outstanding: the pace dial's share of it (CBK2), or at Auto, the
+     * pace before CBK2, QE_SPEED of the larger of the dial, the setting before
+     * it and the share it actually holds. Both ways: what the open market buys
+     * or sells, and under a set pace or runoff only, what runs off too
+     * (runoffCap()).
      */
     public double stepFor(double termPrincipal) {
         if (!(termPrincipal > 0)) return 0;
+        double pace = holdingsRules.pace();
+        if (pace > 0) return pace * termPrincipal;
         double held = paperHeld / termPrincipal;
         return QE_SPEED * Math.max(Math.max(targetShare, previousTarget), held) * termPrincipal;
+    }
+
+    /**
+     * THE RUNOFF'S CAP (CBK2): the most of its maturing paper past its dial it
+     * lets run off in a month rather than roll, at face. The Fed's 2022 rule
+     * (FOMC, "Plans for Reducing the Size of the Federal Reserve's Balance
+     * Sheet", May 4, 2022): principal "reinvested to the extent that they
+     * exceed monthly caps". Under runoff only, or a pace the player set, it is
+     * the pace (stepFor()); at Auto with sales, the rule before CBK2, no cap:
+     * all of what it holds past its dial runs off, and the sales do the rest.
+     */
+    public double runoffCap(double termPrincipal) {
+        if (holdingsRules.runoffOnly() || holdingsRules.pace() > 0) return stepFor(termPrincipal);
+        return Double.POSITIVE_INFINITY;
     }
 
     /* ========================= THE DEFENCE (0.7.2) =========================
@@ -995,6 +1061,35 @@ public final class CentralBank {
     public double getBoughtAtIssueLifetime()        { return boughtAtIssueLifetime; }
     /** ...and the par. */
     public double getParAtIssueLifetime()           { return parAtIssueLifetime; }
+    /** What it paid the treasury this month for its auction share (CBK2): new paper past its rollover, money made. */
+    public double getBoughtAtAuction()              { return boughtAtAuction; }
+    /** ...its par. */
+    public double getParAtAuction()                 { return parAtAuction; }
+    /** ...and since founding, what it paid. */
+    public double getBoughtAtAuctionLifetime()      { return boughtAtAuctionLifetime; }
+    /** ...and the par. */
+    public double getParAtAuctionLifetime()         { return parAtAuctionLifetime; }
+    /** What it has lent the treasury at auction lately: see financedLately. */
+    public double getFinancedLately()               { return financedLately; }
+
+    /** How many months financedLately is read over: its payments fall a twelfth a month, about a year's. */
+    public static final int FINANCING_MONTHS = 12;
+
+    /**
+     * The month's turn of what it lent the treasury at auction lately (CBK2): the
+     * whole falls a FINANCING_MONTHS-th and this month's auction share joins it;
+     * read against a year's GDP, the share Expectations.financed() is told. Once
+     * a month, after the window (Game, beside the anchor). Nothing lent, and
+     * nothing ever lent, leaves it at exactly zero.
+     */
+    public double turnFinancing(double yearGdp) {
+        if (financedLately != 0 || boughtAtAuction != 0)
+            financedLately = financedLately * (1 - 1.0 / FINANCING_MONTHS) + boughtAtAuction;
+        // Decayed to the arithmetic's dust, a cent's millionth: forgotten, so a city that stopped long ago reads none.
+        if (financedLately < MoneyAudit.CENT * 1e-6) financedLately = 0;
+        if (!(financedLately > 0)) return 0;
+        return yearGdp > 0 ? financedLately / yearGdp : Double.POSITIVE_INFINITY;
+    }
 
     public double getPrintedLifetime()    { return printedLifetime; }
     public double getIssuedLifetime()     { return issuedLifetime; }
@@ -1036,7 +1131,9 @@ public final class CentralBank {
         BOUGHT_AT_ISSUE, PAR_AT_ISSUE, DOLLARS_BOUGHT, GOLD_MINTED,
         REPAID_BY_BANK, REPAID_BY_TREASURY, SOLD_PAPER, PAPER_REDEEMED, BOUGHT_BACK, GOLD_REDEEMED,
         DEFENDED, ISSUED, RETIRED, M0_AT_START,
-        WINDOW_INTEREST_DUE_CHANGE
+        WINDOW_INTEREST_DUE_CHANGE,
+        // CBK2: the auction share, after every line before it (a save keeps its lines in this order, led by their count).
+        BOUGHT_AT_AUCTION, PAR_AT_AUCTION
     }
 
     /** ...and a line of its balance sheet, as they read it: this month's and a year ago's (yearAgo()). */
@@ -1113,6 +1210,8 @@ public final class CentralBank {
             case RETIRED                -> retired;
             case M0_AT_START            -> m0AtStart;
             case WINDOW_INTEREST_DUE_CHANGE -> windowInterestDueChange;
+            case BOUGHT_AT_AUCTION      -> boughtAtAuction;
+            case PAR_AT_AUCTION         -> parAtAuction;
         };
     }
 
@@ -1150,6 +1249,8 @@ public final class CentralBank {
             case RETIRED                -> retired = v;
             case M0_AT_START            -> m0AtStart = v;
             case WINDOW_INTEREST_DUE_CHANGE -> windowInterestDueChange = v;
+            case BOUGHT_AT_AUCTION      -> boughtAtAuction = v;
+            case PAR_AT_AUCTION         -> parAtAuction = v;
         }
     }
 
@@ -1163,7 +1264,7 @@ public final class CentralBank {
     public double lastMonth(Line line) { return knowsLastMonth() ? lastLines[line.ordinal()] : 0; }
 
     /** What it paid the commercial bank for paper this month: the rest of getBoughtPaper() once the households, the world and the treasury at issue are out. */
-    public double getBoughtFromBank() { return boughtPaper - boughtFromHouseholds - boughtFromWorld - boughtAtIssue; }
+    public double getBoughtFromBank() { return boughtPaper - boughtFromHouseholds - boughtFromWorld - boughtAtIssue - boughtAtAuction; }
 
     /** What closeMonth() struck as this month's profit (a loss negative): monthProfit() at the strike. */
     public double getStruckProfit()  { return struckProfit; }
@@ -1219,12 +1320,13 @@ public final class CentralBank {
      * and since XR2 what it has paid in new money for the vault's dollars;
      * and since CBK1 the month's own lines after all - this month's, last
      * month's and the year of sheets, for its own pages (ITS OWN
-     * STATEMENTS). A slot appended later reads zero from an older save, which
+     * STATEMENTS); and since CBK2 its auction share since founding and what it
+     * has lent the treasury at auction lately. A slot appended later reads zero from an older save, which
      * is a bank that has not done that yet. A save without the key founds an empty bank. The
      * two dials, the holdings and the ceiling, are under keys of their own.
      */
     public double[] toSaveArray() {
-        double[] out = new double[13 + REVENUE_MONTHS + 15 + 3 + 2 * LINES.length + SHEET_MONTHS * SHEETS.length + 2];
+        double[] out = new double[13 + REVENUE_MONTHS + 15 + 3 + 2 * LINES.length + SHEET_MONTHS * SHEETS.length + 2 + 3];
         int i = 0;
         out[i++] = advancesToBank;
         out[i++] = advancesToTreasury;
@@ -1265,6 +1367,10 @@ public final class CentralBank {
         out[i++] = sheetsFiled;
         out[i++] = windowDeferred;
         out[i++] = windowInterestDue;
+        // CBK2's: the auction share since founding, and what it has lent the treasury at auction lately.
+        out[i++] = boughtAtAuctionLifetime;
+        out[i++] = parAtAuctionLifetime;
+        out[i++] = financedLately;
         return out;
     }
 
@@ -1322,6 +1428,10 @@ public final class CentralBank {
         // ...and RES3's: an older save left nothing owed past the bank's funding (its repayment had no cap).
         if (i < saved.length) windowDeferred = Math.max(0, saved[i++]);
         if (i < saved.length) windowInterestDue = Math.max(0, saved[i++]);
+        // ...and CBK2's: an older save bought nothing past its rollover at auction, and has lent the treasury nothing there.
+        if (i < saved.length) boughtAtAuctionLifetime = Math.max(0, saved[i++]);
+        if (i < saved.length) parAtAuctionLifetime = Math.max(0, saved[i++]);
+        if (i < saved.length) financedLately = Math.max(0, saved[i++]);
     }
 
     /** An empty bank: nothing lent, nothing made. */
@@ -1336,6 +1446,7 @@ public final class CentralBank {
         boughtPaperLifetime = soldPaperLifetime = 0;
         boughtFromHouseholdsLifetime = 0;
         boughtAtIssueLifetime = parAtIssueLifetime = 0;
+        boughtAtAuctionLifetime = parAtAuctionLifetime = financedLately = 0;
         defendedLifetime = 0;
         dollarsBoughtLifetime = goldMinted = goldMintedLifetime = 0;
         goldRedeemDue = goldRedeemedLifetime = 0;
@@ -1373,6 +1484,8 @@ public final class CentralBank {
         boughtFromWorld *= scale;
         boughtAtIssue *= scale;  parAtIssue *= scale;
         boughtAtIssueLifetime *= scale;  parAtIssueLifetime *= scale;
+        boughtAtAuction *= scale;  parAtAuction *= scale;
+        boughtAtAuctionLifetime *= scale;  parAtAuctionLifetime *= scale;  financedLately *= scale;
         paperRedeemed *= scale;  boughtBack *= scale;  paperGains *= scale;
         defendedThisMonth *= scale;  defendedLifetime *= scale;
         goldMinted *= scale; goldMintedLifetime *= scale;
