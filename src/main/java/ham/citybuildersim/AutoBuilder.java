@@ -1243,7 +1243,9 @@ public final class AutoBuilder {
         // plant on site at its revised opening (WorksValue.openBy(), the builders' queue), so a late plant counts from when it will
         // open and a candidate opening sooner is still ordered; dropped whole, every late plant was ordered again, each order
         // crowding the builders and slipping the next deadline (seed 1: 19 coal plants in the 1960s, the firm supply 6 times the peak).
-        if (shortAhead && due != null && game.getMonth() > due && m.kind() != BuildAdvice.Kind.POWER) return Map.of();
+        // Nor the grid's (ASH1): its site is many small units opening in turn; dropped whole, every unit still on site was ordered again
+        // (TownGridCheck 2: 27 units, 145 MW against a 45.6 MW peak).
+        if (shortAhead && due != null && game.getMonth() > due && m.kind() != BuildAdvice.Kind.POWER && m.kind() != BuildAdvice.Kind.GRID) return Map.of();
         // A slow site cannot cover service that faster work can deliver sooner. Power's planner reads each plant on site from its
         // own opening at each candidate's (PW3, WorksValue.openBy()), so a slow power site is kept: dropped whole, a second coal plant
         // would be ordered against the shortfall the first already meets at its opening.
@@ -1255,8 +1257,16 @@ public final class AutoBuilder {
                 if (!game.hasCoolingFor(t)) continue;
                 double lead = game.quoteBuild(t, 1).months;
                 if (Double.isFinite(lead) && Math.ceil(lead) < first
-                        && !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, lead, slack)))
-                    return Map.of();
+                        && !BuildAdvice.maintained(game, m, Map.of(), BuildAdvice.opening(game, lead, slack))) {
+                    // The grid's (ASH1): a 100 MW Substation on site still yields to Distribution Substations that open sooner (Ashbourne
+                    // waited 40 months on one, finding 2), while more units of the faster kind would only crowd the same crews: the site's
+                    // units of the faster template count, those of the others nothing.
+                    if (m.kind() != BuildAdvice.Kind.GRID) return Map.of();
+                    Map<BuildingsTemplate, Long> faster = new LinkedHashMap<>();
+                    Long own = site.get(t);
+                    if (own != null && own > 0) faster.put(t, own);
+                    return faster;
+                }
             }
         }
         return site;

@@ -83,11 +83,24 @@ public final class CityNeeds {
      *                its third, who would come and be hired, the demand,
      *                the load the road's curve reads, the people - so a
      *                served row is a over b
+     * @param wires   whether a POWER row reads the wires, not the plants:
+     *                the wires' served share is the lower (powerPeak()), so the
+     *                advice it feeds measures the grid's units (BuildAdvice.measureOf());
+     *                false for every other row
      */
     public record Need(String label, String reading, int level, double near,
                        Kind kind, Go go, CareType care, EducationType school,
                        double value, double yellow, double red, boolean higherWorse,
-                       long onSite, double onSiteMonths, double a, double b) {
+                       long onSite, double onSiteMonths, double a, double b, boolean wires) {
+
+        /** A need that reads no wires: every row but a POWER row the wires bind. */
+        public Need(String label, String reading, int level, double near,
+                    Kind kind, Go go, CareType care, EducationType school,
+                    double value, double yellow, double red, boolean higherWorse,
+                    long onSite, double onSiteMonths, double a, double b) {
+            this(label, reading, level, near, kind, go, care, school, value, yellow, red, higherWorse,
+                    onSite, onSiteMonths, a, b, false);
+        }
 
         /** A need the city answers with a building of its own (BuildAdvice): roads, care, schools, police, cells, power and water. */
         public boolean cityBuilds() {
@@ -131,7 +144,13 @@ public final class CityNeeds {
 
         Need withOnSite(String moreReading, long units, double months, int newLevel) {
             return new Need(label, reading + moreReading, newLevel, near, kind, go, care, school,
-                    value, yellow, red, higherWorse, units, months, a, b);
+                    value, yellow, red, higherWorse, units, months, a, b, wires);
+        }
+
+        /** The same row read by the wires: powerPeak()'s answer, set on the POWER row after network() has built it. */
+        Need byTheWires() {
+            return new Need(label, reading, level, near, kind, go, care, school,
+                    value, yellow, red, higherWorse, onSite, onSiteMonths, a, b, true);
         }
     }
 
@@ -299,6 +318,30 @@ public final class CityNeeds {
     /** What the POWER row's share is read at (PW1; PW3 the year's peak hour): the firm supply against the peak hour's draw, not the month's average, so "48% served at the peak hour". */
     public static final String AT_THE_PEAK_HOUR = " at the peak hour";
 
+    /** What the POWER row adds after AT_THE_PEAK_HOUR when the wires, not the plants, are what serves the least of the peak. */
+    public static final String BY_THE_WIRES = " by the wires";
+
+    /**
+     * The pair the POWER row reads: supply and demand in kW at the peak hour, and whether they are the wires'.
+     *
+     * @param wires true when the grid units' carry is what serves the lesser share of the peak
+     */
+    public record PowerPeak(double supply, double demand, boolean wires) { }
+
+    /**
+     * ASH1 finding 1: the POWER row's pair is the lesser of the plants and the wires. It read the plants alone: a town with
+     * plants at 204% of the peak and wires at 79% (10,000 kW carried against 12,713 kW) read "204% served at the peak hour"
+     * in green while 4.6% of the month went unserved. The two peaks are not computed alike, so they are compared by served
+     * share, never by kW. A city drawing nothing keeps the average's pair (production, no demand): its row is the green "—".
+     */
+    public static PowerPeak powerPeak(Game game) {
+        double[] plants = BuildAdvice.supplyDemand(game, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of());
+        if (!(plants[1] > 0)) return new PowerPeak(game.getServicesManager().getUtilitiesHandler().getProduction(), 0, false);
+        double[] grid = BuildAdvice.supplyDemand(game, BuildAdvice.Measure.of(BuildAdvice.Kind.GRID), java.util.Map.of());
+        return servedShare(grid[0], grid[1]) < servedShare(plants[0], plants[1])
+                ? new PowerPeak(grid[0], grid[1], true) : new PowerPeak(plants[0], plants[1], false);
+    }
+
     /**
      * One gauge, read the one way (0.7.41): its share served - supply over
      * demand, unclamped, +∞ when nothing is asked of it - its verdict's level
@@ -440,20 +483,24 @@ public final class CityNeeds {
         double[] staffing = game.getPopulationManager().getJobFillRate();
         long population = game.getPopulationManager().getPopulation();
 
+        SitePace pace = new SitePace(game);
+
         /* ---------------------------- the networks ---------------------------- */
         int at = out.size();
         // PW1, 2026-11-11 (PW3: the year's peak hour): power is read on the firm supply against the peak's draw, the pair the advice plans by
         // (BuildAdvice.supplyDemand()), not on the average (consumption over production, which counts a wind farm at its
-        // average and read a city of wind farms clear while its calm half-blocks were half served). A city drawing nothing
-        // keeps the average's pair: its row is the green "—" it always was.
-        double[] peak = BuildAdvice.supplyDemand(game, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), java.util.Map.of());
-        if (!(peak[1] > 0)) peak = new double[] {utilities.getProduction(), 0};
-        network(out, "POWER", Kind.POWER, peak[1], peak[0], utilities.getEnergyRatio(), AT_THE_PEAK_HOUR);
-        onTheWay(game, w, out, at, t -> t.getCategory() == BuildingType.ELECTRICITY);
+        // average and read a city of wind farms clear while its calm half-blocks were half served). Of the plants and the
+        // wires, the lesser (powerPeak()); the units on the way are those of the one it reads.
+        PowerPeak peak = powerPeak(game);
+        network(out, "POWER", Kind.POWER, peak.demand(), peak.supply(), utilities.getEnergyRatio(),
+                AT_THE_PEAK_HOUR + (peak.wires() ? BY_THE_WIRES : ""));
+        if (peak.wires() && out.size() > at) out.set(at, out.get(at).byTheWires());
+        onTheWay(game, w, out, pace, at, peak.wires()
+                ? BuildAdvice.Measure.of(BuildAdvice.Kind.GRID)::serves : BuildAdvice.Measure.of(BuildAdvice.Kind.POWER)::serves);
         at = out.size();
         network(out, "WATER", Kind.WATER, utilities.getWaterConsumption(),
                 utilities.getWaterProduction(), utilities.getWaterRatio());
-        onTheWay(game, w, out, at, t -> t.getCategory() == BuildingType.WATER);
+        onTheWay(game, w, out, pace, at, t -> t.getCategory() == BuildingType.WATER);
 
         // Its own constants: STRAINED is .85 and free flow ends at .90. Read as
         // the pair every screen writes the road in (0.7.29): how much of its
@@ -468,7 +515,7 @@ public final class CityNeeds {
         over(out, "STREETS", servedPct(served) + " " + SERVED + " · " + String.format("%.0f%% flow", roads.getThroughputRatio() * 100),
                 traffic, InfrastructureManager.STRAINED, InfrastructureManager.FREE_FLOW,
                 Kind.ROADS, Go.ROADS, CareType.NONE, EducationType.NONE, roads.getStreetCapacity(), roads.getStreetLoad());
-        onTheWay(game, w, out, t -> t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway());
+        onTheWay(game, w, out, pace, t -> t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway());
 
         // Read as the through trips on highways ("40% of through traffic on highways"); listed on the overflow,
         // in highways: from HIGHWAY_MIN_FILL of one at free flow, red from HIGHWAY_RED_FILL. No Elevated
@@ -481,7 +528,7 @@ public final class CityNeeds {
                     fill, HIGHWAY_MIN_FILL, HIGHWAY_RED_FILL,
                     Kind.HIGHWAYS, Go.ROADS, CareType.NONE, EducationType.NONE,
                     roads.getHighwayCapacity() * InfrastructureManager.FREE_FLOW, roads.getThroughLoad());
-            onTheWay(game, w, out, t -> t.getCategory() == BuildingType.INFRASTRUCTURE && t.isHighway());
+            onTheWay(game, w, out, pace, t -> t.getCategory() == BuildingType.INFRASTRUCTURE && t.isHighway());
         }
 
         /* ------------------------------- the care ------------------------------- */
@@ -492,28 +539,28 @@ public final class CityNeeds {
                 general, GENERAL_YELLOW, GENERAL_RED,
                 Kind.CARE, Go.HEALTHCARE, CareType.GENERAL, EducationType.NONE,
                 careHave(game, CareType.GENERAL, staffing), CareType.GENERAL.populationServed(cohorts));
-        onTheWay(game, w, out, t -> t.getCare() == CareType.GENERAL);
+        onTheWay(game, w, out, pace, t -> t.getCare() == CareType.GENERAL);
 
         double childcare = careCover(game, CareType.CHILDCARE, cohorts, staffing);
         under(out, "CHILDCARE", servedPct(careServed(game, CareType.CHILDCARE, cohorts, staffing)) + " " + SERVED,
                 childcare, OTHER_CARE_YELLOW, OTHER_CARE_RED,
                 Kind.CARE, Go.HEALTHCARE, CareType.CHILDCARE, EducationType.NONE,
                 careHave(game, CareType.CHILDCARE, staffing), CareType.CHILDCARE.populationServed(cohorts));
-        onTheWay(game, w, out, t -> t.getCare() == CareType.CHILDCARE);
+        onTheWay(game, w, out, pace, t -> t.getCare() == CareType.CHILDCARE);
 
         double senior = careCover(game, CareType.SENIOR, cohorts, staffing);
         under(out, "SENIOR CARE", servedPct(careServed(game, CareType.SENIOR, cohorts, staffing)) + " " + SERVED,
                 senior, OTHER_CARE_YELLOW, OTHER_CARE_RED,
                 Kind.CARE, Go.HEALTHCARE, CareType.SENIOR, EducationType.NONE,
                 careHave(game, CareType.SENIOR, staffing), CareType.SENIOR.populationServed(cohorts));
-        onTheWay(game, w, out, t -> t.getCare() == CareType.SENIOR);
+        onTheWay(game, w, out, pace, t -> t.getCare() == CareType.SENIOR);
 
         // The dead are a STOCK: a backlog does not clear itself and the plots do
         // not come back, so this one is red the moment anybody is waiting.
         double unburied = care.getUnburied();
         flag(out, "THE DEAD", unburied > 0 ? w.people(unburied) + " unburied" : "all dealt with",
                 unburied > 0, unburied > 0, Kind.DEAD, Go.HEALTHCARE, unburied);
-        onTheWay(game, w, out, t -> t.getCare() == CareType.BURIAL || t.getCare() == CareType.CREMATION);
+        onTheWay(game, w, out, pace, t -> t.getCare() == CareType.BURIAL || t.getCare() == CareType.CREMATION);
 
         /*
          * MEASURED: with nobody dying this returns Double.MAX_VALUE - not
@@ -528,7 +575,7 @@ public final class CityNeeds {
             under(out, "BURIAL PLOTS", String.format("%.0f months left", monthsLeft),
                     monthsLeft, PLOTS_YELLOW, PLOTS_RED,
                     Kind.PLOTS, Go.HEALTHCARE, CareType.BURIAL, EducationType.NONE, 0, 0);
-            onTheWay(game, w, out, t -> t.getCare() == CareType.BURIAL);
+            onTheWay(game, w, out, pace, t -> t.getCare() == CareType.BURIAL);
         }
 
         /* ------------------------------ the schools ------------------------------ */
@@ -545,24 +592,24 @@ public final class CityNeeds {
             under(out, "SCHOOLS", thin + " " + servedPct(basic) + " " + SERVED,
                     basic, SCHOOLS_YELLOW, SCHOOLS_RED,
                     Kind.BASIC_SCHOOLS, Go.EDUCATION, CareType.NONE, bottleneck, 0, 0);
-            onTheWay(game, w, out, t -> t.getTeaches() == bottleneck);
+            onTheWay(game, w, out, pace, t -> t.getTeaches() == bottleneck);
         }
 
         /* ------------------------ and the schools above them ------------------------ */
-        seatsWanted(game, w, out);
+        seatsWanted(game, w, out, pace);
 
         /* ------------------------------- the police ------------------------------- */
         double vsCanada = crime.getRateVsCanada();
         over(out, "CRIME", String.format("%.1fx Canada's", vsCanada),
                 vsCanada, CRIME_YELLOW, CRIME_RED,
                 Kind.CRIME, Go.SAFETY, CareType.NONE, EducationType.NONE, 0, 0);
-        onTheWay(game, w, out, t -> t.getSafety() == SafetyType.POLICE);
+        onTheWay(game, w, out, pace, t -> t.getSafety() == SafetyType.POLICE);
 
         double unheld = crime.getNotHeld();
         over(out, "CELLS", unheld >= 1 ? w.people(unheld) + " caught, not held" : "enough for the caught",
                 unheld, CELLS_YELLOW, CELLS_RED,
                 Kind.CELLS, Go.SAFETY, CareType.NONE, EducationType.NONE, 0, 0);
-        onTheWay(game, w, out, t -> t.getSafety() == SafetyType.PRISON);
+        onTheWay(game, w, out, pace, t -> t.getSafety() == SafetyType.PRISON);
 
         /* ------------------------------- the housing ------------------------------- */
         // Who lives past the census line, overcrowded, wants a home as much as who has none (RES3c, 2026-11-25, call A).
@@ -570,7 +617,7 @@ public final class CityNeeds {
         over(out, "HOMES", unplaced >= .5 ? w.people(unplaced) + " with nowhere to live"
                         : wanting >= .5 ? w.people(wanting) + " overcrowded" : "everybody housed",
                 wanting, .5, 25, Kind.HOMES, Go.HOMES, CareType.NONE, EducationType.NONE, 0, 0);
-        onTheWay(game, w, out, t -> t.getCategory() == BuildingType.RESIDENTIAL);
+        onTheWay(game, w, out, pace, t -> t.getCategory() == BuildingType.RESIDENTIAL);
 
         /* -------------------------------- the ground -------------------------------- */
         out.add(ground(game, w));
@@ -625,7 +672,7 @@ public final class CityNeeds {
                 bank.isInsolvent() || noBank || bank.strain() > 1,
                 bank.isInsolvent() || noBank, Kind.BANK, Go.BANK, bank.strain());
         // The model counts its branches by this name (Game: bank.openBranches(...countByName(...))).
-        onTheWay(game, w, out, t -> "Commercial Bank".equals(t.getName()));
+        onTheWay(game, w, out, pace, t -> "Commercial Bank".equals(t.getName()));
 
         flag(out, "BORROWING", game.getDebtManager().atCeiling()
                         ? "priced out of the market" : "the market is open",
@@ -905,11 +952,11 @@ public final class CityNeeds {
      * ...AND WHAT IS ALREADY ON THE WAY (0.7.20). The need at `at`, if there
      * is one, says what of the buildings that answer it is on site, for
      * anybody's order - "1 on the way, ~8 mo", the soonest of them by the
-     * wait the quote reads (Game.onSiteMonths()) - and a red one falls to
+     * pace this month's plan gives the site (Game.onSitePaceMonths(), ASH1 finding 8) - and a red one falls to
      * amber: the city has done something about it, and it is waiting on the
      * builders.
      */
-    static void onTheWay(Game game, Words w, List<Need> out, int at,
+    static void onTheWay(Game game, Words w, List<Need> out, SitePace pace, int at,
                          java.util.function.Predicate<BuildingsTemplate> serves) {
         if (at < 0 || at >= out.size()) return;
         long units = 0;
@@ -917,7 +964,7 @@ public final class CityNeeds {
         for (BuildingsStacks site : game.getBuildingManager().getStacksUnderConstruction()) {
             if (!serves.test(site.getBuilding())) continue;
             units += site.getUnderConstruction();
-            double months = game.onSiteMonths(site.getBuilding());
+            double months = game.onSitePaceMonths(site.getBuilding(), pace.plan());
             if (!Double.isNaN(months) && !(months >= soonest)) soonest = months;
         }
         if (units <= 0) return;
@@ -927,9 +974,22 @@ public final class CityNeeds {
     }
 
     /** The same, for the need just measured. */
-    static void onTheWay(Game game, Words w, List<Need> out,
+    static void onTheWay(Game game, Words w, List<Need> out, SitePace pace,
                          java.util.function.Predicate<BuildingsTemplate> serves) {
-        onTheWay(game, w, out, out.size() - 1, serves);
+        onTheWay(game, w, out, pace, out.size() - 1, serves);
+    }
+
+    /** This month's plan of the sites (Game.sitesPlan()), struck the first time a row on the way asks and read by every row after it; made in measure() and gone with it. */
+    static final class SitePace {
+        private final Game game;
+        private BuildingManager.Plan plan;
+
+        SitePace(Game game) { this.game = game; }
+
+        BuildingManager.Plan plan() {
+            if (plan == null) plan = game.sitesPlan();
+            return plan;
+        }
     }
 
     /**
@@ -989,7 +1049,7 @@ public final class CityNeeds {
      * school is listed only once those would fill half the smallest that
      * teaches it (listsSchool()) - the businesses' first-plant rule.
      */
-    static void seatsWanted(Game game, Words w, List<Need> out) {
+    static void seatsWanted(Game game, Words w, List<Need> out, SitePace pace) {
         PopulationManager pm = game.getPopulationManager();
         double[] seatsBy = game.getBuildingManager().getStaffedEducationPlaces(pm.getJobFillRate());
 
@@ -1002,7 +1062,7 @@ public final class CityNeeds {
                     String.format("%s seats, %s would come and be hired", w.people(seats), w.people(want)),
                     want / Math.max(seats, 1), SEATS_YELLOW, SEATS_RED,
                     Kind.HIGHER_SCHOOL, Go.EDUCATION, CareType.NONE, type, seats, want);
-            onTheWay(game, w, out, t -> t.getTeaches() == type);
+            onTheWay(game, w, out, pace, t -> t.getTeaches() == type);
         }
     }
 

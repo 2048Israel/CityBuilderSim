@@ -18,6 +18,16 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.218 — ASH1, power for a small town — 2026-11-27, ready, see docs/queue/ASH1-notes.md
+From Jerus's Ashbourne findings 1, 2, 9 and 8. The overview's POWER row read the plants alone and said "204% served" while the
+wires shed 4.6% of the month; it now reads the lesser of the plants and the wires, "by the wires" and red when they shed load,
+and its card offers the wires. The only grid step past the free 10 MW was a Cr 22.1M, 100 MW Substation; the Distribution
+Substation (id 173) is 5 MW at the same price, ground and crew per MW, after 1924 city substations of 3-6 MW, and the
+auto-builder grows the wires in those steps. The grid's posts are offered at the share of the carry the peak uses, so an
+idle Substation no longer takes a small town's diploma holders. The months left on a site read its pace, the work the
+month gives it, on every screen (28 months had read where 17-18 was the pace). The auto-builder no longer orders a grid site
+again while its small units open in turn. TownGridCheck proves each, the money audit exact over a growing town.
+
 ### UX1 — the interface rework's study — 2026-11-27, ready, see docs/queue/UX1-notes.md
 The study for Jerus's interface rework: the map as the ground of every screen, going deeper while it stays in view, alerts as a row of marks at the top. A picture tool, `ui.PagePictures`, writes every rail page and sub-page of a city, 122 of them, at 1920x1080 from a copied slot or the playtest's city at any month. A new harness, `UiSteadyCheck` (in AllChecks and its display list), holds the real window still on every page. An unchanged redraw must move nothing, rebuild nothing and grow nothing, and a month must keep the scroller's pixel. Its 33 reds on today's pages are three faults, each a known red owned by the row that mends it: Services and Infrastructure breathe by a pixel, Revenue rebuilds a line, and Build's Industry holds its place as a fraction. The audit reads all 122 pages on three cities, the young town of slot 1 and the playtest's city at 606 and 2,406 months, and finds alarms buried in six places, walls of cards, money written many ways, and Build not telling the city's buildings from the market's. Ten mockups in the game's own look over the real map draw four picks for Jerus, each with a recommendation and its alternatives: where pages open, the needs, the alerts and the build screen. Twelve rows, UX2 to UX13, are queued with their briefs, written to the recommendations. Nothing a player sees changes; `docs/studies/ux1/`.
 

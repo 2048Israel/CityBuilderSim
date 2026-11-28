@@ -601,8 +601,8 @@ public class PowerPlantsCheck {
         List<String> known = new ArrayList<>(), menu = new ArrayList<>();
         for (BuildingsTemplate t : b.getKnownTemplates()) if (t.getCategory() == BuildingType.ELECTRICITY) known.add(t.getName());
         for (BuildingsTemplate t : b.getTemplatesByCategory(EnumSet.of(BuildingType.ELECTRICITY))) menu.add(t.getName());
-        check("a 1900 city (month " + g.getMonth() + ") knows coal, oil, hydro, the substation and PW9's small steam station, and no later row",
-                known.equals(List.of("Coal Power Plant", "Hydro Station", "Substation", "Oil-Fired Plant", "Small Steam Station")), known + "");
+        check("a 1900 city (month " + g.getMonth() + ") knows coal, oil, hydro, the substation, PW9's small steam station and ASH1's distribution substation, and no later row",
+                known.equals(List.of("Coal Power Plant", "Hydro Station", "Substation", "Oil-Fired Plant", "Small Steam Station", "Distribution Substation")), known + "");
         check("...its build menu's power is the same list, and an order for a diesel station is refused NOT_KNOWN", menu.equals(known)
                 && hushed(() -> g.buildStack(b.getTemplateByName("Diesel Station"), 1, true)) == Game.BuildResult.NOT_KNOWN, menu + "");
         int edge = ResearchCatalog.knownFrom("1910");

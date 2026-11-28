@@ -11,6 +11,7 @@ adds its line here, not in `CLAUDE.md`.
     src/main/java/ham/citybuildersim/
         Substations.java           the city's 100 MW district grids and their capital, repair and filled-post costs in the wires' tariff (PW5)
         SubstationCheck.java       both carry edges, grid shortages, peak-growth orders, cost-based bills and the saved closing costs (PW5)
+        TownGridCheck.java         power for a small town: the POWER row at the lesser of plants and wires, the 5 MW unit ordered as a town grows past 10 MW, the grid units' posts at the load, the months on the way at the site's pace, and the money audit over them (ASH1)
         WaterPowerCheck.java       the water priced at its margin works' power, its bills once and its save, PW1-L's licence power and PW1-G's recipe surplus (PW1-W)
         PowerPlantsCheck.java      the oil, diesel, turbine, biomass and solar rows and the refigured coal and wind: the study's figures, the sun's hours, each fuel bought once, the cooling gate, the build-time floor and each row from its year (PW2)
         PowerPlanCheck.java        the power planner: the south's season and the sun by place and rack, the credit falling with its share, the firm supply, the reserve test by slice, wind never passing it, the spread and an order's ground assembled (PW3)

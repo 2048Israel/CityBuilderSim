@@ -327,11 +327,11 @@ public final class BuildAdvice {
         return out;
     }
 
-    /** The measure a NEEDS YOU row is about, for the rows a city-built building answers; null for the rest. */
+    /** The measure a NEEDS YOU row is about, for the rows a city-built building answers (a POWER row the wires bind: the grid's); null for the rest. */
     public static Measure measureOf(CityNeeds.Need need) {
         if (need == null) return null;
         switch (need.kind()) {
-            case POWER:         return Measure.of(Kind.POWER);
+            case POWER:         return need.wires() ? Measure.of(Kind.GRID) : Measure.of(Kind.POWER);
             case WATER:         return Measure.of(Kind.WATER);
             case ROADS:         return Measure.of(Kind.ROADS);
             case HIGHWAYS:      return Measure.of(Kind.HIGHWAYS);
@@ -447,7 +447,7 @@ public final class BuildAdvice {
         if (!m.serves(t) && !(m.kind() == Kind.ROADS && t.getCategory() == BuildingType.INFRASTRUCTURE && !t.isHighway())) return 0;
         double[] fill = game.getPopulationManager().getJobFillRate();
         switch (m.kind()) {
-            case GRID: return Substations.SUBSTATION_MW * 1000;
+            case GRID: return Substations.unitKw(t);
             case POWER:
                 // A hydro station adds power only while a slot of the city's river is free (HY1: Game.hydroSlotsFree()).
                 if (t.isHydro() && game.hydroSlotsFree(t) < 1) return 0;
@@ -783,13 +783,14 @@ public final class BuildAdvice {
         switch (m.kind()) {
             case GRID: {
                 UtilitiesHandler u = game.getServicesManager().getUtilitiesHandler();
-                double n = bm.getQuantity(Substations.ID);
+                long nSub = bm.getQuantity(Substations.ID), nDist = bm.getQuantity(Substations.DISTRIBUTION_ID);
                 double draw = k * u.getConsumption() + WorksValue.pendingPowerLoad(game, p.months());
                 for (Map.Entry<BuildingsTemplate, Long> e : added.entrySet()) {
-                    if (Substations.isSubstation(e.getKey())) n += e.getValue();
+                    if (e.getKey().getId() == Substations.ID) nSub += e.getValue();
+                    if (e.getKey().getId() == Substations.DISTRIBUTION_ID) nDist += e.getValue();
                     draw += e.getValue() * adding(game, e.getKey(), e.getValue()).getElectricityConsumption();
                 }
-                double supply = Math.max(u.getFoundingGridKw(), n * Substations.SUBSTATION_MW * 1000);
+                double supply = Substations.carryKw(u.getFoundingGridKw(), nSub, nDist);
                 double season = PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth()));
                 return new double[] {supply, Substations.peak(draw, season)};
             }

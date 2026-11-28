@@ -687,7 +687,7 @@ public class BuildAdviceCheck {
         switch (m.kind()) {
             case GRID: {
                 UtilitiesHandler u = twin.getServicesManager().getUtilitiesHandler();
-                double carry = Math.max(u.getFoundingGridKw(), bm.getQuantity(Substations.ID) * Substations.SUBSTATION_MW * 1000);
+                double carry = Substations.carryKw(u.getFoundingGridKw(), bm.getQuantity(Substations.ID), bm.getQuantity(Substations.DISTRIBUTION_ID));
                 double season = PowerDispatch.season(CityCalendar.monthOfYear(twin.getMonth()));
                 return u.getConsumption() * season * PowerDispatch.PLAN_PEAK / carry;
             }
@@ -803,6 +803,19 @@ public class BuildAdviceCheck {
                         advised, read, m.kind() == BuildAdvice.Kind.CELLS ? 1e-6 : 1e-9);
             }
         }
+        // ...the grid's second unit, ASH1's Distribution Substation: it extends the network that stands by its own few MW, the Substation (above) replacing it.
+        BuildAdvice.Measure wires = BuildAdvice.Measure.of(BuildAdvice.Kind.GRID);
+        BuildingsTemplate small = template(g, "Distribution Substation");
+        Map<BuildingsTemplate, Long> smalls = BuildAdvice.plus(BuildAdvice.onSite(g, wires), small, 3);
+        close("Utilities, Power grid: 3 Distribution Substation - the advice's figure is the model's",
+                BuildAdvice.figure(g, wires, smalls), builtAndRead(twin(g), wires, smalls), 1e-9);
+        close("Utilities, Power grid: 3 Distribution Substation carry 3 x DISTRIBUTION_MW more than what stands",
+                BuildAdvice.supplyDemand(g, wires, smalls)[0] - BuildAdvice.supplyDemand(g, wires, BuildAdvice.onSite(g, wires))[0],
+                3 * Substations.DISTRIBUTION_MW * 1000, 1e-9);
+        close("Utilities, Power grid: one Distribution Substation is DISTRIBUTION_MW of kW a unit",
+                BuildAdvice.unit(g, wires, small), Substations.DISTRIBUTION_MW * 1000, 1e-9);
+        close("Utilities, Power grid: one Substation is still SUBSTATION_MW of kW a unit",
+                BuildAdvice.unit(g, wires, template(g, "Substation")), Substations.SUBSTATION_MW * 1000, 1e-9);
         // ...and the burial plots, which have a NEEDS YOU row and no ring of their own.
         BuildAdvice.Measure plots = BuildAdvice.Measure.of(BuildAdvice.Kind.PLOTS);
         BuildingsTemplate cemetery = template(g, "Memorial Cemetery");
@@ -1765,6 +1778,35 @@ public class BuildAdviceCheck {
         assertTrue("fixture: ...and the CALM PEAK does not: the advice's power figure " + String.format("%.3f", figure) + " is over NETWORK_YELLOW",
                 figure > CityNeeds.NETWORK_YELLOW);
 
+        // ASH1 finding 1: the homes' draw is carried by the founding grid's wires and no more, so here the WIRES serve the least of the peak,
+        // and the row, the card and the order's measure read them, not the plants.
+        BuildAdvice.Measure wires = BuildAdvice.Measure.of(BuildAdvice.Kind.GRID);
+        double[] wd = BuildAdvice.supplyDemand(g, wires, none);
+        double[] pd = BuildAdvice.supplyDemand(g, power, none);
+        assertTrue(String.format("fixture: the wires serve less of the peak (%.1f%% of %.0f kW) than the plants (%.1f%%)",
+                CityNeeds.servedShare(wd[0], wd[1]) * 100, wd[1], CityNeeds.servedShare(pd[0], pd[1]) * 100),
+                CityNeeds.servedShare(wd[0], wd[1]) < CityNeeds.servedShare(pd[0], pd[1]));
+        List<CityNeeds.Need> shortWires = CityNeeds.measure(g, CityNeeds.PLAIN);
+        CityNeeds.Need wiresRow = powerRow(shortWires);
+        assertTrue("(w) the POWER row reads the wires' pair and says so: \"" + (wiresRow == null ? null : wiresRow.reading()) + "\"",
+                wiresRow != null && wiresRow.wires() && wiresRow.a() == wd[0] && wiresRow.b() == wd[1] && wiresRow.reading().equals(
+                        CityNeeds.servedPct(CityNeeds.servedShare(wd[0], wd[1])) + " " + CityNeeds.SERVED + CityNeeds.AT_THE_PEAK_HOUR + CityNeeds.BY_THE_WIRES));
+        assertTrue("...red, and NEEDS YOU's: the wires shed load (level " + (wiresRow == null ? -1 : wiresRow.level()) + ")",
+                wiresRow != null && wiresRow.level() == 2 && wiresRow.verdictLevel() == 2 && CityNeeds.biting(shortWires).contains(wiresRow));
+        assertTrue("...and its advice is measured on the grid's units (BuildAdvice.measureOf())",
+                wiresRow != null && BuildAdvice.measureOf(wiresRow).kind() == BuildAdvice.Kind.GRID);
+        BuildAdvice.Suggestion wiresCard = null;
+        for (BuildAdvice.Suggestion s : BuildAdvice.suggest(g, shortWires)) if (s.measure().kind() == BuildAdvice.Kind.GRID) wiresCard = s;
+        assertTrue("...the Build screen offers a grid unit: " + (wiresCard == null ? "none" : wiresCard.count() + " x " + wiresCard.template().getName()),
+                wiresCard != null && Substations.isSubstation(wiresCard.template()) && wiresCard.count() >= 1);
+
+        // The rest of the section is the plants' (PW1): carry twice the peak, so that the wires are not what the row reads.
+        BuildingsTemplate substation = template(g, "Substation");
+        long units = (long) Math.ceil((2 * wd[1] - wd[0]) / Substations.unitKw(substation)) + 1;
+        builtAndRead(g, wires, Map.of(substation, units));
+        double[] carried = BuildAdvice.supplyDemand(g, wires, none);
+        assertTrue(String.format("fixture: %d Substations carry %.0f kW against %.0f kW", units, carried[0], carried[1]), carried[0] >= 2 * carried[1]);
+
         // (a) the row: listed, on the advice's own pair, in the calm peak's words.
         List<CityNeeds.Need> all = CityNeeds.measure(g, CityNeeds.PLAIN);
         CityNeeds.Need row = powerRow(all);
@@ -1795,6 +1837,39 @@ public class BuildAdviceCheck {
         assertTrue("(c) with the figure clear the POWER row is not listed" + (row == null ? "" : " (" + row.reading() + ")"),
                 row == null || !CityNeeds.biting(all).contains(row));
         assertTrue("...and the advice offers no power card", powerCard(BuildAdvice.suggest(g, all)) == null);
+
+        // ASH1 findings 1 and 8, "on the way": a twin whose wires are what the row reads counts the grid's units on site and not a plant, and reads the
+        // site's pace in this month's plan (Game.onSitePaceMonths()), small sites among it, not the rule's wait.
+        Game on = twin(fixture);
+        BuildingManager onSites = on.getBuildingManager();
+        BuildingsTemplate unit = template(on, "Distribution Substation");
+        // This city's repairs take all its builders' month (maintenance over the crews' output), so depots stand until the sites have a share to advance on.
+        BuildingsTemplate depot = template(on, "Construction Depot");
+        for (int guard = 0; guard < 40 && on.getBuildingOutput() < 1000; guard++) onSites.addStack(depot, 25, true);
+        assertTrue("fixture: the twin's POWER row reads the wires and the builders have an output",
+                powerRow(CityNeeds.measure(on, CityNeeds.PLAIN)) != null && powerRow(CityNeeds.measure(on, CityNeeds.PLAIN)).wires() && on.getBuildingOutput() > 0);
+        onSites.addStack(template(on, "Coal Power Plant"), 1, false);
+        assertTrue("(d) a plant on site does not answer the wires: nothing on the way on the POWER row",
+                powerRow(CityNeeds.measure(on, CityNeeds.PLAIN)).onSite() == 0);
+        onSites.addStack(unit, 3, false);
+        int smalls = 0;
+        for (BuildingsTemplate t : onSites.getTemplates()) {
+            if (smalls >= 30) break;
+            if (t.getCategory() != BuildingType.ELECTRICITY && t.getConstructionPoints() > 0 && t.getConstructionPoints() < unit.getConstructionPoints()
+                    && (onSites.getStack(t) == null || onSites.getStack(t).getUnderConstruction() == 0)) {
+                onSites.addStack(t, 1, false);
+                smalls++;
+            }
+        }
+        CityNeeds.Need onRow = powerRow(CityNeeds.measure(on, CityNeeds.PLAIN));
+        BuildingManager.Plan month = on.sitesPlan();
+        String key = ConstructionControl.keyOf(unit);
+        double pace = onSites.getStack(unit).owedPoints() / month.workOf(key);
+        out.printf("      %d small sites beside 3 %s: the plan gives it %.0f of %.0f points owed a month, %.2f months; the rule's wait reads %.2f%n",
+                smalls, unit.getName(), month.workOf(key), onSites.getStack(unit).owedPoints(), pace, on.onSiteMonths(unit));
+        assertTrue("(e) the grid's units on site are the row's on the way: 3, at the pace the month's plan gives them (" + onRow.onSite() + " at " + onRow.onSiteMonths() + ")",
+                smalls > 0 && onRow.onSite() == 3 && month.workOf(key) > 0 && Math.abs(on.onSitePaceMonths(unit, month) - pace) <= 1e-9 * pace
+                && Math.abs(onRow.onSiteMonths() - pace) <= 1e-9 * pace);
     }
 
     /** The NEEDS YOU POWER row of a measure, or null when the city draws nothing. */
