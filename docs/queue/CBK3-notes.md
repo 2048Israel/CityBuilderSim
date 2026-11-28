@@ -1667,3 +1667,22 @@ intentional Float transition must begin with a positive accepted offer;
 The exact old break branch remains unproved until the new operands run;
 no speculative known-red row is added, though FS8 currently owns this
 industry fixture class. No production gold or monetary rule changes.
+
+Full current CentralBankCheck completes **exit0**, with no truncated table:
+all24 shapes,23/24 lower-price comparisons, median-0.365 points/year
+(18 required),246/246 native rule comparisons in each direction, and every
+post-grid bank/decision/save law pass. This is the actual morning-money
+source, including the raw resolution callback and arrears rate, not the
+old4704 run or the old1740-second local timeout. The native named command
+keeps its full grid under the7200-second limit and exits normally; log
+`target/CBK3-evening-CentralBankCheck.log`, command
+`target/cbk3-evening-central.sh`. No model source changed during it.
+
+The helper's Kept diagnostic artifact is now applied locally for the next
+native run: `../codex-CBK3-res3/target/CBK3-res3-kept-diagnostics-turn15.patch`.
+It records only strings from the two graphs at their original comparison
+points and the rejected native quote operands. It does not force CSS,
+layout, redraw, binding, signature tolerances or funding acceptance. Kept's
+actual run is pending; its compile has succeeded, including all other queued
+fixture mends. The broad temporary instrumentation will be removed once the
+actual cause is established, retaining only useful regression evidence.

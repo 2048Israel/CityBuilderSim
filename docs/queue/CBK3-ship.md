@@ -1,6 +1,6 @@
 <!-- readiness: provisional -->
 ## changelog
-### {next} — CBK3, the window against collateral and the bank's rules as dials — 2026-11-26, ready, see docs/queue/CBK3-notes.md
+### {next} — CBK3, the window against collateral and the bank's rules as dials — 2026-11-27, ready, see docs/queue/CBK3-notes.md
 The window lends against eligible loans and government paper after haircuts;
 the share desk needs stable cash, and excess wholesale funding is borrowed
 abroad at a term rate in the city's own money. Nine saved bank controls appear
