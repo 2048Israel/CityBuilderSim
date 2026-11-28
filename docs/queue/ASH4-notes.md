@@ -70,7 +70,7 @@ was never written.
   - The Diesel Station stranded behind the 10 MW wires is findings 1 and 2, ASH1's.
 - **Noted, not mended:** a building's draw does not follow its staffing or output; it is a fixed kW per building. In
   Ashbourne the construction workers rose 123 -> 479 at month 194 with no change in load. A design simplification,
-  for Jerus.
+  queued as PL1 (`docs/queue/PL1.md`), the orchestrator's call (BP1-C): real load follows output.
 
 ### Finding 16, households merge by 8% when a building boom ends: a defect, its mend queued as HF1
 
@@ -125,7 +125,7 @@ was never written.
 - ★2 **D32's appetite is left as it is**, for Jerus (pending row ASH4-A).
 - ★3 **Finding 16 is queued, not mended** (HF1): it moves his 2026-09-11 design and four subsystems.
 - **Finding 12 gets no new row:** EP1b owns the century's rates.
-- **Finding 11 is real.** The fixed draw per building is a simplification left for him (pending row ASH4-B), not a cause.
+- **Finding 11 is real.** The fixed draw per building is not its cause; it is queued as PL1, the orchestrator's call (BP1-C, 11-28).
 - **AshbourneCheck numbers its sections 1-4 in the brief's order** (5, 12, 11, 16), each titled with its finding.
 - **The review line** of `tools/pick.sh` says "not needed", but the mend moves what the households pay for the city's
   paper, bonds and shares. I asked the orchestrator for a stranger's review at mends-at, as the brief has it.
@@ -161,9 +161,6 @@ was never written.
   because the households bid a fifth of the issue per point of spread, up to their spare. Real portfolios do not put
   most of their liquid wealth into one 30-year issue in a month. Capping the share of a household's wealth in one
   issue would change your D32 (2026-10-20, "no half-of-the-issue cap"). Not done.
-- **ASH4-B, a building's draw** (finding 11, aside). The draw is a fixed kW per building, whether it is staffed or idle.
-  In Ashbourne, the construction workers went 123 -> 479 at month 194 with no change in load. Real load follows
-  output. A design call: no fault caused finding 11.
 - **HF1** changes your design of 2026-09-11, the out of work as their own household structure. Its brief says how.
 
 ## 6. For the manual

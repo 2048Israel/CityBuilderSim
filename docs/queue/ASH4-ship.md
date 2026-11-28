@@ -12,6 +12,6 @@ Finding 16 is a defect of design: a lost job splits a family at once and the fam
 queued as HF1, which keeps the out-of-work adults in their households.
 ## pending
 | ASH4-A | One large city issue still takes about 90% of a rentier family's balance past its cushion ({next}) | D32's appetite has no limit on a household's share of its wealth in one issue; a limit would change his D32 (2026-10-20) | [ASH4 notes](docs/queue/ASH4-notes.md) |
-| ASH4-B | A building's power draw is fixed per building, staffed or idle ({next}) | Real load follows output; in Ashbourne the builders went 123 -> 479 at m194 with no change in load. A design call, not finding 11's cause | [ASH4 notes](docs/queue/ASH4-notes.md) |
 ## queued
 | HF1 | The families keep their out-of-work adults: a lost job leaves the household standing, and HouseholdMemoryCheck's re-forming pace holds only for real formation | [HF1](docs/queue/HF1.md) |
+| PL1 | A building's power draw follows its output or staffing: an idle works draws its standing share, the orchestrator's call on Ashbourne's finding 11 (real load follows output) | [PL1](docs/queue/PL1.md) |
