@@ -1,8 +1,8 @@
 # CBK3 - the window against collateral and the bank's rules as dials
 
-Current candidate: the morning money mends and evening old-dry repairs are
-being verified for REV-CBK3b's second look. The final-model ensemble and a
-new authorised dry run remain; the failed old dry is not reusable. Base
+Review candidate: named verification of the morning money mends and evening
+old-dry repairs is complete for REV-CBK3b's second look. The final-model
+ensemble and a new authorised dry run remain; the failed old dry is not reusable. Base
 b2f50a9ef, 0.9.213, format66; RES3's compatible format67 is now inherited.
 CBK1 main482dbfab2 (0.9.214, still format66) is merged for integration checks.
 The builder keeps decisions and review; CBK3-trace's bounded diagnostic
@@ -1856,3 +1856,73 @@ Government retained/fresh full-page signature and pixel comparisons. Thus
 the independent native-gutter regression is backed by the actual formerly
 failing played page. The full native footer is still pending; Trade, Policy
 and research checks continue, with no failure recorded so far.
+
+## Evening completed old-dry repairs, 2026-11-27
+
+Full native **KeptCheck0, ALL OK** (`target/CBK3-evening-KeptCheck-final.log`,
+529572 bytes; startup22:13:58, footer22:43:12). This is a completed native
+run, not the earlier timeout or early guard failure. The exact captured
+2048MiB/64MiB/SoftRef0/default-renderer settings and 7200-second outer limit
+are recorded above; no internal timing, geometry, retention, money or save
+assertion is changed. KRT1 held-still has0 nonrepeating place/size differences;
+KBP1 has8 monthly new blocks,0 repeated held-still, and2 genuine content
+readings after a choice. Both original Spending bridge failures, the real
+covered-funding case, the independent gutter cause, all pixel comparisons,
+clock non-rebuild, research, speed and final release/geometry checks pass.
+
+The helper's36 old unnamed framework lines are now accounted for by owned
+repairs, with no newly invented known-red exemption:
+
+| Old-dry harness | Cause repaired; current native result |
+| --- | --- |
+| CreditCrunchCheck | Fund each actual changing native land quote before purchase;120/120 ground-ready months,0. |
+| BuybackCheck | Cause the actual five-year all-holder issue through legal pricing inputs; refusal, settlement, no-pump and save laws retained,0. |
+| CurrencyRegimeCheck | Reconcile independent non-purchase issue/retirement and central-bank income/vault/remittance effects; native cent laws retained,0. |
+| FundCheck | Supply stable desk cash, eligible live holdings and free tagged donor units while preserving secured backing and claims;3, only its existing HT1-H limit-order red. |
+| HoldersCheck | Restore the live pin and both deliberately unsaved investment holds after the twin loads; strict face continuation passes,3, only three existing main reds. |
+| CapitalGainsCheck | Cause the second genuine native split above the scaled floor; factors10 to1000 to10000,0. |
+| KeptCheck | Cause the opening covered offers, prove actual after-month coverage, and remove the native AS_NEEDED width-history ambiguity; all original comparisons and the full footer pass,0. |
+| GoldMiningCheck | Forget the opening vault's completed FX-dealing marker, then cause actual Gold offers;24/24 positive mint months and24/24 cent audits,0. |
+| OwnerCheck | Check the actual32-cell snapshot and both real old31/29-cell prefixes;0 on the current monetary model. |
+
+All model money/save behaviour remains0119a4307 through these evening
+fixture and Government presentation repairs. The post-merge fast and exact
+native BankCheck plus individually named SaveFileCheck, GoldStandardCheck,
+CentralBankStatementCheck, SectorStatementCheck and ReadPathCheck are now
+running sequentially. The final80-run ensemble and a newly authorised full
+dry run remain AFTER REV-CBK3b's second SHIP; no prior measurement is relabelled.
+
+The post-merge final sequence now completes **0** in
+`target/CBK3-evening-remaining.txt`: **--fast0**, exact native **BankCheck0**,
+**SaveFileCheck0**, **GoldStandardCheck0**, **CentralBankStatementCheck0**,
+**SectorStatementCheck0** and **ReadPathCheck0**, strictly sequential. Every
+wrapper reports zero firm stale findings (210 soft). The played gold-window
+continuation reproduces m321/m322's actual two invoices and cent residuals
+recorded above, preserving RES3's reserve-capped repayment and once-only
+pricing of every held dollar. The read paths change none of the native
+fields, world/trade state or health rings under repeated reads.
+
+Current-model **CentralBankCheck0** (all24 shapes), **BankRulesCheck0** and
+**BankFailureCheck0** are retained with their complete evening logs. The
+completed **MonetaryCheck** native child and batch suite are green; the
+post-suite launcher error is explicitly separate above. No further monetary
+source has changed since those checks. The Kept binary precedes the final
+read-only main probes and diagnostic-label correction only; all of its
+predicates, native setup, production Government behaviour and every existing
+check are identical. The final merged source compiles green after both.
+
+The provisional ship file now records the native Government gutter fix and
+retains all three queued follow-ups. No known-red row is added: the only
+remaining Fund/Holders reds are main's existing registered lines. No failed
+run is substituted for green, no money/save law is relaxed, and no player
+save folder or slot is accessed. All helpers and all named JVMs have ended.
+The next handoff is mends for the second review, not readiness; the marker
+stays provisional until the final-model ensemble and authorised dry run.
+
+Final documentation hygiene retains655 generated maps whose ONLY difference
+was the gate box's UTC28th versus this laptop's local27th date; their bodies
+match HEAD exactly after normalizing that single date line. Every changed
+generated body is retained. Known-red validation is **0**, and LE1/BFW1/BPM1
+all recheck free against current origin/main. The sector-statement result
+specifically covers **3000 statements /36300 screen lines /120 months**,
+every one balanced and readable. No further source change is needed.

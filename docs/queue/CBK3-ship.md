@@ -9,6 +9,7 @@ window and foreign borrowing, old saved claims remain truthful, and mature
 share valuation no longer revives an old offering price at zero earnings.
 Monthly play audits both funding limits and counts when stable cash binds.
 An unpaid window-interest bill stays owed and bears the past-due rate until paid.
+Government keeps its native scroll gutter, so wrapped redraws stay put.
 The copied-city evidence, ensemble comparisons and individual failure increases
 are recorded in the notes.
 ## queued

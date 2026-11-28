@@ -1,6 +1,6 @@
 # KeptBench.java - 6,504 lines · 645 methods · 14 constants · interface
 
-`ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/KeptBench.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
 > The game's kept screens on scenes of their own, without a stage, for KeptCheck and KeptTimingCheck.
 > Each Page draws the real screen code from its retained pool or an empty pool. The methods below
@@ -446,7 +446,7 @@
 | 2756 | 62 | `public Object[] causeFundingRunCovered(double coverBy, java.util.function.DoubleConsumer setOpeningCash)` | Opening inputs for a real eligible covered run; native quotes/caps/minimums are unchanged. |
 | 2819 | 1 | **type** `public record FundingCoverage(boolean okay, String detail)` |  |
 | 2822 | 3 | `public FundingCoverage fundingCoverage(BuildingsTemplate t, int q, double coverBy)` | Read current inputs/quotes only; never re-cause cash, rates, bids or an order after the watched month. |
-| 2827 | 3 | `public FundingCoverage fundingCoverageAfterMonth(BuildingsTemplate t, int q, double coverBy)` | The real watched month may pay the invoice from cash; it need not preserve a borrowing shortfall. |
+| 2827 | 3 | `public FundingCoverage fundingCoverageAfterMonth(BuildingsTemplate t, int q, double coverBy)` | After the real watched month, cash may cover the invoice; a borrowing shortfall need not persist. |
 | 2831 | 28 | `private FundingCoverage fundingCoverage(BuildingsTemplate t, int q, double coverBy, boolean allowPaidByCash)` |  |
 | 2861 | 5 | `private static double coveredGap(Game g, BuildingsTemplate t, int q)` | A run's funding gap as fundingRunCovered() reads it: the gap on the part the model lets ahead, or NaN when it lets none. |
 | 2868 | 12 | `private static boolean covers(Game g, double sum, Auction.Cap cap, List<String> rejected, int[] counts, String where)` | Whether both the funding page's offers, quoted at its cap as runOffers() quotes them, would raise this sum. |
