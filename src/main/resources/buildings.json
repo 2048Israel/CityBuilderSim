@@ -6756,6 +6756,22 @@
    "roadLoad": 1,
    "since": 1900,
    "until": 1914
+  },
+  {
+   "id": 173,
+   "name": "Distribution Substation",
+   "category": "ELECTRICITY",
+   "capacity": 5000,
+   "cashCost": 13200,
+   "constructionPoints": 6600,
+   "constructionMaterials": 489,
+   "land": 10890,
+   "roadLoad": 7,
+   "jobs": {
+    "DIPLOMA": 5,
+    "COLLEGE_ENGINEERING": 2
+   },
+   "since": 1900
   }
  ]
 }

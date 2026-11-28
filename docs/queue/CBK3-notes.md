@@ -1,7 +1,8 @@
 # CBK3 - the window against collateral and the bank's rules as dials
 
 REV-CBK3b's second review of aed3b2916 is SHIP, no P1 (orchestrator mail
-20261127-230912-686). Main22b6eb96f is already merged. The final-model
+20261127-230912-686). ASH1 main39fcbee71 is now merged for the authorized dry run;
+the bank model is retained without a source conflict. The accepted
 80-run ensemble CBK3-final is PASS, M1/F1 hard10/10, on the box; a newly
 authorised dry run remains, and the failed old dry is not reusable. Base
 b2f50a9ef, 0.9.213, format66; RES3's compatible format67 is now inherited.
@@ -2129,3 +2130,46 @@ fixture, model/scorer edit or process control was used; helper turn26 ended
 with no jobs. The actual M1/F1 PASS, the unmet no-new-failures aim and these
 limits all go to the orchestrator with the dry-run request. The approved
 model remains unchanged.
+
+## ASH1 merge and authorized dry-run preparation, 2026-11-28
+
+Orchestrator mail20261128-062902-458 gives the box slot after ASH1 ships as
+0.9.218 at39fcbee71. Merge parents are approved CBK3 records07e656579 and
+that main. No Java conflict occurs: Game, AllChecks and BuildScreen merge
+automatically. The nine conflicts are generated dials/harness indexes,
+BuildScreen/Game/GameFiles/MoneyAudit/PriceLevel/README maps and month-order;
+regeneration resolves them. Merged **--fast0** compiles and regenerates, and
+**BankRulesCheck0** is the first completed named result; the rest are running.
+
+The helper's independent two-parent source review
+`20261128-063739-749-CBK3-res3-e197` finds no semantic collision. Bank,
+BankRules, CentralBank, DebtManager and SimulationEngine are byte-identical
+to07. DataSave, HistorySave, GameFiles and MoneyAudit code are unchanged.
+Game keeps CBK3's raw window capacity, actual-H and interest-due suppliers,
+the monthly invoice/collection/H/F settlement, and the later principal-only
+settle after hot withdrawals/paper trades before the audit. No second bill
+or ASH1 replacement of these legs appears.
+
+ASH1 adds the once-struck wires share after research posts and before the
+bank/fund clocks/jobs, plus its grid callback, founding reset and site-pace
+readers. Its power implementation matches its parent. AllChecks retains
+UiSteadyCheck and appends TownGridCheck. Held wiresShare's saved meaning and
+format67 remain ASH1's; there is no conversion or old-save refusal bypass.
+The helper's turn27 ends with no jobs. No CBK3 model mend is made.
+
+The orchestrator explicitly accepts the existing aed ensemble for this
+merge unless CBK3's model code conflicts/changes. Neither condition occurs;
+**no ensemble is rerun**. Its published source hash/data and the already
+recorded observation limits remain truthful, rather than claiming a new
+80-run measurement of the combined power/monetary tree.
+
+Named checks run strictly one at a time, with the real Earth2/World1 options:
+BankRulesCheck, BankFailureCheck, MonetaryCheck, SaveFileCheck,
+GoldStandardCheck, TownGridCheck, SubstationCheck, PowerPlantsCheck,
+PowerPlanCheck, PowerPriceCheck, then exact native BankCheck and full
+CentralBankCheck. Exact invocation avoids BankCheck's substring selecting
+CentralBankCheck twice and preserves the existing 7200-second completion
+budget and every model assertion. The additional merge-reader/posting checks
+are LabourCheck, ReadPathCheck, BuildAdviceCheck, BuildCardCheck,
+ConstructionControlCheck and CentralBankStatementCheck, also sequential.
+No ALL suite is launched locally; the authorized box dry run follows green.

@@ -116,7 +116,7 @@ public final class OilView {
      *                   tonnes of crude the wells could lift that no refinery takes (Refining.Outlook.spareCrude())
      * @param fuelShort  the crude units only: litres a month of petrol and diesel the city wants past what its refinery
      *                   makes (Refining.Outlook.room()); NaN for a conversion unit
-     * @param months     months its site would take at today's queue (Game.onSiteMonths()); 0 with none on site
+     * @param months     months its site has left at its pace (Game.onSitePaceMonths(), ASH1); 0 with none on site
      */
     public record UnitRow(Kind kind, long standing, long onSite, double feed, double run, double share, double citySpread,
                           SpreadPlanner.Candidate gate, double spare, double fuelShort, double months) {
@@ -566,7 +566,7 @@ public final class OilView {
         rows.add(new UnitRow(null, crudeStanding, crudeOnSite, crudeFeed, crudeRun,
                 refinery.counted() && crudeStanding > 0 ? refinery.rate() : Double.NaN, Double.NaN,
                 oneMoreCrude(r, plans, crudeUnits), o == null ? Double.NaN : Math.max(0, o.spareCrude()),
-                o == null ? Double.NaN : Math.max(0, o.room()), crudeSite == null ? 0 : game.onSiteMonths(crudeSite)));
+                o == null ? Double.NaN : Math.max(0, o.room()), crudeSite == null ? 0 : game.onSitePaceMonths(crudeSite)));
 
         List<UnitRow> standing = new ArrayList<>(), building = new ArrayList<>(), rest = new ArrayList<>();
         for (Kind k : Kind.values()) {
@@ -577,7 +577,7 @@ public final class OilView {
             long on = u == null ? 0 : u.standing(), site = u == null ? 0 : u.onSite();
             double run = u == null ? (refinery.counted() ? 0 : Double.NaN) : u.run();
             double share = u == null ? Double.NaN : u.share();
-            double months = sites.containsKey(k) ? game.onSiteMonths(sites.get(k)) : 0;
+            double months = sites.containsKey(k) ? game.onSitePaceMonths(sites.get(k)) : 0;
             UnitRow row = new UnitRow(k, on, site, feed[k.ordinal()], run, share, refinery.flow().process().spread(k, values), gate, spare,
                     Double.NaN, months);
             (on > 0 ? standing : site > 0 ? building : rest).add(row);

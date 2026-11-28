@@ -1,8 +1,8 @@
-# gate of Merge batch/UX1: the interface rework's study (Jerus, 11-27: the map as the ground of every screen, HoI IV-style alerts at the top, a build screen in groups with an icon per building): the picture tool, the stability harness, the audit of every page on two or three cities, mockups over the real map, and the rows UX2 onward, 0.9.217
+# gate of Merge batch/ASH1: power for a small town, from Jerus's Ashbourne findings 1, 2, 9, 8 (desk chat 2026-11-27, "Yes, send them"): the overview's POWER row reads the lesser of the plants and the wires (it said "204% served" while 4.6% of the month went unserved); a grid step a small town can take (the only one past 10 MW is a Cr 22.1M substation, 153% of a 6,166-person town's GDP); posts that follow the load; the months-left at the site's pace. Next free lane, ahead of PW9-G. An ensemble, 0.9.218
 # date: 2026-11-28
 # earth-2.bin: named
 # nightly: 2026-11-27 03:12 0.9.215 c71984995 4,000 months: OK in 578 s; nightly tier OK; observations: 3 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 1 SLOWER, 1 standing miss(es), 0 first-night miss(es), 1 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-27-c71984995-Kh1HaGNd; SaveSlotCheck | the median due month, 25.4 ms, holds the clock at most CLOCK_MS (25 ms) | previous 22.3, tonight 25.8, budget 25 ms | attribution inconclusive: boundary did not confirm
-# suite: 247 harnesses run in 1476s: 233 passed, 14 failed
+# suite: 260 harnesses run in 1713s: 245 passed, 15 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -56,6 +56,10 @@ CarCheck | 3 FAILED
 OilCheck | exit 1
 OilCheck | a town with no station, its drivers' petrol all past the stations at the queue's price, is given one FAIL  8,249 L past them: "the city could staff 33% of a Filling Station now and 80% with a year's arrivals; it wants 80%"
 OilCheck | 1 FAILED
+CopperRefiningCheck | exit 1
+CopperRefiningCheck | the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line            FAIL  exit 1, 5.3 minutes; its output: /tmp/citybuildersim-tmp/173284/copperrefiningcheck-rodmills120435047277764052/seed1.log
+CopperRefiningCheck | seed 1's 2,400 months stand at most ROD_MILLS_STANDING (1) Rod Mill                                  FAIL  2 Rod Mills, 5.3 minutes
+CopperRefiningCheck | 2 FAILED
 GroundSkipCheck | exit 1
 GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 48 month(s) FAIL
 GroundSkipCheck | 1 FAILED
