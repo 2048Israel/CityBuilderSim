@@ -60,3 +60,123 @@ Monetary financing and credibility, the calibration's cases:
   triples it; no significant link under a 3%-of-GDP deficit; an EM purchase announcement of 1%
   of GDP in 2020 raised expectations only 0.04pp.
 - Speed: surveyed expectations and the currency within 1-3 months; inflation in 6-12.
+
+## What was built
+
+- **`HoldingsRules`** (new; owned by `CentralBank`, saved under its own key
+  `DataSave.holdingsRules`): four dials in `Dial`'s saved order, each change a
+  decision-log line.
+  - *Pace*: Auto, or 0.25% to 25% of the term paper a month.
+  - *Shrinking the book*: runoff and sales at market, or runoff only.
+  - *Auction share*: 0 to 100% of each term issue.
+  - *Direct purchases*: not allowed, or allowed.
+- **The pace.** `CentralBank.stepFor`: Auto is main's QE_SPEED rule, bit for
+  bit. A set pace is pace × the term paper a month, both ways. In sale mode a
+  set pace bounds runoff and sales together: `rollMaturities` records the
+  month's runoff (`centralBankRanOff`), and `openMarketOperation` sells only
+  what is left of the step.
+- **QT.** `CentralBank.runoffCap`: uncapped at Auto with sales (main's rule).
+  Under a set pace or runoff only, `Game.centralBankRolls` caps what runs off
+  at the press at the step. Runoff only sells nothing.
+- **The auction share.** `Game.rollCentralBankAtIssue`, under the law:
+  - share × the face the market bought, at every term issue waiting to
+    settle, pro rata over the pieces;
+  - each piece at its own price (`settleDue / unsettledFace`, the auction's);
+  - within the dial's room (`Game.auctionShareTake`);
+  - paid through `CentralBank.buyAtAuction`, then `buyPaper`, and booked
+    ISSUED in MoneyAudit (Scope.MONEY);
+  - recorded as lines `BOUGHT_AT_AUCTION` and `PAR_AT_AUCTION`, a MADE row
+    on the money statement, and a sale note (`Debt.CENTRAL_BANK_AUCTION_SHARE`).
+- **The cost.** `CentralBank.turnFinancing` keeps a stock of auction purchases
+  (a twelfth forgotten a month) and reads it against the national accounts'
+  rolling year of GDP. `Expectations.financed`:
+  - the strength is 0 up to FINANCING_ANCHORED (3% of GDP), 1 at
+    FINANCING_UNANCHORED (7%), linear between;
+  - credibility falls strength/6 of the way to KMIN at once;
+  - the month's premium on expected inflation is FINANCING_PREMIUM (9 points)
+    × strength × (KMAX − κ)/(KMAX − KMIN);
+  - the currency moves through the real rate gap (`Game.realRateDifferential`).
+- **Saves, no format bump.**
+  - The rules are under their own key; a save without it reads the defaults.
+  - `CentralBank`'s array has three slots appended (the auction's two
+    lifetimes and the stock), guarded. The line block is length-prefixed, so
+    the two new Lines read zero from an older save.
+  - `Expectations.SAVE_SLOTS` is 9 (the premium), guarded.
+  - CentralBankPaceCheck 7 strips all of this from a save. It reads the
+    defaults and plays its next month to the bit as the same save with them.
+- **Screens.**
+  - `ui/HoldingsRulesPane` is BankRulesPane's shape (Kept + Ladder). It is on
+    Policy's "Bank rules" page and on the central bank's own Policy page, with
+    a line on what the bank has lent at auction lately and the premium.
+  - Policy's holdings card reads main's words exactly at the defaults
+    (`PolicyScreen.holdingsLaw`, `holdingsPace`). Otherwise it states the set
+    pace, the auction share and runoff only.
+
+## Design calls
+
+1. ★ **A class of its own, not four more `BankRules` dials.**
+   BankRulesCheck section 4 fences `BankRules.Dial` at the nine measured
+   rules of CBK3 Part 1. A key of its own also means an old save lacks it
+   and reads the defaults: no format bump under the old-saves rule.
+2. ★ **Auto is the default pace, and it is main's rule** ("the pace default
+   reproduces QE_SPEED's path"). A set pace is a fixed share of the term
+   paper a month, as the Fed's purchases ($80B + $40B from June 2020) and its
+   QT caps are fixed amounts, not a share of the gap.
+3. ★ **A set pace bounds runoff and sales together.** The Fed's caps bound
+   what runs off; the BoE's £80bn a year was its sales and its runoff
+   together. At Auto the runoff stays uncapped, as in main.
+4. ★ **"Sale at market" is a sale to the commercial bank at the curve's
+   market value.** The city's paper has no order book (`BondMarket` and
+   `OrderBook` are corporate bonds and shares), so the commercial bank is the
+   market for city paper here. The gain or loss lands in `paperGains`, then
+   the bank's profit and its remittance. The BoE sells at auction to dealers
+   at market prices, and HM Treasury indemnifies its losses. Here a loss is
+   the bank's own, through its profit.
+5. ★ **The auction share bids at every term issue, the rollover's
+   refinancing included.** The Bank of Canada takes its 13% minimum at every
+   nominal bond auction. The share is an add-on over the market's face
+   (Fed-style), at that issue's own price, and is bounded by the dial (the
+   cap), not by the pace ("always within the cap"). The open market's step
+   reads the book after it.
+6. ★ **With the law off, the bank buys at auction only its own maturing
+   paper** (main's rollover). This follows the Federal Reserve Act s.14(b)
+   and the NY Fed's rollover practice, TFEU Article 123, and Japan's Public
+   Finance Act Article 5. The share's dial can be set with the law off, and
+   it does nothing.
+7. ★ **The cost of leaning on it, calibrated from the cases above.**
+   - Nothing up to 3% of GDP a year: Indonesia 2020-22 stayed anchored, and
+     the IMF found no link under a 3% deficit.
+   - The full cost at 7%: Argentina 2020 (7.4%) and Ghana 2022 (7.2%), both
+     unanchored within a year.
+   - At the full cost, a sixth of the way to KMIN a month: both moved within
+     1-3 months.
+   - Up to 9 points of premium, Argentina's survey going from 40% to 49%. The
+     premium is in proportion to the trust already lost: the IMF found that
+     low independence triples the effect.
+   - The first draft's anchored line was 1%. It moved to 3% when the harness
+     set the line against the cases it cites.
+   - Measured on CentralBankPaceCheck 6's twin towns, lending 12.3% of a
+     year's GDP over ten months:
+     - credibility went from .70 to .37;
+     - expected inflation went from 2.99% to 11.85%;
+     - the D$ was 10% weaker (1.351 to 1.483 per US$);
+     - stopped, the stock fell under 3% of GDP in 16 months, and credibility
+       went on falling while it was over.
+8. ★ **The stock is read against `NationalAccounts.getAnnualGdp()`, the
+   rolling year.** The first draft used `EconomyManager.getYearGdp()`, which
+   is struck only at a load. The harness found it: the twins read 799% of
+   GDP.
+9. ★ **Held figures (AP5-AP8): no new writer.** The held figures are the
+   stacks' posts (AP5), the month's sector walks (AP6), `warranted()` (AP7)
+   and the bond market's books (AP8). CBK2 writes none of them. Its writes go
+   through `Debt.addOnForCentralBank` (the rollover's writer, now with a sale
+   tag) and `CentralBank.buyPaper`. DebtManager's curve cache is keyed by
+   value. So there is nothing new to raise.
+10. **An observation, not this batch's.** The treasury's advances, the line
+    through which the bank lends the treasury directly, carry no credibility
+    cost, in main as here. Leaning on them is monetary financing too.
+11. **The fixture's scale.** CentralBankCheck 19's town carries a serial of
+    $20,000k against a year's GDP of about $128k, about 156× its GDP. With
+    the share at 100%, the serial's first slice, refinanced at auction, is
+    19 years of GDP. Section 6's twins roll that slice alike before the
+    share opens, so the share meets only the treasury's own sales.
