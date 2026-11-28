@@ -1,4 +1,3 @@
-<!-- readiness: provisional -->
 ## changelog
 ### {next} — ASH1, power for a small town — 2026-11-27, ready, see docs/queue/ASH1-notes.md
 From Jerus's Ashbourne findings 1, 2, 9 and 8. The overview's POWER row read the plants alone and said "204% served" while the
