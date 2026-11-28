@@ -1590,9 +1590,36 @@ public final class AutoBuilder {
         return new Wires(game, s).due(n);
     }
 
-    /** Keeps the wires a placed plant relied on open by its month (REV-PW9-G 3): `months` from now, NaN for none. */
+    /**
+     * Keeps the wires a placed plant relied on open by its month (REV-PW9-G 3): `months` from now, NaN for none - where the
+     * grid's first unit on site, the plant now on the crews, is read open by then. A promise the queue already reads broken
+     * is none: that plant was allowed by the wires' share, its predecessors short of it, not by their opening.
+     * WHY (PowerWiresCheck 3(b)): a town whose two depots read the first unit thousands of months out recorded dues 260 to
+     * 5,324 months on, and the guard then held every plant order that slowed the unit, leaving the plants short of the
+     * carry the standing wires already had (13,628 of 15,000 kW).
+     */
     private void promiseWires(Game game, double months) {
-        if (Double.isFinite(months)) wiresDue.add(game.getMonth() + months);
+        if (Double.isFinite(months) && Math.ceil(firstGridMonths(game, null, 0, 0) - 1e-9) <= months + 1e-9)
+            wiresDue.add(game.getMonth() + months);
+    }
+
+    /**
+     * The months to the grid's soonest first unit on site, read as the crew guard reads a first completion
+     * (BuildingManager.siteUnitMonths(), siteUnitMonthsAfter() with `count` of `additional` on the crews, never before the
+     * foreign crews' part of it: abroadUnitFloor()); infinite with none on site or none that will open.
+     */
+    private double firstGridMonths(Game game, BuildingsTemplate additional, long count, double points) {
+        BuildingManager bm = game.getBuildingManager();
+        double output = game.getBuildingOutputAtEveryPost();
+        double soonest = Double.POSITIVE_INFINITY;
+        for (Map.Entry<BuildingsTemplate, Long> e : building(game, GRID).entrySet()) {
+            if (e.getValue() <= 0) continue;
+            BuildingsTemplate t = e.getKey();
+            double months = Math.max(additional == null || count < 1 ? bm.siteUnitMonths(t, 1, output)
+                    : bm.siteUnitMonthsAfter(t, 1, output, additional, count, points), bm.abroadUnitFloor(t, 1));
+            if (!Double.isNaN(months)) soonest = Math.min(soonest, months);
+        }
+        return soonest;
     }
 
     /** The wires' promises kept (REV-PW9-G 3): the months, absolute, by which the wires pending plants relied on must open. */
@@ -1614,23 +1641,11 @@ public final class AutoBuilder {
      * order that slowed it further was placed.
      */
     private boolean wiresDelayed(Game game, BuildAdvice.Suggestion suggestion, long count) {
-        Map<BuildingsTemplate, Long> grid = building(game, GRID);
-        if (BuildAdvice.units(grid) == 0 || wiresDue.isEmpty()) return false;
-        BuildingManager bm = game.getBuildingManager();
-        double output = game.getBuildingOutputAtEveryPost();
-        double points = orderPoints(game, suggestion, count);
-        double before = Double.POSITIVE_INFINITY, after = Double.POSITIVE_INFINITY;
-        for (Map.Entry<BuildingsTemplate, Long> e : grid.entrySet()) {
-            if (e.getValue() <= 0) continue;
-            BuildingsTemplate t = e.getKey();
-            double floor = bm.abroadUnitFloor(t, 1);
-            double old = Math.max(bm.siteUnitMonths(t, 1, output), floor);
-            double proposed = Math.max(bm.siteUnitMonthsAfter(t, 1, output, suggestion.template(), count, points), floor);
-            if (Double.isFinite(old)) before = Math.min(before, old);
-            if (!Double.isNaN(proposed)) after = Math.min(after, proposed);
-        }
-        return Double.isFinite(before) && after > before + 1e-9
-                && game.getMonth() + Math.ceil(after - 1e-9) > wiresDue.first();
+        if (wiresDue.isEmpty() || !(game.getBuildingOutputAtEveryPost() > 0)) return false;
+        double before = firstGridMonths(game, null, 0, 0);
+        if (!Double.isFinite(before)) return false;
+        double after = firstGridMonths(game, suggestion.template(), count, orderPoints(game, suggestion, count));
+        return after > before + 1e-9 && game.getMonth() + Math.ceil(after - 1e-9) > wiresDue.first();
     }
 
     /** The construction points an order of `count` of a suggestion puts on the crews: its buildings at the points their equipment takes and its works (R1e). */
