@@ -490,6 +490,9 @@ was never written.
     - ZERO_HOT's, SHOCK's and HIGH's T2 go FAIL to PASS: the baseline's own T2 failed against its predecessor.
   - **Bank failures, cumulative (info):** AUTO2 76 against 52, ZERO_SLACK 74 against 51, ZERO_HOT 33 against 28,
     SHOCK 40 against 51, HIGH 40 against 49. 14 of 16 runs have failures in every policy, as on main.
+    - **An unresolved risk, neither noise nor validated** (REV-ASH4's fourth look). AUTO2's rise is one seed's: seed 0
+      has 29 against main's 0. The other fifteen total 47 against 52, with a median paired change of zero. Seed 0's
+      failures were not traced, and no null placed them.
   - None is placed: no null ran on 0.9.219. Neither the sign nor the size of any of these is validated by a real
     measure.
 - **The ensemble on the spending fix: PASS, hard 10 of 10** (label ASH4d). It ran on the
