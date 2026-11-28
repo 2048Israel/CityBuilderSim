@@ -1,6 +1,6 @@
 # BankRulesCheck.java - 911 lines · 20 methods · 2 constants · harnesses
 
-`ham/citybuildersim/BankRulesCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/BankRulesCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > The window against collateral and the bank's rules as the player's dials.
 > WHY (CBK3): a capital-only equity desk could be financed without limit at

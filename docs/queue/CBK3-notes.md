@@ -2173,3 +2173,29 @@ budget and every model assertion. The additional merge-reader/posting checks
 are LabourCheck, ReadPathCheck, BuildAdviceCheck, BuildCardCheck,
 ConstructionControlCheck and CentralBankStatementCheck, also sequential.
 No ALL suite is launched locally; the authorized box dry run follows green.
+
+The merged named verification now completes **all18 harnesses exit0**:
+BankRulesCheck, BankFailureCheck, MonetaryCheck, SaveFileCheck,
+GoldStandardCheck, TownGridCheck, SubstationCheck, PowerPlantsCheck,
+PowerPlanCheck, PowerPriceCheck, exact BankCheck and full exact
+CentralBankCheck; then LabourCheck, ReadPathCheck, BuildAdviceCheck,
+BuildCardCheck, ConstructionControlCheck and CentralBankStatementCheck.
+Both sequential controllers exit0, with no overlap and no test/mode/fixture
+change. Full CentralBankCheck completes all24 played shapes and its post-grid
+save assertions. Logs are `target/CBK3-ASH1-named.txt`,
+`target/CBK3-ASH1-extra-named.txt` and `target/CBK3-ASH1-<Name>.log/.txt`.
+The wrappers have0 firm stale findings,212 soft.
+
+The gold continuation still actually invoices29.0330421737 then29.3173240450,
+collects0 then58.3503662186, and closes its two audits at
+-4.71800376545e-12 and-1.04591890704e-11. This is the subsequent audited
+continuation; its earlier reserve drain remains labelled pre-audit fixture
+preparation, with no paying pool. TownGridCheck's separate money section
+also passes. No raw ensemble maximum is inferred from these named cases.
+
+Final pre-dry fetch still names39fcbee71; it is fully included in merge
+794d2068b. The only later generated changes are six map date stamps to the
+actual November28 regeneration date, not source changes. The finalized merge
+and this verification record are pushed before the already authorized dry
+run; no repeat permission or ensemble is requested. All named JVMs and the
+merge-review helper have ended before the box run starts.

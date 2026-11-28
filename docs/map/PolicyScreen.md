@@ -1,6 +1,6 @@
 # PolicyScreen.java - 6,589 lines · 333 methods · 118 constants · interface
 
-`ham/citybuildersim/ui/PolicyScreen.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/PolicyScreen.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > The Policy tab: every number the city sets for itself - the taxes, the
 > wage floor, the price of money and the promises - each a dial with what

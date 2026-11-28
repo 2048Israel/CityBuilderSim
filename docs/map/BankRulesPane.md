@@ -1,6 +1,6 @@
 # BankRulesPane.java - 32 lines · 1 methods · 0 constants · interface
 
-`ham/citybuildersim/ui/BankRulesPane.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/BankRulesPane.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > The same saved banking dials on Policy and the central bank's page.
 > WHY (CBK3): two screens must set one rule, with Kept retaining the nodes
