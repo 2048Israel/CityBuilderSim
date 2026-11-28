@@ -499,7 +499,7 @@ public class BuildCardCheck {
                 BuildingsStacks st = g.getBuildingManager().getStack(t);
                 long site = st == null ? 0 : st.getUnderConstruction();
                 head &= f.owned() == g.getBuildingManager().getQuantity(t.getId()) && f.onSite() == site
-                        && f.siteMonths() == (site > 0 ? g.onSiteMonths(t) : 0)
+                        && f.siteMonths() == (site > 0 ? g.onSitePaceMonths(t) : 0)
                         && f.landFree() == g.getLandManager().getAvailableSqFt();
                 double scale = f.kind() == BuildCard.Kind.MEALS || f.kind() == BuildCard.Kind.PUMP
                         || f.kind() == BuildCard.Kind.TANKS || f.kind() == BuildCard.Kind.BERTHS ? 1000 : 1;
@@ -780,7 +780,7 @@ public class BuildCardCheck {
         BuildCard.Investors b = BuildCard.investors(g, store), d = BuildCard.investors(g, grocery);
         assertTrue("the department store reads \"Investors are building\", with the three on site and their wait",
                 b.theirs() && !b.yoursToo() && b.onSite() == 3
-                && Double.doubleToLongBits(b.months()) == Double.doubleToLongBits(g.onSiteMonths(store)));
+                && Double.doubleToLongBits(b.months()) == Double.doubleToLongBits(g.onSitePaceMonths(store)));
         assertTrue("...and says no \"this one:\" while they are, whatever its gate", !b.showOwn());
         assertTrue("the city's own two grocery stores on site are not an investors' order", !d.theirs() && d.onSite() == 2);
         quietly(() -> g.buildStack(store, 1, false));
@@ -1136,7 +1136,7 @@ public class BuildCardCheck {
                 + theirSites + ", the stores among them) and the longest wait, the city's order among them",
                 lux.theirs() && lux.kind() == BuildCard.WordKind.BUILDING && lux.yoursToo()
                 && lux.onSite() == theirSites && theirSites >= onSite(g.getBuildingManager(), store)
-                && Double.doubleToLongBits(lux.months()) == Double.doubleToLongBits(wait) && wait >= g.onSiteMonths(store)
+                && Double.doubleToLongBits(lux.months()) == Double.doubleToLongBits(wait) && wait >= g.onSitePaceMonths(store)
                 && lux.line().theirs() && lux.line().own() == null && !lux.line().showOwn());
         BuildCard.SectorInvestors mines = BuildCard.sectorInvestors(g, g.getSectors().mining());
         assertTrue("...and a sector with nothing on site does not: " + mines.kind() + ", " + mines.word(),
@@ -1330,6 +1330,10 @@ public class BuildCardCheck {
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates())
             variable |= (t.isWind() || t.isSolar()) && g.getBuildingManager().getQuantity(t.getId()) > 0;
         double gridAtPeak = u.getPowerServed() / PowerDispatch.PLAN_PEAK_HOUR;
+        // ASH1 finding 1: ...and the row is the lesser of that and the wires' (the grid units' carry over the peak), said "by the wires" when they are the lesser.
+        double[] gridPair = BuildAdvice.supplyDemand(g, BuildAdvice.Measure.of(BuildAdvice.Kind.GRID), Map.of());
+        double wiresAtPeak = CityNeeds.servedShare(gridPair[0], gridPair[1]);
+        out.printf("      the town's plants serve %.1f%% of the peak, its wires %.1f%%%n", gridAtPeak * 100, wiresAtPeak * 100);
         boolean rows = true;
         int servedRows = 0, listedRows = 0;
         for (CityNeeds.Need n : all) {
@@ -1341,7 +1345,7 @@ public class BuildCardCheck {
                 // PW1: the POWER row read the handler's average (getPowerServed(), production over consumption); it reads the advice's pair, the firm
                 // supply over the calm peak's draw (BuildAdvice.served()), as the cards do. It was held to BuildAdvice.served(), itself (REV-PW1's
                 // lows); it is held to the grid's own figure at the peak hour's draw, below (PW1-R).
-                case POWER -> gridAtPeak;
+                case POWER -> Math.min(gridAtPeak, wiresAtPeak);
                 case WATER -> u.getWaterServed();
                 case ROADS -> road.getServed();
                 case CARE -> CityNeeds.careServed(g, n.care(), g.getCohorts(), g.getPopulationManager().getJobFillRate());
@@ -1363,6 +1367,15 @@ public class BuildCardCheck {
         assertTrue("every served NEEDS YOU row (" + servedRows + " in the town, " + listedRows + " listed) reads its owner's "
                 + "figure, to the bit (power's the grid's own at the peak hour's draw, to 1e-9, at most it with wind or sun standing: "
                 + variable + "), as served, in the colour of its level where it is listed", rows && servedRows >= 6);
+        // ASH1 finding 1: ...and it says "by the wires", and measures the grid's units, when and only when they serve less of the peak than the plants.
+        double[] plantPair = BuildAdvice.supplyDemand(g, BuildAdvice.Measure.of(BuildAdvice.Kind.POWER), Map.of());
+        boolean wiresLess = wiresAtPeak < CityNeeds.servedShare(plantPair[0], plantPair[1]);
+        CityNeeds.Need powerRow = null;
+        for (CityNeeds.Need n : all) if (n.kind() == CityNeeds.Kind.POWER) powerRow = n;
+        assertTrue("the POWER row reads \"by the wires\" exactly when the wires serve less of the peak than the plants (the wires' "
+                + String.format("%.1f%%, the plants' %.1f%%", wiresAtPeak * 100, CityNeeds.servedShare(plantPair[0], plantPair[1]) * 100) + "), and its advice measure follows",
+                powerRow != null && powerRow.wires() == wiresLess && powerRow.reading().contains(CityNeeds.BY_THE_WIRES) == wiresLess
+                && BuildAdvice.measureOf(powerRow).kind() == (wiresLess ? BuildAdvice.Kind.GRID : BuildAdvice.Kind.POWER));
 
         boolean measures = true;
         int counted = 0;

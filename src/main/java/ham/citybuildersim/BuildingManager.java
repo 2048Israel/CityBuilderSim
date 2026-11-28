@@ -5139,6 +5139,12 @@ public class BuildingManager {
                 .setCapacity((int) (Substations.SUBSTATION_MW * 1000)).setLandSqFt(217800).setRoadLoad(140)
                 .setJobs(JobType.DIPLOMA, 100).setJobs(JobType.COLLEGE_ENGINEERING, 30)
                 .setJobs(JobType.UNIV_HIGHTECH_ENG, 10).setSince(1900).setId(Substations.ID));
+        // ASH1: a city distribution substation of a few MW, the Substation's cost, land and crew at 5% per MW (1924 Portland and Midwest cases).
+        templates.add(new BuildingsTemplate("Distribution Substation", BuildingType.ELECTRICITY)
+                .setCashCost(13200).setConstructionPoints(6600).setConstructionMaterials(489)
+                .setCapacity((int) (Substations.DISTRIBUTION_MW * 1000)).setLandSqFt(10890).setRoadLoad(7)
+                .setJobs(JobType.DIPLOMA, 5).setJobs(JobType.COLLEGE_ENGINEERING, 2)
+                .setSince(1900).setId(Substations.DISTRIBUTION_ID));
         HousingForms.installFallback(templates);
 
         /* ------------------------------------------------------------------
@@ -7873,6 +7879,8 @@ public class BuildingManager {
         for (int i = 0; i < posts.length; i++) {
             posts[i] = postsOffered(posts[i] - crews[i], offeredShareOf(sector, types[i])) + crews[i];
         }
+        // ...the city's sector also lacks the grid units' posts the wires' load does not call for (ASH1, THE GRID UNITS' POSTS).
+        if (isGridSector(sector)) for (int i = 0; i < posts.length; i++) posts[i] -= gridWithheld(gridPosts(types[i]));
         return posts;
     }
 
@@ -8215,6 +8223,8 @@ public class BuildingManager {
         final long at;
         /** Each job type's posts over the stacks, by ordinal. */
         final long[] everyPost;
+        /** The grid units' posts (Substations.isSubstation) of each job type, by ordinal: a stack sum like the sectors', the share applied live (ASH1). */
+        final long[] grid;
         /** Each owning sector's posts of each job type, by ordinal. */
         final java.util.Map<String, long[]> bySector = new java.util.LinkedHashMap<>();
         /** Each owning sector's stacks, in the list's order. */
@@ -8224,14 +8234,17 @@ public class BuildingManager {
             this.at = at;
             JobType[] types = JobType.values();
             everyPost = new long[types.length];
+            grid = new long[types.length];
             java.util.Map<String, List<BuildingsStacks>> own = new java.util.HashMap<>();
             for (BuildingsStacks stack : stacks) {
                 String sector = stack.getBuilding().getSector();
+                boolean wires = Substations.isSubstation(stack.getBuilding());
                 long[] posts = bySector.computeIfAbsent(sector, k -> new long[types.length]);
                 for (JobType type : types) {
                     long n = stack.getTotalJobs(type);
                     everyPost[type.ordinal()] += n;
                     posts[type.ordinal()] += n;
+                    if (wires) grid[type.ordinal()] += n;
                 }
                 own.computeIfAbsent(sector, k -> new ArrayList<>()).add(stack);
             }
@@ -8291,43 +8304,111 @@ public class BuildingManager {
      * A post is counted once, whoever pays it.
      */
     public long getPostsWithheld(JobType type) {
-        if (offeredShare == null) return 0;
+        // ...and the grid units' posts the wires' load does not call for (ASH1, THE GRID UNITS' POSTS), whether or not a sector hook is set.
         HeldPosts held = heldPosts();
         if (held != null) {
-            long withheld = 0;
-            for (java.util.Map.Entry<String, long[]> e : held.bySector.entrySet()) {
-                long posts = e.getValue()[type.ordinal()];
-                if (posts != 0) withheld += posts - postsOffered(posts, offeredShareOf(e.getKey(), type));
+            long withheld = gridWithheld(held.grid[type.ordinal()]);
+            if (offeredShare != null) {
+                for (java.util.Map.Entry<String, long[]> e : held.bySector.entrySet()) {
+                    long posts = e.getValue()[type.ordinal()];
+                    if (posts != 0) withheld += posts - postsOffered(posts, offeredShareOf(e.getKey(), type));
+                }
             }
             return WorksValue.compared(withheld, () -> getPostsWithheld(type));
         }
         java.util.Map<String, Long> bySector = new java.util.HashMap<>();
+        long wires = 0;
         for (BuildingsStacks stack : stacks) {
             long posts = stack.getTotalJobs(type);
-            if (posts != 0) bySector.merge(stack.getBuilding().getSector(), posts, Long::sum);
+            if (posts == 0) continue;
+            if (offeredShare != null) bySector.merge(stack.getBuilding().getSector(), posts, Long::sum);
+            if (Substations.isSubstation(stack.getBuilding())) wires += posts;
         }
-        long withheld = 0;
+        long withheld = gridWithheld(wires);
         for (java.util.Map.Entry<String, Long> e : bySector.entrySet()) {
             withheld += e.getValue() - postsOffered(e.getValue(), offeredShareOf(e.getKey(), type));
         }
         return withheld;
     }
 
-    /** The posts of a job type one sector does not offer this month: getPostsWithheld(type) for that sector alone (IC1). */
+    /**
+     * The posts of a job type one sector does not offer this month: getPostsWithheld(type) for that sector alone (IC1). The grid units' own
+     * sector (the city's, "") also holds back their posts the wires' load does not call for (ASH1), so the sectors' figures add to the total.
+     */
     public long getPostsWithheld(String sector, JobType type) {
-        if (offeredShare == null || sector == null) return 0;
+        if (sector == null) return 0;
+        long wires = 0;
+        if (isGridSector(sector)) {
+            wires = gridWithheld(gridPosts(type));
+            if (offeredShare == null) return wires;
+        } else if (offeredShare == null) {
+            return 0;
+        }
         HeldPosts held = heldPosts();
         if (held != null) {
             long[] own = held.bySector.get(sector);
             long posts = own == null ? 0 : own[type.ordinal()];
-            return WorksValue.compared(posts == 0 ? 0 : posts - postsOffered(posts, offeredShareOf(sector, type)),
+            return WorksValue.compared(wires + (posts == 0 ? 0 : posts - postsOffered(posts, offeredShareOf(sector, type))),
                     () -> getPostsWithheld(sector, type));
         }
         long posts = 0;
         for (BuildingsStacks stack : stacks) {
             if (sector.equals(stack.getBuilding().getSector())) posts += stack.getTotalJobs(type);
         }
-        return posts == 0 ? 0 : posts - postsOffered(posts, offeredShareOf(sector, type));
+        return wires + (posts == 0 ? 0 : posts - postsOffered(posts, offeredShareOf(sector, type)));
+    }
+
+    /* ----- THE GRID UNITS' POSTS (ASH1 finding 9, 2026-11-27) -----
+       The Substation (100 MW, 140 posts) and the Distribution Substation (5 MW, 7 posts) offered every post whatever the wires carried:
+       a 100 MW Substation in a 12 MW town took about 9% of its diploma holders and carried nothing more for them. A distribution
+       utility's line crews, troublemen and meter readers scale with the load and the customers served (US Census of Electrical
+       Industries 1917; BLS Bulletin 944, 1948), so the grid units offer their posts at the share of the carry the last dispatch's peak
+       half-block used, struck as the month begins and saved (UtilitiesHandler.getWiresShare(), handed in by Game: the month counts
+       and pays its posts before its own dispatch, REV-ASH1 1), rounded once on the stacks' sum as a sector's share is
+       (postsOffered()). The rest are withheld like the builders' laid-off crews: the labour market (getTotalJobs()), the utility payroll
+       (getJobArrayPerCategory()) and Substations.costs() (getGridPostsOffered()) take the posts offered. The carry does not depend on
+       staffing. The raw stack sums are held with the sectors' (HeldPosts.grid); the share is read live (it moves once a month, before
+       any pass), never held. ----- */
+
+    /** The share of the grid units' posts the wires call for: handed in by Game; null offers every post. */
+    private java.util.function.DoubleSupplier gridShare;
+
+    /** The hook for the share of the wires' carry the last dispatch used (ASH1); null offers every post of the grid units. */
+    public void setGridShare(java.util.function.DoubleSupplier share) {
+        this.gridShare = share;
+    }
+
+    /** The share of the grid units' posts offered this month: 1 without the hook or for a reading that is not a share. */
+    private double gridShareNow() {
+        if (gridShare == null) return 1;
+        double share = gridShare.getAsDouble();
+        return share >= 0 ? Math.min(1, share) : 1;
+    }
+
+    /** The posts of the grid units' sector are the city's: a building nobody in the private sector owns. */
+    private static boolean isGridSector(String sector) {
+        return sector != null && sector.isEmpty();
+    }
+
+    /** The posts of a job type the grid units are not offering this month, from their whole count. */
+    private long gridWithheld(long posts) {
+        return posts == 0 ? 0 : posts - postsOffered(posts, gridShareNow());
+    }
+
+    /** Every post of a job type the grid units have, offered or not: the held stack sum in a pass, the walk of the stacks otherwise. */
+    private long gridPosts(JobType type) {
+        HeldPosts held = heldPosts();
+        if (held != null) return WorksValue.compared(held.grid[type.ordinal()], () -> gridPosts(type));
+        long posts = 0;
+        for (BuildingsStacks stack : stacks) {
+            if (Substations.isSubstation(stack.getBuilding())) posts += stack.getTotalJobs(type);
+        }
+        return posts;
+    }
+
+    /** The posts of a job type the grid units offer this month, at the share of the wires' carry used: what their payroll is struck on (Substations.costs()). */
+    public long getGridPostsOffered(JobType type) {
+        return postsOffered(gridPosts(type), gridShareNow());
     }
 
     /** getPostsWithheld() over every job type. */
@@ -9222,18 +9303,24 @@ public class BuildingManager {
 
     public long[] getJobArrayPerCategory(BuildingType category) {
         long[] jobs = new long[JobType.values().length];
+        long[] wires = new long[jobs.length];
 
         for (int i = 0; i < stacks.size(); i++) {
 
             if (stacks.get(i).getBuilding().getCategory() == category) {
+                boolean grid = Substations.isSubstation(stacks.get(i).getBuilding());
 
                 for (int j = 0; j < jobs.length; j++) {
-                    jobs[j] += stacks.get(i).getTotalJobs(jobTypes[j]);
+                    long n = stacks.get(i).getTotalJobs(jobTypes[j]);
+                    jobs[j] += n;
+                    if (grid) wires[j] += n;
                 }
 
             }
         }
 
+        // The grid units' posts the wires' load does not call for are nobody's: the utility payroll and its fill are struck on the posts offered (ASH1).
+        for (int j = 0; j < jobs.length; j++) jobs[j] -= gridWithheld(wires[j]);
         return jobs;
     }
 

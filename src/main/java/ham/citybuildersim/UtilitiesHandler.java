@@ -711,6 +711,41 @@ public class UtilitiesHandler {
 
     public PowerDispatch.Month getLatestMonth() { return latest; }
 
+    /**
+     * The share of the wires' carry the last dispatch's peak half-block used: its highest half-block load over the carry it ran against,
+     * at most 1 (ASH1 finding 9: a 100 MW Substation in a 12 MW town took 140 posts and carried nothing more for them; real distribution
+     * utilities' line crews, troublemen and meter readers scale with the load and the customers served, US Census of Electrical Industries
+     * 1917, BLS Bulletin 944, 1948). The month's posts are offered at it as struck when the month began (getWiresShare()), not read live.
+     * 1 before any dispatch, with no grid costs (a bare fixture) or with a carry that is zero or infinite. Reads the last dispatch
+     * (`latest`, `latestGridCosts`), which the save carries (PowerState.pendingMonth, pendingGridCosts).
+     */
+    public double getWiresUsed() {
+        if (latestGridCosts == null || latest == null) return 1;
+        double carry = latestGridCosts.carryKw();
+        if (!(carry > 0) || Double.isInfinite(carry)) return 1;
+        double peak = 0;
+        for (double load : latest.load) peak = Math.max(peak, load);
+        return Math.min(1, peak / carry);
+    }
+
+    /**
+     * The share the grid units offer their posts at this month (BuildingManager.setGridShare(), THE GRID UNITS' POSTS): getWiresUsed() as the
+     * month began (strikeWiresShare(), Game.nextMonth()), held until the next month's. WHY held (REV-ASH1 1): the month counts its posts and pays
+     * them (SimulationEngine.updatePopulation(), updateServices()) before its own dispatch, which then finds the month's load; read live, the
+     * share a reload's rebuild counted the posts at was the closing dispatch's, not the one the month counted and paid them at, so a load,
+     * season or carry that moved in the month changed a reloaded city's staffing, fill and utility payroll. Saved (PowerState.wiresShare);
+     * 1 in a new city and in a save from before ASH1, whose month offered every post.
+     */
+    private double wiresShare = 1;
+
+    public double getWiresShare() { return wiresShare; }
+
+    /** Strikes the month's share from the last dispatch (getWiresUsed()): once a month, as it begins and before its posts are counted (Game.nextMonth()). */
+    public void strikeWiresShare() { wiresShare = getWiresUsed(); }
+
+    /** ...and every post offered, as a new city founds (Game.newGame()): a Game the player founds again does not keep the last city's share. */
+    public void foundWiresShare() { wiresShare = 1; }
+
     public List<PowerDispatch.Row> getLatestRows() { return latestRows; }
 
     /** A month's price and what it was made of: what the bills and the screens read. Public fields, for the save. */
@@ -907,6 +942,8 @@ public class UtilitiesHandler {
         /** The held tariff in local money per water unit, excluding the struck power charge. */
         public double waterTariff;
         public WaterDraw pendingWater;
+        /** The share of the wires' carry the month's grid posts were offered at (getWiresShare(), ASH1); absent in a save from before it, NaN here, which loads as 1. */
+        public double wiresShare = Double.NaN;
     }
 
     public PowerState toPowerState() {
@@ -919,6 +956,7 @@ public class UtilitiesHandler {
         s.pendingMonth = latest.copy(); s.pendingDispatch = latestRecord;
         s.pendingGridCosts = latestGridCosts;
         s.waterPowerPaid = waterPowerPaid; s.waterTariff = pricePerWaterUnit; s.pendingWater = latestWater;
+        s.wiresShare = wiresShare;
         return s;
     }
 
@@ -976,6 +1014,8 @@ public class UtilitiesHandler {
         pendingLoadedGridCosts = s == null ? null : s.pendingGridCosts;
         pendingLoadedWater = s == null ? null : s.pendingWater;
         waterPowerPaid = s == null ? 0 : s.waterPowerPaid;
+        // ...and the share the saved month offered its grid posts at, before the load's rebuild counts them (ASH1); every post in a save from before it.
+        wiresShare = s == null || !(s.wiresShare >= 0 && s.wiresShare <= 1) ? 1 : s.wiresShare;
         if (s == null) { fuelLocal = fuelImported = upkeepPaid = 0; paidDispatchMonth = fuelPaidMonth = -1; return; }
         pricePerWaterUnit = s.waterTariff;
         setFuelPaid(s.fuelLocal, s.fuelImported, s.upkeepPaid, s.fuelImportedByGood);

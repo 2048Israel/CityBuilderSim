@@ -72,6 +72,16 @@ public class BuildingDataCheck {
                         && !grid.isOwnedBySector() && grid.getCapacity() == Substations.SUBSTATION_MW * 1000
                         && grid.getProduction1() == 0 && grid.getTotalJobs() == 140
                         && near(todays(grid.getCashCost()) + todays(BuildingManager.MATERIALS_WORLD_PRICE) * grid.getConstructionMaterials(), 440004));
+        BuildingsTemplate dist = byId(data, Substations.DISTRIBUTION_ID);
+        double share = Substations.DISTRIBUTION_MW / Substations.SUBSTATION_MW;
+        assertTrue("ASH1 appends the Distribution Substation, a few MW of wires at the Substation's price, land, roads and crew per MW (1924 Portland and Midwest stations: no economy of scale)",
+                dist != null && "Distribution Substation".equals(dist.getName()) && dist.getCategory() == BuildingType.ELECTRICITY
+                        && !dist.isOwnedBySector() && dist.getCapacity() == Substations.DISTRIBUTION_MW * 1000
+                        && dist.getProduction1() == 0 && dist.getTotalJobs() == 7
+                        && near(dist.getCashCost(), grid.getCashCost() * share)
+                        && near(dist.getConstructionPoints(), grid.getConstructionPoints() * share)
+                        && Math.abs(dist.getConstructionMaterials() - grid.getConstructionMaterials() * share) <= .5
+                        && near(dist.getLandSqFt(), grid.getLandSqFt() * share) && near(dist.getRoadLoad(), grid.getRoadLoad() * share));
         BuildingsTemplate steam = byId(data, 172);
         assertTrue("PW9 appends the period's 850 kW Small Steam Station, coal-fired from 1900 with a 15-month lead",
                 steam != null && "Small Steam Station".equals(steam.getName()) && steam.getCategory() == BuildingType.ELECTRICITY
@@ -840,6 +850,7 @@ public class BuildingDataCheck {
         years.put(ham.citybuildersim.sectors.CopperMining.SULPHIDE_LEACH, 2025);   // FE2
         years.put(ham.citybuildersim.sectors.HeavyIndustry.HYDROGEN_WORKS, 2028);   // FE4, the Hydrogen Steel Works: a projection
         years.put(Substations.ID, 1900);   // PW5: the district grid is available at founding.
+        years.put(Substations.DISTRIBUTION_ID, 1900);   // ASH1: a city distribution substation, the 1924 stations' kind, available at founding.
         for (HousingForms.Form form : HousingForms.ALL) years.put(form.id(),form.since());
         years.put(9, 1900);     // PW2: the Coal Power Plant, a kind before the start (a 325 MW unit first ran in 1960, Eddystone)
         years.put(167, 1900);   // PW2: the Oil-Fired Plant
@@ -866,7 +877,7 @@ public class BuildingDataCheck {
                         + " Steel Mini-Mill E13 1969, the Walk-in Clinic B4 1973, the Wind Farm E16 1980, the Assisted Living Residence M8 1981 and the Shared"
                         + " Services Centre B6 1982) and R6b's two near-future buildings, the Sulphide Leach & SX-EW Plant 2025 (FE2) and the Hydrogen Steel Works 2028 (FE4, a projection); the Large Cement Plant, the Large Copper Mine, the pelletising and two magnetite works, the Large"
                         + " Mini-Mill, the Leach & SX-EW Plant and the Harvesting Operation keep their years, now as the codes PE4, PE8, E4, E13, E12 and E14,"
-                        + " their years here being their entries'; and PW5's Substation 1900; and PW2's power plants, each from its year"
+                        + " their years here being their entries'; and PW5's Substation 1900 and ASH1's Distribution Substation 1900; and PW2's power plants, each from its year"
                         + " (spec-electricity 2.3, Q2): the Coal Power Plant 1900 (a kind before the start), the Oil-Fired Plant 1900, the"
                         + " Diesel Station 1910, the Oil-Fired Turbine 1949 (Belle Isle) and the Biomass Plant 1970 (with the Wood Pellet"
                         + " Mill), the Solar Farm 1982 (Lugo); no row"
