@@ -1686,3 +1686,75 @@ layout, redraw, binding, signature tolerances or funding acceptance. Kept's
 actual run is pending; its compile has succeeded, including all other queued
 fixture mends. The broad temporary instrumentation will be removed once the
 actual cause is established, retaining only useful regression evidence.
+
+Evening native results now complete: CapitalGainsCheck **0**, including a
+real second10x split (factor1000 to10000, tagged units100000), every nominal
+claim/basis/collection/save law unchanged; CreditCrunchCheck **0**, with
+**120/120** ground-ready crunch months and7 actual native plots; BuybackCheck
+**0**, including the genuinely issued5-year line, all-holder allocations and
+all refusal/settlement/no-pump laws; FundCheck **3**, only main's registered
+HT1-H limit-order red. Its four newly red withdrawal/donor premises and all
+free-share, claim, backing, cash and basis assertions now pass. Logs are
+`target/CBK3-evening-<Name>.txt` and `.log`.
+
+The first local Kept diagnostic run is **not green**: three actual assertion
+failures (covered funding run, Spending bridge open/closed), then its1740s
+watchdog, five framework lines including exit. Classes compiled20:33 precede
+both the20:55 funding mend and21:06 gutter fix. Keep its evidence in
+`target/CBK3-evening-KeptCheck.log` and the funding/government partial copies.
+The final named Kept will retain the exact captured2048MiB heap,64MiB initial
+heap, SoftRefLRUPolicyMSPerMB=0 and renderer, with a7200s outer completion
+limit; no timing/conservation/save/geometry assertion is changed. The previous
+local timed-out run is never substituted for a completed result.
+
+Government geometry is now proved on Windows too. Both binding owners and
+frame/body sizes are correct in both graphs and the held-still repeats.
+Only the inner vertical bar differs: wide viewport1454, page656+24 foot=680
+fits its696 height; narrow1446, page673+24=697 overflows. The actual Windows
+gutter is8px (old box9), and wrapping adds17px: two stable AS_NEEDED solutions,
+not owner drift, stale data, platform noise or a transient.
+★ Reserve the native vertical gutter in GovernmentScreen.frameOver with
+ALWAYS, keeping every node, binding and scroll value. Short pages now show
+an idle vertical track: that is the explicit presentation tradeoff. No fixed
+pixel gutter or global scroller change is used. The temporary owner/geometry
+dump is removed after collecting the proof. A separate native probe derives
+the CSS gutter and wrap midpoint, causes both AS_NEEDED histories, and checks
+production boundary/short/tall dimensions, full pixels, node identity and
+zero unchanged allocation. It runs early and fails hard if any proof fails;
+the two original played Spending comparisons still run later unchanged.
+
+The covered funding setup now has the actual missing inputs: bank treasury
+paper room0, household spare71334.91, deposit6.955%, native TAIL1% cap. Large
+orders have real offers but exceed them; merely shrinking cash need lowers
+the ceiling below deposit and truthfully empties the short issue below its
+minimum. The fixture supplies only quoted opening cash and an actual lower
+savers' rate to draw on the existing household purse, keeping native minimum,
+lots, cap, quote, actual proceeds and the same nonempty order. Earlier short
+pages finish before the endowment. Read-only guards now require the SAME
+positive eligible run and both full fourfold offers before and after the
+real watched month; no post-month re-cause/freeze/restore can hide a failure.
+Persistence is still unproved until the named run. A compile caught the
+cross-package cash setter in the prototype; KeptCheck now passes its existing
+package-private setter as a DoubleConsumer, without widening Game's API.
+HoldersCheck is compiling/running on this source; no result claimed yet.
+
+HoldersCheck's pin-only rerun still failed the same strict face continuation;
+that failed native log is retained as
+`target/CBK3-evening-HoldersCheck-pin-only-red.log`. The deeper source trace
+proved two more intentionally unsaved fixture controls missing from the
+twin: Construction and Heavy Industry planning holds. Restoring those exact
+live controls after load removes the new failure: HoldersCheck **3**, only
+its three registered main reds, with the same strict continuation assertion
+now OK. No tolerance, saved field, format, conversion or load rule changes
+were needed. The temporary98-line Game replay probe was never applied.
+GoldMiningCheck **0** records24/24 positive mint months and24/24 cent audits,
+worst residual7.75912667450e-11, and the positive already-accepted Float
+transition. BankFailureCheck **0** and BankCheck **0** complete as well.
+
+The independent gutter proof and the covered-run before/after guards compile
+successfully. They are still awaiting native execution. Their new impossible
+fixture states fail hard; KeptCheck's main now reports an exception and exits
+nonzero with the FX toolkit stopped, instead of leaving a failed setup alive
+until the watchdog. No assertion is skipped or relaxed. The final long named
+run uses the captured heap/renderer settings and a7200s outer completion
+limit, preserving every existing timed/retention/geometry/money/save check.

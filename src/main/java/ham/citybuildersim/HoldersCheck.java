@@ -1629,6 +1629,8 @@ public class HoldersCheck {
             twinBox[0].holdCausesOfDeathOff();   // R0b call 7: as the live city; the hold is not saved
             twinBox[0].loadGameSave(3);
             twinBox[0].getForeignAccounts().pinRate(city.getForeignAccounts().getRate()); // the live fixture's unsaved control
+            twinBox[0].getBusinessInvestment().holdSector(Sectors.CONSTRUCTION);
+            twinBox[0].getBusinessInvestment().holdSector(Sectors.HEAVY_INDUSTRY); // both live planning holds are intentionally unsaved
         });
         Game twin = twinBox[0];
         assertTrue("fixture: live and reloaded cities have the same unsaved FX pin and exact rate before continuation",

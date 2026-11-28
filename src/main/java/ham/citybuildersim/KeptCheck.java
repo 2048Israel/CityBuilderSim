@@ -2470,9 +2470,13 @@ public class KeptCheck {
             pages.add(fx(() -> bench.buildFellShort(road, 2, t, q, "20-year bond")));
             pages.add(fx(() -> bench.buildFellShort(null, 0, t, q, "20-year bond")));
         }
+        // Finish the existing short-page comparisons before changing the covered fixture's opening cash/rate.
+        for (KeptBench.Page p : pages)
+            pageReshapedCaused(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)));
+        pages.clear();
         // ...and the usual funding page, an offer covering the gap (REV-FB6-1): a run the market would lend for FUNDING_SHORT_BY times
         // over at the page's cap, so that no shortfall line comes onto it in the month watched.
-        Object[] covered = gapped == null ? null : fx(() -> bench.fundingRunCovered(FUNDING_SHORT_BY));
+        Object[] covered = gapped == null ? null : fx(() -> bench.causeFundingRunCovered(FUNDING_SHORT_BY, g::setCashForTest));
         if (gapped != null) {
             check("fixture: a run of orders the market lends for, both offers covering " + (int) FUNDING_SHORT_BY + " times its gap at the page's cap", covered != null);
         }
@@ -2494,7 +2498,25 @@ public class KeptCheck {
                     shortLines.isEmpty() && !capShown);
         }
         for (KeptBench.Page p : pages) {
-            pageReshapedCaused(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)));
+            BuildingsTemplate t = (BuildingsTemplate) covered[0];
+            int q = (int) covered[1];
+            KeptBench.FundingCoverage before = fx(() -> bench.fundingCoverage(t, q, FUNDING_SHORT_BY));
+            System.out.println("BUILD4X before watched month " + before.detail());
+            check("fixture: the same covered run is positive and both actual offers cover fourfold before the month", before.okay());
+            if (!before.okay()) throw new IllegalStateException("Covered funding fixture lost its opening native offers");
+            KeptBench.FundingCoverage[] after = {null};
+            Runnable previous = afterMonth;
+            try {
+                afterMonth = () -> {
+                    if (previous != null) previous.run();
+                    after[0] = bench.fundingCoverage(t, q, FUNDING_SHORT_BY);
+                };
+                pageReshapedCaused(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)));
+            } finally { afterMonth = previous; }
+            System.out.println("BUILD4X after watched month " + (after[0] == null ? "month did not run" : after[0].detail()));
+            check("fixture: the same covered run stays positive and both actual offers cover fourfold after the month",
+                    after[0] != null && after[0].okay());
+            if (after[0] == null || !after[0].okay()) throw new IllegalStateException("Covered funding fixture did not persist through its native month");
         }
     }
 
@@ -6245,6 +6267,23 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
     /** The identical lifetime law for the ordinary restore and its real leaked-page negative control. */
     private static boolean comparisonFreshReleased(KeptBench.ReleasedComparison r) {
         return r.fresh().stream().noneMatch(w -> w.get() != null);
+    }
+
+    /** The native scrollbar boundary is checked before the long played-page sequence. */
+    static void governmentGutterProof(Game g) throws Exception {
+        System.out.println("\n--- Government: native scrollbar histories at a derived wrapping boundary ---");
+        KeptBench isolated = fx(() -> new KeptBench(g));
+        try {
+            KeptBench.GutterProof proof = fx(isolated::governmentGutterProbe);
+            System.out.println("Government native gutter proof: " + proof.detail());
+            check("fixture: real AS_NEEDED skins retain opposite bar states at the same derived wrap boundary", proof.controls());
+            check("Government boundary/short/tall retained and fresh graphs have exact signatures and dimensions", proof.dimensions());
+            check("Government boundary/short/tall retained and fresh graphs have exact pixels", proof.pixels());
+            check("Government opposite histories retain all original nodes and make none", proof.retained());
+            check("Government unchanged native gutter draws keep exact signature/pixels/nodes without repair", proof.unchanged());
+            if (!proof.controls() || !proof.dimensions() || !proof.pixels() || !proof.retained() || !proof.unchanged())
+                throw new IllegalStateException("Native government gutter proof failed");
+        } finally { fx(() -> { isolated.release(); return null; }); }
     }
 
     /** Sections 69 to 71: the Government tab kept. */
@@ -10161,8 +10200,15 @@ static final List<String> CENTRAL_LONG = List.of("History", "Policy");
         }
         Game g = playedCity(GameFiles.scratch("keptcheck"));
         KeptBench bench = fx(() -> new KeptBench(g));
-        System.out.printf("a city played to month %d: %,d people%n", g.getMonth(), g.getPopulationManager().getPopulation());
-        mainSections(g, bench);
+        try {
+            governmentGutterProof(g);
+            System.out.printf("a city played to month %d: %,d people%n", g.getMonth(), g.getPopulationManager().getPopulation());
+            mainSections(g, bench);
+        } catch (Throwable failure) {
+            failure.printStackTrace();
+            Platform.exit();
+            System.exit(Math.max(1, fails));
+        }
     }
 
     /**
