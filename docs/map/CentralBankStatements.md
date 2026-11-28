@@ -1,4 +1,4 @@
-# CentralBankStatements.java - 293 lines · 14 methods · 6 constants · model
+# CentralBankStatements.java - 294 lines · 14 methods · 6 constants · model
 
 `ham/citybuildersim/CentralBankStatements.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -19,9 +19,9 @@
 > counted twice shows there, and CentralBankStatementCheck holds every one of them under a cent. Pure: it reads
 > CentralBank (its ITS OWN STATEMENTS) and DebtManager's book of it, and changes nothing; nothing in the model reads it.
 
-**Uses:** [CentralBank](CentralBank.md) (100), [SectorStatements](SectorStatements.md) (11), [DebtManager](DebtManager.md) (3)
+**Uses:** [CentralBank](CentralBank.md) (101), [SectorStatements](SectorStatements.md) (11), [DebtManager](DebtManager.md) (3)
 
-**Used by (2):** [CentralBankScreen](CentralBankScreen.md), [CentralBankStatementCheck](CentralBankStatementCheck.md)
+**Used by (3):** [CentralBankPaceCheck](CentralBankPaceCheck.md), [CentralBankScreen](CentralBankScreen.md), [CentralBankStatementCheck](CentralBankStatementCheck.md)
 
 ## Sections
 
@@ -30,8 +30,8 @@
 | 31 | THE INCOME STATEMENT |
 | 91 | THE BALANCE SHEET |
 | 160 | THE MONEY MADE AND DESTROYED |
-| 244 | THE HOLDINGS' LADDER |
-| 277 | FIGURES THE PAGES SHOW BESIDE THE STATEMENTS |
+| 245 | THE HOLDINGS' LADDER |
+| 278 | FIGURES THE PAGES SHOW BESIDE THE STATEMENTS |
 
 ## Constants
 
@@ -42,13 +42,13 @@
 | 94 | `CentralBankStatements.S_ASSETS_HEAD` | `"cbs.assetsHead", S_WINDOW = "cbs.window", S_TREASURY = "cbs.treasury", S_PAP...` | The balance sheet's row ids. |
 | 163 | `CentralBankStatements.M_MADE_HEAD` | `"cbm.madeHead", M_MADE_REST = "cbm.madeRest", M_MADE = "cbm.made", M_DESTROYE...` | The money statement's row ids. |
 | 168 | `CentralBankStatements.MADE` | `{ { "Lent to the commercial bank at the window", CentralBank.Line.ADVANCED_TO...` | The money made, by flow: {label, line}, in the order the statement prints them. |
-| 181 | `CentralBankStatements.DESTROYED` | `{ { "Repaid by the commercial bank at the window", CentralBank.Line.REPAID_BY...` | ...and destroyed. |
+| 182 | `CentralBankStatements.DESTROYED` | `{ { "Repaid by the commercial bank at the window", CentralBank.Line.REPAID_BY...` | ...and destroyed. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 24 | 270 | **type** `public final class CentralBankStatements` | The central bank's month as formal statements (CBK1): its income statement down to the profit and what the strike did with it, its balance sheet against a year ago, and the money it made and destroyed from M0 as the m... |
+| 24 | 271 | **type** `public final class CentralBankStatements` | The central bank's month as formal statements (CBK1): its income statement down to the profit and what the strike did with it, its balance sheet against a year ago, and the money it made and destroyed from M0 as the m... |
 | 26 | 1 | `private CentralBankStatements()` |  |
 
 ### THE INCOME STATEMENT (lines 31-90)
@@ -66,27 +66,27 @@
 | 150 | 3 | `private static void sheetLine(SectorStatements.Builder b, CentralBank cb, String id, String label, CentralBank.Sheet line)` |  |
 | 154 | 5 | `private static double sum(CentralBank cb, CentralBank.Sheet[] lines, boolean yearAgo)` |  |
 
-### THE MONEY MADE AND DESTROYED (lines 160-243)
+### THE MONEY MADE AND DESTROYED (lines 160-244)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 193 | 1 | `public static String moneyId(CentralBank.Line line)` | A flow's row id on the money statement. |
-| 201 | 42 | `public static SectorStatements.Table money(CentralBank cb)` | The money it made and destroyed this month, against last: every flow that made money (MoneyAudit's ISSUED), every flow that destroyed it (RETIRED), each group against getIssued() and getRetired(); the difference, M0 M... |
+| 194 | 1 | `public static String moneyId(CentralBank.Line line)` | A flow's row id on the money statement. |
+| 202 | 42 | `public static SectorStatements.Table money(CentralBank cb)` | The money it made and destroyed this month, against last: every flow that made money (MoneyAudit's ISSUED), every flow that destroyed it (RETIRED), each group against getIssued() and getRetired(); the difference, M0 M... |
 
-### THE HOLDINGS' LADDER (lines 244-276)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 247 | 1 | **type** `public record Rung(String label, double face, double market, double gain)` | One rung of the ladder: its words, what it holds there at face and at market, and the gain or loss between. |
-| 250 | 12 | `public static List<Rung> ladder(DebtManager market)` | Its holdings by months left (DebtManager.CENTRAL_BANK_LADDER), each at face and at market; then the whole book as a last rung, "Every piece". |
-| 264 | 6 | `static String rungWords(int k)` | A rung's words: "a year or less", "1 to 2 years", "over 10 years". |
-| 271 | 5 | `private static String years(int months)` |  |
-
-### FIGURES THE PAGES SHOW BESIDE THE STATEMENTS (lines 277-293)
+### THE HOLDINGS' LADDER (lines 245-277)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 280 | 3 | `public static double m2OverM0(double m2, CentralBank cb)` | What the public holds for each dollar the central bank has made: M2 over M0; NaN with nothing made. |
-| 285 | 3 | `public static double inflationGap(double inflation, DebtManager market)` | Inflation against the target, in points: what the rule leans against (positive over it). |
-| 290 | 3 | `public static double ceilingUsed(CentralBank cb)` | The share of the treasury's ceiling it has drawn: its advances over CentralBank.ceiling(); NaN with no ceiling. |
+| 248 | 1 | **type** `public record Rung(String label, double face, double market, double gain)` | One rung of the ladder: its words, what it holds there at face and at market, and the gain or loss between. |
+| 251 | 12 | `public static List<Rung> ladder(DebtManager market)` | Its holdings by months left (DebtManager.CENTRAL_BANK_LADDER), each at face and at market; then the whole book as a last rung, "Every piece". |
+| 265 | 6 | `static String rungWords(int k)` | A rung's words: "a year or less", "1 to 2 years", "over 10 years". |
+| 272 | 5 | `private static String years(int months)` |  |
+
+### FIGURES THE PAGES SHOW BESIDE THE STATEMENTS (lines 278-294)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 281 | 3 | `public static double m2OverM0(double m2, CentralBank cb)` | What the public holds for each dollar the central bank has made: M2 over M0; NaN with nothing made. |
+| 286 | 3 | `public static double inflationGap(double inflation, DebtManager market)` | Inflation against the target, in points: what the rule leans against (positive over it). |
+| 291 | 3 | `public static double ceilingUsed(CentralBank cb)` | The share of the treasury's ceiling it has drawn: its advances over CentralBank.ceiling(); NaN with no ceiling. |
 
