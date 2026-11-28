@@ -132,6 +132,9 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
 - **Red without the limit** (a mutation, reverted: the lift for any count while the town is short;
   `target/HungerCheck-nolimit.log`): 2 FAIL, section 5's two orders past the gap, read 0.700 and 0.658 against
   the ordinary 0.592 and 0.547. Everything else stays green.
+  REV-HG1's third look (SHIP) qualifies it: the stalls past the gap stay under the 80% either way, and
+  staffableCount(conv, 3) is 1 even without the limit (the trapped town cannot staff three at the fill), so
+  those two assertions alone would not reproduce the old over-order; the share assertions do.
 - **Red without the mends** (a mutation, reverted, run before section 5 was added: Retail's hook off, the basing
   back to groceries only, no join, no FOOD row; `target/HungerCheck-mutated.log`): 29 FAIL, in sections 1 (4),
   2 (1), 3 (5) and 4 (19). The money audit (then section 5, now 6) stays green, as it should. Without the mend the hunt finds month 22, where the band has freed itself (spare
@@ -145,8 +148,8 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
 - **The pick is ALL** (AllChecks changed): the whole suite runs in the dry run.
 - **The ensemble**, owed because the default trace can move (Retail's gate in tight-labour months; basing on
   meals before groceries). It ran after REV-HG1's SHIP, on the gate box: label HG1, classes of bcc373d55, 80 of 80
-  runs, queued behind ASH4d's (the orchestrator's call), scored against `docs/ensemble/0.9.219.md`, committed as
-  `docs/ensemble/HG1.md`. **Batch verdict PASS: hard 10 of 10** (M1 0 months, F1 0 of 16 in every policy),
+  runs, queued behind ASH4d's (the orchestrator's call), scored against `docs/ensemble/0.9.219.md`, first committed as
+  `docs/ensemble/HG1.md` (HG1c's since, below). **Batch verdict PASS: hard 10 of 10** (M1 0 months, F1 0 of 16 in every policy),
   24 of 26 criteria. The changed verdicts are all information:
   - AUTO2 A1 (inflation m240-end): FAIL -> PASS, median 2.93% (2.90%), 12 of 16 in band.
   - ZERO_HOT H2 (inflation after the autopilot's return, minus the twin): VACUOUS -> PASS, median -0.37%.
@@ -158,8 +161,16 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   on the box.
   That run was on the first, wider gate (short at the operating rate). The gate's reading changed after the second
   dry run, so the ensemble ran again as HG1b on e5d178da4 (the nameplate reading); it was stopped unfinished when
-  REV-HG1's second look narrowed the gate once more, to the gap's units. It runs again as **HG1c** on the box, on
-  d9a09ead9 (the limit), and `docs/ensemble/HG1.md` becomes its baseline.
+  REV-HG1's second look narrowed the gate once more, to the gap's units. It ran again as **HG1c** on the box, on
+  d9a09ead9 (the limit), JDK_JAVA_OPTIONS unset, 80 of 80 runs (paused once behind CBK2's gate), scored against
+  `docs/ensemble/0.9.219.md`; `docs/ensemble/HG1.md` is its baseline. **Batch verdict PASS: hard 10 of 10**
+  (M1 0 months, F1 0 of 16 in every policy), 24 of 25 criteria (ZERO_HOT H2 vacuous, as in the baseline; one
+  retired). The changed verdicts are all information, and all go green:
+  - AUTO2 A1 (inflation m240-end): FAIL -> PASS, median 2.88% (2.90%), 12 of 16 in band.
+  - T2 final population, ZERO_HOT, SHOCK and HIGH: FAIL -> PASS. Medians: 18,944 (13,698); 203,784 (197,311);
+    84,324 (86,550).
+  HIGH R2 is PASS again, +0.54 points against +0.52: the first run's one red info row belonged to the wider gate.
+  ZERO_HOT H2 stays VACUOUS (median -0.50%). The runs are kept in `target/ensemble/HG1c/` here and on the box.
 - **The dry runs.**
   1. Box run cbs-gate-HG1-xSgI3JNV (18:08 UTC) stopped at the records, before the suite: "{next} remains in added
      source". Four of HG1's own comment labels (Sector's banner, Retail, PriceIndex, CityNeeds) carried it; they
@@ -217,4 +228,4 @@ Not this batch's to write. For when an edition comes:
 
 target/named1.txt, target/hgfinal.txt, target/hgfinal2.txt, target/HungerCheck-mutated.log, target/HungerCheck-oprate.log,
 target/HungerCheck-nolimit.log, target/HG1-ens.txt and target/ensemble/HG1/, target/HG1b-ens.txt (stopped) and
-target/HG1c-ens.txt, in this worktree.
+target/HG1c-ens.txt and target/ensemble/HG1c/, in this worktree.
