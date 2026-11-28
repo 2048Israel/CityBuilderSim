@@ -1,4 +1,4 @@
-# WorksFinanceCheck.java - 1,104 lines · 28 methods · 6 constants · harnesses
+# WorksFinanceCheck.java - 1,111 lines · 28 methods · 6 constants · harnesses
 
 `ham/citybuildersim/WorksFinanceCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -12,9 +12,9 @@
 > sections read towns played 24 and 36 months, whose builders, growth and GDP moved
 > with every change to the month.
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (141), [AutoBuilder](AutoBuilder.md) (58), [Game](Game.md) (43), [EssentialWorksCheck](EssentialWorksCheck.md) (41), [BuildingsTemplate](BuildingsTemplate.md) (36), [LandManager](LandManager.md) (28), [WorksValue](WorksValue.md) (13), [BuildingManager](BuildingManager.md) (12), [InfrastructureManager](InfrastructureManager.md) (10), [LandParcel](LandParcel.md) (7), [BuildingsStacks](BuildingsStacks.md) (7), [AdviceValueOracle](AdviceValueOracle.md) (6), [ConstructionControl](ConstructionControl.md) (6), [Traffic](Traffic.md) (6), [DebtQuote](DebtQuote.md) (5), [CareType](CareType.md) (5), [CityLand](CityLand.md) (5), [Auction](Auction.md) (5), [RoadCheck](RoadCheck.md) (5), [Sector](Sector.md) (4), [BuildingType](BuildingType.md) (4), [AgeBand](AgeBand.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [RunWorksCheck](RunWorksCheck.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [Sectors](Sectors.md) (2), [AuctionCheck](AuctionCheck.md) (2), [BuildAdviceCheck](BuildAdviceCheck.md) (2)... and 10 more
+**Uses:** [BuildAdvice](BuildAdvice.md) (146), [AutoBuilder](AutoBuilder.md) (58), [Game](Game.md) (43), [EssentialWorksCheck](EssentialWorksCheck.md) (42), [BuildingsTemplate](BuildingsTemplate.md) (36), [LandManager](LandManager.md) (28), [WorksValue](WorksValue.md) (13), [BuildingManager](BuildingManager.md) (12), [InfrastructureManager](InfrastructureManager.md) (10), [LandParcel](LandParcel.md) (7), [BuildingsStacks](BuildingsStacks.md) (7), [AdviceValueOracle](AdviceValueOracle.md) (6), [ConstructionControl](ConstructionControl.md) (6), [Traffic](Traffic.md) (6), [DebtQuote](DebtQuote.md) (5), [CareType](CareType.md) (5), [CityLand](CityLand.md) (5), [Auction](Auction.md) (5), [RoadCheck](RoadCheck.md) (5), [Sector](Sector.md) (4), [BuildingType](BuildingType.md) (4), [AgeBand](AgeBand.md) (3), [UtilitiesHandler](UtilitiesHandler.md) (3), [RunWorksCheck](RunWorksCheck.md) (3), [GameFiles](GameFiles.md) (2), [Founding](Founding.md) (2), [PopulationCohorts](PopulationCohorts.md) (2), [Sectors](Sectors.md) (2), [AuctionCheck](AuctionCheck.md) (2), [BuildAdviceCheck](BuildAdviceCheck.md) (2)... and 10 more
 
-**Used by (2):** [AskProceedsCheck](AskProceedsCheck.md), [PowerPlanCheck](PowerPlanCheck.md)
+**Used by (3):** [AskProceedsCheck](AskProceedsCheck.md), [PowerPlanCheck](PowerPlanCheck.md), [PowerWiresCheck](PowerWiresCheck.md)
 
 ## Constants
 
@@ -37,7 +37,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 22 | 1083 | **type** `public final class WorksFinanceCheck` | Essential funding reservations, actual parcel cash and quoted bond terms (HW1). |
+| 22 | 1090 | **type** `public final class WorksFinanceCheck` | Essential funding reservations, actual parcel cash and quoted bond terms (HW1). |
 | 26 | 4 | `static void check(String words, boolean condition)` |  |
 | 31 | 3 | `static boolean close(double a, double b)` |  |
 | 72 | 31 | `static Game founded(Path root, String name, String[][] works)` | FS15: the city a section's premise is set on, caused. |
@@ -61,9 +61,9 @@
 | 602 | 97 | `static void crewPromise(Path root, boolean partial) throws Exception` |  |
 | 700 | 14 | `static Game reserveTown(Path root, String name)` |  |
 | 715 | 64 | `static void pavingHold(Path root)` |  |
-| 780 | 74 | `static void highwayPromise(Path root)` |  |
-| 855 | 94 | `static void promotedDepot(Path root)` |  |
-| 950 | 31 | `static void commonCalendar(Path root)` |  |
-| 982 | 80 | `static void growingCalendarChoice(Path root)` |  |
-| 1063 | 41 | `public static void main(String[] args) throws Exception` |  |
+| 780 | 81 | `static void highwayPromise(Path root)` |  |
+| 862 | 94 | `static void promotedDepot(Path root)` |  |
+| 957 | 31 | `static void commonCalendar(Path root)` |  |
+| 989 | 80 | `static void growingCalendarChoice(Path root)` |  |
+| 1070 | 41 | `public static void main(String[] args) throws Exception` |  |
 
