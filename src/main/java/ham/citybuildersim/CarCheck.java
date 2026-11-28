@@ -384,7 +384,7 @@ public class CarCheck {
                 if (c.isEmpty()) continue;
                 c.debt = 0;
                 c.shutOut = 0;
-                c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) + 2 * carMarket.getLocalPrice();
+                c.savings = HouseholdBalance.cushion(c) + 2 * carMarket.getLocalPrice();
             }
             game.toggleNextMonth();
         });
@@ -392,7 +392,7 @@ public class CarCheck {
         int able = 0;
         for (Household c : homes.cells()) {
             if (c.isEmpty()) continue;
-            c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) + 2 * carAsking;
+            c.savings = HouseholdBalance.cushion(c) + 2 * carAsking;
             c.cars = 0;
             if (c.shutOut < 1 && !c.isGoingShort()) able++;
         }
@@ -1229,7 +1229,7 @@ public class CarCheck {
             c.cars = 0;
             c.debt = 0;
             c.shutOut = 0;
-            c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+            c.savings = HouseholdBalance.cushion(c);
             if (c.canInvest() && !c.isGoingShort()) buyers.add(c);
         }
         buyers.sort((a, b) -> Double.compare(b.households, a.households));
@@ -1263,7 +1263,7 @@ public class CarCheck {
         int trials = 0;
         search:
         for (Household c : buyers.subList(0, Math.min(3, buyers.size()))) {
-            double cushion = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+            double cushion = HouseholdBalance.cushion(c);
             for (double cut : new double[] {3.5, 5.5, 6.5, 7.5}) {
                 c.savings = cushion;
                 // The shelf a cut of the edge's price, so the households size the draw for several cars at it and can buy one at the world's.
@@ -1399,7 +1399,7 @@ public class CarCheck {
                 c.cars = 0;
                 c.debt = 0;
                 c.shutOut = 0;
-                c.savings = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) + 2 * p;
+                c.savings = HouseholdBalance.cushion(c) + 2 * p;
             }
             int before = carMarket.monthsDraws().size();
             quietly(() -> {
