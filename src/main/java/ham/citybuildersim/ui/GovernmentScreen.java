@@ -221,6 +221,8 @@ final class GovernmentScreen {
         frame.setPadding(FRAME_ROOM);
         body = ui.scrolled(page, FRAME_CHROME);
         final javafx.scene.control.ScrollPane scroller = body;
+        // Reserve the vertical gutter: wrapping must not select a different width from the previous scrollbar state.
+        scroller.setVbarPolicy(javafx.scene.control.ScrollPane.ScrollBarPolicy.ALWAYS);
         // Kept (KP6): both bindings are made once per scroller, since a kept page is handed back each draw with the
         // scroller and frame it is already bound to; a draw never unbinds and binds again.
         if (scroller.getProperties().get(BOUND_TO_FRAME) != frame) {

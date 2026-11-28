@@ -876,7 +876,8 @@ final class CentralBankScreen {
     /** The Policy page's (i). */
     private static final String POLICY_INFO = "The central bank's own dials, the same ones Policy sets: the inflation target and how "
             + "strictly it holds it, the share of the city's term paper it aims to hold, and how far it will advance the treasury. "
-            + "They apply at once. The policy rate is read here and set on Policy, where a proposal is staged and applied.";
+            + "It also sets the commercial bank's window, capital, reserve and credit rules. They apply at once. "
+            + "The policy rate is read here and set on Policy, where a proposal is staged and applied.";
 
     /** The Policy page: its lead, the policy rate read beside the rule, and the holdings and the ceiling. */
     private void policyPage(VBox p) {
@@ -904,13 +905,14 @@ final class CentralBankScreen {
             two.add(right, 1, 0);
             return two;
         }));
+        p.getChildren().add(Kept.scope("bank rules", () -> BankRulesPane.build(ui.game, again)));
         // CBK2 adds the central bank's QE/QT pace dials to this page, after the holdings' card: how fast it moves toward the share it aims at.
     }
 
     /** THE POLICY RATE, read: the dial today and its real rate, with the door to Policy where it is set. */
     private VBox policyRateCard(DebtManager market) {
         return card(cardHead(Icons.POLICY, Palette.MONEY, "THE POLICY RATE",
-                        "The rate the central bank sets: what the commercial bank pays to borrow at its window and is paid on its "
+                        "The rate the central bank sets: the base for window borrowing before the chosen spread, the rate paid on "
                                 + "reserves, and what the city's paper is priced up from. Changing it stages a proposal on Policy's "
                                 + "Money page, which is applied there.", null),
                 figure(ratePerYear(market.getPolicyRate()), Palette.SIZE_LEAD, Palette.TEXT_HEAD),

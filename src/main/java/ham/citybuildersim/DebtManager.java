@@ -1206,6 +1206,19 @@ public class DebtManager {
     }
 
     /**
+     * Foreign lenders' quote for term funds payable in the city's own money (CBK3).
+     * The independent expected policy path supplies the local nominal benchmark;
+     * existing country credit and term premia supply the rest. Treasury QE and
+     * the bank's own cost-of-funds floor cannot feed this funding quote back into itself.
+     */
+    public double localWholesaleRate(int months) {
+        double premium = countryPremium();
+        return YieldCurve.of(expectedPolicyPath(), premium, premium, DebtManager::termPremium)
+                .parYield(Math.max(1, months));
+    }
+
+
+    /**
      * ...in a money of the eight (CD8): that money's world rate (its central bank's policy rate, worldRate(code)) plus the city's country premium,
      * which stays ONE figure for the city - its local foreign principal and service over every money it owes in. The US$'s is foreignRate(), to the bit.
      */
@@ -2418,6 +2431,35 @@ public class DebtManager {
         return curve().zero(months);
     }
 
+    /** Current market value of the commercial bank's government collateral, excluding every other holder. */
+    public double bankCollateralValue() {
+        int longestCallable = 0;
+        for (Debt paper : getDebt()) {
+            if (paper instanceof LongTermBond bond && bond.isCallable() && !paper.isForeign()
+                    && paper.getOustandingPrincipal() > 0 && paper.bankPrincipal() > 0)
+                longestCallable = Math.max(longestCallable, paper.getRemainingMonths());
+        }
+        double value = 0;
+        YieldCurve domestic = null;
+        CallTree callable = null;
+        for (Debt paper : getDebt()) {
+            double face = paper.getOustandingPrincipal();
+            double held = paper.bankPrincipal();
+            if (face > 0 && held > 0) {
+                // One read, one domestic curve: rebuilding its key scans the whole book.
+                // Nothing is held across trades, policy changes or settlement phases.
+                if (!paper.isForeign() && paper.getRemainingMonths() > 0 && domestic == null) {
+                    domestic = curve();
+                    // Fit the largest eligible callable once, before pricing shorter
+                    // pieces; treeOn already reuses a longer tree for shorter flows.
+                    if (longestCallable > 0) callable = treeOn(domestic, rateVolatility(), longestCallable);
+                }
+                value += Math.max(0, marketValue(paper, domestic, callable)) * Math.min(1, held / face);
+            }
+        }
+        return value;
+    }
+
     /**
      * What this paper would fetch today: the present value of what it still
      * owes, EACH PAYMENT AT ITS OWN MONTH'S FACTOR (CD1) - the city's curve()
@@ -2429,14 +2471,21 @@ public class DebtManager {
      * Nothing left to pay (no months) costs what is owed, as Debt does.
      */
     public double marketValue(Debt paper) {
+        return marketValue(paper, null, null);
+    }
+
+    /** The same price with a domestic curve and callable tree read for this operation. */
+    private double marketValue(Debt paper, YieldCurve domestic, CallTree callable) {
         if (paper == null) return 0;
         if (paper.getRemainingMonths() <= 0) return paper.getOustandingPrincipal();
         // Its own schedule - except a floater's and a linker's, which the market prices on the dial and
         // the index it expects (CD5, pricingFlows()).
         double[] flows = pricingFlows(paper);
         if (paper.isForeign()) return worldCurveAt(paper.getMoney(), foreignRate(paper.getMoney())).pv(flows);
-        YieldCurve curve = curve();
-        if (paper instanceof LongTermBond bond && bond.isCallable()) return callableValue(bond, curve, flows);
+        YieldCurve curve = domestic == null ? curve() : domestic;
+        if (paper instanceof LongTermBond bond && bond.isCallable())
+            return callable == null ? callableValue(bond, curve, flows)
+                    : callable.price(flows, bond.monthsToFirstCall(), bond.getOustandingPrincipal());
         return curve.pv(flows);
     }
 

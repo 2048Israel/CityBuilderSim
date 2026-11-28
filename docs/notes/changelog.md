@@ -18,6 +18,19 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### 0.9.219 — CBK3, the window against collateral and the bank's rules as dials — 2026-11-28, ready, see docs/queue/CBK3-notes.md
+The window lends against eligible loans and government paper after haircuts;
+the share desk needs stable cash, and excess wholesale funding is borrowed
+abroad at a term rate in the city's own money. Nine saved bank controls appear
+on Policy and the central bank's Policy page. Statements separate actual
+window and foreign borrowing, old saved claims remain truthful, and mature
+share valuation no longer revives an old offering price at zero earnings.
+Monthly play audits both funding limits and counts when stable cash binds.
+An unpaid window-interest bill stays owed and bears the past-due rate until paid.
+Government keeps its native scroll gutter, so wrapped redraws stay put.
+The copied-city evidence, ensemble comparisons, individual failure increases and
+native credit-crunch fixture evidence are recorded in the notes.
+
 ### 0.9.218 — ASH1, power for a small town — 2026-11-27, ready, see docs/queue/ASH1-notes.md
 From Jerus's Ashbourne findings 1, 2, 9 and 8. The overview's POWER row read the plants alone and said "204% served" while the
 wires shed 4.6% of the month; it now reads the lesser of the plants and the wires, "by the wires" and red when they shed load,

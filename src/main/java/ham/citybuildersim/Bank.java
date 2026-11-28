@@ -72,6 +72,16 @@ package ham.citybuildersim;
  */
 public class Bank {
 
+    private final BankRules rules = new BankRules();
+    public BankRules rules() { return rules; }
+    public double windowSpread() { return rules.get(BankRules.Dial.WINDOW_SPREAD); }
+    public double mortgageLoanToCost() { return rules.get(BankRules.Dial.MORTGAGE_LTC); }
+    public double businessLoanToAssets() { return rules.get(BankRules.Dial.BUSINESS_LTA); }
+    public double capitalMinimum() { return rules.get(BankRules.Dial.CAPITAL_MINIMUM); }
+    public double leverageMinimum() { return rules.get(BankRules.Dial.LEVERAGE_MINIMUM); }
+    public double reserveRequired() { return depositsGathered() * rules.get(BankRules.Dial.RESERVE_REQUIREMENT); }
+    public double usableDeposits() { return Math.max(0, depositsGathered() - reserveRequired()); }
+
     /* ------------------------------- the dials ------------------------------- */
 
     /**
@@ -336,7 +346,7 @@ public class Bank {
     private double repaidByHouseholds;
     private double fundingCost;
 
-    /** ...the part of it on the advance the window holds past the tranche (fundToCover(policy, deferred, held)): a month's figure, struck afresh every month and not saved. */
+    /** The part on the actual advance still held past the active tranche, saved with the month's statement lines. */
     private double windowOwedCost;
 
     /**
@@ -784,9 +794,9 @@ public class Bank {
      * The share of the bank's marginal money that comes from the window, 0 to
      * 1: struck at the close from how the month ended funded - what it owed
      * the window over everything it had borrowed, 0 while it holds reserves -
-     * and 1 with no branch or a failed bank, whose marginal money is the
-     * window's by construction. A bank that has never closed a month is
-     * taken to be at the window, where a city with no bank yet is.
+     * and 1 with no branch, the bankless pricing convention. A failure does
+     * not turn deposits or term funding into overnight money. Until the first
+     * close the historical bankless window convention supplies the quote.
      *
      * STRUCK, NOT READ LIVE, even for the branch count: the load path prices
      * before the bank has been refreshed off the city, and a live read would
@@ -804,7 +814,9 @@ public class Bank {
      * built on; nothing inside a year).
      */
     public double fundsTransferPrice(double policyAnnual, int months) {
-        return Math.max(0, policyAnnual) + CentralBank.WINDOW_PENALTY * windowShare()
+        return Math.max(0, policyAnnual) + rules.get(BankRules.Dial.WINDOW_SPREAD) * windowShare()
+                + (foreignFundingRate - DebtManager.termPremium(WHOLESALE_TERM_MONTHS)
+                    - Math.max(0, policyAnnual)) * lastForeignShare
                 + DebtManager.termPremium(months);
     }
 
@@ -908,7 +920,7 @@ public class Bank {
      * adds less than nothing. Still never less than the leverage floor.
      */
     public double capitalPerDollar(double riskWeight, String sector) {
-        double conc = concentrationPerDollar(sector) * capitalTarget() / CAPITAL_RATIO;
+        double conc = concentrationPerDollar(sector) * capitalTarget() / capitalMinimum();
         return Math.max(Math.max(0, riskWeight) * capitalTarget() + conc, leverageTarget());
     }
 
@@ -982,7 +994,7 @@ public class Bank {
 
        WHERE IT GOES, one formula each:
          - the requirement: the add-on is weight on the book, add-on /
-           CAPITAL_RATIO (concentrationWeighted), inside getWeightedBook() -
+           capitalMinimum() (concentrationWeighted), inside getWeightedBook() -
            so the minimum, the target, the capital ratio, capacity and the
            capital rule all read it;
          - the price: a_j at the bank's target, inside the capital charge
@@ -1099,7 +1111,7 @@ public class Bank {
 
     private final java.util.Map<String, Exposure> exposures = new java.util.LinkedHashMap<>();
     private final java.util.Map<String, Double> concentrationMarginal = new java.util.LinkedHashMap<>();
-    private double concentrationHerfindahl, concentrationAddOn, concentrationWeighted, concentrationExposure;
+    private double concentrationHerfindahl, concentrationAddOn, concentrationExposure;
 
     /**
      * THE BOOK'S CONCENTRATION, struck from every sector's exposure: its
@@ -1110,7 +1122,7 @@ public class Bank {
     public void setConcentration(java.util.Map<String, Exposure> bySector) {
         exposures.clear();
         concentrationMarginal.clear();
-        concentrationHerfindahl = concentrationAddOn = concentrationWeighted = concentrationExposure = 0;
+        concentrationHerfindahl = concentrationAddOn = concentrationExposure = 0;
         if (bySector == null) return;
         double total = 0;
         for (java.util.Map.Entry<String, Exposure> e : bySector.entrySet()) {
@@ -1141,7 +1153,6 @@ public class Bank {
             slope += w * irbCorrelation(x.pd()) * irbCapitalSlope(x.pd(), x.lgd(), rho);
         }
         concentrationAddOn = Math.max(0, addOn);
-        concentrationWeighted = concentrationAddOn / CAPITAL_RATIO;
         for (java.util.Map.Entry<String, Exposure> e : exposures.entrySet()) {
             Exposure x = e.getValue();
             double w = Math.max(0, x.amount()) / total;
@@ -1160,7 +1171,7 @@ public class Bank {
     /** The book's sector Herfindahl index, the add-on at the minimum, the weight it adds and the exposure it was struck on. */
     public double getConcentrationHerfindahl() { return concentrationHerfindahl; }
     public double getConcentrationAddOn()      { return concentrationAddOn; }
-    public double getConcentrationWeighted()   { return concentrationWeighted; }
+    public double getConcentrationWeighted()   { return concentrationAddOn / capitalMinimum(); }
     public double getConcentrationExposure()   { return concentrationExposure; }
     /** One sector's exposure as the book was struck, or null. */
     public Exposure getExposure(String sector) { return exposures.get(sector); }
@@ -1304,8 +1315,11 @@ public class Bank {
         lastRunningCost = carried > 0 ? costs / costFilled * 12 / carried : 0;
 
         double owed = borrowings();
-        lastWindowShare = branches <= 0 || inResolution ? 1
-                : owed > 0 ? Math.min(1, Math.max(0, wholesaleFunding() / owed)) : 0;
+        double window = branches > 0 && owed > 0 ? Math.min(wholesaleFunding(), Math.max(0, getWindowOutstanding())) : 0;
+        lastWindowShare = branches <= 0 ? 1
+                : owed > 0 ? Math.min(1, window / owed) : 0;
+        lastForeignShare = branches > 0 && owed > 0
+                ? Math.min(1 - lastWindowShare, Math.min(Math.max(0, wholesaleFunding() - window), foreignWholesale) / owed) : 0;
     }
 
     /** The record, for the save: the count, then the two cost rings. */
@@ -1462,6 +1476,7 @@ public class Bank {
         markChange = 0;
         paperGains = 0;
         discountRestruck = 0;
+        foreignWholesaleIn = foreignWholesaleOut = foreignFundingCost = windowFundingCost = 0;
         paperBoughtFromHouseholds = 0;
         paperBoughtFromFirms = 0;
         paperSoldToCentralBank = paperBoughtFromCentralBank = 0;
@@ -1540,7 +1555,7 @@ public class Bank {
                 + Math.abs(securities) * RISK_EQUITY
                 // ...and its corporate bonds, as loans to their issuers, and
                 // the book's concentration as the weight it adds (0.7.12).
-                + bondWeighted + concentrationWeighted;
+                + bondWeighted + getConcentrationWeighted();
     }
 
     /* =====================================================================
@@ -1682,6 +1697,12 @@ public class Bank {
      * @return shares; none when it has no capital to spare
      */
     public double deskCanCarry(double inventory, double price, double mark) {
+        double funded = price > 0 ? stableDeskRoom() / price : 0;
+        return Math.min(funded, deskCapitalCanCarry(inventory, price, mark));
+    }
+
+    /** Capital-only share room, kept separate so an actual posting can name the cash limit that binds it. */
+    double deskCapitalCanCarry(double inventory, double price, double mark) {
         double spare = spareOnRisk(inventory);
         if (!(spare > 0)) return 0;
         double perShare = price - mark + capitalTarget() * RISK_EQUITY * Math.max(0, mark);
@@ -1698,6 +1719,11 @@ public class Bank {
         double perShareL = price - mark + leverageTarget() * Math.max(0, mark);
         double onLeverage = perShareL > 0 ? spareL / perShareL : Double.POSITIVE_INFINITY;
         return Math.min(onRisk, onLeverage);
+    }
+
+    /** Cash plus core deposits left for customer market-making after hot money leaves. */
+    public double stableDeskRoom() {
+        return Math.max(0, cash + localDeposits() - reserveRequired() - Math.max(0, foreignDeposits));
     }
 
     /** How much lighter the weighting makes the book. 0 when nothing is lent. */
@@ -1826,7 +1852,7 @@ public class Bank {
     private double weightedBookSupportedBy(double equity) {
         double weighted = getWeightedBook();
         if (leverageBinds() && weighted > 0) return Math.max(0, equity) * weighted / minimumEquity();
-        return Math.max(0, equity) / CAPITAL_RATIO;
+        return Math.max(0, equity) / capitalMinimum();
     }
 
     /** True when it is the capital that binds rather than the funding. */
@@ -3331,79 +3357,26 @@ public class Bank {
     public double getLoanFeesOwed()  { return loanFeesOwed; }
 
     /* ============================ THE FUNDING SIDE ============================
+     * CBK3: cash is the net funding position, not a gross reserve account.
+     * Borrowings mirror negative cash. Deposits are memorandum funding: the
+     * household and sector pools already contain them, so crediting them here
+     * would count their money twice. Required reserves withhold a share.
      *
-     * Jerus asked for the bank to be able to fund itself with short-term paper
-     * rather than only with what the city has banked with it. It already did,
-     * in the worst possible way: cash simply went NEGATIVE when it lent more
-     * than it held, which is a liability written as a negative asset - the
-     * balance sheet equivalent of paying for something by making your wallet
-     * owe you money.
+     * The collateralised window covers only the residual that may be overnight:
+     * eligible domestic loans net of allowances and government paper at market,
+     * after haircuts. Equity, carry and unrated corporate bonds are ineligible.
+     * The NSFR approximation also excludes the stable-funding requirement of
+     * long assets, and the whole equity desk, from the overnight tranche.
      *
-     * Now it borrows, and it is charged for borrowing. The cost is what makes
-     * this a constraint rather than free money. Until 0.7.0 a bank reaching
-     * further past its deposits paid more for every dollar it had reached for,
-     * so the strain premium it charged its borrowers was passing on a bill it
-     * was actually being sent; the window's price is flat, and since 0.7.7
-     * what the bank charges is priced off it (fundsTransferPrice()) rather
-     * than off a premium.
+     * The rest is term wholesale debt to foreign lenders in local money.
+     * The net cash position already includes its liability. Principal enters
+     * the gross audit pool through the separate settled stock; it is never
+     * credited to net cash a second time. Draws/repayments are financial flows,
+     * interest an income flow. Only window transactions make/retire M0.
      *
-     * THIS MONEY CAME FROM OUTSIDE THE CITY until 0.7.0, and now it comes from
-     * the CENTRAL BANK'S WINDOW, at the policy rate plus
-     * CentralBank.WINDOW_PENALTY. The window's advance is money made, its
-     * repayment money destroyed and its interest the central bank's income -
-     * all three declared in MoneyAudit under Scope.MONEY, so a city whose bank
-     * borrows at the window genuinely has more money in it than one whose bank
-     * does not, and the audit knows who made it. Abroad is still there as the
-     * carry trade (CapitalFlows), which is now the priced alternative rather
-     * than the marginal source.
-     *
-     * THE WINDOW IS NOT LIMITED in 0.7.0. What bounds what the bank lends is
-     * the capital ratio, which no amount of funding relaxes, and what the
-     * window's money costs, which is priced into every loan - past
-     * EASY_STRAIN a strain premium did it too, until 0.7.7.
-     */
-
-    /*
-     * THE BANK'S CASH IS ITS NET FUNDING POSITION, and once that is said out
-     * loud the rest of this falls out.
-     *
-     * A negative cash balance is not a bank with a negative wallet - it is a
-     * bank that has lent out more than has come in, which is to say a bank that
-     * has borrowed. What it has borrowed is funded in two tranches, cheapest
-     * first, exactly as a real one funds itself:
-     *
-     *   DEPOSITS, up to what the city has banked with it, at no cash cost. This
-     *   is the city's own money doing the work, and it is why a city with deep
-     *   savings has a cheap banking system.
-     *
-     *   THE WINDOW for anything beyond that, at the policy rate plus
-     *   CentralBank.WINDOW_PENALTY - wholesale paper from abroad, at the
-     *   market's price, until 0.7.0.
-     *
-     * The first version of this charged the wholesale rate on the WHOLE book,
-     * because deposits are a memorandum figure here rather than cash the bank
-     * holds. A bank paying market funding costs on every dollar it has ever lent
-     * cannot make money: measured over 90 months it went to NEGATIVE $37M of
-     * equity against $48M of funding, which is not a bank, it is a bonfire.
-     */
-
-    /*
-     * PAYING FOR DEPOSITS is the other half of what a bank IS. Until it did,
-     * the city's savings sat with the bank earning nothing while it lent them
-     * out at eleven percent, which is not a bank, it is a shoebox with a
-     * licence. Paying for them turns the difference between what it charges
-     * and what it pays into a NET INTEREST MARGIN, the number a real bank
-     * lives or dies on.
-     *
-     * WHAT IT PAYS IS ITS OWN CHOICE since 0.7.7 - Jerus: "the bank chooses,
-     * but it can pass on less or more if it wants." It was DEPOSIT_PASS_THROUGH,
-     * 45% of the month's INTEREST INCOME (Jerus, 2026-09-09: "make it so that
-     * the banks pay 55% of interest income, not 55% of the interest rate"),
-     * the rate derived from the payout - so a bank lent out at high rates
-     * paid its savers more than the dial and a bank with no book paid them
-     * almost nothing, whatever money was worth. Now the bank sets a RATE, a
-     * share of the policy rate, by how it is funded - see WHAT TO PAY SAVERS.
-     * The rule that it never pays out more interest than it took in stands.
+     * Savers are paid by their own bases: households, sectors and hot money.
+     * Paying sectors the remainder would wrongly give them foreign interest
+     * or lose it when every domestic till is empty (MoneyCheck, 2026-09-07).
      */
 
     private double depositRate;
@@ -3456,7 +3429,7 @@ public class Bank {
 
     /**
      * What it charges borrowers and earns on its reserves, less what it pays
-     * savers and the window, at a yearly rate on the assets that earn it
+     * savers, the window and foreign wholesale creditors, at a yearly rate on the assets that earn it
      * interest (earningAssets()): a bank's whole business, as this month
      * stands. Nothing with nothing earning.
      */
@@ -3486,18 +3459,143 @@ public class Bank {
      *
      * Measured against what its branches can GATHER, not against everything the
      * city happens to have. A bank cannot fund itself with savings held in
-     * somebody's mattress, and a bank with no branches has gathered nothing at
-     * all, so every dollar it has lent is money it went to the window for.
+     * somebody's mattress. A bank with no branches has gathered nothing;
+     * the bankless city's borrowing is outside this institution.
      */
-    public double depositFunding() { return Math.min(borrowings(), depositsGathered()); }
+    public double depositFunding() { return Math.min(borrowings(), usableDeposits()); }
 
-    /** ...and the part it had to go to the window for. */
+    /** Funding past deposits, split between the collateralised window and foreign wholesale. */
     public double wholesaleFunding() { return borrowings() - depositFunding(); }
 
+    /** Secured business/mortgage loan haircut: BoC SLF secured business loans; ELA mortgages (CBK3 notes). */
+    public static final double BUSINESS_COLLATERAL_HAIRCUT = .30;
+    /** Unsecured household loan haircut: BoC SLF's unsecured consumer portfolio. */
+    public static final double HOUSEHOLD_COLLATERAL_HAIRCUT = .85;
+    /** Government paper haircut: the Fed's conservative long-duration Treasury margin. */
+    public static final double GOVERNMENT_COLLATERAL_HAIRCUT = .05;
+    /** The window's maximum share of collateral after haircuts. */
+    public static final double WINDOW_COLLATERAL_SHARE = 1;
+    /** Replacement wholesale funding has a one-year term, qualifying as stable funding under NSFR. */
+    public static final int WHOLESALE_TERM_MONTHS = 12;
+
+    /** Basel NSFR required stable funding for ordinary performing long loans. */
+    public static final double LOAN_STABLE_SHARE = .85;
+    /** Basel NSFR required stable funding for low-risk residential mortgages. */
+    public static final double MORTGAGE_STABLE_SHARE = .65;
+    /** Basel NSFR required stable funding for Level 1 government paper. */
+    public static final double GOVERNMENT_STABLE_SHARE = .05;
+    /** Basel NSFR available stable funding from stable retail deposits. */
+    public static final double HOUSEHOLD_STABLE_SHARE = .95;
+    /** Basel NSFR available stable funding from short non-financial corporate deposits. */
+    public static final double BUSINESS_STABLE_SHARE = .50;
+
+    private java.util.function.DoubleSupplier settledWindow;
+    /** The central bank's actual claim, including the inherited claim of a newly loaded city. */
+    public void setSettledWindow(java.util.function.DoubleSupplier outstanding) { settledWindow = outstanding; }
+    public double getWindowOutstanding() { return settledWindow == null ? windowFunding() : settledWindow.getAsDouble(); }
+
+    private java.util.function.DoubleSupplier windowInterestDue;
+    public void setWindowInterestDue(java.util.function.DoubleSupplier due) { windowInterestDue = due; }
+    public double getWindowInterestDue() { return windowInterestDue == null ? 0 : Math.max(0, windowInterestDue.getAsDouble()); }
+
+    /** Cash collected by the window; its expense was already accrued by fundToCover(). */
+    public void payWindowInterest(double paid) { if (paid > 0) cash -= paid; }
+
+    private double foreignWholesale, foreignWholesaleIn, foreignWholesaleOut;
+    private double foreignFundingCost, windowFundingCost;
+    private double foreignFundingRate = DebtManager.WORLD_BASE_RATE;
+    private double lastForeignShare;
+
+    private java.util.function.DoubleSupplier governmentCollateral;
+    public void setGovernmentCollateral(java.util.function.DoubleSupplier value) { governmentCollateral = value; }
+
+    /** Eligible domestic loans net of allowances and government paper at market, after haircuts; no equity or carry. */
+    public double windowCollateral() {
+        double businesses = Math.max(0, sectorBook - Math.max(0, getAllowance() - householdAllowance));
+        double families = Math.max(0, householdBook - householdAllowance);
+        double government = governmentCollateral == null ? Math.max(0, cityBook - unearnedDiscount)
+                : Math.max(0, governmentCollateral.getAsDouble());
+        return businesses * (1 - BUSINESS_COLLATERAL_HAIRCUT)
+                + families * (1 - HOUSEHOLD_COLLATERAL_HAIRCUT)
+                + government * (1 - GOVERNMENT_COLLATERAL_HAIRCUT);
+    }
+
+    /** Window tranche: collateralised and with every dollar of equity inventory kept out of it. */
+    public double windowFunding() {
+        if (!(branches > 0)) return 0;
+        double need = wholesaleFunding();
+        double termRequired = Math.max(0, requiredStableFunding() - coreStableFunding());
+        double requested = Math.max(0, need - Math.max(Math.max(0, securities), termRequired));
+        // A zero request needs no collateral price; do not walk the government's
+        // whole book for a cash-rich bank. NaN requests still reach the original minimum.
+        if (requested == 0) return 0;
+        return Math.min(windowCollateral() * rules.get(BankRules.Dial.WINDOW_LIMIT), requested);
+    }
+
+    /** The ceiling on total issued principal, separate from the current funding request. */
+    public double windowCreditLimit() { return windowCollateral() * rules.get(BankRules.Dial.WINDOW_LIMIT); }
+
+    /** NSFR approximation by book: the equity desk is wholly stable-funded, with no overnight allowance. */
+    public double requiredStableFunding() {
+        double ordinary = Math.max(0, sectorBook - mortgageBook) + Math.max(0, householdBook)
+                + Math.max(0, carryBook) + Math.max(0, bondBook);
+        return Math.max(0, ordinary - getAllowance()) * LOAN_STABLE_SHARE
+                + Math.max(0, mortgageBook) * MORTGAGE_STABLE_SHARE
+                + Math.max(0, cityBook - unearnedDiscount) * GOVERNMENT_STABLE_SHARE
+                + Math.max(0, securities);
+    }
+
+    /** Own capital and core deposits; hot money and overnight advances have no stable value. */
+    public double coreStableFunding() {
+        return Math.max(0, Math.max(0, equity()) + Math.max(0, householdDeposits) * HOUSEHOLD_STABLE_SHARE
+                + Math.max(0, sectorDeposits) * BUSINESS_STABLE_SHARE - reserveRequired());
+    }
+
+    /** The foreign wholesale liability actually settled, distinct from hot deposits. */
+    public double getForeignWholesale() { return foreignWholesale; }
+    public double getForeignWholesaleIn() { return foreignWholesaleIn; }
+    public double getForeignWholesaleOut() { return foreignWholesaleOut; }
+    public double getForeignFundingCost() { return foreignFundingCost; }
+    public double getForeignFundingRate() { return foreignFundingRate; }
+    public double foreignShare() { return lastForeignShare; }
+    public double getWindowFundingCost() { return Math.max(0, fundingCost - foreignFundingCost); }
+
+    /** Refinance the residual abroad; net cash already carries the borrowing, so only its gross pool moves. */
+    public void settleForeignFunding(double window) {
+        double target = branches > 0 ? Math.max(0, wholesaleFunding() - Math.max(0, window)) : 0;
+        double moved = target - foreignWholesale;
+        foreignWholesaleIn += Math.max(0, moved);
+        foreignWholesaleOut += Math.max(0, -moved);
+        foreignWholesale = target;
+    }
+
+    /** Stocks and flows kept together so loading cannot reconstruct a month's financing. */
+    public double[] fundingToSave() {
+        return new double[]{foreignWholesale, foreignWholesaleIn, foreignWholesaleOut,
+                foreignFundingCost, windowFundingCost, foreignFundingRate, lastForeignShare};
+    }
+
+    public void restoreFunding(double[] saved) {
+        foreignWholesale = foreignWholesaleIn = foreignWholesaleOut = 0;
+        foreignFundingCost = windowFundingCost = lastForeignShare = 0;
+        foreignFundingRate = DebtManager.WORLD_BASE_RATE;
+        if (saved == null) return;
+        if (saved.length > 0) foreignWholesale = Math.max(0, saved[0]);
+        if (saved.length > 1) foreignWholesaleIn = Math.max(0, saved[1]);
+        if (saved.length > 2) foreignWholesaleOut = Math.max(0, saved[2]);
+        if (saved.length > 3) foreignFundingCost = Math.max(0, saved[3]);
+        if (saved.length > 4) windowFundingCost = Math.max(0, saved[4]);
+        if (saved.length > 5) foreignFundingRate = Math.max(0, saved[5]);
+        if (saved.length > 6) lastForeignShare = Math.max(0, Math.min(1, saved[6]));
+    }
+
+    /** Foreign lenders' term quote in local money, including the city's credit spread. */
+    public void setForeignFundingRate(double annual) { foreignFundingRate = Math.max(0, annual); }
+
     /**
-     * What the bank is paying for the money it did not have: the window's
-     * rate, policy plus CentralBank.WINDOW_PENALTY. Flat since 0.7.0 - see the
-     * note above it on what it used to rise with.
+     * The weighted annual price of its external funding: the collateralised
+     * window at policy plus its saved spread and foreign term money at its
+     * local-money quote. The bills are kept separately as well.
      */
     public double fundingRate() { return fundingRate; }
 
@@ -3512,7 +3610,12 @@ public class Bank {
      *
      * Called once, at the end of the month, after every loan has moved.
      */
-    public void fundToCover(double policyAnnual) { fundToCover(policyAnnual, 0, 0); }
+    public void fundToCover(double policyAnnual) {
+        fundToCover(policyAnnual, 0, getWindowOutstanding());
+        // Immediate-payment form for a bank used without a central-bank collection ledger.
+        // Game uses the explicit overload and pays only what the central bank actually collects.
+        payWindowInterest(getWindowFundingCost());
+    }
 
     /**
      * ...and the advance the window holds past that tranche, which the last settle asked back and the central bank's reserves could
@@ -3523,6 +3626,7 @@ public class Bank {
      * was charged as 160. Nothing is owed past the tranche wherever the reserves took the repayment, and the charge is what it was.
      */
     public void fundToCover(double policyAnnual, double windowDeferred, double windowHeld) {
+        windowOwedCost = 0;
 
         /*
          * WITH NO BRANCHES THERE IS NO BANK, and nothing to charge.
@@ -3537,13 +3641,19 @@ public class Bank {
          * real one. A trap with no way out, built entirely out of bookkeeping.
          */
         if (branches <= 0 || inResolution) {
-            // A bank in resolution is not paying anybody. Charging it is what
-            // turned a failure into a runaway - see resolveIfFailed().
+            windowFundingCost = 0;
+            foreignFundingCost = branches > 0 ? foreignWholesale * foreignFundingRate / 12 : 0;
+            fundingCost = foreignFundingCost;
+            double wholesaleNow = wholesaleFunding();
+            fundingRate = wholesaleNow > 0 ? fundingCost * 12 / wholesaleNow : 0;
+            cash -= foreignFundingCost;
+            // The existing window standstill remains; foreign creditors retain
+            // their interest claim. A bankless city has no institutional bill.
             //
             // NOR THE WINDOW, and that is decided rather than forgotten
-            // (0.7.1): the central bank goes on advancing what a failed bank
-            // owes past its deposits (CentralBank.settleWindow(), from the
-            // month's settle), and charges it no interest while it is in
+            // (0.7.1): the central bank retains its collateralised tranche
+            // (CentralBank.settleWindow(), from the month's settle), and
+            // charges no window interest while the bank is in
             // resolution. The resolution has just set
             // its equity to zero; a charge on the window's tranche would put
             // it straight back under the next month, and that month's
@@ -3553,7 +3663,6 @@ public class Bank {
             // of last resort does for a bank it has resolved.
             depositRate = 0;
             depositPayoutHeld = false;
-            fundingRate = 0;
             return;
         }
 
@@ -3565,18 +3674,24 @@ public class Bank {
          * less the deposit-funded part, and both are fixed by the time this
          * runs - so moving it above the depositors changes no arithmetic.
          */
-        /*
-         * THE WINDOW'S PRICE, since 0.7.0: the policy rate plus the penalty,
-         * on the whole of the wholesale tranche. The three-way split below is
-         * untouched - deposits first and free, the window for the rest - and
-         * only the rate it prices changed. See THE FUNDING SIDE.
-         */
+        // CBK3: the window's actual secured tranche pays policy plus its
+        // spread; foreign term funding pays its independent local-money quote.
         double policy = Math.max(0, policyAnnual);
         double wholesaleNow = wholesaleFunding();
-        fundingRate = policy + CentralBank.WINDOW_PENALTY;
-        double owedPast = Math.min(Math.max(0, windowDeferred), Math.max(0, windowHeld - wholesaleNow));
-        windowOwedCost = owedPast * fundingRate / 12;
-        fundingCost = wholesaleNow * fundingRate / 12 + windowOwedCost;
+        double held = Math.max(0, windowHeld), foreign = Math.max(0, foreignWholesale);
+        double windowRate = policy + rules.get(BankRules.Dial.WINDOW_SPREAD);
+        double activeWindow = Math.min(wholesaleNow, held);
+        double owedPast = Math.min(Math.max(0, windowDeferred), Math.max(0, held - activeWindow));
+        windowOwedCost = owedPast * windowRate / 12;
+        // Only the opening unpaid receivable bears the past-due rate; today's new invoice is not charged twice.
+        // OC10 4.2 prices unpaid repayment amounts (including interest) at the applicable loan rate plus 500bp.
+        windowFundingCost = held * windowRate / 12
+                + getWindowInterestDue() * (windowRate + CentralBank.WINDOW_ARREARS_PENALTY) / 12;
+        foreignFundingCost = foreign * foreignFundingRate / 12;
+        fundingCost = windowFundingCost + foreignFundingCost;
+        double actualExternal = held + foreign;
+        fundingRate = actualExternal > 0
+                ? (held * windowRate + foreign * foreignFundingRate) / actualExternal : windowRate;
 
         // ...and the other side of the same position: what is not lent is
         // its reserves, and earns the policy rate at the central bank. Struck
@@ -3644,13 +3759,9 @@ public class Bank {
                                                  - depositInterestToSectors;
         cash -= onDeposits;
 
-        // Only the window's tranche is charged for. The deposits are the city's
-        // own money and cost the bank nothing to use beyond what it pays for
-        // them - which is the whole advantage of having somewhere for people to
-        // save. Struck above, banked here - and the interest on reserves with
-        // it. The central bank's end of both is booked by Game in the same
-        // breath, off these two figures (getFundingCost(), getPlacementIncome()).
-        cash -= fundingCost;
+        // Foreign interest is paid abroad. Game settles the accrued window
+        // bill against actual reserves, with any unpaid part still a payable.
+        cash -= foreignFundingCost;
         cash += placementIncome;
     }
 
@@ -3729,7 +3840,7 @@ public class Bank {
         if (branches <= 0 || inResolution) return 1;
         double owed = borrowings();
         if (owed <= 0) return 0;
-        double gathered = depositsGathered();
+        double gathered = usableDeposits();
         return gathered > 0 ? Math.min(1, owed / gathered) : 1;
     }
 
@@ -3785,7 +3896,7 @@ public class Bank {
      */
     public double depositRateAt(double policyAnnual) {
         double policy = Math.max(0, policyAnnual);
-        double window = policy + CentralBank.WINDOW_PENALTY;
+        double window = policy + windowSpread();
         double target = Math.max(0, Math.min(window, depositShare() * policy));
         double moved = depositRate + (target - depositRate) * DEPOSIT_RATE_SPEED;
         return Math.max(0, Math.min(window, moved));
@@ -3866,7 +3977,7 @@ public class Bank {
      * is interest it earns over the paper's life, not the day it settles.
      */
     public double totalLiabilities() {
-        return borrowings() + Math.max(0, foreignDeposits) + shortSecurities() + unearnedDiscount;
+        return borrowings() + Math.max(0, foreignDeposits) + shortSecurities() + unearnedDiscount + getWindowInterestDue();
     }
 
     /**
@@ -4206,7 +4317,7 @@ public class Bank {
        equity under one per cent; and its lending did not tighten as its
        capital ran down, it stopped dead when it failed. Four rules now, each
        one a banker would recognise, and the regulator's minimum,
-       CAPITAL_RATIO, is the only number in them that is the city's:
+       capitalMinimum(), is the only number in them that is the city's:
 
          THE ALLOWANCE (simplified IFRS 9). Every book it lends from - each
          sector's business debt, and the families' - holds an allowance: a
@@ -4262,8 +4373,8 @@ public class Bank {
          BusinessDebtManager.setCapitalRule(), HouseholdBalance
          .setCapitalRule(), and the carry trade through headroom().
 
-       TWO MINIMUMS SINCE ROUND 2 OF 0.7.11. CAPITAL_RATIO is no longer the
-       only number in them that is the city's: LEVERAGE_RATIO_MIN asks for
+       TWO MINIMUMS SINCE ROUND 2 OF 0.7.11. capitalMinimum() is no longer the
+       only number in them that is the city's: leverageMinimum() asks for
        equity against everything the bank has lent, whatever it weighs.
        Every minimum and target above is the larger of the risk-based one
        and the leverage one (minimumEquity(), targetEquity(); the leverage
@@ -4273,7 +4384,7 @@ public class Bank {
 
     /* ---------------------------- the allowance ---------------------------- */
 
-    /** Leverage past which a business borrower is in trouble ("stage 2"): BusinessDebtManager.MAX_LOAN_TO_ASSETS, the most the shortfall desk lends against a borrower's assets - past it the bank would not lend it another dollar to cover a loss. Since 0.7.8's staging a line each FIRM is read against, so a sector at it has half its book in stage 2 (stageTwoShare()), and past it most (getStage()). */
+    /** Risk-staging reference at the original 90% business loan/assets ceiling. The player's new-credit ceiling does not itself change an existing borrower's risk. Since 0.7.8's staging reads each FIRM, a sector at this reference has half its book in stage 2 (stageTwoShare()), and past it most (getStage()). */
     public static final double SECTOR_WATCH_LEVERAGE = BusinessDebtManager.MAX_LOAN_TO_ASSETS;
 
 
@@ -4583,7 +4694,8 @@ public class Bank {
     public boolean conservationBufferRequired() { return conservationBufferRequired; }
 
     /** The least buffer the rule asks over the minimum this month: CONSERVATION_BUFFER once L8 is known, BUFFER_BEFORE_L8 before. */
-    public double bufferFloor() { return conservationBufferRequired ? CONSERVATION_BUFFER : BUFFER_BEFORE_L8; }
+    public double bufferFloor() { return (conservationBufferRequired ? CONSERVATION_BUFFER : BUFFER_BEFORE_L8)
+                + rules.get(BankRules.Dial.COUNTERCYCLICAL); }
 
     /** How far over its target a bank runs before it calls its capital surplus: 2.5 points, the gap between the ~13.5% Canada's big banks held and the 11% OSFI expected of them (June 2026). */
     public static final double MANAGEMENT_CUSHION = .025;
@@ -4631,7 +4743,7 @@ public class Bank {
         if (n <= 0) return 0;
         double lost = 0, weighed = 0;
         for (int i = 0; i < n; i++) { lost += lossRing[i]; weighed += riskRing[i]; }
-        double average = Math.max(weighed / n, branches * paidInPerBranch / CAPITAL_RATIO);
+        double average = Math.max(weighed / n, branches * paidInPerBranch / capitalMinimum());
         return average > 0 ? lost * YEAR_MONTHS / n / average : 0;
     }
 
@@ -4686,7 +4798,7 @@ public class Bank {
     public double capitalBuffer() { return Math.min(MAX_BUFFER, Math.max(bufferFloor(), worstLossRate)); }
 
     /** THE TARGET it chooses: the city's minimum and its own buffer. */
-    public double capitalTarget() { return CAPITAL_RATIO + capitalBuffer(); }
+    public double capitalTarget() { return capitalMinimum() + capitalBuffer(); }
 
     /** ...and the top of its band. */
     public double capitalTop() { return capitalTarget() + MANAGEMENT_CUSHION; }
@@ -4722,18 +4834,22 @@ public class Bank {
     }
 
     /**
-     * ITS OWN LEVERAGE TARGET: LEVERAGE_RATIO_MIN scaled by the buffer it
-     * chose on the risk side - LEVERAGE_RATIO_MIN x capitalTarget() /
-     * CAPITAL_RATIO. Derived, not a new number. A bank that holds twice
-     * the risk-based minimum as its target holds twice the leverage minimum
-     * too. The two requirements then keep the same proportion between
-     * minimum and target, so whichever binds at the minimum binds at the
-     * target and at the top of the band as well.
+     * ITS OWN LEVERAGE TARGET: scale the leverage minimum by the risk
+     * target over the original CAPITAL_RATIO. Loosening the risk minimum
+     * cannot loosen the independent leverage floor or its loss buffer:
+     * retain CAPITAL_RATIO plus that buffer as the scaling baseline. The
+     * final max also keeps floating-point rounding from slipping below it.
      */
-    public double leverageTarget() { return LEVERAGE_RATIO_MIN * capitalTarget() / CAPITAL_RATIO; }
+    public double leverageTarget() {
+        return Math.max(leverageMinimum(),
+                leverageMinimum() * Math.max(capitalTarget(), CAPITAL_RATIO + capitalBuffer()) / CAPITAL_RATIO);
+    }
 
-    /** ...and the top of its band on the same measure: LEVERAGE_RATIO_MIN x capitalTop() / CAPITAL_RATIO. */
-    public double leverageTop() { return LEVERAGE_RATIO_MIN * capitalTop() / CAPITAL_RATIO; }
+    /** ...and the top of its band, retaining its management cushion over that independent baseline. */
+    public double leverageTop() {
+        return Math.max(leverageMinimum(),
+                leverageMinimum() * Math.max(capitalTop(), CAPITAL_RATIO + capitalBuffer() + MANAGEMENT_CUSHION) / CAPITAL_RATIO);
+    }
 
     /**
      * THE MINIMUM THE CITY REQUIRES, IN MONEY: the larger of the risk-based
@@ -4751,19 +4867,19 @@ public class Bank {
      *   - what its capital supports (capitalLimit()).
      */
     public double minimumEquity() {
-        return Math.max(CAPITAL_RATIO * getWeightedBook(), LEVERAGE_RATIO_MIN * exposure());
+        return Math.max(capitalMinimum() * getWeightedBook(), leverageMinimum() * exposure());
     }
 
     /** True when the leverage requirement is the larger - when a bank's zero-weighted assets are what its capital is short against. */
     public boolean leverageBinds() {
-        return LEVERAGE_RATIO_MIN * exposure() > CAPITAL_RATIO * getWeightedBook();
+        return leverageMinimum() * exposure() > capitalMinimum() * getWeightedBook();
     }
 
     /** Its capital as a ratio on the measure that binds: the leverage ratio when leverageBinds(), the risk-based capitalRatio() otherwise - the figure the Bank tab's bar and status read. */
     public double bindingRatio() { return leverageBinds() ? leverageRatio() : capitalRatio(); }
 
     /** The minimum on the binding measure: LEVERAGE_RATIO_MIN or CAPITAL_RATIO. */
-    public double bindingMinimum() { return leverageBinds() ? LEVERAGE_RATIO_MIN : CAPITAL_RATIO; }
+    public double bindingMinimum() { return leverageBinds() ? leverageMinimum() : capitalMinimum(); }
 
     /** Its target on the binding measure: leverageTarget() or capitalTarget(). */
     public double bindingTarget() { return leverageBinds() ? leverageTarget() : capitalTarget(); }
@@ -5091,8 +5207,8 @@ public class Bank {
             double e = exposure();
             double ratio = e > 0 ? equity / e : Double.MAX_VALUE, target = leverageTarget();
             if (ratio >= target) return Double.POSITIVE_INFINITY;
-            if (ratio <= LEVERAGE_RATIO_MIN) return 0;
-            double x = (ratio - LEVERAGE_RATIO_MIN) / (target - LEVERAGE_RATIO_MIN);
+            if (ratio <= leverageMinimum()) return 0;
+            double x = (ratio - leverageMinimum()) / (target - leverageMinimum());
             return RATIONED_GROWTH * x / (1 - x);
         }
         double weighted = getWeightedBook();
@@ -5100,8 +5216,8 @@ public class Bank {
         double ratio = equity / weighted;
         double target = capitalTarget();
         if (ratio >= target) return Double.POSITIVE_INFINITY;
-        if (ratio <= CAPITAL_RATIO) return 0;
-        double x = (ratio - CAPITAL_RATIO) / (target - CAPITAL_RATIO);
+        if (ratio <= capitalMinimum()) return 0;
+        double x = (ratio - capitalMinimum()) / (target - capitalMinimum());
         return RATIONED_GROWTH * x / (1 - x);
     }
 
@@ -5282,11 +5398,12 @@ public class Bank {
                 // 0.7.19's: the branches' operating cost inside upkeep, and the customers.
                 operatingCost, customers,
                 // BK1's: the bank's share of a reopened line's discount, re-struck.
-                discountRestruck };
+                discountRestruck, windowOwedCost };
     }
 
     /** ...and back. Nothing on an older save, whose Profit page reads zero for a month as it always did. */
     public void restoreMonthLines(double[] v) {
+        windowOwedCost = 0;
         if (v == null || v.length < 44) return;
         int i = 0;
         interestEarned = v[i++]; internalInterest = v[i++]; writeOffs = v[i++]; payroll = v[i++]; upkeep = v[i++];
@@ -5322,7 +5439,8 @@ public class Bank {
         operatingCost = v.length > i ? v[i++] : 0;
         customers = v.length > i ? v[i++] : 0;
         // ...and BK1's; an older save's month re-struck nothing.
-        discountRestruck = v.length > i ? v[i] : 0;
+        discountRestruck = v.length > i ? v[i++] : 0;
+        windowOwedCost = v.length > i ? v[i] : 0;
     }
 
     /* ------------------------------- reading ------------------------------- */
@@ -5662,7 +5780,8 @@ public class Bank {
         double newBranches = Math.max(0, branchCount - branchesCapitalised);
         double equityThen = equity() + newBranches * paidInPerBranch;
         double capital = weightedBookSupportedBy(equityThen);
-        double funding = branchCount > 0 ? Math.max(0, deposits) * LEVERAGE : 0;
+        double funding = branchCount > 0 ? Math.max(0, deposits)
+                * (1 - rules.get(BankRules.Dial.RESERVE_REQUIREMENT)) * LEVERAGE : 0;
         return Math.min(capital, funding);
     }
 
@@ -5733,8 +5852,8 @@ public class Bank {
         double toTarget = Math.min(equityLeft / capitalTarget() - getWeightedBook(),
                 equityLeft / leverageTarget() - exposure());
         if (toTarget >= 0) return Math.min(headroom(), toTarget);
-        return bandShare(equityLeft, Math.min(equityLeft / CAPITAL_RATIO - getWeightedBook(),
-                equityLeft / LEVERAGE_RATIO_MIN - exposure()));
+        return bandShare(equityLeft, Math.min(equityLeft / capitalMinimum() - getWeightedBook(),
+                equityLeft / leverageMinimum() - exposure()));
     }
 
     /** Insured growth consumes exposure, with no risk weight or assumed business-loan mix: the room to the leverage target over it, the band's share under it (MC2, projectHeadroom()). */
@@ -5748,7 +5867,7 @@ public class Bank {
         double equityLeft = equity() - loss;
         double toTarget = equityLeft / leverageTarget() - exposure();
         if (toTarget >= 0) return toTarget;
-        return bandShare(equityLeft, equityLeft / LEVERAGE_RATIO_MIN - exposure());
+        return bandShare(equityLeft, equityLeft / leverageMinimum() - exposure());
     }
 
     /**
@@ -5780,6 +5899,10 @@ public class Bank {
     public void setCash(double value) { this.cash = value; }
 
     public void reset() {
+        settledWindow = governmentCollateral = windowInterestDue = null;
+        rules.reset();
+        restoreFunding(null);
+        foreignFundingRate = DebtManager.WORLD_BASE_RATE;
         cash = 0;
         branches = 0;
         uncoveredMonths = 0;
@@ -5792,7 +5915,7 @@ public class Bank {
         bondBook = bondWeighted = bondFace = 0;
         exposures.clear();
         concentrationMarginal.clear();
-        concentrationHerfindahl = concentrationAddOn = concentrationWeighted = concentrationExposure = 0;
+        concentrationHerfindahl = concentrationAddOn = concentrationExposure = 0;
         cityBook = 0;
         unearnedDiscount = 0;
         householdBook = 0;
@@ -5886,6 +6009,11 @@ public class Bank {
         paidInPerBranch      *= scale;
         domesticCapitalScale *= scale;
 
+        foreignWholesale *= scale;
+        foreignWholesaleIn *= scale;
+        foreignWholesaleOut *= scale;
+        foreignFundingCost *= scale;
+        windowFundingCost *= scale;
         cash              *= scale;
         deposits          *= scale;
         householdDeposits *= scale;
@@ -5907,7 +6035,6 @@ public class Bank {
         retainedOpening   *= scale;
         interestFromBonds *= scale;
         concentrationAddOn *= scale;
-        concentrationWeighted *= scale;
         concentrationExposure *= scale;
         exposures.replaceAll((k, x) -> new Exposure(x.amount() * scale, x.pd(), x.lgd()));
         cityBook          *= scale;
@@ -6187,7 +6314,8 @@ public class Bank {
         DIVIDENDS, BUYBACKS, ISSUED, RETAINED,
         BOOK, EQUITY,
         // 0.7.12's: the coupons on its bonds, its underwriting fees and its gains on bonds.
-        FROM_BONDS, UNDERWRITING, BOND_GAINS
+        FROM_BONDS, UNDERWRITING, BOND_GAINS,
+        WHOLESALE_ABROAD
     }
 
     /** What it earned before provisions and costs: net interest, fees, the desk and the city's paper - what its costs are read against. */
@@ -6215,7 +6343,8 @@ public class Bank {
             case FROM_RESERVES   -> placementIncome;
             case DISCOUNT        -> discountAccreted;
             case SAVERS          -> depositInterest();
-            case WINDOW          -> fundingCost;
+            case WINDOW          -> getWindowFundingCost();
+            case WHOLESALE_ABROAD -> foreignFundingCost;
             case NET_INTEREST    -> netInterestIncome();
             case FEES            -> feeIncome();
             case ACCOUNT_FEES    -> accountFees;
@@ -6405,7 +6534,8 @@ public class Bank {
         HOUSEHOLD_DEPOSITS, SECTOR_DEPOSITS,
         PAID_IN, RETAINED,
         /** The city's preferred at par (0.7.14): equity's third part, beside paid in and retained. */
-        PREFERRED
+        PREFERRED,
+        WHOLESALE_ABROAD, WINDOW_INTEREST_DUE
     }
 
     /** The asset lines, in the page's order: they sum to totalAssets(). */
@@ -6414,7 +6544,7 @@ public class Bank {
 
     /** ...and the liability lines: they sum to totalLiabilities(). */
     public static final Sheet[] SHEET_LIABILITIES = { Sheet.DEPOSIT_FUNDING, Sheet.WINDOW, Sheet.FOREIGN_DEPOSITS,
-            Sheet.DESK_SHORT, Sheet.UNEARNED_DISCOUNT };
+            Sheet.DESK_SHORT, Sheet.UNEARNED_DISCOUNT, Sheet.WHOLESALE_ABROAD, Sheet.WINDOW_INTEREST_DUE };
 
     /**
      * A line of its balance sheet as it stands: its reserves at the central
@@ -6446,11 +6576,14 @@ public class Bank {
             case ALLOWANCE          -> -getAllowance();
             case DESK               -> Math.max(0, securities);
             case ASSETS             -> totalAssets();
-            case DEPOSIT_FUNDING    -> depositFunding();
-            case WINDOW             -> wholesaleFunding();
+            case DEPOSIT_FUNDING    -> settledWindow == null ? depositFunding()
+                    : borrowings() - getWindowOutstanding() - foreignWholesale;
+            case WINDOW             -> getWindowOutstanding();
+            case WHOLESALE_ABROAD    -> settledWindow == null ? wholesaleFunding() - windowFunding() : foreignWholesale;
             case FOREIGN_DEPOSITS   -> Math.max(0, foreignDeposits);
             case DESK_SHORT         -> shortSecurities();
             case UNEARNED_DISCOUNT  -> unearnedDiscount;
+            case WINDOW_INTEREST_DUE -> getWindowInterestDue();
             case LIABILITIES        -> totalLiabilities();
             case EQUITY             -> equity();
             case HOUSEHOLD_DEPOSITS -> householdDeposits;
@@ -6644,7 +6777,7 @@ public class Bank {
                 fundsTransferPrice(policyAnnual, term), runningCostRate(), expectedLossRate(),
                 capitalCharge(policyAnnual, term, RISK_BUSINESS), prime(policyAnnual),
                 cardRate(policyAnnual), carryRate(policyAnnual),
-                Math.max(0, policyAnnual) + CentralBank.WINDOW_PENALTY,
+                Math.max(0, policyAnnual) + windowSpread(),
                 fundsTransferPrice(policyAnnual, Mortgage.MORTGAGE_TERM_MONTHS),
                 insuredMortgageRate(policyAnnual),
                 capitalCharge(policyAnnual, Mortgage.MORTGAGE_TERM_MONTHS, RISK_INSURED_MORTGAGE));
@@ -6751,8 +6884,8 @@ public class Bank {
                 // weight it adds on the exposure it was struck on (0.7.12).
                 weightRow(Book.BONDS, bondBook, RISK_BUSINESS, bondWeighted),
                 new WeightRow(Book.CONCENTRATION, concentrationExposure, 1,
-                        concentrationExposure > 0 ? concentrationWeighted / concentrationExposure : 0,
-                        concentrationWeighted));
+                        concentrationExposure > 0 ? getConcentrationWeighted() / concentrationExposure : 0,
+                        getConcentrationWeighted()));
     }
 
     private static WeightRow weightRow(Book book, double face, double risk, double weighted) {
@@ -6790,7 +6923,7 @@ public class Bank {
     public double localDeposits() { return Math.max(0, deposits - foreignDeposits); }
 
     /** What its funding would carry: what it gathered, lent LEVERAGE times over - the second of capacity()'s two limits. */
-    public double fundingLimit() { return depositsGathered() * LEVERAGE; }
+    public double fundingLimit() { return usableDeposits() * LEVERAGE; }
 
     /* ---------------------------- another branch ---------------------------- */
 

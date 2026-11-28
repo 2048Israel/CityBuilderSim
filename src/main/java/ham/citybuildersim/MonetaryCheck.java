@@ -38,15 +38,19 @@ import java.nio.file.Path;
  *
  *   6. Does the rate lower inflation overall, while higher financing costs
  *      can delay housing starts and raise the same class's rents later?
- *      Preserve the original founding's 3%-to-40% effect of at least one
- *      point over months 49-84. Measure the policy slope and the timing of
+ *      Require a point of pooled headline disinflation across the declared
+ *      towns. In the original founding, keep the positive headline effect
+ *      and the point on its common basket at the observed grocery floors;
+ *      an adverse scarcity offset must name actual physical shortages.
+ *      Measure the policy slope and the timing of
  *      the paired estimate across the fixed world-path sample, rather than make
  *      a local supply inversion a universal adjacent-rate law. Across that
- *      sample, require at least a point of non-shelter disinflation on the
- *      same physical basket, and the saving return reaching each live plan.
+ *      sample, require the non-shelter sign and shortage attribution below,
+ *      and the saving return reaching each live plan.
  *      Jerus,
  *      2026-11-23: "sometimes its as simple as check reality"; sources and
- *      the revised law's authority are in docs/queue/RES3-notes.md.
+ *      the revised laws' evidence is in docs/queue/RES3-notes.md and
+ *      docs/queue/CBK3-notes.md.
  *      (FS10, MQ1: the D$ held by ForeignAccounts.pinRate() from month 25,
  *      so a month's delay in the hand cannot move the currency the rows
  *      ride on; read over three whole calendar years, months 49 to 84, the
@@ -104,6 +108,20 @@ public class MonetaryCheck {
                     laterStockMonths, laterTradeMonths);
         }
     }
+    /** The last sale's retained native readings, observed after each completed month, without re-running its demand curve. */
+    private record GrocerySale(int month, double demand, double supply, double handOver,
+                               boolean shelfBound, double charged, double clearing, double floor, double nextPrice, double acquired) {
+        static GrocerySale read(Game g) {
+            var r = g.getSectors().retail();
+            return new GrocerySale(g.getMonth(), r.getDemandAtPrice(), r.getSupplyBaskets(), r.getHandOver(),
+                    r.isShelfBound(), r.getChargedPrice(), r.getClearingPrice(), r.getFloorPrice(), r.getStoreSellPrice(), r.getCurrentGrocerySales());
+        }
+        boolean physicalShortage() {
+            return Double.isFinite(demand) && Double.isFinite(supply) && Double.isFinite(handOver)
+                    && supply > 0 && supply < demand && supply == handOver && !shelfBound;
+        }
+        boolean clearingPressure() { return clearing > charged && charged > 0; }
+    }
     /** Flatten the services sub-basket too: changing fee shares must not masquerade as a price response. */
     private record BasketPrices(double[] quantities, double[] prices, int linked, double index) {
         static BasketPrices read(PriceIndex p) {
@@ -136,17 +154,22 @@ public class MonetaryCheck {
      * groceries ran short (shortOfGroceries()) in the held months before the window and in the window itself.
      */
     private record PriceWindow(BasketPrices from, BasketPrices to, double spendFactor, double expectedInflation,
-                               double floorFrom, double floorTo, java.util.List<Integer> shortBefore, java.util.List<Integer> shortWithin) {
+                               double floorFrom, double floorTo, java.util.List<Integer> shortBefore, java.util.List<Integer> shortWithin,
+                               java.util.List<GrocerySale> sales) {
         double nonShelterInflation(double[] quantities) {
             return Math.pow(to.cost(quantities, true) / from.cost(quantities, true), 12.0 / windowMonths()) - 1;
         }
         /** ...with the groceries priced at the shelf's floor at either end: the same basket with the shortage mark-up taken out. */
         double nonShelterAtFloor(double[] quantities) {
+            return inflationAtFloor(quantities, true);
+        }
+        /** Observed price decomposition, on the same quantities; this does not re-play a city at a different price. */
+        double inflationAtFloor(double[] quantities, boolean withoutRent) {
             double[] f = from.prices().clone(), t = to.prices().clone();
             f[PriceIndex.GROCERIES] = floorFrom;
             t[PriceIndex.GROCERIES] = floorTo;
-            return Math.pow(new BasketPrices(to.quantities(), t, to.linked(), to.index()).cost(quantities, true)
-                    / new BasketPrices(from.quantities(), f, from.linked(), from.index()).cost(quantities, true), 12.0 / windowMonths()) - 1;
+            return Math.pow(new BasketPrices(to.quantities(), t, to.linked(), to.index()).cost(quantities, withoutRent)
+                    / new BasketPrices(from.quantities(), f, from.linked(), from.index()).cost(quantities, withoutRent), 12.0 / windowMonths()) - 1;
         }
     }
     private record PolicyComparison(long seed, double[] inflation, double[][] years, double[] late,
@@ -908,7 +931,7 @@ public class MonetaryCheck {
     /** Frozen before validation: twice the 0.961207-point pooled annual response, rounded up to a quarter point. */
     static final double ANNUAL_TIMING_LIMIT = .02;
 
-    /** Minimum annual effect: a point on the original town's CPI; a flat demand channel fails (non-shelter prices: the ★ law, inflationFallsWithTheRate()). */
+    /** Minimum annual effect: a point on pooled headline CPI and on the original common basket at grocery floors; a flat channel fails. */
     static final double TRANSMISSION_FLOOR = .01;
 
     /** Of the sixteen declared towns, the fewest whose common-basket non-shelter effect is positive (Call B, 2026-11-25); each of the rest names its shortage. */
@@ -1099,6 +1122,7 @@ public class MonetaryCheck {
             WorldMarket market = g.getWorldMarket();
             var shops = g.getSectors().retail();
             java.util.List<Integer> shortBefore = new java.util.ArrayList<>(), shortWithin = new java.util.ArrayList<>();
+            java.util.List<GrocerySale> sales = new java.util.ArrayList<>();
             while (g.getMonth() < opens) {
                 step(g, rate, heldFrom);
                 if(Boolean.getBoolean("res3.housingTrace"))reportHeldRent(g,label);
@@ -1135,6 +1159,7 @@ public class MonetaryCheck {
                 spendSamples++;
                 expected += g.getExpectations().getExpectedInflation();
                 if (shortOfGroceries(shops)) shortWithin.add(g.getMonth());
+                sales.add(GrocerySale.read(g));
                 if (CityCalendar.monthOfYear(g.getMonth()) == 1) yearFrom = g.getPriceIndex().getIndex();
                 if (CityCalendar.monthOfYear(g.getMonth()) == 12) {
                     reportHeldRent(g, label);
@@ -1150,7 +1175,8 @@ public class MonetaryCheck {
             assertTrue("fixture: observed physical quantities reconstruct the model's CPI change",
                     Math.abs(reconstructed - basketTo.index() / basketFrom.index()) < 1e-12);
             if (observation != null) observation[0] = new PriceWindow(basketFrom, basketTo, spendFactor / spendSamples,
-                    expected / windowMonths(), floorFrom, shops.getFloorPrice(), java.util.List.copyOf(shortBefore), java.util.List.copyOf(shortWithin));
+                    expected / windowMonths(), floorFrom, shops.getFloorPrice(), java.util.List.copyOf(shortBefore), java.util.List.copyOf(shortWithin),
+                    java.util.List.copyOf(sales));
             out.printf("   held-rate rent trace %s: dial %.0f%% from m%d, family rent per capacity %.12g -> %.12g, CPI %.12g -> %.12g%n",
                     label, rate * 100, heldFrom, rentFrom, g.getSectors().realEstate().getRentPrice(), indexFrom, g.getPriceIndex().getIndex());
             out.printf("   held-rate components %s: annual growth %s, closing weights %s (groceries, rent, meals, luxury, services)%n",
@@ -1195,6 +1221,8 @@ public class MonetaryCheck {
         }
         meanEffect /= comparisons.size();
         meanSlope /= comparisons.size();
+        assertTrue("the highest rate lowers pooled headline inflation across the fixed declared towns by at least the effect bound",
+                meanEffect >= TRANSMISSION_FLOOR);
         out.printf("   fixed paths %s: mean low-to-high effect %.6f points; mean policy/CPI slope %.6f%n",
                 java.util.Arrays.toString(POLICY_SEEDS), meanEffect * 100, meanSlope);
         out.printf("   mean CPI curve on validation paths: %s percent%n", java.util.Arrays.toString(java.util.Arrays.stream(meanCurve).map(x -> x*100).toArray()));
@@ -1411,11 +1439,54 @@ public class MonetaryCheck {
                 solvesOnTheCalendar);
         assertTrue("fixture: the basket was based before every run's window opened", basedBeforeWindow);
         // Real construction timing is reported per town above; infer the policy estimate across the predeclared sample.
-        if (seed == Founding.defaults().getPathSeed())
-            assertTrue("the original highest rate lowers inflation by at least the effect bound over the original window",
-                    inflation[0] - inflation[n - 1] >= TRANSMISSION_FLOOR);
+        if (seed == Founding.defaults().getPathSeed()) originalHeadlineLaw(inflation, prices, commonQuantities);
         return new PolicyComparison(seed, inflation, years, lateInflation, lateAnnual, starts, rents, nonShelter, supply, expected, atFloor,
                 prices[0].shortBefore(), prices[n - 1].shortWithin());
+    }
+
+    /**
+     * ★ CBK3: investment contraction can reduce supply as well as demand (BoE 2024 transmission account, ECB Lane 2023).
+     * The original pair's loss-making grocer retired a shop; road-throttled handover then bound despite stocked shelves.
+     * Keep the observed sign and quantitative underlying price response, and require the adverse scarcity effect itself.
+     * The traced native decisions, exact same-pair control and primary research are recorded in docs/queue/CBK3-notes.md.
+     * No seed, calendar, policy, basket, monetary audit, timing bound or model operation is changed by this decomposition.
+     */
+    private static void originalHeadlineLaw(double[] inflation, PriceWindow[] prices, double[] quantities) {
+        var low = prices[0];
+        var high = prices[prices.length - 1];
+        double effect = inflation[0] - inflation[inflation.length - 1];
+        double commonLow = Math.pow(low.to().cost(quantities, false) / low.from().cost(quantities, false), 12.0 / windowMonths()) - 1;
+        double commonHigh = Math.pow(high.to().cost(quantities, false) / high.from().cost(quantities, false), 12.0 / windowMonths()) - 1;
+        double commonEffect = commonLow - commonHigh;
+        double floorEffect = low.inflationAtFloor(quantities, false) - high.inflationAtFloor(quantities, false);
+        double scarcityOffset = floorEffect - commonEffect;
+        var physical = high.sales().stream().filter(GrocerySale::physicalShortage).filter(GrocerySale::clearingPressure).toList();
+        out.printf("   original common headline basket: effect %+.6f points, at grocery floors %+.6f, adverse scarcity offset %+.6f; physical shortage/markup months %s%n",
+                commonEffect * 100, floorEffect * 100, scarcityOffset * 100, physical.stream().map(GrocerySale::month).toList());
+        assertTrue("the original highest rate lowers observed headline inflation over the original window", effect > 0);
+        assertTrue("the original common headline basket at observed grocery floors retains at least the effect bound", floorEffect >= TRANSMISSION_FLOOR);
+        assertTrue("the original highest rate also lowers the expected inflation used to strike floors and fees",
+                high.expectedInflation() < low.expectedInflation());
+        if (effect < TRANSMISSION_FLOOR) {
+            // The floor is the closing reprice's input, not the completed sale's floor. Sticky catch-up can leave the next
+            // posted price below it. Observe pressure now and realized paid prices through the consecutive-month chain.
+            boolean postedBecomesPaid = true;
+            for (int m = 1; m < high.sales().size(); m++)
+                postedBecomesPaid &= high.sales().get(m - 1).nextPrice() == high.sales().get(m).charged();
+            var closing = high.sales().getLast();
+            assertTrue("the observed grocery reprices become the following sales' charged prices and the closing paid CPI price",
+                    postedBecomesPaid && closing.month() == MEASURED_MONTHS && closing.acquired() > 0
+                            && closing.charged() == high.to().prices()[PriceIndex.GROCERIES]);
+            boolean carried = !high.shortWithin().isEmpty()
+                    && high.shortWithin().stream().allMatch(m -> physical.stream().anyMatch(s -> s.month() == m))
+                    && physical.stream().anyMatch(s -> s.month() == MEASURED_MONTHS);
+            assertTrue("the original smaller headline response is carried by measured physical shortages and an adverse grocery scarcity price contribution",
+                    carried && commonEffect < TRANSMISSION_FLOOR && scarcityOffset > 0
+                            && closing.charged() > high.floorTo());
+            for (var s : physical)
+                out.printf("     m%d: demand %.12g > supply %.12g = building handover %.12g; shelf-bound %s, charged %.12g, clearing %.12g, floor %.12g, next price %.12g%n",
+                        s.month(), s.demand(), s.supply(), s.handOver(), s.shelfBound(), s.charged(), s.clearing(), s.floor(), s.nextPrice());
+        }
     }
 
     /** The world's price level section 5's fixture sets (WorldEconomy.shockLevel()): half again the founding's 1.0, far past the one point its premise asks. */

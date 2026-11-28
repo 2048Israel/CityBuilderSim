@@ -1,0 +1,21 @@
+{
+  "purpose": "observational sequential ZERO_HOT full-402-month replay; no model-policy modification",
+  "models": {
+    "candidate": {
+      "worktree": "C:\\Users\\Jerus\\Documents\\NetBeansProjects\\CityBuilderSim\\.claude\\worktrees\\codex-CBK3-failures",
+      "commit": "4ffbb65b29166be07e292a7716659efb36536afd",
+      "patch_sha256": "e32bc6fd18a35cc46b93719dbb892909b55f14a35350b37771f66eab3a8c1b77",
+      "probe_sha256": "44b06f29d00da9a757f3bd67ec4c4506653c3f6f2ec8a5a2d06ba9ec0834ef72",
+      "driver_sha256": "104101a46ee90e4f2baff8c4d4e86ee8d011be3a84e414917809ae519822aef3",
+      "hooks": 72
+    },
+    "control": {
+      "worktree": "C:\\Users\\Jerus\\Documents\\NetBeansProjects\\CityBuilderSim\\.claude\\worktrees\\codex-CBK3-failure-control",
+      "commit": "c52ad51365265ef299cd59fc06ceefa76b4f2f65",
+      "patch_sha256": "19bac4e2278de4b6c3229d026b9e54e962c74ea2394b1ab47a89f8745e75056d",
+      "probe_sha256": "44b06f29d00da9a757f3bd67ec4c4506653c3f6f2ec8a5a2d06ba9ec0834ef72",
+      "driver_sha256": "104101a46ee90e4f2baff8c4d4e86ee8d011be3a84e414917809ae519822aef3",
+      "hooks": 70
+    }
+  }
+}

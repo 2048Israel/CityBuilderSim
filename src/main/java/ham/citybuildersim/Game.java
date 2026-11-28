@@ -555,6 +555,7 @@ public class Game {
         couponsToWorld = principalToWorld = worldBoughtPaper = paperBoughtFromWorld = 0;
         bankPrincipalRepaidThisMonth = 0;
         bank.reset();
+        economyManager.getBusinessDebtManager().setRules(bank.rules());
         foreign.reset();
         // The D$'s market swing is a path of the city's own: one world seed, one path
         // (XR1; the nations study's D9). A load puts the save's seed back over this.
@@ -568,6 +569,10 @@ public class Game {
         // ...and the central bank, founded fresh rather than reset, reading
         // the vault where ForeignAccounts keeps it. See getCentralBank().
         centralBank = new CentralBank(foreign::getReserves);
+        centralBank.setWindowCapacity(bank::windowCreditLimit);
+        bank.setSettledWindow(centralBank::getAdvancesToBank);
+        bank.setWindowInterestDue(centralBank::getWindowInterestDue);
+        bank.setGovernmentCollateral(debtManager::bankCollateralValue);
         // ...and every dial the player sets writes its change to the city's
         // decision log where it is applied (0.7.23): the taxes and promises,
         // the wage floor, the share of tuition, the rate, the rule and the
@@ -579,6 +584,7 @@ public class Game {
         education.recordTo(decisions);
         debtManager.recordTo(decisions);
         centralBank.recordTo(decisions);
+        bank.rules().recordTo(decisions);
         arrears.clear();
         arrearsPaidTo.clear();
         arrearsRefusedThisMonth = arrearsPaidThisMonth = 0;
@@ -2534,7 +2540,8 @@ public class Game {
     private void handTheWorldToTheD() {
         WorldMoneys moneys = worldMoneys;
         if (moneys == null || worldQuietForTheD) foreign.setWorld(0, 0, 0);
-        else foreign.setWorld(moneys.cycle(), moneys.riskOff(), hotMoney.getStock() + debtManager.getForeignPrincipalUsd() * foreign.getRate());
+        else foreign.setWorld(moneys.cycle(), moneys.riskOff(), hotMoney.getStock() + bank.getForeignWholesale()
+                + debtManager.getForeignPrincipalUsd() * foreign.getRate());
     }
 
     /** The log's lines about the world, after the reprice: money running to safety abroad (with where the D$ went in it) and the world pegs that broke. */
@@ -7943,7 +7950,7 @@ public class Game {
             SectorBooks.SectorMonth books = sectorBooks.get(sector);
             ask = equity.raiseFor(company, books.totalAssets(), books.equity(), cost);
             if (buysOnMortgage(sector, t)) {
-                double down = Mortgage.ownFundsFor(cost);
+                double down = Mortgage.ownFundsFor(cost, bank.rules().get(BankRules.Dial.MORTGAGE_LTC));
                 double lacking = Math.min(down, down - till - abroad);
                 if (lacking > ask) ask = lacking;
             }
@@ -7974,7 +7981,7 @@ public class Game {
         java.util.function.LongToDoubleFunction carryOf = n -> businessInvestment.carryOf(t, n, insured);
         double carry = economyManager.housingCarry(t), noi = perUnitRent - carry, flat = perUnitRent;
         java.util.function.LongToDoubleFunction noiOf = forecast == null ? n -> flat - carry : n -> forecast.income(t, n) / n - carry;
-        return new LenderReading(costOf, insured, tested, noi, noiOf, Mortgage.decide(quantity, costOf, cash, noiOf, tested, carryOf));
+        return new LenderReading(costOf, insured, tested, noi, noiOf, Mortgage.decide(quantity, costOf, cash, noiOf, tested, carryOf, bank.rules()));
     }
 
     /**
@@ -7989,7 +7996,7 @@ public class Game {
      * order makes.
      */
     public record LenderTest(double cost, double cash, double rent, double noi, double insured, double tested,
-                             double carry, Mortgage.Decision decision) {
+                             double carry, Mortgage.Decision decision, double maxLoanToCost) {
 
         /** Whether the lender writes it (or the landlord's funds buy it outright). */
         public boolean passes() { return decision.quantity() >= 1; }
@@ -8001,7 +8008,7 @@ public class Game {
         public boolean shortOfDown() { return decision.shortOfDown(); }
 
         /** The down payment the lender asks of the landlord's own funds on this cost (Mortgage.ownFundsFor()). */
-        public double down() { return Mortgage.ownFundsFor(cost); }
+        public double down() { return Mortgage.ownFundsFor(cost, maxLoanToCost); }
 
         /** What the lender lends against it: the shortfall the funds leave, once the fee is paid (Mortgage.loanFor()); nothing outright. */
         public double loan() { return outright() ? 0 : Mortgage.loanFor(cost - cash); }
@@ -8026,7 +8033,8 @@ public class Game {
         double rent = businessInvestment.estimatedMonthlyProfit(sector, t);
         LenderReading read = lenderReads(t, 1, cash, rent);
         return new LenderTest(f[0], cash, rent, read.noi(), read.insured(), read.tested(),
-                businessInvestment.carryOf(t, 1, read.insured()), read.decision());
+                businessInvestment.carryOf(t, 1, read.insured()), read.decision(),
+                bank.rules().get(BankRules.Dial.MORTGAGE_LTC));
     }
 
     /**
@@ -8049,13 +8057,13 @@ public class Game {
 
         if (d.quantity() <= 0) {
             (d.shortOfDown() ? heldForDownPayment : refusedByLender).add(decision.sector);
-            lastInvestment.put(slot, d.refusal(t.getName(), tested, insured));
+            lastInvestment.put(slot, d.refusal(t.getName(), tested, insured, bank.mortgageLoanToCost()));
             return;
         }
 
         long quantity = d.quantity();
-        String trimmed = d.trimmed(decision.quantity);
-        double downShare = 1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST;
+        String trimmed = d.trimmed(decision.quantity, bank.mortgageLoanToCost());
+        double downShare = 1 - bank.rules().get(BankRules.Dial.MORTGAGE_LTC);
 
         String[] refusal = { null };
         int written = credit.getMortgagesWrittenThisMonth();
@@ -8141,13 +8149,13 @@ public class Game {
      * mortgage, or bought outright when the smaller order needed none
      * (REV-HN1-1: "15% down" on an order with no loan was not what happened).
      */
-    private static String doorTrimmed(String refusal, long asked, long built, boolean mortgaged) {
+    private String doorTrimmed(String refusal, long asked, long built, boolean mortgaged) {
         if (!mortgaged) return String.format(" (trimmed from %,d - %s, so what its own funds buy outright)", asked,
                 switch (refusal) {
                     case BusinessDebtManager.MORTGAGE_CAPITAL -> "the bank is short of capital for a mortgage";
                     case BusinessDebtManager.MORTGAGE_DOWN_PAYMENT -> String.format(
                             "its own funds were short of the %.0f%% down on more",
-                            (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100);
+                            (1 - bank.rules().get(BankRules.Dial.MORTGAGE_LTC)) * 100);
                     case BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT -> String.format(
                             "a mortgage would leave it owing past %.2f times what it owns",
                             BusinessDebtManager.INSOLVENCY_TRIGGER);
@@ -8160,7 +8168,7 @@ public class Game {
                     " (trimmed from %,d - the bank is short of capital for more)", asked);
             case BusinessDebtManager.MORTGAGE_DOWN_PAYMENT -> String.format(
                     " (trimmed from %,d - its own funds put the %.0f%% down on %,d)",
-                    asked, (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100, built);
+                    asked, (1 - bank.rules().get(BankRules.Dial.MORTGAGE_LTC)) * 100, built);
             case BusinessDebtManager.MORTGAGE_PAST_DEFAULT_POINT -> String.format(
                     " (trimmed from %,d - more would leave it owing past %.2f times what it owns)",
                     asked, BusinessDebtManager.INSOLVENCY_TRIGGER);
@@ -12558,7 +12566,7 @@ public class Game {
         double bankRoom;
         if (bank.isInsolvent()) bankRoom = 0;
         else if (bank.equity() <= 0) bankRoom = Math.max(0, face);
-        else bankRoom = Math.max(0, Math.max(0, bank.equity() / Bank.CAPITAL_RATIO - bank.getWeightedBook())
+        else bankRoom = Math.max(0, Math.max(0, bank.equity() / bank.capitalMinimum() - bank.getWeightedBook())
                 / Bank.RISK_CITY - pendingBank);
         double extra = Math.max(0, debtManager.bankFloorRate() - debtManager.floorRate());
         if (extra > 0 && months > 1) {
@@ -14745,6 +14753,7 @@ public class Game {
          * by how it is funded now, and the bid went with the rule - see Bank,
          * WHAT TO PAY SAVERS.
          */
+        bank.setForeignFundingRate(debtManager.localWholesaleRate(Bank.WHOLESALE_TERM_MONTHS));
         bank.fundToCover(debtManager.getPolicyRate(), centralBank.getWindowDeferred(), centralBank.getAdvancesToBank());
 
         /*
@@ -14759,8 +14768,9 @@ public class Game {
          * closed to it.
          */
         centralBank.payInterestOnReserves(bank.getPlacementIncome());
-        centralBank.chargeWindow(bank.getFundingCost());
-        centralBank.settleWindow(bank.getBranches() > 0 ? bank.wholesaleFunding() : 0);
+        bank.payWindowInterest(centralBank.chargeWindow(bank.getWindowFundingCost()));
+        centralBank.settleWindow(bank.windowFunding());
+        bank.settleForeignFunding(centralBank.getAdvancesToBank());
 
         // ...and if that left it owing more than it owns, it has failed - and
         // waits for the city, which resolves it now if its setting is
@@ -14966,6 +14976,11 @@ public class Game {
         bank.setForeignDeposits(hotMoney.getStock());
         // ...and the city's paper the world holds leaves with it (CD2, slice 5): sold to the bank's desk, inside the window.
         worldPaperLeavesWithTheMoney(hotBefore);
+
+        // CBK3: trading and hot withdrawals follow the first settle. Refinance
+        // their final shortfall inside the audited month, with no second interest bill.
+        centralBank.settleWindow(bank.windowFunding());
+        bank.settleForeignFunding(centralBank.getAdvancesToBank());
 
         lastMoneyAudit = MoneyAudit.strike(this, pooledBefore, poolsBefore, interestDue);
         lastHouseholdsAudit = MoneyAudit.households(this, householdsBefore, lastMoneyAudit);
@@ -17646,7 +17661,7 @@ public class Game {
      * Negative when more is owed than is held.
      */
     public double getOwnReserves() {
-        return foreign.getReserves() - foreign.getForeignDebt() - hotMoney.getStock();
+        return foreign.getReserves() - foreign.getForeignDebt() - hotMoney.getStock() - bank.getForeignWholesale();
     }
 
     /** The city's shares in foreign hands, at each company's price - its last trade, or its fair value before one (0.7.35; the Trade tab's own sum until then). */
@@ -17676,7 +17691,7 @@ public class Game {
     /** What the world holds here: the city's shares at their price, the businesses' bonds at face, the foreign money parked in the bank, the city's own paper it bought at the auction (CD2, slice 5; at face) and the city's dollar paper at today's rate. */
     public double getHeldHereByTheWorld() {
         return getSharesHeldAbroad() + bondMarket.faceHeldByWorld() + hotMoney.getStock() + hotMoney.getPaper()
-                + foreign.getForeignDebt();
+                + foreign.getForeignDebt() + bank.getForeignWholesale();
     }
 
     /**
@@ -18364,6 +18379,8 @@ public class Game {
         dataSave.setSecuredHouseholdTaxes(householdBalance.securedTaxesToSave());
         dataSave.setSecuredForeignTaxes(equity.foreignTaxesToSave());
         dataSave.setBankCash(bank.getCash());
+        dataSave.setBankFunding(bank.fundingToSave());
+        dataSave.setBankRules(bank.rules().toSave());
         // ...and its desk's inventory as it carries it, at the last step's mark (FL1): the quote can have moved since.
         dataSave.setBankSecurities(bank.getSecurities());
         // ...and its deposit book as the month last set it (FW2): the load re-reads the city's after the month.
@@ -22083,6 +22100,8 @@ public class Game {
             bank.setBranchesCapitalised(loaded.getBankBranchesCapitalised());
             bank.setProfitLastMonth(loaded.getBankProfitLastMonth());
             bank.setDepositRate(loaded.getBankDepositRate());
+            bank.rules().restore(loaded.getBankRules());
+            bank.restoreFunding(loaded.getBankFunding());
             bank.restoreSolvency(loaded.getBankSolvency());
             bank.restoreLastMonth(loaded.getBankLastMonth());
             bank.restorePricingHistory(loaded.getBankPricingHistory());

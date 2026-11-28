@@ -370,9 +370,18 @@ public class OwnerCheck {
         Exchange.State st = a.x.toState();
         Exchange back = ExchangeCheck.exchange();
         check("the owners' offered and filled go through the save and back: appended to the life array, after the value sold",
-                st.life.length == 31 && st.life[29] == a.x.getLifePostedSellBy(Exchange.BY_OWNERS) && back.restore(st)
+                st.life.length == 32 && st.life[29] == a.x.getLifePostedSellBy(Exchange.BY_OWNERS)
+                && st.life[30] == a.x.getLifeFilledSellBy(Exchange.BY_OWNERS) && back.restore(st)
                 && back.getLifePostedSellBy(Exchange.BY_OWNERS) == a.x.getLifePostedSellBy(Exchange.BY_OWNERS)
                 && back.getLifeFilledSellBy(Exchange.BY_OWNERS) == a.x.getLifeFilledSellBy(Exchange.BY_OWNERS));
+        Exchange.State beforeStableBudget = a.x.toState();
+        beforeStableBudget.life = java.util.Arrays.copyOf(beforeStableBudget.life, 31);
+        Exchange oldBudget = ExchangeCheck.exchange();
+        check("...the prior 31-cell prefix preserves both owner cells and defaults the appended stable-budget counter",
+                oldBudget.restore(beforeStableBudget)
+                        && oldBudget.getLifePostedSellBy(Exchange.BY_OWNERS) == a.x.getLifePostedSellBy(Exchange.BY_OWNERS)
+                        && oldBudget.getLifeFilledSellBy(Exchange.BY_OWNERS) == a.x.getLifeFilledSellBy(Exchange.BY_OWNERS)
+                        && oldBudget.toState().life[31] == 0);
         double[] old = java.util.Arrays.copyOf(st.life, 29);
         st.life = old;
         Exchange older = ExchangeCheck.exchange();

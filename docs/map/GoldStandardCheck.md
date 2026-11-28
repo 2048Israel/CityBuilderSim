@@ -1,4 +1,4 @@
-# GoldStandardCheck.java - 1,137 lines · 33 methods · 17 constants · harnesses
+# GoldStandardCheck.java - 1,276 lines · 35 methods · 17 constants · harnesses
 
 `ham/citybuildersim/GoldStandardCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -46,7 +46,7 @@
 > 
 > Money is in thousands, as everywhere; gold is in thousands of ounces, as the vault keeps it.
 
-**Uses:** [ForeignAccounts](ForeignAccounts.md) (128), [DebtManager](DebtManager.md) (46), [Game](Game.md) (45), [Founding](Founding.md) (30), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (28), [GoldPrice](GoldPrice.md) (28), [PolicyDates](PolicyDates.md) (5), [Nations](Nations.md) (4), [MoneyAudit](MoneyAudit.md) (4), [DecisionLog](DecisionLog.md) (3), [Notice](Notice.md) (3), [CentralBank](CentralBank.md) (3), [WorldEconomy](WorldEconomy.md) (3), [PegAnchorCheck](PegAnchorCheck.md) (2), [WorldMoneys](WorldMoneys.md) (2), [GameFiles](GameFiles.md) (2), [Bank](Bank.md) (1)
+**Uses:** [ForeignAccounts](ForeignAccounts.md) (132), [DebtManager](DebtManager.md) (46), [Game](Game.md) (46), [Founding](Founding.md) (30), [CurrencyRegimeCheck](CurrencyRegimeCheck.md) (28), [GoldPrice](GoldPrice.md) (28), [MoneyAudit](MoneyAudit.md) (20), [Bank](Bank.md) (8), [CentralBank](CentralBank.md) (7), [BankRules](BankRules.md) (7), [PolicyDates](PolicyDates.md) (5), [Nations](Nations.md) (4), [DecisionLog](DecisionLog.md) (3), [Notice](Notice.md) (3), [WorldEconomy](WorldEconomy.md) (3), [PegAnchorCheck](PegAnchorCheck.md) (2), [WorldMoneys](WorldMoneys.md) (2), [GameFiles](GameFiles.md) (2), [HouseholdBalance](HouseholdBalance.md) (1), [PriceLevel](PriceLevel.md) (1), [BankRulesCheck](BankRulesCheck.md) (1)
 
 **Used by (2):** [ExchangeRateCheck](ExchangeRateCheck.md), [SaveFileCheck](SaveFileCheck.md)
 
@@ -105,7 +105,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 54 | 1084 | **type** `public class GoldStandardCheck` | The gold standard (batch GD3; spec-gold-money 4.3): the D$ on Gold, a mint price that keeps its value when it is entered, the rate held inside the gold points of the centre that moves with gold, the sale paid in gold ... |
+| 54 | 1223 | **type** `public class GoldStandardCheck` | The gold standard (batch GD3; spec-gold-money 4.3): the D$ on Gold, a mint price that keeps its value when it is entered, the rate held inside the gold points of the centre that moves with gold, the sale paid in gold ... |
 | 71 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 77 | 5 | `static void same(String label, double actual, double expected)` | Equal to the bit (and so a -0.0 is not a 0.0). |
 | 84 | 5 | `static void close(String label, double actual, double expected, double tol)` | Equal within a share of the expected. |
@@ -190,9 +190,11 @@
 | 955 | 61 | `static void theGoldsSalesRetireMZero()` |  |
 | 1020 | 67 | `static void theStartOnGoldBox()` |  |
 
-### 15 (lines 1088-1137)
+### 15 (lines 1088-1276)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1092 | 45 | `static void theDatesPassItBy()` |  |
+| 1092 | 52 | `static void theDatesPassItBy()` |  |
+| 1146 | 71 | `static int[] playedWindowArrears(Game g)` | Continue the already played city after the fixed calendar proof; actual paper, vault, reserve and month operations cause arrears. |
+| 1219 | 57 | `static void windowStillOwedAfterGold()` | Cause the RES3 condition by native gold retirement, without changing the calendar town or relying on an incidental default funding path. |
 

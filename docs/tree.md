@@ -1195,3 +1195,10 @@ new-credit failures, distinguishes consolidations from missing shares, and
 audits 24 default Random cities for 120 months apiece.
 
 `MoneyDatesCheck.java` (R0f; OP1): founded cities cross Canada's two gold episodes with Money the player's from the first month, a player who leaves gold staying off it, and the Bank of Canada's date passing as data; exhausted reserves remain off gold after JSON and the next month.
+
+`BankRules.java` (CBK3) owns the nine saved banking settings used by the bank,
+business lender and mortgage order tests. `ui/BankRulesPane.java` draws that
+same model through Kept and Ladder on Policy and the central bank page.
+`BankRulesCheck.java` causes collateral and stable-funding limits, tighter
+credit controls, missing-key defaults and actual save/load round trips; its
+optional evidence mode plays only a fresh copy of the supplied autosave.

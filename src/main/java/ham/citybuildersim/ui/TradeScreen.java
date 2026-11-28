@@ -1850,7 +1850,7 @@ final class TradeScreen {
         double shares = ui.game.getSharesHeldAbroad();
         double bonds = ui.game.getBondMarket().faceHeldByWorld();
         double parked = ui.game.getCapitalFlows().getStock();
-        double owed = fx.getForeignDebt();
+        double owed = fx.getForeignDebt(), wholesale = ui.game.getBank().getForeignWholesale();
         double abroad = ui.game.getHeldAbroad(), here = ui.game.getHeldHereByTheWorld();
         String sand = Palette.CATEGORIES[4];
         List<Segment> top = List.of(
@@ -1861,7 +1861,8 @@ final class TradeScreen {
                 seg(shares, Palette.BUSINESS_LIGHT, "the city's shares in the world's hands\n" + dFull(shares)),
                 seg(bonds, Palette.BUSINESS_DARK, "the businesses' bonds the world holds, at face\n" + dFull(bonds)),
                 seg(parked, sand, "foreign money parked in the bank\n" + dFull(parked)),
-                seg(owed, Palette.MONEY_DARK, "the city's dollar paper\n" + dFull(owed)));
+                seg(owed, Palette.MONEY_DARK, "the city's dollar paper\n" + dFull(owed)),
+                seg(wholesale, Palette.RAMP_REST, "the bank's term wholesale debt in local money\n" + dFull(wholesale)));
         double scale = Math.max(abroad, here);
         VBox c = card(cardHead(Icons.TRADE, Palette.MONEY, "WHAT THE CITY HOLDS ABROAD · WHAT THE WORLD HOLDS HERE",
                 HOLDINGS_INFO, null));
@@ -1879,6 +1880,7 @@ final class TradeScreen {
         VBox right = Kept.column(4,
                 keyLine(Palette.BUSINESS_LIGHT, "the city's shares", d(shares)),
                 keyLine(Palette.BUSINESS_DARK, "the businesses' bonds", d(bonds)),
+                keyLine(Palette.RAMP_REST, "bank wholesale debt", d(wholesale)),
                 keyLine(sand, "money parked in the bank", d(parked)),
                 keyLine(Palette.MONEY_DARK, "the city's dollar paper", d(owed) + " · " + usd(fx.getForeignDebtUsd())));
         key.add(left, 0, 0);
@@ -3409,18 +3411,20 @@ final class TradeScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         CapitalFlows hot = ui.game.getCapitalFlows();
         double gross = fx.getReserves(), debt = fx.getForeignDebt(), parked = hot.getStock();
+        double wholesale = ui.game.getBank().getForeignWholesale();
         double own = ui.game.getOwnReserves();
         VBox c = card(cardHead(Icons.SAFE, Palette.MONEY, "WHOSE IT IS", ONE_POT_INFO, null));
-        if (gross <= 0 && debt <= 0 && parked <= 0) {
+        if (gross <= 0 && debt <= 0 && parked <= 0 && wholesale <= 0) {
             c.getChildren().add(Kept.scope("empty", () -> line("The vault is empty and nothing is owed abroad.",
                     "The vault is empty and nothing is owed abroad. Export earnings go to the firms that earned them — a "
                             + "treasury holds foreign money only if it has bought some, or borrowed it abroad.")));
             return c;
         }
-        c.getChildren().add(Kept.scope("claims", () -> claimBar(gross, debt, parked, own)));
+        c.getChildren().add(Kept.scope("claims", () -> claimBar(gross, debt, parked, wholesale, own)));
         c.getChildren().add(cardLine("in the vault", usd(fx.getReservesUsd()) + " · " + d(gross), null));
         c.getChildren().add(cardLine("owed abroad on paper", d(debt) + (debt > 0 ? " · " + usd(fx.getForeignDebtUsd()) : ""), null));
         c.getChildren().add(cardLine("parked in the bank, free to leave", d(parked), null));
+        c.getChildren().add(cardLine("bank wholesale debt, in local money", d(wholesale), null));
         c.getChildren().add(cardLine("the city's own", d(own) + (own > 0 ? " · " + usd(fx.toUsd(own)) : ""),
                 own < 0 ? Palette.BAD : null));
         c.getChildren().add(cardLine("the treasury's position", signedD(fx.netForeignPosition()), null,
@@ -3453,18 +3457,20 @@ final class TradeScreen {
      * run past the vault the bar is all claims and a mark says where the
      * vault ends.
      */
-    VBox claimBar(double gross, double debt, double parked, double own) {
-        double scale = Math.max(gross, debt + parked);
+    VBox claimBar(double gross, double debt, double parked, double wholesale, double own) {
+        double scale = Math.max(gross, debt + parked + wholesale);
         if (!(scale > 0)) return Kept.column(0);
         String sand = Palette.CATEGORIES[4];
         List<Segment> parts = new ArrayList<>();
         if (debt > 0) parts.add(seg(debt, Palette.MONEY_DARK, "owed abroad on paper\n" + dFull(debt)));
         if (parked > 0) parts.add(seg(parked, sand, "parked here and free to leave\n" + dFull(parked)));
+        if (wholesale > 0) parts.add(seg(wholesale, Palette.RAMP_REST, "bank term wholesale debt\n" + dFull(wholesale)));
         if (own > 0) parts.add(seg(own, Palette.MONEY, "the city's own\n" + dFull(own)));
         List<Tick> ticks = List.of(new Tick(gross, Palette.TEXT_MAX, 2, "the vault ends here", "the vault ends here: " + dFull(gross)));
         VBox box = Kept.column(4, segmentBar(parts, scale, ticks, 0, 22),
                 keyRow(debt > 0 ? swatch(Palette.MONEY_DARK, "dollar paper") : null,
                         parked > 0 ? swatch(sand, "parked money") : null,
+                        wholesale > 0 ? swatch(Palette.RAMP_REST, "bank wholesale") : null,
                         own > 0 ? swatch(Palette.MONEY, "the city's own") : null));
         return box;
     }
@@ -4014,7 +4020,7 @@ final class TradeScreen {
         ForeignAccounts fx = ui.game.getForeignAccounts();
         double debt = fx.getForeignDebt(), parked = ui.game.getCapitalFlows().getStock();
         VBox column = column();
-        column.getChildren().add(statementHead("The two claims are not alike"));
+        column.getChildren().add(statementHead("The claims are not alike"));
         GridPane t = grid(new double[] {160, 126, 130, 130}, rightAfterFirst(4));
         gridHead(t, "", "amount", "when it is due", "whose claim");
         t.add(gridCell("Dollar paper", Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, 1);
@@ -4025,6 +4031,11 @@ final class TradeScreen {
         t.add(gridCell(money(parked), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, 2);
         t.add(gridCell("whenever it likes", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, 2);
         t.add(gridCell("the bank's", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 3, 2);
+        double wholesale = ui.game.getBank().getForeignWholesale();
+        t.add(gridCell("Wholesale funds", Palette.TEXT_BODY, Palette.SIZE_CAPTION, false), 0, 3);
+        t.add(gridCell(money(wholesale), Palette.TEXT_HEAD, Palette.SIZE_CAPTION, true), 1, 3);
+        t.add(gridCell("one-year term", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 2, 3);
+        t.add(gridCell("the bank's, local money", Palette.TEXT_MUTED, Palette.SIZE_CAPTION, true), 3, 3);
         column.getChildren().add(t);
         column.getChildren().add(statementNote("The city's own figure for what it is worth abroad takes off the paper and "
                 + "nothing else. This tab takes off the parked money too, and that is the right addition: a claim that can "

@@ -1535,6 +1535,45 @@ public class LongPlaytest {
     static int landLedgerMonths, landLedgerDiffMonths, landLedgerWorstMonth;
     static double landLedgerWorstSqFt;
 
+    /** CBK3: count actual posted bids limited by stable cash, once per audited month. */
+    static int bankFundingMonths, bankFundingCompletedMonths, deskStableBoundMonths;
+
+    /**
+     * The completed month's funding, before the player's next actions.
+     * A capital receipt or a tighter dial changes the NEXT rollover's need;
+     * it does not cancel an actual advance already owed to maturity. Keep
+     * the broad money and late-write audit below after those actions.
+     */
+    static void auditBankFunding(Game g) {
+        int month = g.getMonth();
+        CentralBank cb = g.getCentralBank();
+        Bank bank = g.getBank();
+        bankFundingMonths++;
+        if (g.getExchange().getLastDeskBound(Exchange.BOUND_STABLE) > 0) deskStableBoundMonths++;
+        double held = cb.getAdvancesToBank(), deferred = cb.getWindowDeferred();
+        // RES3's reserve cap can leave already-issued principal owed after a target falls.
+        // That debt is neither forgiven nor a new loan; the current funded tranche must still fit both limits.
+        double window = Math.max(0, held - deferred);
+        double collateral = bank.windowCollateral() * bank.rules().get(BankRules.Dial.WINDOW_LIMIT);
+        double nonDeskFunding = Math.max(0, bank.wholesaleFunding() - Math.max(0, bank.getSecurities()));
+        finite(month, "window collateral", collateral);
+        finite(month, "window principal", held);
+        finite(month, "deferred window principal", deferred);
+        finite(month, "unpaid window interest", cb.getWindowInterestDue());
+        if (deferred < -MoneyAudit.CENT || deferred > held + MoneyAudit.CENT) {
+            flag(month, "deferred window principal exceeds the debt still owed",
+                    String.format("held $%,.9f, deferred $%,.9f", held, deferred));
+        }
+        if (window > collateral + MoneyAudit.CENT) {
+            flag(month, "the window lent beyond eligible collateral after haircuts",
+                    String.format("window $%,.9f, collateral $%,.9f", window, collateral));
+        }
+        if (window > nonDeskFunding + MoneyAudit.CENT) {
+            flag(month, "the equity desk was funded at the window",
+                    String.format("window $%,.9f, non-desk funding need $%,.9f", window, nonDeskFunding));
+        }
+    }
+
     static void audit(Game g) {
 
         int month = g.getMonth();
@@ -6328,7 +6367,11 @@ public class LongPlaytest {
             // The food law's opening stock (GT1): taken here, after the player's move and before the month runs.
             breadOpening = g.getSectors().industry().getStock(Good.BREAD);
             if (retirementWatch != null) retirementWatch.before(g);
-            g.simulateMonths(1);
+            int completed = g.simulateMonths(1);
+            if (completed > 0) {
+                bankFundingCompletedMonths += completed;
+                auditBankFunding(g);
+            }
             // The player's annual move sees every completed January, including one crossed inside a long skip (GV1/GV2).
             if (playGovernmentPolicy && g.getMonth() > before) GovernmentPlayer.step(g);
             if (Boolean.getBoolean("cbs.pw5.firstDistrict") && !pw5DistrictReported
@@ -6440,6 +6483,8 @@ public class LongPlaytest {
                             "cash " + g.getCash());
                     return;
                 }
+                bankFundingCompletedMonths++;
+                auditBankFunding(g);
             }
             if (WAGES) walkLag(g, indexHanded);
             if (retirementWatch != null) retirementWatch.after(g);
@@ -7027,6 +7072,7 @@ public class LongPlaytest {
         retirementWatch = new RetirementWatch();
         landLedgerMonths = landLedgerDiffMonths = landLedgerWorstMonth = 0;
         landLedgerWorstSqFt = 0;
+        bankFundingMonths = bankFundingCompletedMonths = deskStableBoundMonths = 0;
         List<String> log = new ArrayList<>();
         long started = System.currentTimeMillis();
         traceOpen();
@@ -8185,15 +8231,22 @@ public class LongPlaytest {
                     notRenewedAtLineRun, projectsRefusedAtLine);
             // The desk's caps and the cells' rebalancing (0.7.12 round 3).
             out.printf("  the desk's caps over the run: its bid held by its capital in %,d company-month(s), by POSITION_LIMIT"
-                    + " in %,d, by BOOK_LIMIT in %,d, by the float in %,d; its book at fair value a median %.1f%% of the"
+                    + " in %,d, by BOOK_LIMIT in %,d, by the float in %,d, by stable cash in %,d; its book at fair value a median %.1f%% of the"
                     + " bank's equity (90th percentile %.1f%%, most %.1f%%) against BOOK_LIMIT %.0f%%, its largest holding"
                     + " a median %.1f%% (90th percentile %.1f%%, most %.1f%%) against POSITION_LIMIT %.0f%%; the cells"
                     + " offered $%,.0fk of shares to rebalance%n",
                     exEnd.getLifeDeskBound(Exchange.BOUND_CAPITAL), exEnd.getLifeDeskBound(Exchange.BOUND_POSITION),
                     exEnd.getLifeDeskBound(Exchange.BOUND_BOOK), exEnd.getLifeDeskBound(Exchange.BOUND_FLOAT),
+                    exEnd.getLifeDeskBound(Exchange.BOUND_STABLE),
                     quantile(deskBookAtFair, .5) * 100, quantile(deskBookAtFair, .9) * 100, maxOf(deskBookAtFair) * 100,
                     Exchange.BOOK_LIMIT * 100, quantile(deskLargestPosition, .5) * 100, quantile(deskLargestPosition, .9) * 100,
                     maxOf(deskLargestPosition) * 100, Exchange.POSITION_LIMIT * 100, exEnd.getLifeRebalanceSold());
+            if (bankFundingMonths != bankFundingCompletedMonths) {
+                flag(g.getMonth(), "a completed month did not get exactly one bank funding audit",
+                        bankFundingMonths + " audits for " + bankFundingCompletedMonths + " completed months");
+            }
+            out.printf("  window collateral and desk funding (CBK3): %d completed months, %d audits; the stable cash budget limited"
+                    + " a posted desk bid in %d month(s)%n", bankFundingCompletedMonths, bankFundingMonths, deskStableBoundMonths);
             // ...and what it offered over them at fair value (0.7.12 round 4).
             out.printf("  the desk over its caps: month-ends over BOOK_LIMIT %.1f%%, over POSITION_LIMIT %.1f%%; it offered"
                     + " $%,.0fk over its caps at fair value and sold $%,.0fk of it; its trading result $%,.0fk%n",

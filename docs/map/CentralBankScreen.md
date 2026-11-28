@@ -1,4 +1,4 @@
-# CentralBankScreen.java - 923 lines · 51 methods · 11 constants · interface
+# CentralBankScreen.java - 925 lines · 51 methods · 11 constants · interface
 
 `ham/citybuildersim/ui/CentralBankScreen.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -22,7 +22,7 @@
 > read the same getters as cards (the holdings' ladder is CentralBankStatements.ladder()), and work out no more than a
 > share of one getter over another.
 
-**Uses:** [Palette](Palette.md) (114), [Kept](Kept.md) (54), [CentralBankStatements](CentralBankStatements.md) (37), [CentralBank](CentralBank.md) (31), [Icons](Icons.md) (30), [SectorScreen](SectorScreen.md) (27), [DebtManager](DebtManager.md) (22), [StatementView](StatementView.md) (7), [PriceIndex](PriceIndex.md) (7), [PolicyScreen](PolicyScreen.md) (7), [FinancesScreen](FinancesScreen.md) (7), [SectorStatements](SectorStatements.md) (6), [Expectations](Expectations.md) (4), [BankScreen](BankScreen.md) (3), [CityCalendar](CityCalendar.md) (3), [UserInterface](UserInterface.md) (2), [HistorySave](HistorySave.md) (1)
+**Uses:** [Palette](Palette.md) (114), [Kept](Kept.md) (55), [CentralBankStatements](CentralBankStatements.md) (37), [CentralBank](CentralBank.md) (31), [Icons](Icons.md) (30), [SectorScreen](SectorScreen.md) (27), [DebtManager](DebtManager.md) (22), [StatementView](StatementView.md) (7), [PriceIndex](PriceIndex.md) (7), [PolicyScreen](PolicyScreen.md) (7), [FinancesScreen](FinancesScreen.md) (7), [SectorStatements](SectorStatements.md) (6), [Expectations](Expectations.md) (4), [BankScreen](BankScreen.md) (3), [CityCalendar](CityCalendar.md) (3), [UserInterface](UserInterface.md) (2), [HistorySave](HistorySave.md) (1), [BankRulesPane](BankRulesPane.md) (1)
 
 **Used by (6):** [BankScreen](BankScreen.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [KeptBench](KeptBench.md), [PagePictures](PagePictures.md), [UserInterface](UserInterface.md)
 
@@ -69,7 +69,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 875 | **type** `final class CentralBankScreen` | The central bank's pages in the Bank tab: its frame - the head "Bank › Central bank", the strip of nine chips - and the nine pages behind them: the Overview; its income statement, its balance sheet and the money it ma... |
+| 49 | 877 | **type** `final class CentralBankScreen` | The central bank's pages in the Bank tab: its frame - the head "Bank › Central bank", the strip of nine chips - and the nine pages behind them: the Overview; its income statement, its balance sheet and the money it ma... |
 | 57 | 4 | `CentralBankScreen(UserInterface ui, BankScreen bank)` |  |
 
 ### THE FRAME (CBK1, 2026-11-26) (lines 62-141)
@@ -160,10 +160,10 @@
 |---:|---:|---|---|
 | 836 | 26 | `private void historyPage(VBox p)` | The History page: its lead, then the charts - or a line saying the history is too young. |
 
-### POLICY (CBK1, 2026-11-26) (lines 863-923)
+### POLICY (CBK1, 2026-11-26) (lines 863-925)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 882 | 27 | `private void policyPage(VBox p)` | The Policy page: its lead, the policy rate read beside the rule, and the holdings and the ceiling. |
-| 911 | 12 | `private VBox policyRateCard(DebtManager market)` | THE POLICY RATE, read: the dial today and its real rate, with the door to Policy where it is set. |
+| 883 | 28 | `private void policyPage(VBox p)` | The Policy page: its lead, the policy rate read beside the rule, and the holdings and the ceiling. |
+| 913 | 12 | `private VBox policyRateCard(DebtManager market)` | THE POLICY RATE, read: the dial today and its real rate, with the door to Policy where it is set. |
 

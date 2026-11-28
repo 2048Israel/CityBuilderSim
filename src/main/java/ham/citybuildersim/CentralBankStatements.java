@@ -97,7 +97,7 @@ public final class CentralBankStatements {
             S_CURRENCY = "cbs.currency", S_LIABILITIES_REST = "cbs.liabilitiesRest", S_LIABILITIES = "cbs.liabilities",
             S_EQUITY_HEAD = "cbs.equityHead", S_EQUITY_LINE = "cbs.equityLine", S_EQUITY = "cbs.equity",
             S_CLAIMS = "cbs.claims", S_MEMO_HEAD = "cbs.memoHead", S_DUE = "cbs.due", S_LOSS = "cbs.loss",
-            S_AT_MARKET = "cbs.atMarket", S_MARK = "cbs.mark";
+            S_AT_MARKET = "cbs.atMarket", S_MARK = "cbs.mark", S_WINDOW_INTEREST_DUE = "cbs.windowInterestDue";
 
     /**
      * Its statement of financial position, this month against a year ago: what it has lent and holds, what it owes - M0,
@@ -112,12 +112,13 @@ public final class CentralBankStatements {
         SectorStatements.Builder b = new SectorStatements.Builder(cb.knowsYearAgo());
         b.head(S_ASSETS_HEAD, "ASSETS");
         sheetLine(b, cb, S_WINDOW, "Advances to the commercial bank, at the window", CentralBank.Sheet.WINDOW);
+        sheetLine(b, cb, S_WINDOW_INTEREST_DUE, "Interest on window advances, still to collect", CentralBank.Sheet.WINDOW_INTEREST_DUE);
         sheetLine(b, cb, S_TREASURY, "Advances to the treasury: what it has printed", CentralBank.Sheet.TREASURY);
         sheetLine(b, cb, S_PAPER, "The city's paper it holds, at face", CentralBank.Sheet.PAPER);
         sheetLine(b, cb, S_REDEMPTION, "Its paper the treasury bought back, still to settle", CentralBank.Sheet.REDEMPTION_DUE);
         sheetLine(b, cb, S_VAULT, "The vault: the foreign reserves, at the month's rate", CentralBank.Sheet.VAULT);
         CentralBank.Sheet[] assets = { CentralBank.Sheet.WINDOW, CentralBank.Sheet.TREASURY, CentralBank.Sheet.PAPER,
-                CentralBank.Sheet.REDEMPTION_DUE, CentralBank.Sheet.VAULT };
+                CentralBank.Sheet.REDEMPTION_DUE, CentralBank.Sheet.VAULT, CentralBank.Sheet.WINDOW_INTEREST_DUE };
         b.residual(S_ASSETS_REST, "NOT ACCOUNTED FOR", cb.sheet(CentralBank.Sheet.ASSETS) - sum(cb, assets, false),
                 cb.yearAgo(CentralBank.Sheet.ASSETS) - sum(cb, assets, true));
         b.total(S_ASSETS, "TOTAL ASSETS");
@@ -179,7 +180,7 @@ public final class CentralBankStatements {
     /** ...and destroyed. Every retire() in CentralBank is one. */
     static final Object[][] DESTROYED = {
             { "Repaid by the commercial bank at the window", CentralBank.Line.REPAID_BY_BANK },
-            { "The window's interest, from the commercial bank", CentralBank.Line.WINDOW_INTEREST },
+            { "Window interest collected from the commercial bank", CentralBank.Line.WINDOW_INTEREST },
             { "Repaid by the treasury", CentralBank.Line.REPAID_BY_TREASURY },
             { "The treasury's interest on its advances", CentralBank.Line.ADVANCES_INTEREST },
             { "Paid it for paper it sold the commercial bank", CentralBank.Line.SOLD_PAPER },
@@ -215,9 +216,14 @@ public final class CentralBankStatements {
         double gone = 0, goneThen = 0;
         for (Object[] w : DESTROYED) {
             CentralBank.Line l = (CentralBank.Line) w[1];
-            b.line(moneyId(l), (String) w[0], -cb.thisMonth(l), -cb.lastMonth(l), 0);
-            gone += cb.thisMonth(l);
-            goneThen += cb.lastMonth(l);
+            double now = cb.thisMonth(l), then = cb.lastMonth(l);
+            if (l == CentralBank.Line.WINDOW_INTEREST) {
+                now -= cb.thisMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE);
+                then -= cb.lastMonth(CentralBank.Line.WINDOW_INTEREST_DUE_CHANGE);
+            }
+            b.line(moneyId(l), (String) w[0], -now, -then, 0);
+            gone += now;
+            goneThen += then;
         }
         b.residual(M_DESTROYED_REST, "NOT ACCOUNTED FOR", -(cb.thisMonth(CentralBank.Line.RETIRED) - gone),
                 -(cb.lastMonth(CentralBank.Line.RETIRED) - goneThen));

@@ -667,6 +667,7 @@ public final class MoneyAudit {
          * "+ centralbank AdvancedToBank", and a repayment the other way.
          */
         pools[i++] = g.getBank().getCash() + g.getCentralBank().getAdvancesToBank()
+                + g.getBank().getForeignWholesale()
                 - g.getCityPaperUnsettled();
         /*
          * THE CITY'S FUND (0.7.14), its cash: the government's, inside the
@@ -1240,6 +1241,7 @@ public final class MoneyAudit {
          */
         CentralBank cb = g.getCentralBank();
         in += credit.apply("+ centralbank AdvancedToBank", cb.getAdvancedToBank(), Scope.MONEY);
+        in += credit.apply("+ bank WholesaleBorrowedAbroad", g.getBank().getForeignWholesaleIn(), Scope.FINANCIAL);
         in += credit.apply("+ centralbank AdvancedToTreasury", cb.getAdvancedToTreasury(), Scope.MONEY);
         in += credit.apply("+ centralbank Remittance", cb.getRemitted(), Scope.MONEY);
         // ...and what it paid the bank for the city's paper it bought, in
@@ -1268,6 +1270,8 @@ public final class MoneyAudit {
         in += credit.apply("+ centralbank TakenBackForGold", cb.getGoldRedeemed(), Scope.RESERVE);
 
         double out = 0;
+        out += debit.apply("- bank WholesaleRepaidAbroad", g.getBank().getForeignWholesaleOut(), Scope.FINANCIAL);
+        out += debit.apply("- bank WholesaleInterestAbroad", g.getBank().getForeignFundingCost(), Scope.INCOME);
         // Payrolls, as each statement charged them.
         for (Sector s : sectors.all()) {
             out += debit.apply("- " + s.key() + " Payroll", s.statement().payroll, Scope.DOMESTIC);
@@ -1441,8 +1445,9 @@ public final class MoneyAudit {
          * other lines above. Read off the central bank's counter, which Game
          * books from the bank's own figure in the same breath.
          */
+        // Uncollected accrued interest is a receivable/payable, not destroyed money.
         out += debit.apply("- centralbank WindowInterest",
-                cb.getWindowInterest(), Scope.MONEY);
+                cb.getWindowInterestCollected(), Scope.MONEY);
         // ...and the mirror: what its reserves earned at the central bank, at
         // the policy rate, in money made to pay it. See Bank.placementIncome.
         // Placed abroad at the world's rate, and declared as foreign income,

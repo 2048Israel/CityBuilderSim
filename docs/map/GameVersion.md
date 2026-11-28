@@ -40,13 +40,13 @@
 > earlier wording of this very comment was a second match, and survived only
 > because it happened to carry no equals sign.
 
-**Used by (29):** [BridgeCheck](BridgeCheck.md), [CapitalGainsCheck](CapitalGainsCheck.md), [CardCheck](CardCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Credits](Credits.md), [CreditsCheck](CreditsCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EnsembleCheck](EnsembleCheck.md), [Game](Game.md), [GameLog](GameLog.md), [GoldMiningCheck](GoldMiningCheck.md), [KeptCheck](KeptCheck.md), [LandmassCheck](LandmassCheck.md), [MaterialsCheck](MaterialsCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [RankingsCheck](RankingsCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
+**Used by (30):** [BankRulesCheck](BankRulesCheck.md), [BridgeCheck](BridgeCheck.md), [CapitalGainsCheck](CapitalGainsCheck.md), [CardCheck](CardCheck.md), [ChartCheck](ChartCheck.md), [ConstructionControlCheck](ConstructionControlCheck.md), [Credits](Credits.md), [CreditsCheck](CreditsCheck.md), [EarthDepositsCheck](EarthDepositsCheck.md), [EarthSite](EarthSite.md), [EarthTerrainCheck](EarthTerrainCheck.md), [EnsembleCheck](EnsembleCheck.md), [Game](Game.md), [GameLog](GameLog.md), [GoldMiningCheck](GoldMiningCheck.md), [KeptCheck](KeptCheck.md), [LandmassCheck](LandmassCheck.md), [MaterialsCheck](MaterialsCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [RankingsCheck](RankingsCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMode](ReplayMode.md), [RobustnessCheck](RobustnessCheck.md), [SaveFileCheck](SaveFileCheck.md), [SaveHeader](SaveHeader.md), [SaveSlotCheck](SaveSlotCheck.md), [SectorStatementCheck](SectorStatementCheck.md), [UserInterface](UserInterface.md), [WellCheck](WellCheck.md), [YearBook](YearBook.md)
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 7372 | `GameVersion.VERSION` | `"0.9.218"` | Bump on release. |
+| 7372 | `GameVersion.VERSION` | `"0.9.219"` | Bump on release. |
 | 8398 | `GameVersion.SAVE_FORMAT` | `67` | RES3: typed leases, comparable rent/CPI observations and held monetary inputs cannot be reconstructed from a format-66 city. |
 | 8469 | `GameVersion.OLDEST_LOADABLE_FORMAT` | `67` | The oldest save format this build loads: a batch that bumps SAVE_FORMAT because an older save would load wrongly raises this to the new format in the same batch, so that save is refused cleanly (isNoLongerReadable()) ... |
 | 8477 | `GameVersion.NAME` | `"Civic Ledger"` | The game's name, on the title screen and in the window's title (BR1, 2026-10-27: Jerus chose Civic Ledger, the name itch.io and the releases already wore). |

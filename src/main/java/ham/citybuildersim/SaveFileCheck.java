@@ -64,7 +64,102 @@ public class SaveFileCheck {
         return p.toString().replace('\\', '/');
     }
 
+    /** The fund's native transfer phase, with the treasury side settled as Game settles it. */
+    static double controlledFundTransfer(Game g) {
+        TreasuryFund fund = g.getFund();
+        double cashBefore = g.getCash() + fund.getCash();
+        double paid = fund.payTransfer(g.fundValue(), g.fundIdleCash(), CityCalendar.yearOf(g.getMonth()));
+        g.setCashForTest(g.getCash() + paid);
+        g.getEconomyManager().setFundTransfer(paid);
+        fund.getLedger().flow(FundLedger.TRANSFER, paid, false, g.getMonth());
+        same("the native transfer conserves the treasury's and fund's cash", g.getCash() + fund.getCash(), cashBefore);
+        return paid;
+    }
+
+    /** A known earned record and a real market lot cause the withdrawal sale, independent of the played city's holdings. */
+    static Game controlledFundWithdrawal(GameFiles files) {
+        Game drawing = new Game(files);
+        drawing.run();
+        Equity reg = drawing.getEquity();
+        Exchange ex = drawing.getExchange();
+        TreasuryFund fund = drawing.getFund();
+        ex.attachFund(fund);
+        int company = Equity.indexOf(Sectors.INDUSTRY), month = drawing.getMonth();
+        assertTrue("fixture: the scratch city starts with unlisted Industry and an empty fund",
+                reg.getShares(company) == 0 && drawing.fundValue() == 0);
+        double worldRate = DebtManager.WORLD_BASE_RATE;
+        reg.offer(company, 1_000 * reg.foundingPrice(), 0, null, worldRate);
+        for (int m = 0; m < Equity.RECORD_MONTHS; m++) reg.recordMonth(company, 1_500 * reg.foundingPrice(), 0);
+        ExchangeCheck.Firms firms = new ExchangeCheck.Firms();
+        double[] book = new double[Equity.COMPANIES.length];
+        ex.startMonth(month);
+        ex.takeMonth(reg, null, null, firms, book, worldRate, 0, month);
+        double lot = reg.getShares(company) * TreasuryFund.OWNERSHIP_LIMIT / 2;
+        double price = ex.fair(company), cost = lot * price;
+        assertTrue("fixture: a mature positive earned record supports a saleable lot within the fund's cap",
+                reg.valuedOnRecord(company) && reg.getTrailingIncome(company) > 0 && !ex.atFloor(company)
+                        && lot > OrderBook.DUST && reg.getForeignShares(company) >= lot);
+        double openingCash = drawing.getCash() + fund.getCash();
+        same("the treasury really pays in the lot's purchase money", drawing.fundPayIn(cost), cost);
+        ex.tradeForCheck(company, Exchange.WORLD, OrderBook.Side.SELL, price, lot);
+        double bought = 0;
+        for (OrderBook.Fill f : ex.tradeForCheck(company, Exchange.FUND, OrderBook.Side.BUY, price, lot))
+            if (f.buyer().equals(Exchange.FUND) && f.seller().equals(Exchange.WORLD)) bought += f.quantity();
+        same("the fund's market lot was actually bought from the world", bought, lot);
+        same("the settled lot is on the register", reg.getCityMarketShares(company), lot);
+        same("the world received exactly the fund's purchase cash", ex.getFundBoughtAbroad(), cost);
+        same("the purchase conserves cash including its declared payment abroad",
+                drawing.getCash() + fund.getCash() + ex.getFundBoughtAbroad(), openingCash);
+        drawing.fundDrawOut(fund.getCash());
+        assertTrue("fixture: the withdrawal opens with the fund's actual till empty", fund.getCash() == 0);
+        drawing.setFundWithdrawal(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP);
+        drawing.setFundDial(0);
+        fund.startMonth();
+        same("the empty fund pays nothing at the first transfer phase", controlledFundTransfer(drawing), 0);
+        assertTrue("fixture: the month's cash ran short and the fund owes what it sells for",
+                fund.sellsToPay() && fund.getToRaise() > 0);
+        double owed = fund.getToRaise();
+        // Earnings weaken between the transfer and market phases but stay positive. The old due now exceeds the whole lot's value,
+        // so the withdrawal, rather than ordinary rebalancing, must cause the ask. Both valuations come from the native earned records.
+        for (int m = 0; m < Equity.RECORD_MONTHS; m++) reg.recordMonth(company, 100 * reg.foundingPrice(), 0);
+        ex.startMonth(month);
+        ex.takeMonth(reg, null, null, firms, book, worldRate, 0, month);
+        OrderBook shares = ex.bookOf(company);
+        double fundAsked = shares.resting(Exchange.FUND, OrderBook.Side.SELL), asking = 0;
+        for (OrderBook.Order o : shares.asks()) if (o.who().equals(Exchange.FUND)) asking = Math.max(asking, o.price());
+        // This buyer spends at most half the actual shortfall: its proceeds cannot also pay the next month's whole due.
+        double wanted = asking > 0 ? Math.min(fundAsked, owed / (2 * asking)) : 0;
+        assertTrue("fixture: at the sale phase positive economic value, held shares and a real ask cover the buyer's order",
+                reg.getTrailingIncome(company) > 0 && !ex.atFloor(company) && wanted > OrderBook.DUST
+                        && fundAsked >= wanted && reg.getCityMarketShares(company) > wanted && fund.getCash() == 0);
+        assertTrue("the unpaid withdrawal causes a larger ask than ordinary rebalancing alone",
+                owed >= lot * ex.fair(company) && Double.isNaN(ex.bestBid(company))
+                        && fundAsked * ex.price(company) > TreasuryFund.sharesOver(lot * ex.price(company), 0, 0));
+        double cashBeforeSale = fund.getCash(), worldBought = 0, proceeds = 0;
+        for (OrderBook.Fill f : ex.tradeForCheck(company, Exchange.WORLD, OrderBook.Side.BUY, asking, wanted)) {
+            if (f.seller().equals(Exchange.FUND) && f.buyer().equals(Exchange.WORLD)) {
+                worldBought += f.quantity();
+                proceeds += f.quantity() * f.price();
+            }
+        }
+        assertTrue("fixture: the step asked the market book for shares to pay the withdrawal with, and the world bought them (" + worldBought + " of " + fundAsked + ")",
+                fundAsked > OrderBook.DUST && worldBought > OrderBook.DUST);
+        same("the real fund ask delivers every share the world ordered", worldBought, wanted);
+        same("the fund's cash comes only from its actual sale proceeds", fund.getCash() - cashBeforeSale, proceeds);
+        same("the exchange declares the world's exact payment for those shares", ex.getFundSoldAbroad(), proceeds);
+        same("the sale removed exactly its filled quantity from the fund", lot - reg.getCityMarketShares(company), worldBought);
+        assertTrue("fixture: sale proceeds are positive and cannot cover the whole unpaid transfer", proceeds > 0 && proceeds < owed);
+        fund.startMonth();
+        same("the later transfer phase pays exactly the actual sale proceeds", controlledFundTransfer(drawing), proceeds);
+        same("the late-payment counter is exactly those proceeds, not incidental cash", fund.getTransferPaidLate(), proceeds);
+        same("the two transfer phases and market trades conserve cash with the world",
+                drawing.getCash() + fund.getCash() + cost - proceeds, openingCash);
+        return drawing;
+    }
+
     public static void main(String[] args) throws Exception {
+        assertTrue("CBK3 rules, funding and the stable desk count survive both save paths; old prefixes read defaults", BankRulesCheck.saveChecks());
+        assertTrue("CBK3 unpaid window interest and its current/last flows survive the real save; compatible old fields default", BankRulesCheck.windowInterestSaveChecks());
         assertTrue("HT1 basis, loss, policy and tax flows cross both loaders", CapitalGainsCheck.saveChecks());
         System.out.println("--- XR7: support already bought under a peg crosses the save ---");
         assertTrue("nonzero hold support crosses DataSave JSON and Game's loader without billing the whole gap again", CurrencyRegimeCheck.savedHoldSupportChecks());
@@ -3129,65 +3224,15 @@ public class SaveFileCheck {
          * that top paid late, the month's slots 7 and 8. A save from before
          * it has neither: Norway's rule, owing nothing.
          */
-        Game drawing = new Game(fundCity.getGameFiles());
-        drawing.loadGameSave(4);
-        // The prior manual-order fixture can reserve cash. Free cash alone leaves that reserve
-        // available to the withdrawal and no longer causes a shortage. Draw the actual whole till.
-        drawing.fundDrawOut(drawing.getFund().getCash());
-        assertTrue("fixture: the withdrawal opens with the fund's actual till empty",drawing.getFund().getCash()==0);
-        drawing.setFundWithdrawal(TreasuryFund.MAX_WITHDRAWAL_STEPS * TreasuryFund.WITHDRAWAL_STEP);
-        // ...and nothing paid in (0.7.55): under the crowding premium this
-        // city's treasury runs a surplus whose pay-in met the transfer every
-        // month, so the fund never sold (its cash $136.6M after a year).
-        drawing.setFundDial(0);
-        // FS17: this pressed up to twelve months for a month that ran short AND a month that paid what it sold late, and on a town where nobody
-        // bid for the fund's shares (the moved college town: 44,441 Retail shares, no bid standing, nothing sold in a year) it never did - the
-        // known red. Both months are caused now. The first runs short by the dial's own arithmetic (the cash is drawn out above, the transfer
-        // is due), and the step posts the fund's ask for what it owes (Exchange.postFund(): asked at the desk's bid, RULE_PREMIUM under fair
-        // value); between the steps the world bids for it, at the ask and for all that rests at or under it, the way a buyer arrives between
-        // the clearings (Exchange.tradeForCheck()); and the second month's top pays what the shares fetched, late.
-        drawing.simulateMonths(1);
-        System.out.printf("   first withdrawal: due %.9f, paid %.9f, to raise %.9f, cash %.9f, reserved %.9f%n",drawing.getFund().getTransferDue(),drawing.getFund().getTransferPaid(),drawing.getFund().getToRaise(),drawing.getFund().getCash(),drawing.getFund().handReserve());
-        assertTrue("fixture: the month's cash ran short and the fund owes what it sells for",
-                drawing.getFund().sellsToPay() && drawing.getFund().getToRaise() > 0);
-        double fundAsked = 0, worldBought = 0;
-        // The normal step may already fill its whole ask. Count actual rule
-        // share sales as well as resting asks, with actual world settlement.
-        java.util.Set<String> shareLots=new java.util.HashSet<>();
-        for(String company:Equity.COMPANIES)shareLots.add(FundLedger.shareKey(company));
-        double highestSalePrice=0;boolean handSold=false;
-        for(var activity:drawing.getFund().getLedger().getActivity())if(activity.month()==drawing.getMonth()
-                &&FundLedger.SELL.equals(activity.kind())&&shareLots.contains(activity.key())){
-            if(activity.hand())handSold=true;
-            else if(activity.units()>0){fundAsked+=activity.units();highestSalePrice=Math.max(highestSalePrice,activity.money()/activity.units());}
-        }
-        assertTrue("fixture: the withdrawal's share sales are the rule's, with no hand sale mixed in",!handSold);
-        // Cash divided by the highest actual share-sale price is a lower
-        // bound on the world's filled share quantity, in the same units.
-        if(!handSold&&highestSalePrice>0)worldBought=drawing.getExchange().getFundSoldAbroad()/highestSalePrice;
-        System.out.printf("   rule shares already sold %.9f, world-filled quantity at least %.9f%n",fundAsked,worldBought);
-        for (int c = 0; c < Equity.COMPANIES.length; c++) {
-            OrderBook shares = drawing.getExchange().bookOf(c);
-            double resting = shares.resting(Exchange.FUND, OrderBook.Side.SELL);
-            if (!(resting > OrderBook.DUST)) continue;
-            double asking = 0;
-            for (OrderBook.Order o : shares.asks()) if (o.who().equals(Exchange.FUND)) asking = Math.max(asking, o.price());
-            fundAsked += resting;
-            for (OrderBook.Fill f : drawing.getExchange().tradeForCheck(c, Exchange.WORLD, OrderBook.Side.BUY, asking,
-                    shares.depth(OrderBook.Side.SELL, asking))) {
-                if (f.seller().equals(Exchange.FUND)) worldBought += f.quantity();
-            }
-        }
-        assertTrue("fixture: the step asked the market book for shares to pay the withdrawal with, and the world bought them (" + worldBought + " of " + fundAsked + ")",
-                fundAsked > OrderBook.DUST && worldBought > OrderBook.DUST);
-        drawing.simulateMonths(1);
+        // CBK3: the played city's fair>0 lot may be only a presentation floor. A controlled earned record causes a real sale instead.
+        Game drawing = controlledFundWithdrawal(new GameFiles(root.resolve("fund-withdrawal"), root.resolve("no-legacy")));
         System.out.printf("   drawing %s a month: due $%,.2fk, paid $%,.2fk, to raise $%,.2fk, paid late $%,.2fk, cash $%,.2fk%n",
                 DecisionLog.pct2(drawing.getFundWithdrawal()), drawing.getFund().getTransferDue(), drawing.getFund().getTransferPaid(),
                 drawing.getFund().getToRaise(), drawing.getFund().getTransferPaidLate(), drawing.getFund().getCash());
         assertTrue("fixture: over the default it owes what it sells for, and paid some late",
                 drawing.getFund().sellsToPay() && drawing.getFund().getToRaise() > 0 && drawing.getFund().getTransferPaidLate() > 0);
         assertTrue("saved it drawing 10% a month", drawing.saveGame(9, "drawing").ok);
-        Game drawn = new Game(fundCity.getGameFiles());
+        Game drawn = new Game(drawing.getGameFiles());
         drawn.loadGameSave(9);
         assertTrue("the withdrawal and what it owes cross a save",
                 drawn.getFundWithdrawal() == drawing.getFundWithdrawal()
@@ -3197,7 +3242,7 @@ public class SaveFileCheck {
                         && drawn.getFund().getTransferFromIdle() == drawing.getFund().getTransferFromIdle()
                         && drawn.getFund().getTransfersFromIdle() == drawing.getFund().getTransfersFromIdle());
         com.google.gson.JsonObject undialled = com.google.gson.JsonParser
-                .parseString(Files.readString(fundCity.getGameFiles().saveFile(9))).getAsJsonObject();
+                .parseString(Files.readString(drawing.getGameFiles().saveFile(9))).getAsJsonObject();
         com.google.gson.JsonObject undialledFund = undialled.getAsJsonObject("fund");
         assertTrue("fixture: the save carries the dial and the month's two new slots",
                 undialledFund.has("withdrawalSteps") && undialledFund.getAsJsonArray("month").size() == new TreasuryFund().toState().month.length);   // ...ten since LF1's lending fee, eleven since RB1's idle part
@@ -3205,8 +3250,8 @@ public class SaveFileCheck {
         com.google.gson.JsonArray sevenSlots = new com.google.gson.JsonArray();
         for (int i = 0; i < 7; i++) sevenSlots.add(undialledFund.getAsJsonArray("month").get(i));
         undialledFund.add("month", sevenSlots);
-        Files.writeString(fundCity.getGameFiles().saveFile(9), new com.google.gson.Gson().toJson(undialled));
-        Game beforeTheDial = new Game(fundCity.getGameFiles());
+        Files.writeString(drawing.getGameFiles().saveFile(9), new com.google.gson.Gson().toJson(undialled));
+        Game beforeTheDial = new Game(drawing.getGameFiles());
         beforeTheDial.loadGameSave(9);
         assertTrue("...an older save loads Norway's rule, owing nothing",
                 beforeTheDial.getFund().getWithdrawalSteps() == TreasuryFund.DEFAULT_WITHDRAWAL_STEPS
