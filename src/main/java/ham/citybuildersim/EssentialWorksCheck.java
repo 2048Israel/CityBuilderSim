@@ -1298,6 +1298,13 @@ public final class EssentialWorksCheck {
         BuildAdvice.Measure power = BuildAdvice.Measure.of(BuildAdvice.Kind.POWER);
         UtilitiesHandler utilities = g.getServicesManager().getUtilitiesHandler();
         utilities.setWattsConsumption(utilities.getProduction() * 1.2);
+        // PW9-G: no plant is ordered past what its wires carry by its opening (AutoBuilder.wiresCarry()). This section isolates power's pending
+        // deadline, so standing wires carry the town's whole forecast; on the founding wires alone, behind the diesels' queue, the Oil-Fired Plant
+        // was held for wires that could not open by its date. Their repairs (three Substations, a third of the town's) are the isolation's, not
+        // the work FC2's lines below are about, and this town cannot staff depots for them: those lines count the builders' surplus without them.
+        double repairsBefore = g.getMaintenancePoints();
+        serveGrid(g);
+        double wiresRepairs = g.getMaintenancePoints() - repairsBefore;
         // ...Diesel Stations pending twice what covers it (PW1 queued a hundred Wind Farms' firm kW): the advice's own count for this
         // shortage at the builder's slack (BuildAdvice.count()), twice over, so the pending site covers each candidate's later
         // opening through the deadline (a quarter more did not: five more were ordered two months on, the planner's own reading).
@@ -1405,12 +1412,14 @@ public final class EssentialWorksCheck {
         g.autoBuildProbeForTest = null;
         loaded.autoBuildProbeForTest = null;
         check("fixture: later priority work kept operating power short throughout the original deadline", stayedShort[0]);
-        check(String.format("fixture: the %d depots' builders make %d points a month at the last pass against the repairs' %.0f, a site output of %d",
-                        PENDING_DEPOTS, g.getConstructionOutputAtEveryPost(), g.getMaintenancePoints(), g.getBuildingOutputAtEveryPost()),
-                g.getConstructionOutputAtEveryPost() > g.getMaintenancePoints() && g.getBuildingOutputAtEveryPost() > 0);
-        check("fixture: the later priority work finished nothing, so the repairs left the builders a site output at the last pass",
+        // ...the repairs less the isolating wires' (PW9-G, above): FC2's question is the work that finishes, not the wires this section stands.
+        double repairs = g.getMaintenancePoints() - wiresRepairs;
+        check(String.format("fixture: the %d depots' builders make %d points a month at the last pass against the repairs' %.0f (the isolating wires' %.0f besides), a site output of %d",
+                        PENDING_DEPOTS, g.getConstructionOutputAtEveryPost(), repairs, wiresRepairs, g.getBuildingOutputAtEveryPost()),
+                g.getConstructionOutputAtEveryPost() > repairs);
+        check("fixture: the later priority work finished nothing, so the repairs left the builders a surplus at the last pass, the isolating wires' aside",
                 bm.getStack(later).getQuantity() == 0 && bm.getStack(later).getUnderConstruction() == 1
-                        && g.getBuildingOutputAtEveryPost() > 0);
+                        && g.getConstructionOutputAtEveryPost() > repairs);
         check("the persistent post-checkpoint industrial load causes a further real power order (" + originalOrders + ")",
                 originalOrders.stream().anyMatch(o -> o.split("\\|")[1].equals(power.label())));
         check("...and the plant it orders is the one that opens before the diesels (" + ahead.getName() + ": " + originalOrders + ")",

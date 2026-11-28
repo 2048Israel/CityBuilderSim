@@ -254,8 +254,12 @@ public final class SubstationCheck {
         // PW5's law, where the small unit is not on the menu: the Substation is the only step, ordered once at the edge.
         Game g = city("order-district", 1);
         BuildingManager bm = g.getBuildingManager();
-        bm.setTemplateKnown(t -> t.getId() != Substations.DISTRIBUTION_ID && t.offeredAt(g.getMonth()) && !ResearchCatalog.nearFuture(t.getSinceText()));
-        bm.setTemplateKnownIn((t, months) -> t.getId() != Substations.DISTRIBUTION_ID && t.offeredAt(g.getMonth() + months) && !ResearchCatalog.nearFuture(t.getSinceText()));
+        // ...nor a power plant (PW9-G): with one, the town's power (8% served) is ordered in the first pass, and its quoted completion holds the 100 MW
+        // unit's long order at the builders (the crew guard), the grid not lacked now when its edge is read at its own opening. This case is the grid's step.
+        java.util.function.Predicate<BuildingsTemplate> menu = t -> t.getId() != Substations.DISTRIBUTION_ID
+                && (Substations.isSubstation(t) || t.getCategory() != BuildingType.ELECTRICITY);
+        bm.setTemplateKnown(t -> menu.test(t) && t.offeredAt(g.getMonth()) && !ResearchCatalog.nearFuture(t.getSinceText()));
+        bm.setTemplateKnownIn((t, months) -> menu.test(t) && t.offeredAt(g.getMonth() + months) && !ResearchCatalog.nearFuture(t.getSinceText()));
         Ordered o = orderAt(g, grid, 1.01, "Substation");
         OUT.printf("   sites below/above/repeated: %d/%d/%d (distribution %d)%n", o.districtBefore(), o.districtAfter(), o.districtRepeated(), o.smallAfter());
         check("a catalogue without the distribution substation orders the 100 MW Substation at the edge, counts its site once, and does not order below it",
