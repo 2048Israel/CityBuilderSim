@@ -5,7 +5,7 @@ REV-CBK3b's second review of aed3b2916 is SHIP, no P1 (orchestrator mail
 the bank model is retained without a source conflict. The accepted
 80-run ensemble CBK3-final is PASS, M1/F1 hard10/10, on the box. The
 authorised ASH1-merge dry completed failed; its owned CreditCrunch fixture
-is being mended for a fresh review/gate. Neither failed dry is reusable. Base
+is now mended and green for a fresh review/gate. Neither failed dry is reusable. Base
 b2f50a9ef, 0.9.213, format66; RES3's compatible format67 is now inherited.
 CBK1 main482dbfab2 (0.9.214, still format66) is merged for integration checks.
 The builder keeps decisions and review; CBK3-trace's bounded diagnostic
@@ -2288,3 +2288,106 @@ checks the actual smaller-slice credit law and how to cause the original
 capital refusal while retaining the six-order, horizon, till fraction and
 rate. No assertion is broadened to accept a different constraint, and no
 model/default change has been made. Latest fetch still names main39fcbee71.
+
+The second read-only probe completes exit4 with the original trim assertion
+and a new, explicit missing-capacity precondition red. At the same m270,
+the native two-block door price is554.69201895579560, held408.39464745550230,
+household offering means145.80859346932700, RE principal1654.6231509461875,
+sector allowance16.546231509461904 and shared insured allowance
+1478.6172498565543. The actual issue is wholly domestic. Its two-block
+residual0.48877803096624460 becomes principal0.52240722414210650, which
+validly fits. A six-block refusal never proved this smaller refusal.
+The derived subscription boundary is130.81627919651137; the native
+mortgageShortOfCapital call, not that arithmetic alone, will prove any
+prepared case. Private logs: `target/CBK3-credit-native-rooms.log/.txt`.
+The proposed cause is an actual funded asset purchase by the subscribing
+owners before the order, preserving their acquired claim and the recipient's
+cash, then re-striking the original half-band. The existing positive partial
+issue and outright capital-trim assertions remain unchanged.
+
+### The financing fixture is caused natively, not exempted
+
+★ Keep the original six-block order, m270 horizon/seed, ORDER_RATE, TILL
+fraction, half-band hold, ground requirement, door-price comparison,
+positive partial issue, capital-trim message and cleared refusal flag.
+Prepare its two missing antecedents explicitly: run the native share market
+once on the fixture's changed homes/ground/yard/till, then let the owners
+buy one current offering budget of bank capital through the existing
+Game.capitaliseBank path. Equity.offer and HouseholdBalance.subscribe debit
+actual savings and register shares and acquisition basis; Bank.injectCapital
+credits the same actual domestic cash and capital counter. The bank was
+already listed and traded, so no founders or supplied price are involved.
+The bank recapitalisation path uses its native price and does not impose
+the RE quote gate; the target RE issue must still pass that unchanged gate.
+No quote, fair value, rate, tolerance, seed, month, HOLD, TILL or growth rule
+is supplied or relaxed. No purse/holding is restored after these trades.
+The original half-band and lending rule are re-caused **after** the real
+market/capital flows, so no stale pre-offer capital snapshot is asserted.
+
+This is fixture preparation before the hand order, not an asserted extra
+played month or a change to default model code. The subscription budget
+falls by actual cell subscriptions, not an assumed uniform share. All
+original assertions remain. New hard assertions establish the supported
+quote, positive residual subscription budget, an outright-affordable first
+block, native mortgageShortOfCapital on the next block after that budget,
+and an actual wholly domestic partial issue within the measured budget.
+They test the smaller refusal directly; a refusal for six is insufficient.
+
+Helper34's bounded exact-path review (20261128-092729-937) finds complete
+cash, share, basis and capital booking. Root's review corrects the proposed
+cash scope: MoneyAudit.pooled excludes households. A domestic subscription
+therefore increases those pools and reduces the owners' savings by the same
+amount; the pooled subtotal alone is not conserved. The new isolated check
+asserts the pool receipt, savings debit and their combined residual each
+round to zero cents against the paid cash, with finite operands. It ends
+before holdInBand's synthetic fixture capital/funding stocks, which are not
+called a native cash transaction. No existing audit tolerance or law moves.
+
+The isolated complete-transfer probe passes CreditCrunchCheck (exit0):
+prior domestic bank subscription145.808593469327, no foreign subscription,
+residual offering means116.66384977229106; pool receipt
+145.80859346932266 and savings debit145.80859346932630, combined residual
+**-3.637978807091713e-12**, zero cents. The subsequent genuine order asks
+1255.6814094118845 and raises116.66384977229106. Its two-block residual
+29.633521728002194 needs principal31.672384695517420 against the native
+sector allowance16.546231509461904 (shared allowance1478.6172498565543).
+The native capital-short predicate is true and the door builds1 block
+outright, trimmed from6 for capital; every original assertion passes.
+Private logs: `target/CBK3-credit-complete-transfer.log/.txt` in the
+separate detached diagnostic worktree. The temporary assertion that the
+non-household pooled subtotal alone stay flat failed by exactly the paid
+cash; it was corrected to the full two-sided transfer, never waived.
+
+Root adopts that native cause with less diagnostic output and adds explicit
+listed/traded-bank, acquired-shares and acquisition-basis assertions.
+No production model/save/UI code changes in this mend, so the accepted
+ensemble's final model and its observation limits remain unchanged. The
+failed VRJmGJS3 dry cannot be reused through the harness source change;
+this returns through a new provisional mends/review and a fresh gate.
+
+Final production-worktree verification completes **exit0** for both
+`./batch-check.sh CreditCrunchCheck` and `./batch-check.sh --fast`, run
+strictly sequentially, with Earth2/World1 and parallel1. Named log
+`target/CBK3-credit-mend.log`, wrapper `target/CBK3-credit-mend.txt`, fast
+`target/CBK3-credit-mend-fast.txt`; 0 firm stale findings,212 soft.
+CreditCrunchCheck retains all42 original assertions and adds8 hard
+antecedent/transaction assertions (50 total); acquired household shares
+match the register's new issue and acquisition basis matches actual paid
+cash. The final operands and transfer residual match the private green
+probe above. Its door builds1 outright from6 for the bank's capital and
+clears the refused flag. The eighteen named bank/power/merge-reader checks
+already passed on this identical production model; none is masked by a new
+known-red row. Maps are regenerated. Only CreditCrunchCheck and its generated
+indexes change as source/derived artifacts in this mend; no default trace,
+save field, monetary model, power model or threading code is changed.
+The provisional marker stays, with no failed-run reuse comment. No JVM or
+helper remains running at the fresh mends handoff.
+
+The actual harness mend is commit1b76fce05; source diff against the failed
+dry's b3526c053 is CreditCrunchCheck alone. Final fetch remains main
+39fcbee71, fully included. The read-only pick is ALL264 through AllChecks;
+its review line still names the batch's money classes and DataSave saves.
+No ALL pick/suite is run on the laptop. The next action is a provisional
+mends handoff for review and a fresh authorized box gate, not ready and not
+reuse of VRJmGJS3. The accepted final-model ensemble is not repeated for
+this harness-only repair.

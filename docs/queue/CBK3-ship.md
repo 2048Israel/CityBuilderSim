@@ -10,8 +10,8 @@ share valuation no longer revives an old offering price at zero earnings.
 Monthly play audits both funding limits and counts when stable cash binds.
 An unpaid window-interest bill stays owed and bears the past-due rate until paid.
 Government keeps its native scroll gutter, so wrapped redraws stay put.
-The copied-city evidence, ensemble comparisons and individual failure increases
-are recorded in the notes.
+The copied-city evidence, ensemble comparisons, individual failure increases and
+native credit-crunch fixture evidence are recorded in the notes.
 ## queued
 | LE1 | Identify borrowers and connected groups before exposing a large-exposure limit | docs/queue/LE1.md |
 | BFW1 | Price the bank's own wholesale credit risk and close new market funding in resolution | docs/queue/BFW1.md |
