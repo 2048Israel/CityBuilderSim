@@ -543,6 +543,28 @@ public final class WorksValue {
         return completedAt(g, completionSchedule(g, site), Double.isFinite(months) ? Math.max(0, months) : 0);
     }
 
+    /**
+     * ...with one more order on the same crews (PW9-G): the units of a site its queue opens by `months` from now once `count`
+     * of `additional`, `points` of work, shares the builders (BuildingManager.siteUnitMonthsAfter()). The wires a plant is
+     * matched to are read so, since the plant's own points slow them (PowerWiresCheck 3). A rushed site's later units read
+     * the queue as it stands.
+     */
+    public static Map<BuildingsTemplate, Long> openByAfter(Game g, Map<BuildingsTemplate, Long> site, double months,
+                                                           BuildingsTemplate additional, long count, double points) {
+        if (site.isEmpty() || additional == null || count <= 0) return openBy(g, site, months);
+        Map<BuildingsTemplate, PendingWork> schedule = new LinkedHashMap<>();
+        BuildingManager bm = g.getBuildingManager();
+        double output = g.getBuildingOutputAtEveryPost();
+        for (Map.Entry<BuildingsTemplate, Long> e : site.entrySet()) {
+            BuildingsTemplate t = e.getKey();
+            double first = bm.siteUnitMonthsAfter(t, 1, output, additional, count, points);
+            double second = e.getValue() > 1 ? bm.siteUnitMonthsAfter(t, 2, output, additional, count, points) : first;
+            schedule.put(t, new PendingWork(e.getValue(), first, second - first,
+                    bm.getControl().isRushed(ConstructionControl.keyOf(t))));
+        }
+        return completedAt(g, schedule, Double.isFinite(months) ? Math.max(0, months) : 0);
+    }
+
     /** Read-only generation schedule and native monthly planning dates; pending loads retain their existing held reader. */
     static final class PowerDates {
         private final Game game;

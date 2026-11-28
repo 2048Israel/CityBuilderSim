@@ -1402,7 +1402,10 @@ public final class AutoBuilder {
        completion, the ground and the money - sized at the plant's date and demand; then no more of the plant is ordered
        than the wires will carry: the plants' served share at that date held to the wires', each measure's own figure
        (BuildAdvice.supplyDemand(): the plants against the year's peak hour, the wires against the peak block of their
-       season), the last whole unit past it allowed. An order the plants on site already serve the load for (the spread's
+       season), the last whole unit past it allowed. The wires are counted as the plants are, by the units their site
+       opens by that date, with the plant's own points on the same crews (WorksValue.openByAfter()): counted whole, a unit
+       the builders would open months after the plant carried it, and read before the plant, each plant slowed the wires
+       it was matched to (PowerWiresCheck 3, a town of two depots: 30 small steam opened six months before their wires). An order the plants on site already serve the load for (the spread's
        cheaper power) needs no wires: the wires carry the same load whichever plant runs.
        WHY: REV-PW9 P1-b. The modern-equipment city stood 31 small steam stations, 21 MW offered, behind the founding
        10 MW while their Substation waited on the College's protected completion: native dispatch m127 generated
@@ -1417,6 +1420,8 @@ public final class AutoBuilder {
     private BuildAdvice.Ahead wiresAt;
     /** Whether this power step has stepped its wires already: once a step, whichever plant in the ranking asked (never saved). */
     private boolean wiresStepped;
+    /** A harness's door (PowerWiresCheck's before and after): true, no plant waits for its wires and none are ordered with it, as on 0.9.218. Never saved, never set outside a harness. */
+    static boolean wiresOffForTest;
 
     /** A measure's supply over its demand at p, with these buildings standing as well: infinite where nothing is asked. */
     static double servedAt(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site, BuildAdvice.Ahead p) {
@@ -1427,16 +1432,13 @@ public final class AutoBuilder {
     /** How many of n of a power suggestion the wires will carry at its date, the wires short of its load there ordered first (THE WIRES WITH THE POWER). */
     private long wiresCarry(Game game, List<CityNeeds.Need> all, List<BuildAdvice.Measure> kept, BuildAdvice.Suggestion s, long n) {
         BuildAdvice.Ahead p = s.ahead();
-        if (p == null || n < 1 || wiresAt != null) return n;
+        if (p == null || n < 1 || wiresAt != null || wiresOffForTest) return n;
         BuildAdvice.Measure power = s.measure();
-        BuildingsTemplate t = s.template();
         Map<BuildingsTemplate, Long> at = WorksValue.openBy(game, pendingCapacity(game, power), p.months());
-        double plants = servedAt(game, power, at, p);
-        if (!(plants < 1)) return n;
+        if (!(servedAt(game, power, at, p) < 1)) return n;
         // The wires at the plant's date and demand: its months, its growth and its slack (the grid reads no power factor).
         BuildAdvice.Ahead load = new BuildAdvice.Ahead(p.months(), p.k(), p.slack());
-        double wires = servedAt(game, GRID, pendingCapacity(game, GRID), load);
-        if (wires < 1 && !wiresStepped) {
+        if (wiresWith(game, s, 0, load) < 1 && !wiresStepped) {
             wiresStepped = true;
             wiresAt = load;
             try {
@@ -1444,17 +1446,41 @@ public final class AutoBuilder {
             } finally {
                 wiresAt = null;
             }
-            wires = servedAt(game, GRID, pendingCapacity(game, GRID), load);
         }
-        if (!(wires < 1)) return n;
-        if (plants >= wires) return 0;
-        if (servedAt(game, power, BuildAdvice.plus(at, t, n), p) < wires) return n;
-        long lo = 0, hi = n;                              // lo serves less than the wires carry, hi as much or more
+        if (wiresAllow(game, s, at, load, n)) return n;
+        long lo = 0, hi = n;                              // lo units allowed, hi not
         while (hi - lo > 1) {
             long mid = lo + (hi - lo) / 2;
-            if (servedAt(game, power, BuildAdvice.plus(at, t, mid), p) < wires) lo = mid; else hi = mid;
+            if (wiresAllow(game, s, at, load, mid)) lo = mid; else hi = mid;
         }
-        return hi;
+        return lo;
+    }
+
+    /**
+     * Whether the wires allow the m-th unit of a power suggestion (THE WIRES WITH THE POWER): with m units on the crews the
+     * wires that open by its date still carry all the load there, or with m - 1 the plants still serve less of it than the
+     * wires carry (the unit that reaches the wires' share allowed). Both fall as m grows - the plants' share rises, and each
+     * unit's points slow the wires on the same crews - so the units allowed are the first ones.
+     */
+    private boolean wiresAllow(Game game, BuildAdvice.Suggestion s, Map<BuildingsTemplate, Long> at, BuildAdvice.Ahead load, long m) {
+        if (m < 1) return true;
+        if (!(wiresWith(game, s, m, load) < 1)) return true;
+        return servedAt(game, s.measure(), BuildAdvice.plus(at, s.template(), m - 1), s.ahead()) < wiresWith(game, s, m - 1, load);
+    }
+
+    /** The wires' served share at `load` with m of a power suggestion on the crews: the units on site the builders open by then, each slowed by the order's points (WorksValue.openByAfter()). */
+    private double wiresWith(Game game, BuildAdvice.Suggestion s, long m, BuildAdvice.Ahead load) {
+        Map<BuildingsTemplate, Long> site = pendingCapacity(game, GRID);
+        Map<BuildingsTemplate, Long> open = m < 1 ? WorksValue.openBy(game, site, load.months())
+                : WorksValue.openByAfter(game, site, load.months(), s.template(), m, orderPoints(game, s, m));
+        return servedAt(game, GRID, open, load);
+    }
+
+    /** The construction points an order of `count` of a suggestion puts on the crews: its buildings at the points their equipment takes and its works (R1e). */
+    private static double orderPoints(Game game, BuildAdvice.Suggestion s, long count) {
+        Game.BuildQuote quote = s.paving() ? game.quotePave(count) : game.quoteBuild(s.template(), count);
+        return count * (quote.fitout() == null ? (double) s.template().getConstructionPoints() : quote.fitout().points())
+                + quote.prepPoints + quote.worksPoints + quote.bridgePoints + quote.deepWaterPoints;
     }
 
     private record CrewLimit(long count, String service) { }
@@ -1488,19 +1514,14 @@ public final class AutoBuilder {
         double output = game.getBuildingOutputAtEveryPost();
         if (!(output > 0)) return null;
         BuildingsTemplate additional = suggestion.template();
-        Game.BuildQuote quote = null;
-        double points = 0;
+        double points = Double.NaN;
         for (BuildAdvice.Measure current : kept) {
             Double due = pendingUntil.get(current.label());
             // PW3, 2026-11-24: a measure the month does not lack holds nothing (lacksNow(): power's peak block in the year's highest month, not the plan's peak hour; see crewLimit()).
             if (due == null || current.equals(measure) || !essential(current) || current.serves(additional)
                     || !BuildAdvice.lacksNow(game, current)) continue;
-            if (quote == null) {
-                quote = suggestion.paving() ? game.quotePave(count) : game.quoteBuild(additional, count);
-                // ...the order's buildings at the points their equipment takes (R1e; the quote's fitout, the template's own in a default city).
-                points = count * (quote.fitout() == null ? (double) additional.getConstructionPoints() : quote.fitout().points())
-                        + quote.prepPoints + quote.worksPoints + quote.bridgePoints + quote.deepWaterPoints;
-            }
+            // ...the order's buildings at the points their equipment takes (R1e; the quote's fitout, the template's own in a default city).
+            if (Double.isNaN(points)) points = orderPoints(game, suggestion, count);
             double before = Double.POSITIVE_INFINITY, after = Double.POSITIVE_INFINITY;
             for (Map.Entry<BuildingsTemplate, Long> site : BuildAdvice.onSite(game, current).entrySet()) {
                 if (site.getValue() <= 0 || current.kind() == BuildAdvice.Kind.HIGHWAYS

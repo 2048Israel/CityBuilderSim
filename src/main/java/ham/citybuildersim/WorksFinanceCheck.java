@@ -798,6 +798,13 @@ public final class WorksFinanceCheck {
         roads.setBuiltCapacity(roads.getStreetLoad() * 2);
         // ...power served with 5% to spare, as the advice reads it (PW1: the calm peak's draw over the firm supply).
         EssentialWorksCheck.powerDrawAt(g, 1 / 1.05);
+        // PW9-G: no plant is ordered past what its wires carry (AutoBuilder.wiresCarry()). This section isolates the crew guard, so standing
+        // wires carry the town's whole forecast, as EssentialWorksCheck's isolated orders have them; on the founding wires alone the reserve
+        // was held for the wires (Cut.WIRES) before the guard was asked.
+        EssentialWorksCheck.serveGrid(g);
+        check("fixture: standing wires carry the town's whole forecast, so the wires hold nothing here",
+                BuildAdvice.maintained(g, BuildAdvice.Measure.of(BuildAdvice.Kind.GRID), Map.of(),
+                        BuildAdvice.opening(g, BuildAdvice.LIFE_MONTHS, g.getAutoBuilder().getSlack())));
         List<BuildingsTemplate> catalogue = new ArrayList<>(bm.getTemplates());
         bm.getTemplates().removeIf(t -> t.getCategory() == BuildingType.ELECTRICITY && t != wind);
         // THE FIXTURE CAUSES IT (PW1, PW3): PW1's advice credited a Wind Farm with its firm part only (PowerDispatch.WIND_FIRM, 0.33 of its

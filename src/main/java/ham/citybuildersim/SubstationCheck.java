@@ -203,17 +203,22 @@ public final class SubstationCheck {
     record Ordered(double supply, double peak, long districtBefore, long districtAfter, long districtRepeated,
                    long smallBefore, long smallAfter, long smallRepeated, boolean placed, String building) { }
 
-    /** A grid at its edge (.99 of one district's carry asked, nothing ordered), then `over` of it asked: what the automatic builder orders, and that a repeat orders no more. */
-    static Ordered orderAt(Game g, BuildAdvice.Measure grid, double over) {
+    /**
+     * A grid at its edge (.99 of one district's carry asked, nothing ordered), then `over` of it asked: what the automatic builder orders, and that a repeat orders no more.
+     * PW9-G: the edge is the peak at the order's own opening - the highest month of the season (BuildAdvice.gridSeason()) at its date and latitude
+     * over `unit`'s lead and horizon - not this month's, so the fixture asks its load against that season and reads the grid at that date.
+     */
+    static Ordered orderAt(Game g, BuildAdvice.Measure grid, double over, String unit) {
         UtilitiesHandler u = g.getServicesManager().getUtilitiesHandler();
         AutoBuilder a = g.getAutoBuilder(); a.setSlack(0, null); a.setOn(true, null);
-        double season = PowerDispatch.season(CityCalendar.monthOfYear(g.getMonth()));
+        BuildingManager bm = g.getBuildingManager();
+        BuildAdvice.Ahead at = BuildAdvice.opening(g, g.quoteBuild(bm.getTemplateByName(unit), 1).months, 0);
+        double season = BuildAdvice.gridSeason(g, at);
         u.setWattsConsumption(.99 * CARRY / (PowerDispatch.PLAN_PEAK * season));
         quietly(() -> a.pass(g));
-        BuildingManager bm = g.getBuildingManager();
         long districtBefore = bm.getUnderConstructionById()[Substations.ID], smallBefore = bm.getUnderConstructionById()[Substations.DISTRIBUTION_ID];
         u.setWattsConsumption(over * CARRY / (PowerDispatch.PLAN_PEAK * season));
-        double[] standing = BuildAdvice.supplyDemand(g, grid, Map.of());
+        double[] standing = BuildAdvice.supplyDemand(g, grid, Map.of(), at);
         quietly(() -> a.pass(g));
         long district = bm.getUnderConstructionById()[Substations.ID], small = bm.getUnderConstructionById()[Substations.DISTRIBUTION_ID];
         var placed = a.steps().stream().filter(s -> s.measure().equals(grid) && s.ordered() > 0).findFirst();
@@ -235,7 +240,7 @@ public final class SubstationCheck {
         // ASH1: with both units known the order is the grid size the load needs - the least 5 MW units that cover the peak, never a 100 MW unit.
         double unit = Substations.DISTRIBUTION_MW * 1000;
         for (double over : new double[] {1.01, 1.12}) {
-            Ordered o = orderAt(city("order-" + over, 1), grid, over);
+            Ordered o = orderAt(city("order-" + over, 1), grid, over, "Distribution Substation");
             long wanted = (long) Math.ceil((o.peak() - o.supply()) / unit);
             OUT.printf("   past the edge by %.0f%%: peak %.0f kW over %.0f kW carried; distribution %d/%d/%d wanted %d, districts %d/%d/%d%n", (over - 1) * 100,
                     o.peak(), o.supply(), o.smallBefore(), o.smallAfter(), o.smallRepeated(), wanted, o.districtBefore(), o.districtAfter(), o.districtRepeated());
@@ -251,7 +256,7 @@ public final class SubstationCheck {
         BuildingManager bm = g.getBuildingManager();
         bm.setTemplateKnown(t -> t.getId() != Substations.DISTRIBUTION_ID && t.offeredAt(g.getMonth()) && !ResearchCatalog.nearFuture(t.getSinceText()));
         bm.setTemplateKnownIn((t, months) -> t.getId() != Substations.DISTRIBUTION_ID && t.offeredAt(g.getMonth() + months) && !ResearchCatalog.nearFuture(t.getSinceText()));
-        Ordered o = orderAt(g, grid, 1.01);
+        Ordered o = orderAt(g, grid, 1.01, "Substation");
         OUT.printf("   sites below/above/repeated: %d/%d/%d (distribution %d)%n", o.districtBefore(), o.districtAfter(), o.districtRepeated(), o.smallAfter());
         check("a catalogue without the distribution substation orders the 100 MW Substation at the edge, counts its site once, and does not order below it",
                 o.districtBefore() == 0 && o.districtAfter() == 1 && o.districtRepeated() == o.districtAfter() && o.placed()
