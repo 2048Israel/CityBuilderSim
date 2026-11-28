@@ -2,7 +2,7 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**265 harness files, 30,867 labelled assertions.** AllChecks runs 265 of them.
+**265 harness files, 30,875 labelled assertions.** AllChecks runs 265 of them.
 
 ## Which harnesses read which class
 
@@ -29608,7 +29608,7 @@ _(no printed sections or labelled assertions found)_
   - L372 power row/tariff/history observations survive the actual save/load, ending-state changes and older incomplete books
   - L373 the saved closing dispatch feeds the next native month without being rebuilt from ending state
 
-## PowerWiresCheck.java - 78 labelled assertions
+## PowerWiresCheck.java - 86 labelled assertions
 
 > The wires are ordered with the power, and the grid is planned at its date and latitude (batch PW9-G).
 > 
@@ -29692,29 +29692,37 @@ _(no printed sections or labelled assertions found)_
   - L1174 fixture: in both runs the plants open (months
   - L1175 from the plants' opening to the wires' the law's cut leaves less offered past the carry than the date alone's (0.9.218's) order does (
   - L1177 ...the first pass ordering fewer plant units (
-- **L1265 9. the promise: the wires a plant was ordered with open by its month, and hold every other order that would put them past it**
-  - L1269 fixture: the town has a power card
-  - L1275 fixture: grid units on order and the standing wires short in a month the plant stands, the plants on site serving none of it (due +
-  - L1280 the plant is placed (step
-  - L1289 a save round trip keeps the dues (
-  - L1301 the grid units the due counted (
-  - L1303 the due is gone the month after it passes (month
-- **L1333 10. a rushed grid site: the units the wires are credited by a date are no more than open by it**
-  - L1375 fixture: the site of
-  - L1376 fixture: the plant's
-  - L1377 fixture: the real openings with the plant fall more than a month past the quote alone for
-  - L1379 the units credited by a date are no more than open by it, in each of
-- **L1389 11. an abroad grid site: no unit is credited before the foreign crews can build it, and no more than open by a date**
-  - L1429 fixture: the site is handed abroad at a pace that opens its last unit (
-  - L1431 fixture: all the units open within
-  - L1432 no unit is credited before the foreign crews' floor (abroadUnitFloor) in any of
-  - L1433 no more units are credited by a date than open by it (
-- **L1442 12. a cancelled grid site: the law reads no carry from it, as in the same town with no grid site**
-  - L1448 fixture: the town has a power card
-  - L1456 fixture: the site is being cancelled and its units would carry the plant if counted (
-  - L1465 the plant is held or cut as in the same town with no grid site (
-- **L1473 13. the money audit stays exact over the months run**
-  - L1476 every one of the
+- **L1277 9. the promise: the wires a plant was ordered with open by its month, and hold power's own later orders that would put them past it**
+  - L1281 fixture: the town has a power card
+  - L1287 fixture: grid units on order and the standing wires short in a month the plant stands, the plants on site serving none of it (due +
+  - L1292 the plant is placed (step
+  - L1301 a save round trip keeps the dues (
+  - L1312 the grid units the due counted (
+  - L1314 the due is gone the month after it passes (month
+  - L1347 overtaken: fixture: the plant's pass records a due
+  - L1351 overtaken: fixture: the queue reads the wires open by the due (month
+  - L1355 overtaken: fixture: the town's power lacks nothing now (
+  - L1381 overtaken: fixture: with the homes on the crews the queue reads the wires open by the due (month
+  - L1385 overtaken: fixture:
+  - L1396 overtaken: fixture: the pass orders the town's care (
+  - L1400 overtaken: no order of the town's other works is held for the wires: each placed whole (
+  - L1401 overtaken: the due moves with the wires: none falls before their opening, month
+- **L1432 10. a rushed grid site: the units the wires are credited by a date are no more than open by it**
+  - L1474 fixture: the site of
+  - L1475 fixture: the plant's
+  - L1476 fixture: the real openings with the plant fall more than a month past the quote alone for
+  - L1478 the units credited by a date are no more than open by it, in each of
+- **L1488 11. an abroad grid site: no unit is credited before the foreign crews can build it, and no more than open by a date**
+  - L1528 fixture: the site is handed abroad at a pace that opens its last unit (
+  - L1530 fixture: all the units open within
+  - L1531 no unit is credited before the foreign crews' floor (abroadUnitFloor) in any of
+  - L1532 no more units are credited by a date than open by it (
+- **L1541 12. a cancelled grid site: the law reads no carry from it, as in the same town with no grid site**
+  - L1547 fixture: the town has a power card
+  - L1555 fixture: the site is being cancelled and its units would carry the plant if counted (
+  - L1564 the plant is held or cut as in the same town with no grid site (
+- **L1572 13. the money audit stays exact over the months run**
+  - L1575 every one of the
 
 ## PriceLevelCheck.java - 102 labelled assertions
 

@@ -2,7 +2,7 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,980 constants in 665 files.**
+**6,981 constants in 665 files.**
 
 ## model (3128 constants)
 
@@ -55,12 +55,12 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 217 | `AutoBuilder.ORDER_MONTHS` | `12` | No more than opens inside this many months: the businesses' own rule for an order until BA1 (BusinessInvestment.MAX_ORDER_MONTHS, which went with the cap on orders), kept for the city's automatic o... |
 | 422 | `AutoBuilder.HELD_BACK` | `"Automatic building holds it back; "` | What the advice card's line opens with (PT1-M3); the inbox's words for the payback follow. |
 | 708 | `AutoBuilder.PAID_MONTHS` | `12` | Months of monthPaid() the payback's figure averages: a year, as a lender reads a city's accounts - a year of its own recurring revenue, the sale of its property left out, as a city's debt limit is ... |
-| 1428 | `AutoBuilder.GRID` | `BuildAdvice.Measure.of(BuildAdvice.Kind.GRID)` | The grid's measure: the wires the plants' power runs on (PW9-G). |
-| 1431 | `AutoBuilder.WIRES_DUE` | `"the wires Power's plants were ordered with"` | The service a crew hold names for the wires' promise (wiresDue; crewHolds, the inbox's and the card's words). |
-| 2241 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
-| 2344 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
-| 2369 | `AutoBuilder.ASSEMBLE_MOST` | `4 * LandMarket.OFFERS` | The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on ... |
-| 3045 | `AutoBuilder.PROCEEDS_WAIT_MONTHS` | `6` | The most months an ask whose bond has raised its order's cost waits, open, for a treasury that cannot pay it - the month's bills spent the proceeds and the central bank advances no more - before it... |
+| 1429 | `AutoBuilder.GRID` | `BuildAdvice.Measure.of(BuildAdvice.Kind.GRID)` | The grid's measure: the wires the plants' power runs on (PW9-G). |
+| 1432 | `AutoBuilder.WIRES_DUE` | `"the wires Power's plants were ordered with"` | The service a crew hold names for the wires' promise (wiresDue; crewHolds, the inbox's and the card's words). |
+| 2271 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
+| 2374 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
+| 2399 | `AutoBuilder.ASSEMBLE_MOST` | `4 * LandMarket.OFFERS` | The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on ... |
+| 3075 | `AutoBuilder.PROCEEDS_WAIT_MONTHS` | `6` | The most months an ask whose bond has raised its order's cost waits, open, for a treasury that cannot pay it - the month's bills spent the proceeds and the central bank advances no more - before it... |
 
 ### Bank.java ([map](map/Bank.md))
 
@@ -6156,7 +6156,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2328 constants)
+## harnesses (2329 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -8798,13 +8798,14 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 916 | `PowerWiresCheck.WINDOW_K` | `1.07, WINDOW_SLACK =.1` |  |
 | 1094 | `PowerWiresCheck.FRONTIER_UNITS` | `2, PROMISE_UNITS = 3` | Sections 8, 9: the distribution units ordered before the pass (8: so many that the first of them opens after the plant; 9: few, so that it opens before). |
 | 1125 | `PowerWiresCheck.FRONTIER_MONTHS` | `36` | Section 8: the months run, the law on and off. |
-| 1214 | `PowerWiresCheck.PROMISE_WORDS` | `"waits to preserve the opening of the wires Power's plants were ordered with"` |  |
-| 1309 | `PowerWiresCheck.RUSHED_UNITS` | `3, RUSHED_PLANTS = 100` | Section 10: the units on the rushed site, the plants whose points share its crews (the chosen count, and those the search tried), and the months run counting the grid's units. |
-| 1310 | `PowerWiresCheck.RUSHED_SEARCH` | `{ RUSHED_PLANTS }` |  |
-| 1313 | `PowerWiresCheck.GRID_MONTHS` | `70` | Sections 10, 11: the months run counting the grid's units standing. |
-| 1385 | `PowerWiresCheck.ABROAD_UNITS` | `3` | Section 11: the units on the site handed abroad, and the months the foreign crews take on the first of them. |
-| 1386 | `PowerWiresCheck.ABROAD_FIRST_MONTHS` | `30` |  |
-| 1439 | `PowerWiresCheck.CANCELLED_UNITS` | `3` | Section 12: the units on the site that is cancelled. |
+| 1226 | `PowerWiresCheck.PROMISE_WORDS` | `"waits to preserve the opening of the wires Power's plants were ordered with"` |  |
+| 1320 | `PowerWiresCheck.HOME` | `"House"` | Section 9's second town: the homes going up by hand on the same crews before the pass, as many as leave the wires read open by their due (each a few points: the finest load the crews take). |
+| 1408 | `PowerWiresCheck.RUSHED_UNITS` | `3, RUSHED_PLANTS = 100` | Section 10: the units on the rushed site, the plants whose points share its crews (the chosen count, and those the search tried), and the months run counting the grid's units. |
+| 1409 | `PowerWiresCheck.RUSHED_SEARCH` | `{ RUSHED_PLANTS }` |  |
+| 1412 | `PowerWiresCheck.GRID_MONTHS` | `70` | Sections 10, 11: the months run counting the grid's units standing. |
+| 1484 | `PowerWiresCheck.ABROAD_UNITS` | `3` | Section 11: the units on the site handed abroad, and the months the foreign crews take on the first of them. |
+| 1485 | `PowerWiresCheck.ABROAD_FIRST_MONTHS` | `30` |  |
+| 1538 | `PowerWiresCheck.CANCELLED_UNITS` | `3` | Section 12: the units on the site that is cancelled. |
 
 ### PriceLevelCheck.java ([map](map/PriceLevelCheck.md))
 

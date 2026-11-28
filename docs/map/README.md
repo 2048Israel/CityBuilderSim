@@ -4,7 +4,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 
 **How to use it.** Open this file first. Every source file is one row here; open `docs/map/NAME.md` for the one you need and it lists that file's banner sections and every method with its line number, so you can read the forty lines that matter instead of the file. `docs/dials.md` has every constant, `docs/month-order.md` the order the month runs in, `docs/harnesses.md` what every check asserts.
 
-**The tree:** 665 files, 718,591 lines, 31,482 methods, 6,980 constants. `GameVersion.VERSION` is "0.9.219", `SAVE_FORMAT` 67.
+**The tree:** 665 files, 718,720 lines, 31,486 methods, 6,981 constants. `GameVersion.VERSION` is "0.9.219", `SAVE_FORMAT` 67.
 
 ## model (289 files)
 
@@ -16,7 +16,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [ArrivalMix.java](ArrivalMix.md) | 189 | 9 | What the world's movers hold by year: the skill mix a month's arrivals are drawn from, in a city founded the 1900 way. | 9 |
 | [Auction.java](Auction.md) | 460 | 28 | The city's paper sold at auction: the bidders, each by its own rule in the game, and the one yield that clears them. | 31 |
 | [AuctionTally.java](AuctionTally.md) | 145 | 11 | The city's auctions counted: how many sales the treasury has booked, what they sold and what they asked, how often the stop sat more than a point o... | 4 |
-| [AutoBuilder.java](AutoBuilder.md) | 3,277 | 200 | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and ... | 30 |
+| [AutoBuilder.java](AutoBuilder.md) | 3,307 | 201 | Automatic building (0.7.73): the city's own works ordered for the player once a month - power, water, the roads and their lines, care, schools and ... | 30 |
 | [BalanceSheet.java](BalanceSheet.md) | 201 | 30 | A simple balance sheet for one business in the city. | 6 |
 | [Bank.java](Bank.md) | 7,129 | 518 | The city's commercial bank: every loan in it, and every default. | 80 |
 | [BankRules.java](BankRules.md) | 73 | 10 | The city's saved banking rules, shared by lenders and both policy pages. | 9 |
@@ -597,7 +597,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.CodeMap` - do not edit; regene
 | [PowerPlantsCheck.java](PowerPlantsCheck.md) | 672 | 23 | The power plants and their fuels (PW2, 2026-11-23; spec-electricity 2.3 and 2.5): the Oil-Fired Plant, the Diesel Station, the Oil-Fired Turbine, t... | 0 |
 | [PowerPriceCheck.java](PowerPriceCheck.md) | 747 | 31 | The month's power at the market's price, through the game's own month (PW1, 2026-11-11; Jerus's Q1: "Market price"): the struck book's prices, what... | 6 |
 | [PowerViewCheck.java](PowerViewCheck.md) | 377 | 14 | Power observations against native dispatch, including shortage, curtailment, fuel order, phase timing and saves. | 1 |
-| [PowerWiresCheck.java](PowerWiresCheck.md) | 1,500 | 80 | The wires are ordered with the power, and the grid is planned at its date and latitude (batch PW9-G). | 0 |
+| [PowerWiresCheck.java](PowerWiresCheck.md) | 1,599 | 83 | The wires are ordered with the power, and the grid is planned at its date and latitude (batch PW9-G). | 0 |
 | [PriceLevelCheck.java](PriceLevelCheck.md) | 1,683 | 64 | A city founded at 1900's prices is today's real economy with every dollar multiplied by one factor, and this is how we know (EP1, Jerus 2026-10-30:... | 13 |
 | [PrizeCheck.java](PrizeCheck.md) | 2,024 | 76 | A prize pays only for a result, a Research Lab goes for the cheapest problem the purse pays for, and the schools' share of a purse buys posts (R4, ... | 1 |
 | [PublicLicenceCheck.java](PublicLicenceCheck.md) | 787 | 34 | The city's own patented works pay R2c's patent rent too: a utility whose upgrade came from abroad is billed the patent share of the service it deli... | 3 |

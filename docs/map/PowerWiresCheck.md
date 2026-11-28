@@ -1,4 +1,4 @@
-# PowerWiresCheck.java - 1,500 lines · 80 methods · 26 constants · harnesses
+# PowerWiresCheck.java - 1,599 lines · 83 methods · 27 constants · harnesses
 
 `ham/citybuildersim/PowerWiresCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > 
 > ... (1 more lines in the source)
 
-**Uses:** [BuildAdvice](BuildAdvice.md) (103), [AutoBuilder](AutoBuilder.md) (75), [Game](Game.md) (69), [BuildingsTemplate](BuildingsTemplate.md) (33), [Substations](Substations.md) (28), [BuildingManager](BuildingManager.md) (20), [UtilitiesHandler](UtilitiesHandler.md) (12), [PowerDispatch](PowerDispatch.md) (12), [WorksValue](WorksValue.md) (11), [ConstructionControl](ConstructionControl.md) (6), [CityCalendar](CityCalendar.md) (4), [PriceLevel](PriceLevel.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [BuildingType](BuildingType.md) (2), [WorksFinanceCheck](WorksFinanceCheck.md) (2), [MoneyAudit](MoneyAudit.md) (2), [GameFiles](GameFiles.md) (1), [TempDirs](TempDirs.md) (1), [EssentialWorksCheck](EssentialWorksCheck.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [CareType](CareType.md) (1)
+**Uses:** [BuildAdvice](BuildAdvice.md) (122), [AutoBuilder](AutoBuilder.md) (78), [Game](Game.md) (72), [BuildingsTemplate](BuildingsTemplate.md) (43), [Substations](Substations.md) (28), [BuildingManager](BuildingManager.md) (23), [PowerDispatch](PowerDispatch.md) (14), [UtilitiesHandler](UtilitiesHandler.md) (12), [WorksValue](WorksValue.md) (11), [ConstructionControl](ConstructionControl.md) (6), [CityCalendar](CityCalendar.md) (4), [PriceLevel](PriceLevel.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [BuildingType](BuildingType.md) (2), [WorksFinanceCheck](WorksFinanceCheck.md) (2), [MoneyAudit](MoneyAudit.md) (2), [GameFiles](GameFiles.md) (1), [TempDirs](TempDirs.md) (1), [EssentialWorksCheck](EssentialWorksCheck.md) (1), [BusinessInvestment](BusinessInvestment.md) (1), [CareType](CareType.md) (1)
 
 ## Constants
 
@@ -89,13 +89,14 @@
 | 916 | `PowerWiresCheck.WINDOW_K` | `1.07, WINDOW_SLACK =.1` |  |
 | 1094 | `PowerWiresCheck.FRONTIER_UNITS` | `2, PROMISE_UNITS = 3` | Sections 8, 9: the distribution units ordered before the pass (8: so many that the first of them opens after the plant; 9: few, so that it opens before). |
 | 1125 | `PowerWiresCheck.FRONTIER_MONTHS` | `36` | Section 8: the months run, the law on and off. |
-| 1214 | `PowerWiresCheck.PROMISE_WORDS` | `"waits to preserve the opening of the wires Power's plants were ordered with"` |  |
-| 1309 | `PowerWiresCheck.RUSHED_UNITS` | `3, RUSHED_PLANTS = 100` | Section 10: the units on the rushed site, the plants whose points share its crews (the chosen count, and those the search tried), and the months run counting the grid's units. |
-| 1310 | `PowerWiresCheck.RUSHED_SEARCH` | `{ RUSHED_PLANTS }` |  |
-| 1313 | `PowerWiresCheck.GRID_MONTHS` | `70` | Sections 10, 11: the months run counting the grid's units standing. |
-| 1385 | `PowerWiresCheck.ABROAD_UNITS` | `3` | Section 11: the units on the site handed abroad, and the months the foreign crews take on the first of them. |
-| 1386 | `PowerWiresCheck.ABROAD_FIRST_MONTHS` | `30` |  |
-| 1439 | `PowerWiresCheck.CANCELLED_UNITS` | `3` | Section 12: the units on the site that is cancelled. |
+| 1226 | `PowerWiresCheck.PROMISE_WORDS` | `"waits to preserve the opening of the wires Power's plants were ordered with"` |  |
+| 1320 | `PowerWiresCheck.HOME` | `"House"` | Section 9's second town: the homes going up by hand on the same crews before the pass, as many as leave the wires read open by their due (each a few points: the finest load the crews take). |
+| 1408 | `PowerWiresCheck.RUSHED_UNITS` | `3, RUSHED_PLANTS = 100` | Section 10: the units on the rushed site, the plants whose points share its crews (the chosen count, and those the search tried), and the months run counting the grid's units. |
+| 1409 | `PowerWiresCheck.RUSHED_SEARCH` | `{ RUSHED_PLANTS }` |  |
+| 1412 | `PowerWiresCheck.GRID_MONTHS` | `70` | Sections 10, 11: the months run counting the grid's units standing. |
+| 1484 | `PowerWiresCheck.ABROAD_UNITS` | `3` | Section 11: the units on the site handed abroad, and the months the foreign crews take on the first of them. |
+| 1485 | `PowerWiresCheck.ABROAD_FIRST_MONTHS` | `30` |  |
+| 1538 | `PowerWiresCheck.CANCELLED_UNITS` | `3` | Section 12: the units on the site that is cancelled. |
 
 ## Fields (state)
 
@@ -126,7 +127,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 75 | 1426 | **type** `public final class PowerWiresCheck` | The wires are ordered with the power, and the grid is planned at its date and latitude (batch PW9-G). |
+| 75 | 1525 | **type** `public final class PowerWiresCheck` | The wires are ordered with the power, and the grid is planned at its date and latitude (batch PW9-G). |
 | 79 | 1 | `static void check(String label, boolean ok)` |  |
 | 80 | 1 | `static boolean near(double a, double b, double relative)` |  |
 | 81 | 1 | `static void quietly(Runnable work)` |  |
@@ -199,15 +200,18 @@
 | 1127 | 52 | `static void frontier()` |  |
 | 1186 | 13 | `static double[] firstUnit(Game g, BuildAdvice.Suggestion s, long n)` | The grid's soonest first unit on site as the crew guard reads it (AutoBuilder.wiresDelayed(): each site's quote or its foreign crews' floor, the later), without and with `n` of the suggestion on the crews: {before, af... |
 | 1201 | 3 | `static boolean guardHolds(Game g, double[] reading, double firstDue)` | Whether the guard holds that reading: the first unit opens later with the order, and past the earliest due. |
-| 1206 | 7 | `static boolean unitLate(Game g, double firstDue)` | Whether the queue already reads the grid's first unit past the due, with no order of the plant's. |
-| 1221 | 42 | `static void heavyHeld(Game g, String what, boolean counter)` | While a due stands, the town's draw grows until the pass would place an order the wires allow whose first unit the guard reads later and past the earliest due; then the pass holds it. |
-| 1264 | 41 | `static void promise()` |  |
-| 1316 | 9 | `static long[] gridOpened(Game g, int most)` | The grid units open by each month 0..most of `most` months from now: the game's own count, every month's. |
-| 1327 | 4 | `static int monthOf(long[] byMonth, int k)` | The first month by which `k` units are counted open in a by-month count, 0 for never within it. |
-| 1332 | 4 | `static void rushed()` |  |
-| 1337 | 44 | `static void rushed(long plants, boolean asserted)` |  |
-| 1388 | 47 | `static void abroad()` |  |
-| 1441 | 28 | `static void cancelled()` |  |
-| 1472 | 6 | `static void money()` | ------------------------------------------------------------------------------------------------------------------ 13 |
-| 1481 | 19 | `public static void main(String[] args)` |  |
+| 1206 | 10 | `static double unitMonths(Game g)` | The months to the grid's soonest first unit on site as the queue reads it now (firstUnit()'s before, no order). |
+| 1218 | 7 | `static boolean unitLate(Game g, double firstDue)` | Whether the queue already reads the grid's first unit past the due, with no order of the plant's. |
+| 1233 | 42 | `static void heavyHeld(Game g, String what, boolean counter)` | While a due stands, the town's draw grows until the pass would place an order the wires allow whose first unit the guard reads later and past the earliest due; then the pass holds it. |
+| 1276 | 41 | `static void promise()` |  |
+| 1323 | 10 | `static double unitMonthsWith(Game g, BuildingsTemplate t, long n)` | The grid's soonest first unit with `n` of t ordered on the crews (the crews' quote, as firstUnit()'s after). |
+| 1342 | 62 | `static void overtaken()` | 9's second town: section 9's, its plant placed and its due recorded; then its power served now (plants stood), its General care stood at the line now in its least unit (the one offered for it), the reserve raised to i... |
+| 1415 | 9 | `static long[] gridOpened(Game g, int most)` | The grid units open by each month 0..most of `most` months from now: the game's own count, every month's. |
+| 1426 | 4 | `static int monthOf(long[] byMonth, int k)` | The first month by which `k` units are counted open in a by-month count, 0 for never within it. |
+| 1431 | 4 | `static void rushed()` |  |
+| 1436 | 44 | `static void rushed(long plants, boolean asserted)` |  |
+| 1487 | 47 | `static void abroad()` |  |
+| 1540 | 28 | `static void cancelled()` |  |
+| 1571 | 6 | `static void money()` | ------------------------------------------------------------------------------------------------------------------ 13 |
+| 1580 | 19 | `public static void main(String[] args)` |  |
 

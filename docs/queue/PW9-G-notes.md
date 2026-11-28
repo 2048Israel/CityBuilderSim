@@ -1,7 +1,8 @@
 # PW9-G — wires ready with the power: notes
 
-**Resume here (2026-11-28):** the law 2043a414a + 61db49b7e; REV-PW9-G's seven P1s mended in c9168e6fe, 626bec463 and
-5bc768cc8, with PowerWiresCheck's sections; g4 measured on 5bc768cc8 (law on, off, the promise off). Next: REV-PW9-G's second look.
+**Resume here (2026-11-28):** the law 2043a414a + 61db49b7e; REV-PW9-G's seven P1s mended in c9168e6fe, 626bec463,
+5bc768cc8 and 9b39ee4a0 (the promise narrowed to power's own orders, re-dated with the wires), with PowerWiresCheck's
+sections; g4 measured on 5bc768cc8 (law on, off, the promise off), g5 on 9b39ee4a0 (narrowed). Next: REV-PW9-G's second look.
 The measuring observer is `target/PW9-G-measure/observer.patch` (+ `PW9GMeasureCheck.java`), never committed:
 `git apply` it, run `-Dpw9g.main=true ... ./batch-check.sh PW9GMeasureCheck`, then `git checkout` it away.
 
@@ -91,7 +92,7 @@ already reach the wires' share, held whole with the WIRES line, and the next tem
   the law on and off, and EssentialWorksCheck's deadline section isolates power's deadline from it. It holds off the
   promise too (`wiresBind`). `wiresDue` is the builder's own state, not a held figure: nothing caches a reading of it.
 
-## REV-PW9-G's seven P1s and their mends (c9168e6fe, 626bec463, 5bc768cc8; PowerWiresCheck 3, 6-12)
+## REV-PW9-G's seven P1s and their mends (c9168e6fe, 626bec463, 5bc768cc8, 9b39ee4a0; PowerWiresCheck 3, 6-12)
 
 1. **Reoffer.** A funded POWER ask was placed by `reoffer()` straight to its count, past the wires. It now goes through
    `wiresCarry` before the crew guard, as the step's order does: the wires short of it are ordered first (GRID's
@@ -108,15 +109,24 @@ already reach the wires' share, held whole with the WIRES line, and the next tem
    kW-months under the law against 8,164 with it off.
 3. **The promise.** A wire date the law accepted was not kept against later orders. A placed plant now records the
    first month it relies on the wires on site (`AutoBuilder.wiresDue`, saved in `State.wiresDue`), where the grid's
-   first unit, the plant on the crews, is read open by then. Until that month passes, the crew guard keeps it as it
-   keeps a lacked measure's quoted first completion (`pendingDelay`): every automatic order except GRID's own, and
-   except a measure short now other than power, is held where it opens the grid's soonest first unit later and that
-   unit then falls past the earliest due: "X waits to preserve the opening of the wires Power's plants were ordered
-   with." FERC Order 2003-A's coupled milestones are the precedent: a generator's network upgrades are scheduled with
-   it. Section 9: a plant placed with due +23 months; 2 more Steam that slow the unit from 21.2 to 22.4 months are
-   placed; 3 more, the unit then read at 24.7 months and pushed to 25.3, are held, 0 of 3; the unit opens by its
-   month; the due is gone the month after; a save round trip keeps it. Red with `wiresBind` false (M9), with only a
-   unit read on time protected (M9b), and, in 3(b), with every promise recorded (M9c).
+   first unit, the plant on the crews, is read open by then. Until that month passes, the crew guard keeps it against
+   power's own later orders as it keeps a lacked measure's quoted first completion (`pendingDelay`): a power order,
+   short now or not, is held where it opens the grid's soonest first unit later and that unit then falls past the
+   earliest due: "Power waits to preserve the opening of the wires Power's plants were ordered with." The town's
+   other works are never held for it (the orchestrator's call on the second look): a street, care or school order is
+   placed whole, and where it puts the wires past a due, the due moves to their new month (`AutoBuilder.redateWires`,
+   read around every placement), the plants' generation waiting with its wires. FERC Order 2003-A's coupled milestones
+   are the precedent: a generator waits for its interconnection, its commercial operation re-dated with the upgrade's
+   in-service date, and the region's other works do not wait for the generator. Section 9: a plant placed with due
+   +23 months; 2 more Steam that slow the unit from 21.2 to 22.4 months are placed; 3 more, the unit then read at 24.7
+   months and pushed to 25.3, are held, 0 of 3; the unit opens by its month; the due is gone the month after; a save
+   round trip keeps it. Its second town has General care at its line now in Walk-in Clinics, the reserve at its most
+   (50%), and 71 houses by hand on the crews, which leave the wires read open in the due's own month (26). The pass
+   places one clinic, whole, the wires then read open in month 28, and the due is 28. The town's power is served now
+   (plants stood): short now, its plants' quoted first completion held the clinic by the crew guard's own law (PW3's).
+   Red with `wiresBind` false (M9), with only a unit read on time protected (M9b), in 3(b) with every promise
+   recorded (M9c), with the promise binding every order but the grid's (M9n: the clinic held, 0 of 1) and with no
+   re-date (M9r: the due stays at 26).
    - The first form (c9168e6fe) counted the units open by each due with and without the order. It protected nothing
      once the queue's own reading had the unit past it (both none), and section 9's first fixture placed a plant
      order that slowed it further. The second (626bec463) recorded every due: 3(b)'s two starved depots read the
@@ -145,31 +155,48 @@ already reach the wires' share, held whole with the WIRES line, and the next tem
   every month, which cut plants for a July peak in a March they would stand through.
 - ★ **The promise is the wires' first completion, kept as the crew guard keeps one.** One law for both: a unit read
   late is held from opening later still, and a promise the queue reads broken when it is made is none.
-- ★ **The promise binds power's own later orders too, and not GRID's or a measure short now.** A plant that put its
-  predecessor's wires past their month would leave both behind them; the grid's own orders only bring the wires
-  sooner; a measure lacking now keeps the crew guard's existing exemption.
+- ★ **The promise binds power's own later orders alone, short now or not** (the second look's call, as recommended
+  after g4). A plant that put its predecessor's wires past their month would leave both behind them. A street, a care
+  centre or a school does not wait for a generator; where it makes the wires late, the due moves with them. Re-dated
+  rather than the plant's site held: the builder has no hold on a site's crews but the player's hand (the order, the
+  rushes, the shells), and a plant that opens before its wires serves only what they carry, as a generator waits for
+  its interconnection. Every order still waits, as before, for a service short now (the crew guard's own law).
+- **Left as it was: a due protects the grid's soonest unit on site.** Once the unit a plant relied on opens, a due
+  not yet passed protects the next one, so power's orders that slow it are held until the due's month, which the
+  re-date can carry to the wires' quoted opening. The crews' quote is slow in a small town: section 9's second town
+  opened its first unit before month 20 against month 28 quoted. Each due would need the unit it relied on; not
+  this batch's, and power's orders alone are bound.
 - ★ **The abroad floor is the wires' reader's alone.** `WorksValue.openBy`, which the power plan and the plants'
   share read, is PW3's and unchanged: a plant site part abroad is read as the city's crews would build it. Changing
   it would move the power plan itself, which is not this batch's. Cancelled sites are dropped for both (`building()`).
 
-### After the mends (g4, 5bc768cc8 merged with main's CBK3; the same observer, the law on and off on one tree)
+### After the mends (g4, 5bc768cc8 merged with main's CBK3; g5, 9b39ee4a0, the promise narrowed; the same observer, one tree)
 
 Main's own figures below (g0) are a city CBK3 has since changed: on this tree the 1900 city leaves g0's at month 18
 (295 people against 294), before any power order. So the law is measured against itself held off (`-Dpw9g.off=true`,
 `AutoBuilder.wiresOffForTest`), the same tree in every other line, and against the promise alone held off (`wiresBind`
 false, measuring only).
 
-| | 1900, m2-440: off | promise off | on | today, m2-180: off | promise off | on |
-|---|---|---|---|---|---|---|
-| the same city as off to | - | m259 | m134 | - | m107 | m85 |
-| months below 95% current energy | 0 (min .9562) | 1 (.9472) | 1 (.9216, m296) | 0 | 0 | 0 |
-| months generated < asked / wire-bound | 2 / 0 | 6 / 0 | 5 / 2 (m419-420) | 0 / 0 | 0 / 0 | 0 / 0 |
-| unserved GWh of asked | 1.13 of 2,917.9 | 3.32 of 2,890.2 | 2.48 of 3,064.5 | 0 | 0 | 0 |
-| carry at the end | 55 MW | 115 MW | 85 MW | 30 MW | 25 MW | 25 MW |
-| generator / grid spend | $5.32M / $7.19M | $9.81M / $19.22M | $21.99M / $14.13M | $3.60M / $3.80M | $3.52M / $2.59M | $4.37M / $3.87M |
-| population at the end | 22,773 | 23,446 | 23,638 | 16,523 | 16,303 | 15,707 |
+| | 1900, m2-440: off | promise off | on, wide | narrowed | today, m2-180: off | promise off | on, wide | narrowed |
+|---|---|---|---|---|---|---|---|---|
+| the same city as off to | - | m259 | m134 | m259 | - | m107 | m85 | m85 |
+| months below 95% current energy | 0 (min .9562) | 1 (.9472) | 1 (.9216, m296) | 1 (.9472) | 0 | 0 | 0 | 0 |
+| months generated < asked / wire-bound | 2 / 0 | 6 / 0 | 5 / 2 (m419-420) | 6 / 0 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| unserved GWh of asked | 1.13 of 2,917.9 | 3.32 of 2,890.2 | 2.48 of 3,064.5 | 3.32 of 2,890.2 | 0 | 0 | 0 | 0 |
+| carry at the end | 55 MW | 115 MW | 85 MW | 115 MW | 30 MW | 25 MW | 25 MW | 25 MW |
+| generator / grid spend | $5.32M / $7.19M | $9.81M / $19.22M | $21.99M / $14.13M | $9.81M / $19.22M | $3.60M / $3.80M | $3.52M / $2.59M | $4.37M / $3.87M | $4.51M / $2.60M |
+| population at the end | 22,773 | 23,446 | 23,638 | 23,446 | 16,523 | 16,303 | 15,707 | 15,967 |
 
-- **The population, named.** The 1900 city has no fall: it ends 865 people above the law held off. The modern city
+- **The population with the promise narrowed (g5).** The 1900 city is promise-off's month for month to month 440
+  (23,446, 673 above the law held off): the promise held nothing there. The modern city ends at 15,967, 556 under the
+  law held off (3.4%, against 4.9% with the wide form), with energy served in full in every month. The promise held
+  Power's own order alone, in three passes (months 79-81: the Small Steam Station promise-off placed at month 79,
+  ordered with the four of month 85), and no street, care centre or school. The city parts from the law held off at
+  month 85 and stays level with it or above it to month 130 (7,345 against 7,307 at month 120). The gap opens in the
+  last forty months, as the city grows fastest, as promise-off's does: a path, not power. Of the 556, 220 are the
+  frontier's (promise off, 16,303), and 336 follow the three held passes, against 596 for the wide promise's 31 holds.
+
+- **The population with the wide promise (g4), named.** The 1900 city has no fall: it ends 865 people above the law held off. The modern city
   ends 816 under it (4.9%), with energy served in full in every month of all three runs. 596 of those people are the
   promise's. From month 80 to 91 it held Streets for 12 passes, Childcare 8, General care 5, and the schools 6, to keep
   the Distribution Substation ordered with the steam of months 72-79 on its date; the city parts from the law held off
@@ -179,11 +206,11 @@ false, measuring only).
   energy in every month, as main did. The two cities parted at month 253, after the month-224 order was placed wires
   first, and by month 339 main's city asked for two Diesels and six Distribution Substations that g2's, ahead of its
   plan, never did ($13.8M more on power over the run).
-- ★ **The promise binds every automatic order, as REV-PW9-G 3 asked, and costs the modern city 3.7% of its people.**
-  Recommended for the second look: narrow it to power's own orders. Those are the plants that would strand their
-  predecessors' wires. The frontier already reads the wires' slip at every later plant order, and a street or a
-  school does not wait on a substation's date the way it waits on a lacked service's completion. Not done here,
-  because REV-PW9-G asked for the wider form.
+- **The wide promise bound every automatic order, as REV-PW9-G 3 asked, and cost the modern city 3.7% of its people.**
+  Recommended for the second look: narrow it to power's own orders, the plants that would strand their predecessors'
+  wires. The frontier already reads the wires' slip at every later plant order, and a street or a school does not
+  wait on a substation's date the way it waits on a lacked service's completion. Done in 9b39ee4a0, the orchestrator's
+  call (the ★ above, "binds power's own later orders alone"): 2.1% against promise-off at g5.
 - **The 1900 city's wire-bound months, m419-420.** The peak steps from 30 to 52 MW in one month, as a large pending
   site opens, on 83 MW of plants standing behind 50 MW of wires. The seven Distribution Substations ordered with the
   Diesel at month 418 open from month 420. These are standing plants under a load step, the class of 3(b): the law
@@ -198,7 +225,7 @@ false, measuring only).
   none. Once the order's 72,600 points were on the crews, those sites read as opening past the date (0.8 MW pending by
   then), and the city ends with 115 MW of wires against a 27 MW peak. The power plan reads the same forecast and sized
   the two Diesels to it (PW3's, unchanged here), so the wires follow the plants' own load, as the law says. Reading an
-  order's load with the order's own points on the crews is the plan's question, for plants and wires alike: PW9-G-2.
+  order's load with the order's own points on the crews is the plan's question, for plants and wires alike: PW11, queued.
 
 ### Before the review: the model of 3fd0da7e5 (g2, the same observer)
 
@@ -248,7 +275,7 @@ the ensemble judges it.
 
 ## The checks
 
-- **PowerWiresCheck** (new, in AllChecks after TownGridCheck), 90 assertions, sections:
+- **PowerWiresCheck** (new, in AllChecks after TownGridCheck), 97 assertions, sections:
   1. the wires' physics;
   2. the wires ordered with the power, law on and off the same month by month where nothing holds the wires;
   3. (a) cut, to the count the harness's own frontier allows (9 of 19; the date alone, 11), and (b) held, behind
@@ -259,7 +286,8 @@ the ensemble judges it.
   6. the allowance a search: a count is allowed only if every smaller one is;
   7. a funded ask (REV-PW9-G 1): the wires ordered first, the plants cut, or held with the ask's line;
   8. the frontier (2): a grid unit opening between the plant's commissioning and its date;
-  9. the promise (3): placed, held, kept, expired, saved;
+  9. the promise (3): placed, held against power's own orders, kept, expired, saved; and in a second town a care
+     order placed whole past it, the due moved to the wires' new month;
   10. a rushed grid site (4), 11. an abroad grid site (5): no unit credited before it opens;
   12. a cancelled grid site (7): no carry read from it;
   13. the money audit to the cent over all 387 months run.
@@ -267,7 +295,8 @@ the ensemble judges it.
   Red by mutation, each restored: M1 the door forced and M2 no nested step (section 2); M3 `allows` true (3(a)
   uncut, 3(b) placed); M4 the wires without the order's points (section 8); M5 the old season reader (section 5);
   M7 no reoffer block (section 7, four lines); M8 the date alone (3(a), 8); M9 `wiresBind` false, M9b only a unit
-  read on time kept (section 9); M9c every promise recorded (3(b)); M10 a rushed site's later units read alone
+  read on time kept (section 9); M9c every promise recorded (3(b)); M9n the promise binding every order but the
+  grid's and M9r no re-date (section 9's second town); M10 a rushed site's later units read alone
   (section 10, 9 months over); M11 no abroad floor (section 11, 38 months over); M12 cancelling sites counted
   (section 12).
 - **SubstationCheck** "the same order machinery": the fixture's edge was this month's season. It is now the season
@@ -298,6 +327,8 @@ the ensemble judges it.
   carry by then)", or holds the station whole when the plants already serve all the wires carry.
 - The grid's forecast reads the year's busiest month between the opening and the horizon, at the city's latitude: a
   southern city's peak is its own winter.
-- A station's wires keep their date. While they are building for a station that relies on them, the builder holds
-  other work that would make them late: "waits to preserve the opening of the wires Power's plants were ordered with".
+- A station's wires keep their date against the next stations: while they are building for a station that relies on
+  them, the builder holds a power order that would make them late ("waits to preserve the opening of the wires
+  Power's plants were ordered with"). It never holds a street, a care centre or a school for them; where one makes
+  the wires late, the stations wait for their wires.
   A station whose money was raised by a bond is placed by the same law as any other.
