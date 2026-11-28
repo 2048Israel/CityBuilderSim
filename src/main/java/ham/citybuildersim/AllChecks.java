@@ -55,7 +55,7 @@ public class AllChecks {
         "GovernmentViewCheck", "GovernmentPlayerCheck", "BankFailureCheck", "ER1Check", "PostwarRecipeCheck", "ModernEngineeringCheck", "ModernRowsCheck", "YoungBankCheck", "NewUnitCheck", "FitoutCheck", "FB13Check", "GroundSkipCheck",
         "ForeignChoiceCheck",
         "SchoolingLadderCheck", "SchoolingPageCheck", "CentralBankStatementCheck",
-        "UiSteadyCheck", "TownGridCheck"
+        "UiSteadyCheck", "TownGridCheck", "HungerCheck"
     };
 
     /** How many harnesses a soft, logged run runs at once (SP1); memory, not the cores, bounds it. */
