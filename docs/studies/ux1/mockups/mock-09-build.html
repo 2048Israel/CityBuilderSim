@@ -1,0 +1,167 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>UX1 mockup 9: the build screen, in the panel</title>
+<link rel="stylesheet" href="lib/frame.css"><script src="lib/icons.js"></script><script src="lib/frame.js"></script>
+<script src="mock-09-build-data.js"></script>
+<style>
+.panel { width: 640px; }
+.cats { display: flex; gap: 14px; padding: 7px 12px 8px; border-bottom: 1px solid var(--edge); flex: none; }
+.set .lab { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; font-weight: 600; margin: 0 0 4px 1px; }
+.set .lab span { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.set.city .lab { color: var(--building-light); } .set.mkt .lab { color: var(--business-light); }
+.btns { display: flex; gap: 4px; }
+.cb { width: 38px; height: 36px; border-radius: 8px; background: var(--control); border: 1px solid var(--control-edge); display: grid; place-items: center; position: relative; }
+.set.city .cb { border-color: rgba(241,124,176,.38); } .set.mkt .cb { border-color: rgba(167,139,250,.38); }
+.cb .st { position: absolute; right: 3px; top: 3px; width: 7px; height: 7px; border-radius: 50%; }
+.set.mkt .cb.on { background: rgba(167,139,250,.2); border: 1.5px solid var(--business); }
+.filt { display: flex; align-items: center; gap: 8px; padding: 7px 12px 5px; flex: none; }
+.seg { display: flex; background: var(--control); border: 1px solid var(--control-edge); border-radius: 8px; padding: 2px; }
+.seg div { padding: 4px 9px; border-radius: 6px; font-size: 12px; color: var(--soft); }
+.seg div.on { background: var(--hover); color: var(--text); }
+.seg .c { font-family: PlexMono; font-size: 11px; color: var(--spent); margin-left: 5px; }
+.seg div.on .c { color: var(--soft); }
+.legend { display: flex; align-items: center; gap: 11px; padding: 0 12px 7px; font-size: 11px; color: var(--soft); border-bottom: 1px solid var(--edge); flex: none; }
+.legend > span { display: flex; align-items: center; gap: 4px; }
+.pp { font-family: PlexMono; font-size: 10.5px; font-weight: 600; padding: 0 4px; min-width: 15px; border-radius: 4px; height: 15px; display: inline-grid; place-items: center; line-height: 1; }
+.pp.p { color: #fbd0e3; background: rgba(241,124,176,.32); } .pp.v { color: #e2d8fe; background: rgba(167,139,250,.32); }
+.grid { flex: 1; overflow: hidden; padding: 8px 18px 0 12px; position: relative; }
+.scroll { position: absolute; right: 5px; top: 8px; width: 5px; height: 300px; border-radius: 3px; background: #2a3b52; }
+.fam { margin-bottom: 6px; }
+.fh { display: flex; align-items: center; gap: 8px; height: 26px; padding: 0 8px; border-radius: 7px; background: var(--raised); border: 1px solid var(--edge); }
+.fh .chev { color: var(--soft); font-size: 11px; width: 10px; }
+.fh .sw { width: 11px; height: 11px; border-radius: 3px; }
+.fh b { font-weight: 600; font-size: 13px; }
+.fh .k { color: var(--spent); font-size: 11px; }
+.fh .grow { flex: 1; }
+.fh.sub { margin: 6px 0 0 14px; height: 24px; background: transparent; }
+.lines { padding: 0 0 0 2px; }
+.line { display: flex; gap: 18px; margin-top: 5px; }
+.ch { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--soft); white-space: nowrap; }
+.sup { font-size: 10.5px; color: var(--spent); display: flex; align-items: center; gap: 6px; white-space: nowrap; height: 14px; }
+.mini { width: 38px; height: 4px; border-radius: 2px; background: #243246; overflow: hidden; flex: none; }
+.mini i { display: block; height: 100%; }
+.cl.one .hd { display: flex; align-items: center; gap: 10px; }
+.tiles { display: flex; gap: 5px; margin-top: 4px; }
+.tile { width: 56px; }
+.sq { width: 52px; height: 52px; margin: 0 2px; border-radius: 9px; background: var(--cb); border: 1px solid var(--cl); position: relative; display: flex; justify-content: center; padding-top: 8px; }
+.tile.none .sq { background: transparent; border-style: dashed; }
+.tile.none .sq svg { opacity: .5; }
+.tile.sel .sq { box-shadow: 0 0 0 2px #e6edf3, 0 0 14px rgba(255,255,255,.3); }
+.sq .mk { position: absolute; right: 3px; top: 1px; font-size: 10px; line-height: 1.2; }
+.sq .cnt { position: absolute; left: 3px; right: 3px; bottom: 3px; display: flex; justify-content: space-between; }
+.nm { font-size: 9.5px; line-height: 1.08; color: var(--soft); text-align: center; margin-top: 2px; height: 21px; overflow: hidden;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.note.pk { max-width: 470px; }
+.tile.sel .nm { color: var(--text); font-weight: 500; }
+.foot { flex: none; border-top: 1px solid var(--control-edge); background: #132031; padding: 9px 12px 10px; box-shadow: 0 -8px 18px rgba(0,0,0,.3); }
+.foot .figs { grid-template-columns: 1fr 1fr 1fr 1fr; margin: 7px 0; }
+.foot .figs > div { padding: 6px 10px; }
+.warnbox { background: #2c2614; border: 1px solid #8a6d1f; border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.38; display: flex; gap: 8px; }
+.ghost { position: absolute; z-index: 11; border: 2px dashed #f9bcd7; background: rgba(241,124,176,.35); border-radius: 3px; }
+.own { position: absolute; z-index: 10; border-radius: 6px; }
+.own.p { border: 2.5px solid #f17cb0; box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 0 10px rgba(241,124,176,.7); }
+.own.v { border: 2px solid #c4b2ff; box-shadow: 0 0 0 1px rgba(0,0,0,.5); }
+.note.n7 { max-width: 290px; }
+.tag { position: absolute; z-index: 12; background: rgba(21,33,48,.97); border: 1px solid var(--control-edge); border-radius: 9px; padding: 7px 10px; box-shadow: 0 6px 18px rgba(0,0,0,.5); font-size: 12px; line-height: 1.4; }
+</style></head>
+<body><script>
+frame({ ground: 'city', figures: CITY, on: 'build', needsList: NEEDS_CITY, alertsLeft: 732,
+  alerts: [['FOOD', 'bad', 1], ['EDUCATION', 'bad', 1], ['HEALTH', 'bad', 2], ['LAND', 'warn', 1]] });
+document.querySelector('.strip .chip').innerHTML = `${icon('CRANE', 15, '#9fb0c3')} 4 building`;
+
+const STC = { GOOD: '#3fb950', WARN: '#e3b341', BAD: '#f85149' };
+const CITYJOB = [['UTILITIES', 'GOOD'], ['INFRASTRUCTURE', 'WARN'], ['HEALTH', 'BAD'], ['EDUCATION', 'BAD'], ['SAFETY', 'GOOD']];
+const MARKET = ['HOMES', 'SHOPS', 'INDUSTRY', 'OFFICES', 'FARMS', 'LORRY', 'VEHICLES', 'LUXURY', 'FOOD'];
+const SEL = 'Steel Mini-Mill';
+
+function tile(f, g, b, i) {
+  const [name, ic, mine, theirs] = b, none = mine + theirs + (b[9] || 0) === 0, top = best(g) === name;
+  const mk = b[8] < 0 ? '<span class="mk warn">▲</span>' : top ? '<span class="mk good">★</span>' : '';
+  return `<div class="tile ${none ? 'none' : ''} ${name === SEL ? 'sel' : ''}" style="--cb:${shade(f, i, g.b.length, .17)};--cl:${shade(f, i, g.b.length, .6)}">
+    <div class="sq">${icon(ic, 21, shade(f, i, g.b.length))}${mk}
+      <div class="cnt">${mine ? `<b class="pp p">${mine}</b>` : '<i></i>'}${theirs ? `<b class="pp v">${theirs}</b>` : ''}</div></div>
+    <div class="nm">${name}</div></div>`;
+}
+function cluster(f, g, one = false) {
+  const [t, s] = supply(g);
+  const bar = s === null ? '' : `<span class="mini"><i style="width:${Math.min(100, s * 100)}%;background:${shareColour(s)}"></i></span>`;
+  return `<div class="cl ${one ? 'one' : ''}"><div class="hd"><div class="ch">${g.name}</div><div class="sup">${bar}${t}</div></div>
+    <div class="tiles">${g.b.map((b, i) => tile(f, g, b, i)).join('')}</div></div>`;
+}
+const famHead = (f, open, extra = '') => `<div class="fh"><span class="chev">${open ? '▾' : '▸'}</span><span class="sw" style="background:hsl(${f.h} ${f.s}% 62%)"></span>
+  <b>${f.name}</b><span class="k">${f.groups.length} group${f.groups.length > 1 ? "s" : ""} · ${famKinds(f)} kinds</span>${extra}<span class="grow"></span>
+  <b class="pp p">${famCount(f, 2)}</b><b class="pp v">${famCount(f, 3)}</b></div>`;
+const groupFold = (f, g) => { const [t, s] = supply(g); return `<div class="fh sub"><span class="chev">▸</span><span class="ch">${g.name}</span>
+  <span class="sup"><span class="mini"><i style="width:${s * 100}%;background:${shareColour(s)}"></i></span>${t}</span><span class="grow"></span>
+  <span class="k">${g.b.length} kinds</span><b class="pp v">${g.b.reduce((u, b) => u + b[3], 0)}</b></div>`; };
+
+const [food, metals, making, materials, energy] = FAM;
+const G = (f, n) => f.groups.find(g => g.name === n);
+const worth = FAM.reduce((t, f) => t + f.groups.reduce((u, g) => { const s = supply(g)[1];
+  return u + (s !== null && s < .95 ? g.b.filter(b => b[8] > 0).length * (g.small ? 2 : 1) : 0); }, 0), 0);
+
+const famFold = (f, why, s) => famHead(f, false, `<span class="sup" style="margin-left:6px"><span class="mini"><i style="width:${s * 100}%;background:${shareColour(s)}"></i></span><span class="warn">${why}</span></span>`);
+
+const sel = G(metals, 'Iron & Steel').b.find(b => b[0] === SEL), si = G(metals, 'Iron & Steel').b.indexOf(sel);
+
+document.body.insertAdjacentHTML('beforeend', `
+<div class="panel">
+  <div class="path"><div class="back"><svg width="15" height="15" viewBox="0 0 24 24" class="i" stroke="#e6edf3"><path d="M15 18l-6-6 6-6"/></svg></div>
+    <span class="crumb">Build</span><span class="sep">›</span><span class="crumb here">Industry</span>
+    <span class="grow"></span><span class="btn">${icon('CRANE', 14, '#f9bcd7')} 4 sites</span><span class="btn">${icon('EXPAND', 14)} Wide</span><span class="btn">${icon('CLOSE', 14)}</span></div>
+  <div class="cats">
+    <div class="set city"><div class="lab">The city’s job</div><div class="btns">${CITYJOB.map(([ic, st]) =>
+      `<div class="cb">${icon(ic, 18, '#9fb0c3')}<span class="st" style="background:${STC[st]}"></span></div>`).join('')}</div></div>
+    <div class="set mkt"><div class="lab">The market’s <span>· you may add</span></div><div class="btns">${MARKET.map(ic =>
+      `<div class="cb ${ic === 'INDUSTRY' ? 'on' : ''}">${icon(ic, 18, ic === 'INDUSTRY' ? '#d3c5fd' : '#9fb0c3')}</div>`).join('')}</div></div></div>
+  <div class="filt"><div class="seg"><div>Worth building<span class="c">${worth}</span></div><div class="on">All<span class="c">78</span></div><div>The city’s own<span class="c">4</span></div></div>
+    <span class="grow" style="flex:1"></span><span class="small">Sort</span><span class="btn">the game’s order <span style="color:#5f7189">▾</span></span></div>
+  <div class="legend"><span><b class="pp p">2</b> the city’s own</span><span><b class="pp v">9</b> the market’s</span>
+    <span><b class="warn">▲</b> its owner would lose</span><span><b class="good">★</b> most per $, of those that pay</span><span style="color:#5f7189">dashed: none standing</span></div>
+  <div class="grid"><div class="scroll"></div>
+    <div class="fam">${famHead(food, true)}<div class="lines"><div class="line">${cluster(food, food.groups[0])}${cluster(food, food.groups[1])}</div></div></div>
+    <div class="fam">${famHead(metals, true)}<div class="lines">
+      <div class="line">${cluster(metals, G(metals, 'Iron Mining'), true)}${cluster(metals, G(metals, 'Gold Mining'), true)}</div>
+      <div class="line">${cluster(metals, G(metals, 'Iron & Steel'), true)}</div></div>
+      ${groupFold(metals, G(metals, 'Copper'))}</div>
+    <div class="fam">${famHead(making, true)}<div class="lines"><div class="line">${cluster(making, making.groups[0], true)}</div></div></div>
+    <div class="fam">${famFold(materials, 'materials: 0 in the yard', .05)}</div>
+    <div class="fam">${famFold(energy, 'fuels: 47% made here', .47)}</div>
+  </div>
+  <div class="foot">
+    <div class="row" style="gap:10px">
+      <div class="sq" style="--cb:${shade(metals, si, 10, .2)};--cl:${shade(metals, si, 10, .7)};width:38px;height:38px;margin:0;padding-top:7px">${icon('INGOT', 21, shade(metals, si, 10))}</div>
+      <div style="flex:1"><div class="row" style="gap:8px"><b style="font-size:16px;font-weight:600">${SEL}</b><span class="small">Metals › Iron & Steel</span></div>
+        <div class="small" style="margin-top:2px"><b class="pp p">2</b> the city’s own &nbsp;<b class="pp v">9</b> the market’s &nbsp;· none on site</div></div>
+      <span class="btn">Its page ›</span></div>
+    <div class="figs">
+      <div><div class="k" style="color:${AREA.business}">Makes</div><div class="v">1,200 t</div><div class="s">steel a month; the city<br>used 61,400 t</div></div>
+      <div><div class="k" style="color:${AREA.money}">All in</div><div class="v">$24.9B</div><div class="s">sticker $6.1B; the rest<br>land and builders</div></div>
+      <div><div class="k" style="color:${AREA.money}">Its price</div><div class="v">7.8 mo</div><div class="s">of what it adds to the<br>city, at today’s prices</div></div>
+      <div><div class="k" style="color:${AREA.people}">Staff</div><div class="v">64</div><div class="s">38 unskilled · 24 diploma<br>· 2 technicians</div></div></div>
+    <div class="warnbox"><b class="warn" style="font-size:13px">▲</b><div><b>Its owner would lose $218.4M a month:</b> the scrap costs more than the steel fetches, so investors build no more. The city’s would add the steel and carry the loss.</div></div>
+    <div class="row" style="margin-top:8px;gap:8px"><span class="btn solid" style="height:30px;padding:0 14px">${icon('BUILD', 15, '#fff')} Place on the map</span>
+      <span class="btn build" style="height:30px">${icon('PIN', 14)} Best plot: North 2</span><span class="grow" style="flex:1"></span>
+      <span class="small" style="text-align:right">12,400 m² · land ≈ $978.0M<br>builders ≈ 7.4 months queued</span></div>
+  </div>
+</div>`);
+
+// The map: the city's own Steel Mini-Mills (pink) and the market's (violet) outlined; the ghost at the cursor.
+const OWN = [[805, 317, 'p'], [872, 352, 'p'], [871, 218, 'v'], [805, 251, 'v'], [839, 251, 'v'], [871, 251, 'v'], [905, 272, 'v'], [772, 284, 'v'], [839, 284, 'v'], [872, 284, 'v'], [839, 352, 'v']];
+document.body.insertAdjacentHTML('beforeend', OWN.map(([x, y, c]) => `<div class="own ${c}" style="left:${x - 16}px;top:${y - 16}px;width:32px;height:32px"></div>`).join('') + `
+<div class="ghost" style="left:764px;top:396px;width:26px;height:26px"></div>
+<svg style="position:absolute;left:781px;top:410px;z-index:13" width="18" height="22" viewBox="0 0 18 22"><path d="M1 1l0 17 4.5-4 3 7 3-1.4-3-6.8 6-.3z" fill="#fff" stroke="#000" stroke-width="1.2"/></svg>
+<div class="tag" style="left:800px;top:436px;width:236px"><div class="row" style="gap:7px">${icon('INGOT', 16, shade(metals, si, 10))}<b style="font-weight:600">Steel Mini-Mill</b><span class="good" style="margin-left:auto">fits</span></div>
+  <div class="small" style="margin-top:2px">12,400 m² · land ≈ $978.0M<br>click to place · Esc stops</div></div>`);
+
+document.body.insertAdjacentHTML('beforeend', `
+${num(694, 112, 1)}${num(694, 216, 2)}${num(694, 260, 3)}${num(694, 302, 4)}${num(694, 586, 5)}${num(694, 870, 6)}
+${note(1345, 108, '<b>1 · The categories as icons, in two labelled sets.</b> <i>The city’s job</i> (pink edge, its need’s state as a dot) and <i>the market’s</i> (violet: investors build, you may add). Hover names one; <i>Build</i> in the path is the Overview. Fifteen 11 px tabs become fourteen buttons.')}
+${note(1345, 212, '<b>2 · A filter and a sort.</b> <i>Worth building</i>: the owner would earn and the city is short of what it makes. <i>The city’s own</i>: only the kinds it holds. Sort by the game’s order, its price in months, the shortfall, or how many stand.')}
+${note(1345, 314, '<b>3 · The city’s own told from the market’s.</b> On every tile, family and card: a <b style="color:#c94f86">pink</b> count for the city’s, a <b style="color:#7c5fd6">violet</b> one for the investors’. Today “you have N” counts both: 340 standing, 6 of them the city’s.')}
+${note(1345, 418, '<b>4 · 18 groups in five families</b>, a hue each: Food straw, Metals steel, Making copper, Materials green, Energy petrol; a shade per building, an icon per kind. Each group’s supply line, today grey at the far right, heads its row with a bar. A folded family keeps its counts and its shortest chain.')}
+${note(1345, 540, '<b>5 · The marks.</b> ▲ its owner would lose on it; ★ the most per $ only among those that pay. The Bakery, which today wears “adds the most per $” while losing $576.9M a month, gets ▲ and no chip; Food has no ★ at all.')}
+${note(1345, 642, '<b>6 · One card, at the panel’s foot.</b> What it makes against what the city used, all in, its price in months of what it adds, staff, and the owner’s verdict as a warning. One button places it; no stepper.')}
+${note(1040, 300, '<b>7 · On the map.</b> The chosen kind’s footprint follows the cursor as a ghost, and the city’s 11 standing Steel Mini-Mills are outlined: <b style="color:#c94f86">the city’s 2</b>, <b style="color:#7c5fd6">the market’s 9</b>.', 'n7')}
+${note(1240, 990, '<b>UX1 mockup 9 · the build screen · P4 A ★ recommended.</b> The big city at month 2,406: Build › Industry, the Steel Mini-Mill chosen. Trade-off: the map stays in view and placing is one step, but you compare one card at a time (<i>Wide</i> opens mockup 10’s sheet).', 'pick pk')}
+`);
+</script></body></html>

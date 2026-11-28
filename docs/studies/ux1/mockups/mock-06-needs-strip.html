@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>UX1 mockup 6: the needs in the top strip</title>
+<link rel="stylesheet" href="lib/frame.css"><script src="lib/icons.js"></script><script src="lib/frame.js"></script>
+<style>
+/* P2 B: the needs as small circles and words inside the top strip, between the figures and the chips. */
+.strip .fig { min-width: 0; padding: 3px 10px; }
+.sneeds { display: flex; align-items: center; height: 44px; margin: 0 4px 0 0; padding: 0 4px; border-left: 1px solid var(--edge); border-right: 1px solid var(--edge); flex: none; }
+.sneeds .g { display: flex; gap: 1px; padding: 0 4px; }
+.sneeds .g + .g { border-left: 1px solid var(--edge); }
+.sn { width: 38px; height: 40px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 6px; position: relative; }
+.sn span { font-size: 9px; color: var(--soft); line-height: 1; white-space: nowrap; letter-spacing: -.01em; }
+.sn.hover { background: var(--control); outline: 1px solid var(--control-edge); }
+.sn.hover span { color: var(--text); }
+.sn .tip { top: 46px; left: -12px; width: 262px; text-align: left; }
+.sn .tip .keys { color: var(--spent); }
+</style></head>
+<body><script>
+const nd = (w, s, st, sub, hover = '') => `<div class="sn ${hover ? 'hover' : ''}">${dot(s, STATE[st], 18)}<span>${w}</span>${hover}</div>`;
+const tip = `<div class="tip"><b>Streets: 48% served</b>the town's roads carry half of what is asked of them; the worst of the ten.
+  <div class="mono" style="margin-top:4px;color:#f85149">48% · ▼ 3 pts this year</div><div class="keys">click opens Infrastructure › Roads in the panel</div></div>`;
+const groups = NEEDS_TOWN.map(([g, items]) => `<div class="g">${items.map(([w, s, st, sub]) => nd(w, s, st, sub, w === 'Streets' ? tip : '')).join('')}</div>`).join('');
+
+frame({ ground: 'town', figures: TOWN, showNeeds: false, alerts: [['ROADS', 'bad', 1], ['STAFF', 'bad', 1], ['COIN', 'warn', 1], ['HEALTH', 'warn', 1]], alertsLeft: 88,
+  stripExtra: `<div class="sneeds" style="position:relative">${groups}<div class="ring-out" style="left:-6px;top:-1px;right:-6px;bottom:-1px"></div><div class="num" style="left:-17px;top:38px">1</div></div>` });
+
+document.body.insertAdjacentHTML('beforeend', `
+<div id="labels"></div>`);
+
+/* The labels go where the strip put the needs. */
+document.fonts.ready.then(() => setTimeout(() => {
+  const b = document.querySelector('.sneeds').getBoundingClientRect();
+  const st = [...document.querySelectorAll('.sn')].find(e => e.classList.contains('hover')).getBoundingClientRect();
+  const t = document.querySelector('.sn .tip').getBoundingClientRect();
+  document.getElementById('labels').innerHTML =
+    note(b.left - 400, 64, '<b>1 · The needs in the top strip (P2 B, alternative).</b> The same ten as the sidebar, a small circle and a word each, by area: people, services, the ground. The ring is how far the need is met; a click opens its page in the panel.') +
+    num(t.left - 14, t.bottom + 8, 2) +
+    note(t.left + 14, t.bottom + 10, '<b>2 · Hover tells the figure.</b> The word has no room for “48%” or “96% housed”: each need’s own figure moves into its tip.') +
+    num(1550, 400, 3) +
+    note(1578, 396, '<b>3 · Nothing over the map’s right edge.</b> The map runs whole to the window’s edge; in mockup 1 the sidebar takes 120 px of it.') +
+    note(b.left - 400, 162, '<b>The trade-off:</b> nothing lies over the map, but the strip is full: the words shrink to 9 px, the needs take the room the figures had to grow, and a city with more needs, or a window narrower than 1920 px, has none left.') +
+    note(1330, 1030, '<b>UX1 mockup 6 · the needs in the strip · P2 B, alternative.</b> The young town, slot 1, July 1909; the panel closed, the map whole.', 'pick');
+}, 1200));
+</script></body></html>

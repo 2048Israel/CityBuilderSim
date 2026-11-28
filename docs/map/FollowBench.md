@@ -15,7 +15,7 @@
 
 **Uses:** [InputLog](InputLog.md) (57), [UserInterface](UserInterface.md) (22), [ReplayCheck](ReplayCheck.md) (10), [Reenactor](Reenactor.md) (8), [FollowRules](FollowRules.md) (7), [ReplayMode](ReplayMode.md) (7), [GamePrefs](GamePrefs.md) (7), [Game](Game.md) (6), [Recording](Recording.md) (5), [GameFiles](GameFiles.md) (3), [LongPlaytest](LongPlaytest.md) (1), [TempDirs](TempDirs.md) (1), [InputTimeline](InputTimeline.md) (1)
 
-**Used by (6):** [AllChecks](AllChecks.md), [KeptCheck](KeptCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TimingCheck](TimingCheck.md), [UiProbe](UiProbe.md)
+**Used by (9):** [AllChecks](AllChecks.md), [KeptCheck](KeptCheck.md), [PagePictures](PagePictures.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [SteadyBench](SteadyBench.md), [TimingCheck](TimingCheck.md), [UiProbe](UiProbe.md), [UiSteadyCheck](UiSteadyCheck.md)
 
 ## Sections
 

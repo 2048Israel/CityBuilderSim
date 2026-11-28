@@ -7313,6 +7313,24 @@ public class UserInterface extends Application {
         return false;
     }
 
+    /** The rail's keys, top to foot ("build", "land"... "rankings"): what PagePictures and UiSteadyCheck walk (UX1). */
+    List<String> railKeys() {
+        List<String> keys = new ArrayList<>();
+        for (Tab t : tabs()) keys.add(t.key());
+        return keys;
+    }
+
+    /** The rail button with this key pressed, as the player's click does (goHome); false for a key the rail has not (UX1). */
+    boolean pressRail(String key) {
+        for (Tab t : tabs()) {
+            if (t.key().equals(key)) {
+                goHome(t);
+                return true;
+            }
+        }
+        return false;
+    }
+
     // What ReplayMode needs of this class's private parts, one small method each.
 
     Stage replayStage() { return stage; }

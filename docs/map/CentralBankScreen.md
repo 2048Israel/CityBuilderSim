@@ -24,7 +24,7 @@
 
 **Uses:** [Palette](Palette.md) (114), [Kept](Kept.md) (54), [CentralBankStatements](CentralBankStatements.md) (37), [CentralBank](CentralBank.md) (31), [Icons](Icons.md) (30), [SectorScreen](SectorScreen.md) (27), [DebtManager](DebtManager.md) (22), [StatementView](StatementView.md) (7), [PriceIndex](PriceIndex.md) (7), [PolicyScreen](PolicyScreen.md) (7), [FinancesScreen](FinancesScreen.md) (7), [SectorStatements](SectorStatements.md) (6), [Expectations](Expectations.md) (4), [BankScreen](BankScreen.md) (3), [CityCalendar](CityCalendar.md) (3), [UserInterface](UserInterface.md) (2), [HistorySave](HistorySave.md) (1)
 
-**Used by (5):** [BankScreen](BankScreen.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [KeptBench](KeptBench.md), [UserInterface](UserInterface.md)
+**Used by (6):** [BankScreen](BankScreen.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [KeptBench](KeptBench.md), [PagePictures](PagePictures.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

@@ -23,7 +23,7 @@
 
 **Uses:** [Palette](Palette.md) (900), [Kept](Kept.md) (683), [Sector](Sector.md) (212), [SectorStatements](SectorStatements.md) (143), [FreightView](FreightView.md) (128), [OilView](OilView.md) (104), [Icons](Icons.md) (87), [RefineryView](RefineryView.md) (77), [SectorBooks](SectorBooks.md) (70), [BuildCard](BuildCard.md) (70), [BuildScreen](BuildScreen.md) (63), [StatementView](StatementView.md) (53), [SectorFlow](SectorFlow.md) (44), [IndustryPicture](IndustryPicture.md) (27), [BusinessDebtManager](BusinessDebtManager.md) (19), [BusinessInvestment](BusinessInvestment.md) (18), [ResearchView](ResearchView.md) (16), [Formats](Formats.md) (15), [CityCalendar](CityCalendar.md) (14), [Equity](Equity.md) (14), [Retail](Retail.md) (11), [BuildAdvice](BuildAdvice.md) (10), [Good](Good.md) (10), [Pieces](Pieces.md) (9), [OrderBook](OrderBook.md) (7), [Debt](Debt.md) (7), [BuildingsTemplate](BuildingsTemplate.md) (7), [Restaurants](Restaurants.md) (7), [LuxuryRetail](LuxuryRetail.md) (7), [Game](Game.md) (6)... and 31 more
 
-**Used by (9):** [BankScreen](BankScreen.md), [CentralBankScreen](CentralBankScreen.md), [FundScreen](FundScreen.md), [HistoryScreen](HistoryScreen.md), [KeptBench](KeptBench.md), [LandScreen](LandScreen.md), [StatementView](StatementView.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
+**Used by (10):** [BankScreen](BankScreen.md), [CentralBankScreen](CentralBankScreen.md), [FundScreen](FundScreen.md), [HistoryScreen](HistoryScreen.md), [KeptBench](KeptBench.md), [LandScreen](LandScreen.md), [PagePictures](PagePictures.md), [StatementView](StatementView.md), [TradeScreen](TradeScreen.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

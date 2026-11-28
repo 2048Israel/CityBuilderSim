@@ -1,4 +1,4 @@
-# UserInterface.java - 7,468 lines · 252 methods · 47 constants · interface
+# UserInterface.java - 7,486 lines · 254 methods · 47 constants · interface
 
 `ham/citybuildersim/ui/UserInterface.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -23,7 +23,7 @@
 
 **Uses:** [Palette](Palette.md) (358), [Kept](Kept.md) (248), [Icons](Icons.md) (21), [Pieces](Pieces.md) (16), [GameFiles](GameFiles.md) (14), [PeopleScreen](PeopleScreen.md) (11), [Currency](Currency.md) (11), [Expectations](Expectations.md) (11), [Game](Game.md) (10), [SaveHeader](SaveHeader.md) (10), [CityCalendar](CityCalendar.md) (8), [Notice](Notice.md) (8), [BuildScreen](BuildScreen.md) (6), [FoundingScreen](FoundingScreen.md) (6), [GameVersion](GameVersion.md) (6), [ReplayMode](ReplayMode.md) (6), [DemolitionLog](DemolitionLog.md) (6), [BankScreen](BankScreen.md) (5), [GamePrefs](GamePrefs.md) (5), [Migration](Migration.md) (5), [DebtManager](DebtManager.md) (5), [CityNeeds](CityNeeds.md) (5), [BuildingsStacks](BuildingsStacks.md) (5), [LandmassView](LandmassView.md) (5), [CameraPath](CameraPath.md) (5), [ServicesScreen](ServicesScreen.md) (4), [ClockPace](ClockPace.md) (4), [Formats](Formats.md) (4), [PriceIndex](PriceIndex.md) (4), [ForeignAccounts](ForeignAccounts.md) (4)... and 45 more
 
-**Used by (43):** [BankScreen](BankScreen.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [CentralBankScreen](CentralBankScreen.md), [ChartFitBench](ChartFitBench.md), [CityBuilderSim](CityBuilderSim.md), [ClockCheck](ClockCheck.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FollowBench](FollowBench.md), [FollowRules](FollowRules.md), [FoundingScreen](FoundingScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [InputRecorder](InputRecorder.md), [KeptBench](KeptBench.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [PartnersPage](PartnersPage.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [Reenactor](Reenactor.md), [ReplayCamera](ReplayCamera.md), [ReplayGraphLayer](ReplayGraphLayer.md), [ReplayMode](ReplayMode.md), [ReplayMoveProbe](ReplayMoveProbe.md), [ResearchScreen](ResearchScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UiProbe](UiProbe.md), [VaultTable](VaultTable.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
+**Used by (45):** [BankScreen](BankScreen.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [CentralBankScreen](CentralBankScreen.md), [ChartFitBench](ChartFitBench.md), [CityBuilderSim](CityBuilderSim.md), [ClockCheck](ClockCheck.md), [ConstructionScreen](ConstructionScreen.md), [FinancesScreen](FinancesScreen.md), [FollowBench](FollowBench.md), [FollowRules](FollowRules.md), [FoundingScreen](FoundingScreen.md), [FundScreen](FundScreen.md), [GovernmentScreen](GovernmentScreen.md), [HistoryScreen](HistoryScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [InputRecorder](InputRecorder.md), [KeptBench](KeptBench.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [MapCheck](MapCheck.md), [MapView](MapView.md), [MiniMap](MiniMap.md), [PagePictures](PagePictures.md), [PartnersPage](PartnersPage.md), [PeopleScreen](PeopleScreen.md), [Pieces](Pieces.md), [PolicyScreen](PolicyScreen.md), [RankingsScreen](RankingsScreen.md), [Reenactor](Reenactor.md), [ReplayCamera](ReplayCamera.md), [ReplayGraphLayer](ReplayGraphLayer.md), [ReplayMode](ReplayMode.md), [ReplayMoveProbe](ReplayMoveProbe.md), [ResearchScreen](ResearchScreen.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [SteadyBench](SteadyBench.md), [SummaryScreen](SummaryScreen.md), [TimeChart](TimeChart.md), [TradeScreen](TradeScreen.md), [UiProbe](UiProbe.md), [VaultTable](VaultTable.md), [ZoningScreen](ZoningScreen.md), [ZoningViewCheck](ZoningViewCheck.md)
 
 ## Sections
 
@@ -265,13 +265,13 @@
 | 7141 | `private javafx.scene.Node cinematicLifted` | The expanded map's pane while cinematic mode holds it at the window's top (it lay under the header), to put back under the header when cinematic mode ends. |
 | 7144 | `private boolean cinematicKeepsChrome` | Whether cinematic mode that is on keeps the header and the rail (TR2: Follow's clicks land where the player's layout put them). |
 | 7191 | `private Reenactor reenactor` | Follow's re-enactor, made on first use (TR2). |
-| 7337 | `private GamePrefs playerPrefs` | The player's own prefs while a replay's copy is on screen holding prefs of its own (replayHoldPrefs); null when none is. |
+| 7355 | `private GamePrefs playerPrefs` | The player's own prefs while a replay's copy is on screen holding prefs of its own (replayHoldPrefs); null when none is. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 7416 | **type** `public class UserInterface extends Application` | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox - the rail down the left, the City overview's drawer and ... |
+| 53 | 7434 | **type** `public class UserInterface extends Application` | The window: the stage and its theme, the header - the clock and the speed, the money block, five headline tiles, the "Needs you" chip, the rating and the inbox - the rail down the left, the City overview's drawer and ... |
 
 ### THE SCREENS, one class each since 2026-09-18, in the order the rail (lines 57-80)
 
@@ -628,7 +628,7 @@
 |---:|---:|---|---|
 | 7106 | 13 | `static void popPip(Region pip)` | A quarter second of "that landed", on the figure the month just changed - and since 0.7.26 on the land office's figures the month moved. |
 
-### THE REPLAY AND THE RECORDING (TR1, 2026-10-31) (lines 7120-7468)
+### THE REPLAY AND THE RECORDING (TR1, 2026-10-31) (lines 7120-7486)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -661,31 +661,33 @@
 | 7294 | 3 | `void replaySetMapView(CameraPath.View view)` | A logged view put on the expanded map, as the camera puts a view (MapView.replayShowView()); nothing when the map is not over the window or is on the other kind of ground. |
 | 7299 | 3 | `String replayTabOf(String screen)` | The rail tab a screen belongs to ("land", "bank"...), or "" for a screen that is on no tab (the game menus, the funding pages...). |
 | 7304 | 11 | `boolean replayGoTab(String screen)` | Goes to the rail tab a screen belongs to, as pressing its rail button does (goHome); false when the screen is on no tab. |
-| 7318 | 1 | `Stage replayStage()` | What ReplayMode needs of this class's private parts, one small method each. |
-| 7320 | 1 | `Scene replayScene()` |  |
-| 7322 | 1 | `VBox replayPage()` |  |
-| 7324 | 1 | `Button replayButton(String text, String under, boolean primary)` |  |
-| 7326 | 1 | `boolean replayCityOpen()` |  |
-| 7328 | 1 | `void replaySetCityOpen(boolean open)` |  |
-| 7330 | 1 | `Runnable replayResumeTo()` |  |
-| 7332 | 1 | `void replaySetResumeTo(Runnable again)` |  |
-| 7334 | 1 | `void replayStopClock()` |  |
-| 7345 | 5 | `void replayHoldPrefs()` | The copy takes prefs of its own (TR2-G): the player's values, in a copy that never writes (GamePrefs.copyForReplay), so a click in the copy on the drawer's pin, the construction tab, a map toggle or the Reports' pins ... |
-| 7352 | 5 | `void replayReleasePrefs()` | The replay is left: the player's own prefs are the window's again, as they were when it was entered. |
-| 7359 | 4 | `void replayAnotherCity()` | Another city on screen (the copy's month loaded, or the real city given back): the per-city reset a load does, and the notices it already had not toasted. |
-| 7364 | 1 | `void replayOpenCity()` |  |
-| 7366 | 1 | `void replayQuit()` |  |
-| 7368 | 1 | `void replayPlaceMenu(Runnable place)` |  |
-| 7371 | 1 | `javafx.scene.Node replayTitleLayer()` | The layers that stay above the time bar: the title layer (the menu) and the dialog that is up. |
-| 7373 | 1 | `javafx.scene.Node replayDialog()` |  |
-| 7376 | 1 | `boolean replayPressHeld()` | Whether a mouse button is down: nothing is rebuilt or loaded under a press (0.7.40). |
-| 7379 | 1 | `boolean replayGameMenuUp()` | Whether a menu of the game's own is up (the replay's menu, the list): the screens' keys and the time bar's step aside. |
-| 7381 | 1 | `void replayHideTooltips()` |  |
-| 7384 | 4 | `BorderPane replayRoot()` | The window's root: the BorderPane the header, the rail and the stage hang off, the first layer of windowStack. |
-| 7390 | 1 | `boolean isCinematic()` | Whether cinematic mode is on. |
-| 7393 | 1 | `boolean cinematicHidesChrome()` | Whether cinematic mode is on and takes the chrome away (not the form Follow keeps, TR2): what a map expanded in it follows. |
-| 7403 | 3 | `void replayCinematic(boolean on)` | Cinematic mode on or off (ReplayMode: the C key and the bar's button). |
-| 7412 | 33 | `void replayCinematic(boolean on, boolean keepChrome)` | ...and, with {@code keepChrome} (TR2, while Follow plays), the header and the rail stay and the map's pane stays under the header: the player's clicks that Follow re-enacts land where his layout put them. |
-| 7447 | 3 | `private void replayCinematicPane(boolean underHeader)` | A pane laid under the header while cinematic mode is on (showChartFullScreen()) starts at the window's top. |
-| 7452 | 16 | `private void liftChartPane(boolean lift)` | The expanded map's pane at the window's top (chartFullTop() 0, no margin) or, ending cinematic mode, back under the header as it was. |
+| 7317 | 5 | `List<String> railKeys()` | The rail's keys, top to foot ("build", "land"... |
+| 7324 | 9 | `boolean pressRail(String key)` | The rail button with this key pressed, as the player's click does (goHome); false for a key the rail has not (UX1). |
+| 7336 | 1 | `Stage replayStage()` | What ReplayMode needs of this class's private parts, one small method each. |
+| 7338 | 1 | `Scene replayScene()` |  |
+| 7340 | 1 | `VBox replayPage()` |  |
+| 7342 | 1 | `Button replayButton(String text, String under, boolean primary)` |  |
+| 7344 | 1 | `boolean replayCityOpen()` |  |
+| 7346 | 1 | `void replaySetCityOpen(boolean open)` |  |
+| 7348 | 1 | `Runnable replayResumeTo()` |  |
+| 7350 | 1 | `void replaySetResumeTo(Runnable again)` |  |
+| 7352 | 1 | `void replayStopClock()` |  |
+| 7363 | 5 | `void replayHoldPrefs()` | The copy takes prefs of its own (TR2-G): the player's values, in a copy that never writes (GamePrefs.copyForReplay), so a click in the copy on the drawer's pin, the construction tab, a map toggle or the Reports' pins ... |
+| 7370 | 5 | `void replayReleasePrefs()` | The replay is left: the player's own prefs are the window's again, as they were when it was entered. |
+| 7377 | 4 | `void replayAnotherCity()` | Another city on screen (the copy's month loaded, or the real city given back): the per-city reset a load does, and the notices it already had not toasted. |
+| 7382 | 1 | `void replayOpenCity()` |  |
+| 7384 | 1 | `void replayQuit()` |  |
+| 7386 | 1 | `void replayPlaceMenu(Runnable place)` |  |
+| 7389 | 1 | `javafx.scene.Node replayTitleLayer()` | The layers that stay above the time bar: the title layer (the menu) and the dialog that is up. |
+| 7391 | 1 | `javafx.scene.Node replayDialog()` |  |
+| 7394 | 1 | `boolean replayPressHeld()` | Whether a mouse button is down: nothing is rebuilt or loaded under a press (0.7.40). |
+| 7397 | 1 | `boolean replayGameMenuUp()` | Whether a menu of the game's own is up (the replay's menu, the list): the screens' keys and the time bar's step aside. |
+| 7399 | 1 | `void replayHideTooltips()` |  |
+| 7402 | 4 | `BorderPane replayRoot()` | The window's root: the BorderPane the header, the rail and the stage hang off, the first layer of windowStack. |
+| 7408 | 1 | `boolean isCinematic()` | Whether cinematic mode is on. |
+| 7411 | 1 | `boolean cinematicHidesChrome()` | Whether cinematic mode is on and takes the chrome away (not the form Follow keeps, TR2): what a map expanded in it follows. |
+| 7421 | 3 | `void replayCinematic(boolean on)` | Cinematic mode on or off (ReplayMode: the C key and the bar's button). |
+| 7430 | 33 | `void replayCinematic(boolean on, boolean keepChrome)` | ...and, with {@code keepChrome} (TR2, while Follow plays), the header and the rail stay and the map's pane stays under the header: the player's clicks that Follow re-enacts land where his layout put them. |
+| 7465 | 3 | `private void replayCinematicPane(boolean underHeader)` | A pane laid under the header while cinematic mode is on (showChartFullScreen()) starts at the window's top. |
+| 7470 | 16 | `private void liftChartPane(boolean lift)` | The expanded map's pane at the window's top (chartFullTop() 0, no margin) or, ending cinematic mode, back under the header as it was. |
 
