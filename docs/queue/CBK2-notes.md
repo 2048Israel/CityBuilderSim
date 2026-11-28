@@ -230,6 +230,8 @@ the central bank at a .4 dial, saved the month before its first slice.
 - Exit 0: ExpectationsCheck, BankRulesCheck, CentralBankStatementCheck,
   SaveFileCheck, ReadPathCheck, and KeptCheck (28 min).
 - HoldersCheck exits 3: main's known red only.
+- CentralBankCheck, run directly (it is not for a background batch-check here),
+  exits 0 in 3,011 s with no FAIL line.
 
 **The pick** (`sh tools/pick.sh origin/main HEAD`) is ALL, 265 harnesses
 ("AllChecks.java runs the suite"). The review line is "needed - money:
