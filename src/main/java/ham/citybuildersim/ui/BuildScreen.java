@@ -2895,6 +2895,7 @@ public final class BuildScreen {
             case BuildAdvice.HEALTHCARE: return CityNeeds.Go.HEALTHCARE;
             case BuildAdvice.EDUCATION:  return CityNeeds.Go.EDUCATION;
             case BuildAdvice.SAFETY:     return CityNeeds.Go.SAFETY;
+            case BuildAdvice.SHOPS:      return CityNeeds.Go.SHOPS;     // FOOD's door when the shelves are short (HG1)
             default:                     return CityNeeds.Go.HOMES;
         }
     }

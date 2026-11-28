@@ -236,7 +236,9 @@ public class PriceIndex {
     public void takeMonth(double[] prices, double[] spends, double[] fees, double[] feeSpends, int month) {
 
         double shelfPrice = prices[GROCERIES], rentPrice = prices[RENT];
-        if (shelfPrice <= MIN_BASE || rentPrice <= MIN_BASE) return;
+        // A month with no rent priced is no month (a city with no homes); one with no shelf price is still priced,
+        // on what the city does buy (HG1: a town with no shop based nothing for 79 months).
+        if (rentPrice <= MIN_BASE) return;
 
         // The month's prices, each held at its last where it has none.
         for (int k = 0; k < COMPONENTS; k++) {
@@ -283,10 +285,22 @@ public class PriceIndex {
              * The weights are the trailing year's (0.7.43), and a component
              * nobody has bought yet - no kitchens, no counters - is in it at
              * nothing until the next basket.
+             *
+             * THE OTHER HALF NEED NOT BE GROCERIES (HG1, {next}, 2026-11-28).
+             * Jerus's 1900 city had no shop for 79 months, so no month had
+             * both halves and the index never based: the rule read no
+             * inflation and the header said "rate in ~37 mo" for ever. The
+             * half beside rent is now groceries or any good with prices from
+             * outside the loop (goodsBought(): meals, luxury, cars, petrol,
+             * lamp oil, home coal - each carries the world's food, fuel or
+             * materials in its price), never rent alone and never the city's
+             * own fees. Groceries that appear after such a basing join it once
+             * a whole year of them is in the weights (groceriesJoin()).
              */
             double food = Math.max(0, spends[GROCERIES]);
             double rent = Math.max(0, spends[RENT]);
-            if (food <= MIN_BASE || rent <= MIN_BASE) return;
+            if (rent <= MIN_BASE) return;
+            if (!(food > MIN_BASE && shelfPrice > MIN_BASE) && !goodsBought(prices, spends)) return;
             if (++shoppingMonths < SETTLING_MONTHS) return;
             based = true;
             relink(month, 1.0);
@@ -301,12 +315,13 @@ public class PriceIndex {
              * weights are the trailing year's, which on such a save is this
              * month alone.
              */
-            double level = foodWeight * (baseFood > MIN_BASE ? shelfPrice / baseFood : 1)
+            double level = foodWeight * (baseFood > MIN_BASE && shelfPrice > MIN_BASE ? shelfPrice / baseFood : 1)
                     + rentWeight * (baseRent > MIN_BASE ? rentPrice / baseRent : 1);
             relink(month, level > MIN_BASE && Double.isFinite(level) ? level : index);
-        } else if (month - linkedAt >= REBASE_MONTHS) {
+        } else if (month - linkedAt >= REBASE_MONTHS || groceriesJoin()) {
             // A new basket every REBASE_MONTHS, linked at the level the old
-            // one strikes this month (THE BASKET IS CHAINED).
+            // one strikes this month (THE BASKET IS CHAINED) - and as soon as
+            // a basket struck with no groceries has a year of them (HG1).
             relink(month, levelOnThisBasket());
         }
 
@@ -338,6 +353,30 @@ public class PriceIndex {
        rate is the ring of the level, so the rate does not jump either. A
        save from before 0.7.43 is linked the same way on its first month.
        ====================================================================== */
+
+    /**
+     * Whether the month bought a good beside groceries and rent at a price (HG1): meals, luxury, new cars, petrol,
+     * lamp oil or home coal - the half of a basing that carries prices from outside the rent-wage loop when the city
+     * has no groceries yet. Never SERVICES: the city's own fees are inside the loop.
+     */
+    static boolean goodsBought(double[] prices, double[] spends) {
+        for (int k = 0; k < COMPONENTS; k++) {
+            if (k == GROCERIES || k == RENT || k == SERVICES) continue;
+            if (spends[k] > MIN_BASE && prices[k] > MIN_BASE && Double.isFinite(prices[k])) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Whether groceries join the basket this month (HG1): it was struck with none in its weights, and now every month
+     * of the trailing year (WEIGHT_MONTHS) bought them at a price - so they come in at a whole year's weight, linked at
+     * the level the basket strikes (relink()), rather than waiting REBASE_MONTHS for the next basket.
+     */
+    private boolean groceriesJoin() {
+        if (weight[GROCERIES] > 0 || !(last[GROCERIES] > MIN_BASE) || ringMonths < WEIGHT_MONTHS) return false;
+        for (double[] month : spendRing) if (!(month[GROCERIES] > MIN_BASE)) return false;
+        return true;
+    }
 
     /** The level this month on the basket in force: the link times each component's price over its base, weighted. */
     private double levelOnThisBasket() {

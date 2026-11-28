@@ -1,4 +1,4 @@
-# Sector.java - 4,431 lines · 315 methods · 22 constants · model
+# Sector.java - 4,476 lines · 317 methods · 22 constants · model
 
 `ham/citybuildersim/Sector.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 > MONEY MOVES AT THE STRIKE AND NOWHERE ELSE in this class. A trade is a
 > ... (4 more lines in the source)
 
-**Uses:** [Good](Good.md) (202), [BuildingsTemplate](BuildingsTemplate.md) (29), [GoodsMarket](GoodsMarket.md) (19), [WageBand](WageBand.md) (11), [NewUnit](NewUnit.md) (10), [SupplierCredit](SupplierCredit.md) (10), [Game](Game.md) (9), [Statement](Statement.md) (9), [JobType](JobType.md) (8), [Traffic](Traffic.md) (8), [Trade](Trade.md) (7), [SectorState](SectorState.md) (7), [Markets](Markets.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [Haulage](Haulage.md) (5), [BuildingManager](BuildingManager.md) (4), [BuildingType](BuildingType.md) (3), [BalanceSheet](BalanceSheet.md) (3), [Freight](Freight.md) (2), [Sectors](Sectors.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Recipe](Recipe.md) (1), [PopulationManager](PopulationManager.md) (1), [Construction](Construction.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Migration](Migration.md) (1), [ArrivalMix](ArrivalMix.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [HydroSites](HydroSites.md) (1)... and 5 more
+**Uses:** [Good](Good.md) (202), [BuildingsTemplate](BuildingsTemplate.md) (30), [GoodsMarket](GoodsMarket.md) (19), [WageBand](WageBand.md) (11), [NewUnit](NewUnit.md) (10), [SupplierCredit](SupplierCredit.md) (10), [Game](Game.md) (9), [Statement](Statement.md) (9), [JobType](JobType.md) (8), [Traffic](Traffic.md) (8), [Trade](Trade.md) (7), [SectorState](SectorState.md) (7), [Markets](Markets.md) (5), [BusinessInvestment](BusinessInvestment.md) (5), [Haulage](Haulage.md) (5), [BuildingManager](BuildingManager.md) (4), [BuildingType](BuildingType.md) (3), [PopulationManager](PopulationManager.md) (3), [BalanceSheet](BalanceSheet.md) (3), [Freight](Freight.md) (2), [Sectors](Sectors.md) (2), [SectorStatements](SectorStatements.md) (2), [Formats](Formats.md) (2), [Recipe](Recipe.md) (1), [Construction](Construction.md) (1), [BuildingsStacks](BuildingsStacks.md) (1), [Migration](Migration.md) (1), [ArrivalMix](ArrivalMix.md) (1), [InfrastructureManager](InfrastructureManager.md) (1), [HydroSites](HydroSites.md) (1)... and 5 more
 
 **Used by (193):** [AdviceValueOracle](AdviceValueOracle.md), [Agriculture](Agriculture.md), [AgricultureCheck](AgricultureCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [Automotive](Automotive.md), [BankCheck](BankCheck.md), [BankFailureCheck](BankFailureCheck.md), [BankScreen](BankScreen.md), [BondCheck](BondCheck.md), [BooksCheck](BooksCheck.md), [BuildAdvice](BuildAdvice.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildScreen](BuildScreen.md), [BuildersFirstCheck](BuildersFirstCheck.md), [BuildingDataCheck](BuildingDataCheck.md), [BusinessInvestment](BusinessInvestment.md), [BusinessServices](BusinessServices.md), [BusinessServicesCheck](BusinessServicesCheck.md), [CallCheck](CallCheck.md), [CapitalFlowCheck](CapitalFlowCheck.md), [CarCheck](CarCheck.md), [CardCheck](CardCheck.md), [CementConcreteCheck](CementConcreteCheck.md), [CentralBankCheck](CentralBankCheck.md), [ChartCheck](ChartCheck.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [CoalMiningCheck](CoalMiningCheck.md), [Construction](Construction.md), [ConstructionControlCheck](ConstructionControlCheck.md), [ConstructionScreen](ConstructionScreen.md), [ConstructionTrapCheck](ConstructionTrapCheck.md), [CopperBufferCheck](CopperBufferCheck.md), [CopperMiningCheck](CopperMiningCheck.md), [CopperRefining](CopperRefining.md), [CopperRefiningCheck](CopperRefiningCheck.md), [CreditCheck](CreditCheck.md), [DeathCareFirstCheck](DeathCareFirstCheck.md), [DenominationCheck](DenominationCheck.md), [DeterminismCheck](DeterminismCheck.md), [DistressBleedCheck](DistressBleedCheck.md), [DriverlessTruckCheck](DriverlessTruckCheck.md), [EconomyManager](EconomyManager.md), [EquipmentCheck](EquipmentCheck.md), [EquipmentFit](EquipmentFit.md), [EquipmentForms](EquipmentForms.md), [EssentialWorksCheck](EssentialWorksCheck.md), [ExtractionSector](ExtractionSector.md), [FarmlandReserveCheck](FarmlandReserveCheck.md), [FinancesScreen](FinancesScreen.md), [FitoutCheck](FitoutCheck.md), [FittingCheck](FittingCheck.md), [FloatLinkCheck](FloatLinkCheck.md), [FoodIndustry](FoodIndustry.md), [FoodProcessing](FoodProcessing.md), [ForeignCheck](ForeignCheck.md), [ForeignChoiceCheck](ForeignChoiceCheck.md), [ForeignCrewsCheck](ForeignCrewsCheck.md), [ForestryCheck](ForestryCheck.md), [Forms1900Check](Forms1900Check.md), [Freight](Freight.md), [FreightView](FreightView.md), [FreightViewCheck](FreightViewCheck.md), [Game](Game.md), [GapOrderCheck](GapOrderCheck.md), [GdpCheck](GdpCheck.md), [GoldMiningCheck](GoldMiningCheck.md), [GovernmentScreen](GovernmentScreen.md), [GroceryCheck](GroceryCheck.md), [GroundInputCheck](GroundInputCheck.md), [Haulage](Haulage.md), [HaulageCheck](HaulageCheck.md), [HeavyIndustry](HeavyIndustry.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HistoricalRecipeCheck](HistoricalRecipeCheck.md), [HistoryCheck](HistoryCheck.md), [HistorySave](HistorySave.md), [HistoryScreen](HistoryScreen.md), [HomeRailCheck](HomeRailCheck.md), [HousingCheck](HousingCheck.md), [HydrogenSteelCheck](HydrogenSteelCheck.md), [Icons](Icons.md), [Inbox](Inbox.md), [InboxCheck](InboxCheck.md), [IndustryView](IndustryView.md), [IndustryViewCheck](IndustryViewCheck.md), [InfrastructureCheck](InfrastructureCheck.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [KeptTimingCheck](KeptTimingCheck.md), [LabourCheck](LabourCheck.md), [LandClassCheck](LandClassCheck.md), [LandClassRenders](LandClassRenders.md), [LandScreen](LandScreen.md), [LandlordPortCheck](LandlordPortCheck.md), [LandmassCheck](LandmassCheck.md), [LicenceFees](LicenceFees.md), [LicenceFeesCheck](LicenceFeesCheck.md), [LongPlaytest](LongPlaytest.md), [LuxuryRetail](LuxuryRetail.md), [Manufacturing](Manufacturing.md), [ManufacturingCheck](ManufacturingCheck.md), [MapView](MapView.md), [Markets](Markets.md), [Materials](Materials.md), [MaterialsCheck](MaterialsCheck.md), [MiningCheck](MiningCheck.md), [ModernEngineeringCheck](ModernEngineeringCheck.md), [ModernRowsCheck](ModernRowsCheck.md), [MoneyAudit](MoneyAudit.md), [MoneyWordsCheck](MoneyWordsCheck.md), [NewGameCheck](NewGameCheck.md), [NewUnitCheck](NewUnitCheck.md), [Oil](Oil.md), [OilCheck](OilCheck.md), [OilViewCheck](OilViewCheck.md), [OreView](OreView.md), [OutwardInvestment](OutwardInvestment.md), [PagePictures](PagePictures.md), [PassThroughCheck](PassThroughCheck.md), [Pieces](Pieces.md), [PolicyCheck](PolicyCheck.md), [PolicyPreview](PolicyPreview.md), [PolicyPreviewCheck](PolicyPreviewCheck.md), [PolicyScreen](PolicyScreen.md), [PortCheck](PortCheck.md), [PortDivision](PortDivision.md), [PostwarRecipeCheck](PostwarRecipeCheck.md), [PowerPlantsCheck](PowerPlantsCheck.md), [PowerPriceCheck](PowerPriceCheck.md), [PriceLevelCheck](PriceLevelCheck.md), [PrizeCheck](PrizeCheck.md), [ProcessingSector](ProcessingSector.md), [PublicLicenceCheck](PublicLicenceCheck.md), [QuarryingCheck](QuarryingCheck.md), [RailCheck](RailCheck.md), [RailDepotCheck](RailDepotCheck.md), [ReadPathCheck](ReadPathCheck.md), [RealEstate](RealEstate.md), [RecipeChanges](RecipeChanges.md), [RecipeCheck](RecipeCheck.md), [Recipes](Recipes.md), [RefineryCheck](RefineryCheck.md), [RefineryView](RefineryView.md), [RefineryViewCheck](RefineryViewCheck.md), [Refining](Refining.md), [ReloadCheck](ReloadCheck.md), [ResearchScreen](ResearchScreen.md), [Restaurants](Restaurants.md), [RestaurantsCheck](RestaurantsCheck.md), [Retail](Retail.md), [RoadCheck](RoadCheck.md), [RunWorksCheck](RunWorksCheck.md), [SaveFileCheck](SaveFileCheck.md), [ScaleCheck](ScaleCheck.md), [SectorBooks](SectorBooks.md), [SectorFlow](SectorFlow.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [SectorState](SectorState.md), [SectorStatementCheck](SectorStatementCheck.md), [Sectors](Sectors.md), [ShadowBasket](ShadowBasket.md), [SlopeCheck](SlopeCheck.md), [SpreadPlanner](SpreadPlanner.md), [StaffingDrawCheck](StaffingDrawCheck.md), [StaffingTieCheck](StaffingTieCheck.md), [SulphideLeachCheck](SulphideLeachCheck.md), [SummaryScreen](SummaryScreen.md), [SupplierCreditCheck](SupplierCreditCheck.md), [TaxPolicy](TaxPolicy.md), [TradeBandCheck](TradeBandCheck.md), [TradeScreen](TradeScreen.md), [TruckRouteCheck](TruckRouteCheck.md), [UndemandedFeedCheck](UndemandedFeedCheck.md), [VanCheck](VanCheck.md), [Village1900Check](Village1900Check.md), [WantedPostsCheck](WantedPostsCheck.md), [WaterCheck](WaterCheck.md), [WaterPowerCheck](WaterPowerCheck.md), [WellCheck](WellCheck.md), [WoodProductsCheck](WoodProductsCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md), [YoungBankCheck](YoungBankCheck.md), [ZoningCheck](ZoningCheck.md), [ZoningScreen](ZoningScreen.md), [ZoningView](ZoningView.md)
 
@@ -80,48 +80,49 @@
 | 503 | · A TIE AT THE GATE IS SHARED (TQ1, 2026-11-16) |
 | 566 | · AN IDLE BUILDER'S CREWS ARE SPARE (IC1, {next}, 2026-11-01) |
 | 582 | · THE GATE COUNTS THE DRAW (GW1, {next}, 2026-11-10) |
-| 876 | UTILISATION |
-| 955 | · A FIRST PLANT IS WEIGHED AT THE RATE IT WILL RUN AT (OE1, 2026-11-20) |
-| 1066 | · THE POWER ITS WORKS MAKE THEMSELVES (0.7.112, batch I2; runs/spec- |
-| 1094 | THE STEAM FORM (R0c, 2026-11-05; research-1900 section 4, [P2.26], [P2.27]) |
-| 1166 | · WHAT ITS WORKS BUY ABROAD THAT IS NOT A GOOD (0.7.112, batch I2; |
-| 1205 | THE FLEET (2026-09-17) |
-| 1278 | · AND THE TWO THAT MAKE IT A CONSTRAINT RATHER THAN A BILL |
-| 1321 | · AND THE DIESEL THEY BURN (0.7.83, batch O6; docs/studies/spec-oil.md 2.5) |
-| 1575 | MONEY AND THE BILLS |
-| 1619 | · WHAT ITS BORROWING COST IT UP FRONT, EXPENSED AND DEDUCTED (0.7.102) |
-| 1764 | STOCK |
-| 1785 | CAPACITY, off the buildings |
-| 1809 | THE MONTH'S PRODUCTION FIGURES, per output good |
-| 1890 | THE MONTH'S TRADE ACROSS A SAVE (A1, 2026-10-05) |
-| 1927 | WHAT A MONTH WROTE OFF, PAST ITS STRIKE (0.7.133, batch I8) |
-| 1999 | THE LEDGER |
-| 2227 | BUY ONLY WHAT IT CAN PAY FOR (0.7.12, round 6) |
-| 2339 | ITS SUPPLIERS' CREDIT (0.7.44) |
-| 2622 | THE STATEMENT |
-| 2895 | THE MONTH AT THE BOTTOM - HOOKS Markets CALLS |
-| 3025 | WHOSE COST IS IT, WHEN ONE LINE MAKES TWO THINGS |
-| 3226 | CAPTIVE USE (0.7.112, batch I2; docs/studies/spec-materials.md 2.7) |
-| 3282 | THE ORDER (WN3, 2026-10-29; the ensemble's negative GDP in months |
-| 3637 | · THE GROUND'S SHARE OF THE ORDER (NG1, 2026-11-20) |
-| 3837 | PLANNING - the decision to grow, and to shrink |
-| 3958 | THE SCREENS |
-| 4181 | SAVE AND RESTORE |
-| 4403 | THE POWER, FOR THE PICTOGRAMS (0.7.141, batch I11; IndustryView) |
+| 597 | · A BUILDING THE TOWN GOES WITHOUT IS STAFFED AT THE FILL (HG1, {next}, 2026-11-28) |
+| 921 | UTILISATION |
+| 1000 | · A FIRST PLANT IS WEIGHED AT THE RATE IT WILL RUN AT (OE1, 2026-11-20) |
+| 1111 | · THE POWER ITS WORKS MAKE THEMSELVES (0.7.112, batch I2; runs/spec- |
+| 1139 | THE STEAM FORM (R0c, 2026-11-05; research-1900 section 4, [P2.26], [P2.27]) |
+| 1211 | · WHAT ITS WORKS BUY ABROAD THAT IS NOT A GOOD (0.7.112, batch I2; |
+| 1250 | THE FLEET (2026-09-17) |
+| 1323 | · AND THE TWO THAT MAKE IT A CONSTRAINT RATHER THAN A BILL |
+| 1366 | · AND THE DIESEL THEY BURN (0.7.83, batch O6; docs/studies/spec-oil.md 2.5) |
+| 1620 | MONEY AND THE BILLS |
+| 1664 | · WHAT ITS BORROWING COST IT UP FRONT, EXPENSED AND DEDUCTED (0.7.102) |
+| 1809 | STOCK |
+| 1830 | CAPACITY, off the buildings |
+| 1854 | THE MONTH'S PRODUCTION FIGURES, per output good |
+| 1935 | THE MONTH'S TRADE ACROSS A SAVE (A1, 2026-10-05) |
+| 1972 | WHAT A MONTH WROTE OFF, PAST ITS STRIKE (0.7.133, batch I8) |
+| 2044 | THE LEDGER |
+| 2272 | BUY ONLY WHAT IT CAN PAY FOR (0.7.12, round 6) |
+| 2384 | ITS SUPPLIERS' CREDIT (0.7.44) |
+| 2667 | THE STATEMENT |
+| 2940 | THE MONTH AT THE BOTTOM - HOOKS Markets CALLS |
+| 3070 | WHOSE COST IS IT, WHEN ONE LINE MAKES TWO THINGS |
+| 3271 | CAPTIVE USE (0.7.112, batch I2; docs/studies/spec-materials.md 2.7) |
+| 3327 | THE ORDER (WN3, 2026-10-29; the ensemble's negative GDP in months |
+| 3682 | · THE GROUND'S SHARE OF THE ORDER (NG1, 2026-11-20) |
+| 3882 | PLANNING - the decision to grow, and to shrink |
+| 4003 | THE SCREENS |
+| 4226 | SAVE AND RESTORE |
+| 4448 | THE POWER, FOR THE PICTOGRAMS (0.7.141, batch I11; IndustryView) |
 
 ## Enum constants
 
 | line | constant | says |
 |---:|---|---|
-| 3968 | `Sector.Line.Kind.HEAD` |  |
-| 3968 | `Sector.Line.Kind.LINE` |  |
-| 3968 | `Sector.Line.Kind.NOTE` |  |
-| 3969 | `Sector.Line.Tone.NONE` |  |
-| 3969 | `Sector.Line.Tone.GOOD` |  |
-| 3969 | `Sector.Line.Tone.WARN` |  |
-| 3969 | `Sector.Line.Tone.BAD` |  |
-| 3969 | `Sector.Line.Tone.MUTED` |  |
-| 3969 | `Sector.Line.Tone.HEAD` |  |
+| 4013 | `Sector.Line.Kind.HEAD` |  |
+| 4013 | `Sector.Line.Kind.LINE` |  |
+| 4013 | `Sector.Line.Kind.NOTE` |  |
+| 4014 | `Sector.Line.Tone.NONE` |  |
+| 4014 | `Sector.Line.Tone.GOOD` |  |
+| 4014 | `Sector.Line.Tone.WARN` |  |
+| 4014 | `Sector.Line.Tone.BAD` |  |
+| 4014 | `Sector.Line.Tone.MUTED` |  |
+| 4014 | `Sector.Line.Tone.HEAD` |  |
 
 ## Constants
 
@@ -130,25 +131,25 @@
 | 283 | `Sector.MIN_STAFFABLE_TO_ORDER` | `.80` |  |
 | 286 | `Sector.GATE_DRAW_MONTHS` | `12` | The months of arrivals the staffing gate counts beside the spare workers: the longest window in which none of the study's 16 seeds shrank (GW0; 24 months shrank two by a third). |
 | 391 | `Sector.Staffing.ANY` | `new Staffing(1, 1, new double [ 0 ], new double [ 0 ], new double [ 0 ], new ...` | Always staffable: a building with no posts, or nobody to ask. |
-| 636 | `Sector.SHARE_ROUNDING` | `1e-12` | The share of a building's posts the city could staff at or under which staffing() reads none: the subtraction's rounding, not a worker (BA1, 2026-11-04). |
-| 645 | `Sector.DRAWN_SHARE_GRID` | `1e-9` | The grid a share the drawn workers filled is snapped to (GW1, 2026-11-10): where every band's chance is whole (Migration.opportunity() at 1) the draw grows with the posts, so two templates whose posts only the draw fi... |
-| 1116 | `Sector.STEAM_COAL_KG_A_KWH` | `1.8` | Coal a 1900 factory's steam engine burned for a kWh at the shaft: 1.8 kg (research-1900 section 4, [P2.26], [P2.27], est.). |
-| 1183 | `Sector.CONSUMABLES` | `"Consumables"` | The consumables' name on a sector's input line. |
-| 1270 | `Sector.TONNES_PER_VAN` | `120` | What one vehicle in a sector's fleet moves in a month. |
-| 1276 | `Sector.VAN_LIFE_MONTHS` | `120` | How long a working vehicle lasts. |
-| 1305 | `Sector.FLEET_DELIVERY_MONTHS` | `8` | The fastest a sector can put vehicles on the road: this much of the fleet it needs, a month. |
-| 1319 | `Sector.MIN_VAN_RATE` | `.6` | What a sector with no lorries of its own still gets done. |
-| 1333 | `Sector.LOADS_A_VAN_MONTH` | `TONNES_PER_VAN / Good.VANS.tonnesPerUnit()` | The loads a van-month carries: TONNES_PER_VAN at a van's own weight, three tonnes (Good.VANS.tonnesPerUnit()) - forty. |
-| 1336 | `Sector.KM_A_LOAD` | `50` | How far a load goes, there and back: fifty kilometres (docs/studies/spec-oil.md 2.5, est.; to confirm). |
-| 1339 | `Sector.DIESEL_LITRES_PER_100_KM` | `12` | What a laden van or truck burns: twelve litres of diesel a hundred kilometres (docs/studies/spec-oil.md 2.5, est.; to confirm). |
-| 1342 | `Sector.DIESEL_LITRES_A_VAN_MONTH` | `LOADS_A_VAN_MONTH * KM_A_LOAD * DIESEL_LITRES_PER_100_KM / 100` | ...so a van-month burns LOADS_A_VAN_MONTH x KM_A_LOAD x DIESEL_LITRES_PER_100_KM / 100 litres: 240. |
-| 1662 | `Sector.BORROWING_COST_MOST_MONTHS` | `Mortgage.MORTGAGE_AMORTIZATION_MONTHS` | The longest life a cost of borrowing is expensed over, in months: a mortgage's amortization, forty years (0.7.102, A16) - the clock's length. |
-| 2469 | `Sector.UPKEEP_SOLD` | `"Upkeep work"` | The name of the upkeep sold, in a statement's otherParts (HL1). |
-| 2472 | `Sector.HOUSEHOLD_SERVICES` | `"Household emergency services"` | Named household service receipts, with no physical seat-service good sold (HC1). |
-| 2909 | `Sector.STOCK_MONTHS` | `2` | How many months of local demand a maker holds in stock before it idles. |
-| 2912 | `Sector.DUMP_THRESHOLD` | `.8` | Above this share of warehouse room a maker clears stock even at a loss. |
-| 3361 | `Sector.FLOW_EXPORT_HEADROOM` | `.02` | The margin over its inputs' cost a works aims next month's export price at on the world's slope (FL1): a month's drift in the band then leaves this month's price over the cost, so the line does not stop every other mo... |
-| 3692 | `Sector.UNSOLD_DUST` | `1e-9` | What of a flow good's output may go unsold as rounding, a share of what was made: under it the remainder is idled, not exported (EM2). |
+| 679 | `Sector.SHARE_ROUNDING` | `1e-12` | The share of a building's posts the city could staff at or under which staffing() reads none: the subtraction's rounding, not a worker (BA1, 2026-11-04). |
+| 688 | `Sector.DRAWN_SHARE_GRID` | `1e-9` | The grid a share the drawn workers filled is snapped to (GW1, 2026-11-10): where every band's chance is whole (Migration.opportunity() at 1) the draw grows with the posts, so two templates whose posts only the draw fi... |
+| 1161 | `Sector.STEAM_COAL_KG_A_KWH` | `1.8` | Coal a 1900 factory's steam engine burned for a kWh at the shaft: 1.8 kg (research-1900 section 4, [P2.26], [P2.27], est.). |
+| 1228 | `Sector.CONSUMABLES` | `"Consumables"` | The consumables' name on a sector's input line. |
+| 1315 | `Sector.TONNES_PER_VAN` | `120` | What one vehicle in a sector's fleet moves in a month. |
+| 1321 | `Sector.VAN_LIFE_MONTHS` | `120` | How long a working vehicle lasts. |
+| 1350 | `Sector.FLEET_DELIVERY_MONTHS` | `8` | The fastest a sector can put vehicles on the road: this much of the fleet it needs, a month. |
+| 1364 | `Sector.MIN_VAN_RATE` | `.6` | What a sector with no lorries of its own still gets done. |
+| 1378 | `Sector.LOADS_A_VAN_MONTH` | `TONNES_PER_VAN / Good.VANS.tonnesPerUnit()` | The loads a van-month carries: TONNES_PER_VAN at a van's own weight, three tonnes (Good.VANS.tonnesPerUnit()) - forty. |
+| 1381 | `Sector.KM_A_LOAD` | `50` | How far a load goes, there and back: fifty kilometres (docs/studies/spec-oil.md 2.5, est.; to confirm). |
+| 1384 | `Sector.DIESEL_LITRES_PER_100_KM` | `12` | What a laden van or truck burns: twelve litres of diesel a hundred kilometres (docs/studies/spec-oil.md 2.5, est.; to confirm). |
+| 1387 | `Sector.DIESEL_LITRES_A_VAN_MONTH` | `LOADS_A_VAN_MONTH * KM_A_LOAD * DIESEL_LITRES_PER_100_KM / 100` | ...so a van-month burns LOADS_A_VAN_MONTH x KM_A_LOAD x DIESEL_LITRES_PER_100_KM / 100 litres: 240. |
+| 1707 | `Sector.BORROWING_COST_MOST_MONTHS` | `Mortgage.MORTGAGE_AMORTIZATION_MONTHS` | The longest life a cost of borrowing is expensed over, in months: a mortgage's amortization, forty years (0.7.102, A16) - the clock's length. |
+| 2514 | `Sector.UPKEEP_SOLD` | `"Upkeep work"` | The name of the upkeep sold, in a statement's otherParts (HL1). |
+| 2517 | `Sector.HOUSEHOLD_SERVICES` | `"Household emergency services"` | Named household service receipts, with no physical seat-service good sold (HC1). |
+| 2954 | `Sector.STOCK_MONTHS` | `2` | How many months of local demand a maker holds in stock before it idles. |
+| 2957 | `Sector.DUMP_THRESHOLD` | `.8` | Above this share of warehouse room a maker clears stock even at a loss. |
+| 3406 | `Sector.FLOW_EXPORT_HEADROOM` | `.02` | The margin over its inputs' cost a works aims next month's export price at on the world's slope (FL1): a month's drift in the band then leaves this month's price over the cost, so the line does not stop every other mo... |
+| 3737 | `Sector.UNSOLD_DUST` | `1e-9` | What of a flow good's output may go unsold as rounding, a share of what was made: under it the remainder is idled, not exported (EM2). |
 
 ## Fields (state)
 
@@ -176,108 +177,108 @@
 | 385 | `private final long count` |  |
 | 386 | `private final double[] wantedCopy, spareCopy, drawnCopy` |  |
 | 388 | `private final List<Staffing> tiedWith` | The refusals tied with this one at its share, in the order the planner met them (TQ1; held()); empty for none. |
-| 890 | `protected double energyRatio` |  |
-| 891 | `protected double electricity, water` |  |
-| 892 | `protected double pricePerWatt, pricePerWaterUnit` |  |
-| 894 | `protected double pricePerWattIndustry, pricePerWattWorks` | The struck book's other two prices a kW a month (PW1, the merit order): Heavy Industry and Mining (the energy and the long wires), and what a works' surplus is paid. |
-| 896 | `protected double highVoltageShare` | The share, 0..1, of its billed draw that its Heavy Industry and Mining buildings take: billed at the industry price, the rest at the commerce price. |
-| 898 | `protected double powerSeason` | The struck book's season, the month's load over the year's mean (PW1-R): the bill is the kWh served, draw x ratio x season x the price a kW a month. |
-| 1005 | `private boolean weighStaffed` | Set only inside staffed(): a first plant's staffing read whole. |
-| 1084 | `protected double powerSurplus` | kW its buildings make past their own draws, at nameplate - what it sells the grid. |
-| 1119 | `private double steamShare` | The share of its draw it turns with steam on site (the steam form): 0 until a harness or R1 sets it; not saved. |
-| 1122 | `private double electricityBeforeSteam` | The draw EconomyManager gave it last, before the steam share took its part off: electricity is this when no share is set. |
-| 1345 | `private double fleetDieselLitres, fleetDieselCost, fleetDieselImported` | The month's diesel for the fleet (0.7.83): the litres drawn, what they cost, and the part bought abroad. |
-| 1364 | `protected boolean vansKnown` | Whether this sector's fleet is a fact about the sector rather than a fact about the version it was saved from. |
-| 1579 | `private double cash` |  |
-| 1582 | `private double interestExpense` | Set for the month at the top of it, before the statement runs. |
-| 1583 | `private double propertyTaxExpense` |  |
-| 1584 | `private double maintenanceExpense` |  |
-| 1586 | `private double foreignIncome` | The coupon on its dollars abroad this month, local money (HD1, HD2). |
-| 1589 | `private double taxRate` | The profit rate in force this month. |
-| 1591 | `private double landValue, buildingsValue, bondsPayable` |  |
-| 1665 | `private final double[] borrowingChargesLeft` | The month's charge by how many months it has still to run: index k, k months; nothing at 0. |
-| 1769 | `protected final Map<Good, Double> stock` | Output on hand, per stockable good it makes. |
-| 1772 | `protected final Map<Good, Double> pantry` | Input on hand, per good it keeps a pantry of. |
-| 1815 | `public double capacity` | nameplate a month |
-| 1816 | `public double planned` | nameplate a month |
-| 1817 | `public double produced` | what it decided to make for home |
-| 1818 | `public double idled` | what went into stock or to market |
-| 1819 | `public double exportBound` | nameplate neither the city nor the world would take |
-| 1820 | `public double offered` | made straight for the ship |
-| 1821 | `public double withheld` | released to the market at the price |
-| 1822 | `public double soldLocal` | kept back below cost |
-| 1823 | `public double exported` | units taken by local buyers |
-| 1824 | `public double writtenOff` | units shipped, from the line or the shed |
-| 1825 | `public double costPerUnit` | stock lost to a demolished warehouse |
-| 1826 | `public double captive` | the month's break-even, for the screen |
-| 1831 | `public double needed` | at this month's operating rate |
-| 1832 | `public double bid` | at this month's operating rate |
-| 1833 | `public double boughtLocal` | what it asked the market for |
-| 1834 | `public double imported` | filled at home |
-| 1837 | `protected final Map<Good, Output> outputs` |  |
-| 1838 | `protected final Map<Good, Input> inputs` |  |
-| 1909 | `private final Map<Good, Double> carriedExports` | Units shipped in the month a save was taken, by good: read by unitsExported() until the first strike after the load. |
-| 1912 | `private final Map<Good, Double> carriedImports` | ...and units landed, read by unitsImported(). |
-| 1915 | `private final Map<Good, Double> carriedBoughtLocal` | ...and units bought at home (FR2), read by unitsBoughtLocal(): the city-leg tonnes Haulage bills at the top of the next month. |
-| 1944 | `private final Map<Good, Double> carriedWrittenOff` | Units written off in the month a save was taken, by good: read by unitsWrittenOff() until the first strike after the load. |
-| 1947 | `private final Map<Good, Double> struckWrittenOff` | ...and the units written off in the month the last strike banked, by good: what the accounts add back. |
-| 1964 | `private boolean tradeToDerive` | True from the load of a save that carried the month's trade in money alone until deriveCarriedTrade() has read it. |
-| 2027 | `public double atHome` |  |
-| 2028 | `public double abroad` |  |
-| 2034 | `public double localSales` | Sold to local buyers - sectors, households, the city - in money. |
-| 2036 | `public double exports` | Sold to the world. |
-| 2038 | `public double otherRevenue` | Revenue that is not a sale of a good: recognised building work, repairs billed. |
-| 2040 | `public final Map<String, Double> purchasesBySupplier` | Bought from each local supplier, by the supplier's key: the input tax credit is at THEIR rate. |
-| 2042 | `public double imports` | Bought from the world. |
-| 2044 | `public final Map<Good, Double> unitsSold` | Units sold and bought, per good, for the accounts and the screens. |
-| 2045 | `public final Map<Good, Double> unitsBought` |  |
-| 2053 | `public final Map<Good, Split> sold` | And the same two in MONEY, split home and abroad. |
-| 2054 | `public final Map<Good, Split> bought` |  |
-| 2073 | `public final Map<String, Double> otherInputs` | ...and the part of the input line that is NOT a good, by name. |
-| 2080 | `public final Map<String, Double> servicesSold` | ...and the parts of the EXPORTS that are not a good (FC2): the builders' spare points worked abroad, by name, as they are sold (bookExportedService()). |
-| 2092 | `public double paidEarlier` | ...AND STOCK IT PAID FOR EARLIER (0.7.8): an input drawn this month out of stock the sector bought in an earlier month and paid cash for then - the builders' material from scrapped plant, booked at what they paid for ... |
-| 2105 | `public final Map<String, Double> capitalBySupplier` | ...AND BUILDINGS IT BOUGHT FROM ANOTHER BUSINESS, by the supplier's key (0.7.19): the builders' contract work on its own premises and the material escalation on it, as the builders bill them. |
-| 2110 | `public double salesToHouseholds` | Sold to households in particular - consumption, in the national accounts. |
-| 2112 | `public double oldMetalSold` | The part of otherRevenue that is its old steel sold to the Scrap Yards (0.7.123, batch I4; sellOldMetal()), named apart at the strike. |
-| 2117 | `public double upkeepSold` | The part of otherRevenue that is upkeep sold to the city's services and the bank (HL1; sellUpkeep()), named apart at the strike; its cash left the buyer's pool when it was booked and reaches this till at bank(), and M... |
-| 2119 | `public double householdServices` | Household emergency-service receipts inside otherRevenue and salesToHouseholds (HC1). |
-| 2127 | `public double paidToCity` | What it pays the city this month for a service the city sells and no business does (FR3, payTheCity()): the port dues. |
-| 2187 | `private Ledger pending` |  |
-| 2289 | `private double purchasesLeft` | What the clearing lets it spend, what is left of it, and the share of each order it funds - and of each order its suppliers' credit covers (0.7.44). |
-| 2290 | `private double purchaseShare` |  |
-| 2292 | `private double rPurchaseBudget` | The clearing's reading, for the screens and the playtest. |
-| 2293 | `private final Map<Good, Double> rForgoneUnits` |  |
-| 2294 | `private final Map<Good, Double> rForgoneValue` |  |
-| 2439 | `private double rShelfShort, rShelfShortValue` | What the shelf could not sell this month (0.7.12 round 6): customers the counter and the staff could have served and the stock could not, in what the sector sells, and their value at its price. |
-| 2631 | `public double revenue, inputs, payroll, electricity, water, maintenance` |  |
-| 2632 | `public double operatingIncome, interest, propertyTax, salesTax, preTaxIncome, profitTax, netIncome` |  |
-| 2634 | `public double localSales, exports, otherRevenue, salesToHouseholds` | The two halves of revenue, for the accounts. |
-| 2636 | `public double localPurchases, imports` | The two halves of inputs, for the accounts and the audit. |
-| 2637 | `public Map<String, Double> purchasesBySupplier` |  |
-| 2644 | `public Map<Good, Split> sold` | Revenue and the cost of sales BY GOOD, each split home and abroad - what the income statement's two biggest lines open into. |
-| 2645 | `public Map<Good, Split> bought` |  |
-| 2652 | `public Map<String, Double> otherParts` | And the parts of otherRevenue that have names - the builders' work recognised and repairs billed. |
-| 2658 | `public Map<String, Double> otherInputs` | ...and the parts of the INPUT line that are not a good: haulage on the shippers' books, fuel on the railway's. |
-| 2660 | `public Map<String, Double> servicesSold` | ...and the parts of the exports that are not a good, by name (FC2; Ledger.servicesSold): in exports and revenue, beside the goods sold. |
-| 2662 | `public double paidEarlier` | The part of inputs drawn from stock paid for in an earlier month - see Ledger.paidEarlier. |
-| 2664 | `public double borrowingCosts` | What its borrowing cost it up front, the month's share of each over its debt's life (0.7.102, A16): a cost before the profit tax, paid when it borrowed, so added back to the cash at bank(). |
-| 2666 | `public Map<String, Double> capitalBySupplier` | Buildings bought from other businesses this month, by supplier (0.7.19) - see Ledger.capitalBySupplier. |
-| 2674 | `public double capitalTaxCredit` | The sales tax credited back on them (0.7.19): inside the net the ledger settled, and NOT in salesTax - it was capitalised with the building, not expensed, so crediting it through the tax line would have made it profit... |
-| 2684 | `public double powerSold` | What it sold the grid of the power its works make past their own draws (0.7.112, batch I2; spec-materials 2.8): the surplus at the tariff, IN REVENUE - so every line the books strike from revenue adds up with it - and... |
-| 2686 | `public double foreignIncome` | The coupon on its dollars abroad (HD1, HD2): a line of finance income BELOW the operating line and inside preTaxIncome, so the profit tax and the dividend see it. |
-| 2708 | `private final Statement statement` |  |
-| 3148 | `protected final Map<Good, Double> pantryUsedLastMonth` |  |
-| 3364 | `private final Map<Good, Double> orderShares` | The share of each traded good's nameplate this month's inputs are ordered for (THE ORDER; a flow good's since FL1): empty outside the market pass, never saved - it is decided afresh each month. |
-| 3367 | `private final Map<Good, Double> flowCut` | The units of a flow good this month's order cut from its nameplate at the rate (FL1): only a cut over 0 is here, empty outside the market pass and never saved. |
-| 3370 | `private boolean ordering` | Whether the market pass is on and its shares apply (THE ORDER). |
-| 3373 | `private final Set<Good> planning` | The goods whose share is being worked out, so a chain that loops back to one reads 1 for it (THE ORDER). |
-| 3376 | `private boolean deciding` | Whether planOrders() is at work: only then is a share worked out, so a screen reading the month never touches the shed (THE ORDER). |
+| 935 | `protected double energyRatio` |  |
+| 936 | `protected double electricity, water` |  |
+| 937 | `protected double pricePerWatt, pricePerWaterUnit` |  |
+| 939 | `protected double pricePerWattIndustry, pricePerWattWorks` | The struck book's other two prices a kW a month (PW1, the merit order): Heavy Industry and Mining (the energy and the long wires), and what a works' surplus is paid. |
+| 941 | `protected double highVoltageShare` | The share, 0..1, of its billed draw that its Heavy Industry and Mining buildings take: billed at the industry price, the rest at the commerce price. |
+| 943 | `protected double powerSeason` | The struck book's season, the month's load over the year's mean (PW1-R): the bill is the kWh served, draw x ratio x season x the price a kW a month. |
+| 1050 | `private boolean weighStaffed` | Set only inside staffed(): a first plant's staffing read whole. |
+| 1129 | `protected double powerSurplus` | kW its buildings make past their own draws, at nameplate - what it sells the grid. |
+| 1164 | `private double steamShare` | The share of its draw it turns with steam on site (the steam form): 0 until a harness or R1 sets it; not saved. |
+| 1167 | `private double electricityBeforeSteam` | The draw EconomyManager gave it last, before the steam share took its part off: electricity is this when no share is set. |
+| 1390 | `private double fleetDieselLitres, fleetDieselCost, fleetDieselImported` | The month's diesel for the fleet (0.7.83): the litres drawn, what they cost, and the part bought abroad. |
+| 1409 | `protected boolean vansKnown` | Whether this sector's fleet is a fact about the sector rather than a fact about the version it was saved from. |
+| 1624 | `private double cash` |  |
+| 1627 | `private double interestExpense` | Set for the month at the top of it, before the statement runs. |
+| 1628 | `private double propertyTaxExpense` |  |
+| 1629 | `private double maintenanceExpense` |  |
+| 1631 | `private double foreignIncome` | The coupon on its dollars abroad this month, local money (HD1, HD2). |
+| 1634 | `private double taxRate` | The profit rate in force this month. |
+| 1636 | `private double landValue, buildingsValue, bondsPayable` |  |
+| 1710 | `private final double[] borrowingChargesLeft` | The month's charge by how many months it has still to run: index k, k months; nothing at 0. |
+| 1814 | `protected final Map<Good, Double> stock` | Output on hand, per stockable good it makes. |
+| 1817 | `protected final Map<Good, Double> pantry` | Input on hand, per good it keeps a pantry of. |
+| 1860 | `public double capacity` | nameplate a month |
+| 1861 | `public double planned` | nameplate a month |
+| 1862 | `public double produced` | what it decided to make for home |
+| 1863 | `public double idled` | what went into stock or to market |
+| 1864 | `public double exportBound` | nameplate neither the city nor the world would take |
+| 1865 | `public double offered` | made straight for the ship |
+| 1866 | `public double withheld` | released to the market at the price |
+| 1867 | `public double soldLocal` | kept back below cost |
+| 1868 | `public double exported` | units taken by local buyers |
+| 1869 | `public double writtenOff` | units shipped, from the line or the shed |
+| 1870 | `public double costPerUnit` | stock lost to a demolished warehouse |
+| 1871 | `public double captive` | the month's break-even, for the screen |
+| 1876 | `public double needed` | at this month's operating rate |
+| 1877 | `public double bid` | at this month's operating rate |
+| 1878 | `public double boughtLocal` | what it asked the market for |
+| 1879 | `public double imported` | filled at home |
+| 1882 | `protected final Map<Good, Output> outputs` |  |
+| 1883 | `protected final Map<Good, Input> inputs` |  |
+| 1954 | `private final Map<Good, Double> carriedExports` | Units shipped in the month a save was taken, by good: read by unitsExported() until the first strike after the load. |
+| 1957 | `private final Map<Good, Double> carriedImports` | ...and units landed, read by unitsImported(). |
+| 1960 | `private final Map<Good, Double> carriedBoughtLocal` | ...and units bought at home (FR2), read by unitsBoughtLocal(): the city-leg tonnes Haulage bills at the top of the next month. |
+| 1989 | `private final Map<Good, Double> carriedWrittenOff` | Units written off in the month a save was taken, by good: read by unitsWrittenOff() until the first strike after the load. |
+| 1992 | `private final Map<Good, Double> struckWrittenOff` | ...and the units written off in the month the last strike banked, by good: what the accounts add back. |
+| 2009 | `private boolean tradeToDerive` | True from the load of a save that carried the month's trade in money alone until deriveCarriedTrade() has read it. |
+| 2072 | `public double atHome` |  |
+| 2073 | `public double abroad` |  |
+| 2079 | `public double localSales` | Sold to local buyers - sectors, households, the city - in money. |
+| 2081 | `public double exports` | Sold to the world. |
+| 2083 | `public double otherRevenue` | Revenue that is not a sale of a good: recognised building work, repairs billed. |
+| 2085 | `public final Map<String, Double> purchasesBySupplier` | Bought from each local supplier, by the supplier's key: the input tax credit is at THEIR rate. |
+| 2087 | `public double imports` | Bought from the world. |
+| 2089 | `public final Map<Good, Double> unitsSold` | Units sold and bought, per good, for the accounts and the screens. |
+| 2090 | `public final Map<Good, Double> unitsBought` |  |
+| 2098 | `public final Map<Good, Split> sold` | And the same two in MONEY, split home and abroad. |
+| 2099 | `public final Map<Good, Split> bought` |  |
+| 2118 | `public final Map<String, Double> otherInputs` | ...and the part of the input line that is NOT a good, by name. |
+| 2125 | `public final Map<String, Double> servicesSold` | ...and the parts of the EXPORTS that are not a good (FC2): the builders' spare points worked abroad, by name, as they are sold (bookExportedService()). |
+| 2137 | `public double paidEarlier` | ...AND STOCK IT PAID FOR EARLIER (0.7.8): an input drawn this month out of stock the sector bought in an earlier month and paid cash for then - the builders' material from scrapped plant, booked at what they paid for ... |
+| 2150 | `public final Map<String, Double> capitalBySupplier` | ...AND BUILDINGS IT BOUGHT FROM ANOTHER BUSINESS, by the supplier's key (0.7.19): the builders' contract work on its own premises and the material escalation on it, as the builders bill them. |
+| 2155 | `public double salesToHouseholds` | Sold to households in particular - consumption, in the national accounts. |
+| 2157 | `public double oldMetalSold` | The part of otherRevenue that is its old steel sold to the Scrap Yards (0.7.123, batch I4; sellOldMetal()), named apart at the strike. |
+| 2162 | `public double upkeepSold` | The part of otherRevenue that is upkeep sold to the city's services and the bank (HL1; sellUpkeep()), named apart at the strike; its cash left the buyer's pool when it was booked and reaches this till at bank(), and M... |
+| 2164 | `public double householdServices` | Household emergency-service receipts inside otherRevenue and salesToHouseholds (HC1). |
+| 2172 | `public double paidToCity` | What it pays the city this month for a service the city sells and no business does (FR3, payTheCity()): the port dues. |
+| 2232 | `private Ledger pending` |  |
+| 2334 | `private double purchasesLeft` | What the clearing lets it spend, what is left of it, and the share of each order it funds - and of each order its suppliers' credit covers (0.7.44). |
+| 2335 | `private double purchaseShare` |  |
+| 2337 | `private double rPurchaseBudget` | The clearing's reading, for the screens and the playtest. |
+| 2338 | `private final Map<Good, Double> rForgoneUnits` |  |
+| 2339 | `private final Map<Good, Double> rForgoneValue` |  |
+| 2484 | `private double rShelfShort, rShelfShortValue` | What the shelf could not sell this month (0.7.12 round 6): customers the counter and the staff could have served and the stock could not, in what the sector sells, and their value at its price. |
+| 2676 | `public double revenue, inputs, payroll, electricity, water, maintenance` |  |
+| 2677 | `public double operatingIncome, interest, propertyTax, salesTax, preTaxIncome, profitTax, netIncome` |  |
+| 2679 | `public double localSales, exports, otherRevenue, salesToHouseholds` | The two halves of revenue, for the accounts. |
+| 2681 | `public double localPurchases, imports` | The two halves of inputs, for the accounts and the audit. |
+| 2682 | `public Map<String, Double> purchasesBySupplier` |  |
+| 2689 | `public Map<Good, Split> sold` | Revenue and the cost of sales BY GOOD, each split home and abroad - what the income statement's two biggest lines open into. |
+| 2690 | `public Map<Good, Split> bought` |  |
+| 2697 | `public Map<String, Double> otherParts` | And the parts of otherRevenue that have names - the builders' work recognised and repairs billed. |
+| 2703 | `public Map<String, Double> otherInputs` | ...and the parts of the INPUT line that are not a good: haulage on the shippers' books, fuel on the railway's. |
+| 2705 | `public Map<String, Double> servicesSold` | ...and the parts of the exports that are not a good, by name (FC2; Ledger.servicesSold): in exports and revenue, beside the goods sold. |
+| 2707 | `public double paidEarlier` | The part of inputs drawn from stock paid for in an earlier month - see Ledger.paidEarlier. |
+| 2709 | `public double borrowingCosts` | What its borrowing cost it up front, the month's share of each over its debt's life (0.7.102, A16): a cost before the profit tax, paid when it borrowed, so added back to the cash at bank(). |
+| 2711 | `public Map<String, Double> capitalBySupplier` | Buildings bought from other businesses this month, by supplier (0.7.19) - see Ledger.capitalBySupplier. |
+| 2719 | `public double capitalTaxCredit` | The sales tax credited back on them (0.7.19): inside the net the ledger settled, and NOT in salesTax - it was capitalised with the building, not expensed, so crediting it through the tax line would have made it profit... |
+| 2729 | `public double powerSold` | What it sold the grid of the power its works make past their own draws (0.7.112, batch I2; spec-materials 2.8): the surplus at the tariff, IN REVENUE - so every line the books strike from revenue adds up with it - and... |
+| 2731 | `public double foreignIncome` | The coupon on its dollars abroad (HD1, HD2): a line of finance income BELOW the operating line and inside preTaxIncome, so the profit tax and the dividend see it. |
+| 2753 | `private final Statement statement` |  |
+| 3193 | `protected final Map<Good, Double> pantryUsedLastMonth` |  |
+| 3409 | `private final Map<Good, Double> orderShares` | The share of each traded good's nameplate this month's inputs are ordered for (THE ORDER; a flow good's since FL1): empty outside the market pass, never saved - it is decided afresh each month. |
+| 3412 | `private final Map<Good, Double> flowCut` | The units of a flow good this month's order cut from its nameplate at the rate (FL1): only a cut over 0 is here, empty outside the market pass and never saved. |
+| 3415 | `private boolean ordering` | Whether the market pass is on and its shares apply (THE ORDER). |
+| 3418 | `private final Set<Good> planning` | The goods whose share is being worked out, so a chain that loops back to one reads 1 for it (THE ORDER). |
+| 3421 | `private boolean deciding` | Whether planOrders() is at work: only then is a share worked out, so a screen reading the month never touches the shed (THE ORDER). |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 79 | 4353 | **type** `public abstract class Sector` | One business in the city, and the template every sector extends. |
+| 79 | 4398 | **type** `public abstract class Sector` | One business in the city, and the template every sector extends. |
 
 ### IDENTITY AND DECLARATION (lines 81-163)
 
@@ -352,420 +353,424 @@
 
 ### AN IDLE BUILDER'S CREWS ARE SPARE (IC1, {next}, 2026-11-01) (lines 566-581)
 
-### THE GATE COUNTS THE DRAW (GW1, {next}, 2026-11-10) (lines 582-875)
+### THE GATE COUNTS THE DRAW (GW1, {next}, 2026-11-10) (lines 582-596)
+
+### A BUILDING THE TOWN GOES WITHOUT IS STAFFED AT THE FILL (HG1, {next}, 2026-11-28) (lines 597-920)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 598 | 3 | `public Staffing staffing(BuildingsTemplate t)` | The staffing test every planner that builds posts asks before ordering one (0.7.18); see above. |
-| 611 | 4 | `public int staffableCount(BuildingsTemplate t, int wanted)` | The largest order of up to {@code wanted} of these that still passes, counted as one building of that many times the posts; 0 when not even one does (0.7.18). |
-| 617 | 10 | `public long staffableCount(BuildingsTemplate t, long wanted)` | ...for an order or a stack that may pass 2^31 (SQ1). |
-| 648 | 3 | `public Staffing staffing(BuildingsTemplate t, long count)` | The same test for {@code count} of these at once. |
-| 653 | 3 | `public Staffing staffing(NewUnit u, long count)` | ...for one new building already resolved (QN1): its own posts, the template it is of in the answer. |
-| 665 | 3 | `public Staffing staffingWithOwnSites(BuildingsTemplate t, long count)` | The same test for {@code count} of these of which the ones on site are among them (BA1, 2026-11-05): their own posts are what is asked, so they are not also spoken for (THE POSTS OF ITS OWN SITES ARE SPOKEN FOR, which... |
-| 680 | 3 | `public Staffing staffingWithCrewsSpare(BuildingsTemplate t, long count)` | The same test with the builders' laid-off crews counted spare (LD1): as staffing(t, count) is asked, without the posts BuildingManager.getPostsWithheld() adds. |
-| 685 | 1 | `protected NewUnit newUnit(BuildingsTemplate t)` | One new building of `t` as it would open now (QN1, NewUnit.of()): what this sector's estimates and gates read of it. |
-| 687 | 98 | `private Staffing staffing(NewUnit u, long count, boolean crewsSpokenFor, boolean ownSitesInCount)` |  |
-| 805 | 5 | `public double getPayroll()` | What the staffed posts cost this month: each job type's wage for the posts of that type actually filled. |
-| 817 | 5 | `public double getPayrollAtFullStaffing()` | The same bill with every post it offers filled - what the unfilled posts would cost as well, for the operations page's note (0.7.17); the builders' laid-off posts are not offered and not in it. |
-| 839 | 5 | `public double[] getStaffedPayrollPerType()` | The staffed payroll by tier, for the banded wage tax: each tier's wage bill at that tier's own fill (0.7.17 - it was the average fill, see getPayroll()). |
-| 845 | 1 | `public double getAverageFill()` |  |
-| 852 | 5 | `public long getPostsOffered()` | The posts its buildings offer, as the month's wage pass last counted them (0.7.4, for the sector list): the total the "Staffed" share on the operations page is a share of. |
-| 864 | 1 | `public long[] postsOfferedPerTier()` | ...per job type: its buildings' posts (postsPerTier()) less any it has laid off this month - only the builders do (0.7.17; sectors .Construction, THE CREWS THE WORK NEEDS). |
-| 872 | 3 | `public double getWorkers()` | The posts filled - its workers (0.7.4, for the sector list): the posts at the operations page's "Staffed" share, getAverageFill(), which is the filled posts over the posts, so the two cannot disagree. |
+| 620 | 1 | `protected boolean staffedAtTheFill(BuildingsTemplate t)` | Whether the gate also reads the share the city's fill would staff a building of `t` at (HG1; above): false for every sector but the shops while the town goes short of them (Retail overrides). |
+| 627 | 12 | `static double shareAtTheFill(PopulationManager people, double[] posts, double[] wanted, double total)` | The share of an order's posts the city's fill would staff once they join the posts offered (HG1): each band's workers placed by PopulationManager.fillByBand() over the posts with the order's added, the band's fill, ti... |
+| 641 | 3 | `public Staffing staffing(BuildingsTemplate t)` | The staffing test every planner that builds posts asks before ordering one (0.7.18); see above. |
+| 654 | 4 | `public int staffableCount(BuildingsTemplate t, int wanted)` | The largest order of up to {@code wanted} of these that still passes, counted as one building of that many times the posts; 0 when not even one does (0.7.18). |
+| 660 | 10 | `public long staffableCount(BuildingsTemplate t, long wanted)` | ...for an order or a stack that may pass 2^31 (SQ1). |
+| 691 | 3 | `public Staffing staffing(BuildingsTemplate t, long count)` | The same test for {@code count} of these at once. |
+| 696 | 3 | `public Staffing staffing(NewUnit u, long count)` | ...for one new building already resolved (QN1): its own posts, the template it is of in the answer. |
+| 708 | 3 | `public Staffing staffingWithOwnSites(BuildingsTemplate t, long count)` | The same test for {@code count} of these of which the ones on site are among them (BA1, 2026-11-05): their own posts are what is asked, so they are not also spoken for (THE POSTS OF ITS OWN SITES ARE SPOKEN FOR, which... |
+| 723 | 3 | `public Staffing staffingWithCrewsSpare(BuildingsTemplate t, long count)` | The same test with the builders' laid-off crews counted spare (LD1): as staffing(t, count) is asked, without the posts BuildingManager.getPostsWithheld() adds. |
+| 728 | 1 | `protected NewUnit newUnit(BuildingsTemplate t)` | One new building of `t` as it would open now (QN1, NewUnit.of()): what this sector's estimates and gates read of it. |
+| 730 | 100 | `private Staffing staffing(NewUnit u, long count, boolean crewsSpokenFor, boolean ownSitesInCount)` |  |
+| 850 | 5 | `public double getPayroll()` | What the staffed posts cost this month: each job type's wage for the posts of that type actually filled. |
+| 862 | 5 | `public double getPayrollAtFullStaffing()` | The same bill with every post it offers filled - what the unfilled posts would cost as well, for the operations page's note (0.7.17); the builders' laid-off posts are not offered and not in it. |
+| 884 | 5 | `public double[] getStaffedPayrollPerType()` | The staffed payroll by tier, for the banded wage tax: each tier's wage bill at that tier's own fill (0.7.17 - it was the average fill, see getPayroll()). |
+| 890 | 1 | `public double getAverageFill()` |  |
+| 897 | 5 | `public long getPostsOffered()` | The posts its buildings offer, as the month's wage pass last counted them (0.7.4, for the sector list): the total the "Staffed" share on the operations page is a share of. |
+| 909 | 1 | `public long[] postsOfferedPerTier()` | ...per job type: its buildings' posts (postsPerTier()) less any it has laid off this month - only the builders do (0.7.17; sectors .Construction, THE CREWS THE WORK NEEDS). |
+| 917 | 3 | `public double getWorkers()` | The posts filled - its workers (0.7.4, for the sector list): the posts at the operations page's "Staffed" share, getAverageFill(), which is the filled posts over the posts, so the two cannot disagree. |
 
-### UTILISATION (lines 876-954)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 900 | 1 | `public void setEnergyRatio(double r)` |  |
-| 901 | 1 | `public void setWaterRatio(double r)` |  |
-| 902 | 1 | `public void setRoadRatio(double r)` |  |
-| 903 | 1 | `public void setHealthRatio(double r)` |  |
-| 905 | 1 | `public void setPricePerWatt(double p)` | One price for all three (a fixture's, and the founding tariff): commerce, industry and the works' surplus. |
-| 907 | 3 | `public void setPowerPrices(double commerce, double industry, double works)` | The struck book's three prices a kW a month: commerce and light industry, Heavy Industry and Mining, and what a works' surplus is paid. |
-| 910 | 1 | `public void setPowerSeason(double season)` |  |
-| 911 | 1 | `public double getPowerSeason()` |  |
-| 912 | 1 | `public void setHighVoltageShare(double share)` |  |
-| 913 | 1 | `public double getHighVoltageShare()` |  |
-| 915 | 3 | `public double powerPriceFor(BuildingsTemplate t)` | What a planner values a building's power draw at: the industry price for a high-voltage class, the commerce price for the rest. |
-| 919 | 3 | `public double worksTariff()` | What its works' surplus is paid: the struck book's price of a kW the works sold the grid (Sector.getPowerSoldValue()). |
-| 922 | 1 | `public void setPricePerWaterUnit(double p)` |  |
-| 924 | 4 | `public void setElectricityConsumption(double kw)` | Draw at nameplate, off its own buildings. |
-| 928 | 1 | `public void setWaterConsumption(double units)` |  |
-| 930 | 1 | `public double getEnergyRatio()` |  |
-| 931 | 1 | `public double getWaterRatio()` |  |
-| 932 | 1 | `public double getRoadRatio()` |  |
-| 933 | 1 | `public double getHealthRatio()` |  |
-| 936 | 3 | `public long buildingsStanding()` | How many of its buildings stand, finished (0.7.30): none is "no plant standing" on its pages, not a rate. |
-| 941 | 3 | `public long buildingsOnSite()` | ...and how many are on site, for anyone's order (0.7.30). |
-| 946 | 3 | `public double getOperatingRate()` | How much of nameplate actually runs: staffing times the five ratios, the fifth being its freight (getFreightRatio()). |
-| 951 | 3 | `private double rateOf(double staffing, double roads, double freight)` | The operating rate at a staffing, a roads' ratio and a freight ratio, with the sector's power, water and the city's health: getOperatingRate()'s product, and firstPlantRate()'s. |
-
-### A FIRST PLANT IS WEIGHED AT THE RATE IT WILL RUN AT (OE1, 2026-11-20) (lines 955-1065)
+### UTILISATION (lines 921-999)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 979 | 3 | `public double plannedRate(NewUnit u)` | The operating rate an order weighs one more building of `u` at (OE1): the sector's own, getOperatingRate(), while it runs anything; with nothing running (runsNothing()), the rate the building would run at as the first... |
-| 984 | 3 | `public double plannedRate(NewUnit u, double running)` | ...with the sector's own rate as the reader takes it: the refiners' planner weighs theirs without the run (Refining.plantRate()). |
-| 997 | 6 | `public double firstPlantRate(NewUnit u)` | What one building of `u` would run at as the first of its sector: getOperatingRate()'s product (rateOf()), its staffing and its roads read for the building, the city's fill over its own posts (fillOf()) and the roads'... |
-| 1017 | 9 | `public double staffed(java.util.function.DoubleSupplier estimate)` | `estimate` read with a first plant weighed staffed (OE1): its staffing read whole, the other five ratios as firstPlantRate() reads them. |
-| 1028 | 7 | `private double roadsFor(BuildingsTemplate t)` | The roads' ratio for one building of `t`'s traffic: what EconomyManager.setRoadRatio() reads for a sector's own buildings, here for this one; the sector's ratio with no roads to ask. |
-| 1040 | 3 | `public double getPowerRatio()` | The share of the plant its power lets run (R1d, R0c star 8): the grid's ratio on the electric share, and the steam share whole, since a boiler burning its own coal does not wait on the grid. |
-| 1045 | 1 | `public double getElectricShare()` | The share of the plant on the grid, 1 - getSteamShare(): what a point more of the grid's ratio adds to getPowerRatio() (R1d; WorksValue's power). |
-| 1051 | 5 | `public double perPointOfGrid(double valueAdded)` | What the plant's value added would be at a whole grid, per point of the grid's ratio (R1d): value added over the power ratio, times the electric share; valueAdded / getEnergyRatio() with no steam, to the bit. |
-| 1058 | 6 | `public double getElectricityCost()` | Charged for what was DELIVERED, not asked for - the utility books the same slice - and on the kWh the season served it, not the year's mean (PW1-R). |
-| 1064 | 1 | `public double getWaterCost()` |  |
+| 945 | 1 | `public void setEnergyRatio(double r)` |  |
+| 946 | 1 | `public void setWaterRatio(double r)` |  |
+| 947 | 1 | `public void setRoadRatio(double r)` |  |
+| 948 | 1 | `public void setHealthRatio(double r)` |  |
+| 950 | 1 | `public void setPricePerWatt(double p)` | One price for all three (a fixture's, and the founding tariff): commerce, industry and the works' surplus. |
+| 952 | 3 | `public void setPowerPrices(double commerce, double industry, double works)` | The struck book's three prices a kW a month: commerce and light industry, Heavy Industry and Mining, and what a works' surplus is paid. |
+| 955 | 1 | `public void setPowerSeason(double season)` |  |
+| 956 | 1 | `public double getPowerSeason()` |  |
+| 957 | 1 | `public void setHighVoltageShare(double share)` |  |
+| 958 | 1 | `public double getHighVoltageShare()` |  |
+| 960 | 3 | `public double powerPriceFor(BuildingsTemplate t)` | What a planner values a building's power draw at: the industry price for a high-voltage class, the commerce price for the rest. |
+| 964 | 3 | `public double worksTariff()` | What its works' surplus is paid: the struck book's price of a kW the works sold the grid (Sector.getPowerSoldValue()). |
+| 967 | 1 | `public void setPricePerWaterUnit(double p)` |  |
+| 969 | 4 | `public void setElectricityConsumption(double kw)` | Draw at nameplate, off its own buildings. |
+| 973 | 1 | `public void setWaterConsumption(double units)` |  |
+| 975 | 1 | `public double getEnergyRatio()` |  |
+| 976 | 1 | `public double getWaterRatio()` |  |
+| 977 | 1 | `public double getRoadRatio()` |  |
+| 978 | 1 | `public double getHealthRatio()` |  |
+| 981 | 3 | `public long buildingsStanding()` | How many of its buildings stand, finished (0.7.30): none is "no plant standing" on its pages, not a rate. |
+| 986 | 3 | `public long buildingsOnSite()` | ...and how many are on site, for anyone's order (0.7.30). |
+| 991 | 3 | `public double getOperatingRate()` | How much of nameplate actually runs: staffing times the five ratios, the fifth being its freight (getFreightRatio()). |
+| 996 | 3 | `private double rateOf(double staffing, double roads, double freight)` | The operating rate at a staffing, a roads' ratio and a freight ratio, with the sector's power, water and the city's health: getOperatingRate()'s product, and firstPlantRate()'s. |
 
-### THE POWER ITS WORKS MAKE THEMSELVES (0.7.112, batch I2; runs/spec- (lines 1066-1093)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1086 | 1 | `public void setPowerSurplus(double kw)` |  |
-| 1089 | 1 | `public double getPowerSurplus()` | kW its buildings make past their own draws (0 for every sector until a works makes power). |
-| 1092 | 1 | `public double getPowerSoldValue()` | What the surplus sells for a month, at the works' price (the struck book's): nothing with none. |
-
-### THE STEAM FORM (R0c, 2026-11-05; research-1900 section 4, [P2.26], [P2.27]) (lines 1094-1165)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1125 | 8 | `public void setSteamShare(double s)` | Sets the steam share, clamped to [0, 1] (not a number reads 0); above 0 it registers THERMAL_COAL as an input, once, and the grid draw it is billed on follows at once. |
-| 1134 | 1 | `public double getSteamShare()` |  |
-| 1141 | 3 | `public double getSteamCoalAtCapacity()` | The tonnes of THERMAL_COAL its steam engines burn a month at nameplate: the steam share of what its buildings draw (the units of electricity, HydroSites.KWH_PER_UNIT kWh a month each) in kWh, at STEAM_COAL_KG_A_KWH, i... |
-| 1146 | 9 | `private double steamCoal(java.util.function.ToDoubleFunction<BuildingsTemplate> order)` | The steam coal of its buildings, each at the share its inputs are ordered for when `order` says (THE ORDER), else at nameplate. |
-| 1161 | 4 | `protected double formInput(Good g, boolean ordered)` | Units of an input a form of the sector (the steam engines' coal here; the farm's horses' feed in sectors.Agriculture) uses past what its buildings use, a month at nameplate - or, when `ordered`, what the month orders ... |
-
-### WHAT ITS WORKS BUY ABROAD THAT IS NOT A GOOD (0.7.112, batch I2; (lines 1166-1204)
+### A FIRST PLANT IS WEIGHED AT THE RATE IT WILL RUN AT (OE1, 2026-11-20) (lines 1000-1110)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1186 | 3 | `public double getConsumablesAtNameplate()` | Its buildings' consumables a month at nameplate, thousands of the world's money: nothing with none standing. |
-| 1191 | 6 | `public double consumablesBill()` | What the month's consumables cost it, in the city's money: their nameplate at the operating rate and the exchange factor; nothing with none, or no markets to read the factor off. |
-| 1199 | 4 | `public void buyConsumables()` | The month's consumables, bought from the world (above): an import named CONSUMABLES on the input line. |
+| 1024 | 3 | `public double plannedRate(NewUnit u)` | The operating rate an order weighs one more building of `u` at (OE1): the sector's own, getOperatingRate(), while it runs anything; with nothing running (runsNothing()), the rate the building would run at as the first... |
+| 1029 | 3 | `public double plannedRate(NewUnit u, double running)` | ...with the sector's own rate as the reader takes it: the refiners' planner weighs theirs without the run (Refining.plantRate()). |
+| 1042 | 6 | `public double firstPlantRate(NewUnit u)` | What one building of `u` would run at as the first of its sector: getOperatingRate()'s product (rateOf()), its staffing and its roads read for the building, the city's fill over its own posts (fillOf()) and the roads'... |
+| 1062 | 9 | `public double staffed(java.util.function.DoubleSupplier estimate)` | `estimate` read with a first plant weighed staffed (OE1): its staffing read whole, the other five ratios as firstPlantRate() reads them. |
+| 1073 | 7 | `private double roadsFor(BuildingsTemplate t)` | The roads' ratio for one building of `t`'s traffic: what EconomyManager.setRoadRatio() reads for a sector's own buildings, here for this one; the sector's ratio with no roads to ask. |
+| 1085 | 3 | `public double getPowerRatio()` | The share of the plant its power lets run (R1d, R0c star 8): the grid's ratio on the electric share, and the steam share whole, since a boiler burning its own coal does not wait on the grid. |
+| 1090 | 1 | `public double getElectricShare()` | The share of the plant on the grid, 1 - getSteamShare(): what a point more of the grid's ratio adds to getPowerRatio() (R1d; WorksValue's power). |
+| 1096 | 5 | `public double perPointOfGrid(double valueAdded)` | What the plant's value added would be at a whole grid, per point of the grid's ratio (R1d): value added over the power ratio, times the electric share; valueAdded / getEnergyRatio() with no steam, to the bit. |
+| 1103 | 6 | `public double getElectricityCost()` | Charged for what was DELIVERED, not asked for - the utility books the same slice - and on the kWh the season served it, not the year's mean (PW1-R). |
+| 1109 | 1 | `public double getWaterCost()` |  |
 
-### THE FLEET (2026-09-17) (lines 1205-1277)
-
-### AND THE TWO THAT MAKE IT A CONSTRAINT RATHER THAN A BILL (lines 1278-1320)
-
-### AND THE DIESEL THEY BURN (0.7.83, batch O6; docs/studies/spec-oil.md 2.5) (lines 1321-1574)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1347 | 1 | `public double getFleetDieselLitres()` |  |
-| 1348 | 1 | `public double getFleetDieselCost()` |  |
-| 1349 | 1 | `public double getFleetDieselImported()` |  |
-| 1366 | 1 | `public boolean isFleetKnown()` |  |
-| 1382 | 25 | `public double tonnesMoved()` | Tonnes a month of GOODS this sector's standing plant moves, in and out: what its vans carry (FR2: since then a sector's BULK goes by Freight's trucks, its city leg billed by Haulage). |
-| 1408 | 1 | `public double vansNeeded()` |  |
-| 1416 | 4 | `public ham.citybuildersim.sectors.Haulage.LegPrice legPrice()` | What the city leg of a bulk tonne costs one more works of this sector, at Haulage's quote in force and the city's trade (FR2; sectors.Haulage.legPrice()). |
-| 1422 | 1 | `public double vanFleet()` | The vehicles it owns. |
-| 1435 | 8 | `public double getVanRatio()` | The fifth ratio. |
-| 1450 | 3 | `public boolean hasBulkLegs()` | Whether any good this sector makes or uses at its standing plant travels in the BULK stream (FR2): the test for whether Haulage's trucks are part of its freight at all. |
-| 1455 | 10 | `private boolean bulkLegs(java.util.function.ToDoubleFunction<Good> made, java.util.function.ToDoubleFunction<Good> used)` | ...the same test for a plant that makes `made` and uses `used` of each good a month: its standing plant's (hasBulkLegs()) or one new building's (firstPlantFreight(), OE1). |
-| 1483 | 8 | `public double getHaulageRatio()` | The haulage half of the fifth ratio (FR2, 2026-10-18; spec-freight-and- infrastructure 3.2): the van rule moved across to the trucks. |
-| 1493 | 6 | `private ham.citybuildersim.sectors.Haulage haulage()` | The city's trucks this sector's bulk would ride (sectors.Freight's Haulage): none for Freight itself, the carrier, or with no game to ask. |
-| 1501 | 3 | `private static double haulageAt(double share)` | The haulage half at a share of its legs carried: MIN_VAN_RATE, and the rest of the way by the share. |
-| 1515 | 8 | `double firstPlantFreight(NewUnit u)` | The freight ratio of one building of `u` as the first of its sector (OE1; firstPlantRate()): the lesser of its two halves, as getFreightRatio() takes them. |
-| 1530 | 3 | `public double getFreightRatio()` | The fifth throttle (FR2): its freight, the lesser of the vans' ratio (its own vans for its goods) and Haulage's (Freight's trucks for its bulk), whichever binds. |
-| 1543 | 3 | `public void runFleet()` | A month of wear, and the seeding. |
-| 1556 | 18 | `public void runFleet(Sectors sectors)` | ...and the month's diesel (0.7.83, batch O6; spec-oil 2.5): the van-months the sector works this month - what its standing plant moves at the operating rate, over TONNES_PER_VAN, the same measure its fleet is sized by... |
-
-### MONEY AND THE BILLS (lines 1575-1618)
+### THE POWER ITS WORKS MAKE THEMSELVES (0.7.112, batch I2; runs/spec- (lines 1111-1138)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1593 | 1 | `public final double getCash()` |  |
-| 1594 | 1 | `public final void setCash(double cash)` |  |
-| 1595 | 1 | `public final void addCash(double amount)` |  |
-| 1597 | 1 | `public void setInterestExpense(double v)` |  |
-| 1598 | 1 | `public void setPropertyTaxExpense(double v)` |  |
-| 1599 | 1 | `public void setMaintenanceExpense(double v)` |  |
-| 1600 | 1 | `public void setForeignIncome(double v)` |  |
-| 1601 | 1 | `public void setTaxRate(double rate)` |  |
-| 1603 | 1 | `public double getInterestExpense()` |  |
-| 1604 | 1 | `public double getPropertyTaxExpense()` |  |
-| 1605 | 1 | `public double getMaintenanceExpense()` |  |
-| 1606 | 1 | `public double getForeignIncome()` |  |
-| 1607 | 1 | `public double getTaxRate()` |  |
-| 1609 | 5 | `public void setBalanceSheetInputs(double land, double buildingsWorth, double bonds)` |  |
-| 1615 | 1 | `public double getLandValue()` |  |
-| 1616 | 1 | `public double getBuildingsValue()` |  |
-| 1617 | 1 | `public double getBondsPayable()` |  |
+| 1131 | 1 | `public void setPowerSurplus(double kw)` |  |
+| 1134 | 1 | `public double getPowerSurplus()` | kW its buildings make past their own draws (0 for every sector until a works makes power). |
+| 1137 | 1 | `public double getPowerSoldValue()` | What the surplus sells for a month, at the works' price (the struck book's): nothing with none. |
 
-### WHAT ITS BORROWING COST IT UP FRONT, EXPENSED AND DEDUCTED (0.7.102) (lines 1619-1763)
+### THE STEAM FORM (R0c, 2026-11-05; research-1900 section 4, [P2.26], [P2.27]) (lines 1139-1210)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1668 | 5 | `public void deferBorrowingCosts(double cost, int lifeMonths)` | What its borrowing cost it up front this month on debts of this life, in months: expensed in equal months from the next strike. |
-| 1675 | 7 | `public double getBorrowingCostsToExpense()` | What its borrowing cost it up front and is still to expense: the sheet's asset (SectorBooks), as of now. |
-| 1684 | 10 | `private double expenseBorrowingCosts()` | The strike's charge: every charge with a month to run, then each a month nearer its end. |
-| 1696 | 10 | `public double getInventoryValue()` | Stock on hand at the price it would fetch today, every good together. |
-| 1713 | 10 | `public Map<Good, double[]> stockAtPrices()` | Its stock and its pantry by good: the units, and the price each is valued at today - the two getInventoryValue() multiplies (0.7.75, the sector statements' R6, where the books price last month's stock at this month's ... |
-| 1725 | 1 | `public double stockPrice(Good g)` | The price a good of its stock is valued at today (priceOf()): for last month's stock at this month's prices (R6). |
-| 1728 | 5 | `protected double priceOf(Good g)` | Today's price of a good, for valuing stock: the market's, or nothing for a seller-priced good. |
-| 1741 | 5 | `protected double inputPrice(Good g)` | What a unit of an input costs it to bring in when the month's inputs are costed (inputCostAtRate()): the local price where somebody here offers it, the import price where nobody does (GoodsMarket.currentLandedPrice())... |
-| 1751 | 12 | `public BalanceSheet getBalanceSheet()` | Position as of right now - a balance sheet is an instant, an income statement a period. |
+| 1170 | 8 | `public void setSteamShare(double s)` | Sets the steam share, clamped to [0, 1] (not a number reads 0); above 0 it registers THERMAL_COAL as an input, once, and the grid draw it is billed on follows at once. |
+| 1179 | 1 | `public double getSteamShare()` |  |
+| 1186 | 3 | `public double getSteamCoalAtCapacity()` | The tonnes of THERMAL_COAL its steam engines burn a month at nameplate: the steam share of what its buildings draw (the units of electricity, HydroSites.KWH_PER_UNIT kWh a month each) in kWh, at STEAM_COAL_KG_A_KWH, i... |
+| 1191 | 9 | `private double steamCoal(java.util.function.ToDoubleFunction<BuildingsTemplate> order)` | The steam coal of its buildings, each at the share its inputs are ordered for when `order` says (THE ORDER), else at nameplate. |
+| 1206 | 4 | `protected double formInput(Good g, boolean ordered)` | Units of an input a form of the sector (the steam engines' coal here; the farm's horses' feed in sectors.Agriculture) uses past what its buildings use, a month at nameplate - or, when `ordered`, what the month orders ... |
 
-### STOCK (lines 1764-1784)
+### WHAT ITS WORKS BUY ABROAD THAT IS NOT A GOOD (0.7.112, batch I2; (lines 1211-1249)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1774 | 1 | `public double getStock(Good g)` |  |
-| 1775 | 1 | `public double getPantry(Good g)` |  |
-| 1777 | 1 | `public void setStock(Good g, double units)` |  |
-| 1778 | 1 | `public void setPantry(Good g, double units)` |  |
-| 1781 | 3 | `public double getStockCapacity(Good g)` | Warehouse room for a good, off its buildings' `stock` field. |
+| 1231 | 3 | `public double getConsumablesAtNameplate()` | Its buildings' consumables a month at nameplate, thousands of the world's money: nothing with none standing. |
+| 1236 | 6 | `public double consumablesBill()` | What the month's consumables cost it, in the city's money: their nameplate at the operating rate and the exchange factor; nothing with none, or no markets to read the factor off. |
+| 1244 | 4 | `public void buyConsumables()` | The month's consumables, bought from the world (above): an import named CONSUMABLES on the input line. |
 
-### CAPACITY, off the buildings (lines 1785-1808)
+### THE FLEET (2026-09-17) (lines 1250-1322)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 1790 | 3 | `public double getCapacity(Good g)` | Nameplate output of a good a month, finished buildings only. |
-| 1795 | 4 | `public double getPipeline(Good g)` | ...and what is on site, which counts as supply for the planner. |
-| 1801 | 7 | `public double getInputAtCapacity(Good g)` | Input a good needs a month at nameplate, across its buildings. |
+### AND THE TWO THAT MAKE IT A CONSTRAINT RATHER THAN A BILL (lines 1323-1365)
 
-### THE MONTH'S PRODUCTION FIGURES, per output good (lines 1809-1889)
+### AND THE DIESEL THEY BURN (0.7.83, batch O6; docs/studies/spec-oil.md 2.5) (lines 1366-1619)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1814 | 14 | **type** `public static final class Output` | What the month did with each good it makes. |
-| 1830 | 6 | **type** `public static final class Input` | What the month did with each good it uses. |
-| 1840 | 1 | `public Output output(Good g)` |  |
-| 1841 | 1 | `public Input input(Good g)` |  |
-| 1844 | 1 | `public Output outputRow(Good g)` | The same rows read-only (0.7.30, for SectorFlow): null when the month has none for the good, and asking makes none. |
-| 1845 | 1 | `public Input inputRow(Good g)` |  |
-| 1862 | 6 | `public double unitsExported(Good g)` | What CROSSED THE CITY BOUNDARY this month, in units, by good - read-only, so asking does not create a row. |
-| 1869 | 6 | `public double unitsImported(Good g)` |  |
-| 1883 | 6 | `public double unitsBoughtLocal(Good g)` | ...and what it bought AT HOME in the month, in units, by good (FR2, 2026-10-18): the Input row's boughtLocal, and in a city just loaded what the save carried, as the two above are. |
+| 1392 | 1 | `public double getFleetDieselLitres()` |  |
+| 1393 | 1 | `public double getFleetDieselCost()` |  |
+| 1394 | 1 | `public double getFleetDieselImported()` |  |
+| 1411 | 1 | `public boolean isFleetKnown()` |  |
+| 1427 | 25 | `public double tonnesMoved()` | Tonnes a month of GOODS this sector's standing plant moves, in and out: what its vans carry (FR2: since then a sector's BULK goes by Freight's trucks, its city leg billed by Haulage). |
+| 1453 | 1 | `public double vansNeeded()` |  |
+| 1461 | 4 | `public ham.citybuildersim.sectors.Haulage.LegPrice legPrice()` | What the city leg of a bulk tonne costs one more works of this sector, at Haulage's quote in force and the city's trade (FR2; sectors.Haulage.legPrice()). |
+| 1467 | 1 | `public double vanFleet()` | The vehicles it owns. |
+| 1480 | 8 | `public double getVanRatio()` | The fifth ratio. |
+| 1495 | 3 | `public boolean hasBulkLegs()` | Whether any good this sector makes or uses at its standing plant travels in the BULK stream (FR2): the test for whether Haulage's trucks are part of its freight at all. |
+| 1500 | 10 | `private boolean bulkLegs(java.util.function.ToDoubleFunction<Good> made, java.util.function.ToDoubleFunction<Good> used)` | ...the same test for a plant that makes `made` and uses `used` of each good a month: its standing plant's (hasBulkLegs()) or one new building's (firstPlantFreight(), OE1). |
+| 1528 | 8 | `public double getHaulageRatio()` | The haulage half of the fifth ratio (FR2, 2026-10-18; spec-freight-and- infrastructure 3.2): the van rule moved across to the trucks. |
+| 1538 | 6 | `private ham.citybuildersim.sectors.Haulage haulage()` | The city's trucks this sector's bulk would ride (sectors.Freight's Haulage): none for Freight itself, the carrier, or with no game to ask. |
+| 1546 | 3 | `private static double haulageAt(double share)` | The haulage half at a share of its legs carried: MIN_VAN_RATE, and the rest of the way by the share. |
+| 1560 | 8 | `double firstPlantFreight(NewUnit u)` | The freight ratio of one building of `u` as the first of its sector (OE1; firstPlantRate()): the lesser of its two halves, as getFreightRatio() takes them. |
+| 1575 | 3 | `public double getFreightRatio()` | The fifth throttle (FR2): its freight, the lesser of the vans' ratio (its own vans for its goods) and Haulage's (Freight's trucks for its bulk), whichever binds. |
+| 1588 | 3 | `public void runFleet()` | A month of wear, and the seeding. |
+| 1601 | 18 | `public void runFleet(Sectors sectors)` | ...and the month's diesel (0.7.83, batch O6; spec-oil 2.5): the van-months the sector works this month - what its standing plant moves at the operating rate, over TONNES_PER_VAN, the same measure its fleet is sized by... |
 
-### THE MONTH'S TRADE ACROSS A SAVE (A1, 2026-10-05) (lines 1890-1926)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1918 | 8 | `private static void carry(Map<String, Double> saved, Map<Good, Double> into)` | A save's units by good name into a carried map; a good this build does not know, or nothing, is left out. |
-
-### WHAT A MONTH WROTE OFF, PAST ITS STRIKE (0.7.133, batch I8) (lines 1927-1998)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1950 | 6 | `public double unitsWrittenOff(Good g)` | Units of a good written off in the month in progress: its row, and in a city just loaded what the save carried. |
-| 1958 | 4 | `public double writtenOffStruck(Good g)` | ...and in the month the last strike banked (0.7.133): what NationalAccounts' fifth term adds back, and since 0.7.136 the food, materials and luxuries terms too. |
-| 1983 | 15 | `public void deriveCarriedTrade()` | ...AND FROM A SAVE BEFORE THE UNITS (0.7.63): the units out of the money. |
-
-### THE LEDGER (lines 1999-2226)
+### MONEY AND THE BILLS (lines 1620-1663)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2026 | 5 | **type** `public static final class Split` | One good's side of the month, in money, split by which side of the border it cleared on. |
-| 2029 | 1 | `public double total()` _(in Sector.Split)_ |  |
-| 2032 | 142 | **type** `public static final class Ledger` |  |
-| 2107 | 1 | `public Split soldOf(Good g)` _(in Sector.Ledger)_ |  |
-| 2108 | 1 | `public Split boughtOf(Good g)` _(in Sector.Ledger)_ |  |
-| 2129 | 5 | `public double purchases()` _(in Sector.Ledger)_ |  |
-| 2135 | 1 | `public double revenue()` _(in Sector.Ledger)_ |  |
-| 2137 | 15 | `void clear()` _(in Sector.Ledger)_ |  |
-| 2159 | 14 | `void scale(double s)` _(in Sector.Ledger)_ | AND THE PER-GOOD MONEY SCALES WITH EVERYTHING ELSE. |
-| 2176 | 10 | `public static Map<Good, Split> copyOf(Map<Good, Split> from)` | A deep copy, because a Split is mutable and the ledger is cleared under it. |
-| 2189 | 1 | `public Ledger pending()` |  |
-| 2192 | 14 | `protected void bookSale(Trade t)` | A sale of this sector's, booked. |
-| 2208 | 18 | `protected void bookPurchase(Trade t)` | A purchase of this sector's, booked. |
+| 1638 | 1 | `public final double getCash()` |  |
+| 1639 | 1 | `public final void setCash(double cash)` |  |
+| 1640 | 1 | `public final void addCash(double amount)` |  |
+| 1642 | 1 | `public void setInterestExpense(double v)` |  |
+| 1643 | 1 | `public void setPropertyTaxExpense(double v)` |  |
+| 1644 | 1 | `public void setMaintenanceExpense(double v)` |  |
+| 1645 | 1 | `public void setForeignIncome(double v)` |  |
+| 1646 | 1 | `public void setTaxRate(double rate)` |  |
+| 1648 | 1 | `public double getInterestExpense()` |  |
+| 1649 | 1 | `public double getPropertyTaxExpense()` |  |
+| 1650 | 1 | `public double getMaintenanceExpense()` |  |
+| 1651 | 1 | `public double getForeignIncome()` |  |
+| 1652 | 1 | `public double getTaxRate()` |  |
+| 1654 | 5 | `public void setBalanceSheetInputs(double land, double buildingsWorth, double bonds)` |  |
+| 1660 | 1 | `public double getLandValue()` |  |
+| 1661 | 1 | `public double getBuildingsValue()` |  |
+| 1662 | 1 | `public double getBondsPayable()` |  |
 
-### BUY ONLY WHAT IT CAN PAY FOR (0.7.12, round 6) (lines 2227-2338)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2302 | 3 | `public void openPurchases(double budget, double orderValue)` | Opens the clearing's purchases: what it can pay for, against what its orders would come to at what a unit costs to bring in (GoodsMarket.landedPrice()). |
-| 2314 | 16 | `public void openPurchases(double budget, double orderValue, double coveredValue)` | ...and with what the orders its suppliers' credit covers would come to (0.7.44; SupplierCredit), when it has one. |
-| 2332 | 6 | `public void closePurchases()` | ...and closes it: a purchase outside the clearing is not read against it. |
-
-### ITS SUPPLIERS' CREDIT (0.7.44) (lines 2339-2621)
+### WHAT ITS BORROWING COST IT UP FRONT, EXPENSED AND DEDUCTED (0.7.102) (lines 1664-1808)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2352 | 1 | `public SupplierCredit supplierCredit()` | The ledger of what this sector owes its suppliers for stock they let it have on credit, or null for a sector whose suppliers are paid at the strike. |
-| 2355 | 4 | `public double getTradePayable()` | What it owes its suppliers now: the next strike repays it. |
-| 2361 | 9 | `public double getTradeReceivable()` | What the buyers it supplied owe it now, for stock it let them have on credit: the next strike collects it. |
-| 2372 | 4 | `public double getTradeCreditTaken()` | What its suppliers' credit added to its till at the last strike: the stock it took on credit (what it repaid there is getTradeCreditRepaid()). |
-| 2378 | 4 | `public double getTradeCreditRepaid()` | ...what it repaid there. |
-| 2389 | 9 | `public double getTradeCreditCash()` | What trade credit moved its till by at the last strike, net, in: the credit it took less what it repaid, as a buyer; what it was repaid less what it let its buyers have, as a supplier. |
-| 2400 | 1 | `public double purchaseShare()` | The share of every order for stock the budget funds this clearing: 1 when they all fit. |
-| 2402 | 4 | `public double purchaseShare(Good g)` | ...of an order for this good: more, for one its suppliers' credit covers (0.7.44). |
-| 2407 | 1 | `public double purchasesLeft()` | What is left of what it can pay for, in money. |
-| 2410 | 8 | `void noteForgone(Good g, double units, double value)` | Units of an order it did not place because it could not pay for them, and what they would have cost. |
-| 2420 | 1 | `public double getPurchaseBudget()` | What the last clearing said it could pay for (infinite with nobody asking). |
-| 2422 | 1 | `public double getOrderValue()` | ...what its orders came to, before the budget. |
-| 2424 | 1 | `public double getPurchasesForgone()` | ...and what it did not buy for want of cash and credit, in money. |
-| 2426 | 1 | `public double getUnitsForgone(Good g)` | ...of one good, in units. |
-| 2428 | 1 | `public double getPurchasesForgone(Good g)` | ...and in money. |
-| 2430 | 1 | `public boolean wasPurchaseLimited()` | True when the last clearing's budget cut an order. |
-| 2441 | 4 | `protected final void noteShelfShort(double units, double price)` |  |
-| 2446 | 1 | `public double getShelfShort()` |  |
-| 2447 | 1 | `public double getShelfShortValue()` |  |
-| 2450 | 3 | `protected final void bookOtherRevenue(double amount)` | Revenue that is not a sale of a good, booked into the month. |
-| 2462 | 5 | `public final void sellOldMetal(double amount)` | ...and its old steel, sold to the Scrap Yards (0.7.123, batch I4; OldMetal): other revenue like any, the yards' input from it at the same strike (they bill it to themselves - billForService() - so the sales tax nets a... |
-| 2475 | 6 | `protected final void bookHouseholdServices(double amount)` | Non-good household receipts: one revenue entry, tagged as consumption and named at the strike. |
-| 2489 | 5 | `protected final void bookUpkeepSold(double amount)` | ...and upkeep sold (HL1; BusinessServices.sellUpkeep()): other revenue like any, named apart on the income statement as UPKEEP_SOLD whatever the sector calls the rest of its other revenue (strike()). |
-| 2501 | 3 | `protected final void bookRevenueRefund(double amount)` | ...and a price given back (0.7.19): the builders' refund of material escalation to an owner whose material cost less when it was drawn than its quote allowed. |
-| 2531 | 5 | `public final void billForService(String supplier, String what, double amount)` | A SERVICE BOUGHT FROM ANOTHER BUSINESS IN THE CITY, billed by the business that performed it. |
-| 2549 | 5 | `protected final void payTheCity(String what, double amount)` | A DUE PAID TO THE CITY (FR3, docs/queue/FR3.md 3; the port dues): an operating cost on the input line, named, whose cash goes to the treasury and not to a business. |
-| 2562 | 4 | `public final void recordCapitalPurchase(String supplier, double amount)` | A building bought from another business in the city (0.7.19): the builders' work on this sector's own premises, billed as they do it, and any escalation on it - negative for a refund. |
-| 2572 | 5 | `protected final void drawPaidStock(String what, double cost)` | An input drawn from stock the sector paid for in an earlier month, at what it paid (0.7.8): a cost this month, named, and no cash - see Ledger.paidEarlier. |
-| 2590 | 3 | `public final void bookLicenceFee(double amount)` | Imported patent rent, banked with this month's other service inputs (R2c). |
-| 2603 | 5 | `protected final void bookImportedService(String what, double amount)` | ...AND ONE AGAIN SINCE 0.7.91 (batch O10; spec-oil 2.7): the shuttle tankers that take a platform's crude ashore, a service the world's ships sell with no good behind it. |
-| 2616 | 5 | `protected final void bookExportedService(String what, double amount)` | ...and one SOLD to the world with no good behind it (FC2): the builders' spare points worked abroad (sectors.Construction.sellPointsAbroad()). |
+| 1713 | 5 | `public void deferBorrowingCosts(double cost, int lifeMonths)` | What its borrowing cost it up front this month on debts of this life, in months: expensed in equal months from the next strike. |
+| 1720 | 7 | `public double getBorrowingCostsToExpense()` | What its borrowing cost it up front and is still to expense: the sheet's asset (SectorBooks), as of now. |
+| 1729 | 10 | `private double expenseBorrowingCosts()` | The strike's charge: every charge with a month to run, then each a month nearer its end. |
+| 1741 | 10 | `public double getInventoryValue()` | Stock on hand at the price it would fetch today, every good together. |
+| 1758 | 10 | `public Map<Good, double[]> stockAtPrices()` | Its stock and its pantry by good: the units, and the price each is valued at today - the two getInventoryValue() multiplies (0.7.75, the sector statements' R6, where the books price last month's stock at this month's ... |
+| 1770 | 1 | `public double stockPrice(Good g)` | The price a good of its stock is valued at today (priceOf()): for last month's stock at this month's prices (R6). |
+| 1773 | 5 | `protected double priceOf(Good g)` | Today's price of a good, for valuing stock: the market's, or nothing for a seller-priced good. |
+| 1786 | 5 | `protected double inputPrice(Good g)` | What a unit of an input costs it to bring in when the month's inputs are costed (inputCostAtRate()): the local price where somebody here offers it, the import price where nobody does (GoodsMarket.currentLandedPrice())... |
+| 1796 | 12 | `public BalanceSheet getBalanceSheet()` | Position as of right now - a balance sheet is an instant, an income statement a period. |
 
-### THE STATEMENT (lines 2622-2894)
+### STOCK (lines 1809-1829)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2630 | 77 | **type** `public static final class Statement` | The month's figures, as the statement was struck. |
-| 2688 | 18 | `void scale(double s)` _(in Sector.Statement)_ |  |
-| 2710 | 1 | `public Statement statement()` |  |
-| 2713 | 1 | `public double getNetIncome()` | Pre-tax, before the profit tax. |
-| 2716 | 1 | `public double getProfitTax()` | What the city collects from it this month. |
-| 2723 | 53 | `public void strike()` | Strikes the month WITHOUT the sales tax and without banking: the ledger is read into the statement, and the VAT is struck from these figures next, by SalesTaxLedger, and cannot be known while they are written. |
-| 2785 | 3 | `public void bank(double salesTaxRemitted)` | ...and banks it, once the sales tax is known. |
-| 2795 | 54 | `public void bank(double salesTaxRemitted, double capitalTaxCredit)` | ...with the part of that net which is the tax credited back on buildings it bought (0.7.19): remitted net of it, but charged on the statement without it, and handed to the cash apart - see Statement.capitalTaxCredit. |
-| 2851 | 1 | `protected void afterBank()` | A sector with something to clear when its month is banked says so here. |
-| 2858 | 1 | `protected void beforeBank()` | ...and one with something to keep of the month's rows before they are cleared (A5, 0.7.46): called first in bank(), while every row is still the month being struck. |
-| 2864 | 30 | `public void restoreStatement(Statement saved)` | The struck month, put back on load, so the first month back reads the same as the one before it and the loss counter sees what it saw. |
+| 1819 | 1 | `public double getStock(Good g)` |  |
+| 1820 | 1 | `public double getPantry(Good g)` |  |
+| 1822 | 1 | `public void setStock(Good g, double units)` |  |
+| 1823 | 1 | `public void setPantry(Good g, double units)` |  |
+| 1826 | 3 | `public double getStockCapacity(Good g)` | Warehouse room for a good, off its buildings' `stock` field. |
 
-### THE MONTH AT THE BOTTOM - HOOKS Markets CALLS (lines 2895-3024)
+### CAPACITY, off the buildings (lines 1830-1853)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2924 | 4 | `protected double plannedDemand(Good g)` | What the city will want of a good this month, for planning output. |
-| 2935 | 19 | `public double getPlannedOutput(Good g)` | What it will make of a stockable good this month for the home market: nameplate at today's rate, or what brings the stock to STOCK_MONTHS of demand, whichever is less. |
-| 2967 | 4 | `static double bufferSalePrice(GoodsMarket market)` | What a unit of an undemanded buffer can sell for, for the buffer gate in getPlannedOutput() (CPB2): its net export price where the world buys the good, and nothing where it does not. |
-| 2981 | 3 | `protected double madeAtRate(Good g)` | What its plant could make of a stockable good this month: its nameplate at today's rate - the figure getPlannedOutput(), getExportBoundOutput() and produceStock() start from. |
-| 2990 | 23 | `public double getExportBoundOutput(Good g)` | Nameplate the city cannot eat, made for export instead - if the export price clears the marginal cost of running the line, which is the energy and water and nothing else: the staff are paid either way. |
-| 3018 | 6 | `public double getCostPerUnit(Good g)` | Break-even per unit this month: everything the line costs over what it makes. |
+| 1835 | 3 | `public double getCapacity(Good g)` | Nameplate output of a good a month, finished buildings only. |
+| 1840 | 4 | `public double getPipeline(Good g)` | ...and what is on site, which counts as supply for the planner. |
+| 1846 | 7 | `public double getInputAtCapacity(Good g)` | Input a good needs a month at nameplate, across its buildings. |
 
-### WHOSE COST IS IT, WHEN ONE LINE MAKES TWO THINGS (lines 3025-3225)
+### THE MONTH'S PRODUCTION FIGURES, per output good (lines 1854-1934)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3058 | 19 | `protected double costShareOf(Good g)` |  |
-| 3085 | 6 | `public double getMarginalCostPerUnit(Good g)` | What it costs to SELL a unit already made: the energy and water, and the inputs, and not the payroll, which is paid whether or not a unit leaves the shed. |
-| 3093 | 13 | `protected double inputCostAtRate()` | What the month's inputs cost at the operating rate, at today's prices. |
-| 3116 | 21 | `public double bid(Good g)` | What it wants of an input this month. |
-| 3139 | 5 | `protected double pantryTarget(Good g)` | Units of a pantry good the sector aims to hold: months of recent use. |
-| 3146 | 1 | `protected double recentUse(Good g)` | What it used of a pantry good last month. |
-| 3158 | 19 | `public double offer(Good g, double price)` | Units it will release to the market at the price. |
-| 3183 | 20 | `public void produceFlow(Good g)` | Lifts, brews or smelts a flow good for the month - what the makers bring to a market that has no stock behind it. |
-| 3211 | 5 | `private double flowRunShare(Good g)` | The share of its nameplate a good is made at this month (THE ORDER, FL1; stock too since CPB1): the share of the run of the buildings that make it, nameplate-weighted - what buildingOrder() orders their inputs for - a... |
-| 3218 | 4 | `double productionWeight(BuildingsTemplate t, Good g)` | This template's native joint-run weight relative to its good's fleet average; read during capture, before endOrders(). |
-| 3224 | 1 | `protected double groundLimit(Good g, double asked)` | A sector whose output is limited by what is in the ground says so here. |
+| 1859 | 14 | **type** `public static final class Output` | What the month did with each good it makes. |
+| 1875 | 6 | **type** `public static final class Input` | What the month did with each good it uses. |
+| 1885 | 1 | `public Output output(Good g)` |  |
+| 1886 | 1 | `public Input input(Good g)` |  |
+| 1889 | 1 | `public Output outputRow(Good g)` | The same rows read-only (0.7.30, for SectorFlow): null when the month has none for the good, and asking makes none. |
+| 1890 | 1 | `public Input inputRow(Good g)` |  |
+| 1907 | 6 | `public double unitsExported(Good g)` | What CROSSED THE CITY BOUNDARY this month, in units, by good - read-only, so asking does not create a row. |
+| 1914 | 6 | `public double unitsImported(Good g)` |  |
+| 1928 | 6 | `public double unitsBoughtLocal(Good g)` | ...and what it bought AT HOME in the month, in units, by good (FR2, 2026-10-18): the Input row's boughtLocal, and in a city just loaded what the save carried, as the two above are. |
 
-### CAPTIVE USE (0.7.112, batch I2; docs/studies/spec-materials.md 2.7) (lines 3226-3281)
+### THE MONTH'S TRADE ACROSS A SAVE (A1, 2026-10-05) (lines 1935-1971)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3263 | 1 | `public boolean captive(Good g)` | Whether it uses what it makes of a good first, itself (CAPTIVE USE): false here; sectors.ProcessingSector says yes for every good it both makes and uses. |
-| 3272 | 9 | `public double captiveUnits(Good g)` | The units of a captive good it makes and uses itself this month: its need at the operating rate, for the works that will run (THE ORDER: inputToMake()), as far as what it makes at the rate covers it - for a flow good ... |
+| 1963 | 8 | `private static void carry(Map<String, Double> saved, Map<Good, Double> into)` | A save's units by good name into a carried map; a good this build does not know, or nothing, is left out. |
 
-### THE ORDER (WN3, 2026-10-29; the ensemble's negative GDP in months (lines 3282-3636)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3379 | 1 | `protected boolean ordersForWhatItMakes()` | Whether the sector orders its inputs for what it will make (THE ORDER): yes here; sectors.Refining says no, its crude is the run's (THE RUN, 0.7.105). |
-| 3382 | 16 | `public void planOrders()` | Decides the month's order shares, before the flow goods are made (Markets.clearMonth(), after the fleets): nothing to decide for a sector that makes no traded good (THE ORDER; a flow good's since FL1). |
-| 3400 | 5 | `public void endOrders()` | The market pass is over: nothing is planned, every share reads 1 again (THE ORDER). |
-| 3407 | 14 | `public double orderShare(Good g)` | What share of a traded good's nameplate this month's inputs are ordered for (THE ORDER; a flow good's is FL1's): 1 for a good that is not traded and outside the market pass. |
-| 3428 | 11 | `private double forecastOrder(Good g)` | What the month will make of a stockable good over its nameplate past what the sector keeps for its own works (THE ORDER): the plan for the home market and the ship's line, asked at the stock it expects to hold after t... |
-| 3447 | 34 | `private double shareAboveFloors(Good g, double fraction)` | The order share at which the buildings that make a stockable good, each at the greater of the share and its committed floor (buildingOrder(), committedFloor()), make `fraction` of the good's nameplate (CPB2): exactly ... |
-| 3487 | 11 | `private double forecastFlow(Good g)` | The share of a traded flow good's nameplate at the rate this month's inputs are ordered for (THE ORDER, FL1): what its own works need of it and what the home market demanded at the last strike are made at any price; o... |
-| 3505 | 18 | `private double exportsAtNoLoss(Good g, double spare)` | Of `spare` units of a flow good that can only be exported, the most that sells at no loss on the world's band (THE ORDER, FL1): all of it when nothing bought makes it, or when the whole of it nets over the inputs' cos... |
-| 3530 | 3 | `public double flowCostPerUnit(Good g)` | What the inputs of a unit of a flow good cost the sector (THE ORDER, FL1): over its standing buildings that make it, nameplate-weighted, each one's traded inputs at inputCost() less what its other traded goods are wor... |
-| 3535 | 12 | `private double unitCost(Good g, Set<Good> costing)` | What the inputs of a unit of any good cost the sector, flow or stockable (flowCostPerUnit()'s body); `costing` holds the goods being costed up the chain, so one that loops back is priced as an input is. |
-| 3549 | 14 | `private double inputsLessCoProducts(BuildingsTemplate t, Good made, Set<Good> costing)` | What a month of one building's traded inputs costs here, less its other traded goods at their worth, to no less than nothing (flowCostPerUnit()). |
-| 3574 | 9 | `private double inputCost(Good i, Set<Good> costing)` | What a unit of an input costs the works that use it, for flowCostPerUnit() (THE ORDER, FL1): inputPrice() for one the sector buys; for one it makes itself (captive) and makes enough of to cover its own works' need, wh... |
-| 3585 | 7 | `private double coProductValue(Good o)` | What a unit of a good a building makes beside the one asked about is worth: its net export price where the world will buy it, else its price here; 0 if neither is a number. |
-| 3594 | 10 | `private double whenHolding(Good g, double units, java.util.function.DoubleSupplier ask)` | Asks what the sector's own rules say with some units of a good in the shed instead of what is there, and puts the shed back (THE ORDER). |
-| 3606 | 15 | `private double buildingOrder(BuildingsTemplate t)` | The share of its nameplate a building's inputs are ordered for: the greatest of its traded goods' order shares, flow or stockable; 1 for one that makes an untraded good, or nothing (THE ORDER, FL1). |
-| 3623 | 10 | `private double committedFloor(BuildingsTemplate t)` | The least share of its nameplate a building runs at whatever is ordered (CPB1): what its part of a feed committed outside the goods market needs, to no more than 1; 0 for one that uses none. |
-| 3635 | 1 | `protected double committedInput(Good g)` | Feed committed before the goods orders, which the month's run must use (CPB1); none unless a sector buys outside the market. |
-
-### THE GROUND'S SHARE OF THE ORDER (NG1, 2026-11-20) (lines 3637-3836)
+### WHAT A MONTH WROTE OFF, PAST ITS STRIKE (0.7.133, batch I8) (lines 1972-2043)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3661 | 1 | `protected double groundShare(BuildingsTemplate t)` | The share of a building's run at the rate that its ground lets it make this month (NG1): exactly 1 for a building no ground limits and wherever the ground holds its whole ask, so the order is what it was to the bit; u... |
-| 3667 | 8 | `protected double inputToMake(Good g)` | Units of an input its buildings use a month at the shares they run at (THE ORDER), each held to what its ground gives it (groundShare(), NG1): getInputAtCapacity(), to the bit, while every share is 1 and outside the m... |
-| 3681 | 9 | `private double captiveAtFullRun(Good g)` | Units of a captive good its own works would take at their full rate (THE ORDER): captiveUnits() outside the market pass. |
-| 3698 | 15 | `public void shipUnsoldFlow(Good g, GoodsMarket market)` | A flow good's unsold units, once the market has taken what it wants: shipped abroad at the export price, or lost. |
-| 3715 | 1 | `public void shipUnsoldStock(Good g, GoodsMarket market)` | A processor's wholesale shed can ship after local fills (BF1); other sectors keep their own selling rules. |
-| 3722 | 10 | `public void writeOffUnhousedStock()` | Losing a warehouse loses the stock it cannot hold before any sale or credit reading can use it (BF1). |
-| 3734 | 1 | `public double retirementRecovery()` | Liquid stock carried after the last plant closes: a recovery floor at realizable proceeds, otherwise zero. |
-| 3750 | 40 | `public void produceStock(Good g, GoodsMarket market)` | Runs the month's production of a stockable good into the warehouse, after the market has taken what it wanted from last month's stock. |
-| 3792 | 3 | `protected void sellDirectOutput(Good g, GoodsMarket market, double units)` | Sells the line's surplus. |
-| 3797 | 4 | `protected void takeFromStock(Good g, double units)` | Units of a good taken out of stock by a local sale or an export from the shed. |
-| 3803 | 5 | `void receiveInput(Good g, double units)` | Units of an input received into the pantry, or consumed on the spot. |
-| 3810 | 6 | `protected final void usePantry(Good g, double units)` | A pantry good used up this month, recorded for next month's cover. |
-| 3823 | 1 | `public void sellOwnPriced(Markets markets, Game game)` | The seller-priced goods, sold: the shops to the households, the landlords' doors to the families. |
-| 3826 | 1 | `public void endOfMonth(Game game)` | After every market has cleared and every good is made: anything the month still needs. |
-| 3835 | 1 | `protected void afterClearing(Good g)` | One good's market has cleared this month and its fills are booked (0.7.85; Markets.clear()), told to each of its buyers: a sector whose month reads what it bought says so here - the refiners' run, held to their crude ... |
+| 1995 | 6 | `public double unitsWrittenOff(Good g)` | Units of a good written off in the month in progress: its row, and in a city just loaded what the save carried. |
+| 2003 | 4 | `public double writtenOffStruck(Good g)` | ...and in the month the last strike banked (0.7.133): what NationalAccounts' fifth term adds back, and since 0.7.136 the food, materials and luxuries terms too. |
+| 2028 | 15 | `public void deriveCarriedTrade()` | ...AND FROM A SAVE BEFORE THE UNITS (0.7.63): the units out of the money. |
 
-### PLANNING - the decision to grow, and to shrink (lines 3837-3957)
+### THE LEDGER (lines 2044-2271)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3854 | 3 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | What this sector would like to build this month, or why not. |
-| 3862 | 5 | `public Good planningGood()` | The good the generic planner sizes the sector by: its first stockable output, else its first output. |
-| 3875 | 1 | `public double firstPlantUtilisation()` | The share of a plant's nameplate the city has to be taking, a month, before this sector sinks its FIRST plant. |
-| 3884 | 1 | `public double visibleDemandOver(double months, EconomyManager economy)` | What the sector can SEE it will sell a month over the next `months`, when its customers' orders are on a book - a ceiling on the demand the maker's rule reads off the trend, since a trend read off a boom runs on after... |
-| 3887 | 3 | `public final double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one of its templates would clear a month, for the interest test. |
-| 3895 | 17 | `public double estimatedMonthlyProfit(NewUnit t, BusinessInvestment plans)` | ...for one new building already resolved (QN1; NewUnit): every sector's estimate reads its figures off the unit and its identity off the template the unit is of. |
-| 3927 | 7 | `public double[] retirementDemandAndCapacity(Game game)` | The demand the spare-capacity rule measures the sector against, and the capacity it measures. |
-| 3936 | 4 | `public double unitsOf(BuildingsTemplate t)` | What one of these contributes to the measure the sector is judged on. |
-| 3942 | 1 | `public boolean mayRetire(BuildingsTemplate t)` | Whether a holding of this template may be sold back this month. |
-| 3948 | 1 | `public boolean bleedsWhileLent()` | Whether this sector sells plant it is using while a lender still covers its losses (AQ1): a price taker with no demand reading, whose only shrink is the distress rule (BusinessInvestment.BLEED_MONTHS). |
-| 3951 | 1 | `public long limitSpareRetirement(BuildingsTemplate t, long quantity, double keepAtLeast)` | Limit a spare-capacity sale to what still leaves keepAtLeast units usable; additive sectors need no further limit. |
-| 3954 | 3 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything. |
+| 2071 | 5 | **type** `public static final class Split` | One good's side of the month, in money, split by which side of the border it cleared on. |
+| 2074 | 1 | `public double total()` _(in Sector.Split)_ |  |
+| 2077 | 142 | **type** `public static final class Ledger` |  |
+| 2152 | 1 | `public Split soldOf(Good g)` _(in Sector.Ledger)_ |  |
+| 2153 | 1 | `public Split boughtOf(Good g)` _(in Sector.Ledger)_ |  |
+| 2174 | 5 | `public double purchases()` _(in Sector.Ledger)_ |  |
+| 2180 | 1 | `public double revenue()` _(in Sector.Ledger)_ |  |
+| 2182 | 15 | `void clear()` _(in Sector.Ledger)_ |  |
+| 2204 | 14 | `void scale(double s)` _(in Sector.Ledger)_ | AND THE PER-GOOD MONEY SCALES WITH EVERYTHING ELSE. |
+| 2221 | 10 | `public static Map<Good, Split> copyOf(Map<Good, Split> from)` | A deep copy, because a Split is mutable and the ledger is cleared under it. |
+| 2234 | 1 | `public Ledger pending()` |  |
+| 2237 | 14 | `protected void bookSale(Trade t)` | A sale of this sector's, booked. |
+| 2253 | 18 | `protected void bookPurchase(Trade t)` | A purchase of this sector's, booked. |
 
-### THE SCREENS (lines 3958-4180)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3967 | 11 | **type** `public record Line(Kind kind, String label, String value, Tone tone)` | One line of the operations page. |
-| 3968 | 1 | **type** `public enum Kind` _(in Sector.Line)_ |  |
-| 3969 | 1 | **type** `public enum Tone` _(in Sector.Line)_ |  |
-| 3971 | 1 | `public static Line head(String text)` _(in Sector.Line)_ |  |
-| 3972 | 1 | `public static Line note(String text)` _(in Sector.Line)_ |  |
-| 3974 | 1 | `public static Line note(String shown, String whole)` _(in Sector.Line)_ | A note in two layers (0.7.21): `shown` on the page, and `whole` one click away, behind an (i). |
-| 3975 | 1 | `public static Line of(String label, String value)` _(in Sector.Line)_ |  |
-| 3976 | 1 | `public static Line of(String label, String value, Tone tone)` _(in Sector.Line)_ |  |
-| 3985 | 1 | `public SectorStatements.Format statementFormat()` | What kind of business its formal statements read as (0.7.74; the project's spec-sector-statements.md, 4.6): the words of its revenue, its cost of sales and its middle line - the bottom three are the model's in every f... |
-| 3988 | 9 | `public String inputLabel()` | What the sector's direct-cost line is called on its income statement. |
-| 4014 | 1 | `public Map<String, Double> otherRevenueParts()` | The parts of this sector's revenue that are not the sale of a good, named, for the lines inside an opened Revenue. |
-| 4017 | 1 | `public Map<String, Double> servicesSoldParts()` | ...and the exports that are not a good, by name (FC2; Statement.servicesSold): the builders' work sold abroad. |
-| 4027 | 1 | `public Map<String, Double> otherInputParts()` | ...and the same for the cost line: what is in Inputs that is not a good. |
-| 4047 | 5 | `protected Map<String, Double> nameOtherRevenue()` | ...and where those names come from, read off the sector's LIVE fields at the moment the month is struck. |
-| 4068 | 5 | `public List<Line> operations(Game game)` | The operations page, as data: the factory's block (plantLines()) when the sector keeps it, then the sector's own lines (ownLines()). |
-| 4075 | 1 | `public boolean hasPlantBlock()` | Whether its operations page opens on the factory's block (0.7.30): false for the seven sectors whose page is all their own. |
-| 4078 | 1 | `public List<Line> ownLines(Game game)` | The sector's own lines, after the factory's block (0.7.30): none unless it says more. |
-| 4086 | 94 | `public List<Line> plantLines(Game game)` | The factory's block (0.7.30; operations() itself until then): the plant - staffed, running at, and the five ratios - then a block per good it makes and per good it buys. |
-
-### SAVE AND RESTORE (lines 4181-4402)
+### BUY ONLY WHAT IT CAN PAY FOR (0.7.12, round 6) (lines 2272-2383)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4186 | 57 | `public SectorState toState()` | Everything about this sector that a save has to carry. |
-| 4244 | 67 | `public void restore(SectorState s)` |  |
-| 4313 | 18 | `public void restoreBills(SectorState s)` | The bills of the month back, over whatever a rebuild re-derived. |
-| 4333 | 1 | `private static Double ratioToSave(double r)` | A ratio for the save: itself, or null when it is not a number - Gson writes no NaN, and the load then derives it. |
-| 4336 | 1 | `protected void saveExtras(Map<String, Double> extras)` | A sector with state of its own - a price it walks, an order book - writes it here by name. |
-| 4339 | 1 | `protected void restoreExtras(Map<String, Double> extras)` | ...and reads it back. |
-| 4342 | 28 | `public void reset()` | Everything back to a founding sector. |
-| 4371 | 1 | `protected void resetExtras()` |  |
-| 4377 | 20 | `public void redenominate(double scale)` | Its money in the new unit. |
-| 4398 | 1 | `protected void redenominateExtras(double scale)` |  |
-| 4401 | 1 | `public String toString()` |  |
+| 2347 | 3 | `public void openPurchases(double budget, double orderValue)` | Opens the clearing's purchases: what it can pay for, against what its orders would come to at what a unit costs to bring in (GoodsMarket.landedPrice()). |
+| 2359 | 16 | `public void openPurchases(double budget, double orderValue, double coveredValue)` | ...and with what the orders its suppliers' credit covers would come to (0.7.44; SupplierCredit), when it has one. |
+| 2377 | 6 | `public void closePurchases()` | ...and closes it: a purchase outside the clearing is not read against it. |
 
-### THE POWER, FOR THE PICTOGRAMS (0.7.141, batch I11; IndustryView) (lines 4403-4431)
+### ITS SUPPLIERS' CREDIT (0.7.44) (lines 2384-2666)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 4416 | 4 | `public double getPowerMade()` | kW its buildings make themselves, at nameplate: every billed building's gen (BuildingsTemplate.getGen()) - nothing until a works makes power. |
-| 4422 | 4 | `public double getPowerDrawn()` | ...and kW they draw, at nameplate, before what they make: every billed building's whole draw. |
-| 4428 | 3 | `public double getGridDraw()` | ...and kW they draw from the grid past what they make: the net draw its bill is struck on (setElectricityConsumption()), beside the surplus it sells (getPowerSurplus()). |
+| 2397 | 1 | `public SupplierCredit supplierCredit()` | The ledger of what this sector owes its suppliers for stock they let it have on credit, or null for a sector whose suppliers are paid at the strike. |
+| 2400 | 4 | `public double getTradePayable()` | What it owes its suppliers now: the next strike repays it. |
+| 2406 | 9 | `public double getTradeReceivable()` | What the buyers it supplied owe it now, for stock it let them have on credit: the next strike collects it. |
+| 2417 | 4 | `public double getTradeCreditTaken()` | What its suppliers' credit added to its till at the last strike: the stock it took on credit (what it repaid there is getTradeCreditRepaid()). |
+| 2423 | 4 | `public double getTradeCreditRepaid()` | ...what it repaid there. |
+| 2434 | 9 | `public double getTradeCreditCash()` | What trade credit moved its till by at the last strike, net, in: the credit it took less what it repaid, as a buyer; what it was repaid less what it let its buyers have, as a supplier. |
+| 2445 | 1 | `public double purchaseShare()` | The share of every order for stock the budget funds this clearing: 1 when they all fit. |
+| 2447 | 4 | `public double purchaseShare(Good g)` | ...of an order for this good: more, for one its suppliers' credit covers (0.7.44). |
+| 2452 | 1 | `public double purchasesLeft()` | What is left of what it can pay for, in money. |
+| 2455 | 8 | `void noteForgone(Good g, double units, double value)` | Units of an order it did not place because it could not pay for them, and what they would have cost. |
+| 2465 | 1 | `public double getPurchaseBudget()` | What the last clearing said it could pay for (infinite with nobody asking). |
+| 2467 | 1 | `public double getOrderValue()` | ...what its orders came to, before the budget. |
+| 2469 | 1 | `public double getPurchasesForgone()` | ...and what it did not buy for want of cash and credit, in money. |
+| 2471 | 1 | `public double getUnitsForgone(Good g)` | ...of one good, in units. |
+| 2473 | 1 | `public double getPurchasesForgone(Good g)` | ...and in money. |
+| 2475 | 1 | `public boolean wasPurchaseLimited()` | True when the last clearing's budget cut an order. |
+| 2486 | 4 | `protected final void noteShelfShort(double units, double price)` |  |
+| 2491 | 1 | `public double getShelfShort()` |  |
+| 2492 | 1 | `public double getShelfShortValue()` |  |
+| 2495 | 3 | `protected final void bookOtherRevenue(double amount)` | Revenue that is not a sale of a good, booked into the month. |
+| 2507 | 5 | `public final void sellOldMetal(double amount)` | ...and its old steel, sold to the Scrap Yards (0.7.123, batch I4; OldMetal): other revenue like any, the yards' input from it at the same strike (they bill it to themselves - billForService() - so the sales tax nets a... |
+| 2520 | 6 | `protected final void bookHouseholdServices(double amount)` | Non-good household receipts: one revenue entry, tagged as consumption and named at the strike. |
+| 2534 | 5 | `protected final void bookUpkeepSold(double amount)` | ...and upkeep sold (HL1; BusinessServices.sellUpkeep()): other revenue like any, named apart on the income statement as UPKEEP_SOLD whatever the sector calls the rest of its other revenue (strike()). |
+| 2546 | 3 | `protected final void bookRevenueRefund(double amount)` | ...and a price given back (0.7.19): the builders' refund of material escalation to an owner whose material cost less when it was drawn than its quote allowed. |
+| 2576 | 5 | `public final void billForService(String supplier, String what, double amount)` | A SERVICE BOUGHT FROM ANOTHER BUSINESS IN THE CITY, billed by the business that performed it. |
+| 2594 | 5 | `protected final void payTheCity(String what, double amount)` | A DUE PAID TO THE CITY (FR3, docs/queue/FR3.md 3; the port dues): an operating cost on the input line, named, whose cash goes to the treasury and not to a business. |
+| 2607 | 4 | `public final void recordCapitalPurchase(String supplier, double amount)` | A building bought from another business in the city (0.7.19): the builders' work on this sector's own premises, billed as they do it, and any escalation on it - negative for a refund. |
+| 2617 | 5 | `protected final void drawPaidStock(String what, double cost)` | An input drawn from stock the sector paid for in an earlier month, at what it paid (0.7.8): a cost this month, named, and no cash - see Ledger.paidEarlier. |
+| 2635 | 3 | `public final void bookLicenceFee(double amount)` | Imported patent rent, banked with this month's other service inputs (R2c). |
+| 2648 | 5 | `protected final void bookImportedService(String what, double amount)` | ...AND ONE AGAIN SINCE 0.7.91 (batch O10; spec-oil 2.7): the shuttle tankers that take a platform's crude ashore, a service the world's ships sell with no good behind it. |
+| 2661 | 5 | `protected final void bookExportedService(String what, double amount)` | ...and one SOLD to the world with no good behind it (FC2): the builders' spare points worked abroad (sectors.Construction.sellPointsAbroad()). |
+
+### THE STATEMENT (lines 2667-2939)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2675 | 77 | **type** `public static final class Statement` | The month's figures, as the statement was struck. |
+| 2733 | 18 | `void scale(double s)` _(in Sector.Statement)_ |  |
+| 2755 | 1 | `public Statement statement()` |  |
+| 2758 | 1 | `public double getNetIncome()` | Pre-tax, before the profit tax. |
+| 2761 | 1 | `public double getProfitTax()` | What the city collects from it this month. |
+| 2768 | 53 | `public void strike()` | Strikes the month WITHOUT the sales tax and without banking: the ledger is read into the statement, and the VAT is struck from these figures next, by SalesTaxLedger, and cannot be known while they are written. |
+| 2830 | 3 | `public void bank(double salesTaxRemitted)` | ...and banks it, once the sales tax is known. |
+| 2840 | 54 | `public void bank(double salesTaxRemitted, double capitalTaxCredit)` | ...with the part of that net which is the tax credited back on buildings it bought (0.7.19): remitted net of it, but charged on the statement without it, and handed to the cash apart - see Statement.capitalTaxCredit. |
+| 2896 | 1 | `protected void afterBank()` | A sector with something to clear when its month is banked says so here. |
+| 2903 | 1 | `protected void beforeBank()` | ...and one with something to keep of the month's rows before they are cleared (A5, 0.7.46): called first in bank(), while every row is still the month being struck. |
+| 2909 | 30 | `public void restoreStatement(Statement saved)` | The struck month, put back on load, so the first month back reads the same as the one before it and the loss counter sees what it saw. |
+
+### THE MONTH AT THE BOTTOM - HOOKS Markets CALLS (lines 2940-3069)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2969 | 4 | `protected double plannedDemand(Good g)` | What the city will want of a good this month, for planning output. |
+| 2980 | 19 | `public double getPlannedOutput(Good g)` | What it will make of a stockable good this month for the home market: nameplate at today's rate, or what brings the stock to STOCK_MONTHS of demand, whichever is less. |
+| 3012 | 4 | `static double bufferSalePrice(GoodsMarket market)` | What a unit of an undemanded buffer can sell for, for the buffer gate in getPlannedOutput() (CPB2): its net export price where the world buys the good, and nothing where it does not. |
+| 3026 | 3 | `protected double madeAtRate(Good g)` | What its plant could make of a stockable good this month: its nameplate at today's rate - the figure getPlannedOutput(), getExportBoundOutput() and produceStock() start from. |
+| 3035 | 23 | `public double getExportBoundOutput(Good g)` | Nameplate the city cannot eat, made for export instead - if the export price clears the marginal cost of running the line, which is the energy and water and nothing else: the staff are paid either way. |
+| 3063 | 6 | `public double getCostPerUnit(Good g)` | Break-even per unit this month: everything the line costs over what it makes. |
+
+### WHOSE COST IS IT, WHEN ONE LINE MAKES TWO THINGS (lines 3070-3270)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3103 | 19 | `protected double costShareOf(Good g)` |  |
+| 3130 | 6 | `public double getMarginalCostPerUnit(Good g)` | What it costs to SELL a unit already made: the energy and water, and the inputs, and not the payroll, which is paid whether or not a unit leaves the shed. |
+| 3138 | 13 | `protected double inputCostAtRate()` | What the month's inputs cost at the operating rate, at today's prices. |
+| 3161 | 21 | `public double bid(Good g)` | What it wants of an input this month. |
+| 3184 | 5 | `protected double pantryTarget(Good g)` | Units of a pantry good the sector aims to hold: months of recent use. |
+| 3191 | 1 | `protected double recentUse(Good g)` | What it used of a pantry good last month. |
+| 3203 | 19 | `public double offer(Good g, double price)` | Units it will release to the market at the price. |
+| 3228 | 20 | `public void produceFlow(Good g)` | Lifts, brews or smelts a flow good for the month - what the makers bring to a market that has no stock behind it. |
+| 3256 | 5 | `private double flowRunShare(Good g)` | The share of its nameplate a good is made at this month (THE ORDER, FL1; stock too since CPB1): the share of the run of the buildings that make it, nameplate-weighted - what buildingOrder() orders their inputs for - a... |
+| 3263 | 4 | `double productionWeight(BuildingsTemplate t, Good g)` | This template's native joint-run weight relative to its good's fleet average; read during capture, before endOrders(). |
+| 3269 | 1 | `protected double groundLimit(Good g, double asked)` | A sector whose output is limited by what is in the ground says so here. |
+
+### CAPTIVE USE (0.7.112, batch I2; docs/studies/spec-materials.md 2.7) (lines 3271-3326)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3308 | 1 | `public boolean captive(Good g)` | Whether it uses what it makes of a good first, itself (CAPTIVE USE): false here; sectors.ProcessingSector says yes for every good it both makes and uses. |
+| 3317 | 9 | `public double captiveUnits(Good g)` | The units of a captive good it makes and uses itself this month: its need at the operating rate, for the works that will run (THE ORDER: inputToMake()), as far as what it makes at the rate covers it - for a flow good ... |
+
+### THE ORDER (WN3, 2026-10-29; the ensemble's negative GDP in months (lines 3327-3681)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3424 | 1 | `protected boolean ordersForWhatItMakes()` | Whether the sector orders its inputs for what it will make (THE ORDER): yes here; sectors.Refining says no, its crude is the run's (THE RUN, 0.7.105). |
+| 3427 | 16 | `public void planOrders()` | Decides the month's order shares, before the flow goods are made (Markets.clearMonth(), after the fleets): nothing to decide for a sector that makes no traded good (THE ORDER; a flow good's since FL1). |
+| 3445 | 5 | `public void endOrders()` | The market pass is over: nothing is planned, every share reads 1 again (THE ORDER). |
+| 3452 | 14 | `public double orderShare(Good g)` | What share of a traded good's nameplate this month's inputs are ordered for (THE ORDER; a flow good's is FL1's): 1 for a good that is not traded and outside the market pass. |
+| 3473 | 11 | `private double forecastOrder(Good g)` | What the month will make of a stockable good over its nameplate past what the sector keeps for its own works (THE ORDER): the plan for the home market and the ship's line, asked at the stock it expects to hold after t... |
+| 3492 | 34 | `private double shareAboveFloors(Good g, double fraction)` | The order share at which the buildings that make a stockable good, each at the greater of the share and its committed floor (buildingOrder(), committedFloor()), make `fraction` of the good's nameplate (CPB2): exactly ... |
+| 3532 | 11 | `private double forecastFlow(Good g)` | The share of a traded flow good's nameplate at the rate this month's inputs are ordered for (THE ORDER, FL1): what its own works need of it and what the home market demanded at the last strike are made at any price; o... |
+| 3550 | 18 | `private double exportsAtNoLoss(Good g, double spare)` | Of `spare` units of a flow good that can only be exported, the most that sells at no loss on the world's band (THE ORDER, FL1): all of it when nothing bought makes it, or when the whole of it nets over the inputs' cos... |
+| 3575 | 3 | `public double flowCostPerUnit(Good g)` | What the inputs of a unit of a flow good cost the sector (THE ORDER, FL1): over its standing buildings that make it, nameplate-weighted, each one's traded inputs at inputCost() less what its other traded goods are wor... |
+| 3580 | 12 | `private double unitCost(Good g, Set<Good> costing)` | What the inputs of a unit of any good cost the sector, flow or stockable (flowCostPerUnit()'s body); `costing` holds the goods being costed up the chain, so one that loops back is priced as an input is. |
+| 3594 | 14 | `private double inputsLessCoProducts(BuildingsTemplate t, Good made, Set<Good> costing)` | What a month of one building's traded inputs costs here, less its other traded goods at their worth, to no less than nothing (flowCostPerUnit()). |
+| 3619 | 9 | `private double inputCost(Good i, Set<Good> costing)` | What a unit of an input costs the works that use it, for flowCostPerUnit() (THE ORDER, FL1): inputPrice() for one the sector buys; for one it makes itself (captive) and makes enough of to cover its own works' need, wh... |
+| 3630 | 7 | `private double coProductValue(Good o)` | What a unit of a good a building makes beside the one asked about is worth: its net export price where the world will buy it, else its price here; 0 if neither is a number. |
+| 3639 | 10 | `private double whenHolding(Good g, double units, java.util.function.DoubleSupplier ask)` | Asks what the sector's own rules say with some units of a good in the shed instead of what is there, and puts the shed back (THE ORDER). |
+| 3651 | 15 | `private double buildingOrder(BuildingsTemplate t)` | The share of its nameplate a building's inputs are ordered for: the greatest of its traded goods' order shares, flow or stockable; 1 for one that makes an untraded good, or nothing (THE ORDER, FL1). |
+| 3668 | 10 | `private double committedFloor(BuildingsTemplate t)` | The least share of its nameplate a building runs at whatever is ordered (CPB1): what its part of a feed committed outside the goods market needs, to no more than 1; 0 for one that uses none. |
+| 3680 | 1 | `protected double committedInput(Good g)` | Feed committed before the goods orders, which the month's run must use (CPB1); none unless a sector buys outside the market. |
+
+### THE GROUND'S SHARE OF THE ORDER (NG1, 2026-11-20) (lines 3682-3881)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3706 | 1 | `protected double groundShare(BuildingsTemplate t)` | The share of a building's run at the rate that its ground lets it make this month (NG1): exactly 1 for a building no ground limits and wherever the ground holds its whole ask, so the order is what it was to the bit; u... |
+| 3712 | 8 | `protected double inputToMake(Good g)` | Units of an input its buildings use a month at the shares they run at (THE ORDER), each held to what its ground gives it (groundShare(), NG1): getInputAtCapacity(), to the bit, while every share is 1 and outside the m... |
+| 3726 | 9 | `private double captiveAtFullRun(Good g)` | Units of a captive good its own works would take at their full rate (THE ORDER): captiveUnits() outside the market pass. |
+| 3743 | 15 | `public void shipUnsoldFlow(Good g, GoodsMarket market)` | A flow good's unsold units, once the market has taken what it wants: shipped abroad at the export price, or lost. |
+| 3760 | 1 | `public void shipUnsoldStock(Good g, GoodsMarket market)` | A processor's wholesale shed can ship after local fills (BF1); other sectors keep their own selling rules. |
+| 3767 | 10 | `public void writeOffUnhousedStock()` | Losing a warehouse loses the stock it cannot hold before any sale or credit reading can use it (BF1). |
+| 3779 | 1 | `public double retirementRecovery()` | Liquid stock carried after the last plant closes: a recovery floor at realizable proceeds, otherwise zero. |
+| 3795 | 40 | `public void produceStock(Good g, GoodsMarket market)` | Runs the month's production of a stockable good into the warehouse, after the market has taken what it wanted from last month's stock. |
+| 3837 | 3 | `protected void sellDirectOutput(Good g, GoodsMarket market, double units)` | Sells the line's surplus. |
+| 3842 | 4 | `protected void takeFromStock(Good g, double units)` | Units of a good taken out of stock by a local sale or an export from the shed. |
+| 3848 | 5 | `void receiveInput(Good g, double units)` | Units of an input received into the pantry, or consumed on the spot. |
+| 3855 | 6 | `protected final void usePantry(Good g, double units)` | A pantry good used up this month, recorded for next month's cover. |
+| 3868 | 1 | `public void sellOwnPriced(Markets markets, Game game)` | The seller-priced goods, sold: the shops to the households, the landlords' doors to the families. |
+| 3871 | 1 | `public void endOfMonth(Game game)` | After every market has cleared and every good is made: anything the month still needs. |
+| 3880 | 1 | `protected void afterClearing(Good g)` | One good's market has cleared this month and its fills are booked (0.7.85; Markets.clear()), told to each of its buyers: a sector whose month reads what it bought says so here - the refiners' run, held to their crude ... |
+
+### PLANNING - the decision to grow, and to shrink (lines 3882-4002)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3899 | 3 | `public BusinessInvestment.Decision plan(BusinessInvestment plans, Game game)` | What this sector would like to build this month, or why not. |
+| 3907 | 5 | `public Good planningGood()` | The good the generic planner sizes the sector by: its first stockable output, else its first output. |
+| 3920 | 1 | `public double firstPlantUtilisation()` | The share of a plant's nameplate the city has to be taking, a month, before this sector sinks its FIRST plant. |
+| 3929 | 1 | `public double visibleDemandOver(double months, EconomyManager economy)` | What the sector can SEE it will sell a month over the next `months`, when its customers' orders are on a book - a ceiling on the demand the maker's rule reads off the trend, since a trend read off a boom runs on after... |
+| 3932 | 3 | `public final double estimatedMonthlyProfit(BuildingsTemplate t, BusinessInvestment plans)` | What one of its templates would clear a month, for the interest test. |
+| 3940 | 17 | `public double estimatedMonthlyProfit(NewUnit t, BusinessInvestment plans)` | ...for one new building already resolved (QN1; NewUnit): every sector's estimate reads its figures off the unit and its identity off the template the unit is of. |
+| 3972 | 7 | `public double[] retirementDemandAndCapacity(Game game)` | The demand the spare-capacity rule measures the sector against, and the capacity it measures. |
+| 3981 | 4 | `public double unitsOf(BuildingsTemplate t)` | What one of these contributes to the measure the sector is judged on. |
+| 3987 | 1 | `public boolean mayRetire(BuildingsTemplate t)` | Whether a holding of this template may be sold back this month. |
+| 3993 | 1 | `public boolean bleedsWhileLent()` | Whether this sector sells plant it is using while a lender still covers its losses (AQ1): a price taker with no demand reading, whose only shrink is the distress rule (BusinessInvestment.BLEED_MONTHS). |
+| 3996 | 1 | `public long limitSpareRetirement(BuildingsTemplate t, long quantity, double keepAtLeast)` | Limit a spare-capacity sale to what still leaves keepAtLeast units usable; additive sectors need no further limit. |
+| 3999 | 3 | `public String noRetirementReason(boolean distress)` | Why nothing could be sold, when mayRetire() refused everything. |
+
+### THE SCREENS (lines 4003-4225)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4012 | 11 | **type** `public record Line(Kind kind, String label, String value, Tone tone)` | One line of the operations page. |
+| 4013 | 1 | **type** `public enum Kind` _(in Sector.Line)_ |  |
+| 4014 | 1 | **type** `public enum Tone` _(in Sector.Line)_ |  |
+| 4016 | 1 | `public static Line head(String text)` _(in Sector.Line)_ |  |
+| 4017 | 1 | `public static Line note(String text)` _(in Sector.Line)_ |  |
+| 4019 | 1 | `public static Line note(String shown, String whole)` _(in Sector.Line)_ | A note in two layers (0.7.21): `shown` on the page, and `whole` one click away, behind an (i). |
+| 4020 | 1 | `public static Line of(String label, String value)` _(in Sector.Line)_ |  |
+| 4021 | 1 | `public static Line of(String label, String value, Tone tone)` _(in Sector.Line)_ |  |
+| 4030 | 1 | `public SectorStatements.Format statementFormat()` | What kind of business its formal statements read as (0.7.74; the project's spec-sector-statements.md, 4.6): the words of its revenue, its cost of sales and its middle line - the bottom three are the model's in every f... |
+| 4033 | 9 | `public String inputLabel()` | What the sector's direct-cost line is called on its income statement. |
+| 4059 | 1 | `public Map<String, Double> otherRevenueParts()` | The parts of this sector's revenue that are not the sale of a good, named, for the lines inside an opened Revenue. |
+| 4062 | 1 | `public Map<String, Double> servicesSoldParts()` | ...and the exports that are not a good, by name (FC2; Statement.servicesSold): the builders' work sold abroad. |
+| 4072 | 1 | `public Map<String, Double> otherInputParts()` | ...and the same for the cost line: what is in Inputs that is not a good. |
+| 4092 | 5 | `protected Map<String, Double> nameOtherRevenue()` | ...and where those names come from, read off the sector's LIVE fields at the moment the month is struck. |
+| 4113 | 5 | `public List<Line> operations(Game game)` | The operations page, as data: the factory's block (plantLines()) when the sector keeps it, then the sector's own lines (ownLines()). |
+| 4120 | 1 | `public boolean hasPlantBlock()` | Whether its operations page opens on the factory's block (0.7.30): false for the seven sectors whose page is all their own. |
+| 4123 | 1 | `public List<Line> ownLines(Game game)` | The sector's own lines, after the factory's block (0.7.30): none unless it says more. |
+| 4131 | 94 | `public List<Line> plantLines(Game game)` | The factory's block (0.7.30; operations() itself until then): the plant - staffed, running at, and the five ratios - then a block per good it makes and per good it buys. |
+
+### SAVE AND RESTORE (lines 4226-4447)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4231 | 57 | `public SectorState toState()` | Everything about this sector that a save has to carry. |
+| 4289 | 67 | `public void restore(SectorState s)` |  |
+| 4358 | 18 | `public void restoreBills(SectorState s)` | The bills of the month back, over whatever a rebuild re-derived. |
+| 4378 | 1 | `private static Double ratioToSave(double r)` | A ratio for the save: itself, or null when it is not a number - Gson writes no NaN, and the load then derives it. |
+| 4381 | 1 | `protected void saveExtras(Map<String, Double> extras)` | A sector with state of its own - a price it walks, an order book - writes it here by name. |
+| 4384 | 1 | `protected void restoreExtras(Map<String, Double> extras)` | ...and reads it back. |
+| 4387 | 28 | `public void reset()` | Everything back to a founding sector. |
+| 4416 | 1 | `protected void resetExtras()` |  |
+| 4422 | 20 | `public void redenominate(double scale)` | Its money in the new unit. |
+| 4443 | 1 | `protected void redenominateExtras(double scale)` |  |
+| 4446 | 1 | `public String toString()` |  |
+
+### THE POWER, FOR THE PICTOGRAMS (0.7.141, batch I11; IndustryView) (lines 4448-4476)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 4461 | 4 | `public double getPowerMade()` | kW its buildings make themselves, at nameplate: every billed building's gen (BuildingsTemplate.getGen()) - nothing until a works makes power. |
+| 4467 | 4 | `public double getPowerDrawn()` | ...and kW they draw, at nameplate, before what they make: every billed building's whole draw. |
+| 4473 | 3 | `public double getGridDraw()` | ...and kW they draw from the grid past what they make: the net draw its bill is struck on (setElectricityConsumption()), beside the surplus it sells (getPowerSurplus()). |
 

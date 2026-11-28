@@ -781,6 +781,24 @@ public final class Retail extends Sector {
         return rate > 0 ? rate : 1;
     }
 
+    /**
+     * A SHOP THE TOWN GOES SHORT OF IS STAFFED AT THE FILL (HG1, {next}; Sector.staffedAtTheFill()): a shop (a
+     * building with coverage; never a station) while the shops standing and on site hand over fewer baskets, at the
+     * rate plan() weighs them at, than the households need (HouseholdBalance.groceriesNeeded(), a basket a head).
+     * Jerus's 1900 city was held out of every shop by the spare-worker test for 79 months, 97.5% hungry.
+     */
+    @Override
+    protected boolean staffedAtTheFill(BuildingsTemplate t) {
+        return t != null && t.getCoverage() > 0 && townGoesShort();
+    }
+
+    /** Whether the shops standing and on site, at the rate plan() weighs them at, hand over fewer baskets than the households need (HG1). */
+    public boolean townGoesShort() {
+        ham.citybuildersim.HouseholdBalance households = game == null ? null : game.getHouseholdBalance();
+        double needed = households != null ? households.groceriesNeeded() : population;
+        return needed > 0 && (getStoreCoverage() + storeCoverageOnSite()) * handOverRate() < needed;
+    }
+
     /*
      * THE INVESTMENT TEST COUNTS THE STAFF (0.7.106, batch P5; Jerus's A18,
      * 2026-10-10, "all rec"). What a shop or a station would clear a month -

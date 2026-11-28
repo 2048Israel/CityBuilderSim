@@ -1,4 +1,4 @@
-# PriceIndex.java - 796 lines · 40 methods · 15 constants · model
+# PriceIndex.java - 835 lines · 42 methods · 15 constants · model
 
 `ham/citybuildersim/PriceIndex.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -37,8 +37,8 @@
 |---:|---|
 | 60 | WHAT IS IN THE BASKET (0.7.43; the project's spec-inflation.md 2.8) |
 | 179 | THE HIGH AND LOW WATER MARKS |
-| 328 | THE BASKET IS CHAINED (0.7.43) |
-| 584 | · carrying |
+| 343 | THE BASKET IS CHAINED (0.7.43) |
+| 623 | · carrying |
 
 ## Constants
 
@@ -56,9 +56,9 @@
 | 111 | `PriceIndex.REBASE_MONTHS` | `120` | Months between one basket and the next: ten years. |
 | 115 | `PriceIndex.LUXURY_WEIGHT_CAP` | `.15` | Historical display API only; no expenditure cap is applied. |
 | 154 | `PriceIndex.RENT_CAP` | `1 / 3.0` | The most of the basket rent may be in the level the currency's parity is struck from: a third, about its share in real consumer price indexes (Jerus, 2026-10-21, XR1, "Basket, rent capped"). |
-| 587 | `PriceIndex.SLOTS_BEFORE_CHAIN` | `5 + WINDOW + 5` | The slots a save carried before the chained basket (0.7.43): the two-component basket, the ring, the marks and the settling count. |
-| 590 | `PriceIndex.CHAIN_MARKER` | `743` | What follows them in a save from 0.7.43 on, so an older array - which ends there - is told apart from one that goes on. |
-| 593 | `PriceIndex.CHAIN_TAIL_0743` | `4 + COMPONENTS * 3 + FEE_LINES * 3 + 1 + WEIGHT_MONTHS *(COMPONENTS + FEE_LINES)` | The chained basket's slots behind the marker as 0.7.43 wrote them: the link, its month, the pending flag, the bases, weights and last prices, the fee lines', and the trailing year. |
+| 626 | `PriceIndex.SLOTS_BEFORE_CHAIN` | `5 + WINDOW + 5` | The slots a save carried before the chained basket (0.7.43): the two-component basket, the ring, the marks and the settling count. |
+| 629 | `PriceIndex.CHAIN_MARKER` | `743` | What follows them in a save from 0.7.43 on, so an older array - which ends there - is told apart from one that goes on. |
+| 632 | `PriceIndex.CHAIN_TAIL_0743` | `4 + COMPONENTS * 3 + FEE_LINES * 3 + 1 + WEIGHT_MONTHS *(COMPONENTS + FEE_LINES)` | The chained basket's slots behind the marker as 0.7.43 wrote them: the link, its month, the pending flag, the bases, weights and last prices, the fee lines', and the trailing year. |
 
 ## Fields (state)
 
@@ -93,62 +93,64 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 33 | 764 | **type** `public class PriceIndex` | What a month costs a household, against what it cost at founding. |
+| 33 | 803 | **type** `public class PriceIndex` | What a month costs a household, against what it cost at founding. |
 
 ### WHAT IS IN THE BASKET (0.7.43; the project's spec-inflation.md 2.8) (lines 60-178)
 
-### THE HIGH AND LOW WATER MARKS (lines 179-327)
+### THE HIGH AND LOW WATER MARKS (lines 179-342)
 
 | line | len | member | says |
 |---:|---:|---|---|
 | 217 | 6 | `public void takeMonth(double shelfPrice, double rentPrice, double foodSpend, double rentSpend, int month)` | Prices the basket for the month: groceries and rent alone, the two components the index had until 0.7.43 - meals, luxury and services unpriced and unspent on. |
-| 236 | 91 | `public void takeMonth(double[] prices, double[] spends, double[] fees, double[] feeSpends, int month)` | Prices the basket for the month. |
+| 236 | 106 | `public void takeMonth(double[] prices, double[] spends, double[] fees, double[] feeSpends, int month)` | Prices the basket for the month. |
 
-### THE BASKET IS CHAINED (0.7.43) (lines 328-583)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 343 | 11 | `private double levelOnThisBasket()` | The level this month on the basket in force: the link times each component's price over its base, weighted. |
-| 361 | 10 | `private double[] cappedWeights()` | The weights of the basket in force with rent held to RENT_CAP (XR1): rent at the cap and every other weight scaled so the components add to what they did - when rent weighs more than the cap and the others weigh somet... |
-| 373 | 10 | `private double cappedLevelOnThisBasket()` | The level this month on the basket in force with rent capped: parityLink times each component's relative, weighted by cappedWeights() - parityLink with no weights yet. |
-| 385 | 9 | `private double feeLevel()` | The services price: each fee line's price over its price at the link, weighted by its share of the fees then - 1 at the link, and with no fees, for ever. |
-| 400 | 68 | `private void relink(int month, double level)` | Strikes a new basket: the weights from the trailing year's spending (this month's alone with no year yet), each component based at its price now - and the link, the level the basket opens at. |
-| 470 | 1 | `public double getPeak()` | The dearest the basket has ever been, against founding. |
-| 472 | 1 | `public int getPeakMonth()` | ...and the month it happened. |
-| 474 | 1 | `public double getTrough()` | The cheapest it has ever been. |
-| 475 | 1 | `public int getTroughMonth()` |  |
-| 484 | 1 | `public double swing()` | Peak over trough - how far the level has travelled, in one number. |
-| 487 | 1 | `public double getIndex()` | The basket now, against the basket at founding. |
-| 489 | 1 | `public boolean isBased()` |  |
-| 492 | 1 | `public double getFoodWeight()` | How the basket is split: groceries and rent, as the basket in force weighs them - fixed at a link, re-weighted only at the next (0.7.43; never until then). |
-| 493 | 1 | `public double getRentWeight()` |  |
-| 496 | 1 | `public double getWeight(int component)` | One component's weight in the basket in force (COMPONENTS order). |
-| 499 | 1 | `public double getRelative(int component)` | One component's price this month over its price at the link: 1 at the link, and for a component not in the basket. |
-| 502 | 1 | `public double getBase(int component)` | One component's price at the link (the services' fee index: 1). |
-| 505 | 1 | `public double getComponentPrice(int component)` | The price used in the current relative, for comparisons at a common physical basket. |
-| 508 | 1 | `public double getLink()` | The level the basket in force was linked at: 1 for a city's first basket. |
-| 517 | 1 | `public double getParityLevel()` | The currency's parity level (XR1): the basket with rent held to RENT_CAP, chained and priced as the index is - the level the capped basket was linked at times each component's price over its base, weighted by getParit... |
-| 520 | 1 | `public double getParityWeight(int component)` | One component's weight in the basket parity is struck from: the basket in force with rent held to RENT_CAP (COMPONENTS order; they add to what the basket's do). |
-| 523 | 1 | `public boolean isRentCapped()` | True when the basket in force has rent over RENT_CAP, so the level parity is struck from holds it down to the cap (XR1). |
-| 526 | 1 | `public int getLinkedMonth()` | The month the basket in force was linked: the base month, or the last chain-link. |
-| 529 | 1 | `public double getFeeShare(int line)` | One fee line's share of the services price (FEE_LINES order). |
-| 532 | 1 | `public double getFeeBase(int line)` | One fee's price at the link, for comparisons with the same quantities across baskets. |
-| 535 | 1 | `public double getFeePrice(int line)` | One fee's latest price used by the index. |
-| 538 | 1 | `public boolean isLinkPending()` | True on a save from before 0.7.43 until its first month links the current basket. |
-| 546 | 1 | `public double getComponentLevel(int component)` | One component's own price level against founding, chained across every link (0.7.45; COMPONENTS order): its level at the link times its relative - so a basket struck again does not reset it to 1, as the relative does. |
-| 549 | 1 | `public boolean isLuxuryCapped()` | Historical display API: actual reference expenditures are never capped. |
-| 560 | 6 | `public double inflation()` | Inflation over the last twelve months. |
-| 568 | 1 | `public boolean hasRate()` | True once there is a year of readings and the rate means anything. |
-| 578 | 5 | `public int monthsUntilRate()` | How many more months before hasRate() (0.7.20): the settling months still to come, then the readings after the basket is fixed - for the header, which says when the first rate comes rather than printing a placeholder ... |
-
-### carrying (lines 584-796)
+### THE BASKET IS CHAINED (0.7.43) (lines 343-622)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 595 | 50 | `public double[] toSaveArray()` |  |
-| 646 | 46 | `public void restore(double[] saved)` |  |
-| 694 | 38 | `private void restoreChain(double[] saved)` | The chained basket behind the marker, or a link pending on an older save; the array is read whole or not at all. |
-| 734 | 17 | `private void clearChain()` | Nothing linked, nothing spent: a basket still to be struck. |
-| 752 | 12 | `public void reset()` |  |
-| 778 | 17 | `public void redenominate(double scale)` | The basket's base prices, in the new unit. |
+| 363 | 7 | `static boolean goodsBought(double[] prices, double[] spends)` | Whether the month bought a good beside groceries and rent at a price (HG1): meals, luxury, new cars, petrol, lamp oil or home coal - the half of a basing that carries prices from outside the rent-wage loop when the ci... |
+| 376 | 5 | `private boolean groceriesJoin()` | Whether groceries join the basket this month (HG1): it was struck with none in its weights, and now every month of the trailing year (WEIGHT_MONTHS) bought them at a price - so they come in at a whole year's weight, l... |
+| 382 | 11 | `private double levelOnThisBasket()` |  |
+| 400 | 10 | `private double[] cappedWeights()` | The weights of the basket in force with rent held to RENT_CAP (XR1): rent at the cap and every other weight scaled so the components add to what they did - when rent weighs more than the cap and the others weigh somet... |
+| 412 | 10 | `private double cappedLevelOnThisBasket()` | The level this month on the basket in force with rent capped: parityLink times each component's relative, weighted by cappedWeights() - parityLink with no weights yet. |
+| 424 | 9 | `private double feeLevel()` | The services price: each fee line's price over its price at the link, weighted by its share of the fees then - 1 at the link, and with no fees, for ever. |
+| 439 | 68 | `private void relink(int month, double level)` | Strikes a new basket: the weights from the trailing year's spending (this month's alone with no year yet), each component based at its price now - and the link, the level the basket opens at. |
+| 509 | 1 | `public double getPeak()` | The dearest the basket has ever been, against founding. |
+| 511 | 1 | `public int getPeakMonth()` | ...and the month it happened. |
+| 513 | 1 | `public double getTrough()` | The cheapest it has ever been. |
+| 514 | 1 | `public int getTroughMonth()` |  |
+| 523 | 1 | `public double swing()` | Peak over trough - how far the level has travelled, in one number. |
+| 526 | 1 | `public double getIndex()` | The basket now, against the basket at founding. |
+| 528 | 1 | `public boolean isBased()` |  |
+| 531 | 1 | `public double getFoodWeight()` | How the basket is split: groceries and rent, as the basket in force weighs them - fixed at a link, re-weighted only at the next (0.7.43; never until then). |
+| 532 | 1 | `public double getRentWeight()` |  |
+| 535 | 1 | `public double getWeight(int component)` | One component's weight in the basket in force (COMPONENTS order). |
+| 538 | 1 | `public double getRelative(int component)` | One component's price this month over its price at the link: 1 at the link, and for a component not in the basket. |
+| 541 | 1 | `public double getBase(int component)` | One component's price at the link (the services' fee index: 1). |
+| 544 | 1 | `public double getComponentPrice(int component)` | The price used in the current relative, for comparisons at a common physical basket. |
+| 547 | 1 | `public double getLink()` | The level the basket in force was linked at: 1 for a city's first basket. |
+| 556 | 1 | `public double getParityLevel()` | The currency's parity level (XR1): the basket with rent held to RENT_CAP, chained and priced as the index is - the level the capped basket was linked at times each component's price over its base, weighted by getParit... |
+| 559 | 1 | `public double getParityWeight(int component)` | One component's weight in the basket parity is struck from: the basket in force with rent held to RENT_CAP (COMPONENTS order; they add to what the basket's do). |
+| 562 | 1 | `public boolean isRentCapped()` | True when the basket in force has rent over RENT_CAP, so the level parity is struck from holds it down to the cap (XR1). |
+| 565 | 1 | `public int getLinkedMonth()` | The month the basket in force was linked: the base month, or the last chain-link. |
+| 568 | 1 | `public double getFeeShare(int line)` | One fee line's share of the services price (FEE_LINES order). |
+| 571 | 1 | `public double getFeeBase(int line)` | One fee's price at the link, for comparisons with the same quantities across baskets. |
+| 574 | 1 | `public double getFeePrice(int line)` | One fee's latest price used by the index. |
+| 577 | 1 | `public boolean isLinkPending()` | True on a save from before 0.7.43 until its first month links the current basket. |
+| 585 | 1 | `public double getComponentLevel(int component)` | One component's own price level against founding, chained across every link (0.7.45; COMPONENTS order): its level at the link times its relative - so a basket struck again does not reset it to 1, as the relative does. |
+| 588 | 1 | `public boolean isLuxuryCapped()` | Historical display API: actual reference expenditures are never capped. |
+| 599 | 6 | `public double inflation()` | Inflation over the last twelve months. |
+| 607 | 1 | `public boolean hasRate()` | True once there is a year of readings and the rate means anything. |
+| 617 | 5 | `public int monthsUntilRate()` | How many more months before hasRate() (0.7.20): the settling months still to come, then the readings after the basket is fixed - for the header, which says when the first rate comes rather than printing a placeholder ... |
+
+### carrying (lines 623-835)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 634 | 50 | `public double[] toSaveArray()` |  |
+| 685 | 46 | `public void restore(double[] saved)` |  |
+| 733 | 38 | `private void restoreChain(double[] saved)` | The chained basket behind the marker, or a link pending on an older save; the array is read whole or not at all. |
+| 773 | 17 | `private void clearChain()` | Nothing linked, nothing spent: a basket still to be struck. |
+| 791 | 12 | `public void reset()` |  |
+| 817 | 17 | `public void redenominate(double scale)` | The basket's base prices, in the new unit. |
 

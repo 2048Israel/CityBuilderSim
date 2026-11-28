@@ -48,7 +48,9 @@ public final class CityNeeds {
         /** Whether the city still believes the central bank (0.7.45): the anchor's row. */
         PRICES,
         /** The through trips with no highway to take them (FR7, 2026-10-18): the Elevated Highway's need, beside ROADS' streets. */
-        HIGHWAYS
+        HIGHWAYS,
+        /** The people going short of food (HG1): the households' hunger, both halves. */
+        FOOD
     }
 
     /** Where a need's fix is: the screen its row opens. */
@@ -56,7 +58,11 @@ public final class CityNeeds {
         UTILITIES, ROADS, HEALTHCARE, EDUCATION, SAFETY, HOMES,
         LAND, BUILDERS, FINANCES, BANK, PENSIONS, WAGES, TAXES,
         /** Policy › Money › The policy rate (0.7.45). */
-        MONEY
+        MONEY,
+        /** Build › Shops (HG1): FOOD when the shelves left the people short. */
+        SHOPS,
+        /** Policy › Promises › Food (HG1): FOOD when the people could not pay for a basket. */
+        FOOD_PROMISE
     }
 
     /**
@@ -235,6 +241,13 @@ public final class CityNeeds {
 
     /** The caught, not held. */
     public static final double CELLS_YELLOW = 1, CELLS_RED = 25;
+
+    /**
+     * The share of the people going short of food (HG1, HouseholdBalance.getHungerRate()): listed from a developed
+     * country's very-low-food-security share (USDA ERS, 4.1% of US households in 2019), red from the famine line's
+     * household share (IPC Phase 5: a fifth of households with an extreme lack of food).
+     */
+    public static final double HUNGER_YELLOW = .04, HUNGER_RED = .20;
 
     /**
      * The sick rate, the share of the workforce off sick (0.7.28): the left
@@ -619,6 +632,9 @@ public final class CityNeeds {
                 wanting, .5, 25, Kind.HOMES, Go.HOMES, CareType.NONE, EducationType.NONE, 0, 0);
         onTheWay(game, w, out, pace, t -> t.getCategory() == BuildingType.RESIDENTIAL);
 
+        /* --------------------------------- the food --------------------------------- */
+        out.add(food(game));
+
         /* -------------------------------- the ground -------------------------------- */
         out.add(ground(game, w));
 
@@ -755,6 +771,28 @@ public final class CityNeeds {
         }
         return new Need("PRICES", reading, level, 0, Kind.PRICES, Go.MONEY, CareType.NONE, EducationType.NONE,
                 trust, 1, TRUST_RED, false, 0, Double.NaN, step, 0);
+    }
+
+    /**
+     * FOOD (HG1, {next}, 2026-11-28): the share of the people going short of food (HouseholdBalance.getHungerRate())
+     * against HUNGER_YELLOW and HUNGER_RED. Its door is the larger half: the shops (Build › Shops) when the shelves
+     * left the people short, the food promise (Policy › Promises › Food) when they could not pay for a basket.
+     * WHY: Jerus's 1900 city went 97.5% hungry for want of a shop, and the header said "Nothing needs you": no row
+     * read the hunger, and Build's Shops card took the HOMES need (BuildScreen.goOf()).
+     */
+    public static Need food(Game game) {
+        HouseholdBalance households = game.getHouseholdBalance();
+        double hungry = households == null ? 0 : households.getHungerRate();
+        double priced = households == null ? 0 : households.getHungerPricedOut();
+        double shelves = households == null ? 0 : households.getHungerShortOfStock();
+        boolean shops = shelves >= priced;
+        String reading = hungry < .005 ? "everybody fed"
+                : String.format("%.0f%% go hungry, ", hungry * 100)
+                  + (shops ? "the shops cannot serve them" : "they cannot pay for a basket");
+        List<Need> one = new ArrayList<>(1);
+        over(one, "FOOD", reading, hungry, HUNGER_YELLOW, HUNGER_RED,
+                Kind.FOOD, shops ? Go.SHOPS : Go.FOOD_PROMISE, CareType.NONE, EducationType.NONE, 0, 0);
+        return one.get(0);
     }
 
     /**

@@ -594,6 +594,49 @@ public abstract class Sector {
      * keep: at 40% three seeds of 16 shrank by a third. Counting the draw asks it.
      */
 
+    /* ----- A BUILDING THE TOWN GOES WITHOUT IS STAFFED AT THE FILL (HG1, {next}, 2026-11-28) -----
+     * For a building its sector says so of (staffedAtTheFill(): a shop, while the shops hand over fewer baskets than the
+     * households need), the gate also reads the share of the building's posts the city's fill would staff once
+     * they join the posts already offered (shareAtTheFill(): PopulationManager.fillByBand() over the posts with
+     * the order's added, each band's placed workers over its posts), and passes on the larger of the two shares.
+     * The band test (a band nobody can fill) is untouched, and so is the 80%.
+     *
+     * WHY. Jerus's city (0.9.219, founded the 1900 way, docs/queue/HG1-notes.md) had no shop in 79 months and went
+     * 97.5% hungry. Its posts outran its people from the founding (47 for 15 at month 2), the 1900 arrival mix
+     * holds few diplomas, and the diploma band had 144 posts for 129 workers: its spare was -14.7 every month, and
+     * every shop format has diploma posts, so no shop ever passed (62% for a Convenience Store with a year's draw).
+     * But the fill is one rate a tier for the whole city (updateJobFillRate()): a shop built there is staffed as
+     * every post of its tiers is, at about 94%, its workers taken from the other employers' share of the band. The
+     * spare-worker test treats the posts already standing as owning the band, and for the one seller of the
+     * households' food that left the town with no shop for ever. A new firm in a tight market hires from other
+     * firms (job-to-job moves are about two US hires in five, more when unemployment is low; the notes' sources),
+     * and a grocer with hundreds of customers and no rival is among the first businesses a settlement keeps.
+     */
+
+    /**
+     * Whether the gate also reads the share the city's fill would staff a building of `t` at (HG1; above):
+     * false for every sector but the shops while the town goes short of them (Retail overrides).
+     */
+    protected boolean staffedAtTheFill(BuildingsTemplate t) { return false; }
+
+    /**
+     * The share of an order's posts the city's fill would staff once they join the posts offered (HG1): each band's
+     * workers placed by PopulationManager.fillByBand() over the posts with the order's added, the band's fill, times
+     * the order's posts in the band, over all its posts.
+     */
+    static double shareAtTheFill(PopulationManager people, double[] posts, double[] wanted, double total) {
+        if (people == null || posts == null || !(total > 0)) return 0;
+        double[] with = posts.clone();
+        for (int b = 0; b < with.length && b < wanted.length; b++) with[b] += wanted[b];
+        PopulationManager.BandFill fill = people.fillByBand(with);
+        double filled = 0;
+        for (int b = 0; b < wanted.length && b < with.length; b++) {
+            if (!(wanted[b] > 0) || !(with[b] > 0)) continue;
+            filled += wanted[b] * Math.min(1, Math.max(0, fill.placed[b]) / with[b]);
+        }
+        return filled / total;
+    }
+
     /** The staffing test every planner that builds posts asks before ordering one (0.7.18); see above. */
     public Staffing staffing(BuildingsTemplate t) {
         return staffing(newUnit(t), 1, true, false);
@@ -777,6 +820,8 @@ public abstract class Sector {
         // ...and a share within rounding of nothing is nothing (SHARE_ROUNDING).
         double share = fillable / total;
         if (fromDrawn > 0) share = Math.round(share / DRAWN_SHARE_GRID) * DRAWN_SHARE_GRID;
+        // ...or, for a building the town goes without (HG1, staffedAtTheFill()), the share the city's fill would staff it at.
+        if (staffedAtTheFill(t)) share = Math.max(share, shareAtTheFill(people, posts, wanted, total));
         if (share <= SHARE_ROUNDING) share = 0;
         double shareNow = fillableNow / total;
         if (shareNow <= SHARE_ROUNDING) shareNow = 0;

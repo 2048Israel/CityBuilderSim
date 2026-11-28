@@ -575,6 +575,14 @@ final class SummaryScreen {
             case EDUCATION:  return () -> ui.buildScreen.openCategory(BuildAdvice.EDUCATION);
             case SAFETY:     return () -> ui.buildScreen.openCategory(BuildAdvice.SAFETY);
             case HOMES:      return () -> ui.buildScreen.openCategory(BuildAdvice.HOMES);
+            // FOOD (HG1): the shops when the shelves left the people short, the food promise when they could not pay.
+            case SHOPS:      return () -> ui.buildScreen.openCategory(BuildAdvice.SHOPS);
+            case FOOD_PROMISE: return () -> {
+                ui.policyScreen.policyArea = PolicyScreen.PROMISES;
+                ui.policyScreen.policyPage = "Food";
+                ui.policyScreen.dropProposal();
+                ui.policyScreen.showPolicyMenu();
+            };
             case LAND:       return ui.landScreen::showLandMenu;
             case BUILDERS:   return () -> ui.sectorScreen.openSectorBooks(ui.game.getSectors().construction(), "Investors");
             case FINANCES:   return () -> ui.financesScreen.open(null, null, null);

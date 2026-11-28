@@ -1,4 +1,4 @@
-# SummaryScreen.java - 1,547 lines · 33 methods · 8 constants · interface
+# SummaryScreen.java - 1,555 lines · 33 methods · 8 constants · interface
 
 `ham/citybuildersim/ui/SummaryScreen.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -20,7 +20,7 @@
 > model, CityNeeds - the list, its lines and SEATS AGAINST WHO WOULD COME
 > moved there whole - so the Build tab and the chip read the same verdicts.
 
-**Uses:** [CityNeeds](CityNeeds.md) (50), [Kept](Kept.md) (48), [Palette](Palette.md) (30), [CareType](CareType.md) (14), [BuildScreen](BuildScreen.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [BuildAdvice](BuildAdvice.md) (6), [Health](Health.md) (5), [LandManager](LandManager.md) (5), [Crime](Crime.md) (5), [PolicyScreen](PolicyScreen.md) (4), [UserInterface](UserInterface.md) (3), [Money](Money.md) (3), [PopulationManager](PopulationManager.md) (3), [PopulationCohorts](PopulationCohorts.md) (3), [PeopleScreen](PeopleScreen.md) (3), [Healthcare](Healthcare.md) (3), [WageBand](WageBand.md) (3), [EducationType](EducationType.md) (3), [InfrastructureManager](InfrastructureManager.md) (2), [EconomyManager](EconomyManager.md) (2), [BuildingManager](BuildingManager.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [LabourMarket](LabourMarket.md) (2), [Currency](Currency.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Pieces](Pieces.md) (1), [FinancesScreen](FinancesScreen.md) (1), [TradeScreen](TradeScreen.md) (1), [Bank](Bank.md) (1)... and 7 more
+**Uses:** [CityNeeds](CityNeeds.md) (50), [Kept](Kept.md) (48), [Palette](Palette.md) (30), [CareType](CareType.md) (14), [BuildScreen](BuildScreen.md) (7), [BuildAdvice](BuildAdvice.md) (7), [ForeignAccounts](ForeignAccounts.md) (7), [PolicyScreen](PolicyScreen.md) (5), [Health](Health.md) (5), [LandManager](LandManager.md) (5), [Crime](Crime.md) (5), [UserInterface](UserInterface.md) (3), [Money](Money.md) (3), [PopulationManager](PopulationManager.md) (3), [PopulationCohorts](PopulationCohorts.md) (3), [PeopleScreen](PeopleScreen.md) (3), [Healthcare](Healthcare.md) (3), [WageBand](WageBand.md) (3), [EducationType](EducationType.md) (3), [InfrastructureManager](InfrastructureManager.md) (2), [EconomyManager](EconomyManager.md) (2), [BuildingManager](BuildingManager.md) (2), [UtilitiesHandler](UtilitiesHandler.md) (2), [LabourMarket](LabourMarket.md) (2), [Currency](Currency.md) (2), [CapitalFlows](CapitalFlows.md) (2), [Pieces](Pieces.md) (1), [FinancesScreen](FinancesScreen.md) (1), [TradeScreen](TradeScreen.md) (1), [Bank](Bank.md) (1)... and 7 more
 
 **Used by (10):** [BankScreen](BankScreen.md), [BuildScreen](BuildScreen.md), [FinancesScreen](FinancesScreen.md), [GovernmentScreen](GovernmentScreen.md), [InfrastructureScreen](InfrastructureScreen.md), [KeptBench](KeptBench.md), [LandScreen](LandScreen.md), [PeopleScreen](PeopleScreen.md), [ServicesScreen](ServicesScreen.md), [UserInterface](UserInterface.md)
 
@@ -33,24 +33,24 @@
 | 136 | THE LEFT PANEL |
 | 274 | SUMMARY, OR DASHBOARD |
 | 445 | THE SUMMARY IS A PROBLEM LIST NOW. |
-| 720 | · · what needs you |
-| 758 | · · the symptoms |
-| 823 | · ECONOMY |
-| 854 | · BANK |
-| 890 | · TRADE - the city's edge, in one line. |
-| 925 | · THE TWO POCKETS, AND WHICH MONEY EACH IS IN. |
-| 1030 | · TAX |
-| 1052 | · LABOUR - and this is the one Jerus asked for by name. |
-| 1145 | · SCHOOLS |
-| 1183 | · PEOPLE |
-| 1201 | · HEALTH |
-| 1230 | · SAFETY (2026-09-11) |
-| 1260 | · RESOURCES |
-| 1291 | · LAND |
-| 1330 | · SECTOR CASH |
-| 1342 | · BUILDINGS, and this is where the folding pays for itself. |
-| 1420 | · THE VITALS, which are never folded away. |
-| 1452 | · AND WHATEVER IS ACTUALLY WRONG. |
+| 728 | · · what needs you |
+| 766 | · · the symptoms |
+| 831 | · ECONOMY |
+| 862 | · BANK |
+| 898 | · TRADE - the city's edge, in one line. |
+| 933 | · THE TWO POCKETS, AND WHICH MONEY EACH IS IN. |
+| 1038 | · TAX |
+| 1060 | · LABOUR - and this is the one Jerus asked for by name. |
+| 1153 | · SCHOOLS |
+| 1191 | · PEOPLE |
+| 1209 | · HEALTH |
+| 1238 | · SAFETY (2026-09-11) |
+| 1268 | · RESOURCES |
+| 1299 | · LAND |
+| 1338 | · SECTOR CASH |
+| 1350 | · BUILDINGS, and this is where the folding pays for itself. |
+| 1428 | · THE VITALS, which are never folded away. |
+| 1460 | · AND WHATEVER IS ACTUALLY WRONG. |
 
 ## Constants
 
@@ -77,7 +77,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 1511 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - and the problem list that decides what goes red, dr... |
+| 37 | 1519 | **type** `final class SummaryScreen` | The left panel's content: the summary and the dashboard - the vitals, the alert block, the six lines that are always worth a glance or the thirteen folded sections - and the problem list that decides what goes red, dr... |
 | 42 | 1 | `SummaryScreen(UserInterface ui)` |  |
 
 ### HEADROOM, NOT SATISFACTION (lines 44-123)
@@ -112,7 +112,7 @@
 | 420 | 7 | `Label foldLink(String text, Runnable act)` |  |
 | 435 | 9 | `Label panelNote(String text)` | A caption inside an open section - a sub-heading, or a note. |
 
-### THE SUMMARY IS A PROBLEM LIST NOW. (lines 445-1547)
+### THE SUMMARY IS A PROBLEM LIST NOW. (lines 445-1555)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -123,15 +123,15 @@
 | 517 | 6 | `void under(java.util.List<Watch> out, String label, String reading, double value, double yellow, double red, Runnable go)` | Lower is worse. |
 | 539 | 10 | `java.util.List<Watch> watchAll()` | Everything with a lever, measured against its own line: CityNeeds' list (0.7.24; it was measured here), each need with the door to the screen that answers it. |
 | 556 | 7 | `Runnable financesDoor(CityNeeds.Kind kind)` | Where a Finances row goes (0.7.32, the Finances spec's D17), through FinancesScreen.open() so it lands where it says rather than on the last page the tab had open (its B8): TREASURY on the hub, FALLS DUE on the hub's ... |
-| 570 | 39 | `Runnable goTo(CityNeeds.Go go)` | Where a need's row goes: the Build category that answers it, the land office, the builders' books, Finances, the bank, or the Policy page of the promise, the wage floor or the taxes - the doors watchAll() opened befor... |
-| 618 | 92 | `java.util.List<Watch> citySymptoms()` | The readings with no dial of their own. |
-| 711 | 3 | `void panelSummaryRows(VBox body)` |  |
-| 715 | 55 | `private void summaryRows(VBox body)` |  |
-| 772 | 18 | `VBox panelHeading(String text)` | A rule and a caption, dividing the panel's two halves. |
-| 799 | 3 | `void panelDashboardSections(VBox body)` | The thirteen sections, folded the way the player left them. |
-| 803 | 575 | `private void dashboardSections(VBox body)` |  |
-| 1384 | 4 | `void refreshCityPanel()` | The city panel, drawn kept (UP2): the nodes the last draw made, this month's figures set on them (ui.cityPool). |
-| 1389 | 128 | `private void drawCityPanel()` |  |
-| 1530 | 12 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
-| 1544 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
+| 570 | 47 | `Runnable goTo(CityNeeds.Go go)` | Where a need's row goes: the Build category that answers it, the land office, the builders' books, Finances, the bank, or the Policy page of the promise, the wage floor or the taxes - the doors watchAll() opened befor... |
+| 626 | 92 | `java.util.List<Watch> citySymptoms()` | The readings with no dial of their own. |
+| 719 | 3 | `void panelSummaryRows(VBox body)` |  |
+| 723 | 55 | `private void summaryRows(VBox body)` |  |
+| 780 | 18 | `VBox panelHeading(String text)` | A rule and a caption, dividing the panel's two halves. |
+| 807 | 3 | `void panelDashboardSections(VBox body)` | The thirteen sections, folded the way the player left them. |
+| 811 | 575 | `private void dashboardSections(VBox body)` |  |
+| 1392 | 4 | `void refreshCityPanel()` | The city panel, drawn kept (UP2): the nodes the last draw made, this month's figures set on them (ui.cityPool). |
+| 1397 | 128 | `private void drawCityPanel()` |  |
+| 1538 | 12 | `HBox careLine(String label, CareType care, double needed, double[] staffing)` | One coverage row: the percentage, and the two numbers behind it. |
+| 1552 | 3 | `String shorten(String name)` | Keeps building names inside the panel's fixed-width column. |
 
