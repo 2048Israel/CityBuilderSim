@@ -321,3 +321,10 @@ new count leading them, so it never tested a real pre-CBK2 array. Mended:
   bit". The month's figures alone stayed green, which is why the whole
   array is compared. The mutation was restored (`git checkout`), and the
   harness is green again: all passed, 27 s.
+
+## Review verdict (2026-11-28)
+
+REV-CBK2 says SHIP on db748b00e. The orchestrator: the trace does not move
+(all eight md5s are main's), so no ensemble is owed. The dry run waits for
+the box's slot, which HG1's dry run holds; on the go, merge origin/main,
+then the dry run, then ready.
