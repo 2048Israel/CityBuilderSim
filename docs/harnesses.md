@@ -2,7 +2,7 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**265 harness files, 30,868 labelled assertions.** AllChecks runs 265 of them.
+**265 harness files, 30,872 labelled assertions.** AllChecks runs 265 of them.
 
 ## Which harnesses read which class
 
@@ -18826,7 +18826,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2061 next clearing keeps the three actual households
 - **L2075 small scratch-city integrated profile**
 
-## HungerCheck.java - 81 labelled assertions
+## HungerCheck.java - 85 labelled assertions
 
 > A town with no shop goes hungry, the screens say so, and the price index does not wait for the shop (HG1).
 > 
@@ -18842,92 +18842,96 @@ _(this harness does not label its checks through a helper - it prints its findin
 >      gate (another sector's staffing() of the same template) refuses a Convenience Store; while the town goes short of baskets
 > ...
 
-- **L202 1. the trap, caused: a shop the town goes without is staffed at the fill, and no other building is**
-  - L211 fixture: the city is founded the 1900 way and the catalogue has a Convenience Store and a Filling Station
-  - L213 fixture: the Convenience Store is a shop (coverage) and the Filling Station is not
-  - L214 fixture: Retail owns no building, standing or on site
-  - L221 premise: the diploma band is over-posted (its spare is negative: the 1900 founding's own posts outrun its workers)
-  - L222 premise: the ordinary gate refuses the Convenience Store (no unfillable band, but under MIN_STAFFABLE_TO_ORDER of its posts)
-  - L225 the first month the town's fill could staff it came within HUNT_BOUND months of the founding
-  - L228 the town goes short of baskets: the shops it has hand over fewer than the households need
-  - L229 Retail's gate staffs a shop the town goes without at the fill
-  - L230 ...so Retail's gate passes the Convenience Store, with no band nobody could fill
-  - L231 ...at a share of its posts that reaches MIN_STAFFABLE_TO_ORDER
-  - L232 ...which is more than the ordinary reading of the same posts
-  - L236 ...and is the larger of the ordinary share and the share the fill staffs, recomputed from the same posts
-  - L238 ...and a planner's order of one passes the gate
-  - L241 Retail's planner orders a shop (a template with coverage), and the staffing gate holds nothing back
-  - L246 BOTH SIDES: Retail does not stage a Filling Station (coverage 0) at the fill
-  - L248 ...so its share is the ordinary reading's
-  - L249 ...and so is its unfillable band
-  - L260 fixture: standing Convenience Stores cover the households' need (the shops hand over what the households need)
-  - L263 BOTH SIDES: Retail then does not stage a Convenience Store at the fill
-  - L265 ...and its share of the Convenience Store is the ordinary reading again
-  - L266 ...and the planner orders no more shops while they cover the town
-- **L272 2. the trap played: a shop stands, is stocked, sells, and the shelves stop leaving the town hungry**
-  - L277 fixture: the trapped city has no shop and its shelf is empty before the first month played
-  - L283 premise: the diploma band is over-posted and the ordinary gate refuses the Convenience Store, the shops' gate alone passing it
-  - L286 premise: the shelves leave the town short (more than HUNGER_YELLOW of it)
-  - L300 Retail ordered a shop within
-  - L301 a Retail shop stands within
-  - L302 the shelf holds stock within
-  - L303 baskets are sold within
-  - L304 the households short of stock fall under HUNGER_YELLOW within
-  - L305 ...and are still under it at the bound
-  - L306 once the shop stands the town no longer goes short of baskets
-- **L313 3. the screens: hunger reaches FOOD on NEEDS YOU, at the door that mends it**
-  - L319 fixture: no shop stands and the shelf is empty
-  - L320 premise: the town goes hungry at the red line, from the empty shelf (more of it short of stock than priced out)
-  - L324 FOOD reads level 2 (red) at red hunger
-  - L325 ...and its door is the shops (Build > Shops), the shelves being the larger half
-  - L327 NEEDS YOU lists a FOOD row, so the header cannot say \"Nothing needs you\"
-  - L329 ...and measure() lists it among every row, at level 2
-  - L341 premise: the dearer shelf priced more of the town out of a basket than before
-  - L342 premise: more of the town is priced out than short of stock, and it is at the red line
-  - L345 FOOD reads level 2 there too, and its door is the food promise (Policy > Promises > Food)
-  - L347 ...and NEEDS YOU lists it
-  - L359 fixture: a shop stands and sells, and under HUNGER_YELLOW of the town goes hungry within FED_BOUND months
-  - L363 FOOD reads level 0 in a fed city
-  - L364 ...and NEEDS YOU has no FOOD row, while measure() still lists the row
-  - L369 in every month played the FOOD row followed the thresholds (level 1 at HUNGER_YELLOW, 2 at HUNGER_RED), the door and NEEDS YOU's list
-  - L371 ...and all three levels and both doors were met among them
-- **L408 4. the index: a basket with no groceries bases on what the city buys, and groceries join it**
-  - L427 (a)
-  - L435 (a) rent and meals bought base the index at exactly the SETTLING_MONTHS-th such month, never before,
-  - L437 (a) ...and the header's months until a rate count down from SETTLING_MONTHS + WINDOW instead of standing still
-  - L438 (a) ...the basket holding rent and meals and no groceries,
-  - L452 (a) rent and
-  - L472 (b) rent alone never bases the index
-  - L473 (b) rent and the city's own fees (SERVICES) never base it
-  - L477 (b) ...nor with SERVICES given in the price and spend arrays too
-  - L478 (b) rent and a shelf price nobody bought at never base it
-  - L479 (b) rent and groceries bought at no price never base it
-  - L480 (b) rent and a meal priced and not bought never base it
-  - L481 (b) rent and meals bought at no price never base it
-  - L482 (b) groceries and meals bought and priced, with no rent priced, never base it
-  - L484 (b) ...nor with a rent priced and none paid
-  - L503 (c) after the basing with no groceries their weight is nothing
-  - L521 (c) groceries bought for WEIGHT_MONTHS-1 months leave their weight at nothing
-  - L522 (c) ...and at the WEIGHT_MONTHS-th month they join the basket
-  - L524 (c) ...at the share of the trailing year's spending they were bought for
-  - L526 (c) ...with rent and meals still in it
-  - L527 (c) the level does not jump across the link: prices held flat, the month before and the month of the link
-  - L528 (c) ...and with rent and meals drifting, the level stays that of a basket groceries never joined in every month to the link, the link's included
-  - L536 (c) once joined a dearer shelf moves the index by its weight times the rise, from the level the basket was linked at
-  - L549 (c) a month with no sale among the year's holds the join off until a whole year of sales (the 2 x WEIGHT_MONTHS-th month)
-  - L568 (d) the first rate comes at the SETTLING_MONTHS + WINDOW-th month, not never
-  - L570 (d) ...hasRate() is true exactly once the ring holds more than WINDOW readings, and reads nothing before the basing
-  - L571 (d) ...and the months until a rate follow the readings to nothing
-  - L574 (d) the rule reads a rate above nothing from a rising meal price
-  - L575 (d) ...equal to the year-on-year change of the level as the index's own readings give it
-  - L580 (d) ...and is the meals' rise at the meals' weight in the basket
-  - L602 (e) rent and groceries bought base the index at the SETTLING_MONTHS-th such month, the rent-only months before not counted
-  - L604 (e) ...with groceries in the basket from the basing
-  - L605 (e) ...and the basket is never relinked for them afterwards
-- **L611 5. the money audit: every month played is exact to the cent**
-  - L614 every month section 2's city played (the founding's months to the trap included) has a money audit
-  - L616 ...and each one's residual is within MoneyAudit.tolerance(CENT, moved)
-  - L617 every month the other cities played has an audit, and each one's residual is within the tolerance too
+- **L205 1. the trap, caused: a shop the town goes without is staffed at the fill, and no other building is**
+  - L214 fixture: the city is founded the 1900 way and the catalogue has a Convenience Store and a Filling Station
+  - L216 fixture: the Convenience Store is a shop (coverage) and the Filling Station is not
+  - L217 fixture: Retail owns no building, standing or on site
+  - L224 premise: the diploma band is over-posted (its spare is negative: the 1900 founding's own posts outrun its workers)
+  - L225 premise: the ordinary gate refuses the Convenience Store (no unfillable band, but under MIN_STAFFABLE_TO_ORDER of its posts)
+  - L228 the first month the town's fill could staff it came within HUNT_BOUND months of the founding
+  - L231 the town goes short of shops: the shops it has, at their nameplate, serve fewer baskets than the households need
+  - L232 Retail's gate staffs a shop the town goes without at the fill
+  - L233 ...so Retail's gate passes the Convenience Store, with no band nobody could fill
+  - L234 ...at a share of its posts that reaches MIN_STAFFABLE_TO_ORDER
+  - L235 ...which is more than the ordinary reading of the same posts
+  - L239 ...and is the larger of the ordinary share and the share the fill staffs, recomputed from the same posts
+  - L241 ...and a planner's order of one passes the gate
+  - L244 Retail's planner orders a shop (a template with coverage), and the staffing gate holds nothing back
+  - L249 BOTH SIDES: Retail does not stage a Filling Station (coverage 0) at the fill
+  - L251 ...so its share is the ordinary reading's
+  - L252 ...and so is its unfillable band
+  - L263 fixture: standing Convenience Stores cover the households' need at their nameplate
+  - L266 BOTH SIDES: Retail then does not stage a Convenience Store at the fill
+  - L268 ...and its share of the Convenience Store is the ordinary reading again
+  - L269 ...and the planner orders no more shops while they cover the town
+  - L279 premise: thinned, the shops standing serve fewer baskets at their operating rate than the households need
+  - L281 BOTH SIDES: a shop short of staff is not one the town goes without: read at the nameplate, the town is not short
+  - L283 ...so Retail does not stage another Convenience Store at the fill
+  - L284 ...and its share of one is the ordinary reading
+- **L290 2. the trap played: a shop stands, is stocked, sells, and the shelves stop leaving the town hungry**
+  - L295 fixture: the trapped city has no shop and its shelf is empty before the first month played
+  - L301 premise: the diploma band is over-posted and the ordinary gate refuses the Convenience Store, the shops' gate alone passing it
+  - L304 premise: the shelves leave the town short (more than HUNGER_YELLOW of it)
+  - L318 Retail ordered a shop within
+  - L319 a Retail shop stands within
+  - L320 the shelf holds stock within
+  - L321 baskets are sold within
+  - L322 the households short of stock fall under HUNGER_YELLOW within
+  - L323 ...and are still under it at the bound
+  - L324 once the shop stands the town no longer goes short of shops
+- **L331 3. the screens: hunger reaches FOOD on NEEDS YOU, at the door that mends it**
+  - L337 fixture: no shop stands and the shelf is empty
+  - L338 premise: the town goes hungry at the red line, from the empty shelf (more of it short of stock than priced out)
+  - L342 FOOD reads level 2 (red) at red hunger
+  - L343 ...and its door is the shops (Build > Shops), the shelves being the larger half
+  - L345 NEEDS YOU lists a FOOD row, so the header cannot say \"Nothing needs you\"
+  - L347 ...and measure() lists it among every row, at level 2
+  - L359 premise: the dearer shelf priced more of the town out of a basket than before
+  - L360 premise: more of the town is priced out than short of stock, and it is at the red line
+  - L363 FOOD reads level 2 there too, and its door is the food promise (Policy > Promises > Food)
+  - L365 ...and NEEDS YOU lists it
+  - L377 fixture: a shop stands and sells, and under HUNGER_YELLOW of the town goes hungry within FED_BOUND months
+  - L381 FOOD reads level 0 in a fed city
+  - L382 ...and NEEDS YOU has no FOOD row, while measure() still lists the row
+  - L387 in every month played the FOOD row followed the thresholds (level 1 at HUNGER_YELLOW, 2 at HUNGER_RED), the door and NEEDS YOU's list
+  - L389 ...and all three levels and both doors were met among them
+- **L426 4. the index: a basket with no groceries bases on what the city buys, and groceries join it**
+  - L445 (a)
+  - L453 (a) rent and meals bought base the index at exactly the SETTLING_MONTHS-th such month, never before,
+  - L455 (a) ...and the header's months until a rate count down from SETTLING_MONTHS + WINDOW instead of standing still
+  - L456 (a) ...the basket holding rent and meals and no groceries,
+  - L470 (a) rent and
+  - L490 (b) rent alone never bases the index
+  - L491 (b) rent and the city's own fees (SERVICES) never base it
+  - L495 (b) ...nor with SERVICES given in the price and spend arrays too
+  - L496 (b) rent and a shelf price nobody bought at never base it
+  - L497 (b) rent and groceries bought at no price never base it
+  - L498 (b) rent and a meal priced and not bought never base it
+  - L499 (b) rent and meals bought at no price never base it
+  - L500 (b) groceries and meals bought and priced, with no rent priced, never base it
+  - L502 (b) ...nor with a rent priced and none paid
+  - L521 (c) after the basing with no groceries their weight is nothing
+  - L539 (c) groceries bought for WEIGHT_MONTHS-1 months leave their weight at nothing
+  - L540 (c) ...and at the WEIGHT_MONTHS-th month they join the basket
+  - L542 (c) ...at the share of the trailing year's spending they were bought for
+  - L544 (c) ...with rent and meals still in it
+  - L545 (c) the level does not jump across the link: prices held flat, the month before and the month of the link
+  - L546 (c) ...and with rent and meals drifting, the level stays that of a basket groceries never joined in every month to the link, the link's included
+  - L554 (c) once joined a dearer shelf moves the index by its weight times the rise, from the level the basket was linked at
+  - L567 (c) a month with no sale among the year's holds the join off until a whole year of sales (the 2 x WEIGHT_MONTHS-th month)
+  - L586 (d) the first rate comes at the SETTLING_MONTHS + WINDOW-th month, not never
+  - L588 (d) ...hasRate() is true exactly once the ring holds more than WINDOW readings, and reads nothing before the basing
+  - L589 (d) ...and the months until a rate follow the readings to nothing
+  - L592 (d) the rule reads a rate above nothing from a rising meal price
+  - L593 (d) ...equal to the year-on-year change of the level as the index's own readings give it
+  - L598 (d) ...and is the meals' rise at the meals' weight in the basket
+  - L620 (e) rent and groceries bought base the index at the SETTLING_MONTHS-th such month, the rent-only months before not counted
+  - L622 (e) ...with groceries in the basket from the basing
+  - L623 (e) ...and the basket is never relinked for them afterwards
+- **L629 5. the money audit: every month played is exact to the cent**
+  - L632 every month section 2's city played (the founding's months to the trap included) has a money audit
+  - L634 ...and each one's residual is within MoneyAudit.tolerance(CENT, moved)
+  - L635 every month the other cities played has an audit, and each one's residual is within the tolerance too
 
 ## HydroCheck.java - 102 labelled assertions
 

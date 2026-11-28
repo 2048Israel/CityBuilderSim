@@ -77,6 +77,9 @@ public class HungerCheck {
     static final int PLAYED_BOUND = 12;
     /** The most Convenience Stores section 1 stands to cover the households' need. */
     static final int COVER_BOUND = 50;
+
+    /** The fill the BOTH SIDES fixture thins Retail's staff to, so its shops serve under the need at their operating rate. */
+    static final double THIN_FILL = .05;
     /** The most months a default city is played for a month with a shop selling and nobody hungry. */
     static final int FED_BOUND = 40;
     /** The shelf price section 3 multiplies, and the months it plays for the people to be priced out. */
@@ -225,7 +228,7 @@ public class HungerCheck {
         check("the first month the town's fill could staff it came within HUNT_BOUND months of the founding", trap.months < HUNT_BOUND, trap.months + " months");
 
         // the mend
-        check("the town goes short of baskets: the shops it has hand over fewer than the households need", retail.townGoesShort());
+        check("the town goes short of shops: the shops it has, at their nameplate, serve fewer baskets than the households need", retail.townGoesShort());
         check("Retail's gate staffs a shop the town goes without at the fill", asked.staffedAtTheFill(conv));
         check("...so Retail's gate passes the Convenience Store, with no band nobody could fill", lifted.passes() && lifted.unfillable == null);
         check("...at a share of its posts that reaches MIN_STAFFABLE_TO_ORDER", lifted.share >= Sector.MIN_STAFFABLE_TO_ORDER, String.valueOf(lifted.share));
@@ -257,13 +260,28 @@ public class HungerCheck {
         people.updateJobs(g.getJobs());
         double needed = g.getHouseholdBalance().groceriesNeeded();
         out.printf("   %d Convenience Stores stand: coverage %d for %.1f baskets needed%n", added, retail.getStoreCoverage(), needed);
-        check("fixture: standing Convenience Stores cover the households' need (the shops hand over what the households need)",
-                added > 0 && added < COVER_BOUND && !retail.townGoesShort() && retail.getStoreCoverage() * retail.getOperatingRate() >= needed,
+        check("fixture: standing Convenience Stores cover the households' need at their nameplate",
+                added > 0 && added < COVER_BOUND && !retail.townGoesShort() && retail.getStoreCoverage() >= needed,
                 added + " stores");
         check("BOTH SIDES: Retail then does not stage a Convenience Store at the fill", !asked.staffedAtTheFill(conv));
         Sector.Staffing covered = retail.staffing(conv), coveredPlain = ordinary.staffing(conv);
         near("...and its share of the Convenience Store is the ordinary reading again", covered.share, coveredPlain.share, 1e-12);
         check("...and the planner orders no more shops while they cover the town", !retail.plan(g.getBusinessInvestment(), g).build);
+
+        // short of staff is not short of shops (the first dry run's GroundSkipCheck town: shops read at the operating
+        // rate stayed short in a town with no spare workers, and more were staffed at the fill, spreading them thinner)
+        double[] thin = new double[11];
+        java.util.Arrays.fill(thin, THIN_FILL);
+        retail.updateJobFillRate(thin);
+        retail.updateWages(people.getWagesPerType(), retail.postsPerTier());
+        out.printf("   the shops' staff thinned to %.2f of each band: operating rate %.3f, %.1f baskets at it for %.1f needed%n",
+                THIN_FILL, retail.getOperatingRate(), retail.getStoreCoverage() * retail.getOperatingRate(), needed);
+        check("premise: thinned, the shops standing serve fewer baskets at their operating rate than the households need",
+                retail.getStoreCoverage() * retail.getOperatingRate() < needed);
+        check("BOTH SIDES: a shop short of staff is not one the town goes without: read at the nameplate, the town is not short",
+                !retail.townGoesShort());
+        check("...so Retail does not stage another Convenience Store at the fill", !asked.staffedAtTheFill(conv));
+        near("...and its share of one is the ordinary reading", retail.staffing(conv).share, ordinary.staffing(conv).share, 1e-12);
     }
 
     /* ============================ 2. the trap played ============================ */
@@ -303,7 +321,7 @@ public class HungerCheck {
         check("baskets are sold within " + PLAYED_BOUND + " months", sold > 0, "month +" + sold);
         check("the households short of stock fall under HUNGER_YELLOW within " + PLAYED_BOUND + " months", fed > 0, "month +" + fed);
         check("...and are still under it at the bound", h.getHungerShortOfStock() < CityNeeds.HUNGER_YELLOW, String.valueOf(h.getHungerShortOfStock()));
-        check("once the shop stands the town no longer goes short of baskets", !retail.townGoesShort());
+        check("once the shop stands the town no longer goes short of shops", !retail.townGoesShort());
         played = trap;
     }
 

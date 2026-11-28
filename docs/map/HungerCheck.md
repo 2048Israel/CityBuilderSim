@@ -1,4 +1,4 @@
-# HungerCheck.java - 620 lines · 30 methods · 15 constants · harnesses
+# HungerCheck.java - 638 lines · 30 methods · 16 constants · harnesses
 
 `ham/citybuildersim/HungerCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -41,11 +41,11 @@
 | line | section |
 |---:|---|
 | 68 | · the fixtures' own figures |
-| 199 | 1. the trap, caused |
-| 269 | 2. the trap played |
-| 310 | 3. the screens |
-| 380 | 4. the index |
-| 608 | 5. the money audit |
+| 202 | 1. the trap, caused |
+| 287 | 2. the trap played |
+| 328 | 3. the screens |
+| 398 | 4. the index |
+| 626 | 5. the money audit |
 
 ## Constants
 
@@ -57,15 +57,16 @@
 | 75 | `HungerCheck.HUNT_BOUND` | `36` | The most months a city founded the 1900 way is played for the first month the city's fill would staff a shop. |
 | 77 | `HungerCheck.PLAYED_BOUND` | `12` | The months section 2 gives the town to stand a shop, stock it, sell baskets and be fed. |
 | 79 | `HungerCheck.COVER_BOUND` | `50` | The most Convenience Stores section 1 stands to cover the households' need. |
-| 81 | `HungerCheck.FED_BOUND` | `40` | The most months a default city is played for a month with a shop selling and nobody hungry. |
-| 83 | `HungerCheck.PRICE_UP` | `20` | The shelf price section 3 multiplies, and the months it plays for the people to be priced out. |
-| 84 | `HungerCheck.PRICED_MONTHS` | `2` |  |
-| 180 | `HungerCheck.playedAudit` | `new Audit(), otherAudit = new Audit()` |  |
-| 181 | `HungerCheck.watch` | `new FoodWatch()` |  |
-| 382 | `HungerCheck.LEAD` | `5` |  |
-| 383 | `HungerCheck.RENT_PRICE` | `100, RENT_SPEND = 1000, MEAL_PRICE = 20, MEAL_SPEND = 1000, SHELF_PRICE = 2, ...` |  |
-| 384 | `HungerCheck.GOOD_PRICE` | `50, GOOD_SPEND = 1000, FEE_PRICE = 10, FEE_SPEND = 100` |  |
-| 385 | `HungerCheck.RENT_DRIFT` | `.005, MEAL_DRIFT =.003, MEAL_RISE =.01, SHELF_STEP =.10` |  |
+| 82 | `HungerCheck.THIN_FILL` | `.05` | The fill the BOTH SIDES fixture thins Retail's staff to, so its shops serve under the need at their operating rate. |
+| 84 | `HungerCheck.FED_BOUND` | `40` | The most months a default city is played for a month with a shop selling and nobody hungry. |
+| 86 | `HungerCheck.PRICE_UP` | `20` | The shelf price section 3 multiplies, and the months it plays for the people to be priced out. |
+| 87 | `HungerCheck.PRICED_MONTHS` | `2` |  |
+| 183 | `HungerCheck.playedAudit` | `new Audit(), otherAudit = new Audit()` |  |
+| 184 | `HungerCheck.watch` | `new FoodWatch()` |  |
+| 400 | `HungerCheck.LEAD` | `5` |  |
+| 401 | `HungerCheck.RENT_PRICE` | `100, RENT_SPEND = 1000, MEAL_PRICE = 20, MEAL_SPEND = 1000, SHELF_PRICE = 2, ...` |  |
+| 402 | `HungerCheck.GOOD_PRICE` | `50, GOOD_SPEND = 1000, FEE_PRICE = 10, FEE_SPEND = 100` |  |
+| 403 | `HungerCheck.RENT_DRIFT` | `.005, MEAL_DRIFT =.003, MEAL_RISE =.01, SHELF_STEP =.10` |  |
 
 ## Fields (state)
 
@@ -74,85 +75,85 @@
 | 46 | `static int fails` |  |
 | 47 | `static PrintStream out` |  |
 | 48 | `static PrintStream quiet` |  |
-| 95 | `int months, missing, broken` |  |
-| 96 | `double worst` |  |
-| 97 | `String first` |  |
-| 115 | `final int[] levels` |  |
-| 116 | `int shops, promises, months` |  |
-| 117 | `boolean follows` |  |
-| 118 | `String first` |  |
-| 164 | `final Game game` |  |
-| 165 | `final Retail retail` |  |
-| 166 | `final BuildingsTemplate convenience` |  |
-| 167 | `int months` |  |
-| 183 | `static Trap played` | Section 2's city, once fed: section 3 prices its people out. |
+| 98 | `int months, missing, broken` |  |
+| 99 | `double worst` |  |
+| 100 | `String first` |  |
+| 118 | `final int[] levels` |  |
+| 119 | `int shops, promises, months` |  |
+| 120 | `boolean follows` |  |
+| 121 | `String first` |  |
+| 167 | `final Game game` |  |
+| 168 | `final Retail retail` |  |
+| 169 | `final BuildingsTemplate convenience` |  |
+| 170 | `int months` |  |
+| 186 | `static Trap played` | Section 2's city, once fed: section 3 prices its people out. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 44 | 577 | **type** `public class HungerCheck` | A town with no shop goes hungry, the screens say so, and the price index does not wait for the shop (HG1). |
+| 44 | 595 | **type** `public class HungerCheck` | A town with no shop goes hungry, the screens say so, and the price index does not wait for the shop (HG1). |
 | 50 | 1 | `static void check(String label, boolean ok)` |  |
 | 52 | 4 | `static void check(String label, boolean ok, String detail)` |  |
 | 58 | 3 | `static void near(String label, double actual, double expected, double tol)` | A figure against the harness's own, to an absolute tolerance. |
 | 62 | 5 | `static void quietly(Runnable r)` |  |
 
-### the fixtures' own figures (lines 68-198)
+### the fixtures' own figures (lines 68-201)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 87 | 5 | `static Game found(String label, Founding founding)` | A new city founded as the player's door founds it (newGame(founding)), on a scratch folder, quietly. |
-| 94 | 18 | **type** `static final class Audit` | What the money audit said of every month played through play(): the worst residual over its tolerance, and the months that broke it. |
-| 99 | 12 | `void take(Game g)` _(in HungerCheck.Audit)_ |  |
-| 114 | 24 | **type** `static final class FoodWatch` | Every month played through play(): CityNeeds.food() against the thresholds and the doors, and which levels and doors were met. |
-| 120 | 17 | `void look(Game g)` _(in HungerCheck.FoodWatch)_ |  |
-| 139 | 4 | `static boolean hasFood(List<CityNeeds.Need> needs)` |  |
-| 145 | 5 | `static void play(Game g, Audit audit, FoodWatch watch)` | One month of the clock, as the player's button makes it, and what is watched of it. |
-| 152 | 5 | `static long retailBuildings(Game g)` | The buildings Retail owns, standing and on site. |
-| 163 | 16 | **type** `static final class Trap` | A city founded the 1900 way and played, month by month, up to the first month Retail's gate would pass a Convenience Store: the founding has Retail no building and its posts outrun its people, so nothing but the clock... |
-| 169 | 9 | `Trap(String label, Audit audit, FoodWatch watch)` _(in HungerCheck.Trap)_ |  |
-| 185 | 13 | `public static void main(String[] args) throws Exception` |  |
+| 90 | 5 | `static Game found(String label, Founding founding)` | A new city founded as the player's door founds it (newGame(founding)), on a scratch folder, quietly. |
+| 97 | 18 | **type** `static final class Audit` | What the money audit said of every month played through play(): the worst residual over its tolerance, and the months that broke it. |
+| 102 | 12 | `void take(Game g)` _(in HungerCheck.Audit)_ |  |
+| 117 | 24 | **type** `static final class FoodWatch` | Every month played through play(): CityNeeds.food() against the thresholds and the doors, and which levels and doors were met. |
+| 123 | 17 | `void look(Game g)` _(in HungerCheck.FoodWatch)_ |  |
+| 142 | 4 | `static boolean hasFood(List<CityNeeds.Need> needs)` |  |
+| 148 | 5 | `static void play(Game g, Audit audit, FoodWatch watch)` | One month of the clock, as the player's button makes it, and what is watched of it. |
+| 155 | 5 | `static long retailBuildings(Game g)` | The buildings Retail owns, standing and on site. |
+| 166 | 16 | **type** `static final class Trap` | A city founded the 1900 way and played, month by month, up to the first month Retail's gate would pass a Convenience Store: the founding has Retail no building and its posts outrun its people, so nothing but the clock... |
+| 172 | 9 | `Trap(String label, Audit audit, FoodWatch watch)` _(in HungerCheck.Trap)_ |  |
+| 188 | 13 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. the trap, caused (lines 199-268)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 201 | 67 | `static void sectionOne()` |  |
-
-### 2. the trap played (lines 269-309)
+### 1. the trap, caused (lines 202-286)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 271 | 38 | `static void sectionTwo()` |  |
+| 204 | 82 | `static void sectionOne()` |  |
 
-### 3. the screens (lines 310-379)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 312 | 62 | `static void sectionThree()` |  |
-| 375 | 4 | `static CityNeeds.Need rowOf(List<CityNeeds.Need> all)` |  |
-
-### 4. the index (lines 380-607)
+### 2. the trap played (lines 287-327)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 387 | 7 | `static double[] prices(double groceries, double rent, double meals)` |  |
-| 395 | 1 | `static double[] spends(double groceries, double rent, double meals)` |  |
-| 397 | 3 | `static void take(PriceIndex px, int month, double[] prices, double[] spends)` |  |
-| 401 | 5 | `static double[] filled(int n, double value)` |  |
-| 407 | 8 | `static void sectionFour()` |  |
-| 417 | 39 | `static void basesWithoutGroceries()` | (a) rent and a good bought beside it base the basket at the SETTLING_MONTHS-th such month, groceries absent. |
-| 458 | 8 | `static boolean neverBased(double[] prices, double[] spends, double[] fees, double[] feeSpends)` | Whether the index never bases in three settlings of the same month fed to it. |
-| 468 | 18 | `static void neverBasesOnHalf()` | (b) BOTH HALVES: rent beside nothing from outside the loop never bases the basket. |
-| 487 | 1 | `static double driftRent(int month)` |  |
-| 489 | 1 | `static double driftMeal(int month)` |  |
-| 492 | 60 | `static void groceriesJoin()` | (c) groceries appearing after a basing with none join it once a whole year of them is in the weights, with the level running on. |
-| 554 | 28 | `static void theRateIsReal()` | (d) with no groceries the rule still reads a real rate: the one the meals' price makes of the level, a year on. |
-| 584 | 23 | `static void groceriesFromTheStart()` | (e) a basket with groceries from the start is as it was: both halves at SETTLING_MONTHS, groceries in it from the basing, no relink. |
+| 289 | 38 | `static void sectionTwo()` |  |
 
-### 5. the money audit (lines 608-620)
+### 3. the screens (lines 328-397)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 610 | 10 | `static void sectionFive()` |  |
+| 330 | 62 | `static void sectionThree()` |  |
+| 393 | 4 | `static CityNeeds.Need rowOf(List<CityNeeds.Need> all)` |  |
+
+### 4. the index (lines 398-625)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 405 | 7 | `static double[] prices(double groceries, double rent, double meals)` |  |
+| 413 | 1 | `static double[] spends(double groceries, double rent, double meals)` |  |
+| 415 | 3 | `static void take(PriceIndex px, int month, double[] prices, double[] spends)` |  |
+| 419 | 5 | `static double[] filled(int n, double value)` |  |
+| 425 | 8 | `static void sectionFour()` |  |
+| 435 | 39 | `static void basesWithoutGroceries()` | (a) rent and a good bought beside it base the basket at the SETTLING_MONTHS-th such month, groceries absent. |
+| 476 | 8 | `static boolean neverBased(double[] prices, double[] spends, double[] fees, double[] feeSpends)` | Whether the index never bases in three settlings of the same month fed to it. |
+| 486 | 18 | `static void neverBasesOnHalf()` | (b) BOTH HALVES: rent beside nothing from outside the loop never bases the basket. |
+| 505 | 1 | `static double driftRent(int month)` |  |
+| 507 | 1 | `static double driftMeal(int month)` |  |
+| 510 | 60 | `static void groceriesJoin()` | (c) groceries appearing after a basing with none join it once a whole year of them is in the weights, with the level running on. |
+| 572 | 28 | `static void theRateIsReal()` | (d) with no groceries the rule still reads a real rate: the one the meals' price makes of the level, a year on. |
+| 602 | 23 | `static void groceriesFromTheStart()` | (e) a basket with groceries from the start is as it was: both halves at SETTLING_MONTHS, groceries in it from the basing, no relink. |
+
+### 5. the money audit (lines 626-638)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 628 | 10 | `static void sectionFive()` |  |
 

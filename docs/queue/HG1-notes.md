@@ -42,7 +42,8 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   the larger of its ordinary share and `Sector.shareAtTheFill`: the template's posts joined to the city's posts,
   each band filled by `PopulationManager.fillByBand`, the share of its posts that fill. Only Retail overrides the
   hook, only for a template with coverage (a shop, not its Filling Station), and only while its shops, standing and
-  on site, hand over fewer baskets than the households need (`groceriesNeeded()`). Everything else keeps the 80%.
+  on site, at their nameplate coverage serve fewer baskets than the households need (`groceriesNeeded()`): the town
+  goes without shops, not without staff (the second dry run, section 4). Everything else keeps the 80%.
 - **The index bases without groceries** (`PriceIndex.takeMonth`, comment "THE OTHER HALF NEED NOT BE GROCERIES").
   A shopping month is rent priced and paid, and either groceries bought at a shelf price or any outside good bought
   at a price (`goodsBought`: meals, luxury, new cars, petrol, lamp oil, home coal). It is never the city's own fees
@@ -66,6 +67,14 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   like everyone's. Recommendation taken: only for the building the town goes without, and only while it does.
 - ★ **Only Retail, only shops.** The hook takes the template, so Retail's Filling Station keeps its ordinary gate.
   Other sectors whose absence starves the town (none found) could override it later.
+- ★ **"Short" is read at the nameplate, not the operating rate** (found by the second dry run). Read at the
+  operating rate, a town with no spare workers stayed "short" however many shops stood, because the shops were
+  short of staff, and every further shop staffed at the fill spread the same workers thinner: GroundSkipCheck's
+  played town fell from 3,127 people at m245 to 1,623, flat, with shop coverage 2,400 for 1,449 baskets needed and
+  unemployment 0. That is the GW0/GW1 lesson again. A shop short of staff is not a shop the town goes without; the
+  ordinary 80% gate is right for it. HungerCheck 1 now causes it (Retail's staff thinned to 5% of each band: the
+  nameplate covers, the operating rate does not; not short, not staged) and it goes red with the old reading
+  (`target/HungerCheck-oprate.log`, 3 FAIL).
 - ★ **The basing reads rent and any bought outside good, never fees.** The brief's BOTH HALVES: the base needs a
   real outside price. Groceries keep their place: a city that buys them bases on them as before (HungerCheck 4e).
 - ★ **Groceries join after a whole year of sales**: WEIGHT_MONTHS of them, at their share of the trailing year. A
@@ -121,6 +130,35 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   HIGH R2 is the one info row to go red: high rates raise unemployment over the twin a little less (0.30 points
   against 0.52), within the baseline's spread (-0.94 to 7.00). The run is kept in `target/ensemble/HG1/` here and
   on the box.
+  That run was on the first, wider gate (short at the operating rate). The gate's reading changed after the second
+  dry run, so the ensemble runs again on the final model (below), and `docs/ensemble/HG1.md` is its baseline.
+- **The dry runs.**
+  1. Box run cbs-gate-HG1-xSgI3JNV (18:08 UTC) stopped at the records, before the suite: "{next} remains in added
+     source". Four of HG1's own comment labels (Sector's banner, Retail, PriceIndex, CityNeeds) carried it; they
+     read "(HG1, 2026-11-28)" now, comments only.
+  2. Box run cbs-gate-HG1-UdX8lstP (18:41 UTC), the suite on the merge: four NEW reds, each traced here by
+     removing one mend at a time and by origin/main's own classes in a scratch worktree, one JVM at a time
+     (`target/four-*.txt`, `target/two-*.txt`, `target/cc-mainindex.txt`):
+     - **FoodProcessingCheck** ("a Meat Works on a farm's floor is an ordinary business", $-61.42 a month) and
+       **GroundSkipCheck**'s two premises (its town growing, its ground holding HORIZON months' growth): the gate,
+       read at the operating rate (the call above). **Mended** by the nameplate reading: both green, the town at
+       m245 3,127 people and growing as on main; GroundSkipCheck's one red left is main's own LP-G2 line, which
+       known-reds already passes.
+     - **Village1900Check**, "today's twin's homes ask a household alone under 1.5 times TARGET_RENT_BURDEN":
+       0.451 against the line 0.45 (main 0.443; the 1900 village 0.82-0.91). Green with the gate's mend removed,
+       red with it, read either way: today's twin (founded the default way, played 60 months) goes without a shop
+       in its first year, so HG1 staffs its first shop sooner and the played path moves a tenth of a point
+       across a knife edge. A moved played city, not a fault: named in the ship file with HT1-H.
+     - **CreditCrunchCheck** 4's fixture premise (on the box "the prior bank offer issues new shares in a listed
+       bank at its native traded price"; here, on the final classes, "after the native household issue means the
+       next slice still lacks mortgage capital"): green with origin/main's PriceIndex, red with HG1's, the gate's
+       mend on or off. Its city is played to m270. The likely route (inferred, not traced month by month): a
+       default city's months before its first shop now count to the basing on rent and meals, so its index bases
+       sooner and the rule reads a real rate sooner. The m270 city is another (the bank's leverage 0.0303 against 0.0399, the share price 0.0026 against
+       0.0016), and CBK3's knife-edge (the bank in its band, an issue the quote supports, and the next slice short
+       of capital after the households' issue) is not found there. The index doing what the brief asks; the
+       fixture finds its condition in the played city instead of causing it: named with HT1-H, whose row is
+       exactly that class.
 
 ## 5. Where it meets other batches
 
@@ -150,5 +188,3 @@ Not this batch's to write. For when an edition comes:
 ## Logs kept
 
 target/named1.txt, target/hgfinal.txt, target/HungerCheck-mutated.log, target/HG1-ens.txt and target/ensemble/HG1/, in this worktree.
-
-The first dry run (box run cbs-gate-HG1-xSgI3JNV, 18:08 UTC) stopped at the records before the suite: "{next} remains in added source". Four of HG1's own comment labels (Sector's banner, Retail, PriceIndex, CityNeeds) carried it; they now read "(HG1, 2026-11-28)" (comments only, --fast green), and the dry run ran again.

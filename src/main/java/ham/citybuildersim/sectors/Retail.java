@@ -783,20 +783,26 @@ public final class Retail extends Sector {
 
     /**
      * A SHOP THE TOWN GOES SHORT OF IS STAFFED AT THE FILL (HG1, 2026-11-28; Sector.staffedAtTheFill()): a shop (a
-     * building with coverage; never a station) while the shops standing and on site hand over fewer baskets, at the
-     * rate plan() weighs them at, than the households need (HouseholdBalance.groceriesNeeded(), a basket a head).
-     * Jerus's 1900 city was held out of every shop by the spare-worker test for 79 months, 97.5% hungry.
+     * building with coverage; never a station) while the shops standing and on site could not serve the households
+     * even fully staffed (townGoesShort()). Jerus's 1900 city was held out of every shop by the spare-worker test for
+     * 79 months, 97.5% hungry.
      */
     @Override
     protected boolean staffedAtTheFill(BuildingsTemplate t) {
         return t != null && t.getCoverage() > 0 && townGoesShort();
     }
 
-    /** Whether the shops standing and on site, at the rate plan() weighs them at, hand over fewer baskets than the households need (HG1). */
+    /**
+     * Whether the town goes without shops (HG1): the shops standing and on site, at their nameplate coverage, serve
+     * fewer baskets than the households need (HouseholdBalance.groceriesNeeded(), a basket a head). Nameplate, not at
+     * the operating rate: a shop short of staff is not a shop the town goes without, and in a town with no spare
+     * workers another shop staffed at the fill only spreads them thinner (GW0/GW1; the dry run's GroundSkipCheck town,
+     * where shops at the operating rate stayed short and kept being added).
+     */
     public boolean townGoesShort() {
         ham.citybuildersim.HouseholdBalance households = game == null ? null : game.getHouseholdBalance();
         double needed = households != null ? households.groceriesNeeded() : population;
-        return needed > 0 && (getStoreCoverage() + storeCoverageOnSite()) * handOverRate() < needed;
+        return needed > 0 && getStoreCoverage() + storeCoverageOnSite() < needed;
     }
 
     /*

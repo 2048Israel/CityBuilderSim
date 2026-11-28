@@ -2,7 +2,7 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,968 constants in 665 files.**
+**6,969 constants in 665 files.**
 
 ## model (3127 constants)
 
@@ -4636,11 +4636,11 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 107 | `Retail.CLEARING_STEPS` | `50` | Halvings (in logs) of that band the search takes: fifty, far finer than a cent's grain. |
 | 123 | `Retail.SUPPLIER_CREDIT_MONTHS` | `1` | How much the shops' suppliers will wait for, in months of the stock for the sale the shops expect, at what it costs to bring in: one - a month's terms, repaid at the next strike out of the sale the... |
 | 181 | `Retail.SHELF` | `{ Good.GRAINS, Good.BREAD, Good.DAIRY_EGGS, Good.VEGETABLES, Good.FRUIT, Good.MEAT, Goo...` |  |
-| 916 | `Retail.PUMP_MARGIN` | `.12` | What a station adds to the wholesale price it paid a litre, before the sales tax: twelve per cent (runs/research-pump.md 7: Canada's 10.4 c/L in 2025, about 10% of the wholesale ex tax [6]; the US ... |
-| 924 | `Retail.QUEUE_MARGIN` | `.18` | ...and on the litres past what the stations can sell: eighteen per cent, the top of the research's range - a rural or post-spike forecourt's (runs/research-pump.md 2, 7). |
-| 1017 | `Retail.FuelSale.NONE` | `new FuelSale(0, 0, 0, 0, 0, 0)` | No sale: no litres asked, or no market or city to sell through. |
-| 1067 | `Retail.HomeFuelSale.NONE` | `new HomeFuelSale(0, 0, 0, 0, 0)` | No sale: nothing asked, or no market or city to sell through. |
-| 1368 | `Retail.SUPPLIER_CREDIT_KEY` | `"supplierCredit."` | The prefix the suppliers' credit is saved under among the extras. |
+| 922 | `Retail.PUMP_MARGIN` | `.12` | What a station adds to the wholesale price it paid a litre, before the sales tax: twelve per cent (runs/research-pump.md 7: Canada's 10.4 c/L in 2025, about 10% of the wholesale ex tax [6]; the US ... |
+| 930 | `Retail.QUEUE_MARGIN` | `.18` | ...and on the litres past what the stations can sell: eighteen per cent, the top of the research's range - a rural or post-spike forecourt's (runs/research-pump.md 2, 7). |
+| 1023 | `Retail.FuelSale.NONE` | `new FuelSale(0, 0, 0, 0, 0, 0)` | No sale: no litres asked, or no market or city to sell through. |
+| 1073 | `Retail.HomeFuelSale.NONE` | `new HomeFuelSale(0, 0, 0, 0, 0)` | No sale: nothing asked, or no market or city to sell through. |
+| 1374 | `Retail.SUPPLIER_CREDIT_KEY` | `"supplierCredit."` | The prefix the suppliers' credit is saved under among the extras. |
 
 ### SpreadPlanner.java ([map](map/SpreadPlanner.md))
 
@@ -6155,7 +6155,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2317 constants)
+## harnesses (2318 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -7606,15 +7606,16 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 75 | `HungerCheck.HUNT_BOUND` | `36` | The most months a city founded the 1900 way is played for the first month the city's fill would staff a shop. |
 | 77 | `HungerCheck.PLAYED_BOUND` | `12` | The months section 2 gives the town to stand a shop, stock it, sell baskets and be fed. |
 | 79 | `HungerCheck.COVER_BOUND` | `50` | The most Convenience Stores section 1 stands to cover the households' need. |
-| 81 | `HungerCheck.FED_BOUND` | `40` | The most months a default city is played for a month with a shop selling and nobody hungry. |
-| 83 | `HungerCheck.PRICE_UP` | `20` | The shelf price section 3 multiplies, and the months it plays for the people to be priced out. |
-| 84 | `HungerCheck.PRICED_MONTHS` | `2` |  |
-| 180 | `HungerCheck.playedAudit` | `new Audit(), otherAudit = new Audit()` |  |
-| 181 | `HungerCheck.watch` | `new FoodWatch()` |  |
-| 382 | `HungerCheck.LEAD` | `5` |  |
-| 383 | `HungerCheck.RENT_PRICE` | `100, RENT_SPEND = 1000, MEAL_PRICE = 20, MEAL_SPEND = 1000, SHELF_PRICE = 2, SHELF_SPEN...` |  |
-| 384 | `HungerCheck.GOOD_PRICE` | `50, GOOD_SPEND = 1000, FEE_PRICE = 10, FEE_SPEND = 100` |  |
-| 385 | `HungerCheck.RENT_DRIFT` | `.005, MEAL_DRIFT =.003, MEAL_RISE =.01, SHELF_STEP =.10` |  |
+| 82 | `HungerCheck.THIN_FILL` | `.05` | The fill the BOTH SIDES fixture thins Retail's staff to, so its shops serve under the need at their operating rate. |
+| 84 | `HungerCheck.FED_BOUND` | `40` | The most months a default city is played for a month with a shop selling and nobody hungry. |
+| 86 | `HungerCheck.PRICE_UP` | `20` | The shelf price section 3 multiplies, and the months it plays for the people to be priced out. |
+| 87 | `HungerCheck.PRICED_MONTHS` | `2` |  |
+| 183 | `HungerCheck.playedAudit` | `new Audit(), otherAudit = new Audit()` |  |
+| 184 | `HungerCheck.watch` | `new FoodWatch()` |  |
+| 400 | `HungerCheck.LEAD` | `5` |  |
+| 401 | `HungerCheck.RENT_PRICE` | `100, RENT_SPEND = 1000, MEAL_PRICE = 20, MEAL_SPEND = 1000, SHELF_PRICE = 2, SHELF_SPEN...` |  |
+| 402 | `HungerCheck.GOOD_PRICE` | `50, GOOD_SPEND = 1000, FEE_PRICE = 10, FEE_SPEND = 100` |  |
+| 403 | `HungerCheck.RENT_DRIFT` | `.005, MEAL_DRIFT =.003, MEAL_RISE =.01, SHELF_STEP =.10` |  |
 
 ### HydroCheck.java ([map](map/HydroCheck.md))
 
