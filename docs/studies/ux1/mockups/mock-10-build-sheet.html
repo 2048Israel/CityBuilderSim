@@ -1,0 +1,131 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>UX1 mockup 10: the build screen, a wide sheet</title>
+<link rel="stylesheet" href="lib/frame.css"><script src="lib/icons.js"></script><script src="lib/frame.js"></script>
+<script src="mock-09-build-data.js"></script>
+<style>
+.sheet { position: absolute; left: 92px; top: 66px; width: 1692px; height: 956px; z-index: 16; background: rgba(16,25,36,.985);
+  border: 1px solid var(--control-edge); border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,.6); display: flex; flex-direction: column; }
+.sheet .path { height: 50px; padding: 0 12px; gap: 10px; }
+.crumb.lk { text-decoration: underline; text-decoration-color: #33475f; text-underline-offset: 3px; }
+.sets { display: flex; align-items: center; gap: 7px; margin-left: 26px; }
+.sets .lab { font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; font-weight: 600; margin-right: 3px; }
+.sets .lab span { text-transform: none; letter-spacing: 0; font-weight: 400; }
+.cb { width: 31px; height: 30px; border-radius: 7px; background: var(--control); border: 1px solid var(--control-edge); display: grid; place-items: center; position: relative; }
+.cb.c { border-color: rgba(241,124,176,.38); } .cb.m { border-color: rgba(167,139,250,.38); }
+.cb .st { position: absolute; right: 2px; top: 2px; width: 6px; height: 6px; border-radius: 50%; }
+.cb.on { background: rgba(167,139,250,.2); border: 1.5px solid var(--business); }
+.esc { font-size: 11px; color: var(--soft); display: flex; align-items: center; gap: 5px; }
+.esc b { font-family: PlexMono; font-weight: 500; font-size: 10.5px; padding: 1px 5px; border: 1px solid var(--control-edge); border-radius: 4px; background: var(--control); }
+.filt { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-bottom: 1px solid var(--edge); flex: none; }
+.seg { display: flex; background: var(--control); border: 1px solid var(--control-edge); border-radius: 8px; padding: 2px; }
+.seg div { padding: 3px 9px; border-radius: 6px; font-size: 12px; color: var(--soft); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.seg div.on { background: var(--hover); color: var(--text); }
+.seg .c { font-family: PlexMono; font-size: 11px; color: var(--spent); }
+.seg .sw { width: 9px; height: 9px; border-radius: 2px; }
+.find { height: 28px; width: 190px; border-radius: 7px; background: var(--stage); border: 1px solid var(--control-edge); display: flex; align-items: center; padding: 0 9px; color: var(--spent); font-size: 12px; }
+.legend { display: flex; align-items: center; gap: 10px; font-size: 11px; color: var(--soft); }
+.legend > span { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.pp { font-family: PlexMono; font-size: 10.5px; font-weight: 600; padding: 0 4px; min-width: 15px; border-radius: 4px; height: 15px; display: inline-grid; place-items: center; line-height: 1; }
+.pp.p { color: #fbd0e3; background: rgba(241,124,176,.32); } .pp.v { color: #e2d8fe; background: rgba(167,139,250,.32); }
+.halves { flex: 1; display: flex; align-items: flex-start; gap: 20px; padding: 6px 14px 0; overflow: hidden; position: relative; }
+table { border-collapse: collapse; table-layout: fixed; width: 822px; font-size: 11px; }
+th { font-size: 9.5px; letter-spacing: .05em; text-transform: uppercase; font-weight: 600; color: var(--soft); text-align: right; padding: 2px 6px 4px; vertical-align: bottom;
+  border-bottom: 1px solid var(--control-edge); line-height: 1.15; white-space: nowrap; }
+th small { display: block; text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--spent); font-size: 9.5px; }
+th.l { text-align: left; } th.on { color: var(--text); }
+td { height: 18px; padding: 0 6px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid rgba(36,53,74,.55); }
+td.m { font-family: PlexMono; font-size: 10.5px; }
+td.l { text-align: left; }
+td.mk { color: var(--soft); font-size: 10.5px; }
+tr.tall td { height: 29px; }
+td.gut { vertical-align: top; text-align: left; white-space: normal; padding: 2px 6px 1px 6px; border-right: 1px solid var(--edge); background: rgba(21,33,48,.6); }
+.gn { font-size: 11px; font-weight: 600; display: flex; justify-content: space-between; gap: 4px; line-height: 1.15; }
+.gn b { font-family: PlexMono; font-size: 10px; font-weight: 500; }
+.gs { font-size: 9.5px; color: var(--spent); line-height: 1.17; display: -webkit-box; -webkit-line-clamp: var(--n, 3); -webkit-box-orient: vertical; overflow: hidden; }
+tr.tall .gs { -webkit-line-clamp: 1; }
+.bn { display: flex; align-items: center; gap: 6px; overflow: hidden; }
+.bn span { overflow: hidden; text-overflow: ellipsis; }
+.ti { width: 17px; height: 17px; border-radius: 4px; display: grid; place-items: center; flex: none; background: var(--cb); border: 1px solid var(--cl); }
+tr.none .ti { background: transparent; border-style: dashed; } tr.none .bn span { color: var(--soft); }
+.sz { font-size: 9px; color: var(--spent); border: 1px solid var(--control-edge); border-radius: 4px; padding: 0 3px; margin-left: 2px; flex: none; }
+.sz i { font-style: normal; color: var(--text); }
+.pm { display: inline-flex; align-items: center; gap: 5px; }
+.pm .mini { width: 30px; height: 4px; border-radius: 2px; background: #243246; overflow: hidden; display: inline-block; }
+.pm .mini i { display: block; height: 100%; background: var(--money); }
+.dot0 { color: #3a4b60; }
+tr.fam td { height: 24px; background: var(--raised); border-bottom: 1px solid var(--edge); text-align: left; padding: 0 8px; }
+.fh { display: flex; align-items: center; gap: 8px; }
+.fh .sw { width: 11px; height: 11px; border-radius: 3px; } .fh b { font-size: 12.5px; font-weight: 600; } .fh .k { color: var(--spent); font-size: 11px; }
+tr.sel td { background: rgba(230,237,243,.09); border-top: 1px solid #e6edf3; border-bottom: 1px solid #e6edf3; }
+tr.sel td.gut { border-top: 1px solid var(--edge); border-bottom: 1px solid rgba(36,53,74,.55); }
+tr.sel td.b { box-shadow: inset 3px 0 0 #e6edf3; }
+.footbar { flex: none; height: 46px; border-top: 1px solid var(--control-edge); background: #132031; border-radius: 0 0 10px 10px; display: flex; align-items: center; gap: 12px; padding: 0 14px; }
+.warnchip { background: #2c2614; border: 1px solid #8a6d1f; border-radius: 7px; padding: 4px 9px; font-size: 12px; }
+.note.n3 { max-width: 640px; } .note.pk { max-width: 784px; }
+</style></head>
+<body><script>
+frame({ ground: 'city', figures: CITY, on: 'build', needsList: NEEDS_CITY, dim: true });
+document.querySelector('.strip .chip').innerHTML = `${icon('CRANE', 15, '#9fb0c3')} 4 building`;
+
+const STC = { GOOD: '#3fb950', WARN: '#e3b341', BAD: '#f85149' };
+const CITYJOB = [['UTILITIES', 'GOOD'], ['INFRASTRUCTURE', 'WARN'], ['HEALTH', 'BAD'], ['EDUCATION', 'BAD'], ['SAFETY', 'GOOD']];
+const MARKET = ['HOMES', 'SHOPS', 'INDUSTRY', 'OFFICES', 'FARMS', 'LORRY', 'VEHICLES', 'LUXURY', 'FOOD'];
+const SEL = 'Steel Mini-Mill';
+const worth = FAM.reduce((t, f) => t + f.groups.reduce((u, g) => { const s = supply(g)[1];
+  return u + (s !== null && s < .95 ? g.b.filter(b => b[8] > 0).length * (g.small ? 2 : 1) : 0); }, 0), 0);
+
+function rows(f) {
+  let h = `<tr class="fam"><td colspan="9"><div class="fh"><span style="color:#9fb0c3;font-size:11px">▾</span><span class="sw" style="background:hsl(${f.h} ${f.s}% 62%)"></span><b>${f.name}</b>
+    <span class="k">${f.groups.length} group${f.groups.length > 1 ? 's' : ''} · ${famKinds(f)} kinds</span><span style="flex:1"></span>
+    <b class="pp p">${famCount(f, 2)}</b><b class="pp v">${famCount(f, 3)}</b></div></td></tr>`;
+  for (const g of f.groups) {
+    const [t, s] = supply(g), top = best(g), n = g.b.length;
+    const sorted = g.b.map((b, i) => [b, i]).sort((a, b) => a[0][6] - b[0][6]);
+    sorted.forEach(([b, i], k) => {
+      const [name, ic, mine, theirs, makes, all, mo, staff, own, sm] = b, none = mine + theirs + (sm || 0) === 0;
+      const gut = k ? '' : `<td class="gut" rowspan="${n}" style="--n:${n === 1 ? 1 : n === 2 ? 2 : 3}"><div class="gn"><span>${g.name}</span>${s === null || g.short ? '' : `<b style="color:${shareColour(s)}">${Math.round(s * 100)}%</b>`}</div><div class="gs">${t}</div></td>`;
+      h += `<tr class="${none ? 'none' : ''} ${name === SEL ? 'sel' : ''} ${n === 1 ? 'tall' : ''}">${gut}
+        <td class="l b"><div class="bn"><span class="ti" style="--cb:${shade(f, i, n, .2)};--cl:${shade(f, i, n, .6)}">${icon(ic, 12, shade(f, i, n), 2.2)}</span><span>${name}</span>${g.small ? '<span class="sz"><i>Large</i> · Small</span>' : ''}</div></td>
+        <td>${mine ? `<b class="pp p">${mine}</b>` : '<span class="dot0">·</span>'}</td>
+        <td>${theirs ? `<b class="pp v">${theirs}</b>` : '<span class="dot0">·</span>'}${sm ? ` <span class="small">+${sm} small</span>` : ''}</td>
+        <td class="mk">${makes}</td><td class="m">${money(all)}</td>
+        <td class="m"><span class="pm">${name === top ? '<b class="good">★</b>' : ''}<span class="mini"><i style="width:${Math.min(100, mo / 20 * 100)}%"></i></span>${mo.toFixed(1)}</span></td>
+        <td class="m ${own < 0 ? 'warn' : 'good'}">${own < 0 ? '▲ ' : ''}${money(own, true)}</td><td class="m">${staff}</td></tr>`;
+    });
+  }
+  return h;
+}
+const head = `<colgroup><col style="width:104px"><col style="width:194px"><col style="width:46px"><col style="width:80px"><col style="width:114px"><col style="width:64px"><col style="width:82px"><col style="width:92px"><col style="width:46px"></colgroup>
+  <tr><th class="l">Group<small>made here</small></th><th class="l">Building<small>colour: family; shade: kind</small></th><th style="color:#f9bcd7">City’s<small>own</small></th><th style="color:#d3c5fd">Market’s<small>investors’</small></th>
+  <th>Makes<small>a month</small></th><th>All in<small>its cost</small></th><th class="on">Its price ▴<small>months it adds</small></th><th>Its owner<small>a month</small></th><th>Staff<small>posts</small></th></tr>`;
+
+document.body.insertAdjacentHTML('beforeend', `
+<div class="sheet">
+  <div class="path"><div class="back"><svg width="15" height="15" viewBox="0 0 24 24" class="i" stroke="#e6edf3"><path d="M15 18l-6-6 6-6"/></svg></div>
+    <span class="crumb lk">Build</span><span class="sep">›</span><span class="crumb lk">Industry</span><span class="sep">›</span><span class="crumb here">Every building</span>
+    <div class="sets"><span class="lab" style="color:#f9bcd7">The city’s job</span>${CITYJOB.map(([ic, st]) => `<div class="cb c">${icon(ic, 16, '#9fb0c3')}<span class="st" style="background:${STC[st]}"></span></div>`).join('')}
+      <span class="lab" style="color:#d3c5fd;margin-left:14px">The market’s <span>· you may add</span></span>${MARKET.map(ic => `<div class="cb m ${ic === 'INDUSTRY' ? 'on' : ''}">${icon(ic, 16, ic === 'INDUSTRY' ? '#d3c5fd' : '#9fb0c3')}</div>`).join('')}</div>
+    <span class="grow"></span><span class="esc"><b>Esc</b> back to the panel</span><span class="btn">${icon('EXPAND', 14)} Back to the panel</span><span class="btn">${icon('CLOSE', 14)}</span></div>
+  <div class="filt"><div class="seg"><div>Worth building<span class="c">${worth}</span></div><div class="on">All<span class="c">78</span></div><div>The city’s own<span class="c">4</span></div></div>
+    <div class="seg">${FAM.map(f => `<div class="on"><span class="sw" style="background:hsl(${f.h} ${f.s}% 62%)"></span>${f.name}<span class="c">${famKinds(f)}</span></div>`).join('')}</div>
+    <div class="find">Find a building…</div><span style="flex:1"></span>
+    <div class="legend"><span><b class="pp p">2</b> the city’s own</span><span><b class="pp v">9</b> the market’s</span><span><b class="warn">▲</b> its owner would lose</span>
+      <span><b class="good">★</b> most per $, of those that pay</span></div></div>
+  <div class="halves"><table>${head}${rows(FAM[0])}${rows(FAM[1])}${rows(FAM[2])}</table><table>${head}${rows(FAM[3])}${rows(FAM[4])}</table></div>
+  <div class="footbar"><span class="ti" style="--cb:${shade(FAM[1], 1, 10, .2)};--cl:${shade(FAM[1], 1, 10, .6)};width:26px;height:26px;border-radius:6px">${icon('INGOT', 16, shade(FAM[1], 1, 10))}</span>
+    <b style="font-size:14px;font-weight:600">${SEL}</b><span class="small">Metals › Iron & Steel · <b class="pp p">2</b> the city’s · <b class="pp v">9</b> the market’s · 12,400 m², land ≈ $978.0M</span>
+    <span class="warnchip"><b class="warn">▲</b> Its owner would lose $218.4M a month: the scrap costs more than the steel fetches</span>
+    <span style="flex:1"></span><span class="small">closes the sheet; its ghost follows the cursor</span>
+    <span class="btn solid" style="height:30px;padding:0 14px">${icon('BUILD', 15, '#fff')} Place on the map ›</span></div>
+</div>`);
+
+document.body.insertAdjacentHTML('beforeend', `
+${num(82, 198, 1)}${num(448, 170, 2)}${num(796, 170, 3)}${num(1756, 968, 4)}
+<div style="position:absolute;left:108px;top:886px;width:822px;z-index:40;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+${['<b>1 · All 78 kinds at once,</b> in two columns by family (a hue each, a shade per kind) and group, with the share of it made here. The sort runs within each group; a family’s line folds it.',
+   '<b>2 · The city’s own told from the market’s:</b> a <b style="color:#c94f86">pink</b> count and a <b style="color:#7c5fd6">violet</b> one in their own columns, summed on each family’s line. Filters: worth building, all, the city’s own; by family; by name.'
+  ].map(t => `<div class="note" style="position:static;max-width:none">${t}</div>`).join('')}</div>
+${note(92, 1028, '<b>3 · The figures that argued, side by side:</b> its price in months of what it adds to the city, and what its owner earns or loses a month (▲). ★ goes only to those that pay.', 'n3')}
+${note(1000, 1028, '<b>UX1 mockup 10 · the build screen · P4 B, alternative.</b> Trade-off: every building comparable at once, but the map is hidden while you choose, and placing it is a second step (4: the sheet closes, then the ghost follows the cursor).', 'pick pk')}
+`);
+</script></body></html>

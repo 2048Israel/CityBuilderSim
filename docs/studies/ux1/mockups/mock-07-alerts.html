@@ -1,0 +1,114 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>UX1 mockup 7: the alerts</title>
+<link rel="stylesheet" href="lib/frame.css"><script src="lib/icons.js"></script><script src="lib/frame.js"></script>
+<style>
+/* P3 A: the row of marks in use - one hovered (its tip), one open in the panel, one dismissed a moment ago (the toast). */
+.mark.open { box-shadow: 0 0 0 2px var(--text), 0 2px 8px rgba(0,0,0,.45); }
+.mark.hover { border-color: #ff8a80; background: #43201f; }
+.mark.more.warn { color: var(--warn); font-family: PlexMono; font-size: 13px; }
+.mark .tip { text-align: left; color: var(--text); }
+.mark .tip .fig2 { font-family: PlexMono; color: var(--bad); margin-top: 4px; }
+.ahead { display: flex; gap: 12px; align-items: center; }
+.ahead .sq { width: 44px; height: 44px; border-radius: 9px; display: grid; place-items: center; background: var(--alert-ground); border: 1.5px solid var(--alert-edge); flex: none; }
+.ahead b { font-size: 17px; font-weight: 600; display: block; }
+.prose { font-size: 12.5px; line-height: 1.5; color: var(--text); }
+.do { display: flex; flex-direction: column; gap: 8px; }
+.do .btn { height: 34px; width: 100%; justify-content: space-between; font-size: 12.5px; }
+.do .btn small { color: var(--soft); font-size: 11px; font-weight: 400; }
+.do .btn.solid small { color: #ffe3ef; }
+.dismiss { display: flex; gap: 12px; align-items: center; }
+.dismiss .btn { flex: none; height: 32px; }
+.toast { position: absolute; left: 760px; bottom: 22px; width: 520px; z-index: 17; background: var(--raised); border: 1px solid var(--control-edge);
+  border-radius: 9px; box-shadow: 0 8px 22px rgba(0,0,0,.55); padding: 10px 14px 12px; display: flex; align-items: center; gap: 10px; font-size: 12.5px; overflow: hidden; }
+.toast .undo { color: var(--accent); font-weight: 600; margin-left: auto; }
+.toast .t { position: absolute; left: 0; bottom: 0; height: 3px; width: 62%; background: var(--accent); }
+.hist { font-size: 11.5px; color: var(--soft); line-height: 1.55; }
+.hist .mono { color: var(--text); }
+</style></head>
+<body><script>
+/* The big city's alerts (the playtest at month 2,406), bad first, then warnings: 12 in the row, Land dismissed a moment ago. */
+const F = Object.assign({}, CITY, { people: ['174,226', '▼ 134'] });
+const BANK_TIP = `<div class="tip"><b>The bank is under its minimum</b>It lends only to keep its borrowers going.
+  <div class="fig2">capital 1.0% of its book · the city requires 8.0%</div><div class="keys">left click opens · right click dismisses</div></div>`;
+const mk = (ic, st, extra = '', inner = '') => `<div class="mark ${st} ${extra}">${icon(ic, 19, st === 'bad' ? '#ff8a80' : '#e3b341')}${inner}</div>`;
+const row = [
+  mk('EDUCATION', 'bad', 'open'),          // Schools: none for 9,274 children
+  mk('CHILD', 'bad'),                      // Childcare: 7,370 without
+  mk('FOOD', 'bad'),                       // Food: 88% short
+  mk('BANK', 'bad', 'hover', BANK_TIP),    // the bank under its minimum
+  mk('SECTOR', 'bad'),                     // businesses going bust
+  mk('TRADE', 'bad'),                      // under 3 months of import cover
+  mk('STAFF', 'warn'),                     // out of work 12.0%
+  mk('LEAVE', 'warn'),                     // people leaving, 134 a month
+  `<div class="mark more warn">+4</div>`]; // GDP falling, deflation and trust, streets tight, government hoarding
+
+frame({ ground: 'city', figures: F, needsList: NEEDS_CITY, alerts: row, alertsLeft: 652 });
+
+/* The trend: children without a place, the last 24 months, against the steps it is measured by. */
+const pts = [8610, 8640, 8660, 8700, 8690, 8730, 8760, 8790, 8800, 8840, 8862, 8890, 8930, 8950, 8990, 9010, 9040, 9070, 9110, 9140, 9170, 9200, 9240, 9274];
+const W = 500, H = 92, lo = 7300, hi = 10250, y = v => H - 8 - (v - lo) / (hi - lo) * (H - 16);
+const line = pts.map((v, i) => `${(i * (W - 116) / 23).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+const trend = `<svg width="${W}" height="${H}" style="display:block">
+  <line x1="0" x2="${W - 116}" y1="${y(10000)}" y2="${y(10000)}" stroke="#f85149" stroke-dasharray="4 4" stroke-width="1"/>
+  <text x="${W - 110}" y="${y(10000) + 4}" fill="#f85149" font-family="Plex" font-size="10.5">10,000 the next step</text>
+  <line x1="0" x2="${W - 116}" y1="${y(7500)}" y2="${y(7500)}" stroke="#5f7189" stroke-dasharray="4 4" stroke-width="1"/>
+  <text x="${W - 110}" y="${y(7500) + 4}" fill="#5f7189" font-family="Plex" font-size="10.5">7,500</text>
+  <polyline points="${line}" fill="none" stroke="#f85149" stroke-width="2"/>
+  <circle cx="${W - 116}" cy="${y(9274)}" r="3.5" fill="#f85149"/></svg>`;
+
+document.body.insertAdjacentHTML('beforeend', `
+<div class="panel">
+  <div class="path"><div class="back"><svg width="15" height="15" viewBox="0 0 24 24" class="i" stroke="#e6edf3"><path d="M15 18l-6-6 6-6"/></svg></div>
+    <span class="crumb">Alerts</span><span class="sep">›</span><span class="crumb here">Schools: none for 9,274 children</span>
+    <span class="grow"></span><span class="btn">${icon('CLOSE', 14)}</span></div>
+  <div class="subtabs" style="--c:#f85149"><div class="on">This alert</div><div>All open · 12</div><div>Dismissed · 1</div><div>History</div></div>
+  <div class="body">
+    <div class="ahead"><div class="sq">${icon('EDUCATION', 22, '#ff8a80')}</div>
+      <div><b>Schools: none for 9,274 children</b><span class="small">bad · open since March 2097 · worse a step in February 2100</span></div></div>
+
+    <div class="h">What is happening</div>
+    <div class="prose">No elementary school stands in a city of 174,226, and no college: <span class="mono">9,274</span> children of school age have
+      no place, and college is <span class="mono">0%</span> served. Children who grow up unschooled come into work without the schooling the city’s jobs ask for.</div>
+
+    <div class="figs">
+      <div><div class="k" style="color:${AREA.people}">Without a place</div><div class="v bad">9,274</div><div class="s">children<br>▲ 412 in a year</div></div>
+      <div><div class="k" style="color:${AREA.people}">Elementary</div><div class="v bad">0%</div><div class="s">served,<br>nothing on site</div></div>
+      <div><div class="k" style="color:${AREA.people}">College</div><div class="v bad">0%</div><div class="s">served,<br>nothing on site</div></div>
+      <div><div class="k" style="color:${AREA.money}">To mend it</div><div class="v">$3.0T</div><div class="s">of the $187.9T<br>in the treasury</div></div></div>
+
+    <div class="card" style="padding:8px 12px 6px"><div class="row" style="justify-content:space-between;margin-bottom:2px">
+      <span class="small">children without a place, the last 24 months</span><span class="small mono">8,610 › 9,274</span></div>${trend}</div>
+
+    <div class="h">What to do <span>each button opens the page that mends it</span></div>
+    <div class="do">
+      <span class="btn solid">${icon('BUILD', 14, '#fff')} Build 21 Elementary Schools · $2.4T<small>0% to 124% served · opens in about 5 months ›</small></span>
+      <span class="btn build">${icon('BUILD', 14)} Build 3 Community Colleges · $635.3B<small>0% to 219% served ›</small></span>
+      <span class="btn">${icon('EDUCATION', 14, AREA.people)} Services › Education<small>the ladder, who is taught where ›</small></span>
+      <span class="btn">${icon('POLICY', 14, AREA.money)} Policy › Promises › Schools<small>what the city promises to pay ›</small></span></div>
+
+    <div class="h">Dismiss</div>
+    <div class="dismiss"><span class="btn">${icon('CLOSE', 14)} Dismiss until it worsens</span>
+      <span class="small">It comes back at <span class="mono">10,000</span> children without a place, or in June 2101 if it still holds; it leaves the row by itself when the schools serve them.</span></div>
+
+    <div class="h">Its history <span>the inbox keeps it</span></div>
+    <div class="hist">March 2097 · opened at <span class="mono">5,000</span> without a place<br>
+      May 2099 · dismissed<br>
+      February 2100 · back, worse a step: <span class="mono">7,500</span> crossed</div>
+  </div></div>
+
+<div class="toast">${icon('LAND', 17, '#ff8a80')}<div><b style="font-weight:600">Dismissed</b> · Land: 4.6 km² left to build on
+  <div class="small">back when it falls to 2.5 km², or in June 2101 if it still holds</div></div><span class="undo">Undo</span><i class="t"></i></div>
+
+${outline(646, 56, 440, 50)}${num(1092, 62, 1)}
+${note(1120, 62, '<b>1 · The row (P3 A ★).</b> One mark per kind of alert, the kind’s icon: the bad first on red, then the warnings on amber. Eight show; the rest fold into “+4”, which opens the whole list in the panel.')}
+${num(1092, 166, 2)}
+${note(1120, 164, '<b>2 · Hover tells:</b> the title, one line, the figure.')}
+${outline(78, 54, 562, 1024)}${num(626, 548, 3)}
+${note(660, 560, '<b>3 · Left click opens it in the panel:</b> what is happening, the figure and its trend, what to do (each button goes to the page that mends it), and Dismiss.')}
+${num(735, 1000, 4)}
+${note(760, 895, '<b>4 · Right click dismisses at once.</b> The mark leaves the row; Undo for a few seconds. It comes back when it worsens a step, or after 12 months if it still holds; it leaves by itself when its condition clears.')}
+${note(1405, 236, '<b>5 · The inbox</b> (the envelope, top right) keeps the letters and every alert’s history, settled or not. Letters never become marks.')}
+${outline(1801, 9, 62, 34)}${num(1774, 44, 5)}
+${note(1420, 1004, '<b>UX1 mockup 7 · the alerts · P3 A ★ recommended.</b> The big city, the playtest at month 2,406: twelve open, Schools open in the panel.', 'pick')}
+`);
+</script></body></html>

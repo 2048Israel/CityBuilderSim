@@ -1,0 +1,136 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>UX1 mockup 3: the wide sheet</title>
+<link rel="stylesheet" href="lib/frame.css"><script src="lib/icons.js"></script><script src="lib/frame.js"></script>
+<style>
+  .sheet { position: absolute; left: 92px; top: 66px; width: 1693px; height: 1000px; z-index: 16; background: rgba(16, 25, 36, .985);
+    border: 1px solid var(--control-edge); border-radius: 10px; box-shadow: 0 14px 50px rgba(0,0,0,.65); display: flex; flex-direction: column; overflow: hidden; }
+  .sheet .path { height: 50px; padding: 0 14px 0 12px; }
+  .sheet .path .crumb.go { border-bottom: 1px dotted var(--spent); }
+  .key { font-family: PlexMono; font-size: 11px; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--control-edge); background: var(--control); color: var(--soft); }
+  .sbody { padding: 12px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .info { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--soft); }
+  .info b { color: var(--text); font-weight: 500; }
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); background: var(--raised); border: 1px solid var(--edge); border-radius: 9px; }
+  .tiles > div { padding: 9px 14px; border-left: 1px solid var(--edge); }
+  .tiles > div:first-child { border-left: 0; }
+  .tiles .k { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; color: var(--money); }
+  .tiles .v { font-family: PlexMono; font-size: 19px; font-weight: 500; margin: 2px 0 1px; }
+  .tiles .s { font-size: 11px; color: var(--soft); }
+  table.t { border-collapse: separate; border-spacing: 0; width: 100%; font-size: 12.5px; }
+  table.t th { font-weight: 500; color: var(--soft); font-size: 11.5px; text-align: right; padding: 4px 10px 6px; white-space: nowrap; vertical-align: bottom; }
+  table.t th .u { display: block; color: var(--spent); font-family: PlexMono; font-size: 10.5px; font-weight: 400; }
+  table.t tr.g th { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; font-weight: 600; color: var(--money-light); text-align: center;
+    border-bottom: 1px solid var(--control-edge); padding: 2px 10px 4px; }
+  table.t tr.g th.blank { border-bottom: 0; }
+  table.t td { padding: 0 10px; height: 52px; text-align: right; font-family: PlexMono; font-size: 13px; white-space: nowrap; border-top: 1px solid var(--edge); }
+  table.t td.l, table.t th.l { text-align: left; font-family: Plex; position: sticky; left: 0; background: var(--panel);
+    box-shadow: 6px 0 8px -6px rgba(0,0,0,.7); border-right: 1px solid var(--control-edge); }
+  table.t tbody tr:nth-child(odd) td { background: #132031; }
+  table.t tbody tr:nth-child(odd) td.l { background: #132031; }
+  table.t tbody tr.hover td { background: #1a2a3e !important; }
+  table.t tr.tot td { height: 40px; font-weight: 600; border-top: 1.5px solid var(--soft); background: var(--panel); }
+  table.t td.gs, table.t th.gs { border-left: 1px solid var(--edge); }
+  .bond { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .05em; padding: 1px 7px; border-radius: 9px; border: 1px solid var(--money); color: var(--money-light); margin-right: 8px; vertical-align: 1px; }
+  .holders { display: inline-flex; width: 120px; height: 8px; gap: 2px; vertical-align: middle; }
+  .holders i { height: 100%; border-radius: 2px; display: block; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 11.5px; color: var(--soft); align-items: center; }
+  .legend b { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .charts .card { padding: 12px 14px 10px; }
+  svg text { font-family: PlexMono; font-size: 11px; fill: var(--soft); }
+  svg text.w { font-family: Plex; font-size: 12px; fill: var(--text); }
+</style></head>
+<body><script>
+frame({ ground: 'city', figures: CITY, on: 'finances', needsList: NEEDS_CITY, dim: true });
+
+const M = AREA.money;
+// the yield curve (read off 062's chart): years left, today's yield in %
+const curve = [[.25, 2.02], [.5, 1.62], [1, 1.12], [2, .87], [5, .84], [10, 1.06], [20, 1.43], [30, 1.67], [40, 1.86], [50, 2.01]];
+const W = 790, H = 340, x0 = 54, x1 = 770, y0 = 18, y1 = 300;
+const X = t => x0 + (Math.sqrt(t) - .5) / (Math.sqrt(50) - .5) * (x1 - x0);
+const Y = p => y1 - (p - .75) / 1.5 * (y1 - y0);
+const grid = [.75, 1, 1.25, 1.5, 1.75, 2, 2.25].map(p => `<line x1="${x0}" x2="${x1}" y1="${Y(p)}" y2="${Y(p)}" stroke="#1f2d3f"/><text x="${x0 - 8}" y="${Y(p) + 4}" text-anchor="end">${p.toFixed(2)}%</text>`).join('');
+const ticks = [[.25, '3m'], [1, '1y'], [2, '2y'], [5, '5y'], [10, '10y'], [20, '20y'], [30, '30y'], [40, '40y'], [50, '50y']].map(([t, s]) =>
+  `<line x1="${X(t)}" x2="${X(t)}" y1="${y1}" y2="${y1 + 4}" stroke="#5f7189"/><text x="${X(t)}" y="${y1 + 18}" text-anchor="middle">${s}</text>`).join('');
+const line = curve.map(([t, p], i) => `${i ? 'L' : 'M'}${X(t).toFixed(1)} ${Y(p).toFixed(1)}`).join(' ');
+const bx = X(6.55), by = Y(.90);
+const curveSvg = `<svg width="${W}" height="${H}">${grid}${ticks}
+  <path d="${line}" fill="none" stroke="#9fb0c3" stroke-width="2"/>
+  <line x1="${bx}" y1="${by - 8}" x2="${bx + 44}" y2="${Y(1.8) + 6}" stroke="#a9d1ff" stroke-width="1"/>
+  <circle cx="${bx}" cy="${by}" r="6" fill="${M}" stroke="#101924" stroke-width="2"/>
+  <text class="w" x="${bx + 48}" y="${Y(1.8)}">8¼% Dec 2106</text>
+  <text x="${bx + 48}" y="${Y(1.8) + 15}">6y 6m left · yields 0.90%</text></svg>`;
+
+// at face, carried, worth today: one scale, $ billions
+const bars = [['At face', 990.3], ['Carried', 988.9], ['Worth today', 1457.9]];
+const bw = 560, bscale = v => v / 1600 * bw;
+const barSvg = `<svg width="790" height="${H}">
+  ${[0, 400, 800, 1200, 1600].map(v => `<line x1="${120 + bscale(v)}" x2="${120 + bscale(v)}" y1="20" y2="236" stroke="#1f2d3f"/><text x="${120 + bscale(v)}" y="254" text-anchor="middle">${v.toLocaleString('en-US')}</text>`).join('')}
+  ${bars.map(([k, v], i) => `<text class="w" x="108" y="${62 + i * 66}" text-anchor="end">${k}</text>
+    <rect x="120" y="${44 + i * 66}" width="${bscale(v)}" height="28" rx="4" fill="${M}"/>
+    <text x="${128 + bscale(v)}" y="${63 + i * 66}" style="fill:#e6edf3">${v.toLocaleString('en-US', { minimumFractionDigits: 1 })}</text>`).join('')}
+  <text x="120" y="282">$ billions · one scale for the three</text></svg>`;
+
+const cell = (v, cls = '') => `<td class="${cls}">${v}</td>`;
+document.body.insertAdjacentHTML('beforeend', `
+<div class="sheet">
+  <div class="path"><div class="back"><svg width="15" height="15" viewBox="0 0 24 24" class="i" stroke="#e6edf3"><path d="M15 18l-6-6 6-6"/></svg></div>
+    <span class="crumb go">Finances</span><span class="sep">›</span><span class="crumb go">The book</span><span class="sep">›</span><span class="crumb here">Every piece</span>
+    <span class="grow"></span>
+    <span class="small"><span class="key">Esc</span> back to the panel</span>
+    <span class="btn">${icon('EXPAND', 14)} Back to the panel</span><span class="btn">${icon('CLOSE', 14)}</span></div>
+  <div class="sbody">
+    <div class="info"><span><b>1 line</b> · <b>$187.9T</b> in the treasury · the nearest falls due Dec 2106, in 6 years 6 months</span>
+      <span>$ is the city’s dollar · tables in $ billions</span></div>
+    <div class="tiles">
+      <div><div class="k">Owed, at face</div><div class="v">$990.3B</div><div class="s">1 line · 2% of annual GDP</div></div>
+      <div><div class="k">Carried</div><div class="v">$988.9B</div><div class="s">what the books say</div></div>
+      <div><div class="k">Worth today</div><div class="v">$1.46T</div><div class="s">on today’s curve</div></div>
+      <div><div class="k">Coupon</div><div class="v">$6.9B</div><div class="s">a month, in cash</div></div>
+      <div><div class="k">A point on the curve</div><div class="v">$75.4B</div><div class="s">moves what it is worth</div></div></div>
+
+    <div class="card" style="padding:12px 14px 10px">
+      <div class="h" style="margin-bottom:6px">Every line <span>by when it falls due · click a line for its page</span></div>
+      <table class="t">
+        <colgroup><col style="width:300px"><col span="13"></colgroup>
+        <thead>
+          <tr class="g"><th class="l blank"></th><th colspan="3" class="gs">To close it now</th><th colspan="3" class="gs">The line, as sold</th>
+            <th colspan="3" class="gs">The market today</th><th colspan="2" class="gs">The books</th><th colspan="2" class="gs">Risk, and who holds it</th></tr>
+          <tr><th class="l">Line</th>
+            <th class="gs">If closed now<span class="u">$B</span></th><th>Of carried<span class="u">%</span></th><th></th>
+            <th class="gs">Face<span class="u">$B</span></th><th>Coupon<span class="u">a year</span></th><th>Issue yield<span class="u">%</span></th>
+            <th class="gs">Price<span class="u">per $100</span></th><th>Yield<span class="u">%</span></th><th>Worth<span class="u">$B</span></th>
+            <th class="gs">Carried<span class="u">$B</span></th><th>Face less worth<span class="u">$B</span></th>
+            <th class="gs">Duration<span class="u">years</span></th><th style="text-align:left">Holders</th></tr></thead>
+        <tbody>
+          <tr class="hover"><td class="l"><span class="bond">BOND</span><b style="font-weight:600;font-size:13.5px">8¼% Dec 2106</b>
+              <div class="small" style="margin:2px 0 0 52px">20-year · sold Dec 2086 · 78 months left</div></td>
+            ${cell('−469.0', 'gs bad')}${cell('−47.4%', 'bad')}<td style="text-align:center"><span class="btn" style="height:26px;font-family:Plex">Close it now</span></td>
+            ${cell('990.3', 'gs')}${cell('8.25%')}${cell('8.40%')}
+            ${cell('147.21', 'gs')}${cell('0.90%')}${cell('1,457.9')}
+            ${cell('988.9', 'gs')}${cell('−467.6')}
+            ${cell('5.2', 'gs')}<td style="text-align:left"><span class="holders"><i style="flex:83;background:${AREA.people}"></i><i style="flex:17;background:${M}"></i></span></td></tr>
+          <tr class="tot"><td class="l">The book</td>
+            ${cell('−469.0', 'gs bad')}${cell('−47.4%', 'bad')}<td></td>
+            ${cell('990.3', 'gs')}${cell('')}${cell('')}
+            ${cell('', 'gs')}${cell('')}${cell('1,457.9')}
+            ${cell('988.9', 'gs')}${cell('−467.6')}${cell('5.2', 'gs')}${cell('')}</tr></tbody></table>
+      <div class="legend" style="margin-top:9px"><span>Holders:</span>
+        <span><b style="background:${AREA.people}"></b>households</span><span><b style="background:${M}"></b>the bank</span>
+        <span><b style="background:#2f6fbf"></b>the central bank</span><span><b style="background:${AREA.business}"></b>the businesses</span>
+        <span><b style="background:${AREA.building}"></b>the world</span>
+        <span style="flex:1"></span><span>If closed now: what the books carry less what it is worth; red is a loss the reverse auction would book.</span></div></div>
+
+    <div class="charts">
+      <div class="card"><div class="h">Where each line sits on the curve <span>today’s yield, by what it has left</span></div>${curveSvg}</div>
+      <div class="card"><div class="h">At face, carried, and worth today <span>the market prices the line above what is owed</span></div>${barSvg}</div></div>
+  </div></div>
+
+${num(84, 58, 1)}${num(1700, 56, 2)}${num(1760, 300, 3)}${num(1515, 127, 4)}
+${note(110, 950, '<b>1 · Wide lays the page over the dimmed map.</b> The panel’s <i>Wide</i> opens the page, or one table, as a sheet; the map stays a frame around it, the rail and the needs lit on top. A rail button or a need opens its page and closes the sheet.')}
+${note(510, 950, '<b>2 · Coming back.</b> <i>Back to the panel</i> and <i>Esc</i> fold the sheet back into the 560 px panel at the same place; the path line works here as there.')}
+${note(910, 950, '<b>3 · The table laid properly.</b> The first column stays put when the table scrolls sideways; figures right-aligned in Plex Mono with separators; column groups and row shading for the eye. 15 columns of 9 px figures become 14 of 13 px.')}
+${note(1310, 905, '<b>4 · One currency sign, written one way.</b> $ is the city’s dollar on every page; D$ and US$ only where two currencies meet (the rate, Trade). One unit per table, here $ billions, chosen so the largest figure fits: no “$ millions” cut off, no “$1000000B”. Twelve tiles become five, each figure once.')}
+${note(1330, 1024, '<b>UX1 mockup 3 · the wide sheet · P1 A ★ recommended.</b> The big city: Finances › The book › Every piece.', 'pick')}
+`);
+</script></body></html>

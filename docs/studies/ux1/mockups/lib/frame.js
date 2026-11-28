@@ -38,7 +38,7 @@ const RAIL = [
 /** The young town's figures (slot 1, July 1909, month 115) and the big city's (the playtest at month 2,406). */
 const TOWN = { date: '1 July 1909', month: 'month 115', treasury: ['$435k', '+$10k a month'], people: ['1,888', '+1'], gdp: ['$4.3M/yr', '+83.6% real'],
   inflation: ['9.8%', 'expect 3.0%'], idle: ['42.2%', 'far too many'], rate: ['R$ 13.00%', 'R$1.41 per US$'], inbox: 6 };
-const CITY = { date: '1 June 2100', month: 'month 2,406', treasury: ['$187.9T', '+$608.1B a month'], people: ['174,226', '+134'], gdp: ['$46.9T/yr', '-7.0% real'],
+const CITY = { date: '1 June 2100', month: 'month 2,406', treasury: ['$187.9T', '+$608.1B a month'], people: ['174,226', '▼ 134'], gdp: ['$46.9T/yr', '-7.0% real'],
   inflation: ['-3.0%', 'expect -1.0%'], idle: ['12.0%', 'high'], rate: ['D$ 2.36%', 'D$4,558 per US$'], inbox: 12 };
 
 function strip(f, extra = '') {

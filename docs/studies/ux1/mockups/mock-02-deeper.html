@@ -1,0 +1,150 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>UX1 mockup 2: going deeper and coming back</title>
+<link rel="stylesheet" href="lib/frame.css"><script src="lib/icons.js"></script><script src="lib/frame.js"></script>
+<style>
+  .path .crumb.go { color: var(--soft); border-bottom: 1px dotted var(--spent); cursor: pointer; }
+  .path .crumb.hover { color: var(--text); border-bottom: 1px solid var(--soft); }
+  .figs5 { grid-template-columns: repeat(5, 1fr); }
+  .figs5 .v { font-size: 15px; }
+  .banner { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 8px; border: 1px solid #5b3a52;
+    background: #1d1a28; font-size: 12px; }
+  .banner .pill { font-size: 11px; padding: 1px 8px; border-radius: 10px; border: 1px solid var(--building); color: var(--building-light); }
+  .stack { display: flex; height: 14px; gap: 2px; border-radius: 4px; overflow: hidden; }
+  .stack i { display: block; height: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11px; color: var(--soft); margin-top: 7px; }
+  .legend b { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .stmt { display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding: 0; }
+  .stmt > div { padding: 9px 12px 8px; }
+  .stmt > div + div { border-left: 1px solid var(--edge); }
+  .stmt .t { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; font-weight: 600; color: var(--business-light); margin-bottom: 5px; }
+  .stmt .r { display: flex; justify-content: space-between; align-items: baseline; height: 23px; font-size: 12.5px; }
+  .stmt .r .f { font-family: PlexMono; font-size: 12.5px; }
+  .stmt .r.zero { color: var(--spent); }
+  .stmt .r.sub { border-top: 1px solid var(--edge); margin-top: 3px; font-weight: 600; }
+  .stmt .r.tot { border-top: 1px solid var(--control-edge); margin-top: 6px; padding-top: 4px; height: 28px; font-weight: 600; }
+  .stmt .r.tot .f { font-weight: 600; font-size: 13.5px; }
+  .stmt .gap { height: 10px; }
+  .ratios { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; padding: 0; }
+  .ratios > div { padding: 7px 12px; border-left: 1px solid var(--edge); border-top: 1px solid var(--edge); }
+  .ratios > div:nth-child(3n+1) { border-left: 0; }
+  .ratios > div:nth-child(-n+3) { border-top: 0; }
+  .ratios .k { font-size: 11px; color: var(--soft); }
+  .ratios .v { font-family: PlexMono; font-size: 14px; font-weight: 500; margin-top: 1px; }
+  .bridge .r { display: grid; grid-template-columns: 170px 1fr 92px; align-items: center; height: 25px; font-size: 12.5px; gap: 10px; }
+  .bridge .r .f { font-family: PlexMono; text-align: right; }
+  .bridge .axis { position: relative; height: 12px; }
+  .bridge .axis::before { content: ""; position: absolute; left: 50%; top: -6px; bottom: -6px; border-left: 1px solid var(--control-edge); }
+  .bridge .axis i { position: absolute; top: 1px; height: 10px; border-radius: 2px; }
+  .bridge .r.end { border-top: 1px solid var(--control-edge); margin-top: 4px; padding-top: 3px; font-weight: 600; }
+  .lit { position: absolute; width: 13px; height: 13px; border: 2px solid #c9b8ff; border-radius: 3px; z-index: 6;
+    box-shadow: 0 0 0 2px rgba(20, 10, 40, .55), 0 0 9px 2px rgba(167, 139, 250, .85); background: rgba(167, 139, 250, .25); }
+  .lit.site { border-style: dashed; border-color: var(--building-light); background: rgba(241, 124, 176, .18);
+    box-shadow: 0 0 0 2px rgba(20, 10, 40, .55), 0 0 8px 2px rgba(241, 124, 176, .7); }
+  .maplegend { position: absolute; z-index: 12; background: rgba(16, 25, 36, .95); border: 1px solid var(--control-edge); border-radius: 9px;
+    padding: 8px 11px; font-size: 12px; box-shadow: 0 6px 18px rgba(0,0,0,.5); }
+  .maplegend .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 7px; vertical-align: -2px; }
+  .ctip { position: absolute; z-index: 30; width: 258px; background: var(--raised); border: 1px solid var(--control-edge); border-radius: 8px;
+    padding: 8px 11px; box-shadow: 0 6px 18px rgba(0,0,0,.55); font-size: 12px; line-height: 1.4; }
+  .ctip b { font-weight: 600; }
+  .ctip::before { content: ""; position: absolute; left: 22px; top: -7px; width: 12px; height: 12px; background: var(--raised);
+    border-left: 1px solid var(--control-edge); border-top: 1px solid var(--control-edge); transform: rotate(45deg); }
+  .lv { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+  .lv span.b { border: 1.5px solid #14181d; border-radius: 5px; padding: 3px 7px; font-size: 11.5px; background: #fff; }
+  .lv span.b.here { background: #14181d; color: #f4f1e8; }
+  .lv .a { font-size: 13px; }
+</style></head>
+<body><script>
+frame({ ground: 'city', figures: CITY, on: 'sectors', needsList: NEEDS_CITY,
+  alerts: [['FOOD', 'bad', 1], ['EDUCATION', 'bad', 1], ['HEALTH', 'bad', 1], ['COIN', 'warn', 8]] });
+
+const B = AREA.business;
+const leg = (c, k, v) => `<span><b style="background:${c}"></b>${k} <span class="mono" style="color:var(--text)">${v}</span></span>`;
+const r = (k, v, cls = '') => `<div class="r ${cls}"><span>${k}</span><span class="f">${v}</span></div>`;
+// the equity bridge: each step on its own scale (the largest step, $2.2T, is half the track), so no step draws as a hairline
+const step = (k, v, frac, col) => `<div class="r"><span>${k}</span><div class="axis"><i style="${frac >= 0 ? 'left:50%' : 'right:50%'};width:${Math.max(Math.abs(frac) * 50, .6)}%;background:${col}"></i></div><span class="f">${v}</span></div>`;
+
+document.body.insertAdjacentHTML('beforeend', `
+<div class="panel">
+  <div class="path"><div class="back"><svg width="15" height="15" viewBox="0 0 24 24" class="i" stroke="#e6edf3"><path d="M15 18l-6-6 6-6"/></svg></div>
+    <span class="crumb go hover">Sectors</span><span class="sep">›</span><span class="crumb go">Manufacturing</span><span class="sep">›</span><span class="crumb here">Balance sheet</span>
+    <span class="grow"></span><span class="btn">${icon('EXPAND', 14)} Wide</span><span class="btn">${icon('CLOSE', 14)}</span></div>
+  <div class="subtabs" style="--c:${B}"><div>Operations</div><div>Income</div><div class="on">Balance sheet</div><div>Cash &amp; debt</div><div>Investors</div></div>
+  <div class="body">
+    <div class="figs figs5">
+      <div><div class="k" style="color:${B}">Kept</div><div class="v">$2.2T</div><div class="s bad">−$11.9B on<br>last month</div></div>
+      <div><div class="k" style="color:${B}">Margin</div><div class="v good">44.3%</div><div class="s">of every<br>dollar taken</div></div>
+      <div><div class="k" style="color:${AREA.money}">Cash</div><div class="v">$13.9T</div><div class="s">in its own<br>account</div></div>
+      <div><div class="k" style="color:${AREA.money}">Owes</div><div class="v">$0</div><div class="s">owes<br>nothing</div></div>
+      <div><div class="k" style="color:${B}">Running at</div><div class="v warn">43%</div><div class="s">most cut by<br>freight, 60%</div></div></div>
+    <div class="banner">${icon('CRANE', 15, AREA.building)}<span style="color:var(--building-light);font-weight:600">Building</span>
+      <span style="white-space:nowrap">investors: 4 on site · about 5 months at today’s queue</span><span class="grow" style="flex:1"></span><span class="pill" style="white-space:nowrap">+1 Fabrication Works</span></div>
+
+    <div class="h">What it owns, and who has a claim on it <span>66.8 trillion on each side</span></div>
+    <div class="card" style="padding:10px 12px 9px">
+      <div class="stack"><i style="flex:50.4;background:#5f7189"></i><i style="flex:13.9;background:#d3c5fd"></i><i style="flex:2.0;background:#8b6fe0"></i><i style="flex:.6;background:#9a86c9"></i></div>
+      <div class="legend">${leg('#5f7189', 'buildings', '$50.4T')}${leg('#d3c5fd', 'cash', '$13.9T')}${leg('#8b6fe0', 'land', '$2.0T')}${leg('#9a86c9', 'the rest', '$461.1B')}</div>
+      <div class="stack" style="margin-top:9px"><i style="flex:1;background:${B}"></i></div>
+      <div class="legend">${leg(B, 'owners’ equity', '$66.8T')}<span>owes nothing: no loans, no bonds</span></div></div>
+
+    <div class="card stmt">
+      <div><div class="t">What it owns</div>
+        ${r('Buildings', '$50.4T')}${r('Cash', '$13.9T')}${r('Land', '$2.0T')}${r('Other businesses’ bonds', '$406.1B')}${r('Held abroad', '$43.2B')}${r('Stock', '$11.8B')}
+        ${r('Owns', '$66.8T', 'tot')}</div>
+      <div><div class="t">What it owes, and its owners’ part</div>
+        ${r('Loans', '$0', 'zero')}${r('Bonds', '$0', 'zero')}${r('Owes', '$0', 'sub zero')}
+        <div class="gap"></div>
+        ${r('Owners’ equity', '$66.8T')}${r('<span class="small">owners’ share</span>', '<span class="small">100.0%</span>')}
+        ${r('Owes and equity', '$66.8T', 'tot')}</div></div>
+    <div class="small" style="margin-top:-5px">Against last month: owns <span class="mono bad">−$94.3B</span> · cash <span class="mono bad">−$38.4B</span> · equity <span class="mono bad">−$94.3B</span> · owes no change</div>
+
+    <div class="h">Read as ratios <span>current and quick ratio: none, it owes nothing</span></div>
+    <div class="card ratios">
+      <div><div class="k">Debt to equity</div><div class="v">0.00</div></div>
+      <div><div class="k">Debt to assets</div><div class="v good">0%</div></div>
+      <div><div class="k">Owners’ share</div><div class="v">100.0%</div></div>
+      <div><div class="k">Return on equity</div><div class="v good">39.6% <span class="small">a year</span></div></div>
+      <div><div class="k">Book a share</div><div class="v">$98,440</div></div>
+      <div><div class="k">Owners took</div><div class="v">$2.0T <span class="small">a month</span></div></div></div>
+
+    <div class="h">Its equity this month <span>the steps on their own scale</span></div>
+    <div class="card bridge" style="padding:8px 12px">
+      <div class="r"><span>At the start</span><span class="small">steps below: centre line is no change</span><span class="f">$66.9T</span></div>
+      ${step('Its profit', '+$2.2T', 1, '#3fb950')}
+      ${step('Outside its trading', '+$2.1B', .001, '#3fb950')}
+      ${step('Its owners', '−$2.0T', -.91, '#f85149')}
+      ${step('Revalued, and the rest', '−$316.7B', -.144, '#f85149')}
+      <div class="r end"><span>At the end</span><span class="small">down $94.3B on the month</span><span class="f">$66.8T</span></div></div>
+  </div></div>
+`);
+
+// Manufacturing's works lit: a dozen cells inside the city (its purple industrial blocks), and the 4 on site dashed
+const works = [[772, 276], [806, 312], [840, 345], [873, 286], [907, 262], [906, 318], [872, 350], [938, 412], [906, 452], [968, 482],
+  [969, 662], [1074, 668], [916, 627], [905, 786]];
+const sites = [[996, 487], [1045, 704], [943, 788], [826, 343]];
+document.body.insertAdjacentHTML('beforeend', works.map(([x, y]) => `<div class="lit" style="left:${x}px;top:${y}px"></div>`).join('') +
+  sites.map(([x, y]) => `<div class="lit site" style="left:${x}px;top:${y}px"></div>`).join('') + `
+<div class="maplegend" style="left:658px;top:118px">
+  <div style="font-weight:600;margin-bottom:5px">${icon('SECTOR', 14, AREA.business)} Manufacturing’s works lit</div>
+  <div class="small"><span class="sw" style="border:2px solid #c9b8ff;background:rgba(167,139,250,.25)"></span>its works · 64,129 workers</div>
+  <div class="small" style="margin-top:3px"><span class="sw" style="border:2px dashed #f9bcd7"></span>4 on site</div>
+  <div class="small" style="margin-top:5px;color:var(--spent)">the map kept its place and zoom</div></div>
+
+${outline(80, 56, 556, 44)}${num(640, 60, 1)}
+${note(1350, 118, '<b>1 · The path line.</b> <i>Back</i> and <i>Esc</i> step up one level; each crumb jumps straight to its level. Three levels at most: area, page, book.')}
+${num(1325, 124, 1)}
+${num(136, 88, 2)}
+${note(1350, 196, '<b>2 · Coming back.</b> The page under a crumb keeps its scroll: Sectors opens at Manufacturing’s card, where you left it, not at the top.')}
+${num(1325, 202, 2)}
+${note(1350, 274, `<b>3 · Going deeper does not move the map.</b> It keeps its place and zoom all the way down; the sector’s works light up on it (a dozen cells, Business purple; its 4 sites dashed).`)}
+${num(1325, 280, 3)}${num(870, 238, 3)}
+${outline(86, 424, 540, 238)}${num(627, 540, 4)}
+${note(1350, 370, '<b>4 · The balance sheet laid narrow.</b> A two-column statement that fits 530 px: what it owns against what it owes and its owners’ part, one figure each, the unit scaled (T, B) so nothing is cut off. Today’s “66,768,4…” in $ millions is gone.')}
+${num(1325, 376, 4)}
+${note(1350, 478, '<b>5 · The empty and the invisible go.</b> Two “–” ratios become one line; the equity waterfall (two tall bars, four hairlines) becomes a bridge whose steps are drawn on their own scale. Investors is reached one way, by its tab.')}
+${num(1325, 484, 5)}${num(627, 880, 5)}
+${note(1350, 588, `<b>Three levels, one panel.</b>
+  <div class="lv"><span class="b">Sectors</span><span class="a">›</span><span class="b">Manufacturing</span><span class="a">›</span><span class="b here">Balance sheet</span></div>
+  <div style="margin-top:5px">the list · the sector’s books (five tabs) · one book. <i>Wide</i> lays the book over the dimmed map (mockup 3).</div>`)}
+${note(1330, 1008, '<b>UX1 mockup 2 · going deeper and coming back · P1 A ★ recommended.</b> The big city, June 2100: Sectors › Manufacturing › Balance sheet.', 'pick')}
+`);
+</script></body></html>
