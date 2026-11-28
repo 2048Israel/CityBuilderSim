@@ -2,7 +2,7 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,982 constants in 667 files.**
+**6,984 constants in 667 files.**
 
 ## model (3137 constants)
 
@@ -6170,7 +6170,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2321 constants)
+## harnesses (2323 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6525,6 +6525,8 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 721 | `CentralBankPaceCheck.TWIN_MONTHS` | `10` | Months the twins' treasury sells new paper between the presses: ten, the months before the serial's next slice. |
 | 724 | `CentralBankPaceCheck.MOST_STOP_MONTHS` | `120` | The most months the lending twin is played after it stops, waiting for its stock to fall under the anchored share. |
 | 727 | `CentralBankPaceCheck.SALE_OF_GDP` | `.01` | The face the twins' treasury sells between the presses each month, a share of the year's GDP: a year of it at a share of all of it is past the unanchored share. |
+| 1068 | `CentralBankPaceCheck.LINES_AT` | `13 + CentralBank.REVENUE_MONTHS + 14` | Where the bank's line count stands in its saved array: thirteen slots, the year of revenue and fourteen more before it (CentralBank.toSaveArray). |
+| 1071 | `CentralBankPaceCheck.CBK2_LINES` | `2` | The lines CBK2 added to CentralBank.Line, the enum's last: BOUGHT_AT_AUCTION and PAR_AT_AUCTION. |
 
 ### CentralBankStatementCheck.java ([map](map/CentralBankStatementCheck.md))
 

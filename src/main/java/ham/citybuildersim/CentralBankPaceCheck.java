@@ -1016,19 +1016,30 @@ public class CentralBankPaceCheck {
         older.restore(java.util.Arrays.copyOf(unit.toSaveArray(), Expectations.SAVE_SLOTS - 1));
         check("...and an array from before CBK2, a slot short, reads no premium", older.getFinancingPremium() == 0);
 
-        /* ---- a save from before CBK2: no rules key, no premium, the bank's array without its three slots ---- */
+        /* ---- a save from before CBK2, as format 67 wrote it: no rules key, no premium, and the bank's array as CBK1's build
+           laid it out - two lines fewer in each of its line blocks, led by the old count, and without CBK2's three slots ---- */
         GameFiles old = copiedTo("centralbankpacecheck-before");
         java.nio.file.Path file = old.saveFile(SLOT);
         com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(file)).getAsJsonObject();
         Game now = copy();
-        int bankSlots = now.getCentralBank().toSaveArray().length;
-        check("fixture: the save carries the rules, the premium and the bank's array with CBK2's three slots",
+        double[] withThem = now.getCentralBank().toSaveArray();
+        int lines = CentralBank.Line.values().length;
+        check("fixture: the save carries the rules, the premium and the bank's array with CBK2's lines and three slots",
                 json.has("holdingsRules") && json.getAsJsonArray("expectations").size() == Expectations.SAVE_SLOTS
-                        && json.getAsJsonArray("centralBank").size() == bankSlots);
+                        && json.getAsJsonArray("centralBank").size() == withThem.length);
+        check("fixture: the bank's array is laid out as read here - its line count where CBK1 put it, its sheets' count after the two line blocks",
+                withThem[LINES_AT] == lines && withThem[LINES_AT + 2 * lines + 2] == CentralBank.Sheet.values().length);
+        check("fixture: CBK2's two lines are the last of the enum, so a build before it wrote every line before them",
+                CentralBank.Line.values()[lines - 2] == CentralBank.Line.BOUGHT_AT_AUCTION && CentralBank.Line.values()[lines - 1] == CentralBank.Line.PAR_AT_AUCTION);
         json.remove("holdingsRules");
         json.getAsJsonArray("expectations").remove(Expectations.SAVE_SLOTS - 1);
-        com.google.gson.JsonArray bank = json.getAsJsonArray("centralBank");
-        for (int k = 0; k < 3; k++) bank.remove(bank.size() - 1);
+        String misread = json.toString();
+        com.google.gson.JsonObject wrongWidth = com.google.gson.JsonParser.parseString(misread).getAsJsonObject();
+        beforeCbk2(json.getAsJsonArray("centralBank"), lines - CBK2_LINES);
+        beforeCbk2(wrongWidth.getAsJsonArray("centralBank"), lines);
+        check("fixture: the bank's array is CBK1's width, four lines and three slots short",
+                json.getAsJsonArray("centralBank").size() == withThem.length - 2 * CBK2_LINES - 3
+                        && json.getAsJsonArray("centralBank").get(LINES_AT).getAsInt() == lines - CBK2_LINES);
         java.nio.file.Files.writeString(file, json.toString());
         Game was = loaded(old);
         HoldingsRules wr = was.getCentralBank().holdingsRules();
@@ -1038,9 +1049,38 @@ public class CentralBankPaceCheck {
         check("...a bank that never bought at auction and has lent nothing lately, and no premium",
                 was.getCentralBank().getBoughtAtAuctionLifetime() == 0 && was.getCentralBank().getParAtAuctionLifetime() == 0
                         && was.getCentralBank().getFinancedLately() == 0 && was.getExpectations().getFinancingPremium() == 0);
+        check("...its bank, every slot of it, the same save's with them to the bit", sameBits(was.getCentralBank().toSaveArray(), withThem));
         check("...and everything else as the same save with them", sameBits(figures(was), figures(now)));
         play(was);
         play(now);
-        check("...and it plays its next month to the bit as the same save with them", sameBits(figures(was), figures(now)));
+        check("...and it plays its next month to the bit as the same save with them",
+                sameBits(figures(was), figures(now)) && sameBits(was.getCentralBank().toSaveArray(), now.getCentralBank().toSaveArray()));
+
+        /* ---- ...and the proof can fail: the same old array read at the new width is not the save with them ---- */
+        GameFiles wrong = copiedTo("centralbankpacecheck-misread");
+        java.nio.file.Files.writeString(wrong.saveFile(SLOT), wrongWidth.toString());
+        Game misreadCity = loaded(wrong);
+        check("the old array read as if its line blocks were the new width is another bank, so the proof above would see a loader that misread it",
+                !sameBits(misreadCity.getCentralBank().toSaveArray(), withThem));
+    }
+
+    /** Where the bank's line count stands in its saved array: thirteen slots, the year of revenue and fourteen more before it (CentralBank.toSaveArray). */
+    static final int LINES_AT = 13 + CentralBank.REVENUE_MONTHS + 14;
+
+    /** The lines CBK2 added to CentralBank.Line, the enum's last: BOUGHT_AT_AUCTION and PAR_AT_AUCTION. */
+    static final int CBK2_LINES = 2;
+
+    /**
+     * The bank's saved array as a build before CBK2 wrote it: CBK2's three trailing slots gone, and its two lines gone from
+     * this month's block and from last month's; the blocks led by `count` - the old count for a real old save, the new one
+     * for the array a loader that misread the old width would see.
+     */
+    static void beforeCbk2(com.google.gson.JsonArray bank, int count) {
+        int lines = CentralBank.Line.values().length;
+        for (int k = 0; k < 3; k++) bank.remove(bank.size() - 1);
+        int thisMonth = LINES_AT + 1, lastMonth = thisMonth + lines;
+        for (int k = lines - 1; k >= lines - CBK2_LINES; k--) bank.remove(lastMonth + k);
+        for (int k = lines - 1; k >= lines - CBK2_LINES; k--) bank.remove(thisMonth + k);
+        bank.set(LINES_AT, new com.google.gson.JsonPrimitive(count));
     }
 }

@@ -220,8 +220,12 @@ the central bank at a .4 dial, saved the month before its first slice.
 7. Defaults and saves. The defaults are the rules before CBK2. Every rule,
    both lifetimes, the stock, the auction lines and the premium come back
    from a save to the bit. The saved city and the one it was saved from play
-   their next month to the bit. A save stripped to before CBK2 reads the
-   defaults and plays to the bit as the same save with them.
+   their next month to the bit. A save rewritten as format 67 wrote it before
+   CBK2 reads the defaults, and its bank is the same save's to the bit,
+   every slot. It plays its next month to the bit as the same save with
+   them. The rewrite drops the rules key, the premium, CBK2's two lines from
+   both line blocks (the old count leading them) and the three trailing
+   slots (REV-CBK2).
 8. The money audit over every month played.
 
 **Run here, one JVM at a time:**
@@ -290,3 +294,30 @@ it (Ghana 2022: the cedi lost 30%). When the bank stops, the lending is
 forgotten over about a year, but trust comes back only as it always does:
 by holding the target, over years. The page shows what the bank has lent
 lately and what that adds to the inflation people expect.
+
+## REV-CBK2, first mends (2026-11-28)
+
+Codex's review found one P1 and nothing else: the old-save fixture
+(CentralBankPaceCheck 7) dropped only the bank's three trailing slots. It
+kept `BOUGHT_AT_AUCTION` and `PAR_AT_AUCTION` in both line blocks, and the
+new count leading them, so it never tested a real pre-CBK2 array. Mended:
+
+- `beforeCbk2()` writes the bank's array as CBK1's build did. It removes
+  both lines from this month's block and from last month's, puts back the
+  old count (`Line.values().length - 2`) and drops the three slots. Three
+  fixture checks pin the layout it relies on: the count at slot
+  `LINES_AT` = 13 + REVENUE_MONTHS + 14, the sheets' count after the two
+  blocks, and CBK2's lines as the enum's last two.
+- The proof compares the loaded bank's whole saved array with the same
+  save's, to the bit, after the load and after the next month, not only the
+  month's figures.
+- A negative control is in the harness: the same old array with the new
+  count, which is what a loader that misread the old width would read,
+  loads as another bank.
+- **Shown red by mutation.** `CentralBank.restore` was made to read both
+  line blocks at `LINES.length`, ignoring the saved count. Section 7 went
+  red on three checks (exit 4): "a bank that never bought at auction...",
+  "its bank, every slot of it...", and "...plays its next month to the
+  bit". The month's figures alone stayed green, which is why the whole
+  array is compared. The mutation was restored (`git checkout`), and the
+  harness is green again: all passed, 27 s.

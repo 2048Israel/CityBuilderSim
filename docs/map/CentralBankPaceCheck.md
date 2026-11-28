@@ -1,4 +1,4 @@
-# CentralBankPaceCheck.java - 1,046 lines · 36 methods · 19 constants · harnesses
+# CentralBankPaceCheck.java - 1,086 lines · 37 methods · 21 constants · harnesses
 
 `ham/citybuildersim/CentralBankPaceCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -46,7 +46,7 @@
 > 
 >   8. THE MONEY AUDIT TO THE CENT, over every month any section played.
 
-**Uses:** [Expectations](Expectations.md) (71), [HoldingsRules](HoldingsRules.md) (68), [Game](Game.md) (49), [CentralBank](CentralBank.md) (40), [Debt](Debt.md) (22), [GameFiles](GameFiles.md) (7), [DebtManager](DebtManager.md) (5), [PriceLevel](PriceLevel.md) (5), [CentralBankCheck](CentralBankCheck.md) (5), [CentralBankStatements](CentralBankStatements.md) (5), [MoneyAudit](MoneyAudit.md) (4), [Rollover](Rollover.md) (3), [PriceIndex](PriceIndex.md) (2), [HouseholdBalance](HouseholdBalance.md) (1), [SectorStatements](SectorStatements.md) (1)
+**Uses:** [Expectations](Expectations.md) (71), [HoldingsRules](HoldingsRules.md) (68), [Game](Game.md) (50), [CentralBank](CentralBank.md) (48), [Debt](Debt.md) (22), [GameFiles](GameFiles.md) (8), [DebtManager](DebtManager.md) (5), [PriceLevel](PriceLevel.md) (5), [CentralBankCheck](CentralBankCheck.md) (5), [CentralBankStatements](CentralBankStatements.md) (5), [MoneyAudit](MoneyAudit.md) (4), [Rollover](Rollover.md) (3), [PriceIndex](PriceIndex.md) (2), [HouseholdBalance](HouseholdBalance.md) (1), [SectorStatements](SectorStatements.md) (1)
 
 ## Sections
 
@@ -86,6 +86,8 @@
 | 721 | `CentralBankPaceCheck.TWIN_MONTHS` | `10` | Months the twins' treasury sells new paper between the presses: ten, the months before the serial's next slice. |
 | 724 | `CentralBankPaceCheck.MOST_STOP_MONTHS` | `120` | The most months the lending twin is played after it stops, waiting for its stock to fall under the anchored share. |
 | 727 | `CentralBankPaceCheck.SALE_OF_GDP` | `.01` | The face the twins' treasury sells between the presses each month, a share of the year's GDP: a year of it at a share of all of it is past the unanchored share. |
+| 1068 | `CentralBankPaceCheck.LINES_AT` | `13 + CentralBank.REVENUE_MONTHS + 14` | Where the bank's line count stands in its saved array: thirteen slots, the year of revenue and fourteen more before it (CentralBank.toSaveArray). |
+| 1071 | `CentralBankPaceCheck.CBK2_LINES` | `2` | The lines CBK2 added to CentralBank.Line, the enum's last: BOUGHT_AT_AUCTION and PAR_AT_AUCTION. |
 
 ## Fields (state)
 
@@ -103,7 +105,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 53 | 994 | **type** `public class CentralBankPaceCheck` | Proves the central bank's pace on its holdings and its auction share (CBK2): the pace dial both ways, the runoff's caps, sales at market with the gain or loss realised, the auction share at the auction's price and ins... |
+| 53 | 1034 | **type** `public class CentralBankPaceCheck` | Proves the central bank's pace on its holdings and its auction share (CBK2): the pace dial both ways, the runoff's caps, sales at market with the gain or loss realised, the auction share at the auction's price and ins... |
 
 ### the helpers (lines 107-260)
 
@@ -181,7 +183,7 @@
 | 743 | 3 | `static double premiumAt(double k, double x)` | ...and the premium it strikes at that credibility. |
 | 747 | 161 | `static void credibility()` |  |
 
-### 7. DEFAULTS AND SAVES (lines 910-1046)
+### 7. DEFAULTS AND SAVES (lines 910-1086)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -189,5 +191,6 @@
 | 924 | 5 | `static boolean sameBits(double[] a, double[] b)` |  |
 | 931 | 10 | `static GameFiles copiedTo(String label) throws java.io.IOException` | The slot's files copied to another scratch folder, so a case can rewrite them without touching the fixture. |
 | 942 | 6 | `static Game loaded(GameFiles from)` |  |
-| 949 | 97 | `static void defaultsAndSaves() throws Exception` |  |
+| 949 | 117 | `static void defaultsAndSaves() throws Exception` |  |
+| 1078 | 8 | `static void beforeCbk2(com.google.gson.JsonArray bank, int count)` | The bank's saved array as a build before CBK2 wrote it: CBK2's three trailing slots gone, and its two lines gone from this month's block and from last month's; the blocks led by `count` - the old count for a real old ... |
 

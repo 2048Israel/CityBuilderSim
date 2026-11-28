@@ -2,7 +2,7 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**265 harness files, 30,936 labelled assertions.** AllChecks runs 265 of them.
+**265 harness files, 30,941 labelled assertions.** AllChecks runs 265 of them.
 
 ## Which harnesses read which class
 
@@ -5590,7 +5590,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2581 a save without it reads Standard
   - L2583 ...as does a name this build does not know
 
-## CentralBankPaceCheck.java - 149 labelled assertions
+## CentralBankPaceCheck.java - 154 labelled assertions
 
 > Proves the central bank's pace on its holdings and its auction share (CBK2): the pace dial both ways, the runoff's caps,
 > sales at market with the gain or loss realised, the auction share at the auction's price and inside the dial, the money
@@ -5758,11 +5758,16 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1007 ...and the saved city and the one it was saved from play their next month to the bit
   - L1012 an Expectations' premium comes back from its array to the bit, the array SAVE_SLOTS long
   - L1017 ...and an array from before CBK2, a slot short, reads no premium
-  - L1025 fixture: the save carries the rules, the premium and the bank's array with CBK2's three slots
-  - L1035 a save from before CBK2 reads the rules before it: Auto, runoff and sales, no share, the law off
-  - L1038 ...a bank that never bought at auction and has lent nothing lately, and no premium
-  - L1041 ...and everything else as the same save with them
-  - L1044 ...and it plays its next month to the bit as the same save with them
+  - L1027 fixture: the save carries the rules, the premium and the bank's array with CBK2's lines and three slots
+  - L1030 fixture: the bank's array is laid out as read here - its line count where CBK1 put it, its sheets' count after the two line blocks
+  - L1032 fixture: CBK2's two lines are the last of the enum, so a build before it wrote every line before them
+  - L1040 fixture: the bank's array is CBK1's width, four lines and three slots short
+  - L1046 a save from before CBK2 reads the rules before it: Auto, runoff and sales, no share, the law off
+  - L1049 ...a bank that never bought at auction and has lent nothing lately, and no premium
+  - L1052 ...its bank, every slot of it, the same save's with them to the bit
+  - L1053 ...and everything else as the same save with them
+  - L1056 ...and it plays its next month to the bit as the same save with them
+  - L1063 the old array read as if its line blocks were the new width is another bank, so the proof above would see a loader that misread it
 
 ## CentralBankStatementCheck.java - 29 labelled assertions
 
