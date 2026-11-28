@@ -69,7 +69,7 @@ page rows after it.
 
 - **His picks.** He took all four of UX1's picks, every one A: P1, P2, P3 and P4. The rows as written stand.
 - **His new piece:** "something could and should be in the bottom no? like something semi round occupying 60% of the bottom", then "perhaps the build, for quick access, or the debt?". Its row is UX14.
-- **What moves into this batch.** The clock moves out of item 2's top strip, because where the clock sits is the frame's call:
+- **What moves into this batch.** The clock moves out of item 2's top strip, because where the clock sits is the frame's call. This is the ★. He asked "but like top bar still right?": yes, the strip stays. His word on the clock is still to come through the desk chat: build to the ★ unless he says top.
   - The console is a low, semi-round band at the bottom centre, over the map: about 60% of the width and 90-110 px tall. A click folds it down to its centre.
   - Its centre is the clock: the date, play and pause, the speed, and a ring for the month's progress.
   - The top strip keeps the six figures, building, the rating, the inbox and the menu. The alert row (UX3) sits under it.
