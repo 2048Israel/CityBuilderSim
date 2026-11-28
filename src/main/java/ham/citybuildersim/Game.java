@@ -10058,15 +10058,29 @@ public class Game {
      * it, and not Plan.owedOf(), which is no more than the month's cap. THE ONE MONTHS-LEFT EVERY SCREEN READS (REV-ASH1 2): the
      * overview's NEEDS YOU row (CityNeeds), a build card's "N on site" (BuildCard.Figures.siteMonths()), the construction page's
      * site rows and chart, the right panel, the build screen's ring and the oil view; the quotes, the planners and the abroad
-     * terms keep the rule's wait (siteMonths(), quoteCityMonths()). A site handed abroad, or one the plan gives no work (no
-     * output, or behind the city's order), keeps siteMonths(). 0 with nothing on site. Reads; changes nothing.
+     * terms keep the rule's wait (siteMonths(), quoteCityMonths()). A site the plan gives no work (no output, or behind the
+     * city's order) keeps siteMonths(). A site with work handed to the foreign crews (FC2b, ConstructionControl, G. ABROAD) has
+     * two parts built side by side (BuildingManager.advanceConstruction(): the plan's work on the rest, the least of what is owed
+     * abroad and the crews' pace struck at the handover on that part), and finishes with the later (REV-ASH1 4): the part abroad's
+     * points owed over its pace, the rest's as above, 0 once nothing of it is left at home. 0 with nothing on site. Reads.
      */
     public double sitePaceMonths(String key, BuildingManager.Plan plan) {
         ConstructionControl.Demolition d = buildingManager.getControl().demolitionOf(key);
         BuildingsStacks site = d == null ? buildingManager.stackOfKey(key) : null;
         if (d == null && (site == null || site.getUnderConstruction() <= 0)) return 0;
-        if (plan == null || buildingManager.getControl().abroadOf(key) != null || !(plan.workOf(key) > 0)) return siteMonths(key);
-        return Math.max(0, d != null ? d.owed() : site.owedPoints()) / plan.workOf(key);
+        double owed = Math.max(0, d != null ? d.owed() : site.owedPoints()), work = plan == null ? 0 : plan.workOf(key);
+        ConstructionControl.Abroad rec = d == null ? buildingManager.getControl().abroadOf(key) : null;
+        if (rec == null) return work > 0 ? owed / work : siteMonths(key);
+        double abroadOwed = Math.min(owed, Math.max(0, rec.owed)), homeOwed = owed - abroadOwed;
+        double abroad = !(abroadOwed > 0) ? 0 : rec.pace > 0 ? abroadOwed / rec.pace : Double.NaN;
+        double home = !(homeOwed > 1e-9) ? 0 : work > 0 ? homeOwed / work : siteMonths(key);
+        return Math.max(home, abroad);
+    }
+
+    /** The foreign crews' month on the part of a site handed to them, as BuildingManager.advanceConstruction() builds it: the least of what is owed abroad and their pace; 0 with none handed. */
+    private double abroadWorkOf(String key) {
+        ConstructionControl.Abroad rec = buildingManager.getControl().abroadOf(key);
+        return rec == null ? 0 : Math.min(Math.max(0, rec.owed), Math.max(0, rec.pace));
     }
 
     /** ...at this month's plan of the sites (sitesPlan()); a reader of many sites strikes the plan once and passes it. */
@@ -10090,13 +10104,16 @@ public class Game {
      * A site's standing this month and its months left, decided on the month's plan as the advance takes it (sitesPlan(): the city's
      * crews and the foreign contractor's month), so a site his crews build is built on whatever the city's crews give it (REV-ASH1 3:
      * the right panel and the construction page decided on the city's crews alone and said stalled, or waiting, beside a finite
-     * pace). BUILDING when the plan gives it work, WAITING_FOR_CREWS when the crews' rule gives it a share the order gave a site
-     * ahead, STALLED when it has neither; the months are sitePaceMonths()' in every case. The right panel's line and the
-     * construction page's status read it. Reads; changes nothing.
+     * pace). The site's work this month is every way it gets work as the advance gives it: the plan's (the city's crews' and the
+     * contractor's month, in the crews' rule and the city's order) and the foreign crews' on the part handed to them (abroadWorkOf(),
+     * REV-ASH1 4: a site handed whole has no work in the plan, and read STALLED while they built it). BUILDING when it has some,
+     * WAITING_FOR_CREWS when the crews' rule gives it a share the order gave a site ahead, STALLED when it has neither; the months
+     * are sitePaceMonths()' in every case. The right panel's line and the construction page's status read it. Reads; changes nothing.
      */
     public SiteLeft siteLeft(String key, BuildingManager.Plan plan) {
         double months = sitePaceMonths(key, plan);
-        SiteProgress progress = plan != null && plan.workOf(key) > 0 ? SiteProgress.BUILDING
+        double work = (plan == null ? 0 : plan.workOf(key)) + abroadWorkOf(key);
+        SiteProgress progress = work > 0 ? SiteProgress.BUILDING
                 : plan != null && plan.ruleOf(key) > 0 ? SiteProgress.WAITING_FOR_CREWS : SiteProgress.STALLED;
         return new SiteLeft(progress, months);
     }

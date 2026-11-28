@@ -1,4 +1,4 @@
-# TownGridCheck.java - 502 lines · 20 methods · 6 constants · harnesses
+# TownGridCheck.java - 643 lines · 24 methods · 6 constants · harnesses
 
 `ham/citybuildersim/TownGridCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -29,7 +29,7 @@
 > 
 > Every fixture CAUSES its condition rather than waiting for it, and asserts against the model's own constants and getters.
 
-**Uses:** [CityNeeds](CityNeeds.md) (33), [Game](Game.md) (25), [Substations](Substations.md) (25), [BuildingManager](BuildingManager.md) (17), [BuildAdvice](BuildAdvice.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (11), [JobType](JobType.md) (11), [BuildCard](BuildCard.md) (4), [AutoBuilder](AutoBuilder.md) (3), [MoneyAudit](MoneyAudit.md) (3), [SubstationCheck](SubstationCheck.md) (2), [ConstructionControl](ConstructionControl.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [GameFiles](GameFiles.md) (1), [PriceLevel](PriceLevel.md) (1), [PowerDispatch](PowerDispatch.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [DeathCareFirstCheck](DeathCareFirstCheck.md) (1), [BuildingType](BuildingType.md) (1), [CareType](CareType.md) (1), [Construction](Construction.md) (1)
+**Uses:** [Game](Game.md) (48), [CityNeeds](CityNeeds.md) (34), [Substations](Substations.md) (25), [BuildingManager](BuildingManager.md) (24), [BuildAdvice](BuildAdvice.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (14), [JobType](JobType.md) (11), [ConstructionControl](ConstructionControl.md) (8), [BuildCard](BuildCard.md) (5), [AutoBuilder](AutoBuilder.md) (3), [MoneyAudit](MoneyAudit.md) (3), [BuildingsStacks](BuildingsStacks.md) (3), [SubstationCheck](SubstationCheck.md) (2), [GameFiles](GameFiles.md) (1), [PriceLevel](PriceLevel.md) (1), [PowerDispatch](PowerDispatch.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [DeathCareFirstCheck](DeathCareFirstCheck.md) (1), [BuildingType](BuildingType.md) (1), [CareType](CareType.md) (1), [Construction](Construction.md) (1)
 
 ## Sections
 
@@ -39,7 +39,7 @@
 | 187 | 2 |
 | 280 | 3 |
 | 335 | 4 |
-| 484 | 5 |
+| 625 | 5 |
 
 ## Constants
 
@@ -64,7 +64,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 466 | **type** `public final class TownGridCheck` | Power for a small town (batch ASH1). |
+| 37 | 607 | **type** `public final class TownGridCheck` | Power for a small town (batch ASH1). |
 | 41 | 1 | `static void check(String label, boolean ok)` |  |
 | 42 | 1 | `static boolean near(double a, double b, double relative)` |  |
 | 43 | 1 | `static void quietly(Runnable work)` |  |
@@ -97,18 +97,22 @@
 |---:|---:|---|---|
 | 282 | 52 | `static void posts()` |  |
 
-### 4 (lines 335-483)
+### 4 (lines 335-624)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 343 | 19 | `static void pace()` |  |
-| 369 | 42 | `static void noHomeOutput()` | REV-ASH1 3: a town whose own crews give the sites nothing, standing roads' repairs taking every point of the builders' month (the trap, ConstructionTrapCheck), while the foreign contractor's crews build: the right pan... |
-| 412 | 71 | `static void pace(Game g, boolean contractorOn)` |  |
+| 343 | 21 | `static void pace()` |  |
+| 370 | 13 | `static void trap(Game g)` | Standing Paved Roads as ConstructionTrapCheck lays them, as the player lays them between the presses, until their repairs take the builders' whole month: the roads raise the road ratio and with it the builders' month ... |
+| 385 | 6 | `static boolean sameOnEveryScreen(Game g, BuildingsTemplate t, Game.SiteLeft left, CityNeeds.Need row)` | The site's months left on every other screen equal the right panel's line's, to the bit: the overview's row (null where it shows none), the build card's and the construction page's. |
+| 398 | 30 | `static void queued(Game g)` | REV-ASH1 4, the queue's wait and no work at all, on the town the contractor is off in (section 4's first). |
+| 437 | 58 | `static void handedAbroad()` | REV-ASH1 4, the foreign crews' work on a site handed to them (FC2b, ForeignChoiceCheck's section 5): a town of its own, warmed as section 4's with the contractor on (a handover needs the foreign trade, BuildingManager... |
+| 503 | 49 | `static void noHomeOutput()` | REV-ASH1 3: a town whose own crews give the sites nothing, standing roads' repairs taking every point of the builders' month (the trap, ConstructionTrapCheck), while the foreign contractor's crews build: the right pan... |
+| 553 | 71 | `static void pace(Game g, boolean contractorOn)` |  |
 
-### 5 (lines 484-502)
+### 5 (lines 625-643)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 486 | 6 | `static void money()` |  |
-| 493 | 9 | `public static void main(String[] args)` |  |
+| 627 | 6 | `static void money()` |  |
+| 634 | 9 | `public static void main(String[] args)` |  |
 

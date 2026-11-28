@@ -354,38 +354,164 @@ public final class TownGridCheck {
             BuildingManager.buildersShortOn = false;
             quietly(() -> off.simulateMonths(1));
             pace(off, false);
+            queued(off);
             BuildingManager.buildersShortOn = true;
             pace(on, true);
+            handedAbroad();
             noHomeOutput();
         } finally { BuildingManager.buildersShortOn = contractor; }
+    }
+
+    /**
+     * Standing Paved Roads as ConstructionTrapCheck lays them, as the player lays them between the presses, until their repairs take the builders'
+     * whole month: the roads raise the road ratio and with it the builders' month (ServicesManager.updateServices()), so they are laid again until
+     * the month after the repairs stays at nothing.
+     */
+    static void trap(Game g) {
+        BuildingsTemplate road = named(g, DeathCareFirstCheck.ROAD);
+        double perRoad = road.getConstructionPoints() * road.repairsPerYear() / 12;
+        quietly(() -> {
+            // ...on land of their own: the trap is the roads' repairs, not the land the town has left.
+            g.getLandManager().setOwnedSqFt(g.getLandManager().getOwnedSqFt() + 50_000_000L);
+            for (int guard = 0; guard < 20 && g.getBuildingOutputAtEveryPost() > 0; guard++) {
+                Game.BuildResult r = g.buildStack(road, (int) Math.ceil(g.getBuildingOutputAtEveryPost() / perRoad) + 1, true);
+                if (r != Game.BuildResult.SUCCESS) throw new AssertionError("fixture roads did not stand: " + r);
+                g.getServicesManager().updateServices();
+            }
+        });
+    }
+
+    /** The site's months left on every other screen equal the right panel's line's, to the bit: the overview's row (null where it shows none), the build card's and the construction page's. */
+    static boolean sameOnEveryScreen(Game g, BuildingsTemplate t, Game.SiteLeft left, CityNeeds.Need row) {
+        String key = ConstructionControl.keyOf(t);
+        long bits = Double.doubleToRawLongBits(left.months());
+        return Double.doubleToRawLongBits(BuildCard.of(g, t, GRID).siteMonths()) == bits && Double.doubleToRawLongBits(g.sitePaceMonths(key, g.sitesPlan())) == bits
+                && (row == null || Double.doubleToRawLongBits(row.onSiteMonths()) == bits);
+    }
+
+    /**
+     * REV-ASH1 4, the queue's wait and no work at all, on the town the contractor is off in (section 4's first). The city's order reorders the city's
+     * own sites (BuildingsStacks.isCitysOwn(); a grid unit's site is the utility's), so the city pays for a University and a Middle School and its
+     * order puts the school behind the University, which takes every crew the order gives the city: the crews' rule gives the school a share the
+     * order gives the site ahead. (No work at all, the stall, is the no-home-output town's last case, noHomeOutput().)
+     */
+    static void queued(Game g) {
+        OUT.println("   -- the queue's wait: the city's order gives a site's crews to the site ahead --");
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate big = named(g, "University"), small = named(g, "Middle School");
+        String first = ConstructionControl.keyOf(big), behind = ConstructionControl.keyOf(small);
+        Game.BuildResult[] built = new Game.BuildResult[2];
+        quietly(() -> {
+            g.setCashForTest(20_000_000);
+            built[0] = g.buildStack(big, 1, false);
+            built[1] = g.buildStack(small, 1, false);
+            g.getServicesManager().updateServices();
+        });
+        check("fixture: the city pays for a University and a Middle School, its own sites (" + built[0] + ", " + built[1] + ")",
+                built[0] == Game.BuildResult.SUCCESS && built[1] == Game.BuildResult.SUCCESS && bm.getStack(big).isCitysOwn() && bm.getStack(small).isCitysOwn());
+        List<String> order = new ArrayList<>(List.of(first, behind));
+        for (String k : bm.cityOrder()) if (!order.contains(k)) order.add(k);
+        bm.getControl().setOrder(order);
+        BuildingManager.Plan plan = g.sitesPlan();
+        OUT.printf("   the order gives the %s %.0f points and the %s %.0f, where the crews' rule would give it %.0f%n", big.getName(), plan.workOf(first),
+                small.getName(), plan.workOf(behind), plan.ruleOf(behind));
+        check("fixture: with the order set the University first, the Middle School behind it is worked by nobody, though the crews' rule would give it a share, and nothing of it is abroad",
+                plan.workOf(first) > 0 && plan.workOf(behind) <= 0 && plan.ruleOf(behind) > 0 && bm.getControl().abroadOf(behind) == null
+                && g.getSectors().construction().getForeignPointsThisMonth() == 0);
+        Game.SiteLeft left = g.siteLeft(behind, plan);
+        OUT.printf("   its line: %s at %.6f months; the queue's wait %.6f%n", left.progress(), left.months(), g.siteMonths(behind));
+        check("the right panel's line (Game.siteLeft()) says it waits for crews, at the queue's wait under the order (Game.siteMonths()), a finite number of months",
+                left.progress() == Game.SiteProgress.WAITING_FOR_CREWS && Double.doubleToRawLongBits(left.months()) == Double.doubleToRawLongBits(g.siteMonths(behind))
+                && Double.isFinite(left.months()) && left.months() > 0);
+        check("...the same months as the build card's and the construction page's, to the bit", sameOnEveryScreen(g, small, left, null));
+    }
+
+    /**
+     * REV-ASH1 4, the foreign crews' work on a site handed to them (FC2b, ForeignChoiceCheck's section 5): a town of its own, warmed as section 4's
+     * with the contractor on (a handover needs the foreign trade, BuildingManager.foreignTradeOn()), where the city pays for a Middle School
+     * while its queue at home is within the threshold, so none of its points is on his book (an order past the threshold puts its points past
+     * it there, Construction.handAbroad()), and the crews abroad finish it sooner than the queue at home. The city hands the site whole, so the
+     * plan gives it no work and the line must count the crews' month; then the city pays for a second school on the site, a part at home beside
+     * the part abroad.
+     */
+    static void handedAbroad() {
+        OUT.println("   -- the foreign crews: the city's Middle School handed to them whole, then in part --");
+        Game g = settledTown("pace-hand", PACE_WARM_MONTHS, 0);
+        BuildingManager bm = g.getBuildingManager();
+        BuildingsTemplate school = named(g, "Middle School");
+        String key = ConstructionControl.keyOf(school);
+        double queued = bm.monthsQueued(), threshold = bm.thresholdMonths();
+        Game.BuildResult[] built = new Game.BuildResult[2];
+        quietly(() -> {
+            g.setCashForTest(g.getCash() + 1e9);
+            built[0] = g.buildStack(school, 1, false);
+            g.getServicesManager().updateServices();
+        });
+        Game.AbroadCard card = g.abroadPreview(key);
+        OUT.printf("   a school paid for (%s) at %.2f months queued at home (the threshold %.2f), on his book %.0f; the card: %s, %.2f months abroad against %.2f at home%n",
+                built[0], queued, threshold, bm.abroadOwedOf(school), card.open() ? "open" : card.why(), card.monthsAbroad(), card.monthsHome());
+        check("fixture: the city pays for a Middle School, its own site, while its queue at home is within the threshold, so none of it is on his book",
+                built[0] == Game.BuildResult.SUCCESS && bm.getStack(school).isCitysOwn() && queued < threshold && bm.abroadOwedOf(school) == 0);
+        check("fixture: the foreign trade is open and the card offers the site abroad, sooner than at home", bm.foreignTradeOn() && card.open() && card.monthsAbroad() < card.monthsHome());
+        String[] why = new String[1];
+        quietly(() -> why[0] = g.handSiteAbroad(key));
+        ConstructionControl.Abroad rec = bm.getControl().abroadOf(key);
+        BuildingsStacks site = bm.getStack(school);
+        BuildingManager.Plan plan = g.sitesPlan();
+        OUT.printf("   handed: %s; owed abroad %.0f of %.0f at %.0f a month; the plan gives it %.0f, a rule's share %.0f%n", why[0] == null ? "yes" : why[0],
+                rec == null ? Double.NaN : rec.owed, site.owedPoints(), rec == null ? Double.NaN : rec.pace, plan.workOf(key), plan.ruleOf(key));
+        check("fixture: the city hands the site to the foreign crews whole (Game.handSiteAbroad()): all it owes is owed abroad at their pace, and the plan gives it no work and no rule's share",
+                why[0] == null && rec != null && near(rec.owed, site.owedPoints(), 1e-9) && rec.pace > 0 && plan.workOf(key) <= 0 && plan.ruleOf(key) <= 0);
+        if (rec == null) return;
+        Game.SiteLeft left = g.siteLeft(key, plan);
+        double months = rec.owed / rec.pace, crews = Math.min(rec.owed, rec.pace);
+        OUT.printf("   its line: %s at %.6f months; owed abroad over their pace %.6f%n", left.progress(), left.months(), months);
+        check("the right panel's line (Game.siteLeft()) says the site is built on, at the points owed abroad over the crews' pace",
+                left.progress() == Game.SiteProgress.BUILDING && near(left.months(), months, 1e-9));
+        check("...the same months as the build card's and the construction page's, to the bit", sameOnEveryScreen(g, school, left, null));
+        double progress = site.getConstructionProgress();
+        quietly(() -> g.simulateMonths(1));
+        double advanced = bm.getStack(school).getConstructionProgress() - progress;
+        OUT.printf("   the month built %.6f points on it; the crews' month %.6f%n", advanced, crews);
+        check("the month builds the site by the crews' month the line counted, the least of what was owed abroad and their pace", near(advanced, crews, 1e-9));
+        quietly(() -> {
+            built[1] = g.buildStack(school, 1, false);
+            g.getServicesManager().updateServices();
+        });
+        ConstructionControl.Abroad part = bm.getControl().abroadOf(key);
+        BuildingManager.Plan now = g.sitesPlan();
+        double homeOwed = part == null ? Double.NaN : site.owedPoints() - part.owed, work = now.workOf(key);
+        OUT.printf("   a second school paid for (%s): owed abroad %.0f, at home %.0f, the plan works the part at home %.0f a month%n", built[1], part == null ? Double.NaN : part.owed, homeOwed, work);
+        check("fixture: a second school paid for on the site leaves a part owed abroad and a part at home, which the plan works",
+                built[1] == Game.BuildResult.SUCCESS && part != null && part.owed > 0 && homeOwed > 0 && work > 0);
+        if (part == null) return;
+        Game.SiteLeft both = g.siteLeft(key, now);
+        double later = Math.max(homeOwed / work, part.owed / part.pace);
+        OUT.printf("   its line: %s at %.6f months; at home %.6f, abroad %.6f%n", both.progress(), both.months(), homeOwed / work, part.owed / part.pace);
+        check("the line says built on, at the later of the part at home (its points over the plan's work) and the part abroad (its points over their pace)",
+                both.progress() == Game.SiteProgress.BUILDING && near(both.months(), later, 1e-9));
+        check("...the same as the build card's and the construction page's, to the bit", sameOnEveryScreen(g, school, both, null));
     }
 
     /**
      * REV-ASH1 3: a town whose own crews give the sites nothing, standing roads' repairs taking every point of the builders' month (the trap,
      * ConstructionTrapCheck), while the foreign contractor's crews build: the right panel and the construction page decided "stalled" or
      * "waiting" on the city's crews alone, beside the finite months the card and the overview read. Their decision is Game.siteLeft(), on the
-     * month's plan as the advance takes it, and it says the site is built on, at the same months as every other screen.
+     * month's plan as the advance takes it, and it says the site is built on, at the same months as every other screen. Then (REV-ASH1 4) the
+     * contractor turned off: nothing works the site, and every screen says never.
      */
     static void noHomeOutput() {
         OUT.println("   -- no home output, the contractor's crews at work --");
         Game g = settledTown("pace-abroad", PACE_WARM_MONTHS, 0);
         BuildingManager bm = g.getBuildingManager();
         BuildingsTemplate big = bm.getTemplate(Substations.ID);
-        // The Substation is ordered and a month run, his crews' month settled on it; then standing Paved Roads as ConstructionTrapCheck lays them, as the
-        // player lays them between the presses, until their repairs take the builders' whole month: the roads raise the road ratio and with it the
-        // builders' month (ServicesManager.updateServices()), so they are laid again until the month after the repairs stays at nothing.
-        BuildingsTemplate road = named(g, DeathCareFirstCheck.ROAD);
-        double perRoad = road.getConstructionPoints() * road.repairsPerYear() / 12;
+        // The Substation is ordered and a month run, his crews' month settled on it; then the roads' repairs take the builders' whole month.
         quietly(() -> {
             bm.addStack(big, 1, false);
             g.getServicesManager().updateServices();
             g.simulateMonths(1);
-            for (int guard = 0; guard < 20 && g.getBuildingOutputAtEveryPost() > 0; guard++) {
-                if (g.buildStack(road, (int) Math.ceil(g.getBuildingOutputAtEveryPost() / perRoad) + 1, true) != Game.BuildResult.SUCCESS)
-                    throw new AssertionError("fixture roads did not stand");
-                g.getServicesManager().updateServices();
-            }
         });
+        trap(g);
         String key = ConstructionControl.keyOf(big);
         double settled = g.getSectors().construction().getForeignPointsThisMonth();
         BuildingManager.Plan home = bm.plan(g.getBuildingOutput()), plan = g.sitesPlan();
@@ -407,6 +533,21 @@ public final class TownGridCheck {
         check("...the same months as the overview's, the build card's and the construction page's, to the bit",
                 row != null && row.onSite() == 1 && Double.doubleToRawLongBits(left.months()) == Double.doubleToRawLongBits(row.onSiteMonths())
                 && Double.doubleToRawLongBits(left.months()) == Double.doubleToRawLongBits(card.siteMonths()) && Double.doubleToRawLongBits(left.months()) == Double.doubleToRawLongBits(page));
+
+        // ...and no work at all: the contractor turned off and a month run, so his month is no longer the town's, the roads laid again as needed.
+        OUT.println("   -- no work at all: the contractor off, the roads' repairs taking the builders' whole month --");
+        BuildingManager.buildersShortOn = false;
+        quietly(() -> g.simulateMonths(1));
+        trap(g);
+        BuildingManager.Plan none = g.sitesPlan();
+        Game.SiteLeft stalled = g.siteLeft(key, none);
+        OUT.printf("   the builders' month after repairs %d, his month as last settled %.0f; the plan gives it %.0f, a rule's share %.0f; its line: %s at %s months%n",
+                g.getBuildingOutputAtEveryPost(), g.getSectors().construction().getForeignPointsThisMonth(), none.workOf(key), none.ruleOf(key), stalled.progress(), stalled.months());
+        check("fixture: with him off and the roads' repairs taking the builders' whole month, the plan gives the Substation no work and no rule's share, and nothing of it is abroad",
+                g.getBuildingOutputAtEveryPost() == 0 && g.getSectors().construction().getForeignPointsThisMonth() == 0 && none.workOf(key) <= 0 && none.ruleOf(key) <= 0
+                && bm.getStack(big).getUnderConstruction() == 1 && bm.getControl().abroadOf(key) == null);
+        check("...and the line says stalled, at never (NaN) months, the overview's, the card's and the page's never too", stalled.progress() == Game.SiteProgress.STALLED
+                && Double.isNaN(stalled.months()) && sameOnEveryScreen(g, big, stalled, powerRow(g)));
     }
 
     static void pace(Game g, boolean contractorOn) {

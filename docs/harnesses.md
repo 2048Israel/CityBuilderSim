@@ -2,7 +2,7 @@
 
 Generated 2026-11-27 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**262 harness files, 30,508 labelled assertions.** AllChecks runs 262 of them.
+**262 harness files, 30,523 labelled assertions.** AllChecks runs 262 of them.
 
 ## Which harnesses read which class
 
@@ -35366,7 +35366,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L378 UserInterface makes a ToastRoom of its scroller, its page and its stack of toasts
   - L380 ...and keeps what it is told in pageScrollAt, the field the rebuild restores the player's place from
 
-## TownGridCheck.java - 36 labelled assertions
+## TownGridCheck.java - 51 labelled assertions
 
 > Power for a small town (batch ASH1).
 > 
@@ -35408,21 +35408,36 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L331 the labour market's posts (getTotalJobs) differ from every post by exactly the grid's withheld, in every job type and every month
   - L332 Substations.costs().payroll() and the struck book's are paid on the posts offered, each at its wage and fill, and the whole crew's once the carry is used
 - **L344 4. the months on the way are the site's pace**
-  - L395 fixture: the city's own crews give the sites nothing (the city's plan gives the Substation no share and no rule's share), while his crews' month as last sett...
-  - L405 the right panel's line and the construction page's status (Game.siteLeft(), the getter both call) say the site is built on, at finite months, the site's pace...
-  - L407 ...the same months as the overview's, the build card's and the construction page's, to the bit
-  - L435 fixture: his month as last settled is
-  - L446 fixture: the site's pace is under the rule's wait by a month or more (
-  - L449 the POWER row reads the wires and has the Substation on the way:
-  - L450 ...its months equal the site's owed points over the points the month's plan gives it (
-  - L459 ...and every screen reads that one figure, to the bit: the build card's \"1 on site\", the construction page's and the right panel's, the overview's, none of...
-  - L464 the pace reading includes his points: the plan gives the site more with them (
-  - L467 with him off the plan is the city's crews' alone, to the bit (
-  - L475 the month's advance is the reading's pace within the change of his month,
-  - L477 ...and nearer the reading with his points (
-  - L480 the month then advances the site by exactly the points the plan gave it, so the reading is the site's real pace
-- **L487 5. the money audit stays exact over section 2's months**
-  - L490 every one of section 2's
+  - L410 fixture: the city pays for a University and a Middle School, its own sites (
+  - L418 fixture: with the order set the University first, the Middle School behind it is worked by nobody, though the crews' rule would give it a share, and nothing ...
+  - L423 the right panel's line (Game.siteLeft()) says it waits for crews, at the queue's wait under the order (Game.siteMonths()), a finite number of months
+  - L426 ...the same months as the build card's and the construction page's, to the bit
+  - L453 fixture: the city pays for a Middle School, its own site, while its queue at home is within the threshold, so none of it is on his book
+  - L455 fixture: the foreign trade is open and the card offers the site abroad, sooner than at home
+  - L463 fixture: the city hands the site to the foreign crews whole (Game.handSiteAbroad()): all it owes is owed abroad at their pace, and the plan gives it no work ...
+  - L469 the right panel's line (Game.siteLeft()) says the site is built on, at the points owed abroad over the crews' pace
+  - L471 ...the same months as the build card's and the construction page's, to the bit
+  - L476 the month builds the site by the crews' month the line counted, the least of what was owed abroad and their pace
+  - L485 fixture: a second school paid for on the site leaves a part owed abroad and a part at home, which the plan works
+  - L491 the line says built on, at the later of the part at home (its points over the plan's work) and the part abroad (its points over their pace)
+  - L493 ...the same as the build card's and the construction page's, to the bit
+  - L521 fixture: the city's own crews give the sites nothing (the city's plan gives the Substation no share and no rule's share), while his crews' month as last sett...
+  - L531 the right panel's line and the construction page's status (Game.siteLeft(), the getter both call) say the site is built on, at finite months, the site's pace...
+  - L533 ...the same months as the overview's, the build card's and the construction page's, to the bit
+  - L546 fixture: with him off and the roads' repairs taking the builders' whole month, the plan gives the Substation no work and no rule's share, and nothing of it i...
+  - L549 ...and the line says stalled, at never (NaN) months, the overview's, the card's and the page's never too
+  - L576 fixture: his month as last settled is
+  - L587 fixture: the site's pace is under the rule's wait by a month or more (
+  - L590 the POWER row reads the wires and has the Substation on the way:
+  - L591 ...its months equal the site's owed points over the points the month's plan gives it (
+  - L600 ...and every screen reads that one figure, to the bit: the build card's \"1 on site\", the construction page's and the right panel's, the overview's, none of...
+  - L605 the pace reading includes his points: the plan gives the site more with them (
+  - L608 with him off the plan is the city's crews' alone, to the bit (
+  - L616 the month's advance is the reading's pace within the change of his month,
+  - L618 ...and nearer the reading with his points (
+  - L621 the month then advances the site by exactly the points the plan gave it, so the reading is the site's real pace
+- **L628 5. the money audit stays exact over section 2's months**
+  - L631 every one of section 2's
 
 ## TradeBandCheck.java - 41 labelled assertions
 
