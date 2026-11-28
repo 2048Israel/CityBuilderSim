@@ -2,8 +2,8 @@
 
 REV-CBK3b's second review of aed3b2916 is SHIP, no P1 (orchestrator mail
 20261127-230912-686). Main22b6eb96f is already merged. The final-model
-80-run ensemble is queued on the box as CBK3-final; a newly authorised dry
-run remains, and the failed old dry is not reusable. Base
+80-run ensemble CBK3-final is PASS, M1/F1 hard10/10, on the box; a newly
+authorised dry run remains, and the failed old dry is not reusable. Base
 b2f50a9ef, 0.9.213, format66; RES3's compatible format67 is now inherited.
 CBK1 main482dbfab2 (0.9.214, still format66) is merged for integration checks.
 The builder keeps decisions and review; CBK3-trace's bounded diagnostic
@@ -1948,7 +1948,7 @@ states that interest on the portion unpaid when due:
 
 > "shall be calculated at a rate 500 basis points higher than the applicable rate then in effect"
 
-This is the current primary-source PDF, checked on November27. Section2's
+This primary-source PDF, effective on the date above, was checked on November27. Section2's
 definition on printed page1 (PDF page4) makes the repayment amount include
 both the advance and its accrued unpaid interest. Thus the rule covers
 unpaid principal too; the quote is not authority for applying the extra
@@ -1992,3 +1992,140 @@ statements and named bank/gold/save checks. Follow the old-saves rule for
 any changed saved meaning. Default behaviour moves: stranger review and a
 final-model ensemble with M1/F1 hard stops. This is a distinct follow-up,
 not BFW1's wholesale credit risk or BPM1's bond-premium carrying.
+
+The first final-ensemble connection reset after42 DONE lines were observed;
+`target/CBK3-final-ensemble.txt` records SSH reset/disconnect, no box exit,
+and launcher **1**, not a score verdict. After reconnection main remains
+22b6eb96f. Preserve the completed remote CSVs and the exact approved aed
+snapshot; an isolated detached checkout at aed is prepared for official
+RESUME=1, because the root's later records-only commit would select another
+remote tools worktree. The read-only helper checks surviving process/lock
+and completion state before restart. No completed CSV is declared missing,
+green or rerun without that check; no model or score threshold changes.
+
+The helper's bounded transport report
+`20261128-051607-073-CBK3-res3-b170` confirms42 valid CSV/time pairs:
+AUTO2 16, ZERO_SLACK13, ZERO_HOT13;38 missing, including8 partial CSVs.
+There were0 NO DONE entries and no surviving own serve/shell/xargs/JVM at
+both09:10:58 and09:15:20UTC. The helper's turn24 ended before resumption.
+Official RESUME=1 keeps completed pairs and restarts incomplete runs from
+their starts; no mid-CSV completion is inferred. Root's separate detached
+aed worktree selects the SAME remote directory, while ENSEMBLE_OUT returns
+the eventual copy and score to the main CBK3 worktree's target/ensemble.
+
+External-data verification is kept in
+`target/CBK3-final-data-provenance.txt`. Box SHA256 values match the laptop's
+original named files: Earth2
+`c897b2421d0b742899c034eeba84a4668f6534cae85e9c5500fa9a26172ae33b`
+(281761695 bytes) and World1
+`fbd11a6a3b880ffeeae4e5c07e7a9d950b3d28f17f7c77656aea7a1071a6fcc1`
+(8712947 bytes). Both box modification times are November20, before the
+November28 snapshot. These files are external, not part of the classes
+snapshot; the verification does not pretend the runner hashes/copies them.
+The resumed launcher `target/CBK3-final-ensemble-resume.txt` explicitly
+reports **snapshot kept,38 of80 runs to do**, eight at a time on gatebox.
+The original transport exit1 remains separate; final M1/F1 scoring is pending.
+
+## Final ensemble verdict, 2026-11-28
+
+The official resumed launcher completes **exit0**, **80/80 runs**, no missing
+or short runs, **batch PASS**, **M1/F1 hard10/10**. Retained42 plus resumed38
+belong to the same aed snapshot; they are not a mixture of models or ASH1
+results. The resumed box phase takes8.5 minutes. Artifacts are
+`target/ensemble/CBK3-final/{snapshot.txt,score.md,baseline.md,summary.json}`,
+all policy/seed CSVs, times and logs; the driver is
+`target/CBK3-final-ensemble-resume.txt`. The initial disconnected launcher's
+exit1 remains labelled transport failure, not a score.
+
+The counted score is **20/25**, with1 vacuous and1 retired criterion excluded.
+Changed informational verdicts against the approved replay: ZERO_HOT H2
+PASS to VACUOUS; T2 PASS to FAIL in ZERO_HOT, SHOCK and HIGH. These are
+recorded rather than hidden or made additional ship stops. The official
+side-by-side score is now [the final baseline](../ensemble/CBK3.md), replacing
+the obsolete4ff baseline at that publication path; its earlier observations
+in these notes stay historical. The heading/introduction use{next}, while
+the actual source commit, snapshot time, data files, host and Java are kept.
+The read-only helper independently verifies all80 exact full-horizon DONE
+logs,80 valid CSV/time pairs,0 NO DONE and exact agreement between the
+approved before document's fenced JSON and its replay summary. Its report
+is `20261128-053443-917-CBK3-res3-3eb9`; calculation artifacts are
+`../codex-CBK3-res3/target/CBK3-res3-final-ensemble-observations.{txt,json,py}`.
+Its turn25 ends with no jobs. The counted score is **24/26 before ->20/25
+final**, beside unchanged **M1/F1 hard10/10 PASS on both**. Every policy has
+0 failed/0 unread recorded M1 months and0/16 F1 findings, with empty names.
+
+### Final observed remittances and rescued failure episodes
+
+Shares are100 times SUM(cb_remitted)/SUM(budget_revenue), not averages of
+city ratios. Both sides contain102352 recorded months,16 seeds per policy,
+with matched continuous windows: AUTO2 m2..2400, ZERO_SLACK m2..2040,
+ZERO_HOT m2..402, SHOCK m2..840, HIGH m2..720. Denomination stays at unit1.
+These are nominal revenue weights across recorded time; counterfactual
+policy prefixes repeat, so the aggregate is not80 independent cities.
+
+| Policy | Before remittance/revenue % | Final % | Before failure episodes | Final episodes | Pairs with more episodes |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| AUTO2 |0.061122288|0.088759679|80|52|3/16|
+| ZERO_SLACK |0.194778204|0.192379116|67|51|3/16|
+| ZERO_HOT |4.668742325|1.251922116|45|28|3/16|
+| SHOCK |5.877349694|2.730564514|50|51|5/16|
+| HIGH |2.432930655|0.504158290|47|49|5/16|
+| All pooled |0.111123032|0.117293098|289|231|19/80|
+
+The default young AUTO2 window m241..600 falls from**5.478031103%** to
+**0.754076323%**. The young HOT window m241..402 falls from**5.254215701%** to
+**1.612898388%**. The all-policy pooled share instead rises slightly; it is
+not reported as an aggregate reduction. Failure episodes fall overall,
+but19 pairs increase,51 decrease and10 are equal; runs with any episode
+fall from78/80 to70/80. Thus the brief's **no-new-bank-failures aim is not
+met**, despite the hard PASS. Formerly healthy HOT/6 now has1 increment at
+m234 (before0), while HOT/4 remains0 (before0). The prior historical4ff
+counts and copy-city measurements are not relabelled as these final results.
+
+### Audit observation limit
+
+The raw native maximum audit residual is **not observed/exported** by this
+ensemble. Exported audit_residual has maximum absolute value0, because
+Ensemble.Adapter.auditResidual maps passing residual/relative/drift tests
+to0; neither raw zero nor a raw cent ceiling follows from that export.
+Report the actual M1 verdict and0 failed/unread audit months, not an invented
+raw maximum. The named native bank, monetary, gold and saved-flow cent checks
+and their actual recorded residuals remain the separate evidence above.
+No check or threshold is weakened to hide this measurement limitation.
+
+### Remaining formerly healthy HOT/6 event
+
+The helper's read-only follow-up
+`20261128-054148-249-CBK3-res3-fba4` checks final m234 against the earlier
+trace. It is **not the same event**: the committed4ff/c52 trace covers
+seed6 m132/133/135/300/312 and seed4 m176. Its old loss bridges and2406
+covered scheduled snapshots cannot certify final aed's changed m234 path.
+Baseline842 has no episode; final increments0 to1 between233 and234, while
+historical4ff already has counter3 at both months.
+
+The sole Bank.failures increment is conditional on shortfall=-equity()>0
+and not already in resolution; equity is assets less liabilities. This
+establishes **book insolvency at the increment**. The export does not prove
+or exclude a collateral-only failure of an economically solvent bank, nor
+establish correct carrying values or the size/cause of the loss. Final closing
+capital ratio moves8.54134033% to13.4722101%, after repair; that repaired
+number is not evidence of pre-rescue solvency. The CSV cannot identify
+which of Game's two resolution checks produced the increment.
+
+The export's cb_advances field is **advances to the treasury**, not bank H.
+Its zero cannot show that the bank's window did not bind. Authoritative
+H/deferred/interest-due, raw collateral/request, foreign principal/rate/bill,
+settlement gap, desk/stable room and provision/mark/premium loss bridge are
+not exported here. Closing household deposits or treasury cash cannot
+reconstruct an intra-month run or rescue payment. Thus the old BPM1
+seed4/176 premium proof is **not assigned to this new event**, and economic
+solvency and contributory funding/collateral expense remain unobserved.
+There is no evidence proving a solvent-bank/collateral-only failure, and
+this event is not certified harmless by importing the old diagnosis.
+
+Exact rows/source legs and limits are kept in
+`../codex-CBK3-res3/target/CBK3-res3-final-HOT6-m234.txt`. No new replay,
+fixture, model/scorer edit or process control was used; helper turn26 ended
+with no jobs. The actual M1/F1 PASS, the unmet no-new-failures aim and these
+limits all go to the orchestrator with the dry-run request. The approved
+model remains unchanged.
