@@ -16,3 +16,4 @@ are recorded in the notes.
 | LE1 | Identify borrowers and connected groups before exposing a large-exposure limit | docs/queue/LE1.md |
 | BFW1 | Price the bank's own wholesale credit risk and close new market funding in resolution | docs/queue/BFW1.md |
 | BPM1 | Carry and amortize the bank's purchased treasury-bond premiums; stop the inherited immediate premium capital write-down | docs/queue/BPM1.md |
+| BWP1 | Price opening overdue window principal past its due tranche at the OC10 past-due rate, after CBK3; preserve once-only base interest and reserve-capped repayment | docs/queue/CBK3-notes.md#bwp1-deferred-principal-at-the-past-due-rate |

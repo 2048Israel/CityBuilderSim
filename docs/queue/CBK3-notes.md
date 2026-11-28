@@ -1,8 +1,9 @@
 # CBK3 - the window against collateral and the bank's rules as dials
 
-Review candidate: named verification of the morning money mends and evening
-old-dry repairs is complete for REV-CBK3b's second look. The final-model
-ensemble and a new authorised dry run remain; the failed old dry is not reusable. Base
+REV-CBK3b's second review of aed3b2916 is SHIP, no P1 (orchestrator mail
+20261127-230912-686). Main22b6eb96f is already merged. The final-model
+80-run ensemble is queued on the box as CBK3-final; a newly authorised dry
+run remains, and the failed old dry is not reusable. Base
 b2f50a9ef, 0.9.213, format66; RES3's compatible format67 is now inherited.
 CBK1 main482dbfab2 (0.9.214, still format66) is merged for integration checks.
 The builder keeps decisions and review; CBK3-trace's bounded diagnostic
@@ -1208,9 +1209,10 @@ Its incidental non-vacuity premise is uncaused under the changed funding
 trace. Two equal-zero monitor assertions alone do not prove the mechanism.
 
 ★ Preserve that town's founding, horizon and every calendar/base assertion.
-Cause the deferred-window condition separately by native gold retirement in
-GoldStandardCheck 15b: native loans, haircut collateral and stable funding
-permit an actual draw of 100; a gold payment of 80 is retired at the next
+Cause the deferred-window condition separately by pre-audit reserve
+preparation in GoldStandardCheck 15b: native loans, haircut collateral and
+stable funding permit an actual draw of100; a fixture adjustment of80 across
+the gold vault and reserves is retired at the next
 top; the remaining 20 reserves repay only 20, leaving actual/deferred 80 and
 zero reserves. The next actual need is only 30. Assert the full 80-dollar
 interest invoice and the 50-dollar past-active subset, matching accrual on
@@ -1242,7 +1244,7 @@ logs have `-first-red.log` suffixes. Helper reports and source/operand
 diagnoses: `../codex-CBK3-res3/target/CBK3-res3-gold-diagnosis.txt` and
 `CBK3-res3-mortgage-diagnosis.txt`. No helper JVM or fresh baseline was run.
 Revised MortgageCheck and GoldStandardCheck both exit **0**, with their
-current logs at `target/CBK3-res3-<Name>.log`. The added native gold case
+current logs at `target/CBK3-res3-<Name>.log`. The added deferred-window fixture
 actually exercises all reserve/deferred/bill/collection premises and both
 cent-closure assertions. CentralBankCheck is now running, then default
 LongPlaytest. The older laptop run hit the generic 1,740-second budget (the
@@ -1413,9 +1415,10 @@ component, and full SaveFileCheck passes.
 P3: restore a positive genuinely played overdue/charged counter. The fixed
 calendar proof retains its founding, horizon and all date/base assertions;
 a controlled continuation uses real native bill issuance and normal month
-settlement, an actual XAU sale paired with the reserve retirement, saved
-window limit zero and two normal played months through MoneyAudit. Native
-15b remains additional coverage. The first continuation failed honestly:
+settlement, then a pre-audit XAU/reserve adjustment with a real vault leg but
+no paying pool, saved window limit zero and two normal played months through
+MoneyAudit. The gold adjustment is fixture preparation, not a native paying
+redemption. Section15b remains additional coverage. The first continuation failed honestly:
 its issue sizing did not create actual H, so the invoice/due stayed zero.
 The helper identified omitted gathered deposits/household take-up; sizing now
 covers native liquid funding/stable need and grosses up by the household
@@ -1926,3 +1929,66 @@ generated body is retained. Known-red validation is **0**, and LE1/BFW1/BPM1
 all recheck free against current origin/main. The sector-statement result
 specifically covers **3000 statements /36300 screen lines /120 months**,
 every one balanced and readable. No further source change is needed.
+
+## Second SHIP and final measurement, 2026-11-27
+
+REV-CBK3b's second look at aed3b2916 is SHIP, no P1. Fetch and merge confirm
+main22b6eb96f is already included. Start a fresh label, **CBK3-final**, so no
+4ff snapshot or earlier completed CSV can be reused. The box runs pushed
+aed3b2916, against the approved getter-only **CBK3-before** replay of the
+0.9.212 baseline. Preflight found only ASH1's ensemble; the normal box runner
+queues this one behind it. M1 and F1 remain hard stops, judged from CBK3's
+own completed run. No final verdict is claimed while queued/running.
+
+### Verified OC10 quotation and scope
+
+The Federal Reserve Banks' [OC10, effective August28,2023, section4.2,
+printed page5 (PDF page8 of33)](https://www.frbservices.org/wp-content/uploads/082823-operating-circular-10.pdf#page=8)
+states that interest on the portion unpaid when due:
+
+> "shall be calculated at a rate 500 basis points higher than the applicable rate then in effect"
+
+This is the current primary-source PDF, checked on November27. Section2's
+definition on printed page1 (PDF page4) makes the repayment amount include
+both the advance and its accrued unpaid interest. Thus the rule covers
+unpaid principal too; the quote is not authority for applying the extra
+500bp only to an interest receivable. CBK3 implements the latter part.
+At Bank.fundToCover around3685, RES3's opening deferred principal past the
+active tranche still pays just the window rate. That remaining P2 is queued
+as BWP1 after CBK3, as the orchestrator directed, rather than silently
+claiming complete OC10 coverage or changing the approved final model.
+
+### Gold15a fixture wording corrected
+
+GoldStandardCheck around1173 calls sellReserves, goldPaidOut and
+settleGoldRedeemed directly while preparing the zero-reserve state. There
+is a real matching gold-vault leg, but **no paying pool** for that reserve
+retirement. This is a pre-audit fixture adjustment, not a native customer or
+treasury redemption and not proof of the conservation of such a redemption.
+The native bill issue/settlement before it and the two ordinary audited
+months after preparation are separate evidence. Their positive invoices,
+once-only accrual and cent closure remain the results recorded above. No
+source, fixture, audit threshold or saved meaning changes with this wording
+correction. Earlier descriptions of the gold preparation as native have
+been corrected.
+
+### BWP1: deferred principal at the past-due rate
+
+Queue **BWP1 after CBK3**; its id rechecks free with tools/batch-id.sh.
+Price the opening unpaid principal held past its due tranche under OC10
+section4.2, as well as the unpaid opening interest already covered here.
+Cause a genuine attempted repayment capped by reserves, positive held
+principal above active funding and a subsequent charged month. Distinguish
+performing/new principal, overdue principal and opening interest. Add the
+500bp increment only to the unpaid overdue principal's existing base-rate
+charge, so each principal dollar's base interest is still booked once.
+The bank expense and central-bank receivable must match; collections remain
+actual cash, debt remains owed, and repayment ends the extra charge. Preserve
+RES3's reserve cap, collateral ceiling and both books' saved flows. Check
+opening/partial repayment/later payment, no premature fee on today's new
+invoice, save continuation and full money/pool/M0 closure to the cent.
+Likely scope: Bank.fundToCover, CentralBank's invoice/collection, their
+statements and named bank/gold/save checks. Follow the old-saves rule for
+any changed saved meaning. Default behaviour moves: stranger review and a
+final-model ensemble with M1/F1 hard stops. This is a distinct follow-up,
+not BFW1's wholesale credit risk or BPM1's bond-premium carrying.
