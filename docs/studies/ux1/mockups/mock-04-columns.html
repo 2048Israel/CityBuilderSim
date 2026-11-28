@@ -1,0 +1,139 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>UX1 mockup 4: columns (alternative)</title>
+<link rel="stylesheet" href="lib/frame.css"><script src="lib/icons.js"></script><script src="lib/frame.js"></script>
+<style>
+  /* the map recentred on the third it keeps: the city moves from the middle of the window to the right third */
+  .ground { background-position: 530px 0; background-repeat: no-repeat; }
+  .col { position: absolute; top: var(--strip); bottom: 0; width: 400px; background: rgba(16, 25, 36, .975); border-right: 1px solid var(--edge);
+    z-index: 16; display: flex; flex-direction: column; }
+  .col.last { box-shadow: 8px 0 24px rgba(0,0,0,.35); }
+  .col .ch { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 12px; border-bottom: 1px solid var(--edge); flex: none; }
+  .col .ch b { font-size: 15px; font-weight: 600; }
+  .col .ch .lv { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; color: var(--spent); font-weight: 600; }
+  .col .ch .grow { flex: 1; }
+  .col .cb { flex: 1; overflow: hidden; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+  .figs3 { grid-template-columns: repeat(3, 1fr); }
+  .figs3 .v { font-size: 15px; }
+  .srow { display: flex; align-items: center; gap: 9px; height: 37px; padding: 0 8px; border-radius: 7px; border: 1px solid transparent; }
+  .srow + .srow { margin-top: 1px; }
+  .srow .nm { flex: 1; line-height: 1.15; font-size: 12.5px; }
+  .srow .nm small { display: block; font-size: 10.5px; color: var(--spent); }
+  .srow .k { font-family: PlexMono; font-size: 12.5px; text-align: right; }
+  .srow.idle { color: var(--spent); }
+  .srow.idle .k { color: var(--spent); }
+  .srow.on { background: var(--control); border-color: var(--business); }
+  .srow .chev { color: var(--soft); font-size: 15px; width: 10px; }
+  .page { display: block; padding: 10px 12px; border-radius: 9px; background: var(--raised); border: 1px solid var(--edge); }
+  .page.on { border-color: var(--business); background: #1d1f36; }
+  .page .t { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px; }
+  .page .t .grow { flex: 1; }
+  .page .kv { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 7px; }
+  .page .kv div { font-size: 10.5px; color: var(--soft); line-height: 1.3; }
+  .page .kv b { display: block; font-family: PlexMono; font-size: 13.5px; font-weight: 500; color: var(--text); }
+  .st .r { display: flex; justify-content: space-between; align-items: baseline; height: 22px; font-size: 12.5px; }
+  .st .r .f { font-family: PlexMono; }
+  .st .r.zero { color: var(--spent); }
+  .st .r.tot { border-top: 1px solid var(--control-edge); margin-top: 4px; padding-top: 3px; height: 27px; font-weight: 600; }
+  .st .t { font-size: 10px; letter-spacing: .07em; text-transform: uppercase; font-weight: 600; color: var(--business-light); margin: 2px 0 4px; }
+  .stack { display: flex; height: 12px; gap: 2px; border-radius: 4px; overflow: hidden; }
+  .stack i { display: block; height: 100%; }
+  .ratios { display: grid; grid-template-columns: 1fr 1fr; padding: 0; }
+  .ratios > div { padding: 6px 12px; border-left: 1px solid var(--edge); border-top: 1px solid var(--edge); }
+  .ratios > div:nth-child(2n+1) { border-left: 0; }
+  .ratios > div:nth-child(-n+2) { border-top: 0; }
+  .ratios .k { font-size: 11px; color: var(--soft); }
+  .ratios .v { font-family: PlexMono; font-size: 13.5px; font-weight: 500; }
+  .lit { position: absolute; width: 13px; height: 13px; border: 2px solid #c9b8ff; border-radius: 3px; z-index: 6;
+    box-shadow: 0 0 0 2px rgba(20, 10, 40, .55), 0 0 9px 2px rgba(167, 139, 250, .85); background: rgba(167, 139, 250, .25); }
+</style></head>
+<body><script>
+frame({ ground: 'city', figures: CITY, on: 'sectors', needsList: NEEDS_CITY });
+
+const B = AREA.business;
+const sec = (ic, nm, sub, k, cls = '') => `<div class="srow ${cls}">${icon(ic, 16, cls === 'idle' ? '#5f7189' : B)}<div class="nm">${nm}<small>${sub}</small></div>
+  <span class="k ${k.startsWith('−') ? 'bad' : ''}">${k}</span><span class="chev">${cls.includes('on') ? '›' : ''}</span></div>`;
+const r = (k, v, cls = '') => `<div class="r ${cls}"><span>${k}</span><span class="f">${v}</span></div>`;
+const page = (ic, t, kv, on = '') => `<div class="page ${on}"><div class="t">${icon(ic, 15, B)}${t}<span class="grow"></span><span style="color:var(--soft)">›</span></div>
+  <div class="kv">${kv.map(([v, s]) => `<div><b>${v}</b>${s}</div>`).join('')}</div></div>`;
+
+document.body.insertAdjacentHTML('beforeend', `
+<div class="col" style="left:76px">
+  <div class="ch"><span class="lv">1</span><b>Sectors</b><span class="grow"></span><span class="small">25 sectors</span></div>
+  <div class="cb">
+    <div class="figs figs3">
+      <div><div class="k" style="color:${B}">Kept</div><div class="v">$2.2T</div><div class="s">a month</div></div>
+      <div><div class="k" style="color:${B}">Losing</div><div class="v bad">8 of 25</div><div class="s">Luxury Retail −$60.5B</div></div>
+      <div><div class="k" style="color:${AREA.people}">Workers</div><div class="v">78,541</div><div class="s">of 79,043 posts</div></div></div>
+    <div class="h">Kept a month <span>a row opens its books beside it</span></div>
+    <div>
+    ${sec('HOMES', 'Real Estate', 'homes · 401 workers', '$74.8B')}
+    ${sec('SHOPS', 'Retail', 'shops, groceries · 4,286 workers', '−$32.6B')}
+    ${sec('MILL', 'Industry', 'food mills · no plant standing', '−$2.2M', 'idle')}
+    ${sec('FOOD', 'Food Processing', 'no plant standing', '−$409k', 'idle')}
+    ${sec('INGOT', 'Iron &amp; Steel', 'running at 4% · 197 workers', '−$47.9M')}
+    ${sec('GEAR', 'Manufacturing', 'running at 43% · 64,129 workers', '$2.2T', 'on')}
+    ${sec('ORE', 'Iron Mining', 'no deposit to dig', '$0', 'idle')}
+    ${sec('ORE', 'Coal Mining', 'no deposit to dig', '$0', 'idle')}
+    ${sec('ORE', 'Quarrying', 'no deposit to dig', '$0', 'idle')}
+    ${sec('INDUSTRY', 'Cement &amp; Concrete', 'no plant standing', '$312', 'idle')}
+    ${sec('ORE', 'Copper Mining', 'no deposit to dig', '$0', 'idle')}
+    ${sec('INDUSTRY', 'Copper Refining', 'no plant standing', '$0', 'idle')}
+    ${sec('TREES', 'Forestry', 'no plant standing', '$48k', 'idle')}
+    ${sec('INDUSTRY', 'Wood Products', 'no plant standing', '$43k', 'idle')}
+    ${sec('DROP', 'Oil', 'no oil deposit to drill', '$0', 'idle')}
+    ${sec('FLAME', 'Refining', 'no plant standing', '$0', 'idle')}
+    ${sec('BUILD', 'Materials', 'no plant standing', '$3,561', 'idle')}
+    ${sec('CRANE', 'Construction', 'running at 6%', '$62.3B')}
+    </div>
+    <div class="small" style="text-align:center">7 more below</div></div></div>
+
+<div class="col" style="left:476px">
+  <div class="ch"><span class="lv">2</span>${icon('GEAR', 17, B)}<b>Manufacturing</b><span class="grow"></span><span class="btn build" style="height:26px">${icon('BUILD', 13)} Build ›</span></div>
+  <div class="cb">
+    <div class="small">Industry · fabrication and machinery · its five books</div>
+    ${page('OVERVIEW', 'Operations', [['43%', 'running at'], ['60%', 'freight, the<br>worst cut'], ['64,129', 'workers']])}
+    ${page('COIN', 'Income', [['$2.2T', 'kept a month'], ['44.3%', 'margin'], ['−$11.9B', 'on last month']])}
+    ${page('BANKNOTE', 'Balance sheet', [['$66.8T', 'owns'], ['$0', 'owes'], ['$66.8T', 'owners’ equity']], 'on')}
+    ${page('SAFE', 'Cash &amp; debt', [['$13.9T', 'cash'], ['$0', 'owes nothing'], ['0%', 'debt to assets']])}
+    ${page('POPULATION', 'Investors', [['4', 'on site,<br>+1 Fabrication Works'], ['39.6%', 'return on<br>equity, a year'], ['$98,440', 'book a share']])}
+  </div></div>
+
+<div class="col last" style="left:876px">
+  <div class="ch"><span class="lv">3</span><b>Balance sheet</b><span class="grow"></span><span class="btn">${icon('EXPAND', 14)} Wide</span><span class="btn">${icon('CLOSE', 14)}</span></div>
+  <div class="cb">
+    <div class="h">What it owns, and the claims on it <span>$66.8T a side</span></div>
+    <div class="card" style="padding:9px 12px">
+      <div class="stack"><i style="flex:50.4;background:#5f7189"></i><i style="flex:13.9;background:#d3c5fd"></i><i style="flex:2.0;background:#8b6fe0"></i><i style="flex:.6;background:#9a86c9"></i></div>
+      <div class="stack" style="margin-top:6px"><i style="flex:1;background:${B}"></i></div></div>
+    <div class="card st" style="padding:8px 12px">
+      <div class="t">What it owns</div>
+      ${r('Buildings', '$50.4T')}${r('Cash', '$13.9T')}${r('Land', '$2.0T')}${r('Other businesses’ bonds', '$406.1B')}${r('Held abroad', '$43.2B')}${r('Stock', '$11.8B')}
+      ${r('Owns', '$66.8T', 'tot')}
+      <div class="t" style="margin-top:10px">What it owes, and its owners’ part</div>
+      ${r('Loans and bonds', '$0', 'zero')}${r('Owners’ equity', '$66.8T')}
+      ${r('Owes and equity', '$66.8T', 'tot')}</div>
+    <div class="small">Against last month: owns <span class="mono bad">−$94.3B</span> · cash <span class="mono bad">−$38.4B</span></div>
+    <div class="h">Read as ratios <span>quick and current: none, nothing owed</span></div>
+    <div class="card ratios">
+      <div><div class="k">Debt to equity</div><div class="v">0.00</div></div>
+      <div><div class="k">Owners’ share</div><div class="v">100.0%</div></div>
+      <div><div class="k">Return on equity</div><div class="v good">39.6% <span class="small">a year</span></div></div>
+      <div><div class="k">Book a share</div><div class="v">$98,440</div></div></div>
+    <div class="h">Its equity this month</div>
+    <div class="card st" style="padding:6px 12px">
+      ${r('At the start', '$66.9T')}${r('Its profit', '<span class="good">+$2.2T</span>')}${r('Outside its trading', '<span class="good">+$2.1B</span>')}
+      ${r('Its owners', '<span class="bad">−$2.0T</span>')}${r('Revalued, and the rest', '<span class="bad">−$316.7B</span>')}${r('At the end', '$66.8T', 'tot')}</div>
+  </div></div>
+`);
+
+// Manufacturing's works lit on the third of the map that is left (the same cells as mockup 2, moved with the map)
+const works = [[772, 276], [806, 312], [840, 345], [873, 286], [907, 262], [906, 318], [872, 350], [938, 412], [906, 452], [968, 482],
+  [969, 662], [1074, 668], [916, 627], [905, 786]];
+document.body.insertAdjacentHTML('beforeend', works.map(([x, y]) => `<div class="lit" style="left:${x + 530}px;top:${y}px"></div>`).join('') + `
+${outline(78, 54, 1198, 1024)}
+
+${note(492, 640, '<b>1 · Every level in view.</b> Sectors, Manufacturing and its balance sheet sit side by side, 400 px each; the row that opened the next column stays lit, so the way back is a click on what is already on screen.')}
+${note(1300, 940, '<b>2 · The trade-off.</b> Three levels take 1,200 px: the map keeps a third, recentred on the city, and a page gets 400 px, narrower than the panel’s 560.')}
+${note(1330, 1030, '<b>UX1 mockup 4 · columns · P1 B, alternative.</b> Every level in view, but the map keeps a third.', 'pick')}
+`);
+</script></body></html>

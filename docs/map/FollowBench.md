@@ -1,6 +1,6 @@
 # FollowBench.java - 918 lines · 33 methods · 14 constants · interface
 
-`ham/citybuildersim/ui/FollowBench.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/FollowBench.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > The Reenactor on the real window (TR2, 2026-11-09): a city's window made as the game makes it (UserInterface.start on an
 > undecorated stage that is invisible and off every screen, laid out at 1600 x 900), and logged events played into it, with
@@ -15,7 +15,7 @@
 
 **Uses:** [InputLog](InputLog.md) (57), [UserInterface](UserInterface.md) (22), [ReplayCheck](ReplayCheck.md) (10), [Reenactor](Reenactor.md) (8), [FollowRules](FollowRules.md) (7), [ReplayMode](ReplayMode.md) (7), [GamePrefs](GamePrefs.md) (7), [Game](Game.md) (6), [Recording](Recording.md) (5), [GameFiles](GameFiles.md) (3), [LongPlaytest](LongPlaytest.md) (1), [TempDirs](TempDirs.md) (1), [InputTimeline](InputTimeline.md) (1)
 
-**Used by (6):** [AllChecks](AllChecks.md), [KeptCheck](KeptCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TimingCheck](TimingCheck.md), [UiProbe](UiProbe.md)
+**Used by (9):** [AllChecks](AllChecks.md), [KeptCheck](KeptCheck.md), [PagePictures](PagePictures.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [SteadyBench](SteadyBench.md), [TimingCheck](TimingCheck.md), [UiProbe](UiProbe.md), [UiSteadyCheck](UiSteadyCheck.md)
 
 ## Sections
 

@@ -1,6 +1,6 @@
 # ModernRowsCheck.java - 868 lines · 24 methods · 9 constants · harnesses
 
-`ham/citybuildersim/ModernRowsCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ModernRowsCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > R6f's three research rows and R6e-rest's one, each undone in a city founded the 1900 way until it is known:
 > robot-assisted surgery's share of general care's stays (M12), the Contact Centre's agents' 14% (B10), Basel

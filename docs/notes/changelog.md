@@ -18,6 +18,9 @@ never came, and were moved here on 2026-10-20.
 
 ---
 
+### UX1 — the interface rework's study — 2026-11-27, ready, see docs/queue/UX1-notes.md
+The study for Jerus's interface rework: the map as the ground of every screen, going deeper while it stays in view, alerts as a row of marks at the top. A picture tool, `ui.PagePictures`, writes every rail page and sub-page of a city, 122 of them, at 1920x1080 from a copied slot or the playtest's city at any month. A new harness, `UiSteadyCheck` (in AllChecks and its display list), holds the real window still on every page. An unchanged redraw must move nothing, rebuild nothing and grow nothing, and a month must keep the scroller's pixel. Its 33 reds on today's pages are three faults, each a known red owned by the row that mends it: Services and Infrastructure breathe by a pixel, Revenue rebuilds a line, and Build's Industry holds its place as a fraction. The audit reads all 122 pages on three cities, the young town of slot 1 and the playtest's city at 606 and 2,406 months, and finds alarms buried in six places, walls of cards, money written many ways, and Build not telling the city's buildings from the market's. Ten mockups in the game's own look over the real map draw four picks for Jerus, each with a recommendation and its alternatives: where pages open, the needs, the alerts and the build screen. Twelve rows, UX2 to UX13, are queued with their briefs, written to the recommendations. Nothing a player sees changes; `docs/studies/ux1/`.
+
 ### 0.9.217 — AP8, slot 9 at 50x: the households' bond orders and the build quote — 2026-11-27, ready, see docs/queue/AP8-notes.md
 Slot 9 was still short of 10 months a second at 50x after AP7. Each household bid the bond market posted walked every
 better bid on its side, working out the rounding band at each one. A side that stands in plain price order now finds the

@@ -1,6 +1,6 @@
 # ZoningScreen.java - 1,149 lines · 72 methods · 25 constants · interface
 
-`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ui/ZoningScreen.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > Policy › Zoning (0.7.109, batch Z2): the fifth Policy area - the city's
 > ground and its zones on one page, a sector's zone on its own page of dial
@@ -40,7 +40,7 @@
 
 **Uses:** [PolicyScreen](PolicyScreen.md) (77), [Palette](Palette.md) (75), [ZoningView](ZoningView.md) (64), [Kept](Kept.md) (58), [Zoning](Zoning.md) (54), [LandManager](LandManager.md) (45), [Icons](Icons.md) (16), [Pieces](Pieces.md) (15), [PolicyPreview](PolicyPreview.md) (9), [Money](Money.md) (9), [TaxPolicy](TaxPolicy.md) (6), [Sector](Sector.md) (4), [Game](Game.md) (4), [Ladder](Ladder.md) (4), [BuildCard](BuildCard.md) (4), [UserInterface](UserInterface.md) (2), [Formats](Formats.md) (2), [Forestry](Forestry.md) (2), [LandMap](LandMap.md) (1), [Sectors](Sectors.md) (1), [EconomyManager](EconomyManager.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1)
 
-**Used by (3):** [BuildScreen](BuildScreen.md), [KeptBench](KeptBench.md), [PolicyScreen](PolicyScreen.md)
+**Used by (4):** [BuildScreen](BuildScreen.md), [KeptBench](KeptBench.md), [PagePictures](PagePictures.md), [PolicyScreen](PolicyScreen.md)
 
 ## Sections
 

@@ -1,0 +1,129 @@
+/* UX1's mockups: the game's own look (ui/Palette.java, IBM Plex, ui/Icons.java) over a real picture of the map.
+   Each mockup is one 1920x1080 page: lib/frame.js draws the frame, the page draws its own part. */
+@font-face { font-family: Plex; src: url(../../../../../src/main/resources/fonts/IBMPlexSans-Regular.ttf); font-weight: 400; }
+@font-face { font-family: Plex; src: url(../../../../../src/main/resources/fonts/IBMPlexSans-Medium.ttf); font-weight: 500; }
+@font-face { font-family: Plex; src: url(../../../../../src/main/resources/fonts/IBMPlexSans-SemiBold.ttf); font-weight: 600; }
+@font-face { font-family: Plex; src: url(../../../../../src/main/resources/fonts/IBMPlexSans-Bold.ttf); font-weight: 700; }
+@font-face { font-family: PlexMono; src: url(../../../../../src/main/resources/fonts/IBMPlexMono-Regular.ttf); font-weight: 400; }
+@font-face { font-family: PlexMono; src: url(../../../../../src/main/resources/fonts/IBMPlexMono-Medium.ttf); font-weight: 500; }
+@font-face { font-family: PlexMono; src: url(../../../../../src/main/resources/fonts/IBMPlexMono-SemiBold.ttf); font-weight: 600; }
+
+:root {
+  --stage: #0b1118; --panel: #101924; --raised: #152130; --control: #1a2839; --hover: #22334a;
+  --edge: #24354a; --control-edge: #33475f; --text: #e6edf3; --soft: #9fb0c3; --spent: #5f7189;
+  --good: #3fb950; --warn: #e3b341; --bad: #f85149; --alert-ground: #331d1d; --alert-edge: #c0392b; --accent: #5aa9ff;
+  --people: #2ec4b6; --money: #5aa9ff; --business: #a78bfa; --building: #f17cb0;
+  --people-light: #93e2da; --money-light: #a9d1ff; --business-light: #d3c5fd; --building-light: #f9bcd7;
+  --strip: 52px; --rail: 76px;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--stage); color: var(--text);
+  font-family: Plex, sans-serif; font-size: 13px; }
+.mono { font-family: PlexMono, monospace; }
+.ground { position: absolute; inset: 0; background-size: 1920px 1080px; }
+.dim { position: absolute; inset: 0; background: rgba(6, 10, 15, .62); }
+svg.i { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* ----- the top strip ----- */
+.strip { position: absolute; left: 0; top: 0; right: 0; height: var(--strip); background: rgba(16, 25, 36, .97);
+  border-bottom: 1px solid var(--edge); display: flex; align-items: center; padding: 0 12px; gap: 6px; z-index: 20; }
+.play { width: 34px; height: 34px; border-radius: 50%; background: #2ea043; display: grid; place-items: center; }
+.date { margin: 0 14px 0 8px; line-height: 1.15; }
+.date b { font-size: 16px; font-weight: 600; display: block; }
+.date span { font-size: 11px; color: var(--soft); }
+.fig { height: 40px; padding: 3px 12px; border-left: 1px solid var(--edge); display: flex; flex-direction: column; justify-content: center; min-width: 120px; }
+.fig .k { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+.fig .v { font-family: PlexMono, monospace; font-size: 16px; font-weight: 500; line-height: 1.1; }
+.fig .v small { font-family: Plex; font-size: 11px; color: var(--soft); font-weight: 400; margin-left: 6px; }
+.strip .grow { flex: 1; }
+.chip { height: 30px; padding: 0 10px; border-radius: 7px; background: var(--control); border: 1px solid var(--control-edge);
+  display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.badge { min-width: 17px; height: 17px; border-radius: 9px; background: var(--bad); color: #fff; font-size: 10px; font-weight: 700;
+  display: inline-grid; place-items: center; padding: 0 4px; }
+.aaa { background: #2ea043; color: #06210d; font-weight: 700; font-size: 11px; border-color: #2ea043; }
+
+/* ----- the alert row: marks under the strip, beside the panel ----- */
+.alerts { position: absolute; top: calc(var(--strip) + 10px); display: flex; gap: 8px; z-index: 15; align-items: flex-start; }
+.mark { width: 38px; height: 38px; border-radius: 9px; display: grid; place-items: center; position: relative;
+  background: rgba(16, 25, 36, .94); border: 1.5px solid var(--control-edge); box-shadow: 0 2px 8px rgba(0,0,0,.45); }
+.mark.bad { background: var(--alert-ground); border-color: var(--alert-edge); }
+.mark.warn { background: #2c2614; border-color: #8a6d1f; }
+.mark.info { border-color: #2b4f78; }
+.mark .n { position: absolute; right: -6px; top: -6px; min-width: 16px; height: 16px; border-radius: 8px; font-size: 10px; font-weight: 700;
+  display: grid; place-items: center; padding: 0 3px; background: var(--text); color: var(--stage); }
+.mark.more { width: auto; padding: 0 9px; font-size: 12px; font-weight: 600; color: var(--soft); }
+.mark.gone { opacity: .35; border-style: dashed; }
+.tip { position: absolute; top: 46px; left: -6px; width: 290px; background: var(--raised); border: 1px solid var(--control-edge);
+  border-radius: 8px; padding: 9px 11px; box-shadow: 0 6px 18px rgba(0,0,0,.5); font-size: 12px; line-height: 1.4; z-index: 30; }
+.tip b { display: block; font-size: 13px; margin-bottom: 2px; }
+.tip .keys { color: var(--spent); font-size: 11px; margin-top: 5px; }
+
+/* ----- the rail ----- */
+.rail { position: absolute; left: 0; top: var(--strip); bottom: 0; width: var(--rail); background: rgba(16, 25, 36, .97);
+  border-right: 1px solid var(--edge); padding-top: 6px; z-index: 18; }
+.tab { height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  font-size: 10.5px; color: var(--soft); position: relative; }
+.tab.on { color: var(--text); background: var(--control); }
+.tab.on::before { content: ""; position: absolute; left: 0; top: 6px; bottom: 6px; width: 3px; border-radius: 0 3px 3px 0; background: var(--c); }
+
+/* ----- the panel beside the rail ----- */
+.panel { position: absolute; left: var(--rail); top: var(--strip); bottom: 0; width: 560px; background: rgba(16, 25, 36, .975);
+  border-right: 1px solid var(--edge); box-shadow: 8px 0 24px rgba(0,0,0,.35); z-index: 16; display: flex; flex-direction: column; }
+.path { height: 46px; display: flex; align-items: center; gap: 8px; padding: 0 12px 0 10px; border-bottom: 1px solid var(--edge); flex: none; }
+.path .back { width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; background: var(--control); border: 1px solid var(--control-edge); }
+.path .crumb { font-size: 15px; color: var(--soft); }
+.path .crumb.here { color: var(--text); font-weight: 600; }
+.path .sep { color: var(--spent); }
+.path .grow { flex: 1; }
+.btn { height: 28px; padding: 0 10px; border-radius: 7px; background: var(--control); border: 1px solid var(--control-edge);
+  display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text); }
+.btn.build { border-color: var(--building); color: var(--building-light); }
+.btn.solid { background: #c94f86; border-color: #c94f86; color: #fff; font-weight: 600; }
+.subtabs { display: flex; gap: 2px; padding: 8px 12px 0; border-bottom: 1px solid var(--edge); flex: none; }
+.subtabs div { padding: 6px 10px 8px; font-size: 12px; color: var(--soft); border-bottom: 2px solid transparent; }
+.subtabs div.on { color: var(--text); border-bottom-color: var(--c, var(--accent)); }
+.body { flex: 1; overflow: hidden; padding: 12px 14px; display: flex; flex-direction: column; gap: 12px; }
+.h { font-size: 10.5px; letter-spacing: .07em; text-transform: uppercase; font-weight: 600; color: var(--soft); display: flex; justify-content: space-between; }
+.h span { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--spent); }
+.card { background: var(--raised); border: 1px solid var(--edge); border-radius: 9px; padding: 10px 12px; }
+.row { display: flex; align-items: center; gap: 10px; }
+.figs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; background: var(--raised); border: 1px solid var(--edge); border-radius: 9px; }
+.figs > div { padding: 8px 10px; border-left: 1px solid var(--edge); }
+.figs > div:first-child { border-left: 0; }
+.figs .k { font-size: 9.5px; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+.figs .v { font-family: PlexMono; font-size: 16px; font-weight: 500; margin: 2px 0; }
+.figs .s { font-size: 10.5px; color: var(--soft); line-height: 1.25; }
+.ring { flex: none; }
+.bar { height: 6px; border-radius: 3px; background: #243246; overflow: hidden; }
+.bar > i { display: block; height: 100%; border-radius: 3px; }
+.small { font-size: 11px; color: var(--soft); line-height: 1.35; }
+.link { color: var(--accent); font-size: 11.5px; }
+.good { color: var(--good); } .warn { color: var(--warn); } .bad { color: var(--bad); }
+
+/* ----- the needs sidebar ----- */
+.needs { position: absolute; right: 10px; top: calc(var(--strip) + 10px); width: 112px; background: rgba(16, 25, 36, .93);
+  border: 1px solid var(--edge); border-radius: 10px; padding: 8px 8px 4px; z-index: 14; box-shadow: 0 4px 14px rgba(0,0,0,.4); }
+.needs .t { font-size: 9.5px; letter-spacing: .08em; font-weight: 600; color: var(--soft); margin: 0 0 4px 2px; }
+.need { display: flex; align-items: center; gap: 7px; height: 30px; padding: 0 2px; border-radius: 6px; }
+.need.on { background: var(--control); }
+.need .w { font-size: 11.5px; line-height: 1.05; }
+.need .w small { display: block; font-size: 9.5px; color: var(--spent); font-family: PlexMono; }
+.needs hr { border: 0; border-top: 1px solid var(--edge); margin: 4px 0; }
+
+/* ----- a card on the map ----- */
+.pin { position: absolute; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 3px rgba(0,0,0,.35); }
+.mapcard { position: absolute; width: 300px; background: rgba(21, 33, 48, .97); border: 1px solid var(--control-edge); border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.55); padding: 10px 12px; z-index: 12; }
+.mapcard::after { content: ""; position: absolute; left: 22px; bottom: -7px; width: 12px; height: 12px; background: rgba(21, 33, 48, .97);
+  border-right: 1px solid var(--control-edge); border-bottom: 1px solid var(--control-edge); transform: rotate(45deg); }
+.zoom { position: absolute; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 4px; z-index: 12; }
+.zoom div { width: 34px; height: 34px; border-radius: 8px; background: rgba(16,25,36,.94); border: 1px solid var(--control-edge); display: grid; place-items: center; font-size: 18px; color: var(--soft); }
+
+/* ----- the mockup's own labels: not the game's (white, dashed), so no one takes them for interface ----- */
+.note { position: absolute; z-index: 40; background: #f4f1e8; color: #14181d; border-radius: 6px; padding: 6px 10px; font-size: 12.5px; line-height: 1.35;
+  box-shadow: 0 3px 10px rgba(0,0,0,.5); max-width: 380px; }
+.note b { font-weight: 700; }
+.note.pick { background: #ffe08a; }
+.num { position: absolute; z-index: 41; width: 22px; height: 22px; border-radius: 50%; background: #f4f1e8; color: #14181d; font-weight: 700;
+  font-size: 12px; display: grid; place-items: center; box-shadow: 0 2px 6px rgba(0,0,0,.6); }
+.ring-out { position: absolute; z-index: 39; border: 2px dashed #f4f1e8; border-radius: 10px; pointer-events: none; }

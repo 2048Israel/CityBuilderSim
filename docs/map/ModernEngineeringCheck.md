@@ -1,6 +1,6 @@
 # ModernEngineeringCheck.java - 594 lines · 28 methods · 6 constants · harnesses
 
-`ham/citybuildersim/ModernEngineeringCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ModernEngineeringCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > E21's crop-only historical undo, its actual farm production and patent bill,
 > and the saved physical state on either side of the discovery.

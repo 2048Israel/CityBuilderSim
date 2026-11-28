@@ -1,6 +1,6 @@
 # GatewayCheck.java - 1,498 lines · 49 methods · 16 constants · harnesses
 
-`ham/citybuildersim/GatewayCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/GatewayCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > A city's gateway is the way the world is.
 > FS6 gives the coast its full counts before saving and checks the final coast

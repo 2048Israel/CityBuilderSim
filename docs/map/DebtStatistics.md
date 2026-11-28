@@ -1,6 +1,6 @@
 # DebtStatistics.java - 252 lines · 21 methods · 2 constants · model
 
-`ham/citybuildersim/DebtStatistics.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/DebtStatistics.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > Household debt as the statistics offices print it, read from the cells (HC2).
 > WHY: the average across everyone hides both debt-free families and struggling holders.

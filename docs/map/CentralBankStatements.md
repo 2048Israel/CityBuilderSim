@@ -1,6 +1,6 @@
 # CentralBankStatements.java - 287 lines · 14 methods · 6 constants · model
 
-`ham/citybuildersim/CentralBankStatements.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CentralBankStatements.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > The central bank's month as formal statements (CBK1): its income statement down to the profit and what the strike did
 > with it, its balance sheet against a year ago, and the money it made and destroyed from M0 as the month opened to M0 as

@@ -1,6 +1,6 @@
 # ForeignChoiceCheck.java - 1,198 lines · 37 methods · 20 constants · harnesses
 
-`ham/citybuildersim/ForeignChoiceCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/ForeignChoiceCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > The choices that use the foreign crews (FC2b): a payer - a business by its own sum, the city from its card - hands its
 > share of one site's remaining work to the foreign crews, who build it on that site at the pace and price struck then;

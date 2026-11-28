@@ -1,6 +1,6 @@
 # Consumption.java - 763 lines · 35 methods · 7 constants · model
 
-`ham/citybuildersim/Consumption.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/Consumption.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > What a household eats, and what changes it.
 > 

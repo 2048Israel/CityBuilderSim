@@ -1,0 +1,71 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>UX1 mockup 8: the alerts by area</title>
+<link rel="stylesheet" href="lib/frame.css"><script src="lib/icons.js"></script><script src="lib/frame.js"></script>
+<style>
+/* P3 B: four marks by area (People, Money, Business, Building), each its count; the ground is the worst's. */
+.mark.area { width: auto; padding: 0 11px 0 9px; gap: 7px; display: flex; align-items: center; }
+.mark.area .c { font-family: PlexMono; font-size: 14px; font-weight: 600; color: var(--text); }
+.mark.open { box-shadow: 0 0 0 2px var(--text), 0 2px 8px rgba(0,0,0,.45); }
+.list { padding: 2px 0; }
+.al { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-top: 1px solid var(--edge); }
+.al:first-child { border-top: 0; }
+.al .sq { width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; flex: none; border: 1.5px solid; }
+.al .sq.bad { background: var(--alert-ground); border-color: var(--alert-edge); }
+.al .sq.warn { background: #2c2614; border-color: #8a6d1f; }
+.al .sq.done { background: var(--control); border-color: var(--control-edge); }
+.al .w { flex: 1; min-width: 0; }
+.al .w b { font-weight: 600; font-size: 13px; display: block; }
+.al .f { font-family: PlexMono; font-size: 14px; font-weight: 500; width: 64px; text-align: right; }
+.al .link { width: 50px; text-align: right; }
+.al.settled b { color: var(--soft); font-weight: 500; }
+</style></head>
+<body><script>
+const F = Object.assign({}, CITY, { people: ['174,226', '▼ 134'] });
+const am = (ic, area, n, st, extra = '') => `<div class="mark area ${st} ${extra}">${icon(ic, 19, AREA[area])}<span class="c">${n}</span></div>`;
+frame({ ground: 'city', figures: F, needsList: NEEDS_CITY, alertsLeft: 652, alerts: [
+  am('POPULATION', 'people', 5, 'bad', 'open'),   // schools, childcare, food; out of work, people leaving
+  am('FINANCES', 'money', 4, 'bad'),              // the bank under its minimum; GDP falling, deflation and trust, hoarding
+  am('SECTOR', 'business', 2, 'bad'),             // businesses going bust, import cover
+  am('BUILD', 'building', 1, 'warn')] });         // streets tight (Land dismissed)
+
+const TICK = icon('TICK', 16, '#9fb0c3');
+const al = (ic, st, title, line, fig) => `<div class="al ${st === 'done' ? 'settled' : ''}"><div class="sq ${st}">${icon(ic, 17, st === 'bad' ? '#ff8a80' : st === 'warn' ? '#e3b341' : '#9fb0c3')}</div>
+  <div class="w"><b>${title}</b><div class="small">${line}</div></div><div class="f ${st === 'done' ? '' : st}">${fig}</div><div class="link">${st === 'done' ? '' : 'Open ›'}</div></div>`;
+
+document.body.insertAdjacentHTML('beforeend', `
+<div class="panel">
+  <div class="path"><div class="back"><svg width="15" height="15" viewBox="0 0 24 24" class="i" stroke="#e6edf3"><path d="M15 18l-6-6 6-6"/></svg></div>
+    <span class="crumb">Alerts</span><span class="sep">›</span><span class="crumb here">People</span>
+    <span class="grow"></span><span class="btn">${icon('CLOSE', 14)}</span></div>
+  <div class="subtabs" style="--c:${AREA.people}"><div class="on">People · 5</div><div>Money · 4</div><div>Business · 2</div><div>Building · 1</div><div>History</div></div>
+  <div class="body">
+    <div class="h">Open in People <span>the bad first, then the warnings</span></div>
+    <div class="card list" style="padding:0">
+      ${al('EDUCATION', 'bad', 'Schools: none for 9,274 children', 'elementary and college 0% served, nothing on site', '0%')}
+      ${al('CHILD', 'bad', 'Childcare: 7,370 people without', '1% served, nothing on site', '1%')}
+      ${al('FOOD', 'bad', 'Food: the city is 88% short', '12% of what people need to eat is met', '12%')}
+      ${al('STAFF', 'warn', 'Out of work: 12.0%', 'high; one in eight who want work has none', '12.0%')}
+      ${al('LEAVE', 'warn', 'People are leaving: 134 a month', 'more go than are born or arrive', '−134')}</div>
+    <div class="small">Right click on a row dismisses it until it worsens a step, or for 12 months.</div>
+
+    <div class="h">Settled in People <span>the inbox keeps every one</span></div>
+    <div class="card list" style="padding:0">
+      ${al('HOMES', 'done', 'Homes: 1,200 people without one', 'settled January 2100 · 4 months open', TICK)}
+      ${al('STAFF', 'done', 'Out of work: over 15%', 'settled October 2099 · eased to 12.0%', TICK)}
+      ${al('HEALTH', 'done', 'An outbreak of typhoid', 'settled July 2099 · 41 died', TICK)}</div>
+
+    <div class="h">The other areas <span>a tab each</span></div>
+    <div class="card" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="row" style="gap:7px">${icon('FINANCES', 16, AREA.money)}<div><b style="font-weight:600">Money 4</b><div class="small">the bank under its minimum, and 3 warnings</div></div></div>
+      <div class="row" style="gap:7px">${icon('SECTOR', 16, AREA.business)}<div><b style="font-weight:600">Business 2</b><div class="small">going bust; import cover</div></div></div>
+      <div class="row" style="gap:7px">${icon('BUILD', 16, AREA.building)}<div><b style="font-weight:600">Building 1</b><div class="small">streets tight; Land dismissed</div></div></div></div>
+  </div></div>
+
+${outline(646, 56, 336, 50)}${num(988, 62, 1)}
+${note(1016, 62, '<b>1 · Four marks by area (P3 B, alternative).</b> People, Money, Business, Building, each its colour, its icon and its count; the ground is the worst’s, red or amber (Building holds only a warning).')}
+${outline(78, 54, 562, 1024)}${num(626, 548, 2)}
+${note(660, 560, '<b>2 · A click opens the area’s list in the panel,</b> the worst first: each alert a row with its icon, title, figure and Open ›, which goes to the alert itself, then to the page that mends it.')}
+${note(1016, 166, '<b>The trade-off:</b> it never crowds (four marks, whatever befalls the city), but each alert is a click further, and the kind is not seen at a glance: “People 5” does not say that there are no schools. In a city this troubled three of the four are red.')}
+${note(1420, 1004, '<b>UX1 mockup 8 · the alerts by area · P3 B, alternative.</b> The big city, the playtest at month 2,406: the same twelve alerts as mockup 7, People’s list open.', 'pick')}
+`);
+</script></body></html>

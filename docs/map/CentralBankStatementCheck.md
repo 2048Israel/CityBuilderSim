@@ -1,6 +1,6 @@
 # CentralBankStatementCheck.java - 537 lines · 20 methods · 8 constants · harnesses
 
-`ham/citybuildersim/CentralBankStatementCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/CentralBankStatementCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > The central bank's own statements (CBK1): CentralBankStatements' income statement, balance sheet and money made and
 > destroyed held to the central bank's own figures, every month of two played cities, and across a save.

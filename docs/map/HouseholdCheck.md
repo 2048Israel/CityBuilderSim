@@ -1,6 +1,6 @@
 # HouseholdCheck.java - 1,805 lines · 13 methods · 10 constants · harnesses
 
-`ham/citybuildersim/HouseholdCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
+`ham/citybuildersim/HouseholdCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
 > Verifies the residents' books and the demolition log.
 > 
