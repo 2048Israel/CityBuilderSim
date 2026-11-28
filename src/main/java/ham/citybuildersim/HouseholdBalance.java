@@ -3615,7 +3615,7 @@ public class HouseholdBalance {
          * signing a finance agreement this month either.
          */
         if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
-        double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
+        double spare = (c.savings - cushion(c)) * c.households;
         if (spare <= 0) return 0;
         /*
          * THE ROOM IS MEASURED TO THE CEILING, which is what makes a tram
@@ -3743,7 +3743,7 @@ public class HouseholdBalance {
              */
             double bill = got * price;
             double inHand = Math.max(0,
-                    c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable));
+                    c.savings - cushion(c));
             double cash = Math.min(bill, inHand);
             double lent = bill - cash;
             c.savings = Math.max(0, c.savings - cash);
@@ -4115,7 +4115,7 @@ public class HouseholdBalance {
     private double luxuryBudgetOf(Household c) {
         if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
         if (!(c.luxuryWant > 0)) return 0;
-        double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
+        double spare = (c.savings - cushion(c)) * c.households;
         if (spare <= 0) return 0;
         return Math.min(c.luxuryWant * c.households, spare);
     }
@@ -4222,7 +4222,7 @@ public class HouseholdBalance {
     private double mealBudgetOf(Household c) {
         if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
         if (!(c.mealWant > 0)) return 0;
-        double spare = (c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * c.households;
+        double spare = (c.savings - cushion(c)) * c.households;
         if (spare <= 0) return 0;
         return Math.min(c.mealWant * c.households, spare);
     }
@@ -4698,7 +4698,7 @@ public class HouseholdBalance {
             double freeShare = debtFreeShare(c);
             boolean eligible = freeShare > 0 && !c.isGoingShort();
 
-            double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+            double cushion = cushion(c);
             double spare = c.savings - cushion;
             double target = eligible && spare + held > 0 ? (spare + held) * targetShare * freeShare : 0;
             double gap = target - held;
@@ -4875,7 +4875,7 @@ public class HouseholdBalance {
     }
 
     private double spareFor(Household c) {
-        return Math.max(0, c.savings - SHARE_CUSHION_MONTHS * Math.max(0, c.disposable)) * debtFreeShare(c);
+        return Math.max(0, c.savings - cushion(c)) * debtFreeShare(c);
     }
 
     /** What every eligible household could put into paper: savings past the cushion, in total. */
@@ -5716,8 +5716,25 @@ public class HouseholdBalance {
        buy more because they have more past the cushion.
        ===================================================================== */
 
-    /** Months of take-home a household keeps in the bank before it buys a share. */
+    /** Months of take-home, or of spending where that is more (cushion()), a household keeps in the bank before it buys a share. */
     public static final double SHARE_CUSHION_MONTHS = 3;
+
+    /**
+     * The cushion itself, per household: SHARE_CUSHION_MONTHS of the larger of its take-home and what it planned to
+     * spend. Every path that reads "savings past the cushion" reads this one: a share, the city's paper and a
+     * business's bonds, money sent abroad, an offering, a car paid in cash, the meals and the luxuries, and the
+     * shares sold to refill it (Exchange).
+     *
+     * WHY (ASH4, Jerus's Ashbourne finding 5): it was take-home alone, and take-home is wages, a pension or a benefit
+     * (splitIncome), so a family that lives on its dividends - the owner families, whose earning weight is nothing -
+     * had a cushion of nothing, and its whole balance counted as spare. In Ashbourne (slot 2, months 193-196) six
+     * owner families held 70% of the households' deposits, and one 30-year city bond took 91% of the deposits in
+     * three months. A transaction balance pays the months ahead's outgoings, so when a household spends more than it
+     * takes home, its cushion is sized on what it spends; a saver's is what it always was.
+     */
+    public static double cushion(Household c) {
+        return SHARE_CUSHION_MONTHS * Math.max(0, Math.max(c.disposable, c.planned));
+    }
 
     /** The share of what is past the cushion it puts into one offering. */
     public static final double SHARE_OF_EXCESS = .30;
@@ -5776,7 +5793,7 @@ public class HouseholdBalance {
         if (c.isEmpty() || !c.canInvest() || debtFreeShare(c) <= 0 || c.isGoingShort()) return 0;
         // The owner line takes no offering (BO1): its stakes dilute.
         if (!c.tradesShares()) return 0;
-        double cushion = SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+        double cushion = cushion(c);
         double excess = c.savings - cushion;
         if (excess <= 0) return 0;
         return excess * SHARE_OF_EXCESS * c.households * debtFreeShare(c);

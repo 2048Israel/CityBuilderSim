@@ -1399,7 +1399,7 @@ public class Exchange {
     /** How far a cell's savings are under its cushion, every household of it: its excess over its share target (round 3). Any cell holding shares, whether or not it may buy. */
     static double shortOfCushion(Household c) {
         if (c.isEmpty()) return 0;
-        double gap = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable) - c.savings;
+        double gap = HouseholdBalance.cushion(c) - c.savings;
         return gap > 0 ? gap * c.households : 0;
     }
 
@@ -1411,10 +1411,10 @@ public class Exchange {
     private double lifeValueSold;
     public double getLifeValueSold() { return lifeValueSold; }
 
-    /** What a cell has past its cushion, in all: savings past SHARE_CUSHION_MONTHS of its take-home, every household of it. */
+    /** What a cell has past its cushion, in all: savings past HouseholdBalance.cushion(), every household of it. */
     double spareOf(Household c) {
         if (!mayBuy(c)) return 0;
-        double excess = c.savings - HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
+        double excess = c.savings - HouseholdBalance.cushion(c);
         return excess > 0 ? excess * c.households * buyingShare(c) : 0;
     }
 
