@@ -2015,8 +2015,10 @@ public final class BuildScreen {
         Game.LenderTest t = gate.lender();
         if (t.shortOfDown()) {
             return String.format("the lender wants %s of its own for the %.0f%% down payment, and it would put in %s",
-                    money(t.down()), (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100, money(t.cash()));
+                    money(t.down()), (1 - t.maxLoanToCost()) * 100, money(t.cash()));
         }
+        if (Mortgage.Decision.DEBT_TO_INCOME.equals(t.decision().trimmedBy()))
+            return "the mortgage exceeds the saved debt-to-income limit against annual net rent";
         String rate = t.tested() < t.insured()
                 ? String.format("%.2f%% real (the insured %.2f%% less the inflation expected)", t.tested() * 100, t.insured() * 100)
                 : String.format("the insured %.2f%%", t.insured() * 100);

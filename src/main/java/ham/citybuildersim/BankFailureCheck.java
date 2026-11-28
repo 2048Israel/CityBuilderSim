@@ -703,7 +703,8 @@ public final class BankFailureCheck {
                 }
                 if (g.getBank().isInResolution() && failedAt < 0) failedAt = g.getMonth();
                 Bank.EquityMovement movement = g.getBank().equityMovement();
-                if (g.getBank().isMonthKnown() && Math.abs(movement.residual()) > MoneyAudit.tolerance(movement.scale())) {
+                if (g.getBank().isMonthKnown() && (!Double.isFinite(movement.residual()) || !Double.isFinite(movement.scale())
+                        || Math.abs(movement.residual()) > MoneyAudit.tolerance(movement.scale()))) {
                     badEquity++;
                     out.printf("equity seed %d month %d residual %.8g%n", seed, g.getMonth(), movement.residual());
                 }

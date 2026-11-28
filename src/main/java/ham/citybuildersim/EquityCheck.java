@@ -57,6 +57,208 @@ public class EquityCheck {
         return hb;
     }
 
+    /** Two native offerings leave a large quote before the company has an earnings record. */
+    static Equity staleOffering(int company, double quote) {
+        Equity register = new Equity();
+        register.offer(company, register.foundingPrice(), 0, null, DebtManager.WORLD_BASE_RATE);
+        register.offer(company, quote, 0, null, DebtManager.WORLD_BASE_RATE, quote);
+        return register;
+    }
+
+    /* ================= 10. mature value does not revive an offering quote (CBK3) ================= */
+    static void maturePricesFollowTheirRecord() {
+        out.println("\n--- 10. mature shares follow their actual record, not a stale offering quote ---");
+        int company = Equity.indexOf(Sectors.INDUSTRY);
+        double worldRate = DebtManager.WORLD_BASE_RATE, required = Equity.requiredReturn(worldRate);
+        double quote = 100 * Equity.FOUNDING_PRICE, floor = Exchange.MIN_FAIR;
+        String[] cases = { "negative income", "zero income", "positive income below the floor", "tiny positive income" };
+        Equity negative = null, zero = null, tiny = null;
+        boolean untouched = true;
+        for (int k = 0; k < cases.length; k++) {
+            Equity register = staleOffering(company, quote);
+            double shares = register.getShares(company), abroad = register.getForeignShares(company);
+            double raised = register.getLifetimeRaisedAbroad(company);
+            double annual = switch (k) {
+                case 0 -> -quote;
+                case 1 -> 0;
+                case 2 -> floor * shares * required / 2;
+                default -> 4 * floor * shares * required;
+            };
+            for (int m = 0; m < Equity.RECORD_MONTHS; m++) register.recordMonth(company, annual / Equity.RECORD_MONTHS, 0);
+            assertTrue("fixture: " + cases[k] + " has a mature record and the large offering quote",
+                    register.valuedOnRecord(company) && register.getLastPrice(company) == quote && quote > 1_000 * floor);
+            double income = register.getTrailingIncome(company);
+            close(cases[k] + ": the record keeps the actual income", income, annual, Math.abs(annual) * 1e-12);
+            double price = register.fairValue(company, 2 * quote * shares, 0, worldRate);
+            close(cases[k] + ": no spare money cannot resurrect the offering quote",
+                    price, k == 3 ? 4 * floor : floor, floor * 1e-9);
+            untouched &= register.getTrailingIncome(company) == income && register.getShares(company) == shares
+                    && register.getForeignShares(company) == abroad && register.getDealerShares(company) == 0
+                    && register.getLastPrice(company) == quote && register.getLifetimeRaisedAbroad(company) == raised;
+            if (k == 0) negative = register;
+            if (k == 1) zero = register;
+            if (k == 3) tiny = register;
+        }
+        assertTrue("valuation changes no actual income, share ownership, offering quote or capital raised", untouched);
+
+        double shares = tiny.getShares(company), spare = shares * Equity.FOUNDING_PRICE;
+        close("positive spare remains money at face beside the tiny earnings value",
+                tiny.fairValue(company, 0, spare, worldRate), Equity.FOUNDING_PRICE + 4 * floor, 1e-9);
+        close("positive spare is still valued when the earnings record is zero",
+                zero.fairValue(company, 0, spare, worldRate), spare / zero.getShares(company), 1e-9);
+        close("...and when the actual earnings record is negative",
+                negative.fairValue(company, 0, spare, worldRate), spare / negative.getShares(company), 1e-9);
+
+        Equity young = staleOffering(company, quote);
+        for (int m = 0; m < Equity.RECORD_MONTHS - 1; m++) young.recordMonth(company, -quote, 0);
+        double youngShares = young.getShares(company), prospectsBook = 3 * quote * youngShares;
+        assertTrue("fixture: the loss-making young company has less than a full record", !young.valuedOnRecord(company));
+        close("before a full record its prospects still use book per share",
+                young.fairValue(company, prospectsBook, 0, worldRate), prospectsBook / youngShares, 1e-9);
+        close("before a full record no book or paid dividends still uses the old offering quote",
+                young.fairValue(company, 0, 0, worldRate), quote, 1e-9);
+
+        // The desk bought part of the native offering earlier: both the cash payment and its old mark are booked.
+        double issued = zero.getShares(company), held = issued / 2, paid = held * quote;
+        zero.moveForeign(company, -held);
+        zero.moveDesk(company, held);
+        Bank bank = new Bank();
+        bank.refresh(1, 0, 0, 0, 0, 0);
+        bank.injectCapital(4 * paid);
+        bank.deskPays(paid);
+        bank.markSecurities(paid);
+        bank.startMonth();
+        double cash = bank.getCash(), equity = bank.equity();
+        double[] books = new double[Equity.COMPANIES.length];
+        books[company] = 2 * quote * zero.getShares(company);
+        Exchange exchange = new Exchange();
+        exchange.takeMonth(zero, null, bank, null, books, worldRate, 0, Equity.RECORD_MONTHS);
+        close("the exchange carries the mature zero-income holding at the monetary floor",
+                bank.getSecurities(), held * floor, floor * held * 1e-9);
+        assertTrue("the stale holding actually marks down", bank.getSecurities() < paid);
+        close("the whole mark-down is recorded as the desk's mark change", bank.getMarkChange(), bank.getSecurities() - paid, 1e-9);
+        close("the whole mark-down reaches trading income", bank.getTradingIncome(), bank.getMarkChange(), 1e-9);
+        close("equity falls by that trading loss, with nothing suppressed", bank.equity() - equity, bank.getTradingIncome(), 1e-9);
+        assertTrue("the bank's native equity-movement identity reconciles the mark-down", bank.equityMovement().addsUp());
+        close("a mark-down moves no cash", bank.getCash(), cash, 0);
+        close("...and no desk shares", zero.getDealerShares(company), held, 0);
+        close("...and no shares in issue", zero.getShares(company), issued, 0);
+        close("the remaining owners and the desk still hold every issued share",
+                zero.getForeignShares(company) + zero.getDealerShares(company), zero.getShares(company), 1e-9);
+
+        double value = shares * tiny.fairValue(company, 0, spare, worldRate), income = tiny.getTrailingIncome(company);
+        double consolidation = .01;
+        tiny.split(company, consolidation);
+        close("a consolidation changes the share count by its factor", tiny.getShares(company), shares * consolidation, 0);
+        close("...and preserves total value, including the spare money",
+                tiny.getShares(company) * tiny.fairValue(company, 0, spare, worldRate), value, 1e-9);
+        close("...without changing the actual income record", tiny.getTrailingIncome(company), income, 0);
+        double scale = .01, consolidatedShares = tiny.getShares(company);
+        tiny.redenominate(scale);
+        close("a currency reform scales total value in the same unit as the spare and income",
+                tiny.getShares(company) * tiny.fairValue(company, 0, spare * scale, worldRate), value * scale, 1e-9);
+        close("...and scales the actual income once", tiny.getTrailingIncome(company), income * scale, Math.abs(income * scale) * 1e-9);
+        close("...without changing the number of shares", tiny.getShares(company), consolidatedShares, 0);
+        zero.redenominate(scale);
+        close("the mature zero-value floor follows the currency reform too",
+                zero.fairValue(company, 0, 0, worldRate), floor * scale, floor * scale * 1e-9);
+    }
+
+    /** No buyback money, but a paid wage makes the exchange's automatic split rule active. */
+    static Exchange.Companies wageOnlyCompanies(double wage) {
+        return new Exchange.Companies() {
+            public double averageMonthlyWage() { return wage; }
+            public double cashAvailable(int company, double wanted) { return 0; }
+            public double till(int company) { return 0; }
+            public void payBuyback(int company, double cash) { }
+            public double assets(int company) { return 0; }
+            public double equity(int company) { return 0; }
+            public double monthlyOperatingCost(int company) { return 0; }
+            public double monthlyDebtService(int company) { return 0; }
+        };
+    }
+
+    static boolean finiteListing(Equity register, Exchange market, int company) {
+        return register.getShares(company) > 0 && Double.isFinite(register.getShares(company))
+                && Double.isFinite(register.getForeignShares(company)) && Double.isFinite(register.getDealerShares(company))
+                && Double.isFinite(register.getLastPrice(company)) && Double.isFinite(market.price(company))
+                && Double.isFinite(market.fair(company)) && market.getSplitFactor(company) > 0
+                && Double.isFinite(market.getSplitFactor(company));
+    }
+
+    /* ================= 11. the anchored floor cannot cause a consolidation loop (CBK3) ================= */
+    static void anchoredFloorIsNotAConsolidation() {
+        out.println("\n--- 11. the anchored presentation floor is not a reason to consolidate a worthless company ---");
+        int company = Equity.indexOf(Sectors.INDUSTRY);
+        double worldRate = DebtManager.WORLD_BASE_RATE;
+        String[] cases = { "zero income", "negative income", "positive income below the floor" };
+        for (double denomination : new double[] { 1, 100 }) {
+            double expectedLevel = 2, wage = Equity.FOUNDING_PRICE / denomination;
+            Exchange.Companies companies = wageOnlyCompanies(wage);
+            for (int k = 0; k < cases.length; k++) {
+                String label = cases[k] + " at denomination " + denomination;
+                Equity register = new Equity();
+                register.seedConstants(denomination);
+                register.offer(company, register.foundingPrice(), 0, null, worldRate);
+                double issued = register.getShares(company), abroad = register.getForeignShares(company);
+                // The real monthly anchor moves the register's yardstick, while the venue keeps nominal money.
+                register.seedConstants(denomination / expectedLevel);
+                double floor = register.noValue();
+                double annual = k == 0 ? 0 : k == 1 ? -register.foundingPrice()
+                        : floor * issued * Equity.requiredReturn(worldRate) / 2;
+                for (int m = 0; m < Equity.RECORD_MONTHS; m++) register.recordMonth(company, annual / Equity.RECORD_MONTHS, 0);
+                Exchange market = new Exchange();
+                market.seedConstants(denomination);
+                double[] books = new double[Equity.COMPANIES.length];
+                assertTrue("fixture: " + label + " is mature, never traded and below the active wage band",
+                        register.valuedOnRecord(company) && !market.hasTraded(company) && issued > 0 && abroad == issued
+                                && floor > Exchange.MIN_FAIR / denomination && floor < wage * Exchange.CONSOLIDATE_BELOW);
+                market.startMonth();
+                market.takeMonth(register, null, null, companies, books, worldRate, 0, Equity.RECORD_MONTHS);
+                boolean firstSafe = finiteListing(register, market, company) && market.atFloor(company)
+                        && market.getSplit(company) == 0 && register.getShares(company) == issued;
+                assertTrue(label + ": the first step classifies the anchored floor and makes no consolidation", firstSafe);
+                // The old floor comparison is already red here: never drive its known shrinking-share loop into overflow.
+                if (!firstSafe) continue;
+                close(label + ": the market uses the register's anchored floor", market.fair(company), floor, floor * 1e-9);
+                boolean stable = true;
+                for (int m = 1; m <= 240; m++) {
+                    register.recordMonth(company, annual / Equity.RECORD_MONTHS, 0);
+                    market.startMonth();
+                    market.takeMonth(register, null, null, companies, books, worldRate, 0, Equity.RECORD_MONTHS + m);
+                    stable &= finiteListing(register, market, company) && market.atFloor(company)
+                            && !market.hasTraded(company) && market.getSplit(company) == 0 && market.getSplitFactor(company) == 1
+                            && register.getShares(company) == issued && register.getForeignShares(company) == abroad
+                            && register.getDealerShares(company) == 0;
+                    if (!stable) break;
+                }
+                assertTrue(label + ": 240 more monthly steps keep finite prices and every share without a split", stable);
+                if (!stable) continue;
+                close(label + ": the actual income is preserved", register.getTrailingIncome(company), annual, Math.abs(annual) * 1e-12);
+                close(label + ": presentation-floor total value is unchanged", issued * market.fair(company), issued * floor, issued * floor * 1e-9);
+
+                double recovery = 32 * floor * issued * Equity.requiredReturn(worldRate);
+                for (int m = 0; m < Equity.RECORD_MONTHS; m++) register.recordMonth(company, recovery / Equity.RECORD_MONTHS, 0);
+                double beforePrice = register.fairValue(company, 0, 0, worldRate), beforeValue = issued * beforePrice;
+                assertTrue("fixture: " + label + " recovers above the floor but still below the consolidation band",
+                        Double.isFinite(beforeValue) && beforePrice > floor && beforePrice < wage * Exchange.CONSOLIDATE_BELOW);
+                market.startMonth();
+                market.takeMonth(register, null, null, companies, books, worldRate, 0, Equity.RECORD_MONTHS + 241);
+                boolean recovered = finiteListing(register, market, company);
+                assertTrue(label + ": actual positive income recovers with finite prices, shares and split factor", recovered);
+                if (!recovered) continue;
+                assertTrue(label + ": recovery leaves the floor and really exercises automatic consolidation",
+                        !market.atFloor(company) && market.getSplit(company) > 0 && market.getSplit(company) < 1);
+                close(label + ": the recovered total value survives the automatic consolidation",
+                        register.getShares(company) * market.fair(company), beforeValue, beforeValue * 1e-9);
+                close(label + ": fair recomputation preserves that same recovered total value",
+                        register.getShares(company) * register.fairValue(company, 0, 0, worldRate), beforeValue, beforeValue * 1e-9);
+                close(label + ": the foreign owners still hold every share", register.getForeignShares(company), register.getShares(company), 0);
+                close(label + ": the split changes no actual recovery income", register.getTrailingIncome(company), recovery, recovery * 1e-12);
+            }
+        }
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -383,6 +585,9 @@ public class EquityCheck {
             }
         }
         assertTrue("...with the register and the households agreeing on every company", agree);
+
+        maturePricesFollowTheirRecord();
+        anchoredFloorIsNotAConsolidation();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);

@@ -2695,9 +2695,14 @@ public final class KeptBench {
      */
     public Object[] fundingRunCovered(double coverBy) {
         Object[] first = fundingRun();
-        if (first == null) return null;
+        if (first == null) {
+            System.out.println("CBK3 BUILD4X no nonempty eligible funding run at m" + ui.game.getMonth());
+            return null;
+        }
         Game g = ui.game;
         Auction.Cap cap = ui.buildScreen.fundingCap();
+        List<String> ineligible = new ArrayList<>(), rejected = new ArrayList<>();
+        int[] counts = new int[3]; // no run ahead, no positive gap, rejected quote pairs
         List<BuildingsTemplate> order = new ArrayList<>();
         order.add((BuildingsTemplate) first[0]);
         for (BuildingsTemplate t : g.getBuildingManager().getTemplates()) if (t != null && !order.contains(t)) order.add(t);
@@ -2705,12 +2710,18 @@ public final class KeptBench {
             int clear = 0;
             for (int q = 1; q <= 100_000_000; q *= 10) {
                 double gap = coveredGap(g, t, q);
-                if (Double.isNaN(gap)) break;
+                if (Double.isNaN(gap)) {
+                    counts[0]++;
+                    if (ineligible.size() < 8) ineligible.add(t.getName() + " q=" + q + " ahead=0");
+                    break;
+                }
                 if (!(gap > 0)) {
+                    counts[1]++;
                     clear = q;
                     continue;
                 }
-                if (covers(g, gap * coverBy, cap)) return new Object[]{t, q, gap};
+                if (covers(g, gap * coverBy, cap, rejected, counts,
+                        t.getName() + " q=" + q + " gap=" + gap + " invoiceFromGap=" + (g.getCash() + gap))) return new Object[]{t, q, gap};
                 // FS4: the decade's gap is more than the market covers coverBy times over (a city whose cash buys thousands of the
                 // building first has a gap of thousands of them): the largest count since the last with no gap whose gap it still
                 // covers, by halves. The gap only grows with the count and an offer only shortens with the sum, so the halves find it;
@@ -2721,7 +2732,8 @@ public final class KeptBench {
                     int m = a + (b - a) / 2;
                     double at = coveredGap(g, t, m);
                     if (!Double.isNaN(at) && !(at > 0)) a = m;
-                    else if (!Double.isNaN(at) && covers(g, at * coverBy, cap)) {
+                    else if (!Double.isNaN(at) && covers(g, at * coverBy, cap, rejected, counts,
+                            t.getName() + " q=" + m + " gap=" + at + " invoiceFromGap=" + (g.getCash() + at))) {
                         best = new Object[]{t, m, at};
                         a = m;
                     } else b = m;
@@ -2730,7 +2742,119 @@ public final class KeptBench {
                 break;
             }
         }
+        System.out.println("CBK3 BUILD4X m=" + g.getMonth() + " cash=" + g.getCash()
+                + " coverBy=" + coverBy + " cap=" + cap + " lots=" + g.issueLot("Term") + "/" + g.issueLot("Note")
+                + " minimum=" + g.minimumIssueSize() + " noAhead=" + counts[0]
+                + " noGap=" + counts[1] + " rejectedPairs=" + counts[2] + " loggedPairs=" + rejected.size()
+                + " bankEquity=" + g.getBank().equity() + " stableRoom=" + g.getBank().stableDeskRoom());
+        for (String row : ineligible) System.out.println("CBK3 BUILD4X eligibility " + row);
+        for (String row : rejected) System.out.println("CBK3 BUILD4X rejected " + row);
         return null;
+    }
+
+    /** Opening inputs for a real eligible covered run; native quotes/caps/minimums are unchanged. */
+    public Object[] causeFundingRunCovered(double coverBy, java.util.function.DoubleConsumer setOpeningCash) {
+        Object[] ready = fundingRunCovered(coverBy);
+        if (ready != null) return ready;
+        Object[] first = fundingRun();
+        if (first == null || !(coverBy > 0)) return null;
+        Game g = ui.game;
+        BuildingsTemplate t = (BuildingsTemplate) first[0];
+        Auction.Cap cap = ui.buildScreen.fundingCap();
+        double cashWas = g.getCash(), depositWas = g.getBank().depositRate();
+        boolean accepted = false;
+        try {
+            int q = (int) first[1];
+            double originalGap = coveredGap(g, t, q);
+            var b = g.quoteLongBondForCash(coverBy * originalGap, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
+            var n = g.quoteTBill(coverBy * originalGap, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
+            double available = Math.min(b.cashReceived(), n.cashReceived());
+            double raise = Math.max(g.minimumIssueSize() + g.issueLot("Note"), 2 * g.issueLot("Term"));
+            if (b.isEmpty() || n.isEmpty() || !(available >= raise)) return null;
+            double goalGap = raise / coverBy;
+            int lo = 0, hi = q;
+            while (hi - lo > 1) {
+                int mid = lo + (hi - lo) / 2;
+                double gap = coveredGap(g, t, mid);
+                if (Double.isNaN(gap)) return null;
+                if (gap >= goalGap) hi = mid; else lo = mid;
+            }
+            q = hi;
+            var run = BuildScreen.runOf(t, q);
+            int ahead = g.buildRunAhead(run);
+            if (ahead <= 0) return null;
+            double invoice = g.buildRunInvoice(BuildScreen.firstOf(run, ahead));
+            double opening = invoice - goalGap;
+            if (!(opening >= cashWas)) return null;
+            setOpeningCash.accept(opening);
+            double actualGap = coveredGap(g, t, q);
+            if (!(actualGap > 0)) return null;
+            raise = coverBy * actualGap;
+            b = g.quoteLongBondForCash(raise, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
+            n = g.quoteTBill(raise, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
+            if (b.auction() == null || n.auction() == null) return null;
+            double fair = Math.min(b.auction().ask().fair(), n.auction().ask().fair());
+            double fullSpread = 1 / ham.citybuildersim.HouseholdBalance.HOUSEHOLD_PAPER_APPETITE;
+            // Solve household demand at FAIR, with half the excess spread as a buffer; never set a negative rate.
+            g.getBank().setDepositRate(Math.min(depositWas, Math.max(0, (fair - fullSpread) / 2)));
+            b = g.quoteLongBondForCash(raise, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
+            n = g.quoteTBill(raise, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
+            System.out.println("CBK3 BUILD4X caused " + t.getName() + " q=" + q + " invoice=" + invoice
+                    + " gap=" + actualGap + " raise=" + raise + " available=" + available
+                    + " cash=" + cashWas + "->" + g.getCash() + " deposit=" + depositWas + "->" + g.getBank().depositRate()
+                    + "\n  bond " + fundingQuoteOperands(g, b) + "\n  bill " + fundingQuoteOperands(g, n));
+            if (b.isEmpty() || n.isEmpty() || b.isShort() || n.isShort()
+                    || b.cashReceived() < raise || n.cashReceived() < raise) return null;
+            if (!(coveredGap(g, t, q) > 0) || g.buildRunAhead(run) <= 0) return null;
+            accepted = true;
+            return new Object[]{t, q, actualGap};
+        } finally {
+            if (!accepted) {
+                setOpeningCash.accept(cashWas);
+                g.getBank().setDepositRate(depositWas);
+            }
+        }
+    }
+
+    public record FundingCoverage(boolean okay, String detail) { }
+
+    /** Read current inputs/quotes only; never re-cause cash, rates, bids or an order after the watched month. */
+    public FundingCoverage fundingCoverage(BuildingsTemplate t, int q, double coverBy) {
+        return fundingCoverage(t, q, coverBy, false);
+    }
+
+    /** After the real watched month, cash may cover the invoice; a borrowing shortfall need not persist. */
+    public FundingCoverage fundingCoverageAfterMonth(BuildingsTemplate t, int q, double coverBy) {
+        return fundingCoverage(t, q, coverBy, true);
+    }
+
+    private FundingCoverage fundingCoverage(BuildingsTemplate t, int q, double coverBy, boolean allowPaidByCash) {
+        Game g = ui.game;
+        var run = BuildScreen.runOf(t, q);
+        int ahead = g.buildRunAhead(run);
+        if (ahead <= 0) return new FundingCoverage(false, "m=" + g.getMonth() + " " + t.getName()
+                + " q=" + q + " ahead=" + ahead + " cash=" + g.getCash());
+        var eligible = BuildScreen.firstOf(run, ahead);
+        double invoice = g.buildRunInvoice(eligible), cash = g.getCash();
+        double gap = g.buildFundingGap(eligible), needed = coverBy * gap;
+        Auction.Cap cap = ui.buildScreen.fundingCap();
+        String detail = "m=" + g.getMonth() + " " + t.getName() + " q=" + q + " ahead=" + ahead
+                + " invoice=" + invoice + " cash=" + cash + " gap=" + gap + " needed=" + needed
+                + " cap=" + cap + " deposit=" + g.getBank().depositRate() + " policy=" + g.getDebtManager().getPolicyRate();
+        if (!(invoice > 0) || !Double.isFinite(invoice) || !Double.isFinite(cash) || !Double.isFinite(needed))
+            return new FundingCoverage(false, detail + " invalid invoice/cash/need");
+        if (gap == 0) {
+            boolean noShortfall = fundingShortWords(t, q).isEmpty();
+            return new FundingCoverage(allowPaidByCash && cash >= invoice && noShortfall,
+                    detail + " branch=covered-by-actual-cash noShortfall=" + noShortfall);
+        }
+        if (!(gap > 0)) return new FundingCoverage(false, detail + " invalid gap");
+        var b = g.quoteLongBondForCash(needed, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
+        var n = g.quoteTBill(needed, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
+        boolean okay = !b.isEmpty() && !n.isEmpty() && !b.isShort() && !n.isShort()
+                && b.cashReceived() >= needed && n.cashReceived() >= needed;
+        return new FundingCoverage(okay, detail + " branch=fourfold-native-offers"
+                + "\n  bond " + fundingQuoteOperands(g, b) + "\n  bill " + fundingQuoteOperands(g, n));
     }
 
     /** A run's funding gap as fundingRunCovered() reads it: the gap on the part the model lets ahead, or NaN when it lets none. */
@@ -2741,10 +2865,27 @@ public final class KeptBench {
     }
 
     /** Whether both the funding page's offers, quoted at its cap as runOffers() quotes them, would raise this sum. */
-    private static boolean covers(Game g, double sum, Auction.Cap cap) {
+    private static boolean covers(Game g, double sum, Auction.Cap cap, List<String> rejected, int[] counts, String where) {
         ham.citybuildersim.DebtQuote bond = g.quoteLongBondForCash(sum, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
         ham.citybuildersim.DebtQuote note = g.quoteTBill(sum, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
-        return !bond.isShort() && !note.isShort();
+        boolean covered = !bond.isShort() && !note.isShort();
+        if (!covered) {
+            counts[2]++;
+            if (rejected.size() < 12) rejected.add(where + " cash=" + g.getCash() + " raise=" + sum
+                    + "\n  bond " + fundingQuoteOperands(g, bond)
+                    + "\n  bill " + fundingQuoteOperands(g, note));
+        }
+        return covered;
+    }
+
+    private static String fundingQuoteOperands(Game g, ham.citybuildersim.DebtQuote q) {
+        Auction.Result a = q.auction();
+        return "requested=" + q.requested() + " face=" + q.faceValue() + " cash=" + q.cashReceived()
+                + " empty=" + q.isEmpty() + " short=" + q.isShort()
+                + (a == null ? " auction=null" : " askFace=" + a.ask().face() + " months=" + a.ask().months()
+                    + " fair=" + a.ask().fair() + " fee=" + a.ask().fee() + " ceiling=" + a.ceiling()
+                    + " stop=" + a.stop() + " sold=" + a.sold() + " proceeds=" + a.proceeds() + " fills=" + a.fills()
+                    + " biddersNow=" + g.auctionBidders(a.ask().months(), a.ask().face()));
     }
 
     /** The title over the funding page's cap chips, as BuildScreen.shortAnswers() writes it. */
@@ -6094,6 +6235,136 @@ public final class KeptBench {
             list.getChildren().add(Kept.scope("found:" + i, () -> fs.foundRow(g, f)));
         }
         return list;
+    }
+
+    /** The independently caused native gutter boundary, including both prior scrollbar histories. */
+    public record GutterProof(boolean controls, boolean dimensions, boolean pixels, boolean retained,
+                              boolean unchanged, String detail) { }
+
+    private static final class GutterGraph {
+        final Kept.Pool pool = new Kept.Pool();
+        VBox frame, page;
+        Label label;
+        Region filler;
+        ScrollPane body;
+    }
+
+    private record GutterShot(List<String> signature, int[] pixels, Bounds viewport, Bounds page,
+                              double contentHeight, boolean vertical) { }
+
+    /** An isolated bench calls the real frameOver; controls alone replace its policy with AS_NEEDED. */
+    public GutterProof governmentGutterProbe() throws Exception {
+        ensureWindow();
+        ui.currentScreen = "showGovernmentMenu";
+        ui.governmentScreen.govPage = "Spending";
+        Method frameOver = GovernmentScreen.class.getDeclaredMethod("frameOver", VBox.class, VBox.class);
+        frameOver.setAccessible(true);
+        var bodyField = GovernmentScreen.class.getDeclaredField("body");
+        bodyField.setAccessible(true);
+        GutterGraph measure = new GutterGraph();
+        gutterDraw(measure, "i", 0, ScrollPane.ScrollBarPolicy.NEVER, frameOver, bodyField);
+        double wide = measure.body.getViewportBounds().getWidth();
+        gutterDraw(measure, "i", 0, ScrollPane.ScrollBarPolicy.ALWAYS, frameOver, bodyField);
+        double narrow = measure.body.getViewportBounds().getWidth(), gutter = wide - narrow;
+        String text = null;
+        double low = 0, high = 0;
+        for (int words = 1; words <= 512; words++) {
+            String candidate = "i ".repeat(words);
+            measure.label.setText(candidate);
+            double a = measure.page.prefHeight(wide), b = measure.page.prefHeight(narrow);
+            if (b > a) { text = candidate; low = a; high = b; break; }
+        }
+        if (!(gutter > 0) || text == null)
+            return new GutterProof(false, false, false, false, false, "No actual native gutter/wrap boundary: " + gutter);
+        double foot = ((Region) measure.body.getContent()).getInsets().getTop()
+                + ((Region) measure.body.getContent()).getInsets().getBottom();
+        double filler = measure.body.getViewportBounds().getHeight() / 2;
+        double target = filler + (low + high) / 2 + foot, delta = high - low;
+        double skin = measure.body.getInsets().getTop() + measure.body.getInsets().getBottom();
+        ui.menuScroller.resize(WIDTH, target + skin + measure.frame.getHeight() + GovernmentScreen.STAGE_REST);
+        double shortFill = Math.max(0, filler - 2 * delta), tallFill = filler + 2 * delta;
+        GutterGraph controlShort = new GutterGraph(), controlTall = new GutterGraph();
+        gutterDraw(controlShort, text, shortFill, ScrollPane.ScrollBarPolicy.AS_NEEDED, frameOver, bodyField);
+        gutterFill(controlShort.filler, filler); passes(); settle();
+        GutterShot cw = gutterShot(controlShort);
+        gutterDraw(controlTall, text, tallFill, ScrollPane.ScrollBarPolicy.AS_NEEDED, frameOver, bodyField);
+        gutterFill(controlTall.filler, filler); passes(); settle();
+        GutterShot cn = gutterShot(controlTall);
+        boolean controls = !cw.vertical() && cn.vertical()
+                && cw.viewport().getWidth() > cn.viewport().getWidth()
+                && cw.contentHeight() < cw.viewport().getHeight() && cn.contentHeight() > cn.viewport().getHeight()
+                && !cw.signature().equals(cn.signature());
+        GutterGraph keptShort = new GutterGraph(), keptTall = new GutterGraph();
+        gutterDraw(keptShort, text, shortFill, null, frameOver, bodyField);
+        var shortNodes = nodesOnPage();
+        gutterDraw(keptTall, text, tallFill, null, frameOver, bodyField);
+        var tallNodes = nodesOnPage();
+        boolean dimensions = true, pictures = true, retained = true, unchanged = true;
+        for (double height : new double[]{filler, shortFill, tallFill}) {
+            gutterDraw(keptShort, text, height, null, frameOver, bodyField);
+            GutterShot a = gutterShot(keptShort);
+            retained &= shortNodes.equals(nodesOnPage()) && keptShort.pool.lastMade() == 0;
+            gutterDraw(keptShort, text, height, null, frameOver, bodyField);
+            GutterShot again = gutterShot(keptShort);
+            unchanged &= a.signature().equals(again.signature()) && java.util.Arrays.equals(a.pixels(), again.pixels())
+                    && shortNodes.equals(nodesOnPage()) && keptShort.pool.lastMade() == 0;
+            gutterDraw(keptTall, text, height, null, frameOver, bodyField);
+            GutterShot b = gutterShot(keptTall);
+            retained &= tallNodes.equals(nodesOnPage()) && keptTall.pool.lastMade() == 0;
+            gutterDraw(keptTall, text, height, null, frameOver, bodyField);
+            GutterShot bAgain = gutterShot(keptTall);
+            unchanged &= b.signature().equals(bAgain.signature()) && java.util.Arrays.equals(b.pixels(), bAgain.pixels())
+                    && tallNodes.equals(nodesOnPage()) && keptTall.pool.lastMade() == 0;
+            GutterGraph fresh = new GutterGraph();
+            gutterDraw(fresh, text, height, null, frameOver, bodyField);
+            GutterShot c = gutterShot(fresh);
+            dimensions &= a.vertical() && b.vertical() && c.vertical() && a.signature().equals(b.signature()) && a.signature().equals(c.signature())
+                    && a.viewport().equals(b.viewport()) && a.viewport().equals(c.viewport())
+                    && a.page().equals(b.page()) && a.page().equals(c.page());
+            pictures &= java.util.Arrays.equals(a.pixels(), b.pixels()) && java.util.Arrays.equals(a.pixels(), c.pixels());
+        }
+        return new GutterProof(controls, dimensions, pictures, retained, unchanged,
+                "native gutter=" + gutter + " wrap=" + low + "/" + high + " target=" + target
+                + " controls viewport=" + cw.viewport() + "/" + cn.viewport()
+                + " content=" + cw.contentHeight() + "/" + cn.contentHeight());
+    }
+
+    private void gutterDraw(GutterGraph graph, String text, double height, ScrollPane.ScrollBarPolicy control,
+                            Method frameOver, java.lang.reflect.Field bodyField) throws Exception {
+        Kept.draw(graph.pool, () -> {
+            graph.frame = Kept.scope("frame", () -> Kept.column(0, Kept.label("Government gutter")));
+            graph.page = Kept.scope("page", () -> {
+                VBox page = Pieces.widePage();
+                page.setSpacing(0);
+                graph.label = Kept.label(text);
+                graph.label.setWrapText(true);
+                graph.label.setMinWidth(0);
+                graph.label.setMaxWidth(Double.MAX_VALUE);
+                graph.filler = Kept.of(Region.class, Region::new);
+                gutterFill(graph.filler, height);
+                page.getChildren().setAll(graph.label, graph.filler);
+                return page;
+            });
+            try {
+                frameOver.invoke(ui.governmentScreen, graph.frame, graph.page);
+                graph.body = (ScrollPane) bodyField.get(ui.governmentScreen);
+                if (control != null) graph.body.setVbarPolicy(control);
+            } catch (ReflectiveOperationException e) { throw new IllegalStateException(e); }
+        });
+        passes();
+        settle();
+    }
+
+    private static void gutterFill(Region filler, double height) {
+        filler.setMinHeight(height); filler.setPrefHeight(height); filler.setMaxHeight(height);
+    }
+
+    private GutterShot gutterShot(GutterGraph graph) {
+        boolean vertical = graph.body.lookupAll(".scroll-bar").stream()
+                .anyMatch(n -> n instanceof javafx.scene.control.ScrollBar b
+                        && b.getOrientation() == javafx.geometry.Orientation.VERTICAL && b.isVisible());
+        return new GutterShot(signature(), pixels(), graph.body.getViewportBounds(), graph.page.getLayoutBounds(),
+                graph.body.getContent().getLayoutBounds().getHeight(), vertical);
     }
 
     /** KS1-Gov's probe: what each state's draw made new and what its unchanged redraw made, and the page's signature, kept beside built new. */

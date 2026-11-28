@@ -1,8 +1,8 @@
-# gate of Merge batch/ASH1: power for a small town, from Jerus's Ashbourne findings 1, 2, 9, 8 (desk chat 2026-11-27, "Yes, send them"): the overview's POWER row reads the lesser of the plants and the wires (it said "204% served" while 4.6% of the month went unserved); a grid step a small town can take (the only one past 10 MW is a Cr 22.1M substation, 153% of a 6,166-person town's GDP); posts that follow the load; the months-left at the site's pace. Next free lane, ahead of PW9-G. An ensemble, 0.9.218
+# gate of Merge batch/CBK3: the window lends against collateral, and the bank's rules become the player's (Jerus, desk chat 2026-11-26: "ive noticed alot of runs the banks are borrowing massively overnight, like massively, and the central bank remmittance is nearly 60% of government revenue"; "Yes, queue CBK3"): Part 1 the window only against eligible collateral after haircuts, the desk never window-funded, its cause found and fixed, the remittance near real shares (80-run ensemble); Part 2 dials at today's values (window spread and limit, capital minimum, countercyclical buffer, leverage floor, reserve requirement, large exposures, mortgage LTC and DTI, business loan-to-assets), on CBK1's page and Policy. Next free lane; gates after CBK1, 0.9.219
 # date: 2026-11-28
 # earth-2.bin: named
 # nightly: 2026-11-27 03:12 0.9.215 c71984995 4,000 months: OK in 578 s; nightly tier OK; observations: 3 miss(es); /home/jerus/.cbs-observations/misses.tsv; timing: 1 SLOWER, 1 standing miss(es), 0 first-night miss(es), 1 incomplete; loaded=0; /home/jerus/.cbs-timing/gatebox/2026-11-27-c71984995-Kh1HaGNd; SaveSlotCheck | the median due month, 25.4 ms, holds the clock at most CLOCK_MS (25 ms) | previous 22.3, tonight 25.8, budget 25 ms | attribution inconclusive: boundary did not confirm
-# suite: 260 harnesses run in 1713s: 245 passed, 15 failed
+# suite: 258 harnesses run in 1834s: 244 passed, 14 failed
 InvestCheck | exit 1
 InvestCheck | fixture: the builders' wages have moved since founding, and at the founding ladder's labour, which a load read an older save's contract at before its wages were struck, the House's rebate is not today's - the line lies between them FAIL
 InvestCheck | 1 FAILED
@@ -13,30 +13,35 @@ OrderDoorCheck | exit 1
 OrderDoorCheck | FAIL fixture: there the landlord stands at HN1-A's edge, with ground for three blocks, and the shopkeeper is ready
 OrderDoorCheck | OrderDoorCheck: 1 FAILED
 RoadCheck | exit 1
-RoadCheck | on a busy street (over 200 vehicles a day) the paved road is the least over its life on the same ground, and the advice chooses the lowest net whole plan, every candidate recomputed to the bit FAIL
 RoadCheck | the move follows the card's paving or new-build action and records the actual count              FAIL
 RoadCheck | the test player orders exactly the count on its whole-plan card                                  FAIL
-RoadCheck | 3 FAILED
+RoadCheck | 2 FAILED
+AutoBuildCheck | exit 1
+AutoBuildCheck | fixture: ...and it placed orders in those months (0)                                                           FAIL
+AutoBuildCheck | 1 FAILED
 SectorFlowCheck | exit 1
 SectorFlowCheck | ...and its outputs, goods and work billed, to its revenue                                            FAIL
 SectorFlowCheck | ...and both are the SectorBooks month the Income page draws                                          FAIL
 SectorFlowCheck | 2 FAILED
-HoldersCheck | exit 4
+FundCheck | exit 1
+FundCheck | a limit posts at its limit                                                                       FAIL
+FundCheck | 1 FAILED
+HoldersCheck | exit 3
 HoldersCheck | fixture: in those months no household left and none sold the bank's desk any paper FAIL
-HoldersCheck | ...until it has none: the dial past the bank's holding took all of it    FAIL
 HoldersCheck | fixture: ...and the step came from the households                        FAIL
 HoldersCheck | fixture: in the middle - the households still hold some                  FAIL
-HoldersCheck | 4 FAILED
+HoldersCheck | 3 FAILED
 DenominationCheck | exit 1
-DenominationCheck | the same shops' till                                           FAIL  0.0275631784 != 0.0275631070  (2.59e-06 apart)
-DenominationCheck | the same output                                                FAIL  4.4055564685 != 4.4028842269  (0.000607 apart)
-DenominationCheck | ...and the same year of it                                     FAIL  55.8873043561 != 55.8665541929  (0.000371 apart)
-DenominationCheck | the same rent                                                  FAIL  0.0000607351 != 0.0000607225  (0.000207 apart)
-DenominationCheck | the same price level                                           FAIL  1.2297887819 != 1.2275924213  (0.00179 apart)
-DenominationCheck | the same currency                                              FAIL  0.0115979862 != 0.0115800575  (0.00155 apart)
-DenominationCheck | the same treasury                                              FAIL  720.8863119490 != 720.8818963612  (6.13e-06 apart)
-DenominationCheck | the same bank                                                  FAIL  44.6630178888 != 44.6701641349  (0.000160 apart)
-DenominationCheck | 8 FAILED
+DenominationCheck | the same people live there, to the person                      FAIL
+DenominationCheck | the same output                                                FAIL  9.7444923516 != 9.7484156961  (0.000402 apart)
+DenominationCheck | ...and the same year of it                                     FAIL  103.3814997263 != 103.1360057589  (0.00238 apart)
+DenominationCheck | the same rent                                                  FAIL  0.0001223519 != 0.0001223869  (0.000286 apart)
+DenominationCheck | the same price level                                           FAIL  1.6451926160 != 1.6491481951  (0.00240 apart)
+DenominationCheck | the same currency                                              FAIL  0.0117679986 != 0.0118456382  (0.00655 apart)
+DenominationCheck | the same treasury                                              FAIL  629.1644260067 != 629.0098141686  (0.000246 apart)
+DenominationCheck | the same shops' till                                           FAIL  0.0655998294 != 0.0610370486  (0.0748 apart)
+DenominationCheck | the same bank                                                  FAIL  80.1771494193 != 80.7244743733  (0.00678 apart)
+DenominationCheck | 9 FAILED
 RailDrawCheck | exit 1
 RailDrawCheck | ...and where the line runs on through that plot (a T) its plots and the two beside are not replaced and are track in the picture: 3 of 4 FAIL
 RailDrawCheck | 1 FAILED
@@ -44,26 +49,14 @@ PlanCheck | exit 1
 PlanCheck | (g) crescents are laid at the rim of a real city, every check but the one network holding on the 408 districts planned (alone they are often several pieces, as at 0.8.18), no box on a band FAIL
 PlanCheck | (2) ...built again nearby: of the 74 boxes the runs lie across 74 stand in the cell they stood in (the cell a box left is tried first), against 74 with the first place that fits in any cell, where the larger homes' hole in the first cell takes them FAIL
 PlanCheck | 2 FAILED
-DeathRecordCheck | exit 1
-DeathRecordCheck | the orphan section does not fill behind it, in any month of the two years        FAIL
-DeathRecordCheck | the layoff adds at most one orphan against its twin in every month of the two years FAIL
-DeathRecordCheck | 2 FAILED
 CarCheck | exit 3
 CarCheck | the fixture: one household's money buys a car at the price the draw is sized at and none at the price it is struck at FAIL  4800 trials, no edge found
-CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  65 cars, 1 step(s) of the import price; paid 57.486517858107550, the ship's product 56.430517858107564; 8.0 cars on the makers' shelves
-CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 56.430517858107550, paid 57.486517858107550
+CarCheck | fixture: a month of cars all off a ship whose two roundings part: the cells' sum at cost / units against the ship's one product FAIL  66 cars, 1 step(s) of the import price; paid 57.618517858107566, the ship's product 56.430517858107560; 9.0 cars on the makers' shelves
+CarCheck | ...and the imports declared are what the households paid, not the ship's product: to the bit FAIL  declared 56.430517858107564, paid 57.618517858107566
 CarCheck | 3 FAILED
-OilCheck | exit 1
-OilCheck | a town with no station, its drivers' petrol all past the stations at the queue's price, is given one FAIL  8,249 L past them: "the city could staff 33% of a Filling Station now and 80% with a year's arrivals; it wants 80%"
-OilCheck | 1 FAILED
-CopperRefiningCheck | exit 1
-CopperRefiningCheck | the child ran the playtest's seed 1 to its end (exit 0) and printed its copper works line            FAIL  exit 1, 5.3 minutes; its output: /tmp/citybuildersim-tmp/173284/copperrefiningcheck-rodmills120435047277764052/seed1.log
-CopperRefiningCheck | seed 1's 2,400 months stand at most ROD_MILLS_STANDING (1) Rod Mill                                  FAIL  2 Rod Mills, 5.3 minutes
-CopperRefiningCheck | 2 FAILED
 GroundSkipCheck | exit 1
-GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 48 month(s) FAIL
+GroundSkipCheck | the landlords are never held for land across the watched skip, where the old skip held them 28 month(s) FAIL
 GroundSkipCheck | 1 FAILED
 UiSteadyCheck | exit 1
-UiSteadyCheck | 2. 054-government-revenue: an unchanged redraw makes no node new and lets none go (532 nodes)    FAIL  2 made, 2 lost: Label "Capital gains: assessed ..." in Column; LabeledText in Label
-UiSteadyCheck | 4. 012-build-industry: a month keeps the page's scroller at its pixel                            FAIL  3950.7 px before, 3951.4 after, of 11869.0
-UiSteadyCheck | UiSteadyCheck: 2 FAILED
+UiSteadyCheck | 2. 054-government-revenue: an unchanged redraw makes no node new and lets none go (540 nodes)    FAIL  2 made, 2 lost: LabeledText in Label; Label "Capital gains: assessed ..." in Column
+UiSteadyCheck | UiSteadyCheck: 1 FAILED

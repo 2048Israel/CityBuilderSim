@@ -1,4 +1,4 @@
-# FundCheck.java - 2,048 lines · 39 methods · 4 constants · harnesses
+# FundCheck.java - 2,109 lines · 41 methods · 4 constants · harnesses
 
 `ham/citybuildersim/FundCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -64,7 +64,7 @@
 >      at the step, pro rata - since 0.7.102 asked at the desk's bid (A21),
 > ... (40 more lines in the source)
 
-**Uses:** [TreasuryFund](TreasuryFund.md) (125), [Equity](Equity.md) (85), [Game](Game.md) (84), [Bank](Bank.md) (48), [Exchange](Exchange.md) (41), [OrderBook](OrderBook.md) (28), [Household](Household.md) (17), [Founding](Founding.md) (17), [PriceLevel](PriceLevel.md) (16), [ShortSellingCheck](ShortSellingCheck.md) (10), [HouseholdBalance](HouseholdBalance.md) (9), [MoneyAudit](MoneyAudit.md) (7), [GameFiles](GameFiles.md) (5), [LongTermBond](LongTermBond.md) (5), [CityLand](CityLand.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Sectors](Sectors.md) (4), [FundLedger](FundLedger.md) (4), [LandMarket](LandMarket.md) (4), [CorporateBond](CorporateBond.md) (3), [BondMarket](BondMarket.md) (3), [LandManager](LandManager.md) (3), [TreasuryLine](TreasuryLine.md) (3), [CentralBank](CentralBank.md) (2), [JobType](JobType.md) (2), [FundView](FundView.md) (2), [PolicyPreview](PolicyPreview.md) (2), [NationalAccounts](NationalAccounts.md) (2), [WorldEconomy](WorldEconomy.md) (2), [Debt](Debt.md) (2)... and 4 more
+**Uses:** [TreasuryFund](TreasuryFund.md) (125), [Equity](Equity.md) (87), [Game](Game.md) (86), [Bank](Bank.md) (48), [Exchange](Exchange.md) (42), [OrderBook](OrderBook.md) (28), [Household](Household.md) (18), [Founding](Founding.md) (17), [PriceLevel](PriceLevel.md) (16), [HouseholdBalance](HouseholdBalance.md) (11), [ShortSellingCheck](ShortSellingCheck.md) (10), [MoneyAudit](MoneyAudit.md) (8), [GameFiles](GameFiles.md) (5), [FundLedger](FundLedger.md) (5), [LongTermBond](LongTermBond.md) (5), [CityLand](CityLand.md) (5), [BuildingsTemplate](BuildingsTemplate.md) (4), [Sectors](Sectors.md) (4), [LandMarket](LandMarket.md) (4), [CorporateBond](CorporateBond.md) (3), [BondMarket](BondMarket.md) (3), [LandManager](LandManager.md) (3), [TreasuryLine](TreasuryLine.md) (3), [CentralBank](CentralBank.md) (2), [JobType](JobType.md) (2), [FundView](FundView.md) (2), [PolicyPreview](PolicyPreview.md) (2), [NationalAccounts](NationalAccounts.md) (2), [WorldEconomy](WorldEconomy.md) (2), [Debt](Debt.md) (2)... and 4 more
 
 **Used by (1):** [FundLedgerCheck](FundLedgerCheck.md)
 
@@ -83,22 +83,22 @@
 | 1071 | 8b. the city's mark (0.7.48, C4) |
 | 1137 | 9. the transfer |
 | 1180 | 9b. the withdrawal dial (0.7.48, C1) |
-| 1399 | 9c. the idle cash (RB1) |
-| 1509 | 9d. the idle cash after last month's toRaise (RB1-R) |
-| 1595 | 9e. a real run at the default dial (RB1-R) |
-| 1784 | 10. the hand |
-| 1855 | 11. the save |
-| 1912 | 12. Insane |
-| 1976 | 13. Insane, never borrowing (0.7.15) |
+| 1429 | 9c. the idle cash (RB1) |
+| 1539 | 9d. the idle cash after last month's toRaise (RB1-R) |
+| 1625 | 9e. a real run at the default dial (RB1-R) |
+| 1845 | 10. the hand |
+| 1916 | 11. the save |
+| 1973 | 12. Insane |
+| 2037 | 13. Insane, never borrowing (0.7.15) |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
 | 153 | `FundCheck.FOUNDING_MONTHS` | `72` | The months the fixture town is played before it is saved: a stage of the founding, never a month picked because the town's path passes at it (PK1). |
-| 1512 | `FundCheck.BOND_ROOM_MARGIN` | `3` | How many times the bond room before the month 9d lifts the fund's first month's due (all of it short) to, so the room a month on, which may be over it by the month's new bonds, is still under the toRaise. |
-| 1603 | `FundCheck.MONTHS_9E` | `240` | How many months 9e plays: 240 is twenty years, 5 seconds; the counts (the cap sale in 230 months, the idle transfer in 90) would allow 120 with margin, and the longer run gives the fixed point more buybacks to be held... |
-| 1606 | `FundCheck.PROBE_MONTHS_9E` | `24` | How many months 9e's probe of a copy plays to see which company buys its own shares back (the one the fund is then placed in). |
+| 1542 | `FundCheck.BOND_ROOM_MARGIN` | `3` | How many times the bond room before the month 9d lifts the fund's first month's due (all of it short) to, so the room a month on, which may be over it by the month's new bonds, is still under the toRaise. |
+| 1633 | `FundCheck.MONTHS_9E` | `240` | How many months 9e plays: 240 is twenty years, 5 seconds; the counts (the cap sale in 230 months, the idle transfer in 90) would allow 120 with margin, and the longer run gives the fixed point more buybacks to be held... |
+| 1636 | `FundCheck.PROBE_MONTHS_9E` | `24` | How many months 9e's probe of a copy plays to see which company buys its own shares back (the one the fund is then placed in). |
 
 ## Fields (state)
 
@@ -114,7 +114,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 110 | 1939 | **type** `public class FundCheck` | Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). |
+| 110 | 2000 | **type** `public class FundCheck` | Proves the city's fund, the bank's rescue for its shares, the preferred a standing bank asks for, and the Insane founding (0.7.14). |
 | 116 | 4 | `static void check(String label, boolean ok)` |  |
 | 121 | 9 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 131 | 4 | `static void quietly(Runnable r)` |  |
@@ -186,57 +186,59 @@
 | 1144 | 5 | `static double placeablePayIn(Game g, double wanted)` | A pay-in the rule can place (RB1): `wanted` when the fund's cash with it is within the room its share bids and its bond bids have left (Exchange.fundShareRoom() and BondMarket.fundBondRoom(): none of the cash is idle,... |
 | 1150 | 29 | `static void theTransfer()` |  |
 
-### 9b. the withdrawal dial (0.7.48, C1) (lines 1180-1398)
+### 9b. the withdrawal dial (0.7.48, C1) (lines 1180-1428)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1192 | 12 | `static boolean giveTheDeskRoom(Game g, int[] companies)` | THE DESK'S ROOM TO BUY EVERY SHARE OF A COMPANY THAT IS NOT ITS OWN, CAUSED (FS13, 2026-11-20; PK1). |
-| 1213 | 19 | `static int[] holdTwoAndARescueBook(Game g)` | A FUND HOLDING TWO COMPANIES ON ITS MARKET BOOK AND A RESCUE BOOK SIX TIMES THAT, WITH NO CASH: each company's households hand it 5% of the company (a fixture of a holding, not a trade, as section 8's band) and the ba... |
-| 1234 | 3 | `static double splitUnit(Game g, int c)` | The factor the step's split or consolidation left on a company's count of shares (Exchange.getSplit()), 1 when it had none: what a count read before the step is multiplied by to be read after it. |
-| 1239 | 3 | `static double soldOrAsked(Game g, int c, double before)` | What the rule has on a company's book or sold off it since `before` shares: the step's sale, filled or resting. |
-| 1243 | 155 | `static void theWithdrawal()` |  |
+| 1192 | 18 | `static boolean giveTheDeskRoom(Game g, int[] companies)` | THE DESK'S ROOM TO BUY EVERY SHARE OF A COMPANY THAT IS NOT ITS OWN, CAUSED (FS13, 2026-11-20; PK1). |
+| 1219 | 31 | `static int[] holdTwoAndARescueBook(Game g)` | A FUND HOLDING TWO COMPANIES ON ITS MARKET BOOK AND A RESCUE BOOK SIX TIMES THAT, WITH NO CASH: each company's households hand it 5% of the company (a fixture of a holding, not a trade, as section 8's band) and the ba... |
+| 1252 | 7 | `static void withdrawalRoom(Game g, int[] companies, String when)` | Print the native gates, so a missing bid cannot be mistaken for a cash shortage. |
+| 1261 | 3 | `static double splitUnit(Game g, int c)` | The factor the step's split or consolidation left on a company's count of shares (Exchange.getSplit()), 1 when it had none: what a count read before the step is multiplied by to be read after it. |
+| 1266 | 3 | `static double soldOrAsked(Game g, int c, double before)` | What the rule has on a company's book or sold off it since `before` shares: the step's sale, filled or resting. |
+| 1270 | 158 | `static void theWithdrawal()` |  |
 
-### 9c. the idle cash (RB1) (lines 1399-1508)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1407 | 101 | `static void theIdleCash()` | THE CASH PAST THE ROOM ITS CAPS LEAVE (RB1). |
-
-### 9d. the idle cash after last month's toRaise (RB1-R) (lines 1509-1594)
+### 9c. the idle cash (RB1) (lines 1429-1538)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1521 | 73 | `static void theIdleCashAfterToRaise()` | THE CASH THE TOP OF THE MONTH PAYS LAST MONTH'S toRaise FROM IS NOT IDLE (RB1-R). |
+| 1437 | 101 | `static void theIdleCash()` | THE CASH PAST THE ROOM ITS CAPS LEAVE (RB1). |
 
-### 9e. a real run at the default dial (RB1-R) (lines 1595-1783)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1609 | 6 | `static double unencumberedShares(HouseholdBalance balance, int company)` | Actual free units: a cell's per-household shares less its tagged subset, times its positive count. |
-| 1616 | 6 | `static boolean sameBits(double[] before, double[] after)` |  |
-| 1635 | 148 | `static void theRealRun()` | A REAL RUN AT THE DEFAULT DIAL: THE CAP SALE AND THE IDLE TRANSFER FIRE, AND NO HOLDING PASSES THE FIXED POINT (RB1-R). |
-
-### 10. the hand (lines 1784-1854)
+### 9d. the idle cash after last month's toRaise (RB1-R) (lines 1539-1624)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1786 | 68 | `static void theHand()` |  |
+| 1551 | 73 | `static void theIdleCashAfterToRaise()` | THE CASH THE TOP OF THE MONTH PAYS LAST MONTH'S toRaise FROM IS NOT IDLE (RB1-R). |
 
-### 11. the save (lines 1855-1911)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1857 | 54 | `static void theSave()` |  |
-
-### 12. Insane (lines 1912-1975)
+### 9e. a real run at the default dial (RB1-R) (lines 1625-1844)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1914 | 61 | `static void insane()` |  |
+| 1639 | 6 | `static double unencumberedShares(HouseholdBalance balance, int company)` | Actual free units: a cell's per-household shares less its tagged subset, times its positive count. |
+| 1647 | 25 | `static boolean causeFreeSecuredDonor(Game g, int company, double take)` | A paired opening secured claim, leaving enough genuinely free units for the measured gift. |
+| 1673 | 6 | `static boolean sameBits(double[] before, double[] after)` |  |
+| 1692 | 152 | `static void theRealRun()` | A REAL RUN AT THE DEFAULT DIAL: THE CAP SALE AND THE IDLE TRANSFER FIRE, AND NO HOLDING PASSES THE FIXED POINT (RB1-R). |
 
-### 13. Insane, never borrowing (0.7.15) (lines 1976-2048)
+### 10. the hand (lines 1845-1915)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1986 | 62 | `static void insaneOnAdvances()` | Jerus, asked whether play should work before the city borrows: "Play works from day one. |
+| 1847 | 68 | `static void theHand()` |  |
+
+### 11. the save (lines 1916-1972)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1918 | 54 | `static void theSave()` |  |
+
+### 12. Insane (lines 1973-2036)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 1975 | 61 | `static void insane()` |  |
+
+### 13. Insane, never borrowing (0.7.15) (lines 2037-2109)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2047 | 62 | `static void insaneOnAdvances()` | Jerus, asked whether play should work before the city borrows: "Play works from day one. |
 

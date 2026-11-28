@@ -339,6 +339,41 @@ public class CentralBankCheck {
         return kinds;
     }
 
+    /** The same native resolution/collateral case, also called by the short bank-rules harness. */
+    static void resolutionWindowLaw() {
+    // A FAILED BANK AT THE WINDOW (0.7.1, decided rather than forgotten):
+    // the resolution sets its equity to zero, and it is charged no
+    // interest on what it still owes past its deposits - see the note in
+    // Bank.fundToCover(). The advance stands; the charge does not.
+    Bank failed = new Bank();
+    failed.refresh(1, 100_000, 0, 500_000, 0, 0);
+    failed.injectCapital(50_000);
+    failed.setCash(-600_000);
+    failed.resolveIfFailed();
+    assertTrue("fixture: the bank has failed with a real outstanding loan book",
+            failed.isInsolvent() && failed.getFailures() == 1 && failed.wholesaleFunding() > 0);
+    CentralBank lender = new CentralBank();
+    lender.setWindowCapacity(failed::windowCreditLimit);
+    failed.setSettledWindow(lender::getAdvancesToBank);
+    failed.setWindowInterestDue(lender::getWindowInterestDue);
+    lender.settleWindow(failed.windowFunding());
+    failed.settleForeignFunding(lender.getAdvancesToBank());
+    double foreignOutstanding = failed.getForeignWholesale();
+    failed.setForeignFundingRate(.07);
+    double failedWholesale = failed.wholesaleFunding();
+    failed.fundToCover(.05);
+    close("the existing central-bank standstill charges no window interest", failed.getWindowFundingCost(), 0, 0);
+    close("foreign creditors retain their interest claim in resolution",
+            failed.getForeignFundingCost(), foreignOutstanding * .07 / 12, 1e-9);
+    close("the failed bank's funding quote still records its foreign bill",
+            failed.fundingRate(), foreignOutstanding * .07 / failedWholesale, 1e-12);
+    double limit = failed.windowCreditLimit(), heldBeforeProbe = lender.getAdvancesToBank();
+    assertTrue("fixture: resolution still has positive native collateral capacity to test", limit > heldBeforeProbe);
+    double probe = lender.advanceToBank(2 * limit);
+    close("a resolution draw is clipped at the same raw collateral ceiling Game uses", probe, limit - heldBeforeProbe, 1e-9);
+    assertTrue("resolution does not waive the collateral limit", lender.getAdvancesToBank() <= failed.windowCreditLimit());
+    }
+
     public static void main(String[] args) throws Exception {
 
         out = System.out;
@@ -380,45 +415,74 @@ public class CentralBankCheck {
         /* ================= 3. the window ================= */
         out.println("\n--- 3. the window prices at policy plus the penalty ---");
 
+        Bank unsecured = new Bank();
+        unsecured.refresh(1, 100_000, 0, 0, 0, 0);
+        unsecured.setCash(-400_000);
+        close("an unsupported cash shortfall is not window collateral", unsecured.windowFunding(), 0, 0);
+
         Bank short_ = new Bank();
-        short_.refresh(1, 100_000, 0, 0, 0, 0);
+        short_.refresh(1, 100_000, 0, 500_000, 0, 0);
         short_.injectCapital(50_000);
         short_.setCash(-400_000);
-        double gathered = short_.depositsGathered();
-        double atWindow = short_.wholesaleFunding();
-        close("past its deposits, what it borrows is the window's",
-                atWindow, 400_000 - gathered, 1e-9);
-        short_.fundToCover(.05);
-        close("the window charges the dial plus the penalty",
-                short_.fundingRate(), .05 + CentralBank.WINDOW_PENALTY, 1e-12);
-        close("...on the window's tranche, and nothing on the deposits",
-                short_.getFundingCost(), atWindow * (.05 + CentralBank.WINDOW_PENALTY) / 12, 1e-9);
-        close("...and a bank that is borrowing has no reserves to be paid on",
-                short_.getPlacementIncome(), 0, 0);
-
+        short_.setForeignFundingRate(.07);
         CentralBank window = new CentralBank();
+        window.setWindowCapacity(short_::windowCreditLimit);
+        short_.setSettledWindow(window::getAdvancesToBank);
+        short_.setWindowInterestDue(window::getWindowInterestDue);
+        double wholesale = short_.wholesaleFunding();
+        double atWindow = short_.windowFunding();
+        double collateral = short_.windowCollateral();
+        assertTrue("fixture: eligible loans cause both secured and foreign funding",
+                atWindow > 0 && atWindow < wholesale && atWindow <= collateral);
+        double poolBeforeFunding = short_.getCash();
         window.settleWindow(atWindow);
-        window.chargeWindow(short_.getFundingCost());
+        short_.settleForeignFunding(window.getAdvancesToBank());
+        assertTrue("fixture: both tranches are actual liabilities before the bill",
+                window.getAdvancesToBank() == atWindow && short_.getForeignWholesale() == wholesale - atWindow
+                        && window.getAdvancesToBank() > 0 && short_.getForeignWholesale() > 0);
+        short_.fundToCover(.05, window.getWindowDeferred(), window.getAdvancesToBank());
+        window.payInterestOnReserves(short_.getPlacementIncome());
+        short_.payWindowInterest(window.chargeWindow(short_.getWindowFundingCost()));
+        close("the secured tranche pays policy plus the penalty",
+                short_.getWindowFundingCost(), atWindow * (.05 + CentralBank.WINDOW_PENALTY) / 12, 1e-9);
+        close("the unsupported tranche pays the wholesale rate abroad",
+                short_.getForeignFundingCost(), (wholesale - atWindow) * .07 / 12, 1e-9);
+        close("both funding bills add to the whole cost exactly once", short_.getFundingCost(),
+                short_.getWindowFundingCost() + short_.getForeignFundingCost(), 1e-9);
+        close("the funding rate is the weighted price of its actual two tranches",
+                short_.fundingRate(), (atWindow * (.05 + CentralBank.WINDOW_PENALTY)
+                        + (wholesale - atWindow) * .07) / wholesale, 1e-12);
+        close("...and a borrowing bank has no reserves earning interest", short_.getPlacementIncome(), 0, 0);
+
         close("the advance is money made", window.getIssued(), atWindow, 1e-9);
-        close("...and the interest is the central bank's, and destroyed",
-                window.getWindowInterest(), short_.getFundingCost(), 1e-9);
-        close("...so M0 is what it lent less what it was paid",
-                window.m0(), atWindow - short_.getFundingCost(), 1e-9);
+        close("only the window interest is central-bank income and destroyed",
+                window.getWindowInterest(), short_.getWindowFundingCost(), 1e-9);
+        close("M0 is what it lent less what it was paid",
+                window.m0(), atWindow - short_.getWindowFundingCost(), 1e-9);
+        close("the same collected window cash is retired once", window.getWindowInterestCollected(), short_.getWindowFundingCost(), 1e-9);
+        close("the actual H/F pool closes on funding flows and both paid bills, to the cent",
+                short_.getCash() + window.getAdvancesToBank() + short_.getForeignWholesale() - poolBeforeFunding,
+                window.getAdvancedToBank() - window.getRepaidByBank() - window.getWindowInterestCollected()
+                        + window.getInterestOnReserves() + short_.getForeignWholesaleIn() - short_.getForeignWholesaleOut()
+                        - short_.getForeignFundingCost() - short_.depositInterest(), MoneyAudit.CENT);
         window.settleWindow(atWindow / 2);
-        close("a smaller shortfall is a repayment", window.getRepaidByBank(), atWindow / 2, 1e-9);
+        close("a smaller secured shortfall is a repayment", window.getRepaidByBank(), atWindow / 2, 1e-9);
 
         // RES3: a bank pays the window back only out of reserves there are. A central bank that lent 100 and was paid 80 of it in
         // interest holds 20 of reserves; the bank's shortfall gone, it repays 20, and the 80 it could not stays owed for the next settle.
-        CentralBank spent = new CentralBank();
-        spent.settleWindow(100);
-        spent.chargeWindow(80);
-        spent.settleWindow(0);
-        close("a repayment past the reserves pays what they hold", spent.getRepaidByBank(), 20, 1e-12);
+        CentralBank spent = BankRulesCheck.deferredWindow().window();
+        assertTrue("fixture: the setup month is filed and its previous-month flows are known", spent.knowsLastMonth());
+        close("the previous month's repayment past the reserves paid the 20 they held", spent.lastMonth(CentralBank.Line.REPAID_BY_BANK), 20, 1e-12);
+        close("the next month starts with no second repayment", spent.getRepaidByBank(), 0, 0);
         close("...and M0 does not go below nothing", spent.m0(), 0, 0);
         close("...and the rest stays owed at the window", spent.getAdvancesToBank(), 80, 1e-12);
+        close("...the same 80 is still deferred", spent.getWindowDeferred(), 80, 1e-12);
         spent.payInterestOnReserves(30);
         spent.settleWindow(0);
         close("...repaid as reserves come", spent.getAdvancesToBank(), 50, 1e-12);
+        close("the current month's repayment is the new 30 reserves, not last month's 20", spent.getRepaidByBank(), 30, 1e-12);
+        close("...the 50 still owed is deferred and reserves are empty", spent.getWindowDeferred(), 50, 1e-12);
+        close("...the new repayment does not rewrite the filed 20", spent.lastMonth(CentralBank.Line.REPAID_BY_BANK), 20, 1e-12);
         close("a settle the reserves took whole leaves nothing deferred", window.getWindowDeferred(), 0, 0);
 
         // RES3 (REV-RES3b's P1): the advance a settle left owed is priced the next month on both books. A bank with no deposits
@@ -426,28 +490,18 @@ public class CentralBankCheck {
         // month after, in Game's order, the bank is charged the window's rate on the 80 - 0.6833 at 10% - and the central bank books
         // the same interest out of reserves it does not have, so lends it at the window: the deferred 80 stands, the interest is
         // owed in the bank's own tranche, and its pool and M0 move by what they declared, to the cent.
-        CentralBank owedAt = new CentralBank();
-        Bank owing = new Bank();
-        owing.refresh(1, 0, 0, 0, 0, 0);
-        owing.setCash(0);
-        owedAt.settleWindow(100);
-        owedAt.chargeWindow(80);
-        owedAt.startMonth();
-        owing.fundToCover(.10, owedAt.getWindowDeferred(), owedAt.getAdvancesToBank());
-        owedAt.payInterestOnReserves(owing.getPlacementIncome());
-        owedAt.chargeWindow(owing.getFundingCost());
-        owedAt.settleWindow(owing.wholesaleFunding());
-        assertTrue("fixture: a bank month ends with principal deferred, the bank's funding back and the reserves at 20 ("
-                + owedAt.getRepaidByBank() + " repaid, " + owedAt.getWindowDeferred() + " deferred)",
-                owing.getFundingCost() == 0 && owing.wholesaleFunding() == 0 && owedAt.getRepaidByBank() == 20);
-        close("...and the settle says what it left owed past the bank's funding", owedAt.getWindowDeferred(), 80, 1e-12);
+        BankRulesCheck.WindowFixture owedFixture = BankRulesCheck.deferredWindow();
+        CentralBank owedAt = owedFixture.window();
+        Bank owing = owedFixture.bank();
+        assertTrue("fixture: real collateral, 80 deferred and no reserves before the next bill",
+                owedAt.getAdvancesToBank() == 80 && owedAt.getWindowDeferred() == 80 && owedAt.getReserves() == 0
+                        && owing.windowCreditLimit() >= 80 && owing.windowFunding() == 0);
         double windowRate = .10 + CentralBank.WINDOW_PENALTY;
         double poolBefore = owing.getCash() + owedAt.getAdvancesToBank(), m0Before = owedAt.m0();
-        owedAt.startMonth();
         owing.fundToCover(.10, owedAt.getWindowDeferred(), owedAt.getAdvancesToBank());
         owedAt.payInterestOnReserves(owing.getPlacementIncome());
-        owedAt.chargeWindow(owing.getFundingCost());
-        owedAt.settleWindow(owing.wholesaleFunding());
+        owing.payWindowInterest(owedAt.chargeWindow(owing.getWindowFundingCost()));
+        owedAt.settleWindow(owing.windowFunding());
         double poolMoved = owing.getCash() + owedAt.getAdvancesToBank() - poolBefore;
         out.printf("   the month after: charged %.4f at %.2f%%, the window lent %.4f, %.4f deferred, M0 %.4f%n", owing.getFundingCost(),
                 windowRate * 100, owedAt.getAdvancedToBank(), owedAt.getWindowDeferred(), owedAt.m0());
@@ -455,10 +509,11 @@ public class CentralBankCheck {
                 owing.getFundingCost(), 80 * windowRate / 12, 1e-12);
         close("...all of it on the advance owed past its tranche", owing.getWindowOwedCost(), owing.getFundingCost(), 0);
         close("...and the central bank books the same interest", owedAt.getWindowInterest(), owing.getFundingCost(), 0);
+        close("...and sufficient collateral actually collects the complete invoice", owedAt.getWindowInterestCollected(), owedAt.getWindowInterest(), 0);
         close("...out of reserves it lends at the window where it has none, so M0 does not go below nothing", owedAt.m0(), 0, MoneyAudit.CENT);
         close("...the interest owed in the bank's own tranche, and the 80 still deferred", owedAt.getWindowDeferred(), 80, 1e-9);
         close("the bank's pool, its cash and what it owes the window, moves by what it declared, to the cent", poolMoved,
-                owedAt.getAdvancedToBank() - owedAt.getRepaidByBank() - owedAt.getWindowInterest() + owedAt.getInterestOnReserves()
+                owedAt.getAdvancedToBank() - owedAt.getRepaidByBank() - owedAt.getWindowInterestCollected() + owedAt.getInterestOnReserves()
                         - owing.depositInterest(), MoneyAudit.CENT);
         close("...and M0 by money made less money destroyed", owedAt.m0() - m0Before, owedAt.getIssued() - owedAt.getRetired(), MoneyAudit.CENT);
 
@@ -466,60 +521,33 @@ public class CentralBankCheck {
         // lifts the bank's tranche to 30, then to 80, into the deferred balance: the window lends only the shortfall at its settle, so
         // it still holds 80, and the charge is on 80 (0.6833 at 10%), the tranche's 30 and the 50 past it - not 110 or 160.
         for (double grown : new double[] { 30, 80 }) {
-            CentralBank heldAt = new CentralBank();
-            Bank lending = new Bank();
-            lending.refresh(1, 0, 0, 0, 0, 0);
-            lending.setCash(0);
-            heldAt.settleWindow(100);
-            heldAt.chargeWindow(80);
-            heldAt.startMonth();
-            lending.fundToCover(.10, heldAt.getWindowDeferred(), heldAt.getAdvancesToBank());
-            heldAt.payInterestOnReserves(lending.getPlacementIncome());
-            heldAt.chargeWindow(lending.getFundingCost());
-            heldAt.settleWindow(lending.wholesaleFunding());
+            BankRulesCheck.WindowFixture heldFixture = BankRulesCheck.deferredWindow();
+            CentralBank heldAt = heldFixture.window();
+            Bank lending = heldFixture.bank();
             lending.setCash(-grown);
             assertTrue("fixture: 80 deferred and the window holding 80, the tranche grows to " + (int) grown + " ("
                     + heldAt.getWindowDeferred() + " deferred, " + heldAt.getAdvancesToBank() + " held, " + lending.wholesaleFunding() + " wholesale)",
                     heldAt.getWindowDeferred() == 80 && heldAt.getAdvancesToBank() == 80 && lending.wholesaleFunding() == grown);
             double lentBefore = lending.getCash() + heldAt.getAdvancesToBank(), m0Was = heldAt.m0();
-            heldAt.startMonth();
             lending.fundToCover(.10, heldAt.getWindowDeferred(), heldAt.getAdvancesToBank());
             heldAt.payInterestOnReserves(lending.getPlacementIncome());
-            heldAt.chargeWindow(lending.getFundingCost());
-            heldAt.settleWindow(lending.wholesaleFunding());
+            lending.payWindowInterest(heldAt.chargeWindow(lending.getWindowFundingCost()));
+            heldAt.settleWindow(lending.windowFunding());
             String at = " (the tranche at " + (int) grown + ")";
             close("the window's charge is on the 80 it holds, each dollar once" + at, lending.getFundingCost(), 80 * windowRate / 12, 1e-12);
             close("...the part past the tranche what the tranche has not grown back into" + at, lending.getWindowOwedCost(),
                     (80 - grown) * windowRate / 12, 1e-12);
             close("...and the central bank books the same interest" + at, heldAt.getWindowInterest(), lending.getFundingCost(), 0);
+            close("...and sufficient collateral collects that whole invoice" + at, heldAt.getWindowInterestCollected(), heldAt.getWindowInterest(), 0);
             close("...the deferred balance down by what the tranche took up" + at, heldAt.getWindowDeferred(), 80 - grown, 1e-9);
             close("...the pool moving by what it declared, to the cent" + at, lending.getCash() + heldAt.getAdvancesToBank() - lentBefore,
-                    heldAt.getAdvancedToBank() - heldAt.getRepaidByBank() - heldAt.getWindowInterest() + heldAt.getInterestOnReserves()
+                    heldAt.getAdvancedToBank() - heldAt.getRepaidByBank() - heldAt.getWindowInterestCollected() + heldAt.getInterestOnReserves()
                             - lending.depositInterest(), MoneyAudit.CENT);
             close("...and M0 by money made less money destroyed, at or above nothing" + at, heldAt.m0() - m0Was,
                     heldAt.getIssued() - heldAt.getRetired(), MoneyAudit.CENT);
         }
 
-        // A FAILED BANK AT THE WINDOW (0.7.1, decided rather than forgotten):
-        // the resolution sets its equity to zero, and it is charged no
-        // interest on what it still owes past its deposits - see the note in
-        // Bank.fundToCover(). The advance stands; the charge does not.
-        Bank failed = new Bank();
-        failed.refresh(1, 100_000, 0, 500_000, 0, 0);   // a book, funded past its deposits
-        failed.injectCapital(50_000);
-        failed.setCash(-600_000);
-        failed.resolveIfFailed();
-        assertTrue("fixture: a bank past its deposits whose equity went under has failed",
-                failed.isInsolvent() && failed.getFailures() == 1 && failed.wholesaleFunding() > 0);
-        failed.fundToCover(.05);
-        close("a failed bank is charged nothing at the window: its equity is zero by the resolution,"
-                + " and a charge would fail it again", failed.getFundingCost(), 0, 0);
-        CentralBank lender = new CentralBank();
-        lender.settleWindow(failed.wholesaleFunding());
-        lender.chargeWindow(failed.getFundingCost());
-        close("...while the central bank goes on advancing what it owes", lender.getAdvancesToBank(),
-                failed.wholesaleFunding(), 1e-9);
-        close("...interest-free", lender.getWindowInterest(), 0, 0);
+        resolutionWindowLaw();
 
         /* ================= 4. the city's paper ================= */
         out.println("\n--- 4. the city's note prices at policy + spreads ---");
@@ -602,10 +630,14 @@ public class CentralBankCheck {
         assertTrue("fixture: the treasury sold the bank a bond", bond != null);
         play(city);
         assertTrue("the bank bought it at the window", cb.getAdvancedToBank() > 0);
-        close("...which charges the dial plus the penalty",
-                bank.fundingRate(), ledger.getPolicyRate() + CentralBank.WINDOW_PENALTY, 1e-12);
-        close("...and its interest is the central bank's, to the cent",
-                cb.getWindowInterest(), bank.getFundingCost(), 1e-9);
+        double foreignCarried = bank.getForeignWholesale();
+        assertTrue("the issue's settled foreign liability is finite and nonnegative", Double.isFinite(foreignCarried) && foreignCarried >= 0);
+        out.printf("   after the issue: actual window %.12g, foreign %.12g; this settled foreign stock is priced next month%n",
+                cb.getAdvancesToBank(), foreignCarried);
+        close("the whole bill is the secured and foreign bills, to the cent",
+                bank.getFundingCost(), bank.getWindowFundingCost() + bank.getForeignFundingCost(), 1e-9);
+        close("only the secured interest is the central bank's, to the cent",
+                cb.getWindowInterest(), bank.getWindowFundingCost(), 1e-9);
 
         /* ---- 5. the treasury runs dry ---- */
         out.println("\n--- 5. a broke treasury draws advances, and repays them first ---");
@@ -620,6 +652,8 @@ public class CentralBankCheck {
         double gap = Math.max(300_000, 2 * 12 * cb.getLossCarried() / DebtManager.MAX_POLICY_RATE);
         city.setCashForTest(-gap);
         play(city);
+        close("the following existing month prices the foreign principal it actually carried at that month's quote",
+                bank.getForeignFundingCost(), foreignCarried * bank.getForeignFundingRate() / 12, 1e-9);
         close("the shortfall is advanced whole, net of the remittance that arrived first",
                 cb.getAdvancedToTreasury(), gap - cb.getRemitted(), 1e-6);
         close("...and owed", cb.getAdvancesToTreasury(), cb.getAdvancedToTreasury(), 1e-6);
@@ -979,8 +1013,8 @@ public class CentralBankCheck {
         theSplitFloor();
         theRolloverAtIssue();
         theSurplusPaysEveryone();
-        howStrict();
         theParRolledIntoAHeldLine();
+        howStrict();
 
         out.println(fails == 0 ? "\nAll checks passed." : "\n" + fails + " FAILED");
         System.exit(fails);

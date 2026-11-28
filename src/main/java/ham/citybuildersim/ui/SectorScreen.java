@@ -4000,7 +4000,7 @@ final class SectorScreen {
                     credit.getInsuredMortgageRate() * 100, Mortgage.MORTGAGE_AMORTIZATION_MONTHS / 12,
                     plans.realTestRate(credit.getInsuredMortgageRate()) * 100,
                     BusinessInvestment.REAL_HURDLE_FLOOR * 100);
-            out.add(new String[] {String.format("puts %.0f%% down of its own", (1 - Mortgage.MORTGAGE_MAX_LOAN_TO_COST) * 100), mortgage});
+            out.add(new String[] {String.format("puts %.0f%% down of its own", (1 - ui.game.getBank().mortgageLoanToCost()) * 100), mortgage});
             out.add(new String[] {String.format("rent covers the mortgage %.2f×", Mortgage.MORTGAGE_DEBT_COVERAGE), mortgage});
         } else {
             out.add(new String[] {String.format("earns %.2f× its interest", BusinessInvestment.PROFIT_OVER_INTEREST),
