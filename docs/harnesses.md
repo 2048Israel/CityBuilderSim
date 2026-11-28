@@ -567,7 +567,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 - **L124 1. finding 5: the owners' deposits are not spare, whatever they take home**
   - L131 fixture: owner families, who take home nothing and spend something every month
   - L133 fixture: and hold more than their cushion
-  - L135 the owners' cushion is the months' cushion of their everyday spending
+  - L135 the owners' cushion is the months' cushion of their month's outgoings
   - L149 fixture: there are savers to hold the old rule against
   - L150 a saver's cushion is what it was: the months' cushion of its take-home, exactly
   - L151 no cell's cushion is under the months' cushion of its take-home
@@ -585,11 +585,11 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
   - L215 what the cells paid, in all, is what the settlement took, to the cent
   - L220 the month's money audit closes to the cent
   - L276 fixture: at twice the wealth the plan asks for more, its wealth term
-  - L277 ...while what they spend every month stays where it was
+  - L277 ...while what they pay out every month stays where it was
   - L278 doubling the owners' wealth leaves their cushion where it was
   - L279 fixture: they hold more than their cushion
   - L280 ...and the spare grows by all of the wealth added: it is what is past a cushion that did not move
-  - L285 doubling what they spend every month doubles their cushion
+  - L285 doubling what they pay out every month doubles their cushion
   - L312 fixture: a family with no take-home and no investment income, paying a rent
   - L314 fixture: and holding more than its cushion
   - L315 its cushion is three months of its bills and its groceries

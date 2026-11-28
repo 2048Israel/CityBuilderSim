@@ -132,7 +132,7 @@ public class AshbourneCheck {
                 owners.households > 0 && owners.disposable == 0 && owners.everyday > 0);
         assertTrue("fixture: and hold more than their cushion", owners.savings > cushion);
 
-        close("the owners' cushion is the months' cushion of their everyday spending", cushion,
+        close("the owners' cushion is the months' cushion of their month's outgoings", cushion,
                 HouseholdBalance.SHARE_CUSHION_MONTHS * owners.everyday, 0);
         int savers = 0;
         boolean saversAsBefore = true, neverLess = true, billsKept = true;
@@ -145,7 +145,7 @@ public class AshbourneCheck {
                 saversAsBefore &= HouseholdBalance.cushion(c) == takeHome;
             }
         }
-        out.printf("   %d of %d cells take home at least what they spend every month%n", savers, hb.cellsForMarket().length);
+        out.printf("   %d of %d cells take home at least what they pay out every month%n", savers, hb.cellsForMarket().length);
         assertTrue("fixture: there are savers to hold the old rule against", savers > 0);
         assertTrue("a saver's cushion is what it was: the months' cushion of its take-home, exactly", saversAsBefore);
         assertTrue("no cell's cushion is under the months' cushion of its take-home", neverLess);
@@ -271,10 +271,10 @@ public class AshbourneCheck {
             owners.plan(at[0], at[1], at[2], at[3]);
             double plannedRich = owners.planned, everydayRich = owners.everyday;
             double cushionRich = HouseholdBalance.cushion(owners), spareRich = hb.bondSpare(owners);
-            out.printf("   re-planned at %,.2f and at twice it: the plan %,.2f -> %,.2f, everyday %,.2f -> %,.2f, cushion %,.2f -> %,.2f%n",
+            out.printf("   re-planned at %,.2f and at twice it: the plan %,.2f -> %,.2f, outgoings %,.2f -> %,.2f, cushion %,.2f -> %,.2f%n",
                     saved, planned, plannedRich, everyday, everydayRich, cushion, cushionRich);
             assertTrue("fixture: at twice the wealth the plan asks for more, its wealth term", plannedRich > planned);
-            close("...while what they spend every month stays where it was", everydayRich, everyday, 0);
+            close("...while what they pay out every month stays where it was", everydayRich, everyday, 0);
             close("doubling the owners' wealth leaves their cushion where it was", cushionRich, cushion, 0);
             assertTrue("fixture: they hold more than their cushion", saved > cushion && spare > 0);
             close("...and the spare grows by all of the wealth added: it is what is past a cushion that did not move",
@@ -282,7 +282,7 @@ public class AshbourneCheck {
             owners.savings = saved;
             owners.plan(at[0], at[1], at[2], at[3]);
             owners.everyday = 2 * everyday;
-            close("doubling what they spend every month doubles their cushion", HouseholdBalance.cushion(owners), 2 * cushion, 1e-12);
+            close("doubling what they pay out every month doubles their cushion", HouseholdBalance.cushion(owners), 2 * cushion, 1e-12);
         } finally {
             putBack(owners, kept);
         }
