@@ -38,12 +38,14 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
 ## 2. What was built
 
 - **A shop the town goes short of is staffed at the fill** (`Sector`, banner "A BUILDING THE TOWN GOES WITHOUT IS
-  STAFFED AT THE FILL"; `Retail.staffedAtTheFill`, `Retail.townGoesShort`). For such a template the gate reads
+  STAFFED AT THE FILL"; `Sector.unitsAtTheFill`, `Retail.basketsShort`, `Retail.townGoesShort`). For such a template the gate reads
   the larger of its ordinary share and `Sector.shareAtTheFill`: the template's posts joined to the city's posts,
   each band filled by `PopulationManager.fillByBand`, the share of its posts that fill. Only Retail overrides the
   hook, only for a template with coverage (a shop, not its Filling Station), and only while its shops, standing and
   on site, at their nameplate coverage serve fewer baskets than the households need (`groceriesNeeded()`): the town
-  goes without shops, not without staff (the second dry run, section 4). Everything else keeps the 80%.
+  goes without shops, not without staff (the second dry run, section 4). And only for an order no larger than the
+  gap: the fewest units whose nameplate closes it (`unitsAtTheFill`); an order past it is read the ordinary way,
+  whole (REV-HG1's second look). Everything else keeps the 80%.
 - **The index bases without groceries** (`PriceIndex.takeMonth`, comment "THE OTHER HALF NEED NOT BE GROCERIES").
   A shopping month is rent priced and paid, and either groceries bought at a shelf price or any outside good bought
   at a price (`goodsBought`: meals, luxury, new cars, petrol, lamp oil, home coal). It is never the city's own fees
@@ -53,7 +55,7 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   `HUNGER_RED` .20). The row reads the households' hunger. Its door is Build > Shops when the shelves are the
   larger half (short of stock at least priced out), else Policy > Promises > Food. `SummaryScreen.goTo` and
   `BuildScreen.goOf` map the doors.
-- **HungerCheck** (in AllChecks): five sections, one per check in the brief except his city (below).
+- **HungerCheck** (in AllChecks): six sections, one per check in the brief except his city (below), and the gap.
 - **No saved field, no format bump**: the index's new rule reads only what it already saves.
 - **No held-figure writer**: the mend reads `fillByBand` and the posts, and Retail's order goes through
   `addStack`, which already raises the held posts, the vacancy and the Warrant.
@@ -75,6 +77,15 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   ordinary 80% gate is right for it. HungerCheck 1 now causes it (Retail's staff thinned to 5% of each band: the
   nameplate covers, the operating rate does not; not short, not staged) and it goes red with the old reading
   (`target/HungerCheck-oprate.log`, 3 FAIL).
+- ★ **Only the units that close the gap** (REV-HG1's second look, its P1). The exception first covered the whole
+  order while the town was short: the planner sizes an order at the operating rate (a need of 1,000, coverage
+  960 at 50% asks for three 480-coverage stores where one closes the gap), and all three were read at the fill and
+  could poach workers. Now `Sector.staffing()` lifts an order only if its count is no more than
+  `unitsAtTheFill(t)`, the ceiling of `basketsShort()` over the template's coverage. An order past it is read the
+  ordinary way, whole, not split into a lifted part and an ordinary part: one share per order, as the gate has
+  always read. `staffableCount()` still binary-searches, and the test stays monotone (the ordinary pass, or a
+  count within the gap that passes at the fill; both hold for every smaller count), so a bulk order is cut back
+  to the gap's units when the ordinary reading refuses it. HungerCheck 5 causes it.
 - ★ **The basing reads rent and any bought outside good, never fees.** The brief's BOTH HALVES: the base needs a
   real outside price. Groceries keep their place: a city that buys them bases on them as before (HungerCheck 4e).
 - ★ **Groceries join after a whole year of sales**: WEIGHT_MONTHS of them, at their share of the trailing year. A
@@ -85,22 +96,26 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   area's assessment. Listed from 4%: USDA ERS, very low food security, 4.1% of US households in 2019 (ERR-275,
   https://ers.usda.gov/publications/99281). Red from 20%: the famine line, IPC Phase 5, a fifth of households with
   an extreme lack of food (https://www.unicefusa.org/stories/what-is-famine). The reading says which half.
-- ★ **The priced-out half stays.** On his copy, after the shelves fill, 8-22% stay hungry because they cannot pay.
+- ★ **The priced-out half stays.** On his copy, after the shelves fill, 8-27% stay hungry because they cannot pay.
   They are the people with no income in a 1900 city with no promise made: the model's poverty, not a shelf. FOOD
-  reads it yellow (red at m94, 22%) with the food promise's door, which is the lever. Not mended here: it is his
+  reads it yellow (red at m103, 27%) with the food promise's door, which is the lever. Not mended here: it is his
   to decide by playing.
 - **No change to 40806e6f8 or CBK3**: neither is involved (section 1).
 
 ## 4. The checks and their results
 
-- **His city** (scratch HgFinal on the final classes, his copy in hg1-scratch, 48 months, `target/hgfinal.txt`):
-  - A shop was ordered at once and stood at m81; the shelves were full by m84 (short of stock 0.896 -> 0.000,
-    and 0.000 to m127).
-  - Hunger went 0.975 -> 0.113 at m84, then 8-22% after (priced out, above).
-  - The index counts down from m80 (37 -> 0), bases at m103, and gives its first rate at m116 (-0.3%, then
-    +0.5-0.8%). The rule's rate moves off 2.00% (to 0, then 0.8-1.2%).
-  - FOOD reads red with Build > Shops to m83, then yellow with the food promise; NEEDS YOU lists it every month.
-  - The money audit's residual stays under 1.2e-11 every month.
+- **His city** (scratch HgFinal on the final classes, d9a09ead9, his copy in hg1-scratch, 48 months,
+  `target/hgfinal2.txt`):
+  - Shops were ordered at once: 3 Convenience Stores stood at m81, coverage 1,440 for about 1,000 baskets, the
+    gap's units. On the first, unlimited gate (`target/hgfinal.txt`) 5 stood by m84, 2,400. The shelves were full
+    by m86: short of stock 0.896 -> 0.142 at m83, 0.030 at m84, 0.000 from m86, with two months near 3% as the
+    town outgrew them, before the fourth store (1,920 by m110).
+  - Hunger went 0.975 -> 0.230 at m83 and 0.086 at m85, then 8-27% (priced out, above).
+  - The index counts down from m80 (37 -> 0), bases at m103, and gives its first rate at m116: +0.7%, then down
+    to -4.8% at m119 and back to +1.4% by m127. The rule's rate moves off 2.00% (to 0, then 1.1% at m127).
+  - FOOD reads red with Build > Shops to m83, then yellow with the food promise (red at m103); NEEDS YOU lists it
+    every month.
+  - The money audit's residual stays under 1.6e-11 every month.
 - **HungerCheck** green (target/checks/HungerCheck.log):
   1. The trap caused: a 1900 city at month 16, diploma spare -5.39, ordinary share 0.738, Retail's 0.809. The
      station is not lifted, and the gate is ordinary once the shops cover.
@@ -108,14 +123,25 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   3. The screens: red with Build > Shops; red with the food promise at a 20x shelf price; a fed default city at
      level 0 and not listed; every one of 75 months watched follows the thresholds.
   4. The index, (a)-(e).
-  5. The money audit, every month played.
-- **Red without the mends** (a mutation, reverted: Retail's hook false, the basing back to groceries only, no join,
-  no FOOD row; `target/HungerCheck-mutated.log`): 29 FAIL, in sections 1 (4), 2 (1), 3 (5) and 4 (19). Section 5
-  stays green, as it should. Without the mend the hunt finds month 22, where the band has freed itself (spare
+  5. The gap, on d9a09ead9: the trapped town at month 16 needs 74.4 baskets and has no shop, so the gap takes
+     one Convenience Store or 4 stalls of `STALL_COVERAGE` 20 (a Convenience Store's posts on a smaller floor).
+     Shares, ordinary / at the fill / Retail's: 4 stalls, within the gap, 0.625 / 0.719 / 0.719; 5 stalls, past
+     it, 0.592 / 0.700 / 0.592; 8 stalls 0.547 / 0.658 / 0.547. A count of three Convenience Stores is cut to 1;
+     the planner orders Convenience Store x1.
+  6. The money audit, every month played.
+- **Red without the limit** (a mutation, reverted: the lift for any count while the town is short;
+  `target/HungerCheck-nolimit.log`): 2 FAIL, section 5's two orders past the gap, read 0.700 and 0.658 against
+  the ordinary 0.592 and 0.547. Everything else stays green.
+- **Red without the mends** (a mutation, reverted, run before section 5 was added: Retail's hook off, the basing
+  back to groceries only, no join, no FOOD row; `target/HungerCheck-mutated.log`): 29 FAIL, in sections 1 (4),
+  2 (1), 3 (5) and 4 (19). The money audit (then section 5, now 6) stays green, as it should. Without the mend the hunt finds month 22, where the band has freed itself (spare
   +1.54, ordinary 0.840), so the trap's premises fail.
 - **Named harnesses green, one JVM at a time** (`target/named1.txt`, exit 0): StaffingDrawCheck,
   StaffingTieCheck, GroceryCheck, SupplierCreditCheck, Forms1900Check, ExpectationsCheck, BuildAdviceCheck and
   HungerCheck. `--fast`: Stale 0 firm findings.
+- **On the limit's mend** (d9a09ead9, one JVM at a time): HungerCheck green; FoodProcessingCheck green;
+  GroundSkipCheck known red only (main's LP-G2 line); Village1900Check (0.451) and CreditCrunchCheck (its m270
+  premise) only the two lines named with HT1-H, as before the mend. `--fast`: Stale 0 firm findings.
 - **The pick is ALL** (AllChecks changed): the whole suite runs in the dry run.
 - **The ensemble**, owed because the default trace can move (Retail's gate in tight-labour months; basing on
   meals before groceries). It ran after REV-HG1's SHIP, on the gate box: label HG1, classes of bcc373d55, 80 of 80
@@ -131,7 +157,9 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   against 0.52), within the baseline's spread (-0.94 to 7.00). The run is kept in `target/ensemble/HG1/` here and
   on the box.
   That run was on the first, wider gate (short at the operating rate). The gate's reading changed after the second
-  dry run, so the ensemble runs again on the final model (below), and `docs/ensemble/HG1.md` is its baseline.
+  dry run, so the ensemble ran again as HG1b on e5d178da4 (the nameplate reading); it was stopped unfinished when
+  REV-HG1's second look narrowed the gate once more, to the gap's units. It runs again as **HG1c** on the box, on
+  d9a09ead9 (the limit), and `docs/ensemble/HG1.md` becomes its baseline.
 - **The dry runs.**
   1. Box run cbs-gate-HG1-xSgI3JNV (18:08 UTC) stopped at the records, before the suite: "{next} remains in added
      source". Four of HG1's own comment labels (Sector's banner, Retail, PriceIndex, CityNeeds) carried it; they
@@ -187,4 +215,6 @@ Not this batch's to write. For when an edition comes:
 
 ## Logs kept
 
-target/named1.txt, target/hgfinal.txt, target/HungerCheck-mutated.log, target/HG1-ens.txt and target/ensemble/HG1/, in this worktree.
+target/named1.txt, target/hgfinal.txt, target/hgfinal2.txt, target/HungerCheck-mutated.log, target/HungerCheck-oprate.log,
+target/HungerCheck-nolimit.log, target/HG1-ens.txt and target/ensemble/HG1/, target/HG1b-ens.txt (stopped) and
+target/HG1c-ens.txt, in this worktree.
