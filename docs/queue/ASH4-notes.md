@@ -38,9 +38,21 @@ was never written.
   `DebtManager.marketValue`, which is the yen curve at `worldRate("JPY") + countryPremium()` (the premium once) pricing the
   piece's own flows. Principal and flows convert at one rate: on the fixture, with the D$ 30% weaker, the principal in
   D$ moves by the cross's ratio and the price per 100 at the same rate does not move (1e-9).
-- **The level is the rate's.** In his history `worldMoney.policyJPY` is 13.00% at month 205 (January 1917), and the
-  US$'s is 14.50%. AshbourneCheck 2 prices ¥100 at 3.5% over 312 months on the yen curve: 27.74 at 13% with no premium
-  (Ashbourne paid 27.37), and 67.28 at 5.11%.
+- **The level is the rate's, and the premium's, reconciled to the cent.** In his history `worldMoney.policyJPY` is 13.00%
+  at month 205 (January 1917), and the US$'s is 14.50%.
+  - **The premium, worked by hand from the save** (a helper, no JVM): owed Cr 992,435, the buyback's own line, which is
+    ¥72M at the month's cross (the history's `foreignDebtUsd` 685.07 = ¥72,000 / 105.0991). Trailing exports Cr 1,087.30k a
+    month, rebuilt from the history's `exportsAbroad` with ForeignAccounts' trailing mean; the rebuild gives the saved
+    figure at month 241 to 0.0005. No default scar (`foreignStanding` [0, -1]). So: .16 x (.6 x solvency .0095078 + .4 x
+    service .0106488) = **0.15943%**.
+  - **The piece:** the log's "Borrowed ¥72.0M abroad: 30-year term bond" at month 157, 3.5%, so 312 months left at 205,
+    retired whole (the series reads 0 at 206).
+  - **AshbourneCheck 2 rebuilds it** on a town of its own. The piece is booked by `DebtManager.addLongTermBond` in yen and
+    aged 48 of its own months (`processMonth`). The yen is handed at 13%, and the trade is set so the model's own
+    `countryPremium()` reads Ashbourne's owing against Ashbourne's exports; it gives 0.15943% to 1e-7.
+  - **The result:** the production `Game.quoteBuybackAtRest` quotes **27.3723** per 100, and Ashbourne paid **27.3723**
+    (271,652 / 992,435). The tolerance is the record's half-cent of a point: with no premium the price is 27.7352, and a
+    basis point more gives 27.3498, both outside it. At the Bank of Japan's 5.11% the same piece is worth 65.74.
 - **Reality:**
   - The New York Fed's discount rate was 3.75% from April to November 1917 (FRED, M13009USM156NNBR, NBER Macrohistory).
   - The Bank of Japan's official rate in 1917 was 1.4 sen a day, about 5.11% a year. That figure is from memory. The
@@ -132,15 +144,17 @@ was never written.
 
 ## 4. The checks
 
-- **AshbourneCheck: 53 assertions, all OK.**
+- **AshbourneCheck: 57 assertions, all OK.**
   - Section 1: the lineup town at month 61 has 5 owner households, savings 1,197.05 each (thousands), take-home 0,
     planned 36.27, cushion 108.80; 116 of 141 cells take home at least what they plan, so their cushions are unchanged. An ask of 4 times
     the spare allots the households face 5,639k for 5,573k, and the production settle takes all of it. The owners'
     savings fall 1,197.05 -> 121.48, above their cushion. No cell pays out of its cushion. The cells' payments equal
     the settle's figure to the cent, and the next month's money audit residual is 0.
   - Section 2: the yen piece's fair per 100 is 98.7023 three ways, to 1e-12. With the D$ 30% weaker, the principal
-    moves x1.4286 (the cross) and the price at the same rate does not move. The 312-month 3.5% bond prices 27.74 at
-    13% and 67.28 at 5.11%. Month 205 is before `PolicyRates.TABLE_FIRST_MONTH` (1200).
+    moves x1.4286 (the cross) and the price at the same rate does not move. Ashbourne's own piece, rebuilt (section 1
+    above, finding 12), is quoted 27.3723 by the production buyback against the 27.3723 it paid, inside a half-cent that
+    no premium (27.7352) and a basis point more (27.3498) both miss. Month 205 is before `PolicyRates.TABLE_FIRST_MONTH`
+    (1200). (REV-ASH4's first P1: the first version priced synthetic flows with no premium, inside 3 points.)
   - Section 3: two kilns draw 2 x 690 kW. Without the kilns, and with 61 more houses, the draw moves by exactly
     -1,319 kW. Ashbourne's 9,354 and 8,146 kW leave two blocks and one over the 10 MW wires, so the price falls 78.5%
     while the load falls 12.9%.
@@ -153,6 +167,21 @@ was never written.
   FloatLinkCheck, MarketCheck, OwnerCheck, CapitalGainsCheck, ShortSellingCheck and LongPlaytest.
   - The verdict is exit 3: known reds only, in DenominationCheck (DK1), HoldersCheck (HT1-H) and CarCheck (HT1-H).
   - LongPlaytest: "All checks passed" over 2,400 months, the money audit included.
+- **The default trace moves.** The default `LongPlaytest` with `-Dplaytest.trace` ran on main `22b6eb96f` (classes built
+  on scratch from `git archive`) and on the branch's model (`306552e27`; the model is unchanged since). All eight files
+  differ, from the first year: in month 6 the households' savings 22.327 -> 22.337, and in month 10 the city's cash and
+  its tax. Both runs end with "All checks passed". So the 80-run ensemble is run (below).
+
+  | trace | main `22b6eb96f` | ASH4 |
+  |---|---|---|
+  | t-bank.csv | 6ede455267023c0721bbc430e5d85c6e | daa9ee239e3f0bd946531935e1e115be |
+  | t-bonds.csv | 31d688038b45d088318307ab47345251 | 9f2e5abd2d2ab8ed7f1e4d961d2ff6e6 |
+  | t-borrow.csv | ad17225a89ac4910256628b34f9e707b | f5b6a2d7fdc18f852065ef6763f2501d |
+  | t-build.csv | 6cff5eaf4b95e1170e9cf4698b1fcaf4 | e69975157218e13b06d5d193e38d2ef4 |
+  | t-house.csv | 66a37acc01890e7c405dff9c6eacebd6 | d630b9d45d638eb08536654c9af7d294 |
+  | t-labour.csv | f000ef90f546b8ed4658e078784bfed0 | 12da256991ec5c2795438d7515e382d3 |
+  | t-month.csv | 9de355db849f31706f8b4dc4c93dbdcb | 0901c85a74055af1ec2657c9253c6d95 |
+  | t-pop.csv | 86d0749981733a5339b1dc2e1a33a91b | d5b52aca8eb6abbba2085141f82025c8 |
 
 ## 5. For Jerus
 
