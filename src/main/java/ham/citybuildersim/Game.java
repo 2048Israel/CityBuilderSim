@@ -10080,6 +10080,27 @@ public class Game {
     /** ...at this month's plan of the sites. */
     public double onSitePaceMonths(BuildingsTemplate template) { return onSitePaceMonths(template, sitesPlan()); }
 
+    /** How a site stands in this month's plan of the sites: built on, waiting while the order gives the crews the rule would give it to a site ahead, or given no crews at all. */
+    public enum SiteProgress { BUILDING, WAITING_FOR_CREWS, STALLED }
+
+    /** A site's standing and its months left (sitePaceMonths()), the pair a screen's line on a site reads. */
+    public record SiteLeft(SiteProgress progress, double months) { }
+
+    /**
+     * A site's standing this month and its months left, decided on the month's plan as the advance takes it (sitesPlan(): the city's
+     * crews and the foreign contractor's month), so a site his crews build is built on whatever the city's crews give it (REV-ASH1 3:
+     * the right panel and the construction page decided on the city's crews alone and said stalled, or waiting, beside a finite
+     * pace). BUILDING when the plan gives it work, WAITING_FOR_CREWS when the crews' rule gives it a share the order gave a site
+     * ahead, STALLED when it has neither; the months are sitePaceMonths()' in every case. The right panel's line and the
+     * construction page's status read it. Reads; changes nothing.
+     */
+    public SiteLeft siteLeft(String key, BuildingManager.Plan plan) {
+        double months = sitePaceMonths(key, plan);
+        SiteProgress progress = plan != null && plan.workOf(key) > 0 ? SiteProgress.BUILDING
+                : plan != null && plan.ruleOf(key) > 0 ? SiteProgress.WAITING_FOR_CREWS : SiteProgress.STALLED;
+        return new SiteLeft(progress, months);
+    }
+
     /**
      * ONE WAIT FOR A SITE (0.7.22, after the docs pass): months a site on
      * site would take at today's queue - a stack's by its key, or a

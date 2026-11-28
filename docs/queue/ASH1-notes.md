@@ -1,8 +1,9 @@
 # ASH1 - power for a small town: notes
 
-**Resume here (2026-11-27 21:00):** REV-ASH1's two P1s mended (the grid share held for the month and saved;
-one months-left getter on every screen); next: "mends at" again for its second look; on its SHIP, merge
-origin/main and the ensemble on the gate box. No run is in flight.
+**Resume here (2026-11-27 22:00):** REV-ASH1's P1s mended over two looks (the grid share held for the month and
+saved; one months-left getter on every screen; the panel's and the page's stalled words on the month's whole
+plan, `Game.siteLeft`); next: "mends at" for its third look; on its SHIP, merge origin/main and the ensemble on
+the gate box. No run is in flight.
 
 Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-findings.md`), brief
 `docs/queue/ASH1.md`. Each condition is caused on fixtures of the batch's own; his save was never read.
@@ -36,7 +37,10 @@ Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-finding
    owed points over the points `Game.sitesPlan()` gives it (the month's plan at the builders' output
    plus the foreign contractor's month as last settled, as `advanceConstruction` takes them), and
    every screen's months left reads it: the overview's row, the build card's "N on site", the
-   construction page's rows and chart, the right panel, the build screen's ring, the oil view.
+   construction page's rows and chart, the right panel, the build screen's ring, the oil view. The
+   right panel's "stalled" or "waiting for crews" and the construction page's "waiting for crews" are
+   decided on the same plan (`Game.siteLeft`, REV-ASH1 3): a site the foreign contractor's crews build
+   in a town whose own crews give the sites nothing is built on, not stalled.
 5. **Found in building, mended:** with 5 MW units the auto-builder's grid orders are many small
    units the builders open in turn, and `AutoBuilder.pendingCapacity`'s two drop-whole rules (HW1)
    ordered every unit still on site again: 27 units, 145 MW against a 45.6 MW peak. For GRID alone:
@@ -95,7 +99,10 @@ Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-finding
   the site's pace (the rule's wait 16 months longer; the month's real advance equal to the plan's work
   to 1e-9 with the contractor off, and within his month's change with him on: 4,962 planned against
   4,755 advanced, the crews alone 901), and the overview, the build card, the construction page and
-  the right panel reading the one figure to the bit; 5 the money audit over section 2's months,
+  the right panel reading the one figure to the bit, and a town whose roads' repairs take its
+  builders' whole month while the contractor's crews build the Substation (277 points settled, 208 on
+  the site): the panel's line through `Game.siteLeft` says built on, at the same 631.7 months as the
+  overview, the card and the page; 5 the money audit over section 2's months,
   worst residual 5.7e-8 against a cent.
 - **SubstationCheck's save section** (REV-ASH1 1): a load of 44% of the carry between the presses, a
   month struck on it that closes at 0.09%; live against reloaded, the share, the grid's posts offered
@@ -108,6 +115,7 @@ Jerus's findings 1, 2, 9 and 8 from governing Ashbourne (`docs/queue/ASH-finding
   `BuildingsStacks.addQuantity`: LabourCheck red (6) and SubstationCheck's held-grid line red. The
   grid share read live again (`getWiresUsed`, not `getWiresShare`): SubstationCheck's save section red
   (4 labels). The build card on `onSiteMonths`: TownGridCheck 4's one-figure label red (both cases).
+  `Game.siteLeft` deciding on the city's crews alone: TownGridCheck 4's no-home-output case red (STALLED).
 - Restated to the real law: SubstationCheck's order (both units known: the least Distribution
   Substations that cover the peak, never a 100 MW unit; PW5's one Substation where the small unit is
   off the menu); its tariff's payroll (the posts offered at the dispatch's share); BuildAdviceCheck's

@@ -560,7 +560,8 @@ final class ConstructionScreen {
         else if (demolition != null && demolition.closing) { status = "closes as the month starts"; tone = Palette.WARN; }
         else if (abroad != null) { status = "with the foreign crews"; tone = Palette.BUILDING; }
         else if (rushed) { status = String.format("rushed (month %d)", control.monthsOnOvertime(key) + 1); tone = Palette.BUILDING; }
-        else if (share <= 0 && plan.owedOf(key) > 0) { status = "waiting for crews"; tone = Palette.WARN; }
+        // ...waiting when the month's plan as the advance takes it gives the site no work, the foreign contractor's crews counted (Game.siteLeft(), REV-ASH1 3).
+        else if (g.siteLeft(key, pace).progress() != Game.SiteProgress.BUILDING && pace.owedOf(key) > 0) { status = "waiting for crews"; tone = Palette.WARN; }
         else if (demolition != null) { status = "demolishing"; tone = Palette.GOOD; }
         else { status = "building"; tone = Palette.GOOD; }
         VBox statusBox = Kept.scope("status", () -> {

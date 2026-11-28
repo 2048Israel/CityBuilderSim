@@ -2,7 +2,7 @@
 
 Generated 2026-11-27 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**262 harness files, 30,505 labelled assertions.** AllChecks runs 262 of them.
+**262 harness files, 30,508 labelled assertions.** AllChecks runs 262 of them.
 
 ## Which harnesses read which class
 
@@ -35366,7 +35366,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L378 UserInterface makes a ToastRoom of its scroller, its page and its stack of toasts
   - L380 ...and keeps what it is told in pageScrollAt, the field the rebuild restores the player's place from
 
-## TownGridCheck.java - 33 labelled assertions
+## TownGridCheck.java - 36 labelled assertions
 
 > Power for a small town (batch ASH1).
 > 
@@ -35408,18 +35408,21 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L331 the labour market's posts (getTotalJobs) differ from every post by exactly the grid's withheld, in every job type and every month
   - L332 Substations.costs().payroll() and the struck book's are paid on the posts offered, each at its wage and fill, and the whole crew's once the carry is used
 - **L344 4. the months on the way are the site's pace**
-  - L385 fixture: his month as last settled is
-  - L396 fixture: the site's pace is under the rule's wait by a month or more (
-  - L399 the POWER row reads the wires and has the Substation on the way:
-  - L400 ...its months equal the site's owed points over the points the month's plan gives it (
-  - L408 ...and every screen reads that one figure, to the bit: the build card's \"1 on site\", the construction page's and the right panel's, the overview's, none of...
-  - L413 the pace reading includes his points: the plan gives the site more with them (
-  - L416 with him off the plan is the city's crews' alone, to the bit (
-  - L424 the month's advance is the reading's pace within the change of his month,
-  - L426 ...and nearer the reading with his points (
-  - L429 the month then advances the site by exactly the points the plan gave it, so the reading is the site's real pace
-- **L436 5. the money audit stays exact over section 2's months**
-  - L439 every one of section 2's
+  - L395 fixture: the city's own crews give the sites nothing (the city's plan gives the Substation no share and no rule's share), while his crews' month as last sett...
+  - L405 the right panel's line and the construction page's status (Game.siteLeft(), the getter both call) say the site is built on, at finite months, the site's pace...
+  - L407 ...the same months as the overview's, the build card's and the construction page's, to the bit
+  - L435 fixture: his month as last settled is
+  - L446 fixture: the site's pace is under the rule's wait by a month or more (
+  - L449 the POWER row reads the wires and has the Substation on the way:
+  - L450 ...its months equal the site's owed points over the points the month's plan gives it (
+  - L459 ...and every screen reads that one figure, to the bit: the build card's \"1 on site\", the construction page's and the right panel's, the overview's, none of...
+  - L464 the pace reading includes his points: the plan gives the site more with them (
+  - L467 with him off the plan is the city's crews' alone, to the bit (
+  - L475 the month's advance is the reading's pace within the change of his month,
+  - L477 ...and nearer the reading with his points (
+  - L480 the month then advances the site by exactly the points the plan gave it, so the reading is the site's real pace
+- **L487 5. the money audit stays exact over section 2's months**
+  - L490 every one of section 2's
 
 ## TradeBandCheck.java - 41 labelled assertions
 

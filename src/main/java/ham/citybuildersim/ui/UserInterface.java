@@ -5500,15 +5500,14 @@ public class UserInterface extends Application {
         VBox list = Kept.column(12);
         list.setStyle("-fx-padding: 10 0 0 0;");
 
-        // This month's crews, site by site, as the month will apply them (0.7.22).
-        BuildingManager.Plan sitePlan = buildingManager.plan(forSites);
-        // ...and the month's plan as the advance takes it, for each site's months left at its pace (Game.sitesPlan(), sitePaceMonths(), ASH1), struck once.
+        // This month's crews, site by site, as the month will apply them (0.7.22): the month's plan as the advance takes it, the city's
+        // crews and the foreign contractor's (Game.sitesPlan(), ASH1), for each site's standing and months left (Game.siteLeft()), struck once.
         BuildingManager.Plan pacePlan = game.sitesPlan();
 
         for (BuildingsStacks site : sites) {
             // Keyed by the building it shows: a site that finishes takes its nodes with it, the others keep theirs.
             list.getChildren().add(Kept.scope("site:" + ConstructionControl.keyOf(site.getBuilding()),
-                    () -> siteRow(site, sitePlan, pacePlan, forSites)));
+                    () -> siteRow(site, pacePlan)));
         }
 
         // ...and the player's own hand on the queue, in a line (0.7.22): the
@@ -5535,7 +5534,7 @@ public class UserInterface extends Application {
     }
 
     /** One site's row: its name, its bar, and its months. */
-    private VBox siteRow(BuildingsStacks site, BuildingManager.Plan sitePlan, BuildingManager.Plan pacePlan, int forSites) {
+    private VBox siteRow(BuildingsStacks site, BuildingManager.Plan pacePlan) {
         {
 
             long remaining = site.getUnderConstruction();
@@ -5561,40 +5560,24 @@ public class UserInterface extends Application {
             bar.setProgress(fraction);
             bar.setPrefWidth(240);
 
-            // Stalled when the site gets nothing this month - this month's
-            // share as the month will apply it (BuildingManager.plan(): the
-            // crews' rule, and with the player's hand on the queue the city's
-            // order and its rushes) - and, when the rule would have given it
-            // crews and the order gave them to a site ahead of it, waiting
-            // for them; otherwise the one wait every screen reads.
-            String eta;
-            double perSite = sitePlan.shareOf(siteKey);
-            if (perSite <= 0 && sitePlan.ruleOf(siteKey) > 0) {
-                double monthsLeft = game.onSitePaceMonths(site.getBuilding(), pacePlan);
-                eta = "waiting for crews, "
-                        + (Double.isNaN(monthsLeft) ? "stalled" : atTodaysQueue(monthsLeft));
-            } else if (perSite <= 0) {
+            // Stalled when the site gets nothing this month - the month's plan
+            // as the advance takes it, the city's crews and the foreign
+            // contractor's (REV-ASH1 3: the city's crews alone said stalled
+            // while his crews built it) - and, when the rule would have given
+            // it crews and the order gave them to a site ahead of it, waiting
+            // for them; otherwise the months left every screen reads, at the
+            // site's pace (Game.siteLeft(), sitePaceMonths(), ASH1). It is a
+            // reading of today's queue, and says so: orders placed after it
+            // take crews from it.
+            Game.SiteLeft left = game.siteLeft(siteKey, pacePlan);
+            double monthsLeft = left.months();
+            String eta = switch (left.progress()) {
+                case WAITING_FOR_CREWS -> "waiting for crews, " + (Double.isNaN(monthsLeft) ? "stalled" : atTodaysQueue(monthsLeft));
                 // Two things can stall a site now, and they want different
                 // words: nobody to do the work, or nothing able to reach it.
-                eta = game.getInfrastructureManager().isCongested()
-                        ? "stalled - gridlocked"
-                        : "stalled - no workers";
-            } else {
-                /*
-                 * THE SAME WAIT THE CARD AND THE QUOTE READ (0.7.20):
-                 * Game.onSiteMonths(), so the panel, the build card's "N on
-                 * site" and the order's quote cannot give one site three
-                 * different times. It is a reading of today's queue, and
-                 * says so: orders placed after it take crews from it. Since
-                 * 0.7.22 (after the docs pass) it is the construction page's
-                 * wait too - Game.siteMonths(), BuildingManager, ONE WAIT FOR
-                 * A SITE: the rule's with the player's hand off the site, and
-                 * with an order set or a rush on, the order's and the
-                 * overtime's.
-                 */
-                double monthsLeft = game.onSitePaceMonths(site.getBuilding(), pacePlan);
-                eta = Double.isNaN(monthsLeft) ? "stalled - no output" : atTodaysQueue(monthsLeft);
-            }
+                case STALLED -> game.getInfrastructureManager().isCongested() ? "stalled - gridlocked" : "stalled - no workers";
+                case BUILDING -> Double.isNaN(monthsLeft) ? "stalled - no output" : atTodaysQueue(monthsLeft);
+            };
 
             Label detail = monoLabel(remaining + " left / " + built + " built - " + eta);
             detail.setStyle("-fx-font-family: " + Palette.mono() + "; -fx-font-size: 10px; -fx-text-fill: " + Palette.TEXT_MUTED + ";");

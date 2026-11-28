@@ -1,4 +1,4 @@
-# TownGridCheck.java - 451 lines · 19 methods · 6 constants · harnesses
+# TownGridCheck.java - 502 lines · 20 methods · 6 constants · harnesses
 
 `ham/citybuildersim/TownGridCheck.java` - generated 2026-11-27 by CodeMap; line numbers are as of that run.
 
@@ -29,7 +29,7 @@
 > 
 > Every fixture CAUSES its condition rather than waiting for it, and asserts against the model's own constants and getters.
 
-**Uses:** [CityNeeds](CityNeeds.md) (32), [Substations](Substations.md) (24), [Game](Game.md) (19), [BuildAdvice](BuildAdvice.md) (15), [BuildingManager](BuildingManager.md) (15), [JobType](JobType.md) (11), [BuildingsTemplate](BuildingsTemplate.md) (9), [AutoBuilder](AutoBuilder.md) (3), [MoneyAudit](MoneyAudit.md) (3), [SubstationCheck](SubstationCheck.md) (2), [BuildCard](BuildCard.md) (2), [GameFiles](GameFiles.md) (1), [PriceLevel](PriceLevel.md) (1), [PowerDispatch](PowerDispatch.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [BuildingType](BuildingType.md) (1), [CareType](CareType.md) (1), [Construction](Construction.md) (1), [ConstructionControl](ConstructionControl.md) (1), [BuildingsStacks](BuildingsStacks.md) (1)
+**Uses:** [CityNeeds](CityNeeds.md) (33), [Game](Game.md) (25), [Substations](Substations.md) (25), [BuildingManager](BuildingManager.md) (17), [BuildAdvice](BuildAdvice.md) (15), [BuildingsTemplate](BuildingsTemplate.md) (11), [JobType](JobType.md) (11), [BuildCard](BuildCard.md) (4), [AutoBuilder](AutoBuilder.md) (3), [MoneyAudit](MoneyAudit.md) (3), [SubstationCheck](SubstationCheck.md) (2), [ConstructionControl](ConstructionControl.md) (2), [BuildingsStacks](BuildingsStacks.md) (2), [GameFiles](GameFiles.md) (1), [PriceLevel](PriceLevel.md) (1), [PowerDispatch](PowerDispatch.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [DeathCareFirstCheck](DeathCareFirstCheck.md) (1), [BuildingType](BuildingType.md) (1), [CareType](CareType.md) (1), [Construction](Construction.md) (1)
 
 ## Sections
 
@@ -39,7 +39,7 @@
 | 187 | 2 |
 | 280 | 3 |
 | 335 | 4 |
-| 433 | 5 |
+| 484 | 5 |
 
 ## Constants
 
@@ -64,7 +64,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 37 | 415 | **type** `public final class TownGridCheck` | Power for a small town (batch ASH1). |
+| 37 | 466 | **type** `public final class TownGridCheck` | Power for a small town (batch ASH1). |
 | 41 | 1 | `static void check(String label, boolean ok)` |  |
 | 42 | 1 | `static boolean near(double a, double b, double relative)` |  |
 | 43 | 1 | `static void quietly(Runnable work)` |  |
@@ -97,17 +97,18 @@
 |---:|---:|---|---|
 | 282 | 52 | `static void posts()` |  |
 
-### 4 (lines 335-432)
+### 4 (lines 335-483)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 343 | 18 | `static void pace()` |  |
-| 362 | 70 | `static void pace(Game g, boolean contractorOn)` |  |
+| 343 | 19 | `static void pace()` |  |
+| 369 | 42 | `static void noHomeOutput()` | REV-ASH1 3: a town whose own crews give the sites nothing, standing roads' repairs taking every point of the builders' month (the trap, ConstructionTrapCheck), while the foreign contractor's crews build: the right pan... |
+| 412 | 71 | `static void pace(Game g, boolean contractorOn)` |  |
 
-### 5 (lines 433-451)
+### 5 (lines 484-502)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 435 | 6 | `static void money()` |  |
-| 442 | 9 | `public static void main(String[] args)` |  |
+| 486 | 6 | `static void money()` |  |
+| 493 | 9 | `public static void main(String[] args)` |  |
 
