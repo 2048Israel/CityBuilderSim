@@ -782,14 +782,23 @@ public final class Retail extends Sector {
     }
 
     /**
-     * A SHOP THE TOWN GOES SHORT OF IS STAFFED AT THE FILL (HG1, 2026-11-28; Sector.staffedAtTheFill()): a shop (a
-     * building with coverage; never a station) while the shops standing and on site could not serve the households
-     * even fully staffed (townGoesShort()). Jerus's 1900 city was held out of every shop by the spare-worker test for
-     * 79 months, 97.5% hungry.
+     * A SHOP THE TOWN GOES SHORT OF IS STAFFED AT THE FILL (HG1, 2026-11-28; Sector.unitsAtTheFill()): of a shop (a
+     * building with coverage; never a station), as many as close the gap the shops standing and on site leave at
+     * their nameplate (basketsShort()), and no more (REV-HG1): an order of more is read the ordinary way. Jerus's 1900
+     * city was held out of every shop by the spare-worker test for 79 months, 97.5% hungry.
      */
     @Override
-    protected boolean staffedAtTheFill(BuildingsTemplate t) {
-        return t != null && t.getCoverage() > 0 && townGoesShort();
+    protected long unitsAtTheFill(BuildingsTemplate t) {
+        if (t == null || !(t.getCoverage() > 0)) return 0;
+        double gap = basketsShort();
+        return gap > 0 ? (long) Math.ceil(gap / t.getCoverage()) : 0;
+    }
+
+    /** The baskets the households need that the shops standing and on site, at their nameplate coverage, cannot serve (HG1); 0 when they can. */
+    public double basketsShort() {
+        ham.citybuildersim.HouseholdBalance households = game == null ? null : game.getHouseholdBalance();
+        double needed = households != null ? households.groceriesNeeded() : population;
+        return needed > 0 ? Math.max(0, needed - getStoreCoverage() - storeCoverageOnSite()) : 0;
     }
 
     /**
@@ -800,9 +809,7 @@ public final class Retail extends Sector {
      * where shops at the operating rate stayed short and kept being added).
      */
     public boolean townGoesShort() {
-        ham.citybuildersim.HouseholdBalance households = game == null ? null : game.getHouseholdBalance();
-        double needed = households != null ? households.groceriesNeeded() : population;
-        return needed > 0 && getStoreCoverage() + storeCoverageOnSite() < needed;
+        return basketsShort() > 0;
     }
 
     /*

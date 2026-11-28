@@ -595,11 +595,14 @@ public abstract class Sector {
      */
 
     /* ----- A BUILDING THE TOWN GOES WITHOUT IS STAFFED AT THE FILL (HG1, 2026-11-28) -----
-     * For a building its sector says so of (staffedAtTheFill(): a shop, while the shops at their nameplate serve fewer baskets than the
-     * households need), the gate also reads the share of the building's posts the city's fill would staff once
+     * For an order of a building its sector says so of, no larger than the units that close the town's gap
+     * (unitsAtTheFill(): shops, while the shops at their nameplate serve fewer baskets than the households need, as
+     * many as close that gap), the gate also reads the share of the order's posts the city's fill would staff once
      * they join the posts already offered (shareAtTheFill(): PopulationManager.fillByBand() over the posts with
      * the order's added, each band's placed workers over its posts), and passes on the larger of the two shares.
-     * The band test (a band nobody can fill) is untouched, and so is the 80%.
+     * An order past the gap is read the ordinary way, whole (REV-HG1: a bulk order sized at the operating rate would
+     * otherwise take three shops at the fill where one closes the gap). The band test (a band nobody can fill) is
+     * untouched, and so is the 80%.
      *
      * WHY. Jerus's city (0.9.219, founded the 1900 way, docs/queue/HG1-notes.md) had no shop in 79 months and went
      * 97.5% hungry. Its posts outran its people from the founding (47 for 15 at month 2), the 1900 arrival mix
@@ -614,10 +617,11 @@ public abstract class Sector {
      */
 
     /**
-     * Whether the gate also reads the share the city's fill would staff a building of `t` at (HG1; above):
-     * false for every sector but the shops while the town goes short of them (Retail overrides).
+     * How many units of `t` an order may hold and still be read at the share the city's fill would staff them at
+     * (HG1; above): none for every sector but the shops, and for them the units that close the town's gap (Retail
+     * overrides). A larger order is read the ordinary way.
      */
-    protected boolean staffedAtTheFill(BuildingsTemplate t) { return false; }
+    protected long unitsAtTheFill(BuildingsTemplate t) { return 0; }
 
     /**
      * The share of an order's posts the city's fill would staff once they join the posts offered (HG1): each band's
@@ -820,8 +824,9 @@ public abstract class Sector {
         // ...and a share within rounding of nothing is nothing (SHARE_ROUNDING).
         double share = fillable / total;
         if (fromDrawn > 0) share = Math.round(share / DRAWN_SHARE_GRID) * DRAWN_SHARE_GRID;
-        // ...or, for a building the town goes without (HG1, staffedAtTheFill()), the share the city's fill would staff it at.
-        if (staffedAtTheFill(t)) share = Math.max(share, shareAtTheFill(people, posts, wanted, total));
+        // ...or, for an order of a building the town goes without no larger than its gap (HG1, unitsAtTheFill()), the share
+        // the city's fill would staff it at.
+        if (Math.max(1, count) <= unitsAtTheFill(t)) share = Math.max(share, shareAtTheFill(people, posts, wanted, total));
         if (share <= SHARE_ROUNDING) share = 0;
         double shareNow = fillableNow / total;
         if (shareNow <= SHARE_ROUNDING) shareNow = 0;

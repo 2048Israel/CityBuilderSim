@@ -20,10 +20,10 @@ import java.util.List;
  * newGame, a bare PriceIndex fed by hand) and asserts against the model's own constants:
  *
  *   1. THE TRAP, CAUSED. A city founded the 1900 way has no Retail building and an over-posted diploma band, so the ordinary
- *      gate (another sector's staffing() of the same template) refuses a Convenience Store; while the town goes short of baskets
+ *      gate (another sector's staffing() of the same template) refuses a Convenience Store; while the town goes short of shops
  *      Retail's gate passes it on the share the city's fill would staff (Sector.shareAtTheFill()) and its planner orders one.
- *      BOTH SIDES: a Filling Station (coverage 0) is not lifted, and once the shops cover the households' need Retail's
- *      reading of the Convenience Store is the ordinary one again.
+ *      BOTH SIDES: a Filling Station (coverage 0) is not lifted; once the shops cover the households' need at their nameplate
+ *      Retail's reading of the Convenience Store is the ordinary one again; and so it is when they cover it short of staff.
  *
  *   2. THE TRAP PLAYED. From such a city, within PLAYED_BOUND months a shop stands, its shelf holds stock, baskets are sold,
  *      and the households short of stock fall under CityNeeds.HUNGER_YELLOW.
@@ -37,7 +37,12 @@ import java.util.List;
  *      base it (BOTH HALVES); groceries join a year after they appear, with no jump in the level; the rule then reads a
  *      real rate; and a basket with groceries from the start bases and never relinks, as before.
  *
- *   5. THE MONEY AUDIT is exact to the cent in every month section 2's city played (and in the months of the others).
+ *   5. THE GAP. An order is read at the fill only up to the units that close the town's gap at their nameplate
+ *      (Sector.unitsAtTheFill()); an order past it is read the ordinary way, whole, though the fill would lift it (REV-HG1:
+ *      a bulk order sized at the operating rate took three shops at the fill where one closed the gap); and Retail's
+ *      planner orders no more of a shop at the fill than close the gap.
+ *
+ *   6. THE MONEY AUDIT is exact to the cent in every month section 2's city played (and in the months of the others).
  *
  * Every city lives in GameFiles.scratch(); none touches a save slot.
  */
@@ -194,6 +199,7 @@ public class HungerCheck {
         sectionThree();
         sectionFour();
         sectionFive();
+        sectionSix();
 
         out.println(fails == 0 ? "\nAll HungerCheck assertions passed." : "\n" + fails + " FAILED");
         System.exit(fails == 0 ? 0 : 1);
@@ -208,7 +214,7 @@ public class HungerCheck {
         Retail retail = trap.retail;
         BuildingManager bm = g.getBuildingManager();
         PopulationManager people = g.getPopulationManager();
-        Sector ordinary = g.getSectors().restaurants();   // a sector whose staffedAtTheFill() is false, asked of the same template
+        Sector ordinary = g.getSectors().restaurants();   // a sector whose unitsAtTheFill() is none, asked of the same template
         Sector asked = retail;
         BuildingsTemplate conv = trap.convenience, station = bm.getTemplateByName(STATION);
         check("fixture: the city is founded the 1900 way and the catalogue has a Convenience Store and a Filling Station",
@@ -229,7 +235,7 @@ public class HungerCheck {
 
         // the mend
         check("the town goes short of shops: the shops it has, at their nameplate, serve fewer baskets than the households need", retail.townGoesShort());
-        check("Retail's gate staffs a shop the town goes without at the fill", asked.staffedAtTheFill(conv));
+        check("Retail's gate staffs a shop the town goes without at the fill", asked.unitsAtTheFill(conv) > 0);
         check("...so Retail's gate passes the Convenience Store, with no band nobody could fill", lifted.passes() && lifted.unfillable == null);
         check("...at a share of its posts that reaches MIN_STAFFABLE_TO_ORDER", lifted.share >= Sector.MIN_STAFFABLE_TO_ORDER, String.valueOf(lifted.share));
         check("...which is more than the ordinary reading of the same posts", lifted.share > plain.share, lifted.share + " against " + plain.share);
@@ -246,7 +252,7 @@ public class HungerCheck {
                 order.template == null ? "no template" : order.template.getName() + " x" + order.quantity);
 
         // both sides: nothing but a shop the town goes without is lifted
-        check("BOTH SIDES: Retail does not stage a Filling Station (coverage 0) at the fill", !asked.staffedAtTheFill(station));
+        check("BOTH SIDES: Retail does not stage a Filling Station (coverage 0) at the fill", asked.unitsAtTheFill(station) == 0);
         Sector.Staffing stationPlain = ordinary.staffing(station), stationRetail = retail.staffing(station);
         near("...so its share is the ordinary reading's", stationRetail.share, stationPlain.share, 1e-12);
         check("...and so is its unfillable band", stationRetail.unfillable == stationPlain.unfillable);
@@ -263,7 +269,7 @@ public class HungerCheck {
         check("fixture: standing Convenience Stores cover the households' need at their nameplate",
                 added > 0 && added < COVER_BOUND && !retail.townGoesShort() && retail.getStoreCoverage() >= needed,
                 added + " stores");
-        check("BOTH SIDES: Retail then does not stage a Convenience Store at the fill", !asked.staffedAtTheFill(conv));
+        check("BOTH SIDES: Retail then does not stage a Convenience Store at the fill", asked.unitsAtTheFill(conv) == 0);
         Sector.Staffing covered = retail.staffing(conv), coveredPlain = ordinary.staffing(conv);
         near("...and its share of the Convenience Store is the ordinary reading again", covered.share, coveredPlain.share, 1e-12);
         check("...and the planner orders no more shops while they cover the town", !retail.plan(g.getBusinessInvestment(), g).build);
@@ -280,7 +286,7 @@ public class HungerCheck {
                 retail.getStoreCoverage() * retail.getOperatingRate() < needed);
         check("BOTH SIDES: a shop short of staff is not one the town goes without: read at the nameplate, the town is not short",
                 !retail.townGoesShort());
-        check("...so Retail does not stage another Convenience Store at the fill", !asked.staffedAtTheFill(conv));
+        check("...so Retail does not stage another Convenience Store at the fill", asked.unitsAtTheFill(conv) == 0);
         near("...and its share of one is the ordinary reading", retail.staffing(conv).share, ordinary.staffing(conv).share, 1e-12);
     }
 
@@ -623,10 +629,77 @@ public class HungerCheck {
         check("(e) ...and the basket is never relinked for them afterwards", steady && never && linked == LEAD + PriceIndex.SETTLING_MONTHS);
     }
 
-    /* ============================ 5. the money audit ============================ */
+    /* ============================ 5. the gap ============================ */
+
+    /** The coverage of the harness's corner stall: a Convenience Store's posts on a smaller floor, so the trapped town's gap takes several. */
+    static final int STALL_COVERAGE = 20;
+
+    /** A Convenience Store's posts, costs and ground, serving STALL_COVERAGE baskets: not in the catalogue, asked of the gate by hand. */
+    static BuildingsTemplate stall(BuildingsTemplate conv) {
+        BuildingsTemplate s = new BuildingsTemplate("HungerCheck's corner stall", conv.getCategory()).setCare(conv.getCare())
+                .setCapacity(conv.getCapacity()).setCashCost(conv.getCashCost()).setConstructionPoints(conv.getConstructionPoints())
+                .setConstructionMaterials(conv.getConstructionMaterials()).setUpkeep(conv.getUpkeep())
+                .setElectricityConsumption(conv.getElectricityConsumption()).setWaterConsumption(conv.getWaterConsumption())
+                .setLandSqFt(conv.getLandSqFt()).setRoadLoad(conv.getRoadLoad()).setCoverage(STALL_COVERAGE).setSector(conv.getSector());
+        for (JobType j : JobType.values()) s.setJobs(j, conv.getJobs(j));
+        return s;
+    }
+
+    static double total(double[] wanted) {
+        double t = 0;
+        for (double w : wanted) t += w;
+        return t;
+    }
 
     static void sectionFive() {
-        out.println("\n--- 5. the money audit: every month played is exact to the cent ---");
+        out.println("\n--- 5. the gap: an order is read at the fill only up to the shops that close the town's gap, the rest the ordinary way ---");
+        Trap trap = new Trap("hunger-gap", otherAudit, watch);
+        Game g = trap.game;
+        Retail retail = trap.retail;
+        PopulationManager people = g.getPopulationManager();
+        Sector ordinary = g.getSectors().restaurants();   // a sector whose unitsAtTheFill() is none, asked of the same template
+        Sector asked = retail;
+        BuildingsTemplate conv = trap.convenience, stall = stall(conv), station = g.getBuildingManager().getTemplateByName(STATION);
+        double needed = g.getHouseholdBalance().groceriesNeeded(), gap = retail.basketsShort();
+        long units = asked.unitsAtTheFill(stall);
+        out.printf("   month %d: %.1f baskets needed, %.1f short of the shops' nameplate; the gap takes %d stalls of %d, or %d Convenience Store(s)%n",
+                g.getMonth(), needed, gap, units, STALL_COVERAGE, asked.unitsAtTheFill(conv));
+        check("fixture: the trapped town has no shop standing or on site, so its gap is the households' whole need",
+                retail.townGoesShort() && retail.getStoreCoverage() == 0 && retail.storeCoverageOnSite() == 0 && Math.abs(gap - needed) < 1e-9);
+        check("the gap's units are the fewest stalls whose nameplate closes it, and more than one",
+                units >= 2 && (units - 1) * STALL_COVERAGE < gap && units * STALL_COVERAGE >= gap, units + " stalls");
+        check("...and of a Convenience Store, the one that closes it", asked.unitsAtTheFill(conv) == 1);
+        check("BOTH SIDES: of a Filling Station (coverage 0), none", asked.unitsAtTheFill(station) == 0);
+
+        // within the gap the fill lifts the order; past it the order is read the ordinary way, whole
+        for (long n : new long[]{units, units + 1, 2 * units}) {
+            Sector.Staffing plain = ordinary.staffing(stall, n), read = retail.staffing(stall, n);
+            double atTheFill = Sector.shareAtTheFill(people, people.staffablePostsByBand(), plain.wanted(), total(plain.wanted()));
+            boolean within = n <= units;
+            out.printf("   %d stalls (%s the gap): ordinary %.3f, at the fill %.3f, Retail's %.3f%n",
+                    n, within ? "within" : "past", plain.share, atTheFill, read.share);
+            check("premise: the city's fill would staff " + n + " stalls at a larger share than the ordinary reading", atTheFill > plain.share + 1e-9,
+                    String.format("%.4f against %.4f", atTheFill, plain.share));
+            if (within)
+                near("an order of " + n + " stalls, within the gap, is read at the larger of the two", read.share, Math.max(plain.share, atTheFill), 1e-9);
+            else
+                near("an order of " + n + " stalls, past the gap, is read the ordinary way, whole (REV-HG1)", read.share, plain.share, 1e-12);
+        }
+
+        // the planner's order
+        check("a count of three Convenience Stores is cut to the one that closes the gap", retail.staffableCount(conv, 3) <= 1,
+                retail.staffableCount(conv, 3) + " of them");
+        BusinessInvestment.Decision order = retail.plan(g.getBusinessInvestment(), g);
+        out.println("   plan: " + order.reason + (order.template == null ? "" : ", " + order.template.getName() + " x" + order.quantity));
+        check("Retail's planner orders a shop, no more of it than close the gap",
+                order.build && order.template != null && order.quantity >= 1 && order.quantity <= asked.unitsAtTheFill(order.template),
+                order.template == null ? "no template" : order.template.getName() + " x" + order.quantity);
+    }
+
+    /* ============================ 6. the money audit ============================ */
+
+    static void sectionSix() {
+        out.println("\n--- 6. the money audit: every month played is exact to the cent ---");
         out.printf("   section 2's city: %d months audited, the worst residual %.2e of its tolerance; the others: %d months, %.2e%n",
                 playedAudit.months, playedAudit.worst, otherAudit.months, otherAudit.worst);
         check("every month section 2's city played (the founding's months to the trap included) has a money audit", playedAudit.months > PLAYED_BOUND && playedAudit.missing == 0,
