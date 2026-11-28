@@ -876,8 +876,8 @@ public final class AutoBuilder {
         NOTHING
     }
 
-    /** Why a count was cut or an order held: PAYBACK (0.7.104) what pays back over its life, for a building the treasury runs that is not an essential service - BUDGET, what the year's revenue left to run it, until then; DEBT the limit - over it, or a bond that would cross it; CASH (0.7.81) over it with "Build from cash anyway" on, to what the cash pays for, and (0.7.101) a first of a kind, which the cash alone pays for. */
-    public enum Cut { NONE, BUILDERS, GROUND, PAYBACK, DEBT, CASH }
+    /** Why a count was cut or an order held: PAYBACK (0.7.104) what pays back over its life, for a building the treasury runs that is not an essential service - BUDGET, what the year's revenue left to run it, until then; DEBT the limit - over it, or a bond that would cross it; CASH (0.7.81) over it with "Build from cash anyway" on, to what the cash pays for, and (0.7.101) a first of a kind, which the cash alone pays for; WIRES (PW9-G) a plant past what the wires will carry at its date. */
+    public enum Cut { NONE, BUILDERS, GROUND, PAYBACK, DEBT, CASH, WIRES }
 
     /**
      * One measure at the last pass: what it did, and why - and since 0.7.77
@@ -1395,6 +1395,68 @@ public final class AutoBuilder {
         }
     }
 
+    /* ----- THE WIRES WITH THE POWER (PW9-G, 2026-11-28) -----
+       A utility builds no more generation than its wires can carry. A plant ordered for the load at its date (its
+       suggestion's ahead(): the plants standing and on site that open by then short of it) whose wires are short of that
+       load there first orders the wires, through the grid's own step and every gate it has - the builders, a protected
+       completion, the ground and the money - sized at the plant's date and demand; then no more of the plant is ordered
+       than the wires will carry: the plants' served share at that date held to the wires', each measure's own figure
+       (BuildAdvice.supplyDemand(): the plants against the year's peak hour, the wires against the peak block of their
+       season), the last whole unit past it allowed. An order the plants on site already serve the load for (the spread's
+       cheaper power) needs no wires: the wires carry the same load whichever plant runs.
+       WHY: REV-PW9 P1-b. The modern-equipment city stood 31 small steam stations, 21 MW offered, behind the founding
+       10 MW while their Substation waited on the College's protected completion: native dispatch m127 generated
+       7.2 GWh against 9.9 GWh asked, the steam nothing. On 0.9.218 (ASH1's 5 MW units) the same city ordered a 21 MW
+       diesel and 9 steam at pre134-135 behind 15 MW, its wires held 13 passes for the High school, and its July ran
+       short by the wires. ----- */
+
+    /** The grid's measure: the wires the plants' power runs on (PW9-G). */
+    private static final BuildAdvice.Measure GRID = BuildAdvice.Measure.of(BuildAdvice.Kind.GRID);
+
+    /** While the wires a plant takes with it are stepped (PW9-G): the plant's date and demand, which the grid's suggestion is sized at; null otherwise. Set and cleared inside one step, never saved. */
+    private BuildAdvice.Ahead wiresAt;
+    /** Whether this power step has stepped its wires already: once a step, whichever plant in the ranking asked (never saved). */
+    private boolean wiresStepped;
+
+    /** A measure's supply over its demand at p, with these buildings standing as well: infinite where nothing is asked. */
+    static double servedAt(Game game, BuildAdvice.Measure m, Map<BuildingsTemplate, Long> site, BuildAdvice.Ahead p) {
+        double[] sd = BuildAdvice.supplyDemand(game, m, site, p);
+        return sd[1] > 0 ? sd[0] / sd[1] : Double.POSITIVE_INFINITY;
+    }
+
+    /** How many of n of a power suggestion the wires will carry at its date, the wires short of its load there ordered first (THE WIRES WITH THE POWER). */
+    private long wiresCarry(Game game, List<CityNeeds.Need> all, List<BuildAdvice.Measure> kept, BuildAdvice.Suggestion s, long n) {
+        BuildAdvice.Ahead p = s.ahead();
+        if (p == null || n < 1 || wiresAt != null) return n;
+        BuildAdvice.Measure power = s.measure();
+        BuildingsTemplate t = s.template();
+        Map<BuildingsTemplate, Long> at = WorksValue.openBy(game, pendingCapacity(game, power), p.months());
+        double plants = servedAt(game, power, at, p);
+        if (!(plants < 1)) return n;
+        // The wires at the plant's date and demand: its months, its growth and its slack (the grid reads no power factor).
+        BuildAdvice.Ahead load = new BuildAdvice.Ahead(p.months(), p.k(), p.slack());
+        double wires = servedAt(game, GRID, pendingCapacity(game, GRID), load);
+        if (wires < 1 && !wiresStepped) {
+            wiresStepped = true;
+            wiresAt = load;
+            try {
+                step(game, all, kept, GRID);
+            } finally {
+                wiresAt = null;
+            }
+            wires = servedAt(game, GRID, pendingCapacity(game, GRID), load);
+        }
+        if (!(wires < 1)) return n;
+        if (plants >= wires) return 0;
+        if (servedAt(game, power, BuildAdvice.plus(at, t, n), p) < wires) return n;
+        long lo = 0, hi = n;                              // lo serves less than the wires carry, hi as much or more
+        while (hi - lo > 1) {
+            long mid = lo + (hi - lo) / 2;
+            if (servedAt(game, power, BuildAdvice.plus(at, t, mid), p) < wires) lo = mid; else hi = mid;
+        }
+        return hi;
+    }
+
     private record CrewLimit(long count, String service) { }
 
     private static String crewWords(BuildAdvice.Measure measure, String service) {
@@ -1474,6 +1536,7 @@ public final class AutoBuilder {
      * nothing is paid for, and it holds at once.
      */
     private void step(Game game, List<CityNeeds.Need> all, List<BuildAdvice.Measure> kept, BuildAdvice.Measure m) {
+        if (m.kind() == BuildAdvice.Kind.POWER) wiresStepped = false;
         Map<BuildingsTemplate, Long> site = pendingCapacity(game, m);
         if (!essential(m) && BuildAdvice.maintained(game, m, site, BuildAdvice.opening(game, 0, slack))) {
             steps.add(new Step(m, Outcome.AHEAD, null, 0, 0, Cut.NONE, 0, 0));
@@ -1488,12 +1551,15 @@ public final class AutoBuilder {
         // The first card the money refused because its bond came up short at the cap (D30): where no other building in the ranking is paid for, its ask is kept open.
         Askable askable = null;
         while (true) {
+            // The wires a plant takes with it (PW9-G, wiresCarry()) are sized at the plant's date when that is later than their own opening.
             BuildAdvice.Suggestion s = BuildAdvice.suggestFor(game, rowFor(all, m), m, game.getCash(),
-                    game.getLandManager().getAvailableSqFt(), slack, skip, noPaving, true);
+                    game.getLandManager().getAvailableSqFt(), slack, skip, noPaving, true,
+                    m.kind() == BuildAdvice.Kind.GRID ? wiresAt : null);
             if (s == null || s.count() < 1 || !orderable(s.template())) {
                 if (first != null) {
                     // Nothing in the ranking is paid for: a card whose bond came up short keeps its ask open (D30); any other hold is a hold.
-                    if (askable != null && openAsk(game, m, askable)) return;
+                    // The wires a plant takes with it open no ask of their own: the grid's own step does, at its own date.
+                    if (askable != null && wiresAt == null && openAsk(game, m, askable)) return;
                     hold(m, first.s(), first.cut(), first.wanted(), first.line(), first.payback());
                     return;
                 }
@@ -1530,6 +1596,23 @@ public final class AutoBuilder {
                         return;
                     }
                     n = 1;
+                }
+            }
+
+            // THE WIRES WITH THE POWER (PW9-G): a plant ordered for the load at its date first orders the wires that carry
+            // that load there, through the grid's own gates, and no more of it is ordered than the wires will carry.
+            if (m.kind() == BuildAdvice.Kind.POWER) {
+                long carried = wiresCarry(game, all, kept, s, n);
+                if (carried < n) {
+                    n = carried;
+                    cut = Cut.WIRES;
+                    if (n == 0) {
+                        if (first == null) first = new Refused(s, Cut.WIRES, wanted, m.label() + ": " + wanted + " " + name
+                                + " wanted; the plants standing and on site already serve all the load the wires will carry"
+                                + " by its opening, and the wires to carry more could not be ordered with it.", null);
+                        skip.add(t);
+                        continue;
+                    }
                 }
             }
 
@@ -2326,6 +2409,7 @@ public final class AutoBuilder {
             case PAYBACK:  return " (" + wanted + " wanted; " + n + " pay back)";
             case DEBT:    return " (" + wanted + " wanted; " + n + " within the debt limit)";
             case CASH:     return " (" + wanted + " wanted; " + n + " the cash pays for, over the debt limit)";
+            case WIRES:    return " (" + wanted + " wanted; " + n + " the wires will carry by then)";
             default:       return "";
         }
     }

@@ -775,6 +775,26 @@ public final class BuildAdvice {
         return supplyDemand(game, m, added, NOW);
     }
 
+    /**
+     * The season the wires are planned against at `p` (PW9-G): the native dispatch's own (PowerDispatch.season() at the
+     * city's latitude), this month's at no lead, and for an order ahead the highest of it over the months the order
+     * serves, from its opening (BusinessInvestment.leadFor()) to p's months, at most a year of them.
+     * WHY: the grid read this month's season on the north's calendar for every Ahead, so an order sized in December
+     * planned for December's load and opened into July's (the modern-equipment city on 0.9.218: GRID's peak read 11.7 MW
+     * at m168 and 15.4 MW at m175, and the July ran short by the wires), and a city south of the equator planned its wires
+     * on the north's months while its dispatch ran on its own.
+     */
+    static double gridSeason(Game game, Ahead p) {
+        double lat = game.getServicesManager().getUtilitiesHandler().latitude();
+        int now = game.getMonth();
+        if (!(p.months() > 0)) return PowerDispatch.season(CityCalendar.monthOfYear(now), lat);
+        int from = (int) Math.ceil(BusinessInvestment.leadFor(p.months()) - 1e-9);
+        int to = Math.max(from, Math.min(from + 11, (int) Math.floor(p.months() + 1e-9)));
+        double most = 0;
+        for (int t = from; t <= to; t++) most = Math.max(most, PowerDispatch.season(CityCalendar.monthOfYear(now + t), lat));
+        return most;
+    }
+
     /** ...against the demand `p` says (0.7.51), as figure() reads it: the supply side unchanged. */
     public static double[] supplyDemand(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p) {
         double[] fill = game.getPopulationManager().getJobFillRate();
@@ -791,8 +811,7 @@ public final class BuildAdvice {
                     draw += e.getValue() * adding(game, e.getKey(), e.getValue()).getElectricityConsumption();
                 }
                 double supply = Substations.carryKw(u.getFoundingGridKw(), nSub, nDist);
-                double season = PowerDispatch.season(CityCalendar.monthOfYear(game.getMonth()));
-                return new double[] {supply, Substations.peak(draw, season)};
+                return new double[] {supply, Substations.peak(draw, gridSeason(game, p))};
             }
             case POWER:
                 return powerSupplyDemand(game, added, p);
@@ -1606,16 +1625,33 @@ public final class BuildAdvice {
      */
     public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
                                         double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving, boolean maintain) {
+        return suggestFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, maintain, null);
+    }
+
+    /**
+     * ...sized to keep the need ahead no earlier than `atLeast` (PW9-G; null for the order's own opening): the wires a
+     * plant's order takes with it, sized at the date and demand the plant is (AutoBuilder's THE WIRES WITH THE POWER).
+     * Not for power, whose dates are its own.
+     */
+    public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
+                                        double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving, boolean maintain,
+                                        Ahead atLeast) {
         if (m.kind() != Kind.POWER)
-            return NewUnit.heldWhile(game, () -> suggestionFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, maintain));
+            return NewUnit.heldWhile(game, () -> suggestionFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, maintain, atLeast));
         try (WorksValue.Scope held = WorksValue.hold(game)) {
-            return NewUnit.heldWhile(game, () -> suggestionFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, maintain));
+            return NewUnit.heldWhile(game, () -> suggestionFor(game, need, m, cashLeft, landLeft, slack, skip, noPaving, maintain, null));
         }
+    }
+
+    /** The later of an order's own opening and the date it must be ahead by (PW9-G): `own` where there is none or it is not earlier. */
+    static Ahead later(Ahead own, Ahead atLeast) {
+        return atLeast == null || atLeast.months() <= own.months() ? own : atLeast;
     }
 
     /** suggestFor()'s reading itself. */
     private static Suggestion suggestionFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft,
-                                            double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving, boolean maintain) {
+                                            double slack, java.util.Set<BuildingsTemplate> skip, boolean noPaving, boolean maintain,
+                                            Ahead atLeast) {
         // AP7: warranted() read once for the whole reading, which changes nothing in the city (Warrant).
         Warrant warrant = new Warrant(game, m);
         if (AutoBuilder.essential(m) && !warrant.of(game, m)) return null;
@@ -1680,7 +1716,7 @@ public final class BuildAdvice {
                 n = Math.max(1, today[0]);
                 while (true) {
                     lead = game.quoteBuild(t, n).months;
-                    p = opening(game, lead, slack);
+                    p = later(opening(game, lead, slack), atLeast);
                     found = count(game, m, at, one, p, most, maintain, warrant);
                     if (!full || found[0] <= n) break;
                     n = found[0];
@@ -1778,7 +1814,7 @@ public final class BuildAdvice {
         // Plan the chosen work before its actual order can open. A cheaper small
         // alternative can wait for its own lead, while a coal-sized plan starts earlier. (Power's candidates were each
         // tested at their own opening above.)
-        if (full && !power && maintained(game, m, site, opening(game, best.lead(), slack), warrant)) return null;
+        if (full && !power && maintained(game, m, site, later(opening(game, best.lead(), slack), atLeast), warrant)) return null;
         if (power) RESERVE_ORDERS.incrementAndGet();
         Weighed next = weighed.size() > 1 ? weighed.get(1) : null;
         return suggestion(game, need, m, site, before, whenOnSite, best, next, cashLeft, landLeft);
