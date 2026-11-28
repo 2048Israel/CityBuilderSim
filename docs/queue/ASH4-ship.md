@@ -4,9 +4,11 @@
 From Jerus's Ashbourne findings 5, 12, 11 and 16, each caused on a fixture in AshbourneCheck. Finding 5 was a bug: the
 households keep three months in the bank before they buy shares or paper, and the owner families, who take home nothing
 but dividends, kept none, so a 30-year city bond took 91% of Ashbourne's deposits in three months. The cushion is now three
-months of take-home or of the month's outgoings, the greater (HouseholdBalance.cushion), on every path that reads savings
-past it. The outgoings are the rent and the other bills first, then everyday spending without what a fortune asks for, so
-a bond never takes next month's rent and a cushion grows with spending, never with wealth; they are saved with each cell.
+months of take-home or of the month's outgoings, the greater (HouseholdBalance.cushion), wherever savings are held:
+shares, the city's paper, bonds and money abroad. The outgoings are the rent and the other bills first, then everyday
+spending without what a fortune asks for, so a bond never takes next month's rent and a cushion grows with spending, never
+with wealth; they are saved with each cell. What a household spends, on a car, a meal or a luxury, still leaves three
+months of take-home in the bank (HouseholdBalance.spendingCushion), as before.
 Finding 12 is real in the model: the yen piece is priced on the yen curve, unchanged by the D$, and 1917's yen rate is the
 stand-in century's 13% where the Bank of Japan's was 5.11%, which EP1b's real rates mend. Finding 11 is real: two Lime Kilns
 closed, and with one block of the month fewer over the 10 MW wires the scarcity price fell 78.5% for 12.9% less load.
