@@ -25,7 +25,7 @@
 
 **Uses:** [GameFiles](GameFiles.md) (3), [GameLog](GameLog.md) (2)
 
-**Used by (8):** [FollowBench](FollowBench.md), [HistoryScreen](HistoryScreen.md), [MapCheck](MapCheck.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TruckRouteCheck](TruckRouteCheck.md), [UiProbe](UiProbe.md), [UserInterface](UserInterface.md)
+**Used by (10):** [FollowBench](FollowBench.md), [HistoryScreen](HistoryScreen.md), [MapCheck](MapCheck.md), [PagePictures](PagePictures.md), [ReplayCheck](ReplayCheck.md), [ReplayMoveProbe](ReplayMoveProbe.md), [TruckRouteCheck](TruckRouteCheck.md), [UiProbe](UiProbe.md), [UiSteadyCheck](UiSteadyCheck.md), [UserInterface](UserInterface.md)
 
 ## Sections
 

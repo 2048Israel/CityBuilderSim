@@ -24,7 +24,7 @@
 
 **Uses:** [Palette](Palette.md) (96), [ResearchView](ResearchView.md) (82), [PolicyScreen](PolicyScreen.md) (73), [Kept](Kept.md) (71), [HistorySave](HistorySave.md) (12), [Icons](Icons.md) (11), [TimeChart](TimeChart.md) (9), [CityCalendar](CityCalendar.md) (7), [ResearchPreview](ResearchPreview.md) (6), [Game](Game.md) (4), [DecisionLog](DecisionLog.md) (4), [Pieces](Pieces.md) (4), [Research](Research.md) (3), [UserInterface](UserInterface.md) (2), [Ladder](Ladder.md) (2), [EquipmentFit](EquipmentFit.md) (2), [HistoryScreen](HistoryScreen.md) (2), [BankScreen](BankScreen.md) (2), [ResearchCatalog](ResearchCatalog.md) (1), [BuildingsTemplate](BuildingsTemplate.md) (1), [Sector](Sector.md) (1), [ChartModel](ChartModel.md) (1)
 
-**Used by (3):** [KeptBench](KeptBench.md), [PolicyScreen](PolicyScreen.md), [ServicesScreen](ServicesScreen.md)
+**Used by (4):** [KeptBench](KeptBench.md), [PagePictures](PagePictures.md), [PolicyScreen](PolicyScreen.md), [ServicesScreen](ServicesScreen.md)
 
 ## Sections
 

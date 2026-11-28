@@ -27,7 +27,7 @@
 
 **Uses:** [Palette](Palette.md) (365), [Kept](Kept.md) (162), [InfrastructureManager](InfrastructureManager.md) (47), [Icons](Icons.md) (32), [Traffic](Traffic.md) (31), [CityNeeds](CityNeeds.md) (30), [BuildAdvice](BuildAdvice.md) (21), [Freight](Freight.md) (20), [ServicesScreen](ServicesScreen.md) (15), [FreightView](FreightView.md) (13), [Pieces](Pieces.md) (11), [TaxPolicy](TaxPolicy.md) (10), [Sector](Sector.md) (9), [BuildScreen](BuildScreen.md) (8), [Ports](Ports.md) (7), [Haulage](Haulage.md) (6), [EconomyManager](EconomyManager.md) (5), [Money](Money.md) (5), [Good](Good.md) (4), [MiniMapFrame](MiniMapFrame.md) (4), [CareType](CareType.md) (3), [PolicyScreen](PolicyScreen.md) (3), [UserInterface](UserInterface.md) (2), [GoodsMarket](GoodsMarket.md) (2), [SummaryScreen](SummaryScreen.md) (1), [Ladder](Ladder.md) (1), [Levers](Levers.md) (1), [HouseholdAccounts](HouseholdAccounts.md) (1), [PayTier](PayTier.md) (1), [BoatSchedule](BoatSchedule.md) (1)... and 1 more
 
-**Used by (2):** [KeptBench](KeptBench.md), [UserInterface](UserInterface.md)
+**Used by (3):** [KeptBench](KeptBench.md), [PagePictures](PagePictures.md), [UserInterface](UserInterface.md)
 
 ## Sections
 
