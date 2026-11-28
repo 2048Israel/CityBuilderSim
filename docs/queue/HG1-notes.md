@@ -70,7 +70,10 @@ the work ran on a copy in C:\Users\Jerus\AppData\Local\Temp\hg1-scratch\ (scratc
   real outside price. Groceries keep their place: a city that buys them bases on them as before (HungerCheck 4e).
 - ★ **Groceries join after a whole year of sales**: WEIGHT_MONTHS of them, at their share of the trailing year. A
   month without a sale holds the join off. The relink is chained, so the level carries over.
-- ★ **FOOD's lines.** Listed from 4%: USDA ERS, very low food security, 4.1% of US households in 2019 (ERR-275,
+- ★ **FOOD's lines.** The 4% and the 20% are gameplay choices, when to list the row and when to colour it red;
+  the sources are analogies only, not a measure of the same thing (REV-HG1). The game's hunger is the share of
+  people who went without a basket this month; USDA's and IPC's are household shares over a survey's year or an
+  area's assessment. Listed from 4%: USDA ERS, very low food security, 4.1% of US households in 2019 (ERR-275,
   https://ers.usda.gov/publications/99281). Red from 20%: the famine line, IPC Phase 5, a fifth of households with
   an extreme lack of food (https://www.unicefusa.org/stories/what-is-famine). The reading says which half.
 - ★ **The priced-out half stays.** On his copy, after the shelves fill, 8-22% stay hungry because they cannot pay.
