@@ -271,7 +271,12 @@ was never written.
 - ★3 **Finding 16 is queued, not mended** (HF1): it moves his 2026-09-11 design and four subsystems.
 - **FC3 is queued, not mended:** the bills' ensemble's one F1 run is main's construction fault (section 4). Its mend
   moves every city that hands a site abroad, outside this batch's findings. The orchestrator's call: it passes by
-  name, owned by FC3, if the merged run still shows it.
+  name, owned by FC3, if the merged run still shows it. The merged run does not (ZERO_HOT's F1 0 of 16), so the ship
+  file files no FC3 row.
+- **WM1 is queued, not mended:** the merged ensemble's one F1 path is CBK3's audit reading the window against a cap
+  that the same month's peg break repriced after the last settle struck it (section 4). Its mend is in the bank's
+  audit, outside this batch's findings. It passes by name under gate rule 3, as FC3 would have: the ship file's
+  known-reds row names WM1. Whether it passes is the orchestrator's call.
 - **PH1 is queued, not mended:** DenominationCheck's twins part on the mend's path from a fault of main's (section
   4), already passed by name by DK1's rows. A mend here would move the whole fixture's path and the default trace
   again, outside this batch's findings.
@@ -392,6 +397,26 @@ was never written.
   80-run ensemble is run. The mend (`618d894be`, merged with ASH1, whose own ensemble shipped at 0.9.218) differs
   from both, the bills (`c3e284b1f`) from all three, and the spending fix (`e91b8dfe8`) from all four. Its main column would be `39fcbee71`, and that was not
   traced: the ensemble was run on the mend regardless. All five runs end with "All checks passed".
+- **On the merged tip** the default trace ran on main 0.9.219 (`bbdb5fc08`, with CBK3; classes built on scratch) and on
+  ASH4 merged with it (`a5bd4d878`). All eight files differ, and both runs end with "All checks passed" (2,009 s and
+  1,940 s).
+
+  | trace | main 0.9.219 `bbdb5fc08` | merged `a5bd4d878` |
+  |---|---|---|
+  | t-bank.csv | 06f5e52b70d26ef718312f43827c0685 | 2f89dfc7cd16bb718414105a14268ba1 |
+  | t-bonds.csv | 9ed120b19e0ecc1a62296b4012df94ea | 460cc922f0558b21a5f3b6fa1ba1d83f |
+  | t-borrow.csv | c87d567686deb691c85ac53ad23e47f7 | 37c136ad977714f1bafab4dfaf32f915 |
+  | t-build.csv | b1ba2dcf969de44591c5d2db138f015b | 7808405ef4d60f007e52a3c5e874a38c |
+  | t-house.csv | e1d7a1b4b241ce0b4520ddc7bcbde827 | 4d9f320eb6aba14952aa2cbb259c9cfc |
+  | t-labour.csv | 723a0c4e3f825fc49b464163adeb89e3 | 536bfaee438b4dce6ce20d23e01c5898 |
+  | t-month.csv | 6f7a0008b9e310c37226e4d86ffd262c | 0ed107434e65b030392f336c5f75849e |
+  | t-pop.csv | 2243deb50f586248f10ef60abac81404 | 08a242b638eb300abeb67ea9291b1871 |
+
+  - Its population every 200 months to 2,400: main 7k, 14k, 72k, 219k, 526k, 1,209k, 2,676k, 3,130k, 3,874k,
+    4,364k, 5,184k, 5,722k; merged 5k, 8k, 24k, 98k, 229k, 520k, 1,191k, 1,880k, 2,851k, 3,799k, 4,900k, 6,064k.
+  - The merged city climbs later and ends 6% higher. 2 banks have failed by month 2,400, against main's 5.
+    Unemployment at month 2,400 is 14.8%, against 11.3%, and business debt is 701 a head, against 605.
+  - It is one seed's path. The 80 runs' climb on the same model is ahead of main's (the ensemble below).
 
   | trace | main `22b6eb96f` | the first mend | the mend `618d894be` | the bills `c3e284b1f` | spending `e91b8dfe8` |
   |---|---|---|---|---|---|
@@ -428,7 +453,46 @@ was never written.
   paid 96.5%. The buyback quotes 27.3723. On CBK3's main (merged at `a5bd4d878`) finding 5 was measured again: the
   owners held 82.8% and paid 96.1%, and the buyback still quotes 27.3723 (above).
 
-- **The ensemble on the spending fix: PASS, hard 10 of 10** (`docs/ensemble/ASH4.md`, label ASH4d). It ran on the
+- **The ensemble on the merged tip: FAIL, hard 6 of 10, by one path of a fault of main's** (`docs/ensemble/ASH4.md`,
+  label ASH4e). It ran on the gate box at `a5bd4d878` (0.9.219 with CBK3), 80 of 80 runs: 7.9 min, then 26.3 min
+  after it yielded to HG1's dry run. It was scored here against `docs/ensemble/0.9.219.md`, and 19 of 26 criteria
+  pass.
+  - **M1** is 0 months of failed money audit in every policy.
+  - **F1** is 1 of 16 in AUTO2, ZERO_SLACK, SHOCK and HIGH, and 0 in ZERO_HOT. It is one path: AUTO2 seed 3 to month
+    148, which the other three replay until their policies start. The finding is CBK3's "the window lent beyond
+    eligible collateral after haircuts": window $9,888.30 against collateral $8,974.84.
+  - **The trace** (a helper's probe, AUTO2 seed 3 to month 150, printing every read of the cap):
+    - Month 148's last settle (`Game.java` ~14982) struck the window at $9,888.30 under a cap of $19,610.98. The cap
+      is business loans $7,117.19 x0.70, family loans $12.48 x0.15, and the bank's city paper $15,396.92 x0.95.
+    - The money audit is struck next. Then `foreign.repriceCurrency()` (~15060) breaks the peg: the vault is empty, the
+      rate goes 1.00 to 2.0076, and the curve leaves the US-tied 1.5% for the inflation rule's path on 18.6%
+      inflation (the policy rate 24.4% at month 149).
+    - The city paper is worth $4,200.98, down 73%, so the cap LongPlaytest reads is $8,974.84. Nothing was lent past
+      the cap. Month 149's first settle cuts the window to the new cap, $8,324.45, and the bank repays $1,563.85.
+    - `git diff origin/main` is empty for Bank, CentralBank, DebtManager, Game, ForeignAccounts and LongPlaytest.
+      Main's own seed 3 breaks its peg too, at month 153, but its window of $4,288 is covered by its business loans
+      alone. ASH4's path breaks it five months sooner, with a window about twice main's.
+    - Queued as WM1 (`docs/queue/WM1.md`), whose mend judges the window against the cap it can be held to. Under gate
+      rule 3 it passes by name in the ship file's known-reds, owned by WM1. Whether it passes is the orchestrator's
+      call.
+  - FC3's class, ZERO_HOT seed 3's negative GDP, is not met on this path.
+  - **Growth.** All 16 AUTO2 seeds reach 40,000 people, at a median month of 532 [466 to 734], against main's 595 [526
+    to 1,126]. The final populations are all above main's, and all pass T2:
+    - AUTO2 7.21M against 6.75M, ZERO_SLACK 5.27M against 5.08M, ZERO_HOT 15,341 against 13,698;
+    - SHOCK 217,392 against 197,311, HIGH 96,493 against 86,550.
+  - **Changed verdicts, all info:**
+    - AUTO2's A1 goes FAIL to PASS: 2.80% a year, 13 of 16 in band.
+    - AUTO2's A3 goes PASS to FAIL: one seed's deflation spell from month 240 is 12 months long, against main's 4 at
+      most. Every final population is at least 93.00% of its peak.
+    - SHOCK's K2 goes PASS to FAIL: inflation over months 720-840 is 3.09% a year against the 3.00% line. It is -0.17
+      points under its twin's.
+    - ZERO_HOT's H2 goes VACUOUS to PASS.
+    - ZERO_HOT's, SHOCK's and HIGH's T2 go FAIL to PASS: the baseline's own T2 failed against its predecessor.
+  - **Bank failures, cumulative (info):** AUTO2 76 against 52, ZERO_SLACK 74 against 51, ZERO_HOT 33 against 28,
+    SHOCK 40 against 51, HIGH 40 against 49. 14 of 16 runs have failures in every policy, as on main.
+  - None is placed: no null ran on 0.9.219. Neither the sign nor the size of any of these is validated by a real
+    measure.
+- **The ensemble on the spending fix: PASS, hard 10 of 10** (label ASH4d). It ran on the
   gate box at `e91b8dfe8`, 80 of 80 runs in 32.3 min, and was scored here against `docs/ensemble/0.9.218.md`.
   22 of 25 criteria pass.
   - **M1** is 0 months of failed money audit in every policy. **F1** is 0 of 16 in every policy: FC3's class is
@@ -483,7 +547,7 @@ was never written.
   - **Final populations elsewhere:** AUTO2 6.82M against 8.18M, ZERO_SLACK 4.82M against 5.26M, ZERO_HOT 7,058
     against 6,191, SHOCK 147,116 against 177,650. All pass T2.
   - **The first mend's ensemble** (`caed78d5e`, label ASH4, 31.9 min) also passed, 10 of 10 hard. Its growth loss is
-    in section 1. `docs/ensemble/ASH4.md` holds the spending fix's run, in place of all three.
+    in section 1. `docs/ensemble/ASH4.md` holds the merged tip's run (ASH4e), in place of all four.
 
 ## 5. For Jerus
 
