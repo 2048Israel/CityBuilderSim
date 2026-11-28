@@ -3,8 +3,9 @@
 REV-CBK3b's second review of aed3b2916 is SHIP, no P1 (orchestrator mail
 20261127-230912-686). ASH1 main39fcbee71 is now merged for the authorized dry run;
 the bank model is retained without a source conflict. The accepted
-80-run ensemble CBK3-final is PASS, M1/F1 hard10/10, on the box; a newly
-authorised dry run remains, and the failed old dry is not reusable. Base
+80-run ensemble CBK3-final is PASS, M1/F1 hard10/10, on the box. The
+authorised ASH1-merge dry completed failed; its owned CreditCrunch fixture
+is being mended for a fresh review/gate. Neither failed dry is reusable. Base
 b2f50a9ef, 0.9.213, format66; RES3's compatible format67 is now inherited.
 CBK1 main482dbfab2 (0.9.214, still format66) is merged for integration checks.
 The builder keeps decisions and review; CBK3-trace's bounded diagnostic
@@ -2199,3 +2200,91 @@ actual November28 regeneration date, not source changes. The finalized merge
 and this verification record are pushed before the already authorized dry
 run; no repeat permission or ensemble is requested. All named JVMs and the
 merge-review helper have ended before the box run starts.
+
+## Authorized ASH1-merge dry run: stopped, 2026-11-28
+
+The actual gate exits **1** at12:40:44UTC; the suite takes1844 seconds and
+exits4. This is a completed failed verdict, not the earlier ensemble SSH
+transport failure. Kept run
+`/home/jerus/cbs/runs/cbs-gate-CBK3-VRJmGJS3`, copied home to
+`C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CBK3-VRJmGJS3`; driver
+`target/CBK3-dry-final.txt`. Its two recorded commits are branch
+`b3526c053d75e4d800c16bfbd379defdb2271113` and main
+`39fcbee71e51de2e6359a305757c07554a17ca20`.
+
+The five unnamed framework lines encode three CreditCrunchCheck assertions
+plus exit/count summaries: the combined ground/issue-quote/short-bank-capital
+premise; reading the order at the door price and offering owners the till
+gap (HN1-A); and the premise that their issue falls short. These belong to
+the financing-door case, not the earlier104/120 ground-preparation case
+already repaired in this batch. The provisional marker stays present and
+no green reusable-run comment is added while the cause is unclassified.
+
+The read-only helper is checking exact failed conjuncts/operands, both
+parents and ASH1's kept evidence, plus current queued ownership. No own
+model/fixture defect is passed by a speculative main-class label. The dry
+failure is reported to the orchestrator as a result; source remains
+unchanged after the run. The gate's automatic return instruction asks for
+each line to be mended or named with evidence, then a new mends handoff.
+
+The helper29 report `20261128-084913-100-CBK3-res3-d724` confirms the full
+run:264 registry/pick names,258 selected harnesses completed (243 passed,
+15 failed),6 nightly members unselected;3 timing assertions soft and10 path
+observations unscored. Fourteen failing harnesses match their existing named
+records; only CreditCrunchCheck has new assertions. All943 kept manifest
+hashes match, with no missing file; checks.complete is present. The failed
+verdict is not relabelled green merely because evidence integrity is intact.
+
+Against main39, CreditCrunchCheck changes only standGround. Its financing
+door section and Game's owner-ask/quote/offer code are unchanged, but CBK3's
+bank/equity/desk economics differ. ASH1's authoritative kept run passed that
+case with offered1258.7/raised53.1; the candidate offers0/raises0. No exact
+current queued CreditCrunch owner is verified, so this is not passed as
+HT1-H or attributed to the shipped ASH1 batch.
+
+Root uses a detached diagnostic checkout at b352, with only read-only
+printfs added to the named CreditCrunchCheck, then runs that one harness on
+the laptop with the same data options. The production worktree's code and
+kept run stay untouched. Native diagnostic result is the same3 assertions
+(batch exit4), so the added reads do not hide the failure. At m270:
+ground=true, quote=false, company1 already has59801.892166915284 shares and
+has traded. Price**0.011205122237234182** is below the native90%-of-fair
+threshold**0.012899778056801222** (fair**0.014333086729779137**).
+The door and lender both read**1664.0760568673868**, held cash is
+**416.01901421684670**, and ask**1248.0570426505400** matches the full gap.
+Asked quantity6, capital-short=true and lender-passed2 all fire; offered
+and raised stay0. Thus the quote guard, not founder availability, ground,
+door-price arithmetic or an epsilon margin, suppresses the issue.
+
+★ Keep that native under-fair refusal and every original six-order,
+capital-band, door-price and positive-partial-issue assertion. The fixture
+must cause a genuinely supported market quote before claiming to exercise
+the partial issue; no price/rate/cap/tolerance override or speculative
+known-red exemption is used. The helper is preparing the smallest native
+market-step/funded-quotation cause in a scratch patch for verification.
+If source must change, the failed dry's source hash cannot be reused: return
+through a fresh mends/review and gate, rather than calling this run ready.
+
+The first isolated native-market probe changes no production source or
+played month: it invokes Game.tradeShares once after the fixture's home,
+ground, yard and till preparation, then holds and re-strikes the original
+capital band on the resulting book. It keeps all original assertions.
+The probe compiles and reproduces a supported native issue quote at m270:
+a real10-for1 split leaves593491.02746987260 shares, price
+0.0015996726302546006 above the native threshold0.0013777084853867374.
+Cash is allowed to settle naturally, from416.01901421684670 to
+408.39464745550230; no holding or quote is restored after the trades.
+The actual six-block order offers1255.6814094118845, exactly its till gap,
+and raises145.808593469327, a positive partial issue. The lender still
+reads exactly1664.0760568673868 and passes2 of6; all band and quote
+premises now pass.
+
+That probe is **not adopted as a green mend**: the increased subscriptions
+let the two-block slice obtain a mortgage, so the unchanged assertion that
+the door trims for capital and buys outright still fails. Named batch exit4,
+one assertion, native log in the private detached worktree's
+`target/CBK3-credit-native-market.log`, wrapper `.txt`. The helper now
+checks the actual smaller-slice credit law and how to cause the original
+capital refusal while retaining the six-order, horizon, till fraction and
+rate. No assertion is broadened to accept a different constraint, and no
+model/default change has been made. Latest fetch still names main39fcbee71.
