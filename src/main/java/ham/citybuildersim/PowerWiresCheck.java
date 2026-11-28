@@ -1202,6 +1202,18 @@ public final class PowerWiresCheck {
         return Double.isFinite(reading[0]) && reading[1] > reading[0] + 1e-9 && g.getMonth() + Math.ceil(reading[1] - 1e-9) > firstDue;
     }
 
+    /** The months to the grid's soonest first unit on site as the queue reads it now (firstUnit()'s before, no order). */
+    static double unitMonths(Game g) {
+        BuildingManager bm = g.getBuildingManager();
+        double output = g.getBuildingOutputAtEveryPost(), soonest = Double.POSITIVE_INFINITY;
+        for (Map.Entry<BuildingsTemplate, Long> e : building(g, GRID, false).entrySet())
+            if (e.getValue() > 0) {
+                double m = Math.max(bm.siteUnitMonths(e.getKey(), 1, output), bm.abroadUnitFloor(e.getKey(), 1));
+                if (!Double.isNaN(m)) soonest = Math.min(soonest, m);
+            }
+        return soonest;
+    }
+
     /** Whether the queue already reads the grid's first unit past the due, with no order of the plant's. */
     static boolean unitLate(Game g, double firstDue) {
         BuildingManager bm = g.getBuildingManager();
@@ -1262,7 +1274,7 @@ public final class PowerWiresCheck {
     }
 
     static void promise() {
-        OUT.println("--- 9. the promise: the wires a plant was ordered with open by its month, and hold every other order that would put them past it ---");
+        OUT.println("--- 9. the promise: the wires a plant was ordered with open by its month, and hold power's own later orders that would put them past it ---");
         Game g = wiresTown("promise", PROMISE_UNITS);
         AutoBuilder auto = g.getAutoBuilder();
         BuildAdvice.Suggestion card = powerCard(g);
@@ -1287,9 +1299,8 @@ public final class PowerWiresCheck {
         Game other2 = city("promise-load", 1);
         quietly(() -> other2.getAutoBuilder().restore(back));
         check("a save round trip keeps the dues (" + auto.wiresDue() + " and " + other2.getAutoBuilder().wiresDue() + ")", !auto.wiresDue().isEmpty() && auto.wiresDue().equals(other2.getAutoBuilder().wiresDue()));
-        // While the due stands, an order that would put the first unit past it. No other measure not lacked now could be caused in this town (water's works retired one
-        // at a time never put its card up, and General care lacked at the first): the town's draw grows, so that the pass orders more plants, and power's own orders
-        // are bound by the promise as the rest are (a plant that put its predecessor's wires past its opening would leave both behind them).
+        // While the due stands, an order of power's own that would put the first unit past it: the town's draw grows, so that the pass orders more plants (a plant
+        // that put its predecessor's wires past its opening would leave both behind them). The town's other works are 9's second town (overtaken()).
         heavyHeld(g, "", true);
         // Run on: the units the due counted are open by its month, and it is gone the month after it passes.
         int to = (int) Math.ceil(by) - g.getMonth();
@@ -1301,6 +1312,94 @@ public final class PowerWiresCheck {
         check("the grid units the due counted (" + counted + ") are open by its month (" + open + ")", counted >= 1 && open >= counted);
         months(g, 2);
         check("the due is gone the month after it passes (month " + g.getMonth() + ", wiresDue " + auto.wiresDue() + ")", !auto.wiresDue().contains(by));
+        overtaken();
+    }
+
+
+    /** Section 9's second town: the homes going up by hand on the same crews before the pass, as many as leave the wires read open by their due (each a few points: the finest load the crews take). */
+    static final String HOME = "House";
+
+    /** The grid's soonest first unit with `n` of t ordered on the crews (the crews' quote, as firstUnit()'s after). */
+    static double unitMonthsWith(Game g, BuildingsTemplate t, long n) {
+        BuildingManager bm = g.getBuildingManager();
+        double output = g.getBuildingOutputAtEveryPost(), points = orderPoints(g, t, n), soonest = Double.POSITIVE_INFINITY;
+        for (Map.Entry<BuildingsTemplate, Long> e : building(g, GRID, false).entrySet())
+            if (e.getValue() > 0) {
+                double m = Math.max(bm.siteUnitMonthsAfter(e.getKey(), 1, output, t, n, points), bm.abroadUnitFloor(e.getKey(), 1));
+                if (!Double.isNaN(m)) soonest = Math.min(soonest, m);
+            }
+        return soonest;
+    }
+
+    /**
+     * 9's second town: section 9's, its plant placed and its due recorded; then its power served now (plants stood), its General care stood at the line now in
+     * its least unit (the one offered for it), the reserve raised to its most, so that care wants an order at its date and lacks nothing now, and homes going up
+     * by hand on the same crews, as many as leave the wires read open by their due. Their orders are placed whole though they put the
+     * wires past the due (a generator waits for its interconnection; the town's works do not wait for the generator), and the due moves with the wires to
+     * their new month, against which power's own later orders are then held (9's first town, heavyHeld()).
+     * The draw's lever is not used here: the water works it stands take the builders' workers, and the plants stood leave the frontier allowing no plant.
+     */
+    static void overtaken() {
+        Game g = wiresTown("promise-overtaken", PROMISE_UNITS);
+        AutoBuilder auto = g.getAutoBuilder();
+        BuildingManager bm = g.getBuildingManager();
+        quietly(() -> auto.pass(g));
+        if (auto.wiresDue().isEmpty()) { check("overtaken: fixture: the plant's pass records a due", false); return; }
+        double due = auto.wiresDue().first(), before = unitMonths(g);
+        int month = g.getMonth();
+        OUT.printf("   overtaken: the plant's pass:%s; due month %.0f, the first unit reads %.2f months (month %d)%n", said(auto), due, before, month);
+        check("overtaken: fixture: the queue reads the wires open by the due (month " + (month + Math.ceil(before - 1e-9)) + " by " + due + ")",
+                Double.isFinite(before) && month + Math.ceil(before - 1e-9) <= due);
+        // The town's power served now, so that no order waits for its plants' first completion (the crew guard's own law for a measure short now, PW3's): plants stood.
+        plantsTo(g, plants(g)[1] * PowerDispatch.PLAN_PEAK_SEASON / PowerDispatch.PLAN_PEAK_HOUR, STEAM);
+        check("overtaken: fixture: the town's power lacks nothing now (" + Math.round(plants(g)[0]) + " kW firm), its due standing (wiresDue " + auto.wiresDue() + ")",
+                !BuildAdvice.lacksNow(g, POWER) && auto.wiresDue().contains(due));
+        java.util.Set<BuildingsTemplate> known = new java.util.HashSet<>(), least = new java.util.HashSet<>();
+        for (BuildingsTemplate t : bm.getTemplates()) if (bm.isTemplateKnown(t)) known.add(t);
+        quietly(() -> {
+            BuildingsTemplate unit = null;
+            for (BuildingsTemplate t : known)
+                if (CARE.serves(t) && BuildAdvice.built(g, CARE, t) > 0 && (unit == null || BuildAdvice.built(g, CARE, t) < BuildAdvice.built(g, CARE, unit))) unit = t;
+            for (BuildingsTemplate t : bm.getTemplates()) if (CARE.serves(t) && bm.getQuantity(t.getId()) > 0) bm.retire(t, bm.getQuantity(t.getId()));
+            g.getServicesManager().updateServices();
+            g.buildStack(unit, BuildAdvice.count(g, CARE, Map.of(), Map.of(unit, 1L), BuildAdvice.NOW, BuildAdvice.MOST, true)[0], true);
+            g.getServicesManager().updateServices();
+            least.add(unit);
+            // ...its order its least unit: care's others not offered, the catalogue otherwise town()'s.
+            bm.setTemplateKnown(t -> known.contains(t) && (least.contains(t) || !CARE.serves(t)));
+            auto.setSlack(AutoBuilder.SLACK_MOST, null);
+        });
+        // The homes by hand: the most the crews' quote leaves the wires open by the due with.
+        BuildingsTemplate home = named(g, HOME);
+        long lo = 0, hi = 1;
+        while (hi < 1_000_000 && month + Math.ceil(unitMonthsWith(g, home, hi) - 1e-9) <= due) { lo = hi; hi *= 2; }
+        while (hi - lo > 1) { long mid = lo + (hi - lo) / 2; if (month + Math.ceil(unitMonthsWith(g, home, mid) - 1e-9) <= due) lo = mid; else hi = mid; }
+        long homes = lo;
+        if (homes > 0) quietly(() -> g.buildStack(home, homes, false));
+        double loaded = unitMonths(g);
+        OUT.printf("   overtaken: %d %s by hand on site: the first unit reads %.2f months (month %.0f, due %.0f)%n", homes, HOME, loaded, month + Math.ceil(loaded - 1e-9), due);
+        check("overtaken: fixture: with the homes on the crews the queue reads the wires open by the due (month " + (month + Math.ceil(loaded - 1e-9)) + " by " + due + ")",
+                month + Math.ceil(loaded - 1e-9) <= due);
+        BuildAdvice.Ahead reserve = BuildAdvice.opening(g, 0, auto.getSlack());
+        double[] sd = BuildAdvice.supplyDemand(g, CARE, Map.of(), BuildAdvice.NOW);
+        check("overtaken: fixture: " + CARE.label() + " lacks nothing now (" + Math.round(sd[0]) + " of " + Math.round(sd[1]) + ", in " + least.stream().map(BuildingsTemplate::getName).toList() + ") and is short at the reserve "
+                + auto.getSlack() + ", nothing of it on site", !BuildAdvice.lacksNow(g, CARE) && !BuildAdvice.maintained(g, CARE, Map.of(), reserve) && BuildAdvice.units(BuildAdvice.onSite(g, CARE)) == 0);
+        quietly(() -> auto.pass(g));
+        OUT.printf("   overtaken: the pass at reserve %.2f:%s; wiresDue %s%n", auto.getSlack(), said(auto), auto.wiresDue());
+        for (String h : auto.held()) OUT.println("   held: " + (h.length() > 240 ? h.substring(0, 240) : h));
+        List<String> others = new ArrayList<>();
+        for (AutoBuilder.Step st : auto.steps())
+            if (st.measure().kind() != BuildAdvice.Kind.POWER && st.measure().kind() != BuildAdvice.Kind.GRID && st.ordered() >= 1)
+                others.add(st.ordered() + " " + st.building() + " (" + st.measure().label() + ")");
+        double after = unitMonths(g);
+        double opens = month + Math.ceil(after - 1e-9);
+        check("overtaken: fixture: the pass orders the town's care (" + others + ") and the wires then open past the due (month " + opens + " against " + due + ")",
+                !others.isEmpty() && opens > due);
+        boolean otherHeld = auto.held().stream().anyMatch(h -> h.contains(PROMISE_WORDS) && !h.startsWith(POWER.label() + " "));
+        boolean whole = auto.steps().stream().noneMatch(st -> st.measure().kind() != BuildAdvice.Kind.POWER && st.measure().kind() != BuildAdvice.Kind.GRID && st.ordered() < st.wanted());
+        check("overtaken: no order of the town's other works is held for the wires: each placed whole (" + others + ")", !otherHeld && whole);
+        check("overtaken: the due moves with the wires: none falls before their opening, month " + opens + " (wiresDue " + auto.wiresDue() + ")",
+                !auto.wiresDue().isEmpty() && auto.wiresDue().first() >= opens - 1e-9 && auto.wiresDue().contains(opens));
     }
 
     // ------------------------------------------------------------------------------------------------------------------ 10

@@ -1415,9 +1415,10 @@ public final class AutoBuilder {
        before their wires). An order the plants on site already serve a month's load for (the spread's cheaper power)
        needs no wires that month: the wires carry the same load whichever plant runs. A funded ask's order is cut so too
        when it is placed (reoffer(), REV-PW9-G 1). Once ordered, the wires a plant relied on keep their opening by its
-       commissioning (wiresDue): no later automatic order but the grid's own, or one for a measure short now other than
-       power, may put them past it (crewLimit(), REV-PW9-G 3), as an interconnection's in-service milestone is coupled
-       to the generator's commercial operation (FERC Order 2003-A).
+       commissioning (wiresDue): no later order of power's own may put them past it (crewLimit(), REV-PW9-G 3), as an
+       interconnection's in-service milestone is coupled to the generator's commercial operation (FERC Order 2003-A).
+       The town's other works never wait for a generator: an order of theirs that puts the wires past it is placed, and
+       the due moves with the wires (redateWires()), the generation matched to them waiting for them.
        WHY: REV-PW9 P1-b. The modern-equipment city stood 31 small steam stations, 21 MW offered, behind the founding
        10 MW while their Substation waited on the College's protected completion: native dispatch m127 generated
        7.2 GWh against 9.9 GWh asked, the steam nothing. On 0.9.218 (ASH1's 5 MW units) the same city ordered a 21 MW
@@ -1436,7 +1437,7 @@ public final class AutoBuilder {
     private boolean wiresStepped;
     /** A harness's door (PowerWiresCheck's before and after): true, no plant waits for its wires and none are ordered with it, as on 0.9.218. Never saved, never set outside a harness. */
     static boolean wiresOffForTest;
-    /** The months by which the wires a pending plant relied on must open: each a placed plant's first month needing wires on site (Wires.due()), kept from its order to the month past it (REV-PW9-G 3). Saved. */
+    /** The months by which the wires a pending plant relied on must open: each a placed plant's first month needing wires on site (Wires.due()), kept from its order to the month past it (REV-PW9-G 3), moved with the wires where another order puts them later (redateWires()). Saved. */
     private final java.util.TreeSet<Double> wiresDue = new java.util.TreeSet<>();
 
     /** A measure's supply over its demand at p, with these buildings standing as well: infinite where nothing is asked. */
@@ -1625,10 +1626,36 @@ public final class AutoBuilder {
     /** The wires' promises kept (REV-PW9-G 3): the months, absolute, by which the wires pending plants relied on must open. */
     public java.util.SortedSet<Double> wiresDue() { return java.util.Collections.unmodifiableSortedSet(wiresDue); }
 
-    /** Whether the wires' promise binds an order of this measure: one is kept, and the order is not the grid's own, nor one for a measure short now other than power. */
-    private boolean wiresBind(BuildAdvice.Measure measure, boolean lacked) {
-        return !wiresDue.isEmpty() && !wiresOffForTest && measure.kind() != BuildAdvice.Kind.GRID
-                && (!lacked || measure.kind() == BuildAdvice.Kind.POWER);
+    /**
+     * Whether the wires' promise binds an order of this measure: one is kept, and the order is power's own, short now or not.
+     * WHY (the orchestrator's call on REV-PW9-G 3, 2026-11-28): 5bc768cc8 bound every order but the grid's and a measure short
+     * now, and the modern city lost 596 of its 16,523 people to it: Streets held 12 passes, Childcare 8, General care 5 and
+     * the schools 6 in months 80-91 for a Distribution Substation's date. A generator waits for its interconnection; the
+     * town's other works do not wait for the generator (redateWires()).
+     */
+    private boolean wiresBind(BuildAdvice.Measure measure) {
+        return !wiresDue.isEmpty() && !wiresOffForTest && measure.kind() == BuildAdvice.Kind.POWER;
+    }
+
+    /**
+     * The wires' promise moved with the wires: where an order just placed put the grid's soonest first unit later than
+     * `before` (its months read before the order joined the site), every due the unit now opens past is that unit's new
+     * month. The generation matched to the wires waits for them, as a generator's commercial operation is re-dated with
+     * its interconnection's in-service date (FERC Order 2003-A's coupled milestones), and power's later orders are held
+     * against the new month (wiresDelayed()). Only power's orders are held for the promise (wiresBind()), so this is the
+     * town's other works overtaking the wires on the same crews - a street, a care centre, a school - never held for it.
+     * WHY: kept at its old month, a due broken by a school passed before the wires opened, and power's orders in the
+     * months between were placed on the crews the late wires were waiting for (PowerWiresCheck 9).
+     */
+    private void redateWires(Game game, double before) {
+        if (wiresDue.isEmpty() || !Double.isFinite(before)) return;
+        double after = firstGridMonths(game, null, 0, 0);
+        if (!Double.isFinite(after) || after <= before + 1e-9) return;
+        double opens = game.getMonth() + Math.ceil(after - 1e-9);
+        java.util.SortedSet<Double> missed = wiresDue.headSet(opens, false);
+        if (missed.isEmpty()) return;
+        missed.clear();
+        wiresDue.add(opens);
     }
 
     /**
@@ -1673,9 +1700,9 @@ public final class AutoBuilder {
         // other essential order "waited to preserve Power's quoted first completion" (roads, schools and care held 12 months, power fully served).
         boolean lacked = essential(measure) && BuildAdvice.lacksNow(game, measure);
         boolean promises = !pendingUntil.isEmpty() && !lacked;
-        // ...and the wires a plant was ordered with (REV-PW9-G 3), which bind power's own orders when it is short as well: a plant
-        // that put its predecessor's wires past its opening would leave both behind them.
-        boolean wires = wiresBind(measure, lacked);
+        // ...and the wires a plant was ordered with (REV-PW9-G 3), which bind power's own orders alone, short now or not: a plant that
+        // put its predecessor's wires past its opening would leave both behind them. The town's other works are never held for them (redateWires()).
+        boolean wires = wiresBind(measure);
         if (!promises && !wires) return new CrewLimit(wanted, null);
         String blocked = pendingDelay(game, kept, measure, suggestion, wanted, promises, wires);
         if (blocked == null) return new CrewLimit(wanted, null);
@@ -2014,6 +2041,8 @@ public final class AutoBuilder {
         // An ask's order whose proceeds the month's bills drew takes the cash under by what they drew (OA1, Game.allowProceeds()), for
         // this order's ground and building only.
         double under = from == null ? 0 : Math.max(0, Math.min(cost + landCash, Math.max(0, from.raised) + raised) - game.getCash());
+        // ...the grid's soonest first unit before the order joins the site, so that the wires' promise moves with the wires (redateWires()).
+        double gridBefore = wiresDue.isEmpty() || wiresOffForTest ? Double.NaN : firstGridMonths(game, null, 0, 0);
         boolean placed;
         game.allowProceeds(under);
         try {
@@ -2052,6 +2081,7 @@ public final class AutoBuilder {
             return false;
         }
         rememberPending(game, m, true);
+        redateWires(game, gridBefore);
         String after = reading(game, m, BuildAdvice.onSite(game, m));
         String land = got.isEmpty() ? "" : "; " + LandManager.areaWords(landSq) + " of ground bought for it first ("
                 + String.join(", ", places) + ", " + money(landCost) + ")";
