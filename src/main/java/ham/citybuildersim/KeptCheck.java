@@ -2509,14 +2509,18 @@ public class KeptCheck {
             try {
                 afterMonth = () -> {
                     if (previous != null) previous.run();
-                    after[0] = bench.fundingCoverage(t, q, FUNDING_SHORT_BY);
+                    after[0] = bench.fundingCoverageAfterMonth(t, q, FUNDING_SHORT_BY);
                 };
                 pageReshapedCaused(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)));
             } finally { afterMonth = previous; }
             System.out.println("BUILD4X after watched month " + (after[0] == null ? "month did not run" : after[0].detail()));
-            check("fixture: the same covered run stays positive and both actual offers cover fourfold after the month",
+            check("fixture: after the month the same eligible run is paid by actual cash or both real offers cover fourfold",
                     after[0] != null && after[0].okay());
-            if (after[0] == null || !after[0].okay()) throw new IllegalStateException("Covered funding fixture did not persist through its native month");
+            if (after[0] == null || !after[0].okay()) throw new IllegalStateException("Covered run has neither actual cash nor full native offers after its month");
+            boolean noShortfallOrCap = fx(() -> bench.fundingShortWords(t, q).isEmpty()
+                    && !pageSays(bench, KeptBench.FUNDING_CAP_TITLE));
+            check("fixture: the actual watched redraw still has no shortfall words or cap chips", noShortfallOrCap);
+            if (!noShortfallOrCap) throw new IllegalStateException("Covered run's watched page gained a shortfall or cap");
         }
     }
 

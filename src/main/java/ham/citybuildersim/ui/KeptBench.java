@@ -2820,22 +2820,40 @@ public final class KeptBench {
 
     /** Read current inputs/quotes only; never re-cause cash, rates, bids or an order after the watched month. */
     public FundingCoverage fundingCoverage(BuildingsTemplate t, int q, double coverBy) {
+        return fundingCoverage(t, q, coverBy, false);
+    }
+
+    /** The real watched month may pay the invoice from cash; it need not preserve a borrowing shortfall. */
+    public FundingCoverage fundingCoverageAfterMonth(BuildingsTemplate t, int q, double coverBy) {
+        return fundingCoverage(t, q, coverBy, true);
+    }
+
+    private FundingCoverage fundingCoverage(BuildingsTemplate t, int q, double coverBy, boolean allowPaidByCash) {
         Game g = ui.game;
         var run = BuildScreen.runOf(t, q);
         int ahead = g.buildRunAhead(run);
-        if (ahead <= 0) return new FundingCoverage(false, t.getName() + " q=" + q + " ahead=" + ahead);
+        if (ahead <= 0) return new FundingCoverage(false, "m=" + g.getMonth() + " " + t.getName()
+                + " q=" + q + " ahead=" + ahead + " cash=" + g.getCash());
         var eligible = BuildScreen.firstOf(run, ahead);
+        double invoice = g.buildRunInvoice(eligible), cash = g.getCash();
         double gap = g.buildFundingGap(eligible), needed = coverBy * gap;
-        if (!(gap > 0) || !Double.isFinite(needed))
-            return new FundingCoverage(false, t.getName() + " q=" + q + " gap=" + gap);
         Auction.Cap cap = ui.buildScreen.fundingCap();
+        String detail = "m=" + g.getMonth() + " " + t.getName() + " q=" + q + " ahead=" + ahead
+                + " invoice=" + invoice + " cash=" + cash + " gap=" + gap + " needed=" + needed
+                + " cap=" + cap + " deposit=" + g.getBank().depositRate() + " policy=" + g.getDebtManager().getPolicyRate();
+        if (!(invoice > 0) || !Double.isFinite(invoice) || !Double.isFinite(cash) || !Double.isFinite(needed))
+            return new FundingCoverage(false, detail + " invalid invoice/cash/need");
+        if (gap == 0) {
+            boolean noShortfall = fundingShortWords(t, q).isEmpty();
+            return new FundingCoverage(allowPaidByCash && cash >= invoice && noShortfall,
+                    detail + " branch=paid-by-actual-cash noShortfall=" + noShortfall);
+        }
+        if (!(gap > 0)) return new FundingCoverage(false, detail + " invalid gap");
         var b = g.quoteLongBondForCash(needed, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
         var n = g.quoteTBill(needed, Game.BUILD_NOTE_MONTHS, g.issueLot("Note"), cap);
         boolean okay = !b.isEmpty() && !n.isEmpty() && !b.isShort() && !n.isShort()
                 && b.cashReceived() >= needed && n.cashReceived() >= needed;
-        return new FundingCoverage(okay, "m=" + g.getMonth() + " " + t.getName() + " q=" + q + " ahead=" + ahead
-                + " invoice=" + g.buildRunInvoice(eligible) + " cash=" + g.getCash() + " gap=" + gap + " needed=" + needed
-                + " cap=" + cap + " deposit=" + g.getBank().depositRate() + " policy=" + g.getDebtManager().getPolicyRate()
+        return new FundingCoverage(okay, detail + " branch=fourfold-native-offers"
                 + "\n  bond " + fundingQuoteOperands(g, b) + "\n  bill " + fundingQuoteOperands(g, n));
     }
 

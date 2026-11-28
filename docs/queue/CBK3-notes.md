@@ -1,6 +1,9 @@
 # CBK3 - the window against collateral and the bank's rules as dials
 
-Review candidate: required named verification is complete; stranger review, ensemble and dry run remain. Base b2f50a9ef, 0.9.213, format66.
+Current candidate: the morning money mends and evening old-dry repairs are
+being verified for REV-CBK3b's second look. The final-model ensemble and a
+new authorised dry run remain; the failed old dry is not reusable. Base
+b2f50a9ef, 0.9.213, format66; RES3's compatible format67 is now inherited.
 CBK1 main482dbfab2 (0.9.214, still format66) is merged for integration checks.
 The builder keeps decisions and review; CBK3-trace's bounded diagnostic
 reports and scorer slice are described below. All runs name main's Earth2
@@ -1758,3 +1761,66 @@ nonzero with the FX toolkit stopped, instead of leaving a failed setup alive
 until the watchdog. No assertion is skipped or relaxed. The final long named
 run uses the captured heap/renderer settings and a7200s outer completion
 limit, preserving every existing timed/retention/geometry/money/save check.
+
+Selector/runner correction: AllChecks.selected uses substring matching. The
+BankCheck child completed all its assertions at21:44, but the same wrapper
+then selected CentralBankCheck again. I began the next Kept pipeline before
+noticing that selection, causing an unintended overlap21:52:46–21:55:31.
+Stopped only the duplicate's verified owned tree (34156,584,2776,40220,
+41124,39140,38508); unrelated TownGrid/other sessions survived. The stopped
+wrapper is NOT reported as exit0; its completed native BankCheck log is kept
+as `target/CBK3-evening-BankCheck-native-complete.log`. One exact native
+BankCheck will supply the unambiguous final exit. The already completed
+52-minute current CentralBankCheck0 is retained; its duplicate adds no result.
+
+The new early native gutter regression now actually passes all five laws:
+CSS gutter8, wrap41/58, viewport494; AS_NEEDED control histories stay wide
+1454/content486 versus narrow1446/content503. Production boundary/short/tall
+retained/fresh signatures, dimensions, full pixels and original node identity
+all match; unchanged draws allocate0. Full played Spending comparisons are
+still owed after the remaining funding guard is resolved.
+
+The a67 Kept run exited1 cleanly at the added post-month funding guard, log
+`target/CBK3-evening-KeptCheck-gap-closed.log`. Before the month the real
+Studio2336 order has positive gap25000 and both actual100000 offers funded
+from the existing household purse (837368), same native cap/lots. Every
+original first/next redraw, pixel and node comparison passes,100% handed
+back. After the actual watched month the gap is0. The new added guard insisted
+it remain positive; the original law was no shortfall/cap through the month.
+The helper is checking exact cash/invoice evidence and that original premise
+before any law restatement. No rerun setup, cash restore, rate freeze,
+conservation/save/geometry bound or default change is used to make it pass.
+
+★ The helper confirmed that the added post-month-positive-gap guard exceeded
+the original covered-page premise. Game.buildFundingGap is max(0, the actual
+invoice minus actual cash). Preserve the STRICT positive opening need and
+both real full/nonempty fourfold offers. After the real month, the same
+nonempty eligible positive finite invoice may remain covered by those offers
+or be fully covered by finite actual treasury cash. The latter branch must
+show actual cash>=invoice and gap0, explicitly labelled cash-paid, with no
+shortfall words or cap chips on the watched redraw. Full after-month operands
+are now captured before the former early return; income versus invoice
+movement is not guessed. This restores the original no-shortfall law and adds
+an assertion of the actual cash-covered effect. No cash/rate reset, recause,
+month move, minimum/cap/lots/fee change or money/save/geometry tolerance change
+is introduced. The next named Kept must validate those actual operands and
+all original played page comparisons; no passing verdict is claimed yet.
+
+Evening current-model BankRulesCheck completes **0** after the cash-paid
+fixture guard change (`target/CBK3-evening-BankRulesCheck.log`): all window,
+desk, leverage, dial, arrears and compatible-save assertions pass. The
+MonetaryCheck child and batch suite both complete green, including all native
+CPI/rent/redenomination continuation audits; native evidence is copied to
+`target/CBK3-evening-MonetaryCheck.log`. Its launcher then exits1 because I
+edited that running shell script's allowlist while Bash was blocked in the
+child; its resumed file offset encounters an unmatched quote. This is a
+launcher error after the completed suite, not a model/check red. The final
+immutable v2 launcher passes shell syntax validation and is not edited while
+running. No MonetaryCheck assertion, bound or native result is changed.
+
+The latest --fast completes **0** on the final cash-paid guard. The full
+native KeptCheck is running sequentially with the captured renderer/heap
+and 7200-second outer limit; its result remains pending. Fetched main
+22b6eb96f includes UX1's study, its new independent probes and read-only
+rail methods, plus queue records; its diff changes no monetary behaviour.
+It will be merged before the review candidate, with no remeasurement claim.
