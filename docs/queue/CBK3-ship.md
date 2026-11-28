@@ -1,3 +1,4 @@
+<!-- gate-run: /home/jerus/cbs/runs/cbs-gate-CBK3-KODIcBIM -->
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — CBK3, the window against collateral and the bank's rules as dials — 2026-11-28, ready, see docs/queue/CBK3-notes.md

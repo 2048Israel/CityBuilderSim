@@ -1,11 +1,12 @@
 # CBK3 - the window against collateral and the bank's rules as dials
 
-REV-CBK3b's second review of aed3b2916 is SHIP, no P1 (orchestrator mail
-20261127-230912-686). ASH1 main39fcbee71 is now merged for the authorized dry run;
-the bank model is retained without a source conflict. The accepted
-80-run ensemble CBK3-final is PASS, M1/F1 hard10/10, on the box. The
-authorised ASH1-merge dry completed failed; its owned CreditCrunch fixture
-is now mended and green for a fresh review/gate. Neither failed dry is reusable. Base
+REV-CBK3c reports SHIP on3e938553b, retaining all42 original CreditCrunch
+labels and adding8. The renewed box dry KODIcBIM completes **gate exit0**
+on24ee53f59/main39fcbee71, with only14 known-main red harnesses. Its source
+contains the approved native fixture mend and the complete ASH1 merge.
+The accepted80-run CBK3-final ensemble is PASS, M1/F1 hard10/10; its recorded
+failure-aim shortfall and observation limits remain. The failed older dry
+runs are not reused. Base
 b2f50a9ef, 0.9.213, format66; RES3's compatible format67 is now inherited.
 CBK1 main482dbfab2 (0.9.214, still format66) is merged for integration checks.
 The builder keeps decisions and review; CBK3-trace's bounded diagnostic
@@ -2415,3 +2416,69 @@ there is no new source merge or model change, no repeated ensemble or
 long named checks. Only this requested review clarification is committed
 and pushed before the fresh authorized dry. The provisional marker stays
 until its actual completed verdict and final records are checked.
+
+## Reviewed-model dry run: green, 2026-11-28
+
+The fresh authorized dry completes **gate exit0** at14:21:14UTC
+(10:21:14 Halifax), after a1854-second suite returning3, known reds only.
+The original launcher ends0 and its retained artifacts are copied home.
+Kept box run: `/home/jerus/cbs/runs/cbs-gate-CBK3-KODIcBIM`.
+Home copy: `C:/Users/Jerus/AppData/Local/Temp/cbs-gate-CBK3-KODIcBIM`.
+Driver: `target/CBK3-dry-reviewed.txt`. The run's two commits are branch
+`24ee53f59ada9012749869d14a063257243053de` and main
+`39fcbee71e51de2e6359a305757c07554a17ca20`.
+
+That branch adds only the requested REV-CBK3c rebase qualification to the
+reviewed3e938553b; the approved fixture source is1b76fce05. There is no
+model/save/UI change after review, no main movement before this dry and no
+source change afterward. The accepted final-model ensemble is retained
+under the orchestrator's explicit ASH1-merge exception. The dry's suggested
+0.9.219 is a publication preview; the branch still leaves VERSION and all
+publisher-owned records alone.
+
+The gate names only these14 inherited red harnesses: AutoBuildCheck,
+CarCheck, DenominationCheck, FundCheck, GroundSkipCheck, HoldersCheck,
+HousingDoorCheck, InvestCheck, OrderDoorCheck, PlanCheck, RailDrawCheck,
+RoadCheck, SectorFlowCheck and UiSteadyCheck. This is the same set of main
+classes classified in the preceding failed run after excluding the now
+mended CreditCrunchCheck; no new CreditCrunch exemption or tolerance is
+added. The actual exit is distinguished from the earlier failed VRJmGJS3
+run and from an incomplete live snapshot. The completed retained evidence
+is checked separately before the reusable-run comment and readiness.
+
+Final read-only verification (helper37, mail20261128-102720-666) confirms
+264 registry/pick names,258 selected **all completed**:244 passed and14
+named-red harnesses;6 NIGHTLY-tier members were unselected. Both unnamed
+and new-red lists are empty. AllChecks itself takes1834 seconds. The
+completion marker is present and **all943 manifest entries match**, with
+0 missing,0 mismatched and0 malformed. The retained files are not modified
+or executed. Full helper verification is in its own target
+`CBK3-res3-reviewed-dry-verification.txt/.json`.
+
+CreditCrunchCheck exits0:50 source assertion call sites,49 printed OK and
+0 FAIL. The other source site is the fail-only missing-template guard;
+all8 added antecedent/transaction assertions actually fire and pass. The
+box reproduces the native supported RE quote, complete domestic bank
+subscription with acquired shares/basis, residual
+-3.637978807091713e-12 (zero cents), positive partial issue116.66384977229106,
+and native next-slice capital refusal31.67238469551742 over16.546231509461904.
+The original half-band/growth.01, exact door price, offered whole till gap,
+Built1-out-of6 capital trim and cleared refusal flag all pass.
+
+Selected BankRulesCheck, BankCheck, CentralBankCheck, MonetaryCheck,
+BankFailureCheck, CentralBankStatementCheck, EquityCheck and ExchangeCheck
+all exit0; CentralBankCheck takes663.7 seconds. Selected TownGridCheck,
+SubstationCheck, PowerPlanCheck, PowerPriceCheck and LabourCheck also exit0,
+as do SaveFileCheck, ReadPathCheck, BuildAdviceCheck, BuildCardCheck and
+ConstructionControlCheck. The earlier eighteen sequential named merge
+checks remain separately recorded, including PowerPlantsCheck.
+
+The3 timing SOFT assertions (SaveSlot1,Map2) and10 path OBSERVED entries
+(AutoBuild1,PriceLevel5,Scale2,Housing1,Prize1) are separate unscored evidence,
+not concealed hard reds. Ten Monocle display harnesses actually start;
+none is skipped. No new known-red row, fixture exemption, money tolerance
+or save check is introduced. Only these notes and the ship file change
+since24ee53f59; the reusable gate-run comment names KODIcBIM on the first
+line. Under the explicit readiness go, the provisional marker is removed
+last in its own commit and checked absent on origin before readiness mail.
+All native jobs and the verification helper have ended.
