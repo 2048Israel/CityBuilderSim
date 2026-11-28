@@ -2,7 +2,7 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**264 harness files, 30,779 labelled assertions.** AllChecks runs 264 of them.
+**264 harness files, 30,787 labelled assertions.** AllChecks runs 264 of them.
 
 ## Which harnesses read which class
 
@@ -116,7 +116,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [EquipmentForms](map/EquipmentForms.md) | **none** |
 | [Equity](map/Equity.md) | AgricultureCheck, BankCheck, BankFailureCheck, BuildCardCheck, BusinessServicesCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CentralBankCheck, CoalMiningCheck, CopperMiningCheck, CreditCheck, CreditCrunchCheck, DenominationCheck, EquityCheck, ExchangeCheck, ExpectationsCheck, FoodProcessingCheck, ForestryCheck, FundCheck, FundLedgerCheck, GovernmentViewCheck, HistoryCheck, HouseholdCheck, HouseholdFlowCheck, HousingDoorCheck, HousingMarketCheck, InterestAbroadCheck, KeptCheck, LongPlaytest, ManufacturingCheck, MarketCheck, MoneyWordsCheck, MortgageCheck, OrderDoorCheck, OwnerCheck, PrizeCheck, QuarryingCheck, ReadPathCheck, RestaurantsCheck, SaveFileCheck, ScaleCheck, SectorStatementCheck, ShortSellingCheck, WoodProductsCheck, YoungBankCheck |
 | [EstateCustody](map/EstateCustody.md) | CapitalGainsCheck |
-| [Exchange](map/Exchange.md) | BankCheck, BankFailureCheck, BankRulesCheck, CapitalGainsCheck, EquityCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, KeptCheck, LongPlaytest, MarketCheck, MoneyWordsCheck, OwnerCheck, PrizeCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ShortSellingCheck |
+| [Exchange](map/Exchange.md) | BankCheck, BankFailureCheck, BankRulesCheck, CapitalGainsCheck, CreditCrunchCheck, EquityCheck, ExchangeCheck, FundCheck, FundLedgerCheck, HistoryCheck, KeptCheck, LongPlaytest, MarketCheck, MoneyWordsCheck, OwnerCheck, PrizeCheck, ReadPathCheck, SaveFileCheck, SaveSlotCheck, ShortSellingCheck |
 | [Expectations](map/Expectations.md) | CentralBankCheck, CurrencyRegimeCheck, CurveCheck, ExpectationsCheck |
 | [ExtractionSector](map/ExtractionSector.md) | BuildCardCheck, CoalMiningCheck, CopperMiningCheck, ForestryCheck, IndustryViewCheck, MaterialsCheck, QuarryingCheck, RecipeCheck |
 | [FamilyModel](map/FamilyModel.md) | ArrivalMixCheck, CreditCrunchCheck, CrimeCheck, DeathRecordCheck, DebtExchangeCheck, EducationCheck, HealthCheck, HouseholdCheck, HouseholdMemoryCheck, HouseholdStageCheck, HousingCheck, HousingChoiceCheck, HousingDoorCheck, HousingMarketCheck, InvestCheck, KeptCheck, LabourCheck, LongPlaytest, MoneyWordsCheck, OutsideCheck, OwnerCheck, PopulationCheck, StaffingDrawCheck |
@@ -243,7 +243,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [MiniMapFrame](map/MiniMapFrame.md) | MapCheck |
 | [Mining](map/Mining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, DenominationCheck, ForestryCheck, GatewayCheck, GroundInputCheck, HaulageCheck, HomeRailCheck, IndustryViewCheck, InvestCheck, LandCheck, LandClassCheck, LicenceFeesCheck, LongPlaytest, MapCheck, MaterialsCheck, MiningCheck, OilCheck, PlanCheck, PriceLevelCheck, RailDepotCheck, RailDrawCheck, ReadPathCheck, RunWorksCheck, SaveFileCheck, SlopeCheck, TradeCostCheck, TruckRouteCheck, WellCheck |
 | [Money](map/Money.md) | KeptCheck, LandClassCheck, MoneySignCheck, MoneyWordsCheck, NewUnitCheck, PriceLevelCheck, RankingsCheck, RunWorksCheck, TradeBandCheck, WorldDataCheck |
-| [MoneyAudit](map/MoneyAudit.md) | AskProceedsCheck, AuctionCheck, BankCheck, BankFailureCheck, BankRulesCheck, BondCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DiscoveryCheck, ER1Check, EducationCheck, ExchangeCheck, ExchangeRateCheck, FarmlandReserveCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GroceryCheck, HistoricalLicenceCheck, HistoryCheck, HoldersCheck, HouseholdStageCheck, HousingDoorCheck, HousingMarketCheck, HydrogenSteelCheck, InterestAbroadCheck, InvestCheck, LandCheck, LicenceFeesCheck, LongPlaytest, MaterialsCheck, MoneyDatesCheck, MortgageCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, PortCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TownGridCheck, TreasuryCheck, WaterPowerCheck, WoodProductsCheck |
+| [MoneyAudit](map/MoneyAudit.md) | AskProceedsCheck, AuctionCheck, BankCheck, BankFailureCheck, BankRulesCheck, BondCheck, BuildersFirstCheck, BusinessServicesCheck, BuybackCheck, CallCheck, CapitalFlowCheck, CapitalGainsCheck, CarCheck, CardCheck, CarryTradeCheck, CausesOfDeathCheck, CementConcreteCheck, CentralBankCheck, CoalMiningCheck, ConstructionControlCheck, ConstructionTrapCheck, CopperMiningCheck, CopperRefiningCheck, CreditCheck, CreditCrunchCheck, CurrencyCheck, CurrencyRegimeCheck, CurveCheck, DeathCareFirstCheck, DebtExchangeCheck, DebtMoneysCheck, DenominationCheck, DiscoveryCheck, ER1Check, EducationCheck, ExchangeCheck, ExchangeRateCheck, FarmlandReserveCheck, FittingCheck, FloatLinkCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, ForeignDebtCheck, ForestryCheck, Forms1900Check, FoundingYardCheck, FundCheck, GdpCheck, GoldMiningCheck, GoldStandardCheck, GroceryCheck, HistoricalLicenceCheck, HistoryCheck, HoldersCheck, HouseholdStageCheck, HousingDoorCheck, HousingMarketCheck, HydrogenSteelCheck, InterestAbroadCheck, InvestCheck, LandCheck, LicenceFeesCheck, LongPlaytest, MaterialsCheck, MoneyDatesCheck, MortgageCheck, NewGameCheck, OilCheck, OrderBookCheck, OutsideCheck, PortCheck, PowerPlantsCheck, PowerPriceCheck, PowerViewCheck, PrizeCheck, PublicLicenceCheck, QuarryingCheck, RefineryCheck, RoadCheck, SaveFileCheck, ScaleCheck, ShortSellingCheck, SkipReportCheck, SlopeCheck, SulphideLeachCheck, SupplierCreditCheck, TownGridCheck, TreasuryCheck, WaterPowerCheck, WoodProductsCheck |
 | [MonthOrder](map/MonthOrder.md) | **none** |
 | [Mortgage](map/Mortgage.md) | BankFailureCheck, BankRulesCheck, BooksCheck, BuildCardCheck, CreditCheck, CreditCrunchCheck, HousingDoorCheck, HousingMarketCheck, InvestCheck, LongPlaytest, MortgageCheck, OrderDoorCheck, OrderSearchCheck, ReadPathCheck, ScaleCheck |
 | [Motoring](map/Motoring.md) | CarCheck, DenominationCheck, InfrastructureCheck, OilCheck, ReadPathCheck, ScaleCheck, TradeCostCheck |
@@ -7103,7 +7103,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L2145 the issue and the fair buyback value read the same curve
   - L2149 ...and the buyback takes it off the books at that price
 
-## CreditCrunchCheck.java - 42 labelled assertions
+## CreditCrunchCheck.java - 50 labelled assertions
 
 > A credit crunch and the city's homes (MC1, 2026-11-20): a bank whose
 > leverage ratio binds, standing in its band between its leverage minimum and
@@ -7158,14 +7158,22 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L552 ...and no played month the door trimmed is left marked as held for the bank's capital (REV-HN1-1)
 - **L593 4. an order the owners' issue falls short of, the bank short: the door trims it for the capital**
   - L610 fixture: the hand order has actual replacement demand from removed homes
-  - L657 fixture: the bank held in its band and the rule struck on it: leverage binding, the insured mortgages rationed,
-  - L659 fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage
-  - L665 fixture: the lender's test passes more than the till buys outright, so the door asks the bank for a mortgage
-  - L667 fixture: the door's price of the order is not the planner's (the yard emptied: its materials at the market's quote)
-  - L670 the lender read the order at the door's own price, and the owners were offered what the till lacked at it (HN1-A)
-  - L672 fixture: ...and their issue fell short of it
-  - L673 the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys
-  - L675 ...and is not left marked as held for the bank's capital (REV-HN1-1)
+  - L628 fixture: the native market preparation keeps the hand order at the same played month
+  - L652 fixture: the prepared native quote supports the actual positive issue asked on this six-block order
+  - L669 fixture: after the native household issue means the next slice still lacks mortgage capital
+  - L690 fixture: the native partial issue stays within the measured household budget
+  - L697 fixture: the bank held in its band and the rule struck on it: leverage binding, the insured mortgages rationed,
+  - L699 fixture: ground for the order, a quote that supports an issue, and the bank short of capital for the order's mortgage
+  - L705 fixture: the lender's test passes more than the till buys outright, so the door asks the bank for a mortgage
+  - L707 fixture: the door's price of the order is not the planner's (the yard emptied: its materials at the market's quote)
+  - L710 the lender read the order at the door's own price, and the owners were offered what the till lacked at it (HN1-A)
+  - L712 fixture: ...and their issue fell short of it
+  - L713 the door trimmed the order for the bank's capital, what equity did not cover, and built what the till buys
+  - L715 ...and is not left marked as held for the bank's capital (REV-HN1-1)
+  - L728 fixture: the prior bank offer issues new shares in a listed bank at its native traded price
+  - L744 fixture: one actual household-funded bank offer issues shares and credits the bank's cash
+  - L750 fixture: that native capital purchase transfers the owners' savings to the bank, conserving money to the cent
+  - L755 fixture: the subscribing owners retain a positive smaller offering budget
 
 ## CreditsCheck.java - 71 labelled assertions
 
