@@ -1824,3 +1824,35 @@ and 7200-second outer limit; its result remains pending. Fetched main
 22b6eb96f includes UX1's study, its new independent probes and read-only
 rail methods, plus queue records; its diff changes no monetary behaviour.
 It will be merged before the review candidate, with no remeasurement claim.
+
+Main22b6eb96f is now merged at829102bce. All source merges are clean;
+generated-view conflicts retain their current branch versions until the
+next regeneration. CLAUDE's actual interface-file count is57 (CBK3's extra
+page plus UX1's two probes). Both BankRulesCheck and UiSteadyCheck remain
+registered, and UX1's display registration is preserved. The pick is
+**ALL263**, review needed for money and DataSave; no ALL suite is launched
+locally. The already-running native Kept classes precede this additive
+read-only probe merge; monetary and Government behaviour are identical.
+
+The current native Kept run passes the watched funding case without setup
+reapplication. At m1410 the SAME Studio2336 order has ahead1, actual invoice
+**45853405.707688615**, actual cash**45919910.018052734**, gap**0**;
+native TAIL1% cap and actual rates are recorded. This proves the actual-cash
+branch, rather than assuming an unchanged positive borrowing need. Both
+native fourfold offers and the positive opening need passed before m1410;
+the subsequent watched redraw has neither shortfall words nor cap chips.
+The remaining full-page comparisons are still running; no completed Kept
+verdict is claimed yet.
+
+Terminology correction: those operands prove current invoice COVERAGE by
+actual cash, not a completed invoice payment. Rename only the new branch's
+diagnostic label/comment to `covered-by-actual-cash`; the predicate, native
+month, setup, cash, invoice and every assertion remain identical. The active
+binary's `paid-by-actual-cash` log text denotes that same coverage predicate.
+
+The full native replay now also passes the ORIGINAL played Government
+Spending bridge open/closed assertions (log2934-2937), plus all four original
+Government retained/fresh full-page signature and pixel comparisons. Thus
+the independent native-gutter regression is backed by the actual formerly
+failing played page. The full native footer is still pending; Trade, Policy
+and research checks continue, with no failure recorded so far.

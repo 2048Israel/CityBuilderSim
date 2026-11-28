@@ -2514,7 +2514,7 @@ public class KeptCheck {
                 pageReshapedCaused(g, bench, p, 44, List.of(choice(p.name() + " opened", b -> null)));
             } finally { afterMonth = previous; }
             System.out.println("BUILD4X after watched month " + (after[0] == null ? "month did not run" : after[0].detail()));
-            check("fixture: after the month the same eligible run is paid by actual cash or both real offers cover fourfold",
+            check("fixture: after the month actual cash covers the same eligible run or both real offers cover fourfold",
                     after[0] != null && after[0].okay());
             if (after[0] == null || !after[0].okay()) throw new IllegalStateException("Covered run has neither actual cash nor full native offers after its month");
             boolean noShortfallOrCap = fx(() -> bench.fundingShortWords(t, q).isEmpty()

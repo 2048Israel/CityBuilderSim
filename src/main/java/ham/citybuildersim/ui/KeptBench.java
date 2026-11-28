@@ -2823,7 +2823,7 @@ public final class KeptBench {
         return fundingCoverage(t, q, coverBy, false);
     }
 
-    /** The real watched month may pay the invoice from cash; it need not preserve a borrowing shortfall. */
+    /** After the real watched month, cash may cover the invoice; a borrowing shortfall need not persist. */
     public FundingCoverage fundingCoverageAfterMonth(BuildingsTemplate t, int q, double coverBy) {
         return fundingCoverage(t, q, coverBy, true);
     }
@@ -2846,7 +2846,7 @@ public final class KeptBench {
         if (gap == 0) {
             boolean noShortfall = fundingShortWords(t, q).isEmpty();
             return new FundingCoverage(allowPaidByCash && cash >= invoice && noShortfall,
-                    detail + " branch=paid-by-actual-cash noShortfall=" + noShortfall);
+                    detail + " branch=covered-by-actual-cash noShortfall=" + noShortfall);
         }
         if (!(gap > 0)) return new FundingCoverage(false, detail + " invalid gap");
         var b = g.quoteLongBondForCash(needed, Game.BUILD_BOND_YEARS, g.issueLot("Term"), cap);
