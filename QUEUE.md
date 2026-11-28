@@ -124,6 +124,13 @@ stuff".
 | TG1 | The students' grant on TUITION_SHARE is struck on the student body's tuition with no students > 0 guard, where SURPLUS_SHARE has one (TaxPolicy.java:736-737; main's, found by RES3 and REV-RES3b, 2026-11-26): in the month of a college's first intake it pays the students' row before the census counts a student, and HouseholdBalance books the row as UnsettledIncome (LongPlaytest's industrial city, m137, 0.48). A small fix with its own check; LongPlaytest's own-line count then needs another cause of a row paid with nobody in it. | docs/queue/RES3-notes.md |
 | AU1 | AuctionChart.set draws again whenever the sale's Auction.Result differs, even where the picture does not (main's, found by RES3's slice H, 2026-11-26): on KeptCheck 64's Borrow city, whose bidders stand still, the face moved only in its last digits (4,313,910,641, then 4,313,910,650, then 4,313,910,642, of 4.3bn) and 3 of 6 months drew a pixel-identical chart again, red on "no month draws it again with nothing changed in it". On the played city the market moves the chart every month, so it is green there. A small fix, drawing again on the figures the chart draws, with its own check: KeptCheck 64's AuctionChart watched on Borrow's own city. | docs/queue/RES3-notes.md |
 | AP9 | Slot 9 at 50x after AP8 (Build 9.3, Land 9.6 months a second in the quieter run): private investment (`Game.runPrivateInvestment` 13.8% of the FX thread, `EquipmentFit.priced` 5.3% under `NewUnit.standingWhile`), `HouseholdBalance.followThePeople` (10.6%; `Household.bondFace` boxes its id, `Integer.valueOf` 4.4%), the bond clearing's `settle` and `capacity` (about 6%); measured before and after, exact (the trace's eight md5s equal) | [AP9](docs/queue/AP9.md) |
+
+### UI
+
+The UI rework's own order (Jerus, 2026-11-27: "there are no queue for UI"): beside the batches above, not after them; the top row is next. The rows sit under Queued so that ship.sh's row handling sees them; a UI ship file's queued rows land at the end of the table above, and the orchestrator moves them here.
+
+| batch | what | brief |
+|---|---|---|
 | UX2 | The frame (UX1): the map as the ground of every screen; the top strip of six figures; a rail button opens its page in a 560 px panel beside the rail with a path line (Back and Esc step up, a crumb jumps, the map keeps its place); Wide lays a page over the dimmed map; every page first opens in the wide sheet unchanged; the number keys, Esc, Space. Waits on nothing | docs/queue/UX2.md |
 | UX3 | After UX2: the alert row (Jerus: "appear on the top and you can click to open or right click to make disappear"): an Alerts model, one mark per kind under the strip, eight then +N, hover tells, left click opens it in the panel, right click dismisses; a dismissed alert returns a step worse or after 12 months; the chip, the toasts' cards, the bank's and Trade's cards move there; the dismissed set saved | docs/queue/UX3.md |
 | UX4 | After UX2 and ASH1: the needs sidebar, a small circle and a word per need by area at the right edge, a click opens its page; one reading of "served" for the sidebar, Build's rings and Services' rings | docs/queue/UX4.md |
@@ -136,13 +143,6 @@ stuff".
 | UX11 | After UX2, UX8 and ASH3: Finances in the panel and the wide sheet, the hub's doors at its top, the wide tables laid properly, figures that agree | docs/queue/UX11.md |
 | UX12 | After UX2, UX3, UX8, CBK3 and CBK2: the Bank, the central bank and Trade in the panel, one alert once, empty pages folded, the dials in one place drawn one way, danger drawn as danger | docs/queue/UX12.md |
 | UX13 | After UX2, UX3, UX8 and HO4: Policy, History and Rankings in the panel, the alarms where the player looks, drawings that hold, one way to each area, tables an eye can follow | docs/queue/UX13.md |
-
-### UI
-
-The UI rework's own order (Jerus, 2026-11-27: "there are no queue for UI"): beside the batches above, not after them; the top row is next. The rows sit under Queued so that ship.sh's row handling sees them; a UI ship file's queued rows land at the end of the table above, and the orchestrator moves them here.
-
-| batch | what | brief |
-|---|---|---|
 
 ## Pending
 
