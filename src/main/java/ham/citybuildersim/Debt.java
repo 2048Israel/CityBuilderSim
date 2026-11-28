@@ -559,6 +559,11 @@ public abstract class Debt {
 
     /** ...in the month the caller knows (CD6): recorded as the add-on it is, at the price of the sale it rides on and the piece's issue yield. */
     void addOnForCentralBank(double face, int month) {
+        addOnForCentralBank(face, month, CENTRAL_BANK_ADD_ON);
+    }
+
+    /** ...recorded as this kind of add-on (CBK2): its rollover's, or its auction share past the rollover (CENTRAL_BANK_AUCTION_SHARE). */
+    void addOnForCentralBank(double face, int month, String how) {
         double out = outstandingPrincipal;
         if (foreign || !(face > 0) || !(out > 0)) return;
         ensureBooks();
@@ -574,7 +579,7 @@ public abstract class Debt {
         centralBankDiscount = Math.max(0, centralBankDiscount + face * (1 - price));
         carryingValue += face * price;
         effectiveRate = effectiveRateOf(scheduleOwed(), carryingValue);
-        noteSale(month, face, face * price, issueYield, CENTRAL_BANK_ADD_ON);
+        noteSale(month, face, face * price, issueYield, how);
     }
 
     /**
@@ -848,6 +853,9 @@ public abstract class Debt {
 
     /** ...and its non-competitive add-on to a sale. */
     static final String CENTRAL_BANK_ADD_ON = "the central bank's add-on";
+
+    /** ...and its auction share, past its own rollover, under the law on direct purchases (CBK2). */
+    static final String CENTRAL_BANK_AUCTION_SHARE = "the central bank's auction share";
 
     /** ...and the treasury's rollover of what fell due. */
     static final String ROLLOVER = "the rollover";

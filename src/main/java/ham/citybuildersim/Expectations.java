@@ -201,8 +201,84 @@ public class Expectations {
         credibility = Math.max(KMIN, Math.min(KMAX, credibility));
         // ...and the month's move, for the screens (0.7.45): none the month it was seeded.
         step = seedingNow ? 0 : credibility - before;
-        expected = Math.max(EXPECTED_FLOOR, credibility * target + (1 - credibility) * smoothed);
+        double anchored = credibility * target + (1 - credibility) * smoothed;
+        // ...and what lending the treasury at auction adds, struck by financed() just before (CBK2): none without it.
+        expected = Math.max(EXPECTED_FLOOR, premium > 0 ? anchored + premium : anchored);
         level *= Math.pow(1 + expected, 1.0 / 12);
+    }
+
+    /* ---------------- THE COST OF LENDING THE TREASURY AT AUCTION (CBK2) ----------------
+
+       Jerus, 2026-11-26: "when you issue debt the ability to just issue
+       directly to the central bank? if real life is not like that then no".
+       Real life allows it in a few places (the Bank of Canada bids at its
+       government's auctions) and forbids it in most (the Federal Reserve
+       Act's s.14(b) since 1935, TFEU Article 123, Japan's Public Finance Act
+       Article 5); where a central bank has financed its treasury at scale,
+       people stopped believing it. HoldingsRules' law opens the auction share;
+       Game tells this class each month what the bank has lent the treasury
+       there lately, as a share of a year's GDP (CentralBank.turnFinancing()),
+       before takeMonth(), as pegBroke() is told a break.
+
+       THE CALIBRATION, from the cases (docs/queue/CBK2-notes.md, "Reality
+       checked"): episodes of about 1-3% of GDP a year stayed anchored -
+       Indonesia's burden sharing (about 3%, 2%, 1.4% of GDP, 2020-22), the
+       emerging markets' 2020 purchases (1% of GDP moved expectations 0.04
+       points, IMF DP/2022/001) - and those of about 7% became unanchored
+       within a year: Argentina 2020 (7.4% of GDP; the survey's expectation 40%
+       to 49% in about three months), Ghana 2022 (7.2%; inflation 12.6% to 54%,
+       the cedi down 30%). So: nothing up to FINANCING_ANCHORED, the full cost
+       at FINANCING_UNANCHORED, in a straight line between. The full cost takes
+       a FINANCING_LOSS_MONTHS-th of the way to KMIN a month - expectations
+       moved within one to three months in both - and adds up to
+       FINANCING_PREMIUM to expected inflation, Argentina's nine points, in
+       proportion to the trust already lost (IMF: low independence about
+       triples the effect). Bounded both ways: credibility never under KMIN,
+       the premium never over FINANCING_PREMIUM. The currency weakens through
+       the one road expected inflation takes to it, the real rate gap
+       (Game.realRateDifferential()). Credibility climbs back only as it
+       always does, on target at GAIN_MONTHS.
+       ------------------------------------------------------------------------------------ */
+
+    /** What the bank may lend the treasury at auction a year, as a share of GDP, and cost nothing in trust: one per cent, where the anchored cases stood. */
+    public static final double FINANCING_ANCHORED = .01;
+    /** ...and where it costs its full: seven per cent a year, Argentina 2020's 7.4% and Ghana 2022's 7.2%, both unanchored within a year. */
+    public static final double FINANCING_UNANCHORED = .07;
+    /** Months over which credibility falls toward KMIN at the full cost: a sixth of the distance a month, as expectations moved within three months in both. */
+    public static final double FINANCING_LOSS_MONTHS = 6;
+    /** The most it adds to expected inflation, a fraction a year: nine points, Argentina's survey in the three months after it began. */
+    public static final double FINANCING_PREMIUM = .09;
+
+    /** What lending the treasury at auction adds to expected inflation this month, struck by financed(); saved so a reloaded page reads it. */
+    private double premium;
+
+    /** What lending the treasury at auction adds to expected inflation this month, a fraction a year (CBK2). */
+    public double getFinancingPremium() { return premium; }
+
+    /** How much of the full cost lending this share of a year's GDP brings, 0 to 1: nothing to FINANCING_ANCHORED, all at FINANCING_UNANCHORED. Pure. */
+    public static double financingStrength(double shareOfGdp) {
+        if (!(shareOfGdp > FINANCING_ANCHORED)) return 0;
+        return Math.min(1, (shareOfGdp - FINANCING_ANCHORED) / (FINANCING_UNANCHORED - FINANCING_ANCHORED));
+    }
+
+    /**
+     * The bank has lent the treasury this share of a year's GDP at auction
+     * lately (CentralBank.turnFinancing()): credibility falls its share of the
+     * full cost of a FINANCING_LOSS_MONTHS-th of the way to KMIN, at once, and
+     * the month's premium is struck. Called before takeMonth(), which prices
+     * both and counts the fall in the month's move. Nothing lent changes nothing.
+     */
+    public void financed(double shareOfGdp) {
+        double x = financingStrength(shareOfGdp);
+        if (!(x > 0)) {
+            premium = 0;
+            return;
+        }
+        double was = credibility;
+        credibility -= (credibility - KMIN) * x / FINANCING_LOSS_MONTHS;
+        credibility = Math.max(KMIN, Math.min(KMAX, credibility));
+        dented += was - credibility;
+        premium = FINANCING_PREMIUM * x * (KMAX - credibility) / (KMAX - KMIN);
     }
 
     /**
@@ -253,17 +329,18 @@ public class Expectations {
         struck = 1.0;
         lean = 0;
         step = 0;
+        premium = 0;
         seeded = false;
     }
 
     /* -------------------------------- carrying -------------------------------- */
 
-    /** The slots a save carries: credibility, smoothed, expected, level, seeded - then the lean, the level the month's constants are struck at, and (0.7.45) the month's move in credibility. */
-    public static final int SAVE_SLOTS = 8;
+    /** The slots a save carries: credibility, smoothed, expected, level, seeded - then the lean, the level the month's constants are struck at, and (0.7.45) the month's move in credibility; and (CBK2) the month's premium for lending the treasury at auction. */
+    public static final int SAVE_SLOTS = 9;
 
     /** The state as the save carries it: DataSave.expectations. ORDER IS THE FORMAT; new slots go on the end. */
     public double[] toSaveArray() {
-        return new double[] { credibility, smoothed, expected, level, seeded ? 1 : 0, lean, struck, step };
+        return new double[] { credibility, smoothed, expected, level, seeded ? 1 : 0, lean, struck, step, premium };
     }
 
     /**
@@ -282,6 +359,8 @@ public class Expectations {
         struck = saved.length > 6 && saved[6] > 0 ? saved[6] : level;
         // A save from before 0.7.45 has no step: nothing moved the month it loads.
         step = saved.length > 7 && Double.isFinite(saved[7]) ? saved[7] : 0;
+        // ...and one from before CBK2 had lent the treasury nothing at auction: no premium.
+        premium = saved.length > 8 && saved[8] > 0 ? saved[8] : 0;
         return true;
     }
 }

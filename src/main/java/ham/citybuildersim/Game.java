@@ -14058,12 +14058,16 @@ public class Game {
         // holds past its dial. See THE CENTRAL BANK ROLLS ITS OWN, AT ISSUE.
         centralBankAlone.clear();
         centralBankTender = 0;
+        centralBankRanOff = 0;
         if (rollover.getMode() == Rollover.Mode.MANUAL) {
-            centralBankTender = centralBankRolls(centralBankParFallingDue());
+            double itsPar = centralBankParFallingDue();
+            centralBankTender = centralBankRolls(itsPar);
+            centralBankRanOff = Math.max(0, itsPar - centralBankTender);
             return;
         }
         Rollover.Plan plan = rolloverPlan();
         centralBankTender = plan.centralBankPar();
+        centralBankRanOff = plan.centralBankRunsOff();
         if (!(plan.due() > 0)) return;
 
         GameLog.note(String.format("THE ROLLOVER, %s: %s falls due next month; last year's surplus"
@@ -15141,6 +15145,9 @@ public class Game {
         // Standard rule's advice and the neutral rate - at any strictness
         // (0.7.52, DebtManager's HOW STRICT); at Standard they are the rule's own.
         double target = debtManager.getInflationTarget();
+        // ...and what the central bank has lent the treasury at auction lately, against a year's GDP (CBK2): trust
+        // lost and a premium on what people expect, priced by takeMonth() as a peg's break is. Nothing lent, nothing moves.
+        expectations.financed(centralBank.turnFinancing(economyManager.getYearGdp()));
         expectations.takeMonth(priceIndex, target, debtManager.getPolicyRate(),
                 debtManager.neutralRate(),
                 debtManager.holdingRate(priceIndex.hasRate() ? priceIndex.inflation() : target));
@@ -18461,6 +18468,8 @@ public class Game {
         // The holdings dial, the households' paper ratio, and what a buyback
         // between the presses still has to declare (0.7.1), each under its own key.
         dataSave.setQeTargetShare(centralBank.getTargetShare());
+        // ...and its rules for the holdings (CBK2), under their own key.
+        dataSave.setHoldingsRules(centralBank.holdingsRules().toSave());
         // ...and the advances ceiling dial beside it (0.7.2), under its own key.
         dataSave.setAdvancesCeilingMonths(centralBank.getAdvancesCeilingMonths());
         dataSave.setHouseholdPaperRatio(householdBalance.getPaperRatio());
@@ -19728,6 +19737,9 @@ public class Game {
        face.
        ====================================================================== */
     private void openMarketOperation() {
+        // What ran off past its dial at this month's press (CBK2), read once: the pace a player set counts it.
+        double ranOff = centralBankRanOff;
+        centralBankRanOff = 0;
         // Nothing to aim at and nothing held: no move, as it always read.
         if (!(centralBank.getTargetShare() > 0) && !(centralBank.getPaperHeld() > 0)) return;
         double term = debtManager.termPrincipal();
@@ -19745,7 +19757,14 @@ public class Game {
         double held = centralBank.getPaperHeld() - dueHeld;
         double target = centralBank.getTargetShare() * (term - dueTerm);
         double step = centralBank.stepFor(term);
-        double move = Math.max(-step, Math.min(step, target - held));
+        // QT AT THE PLAYER'S PACE (CBK2, HoldingsRules): under runoff only it
+        // sells nothing - what it holds past its dial runs off at the press, up
+        // to the pace (centralBankRolls()); under a pace the player set, the
+        // sales are what the pace leaves once the month's runoff is counted, so
+        // the book falls no faster than the pace. At Auto with sales, as before.
+        HoldingsRules rules = centralBank.holdingsRules();
+        double sellStep = rules.runoffOnly() ? 0 : rules.pace() > 0 ? Math.max(0, step - ranOff) : step;
+        double move = Math.max(-sellStep, Math.min(step, target - held));
         if (Math.abs(move) <= 1e-9 * Math.max(1, term)) return;
         java.util.List<Debt> pieces = new java.util.ArrayList<>();
         double pool = 0;
@@ -20018,6 +20037,9 @@ public class Game {
     /** What the central bank rolls of its own this month: struck at the press (rollMaturities()), taken in the window (rollCentralBankAtIssue()). Not saved - both happen inside one nextMonth(), and a press strikes it afresh. */
     private double centralBankTender;
 
+    /** ...and what of its own falling due runs off past its dial instead (CBK2), struck at the same press and read once by the holdings step, which counts it against a pace the player set. Not saved, for the same reason. */
+    private double centralBankRanOff;
+
     /** ...and, with none of the city's term paper sold to add it on to, its par alone, quoted at the press: one issue per paper. */
     private final java.util.List<ParAlone> centralBankAlone = new java.util.ArrayList<>();
 
@@ -20050,10 +20072,15 @@ public class Game {
         return over > 1e-9 * Math.max(1, term) ? over : 0;
     }
 
-    /** Of this much par of its own falling due, what it rolls at issue: all of it, less what it holds over its dial. */
+    /**
+     * Of this much par of its own falling due, what it rolls at issue: all of
+     * it, less what it holds over its dial - and since CBK2 no more of that
+     * than the runoff's cap (CentralBank.runoffCap(): the pace, under runoff
+     * only or a pace the player set; none at Auto with sales, as before).
+     */
     private double centralBankRolls(double par) {
         if (!(par > 0)) return 0;
-        return par - Math.min(par, centralBankOverItsDial());
+        return par - Math.min(par, Math.min(centralBankOverItsDial(), centralBank.runoffCap(debtManager.termPrincipal())));
     }
 
     /** True if any of the city's own term paper has been sold between the presses and not yet settled: what the central bank's par is added on to. */
@@ -20106,8 +20133,11 @@ public class Game {
         centralBankTender = 0;
         java.util.List<ParAlone> alone = new java.util.ArrayList<>(centralBankAlone);
         centralBankAlone.clear();
-        if (!(par > 0)) return;
-        double paid = 0, took = 0;
+        // CBK2: its auction share, open only under the law on direct purchases (HoldingsRules.auctionShare());
+        // without it the window is the one before CBK2.
+        double share = centralBank.holdingsRules().auctionShare();
+        if (!(par > 0) && !(share > 0)) return;
+        double paid = 0, took = 0, paidAtAuction = 0, tookAtAuction = 0;
         // BK1: the bank's book and unearned discount before the central bank's face joins a line, for the re-strike below.
         double bankFaceBefore = debtManager.bankBook(), bankUnearnedBefore = debtManager.bankUnearnedDiscount();
         if (!alone.isEmpty()) {
@@ -20152,13 +20182,26 @@ public class Game {
                 sold.add(d);
                 faces += face;
             }
+            // THE AUCTION SHARE (CBK2): its bid on the face the market bought, inside its dial once its own par has joined.
+            double take = share > 0 && faces > 0 ? auctionShareTake(share * faces, par > 0 ? par : 0) : 0;
+            if (!(par > 0) && !(take > 0)) return;
             for (Debt d : sold) {
                 double face = d.unsettledFace();
-                double addOn = sold.size() == 1 ? par : par * face / faces;
-                double price = addOn * d.getSettleDue() / face;
-                d.addOnForCentralBank(addOn, month - 1);
-                paid += centralBank.buyAtIssue(price, addOn);
-                took += addOn;
+                if (par > 0) {
+                    double addOn = sold.size() == 1 ? par : par * face / faces;
+                    double price = addOn * d.getSettleDue() / face;
+                    d.addOnForCentralBank(addOn, month - 1);
+                    paid += centralBank.buyAtIssue(price, addOn);
+                    took += addOn;
+                }
+                if (take > 0) {
+                    // Pro rata to the face the market bought, at the same price on each unit of face as the market's: the auction's.
+                    double bid = sold.size() == 1 ? take : take * face / faces;
+                    double price = bid * d.getSettleDue() / face;
+                    d.addOnForCentralBank(bid, month - 1, Debt.CENTRAL_BANK_AUCTION_SHARE);
+                    paidAtAuction += centralBank.buyAtAuction(price, bid);
+                    tookAtAuction += bid;
+                }
             }
         }
         // BK1: the central bank's face joined a line (reopenForCentralBank(), addOnForCentralBank()) with the bank's
@@ -20170,12 +20213,52 @@ public class Game {
             GameLog.note(String.format("The central bank's %s falling due runs off: nothing was issued"
                     + " to add it on to.", hereK("%,.0fk", par - took)));
         }
-        if (!(paid > 0)) return;
-        cash += paid;
-        treasuryRaisedSoFar += paid;
+        if (paid > 0) {
+            cash += paid;
+            treasuryRaisedSoFar += paid;
+        }
+        // ...and its auction share's payment, money made into the treasury's cash as the rollover's is (MoneyAudit's
+        // "+ centralbank BoughtPaper"), after it, so a window with no share adds to the cash exactly as before.
+        if (paidAtAuction > 0) {
+            cash += paidAtAuction;
+            treasuryRaisedSoFar += paidAtAuction;
+        }
+        if (!(paid > 0) && !(paidAtAuction > 0)) return;
         debtManager.updateInterest();
-        GameLog.note(String.format("The central bank rolled %s of its own falling due into new paper"
+        if (paid > 0) GameLog.note(String.format("The central bank rolled %s of its own falling due into new paper"
                 + " at issue, paying the treasury %s.", hereK("%,.0fk", took), hereK("%,.0fk", paid)));
+        if (paidAtAuction > 0) GameLog.note(String.format("The central bank took %s of the city's new term paper"
+                + " at auction, its auction share, paying the treasury %s in money made for it.",
+                hereK("%,.0fk", tookAtAuction), hereK("%,.0fk", paidAtAuction)));
+    }
+
+    /**
+     * THE AUCTION SHARE INSIDE THE CAP (CBK2). Of this much face its auction
+     * share bids for at the window, what it may take and still hold no more
+     * than its dial's share of the term paper once its own rolled par has
+     * joined - the book read as the holdings step reads it, net of the
+     * principal the month pays (openMarketOperation()), so the step that
+     * follows has nothing to sell back. With x taken, held + x stays at or
+     * under dial * (book + x): x at most (dial * book - held) / (1 - dial).
+     * At a dial of all the paper there is no room to run out of; at nothing,
+     * none at all.
+     */
+    private double auctionShareTake(double wanted, double rolled) {
+        if (!(wanted > 0)) return 0;
+        double dial = centralBank.getTargetShare();
+        if (!(dial > 0)) return 0;
+        if (dial >= 1) return wanted;
+        double term = debtManager.termPrincipal(), dueTerm = 0, dueHeld = 0;
+        for (Debt d : debtManager.getDebt()) {
+            if (!DebtManager.isTermPaper(d)) continue;
+            double principal = d.principalDueNextMonth();
+            if (!(principal > 0)) continue;
+            dueTerm += principal;
+            dueHeld += centralBankShareOf(d, principal);
+        }
+        double held = centralBank.getPaperHeld() - dueHeld + rolled, book = term - dueTerm + rolled;
+        double room = (dial * book - held) / (1 - dial);
+        return room > 1e-9 * Math.max(1, term) ? Math.min(wanted, room) : 0;
     }
 
     /* ----------------------- a buyback's holders outside the pools ----------------------- */
@@ -22283,6 +22366,9 @@ public class Game {
             // central bank that holds nothing. Not setTargetShare(), which
             // would record the empty bank's 0 as the setting before.
             centralBank.restoreTargetShare(loaded.getQeTargetShare());
+            // ...and its rules for the holdings (CBK2), after the same restore(), which leaves them alone: an
+            // older save has no key and reads the defaults - the pace before CBK2, runoff and sales, no auction share, the law off.
+            centralBank.holdingsRules().restore(loaded.getHoldingsRules());
             // ...and the advances ceiling (0.7.2), after the same restore(),
             // which founds the default. An older save has no key and reads
             // the default - six months, the constant it was.

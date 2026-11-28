@@ -905,8 +905,10 @@ final class CentralBankScreen {
             two.add(right, 1, 0);
             return two;
         }));
+        // CBK2: its rules for the holdings, after the holdings' card: how fast it moves toward the share it aims at,
+        // how it shrinks, its auction share and the law on direct purchases.
+        p.getChildren().add(Kept.scope("holdings rules", () -> HoldingsRulesPane.build(ui.game, again)));
         p.getChildren().add(Kept.scope("bank rules", () -> BankRulesPane.build(ui.game, again)));
-        // CBK2 adds the central bank's QE/QT pace dials to this page, after the holdings' card: how fast it moves toward the share it aims at.
     }
 
     /** THE POLICY RATE, read: the dial today and its real rate, with the door to Policy where it is set. */

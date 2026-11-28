@@ -174,6 +174,7 @@ public final class CentralBankStatements {
             { "Paper bought from the families", CentralBank.Line.BOUGHT_FROM_HOUSEHOLDS },
             { "Paper bought from abroad", CentralBank.Line.BOUGHT_FROM_WORLD },
             { "Paper bought from the treasury at issue, rolling its own", CentralBank.Line.BOUGHT_AT_ISSUE },
+            { "Paper bought from the treasury at auction, its auction share", CentralBank.Line.BOUGHT_AT_AUCTION },
             { "Dollars bought for the vault", CentralBank.Line.DOLLARS_BOUGHT },
             { "Paid to the city's gold mines for their gold", CentralBank.Line.GOLD_MINTED } };
 

@@ -2382,6 +2382,16 @@ public class DataSave implements Cloneable {
     public double getQeTargetShare()           { return qeTargetShare; }
 
     /**
+     * The holdings' rules beside the dial (CBK2): the pace, how the book shrinks,
+     * the auction share and the law on direct purchases, in HoldingsRules.Dial's
+     * order. A save from before CBK2 has no key and reads every rule at its
+     * default, which moves the city as it moved.
+     */
+    private double[] holdingsRules;
+    public void setHoldingsRules(double[] state) { holdingsRules = state; }
+    public double[] getHoldingsRules() { return holdingsRules; }
+
+    /**
      * The advances ceiling dial (0.7.2): the most the treasury may owe its
      * central bank, in months of its revenue - CentralBank
      * .getAdvancesCeilingMonths(). Under its own key, beside the holdings

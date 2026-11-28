@@ -264,7 +264,11 @@ final class PolicyScreen {
                         case MONEY -> {
                             if ("Currency reform".equals(policyPage)) reformPage(p);
                             else if (CURRENCY_PAGE.equals(policyPage)) currencyPage(p);
-                            else if ("Bank rules".equals(policyPage)) p.getChildren().add(BankRulesPane.build(ui.game, this::showPolicyMenu));
+                            else if ("Bank rules".equals(policyPage)) {
+                                p.getChildren().add(BankRulesPane.build(ui.game, this::showPolicyMenu));
+                                // CBK2: the central bank's rules for its holdings, beside the banking rules.
+                                p.getChildren().add(Kept.scope("holdings rules", () -> HoldingsRulesPane.build(ui.game, this::showPolicyMenu)));
+                            }
                             else                                      ratePage(p);
                         }
                         case ZONING -> zoning.page(p);
@@ -3690,11 +3694,26 @@ final class PolicyScreen {
                 + "sells to the bank. From the treasury it buys only to replace what it holds of "
                 + "a maturing piece, par for par, on top of what the market is sold and at the "
                 + "market's price, as the Fed rolls its own. What it holds past its dial is repaid "
-                + "instead, and so is what last year's surplus pays off. It never lends the treasury "
-                + "new money that way: that is the advances' line. The book moves a quarter of the way to the dial "
-                + "a month, from the next press. (What the model does: it swaps paper for money; it does not lend to "
-                + "the shops.)",
-                CentralBank.FULL_COMPRESSION_SHARE * 100, market.compression(360) * 100);
+                + "instead, and so is what last year's surplus pays off. %s %s (What the model does: it swaps "
+                + "paper for money; it does not lend to the shops.)",
+                CentralBank.FULL_COMPRESSION_SHARE * 100, market.compression(360) * 100,
+                holdingsLaw(), holdingsPace());
+    }
+
+    /** The holdings' law in a sentence (CBK2): main's words while direct purchases are not allowed. */
+    String holdingsLaw() {
+        HoldingsRules rules = ui.game.getCentralBank().holdingsRules();
+        if (!rules.directPurchasesAllowed()) return "It never lends the treasury new money that way: that is the advances' line.";
+        return "Direct purchases are allowed, so it also takes " + pct0(rules.auctionShare()) + " of the face of each new "
+                + "term issue at the auction's price, never past its dial - and trust falls as it lends the treasury that way.";
+    }
+
+    /** ...and the pace (CBK2): main's words at Auto. */
+    String holdingsPace() {
+        HoldingsRules rules = ui.game.getCentralBank().holdingsRules();
+        String shrinks = rules.runoffOnly() ? " Over its dial it sells nothing; maturing paper runs off up to the pace." : "";
+        if (rules.pace() == HoldingsRules.PACE_AUTO) return "The book moves a quarter of the way to the dial a month, from the next press." + shrinks;
+        return "The book moves at most " + HoldingsRules.reading(HoldingsRules.Dial.PACE, rules.pace()) + ", from the next press." + shrinks;
     }
 
     /** How QE reaches prices, in one plain line on the holdings card (0.7.45; the UI spec's D20). */
