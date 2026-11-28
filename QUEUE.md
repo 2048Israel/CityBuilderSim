@@ -143,6 +143,7 @@ The UI rework's own order (Jerus, 2026-11-27: "there are no queue for UI"): besi
 | UX11 | After UX2, UX8 and ASH3: Finances in the panel and the wide sheet, the hub's doors at its top, the wide tables laid properly, figures that agree | docs/queue/UX11.md |
 | UX12 | After UX2, UX3, UX8, CBK3 and CBK2: the Bank, the central bank and Trade in the panel, one alert once, empty pages folded, the dials in one place drawn one way, danger drawn as danger | docs/queue/UX12.md |
 | UX13 | After UX2, UX3, UX8 and HO4: Policy, History and Rankings in the panel, the alarms where the player looks, drawings that hold, one way to each area, tables an eye can follow | docs/queue/UX13.md |
+| UX14 | After UX2, UX5 and UX7: the bottom console's wings (Jerus, 11-27: "something semi round occupying 60% of the bottom", "perhaps the build, for quick access, or the debt?"): quick build on the left, money and debt on the right, the map's lenses by the zoom; a mockup of it and two alternatives to the desk chat first, then built to the recommendation. UX2 builds the console's shell and moves the clock into its centre | docs/queue/UX14.md |
 
 ## Pending
 

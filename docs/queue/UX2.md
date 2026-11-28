@@ -65,6 +65,19 @@ so it merges main as each ships. REU1's Real Estate page, if it lands after this
 every page and takes its narrow form by the page rows' rule. UX3 to UX8 start after it; the
 page rows after it.
 
+## The bottom console's centre (Jerus, 2026-11-27, 22:00-22:05, through the desk chat)
+
+- **His picks.** He took all four of UX1's picks, every one A: P1, P2, P3 and P4. The rows as written stand.
+- **His new piece:** "something could and should be in the bottom no? like something semi round occupying 60% of the bottom", then "perhaps the build, for quick access, or the debt?". Its row is UX14.
+- **What moves into this batch.** The clock moves out of item 2's top strip, because where the clock sits is the frame's call:
+  - The console is a low, semi-round band at the bottom centre, over the map: about 60% of the width and 90-110 px tall. A click folds it down to its centre.
+  - Its centre is the clock: the date, play and pause, the speed, and a ring for the month's progress.
+  - The top strip keeps the six figures, building, the rating, the inbox and the menu. The alert row (UX3) sits under it.
+- **What this batch builds.** The console's shell and its centre only. The wings are UX14's, after UX5 and UX7.
+- **The guard.** UiSteadyCheck covers the console:
+  - it never covers a panel's foot or the zoom buttons;
+  - folding and unfolding it keeps the map's place and zoom.
+
 ## Not this batch's
 
 The alerts (UX3), the needs (UX4), the map's card and tints (UX5), the icons (UX6), the build screen (UX7),
