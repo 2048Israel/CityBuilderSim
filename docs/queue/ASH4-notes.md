@@ -183,6 +183,25 @@ was never written.
   | t-month.csv | 9de355db849f31706f8b4dc4c93dbdcb | 0901c85a74055af1ec2657c9253c6d95 |
   | t-pop.csv | 86d0749981733a5339b1dc2e1a33a91b | d5b52aca8eb6abbba2085141f82025c8 |
 
+- **On ASH1's main** (merged at `caed78d5e`; ASH1 `39fcbee71` changed the POWER row, the grid step and the grid's posts),
+  AshbourneCheck has 57 OK. Finding 11 measures the same: draws 4,257 -> 5,637 -> 4,318 kW, and Ashbourne's two
+  draws leave 2 and 1 blocks over the wires, the price -78.5%. Finding 5 measures the same: the owners held 86.7% and
+  paid 96.5%. The buyback quotes 27.3723. CBK3 has not shipped; finding 5 is measured again on its main when it does.
+
+- **The ensemble: PASS** (`docs/ensemble/ASH4.md`). It ran on the gate box at `caed78d5e`, the merged tip with ASH1:
+  80 of 80 runs in 31.9 min, scored here against the newest baseline, `docs/ensemble/0.9.218.md` (ASH1's).
+  - **Hard criteria, 10 of 10:** M1 is 0 months of failed money audit in every policy, and F1 is 0 of 16 runs with a
+    LongPlaytest finding in every policy. 21 of 25 criteria pass.
+  - **Two changed verdicts, both info and both in HIGH:**
+    - T2, final population: the median is 39,690 [26,505 to 495,129] against 74,812 [22,414 to 168,964]. The row was
+      FAIL in 0.9.216's own scoring (56,156) and PASS in 0.9.218's, so HIGH's population swings by a factor of two
+      between models and its range spans nearly 19 times.
+    - R2, unemployment minus its twin: 0.43% [-0.20% to 3.00%] against 1.46%, under the +0.50% line.
+    - Neither stops a ship. Not traced: the cushion's effect on HIGH was not separated from HIGH's own swing, which
+      reached a factor of two between earlier models.
+  - **Unchanged elsewhere:** AUTO2, ZERO_SLACK, ZERO_HOT and SHOCK keep their verdicts. Their final populations are
+    within 25% of the baseline (AUTO2 7.56M against 8.18M).
+
 ## 5. For Jerus
 
 - **ASH4-A, D32's appetite** (finding 5, what is left). With the cushion mended, an owner family keeps 3 months of
