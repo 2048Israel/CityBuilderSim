@@ -15145,9 +15145,10 @@ public class Game {
         // Standard rule's advice and the neutral rate - at any strictness
         // (0.7.52, DebtManager's HOW STRICT); at Standard they are the rule's own.
         double target = debtManager.getInflationTarget();
-        // ...and what the central bank has lent the treasury at auction lately, against a year's GDP (CBK2): trust
-        // lost and a premium on what people expect, priced by takeMonth() as a peg's break is. Nothing lent, nothing moves.
-        expectations.financed(centralBank.turnFinancing(economyManager.getYearGdp()));
+        // ...and what the central bank has lent the treasury at auction lately, against the last twelve months' GDP (CBK2;
+        // the national accounts' rolling year - EconomyManager.getYearGdp() is struck only at a load): trust lost and a
+        // premium on what people expect, priced by takeMonth() as a peg's break is. Nothing lent, nothing moves.
+        expectations.financed(centralBank.turnFinancing(economyManager.getNationalAccounts().getAnnualGdp()));
         expectations.takeMonth(priceIndex, target, debtManager.getPolicyRate(),
                 debtManager.neutralRate(),
                 debtManager.holdingRate(priceIndex.hasRate() ? priceIndex.inflation() : target));

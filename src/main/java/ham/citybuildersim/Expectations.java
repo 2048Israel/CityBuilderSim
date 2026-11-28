@@ -240,8 +240,8 @@ public class Expectations {
        always does, on target at GAIN_MONTHS.
        ------------------------------------------------------------------------------------ */
 
-    /** What the bank may lend the treasury at auction a year, as a share of GDP, and cost nothing in trust: one per cent, where the anchored cases stood. */
-    public static final double FINANCING_ANCHORED = .01;
+    /** What the bank may lend the treasury at auction a year, as a share of GDP, and cost nothing in trust: three per cent, Indonesia 2020 (anchored) and the IMF's line under which a financed deficit showed no link to inflation. */
+    public static final double FINANCING_ANCHORED = .03;
     /** ...and where it costs its full: seven per cent a year, Argentina 2020's 7.4% and Ghana 2022's 7.2%, both unanchored within a year. */
     public static final double FINANCING_UNANCHORED = .07;
     /** Months over which credibility falls toward KMIN at the full cost: a sixth of the distance a month, as expectations moved within three months in both. */

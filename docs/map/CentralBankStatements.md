@@ -21,7 +21,7 @@
 
 **Uses:** [CentralBank](CentralBank.md) (101), [SectorStatements](SectorStatements.md) (11), [DebtManager](DebtManager.md) (3)
 
-**Used by (2):** [CentralBankScreen](CentralBankScreen.md), [CentralBankStatementCheck](CentralBankStatementCheck.md)
+**Used by (3):** [CentralBankPaceCheck](CentralBankPaceCheck.md), [CentralBankScreen](CentralBankScreen.md), [CentralBankStatementCheck](CentralBankStatementCheck.md)
 
 ## Sections
 

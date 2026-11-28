@@ -64,7 +64,7 @@
 
 **Uses:** [DebtManager](DebtManager.md) (3), [PriceIndex](PriceIndex.md) (2)
 
-**Used by (13):** [CentralBankCheck](CentralBankCheck.md), [CentralBankScreen](CentralBankScreen.md), [CityNeeds](CityNeeds.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [HoldingsRulesPane](HoldingsRulesPane.md), [PolicyScreen](PolicyScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YieldCurve](YieldCurve.md)
+**Used by (14):** [CentralBankCheck](CentralBankCheck.md), [CentralBankPaceCheck](CentralBankPaceCheck.md), [CentralBankScreen](CentralBankScreen.md), [CityNeeds](CityNeeds.md), [CurrencyRegimeCheck](CurrencyRegimeCheck.md), [CurveCheck](CurveCheck.md), [DebtManager](DebtManager.md), [ExpectationsCheck](ExpectationsCheck.md), [Game](Game.md), [HoldingsRulesPane](HoldingsRulesPane.md), [PolicyScreen](PolicyScreen.md), [UserInterface](UserInterface.md), [YearBook](YearBook.md), [YieldCurve](YieldCurve.md)
 
 ## Sections
 
@@ -89,7 +89,7 @@
 | 91 | `Expectations.KMAX` | `.95` | The most anyone believes it: a twentieth of expected inflation is always recent experience. |
 | 94 | `Expectations.KSEED` | `.80` | Where a new city, and a save from before the anchor, starts: a bank believed more than not, with something to earn. |
 | 97 | `Expectations.EXPECTED_FLOOR` | `-.01` | The least inflation anybody expects, a fraction a year: the floor under the deflation attractor (minus one per cent). |
-| 244 | `Expectations.FINANCING_ANCHORED` | `.01` | What the bank may lend the treasury at auction a year, as a share of GDP, and cost nothing in trust: one per cent, where the anchored cases stood. |
+| 244 | `Expectations.FINANCING_ANCHORED` | `.03` | What the bank may lend the treasury at auction a year, as a share of GDP, and cost nothing in trust: three per cent, Indonesia 2020 (anchored) and the IMF's line under which a financed deficit showed no link to inflat... |
 | 246 | `Expectations.FINANCING_UNANCHORED` | `.07` | ...and where it costs its full: seven per cent a year, Argentina 2020's 7.4% and Ghana 2022's 7.2%, both unanchored within a year. |
 | 248 | `Expectations.FINANCING_LOSS_MONTHS` | `6` | Months over which credibility falls toward KMIN at the full cost: a sixth of the distance a month, as expectations moved within three months in both. |
 | 250 | `Expectations.FINANCING_PREMIUM` | `.09` | The most it adds to expected inflation, a fraction a year: nine points, Argentina's survey in the three months after it began. |

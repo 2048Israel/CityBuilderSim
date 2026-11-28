@@ -16,7 +16,7 @@
 
 **Uses:** [DecisionLog](DecisionLog.md) (3)
 
-**Used by (4):** [CentralBank](CentralBank.md), [Game](Game.md), [HoldingsRulesPane](HoldingsRulesPane.md), [PolicyScreen](PolicyScreen.md)
+**Used by (5):** [CentralBank](CentralBank.md), [CentralBankPaceCheck](CentralBankPaceCheck.md), [Game](Game.md), [HoldingsRulesPane](HoldingsRulesPane.md), [PolicyScreen](PolicyScreen.md)
 
 ## Enum constants
 

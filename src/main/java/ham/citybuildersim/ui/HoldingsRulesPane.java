@@ -40,7 +40,7 @@ final class HoldingsRulesPane {
 
     /** One plain line: what it has lent the treasury at auction lately against a year's GDP, and what that adds to expected inflation. */
     static String financingLine(Game game) {
-        double gdp = game.getEconomyManager().getYearGdp();
+        double gdp = game.getEconomyManager().getNationalAccounts().getAnnualGdp();
         double lately = game.getCentralBank().getFinancedLately();
         double premium = game.getExpectations().getFinancingPremium();
         if (!(lately > 0)) return "It has lent the treasury nothing at auction lately. Up to "

@@ -2,7 +2,7 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,963 constants in 666 files.**
+**6,982 constants in 667 files.**
 
 ## model (3137 constants)
 
@@ -1541,7 +1541,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 91 | `Expectations.KMAX` | `.95` | The most anyone believes it: a twentieth of expected inflation is always recent experience. |
 | 94 | `Expectations.KSEED` | `.80` | Where a new city, and a save from before the anchor, starts: a bank believed more than not, with something to earn. |
 | 97 | `Expectations.EXPECTED_FLOOR` | `-.01` | The least inflation anybody expects, a fraction a year: the floor under the deflation attractor (minus one per cent). |
-| 244 | `Expectations.FINANCING_ANCHORED` | `.01` | What the bank may lend the treasury at auction a year, as a share of GDP, and cost nothing in trust: one per cent, where the anchored cases stood. |
+| 244 | `Expectations.FINANCING_ANCHORED` | `.03` | What the bank may lend the treasury at auction a year, as a share of GDP, and cost nothing in trust: three per cent, Indonesia 2020 (anchored) and the IMF's line under which a financed deficit show... |
 | 246 | `Expectations.FINANCING_UNANCHORED` | `.07` | ...and where it costs its full: seven per cent a year, Argentina 2020's 7.4% and Ghana 2022's 7.2%, both unanchored within a year. |
 | 248 | `Expectations.FINANCING_LOSS_MONTHS` | `6` | Months over which credibility falls toward KMIN at the full cost: a sixth of the distance a month, as expectations moved within three months in both. |
 | 250 | `Expectations.FINANCING_PREMIUM` | `.09` | The most it adds to expected inflation, a fraction a year: nine points, Argentina's survey in the three months after it began. |
@@ -1755,17 +1755,17 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 13494 | `Game.NO_DOLLAR_FLOAT_OR_LINKED` | `"Floating-rate notes and inflation-linked bonds are issued at home only."` | What the treasury is told when it asks for a dollar floater or linker. |
 | 13538 | `Game.FOREIGN_QUOTE_ITERATIONS` | `50` | The most times the dollar quote's fixed point is walked; it settles to 1e-13 in a handful. |
 | 13698 | `Game.BUILD_NOTE_GRANULE` | `1000 * PriceLevel.FACTOR` | A founding-price bill granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15652 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
-| 15664 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
-| 15667 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
-| 15695 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
-| 15706 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
-| 15746 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
-| 17603 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
-| 18015 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
-| 18685 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
-| 18688 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
-| 18691 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
+| 15653 | `Game.BUILD_NOTE_MONTHS` | `6` | The term of the note the build screen offers when the treasury cannot pay for an order - the player's choice, and the only note sized to a gap since 0.7.0. |
+| 15665 | `Game.BUILD_BOND_YEARS` | `20` | The term of the bond the build screen offers beside the note (0.7.10): a long-lived asset financed with long-lived debt, the matching principle, so a plant is paid for over the years the city uses it. |
+| 15668 | `Game.BUILD_BOND_GRANULE` | `100 * PriceLevel.FACTOR` | A founding-price bond granule retained for explicit quote fixtures; live funding and rollover use fundingLot() (SZ1). |
+| 15696 | `Game.FIXED_ISSUE_COST` | `12 * PriceLevel.FACTOR` | Bond counsel, rating and printing. |
+| 15707 | `Game.UNDERWRITING_SPREAD` | `.0075` | Underwriter's spread, as a fraction of face: 0.75%, inside the 0.5-1% gross spread investment-grade issues pay (Melnik & Nissim, 2003). |
+| 15747 | `Game.MINIMUM_ISSUE_FLOOR` | `50 * PriceLevel.FACTOR` | The floor under minimumIssueSize(), in thousands: $50k, so a brand new city can still borrow. |
+| 17604 | `Game.SHORTFALL_DUST` | `1e-9` | A shortfall smaller than this share of an order's cost is rounding, not a want of cash: buildFor() borrows nothing for it. |
+| 18016 | `Game.AUTOSAVE_MONTHS` | `12` | How many months between autosaves. |
+| 18686 | `Game.RECORD_BACKLOG` | `6` | The most recording writes the writer may be behind by (months and histories not yet on disk): the clock then records nothing that month, and a skip waits. |
+| 18689 | `Game.RECORDING_NAME` | `"Recording"` | The name a recorded month's save carries in its header (the slot name a save has): the same whether the month was filled for the recording or shared with the autosave's. |
+| 18692 | `Game.RECORD_WAIT_MS` | `30_000` | The longest a skip waits for the writer to get inside RECORD_BACKLOG, in milliseconds, before it records nothing that month: a writer that cannot write must not hold the skip for ever. |
 
 ### GameFiles.java ([map](map/GameFiles.md))
 
@@ -6170,7 +6170,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2302 constants)
+## harnesses (2321 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -6501,6 +6501,30 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 2200 | `CentralBankCheck.PROBE_MONTHS` | `4` | ...and the months it plays before them, seed 7's four. |
 | 2208 | `CentralBankCheck.STRICT_SHAPES` | `{ { 40, 3, 20 }, { 41, 3, 20 }, { 42, 3, 20 }, { 43, 3, 20 }, { 40, 4, 20 }, { 41, 4, 2...` | The founding shapes very strict is measured against Standard in: the playtest's seeds 0 to 23, with 40 + seed % 4 houses, 3 + (seed / 4) % 3 months before the next 20 + (seed / 12) % 3 houses. |
 | 2221 | `CentralBankCheck.STRICT_SHARE` | `.75` | The share of STRICT_SHAPES' cities in which very strict must hold prices lower than Standard: three in four, retained after CB2 measured all 24 shapes at month 600 for 240 months on RT2 main (0.9.1... |
+
+### CentralBankPaceCheck.java ([map](map/CentralBankPaceCheck.md))
+
+| line | constant | value | says |
+|---:|---|---|---|
+| 60 | `CentralBankPaceCheck.SLOT` | `10` | The scratch slot the fixture is saved in: the assistant's slot, in a scratch folder (never the player's 1-9). |
+| 63 | `CentralBankPaceCheck.PACE` | `.01` | The pace the set-pace cases use: a hundredth of the term paper a month, small beside the .4 the fixture holds so that neither the dial nor the paper there is to buy or sell stops it. |
+| 66 | `CentralBankPaceCheck.DIAL_UP` | `.9` | The dial the buying cases raise it to: far above the holding, so that the pace and not the dial is what stops it. |
+| 69 | `CentralBankPaceCheck.DIAL_DOWN` | `.1` | The dial the selling cases lower it to: far below the holding, so that the pace and not the dial is what stops it. |
+| 72 | `CentralBankPaceCheck.DIAL_NEAR` | `.01` | How far above the holding the near-dial case puts the dial: nearer than the quarter of the larger setting Auto allows. |
+| 75 | `CentralBankPaceCheck.SHARE` | `.25` | The auction share the cases give the central bank: a quarter of the face the market buys. |
+| 78 | `CentralBankPaceCheck.ROOM_OF_BID` | `.5` | Of the share's bid, the part the dial's room allows in the capped case: half, so that the cap binds with the bid unmet. |
+| 81 | `CentralBankPaceCheck.RATES_UP` | `.04` | How far the policy rate is put up at a time in the loss case, until the paper stands under face (CentralBankCheck puts it up four points for a bond sold at the new rate; this paper carries the old,... |
+| 84 | `CentralBankPaceCheck.MOST_RATE_STEPS` | `10` | The most steps the loss case puts the rate up before it gives up on the paper standing under face. |
+| 87 | `CentralBankPaceCheck.UNDER_FACE` | `.01` | How far under its face the paper must stand for the loss case: more than the month's own re-strike of the curve moves its price (0.2% where nothing else changed), so the sign holds through the window. |
+| 90 | `CentralBankPaceCheck.CURVE_DRIFT` | `3e-4` | How far the price of paper per unit of face can move between the window that prices the sale and the probe that reads it: the month's GDP and taxes reach the spread after the window (priceTheDebtMa... |
+| 93 | `CentralBankPaceCheck.SALE_IN_PURSES` | `3` | The face of the new paper the cases sell between the presses, in households' purses: the fixture's own size (CentralBankCheck 19), so the market takes it. |
+| 96 | `CentralBankPaceCheck.SALE_FLOOR` | `20_000` | ...and the least it is, which the treasury's lineup sells. |
+| 99 | `CentralBankPaceCheck.MOST_MONTHS` | `30` | The most months any loop here plays before it gives up on the condition it plays to. |
+| 715 | `CentralBankPaceCheck.INDONESIA` | `.03, ARGENTINA =.074, GHANA =.072` | The share of a year's GDP each case lent its treasury (docs/queue/CBK2-notes.md, "Reality checked"): Indonesia 2020, anchored; Argentina 2020 and Ghana 2022, unanchored within a year. |
+| 718 | `CentralBankPaceCheck.LONG_MONTHS` | `600` | Months the bounded case lends all of a year's GDP: fifty years. |
+| 721 | `CentralBankPaceCheck.TWIN_MONTHS` | `10` | Months the twins' treasury sells new paper between the presses: ten, the months before the serial's next slice. |
+| 724 | `CentralBankPaceCheck.MOST_STOP_MONTHS` | `120` | The most months the lending twin is played after it stops, waiting for its stock to fall under the anchored share. |
+| 727 | `CentralBankPaceCheck.SALE_OF_GDP` | `.01` | The face the twins' treasury sells between the presses each month, a share of the year's GDP: a year of it at a share of all of it is past the unanchored share. |
 
 ### CentralBankStatementCheck.java ([map](map/CentralBankStatementCheck.md))
 
