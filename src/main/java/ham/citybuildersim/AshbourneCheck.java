@@ -168,6 +168,7 @@ public class AshbourneCheck {
         assertTrue("what the mend keeps back is at most three months of the spending take-home does not cover", held <= uncovered + 1e-9 * depositsNow);
         wealthAndSpending(hb, owners);
         billsInTheCushion(hb, owners);
+        spendingKeepsTheOldRule(hb);
 
         double takeHomeAlone = HouseholdBalance.SHARE_CUSHION_MONTHS * Math.max(0, owners.disposable);
         double spare = hb.bondSpare(owners);
@@ -324,6 +325,93 @@ public class AshbourneCheck {
             close("twice the rent raises the cushion by three months of the raise", cushionDear - cushion, months * rent, 1e-9);
         } finally {
             putBack(owners, kept);
+        }
+    }
+
+    /**
+     * What a household spends keeps main's rule, to the bit (the orchestrator's call on the ensemble, 2026-11-28, by check
+     * reality). The fixture is the cell that may spend whose outgoings pass its take-home by the most, holding
+     * savings halfway between three months of its take-home and three months of its outgoings. Its luxury and meal
+     * budgets, its car want and the cash it pays for a car are struck on savings past three months of take-home
+     * (HouseholdBalance.spendingCushion(), cushion()'s rule before ASH4). What it may put into a bond is still struck past
+     * the outgoings' cushion, and here that is nothing. WHY: the budgets read cushion(), so the rent held back meals,
+     * watches and cars, and the city's climb fell outside the null draws. Under that wiring every budget here is
+     * nothing, and the car is bought on credit if at all.
+     */
+    static void spendingKeepsTheOldRule(HouseholdBalance hb) throws Exception {
+        Household[] cells = hb.cellsForMarket();
+        int at = -1;
+        for (int i = 0; i < cells.length; i++) {
+            Household c = cells[i];
+            if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) continue;
+            double gap = (HouseholdBalance.cushion(c) - HouseholdBalance.spendingCushion(c)) * c.households;
+            if (!(gap > 0)) continue;
+            if (at < 0 || gap > (HouseholdBalance.cushion(cells[at]) - HouseholdBalance.spendingCushion(cells[at])) * cells[at].households) at = i;
+        }
+        assertTrue("fixture: a cell that may spend, whose month's outgoings pass its take-home", at >= 0);
+        if (at < 0) return;
+        Household c = cells[at];
+        java.util.List<java.util.Map<java.lang.reflect.Field, Object>> kept = new java.util.ArrayList<>();
+        for (Household x : cells) kept.add(keep(x));
+        String[] lastNames = {"lastCarsBought", "lastCarsFinanced", "lastCarLoanFees"};
+        java.lang.reflect.Field[] lastFields = new java.lang.reflect.Field[lastNames.length];
+        double[] lastValues = new double[lastNames.length];
+        for (int k = 0; k < lastNames.length; k++) {
+            lastFields[k] = HouseholdBalance.class.getDeclaredField(lastNames[k]);
+            lastFields[k].setAccessible(true);
+            lastValues[k] = lastFields[k].getDouble(hb);
+        }
+        java.lang.reflect.Field replaceField = HouseholdBalance.class.getDeclaredField("carsToReplace");
+        replaceField.setAccessible(true);
+        double[] carsToReplace = (double[]) replaceField.get(hb);
+        double replaceKept = carsToReplace[at];
+        java.lang.reflect.Method luxuryOf = HouseholdBalance.class.getDeclaredMethod("luxuryBudgetOf", Household.class);
+        java.lang.reflect.Method mealOf = HouseholdBalance.class.getDeclaredMethod("mealBudgetOf", Household.class);
+        java.lang.reflect.Method wantOf = HouseholdBalance.class.getDeclaredMethod("wantOf", int.class, double.class, double.class);
+        luxuryOf.setAccessible(true);
+        mealOf.setAccessible(true);
+        wantOf.setAccessible(true);
+        try {
+            double takeHome = HouseholdBalance.spendingCushion(c), outgoings = HouseholdBalance.cushion(c);
+            c.savings = takeHome + (outgoings - takeHome) / 2;
+            double past = (c.savings - takeHome) * c.households;
+            if (!(c.luxuryWant > 0)) c.luxuryWant = (outgoings - takeHome) / 8;
+            if (!(c.mealWant > 0)) c.mealWant = (outgoings - takeHome) / 8;
+            double luxury = (double) luxuryOf.invoke(hb, c), meals = (double) mealOf.invoke(hb, c);
+            double bond = hb.bondSpare(c);
+            out.printf("   a cell of %,.2f households: take-home %,.2f, outgoings %,.2f; savings %,.2f against cushions of %,.2f (take-home's) and %,.2f (outgoings'); luxuries %,.2f, meals %,.2f, a bond %,.2f%n",
+                    c.households, c.disposable, c.everyday, c.savings, takeHome, outgoings, luxury, meals, bond);
+            assertTrue("fixture: its savings are past three months of take-home and short of three months of its outgoings",
+                    c.savings > takeHome && c.savings < outgoings);
+            assertTrue("its luxury budget is struck on savings past three months of take-home, main's rule, to the bit",
+                    luxury > 0 && luxury == Math.min(c.luxuryWant * c.households, past));
+            assertTrue("...and so is its meal budget", meals > 0 && meals == Math.min(c.mealWant * c.households, past));
+            assertTrue("...while what it may put into a bond is struck past its outgoings' cushion: nothing", bond == 0);
+
+            // A car, priced so that each household could pay for four in cash, and every household replacing one.
+            double price = (c.savings - takeHome) / 4, ceiling = 1;
+            c.cars = 0;
+            carsToReplace[at] = 1;
+            double wanted = (double) wantOf.invoke(hb, at, price, ceiling);
+            double everyday = c.everyday;
+            c.everyday = 0;
+            close("fixture: with no outgoings its cushion is take-home's", HouseholdBalance.cushion(c), takeHome, 0);
+            double wantedOldRule = (double) wantOf.invoke(hb, at, price, ceiling);
+            c.everyday = everyday;
+            assertTrue("its car want is struck on the same savings: it wants cars, as many as under main's rule",
+                    wanted > 0 && wanted == wantedOldRule);
+            double savings = c.savings, debt = c.debt;
+            hb.takeCars(wanted, price, price, ceiling);
+            double got = c.cars, paid = savings - c.savings;
+            out.printf("   %,.0f cars wanted at %,.4f; each household got %,.4f of a car and paid %,.4f in cash, %,.4f lent%n",
+                    wanted, price, got, paid, c.debt - debt);
+            assertTrue("fixture: it got cars", got > 0);
+            assertTrue("it paid for them in cash, out of savings past three months of take-home, to the bit",
+                    c.savings == Math.max(0, savings - got * price) && c.debt == debt);
+        } finally {
+            carsToReplace[at] = replaceKept;
+            for (int k = 0; k < lastNames.length; k++) lastFields[k].setDouble(hb, lastValues[k]);
+            for (int i = 0; i < cells.length; i++) putBack(cells[i], kept.get(i));
         }
     }
 

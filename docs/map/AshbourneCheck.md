@@ -1,4 +1,4 @@
-# AshbourneCheck.java - 659 lines · 23 methods · 13 constants · harnesses
+# AshbourneCheck.java - 747 lines · 24 methods · 13 constants · harnesses
 
 `ham/citybuildersim/AshbourneCheck.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -33,7 +33,7 @@
 > 
 > Every fixture CAUSES its condition; every figure is read off the model's own getters and constants.
 
-**Uses:** [PowerDispatch](PowerDispatch.md) (27), [HouseholdBalance](HouseholdBalance.md) (23), [Game](Game.md) (12), [DebtMoneysCheck](DebtMoneysCheck.md) (10), [Household](Household.md) (6), [Debt](Debt.md) (4), [WorldMoneys](WorldMoneys.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [OwnerHousehold](OwnerHousehold.md) (3), [MoneyAudit](MoneyAudit.md) (3), [PayTier](PayTier.md) (3), [FamilyModel](FamilyModel.md) (3), [AgeBand](AgeBand.md) (3), [DebtManager](DebtManager.md) (2), [Buyback](Buyback.md) (2), [Nations](Nations.md) (2), [PolicyRates](PolicyRates.md) (2), [FamilyStructure](FamilyStructure.md) (2), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [PriceLevel](PriceLevel.md) (1), [LongTermBond](LongTermBond.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [YieldCurve](YieldCurve.md) (1), [BuildingManager](BuildingManager.md) (1), [ServicesManager](ServicesManager.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [PopulationCohorts](PopulationCohorts.md) (1), [HouseholdMemoryCheck](HouseholdMemoryCheck.md) (1)
+**Uses:** [HouseholdBalance](HouseholdBalance.md) (36), [PowerDispatch](PowerDispatch.md) (27), [Game](Game.md) (12), [Household](Household.md) (12), [DebtMoneysCheck](DebtMoneysCheck.md) (10), [Debt](Debt.md) (4), [WorldMoneys](WorldMoneys.md) (4), [BuildingsTemplate](BuildingsTemplate.md) (3), [OwnerHousehold](OwnerHousehold.md) (3), [MoneyAudit](MoneyAudit.md) (3), [PayTier](PayTier.md) (3), [FamilyModel](FamilyModel.md) (3), [AgeBand](AgeBand.md) (3), [DebtManager](DebtManager.md) (2), [Buyback](Buyback.md) (2), [Nations](Nations.md) (2), [PolicyRates](PolicyRates.md) (2), [FamilyStructure](FamilyStructure.md) (2), [GameFiles](GameFiles.md) (1), [Founding](Founding.md) (1), [PriceLevel](PriceLevel.md) (1), [LongTermBond](LongTermBond.md) (1), [ForeignAccounts](ForeignAccounts.md) (1), [YieldCurve](YieldCurve.md) (1), [BuildingManager](BuildingManager.md) (1), [ServicesManager](ServicesManager.md) (1), [UtilitiesHandler](UtilitiesHandler.md) (1), [PopulationCohorts](PopulationCohorts.md) (1), [HouseholdMemoryCheck](HouseholdMemoryCheck.md) (1)
 
 **Used by (1):** [SaveFileCheck](SaveFileCheck.md)
 
@@ -42,27 +42,27 @@
 | line | section |
 |---:|---|
 | 122 | 1. finding 5: the households' deposits into one bond |
-| 330 | 2. finding 12: the yen bond bought back at 27.37 |
-| 485 | 3. finding 11: the load fell while the town grew |
-| 584 | 4. finding 16: households merge when a boom ends |
+| 418 | 2. finding 12: the yen bond bought back at 27.37 |
+| 573 | 3. finding 11: the load fell while the town grew |
+| 672 | 4. finding 16: households merge when a boom ends |
 
 ## Constants
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 333 | `AshbourneCheck.KEEPS_30` | `0.70` | The D$ keeps this much of its worth in US$ in the fall section 2 moves it by (DebtMoneysCheck.KEEPS's, 30% rather than 10%). |
-| 336 | `AshbourneCheck.STAND_IN_YEN` | `.13` | Ashbourne's yen policy rate in January 1917, the stand-in century's (worldMoney.policyJPY in its history, month 205). |
-| 339 | `AshbourneCheck.BOJ_1917` | `.0511` | The Bank of Japan's discount rate of 1917, 1.4 sen a day (the US: New York Fed 3.75% in 1917, FRED M13009USM156NNBR). |
-| 342 | `AshbourneCheck.ASH_FACE_YEN` | `72_000, ASH_COUPON =.035` | Ashbourne's yen piece, as its save's log has it ("Borrowed Y72.0M abroad: 30-year term bond", month 157): the face in thousands of yen, the coupon a year. |
-| 345 | `AshbourneCheck.ASH_SOLD` | `157, ASH_TERM = 360, ASH_BOUGHT_BACK = 205` | ...sold at month 157 for 360 months, and bought back whole at month 205, with 312 months left. |
-| 348 | `AshbourneCheck.ASH_OWED` | `992.435, ASH_PAID = 271.652` | What the buyback took and paid, Cr thousands, its own line: "Bought back Cr 992,435 of TERM paper for Cr 271,652 (27.37 per 100 on average, stop 27.37)". |
-| 354 | `AshbourneCheck.ASH_EXPORTS` | `1087.3017` | Ashbourne's trailing month of exports at month 205, Cr thousands: ForeignAccounts' trailing mean (COVER_WINDOW) rebuilt from its history's exportsAbroad, the rebuild giving the saved figure at month 241 (1774.4850) to... |
-| 362 | `AshbourneCheck.ASH_PREMIUM` | `.0015943` | Ashbourne's country premium at month 205, worked by hand from those figures, independently of the price (its save's foreignStanding is [0, -1]: never a default, no scar): MAX_COUNTRY_PREMIUM .16 x (SOLVENCY_WEIGHT .6 ... |
-| 365 | `AshbourneCheck.PER_100_TOLERANCE` | `.005` | The record rounds the price to the cent of a point; a basis point of premium moves this piece 0.0225, so a premium a quarter of a basis point wrong is outside. |
-| 488 | `AshbourneCheck.DRAW_193` | `9_354` | The draw Ashbourne's dispatch read in month 193, kW: its underlying draw before the losses and the season. |
-| 491 | `AshbourneCheck.DRAW_205` | `8_146` | ...and in month 205, after the two Lime Kilns closed. |
-| 608 | `AshbourneCheck.END` | `12, BACK = 20, MONTHS = 24` | The month the boom ends, the months the jobs stay gone and the month they are back. |
-| 611 | `AshbourneCheck.LAID` | `400` | Adults of the town out of work the months the boom is off: 400 unskilled jobs gone, 16% of the town's 2,500. |
+| 421 | `AshbourneCheck.KEEPS_30` | `0.70` | The D$ keeps this much of its worth in US$ in the fall section 2 moves it by (DebtMoneysCheck.KEEPS's, 30% rather than 10%). |
+| 424 | `AshbourneCheck.STAND_IN_YEN` | `.13` | Ashbourne's yen policy rate in January 1917, the stand-in century's (worldMoney.policyJPY in its history, month 205). |
+| 427 | `AshbourneCheck.BOJ_1917` | `.0511` | The Bank of Japan's discount rate of 1917, 1.4 sen a day (the US: New York Fed 3.75% in 1917, FRED M13009USM156NNBR). |
+| 430 | `AshbourneCheck.ASH_FACE_YEN` | `72_000, ASH_COUPON =.035` | Ashbourne's yen piece, as its save's log has it ("Borrowed Y72.0M abroad: 30-year term bond", month 157): the face in thousands of yen, the coupon a year. |
+| 433 | `AshbourneCheck.ASH_SOLD` | `157, ASH_TERM = 360, ASH_BOUGHT_BACK = 205` | ...sold at month 157 for 360 months, and bought back whole at month 205, with 312 months left. |
+| 436 | `AshbourneCheck.ASH_OWED` | `992.435, ASH_PAID = 271.652` | What the buyback took and paid, Cr thousands, its own line: "Bought back Cr 992,435 of TERM paper for Cr 271,652 (27.37 per 100 on average, stop 27.37)". |
+| 442 | `AshbourneCheck.ASH_EXPORTS` | `1087.3017` | Ashbourne's trailing month of exports at month 205, Cr thousands: ForeignAccounts' trailing mean (COVER_WINDOW) rebuilt from its history's exportsAbroad, the rebuild giving the saved figure at month 241 (1774.4850) to... |
+| 450 | `AshbourneCheck.ASH_PREMIUM` | `.0015943` | Ashbourne's country premium at month 205, worked by hand from those figures, independently of the price (its save's foreignStanding is [0, -1]: never a default, no scar): MAX_COUNTRY_PREMIUM .16 x (SOLVENCY_WEIGHT .6 ... |
+| 453 | `AshbourneCheck.PER_100_TOLERANCE` | `.005` | The record rounds the price to the cent of a point; a basis point of premium moves this piece 0.0225, so a premium a quarter of a basis point wrong is outside. |
+| 576 | `AshbourneCheck.DRAW_193` | `9_354` | The draw Ashbourne's dispatch read in month 193, kW: its underlying draw before the losses and the season. |
+| 579 | `AshbourneCheck.DRAW_205` | `8_146` | ...and in month 205, after the two Lime Kilns closed. |
+| 696 | `AshbourneCheck.END` | `12, BACK = 20, MONTHS = 24` | The month the boom ends, the months the jobs stay gone and the month they are back. |
+| 699 | `AshbourneCheck.LAID` | `400` | Adults of the town out of work the months the boom is off: 400 unskilled jobs gone, 16% of the town's 2,500. |
 
 ## Fields (state)
 
@@ -76,7 +76,7 @@
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 41 | 619 | **type** `public class AshbourneCheck` | Four findings from Jerus's Ashbourne (slot 2, months 193-241), each caused on a fixture of this harness's own (ASH4; docs/queue/ASH-findings.md, docs/queue/ASH4-notes.md). |
+| 41 | 707 | **type** `public class AshbourneCheck` | Four findings from Jerus's Ashbourne (slot 2, months 193-241), each caused on a fixture of this harness's own (ASH4; docs/queue/ASH-findings.md, docs/queue/ASH4-notes.md). |
 | 48 | 4 | `static void assertTrue(String label, boolean ok)` |  |
 | 53 | 5 | `static void close(String label, double actual, double expected, double tol)` |  |
 | 59 | 5 | `static void quietly(Runnable r)` |  |
@@ -86,38 +86,39 @@
 | 97 | 5 | `static double settle(Game g) throws Exception` | The production settlement of the households' part of a sale (Game.householdsTakeTheirShare, private), what it took from them. |
 | 103 | 18 | `public static void main(String[] args) throws Exception` |  |
 
-### 1. finding 5: the households' deposits into one bond (lines 122-329)
+### 1. finding 5: the households' deposits into one bond (lines 122-417)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 123 | 99 | `static void section1(Game g) throws Exception` |  |
-| 224 | 10 | `static java.util.Map<java.lang.reflect.Field, Object> keep(Household c) throws Exception` | Every double a household holds, to be put back after a fixture strikes it again (putBack()). |
-| 236 | 5 | `static void putBack(Household c, java.util.Map<java.lang.reflect.Field, Object> kept) throws Exception` | ...put back, and checked put back, so nothing past the fixture reads a re-struck household. |
-| 243 | 10 | `static double[] planInputs(HouseholdBalance hb) throws Exception` | The month's own inputs to Household.plan(), HouseholdBalance's private fields, in plan()'s order. |
-| 263 | 27 | `static void wealthAndSpending(HouseholdBalance hb, OwnerHousehold owners) throws Exception` | The real law on the production plan: the owners re-planned through Household.plan() at the month's own inputs (HouseholdBalance's, private), once at their savings and once at twice them. |
-| 299 | 30 | `static void billsInTheCushion(HouseholdBalance hb, OwnerHousehold owners) throws Exception` | The cushion keeps the bills first (REV-ASH4's fourth look). |
+| 123 | 100 | `static void section1(Game g) throws Exception` |  |
+| 225 | 10 | `static java.util.Map<java.lang.reflect.Field, Object> keep(Household c) throws Exception` | Every double a household holds, to be put back after a fixture strikes it again (putBack()). |
+| 237 | 5 | `static void putBack(Household c, java.util.Map<java.lang.reflect.Field, Object> kept) throws Exception` | ...put back, and checked put back, so nothing past the fixture reads a re-struck household. |
+| 244 | 10 | `static double[] planInputs(HouseholdBalance hb) throws Exception` | The month's own inputs to Household.plan(), HouseholdBalance's private fields, in plan()'s order. |
+| 264 | 27 | `static void wealthAndSpending(HouseholdBalance hb, OwnerHousehold owners) throws Exception` | The real law on the production plan: the owners re-planned through Household.plan() at the month's own inputs (HouseholdBalance's, private), once at their savings and once at twice them. |
+| 300 | 30 | `static void billsInTheCushion(HouseholdBalance hb, OwnerHousehold owners) throws Exception` | The cushion keeps the bills first (REV-ASH4's fourth look). |
+| 341 | 76 | `static void spendingKeepsTheOldRule(HouseholdBalance hb) throws Exception` | What a household spends keeps main's rule, to the bit (the orchestrator's call on the ensemble, 2026-11-28, by check reality). |
 
-### 2. finding 12: the yen bond bought back at 27.37 (lines 330-484)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 367 | 61 | `static void section2()` |  |
-| 430 | 54 | `static void rebuilt()` | Ashbourne's buyback, rebuilt on a town of its own: its piece, its premium, its rate, priced by the production quote. |
-
-### 3. finding 11: the load fell while the town grew (lines 485-583)
+### 2. finding 12: the yen bond bought back at 27.37 (lines 418-572)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 494 | 5 | `static int blocksOver(PowerDispatch.Month m, double wires)` | How many blocks of the month's three the wires leave short at this draw, off the dispatch's own half-blocks. |
-| 500 | 4 | `static PowerDispatch.Month struck(double draw, double season, double wires)` |  |
-| 505 | 78 | `static void section3(Game g)` |  |
+| 455 | 61 | `static void section2()` |  |
+| 518 | 54 | `static void rebuilt()` | Ashbourne's buyback, rebuilt on a town of its own: its piece, its premium, its rate, priced by the production quote. |
 
-### 4. finding 16: households merge when a boom ends (lines 584-659)
+### 3. finding 11: the load fell while the town grew (lines 573-671)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 586 | 7 | `static double[] jobs(double unskilled)` |  |
-| 594 | 5 | `static double sum(double[] a)` |  |
-| 601 | 5 | `static double familyAdults(FamilyModel f)` | The adults the families hold: every shape's households times the adults in one. |
-| 613 | 46 | `static void section4()` |  |
+| 582 | 5 | `static int blocksOver(PowerDispatch.Month m, double wires)` | How many blocks of the month's three the wires leave short at this draw, off the dispatch's own half-blocks. |
+| 588 | 4 | `static PowerDispatch.Month struck(double draw, double season, double wires)` |  |
+| 593 | 78 | `static void section3(Game g)` |  |
+
+### 4. finding 16: households merge when a boom ends (lines 672-747)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 674 | 7 | `static double[] jobs(double unskilled)` |  |
+| 682 | 5 | `static double sum(double[] a)` |  |
+| 689 | 5 | `static double familyAdults(FamilyModel f)` | The adults the families hold: every shape's households times the adults in one. |
+| 701 | 46 | `static void section4()` |  |
 

@@ -3615,7 +3615,7 @@ public class HouseholdBalance {
          * signing a finance agreement this month either.
          */
         if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
-        double spare = (c.savings - cushion(c)) * c.households;
+        double spare = (c.savings - spendingCushion(c)) * c.households;
         if (spare <= 0) return 0;
         /*
          * THE ROOM IS MEASURED TO THE CEILING, which is what makes a tram
@@ -3743,7 +3743,7 @@ public class HouseholdBalance {
              */
             double bill = got * price;
             double inHand = Math.max(0,
-                    c.savings - cushion(c));
+                    c.savings - spendingCushion(c));
             double cash = Math.min(bill, inHand);
             double lent = bill - cash;
             c.savings = Math.max(0, c.savings - cash);
@@ -4115,7 +4115,7 @@ public class HouseholdBalance {
     private double luxuryBudgetOf(Household c) {
         if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
         if (!(c.luxuryWant > 0)) return 0;
-        double spare = (c.savings - cushion(c)) * c.households;
+        double spare = (c.savings - spendingCushion(c)) * c.households;
         if (spare <= 0) return 0;
         return Math.min(c.luxuryWant * c.households, spare);
     }
@@ -4222,7 +4222,7 @@ public class HouseholdBalance {
     private double mealBudgetOf(Household c) {
         if (c.isEmpty() || !c.canInvest() || c.shutOut >= 1 || c.isGoingShort()) return 0;
         if (!(c.mealWant > 0)) return 0;
-        double spare = (c.savings - cushion(c)) * c.households;
+        double spare = (c.savings - spendingCushion(c)) * c.households;
         if (spare <= 0) return 0;
         return Math.min(c.mealWant * c.households, spare);
     }
@@ -5716,14 +5716,15 @@ public class HouseholdBalance {
        buy more because they have more past the cushion.
        ===================================================================== */
 
-    /** Months of take-home, or of the month's outgoings where they are more (cushion()), a household keeps in the bank before it buys a share. */
+    /** Months of take-home, or of the month's outgoings where they are more (cushion()), a household keeps in the bank before it buys a share; months of take-home its spending budgets leave there (spendingCushion()). */
     public static final double SHARE_CUSHION_MONTHS = 3;
 
     /**
      * The cushion itself, per household: SHARE_CUSHION_MONTHS of the larger of its take-home and its month's outgoings
-     * (Household.everyday: its recurring bills, then the basket and what income adds to it, the wealth term apart). Every path that reads
-     * "savings past the cushion" reads this one: a share, the city's paper and a business's bonds, money sent abroad,
-     * an offering, a car paid in cash, the meals and the luxuries, and the shares sold to refill it (Exchange).
+     * (Household.everyday: its recurring bills, then the basket and what income adds to it, the wealth term apart). Every path that
+     * decides how savings are held reads this one: a share, the city's paper and a business's bonds, money sent abroad,
+     * an offering, and the shares sold to refill it (Exchange). What a household spends - a car, the meals, the
+     * luxuries - reads spendingCushion(), take-home's.
      *
      * WHY (ASH4, Jerus's Ashbourne finding 5): it was take-home alone, and take-home is wages, a pension or a benefit
      * (splitIncome), so a family that lives on its dividends - the owner families, whose earning weight is nothing -
@@ -5744,9 +5745,27 @@ public class HouseholdBalance {
      * month's rent, and a higher rent could lower the reserve. Expenses are the rent and the bills before they are food
      * (SHED's "expenses"; an emergency fund's essentials: housing and utilities, then food): the cushion is never less
      * than three months of Household.bills().
+     *
+     * AND ONLY HOW SAVINGS ARE HELD (the orchestrator's call on its ensemble, 2026-11-28): spendingCushion().
      */
     public static double cushion(Household c) {
         return SHARE_CUSHION_MONTHS * Math.max(0, Math.max(c.disposable, c.everyday));
+    }
+
+    /**
+     * The cushion a household's spending leaves in the bank, per household: SHARE_CUSHION_MONTHS of its take-home, the
+     * rule cushion() had before ASH4, unchanged. A car (its want and the part of its bill paid in cash), the luxuries
+     * and the meals are bought out of savings past this one.
+     *
+     * WHY (ASH4, the orchestrator's call on its ensemble, 2026-11-28, by check reality): these budgets read cushion(),
+     * so the rent held back a family's meals, watches and cars, and the city spent less. Over the 80-run ensemble the
+     * climb to 10,000 people took a median 24 months longer than main's, outside three null draws (+4.5, -10.5, +6.5);
+     * the default city stood at 611k people at month 2,400 against main's 4.27M, with 16 banks failed against 2. A
+     * precautionary buffer decides how savings are held - deposits against paper and shares - not the grocery bill: a
+     * household that keeps three months of its expenses in the bank instead of in a bond spends what it spent before.
+     */
+    public static double spendingCushion(Household c) {
+        return SHARE_CUSHION_MONTHS * Math.max(0, c.disposable);
     }
 
     /** The share of what is past the cushion it puts into one offering. */
