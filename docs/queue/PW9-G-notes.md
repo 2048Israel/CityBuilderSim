@@ -1,6 +1,7 @@
 # PW9-G — wires ready with the power: notes
 
-**Resume here (2026-11-28):** the mend is 2043a414a + 61db49b7e, the harness 56e6aec80; the fixture restatements 3fd0da7e5; g2 measured; then the merge of main (CBK3), `--fast`, the maps, the ship file.
+**Resume here (2026-11-28):** the law 2043a414a + 61db49b7e; REV-PW9-G's seven P1s mended in c9168e6fe, 626bec463 and
+5bc768cc8, with PowerWiresCheck's sections; g4 measured on 5bc768cc8 (law on, off, the promise off). Next: REV-PW9-G's second look.
 The measuring observer is `target/PW9-G-measure/observer.patch` (+ `PW9GMeasureCheck.java`), never committed:
 `git apply` it, run `-Dpw9g.main=true ... ./batch-check.sh PW9GMeasureCheck`, then `git checkout` it away.
 
@@ -35,7 +36,7 @@ session's python process (reported to the orchestrator with "mends at").
 ## The law and the mend
 
 
-**The law, as built (2043a414a, 61db49b7e):** a utility orders no generation past what its wires will carry when the plant
+**The law, as first built (2043a414a, 61db49b7e; since REV-PW9-G read at every month from the opening to the date, below):** a utility orders no generation past what its wires will carry when the plant
 opens; it orders the wires with the generation where they can be ordered, and holds the excess generation where
 they cannot. At every POWER order `AutoBuilder.step` reads two shares at the order's own dated `Ahead` (the power
 planner's `binding().ahead()`: its opening and the load then), through `AutoBuilder.wiresCarry`:
@@ -83,11 +84,123 @@ already reach the wires' share, held whole with the WIRES line, and the next tem
   Substation (155) the loads past it, chosen by the advice's ranking as GRID already does. No plant is resized.
 - **Held figures:** no new writer. The nested step places through `place()`, so `buildStack` raises the AP1 scope's
   site stamp, HeldPosts (AP5) and the warrant (AP7) as it does for any order.
-- **Saves:** unchanged. `Cut.WIRES`, `wiresAt` and `wiresStepped` live only inside one pass; `Cut` is not saved.
+- **Saves:** one new field, no format bump. `AutoBuilder.State.wiresDue` (the promise's months, REV-PW9-G 3) is written
+  by Gson with the rest of the builder's state; an old save has none and reads an empty set, which is what a city with
+  no plant waiting on its wires has. `Cut.WIRES`, `wiresAt` and `wiresStepped` live only inside one pass.
 - **A harness's door:** `AutoBuilder.wiresOffForTest` (static, never saved), so PowerWiresCheck runs one fixture with
-  the law on and off.
+  the law on and off, and EssentialWorksCheck's deadline section isolates power's deadline from it. It holds off the
+  promise too (`wiresBind`). `wiresDue` is the builder's own state, not a held figure: nothing caches a reading of it.
 
-### The final model (g2, 3fd0da7e5, the same observer)
+## REV-PW9-G's seven P1s and their mends (c9168e6fe, 626bec463, 5bc768cc8; PowerWiresCheck 3, 6-12)
+
+1. **Reoffer.** A funded POWER ask was placed by `reoffer()` straight to its count, past the wires. It now goes through
+   `wiresCarry` before the crew guard, as the step's order does: the wires short of it are ordered first (GRID's
+   own step, nested), and the plant is cut `Cut.WIRES` to what they carry, or held with the ask's own line, "Power:
+   the ask for N X has $... raised; ...". The ask stays open and keeps what it raised. Section 7 (three asks: wires
+   ordered first, cut, held) is red with the reoffer block deleted (M7).
+2. **The frontier.** The law read the plan's binding date alone, so wires opening between the plant's commissioning
+   and that date were credited at months they were not yet up. `Wires.dates(m)` now runs from the month m opens by
+   (`AutoBuilder.wait`) to the date, at most the year before it, as the plan's frontier runs (`WorksValue.frontier`).
+   At each month the plants read that month's own peak block (`BuildAdvice.powerAheadAt`), and the wires that month's
+   season (`BuildAdvice.gridInMonth`). Section 8, and 3(a)'s count now read by the harness's own frontier (9 of 19),
+   are red with the date alone (M8: 11 of 19 in 3(a), 7 of 7 against 2 in 8). Section 8's town stands on its
+   founding plants at the carry, so it asserts the plants offered past the carry before the wires open: 6,406
+   kW-months under the law against 8,164 with it off.
+3. **The promise.** A wire date the law accepted was not kept against later orders. A placed plant now records the
+   first month it relies on the wires on site (`AutoBuilder.wiresDue`, saved in `State.wiresDue`), where the grid's
+   first unit, the plant on the crews, is read open by then. Until that month passes, the crew guard keeps it as it
+   keeps a lacked measure's quoted first completion (`pendingDelay`): every automatic order except GRID's own, and
+   except a measure short now other than power, is held where it opens the grid's soonest first unit later and that
+   unit then falls past the earliest due: "X waits to preserve the opening of the wires Power's plants were ordered
+   with." FERC Order 2003-A's coupled milestones are the precedent: a generator's network upgrades are scheduled with
+   it. Section 9: a plant placed with due +23 months; 2 more Steam that slow the unit from 21.2 to 22.4 months are
+   placed; 3 more, the unit then read at 24.7 months and pushed to 25.3, are held, 0 of 3; the unit opens by its
+   month; the due is gone the month after; a save round trip keeps it. Red with `wiresBind` false (M9), with only a
+   unit read on time protected (M9b), and, in 3(b), with every promise recorded (M9c).
+   - The first form (c9168e6fe) counted the units open by each due with and without the order. It protected nothing
+     once the queue's own reading had the unit past it (both none), and section 9's first fixture placed a plant
+     order that slowed it further. The second (626bec463) recorded every due: 3(b)'s two starved depots read the
+     unit thousands of months out, recorded dues 260 to 5,324 months on, and held every plant order that slowed it,
+     leaving the plants short of the carry the standing wires already had (13,628 of 15,000 kW).
+4. **A rushed grid site.** Its later units were read without the plant's points while its first was read with them.
+   A rush does not shield a site from a new order: in section 10 three rushed units open in months 8, 15 and 26
+   alone, and 15, 34 and 59 with 100 plants (26,900 points) on the crews. The no-plant reading (10.6, 21.5, 32.4)
+   then credits a unit 9 months early. Every unit is now read as the first, the crew guard's reading with the plant
+   on the crews (`siteUnitMonthsAfter`): it credits no unit early, red under the old reading (M10). That reading is
+   slow for a rushed site (26, 52 and 79 months against 10, 21 and 32 with a 40-plant order), so the law holds more
+   plants behind a rushed grid site than the rush needs; it is the guard's own quote, and BuildingManager's to sharpen.
+5. **An abroad grid site.** The crews' quote timed all of a site's points at the city's crews. A site with part handed
+   to the foreign crews now opens no unit before that part can be built at its pace (`BuildingManager.abroadUnitFloor`),
+   and its units are read one by one. Section 11 is red with the floor at 0 (M11: a unit credited 38 months early).
+6. **EssentialWorksCheck's starvation witness.** The wires' repairs subtracted from the builders' output left a log
+   that passed with no site output. That section isolates power's deadline, so the wires' law is now held off for it
+   by the harness's door (`AutoBuilder.wiresOffForTest`, in its main()), and FC2's own two lines are restored as they
+   were: output over repairs, and site output at the last pass above 0 (103).
+7. **A cancelled grid site.** Sites the player is cancelling are left a shell and carry nothing. The wires' reader
+   (`AutoBuilder.building()`) drops them, for the plants and the grid alike. Section 12 is red with them counted (M12:
+   7 of 7 placed, cut NONE, against 0 of 7, cut WIRES).
+
+- ★ **The frontier reads each month's own season, not the window's.** The plan's window (the busiest month from the
+  opening to the horizon) is the date's reading; a month before it is that month's dispatch. Rejected: the window at
+  every month, which cut plants for a July peak in a March they would stand through.
+- ★ **The promise is the wires' first completion, kept as the crew guard keeps one.** One law for both: a unit read
+  late is held from opening later still, and a promise the queue reads broken when it is made is none.
+- ★ **The promise binds power's own later orders too, and not GRID's or a measure short now.** A plant that put its
+  predecessor's wires past their month would leave both behind them; the grid's own orders only bring the wires
+  sooner; a measure lacking now keeps the crew guard's existing exemption.
+- ★ **The abroad floor is the wires' reader's alone.** `WorksValue.openBy`, which the power plan and the plants'
+  share read, is PW3's and unchanged: a plant site part abroad is read as the city's crews would build it. Changing
+  it would move the power plan itself, which is not this batch's. Cancelled sites are dropped for both (`building()`).
+
+### After the mends (g4, 5bc768cc8 merged with main's CBK3; the same observer, the law on and off on one tree)
+
+Main's own figures below (g0) are a city CBK3 has since changed: on this tree the 1900 city leaves g0's at month 18
+(295 people against 294), before any power order. So the law is measured against itself held off (`-Dpw9g.off=true`,
+`AutoBuilder.wiresOffForTest`), the same tree in every other line, and against the promise alone held off (`wiresBind`
+false, measuring only).
+
+| | 1900, m2-440: off | promise off | on | today, m2-180: off | promise off | on |
+|---|---|---|---|---|---|---|
+| the same city as off to | - | m259 | m134 | - | m107 | m85 |
+| months below 95% current energy | 0 (min .9562) | 1 (.9472) | 1 (.9216, m296) | 0 | 0 | 0 |
+| months generated < asked / wire-bound | 2 / 0 | 6 / 0 | 5 / 2 (m419-420) | 0 / 0 | 0 / 0 | 0 / 0 |
+| unserved GWh of asked | 1.13 of 2,917.9 | 3.32 of 2,890.2 | 2.48 of 3,064.5 | 0 | 0 | 0 |
+| carry at the end | 55 MW | 115 MW | 85 MW | 30 MW | 25 MW | 25 MW |
+| generator / grid spend | $5.32M / $7.19M | $9.81M / $19.22M | $21.99M / $14.13M | $3.60M / $3.80M | $3.52M / $2.59M | $4.37M / $3.87M |
+| population at the end | 22,773 | 23,446 | 23,638 | 16,523 | 16,303 | 15,707 |
+
+- **The population, named.** The 1900 city has no fall: it ends 865 people above the law held off. The modern city
+  ends 816 under it (4.9%), with energy served in full in every month of all three runs. 596 of those people are the
+  promise's. From month 80 to 91 it held Streets for 12 passes, Childcare 8, General care 5, and the schools 6, to keep
+  the Distribution Substation ordered with the steam of months 72-79 on its date; the city parts from the law held off
+  at month 85. The other 220 are the rest of the law's, the plants cut for their wires: with the promise alone off the city
+  parts at month 107. The fall
+  measured before the mends (g1, g2: 13,080 against main's 14,656, 1900) was a path, not power. g2 served all its
+  energy in every month, as main did. The two cities parted at month 253, after the month-224 order was placed wires
+  first, and by month 339 main's city asked for two Diesels and six Distribution Substations that g2's, ahead of its
+  plan, never did ($13.8M more on power over the run).
+- ★ **The promise binds every automatic order, as REV-PW9-G 3 asked, and costs the modern city 3.7% of its people.**
+  Recommended for the second look: narrow it to power's own orders. Those are the plants that would strand their
+  predecessors' wires. The frontier already reads the wires' slip at every later plant order, and a street or a
+  school does not wait on a substation's date the way it waits on a lacked service's completion. Not done here,
+  because REV-PW9-G asked for the wider form.
+- **The 1900 city's wire-bound months, m419-420.** The peak steps from 30 to 52 MW in one month, as a large pending
+  site opens, on 83 MW of plants standing behind 50 MW of wires. The seven Distribution Substations ordered with the
+  Diesel at month 418 open from month 420. These are standing plants under a load step, the class of 3(b): the law
+  placed no plant that made them, and the grid's own plan, at its own date, had not ordered for that site.
+- **What the law costs the 1900 city (promise off, the g3 path).** At month 256 the wires the two Diesels needed were
+  ordered first and took the cash: 4 of 7 Distribution Substations, with the city at 242% of a year's GDP against its
+  240% limit. So the Diesels were held for money until month 269, and opened at 284 against 271. The plants were short
+  in months 289-301: 2.2 GWh more unserved than off (0.11% of the energy asked against 0.04%), one month at 94.7%.
+- **What the law buys it.** At month 353 (the same path) the nested step ordered 11 Distribution Substations with two
+  Diesels. It sized them to the plan's load at the plants' date, 38 months on: 101.9 MW of peak, 52.2 MW of it from
+  sites pending then (`WorksValue.pendingPowerLoad`). The grid's own step, at its own nearer date, would have ordered
+  none. Once the order's 72,600 points were on the crews, those sites read as opening past the date (0.8 MW pending by
+  then), and the city ends with 115 MW of wires against a 27 MW peak. The power plan reads the same forecast and sized
+  the two Diesels to it (PW3's, unchanged here), so the wires follow the plants' own load, as the law says. Reading an
+  order's load with the order's own points on the crews is the plan's question, for plants and wires alike: PW9-G-2.
+
+### Before the review: the model of 3fd0da7e5 (g2, the same observer)
 
 | | default 1900, m2-440: main | g2 | modern equipment, m2-180: main | g2 |
 |---|---|---|---|---|
@@ -106,65 +219,57 @@ g1's 17, $1.25M less on plants than g1 and $1.34M less than main, with no energy
 ends 4% under main's and 7% under g1's. Power was served in full every month, so that is the path and not the power:
 the ensemble judges it.
 
-### The crews: the law on against off (PowerWiresCheck 3, 16 native months, two depots)
+### The crews: the law on against off (PowerWiresCheck 3 on 5bc768cc8, 16 native months, two depots)
 
 | | 3(a) plants short of the wires' share: on | off | 3(b) plants at it: on | off |
 |---|---|---|---|---|
-| plant units ordered | 24 | 38 | 16 | 21 |
-| their construction points on the crews | 6,456 | 10,222 | 4,304 | 5,649 |
+| plant units ordered | 25 | 38 | 12 | 21 |
+| their construction points on the crews | 6,725 | 10,222 | 3,228 | 5,649 |
 | wire-bound months | 1 | 3 | 8 | 8 |
 | plant-bound months | 12 | 10 | 0 | 0 |
-| energy served of asked | .9017 | .9255 | .9818 | .9817 |
+| energy served of asked | .8888 | .9255 | .9818 | .9817 |
 
-- **The cost, 3(a).** With the law on the town serves 2.4 points less of its energy over the 16 months. The whole gap
-  is months 14-15: on had 9-10 plants standing against off's 12-13. The plants the law allowed were still being
+- **The cost, 3(a).** With the law on the town serves 3.7 points less of its energy over the 16 months (2.4 before the
+  frontier: it reads the wires short in months before the date as well, and allows 9 of 19 where the date alone
+  allowed 11). In the months on serves less, it has fewer plants standing than off. The plants the law allowed were still being
   built; the cut did not leave them short of the wires (by the last month they offer 15,947 kW of the 15,000 carried).
   Off's extra units take a bigger share of the two depots, since the crews' weight is units × points^0.7, the inherited
   ConstructionControl law. So off's first plants open sooner, and the protected care centre pays for it: under the
   law it is further along in every month from month 4. The harness asserts these four facts and prints the cost.
   It does not hold on's delivery to off's, because off's lead is bought with crews taken from a protected completion.
-- **What the law does not do, 3(b).** The wires' opening is a forecast read at the order. In 3(b) the units on site
-  were forecast to open by the plants' dates, and none opened in 16 months under either law. The orders that came after
-  (the care centre's, the grid's own, more plants each month) shared the same two depots. The law holds 5 of 21 units
-  and delivery is the same. Closing this would mean protecting the wires' quoted completion the way the crew guard
-  protects a lacked measure's. That changes which promises the crew guard keeps, so it is not this batch's: it is a
-  queue row if the review wants it.
-
-### After the first mend (g1, 2043a414a, the same observer)
-
-| | default 1900, m2-440: main | g1 | modern equipment, m2-180: main | g1 |
-|---|---|---|---|---|
-| months below 95% current energy | 0 | 0 | 0 (min .99683) | 0 (min 1.0) |
-| dispatches wire-bound | 0 | 0 | 1, 0.029 GWh unserved | 0 |
-| grid orders | 173 1@224, 6@343, 1@355, 1@380, 1@385 | 173 1@224, 1@355, 1@381 (25 MW) | 173 1@90, 1@138, 1@175 | 173 1@77 (open m105), 1@128 with the Diesel (open m170), 1@166, 1@171 |
-| generator orders | Diesel 1@224, 2@339, 1@384 | Diesel 1@224 | Steam 18, Diesel 1@134 (open m168) | Steam 2@77, 1@85, 3@92, 2@110, 1@127, 7@129, 1@134; Diesel 1@128 (open m165) |
-| asked / delivered GWh | 1,316.16 / 1,250.35 | 1,246.5 asked | 591.78 / 562.17 | 593.39 / 563.72 |
-| generator / grid spend | $7.783M / $11.219M | $2.02M / $3.15M | $5.397M / $4.067M + $40.9k | $5.310M + $6.7k land / $5.941M |
-| population at the end | 14,656 | 13,080 | 10,734 | 11,032 |
-| WIRES cuts | - | 0 | - | 0 |
-
-The modern city's first unit is ordered with the first steam (pre77, open m105), and its second with the Diesel
-(pre128). The Diesel opened m165 and that unit m170; the load in between stayed within the 15 MW standing, so no
-month was short of wires (the law is the load's at the plant's date, not the plant's opening). GRID was held by
-BUILDERS for the High school in 22 passes (106-127), nested and its own, and POWER in 28; no plant was ever cut.
-The default 1900 trace moves from m253 by one person: at pre224 the wires are now placed before the Diesel,
-which changes the stack order, and the city takes a different path. On main a pending industrial load spiked the
-plan to 47 MW at m380 and ordered three more Diesels and seven more units; on g1 that load never came. So the
-default trace moves, and the ensemble is this batch's.
+- **What 3(b)'s wire-bound months are** (corrected: the first notes read them as the wires' forecast overtaken by the
+  orders after it, which was wrong). The town's 15 standing plants (18,858 kW firm) stand above its 15,000 kW carry
+  before any order, so every month its peak passes the carry is wire-bound with the law on or off: the same 8 months
+  in both, law on leaving no more unserved in any of them. The grid is first lacked now in the run's month 6-7 and
+  ordered then, the protected care centre holding it until then, and its first unit (6,600 points) cannot open in
+  16 months at the builders the centre leaves. The law placed no plant that made those months. PowerWiresCheck 3(b)
+  now asserts each of these. PW9-G-1 (the wires' quoted opening kept against later orders) is mended here, as REV-PW9-G
+  asked: the promise, above.
 
 ## The checks
 
-- **PowerWiresCheck** (new, in AllChecks after TownGridCheck), sections:
+- **PowerWiresCheck** (new, in AllChecks after TownGridCheck), 90 assertions, sections:
   1. the wires' physics;
   2. the wires ordered with the power, law on and off the same month by month where nothing holds the wires;
-  3. (a) cut and (b) held behind wires held for a care centre's quoted completion, law on against off;
+  3. (a) cut, to the count the harness's own frontier allows (9 of 19; the date alone, 11), and (b) held, behind
+     wires held for a care centre's quoted completion, law on against off, (b)'s wire-bound months shown the
+     fixture's own;
   4. (a) wires that carry the load, (b) the spread's order: not cut;
   5. the grid's season at its date and latitude (45, -35, NaN);
-  6. the money audit to the cent.
+  6. the allowance a search: a count is allowed only if every smaller one is;
+  7. a funded ask (REV-PW9-G 1): the wires ordered first, the plants cut, or held with the ask's line;
+  8. the frontier (2): a grid unit opening between the plant's commissioning and its date;
+  9. the promise (3): placed, held, kept, expired, saved;
+  10. a rushed grid site (4), 11. an abroad grid site (5): no unit credited before it opens;
+  12. a cancelled grid site (7): no carry read from it;
+  13. the money audit to the cent over all 387 months run.
 
-  Red by mutation, each restored: M1 the door forced (9 red, the new crews assertions among them); M2 no nested
-  step; M3 `wiresAllow` true; M4 the wires without the order's points (3(b)'s fewer units); M5 the old season reader
-  (11-12 red).
+  Red by mutation, each restored: M1 the door forced and M2 no nested step (section 2); M3 `allows` true (3(a)
+  uncut, 3(b) placed); M4 the wires without the order's points (section 8); M5 the old season reader (section 5);
+  M7 no reoffer block (section 7, four lines); M8 the date alone (3(a), 8); M9 `wiresBind` false, M9b only a unit
+  read on time kept (section 9); M9c every promise recorded (3(b)); M10 a rushed site's later units read alone
+  (section 10, 9 months over); M11 no abroad floor (section 11, 38 months over); M12 cancelling sites counted
+  (section 12).
 - **SubstationCheck** "the same order machinery": the fixture's edge was this month's season. It is now the season
   `gridSeason` reads at the unit's own opening, and the grid is read there. The law it asserts, the least units that
   cover the peak, is unchanged.
@@ -175,9 +280,11 @@ default trace moves, and the ensemble is this batch's.
 - **EssentialWorksCheck** "pending capacity keeps its deadline through a real mid-construction save and load": a
   100+ MW town on the founding 10 MW, behind 34 pending diesels. Counted by their opening, the wires ordered with the
   Oil-Fired Plant could not open by its date, so the plant was held. That is the law, and the section isolates power's
-  deadline, so it now gets `serveGrid` (three Substations). This town cannot staff depots for their repairs (333
-  points). FC2's two fixture lines therefore count the builders' surplus over the repairs without the isolating wires'
-  (875 against 720, as before), and print them. Every PW3 assertion in the section is green, as it was.
+  deadline. The first mend stood three Substations and subtracted their repairs from FC2's two fixture lines, which
+  REV-PW9-G 6 showed then passed with no site output. The section now runs with the wires' law held off by the
+  harness's door (`AutoBuilder.wiresOffForTest`, set and cleared around it in main()), so its town is the one FC2
+  built and its two lines are FC2's own: output over repairs, and site output at the last pass (103). Every PW3
+  assertion in the section is green, as it was.
 - **WorksFinanceCheck** "an early street cannot cover a later highway's saved promise": its 290 MW town stood on
   the founding 10 MW, so the wind reserve was held for the wires before the crew guard it isolates was asked. It now
   gets `EssentialWorksCheck.serveGrid`, as that file's isolated orders do, with a fixture line of its own.
@@ -191,3 +298,6 @@ default trace moves, and the ensemble is this batch's.
   carry by then)", or holds the station whole when the plants already serve all the wires carry.
 - The grid's forecast reads the year's busiest month between the opening and the horizon, at the city's latitude: a
   southern city's peak is its own winter.
+- A station's wires keep their date. While they are building for a station that relies on them, the builder holds
+  other work that would make them late: "waits to preserve the opening of the wires Power's plants were ordered with".
+  A station whose money was raised by a bond is placed by the same law as any other.

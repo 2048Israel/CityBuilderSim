@@ -2,7 +2,7 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.HarnessMap` - every labelled assertion in every harness, under the section it prints. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**265 harness files, 30,827 labelled assertions.** AllChecks runs 265 of them.
+**265 harness files, 30,867 labelled assertions.** AllChecks runs 265 of them.
 
 ## Which harnesses read which class
 
@@ -80,7 +80,7 @@ A class nobody reads is a class nothing checks. Mentions by name, so a harness t
 | [CoalMining](map/CoalMining.md) | BuildCardCheck, BuildingDataCheck, CoalMiningCheck, GroundInputCheck, IndustryViewCheck, LandCheck |
 | [CodeMap](map/CodeMap.md) | **none** |
 | [Construction](map/Construction.md) | BankCheck, BuildersFirstCheck, ConstructionControlCheck, ConstructionTrapCheck, FitoutCheck, FittingCheck, ForeignCheck, ForeignChoiceCheck, ForeignCrewsCheck, FoundingYardCheck, GapOrderCheck, HousingCheck, InvestCheck, LabourCheck, LongPlaytest, NewGameCheck, PegAnchorCheck, ReloadCheck, RobustnessCheck, RunWorksCheck, SaveFileCheck, SectorStatementCheck, SlopeCheck, TownGridCheck, WantedPostsCheck |
-| [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BridgeCheck, BuildAdviceCheck, BuildersFirstCheck, BuildingStackCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DeathCareFirstCheck, EssentialWorksCheck, FarmlandReserveCheck, FitoutCheck, ForeignChoiceCheck, ForeignCrewsCheck, HousingMarketCheck, LandmassCheck, LongPlaytest, NewUnitCheck, RoadCheck, SaveSlotCheck, TownGridCheck, WorksFinanceCheck |
+| [ConstructionControl](map/ConstructionControl.md) | AutoBuildCheck, BankCheck, BridgeCheck, BuildAdviceCheck, BuildersFirstCheck, BuildingStackCheck, ChartCheck, ConstructionControlCheck, ConstructionTrapCheck, DeathCareFirstCheck, EssentialWorksCheck, FarmlandReserveCheck, FitoutCheck, ForeignChoiceCheck, ForeignCrewsCheck, HousingMarketCheck, LandmassCheck, LongPlaytest, NewUnitCheck, PowerWiresCheck, RoadCheck, SaveSlotCheck, TownGridCheck, WorksFinanceCheck |
 | [ConstructionScreen](map/ConstructionScreen.md) | **none** |
 | [Consumption](map/Consumption.md) | BasketYearCheck, ConsumptionCheck, ForeignCheck, PriceLevelCheck |
 | [CopperMining](map/CopperMining.md) | BuildCardCheck, BuildingDataCheck, CopperMiningCheck, CopperRefiningCheck, GdpCheck, GroundInputCheck, HistoricalRecipeCheck, IndustryViewCheck, SulphideLeachCheck |
@@ -10653,7 +10653,7 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L578 ...and every month of it is conserved
   - L587 ...with the register and the households agreeing on every company
 
-## EssentialWorksCheck.java - 96 labelled assertions
+## EssentialWorksCheck.java - 97 labelled assertions
 
 > Essential works ordered for their unmet service, including their ground (HW1).
 > WHY. Highways waited behind street sites at the twelve-month cap; schools
@@ -10773,17 +10773,18 @@ _(this harness does not label its checks through a helper - it prints its findin
   - L1265 fixture: paving is worth offering and the growing city needs more than its unprojected paving count
   - L1269 the paving quote and projection both use the final count's complete opening
 - **L1282 pending capacity keeps its deadline through a real mid-construction save and load**
-  - L1324 fixture: operating power is short, pending diesel covers it (
-  - L1333 pending capacity covers the shortage before its quoted deadline (
-  - L1363 the original city reaches its unchanged mid-construction save month
-  - L1365 the native additional Oil order precedes the original checkpoint (
-  - L1401 the mid-construction scratch save loaded through DataSave with its original pending date
-  - L1411 both scratch timelines advance every compared month
-  - L1414 fixture: later priority work kept operating power short throughout the original deadline
-  - L1420 fixture: the later priority work finished nothing, so the repairs left the builders a surplus at the last pass, the isolating wires' aside
-  - L1423 the persistent post-checkpoint industrial load causes a further real power order (
-  - L1425 ...and the plant it orders is the one that opens before the diesels (
-  - L1428 the real loaded city and its unbroken twin place the same later automatic orders, one by one (
+  - L1301 fixture: the wires' law is held off for this section (AutoBuilder.wiresOffForTest, main())
+  - L1318 fixture: operating power is short, pending diesel covers it (
+  - L1327 pending capacity covers the shortage before its quoted deadline (
+  - L1357 the original city reaches its unchanged mid-construction save month
+  - L1359 the native additional Oil order precedes the original checkpoint (
+  - L1395 the mid-construction scratch save loaded through DataSave with its original pending date
+  - L1405 both scratch timelines advance every compared month
+  - L1408 fixture: later priority work kept operating power short throughout the original deadline
+  - L1412 fixture: the later priority work finished nothing, so the repairs left the builders a site output at the last pass
+  - L1415 the persistent post-checkpoint industrial load causes a further real power order (
+  - L1417 ...and the plant it orders is the one that opens before the diesels (
+  - L1420 the real loaded city and its unbroken twin place the same later automatic orders, one by one (
 
 ## ExchangeCheck.java - 291 labelled assertions
 
@@ -29607,7 +29608,7 @@ _(no printed sections or labelled assertions found)_
   - L372 power row/tariff/history observations survive the actual save/load, ending-state changes and older incomplete books
   - L373 the saved closing dispatch feeds the next native month without being rebuilt from ending state
 
-## PowerWiresCheck.java - 39 labelled assertions
+## PowerWiresCheck.java - 78 labelled assertions
 
 > The wires are ordered with the power, and the grid is planned at its date and latitude (batch PW9-G).
 > 
@@ -29623,51 +29624,97 @@ _(no printed sections or labelled assertions found)_
 >      through, and serves what it asked less what it left. No law here: it is the physics the law answers to.
 > ...
 
-- **L240 1. the condition and its real effect**
-  - L261 fixture: the wires are the founding grid's (
-  - L262 fixture: the plants offer well past the wires (
-  - L263 no half-block is served more than the wires carry
-  - L264 load is left unserved (
-  - L265 the plants generate no more than the wires let through (
-  - L266 served is asked less unserved (
-- **L401 2. the wires are ordered with the power: the law on, and off as 0.9.218 had it**
-  - L416 fixture: no service's first completion is protected, and the wires carry today's peak (
-  - L417 fixture: the power card is Diesel Stations (
-  - L418 fixture: the order's window season (
-  - L419 fixture: the plants are short at the plant's opening (
-  - L434 one pass orders the wires (step
-  - L435 ...and the wires then carry the load at the plant's date (the wires' share
-  - L439 every order has opened (
-  - L440 no month of the
-  - L457 where nothing holds the wires the law changes nothing: law on and law off have the same plants standing, grid standing and kWh served in each of
-  - L460 law on serves of the load asked no less than law off (
-  - L562 fixture: General care lacks now and its first completion is protected (
-  - L564 fixture: the wires' order for the plant's load (
-  - L567 fixture: the plants are short of the wires' share (
-  - L570 fixture: the plants are at the wires' share (
-  - L586 the wires' step is held by the builders, ordering none, and says it waits to preserve
-  - L588 ...and the school's promised months are what they were (
-  - L590 the plants' order is cut for the wires (
-  - L594 the plants' order is held whole by the wires (
-  - L602 the grid is ordered while the centres go up only in a month it is lacked now (
-  - L625 law on orders fewer plant units than law off (
-  - L637 ...and the protected care centre is as far along under law on as under law off in every month (
-  - L638 each month law on's plants bound and law off's did not, law on had fewer plants standing: they were still being built, not cut short (
-- **L650 4 (a) wires that carry the load at the plant's date: the order is not cut and no wires are ordered**
-  - L670 fixture: the plants are short at the plant's date (
-  - L680 the plants' order is placed whole, not cut for the wires
-  - L681 no grid unit is ordered in the pass
-- **L696 4 (b) an order the plants on site already serve the load for, behind short wires: not cut**
-  - L721 fixture: the card is the Wind Farm, the plants serve the load at its date (
-  - L730 the spread's order is placed whole, not cut for the wires (
-- **L742 5. the grid's peak at its date and latitude**
-  - L779 fixture: the town draws (
-  - L780 NOW reads the dispatch's own month at the latitude exactly, at 45, -35 and NaN, in every month of the year
-  - L781 ...which for -35 is not the north's month in the
-  - L782 a future date reads the highest season over its opening to its horizon, for
-  - L783 a window holding the year's highest month reads above the present month's season (
-- **L789 6. the money audit stays exact over the months run**
-  - L792 every one of the
+- **L374 1. the condition and its real effect**
+  - L395 fixture: the wires are the founding grid's (
+  - L396 fixture: the plants offer well past the wires (
+  - L397 no half-block is served more than the wires carry
+  - L398 load is left unserved (
+  - L399 the plants generate no more than the wires let through (
+  - L400 served is asked less unserved (
+- **L553 2. the wires are ordered with the power: the law on, and off as 0.9.218 had it**
+  - L568 fixture: no service's first completion is protected, and the wires carry today's peak (
+  - L569 fixture: the power card is Diesel Stations (
+  - L570 fixture: the order's window season (
+  - L571 fixture: the plants are short at the plant's opening (
+  - L586 one pass orders the wires (step
+  - L587 ...and the wires then carry the load at the plant's date (the wires' share
+  - L591 every order has opened (
+  - L592 no month of the
+  - L609 where nothing holds the wires the law changes nothing: law on and law off have the same plants standing, grid standing and kWh served in each of
+  - L612 law on serves of the load asked no less than law off (
+  - L712 fixture: General care lacks now and its first completion is protected (
+  - L714 fixture: the wires' order for the plant's load (
+  - L717 fixture: the plants are short of the wires' share (
+  - L720 fixture: the plants are at the wires' share (
+  - L736 the wires' step is held by the builders, ordering none, and says it waits to preserve
+  - L738 ...and the school's promised months are what they were (
+  - L740 the plants' order is cut for the wires (
+  - L745 the plants' order is held whole by the wires (
+  - L755 the grid is ordered while the centres go up only in a month it is lacked now (
+  - L778 law on orders fewer plant units than law off (
+  - L790 ...and the protected care centre is as far along under law on as under law off in every month (
+  - L791 each month law on's plants bound and law off's did not, law on had fewer plants standing: they were still being built, not cut short (
+  - L814 (i) law on's wire-bound months are law off's (
+  - L816 (ii) the plants standing at the run's start alone offer more than the carry (
+  - L818 (iii) the grid is ordered in the first month it is lacked now (lacked in run month
+  - L820 (iv) every due the law kept during the run (
+- **L827 4 (a) wires that carry the load at the plant's date: the order is not cut and no wires are ordered**
+  - L847 fixture: the plants are short at the plant's date (
+  - L857 the plants' order is placed whole, not cut for the wires
+  - L858 no grid unit is ordered in the pass
+- **L873 4 (b) an order the plants on site already serve the load for, behind short wires: not cut**
+  - L898 fixture: the card is the Wind Farm, the plants serve the load at its date (
+  - L907 the spread's order is placed whole, not cut for the wires (
+- **L919 5. the grid's peak at its date and latitude**
+  - L956 fixture: the town draws (
+  - L957 NOW reads the dispatch's own month at the latitude exactly, at 45, -35 and NaN, in every month of the year
+  - L958 ...which for -35 is not the north's month in the
+  - L959 a future date reads the highest season over its opening to its horizon, for
+  - L960 a window holding the year's highest month reads above the present month's season (
+- **L981 6. the allowance is a search: a count is allowed only if every smaller one is**
+  - L984 fixture: the town has a power card of several units behind wires short at its date
+  - L995 the counts the rule allows are 1 to
+- **L1037 7. a funded ask is placed through the wires too: the wires ordered first, the plants cut to the count they allow, or held with the ask's ...**
+  - L1044 (a) fixture: the plants are short at the plant's opening (
+  - L1052 (a) the pass orders the wires (step
+  - L1053 ...the ask is placed and closed, and the wires then carry the load at the plant's date (
+  - L1059 (b) fixture: the ask is for
+  - L1066 (b) the wires' step runs before the plant is placed and is held by the builders (step
+  - L1068 ...the plant is placed cut WIRES to the frontier's count (
+  - L1074 (c) fixture: a power card
+  - L1086 (c) the plants are held whole (
+- **L1128 8. the frontier: wires that carry the load at the plant's date and not in the months before**
+  - L1133 fixture: the town has a power card
+  - L1142 fixture: the plant opens (
+  - L1144 fixture: at its date the wires carry the load (
+  - L1146 fixture: the date alone would allow more (
+  - L1153 the order is cut WIRES to the frontier's count (
+  - L1174 fixture: in both runs the plants open (months
+  - L1175 from the plants' opening to the wires' the law's cut leaves less offered past the carry than the date alone's (0.9.218's) order does (
+  - L1177 ...the first pass ordering fewer plant units (
+- **L1265 9. the promise: the wires a plant was ordered with open by its month, and hold every other order that would put them past it**
+  - L1269 fixture: the town has a power card
+  - L1275 fixture: grid units on order and the standing wires short in a month the plant stands, the plants on site serving none of it (due +
+  - L1280 the plant is placed (step
+  - L1289 a save round trip keeps the dues (
+  - L1301 the grid units the due counted (
+  - L1303 the due is gone the month after it passes (month
+- **L1333 10. a rushed grid site: the units the wires are credited by a date are no more than open by it**
+  - L1375 fixture: the site of
+  - L1376 fixture: the plant's
+  - L1377 fixture: the real openings with the plant fall more than a month past the quote alone for
+  - L1379 the units credited by a date are no more than open by it, in each of
+- **L1389 11. an abroad grid site: no unit is credited before the foreign crews can build it, and no more than open by a date**
+  - L1429 fixture: the site is handed abroad at a pace that opens its last unit (
+  - L1431 fixture: all the units open within
+  - L1432 no unit is credited before the foreign crews' floor (abroadUnitFloor) in any of
+  - L1433 no more units are credited by a date than open by it (
+- **L1442 12. a cancelled grid site: the law reads no carry from it, as in the same town with no grid site**
+  - L1448 fixture: the town has a power card
+  - L1456 fixture: the site is being cancelled and its units would carry the plant if counted (
+  - L1465 the plant is held or cut as in the same town with no grid site (
+- **L1473 13. the money audit stays exact over the months run**
+  - L1476 every one of the
 
 ## PriceLevelCheck.java - 102 labelled assertions
 

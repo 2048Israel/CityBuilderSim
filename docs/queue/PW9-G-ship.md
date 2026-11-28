@@ -1,13 +1,13 @@
 <!-- readiness: provisional -->
 ## changelog
 ### {next} — PW9-G, wires ready with the power — 2026-11-28, ready, see docs/queue/PW9-G-notes.md
-A utility orders no generation past what its wires will carry when the plant opens (REV-PW9 P1-b: 0.9.218's
-modern city ordered a 21 MW diesel and nine steam stations behind 15 MW, and its July ran short by the wires). At a
-power order the automatic builder first orders the wires the plant's load needs at its date, through the grid's own
-step and every gate it has. Where they cannot come (a protected completion, money, ground), the plant is cut to
-what will be carried by the wires that open by then, with the plant's own points on the crews, or held. The grid's
-forecast reads the busiest month from its opening to its horizon at the city's latitude, not this month's. No
-catalogue id, no save change. The modern city: no month short, nothing unserved (main: one wire-bound month),
-$1.34M less on plants. PowerWiresCheck is new; three older fixtures are isolated from the law.
+A utility orders no generation past what its wires will carry (REV-PW9 P1-b: 0.9.218's modern city ordered a 21 MW
+diesel and nine steam stations behind 15 MW, and its July ran short by the wires). At a power order, a bond-raised one
+too, the automatic builder first orders the wires the plant's load needs, through the grid's own step and its gates,
+and allows no more of the plant than the wires opening by then carry in every month from its opening to its date, with
+its own points on the crews and no cancelled or foreign-held site credited early. The wires it relied on keep their
+date: later orders that would make them late wait, as for a lacked service's first completion. The grid's forecast
+reads the busiest month to its horizon at the city's latitude. No catalogue id; the saves gain the wires' dates, no
+format bump. PowerWiresCheck is new; three older fixtures are isolated from the law.
 ## pending
-| PW9-G-1 | the wires a plant is matched to keep their quoted opening against later orders ({next}) | PowerWiresCheck 3(b): the opening is a forecast at the order, overtaken by the orders after it on the same crews | docs/queue/PW9-G-notes.md |
+| PW9-G-2 | an order's load read with its own points on the crews, for plants and their wires ({next}) | the 1900 city's month-353 order sized 11 Distribution Substations to 52 MW of pending sites its own points then put past its date | docs/queue/PW9-G-notes.md |

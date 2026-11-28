@@ -1,4 +1,4 @@
-# BuildAdvice.java - 3,520 lines · 191 methods · 17 constants · model
+# BuildAdvice.java - 3,545 lines · 194 methods · 17 constants · model
 
 `ham/citybuildersim/BuildAdvice.java` - generated 2026-11-28 by CodeMap; line numbers are as of that run.
 
@@ -41,7 +41,7 @@
 > goes (Jerus's school at 0% that one would take to 20,000%): the overshoot
 > enters the plan's cost, it never stops one (0.7.101, HW1).
 
-**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (247), [Game](Game.md) (140), [CityNeeds](CityNeeds.md) (65), [BuildingType](BuildingType.md) (44), [NewUnit](NewUnit.md) (37), [CareType](CareType.md) (33), [PowerDispatch](PowerDispatch.md) (25), [WorksValue](WorksValue.md) (24), [Landmasses](Landmasses.md) (24), [Ports](Ports.md) (20), [InfrastructureManager](InfrastructureManager.md) (17), [JobType](JobType.md) (15), [EducationType](EducationType.md) (13), [ConstructionControl](ConstructionControl.md) (13), [BusinessInvestment](BusinessInvestment.md) (10), [Good](Good.md) (10), [Substations](Substations.md) (9), [UtilitiesHandler](UtilitiesHandler.md) (9), [AutoBuilder](AutoBuilder.md) (8), [BuildingManager](BuildingManager.md) (7), [Healthcare](Healthcare.md) (7), [SafetyType](SafetyType.md) (6), [Crime](Crime.md) (6), [Traffic](Traffic.md) (6), [Sectors](Sectors.md) (6), [BuildingsStacks](BuildingsStacks.md) (4), [LandManager](LandManager.md) (4), [LicenceFees](LicenceFees.md) (4), [LandParcel](LandParcel.md) (4), [Bridges](Bridges.md) (4)... and 20 more
+**Uses:** [BuildingsTemplate](BuildingsTemplate.md) (249), [Game](Game.md) (143), [CityNeeds](CityNeeds.md) (65), [BuildingType](BuildingType.md) (44), [NewUnit](NewUnit.md) (37), [CareType](CareType.md) (33), [PowerDispatch](PowerDispatch.md) (26), [WorksValue](WorksValue.md) (24), [Landmasses](Landmasses.md) (24), [Ports](Ports.md) (20), [InfrastructureManager](InfrastructureManager.md) (17), [JobType](JobType.md) (15), [EducationType](EducationType.md) (13), [ConstructionControl](ConstructionControl.md) (13), [BusinessInvestment](BusinessInvestment.md) (10), [Good](Good.md) (10), [Substations](Substations.md) (9), [UtilitiesHandler](UtilitiesHandler.md) (9), [BuildingManager](BuildingManager.md) (8), [AutoBuilder](AutoBuilder.md) (8), [Healthcare](Healthcare.md) (7), [SafetyType](SafetyType.md) (6), [Crime](Crime.md) (6), [Traffic](Traffic.md) (6), [Sectors](Sectors.md) (6), [BuildingsStacks](BuildingsStacks.md) (4), [CityCalendar](CityCalendar.md) (4), [LandManager](LandManager.md) (4), [LicenceFees](LicenceFees.md) (4), [LandParcel](LandParcel.md) (4)... and 20 more
 
 **Used by (62):** [AdviceValueOracle](AdviceValueOracle.md), [AskProceedsCheck](AskProceedsCheck.md), [AuctionCheck](AuctionCheck.md), [AutoBuildCheck](AutoBuildCheck.md), [AutoBuilder](AutoBuilder.md), [BankScreen](BankScreen.md), [BridgeCheck](BridgeCheck.md), [BuildAdviceCheck](BuildAdviceCheck.md), [BuildCard](BuildCard.md), [BuildCardCheck](BuildCardCheck.md), [BuildMenuCheck](BuildMenuCheck.md), [BuildScreen](BuildScreen.md), [ChildcareCheck](ChildcareCheck.md), [CityNeeds](CityNeeds.md), [ER1Check](ER1Check.md), [EquipmentCheck](EquipmentCheck.md), [EssentialWorksCheck](EssentialWorksCheck.md), [FB13Check](FB13Check.md), [FarmlandReserveCheck](FarmlandReserveCheck.md), [ForeignChoiceCheck](ForeignChoiceCheck.md), [Game](Game.md), [GroundSkipCheck](GroundSkipCheck.md), [HistoricalLicenceCheck](HistoricalLicenceCheck.md), [HydroCheck](HydroCheck.md), [Inbox](Inbox.md), [InfrastructureScreen](InfrastructureScreen.md), [InvestCheck](InvestCheck.md), [IslandLinkCheck](IslandLinkCheck.md), [KeptBench](KeptBench.md), [KeptCheck](KeptCheck.md), [KeptTimingCheck](KeptTimingCheck.md), [LandCheck](LandCheck.md), [LandScreen](LandScreen.md), [LandmassCheck](LandmassCheck.md), [LandmassView](LandmassView.md), [LicenceFees](LicenceFees.md), [LongPlaytest](LongPlaytest.md), [MapView](MapView.md), [NewUnitCheck](NewUnitCheck.md), [PeopleScreen](PeopleScreen.md), [PolicyScreen](PolicyScreen.md), [PowerPlanCheck](PowerPlanCheck.md), [PowerPlantsCheck](PowerPlantsCheck.md), [PowerViewCheck](PowerViewCheck.md), [PowerWiresCheck](PowerWiresCheck.md), [PublicLicenceCheck](PublicLicenceCheck.md), [ReadPathCheck](ReadPathCheck.md), [RecipeChanges](RecipeChanges.md), [ResearchCheck](ResearchCheck.md), [RoadCheck](RoadCheck.md), [SectorFlowCheck](SectorFlowCheck.md), [SectorScreen](SectorScreen.md), [ServicesScreen](ServicesScreen.md), [StepsCheck](StepsCheck.md), [SubstationCheck](SubstationCheck.md), [SummaryScreen](SummaryScreen.md), [TownGridCheck](TownGridCheck.md), [UserInterface](UserInterface.md), [UtilitiesHandler](UtilitiesHandler.md), [WaterCheck](WaterCheck.md), [WorksFinanceCheck](WorksFinanceCheck.md), [WorksValue](WorksValue.md)
 
@@ -54,18 +54,18 @@
 | 367 | STAFFED CAPACITY |
 | 511 | THE FIGURE, BEFORE AND AFTER |
 | 692 | · THE FIRM SUPPLY (PW3, 2026-11-23; spec-electricity 2.8) |
-| 1148 | THE SCARCE STAFF, AND WHAT AN ORDER NEEDS |
-| 1211 | THE SUGGESTIONS |
-| 1354 | · warranted() read once in one search (AP7, 2026-11-26) |
-| 1860 | THE POWER PLANNER (PW3, 2026-11-23; spec-electricity 2.8) |
-| 2331 | THE SIZE THAT FITS THE NEED (0.7.71) |
-| 2354 | A ROAD OVER ITS LIFE (0.7.70) |
-| 2679 | A BUILDING OVER ITS LIFE, FOR WHAT IT WILL SERVE (0.7.101, batch P2) |
-| 2864 | AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) |
-| 3059 | A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the |
-| 3155 | · A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) |
-| 3231 | THE ISLAND LINK (AL1, 2026-11-09) |
-| 3445 | THE ISLAND LINK, AS THE SCREENS SAY IT (FB13, AL1-W) |
+| 1164 | THE SCARCE STAFF, AND WHAT AN ORDER NEEDS |
+| 1227 | THE SUGGESTIONS |
+| 1370 | · warranted() read once in one search (AP7, 2026-11-26) |
+| 1876 | THE POWER PLANNER (PW3, 2026-11-23; spec-electricity 2.8) |
+| 2356 | THE SIZE THAT FITS THE NEED (0.7.71) |
+| 2379 | A ROAD OVER ITS LIFE (0.7.70) |
+| 2704 | A BUILDING OVER ITS LIFE, FOR WHAT IT WILL SERVE (0.7.101, batch P2) |
+| 2889 | AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) |
+| 3084 | A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the |
+| 3180 | · A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) |
+| 3256 | THE ISLAND LINK (AL1, 2026-11-09) |
+| 3470 | THE ISLAND LINK, AS THE SCREENS SAY IT (FB13, AL1-W) |
 
 ## Enum constants
 
@@ -84,18 +84,18 @@
 | 229 | `BuildAdvice.Kind.HIGHWAYS` |  |
 | 229 | `BuildAdvice.Kind.PORT` |  |
 | 229 | `BuildAdvice.Kind.GRID` |  |
-| 1493 | `BuildAdvice.Lost.DEARER` |  |
-| 1493 | `BuildAdvice.Lost.CANNOT_CLOSE` |  |
-| 1493 | `BuildAdvice.Lost.NO_ROOM` |  |
-| 3167 | `BuildAdvice.BerthState.PAYS` |  |
-| 3167 | `BuildAdvice.BerthState.SHORT` |  |
-| 3167 | `BuildAdvice.BerthState.COVERED` |  |
-| 3167 | `BuildAdvice.BerthState.NO_DUES` |  |
-| 3167 | `BuildAdvice.BerthState.UPKEEP` |  |
-| 3167 | `BuildAdvice.BerthState.NO_CARGO` |  |
-| 3257 | `BuildAdvice.LinkKind.BRIDGE` |  |
-| 3257 | `BuildAdvice.LinkKind.PORT` |  |
-| 3257 | `BuildAdvice.LinkKind.NONE` |  |
+| 1509 | `BuildAdvice.Lost.DEARER` |  |
+| 1509 | `BuildAdvice.Lost.CANNOT_CLOSE` |  |
+| 1509 | `BuildAdvice.Lost.NO_ROOM` |  |
+| 3192 | `BuildAdvice.BerthState.PAYS` |  |
+| 3192 | `BuildAdvice.BerthState.SHORT` |  |
+| 3192 | `BuildAdvice.BerthState.COVERED` |  |
+| 3192 | `BuildAdvice.BerthState.NO_DUES` |  |
+| 3192 | `BuildAdvice.BerthState.UPKEEP` |  |
+| 3192 | `BuildAdvice.BerthState.NO_CARGO` |  |
+| 3282 | `BuildAdvice.LinkKind.BRIDGE` |  |
+| 3282 | `BuildAdvice.LinkKind.PORT` |  |
+| 3282 | `BuildAdvice.LinkKind.NONE` |  |
 
 ## Constants
 
@@ -103,45 +103,45 @@
 |---:|---|---|---|
 | 88 | `BuildAdvice.OVERVIEW` | `"Overview"` | The page Build opens on: the city's job, what would help most, and what the market builds. |
 | 116 | `BuildAdvice.UTILITIES` | `"Utilities", ROADS = "Infrastructure", HEALTHCARE = "Healthcare", EDUCATION =...` | The fourteen categories' names, as the strip, the Overview and NEEDS YOU's doors say them. |
-| 1240 | `BuildAdvice.MAX_SUGGESTIONS` | `3` | At most this many suggestions, one per need. |
-| 1243 | `BuildAdvice.MOST` | `1<<22` | The most of one building a search will count to. |
-| 1246 | `BuildAdvice.SLACK` | `BusinessInvestment.TARGET_HEADROOM` | The businesses' headroom, retained for explicit callers. |
-| 1249 | `BuildAdvice.HORIZON` | `BusinessInvestment.PLANNING_HORIZON` | The least months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); an order that opens later than that is sized further past it, as the businesses size theirs (BusinessInv... |
-| 1265 | `BuildAdvice.NOW` | `new Ahead(0, 1, 0)` | Today's demand, no slack: what NEEDS YOU reads. |
-| 1336 | `BuildAdvice.FIRST_WORK_SHARE` | `.30` | Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. |
-| 1442 | `BuildAdvice.PROBES` | `new ThreadLocal<>()` | Each thread's open probe, if a harness opened one on it. |
-| 1929 | `BuildAdvice.RESERVE_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's reserve orders suggested (the reserve test fired): PowerPlanCheck's count, never a decision. |
-| 1932 | `BuildAdvice.SPREAD_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's spread orders suggested (the spread fired): PowerPlanCheck's count, never a decision. |
-| 1935 | `BuildAdvice.YEAR_HOURS` | `12 * PowerDispatch.MONTH_HOURS` | The game's hours a year: twelve months of PowerDispatch.MONTH_HOURS. |
-| 2412 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
-| 2723 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
-| 3284 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link at all is asked eve... |
-| 3290 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
-| 3461 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. |
+| 1256 | `BuildAdvice.MAX_SUGGESTIONS` | `3` | At most this many suggestions, one per need. |
+| 1259 | `BuildAdvice.MOST` | `1<<22` | The most of one building a search will count to. |
+| 1262 | `BuildAdvice.SLACK` | `BusinessInvestment.TARGET_HEADROOM` | The businesses' headroom, retained for explicit callers. |
+| 1265 | `BuildAdvice.HORIZON` | `BusinessInvestment.PLANNING_HORIZON` | The least months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); an order that opens later than that is sized further past it, as the businesses size theirs (BusinessInv... |
+| 1281 | `BuildAdvice.NOW` | `new Ahead(0, 1, 0)` | Today's demand, no slack: what NEEDS YOU reads. |
+| 1352 | `BuildAdvice.FIRST_WORK_SHARE` | `.30` | Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. |
+| 1458 | `BuildAdvice.PROBES` | `new ThreadLocal<>()` | Each thread's open probe, if a harness opened one on it. |
+| 1945 | `BuildAdvice.RESERVE_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's reserve orders suggested (the reserve test fired): PowerPlanCheck's count, never a decision. |
+| 1948 | `BuildAdvice.SPREAD_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's spread orders suggested (the spread fired): PowerPlanCheck's count, never a decision. |
+| 1951 | `BuildAdvice.YEAR_HOURS` | `12 * PowerDispatch.MONTH_HOURS` | The game's hours a year: twelve months of PowerDispatch.MONTH_HOURS. |
+| 2437 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
+| 2748 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
+| 3309 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link at all is asked eve... |
+| 3315 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
+| 3486 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. |
 
 ## Fields (state)
 
 | line | field | says |
 |---:|---|---|
-| 1365 | `private final Game game` |  |
-| 1366 | `private final Measure m` |  |
-| 1368 | `private final WarrantProbe probe` | The probe a harness had open on this city and thread when this was made (WarrantProbe); in play, always none. |
-| 1369 | `private byte answer` | -1 unread, 0 not warranted, 1 warranted |
-| 1400 | `final Game game` |  |
-| 1402 | `boolean bare` | Every ask read afresh, nothing held (the original behaviour). |
-| 1404 | `boolean checked` | Every held answer also read afresh and compared. |
-| 1406 | `long asked, read, compared, differed` | Asks answered from a held reading, the readings made, the held answers read afresh and compared, and those that differed. |
-| 1444 | `private static boolean probed` | Whether a harness has opened a probe in this JVM; play never does, so a Warrant made in play reads only this plain field. |
-| 3293 | `static int linkSurveys` | How many crossings the rule has surveyed in this run (AL1): a harness reads that an island with none is not surveyed every month. |
-| 3464 | `static int screenSurveys` | How many crossings the screens have surveyed in this run (FB13): a harness reads that a no-crossing island is surveyed once for a ground, not each month. |
-| 3470 | `private static volatile Shown shownKept` |  |
-| 3473 | `static int shownReads` | How many times the screens' reading was made afresh in this run (FB13): a harness reads that a redraw with nothing new reads nothing. |
+| 1381 | `private final Game game` |  |
+| 1382 | `private final Measure m` |  |
+| 1384 | `private final WarrantProbe probe` | The probe a harness had open on this city and thread when this was made (WarrantProbe); in play, always none. |
+| 1385 | `private byte answer` | -1 unread, 0 not warranted, 1 warranted |
+| 1416 | `final Game game` |  |
+| 1418 | `boolean bare` | Every ask read afresh, nothing held (the original behaviour). |
+| 1420 | `boolean checked` | Every held answer also read afresh and compared. |
+| 1422 | `long asked, read, compared, differed` | Asks answered from a held reading, the readings made, the held answers read afresh and compared, and those that differed. |
+| 1460 | `private static boolean probed` | Whether a harness has opened a probe in this JVM; play never does, so a Warrant made in play reads only this plain field. |
+| 3318 | `static int linkSurveys` | How many crossings the rule has surveyed in this run (AL1): a harness reads that an island with none is not surveyed every month. |
+| 3489 | `static int screenSurveys` | How many crossings the screens have surveyed in this run (FB13): a harness reads that a no-crossing island is surveyed once for a ground, not each month. |
+| 3495 | `private static volatile Shown shownKept` |  |
+| 3498 | `static int shownReads` | How many times the screens' reading was made afresh in this run (FB13): a harness reads that a redraw with nothing new reads nothing. |
 
 ## Methods, in file order, under their sections
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 49 | 3472 | **type** `public final class BuildAdvice` | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure before and after an order by the model's own arithmetic, and the rule behin... |
+| 49 | 3497 | **type** `public final class BuildAdvice` | What the city should build next, and why: the Build tab's categories and the measures its five city categories open on, each measure's figure before and after an order by the model's own arithmetic, and the rule behin... |
 | 51 | 1 | `private BuildAdvice()` |  |
 
 ### THE CATEGORIES (0.7.24) (lines 53-189)
@@ -205,7 +205,7 @@
 | 594 | 3 | `public static double figure(Game game, Measure m, Map<BuildingsTemplate, Long> added)` | The measure's figure with these buildings standing as well. |
 | 599 | 92 | `public static double figure(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p)` | ...against the demand `p` says (0.7.51): today's times p.scale() - projected and padded - on the demand side only. |
 
-### THE FIRM SUPPLY (PW3, 2026-11-23; spec-electricity 2.8) (lines 692-1147)
+### THE FIRM SUPPLY (PW3, 2026-11-23; spec-electricity 2.8) (lines 692-1163)
 
 | line | len | member | says |
 |---:|---:|---|---|
@@ -215,227 +215,230 @@
 | 737 | 24 | `private static double[] powerSupplyDemand(Game game, Map<BuildingsTemplate, Long> added, Ahead p)` | Power's {firm supply, the peak hour's draw}, kW, with these buildings standing as well, at `p`'s demand: THE FIRM SUPPLY above. |
 | 774 | 3 | `public static double[] supplyDemand(Game game, Measure m, Map<BuildingsTemplate, Long> added)` | What the measure has against what it needs, with these buildings standing as well, in the measure's own unit: generation or treatment against the draw; the road's capacity against the trips on it, and the room on tran... |
 | 787 | 10 | `static double gridSeason(Game game, Ahead p)` | The season the wires are planned against at `p` (PW9-G): the native dispatch's own (PowerDispatch.season() at the city's latitude), this month's at no lead, and for an order ahead the highest of it over the months the... |
-| 799 | 79 | `public static double[] supplyDemand(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p)` | ...against the demand `p` says (0.7.51), as figure() reads it: the supply side unchanged. |
-| 886 | 10 | `static double schoolNeed(Game game, EducationType type, Ahead p)` | The people a school serves at `p`'s demand (0.7.51): a basic stage's children or teens times p.scale(); above the ladder the students the city would get and hire by then (CityNeeds.wanted(), its posts grown by p.k()) ... |
-| 906 | 7 | `static double carePlaces(Game game, CareType care, Map<BuildingsTemplate, Long> added, double[] fill)` | A kind of care's places with these buildings standing as well: the staffed beds and the order's at the fill, less the people the fee turned away last month (Healthcare.getPricedOut()) - the beds less the priced out, a... |
-| 915 | 5 | `public static double cover(Game game, Measure m, Map<BuildingsTemplate, Long> added)` | The figure as a share of what is needed, 0 to 1 - supply over demand, held to it - for a ring and the order bar's stacked bar. |
-| 931 | 6 | `public static boolean isServed(Measure m)` | Whether a measure's gauge reads as served (0.7.41): power, water, the road, transit, care and the schools. |
-| 939 | 5 | `public static double served(Game game, Measure m, Map<BuildingsTemplate, Long> added)` | What the measure serves with these buildings standing as well (0.7.41): supply over demand, unclamped; NaN for a measure that is not served (isServed()). |
-| 953 | 17 | `public static CityNeeds.Served verdict(Game game, Measure m, Map<BuildingsTemplate, Long> added)` | ...and CityNeeds' one verdict on it (0.7.41): the lines of the NEEDS YOU row that watches the measure. |
-| 972 | 11 | `public static double[] servedLines(Measure m)` | A served measure's two lines in served terms (0.7.41), {off NEEDS YOU's list past this, red at or under this}; null for transit, for the highways (their verdict is the row's own level: CityNeeds.highwayVerdict()) and ... |
-| 985 | 3 | `public static CityNeeds.Served verdictAfter(Game game, Suggestion s)` | What a suggestion would leave its measure serving, and the verdict on it (0.7.41): what is on site and the order, standing - the served side of its after(); null for a measure not served. |
-| 990 | 4 | `public static Map<BuildingsTemplate, Long> added(Game game, Suggestion s)` | What a suggestion changes on the city: its count of its building - and for a paving (0.7.70), as many gravel roads gone. |
-| 996 | 3 | `static InfrastructureManager roads(Game game, Map<BuildingsTemplate, Long> added)` | The road network with these buildings standing: InfrastructureManager.with(), the model's own curve. |
-| 1001 | 25 | `static InfrastructureManager roads(Game game, Map<BuildingsTemplate, Long> added, double k)` | ...with the city's own traffic times k (0.7.51): the load and every stream grown alike, then the buildings' own as before. |
-| 1033 | 8 | `public static double highwayFlow(Game game)` | The trips a month one more highway carries at free flow (FR7): the Elevated Highway's capacity at FREE_FLOW - the unit the through need is read in, so a share of one is a share of a highway worth building. |
-| 1043 | 4 | `static double highwayFill(Game game, InfrastructureManager r)` | The through need's figure (FR7): the through trips with no highway to take them, over what one more highway carries (CityNeeds.HIGHWAY_MIN_FILL of one bites); 0 with no highway to build. |
-| 1056 | 5 | `static double roadsOver(Game game, Map<BuildingsTemplate, Long> added)` | Trips over the line: what the road carries past STRAINED of its capacity, the line NEEDS YOU lists the roads at. |
-| 1063 | 3 | `static double unburiedNext(Game game, Map<BuildingsTemplate, Long> added)` | The dead next month at today's deaths: those waiting and those dying, less what the free plots and the ovens take (Healthcare.settleDeaths()'s arithmetic). |
-| 1068 | 16 | `static double unburiedNext(Game game, Map<BuildingsTemplate, Long> added, double k)` | ...with k times today's deaths (0.7.51): the unburied are a stock, and stay as they are. |
-| 1086 | 3 | `static double school(Game game, EducationType type, Map<BuildingsTemplate, Long> added)` | A school's figure: a basic stage's coverage (Education's own cover, places over the children it serves), or above the ladder who would come and be hired over the seats (0.7.51; who would come until then). |
-| 1091 | 14 | `static double school(Game game, EducationType type, Map<BuildingsTemplate, Long> added, Ahead p)` | ...against the people `p` says it serves (schoolNeed()). |
-| 1106 | 8 | `static double officers(Game game, Map<BuildingsTemplate, Long> added)` |  |
-| 1115 | 8 | `static double cells(Game game, Map<BuildingsTemplate, Long> added)` |  |
-| 1130 | 17 | `public static boolean clear(Measure m, double figure)` | Whether a figure is off NEEDS YOU's list: past the line it is listed at (the yellow line, strictly), which way past depending on the row. |
+| 799 | 13 | `private static double[] gridSupplyDemand(Game game, Map<BuildingsTemplate, Long> added, Ahead p, double season)` | The wires' carry and the peak they serve at p in a season: the grid's supplyDemand() at gridSeason(), and a single month's at its own (gridInMonth()). |
+| 818 | 5 | `static double[] gridInMonth(Game game, Map<BuildingsTemplate, Long> added, Ahead p)` | The wires' carry and peak in the one month p's months fall in (PW9-G, REV-PW9-G 2): its season alone, as the dispatch serves that month, where supplyDemand() plans for the highest over the months an order serves (grid... |
+| 825 | 69 | `public static double[] supplyDemand(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p)` | ...against the demand `p` says (0.7.51), as figure() reads it: the supply side unchanged. |
+| 902 | 10 | `static double schoolNeed(Game game, EducationType type, Ahead p)` | The people a school serves at `p`'s demand (0.7.51): a basic stage's children or teens times p.scale(); above the ladder the students the city would get and hire by then (CityNeeds.wanted(), its posts grown by p.k()) ... |
+| 922 | 7 | `static double carePlaces(Game game, CareType care, Map<BuildingsTemplate, Long> added, double[] fill)` | A kind of care's places with these buildings standing as well: the staffed beds and the order's at the fill, less the people the fee turned away last month (Healthcare.getPricedOut()) - the beds less the priced out, a... |
+| 931 | 5 | `public static double cover(Game game, Measure m, Map<BuildingsTemplate, Long> added)` | The figure as a share of what is needed, 0 to 1 - supply over demand, held to it - for a ring and the order bar's stacked bar. |
+| 947 | 6 | `public static boolean isServed(Measure m)` | Whether a measure's gauge reads as served (0.7.41): power, water, the road, transit, care and the schools. |
+| 955 | 5 | `public static double served(Game game, Measure m, Map<BuildingsTemplate, Long> added)` | What the measure serves with these buildings standing as well (0.7.41): supply over demand, unclamped; NaN for a measure that is not served (isServed()). |
+| 969 | 17 | `public static CityNeeds.Served verdict(Game game, Measure m, Map<BuildingsTemplate, Long> added)` | ...and CityNeeds' one verdict on it (0.7.41): the lines of the NEEDS YOU row that watches the measure. |
+| 988 | 11 | `public static double[] servedLines(Measure m)` | A served measure's two lines in served terms (0.7.41), {off NEEDS YOU's list past this, red at or under this}; null for transit, for the highways (their verdict is the row's own level: CityNeeds.highwayVerdict()) and ... |
+| 1001 | 3 | `public static CityNeeds.Served verdictAfter(Game game, Suggestion s)` | What a suggestion would leave its measure serving, and the verdict on it (0.7.41): what is on site and the order, standing - the served side of its after(); null for a measure not served. |
+| 1006 | 4 | `public static Map<BuildingsTemplate, Long> added(Game game, Suggestion s)` | What a suggestion changes on the city: its count of its building - and for a paving (0.7.70), as many gravel roads gone. |
+| 1012 | 3 | `static InfrastructureManager roads(Game game, Map<BuildingsTemplate, Long> added)` | The road network with these buildings standing: InfrastructureManager.with(), the model's own curve. |
+| 1017 | 25 | `static InfrastructureManager roads(Game game, Map<BuildingsTemplate, Long> added, double k)` | ...with the city's own traffic times k (0.7.51): the load and every stream grown alike, then the buildings' own as before. |
+| 1049 | 8 | `public static double highwayFlow(Game game)` | The trips a month one more highway carries at free flow (FR7): the Elevated Highway's capacity at FREE_FLOW - the unit the through need is read in, so a share of one is a share of a highway worth building. |
+| 1059 | 4 | `static double highwayFill(Game game, InfrastructureManager r)` | The through need's figure (FR7): the through trips with no highway to take them, over what one more highway carries (CityNeeds.HIGHWAY_MIN_FILL of one bites); 0 with no highway to build. |
+| 1072 | 5 | `static double roadsOver(Game game, Map<BuildingsTemplate, Long> added)` | Trips over the line: what the road carries past STRAINED of its capacity, the line NEEDS YOU lists the roads at. |
+| 1079 | 3 | `static double unburiedNext(Game game, Map<BuildingsTemplate, Long> added)` | The dead next month at today's deaths: those waiting and those dying, less what the free plots and the ovens take (Healthcare.settleDeaths()'s arithmetic). |
+| 1084 | 16 | `static double unburiedNext(Game game, Map<BuildingsTemplate, Long> added, double k)` | ...with k times today's deaths (0.7.51): the unburied are a stock, and stay as they are. |
+| 1102 | 3 | `static double school(Game game, EducationType type, Map<BuildingsTemplate, Long> added)` | A school's figure: a basic stage's coverage (Education's own cover, places over the children it serves), or above the ladder who would come and be hired over the seats (0.7.51; who would come until then). |
+| 1107 | 14 | `static double school(Game game, EducationType type, Map<BuildingsTemplate, Long> added, Ahead p)` | ...against the people `p` says it serves (schoolNeed()). |
+| 1122 | 8 | `static double officers(Game game, Map<BuildingsTemplate, Long> added)` |  |
+| 1131 | 8 | `static double cells(Game game, Map<BuildingsTemplate, Long> added)` |  |
+| 1146 | 17 | `public static boolean clear(Measure m, double figure)` | Whether a figure is off NEEDS YOU's list: past the line it is listed at (the yellow line, strictly), which way past depending on the row. |
 
-### THE SCARCE STAFF, AND WHAT AN ORDER NEEDS (lines 1148-1210)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 1153 | 10 | `public static JobType scarceJob(BuildingsTemplate t, double[] fill)` | The job type among a building's posts with the city's lowest fill rate, or null for a building with no posts. |
-| 1165 | 3 | `public static double[] needs(Map<BuildingsTemplate, Long> order)` | Posts and land an order needs: posts by job type (index JobType.ordinal()), then the land in the last slot. |
-| 1170 | 3 | `public static double[] needs(Game game, Map<BuildingsTemplate, Long> order)` | ...of an order as it would open now (QN1): each building to add (a count above nothing) as one new building of its template, a removal as it stands. |
-| 1174 | 10 | `private static double[] needs(Map<BuildingsTemplate, Long> order, java.util.function.BiFunction<BuildingsTemplate, Long, NewUni...` |  |
-| 1191 | 5 | `public static double quoteTotal(Game game, Map<BuildingsTemplate, Long> order)` | What an order of several buildings costs all in (0.7.34): each one's Game.quoteBuild() total, as its own card quotes it and its own Build charges it - the order bar's "$X all in" and its Build button's label, which th... |
-| 1205 | 5 | `public static double quoteTotal(List<Suggestion> advice)` | ...and of the overview's suggestions (0.7.38): each one's own quote, its price(), which is Game.quoteBuild() as its card shows it and its Build charges it, added in their order. |
-
-### THE SUGGESTIONS (lines 1211-1353)
+### THE SCARCE STAFF, AND WHAT AN ORDER NEEDS (lines 1164-1226)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1257 | 6 | **type** `public record Ahead(double months, double k, double slack, double powerFactor)` | The demand an order is sized against (0.7.51): today's, `months` ahead grown by k (BusinessInvestment.growthFactor()), and padded by `slack`. |
-| 1259 | 1 | `public Ahead(double months, double k, double slack)` _(in BuildAdvice.Ahead)_ | Existing callers plan the annual peak hour; a physical dispatch month supplies its own seasonal peak factor. |
-| 1261 | 1 | `public double scale()` _(in BuildAdvice.Ahead)_ | What today's demand is multiplied by. |
-| 1275 | 3 | `public static Ahead opening(Game game, double lead)` | The demand an order that opens after `lead` months is sized to: the wait (a stalled one, NaN, counts as none), plus the businesses' horizon for a building that takes so long (BusinessInvestment.horizonFor(): HORIZON f... |
-| 1280 | 5 | `public static Ahead opening(Game game, double lead, double slack)` | ...with another slack past it (0.7.73): automatic building's, the player's slider (AutoBuilder). |
-| 1300 | 8 | `public static boolean ahead(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p)` | Whether these buildings keep the measure ahead at `p`'s demand: off NEEDS YOU's list there (clear()), and a served measure - not transit, which has no line - at 100% of it or more. |
-| 1310 | 3 | `public static boolean maintained(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p)` | Automatic works (HW1): every essential service meets the whole demand, including highways, police and professional schools. |
-| 1315 | 6 | `static boolean maintained(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p, Warrant warrant)` | ...with warranted() read through the search's or valuation's own Warrant (AP7): null reads it afresh, as above. |
-| 1328 | 6 | `public static boolean lacksNow(Game game, Measure m)` | What the city lacks this month (PW3, 2026-11-24): every measure but power is lacking when it is not maintained now; power is short when the firm supply is below the draw of the peak block in the year's highest month (... |
-| 1339 | 14 | `public static boolean warranted(Game game, Measure m)` | Below a useful share of the smallest work, no shortage is declared or forced (HW1). |
+| 1169 | 10 | `public static JobType scarceJob(BuildingsTemplate t, double[] fill)` | The job type among a building's posts with the city's lowest fill rate, or null for a building with no posts. |
+| 1181 | 3 | `public static double[] needs(Map<BuildingsTemplate, Long> order)` | Posts and land an order needs: posts by job type (index JobType.ordinal()), then the land in the last slot. |
+| 1186 | 3 | `public static double[] needs(Game game, Map<BuildingsTemplate, Long> order)` | ...of an order as it would open now (QN1): each building to add (a count above nothing) as one new building of its template, a removal as it stands. |
+| 1190 | 10 | `private static double[] needs(Map<BuildingsTemplate, Long> order, java.util.function.BiFunction<BuildingsTemplate, Long, NewUni...` |  |
+| 1207 | 5 | `public static double quoteTotal(Game game, Map<BuildingsTemplate, Long> order)` | What an order of several buildings costs all in (0.7.34): each one's Game.quoteBuild() total, as its own card quotes it and its own Build charges it - the order bar's "$X all in" and its Build button's label, which th... |
+| 1221 | 5 | `public static double quoteTotal(List<Suggestion> advice)` | ...and of the overview's suggestions (0.7.38): each one's own quote, its price(), which is Game.quoteBuild() as its card shows it and its Build charges it, added in their order. |
 
-### warranted() read once in one search (AP7, 2026-11-26) (lines 1354-1859)
+### THE SUGGESTIONS (lines 1227-1369)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1364 | 27 | **type** `static final class Warrant` | warranted() for one city and measure, read at its first ask and held for one search or valuation: suggestionFor()'s reading, one count(), one power plan, one WorksValue relief. |
-| 1371 | 5 | `Warrant(Game game, Measure m)` _(in BuildAdvice.Warrant)_ | -1 unread, 0 not warranted, 1 warranted |
-| 1378 | 12 | `boolean of(Game g, Measure measure)` _(in BuildAdvice.Warrant)_ | The answer for this city and measure; another city or measure (never asked so) reads it afresh. |
-| 1399 | 33 | **type** `static final class WarrantProbe implements AutoCloseable` | A harness's window on the Warrants made for one city on one thread (REV-AP7): opened by probe(), it counts their asks and readings, and can make them read every ask afresh (bare, the original behaviour) or read each h... |
-| 1408 | 3 | `private WarrantProbe(Game game)` _(in BuildAdvice.WarrantProbe)_ |  |
-| 1412 | 7 | `private void asked(boolean held, Warrant w)` _(in BuildAdvice.WarrantProbe)_ |  |
-| 1421 | 4 | `private static WarrantProbe open(Game game)` _(in BuildAdvice.WarrantProbe)_ | The probe this thread has open on this city, or none. |
-| 1428 | 3 | `public void close()` _(in BuildAdvice.WarrantProbe)_ | Closed, Warrants made after it on this thread take none; those made while it was open keep it. |
-| 1434 | 6 | `static WarrantProbe probe(Game game)` | Opens a probe on this city for the calling thread, in place of any it had: only Warrants made for this city on this thread see it. |
-| 1453 | 6 | `public static double landValue(Game game, double sqFt, double landLeft)` | What `sqFt` of ground is worth to the city with `landLeft` free: the free part at the cheaper of what a business pays the city for it and the land office's price, the rest at the land office's (LandManager.getOfficePr... |
-| 1470 | 7 | `public static double landValue(Game game, BuildingsTemplate t, double sqFt, double landLeft)` | ...a template's ground (RG1), `landLeft` the ground it may take as availableGround() reads it: a Wind or Solar Farm in the farmland reserve while one stands - as much as the reserve holds at the reserve's price (LandM... |
-| 1479 | 5 | `static double reserveHeldFor(Game game, BuildingsTemplate t)` | The farmland reserve's held ground a template may take besides the ground free for anyone (RG1): a Wind or Solar Farm's while a reserve stands, else none. |
-| 1486 | 5 | `static double availableGround(Game game, BuildingsTemplate t, double buildingGroundLeft)` | Ground remaining for this order's actual land use after earlier cards' footprints - and for a Wind or Solar Farm the farmland reserve's held ground while one stands (RG1, reserveHeldFor()). |
-| 1493 | 1 | **type** `public enum Lost` | Why the next plan lost: greater whole-life net cost, or it cannot close the need (HW1). |
-| 1535 | 10 | **type** `public record Suggestion(CityNeeds.Need need, Measure measure, BuildingsTemplate template, long count, doub...` | One suggested order (0.7.51: one count, the one that keeps the need ahead - the cash no longer caps it). |
-| 1543 | 1 | `public double planValue()` _(in BuildAdvice.Suggestion)_ | The complete plan's comparable net present value, separate from its informational unit cost. |
-| 1547 | 3 | `public static List<Suggestion> suggest(Game game)` | The rule, on this city now. |
-| 1556 | 16 | `public static List<Suggestion> suggest(Game game, List<CityNeeds.Need> all)` | The rule, on NEEDS YOU as already measured (the screen measures it once a redraw): each card on the cash and the ground the ones before it leave. |
-| 1574 | 5 | `public static LinkedHashMap<BuildingsTemplate, Long> run(List<Suggestion> advice)` | The suggestions as one run, as "Build all three" places it: each card's building and count in their order, two of one building added together - and no paving (0.7.70), which is not a build order and has its card's own... |
-| 1581 | 5 | `public static List<Suggestion> builds(List<Suggestion> advice)` | The suggestions "Build all three" places (0.7.70): every one but a paving. |
-| 1588 | 3 | **type** `private record Weighed(BuildingsTemplate t, int tier, double per, double unit, long count, boolean closes, ...` | One building weighed for a need: its count at its projection, and where it ranks - or, paving, gravel roads paved (0.7.70). |
-| 1593 | 3 | `static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft)` | One need's suggestion, or null when what is on site already keeps it ahead or no building can help. |
-| 1605 | 4 | `public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double slack)` | ...sized with `slack` past its projection in place of SLACK (0.7.73): automatic building's spare margin, the player's slider (AutoBuilder) - the same ranking, the same projection, the same count at another slack. |
-| 1611 | 4 | `public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double slack, ...` | ...with the buildings in `skip` left out of the ranking (0.7.73): automatic building's, for one that would not pay back (since 0.7.104; one its budget could not run from 0.7.73), and since 0.7.101 one the money or the... |
-| 1617 | 4 | `public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double slack, ...` | ...and with the city's gravel roads paved left out too when `noPaving` (0.7.101): a paving the money cannot pay for, passed over the same way (and the test player's paving once offered, since 0.7.103). |
-| 1626 | 4 | `public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double slack, ...` | The shared Build-card and automatic full-service target, with the player's reserve setting (HW1). |
-| 1636 | 9 | `public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double slack, ...` | ...sized to keep the need ahead no earlier than `atLeast` (PW9-G; null for the order's own opening): the wires a plant's order takes with it, sized at the date and demand the plant is (AutoBuilder's THE WIRES WITH THE... |
-| 1647 | 3 | `static Ahead later(Ahead own, Ahead atLeast)` | The later of an order's own opening and the date it must be ahead by (PW9-G): `own` where there is none or it is not earlier. |
-| 1652 | 170 | `private static Suggestion suggestionFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double sla...` | suggestFor()'s reading itself. |
-| 1824 | 35 | `private static Suggestion suggestion(Game game, CityNeeds.Need need, Measure m, Map<BuildingsTemplate, Long> site, double befor...` | A need's suggestion from the building ranked first, and the one after it (null with none): its quote, its figures and its ground. |
+| 1273 | 6 | **type** `public record Ahead(double months, double k, double slack, double powerFactor)` | The demand an order is sized against (0.7.51): today's, `months` ahead grown by k (BusinessInvestment.growthFactor()), and padded by `slack`. |
+| 1275 | 1 | `public Ahead(double months, double k, double slack)` _(in BuildAdvice.Ahead)_ | Existing callers plan the annual peak hour; a physical dispatch month supplies its own seasonal peak factor. |
+| 1277 | 1 | `public double scale()` _(in BuildAdvice.Ahead)_ | What today's demand is multiplied by. |
+| 1291 | 3 | `public static Ahead opening(Game game, double lead)` | The demand an order that opens after `lead` months is sized to: the wait (a stalled one, NaN, counts as none), plus the businesses' horizon for a building that takes so long (BusinessInvestment.horizonFor(): HORIZON f... |
+| 1296 | 5 | `public static Ahead opening(Game game, double lead, double slack)` | ...with another slack past it (0.7.73): automatic building's, the player's slider (AutoBuilder). |
+| 1316 | 8 | `public static boolean ahead(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p)` | Whether these buildings keep the measure ahead at `p`'s demand: off NEEDS YOU's list there (clear()), and a served measure - not transit, which has no line - at 100% of it or more. |
+| 1326 | 3 | `public static boolean maintained(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p)` | Automatic works (HW1): every essential service meets the whole demand, including highways, police and professional schools. |
+| 1331 | 6 | `static boolean maintained(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p, Warrant warrant)` | ...with warranted() read through the search's or valuation's own Warrant (AP7): null reads it afresh, as above. |
+| 1344 | 6 | `public static boolean lacksNow(Game game, Measure m)` | What the city lacks this month (PW3, 2026-11-24): every measure but power is lacking when it is not maintained now; power is short when the firm supply is below the draw of the peak block in the year's highest month (... |
+| 1355 | 14 | `public static boolean warranted(Game game, Measure m)` | Below a useful share of the smallest work, no shortage is declared or forced (HW1). |
 
-### THE POWER PLANNER (PW3, 2026-11-23; spec-electricity 2.8) (lines 1860-2330)
+### warranted() read once in one search (AP7, 2026-11-26) (lines 1370-1875)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 1938 | 6 | `public static int slice(double firmKw, double meanDrawKw)` | The slices of the load, the screening curve's (spec 2.8): 0 the base, 1 the shoulder and the peak, 2 the peak alone. |
-| 1946 | 6 | `public static double sliceHours(int slice)` | The hours a year a slice's kW is needed: all of them for the base, the shoulder's and the peak's blocks for the shoulder, the peak's alone above (PowerDispatch.BLOCK_HOURS). |
-| 1959 | 8 | `static long reserveMost(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Long> at)` | The most of a power plant the reserve test counts with `at` open (PW3, REV-PW3 #3): a hydro station's the slots its river has free (HY1); a wind or solar farm's the farms that keep the variable rows' share of the ener... |
-| 1969 | 3 | `public static double runningPerKwh(Game game, BuildingsTemplate t)` | What a kWh a plant runs costs the city: a fuelled row's fuel and variable upkeep (UtilitiesHandler.marginalOf()), a station's variable upkeep, a wind or solar farm's nothing. |
-| 1974 | 3 | `static double capitalOf(Game game, BuildingsTemplate t, long n, double landLeft)` | n of a plant's capital and ground: the quote of the order, its ground at landValue() on the land left - a farm's in the farmland reserve first, at its price (RG1). |
-| 1979 | 3 | `static double yearCost(Game game, BuildingsTemplate t, long n, double capital, double life)` | What n of a plant cost a year: twelve months of its `capital` over lifeFactor() `life` and of its fixed running (the spread's cost, and the reserve rank's). |
-| 1988 | 9 | `static double screening(Game game, BuildingsTemplate t, long n, Map<BuildingsTemplate, Long> at, Ahead p, double landLeft)` | n of a plant's price a firm kW-year for the slice the gap at `p`'s demand lies in, with `at` open (the screening curve, rule 1): twelve months of its capital and ground over lifeFactor() and of its fixed running (year... |
-| 2005 | 11 | `static double reserveRank(Game game, BuildingsTemplate t, long n, boolean closes, double lead, Map<BuildingsTemplate, Long> at,...` | A plant's net cost a year (PW3, REV-PW3 #3), lower first: n of it, its yearCost() less the year's running it saves (UtilitiesHandler.yearRunning() on what is on site by `lead`, the plant's own opening, as spreads() re... |
-| 2018 | 1 | **type** `private record PowerRequirement(Map<BuildingsTemplate, Long> at, Ahead ahead, long[] count)` | One whole monthly constraint; its Ahead carries the actual demand factor into counts, guards, rank and display. |
-| 2021 | 1 | **type** `private record PowerPlan(long count, double lead, PowerRequirement binding, boolean closes)` | One actual count and quote, validated against every applicable monthly requirement. |
-| 2023 | 20 | `private static List<PowerRequirement> powerRequirements(Game game, Measure m, BuildingsTemplate t, WorksValue.PowerDates dates,...` |  |
-| 2044 | 4 | `private static boolean powerCovered(Game game, Measure m, Map<BuildingsTemplate, Long> at, Ahead p, boolean maintain, Warrant w...` |  |
-| 2054 | 43 | `private static PowerPlan powerPlan(Game game, Measure m, BuildingsTemplate t, WorksValue.PowerDates dates, double slack, boolea...` | Search distinct dated requirements, not a count that can only rise. |
-| 2114 | 27 | `private static boolean timely(Game game, Measure m, Weighed d, Map<BuildingsTemplate, Long> at, boolean late, WorksValue.PowerD...` | Whether a power row that passed its own test, so is due (the need date falls at or before its completion), orders now: THE NEED DATE (PW3, REV-PW3f). |
-| 2147 | 4 | `static boolean seasonalShort(Game game, Measure m, Map<BuildingsTemplate, Long> at, double months)` | Whether the seasonal peak (PowerDispatch.PLAN_PEAK_SEASON, the peak block of the year's highest month) is short `months` on, with `at` open: the town's growth to then (BusinessInvestment.growthFactor()), no horizon pa... |
-| 2153 | 1 | `private static boolean isFarm(BuildingsTemplate t)` | A wind or solar farm: the rows whose credit falls with their share (reserveMost(), placeFarms()). |
-| 2162 | 18 | `private static void placeFarms(Game game, List<Weighed> weighed, Map<BuildingsTemplate, Map<BuildingsTemplate, Long>> opened, M...` | Where the farms that close the gap stand among the sorted candidates (PW3, REV-PW3 #3; the reviewer's: a farm's credit avoids a thermal plant's capital). |
-| 2182 | 6 | **type** `public record Spread(BuildingsTemplate template, double saved, double cost, double capital)` | One more of a plant weighed by the spread (rule 2): the year's running it saves, what it costs a year, and the net over its capital. |
-| 2184 | 1 | `public double net()` _(in BuildAdvice.Spread)_ | What it saves a year less what it costs a year, city money. |
-| 2186 | 1 | `public double ratio()` _(in BuildAdvice.Spread)_ | ...over its capital and ground: the saving a dollar, what the spread ranks by. |
-| 2193 | 18 | `public static List<Spread> spreads(Game game, double landLeft, java.util.Set<BuildingsTemplate> skip)` | Every power plant the city could order one more of, weighed by the spread with what is on site standing at that plant's own opening (WorksValue.openBy() at its quoted lead, as the reserve test reads a site; PW3, REV-P... |
-| 2213 | 23 | `private static Suggestion spread(Game game, CityNeeds.Need need, Measure m, Map<BuildingsTemplate, Long> site, double before, d...` | Power with the reserve test passed (rule 2): one of the plant whose next unit saves the most a dollar of capital, when it saves more than it costs; null when none does. |
-| 2242 | 3 | `static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, BuildingsTemplate t)` | The count before 0.7.51, kept for the harness's comparison: the least n whose figure today is off the list (count() at no projection and no slack, judged by clear() alone). |
-| 2252 | 5 | `static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, BuildingsTemplate t, Ahead p)` | The count of t that keeps the need ahead at p's demand, after what is on site (p null: the old rule, off the list today). |
-| 2264 | 4 | `static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> step, Ahead p, long m...` | ...of a step that may be more than one building (0.7.70): a paving is a Paved Road more and a Gravel Road less (pavingStep()); and at most `most` of it, the gravel roads there are to pave. |
-| 2270 | 4 | `static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> step, Ahead p, long m...` | Count full staffed service for automatic essential works; other advice retains its own figure (HW1). |
-| 2276 | 47 | `static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> step, Ahead p, long m...` | ...with warranted() read through the caller's Warrant (AP7), or through one of its own for this search when null. |
-| 2325 | 5 | `static Map<BuildingsTemplate, Long> times(Map<BuildingsTemplate, Long> base, Map<BuildingsTemplate, Long> step, long n)` | A copy of base with n times every quantity of step added. |
+| 1380 | 27 | **type** `static final class Warrant` | warranted() for one city and measure, read at its first ask and held for one search or valuation: suggestionFor()'s reading, one count(), one power plan, one WorksValue relief. |
+| 1387 | 5 | `Warrant(Game game, Measure m)` _(in BuildAdvice.Warrant)_ | -1 unread, 0 not warranted, 1 warranted |
+| 1394 | 12 | `boolean of(Game g, Measure measure)` _(in BuildAdvice.Warrant)_ | The answer for this city and measure; another city or measure (never asked so) reads it afresh. |
+| 1415 | 33 | **type** `static final class WarrantProbe implements AutoCloseable` | A harness's window on the Warrants made for one city on one thread (REV-AP7): opened by probe(), it counts their asks and readings, and can make them read every ask afresh (bare, the original behaviour) or read each h... |
+| 1424 | 3 | `private WarrantProbe(Game game)` _(in BuildAdvice.WarrantProbe)_ |  |
+| 1428 | 7 | `private void asked(boolean held, Warrant w)` _(in BuildAdvice.WarrantProbe)_ |  |
+| 1437 | 4 | `private static WarrantProbe open(Game game)` _(in BuildAdvice.WarrantProbe)_ | The probe this thread has open on this city, or none. |
+| 1444 | 3 | `public void close()` _(in BuildAdvice.WarrantProbe)_ | Closed, Warrants made after it on this thread take none; those made while it was open keep it. |
+| 1450 | 6 | `static WarrantProbe probe(Game game)` | Opens a probe on this city for the calling thread, in place of any it had: only Warrants made for this city on this thread see it. |
+| 1469 | 6 | `public static double landValue(Game game, double sqFt, double landLeft)` | What `sqFt` of ground is worth to the city with `landLeft` free: the free part at the cheaper of what a business pays the city for it and the land office's price, the rest at the land office's (LandManager.getOfficePr... |
+| 1486 | 7 | `public static double landValue(Game game, BuildingsTemplate t, double sqFt, double landLeft)` | ...a template's ground (RG1), `landLeft` the ground it may take as availableGround() reads it: a Wind or Solar Farm in the farmland reserve while one stands - as much as the reserve holds at the reserve's price (LandM... |
+| 1495 | 5 | `static double reserveHeldFor(Game game, BuildingsTemplate t)` | The farmland reserve's held ground a template may take besides the ground free for anyone (RG1): a Wind or Solar Farm's while a reserve stands, else none. |
+| 1502 | 5 | `static double availableGround(Game game, BuildingsTemplate t, double buildingGroundLeft)` | Ground remaining for this order's actual land use after earlier cards' footprints - and for a Wind or Solar Farm the farmland reserve's held ground while one stands (RG1, reserveHeldFor()). |
+| 1509 | 1 | **type** `public enum Lost` | Why the next plan lost: greater whole-life net cost, or it cannot close the need (HW1). |
+| 1551 | 10 | **type** `public record Suggestion(CityNeeds.Need need, Measure measure, BuildingsTemplate template, long count, doub...` | One suggested order (0.7.51: one count, the one that keeps the need ahead - the cash no longer caps it). |
+| 1559 | 1 | `public double planValue()` _(in BuildAdvice.Suggestion)_ | The complete plan's comparable net present value, separate from its informational unit cost. |
+| 1563 | 3 | `public static List<Suggestion> suggest(Game game)` | The rule, on this city now. |
+| 1572 | 16 | `public static List<Suggestion> suggest(Game game, List<CityNeeds.Need> all)` | The rule, on NEEDS YOU as already measured (the screen measures it once a redraw): each card on the cash and the ground the ones before it leave. |
+| 1590 | 5 | `public static LinkedHashMap<BuildingsTemplate, Long> run(List<Suggestion> advice)` | The suggestions as one run, as "Build all three" places it: each card's building and count in their order, two of one building added together - and no paving (0.7.70), which is not a build order and has its card's own... |
+| 1597 | 5 | `public static List<Suggestion> builds(List<Suggestion> advice)` | The suggestions "Build all three" places (0.7.70): every one but a paving. |
+| 1604 | 3 | **type** `private record Weighed(BuildingsTemplate t, int tier, double per, double unit, long count, boolean closes, ...` | One building weighed for a need: its count at its projection, and where it ranks - or, paving, gravel roads paved (0.7.70). |
+| 1609 | 3 | `static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft)` | One need's suggestion, or null when what is on site already keeps it ahead or no building can help. |
+| 1621 | 4 | `public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double slack)` | ...sized with `slack` past its projection in place of SLACK (0.7.73): automatic building's spare margin, the player's slider (AutoBuilder) - the same ranking, the same projection, the same count at another slack. |
+| 1627 | 4 | `public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double slack, ...` | ...with the buildings in `skip` left out of the ranking (0.7.73): automatic building's, for one that would not pay back (since 0.7.104; one its budget could not run from 0.7.73), and since 0.7.101 one the money or the... |
+| 1633 | 4 | `public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double slack, ...` | ...and with the city's gravel roads paved left out too when `noPaving` (0.7.101): a paving the money cannot pay for, passed over the same way (and the test player's paving once offered, since 0.7.103). |
+| 1642 | 4 | `public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double slack, ...` | The shared Build-card and automatic full-service target, with the player's reserve setting (HW1). |
+| 1652 | 9 | `public static Suggestion suggestFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double slack, ...` | ...sized to keep the need ahead no earlier than `atLeast` (PW9-G; null for the order's own opening): the wires a plant's order takes with it, sized at the date and demand the plant is (AutoBuilder's THE WIRES WITH THE... |
+| 1663 | 3 | `static Ahead later(Ahead own, Ahead atLeast)` | The later of an order's own opening and the date it must be ahead by (PW9-G): `own` where there is none or it is not earlier. |
+| 1668 | 170 | `private static Suggestion suggestionFor(Game game, CityNeeds.Need need, Measure m, double cashLeft, double landLeft, double sla...` | suggestFor()'s reading itself. |
+| 1840 | 35 | `private static Suggestion suggestion(Game game, CityNeeds.Need need, Measure m, Map<BuildingsTemplate, Long> site, double befor...` | A need's suggestion from the building ranked first, and the one after it (null with none): its quote, its figures and its ground. |
 
-### THE SIZE THAT FITS THE NEED (0.7.71) (lines 2331-2353)
-
-### A ROAD OVER ITS LIFE (0.7.70) (lines 2354-2678)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 2428 | 3 | `public static double running(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Long> site)` | What one costs the city a month, standing (0.7.70): its repairs - its share a year of what one costs to put up today (since 0.7.103 a road kind's own, BuildingsTemplate.repairsPerYear(); the house's one percent for ev... |
-| 2433 | 3 | `public static double running(Game game, NewUnit u, Map<BuildingsTemplate, Long> site)` | ...of one new building already resolved (QN1): its own posts, power and water. |
-| 2446 | 4 | `public static double running(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Long> site, boolean added)` | ...and, for a Gravel Road, at the traffic on the streets it is repaired at (FR7 2.2, BuildingsTemplate.gravelRepairsAt()): the streets' utilisation of the city with what is on site and, when `added`, the road itself t... |
-| 2452 | 6 | `public static double running(Game game, NewUnit u, Map<BuildingsTemplate, Long> site, boolean added)` | ...of one new building already resolved (QN1). |
-| 2463 | 3 | `private static double runningCostAt(Game game, BuildingsTemplate t, double streetUtilisation)` | The running cost the planners read: the building's own (rawRunningCostAt()) with a patented public work's licence added (R2c-P, LicenceFees.forNewWork()), so WorksValue and the auto-builder net the rent a new utility ... |
-| 2468 | 4 | `private static double runningCostAt(Game game, NewUnit u, double streetUtilisation)` | ...of one new building already resolved (QN1); the licence is the template's. |
-| 2477 | 3 | `static double licenceOf(Game game, BuildingsTemplate t)` | The licence running() adds for one more of this building (R2c-P, REV-R2c-P-1): LicenceFees.forNewWork() on its raw running cost, over a life; 0 for any work that is not one of a 1900 city's own utilities, and in any o... |
-| 2482 | 5 | `static double licenceOf(Game game, NewUnit u)` | ...of one new building already resolved (QN1): the licence on its own running cost, as running(game, u, ...) adds it. |
-| 2492 | 3 | `static double rawRunningCostAt(Game game, BuildingsTemplate t, double streetUtilisation)` | The running cost of one building before any licence (R2c-P: runningCostAt() adds a public work's), at this street utilisation: the template as it stands (LicenceFees and RecipeChanges.feesAt() price the buildings they... |
-| 2497 | 12 | `static double rawRunningCostAt(Game game, NewUnit u, double streetUtilisation)` | ...of one new building already resolved (QN1): its own power, water, posts; its repairs and upkeep are the template's. |
-| 2511 | 27 | `static double runningChange(Game game, Map<BuildingsTemplate, Long> before, Map<BuildingsTemplate, Long> after, Ahead at)` | The complete stock change's bill, with its actual traffic wear and one shared pool of fare-paying riders. |
-| 2548 | 4 | `public static double lifeFactor(Game game)` | Months of a month's running cost a life is worth today (0.7.70): the level annuity's factor over LIFE_MONTHS at the real rate - the debt market's rate for that term at the city's debt now (DebtManager.quoteRate()), le... |
-| 2554 | 4 | `public static double lifeRate(Game game)` | ...the real rate it is struck at, a year: the debt market's for LIFE_MONTHS less expected inflation (BusinessInvestment.realTestRate()). |
-| 2560 | 3 | `public static double lifetime(Game game, BuildingsTemplate t, double landLeft, Map<BuildingsTemplate, Long> site)` | A road's or a line's cost over its life (0.7.70): its quote for one, its ground at landValue() on the land left, and lifeFactor() months of running(). |
-| 2565 | 5 | `public static double lifetime(Game game, NewUnit u, double landLeft, Map<BuildingsTemplate, Long> site)` | ...of one new building already resolved (QN1): its own running cost; its quote and ground are the template's. |
-| 2572 | 9 | `static Map<BuildingsTemplate, Long> pavingStep(Game game)` | One paving (0.7.70): a Paved Road more and a Gravel Road less; empty with either missing from the catalogue. |
-| 2583 | 5 | `public static double pavingFrees(Game game)` | The ground one paving frees (0.7.70): a gravel road's less a paved road's; 0 with either missing. |
-| 2590 | 5 | `public static double pavingUnit(Game game, Map<BuildingsTemplate, Long> site)` | The trips one paving takes off the road (0.7.70): over the line with what is on site, less with one more gravel road paved. |
-| 2603 | 9 | `public static double pavingLifetime(Game game, double landLeft, Map<BuildingsTemplate, Long> site)` | A paving's cost over its life (0.7.70), as lifetime() prices a road: its quote for one (Game.quotePave()), less the ground it frees at landValue() on the land left - what the next road would pay for it - and lifeFacto... |
-| 2619 | 6 | `public static boolean pavingBeatsPaved(Game game, double landLeft, Map<BuildingsTemplate, Long> site)` | Whether paving beats a new Paved Road (0.7.70), each over its life a trip it takes off: pavingLifetime() over pavingUnit() under a Paved Road's lifetime() over unit() - Jerus's "recommends this if better". |
-| 2640 | 3 | `static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Long> site, double landLeft)` | The city's gravel roads, paved, weighed for the road (0.7.70) as a building is in suggestFor(): the count that keeps the road ahead at its projection, of the gravel roads the city could pave (Game.paveable()); its wai... |
-| 2645 | 3 | `static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Long> site, double landLeft, double slack)` | ...at another slack past its projection (0.7.73, AutoBuilder). |
-| 2649 | 29 | `private static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Long> site, double landLeft, double slack, bool...` |  |
-
-### A BUILDING OVER ITS LIFE, FOR WHAT IT WILL SERVE (0.7.101, batch P2) (lines 2679-2863)
+### THE POWER PLANNER (PW3, 2026-11-23; spec-electricity 2.8) (lines 1876-2355)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 2737 | 14 | `public static double lifeTrend(Game game, double months)` | The city's demand `months` from now over today's, for a building's life (0.7.101): the city's own population trend over the last LIFE_MONTHS of its record - or since its first month recorded, a younger city - linear i... |
-| 2753 | 4 | `public static double orderLife(Game game, BuildingsTemplate t, int count, double landLeft, Map<BuildingsTemplate, Long> site)` | An order of `count` of t over its life (0.7.101): its quote for the count, its ground at landValue() on the land left, and lifeFactor() months of running() for each. |
-| 2759 | 6 | `public static double orderLife(Game game, NewUnit u, int count, double landLeft, Map<BuildingsTemplate, Long> site)` | ...of one new building already resolved (QN1): its own running cost; its quote and ground are the template's. |
-| 2767 | 8 | `public static double pavingOrderLife(Game game, int count, double landLeft, Map<BuildingsTemplate, Long> site)` | ...`count` pavings' (0.7.101): their quote (Game.quotePave()), less the ground they free at landValue() on the land left, and lifeFactor() months of a paved road's running over a gravel road's for each; NaN with nothi... |
-| 2785 | 25 | `public static double shortfall(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p)` | What a measure is short of, in its own unit, with these buildings standing as well, at `p`'s demand (0.7.101): power and water the supply NEEDS YOU's quarter in hand asks (the demand over NETWORK_YELLOW) less the supp... |
-| 2812 | 6 | `public static boolean weighsServed(Measure m)` | Whether a measure's candidates are weighed for what they will serve over their lives (shortfall()): power, water, the roads (streets and highways) and care. |
-| 2829 | 19 | `public static double servedOverLife(Game game, Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> order...` | What an order serves over its life, a month on average, in the measure's unit (0.7.101): each of its LIFE_YEARS years read at its middle month - from its opening, `p`'s months less the horizon (BusinessInvestment.lead... |
-| 2850 | 3 | `public static double perServed(double life, double served, int count, double unit)` | The figure from an order's life and what it serves (0.7.101): the life over what it will serve; with that not measured, or nothing, over what its count adds (count x unit). |
-| 2859 | 4 | `public static double lifePerServed(Game game, Measure m, Map<BuildingsTemplate, Long> site, BuildingsTemplate t, int count, dou...` | A candidate's informational cost per physical unit relieved (HW1). |
+| 1954 | 6 | `public static int slice(double firmKw, double meanDrawKw)` | The slices of the load, the screening curve's (spec 2.8): 0 the base, 1 the shoulder and the peak, 2 the peak alone. |
+| 1962 | 6 | `public static double sliceHours(int slice)` | The hours a year a slice's kW is needed: all of them for the base, the shoulder's and the peak's blocks for the shoulder, the peak's alone above (PowerDispatch.BLOCK_HOURS). |
+| 1975 | 8 | `static long reserveMost(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Long> at)` | The most of a power plant the reserve test counts with `at` open (PW3, REV-PW3 #3): a hydro station's the slots its river has free (HY1); a wind or solar farm's the farms that keep the variable rows' share of the ener... |
+| 1985 | 3 | `public static double runningPerKwh(Game game, BuildingsTemplate t)` | What a kWh a plant runs costs the city: a fuelled row's fuel and variable upkeep (UtilitiesHandler.marginalOf()), a station's variable upkeep, a wind or solar farm's nothing. |
+| 1990 | 3 | `static double capitalOf(Game game, BuildingsTemplate t, long n, double landLeft)` | n of a plant's capital and ground: the quote of the order, its ground at landValue() on the land left - a farm's in the farmland reserve first, at its price (RG1). |
+| 1995 | 3 | `static double yearCost(Game game, BuildingsTemplate t, long n, double capital, double life)` | What n of a plant cost a year: twelve months of its `capital` over lifeFactor() `life` and of its fixed running (the spread's cost, and the reserve rank's). |
+| 2004 | 9 | `static double screening(Game game, BuildingsTemplate t, long n, Map<BuildingsTemplate, Long> at, Ahead p, double landLeft)` | n of a plant's price a firm kW-year for the slice the gap at `p`'s demand lies in, with `at` open (the screening curve, rule 1): twelve months of its capital and ground over lifeFactor() and of its fixed running (year... |
+| 2021 | 11 | `static double reserveRank(Game game, BuildingsTemplate t, long n, boolean closes, double lead, Map<BuildingsTemplate, Long> at,...` | A plant's net cost a year (PW3, REV-PW3 #3), lower first: n of it, its yearCost() less the year's running it saves (UtilitiesHandler.yearRunning() on what is on site by `lead`, the plant's own opening, as spreads() re... |
+| 2034 | 1 | **type** `private record PowerRequirement(Map<BuildingsTemplate, Long> at, Ahead ahead, long[] count)` | One whole monthly constraint; its Ahead carries the actual demand factor into counts, guards, rank and display. |
+| 2037 | 1 | **type** `private record PowerPlan(long count, double lead, PowerRequirement binding, boolean closes)` | One actual count and quote, validated against every applicable monthly requirement. |
+| 2039 | 17 | `private static List<PowerRequirement> powerRequirements(Game game, Measure m, BuildingsTemplate t, WorksValue.PowerDates dates,...` |  |
+| 2062 | 6 | `static Ahead powerAheadAt(Game game, double month, int peak, double slack)` | The power plan's requirement at one month of its frontier (PW3): its growth, the slack at its peak alone, and off the peak the month's own peak block in the plan's peak hour (the power factor). |
+| 2069 | 4 | `private static boolean powerCovered(Game game, Measure m, Map<BuildingsTemplate, Long> at, Ahead p, boolean maintain, Warrant w...` |  |
+| 2079 | 43 | `private static PowerPlan powerPlan(Game game, Measure m, BuildingsTemplate t, WorksValue.PowerDates dates, double slack, boolea...` | Search distinct dated requirements, not a count that can only rise. |
+| 2139 | 27 | `private static boolean timely(Game game, Measure m, Weighed d, Map<BuildingsTemplate, Long> at, boolean late, WorksValue.PowerD...` | Whether a power row that passed its own test, so is due (the need date falls at or before its completion), orders now: THE NEED DATE (PW3, REV-PW3f). |
+| 2172 | 4 | `static boolean seasonalShort(Game game, Measure m, Map<BuildingsTemplate, Long> at, double months)` | Whether the seasonal peak (PowerDispatch.PLAN_PEAK_SEASON, the peak block of the year's highest month) is short `months` on, with `at` open: the town's growth to then (BusinessInvestment.growthFactor()), no horizon pa... |
+| 2178 | 1 | `private static boolean isFarm(BuildingsTemplate t)` | A wind or solar farm: the rows whose credit falls with their share (reserveMost(), placeFarms()). |
+| 2187 | 18 | `private static void placeFarms(Game game, List<Weighed> weighed, Map<BuildingsTemplate, Map<BuildingsTemplate, Long>> opened, M...` | Where the farms that close the gap stand among the sorted candidates (PW3, REV-PW3 #3; the reviewer's: a farm's credit avoids a thermal plant's capital). |
+| 2207 | 6 | **type** `public record Spread(BuildingsTemplate template, double saved, double cost, double capital)` | One more of a plant weighed by the spread (rule 2): the year's running it saves, what it costs a year, and the net over its capital. |
+| 2209 | 1 | `public double net()` _(in BuildAdvice.Spread)_ | What it saves a year less what it costs a year, city money. |
+| 2211 | 1 | `public double ratio()` _(in BuildAdvice.Spread)_ | ...over its capital and ground: the saving a dollar, what the spread ranks by. |
+| 2218 | 18 | `public static List<Spread> spreads(Game game, double landLeft, java.util.Set<BuildingsTemplate> skip)` | Every power plant the city could order one more of, weighed by the spread with what is on site standing at that plant's own opening (WorksValue.openBy() at its quoted lead, as the reserve test reads a site; PW3, REV-P... |
+| 2238 | 23 | `private static Suggestion spread(Game game, CityNeeds.Need need, Measure m, Map<BuildingsTemplate, Long> site, double before, d...` | Power with the reserve test passed (rule 2): one of the plant whose next unit saves the most a dollar of capital, when it saves more than it costs; null when none does. |
+| 2267 | 3 | `static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, BuildingsTemplate t)` | The count before 0.7.51, kept for the harness's comparison: the least n whose figure today is off the list (count() at no projection and no slack, judged by clear() alone). |
+| 2277 | 5 | `static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, BuildingsTemplate t, Ahead p)` | The count of t that keeps the need ahead at p's demand, after what is on site (p null: the old rule, off the list today). |
+| 2289 | 4 | `static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> step, Ahead p, long m...` | ...of a step that may be more than one building (0.7.70): a paving is a Paved Road more and a Gravel Road less (pavingStep()); and at most `most` of it, the gravel roads there are to pave. |
+| 2295 | 4 | `static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> step, Ahead p, long m...` | Count full staffed service for automatic essential works; other advice retains its own figure (HW1). |
+| 2301 | 47 | `static long[] count(Game game, Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> step, Ahead p, long m...` | ...with warranted() read through the caller's Warrant (AP7), or through one of its own for this search when null. |
+| 2350 | 5 | `static Map<BuildingsTemplate, Long> times(Map<BuildingsTemplate, Long> base, Map<BuildingsTemplate, Long> step, long n)` | A copy of base with n times every quantity of step added. |
 
-### AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) (lines 2864-3058)
+### THE SIZE THAT FITS THE NEED (0.7.71) (lines 2356-2378)
 
-| line | len | member | says |
-|---:|---:|---|---|
-| 2893 | 4 | **type** `public record Payback(int mines, double earns, double payment)` | An iron field weighed (0.7.101): the mines the city could staff and work on it, their profit a month, and the month's payment that repays its price - it pays back when the profit is at least the payment. |
-| 2895 | 1 | `public boolean pays()` _(in BuildAdvice.Payback)_ | Whether the mines pay the field back. |
-| 2899 | 4 | `public static Payback ironPayback(Game game, LandParcel field)` | Whether an offer holding iron would pay itself back in this city (fieldEarnings() against fieldPayment()) - since 0.7.142 by the best mine that fits each of its fields. |
-| 2929 | 1 | **type** `public record FieldMines(Deposit.FieldType type, int sites, BuildingsTemplate mine, long count)` | A field of an offer and the mines that would fill it (0.7.142): its type, its sites, a kind of mine and how many of it. |
-| 2932 | 32 | `public static List<FieldMines> fieldMines(Game game, LandParcel field)` | Each iron field an offer holds, filled with the iron mines that fit it by type and size in the plan's order (above); a field no mine fits has a row with none. |
-| 2966 | 29 | `public static double[] fieldEarnings(Game game, LandParcel field)` | What an offer's iron fields would earn the city's mines a month (0.7.142; BY THE FIELDS IT HOLDS, above): {mines, their monthly profit}, fieldEarnings()'s count on fieldMines()' mines. |
-| 3009 | 25 | `public static double[] fieldEarnings(Game game, int sites)` | What a field of `sites` iron sites would earn the city's mines a month (0.7.67, M3b; moved from LongPlaytest in 0.7.101): {mines, their monthly profit}. |
-| 3043 | 6 | `public static double fieldPayment(Game game, LandParcel field)` | The month's payment that repays a field's price here over Game.BUILD_BOND_YEARS (0.7.67, M3b; moved from LongPlaytest in 0.7.101): the level payment at the rate the market quotes for that much money at that term (Debt... |
-| 3051 | 7 | `public static boolean higherWorse(Measure m)` | Which way is worse for a measure's figure. |
-
-### A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the (lines 3059-3154)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3097 | 5 | `public static List<Measure> portMeasures()` | The port measures, one a kind of cargo, in Cargo order (FR3). |
-| 3104 | 8 | `static double portUncovered(Game game, Measure m, Map<BuildingsTemplate, Long> added)` | A port measure's uncovered tonnes a month with these buildings standing as well: the kind's carriable() less its berths standing and the berths in `added` (Ports.uncovered()). |
-| 3122 | 7 | `public static BuildingsTemplate portTerminal(Game game, Measure m, Map<BuildingsTemplate, Long> added, java.util.Set<BuildingsT...` | The terminal to order for a port measure, or null (FR3): with the kind's uncovered tonnes (`added` standing too) paying back some terminal of it but those in `skip` at the port dues dial, the largest of them whose bre... |
-| 3136 | 18 | `static Suggestion portSuggestion(Game game, Measure m, double cashLeft, double landLeft, java.util.Set<BuildingsTemplate> skip)` | A port measure's card: as many of the terminal portTerminal() chose as the uncovered tonnes pay back, each counted after the ones before it, and one at least (SL1, Ports.orderCount(); it was one), or null for none (po... |
-
-### A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) (lines 3155-3230)
-
-| line | len | member | says |
-|---:|---:|---|---|
-| 3167 | 1 | **type** `public enum BerthState` | Where a berth stands on its payback (FR4): PAYS - the dues at the dial cover its cost and more than its upkeep; SHORT - cargo of its kind crosses and no berth takes it, but not enough of it (Ports.berthPaysBack()); CO... |
-| 3181 | 10 | **type** `public record BerthPayback(BuildingsTemplate terminal, BerthState state, double carriable, double uncovered...` | One more of a terminal, weighed as the advice weighs one (FR4): the kind's carriable and uncovered tonnes a month, the tonnes a month the advice needs uncovered before the terminal pays back (needed; NaN with no dues)... |
-| 3186 | 1 | `public boolean pays()` _(in BuildAdvice.BerthPayback)_ | Whether it pays back (state PAYS). |
-| 3189 | 1 | `public double carriedAYear()` _(in BuildAdvice.BerthPayback)_ | The tonnes a year it would carry. |
-| 3204 | 26 | `public static BerthPayback berthPayback(Game game, BuildingsTemplate t)` | A sea terminal's payback, as its card says it (FR4; null for any other building). |
-
-### THE ISLAND LINK (AL1, 2026-11-09) (lines 3231-3444)
+### A ROAD OVER ITS LIFE (0.7.70) (lines 2379-2703)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3257 | 1 | **type** `public enum LinkKind` | How a link is made: a long bridge, sea terminals, or not at all (NONE: the Link says why). |
-| 3260 | 1 | **type** `public record LinkOrder(BuildingsTemplate template, int asked, double price)` | One order of a link: the template, the landmass its order is for (a bridge's far landmass, or a terminal's `asked`: Landmasses.RULE for home, an id for an island's own shore), and its quote's total, thousands of US do... |
-| 3267 | 12 | **type** `public record Link(int landmass, String name, double sqFt, LinkKind kind, List<LinkOrder> orders, BridgeSur...` | What the city should order to link an island: the island's id, name and buildable ground (square feet), the kind, the orders (none for NONE), the crossing a bridge is surveyed over (null otherwise), the orders' total ... |
-| 3271 | 1 | `public double perSqFt()` _(in BuildAdvice.Link)_ | Its price a square foot of ground it links: the candidate's unit is the ground, not trips. |
-| 3274 | 1 | `public boolean underWay()` _(in BuildAdvice.Link)_ | Whether a bridge is already on site to the island (FB13): the screens' link for it, a BRIDGE with no orders; linkFor() never returns one. |
-| 3277 | 1 | `public BuildingsTemplate bridge()` _(in BuildAdvice.Link)_ | The bridge a BRIDGE link orders (the Road Bridge, or the Highway Bridge where a highway stands), or null for any other link and for one under way. |
-| 3281 | 1 | **type** `private record Found(LinkOrder order, double months)` | One terminal order found, and its months. |
-| 3287 | 1 | **type** `private record NoCrossing(int month, String why)` | A survey that found no crossing: the month it was made and its refusal in BridgeView's words. |
-| 3300 | 13 | `public static Link linkFor(Game game)` | The link the city should order for the island it most needs, or null when nothing is unlinked (checked first and alone: every generated world, and every city on one landmass, reads nothing else). |
-| 3315 | 15 | `private static List<Landmasses.Row> islandsToLink(Game game, Landmasses lms)` | The islands the rule would link, the one with the most buildable ground first (the lower id on a tie): unlinked, with no bridge on site to them and no terminal on them while linked ground has one. |
-| 3332 | 5 | `private static long linkedTerminals(Landmasses lms)` | The sea terminals standing or on site on the landmasses the city has linked. |
-| 3342 | 62 | `private static Link linkOf(Game game, Landmasses lms, Landmasses.Row island, boolean screens)` | The rule for one island. |
-| 3405 | 10 | `private static Link portLink(Landmasses.Row island, List<Found> found)` |  |
-| 3417 | 10 | `private static BuildingsTemplate bridgeTemplate(Game game)` | The Highway Bridge where the city has an Elevated Highway standing, else the Road Bridge; null when the one wanted is not yet known (never the Rail Bridge). |
-| 3433 | 11 | `private static Found cheapestTerminal(Game game, Landmasses lms, int asked, int island)` | The cheapest sea terminal the city knows for a landmass: by the quote of one asked for `asked`, among those whose order would stand where it is asked. |
+| 2453 | 3 | `public static double running(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Long> site)` | What one costs the city a month, standing (0.7.70): its repairs - its share a year of what one costs to put up today (since 0.7.103 a road kind's own, BuildingsTemplate.repairsPerYear(); the house's one percent for ev... |
+| 2458 | 3 | `public static double running(Game game, NewUnit u, Map<BuildingsTemplate, Long> site)` | ...of one new building already resolved (QN1): its own posts, power and water. |
+| 2471 | 4 | `public static double running(Game game, BuildingsTemplate t, Map<BuildingsTemplate, Long> site, boolean added)` | ...and, for a Gravel Road, at the traffic on the streets it is repaired at (FR7 2.2, BuildingsTemplate.gravelRepairsAt()): the streets' utilisation of the city with what is on site and, when `added`, the road itself t... |
+| 2477 | 6 | `public static double running(Game game, NewUnit u, Map<BuildingsTemplate, Long> site, boolean added)` | ...of one new building already resolved (QN1). |
+| 2488 | 3 | `private static double runningCostAt(Game game, BuildingsTemplate t, double streetUtilisation)` | The running cost the planners read: the building's own (rawRunningCostAt()) with a patented public work's licence added (R2c-P, LicenceFees.forNewWork()), so WorksValue and the auto-builder net the rent a new utility ... |
+| 2493 | 4 | `private static double runningCostAt(Game game, NewUnit u, double streetUtilisation)` | ...of one new building already resolved (QN1); the licence is the template's. |
+| 2502 | 3 | `static double licenceOf(Game game, BuildingsTemplate t)` | The licence running() adds for one more of this building (R2c-P, REV-R2c-P-1): LicenceFees.forNewWork() on its raw running cost, over a life; 0 for any work that is not one of a 1900 city's own utilities, and in any o... |
+| 2507 | 5 | `static double licenceOf(Game game, NewUnit u)` | ...of one new building already resolved (QN1): the licence on its own running cost, as running(game, u, ...) adds it. |
+| 2517 | 3 | `static double rawRunningCostAt(Game game, BuildingsTemplate t, double streetUtilisation)` | The running cost of one building before any licence (R2c-P: runningCostAt() adds a public work's), at this street utilisation: the template as it stands (LicenceFees and RecipeChanges.feesAt() price the buildings they... |
+| 2522 | 12 | `static double rawRunningCostAt(Game game, NewUnit u, double streetUtilisation)` | ...of one new building already resolved (QN1): its own power, water, posts; its repairs and upkeep are the template's. |
+| 2536 | 27 | `static double runningChange(Game game, Map<BuildingsTemplate, Long> before, Map<BuildingsTemplate, Long> after, Ahead at)` | The complete stock change's bill, with its actual traffic wear and one shared pool of fare-paying riders. |
+| 2573 | 4 | `public static double lifeFactor(Game game)` | Months of a month's running cost a life is worth today (0.7.70): the level annuity's factor over LIFE_MONTHS at the real rate - the debt market's rate for that term at the city's debt now (DebtManager.quoteRate()), le... |
+| 2579 | 4 | `public static double lifeRate(Game game)` | ...the real rate it is struck at, a year: the debt market's for LIFE_MONTHS less expected inflation (BusinessInvestment.realTestRate()). |
+| 2585 | 3 | `public static double lifetime(Game game, BuildingsTemplate t, double landLeft, Map<BuildingsTemplate, Long> site)` | A road's or a line's cost over its life (0.7.70): its quote for one, its ground at landValue() on the land left, and lifeFactor() months of running(). |
+| 2590 | 5 | `public static double lifetime(Game game, NewUnit u, double landLeft, Map<BuildingsTemplate, Long> site)` | ...of one new building already resolved (QN1): its own running cost; its quote and ground are the template's. |
+| 2597 | 9 | `static Map<BuildingsTemplate, Long> pavingStep(Game game)` | One paving (0.7.70): a Paved Road more and a Gravel Road less; empty with either missing from the catalogue. |
+| 2608 | 5 | `public static double pavingFrees(Game game)` | The ground one paving frees (0.7.70): a gravel road's less a paved road's; 0 with either missing. |
+| 2615 | 5 | `public static double pavingUnit(Game game, Map<BuildingsTemplate, Long> site)` | The trips one paving takes off the road (0.7.70): over the line with what is on site, less with one more gravel road paved. |
+| 2628 | 9 | `public static double pavingLifetime(Game game, double landLeft, Map<BuildingsTemplate, Long> site)` | A paving's cost over its life (0.7.70), as lifetime() prices a road: its quote for one (Game.quotePave()), less the ground it frees at landValue() on the land left - what the next road would pay for it - and lifeFacto... |
+| 2644 | 6 | `public static boolean pavingBeatsPaved(Game game, double landLeft, Map<BuildingsTemplate, Long> site)` | Whether paving beats a new Paved Road (0.7.70), each over its life a trip it takes off: pavingLifetime() over pavingUnit() under a Paved Road's lifetime() over unit() - Jerus's "recommends this if better". |
+| 2665 | 3 | `static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Long> site, double landLeft)` | The city's gravel roads, paved, weighed for the road (0.7.70) as a building is in suggestFor(): the count that keeps the road ahead at its projection, of the gravel roads the city could pave (Game.paveable()); its wai... |
+| 2670 | 3 | `static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Long> site, double landLeft, double slack)` | ...at another slack past its projection (0.7.73, AutoBuilder). |
+| 2674 | 29 | `private static Weighed weighPaving(Game game, Measure m, Map<BuildingsTemplate, Long> site, double landLeft, double slack, bool...` |  |
 
-### THE ISLAND LINK, AS THE SCREENS SAY IT (FB13, AL1-W) (lines 3445-3520)
+### A BUILDING OVER ITS LIFE, FOR WHAT IT WILL SERVE (0.7.101, batch P2) (lines 2704-2888)
 
 | line | len | member | says |
 |---:|---:|---|---|
-| 3458 | 1 | **type** `private record ScreenNone(int version, long stamp, String why)` | A survey that found no crossing as a screen's read of it remembers it: the refusal, and the landmasses' version and the land's stamp it was made on (it stands for that ground and no other, where the rule's stands NO_C... |
-| 3467 | 2 | **type** `private record Shown(java.lang.ref.WeakReference<Landmasses> landmasses, int month, int version, long stamp...` | What the screens last read, and what it was read against. |
-| 3480 | 4 | `public static Link islandLink(Game game, int island)` | What the rule says links one island, as the screens word it: the link linkOf() finds for it (BRIDGE, PORT, or NONE with the survey's refusal and why no port), or - for an island a bridge is on site to - a BRIDGE with ... |
-| 3486 | 4 | `public static Link linkShown(Game game)` | The link the Build tab's card shows: the one linkFor() would answer, the island it most needs; null when there is none. |
-| 3491 | 29 | `private static Shown shown(Game game)` |  |
+| 2762 | 14 | `public static double lifeTrend(Game game, double months)` | The city's demand `months` from now over today's, for a building's life (0.7.101): the city's own population trend over the last LIFE_MONTHS of its record - or since its first month recorded, a younger city - linear i... |
+| 2778 | 4 | `public static double orderLife(Game game, BuildingsTemplate t, int count, double landLeft, Map<BuildingsTemplate, Long> site)` | An order of `count` of t over its life (0.7.101): its quote for the count, its ground at landValue() on the land left, and lifeFactor() months of running() for each. |
+| 2784 | 6 | `public static double orderLife(Game game, NewUnit u, int count, double landLeft, Map<BuildingsTemplate, Long> site)` | ...of one new building already resolved (QN1): its own running cost; its quote and ground are the template's. |
+| 2792 | 8 | `public static double pavingOrderLife(Game game, int count, double landLeft, Map<BuildingsTemplate, Long> site)` | ...`count` pavings' (0.7.101): their quote (Game.quotePave()), less the ground they free at landValue() on the land left, and lifeFactor() months of a paved road's running over a gravel road's for each; NaN with nothi... |
+| 2810 | 25 | `public static double shortfall(Game game, Measure m, Map<BuildingsTemplate, Long> added, Ahead p)` | What a measure is short of, in its own unit, with these buildings standing as well, at `p`'s demand (0.7.101): power and water the supply NEEDS YOU's quarter in hand asks (the demand over NETWORK_YELLOW) less the supp... |
+| 2837 | 6 | `public static boolean weighsServed(Measure m)` | Whether a measure's candidates are weighed for what they will serve over their lives (shortfall()): power, water, the roads (streets and highways) and care. |
+| 2854 | 19 | `public static double servedOverLife(Game game, Measure m, Map<BuildingsTemplate, Long> site, Map<BuildingsTemplate, Long> order...` | What an order serves over its life, a month on average, in the measure's unit (0.7.101): each of its LIFE_YEARS years read at its middle month - from its opening, `p`'s months less the horizon (BusinessInvestment.lead... |
+| 2875 | 3 | `public static double perServed(double life, double served, int count, double unit)` | The figure from an order's life and what it serves (0.7.101): the life over what it will serve; with that not measured, or nothing, over what its count adds (count x unit). |
+| 2884 | 4 | `public static double lifePerServed(Game game, Measure m, Map<BuildingsTemplate, Long> site, BuildingsTemplate t, int count, dou...` | A candidate's informational cost per physical unit relieved (HW1). |
+
+### AN IRON FIELD THAT WILL NOT PAY BACK (0.7.101, batch P2) (lines 2889-3083)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 2918 | 4 | **type** `public record Payback(int mines, double earns, double payment)` | An iron field weighed (0.7.101): the mines the city could staff and work on it, their profit a month, and the month's payment that repays its price - it pays back when the profit is at least the payment. |
+| 2920 | 1 | `public boolean pays()` _(in BuildAdvice.Payback)_ | Whether the mines pay the field back. |
+| 2924 | 4 | `public static Payback ironPayback(Game game, LandParcel field)` | Whether an offer holding iron would pay itself back in this city (fieldEarnings() against fieldPayment()) - since 0.7.142 by the best mine that fits each of its fields. |
+| 2954 | 1 | **type** `public record FieldMines(Deposit.FieldType type, int sites, BuildingsTemplate mine, long count)` | A field of an offer and the mines that would fill it (0.7.142): its type, its sites, a kind of mine and how many of it. |
+| 2957 | 32 | `public static List<FieldMines> fieldMines(Game game, LandParcel field)` | Each iron field an offer holds, filled with the iron mines that fit it by type and size in the plan's order (above); a field no mine fits has a row with none. |
+| 2991 | 29 | `public static double[] fieldEarnings(Game game, LandParcel field)` | What an offer's iron fields would earn the city's mines a month (0.7.142; BY THE FIELDS IT HOLDS, above): {mines, their monthly profit}, fieldEarnings()'s count on fieldMines()' mines. |
+| 3034 | 25 | `public static double[] fieldEarnings(Game game, int sites)` | What a field of `sites` iron sites would earn the city's mines a month (0.7.67, M3b; moved from LongPlaytest in 0.7.101): {mines, their monthly profit}. |
+| 3068 | 6 | `public static double fieldPayment(Game game, LandParcel field)` | The month's payment that repays a field's price here over Game.BUILD_BOND_YEARS (0.7.67, M3b; moved from LongPlaytest in 0.7.101): the level payment at the rate the market quotes for that much money at that term (Debt... |
+| 3076 | 7 | `public static boolean higherWorse(Measure m)` | Which way is worse for a measure's figure. |
+
+### A BERTH THAT PAYS BACK (FR3, 2026-10-19; docs/queue/FR3.md 5, the (lines 3084-3179)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3122 | 5 | `public static List<Measure> portMeasures()` | The port measures, one a kind of cargo, in Cargo order (FR3). |
+| 3129 | 8 | `static double portUncovered(Game game, Measure m, Map<BuildingsTemplate, Long> added)` | A port measure's uncovered tonnes a month with these buildings standing as well: the kind's carriable() less its berths standing and the berths in `added` (Ports.uncovered()). |
+| 3147 | 7 | `public static BuildingsTemplate portTerminal(Game game, Measure m, Map<BuildingsTemplate, Long> added, java.util.Set<BuildingsT...` | The terminal to order for a port measure, or null (FR3): with the kind's uncovered tonnes (`added` standing too) paying back some terminal of it but those in `skip` at the port dues dial, the largest of them whose bre... |
+| 3161 | 18 | `static Suggestion portSuggestion(Game game, Measure m, double cashLeft, double landLeft, java.util.Set<BuildingsTemplate> skip)` | A port measure's card: as many of the terminal portTerminal() chose as the uncovered tonnes pay back, each counted after the ones before it, and one at least (SL1, Ports.orderCount(); it was one), or null for none (po... |
+
+### A BERTH'S PAYBACK, FOR ITS CARD (FR4, 2026-10-20) (lines 3180-3255)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3192 | 1 | **type** `public enum BerthState` | Where a berth stands on its payback (FR4): PAYS - the dues at the dial cover its cost and more than its upkeep; SHORT - cargo of its kind crosses and no berth takes it, but not enough of it (Ports.berthPaysBack()); CO... |
+| 3206 | 10 | **type** `public record BerthPayback(BuildingsTemplate terminal, BerthState state, double carriable, double uncovered...` | One more of a terminal, weighed as the advice weighs one (FR4): the kind's carriable and uncovered tonnes a month, the tonnes a month the advice needs uncovered before the terminal pays back (needed; NaN with no dues)... |
+| 3211 | 1 | `public boolean pays()` _(in BuildAdvice.BerthPayback)_ | Whether it pays back (state PAYS). |
+| 3214 | 1 | `public double carriedAYear()` _(in BuildAdvice.BerthPayback)_ | The tonnes a year it would carry. |
+| 3229 | 26 | `public static BerthPayback berthPayback(Game game, BuildingsTemplate t)` | A sea terminal's payback, as its card says it (FR4; null for any other building). |
+
+### THE ISLAND LINK (AL1, 2026-11-09) (lines 3256-3469)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3282 | 1 | **type** `public enum LinkKind` | How a link is made: a long bridge, sea terminals, or not at all (NONE: the Link says why). |
+| 3285 | 1 | **type** `public record LinkOrder(BuildingsTemplate template, int asked, double price)` | One order of a link: the template, the landmass its order is for (a bridge's far landmass, or a terminal's `asked`: Landmasses.RULE for home, an id for an island's own shore), and its quote's total, thousands of US do... |
+| 3292 | 12 | **type** `public record Link(int landmass, String name, double sqFt, LinkKind kind, List<LinkOrder> orders, BridgeSur...` | What the city should order to link an island: the island's id, name and buildable ground (square feet), the kind, the orders (none for NONE), the crossing a bridge is surveyed over (null otherwise), the orders' total ... |
+| 3296 | 1 | `public double perSqFt()` _(in BuildAdvice.Link)_ | Its price a square foot of ground it links: the candidate's unit is the ground, not trips. |
+| 3299 | 1 | `public boolean underWay()` _(in BuildAdvice.Link)_ | Whether a bridge is already on site to the island (FB13): the screens' link for it, a BRIDGE with no orders; linkFor() never returns one. |
+| 3302 | 1 | `public BuildingsTemplate bridge()` _(in BuildAdvice.Link)_ | The bridge a BRIDGE link orders (the Road Bridge, or the Highway Bridge where a highway stands), or null for any other link and for one under way. |
+| 3306 | 1 | **type** `private record Found(LinkOrder order, double months)` | One terminal order found, and its months. |
+| 3312 | 1 | **type** `private record NoCrossing(int month, String why)` | A survey that found no crossing: the month it was made and its refusal in BridgeView's words. |
+| 3325 | 13 | `public static Link linkFor(Game game)` | The link the city should order for the island it most needs, or null when nothing is unlinked (checked first and alone: every generated world, and every city on one landmass, reads nothing else). |
+| 3340 | 15 | `private static List<Landmasses.Row> islandsToLink(Game game, Landmasses lms)` | The islands the rule would link, the one with the most buildable ground first (the lower id on a tie): unlinked, with no bridge on site to them and no terminal on them while linked ground has one. |
+| 3357 | 5 | `private static long linkedTerminals(Landmasses lms)` | The sea terminals standing or on site on the landmasses the city has linked. |
+| 3367 | 62 | `private static Link linkOf(Game game, Landmasses lms, Landmasses.Row island, boolean screens)` | The rule for one island. |
+| 3430 | 10 | `private static Link portLink(Landmasses.Row island, List<Found> found)` |  |
+| 3442 | 10 | `private static BuildingsTemplate bridgeTemplate(Game game)` | The Highway Bridge where the city has an Elevated Highway standing, else the Road Bridge; null when the one wanted is not yet known (never the Rail Bridge). |
+| 3458 | 11 | `private static Found cheapestTerminal(Game game, Landmasses lms, int asked, int island)` | The cheapest sea terminal the city knows for a landmass: by the quote of one asked for `asked`, among those whose order would stand where it is asked. |
+
+### THE ISLAND LINK, AS THE SCREENS SAY IT (FB13, AL1-W) (lines 3470-3545)
+
+| line | len | member | says |
+|---:|---:|---|---|
+| 3483 | 1 | **type** `private record ScreenNone(int version, long stamp, String why)` | A survey that found no crossing as a screen's read of it remembers it: the refusal, and the landmasses' version and the land's stamp it was made on (it stands for that ground and no other, where the rule's stands NO_C... |
+| 3492 | 2 | **type** `private record Shown(java.lang.ref.WeakReference<Landmasses> landmasses, int month, int version, long stamp...` | What the screens last read, and what it was read against. |
+| 3505 | 4 | `public static Link islandLink(Game game, int island)` | What the rule says links one island, as the screens word it: the link linkOf() finds for it (BRIDGE, PORT, or NONE with the survey's refusal and why no port), or - for an island a bridge is on site to - a BRIDGE with ... |
+| 3511 | 4 | `public static Link linkShown(Game game)` | The link the Build tab's card shows: the one linkFor() would answer, the island it most needs; null when there is none. |
+| 3516 | 29 | `private static Shown shown(Game game)` |  |
 

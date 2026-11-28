@@ -2,9 +2,9 @@
 
 Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` constant in the tree, with the comment that explains it. Do not edit; regenerate with `Regenerate maps.bat`.
 
-**6,970 constants in 665 files.**
+**6,980 constants in 665 files.**
 
-## model (3127 constants)
+## model (3128 constants)
 
 ### AgeBand.java ([map](map/AgeBand.md))
 
@@ -55,11 +55,12 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 217 | `AutoBuilder.ORDER_MONTHS` | `12` | No more than opens inside this many months: the businesses' own rule for an order until BA1 (BusinessInvestment.MAX_ORDER_MONTHS, which went with the cap on orders), kept for the city's automatic o... |
 | 422 | `AutoBuilder.HELD_BACK` | `"Automatic building holds it back; "` | What the advice card's line opens with (PT1-M3); the inbox's words for the payback follow. |
 | 708 | `AutoBuilder.PAID_MONTHS` | `12` | Months of monthPaid() the payback's figure averages: a year, as a lender reads a city's accounts - a year of its own recurring revenue, the sale of its property left out, as a city's debt limit is ... |
-| 1417 | `AutoBuilder.GRID` | `BuildAdvice.Measure.of(BuildAdvice.Kind.GRID)` | The grid's measure: the wires the plants' power runs on (PW9-G). |
-| 2057 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
-| 2160 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
-| 2185 | `AutoBuilder.ASSEMBLE_MOST` | `4 * LandMarket.OFFERS` | The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on ... |
-| 2842 | `AutoBuilder.PROCEEDS_WAIT_MONTHS` | `6` | The most months an ask whose bond has raised its order's cost waits, open, for a treasury that cannot pay it - the month's bills spent the proceeds and the central bank advances no more - before it... |
+| 1428 | `AutoBuilder.GRID` | `BuildAdvice.Measure.of(BuildAdvice.Kind.GRID)` | The grid's measure: the wires the plants' power runs on (PW9-G). |
+| 1431 | `AutoBuilder.WIRES_DUE` | `"the wires Power's plants were ordered with"` | The service a crew hold names for the wires' promise (wiresDue; crewHolds, the inbox's and the card's words). |
+| 2241 | `AutoBuilder.LINKS_LABEL` | `"Island links"` | The measure label an island link is entered under in the log. |
+| 2344 | `AutoBuilder.Ground.NONE` | `new Ground(List.of(), 0, true)` | No ground to buy: the order fits what is free. |
+| 2369 | `AutoBuilder.ASSEMBLE_MOST` | `4 * LandMarket.OFFERS` | The most offers one order assembles its ground from (PW3, Jerus 2026-11-23: "you just buy more land"): four listings' worth (LandMarket.OFFERS), past the 18 a 325 MW coal plant's 200 acres took on ... |
+| 3045 | `AutoBuilder.PROCEEDS_WAIT_MONTHS` | `6` | The most months an ask whose bond has raised its order's cost waits, open, for a treasury that cannot pay it - the month's bills spent the proceeds and the central bank advances no more - before it... |
 
 ### Bank.java ([map](map/Bank.md))
 
@@ -243,21 +244,21 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 |---:|---|---|---|
 | 88 | `BuildAdvice.OVERVIEW` | `"Overview"` | The page Build opens on: the city's job, what would help most, and what the market builds. |
 | 116 | `BuildAdvice.UTILITIES` | `"Utilities", ROADS = "Infrastructure", HEALTHCARE = "Healthcare", EDUCATION = "Educatio...` | The fourteen categories' names, as the strip, the Overview and NEEDS YOU's doors say them. |
-| 1240 | `BuildAdvice.MAX_SUGGESTIONS` | `3` | At most this many suggestions, one per need. |
-| 1243 | `BuildAdvice.MOST` | `1<<22` | The most of one building a search will count to. |
-| 1246 | `BuildAdvice.SLACK` | `BusinessInvestment.TARGET_HEADROOM` | The businesses' headroom, retained for explicit callers. |
-| 1249 | `BuildAdvice.HORIZON` | `BusinessInvestment.PLANNING_HORIZON` | The least months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); an order that opens later than that is sized further past it, as the businesses size... |
-| 1265 | `BuildAdvice.NOW` | `new Ahead(0, 1, 0)` | Today's demand, no slack: what NEEDS YOU reads. |
-| 1336 | `BuildAdvice.FIRST_WORK_SHARE` | `.30` | Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. |
-| 1442 | `BuildAdvice.PROBES` | `new ThreadLocal<>()` | Each thread's open probe, if a harness opened one on it. |
-| 1929 | `BuildAdvice.RESERVE_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's reserve orders suggested (the reserve test fired): PowerPlanCheck's count, never a decision. |
-| 1932 | `BuildAdvice.SPREAD_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's spread orders suggested (the spread fired): PowerPlanCheck's count, never a decision. |
-| 1935 | `BuildAdvice.YEAR_HOURS` | `12 * PowerDispatch.MONTH_HOURS` | The game's hours a year: twelve months of PowerDispatch.MONTH_HOURS. |
-| 2412 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
-| 2723 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
-| 3284 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link... |
-| 3290 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
-| 3461 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. |
+| 1256 | `BuildAdvice.MAX_SUGGESTIONS` | `3` | At most this many suggestions, one per need. |
+| 1259 | `BuildAdvice.MOST` | `1<<22` | The most of one building a search will count to. |
+| 1262 | `BuildAdvice.SLACK` | `BusinessInvestment.TARGET_HEADROOM` | The businesses' headroom, retained for explicit callers. |
+| 1265 | `BuildAdvice.HORIZON` | `BusinessInvestment.PLANNING_HORIZON` | The least months past an order's opening it is sized for: the businesses' (BusinessInvestment.PLANNING_HORIZON); an order that opens later than that is sized further past it, as the businesses size... |
+| 1281 | `BuildAdvice.NOW` | `new Ahead(0, 1, 0)` | Today's demand, no slack: what NEEDS YOU reads. |
+| 1352 | `BuildAdvice.FIRST_WORK_SHARE` | `.30` | Jerus's HW1 first-work threshold: 150 students for a 500-seat college, and the same share for other oversized works. |
+| 1458 | `BuildAdvice.PROBES` | `new ThreadLocal<>()` | Each thread's open probe, if a harness opened one on it. |
+| 1945 | `BuildAdvice.RESERVE_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's reserve orders suggested (the reserve test fired): PowerPlanCheck's count, never a decision. |
+| 1948 | `BuildAdvice.SPREAD_ORDERS` | `new java.util.concurrent.atomic.AtomicLong()` | Power's spread orders suggested (the spread fired): PowerPlanCheck's count, never a decision. |
+| 1951 | `BuildAdvice.YEAR_HOURS` | `12 * PowerDispatch.MONTH_HOURS` | The game's hours a year: twelve months of PowerDispatch.MONTH_HOURS. |
+| 2437 | `BuildAdvice.LIFE_MONTHS` | `Game.BUILD_BOND_YEARS * 12` | Months a road is weighed over (0.7.70): the funding page's bond term, Game.BUILD_BOND_YEARS - a long-lived asset "paid for over the years the city uses it". |
+| 2748 | `BuildAdvice.LIFE_YEARS` | `LIFE_MONTHS / 12` | The years of a building's life the served figure reads: LIFE_MONTHS in whole years. |
+| 3309 | `BuildAdvice.NO_CROSSING_MONTHS` | `12` | The months a survey that found no crossing to an island stands before the rule surveys it again: such a survey searches out to 45 km, up to 1.7 s (ET6), and an island held for money or with no link... |
+| 3315 | `BuildAdvice.NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing, by island, kept for each city's landmasses (a loaded or new city has its own; never saved, so a loaded city surveys once). |
+| 3486 | `BuildAdvice.SCREEN_NO_CROSSING` | `new java.util.WeakHashMap<>()` | The surveys that found no crossing as the screens remember them, apart from NO_CROSSING: what a screen has read never moves the rule's own memory, and the rule's own fresh memory is read before it. |
 
 ### BuildCard.java ([map](map/BuildCard.md))
 
@@ -312,9 +313,9 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 5496 | `BuildingManager.CREW_SCALE_EXPONENT` | `0.70` | The power of a building's construction points its crew grows by: 1 - Bromilow's B. |
 | 6410 | `BuildingManager.DEATH_CARE_FIRST` | `"Death care first while the dead wait"` | The page's words for the rule, which Plan.line() opens with: what it does and when. |
 | 6592 | `BuildingManager.BUILDERS_FIRST` | `"The builders' own depots first"` | The page's words for the rule, which Plan.line() opens with when a depot is on site. |
-| 8216 | `BuildingManager.POSTS_EDITS` | `new java.util.concurrent.atomic.AtomicLong()` | Raised after every change to the stacks' posts or the list of stacks, in any city (AP5): transient, never saved. |
-| 8513 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
-| 9866 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
+| 8237 | `BuildingManager.POSTS_EDITS` | `new java.util.concurrent.atomic.AtomicLong()` | Raised after every change to the stacks' posts or the list of stacks, in any city (AP5): transient, never saved. |
+| 8534 | `BuildingManager.BASE_MATERIALS` | `36` | The public works yard: it produces this many units of materials a month on its own. |
+| 9887 | `BuildingManager.formatter` | `NumberFormat.getNumberInstance(Locale.CANADA)` |  |
 
 ### BuildingVisual.java ([map](map/BuildingVisual.md))
 
@@ -6155,7 +6156,7 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 | 772 | `ZoningScreen.RESERVE_INFO` | `"A farmland reserve, as BC's Agricultural Land Reserve, Oregon's exclusive farm-use " +...` | THE FARMLAND RESERVE's (i) (RG1). |
 | 1042 | `ZoningScreen.FOREST_INFO` | `LAW_INFO + " What it would do is the long run: the protected share of the forest's " + ...` | The law's (i) on its page. |
 
-## harnesses (2319 constants)
+## harnesses (2328 constants)
 
 ### AgricultureCheck.java ([map](map/AgricultureCheck.md))
 
@@ -8778,23 +8779,32 @@ Generated 2026-11-28 by `ham.citybuildersim.tools.Dials` - every `static final` 
 
 | line | constant | value | says |
 |---:|---|---|---|
-| 49 | `PowerWiresCheck.OUT` | `System.out, QUIET = new PrintStream(OutputStream.nullOutputStream())` |  |
-| 55 | `PowerWiresCheck.GRID` | `BuildAdvice.Measure.of(BuildAdvice.Kind.GRID), POWER = BuildAdvice.Measure.of(BuildAdvi...` |  |
-| 58 | `PowerWiresCheck.DIESEL` | `"Diesel Station"` | The one plant the fixtures' city knows: 19 MW firm in one unit, small enough to be ordered a unit at a time. |
-| 61 | `PowerWiresCheck.OVER_CARRY` | `1.4, PLANTS_OVER = 2` | Section 1: the town's peak is this many times the founding wires'; its plants' firm supply this many times the peak. |
-| 64 | `PowerWiresCheck.UNDER_CARRY` | `.85` | Section 2: the town's peak today is this share of the founding wires' carry, so the wires carry it now and not the peak a plant's opening brings. |
-| 67 | `PowerWiresCheck.HELD_LOAD` | `.95` | Section 3: the town's peak today as a share of the carry of the founding wires and a distribution unit. |
-| 70 | `PowerWiresCheck.HELD_MONTHS` | `16` | Section 3: the native months run after the pass: the school's promised thirteen and three more. |
-| 73 | `PowerWiresCheck.LEAST_MONTHS` | `15, MOST_MONTHS = 70` | Section 2: the native months run at least this many (a year and a quarter, so that the highest season comes round), at most MOST_MONTHS. |
-| 76 | `PowerWiresCheck.AUDIT` | `new ArrayList<>()` | Every month's money audit residual, sections 2 and 3's, for section 6. |
-| 272 | `PowerWiresCheck.YEAR_AFTER` | `13` | The months a run goes on after every order has opened (a year and a month, so that the highest season comes round with them all standing). |
-| 466 | `PowerWiresCheck.CARE` | `BuildAdvice.Measure.care(CareType.GENERAL)` | The service whose first completion the fixtures protect: General care's Community Health Centres. |
-| 469 | `PowerWiresCheck.STEAM` | `"Small Steam Station"` | The one plant section 3 knows: a unit a twentieth of a Diesel Station's, so that an order of several is cut to fewer. |
-| 685 | `PowerWiresCheck.WIND` | `"Wind Farm"` | The one plant section 4 (b)'s spread orders: a farm that displaces the diesels' fuel. |
-| 688 | `PowerWiresCheck.SPREAD_UNITS` | `2` | Section 4 (b): the distribution units that stand, so that the wires carry more than the founding grid's plant and the diesels run past it. |
-| 737 | `PowerWiresCheck.SEASON_DRAW` | `.5` | Section 5: the town's draw as a share of the founding wires', the ahead windows' months, and their growth and slack. |
-| 738 | `PowerWiresCheck.WINDOWS` | `{ 3, 8, 14, 20, 30, 45 }` |  |
-| 739 | `PowerWiresCheck.WINDOW_K` | `1.07, WINDOW_SLACK =.1` |  |
+| 77 | `PowerWiresCheck.OUT` | `System.out, QUIET = new PrintStream(OutputStream.nullOutputStream())` |  |
+| 83 | `PowerWiresCheck.GRID` | `BuildAdvice.Measure.of(BuildAdvice.Kind.GRID), POWER = BuildAdvice.Measure.of(BuildAdvi...` |  |
+| 86 | `PowerWiresCheck.DIESEL` | `"Diesel Station"` | The one plant the fixtures' city knows: 19 MW firm in one unit, small enough to be ordered a unit at a time. |
+| 89 | `PowerWiresCheck.OVER_CARRY` | `1.4, PLANTS_OVER = 2` | Section 1: the town's peak is this many times the founding wires'; its plants' firm supply this many times the peak. |
+| 92 | `PowerWiresCheck.UNDER_CARRY` | `.85` | Section 2: the town's peak today is this share of the founding wires' carry, so the wires carry it now and not the peak a plant's opening brings. |
+| 95 | `PowerWiresCheck.HELD_LOAD` | `.95` | Section 3: the town's peak today as a share of the carry of the founding wires and a distribution unit. |
+| 98 | `PowerWiresCheck.HELD_MONTHS` | `16` | Section 3: the native months run after the pass: the school's promised thirteen and three more. |
+| 101 | `PowerWiresCheck.LEAST_MONTHS` | `15, MOST_MONTHS = 70` | Section 2: the native months run at least this many (a year and a quarter, so that the highest season comes round), at most MOST_MONTHS. |
+| 104 | `PowerWiresCheck.AUDIT` | `new ArrayList<>()` | Every month's money audit residual, sections 2 and 3's, for section 6. |
+| 406 | `PowerWiresCheck.YEAR_AFTER` | `13` | The months a run goes on after every order has opened (a year and a month, so that the highest season comes round with them all standing). |
+| 618 | `PowerWiresCheck.CARE` | `BuildAdvice.Measure.care(CareType.GENERAL)` | The service whose first completion the fixtures protect: General care's Community Health Centres. |
+| 621 | `PowerWiresCheck.STEAM` | `"Small Steam Station"` | The one plant section 3 knows: a unit a twentieth of a Diesel Station's, so that an order of several is cut to fewer. |
+| 862 | `PowerWiresCheck.WIND` | `"Wind Farm"` | The one plant section 4 (b)'s spread orders: a farm that displaces the diesels' fuel. |
+| 865 | `PowerWiresCheck.SPREAD_UNITS` | `2` | Section 4 (b): the distribution units that stand, so that the wires carry more than the founding grid's plant and the diesels run past it. |
+| 914 | `PowerWiresCheck.SEASON_DRAW` | `.5` | Section 5: the town's draw as a share of the founding wires', the ahead windows' months, and their growth and slack. |
+| 915 | `PowerWiresCheck.WINDOWS` | `{ 3, 8, 14, 20, 30, 45 }` |  |
+| 916 | `PowerWiresCheck.WINDOW_K` | `1.07, WINDOW_SLACK =.1` |  |
+| 1094 | `PowerWiresCheck.FRONTIER_UNITS` | `2, PROMISE_UNITS = 3` | Sections 8, 9: the distribution units ordered before the pass (8: so many that the first of them opens after the plant; 9: few, so that it opens before). |
+| 1125 | `PowerWiresCheck.FRONTIER_MONTHS` | `36` | Section 8: the months run, the law on and off. |
+| 1214 | `PowerWiresCheck.PROMISE_WORDS` | `"waits to preserve the opening of the wires Power's plants were ordered with"` |  |
+| 1309 | `PowerWiresCheck.RUSHED_UNITS` | `3, RUSHED_PLANTS = 100` | Section 10: the units on the rushed site, the plants whose points share its crews (the chosen count, and those the search tried), and the months run counting the grid's units. |
+| 1310 | `PowerWiresCheck.RUSHED_SEARCH` | `{ RUSHED_PLANTS }` |  |
+| 1313 | `PowerWiresCheck.GRID_MONTHS` | `70` | Sections 10, 11: the months run counting the grid's units standing. |
+| 1385 | `PowerWiresCheck.ABROAD_UNITS` | `3` | Section 11: the units on the site handed abroad, and the months the foreign crews take on the first of them. |
+| 1386 | `PowerWiresCheck.ABROAD_FIRST_MONTHS` | `30` |  |
+| 1439 | `PowerWiresCheck.CANCELLED_UNITS` | `3` | Section 12: the units on the site that is cancelled. |
 
 ### PriceLevelCheck.java ([map](map/PriceLevelCheck.md))
 
